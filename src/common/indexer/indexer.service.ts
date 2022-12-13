@@ -1,4 +1,3 @@
-import { LogPerformanceAsync } from "@elrondnetwork/erdnest";
 import { Inject, Injectable } from "@nestjs/common";
 import { BlockFilter } from "src/endpoints/blocks/entities/block.filter";
 import { CollectionFilter } from "src/endpoints/collections/entities/collection.filter";
@@ -14,6 +13,7 @@ import { TokenAssets } from "../assets/entities/token.assets";
 import { QueryPagination } from "../entities/query.pagination";
 import { Account, AccountHistory, AccountTokenHistory, Block, Collection, MiniBlock, Operation, Round, ScDeploy, ScResult, Tag, Token, TokenAccount, Transaction, TransactionLog, TransactionReceipt } from "./entities";
 import { IndexerInterface } from "./indexer.interface";
+import { LogPerformanceAsync } from "src/utils/log.performance.decorator";
 
 @Injectable()
 export class IndexerService implements IndexerInterface {

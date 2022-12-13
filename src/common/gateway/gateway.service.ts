@@ -1,9 +1,10 @@
-import { ApiService, ApiSettings, LogPerformanceAsync } from "@elrondnetwork/erdnest";
+import { ApiService, ApiSettings } from "@elrondnetwork/erdnest";
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { ApiConfigService } from "../api-config/api.config.service";
 import { Auction } from "./entities/auction";
 import { GatewayComponentRequest } from "./entities/gateway.component.request";
 import { MetricsEvents } from "src/utils/metrics-events.constants";
+import { LogPerformanceAsync } from "src/utils/log.performance.decorator";
 
 @Injectable()
 export class GatewayService {
