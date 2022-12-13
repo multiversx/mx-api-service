@@ -78,7 +78,7 @@ export class IndexerService implements IndexerInterface {
     return await this.indexerInterface.getTransfersCount(filter);
   }
 
-  @LogPerformanceAsync('setIndexerDuration', 'getTokenCountForAddress')
+  @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
   async getTokenCountForAddress(address: string, filter: TokenFilter): Promise<number> {
     return await this.indexerInterface.getTokenCountForAddress(address, filter);
   }

@@ -53,7 +53,7 @@ export class GatewayService {
     return result?.data?.data;
   }
 
-  @LogPerformanceAsync('setGatewayDuration', { argIndex: 1 })
+  @LogPerformanceAsync(MetricsEvents.SetGatewayDuration, { argIndex: 1 })
   async createRaw(url: string, component: GatewayComponentRequest, data: any, errorHandler?: (error: any) => Promise<boolean>): Promise<any> {
     return await this.apiService.post(`${this.getUrl(component)}/${url}`, data, new ApiSettings(), errorHandler);
   }
