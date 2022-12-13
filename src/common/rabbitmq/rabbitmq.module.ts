@@ -6,8 +6,9 @@ import { NftWorkerModule } from 'src/queue.worker/nft.worker/nft.worker.module';
 import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 import { ApiConfigModule } from '../api-config/api.config.module';
 import { ApiConfigService } from '../api-config/api.config.service';
-import { RabbitMqNftConsumer } from './rabbitmq.nft.consumer';
+import { RabbitMqConsumer } from './rabbitmq.consumer';
 import { RabbitMqNftHandlerService } from './rabbitmq.nft.handler.service';
+import { RabbitMqTokenHandlerService } from './rabbitmq.token.handler.service';
 
 @Module({
   imports: [
@@ -18,8 +19,9 @@ import { RabbitMqNftHandlerService } from './rabbitmq.nft.handler.service';
   ],
   providers: [
     DynamicModuleUtils.getPubSubService(),
-    RabbitMqNftConsumer,
+    RabbitMqConsumer,
     RabbitMqNftHandlerService,
+    RabbitMqTokenHandlerService,
   ],
 })
 export class RabbitMqModule {

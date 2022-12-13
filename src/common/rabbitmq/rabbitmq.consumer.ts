@@ -5,13 +5,15 @@ import configuration from 'config/configuration';
 import { NotifierEvent as NotifierEvent } from './entities/notifier.event';
 import { OriginLogger } from '@elrondnetwork/erdnest';
 import { NotifierEventIdentifier } from './entities/notifier.event.identifier';
+import { RabbitMqTokenHandlerService } from './rabbitmq.token.handler.service';
 
 @Injectable()
-export class RabbitMqNftConsumer {
-  private readonly logger = new OriginLogger(RabbitMqNftConsumer.name);
+export class RabbitMqConsumer {
+  private readonly logger = new OriginLogger(RabbitMqConsumer.name);
 
   constructor(
     private readonly nftHandlerService: RabbitMqNftHandlerService,
+    private readonly tokenHandlerService: RabbitMqTokenHandlerService,
   ) { }
 
   @CompetingRabbitConsumer({
@@ -40,7 +42,7 @@ export class RabbitMqNftConsumer {
         await this.nftHandlerService.handleNftUpdateAttributesEvent(event);
         break;
       case NotifierEventIdentifier.transferOwnership:
-        await this.nftHandlerService.handleTransferOwnershipEvent(event);
+        await this.tokenHandlerService.handleTransferOwnershipEvent(event);
         break;
     }
   }
