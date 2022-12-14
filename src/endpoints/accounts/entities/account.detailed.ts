@@ -49,6 +49,10 @@ export class AccountDetailed extends Account {
   @ApiProperty({ description: 'Specific property flag for smart contract', type: Number })
   deployedAt?: number;
 
+  @Field(() => String, { description: 'DeployTxHash for the given detailed account.', nullable: true })
+  @ApiProperty({ description: 'The contract deploy transaction hash' })
+  deployTxHash?: string;
+
   @Field(() => Boolean, { description: 'If the given detailed account is upgradeable.', nullable: true })
   @ApiProperty({ description: 'Specific property flag for smart contract', type: Boolean })
   isUpgradeable?: boolean;

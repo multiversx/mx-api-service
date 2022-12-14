@@ -102,6 +102,11 @@ export class AccountService {
         account = { ...account, ...codeAttributes };
       }
 
+      const deployTxHash = await this.getAccountDeployedTxHash(address);
+      if (deployTxHash) {
+        account.deployTxHash = deployTxHash;
+      }
+
       if (account.code) {
         const deployedAt = await this.getAccountDeployedAt(address);
         if (deployedAt) {
@@ -163,6 +168,15 @@ export class AccountService {
     }
 
     return transaction.timestamp;
+  }
+
+  async getAccountDeployedTxHash(address: string): Promise<string | null> {
+    const scDeploy = await this.indexerService.getScDeploy(address);
+    if (!scDeploy) {
+      return null;
+    }
+
+    return scDeploy.deployTxHash;
   }
 
   async getAccounts(queryPagination: QueryPagination): Promise<Account[]> {
