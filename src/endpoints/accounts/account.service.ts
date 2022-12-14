@@ -26,6 +26,7 @@ import { AccountAssets } from 'src/common/assets/entities/account.assets';
 import { OriginLogger } from '@elrondnetwork/erdnest';
 import { CacheInfo } from 'src/utils/cache.info';
 import { UsernameService } from '../usernames/username.service';
+import { ContractUpgrades } from './entities/contract.upgrades';
 
 @Injectable()
 export class AccountService {
@@ -367,6 +368,19 @@ export class AccountService {
 
   async getAccountContractsCount(address: string): Promise<number> {
     return await this.indexerService.getAccountContractsCount(address);
+  }
+
+  async getContractUpgrades(address: string): Promise<ContractUpgrades> {
+    const details = await this.indexerService.getScDeploy(address);
+
+    const upgrades: ContractUpgrades = {
+      contract: address,
+      deployer: details.deployer,
+      timestamp: details.timestamp,
+      upgrades: details.upgrades,
+    };
+
+    return upgrades;
   }
 
   async getAccountHistory(address: string, pagination: QueryPagination): Promise<AccountHistory[]> {

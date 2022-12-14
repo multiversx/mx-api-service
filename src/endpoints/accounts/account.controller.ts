@@ -48,6 +48,7 @@ import { OriginLogger } from '@elrondnetwork/erdnest';
 import { AccountDelegation } from '../stake/entities/account.delegation';
 import { DelegationService } from '../delegation/delegation.service';
 import { TokenType } from '../tokens/entities/token.type';
+import { ContractUpgrades } from './entities/contract.upgrades';
 
 @Controller()
 @ApiTags('accounts')
@@ -887,6 +888,15 @@ export class AccountController {
   @ApiExcludeEndpoint()
   getAccountContractsCountAlternative(@Param('address', ParseAddressPipe) address: string): Promise<number> {
     return this.accountService.getAccountContractsCount(address);
+  }
+
+  @Get("/accounts/:address/upgrades")
+  @ApiOperation({ summary: 'Account upgrades details', description: 'Returns all upgrades details for a specific contract address' })
+  @ApiOkResponse({ type: ContractUpgrades })
+  getContractUpgrades(
+    @Param('address', ParseAddressPipe) address: string,
+  ): Promise<ContractUpgrades> {
+    return this.accountService.getContractUpgrades(address);
   }
 
   @Get("/accounts/:address/results")
