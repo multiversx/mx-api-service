@@ -476,4 +476,11 @@ export class CacheInfo {
       ttl: Constants.oneHour(),
     };
   }
+
+  static ContractUpgrades(address: string): CacheInfo {
+    return {
+      key: `contractUpgrades:${address}`,
+      ttl: Constants.oneHour(),
+    };
+  }
 }

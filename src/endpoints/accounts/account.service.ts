@@ -370,7 +370,7 @@ export class AccountService {
     return await this.indexerService.getAccountContractsCount(address);
   }
 
-  async getContractUpgrades(address: string): Promise<ContractUpgrades | null> {
+  async getContractUpgradesRaw(address: string): Promise<ContractUpgrades | null> {
     const details = await this.indexerService.getScDeploy(address);
 
     if (!details) {
@@ -385,6 +385,14 @@ export class AccountService {
     };
 
     return upgrades;
+  }
+
+  async getContractUpgrades(address: string): Promise<ContractUpgrades | null> {
+    return await this.cachingService.getOrSetCache(
+      CacheInfo.ContractUpgrades(address).key,
+      async () => await this.getContractUpgradesRaw(address),
+      CacheInfo.ContractUpgrades(address).ttl
+    );
   }
 
   async getAccountHistory(address: string, pagination: QueryPagination): Promise<AccountHistory[]> {
