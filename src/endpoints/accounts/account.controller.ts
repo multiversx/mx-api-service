@@ -895,8 +895,10 @@ export class AccountController {
   @ApiOkResponse({ type: ContractUpgrades })
   getContractUpgrades(
     @Param('address', ParseAddressPipe) address: string,
-  ): Promise<ContractUpgrades> {
-    return this.accountService.getContractUpgrades(address);
+  ): Promise<ContractUpgrades | null> {
+    const upgrades = this.accountService.getContractUpgrades(address);
+
+    return upgrades;
   }
 
   @Get("/accounts/:address/results")

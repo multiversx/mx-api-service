@@ -370,8 +370,12 @@ export class AccountService {
     return await this.indexerService.getAccountContractsCount(address);
   }
 
-  async getContractUpgrades(address: string): Promise<ContractUpgrades> {
+  async getContractUpgrades(address: string): Promise<ContractUpgrades | null> {
     const details = await this.indexerService.getScDeploy(address);
+
+    if (!details) {
+      return null;
+    }
 
     const upgrades: ContractUpgrades = {
       contract: address,
