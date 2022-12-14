@@ -168,6 +168,8 @@ async function configurePublicApp(publicApp: NestExpressApplication, apiConfigSe
 
   const globalInterceptors: NestInterceptor[] = [];
   // @ts-ignore
+  globalInterceptors.push(new QueryCheckInterceptor(httpAdapterHostService));
+  // @ts-ignore
   globalInterceptors.push(new OriginInterceptor());
   // @ts-ignore
   globalInterceptors.push(new ComplexityInterceptor());
@@ -206,7 +208,6 @@ async function configurePublicApp(publicApp: NestExpressApplication, apiConfigSe
   // @ts-ignore
   globalInterceptors.push(new PaginationInterceptor(apiConfigService.getIndexerMaxPagination()));
   // @ts-ignore
-  globalInterceptors.push(new QueryCheckInterceptor(httpAdapterHostService));
   globalInterceptors.push(new TransactionLoggingInterceptor());
 
   await pluginService.bootstrapPublicApp(publicApp);
