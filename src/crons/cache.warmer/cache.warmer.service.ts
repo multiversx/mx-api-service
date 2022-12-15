@@ -200,6 +200,7 @@ export class CacheWarmerService {
   async handleGuestCaching() {
     await this.guestCachingWarmer.recompute({
       targetUrl: this.apiConfigService.getGuestCacheTargetUrl(),
+      cacheTriggerHitsThreshold: 3,
     });
   }
 

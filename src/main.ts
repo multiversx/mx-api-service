@@ -172,7 +172,8 @@ async function configurePublicApp(publicApp: NestExpressApplication, apiConfigSe
 
   const cachingService = publicApp.get<CachingService>(CachingService);
   const guestCachingService = publicApp.get<GuestCachingService>(GuestCachingService);
-  globalInterceptors.push(new GuestCachingInterceptor(guestCachingService));
+  // @ts-ignore
+  globalInterceptors.push(new GuestCachingInterceptor(guestCachingService, { batchSize: 3 }));
 
   // @ts-ignore
   globalInterceptors.push(new OriginInterceptor());
