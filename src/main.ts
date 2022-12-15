@@ -169,6 +169,11 @@ async function configurePublicApp(publicApp: NestExpressApplication, apiConfigSe
   const globalInterceptors: NestInterceptor[] = [];
   // @ts-ignore
   globalInterceptors.push(new QueryCheckInterceptor(httpAdapterHostService));
+
+  const cachingService = publicApp.get<CachingService>(CachingService);
+  const guestCachingService = publicApp.get<GuestCachingService>(GuestCachingService);
+  globalInterceptors.push(new GuestCachingInterceptor(guestCachingService));
+
   // @ts-ignore
   globalInterceptors.push(new OriginInterceptor());
   // @ts-ignore
@@ -179,9 +184,6 @@ async function configurePublicApp(publicApp: NestExpressApplication, apiConfigSe
   globalInterceptors.push(new RequestCpuTimeInterceptor(metricsService));
   // @ts-ignore
   globalInterceptors.push(new LoggingInterceptor(metricsService));
-
-  const cachingService = publicApp.get<CachingService>(CachingService);
-  const guestCachingService = publicApp.get<GuestCachingService>(GuestCachingService);
 
   if (apiConfigService.getUseRequestCachingFlag()) {
     const cachingInterceptor = new CachingInterceptor(
@@ -194,8 +196,6 @@ async function configurePublicApp(publicApp: NestExpressApplication, apiConfigSe
     // @ts-ignore
     globalInterceptors.push(cachingInterceptor);
   }
-
-  globalInterceptors.push(new GuestCachingInterceptor(guestCachingService));
 
   // @ts-ignore
   globalInterceptors.push(new FieldsInterceptor());
