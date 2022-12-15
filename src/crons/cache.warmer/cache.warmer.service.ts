@@ -198,10 +198,12 @@ export class CacheWarmerService {
 
   @Cron("*/6 * * * * *")
   async handleGuestCaching() {
-    await this.guestCachingWarmer.recompute({
-      targetUrl: this.apiConfigService.getGuestCacheTargetUrl(),
-      cacheTriggerHitsThreshold: 3,
-    });
+    if (this.apiConfigService.isGuestCachingFeatureActive()) {
+      await this.guestCachingWarmer.recompute({
+        targetUrl: this.apiConfigService.getSelfUrl(),
+        cacheTriggerHitsThreshold: this.apiConfigService.getGuestCachingHitsThreshold(),
+      });
+    }
   }
 
   @Cron(CronExpression.EVERY_MINUTE)

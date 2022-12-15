@@ -30,6 +30,9 @@ features:
     url: 'amqp://guest:guest@127.0.0.1:5672'
     exchange: 'all_events'
     queue: 'api-process-logs-and-events'
+  guestCache:
+    enabled: false
+    hitsThreshold: 100
 image:
   width: 600
   height: 600
@@ -44,7 +47,7 @@ urls:
     - 'https://testnet-api.elrond.com'
     - 'https://devnet-api.elrond.com'
     - 'https://api.elrond.com'
-  guestCache: 'https://testnet-api.elrond.com'
+  self: 'https://testnet-api.elrond.com'
   elastic:
     - 'https://testnet-index.elrond.com'
   gateway:

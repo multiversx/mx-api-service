@@ -19,13 +19,21 @@ export class ApiConfigService {
     return apiUrls;
   }
 
-  getGuestCacheTargetUrl(): string {
-    const guestCacheUrl = this.configService.get<string>('urls.guestCache');
+  getSelfUrl(): string {
+    const guestCacheUrl = this.configService.get<string>('urls.self');
     if (!guestCacheUrl) {
-      throw new Error('No guest cache url present');
+      throw new Error('No self url present');
     }
 
     return guestCacheUrl;
+  }
+
+  isGuestCachingFeatureActive(): boolean {
+    return this.configService.get<boolean>('features.guestCaching.enabled') ?? false;
+  }
+
+  getGuestCachingHitsThreshold(): number {
+    return this.configService.get<number>('features.guestCaching.hitsThreshold') ?? 100;
   }
 
   getGatewayUrl(): string {
