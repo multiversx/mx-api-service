@@ -21,7 +21,7 @@ import { PluginService } from './common/plugins/plugin.service';
 import { TransactionCompletedModule } from './crons/transaction.processor/transaction.completed.module';
 import { SocketAdapter } from './common/websockets/socket-adapter';
 import { ApiConfigModule } from './common/api-config/api.config.module';
-import { JwtAuthenticateGlobalGuard, CachingService, LoggerInitializer, LoggingInterceptor, MetricsService, CachingInterceptor, LogRequestsInterceptor, FieldsInterceptor, ExtractInterceptor, CleanupInterceptor, PaginationInterceptor, QueryCheckInterceptor, ComplexityInterceptor, OriginInterceptor, RequestCpuTimeInterceptor } from '@elrondnetwork/erdnest';
+import { JwtAuthenticateGlobalGuard, CachingService, LoggerInitializer, LoggingInterceptor, MetricsService, CachingInterceptor, LogRequestsInterceptor, FieldsInterceptor, ExtractInterceptor, CleanupInterceptor, PaginationInterceptor, QueryCheckInterceptor, ComplexityInterceptor, OriginInterceptor, RequestCpuTimeInterceptor, GuestCachingInterceptor, GuestCachingService } from '@elrondnetwork/erdnest';
 import { ErdnestConfigServiceImpl } from './common/api-config/erdnest.config.service.impl';
 import { RabbitMqModule } from './common/rabbitmq/rabbitmq.module';
 import { TransactionLoggingInterceptor } from './interceptors/transaction.logging.interceptor';
@@ -180,9 +180,10 @@ async function configurePublicApp(publicApp: NestExpressApplication, apiConfigSe
   // @ts-ignore
   globalInterceptors.push(new LoggingInterceptor(metricsService));
 
-  if (apiConfigService.getUseRequestCachingFlag()) {
-    const cachingService = publicApp.get<CachingService>(CachingService);
+  const cachingService = publicApp.get<CachingService>(CachingService);
+  const guestCachingService = publicApp.get<GuestCachingService>(GuestCachingService);
 
+  if (apiConfigService.getUseRequestCachingFlag()) {
     const cachingInterceptor = new CachingInterceptor(
       cachingService,
       // @ts-ignore
@@ -193,6 +194,11 @@ async function configurePublicApp(publicApp: NestExpressApplication, apiConfigSe
     // @ts-ignore
     globalInterceptors.push(cachingInterceptor);
   }
+
+  globalInterceptors.push(new GuestCachingInterceptor(guestCachingService));
+
+  // @ts-ignore
+  globalInterceptors.push(new FieldsInterceptor());
 
   if (apiConfigService.getUseRequestLoggingFlag()) {
     // @ts-ignore

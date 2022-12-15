@@ -7,7 +7,7 @@ import { MexModule } from 'src/endpoints/mex/mex.module';
 import { AssetsModule } from 'src/common/assets/assets.module';
 import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 import { NftCronModule } from '../nft/nft.cron.module';
-import { GuestCachingService } from '@elrondnetwork/erdnest';
+import { GuestCachingWarmer } from '@elrondnetwork/erdnest';
 
 @Module({
   imports: [
@@ -20,7 +20,7 @@ import { GuestCachingService } from '@elrondnetwork/erdnest';
   ],
   providers: [
     DynamicModuleUtils.getPubSubService(),
-    GuestCachingService,
+    GuestCachingWarmer,
     CacheWarmerService,
   ],
 })

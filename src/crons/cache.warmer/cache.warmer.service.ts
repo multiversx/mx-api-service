@@ -22,7 +22,7 @@ import { MexPairService } from "src/endpoints/mex/mex.pair.service";
 import { MexTokenService } from "src/endpoints/mex/mex.token.service";
 import { MexFarmService } from "src/endpoints/mex/mex.farm.service";
 import AsyncLock from "async-lock";
-import { CachingService, Constants, Locker, OriginLogger, GuestCachingService } from "@elrondnetwork/erdnest";
+import { CachingService, Constants, Locker, OriginLogger, GuestCachingWarmer } from "@elrondnetwork/erdnest";
 import { DelegationLegacyService } from "src/endpoints/delegation.legacy/delegation.legacy.service";
 import { TokenService } from "src/endpoints/tokens/token.service";
 
@@ -54,7 +54,7 @@ export class CacheWarmerService {
     private readonly mexFarmsService: MexFarmService,
     private readonly delegationLegacyService: DelegationLegacyService,
     private readonly tokenService: TokenService,
-    private readonly guestCachingService: GuestCachingService
+    private readonly guestCachingWarmer: GuestCachingWarmer
   ) {
     this.lock = new AsyncLock();
 
@@ -198,7 +198,7 @@ export class CacheWarmerService {
 
   @Cron("*/6 * * * * *")
   async handleGuestCaching() {
-    await this.guestCachingService.recompute({
+    await this.guestCachingWarmer.recompute({
       targetUrl: this.apiConfigService.getGuestCacheTargetUrl(),
     });
   }
