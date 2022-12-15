@@ -898,6 +898,10 @@ export class AccountController {
   ): Promise<ContractUpgrades | null> {
     const upgrades = this.accountService.getContractUpgrades(address);
 
+    if (!upgrades) {
+      throw new NotFoundException();
+    }
+
     return upgrades;
   }
 
