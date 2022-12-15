@@ -43,12 +43,12 @@ aws:
   s3Bucket: 'devnet-media.elrond.com'
   s3Region: ''
 urls:
+  self: 'https://devnet-api.elrond.com'
   api:
     - 'https://devnet-api.elrond.com'
     - 'https://testnet-api.elrond.com'
     - 'https://api.elrond.com'
     - 'http://localhost:3001'
-  self: 'https://devnet-api.elrond.com'
   elastic:
     - 'https://devnet-index.elrond.com'
   gateway:
