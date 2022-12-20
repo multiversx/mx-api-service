@@ -63,7 +63,7 @@ describe('Provider Service', () => {
       }
 
       expect(result.identity).toBeDefined();
-      expect(result.identity).toStrictEqual("justminingfr");
+      expect(result.identity).toStrictEqual("meria");
       expect(result.provider).toStrictEqual("erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq8hlllls7a6h85");
     });
 
@@ -208,7 +208,7 @@ describe('Provider Service', () => {
             'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzhllllsp9wvyl',
           partnerstaking:
             'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq9hllllsz2je7q',
-          justminingfr:
+          meria:
             'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq8hlllls7a6h85',
           thepalmtreenw:
             'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqy8lllls62y8s5',
