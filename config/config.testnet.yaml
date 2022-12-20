@@ -30,7 +30,7 @@ features:
     url: 'amqp://guest:guest@127.0.0.1:5672'
     exchange: 'all_events'
     queue: 'api-process-logs-and-events'
-  guestCache:
+  guestCaching:
     enabled: false
     hitsThreshold: 100
 image:
