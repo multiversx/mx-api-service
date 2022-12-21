@@ -205,7 +205,7 @@ describe("Tokens Controller", () => {
         .expect(200)
         .then(res => {
           expect(res.body).toHaveLength(25);
-          expect(res.body[0].address).toStrictEqual('erd1qqqqqqqqqqqqqpgq7qhsw8kffad85jtt79t9ym0a4ycvan9a2jps0zkpen');
+          expect(res.body[0].address).toStrictEqual('erd1qqqqqqqqqqqqqpgqa0fsfshnff4n76jhcye6k7uvd7qacsq42jpsp6shh2');
         });
     });
 
