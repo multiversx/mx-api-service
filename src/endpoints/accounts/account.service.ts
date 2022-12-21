@@ -370,29 +370,21 @@ export class AccountService {
     return await this.indexerService.getAccountContractsCount(address);
   }
 
-  async getContractUpgradesRaw(address: string): Promise<ContractUpgrades | null> {
+  async getContractUpgrades(queryPagination: QueryPagination, address: string): Promise<ContractUpgrades[] | null> {
+    const { from, size } = queryPagination;
     const details = await this.indexerService.getScDeploy(address);
 
     if (!details) {
       return null;
     }
 
-    const upgrades: ContractUpgrades = {
-      contract: address,
-      deployer: details.deployer,
-      timestamp: details.timestamp,
-      upgrades: details.upgrades,
-    };
+    const upgrades = details.upgrades.map(item => ApiUtils.mergeObjects(new ContractUpgrades(), {
+      address: item.upgrader,
+      txHash: item.upgradeTxHash,
+      timestamp: item.timestamp,
+    }));
 
-    return upgrades;
-  }
-
-  async getContractUpgrades(address: string): Promise<ContractUpgrades | null> {
-    return await this.cachingService.getOrSetCache(
-      CacheInfo.ContractUpgrades(address).key,
-      async () => await this.getContractUpgradesRaw(address),
-      CacheInfo.ContractUpgrades(address).ttl
-    );
+    return upgrades.slice(from, from + size);
   }
 
   async getAccountHistory(address: string, pagination: QueryPagination): Promise<AccountHistory[]> {
