@@ -271,14 +271,16 @@ export class NodeService {
     const providers = await this.providerService.getAllProviders();
 
     for (const node of nodes) {
-      const provider = providers.find(({ provider }) => provider === node.owner);
+      if (node.type === NodeType.validator) {
+        const provider = providers.find(({ provider }) => provider === node.owner);
 
-      if (provider) {
-        node.provider = provider.provider;
-        node.owner = provider.owner ?? '';
+        if (provider) {
+          node.provider = provider.provider;
+          node.owner = provider.owner ?? '';
 
-        if (provider.identity) {
-          node.identity = provider.identity;
+          if (provider.identity) {
+            node.identity = provider.identity;
+          }
         }
       }
     }
