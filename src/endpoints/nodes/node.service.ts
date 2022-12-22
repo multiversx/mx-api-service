@@ -530,7 +530,7 @@ export class NodeService {
         nodeType = NodeType.validator;
         nodeStatus = NodeStatus.leaving;
       } else if (validatorStatus === 'inactive') {
-        nodeType = peerType === 'validator' ? NodeType.validator : NodeType.observer;
+        nodeType = NodeType.validator;
         nodeStatus = NodeStatus.inactive;
       } else if (peerType === 'observer') {
         nodeType = NodeType.observer;
