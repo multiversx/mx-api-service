@@ -1,4 +1,4 @@
-import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Param, Query } from "@nestjs/common";
+import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, NotFoundException, Param, Query, Res } from "@nestjs/common";
 import { ApiExcludeEndpoint, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { NftCollection } from "./entities/nft.collection";
 import { NftType } from "../nfts/entities/nft.type";
@@ -21,6 +21,7 @@ import { TransactionFilter } from "../transactions/entities/transaction.filter";
 import { NftRank } from "src/common/assets/entities/nft.rank";
 import { SortCollectionNfts } from "./entities/sort.collection.nfts";
 import { NftCollectionDetailed } from "./entities/nft.collection.detailed";
+import { Response } from "express";
 
 @Controller()
 @ApiTags('collections')
@@ -416,5 +417,43 @@ export class CollectionController {
       before,
       after,
     }));
+  }
+
+  @Get('/collections/:identifier/logo/png')
+  @ApiOperation({ summary: 'Collection png logo', description: 'Returns collection PNG logo ', deprecated: true })
+  async getCollectionLogoPng(
+    @Param('identifier', ParseCollectionPipe) identifier: string,
+    @Res() response: Response
+  ): Promise<void> {
+    const isCollection = await this.collectionService.isCollection(identifier);
+    if (!isCollection) {
+      throw new NotFoundException('Collection not found');
+    }
+
+    const url = await this.collectionService.getLogoPng(identifier);
+    if (url === undefined) {
+      throw new NotFoundException('Assets not found');
+    }
+
+    response.redirect(url);
+  }
+
+  @Get('/collections/:identifier/logo/svg')
+  @ApiOperation({ summary: 'Collection png logo', description: 'Returns collection SVG logo ', deprecated: true })
+  async getTokenLogoSvg(
+    @Param('identifier', ParseCollectionPipe) identifier: string,
+    @Res() response: Response
+  ): Promise<void> {
+    const isCollection = await this.collectionService.isCollection(identifier);
+    if (!isCollection) {
+      throw new NotFoundException('Collection not found');
+    }
+
+    const url = await this.collectionService.getLogoSvg(identifier);
+    if (url === undefined) {
+      throw new NotFoundException('Assets not found');
+    }
+
+    response.redirect(url);
   }
 }

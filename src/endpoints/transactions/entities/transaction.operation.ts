@@ -31,6 +31,10 @@ export class TransactionOperation {
   @ApiProperty({ type: String })
   identifier: string = '';
 
+  @Field(() => String, { description: 'Token ticker for the transaction operation.' })
+  @ApiProperty({ type: String })
+  ticker?: string = '';
+
   @Field(() => String, { description: 'Collection for the transaction operation.', nullable: true })
   @ApiProperty({ type: String })
   collection?: string;

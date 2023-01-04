@@ -143,9 +143,9 @@ export class EsdtAddressService {
           delete clonedRoles.canTransfer;
 
           Object.assign(collectionWithRoles, clonedRoles);
-
-          collectionsWithRoles.push(collectionWithRoles);
         }
+
+        collectionsWithRoles.push(collectionWithRoles);
       }
     }
 

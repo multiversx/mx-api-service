@@ -104,10 +104,10 @@ export class NftService {
     return nfts;
   }
 
-  private async batchProcessNfts(nfts: Nft[]) {
+  private async batchProcessNfts(nfts: Nft[], fields?: string[]) {
     await Promise.all([
-      this.batchApplyMedia(nfts),
-      this.batchApplyMetadata(nfts),
+      this.batchApplyMedia(nfts, fields),
+      this.batchApplyMetadata(nfts, fields),
     ]);
   }
 
@@ -120,7 +120,11 @@ export class NftService {
     }
   }
 
-  private async batchApplySupply(nfts: Nft[]) {
+  private async batchApplySupply(nfts: Nft[], fields?: string[]) {
+    if (fields && !fields.includes('supply')) {
+      return;
+    }
+
     await this.cachingService.batchApplyAll(
       nfts,
       nft => CacheInfo.TokenSupply(nft.identifier).key,
@@ -130,7 +134,11 @@ export class NftService {
     );
   }
 
-  private async batchApplyMedia(nfts: Nft[]) {
+  private async batchApplyMedia(nfts: Nft[], fields?: string[]) {
+    if (fields && !fields.includes('media')) {
+      return;
+    }
+
     await this.cachingService.batchApply(
       nfts,
       nft => CacheInfo.NftMedia(nft.identifier).key,
@@ -150,7 +158,11 @@ export class NftService {
     }
   }
 
-  private async batchApplyMetadata(nfts: Nft[]) {
+  private async batchApplyMetadata(nfts: Nft[], fields?: string[]) {
+    if (fields && !fields.includes('metadata')) {
+      return;
+    }
+
     await this.cachingService.batchApply(
       nfts,
       nft => CacheInfo.NftMetadata(nft.identifier).key,
@@ -176,7 +188,11 @@ export class NftService {
     }
   }
 
-  async applyAssetsAndTicker(token: Nft) {
+  async applyAssetsAndTicker(token: Nft, fields?: string[]) {
+    if (fields && !fields.includes('assets') && !fields.includes('ticker')) {
+      return;
+    }
+
     token.assets = await this.assetsService.getTokenAssets(token.identifier) ??
       await this.assetsService.getTokenAssets(token.collection);
 
@@ -221,7 +237,11 @@ export class NftService {
     return nft;
   }
 
-  private async applyUnlockSchedule(nft: Nft): Promise<void> {
+  private async applyUnlockSchedule(nft: Nft, fields?: string[]): Promise<void> {
+    if (fields && !fields.includes('unlockSchedule')) {
+      return;
+    }
+
     if (!nft.attributes) {
       return;
     }
@@ -412,22 +432,22 @@ export class NftService {
     return await this.indexerService.getNftCount(filter);
   }
 
-  async getNftsForAddress(address: string, queryPagination: QueryPagination, filter: NftFilter, queryOptions?: NftQueryOptions, source?: EsdtDataSource): Promise<NftAccount[]> {
+  async getNftsForAddress(address: string, queryPagination: QueryPagination, filter: NftFilter, fields?: string[], queryOptions?: NftQueryOptions, source?: EsdtDataSource): Promise<NftAccount[]> {
     const nfts = await this.esdtAddressService.getNftsForAddress(address, filter, queryPagination, source);
 
     for (const nft of nfts) {
-      await this.applyAssetsAndTicker(nft);
-      await this.applyPriceUsd(nft);
+      await this.applyAssetsAndTicker(nft, fields);
+      await this.applyPriceUsd(nft, fields);
     }
 
     if (queryOptions && queryOptions.withSupply) {
       const supplyNfts = nfts.filter(nft => nft.type.in(NftType.SemiFungibleESDT, NftType.MetaESDT));
-      await this.batchApplySupply(supplyNfts);
+      await this.batchApplySupply(supplyNfts, fields);
     }
 
-    await this.batchProcessNfts(nfts);
+    await this.batchProcessNfts(nfts, fields);
 
-    if (this.apiConfigService.isNftExtendedAttributesEnabled()) {
+    if (this.apiConfigService.isNftExtendedAttributesEnabled() && (!fields || fields.includes('score') || fields.includes('rank') || fields.includes('isNsfw'))) {
       const internalNfts = await this.getNftsInternalByIdentifiers(nfts.map(x => x.identifier));
 
       const indexedInternalNfts = internalNfts.toRecord<Nft>(x => x.identifier);
@@ -442,10 +462,12 @@ export class NftService {
     }
 
     for (const nft of nfts) {
-      await this.applyUnlockSchedule(nft);
+      await this.applyUnlockSchedule(nft, fields);
     }
 
-    await this.pluginService.processNfts(nfts, queryOptions?.withScamInfo || queryOptions?.computeScamInfo);
+    const withScamInfo = (queryOptions?.withScamInfo || queryOptions?.computeScamInfo) && (!fields || fields.includes('scamInfo'));
+
+    await this.pluginService.processNfts(nfts, withScamInfo);
 
     return nfts;
   }
@@ -462,7 +484,11 @@ export class NftService {
     return result;
   }
 
-  private async applyPriceUsd(nft: NftAccount) {
+  private async applyPriceUsd(nft: NftAccount, fields?: string[]) {
+    if (fields && !fields.includes('price') && !fields.includes('valueUsd')) {
+      return;
+    }
+
     if (nft.type !== NftType.MetaESDT) {
       return;
     }
@@ -485,7 +511,7 @@ export class NftService {
     return await this.esdtAddressService.getNftCountForAddressFromElastic(address, filter);
   }
 
-  async getNftForAddress(address: string, identifier: string): Promise<NftAccount | undefined> {
+  async getNftForAddress(address: string, identifier: string, fields?: string[]): Promise<NftAccount | undefined> {
     const filter = new NftFilter();
     filter.identifiers = [identifier];
 
@@ -493,16 +519,12 @@ export class NftService {
       return undefined;
     }
 
-    const nfts = await this.getNftsForAddress(address, new QueryPagination({ from: 0, size: 1 }), filter, new NftQueryOptions({ withScamInfo: true, computeScamInfo: true }));
+    const nfts = await this.getNftsForAddress(address, new QueryPagination({ from: 0, size: 1 }), filter, fields, new NftQueryOptions({ withScamInfo: true, computeScamInfo: true }));
     if (nfts.length === 0) {
       return undefined;
     }
 
-    const nft = nfts[0];
-
-    await this.applyUnlockSchedule(nft);
-
-    return nft;
+    return nfts[0];
   }
 
   async applySupply(nft: Nft): Promise<void> {

@@ -24,6 +24,7 @@ import { NftRankAlgorithm } from "src/common/assets/entities/nft.rank.algorithm"
 import { NftRank } from "src/common/assets/entities/nft.rank";
 import { TokenDetailed } from "../tokens/entities/token.detailed";
 import { NftCollectionDetailed } from "./entities/nft.collection.detailed";
+import { CollectionLogo } from "./entities/collection.logo";
 
 @Injectable()
 export class CollectionService {
@@ -339,5 +340,32 @@ export class CollectionService {
 
   async getCollectionCountForAddressWithRoles(address: string, filter: CollectionFilter): Promise<number> {
     return await this.esdtAddressService.getCollectionCountForAddressFromElastic(address, filter);
+  }
+
+  private async getCollectionLogo(identifier: string): Promise<CollectionLogo | undefined> {
+    const assets = await this.assetsService.getTokenAssets(identifier);
+    if (!assets) {
+      return;
+    }
+
+    return new CollectionLogo({ pngUrl: assets.pngUrl, svgUrl: assets.svgUrl });
+  }
+
+  async getLogoPng(identifier: string): Promise<string | undefined> {
+    const collectionLogo = await this.getCollectionLogo(identifier);
+    if (!collectionLogo) {
+      return;
+    }
+
+    return collectionLogo.pngUrl;
+  }
+
+  async getLogoSvg(identifier: string): Promise<string | undefined> {
+    const collectionLogo = await this.getCollectionLogo(identifier);
+    if (!collectionLogo) {
+      return;
+    }
+
+    return collectionLogo.svgUrl;
   }
 }
