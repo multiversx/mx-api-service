@@ -644,10 +644,10 @@ describe('Token Service', () => {
 
     it("should return a list of two tokens for a specific address with source ELASTIC and identifiers filter applied", async () => {
       const MOCK_PATH = apiConfigService.getMockPath();
-      const address: string = "erd1qqqqqqqqqqqqqpgq6wegs2xkypfpync8mn2sa5cmpqjlvrhwz5nqgepyg8";
+      const address: string = "erd1qqqqqqqqqqqqqpgqa0fsfshnff4n76jhcye6k7uvd7qacsq42jpsp6shh2";
 
       const filter: TokenFilter = new TokenFilter();
-      filter.identifiers = ["WEGLD-bd4d79", "RIDE-7d18e9"];
+      filter.identifiers = ["WEGLD-bd4d79", "MEX-455c57"];
 
       jest
         .spyOn(ElasticService.prototype, 'get')
@@ -660,7 +660,7 @@ describe('Token Service', () => {
       expect(results).toEqual(
         expect.arrayContaining([
           expect.objectContaining({ identifier: "WEGLD-bd4d79" }),
-          expect.objectContaining({ identifier: "RIDE-7d18e9" }),
+          expect.objectContaining({ identifier: "MEX-455c57" }),
         ])
       );
     });
