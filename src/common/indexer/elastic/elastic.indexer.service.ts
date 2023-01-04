@@ -666,4 +666,27 @@ export class ElasticIndexerService implements IndexerInterface {
   async setMetadataForToken(identifier: string, value: any): Promise<void> {
     return await this.elasticService.setCustomValue('tokens', identifier, 'metadata', value);
   }
+
+  async getEsdtProperties(identifier: string): Promise<any> {
+    const query = ElasticQuery.create()
+      .withMustMatchCondition('token', identifier, QueryOperator.AND)
+      .withMustCondition(
+        QueryType.Match('token', identifier, QueryOperator.AND),
+      )
+      .withFields(["name", "type", "currentOwner", "numDecimals", "properties"])
+      .withMustNotExistCondition('nonce');
+
+    let properties;
+
+    await this.elasticService.getScrollableList(
+      'tokens',
+      'identifier',
+      query,
+      // eslint-disable-next-line require-await
+      async (item) => {
+        properties = item[0];
+      },
+    );
+    return properties;
+  }
 }

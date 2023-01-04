@@ -10,8 +10,10 @@ import { TokenRoles } from "../tokens/entities/token.roles";
 import { AssetsService } from "../../common/assets/assets.service";
 import { EsdtLockedAccount } from "./entities/esdt.locked.account";
 import { EsdtSupply } from "./entities/esdt.supply";
-import { AddressUtils, BinaryUtils, Constants, CachingService } from "@elrondnetwork/erdnest";
+import { BinaryUtils, Constants, CachingService } from "@elrondnetwork/erdnest";
 import { IndexerService } from "src/common/indexer/indexer.service";
+import { EsdtType } from "./entities/esdt.type";
+import { ElasticIndexerService } from "src/common/indexer/elastic/elastic.indexer.service";
 
 @Injectable()
 export class EsdtService {
@@ -23,6 +25,7 @@ export class EsdtService {
     private readonly indexerService: IndexerService,
     @Inject(forwardRef(() => AssetsService))
     private readonly assetsService: AssetsService,
+    private readonly elasticIndexerService: ElasticIndexerService
   ) { }
 
   async getEsdtTokenProperties(identifier: string): Promise<TokenProperties | undefined> {
@@ -40,83 +43,6 @@ export class EsdtService {
     return properties;
   }
 
-  async getEsdtTokenPropertiesRaw(identifier: string): Promise<TokenProperties | null> {
-    const arg = Buffer.from(identifier, 'utf8').toString('hex');
-
-    const tokenPropertiesEncoded = await this.vmQueryService.vmQuery(
-      this.apiConfigService.getEsdtContractAddress(),
-      'getTokenProperties',
-      undefined,
-      [arg],
-      undefined,
-      true
-    );
-
-    if (!tokenPropertiesEncoded) {
-      // this.logger.error(`Could not fetch token properties for token with identifier '${identifier}'`);
-      return null;
-    }
-
-    const tokenProperties = tokenPropertiesEncoded.map((encoded, index) =>
-      Buffer.from(encoded, 'base64').toString(index === 2 ? 'hex' : undefined)
-    );
-
-    const [
-      name,
-      type,
-      owner,
-      _,
-      __,
-      decimals,
-      isPaused,
-      canUpgrade,
-      canMint,
-      canBurn,
-      canChangeOwner,
-      canPause,
-      canFreeze,
-      canWipe,
-      canAddSpecialRoles,
-      canTransferNFTCreateRole,
-      NFTCreateStopped,
-      wiped,
-    ] = tokenProperties;
-
-    const tokenProps: TokenProperties = {
-      identifier,
-      name,
-      // @ts-ignore
-      type,
-      owner: AddressUtils.bech32Encode(owner),
-      decimals: parseInt(decimals.split('-').pop() ?? '0'),
-      isPaused: TokenHelpers.canBool(isPaused),
-      canUpgrade: TokenHelpers.canBool(canUpgrade),
-      canMint: TokenHelpers.canBool(canMint),
-      canBurn: TokenHelpers.canBool(canBurn),
-      canChangeOwner: TokenHelpers.canBool(canChangeOwner),
-      canPause: TokenHelpers.canBool(canPause),
-      canFreeze: TokenHelpers.canBool(canFreeze),
-      canWipe: TokenHelpers.canBool(canWipe),
-      canAddSpecialRoles: TokenHelpers.canBool(canAddSpecialRoles),
-      canTransferNFTCreateRole: TokenHelpers.canBool(canTransferNFTCreateRole),
-      NFTCreateStopped: TokenHelpers.canBool(NFTCreateStopped),
-      wiped: wiped.split('-').pop() ?? '',
-    };
-
-    if (type === 'FungibleESDT') {
-      // @ts-ignore
-      delete tokenProps.canAddSpecialRoles;
-      // @ts-ignore
-      delete tokenProps.canTransferNFTCreateRole;
-      // @ts-ignore
-      delete tokenProps.NFTCreateStopped;
-      // @ts-ignore
-      delete tokenProps.wiped;
-    }
-
-    return tokenProps;
-  }
-
   async getEsdtAddressesRoles(identifier: string): Promise<TokenRoles[] | undefined> {
     const addressesRoles = await this.cachingService.getOrSetCache(
       CacheInfo.EsdtAddressesRoles(identifier).key,
@@ -130,6 +56,40 @@ export class EsdtService {
     }
 
     return addressesRoles;
+  }
+
+  async getEsdtTokenPropertiesRaw(identifier: string): Promise<TokenProperties | null> {
+    const elastic = await this.elasticIndexerService.getEsdtProperties(identifier);
+
+    if (!elastic) {
+      return null;
+    }
+
+    const tokenProps: TokenProperties = new TokenProperties({
+      identifier: identifier,
+      name: elastic.name,
+      type: elastic.type as EsdtType,
+      owner: elastic.currentOwner,
+      decimals: elastic.numDecimals,
+      canUpgrade: elastic.properties.canUpgrade,
+      canMint: elastic.properties.canMint,
+      canBurn: elastic.properties.canBurn,
+      canChangeOwner: elastic.properties.canChangeOwner,
+      canPause: elastic.properties.canPause,
+      canFreeze: elastic.properties.canFreeze,
+      canWipe: elastic.properties.canWipe,
+      canAddSpecialRoles: elastic.properties.canAddSpecialRoles,
+      canTransferNFTCreateRole: elastic.properties.canTransferNFTCreateRole,
+      NFTCreateStopped: elastic.properties.NFTCreateStopped,
+    } as unknown as TokenProperties);
+
+    if (elastic.type === 'FungibleESDT') {
+      // @ts-ignore
+      delete tokenProps.canTransferNFTCreateRole;
+      // @ts-ignore
+      delete tokenProps.NFTCreateStopped;
+    }
+    return tokenProps;
   }
 
   async getEsdtAddressesRolesRaw(identifier: string): Promise<TokenRoles[] | null> {
