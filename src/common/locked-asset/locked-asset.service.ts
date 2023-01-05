@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { LockedAssetAttributes, UnlockMilestone } from '@elrondnetwork/erdjs-dex';
+import { LockedAssetAttributes, UnlockMilestone, LockedTokenAttributes } from '@elrondnetwork/erdjs-dex';
 import { ApiConfigService } from '../api-config/api.config.service';
 import { VmQueryService } from '../../endpoints/vm.query/vm.query.service';
 import { CacheInfo } from '../../utils/cache.info';
@@ -9,6 +9,7 @@ import { TokenHelpers } from '../../utils/token.helpers';
 import { GatewayComponentRequest } from '../gateway/entities/gateway.component.request';
 import { GatewayService } from '../gateway/gateway.service';
 import { MexSettingsService } from 'src/endpoints/mex/mex.settings.service';
+import { ILockedTokens, IUnlockFields } from '../entities/unlock-token';
 
 @Injectable()
 export class LockedAssetService {
@@ -20,30 +21,43 @@ export class LockedAssetService {
     private readonly mexSettingsService: MexSettingsService,
   ) { }
 
-  async getUnlockSchedule(identifier: string, attributes: string): Promise<UnlockMileStoneModel[] | undefined> {
-    const hasUnlockSchedule = await this.hasUnlockSchedule(identifier);
-    if (!hasUnlockSchedule) {
+  async getUnlockFields(identifier: string, attributes: string): Promise<IUnlockFields | undefined> {
+    const unlockData = await this.getUnlockData(identifier);
+    if (!unlockData.lkmex && !unlockData.xmex) {
       return undefined;
     }
+    if (unlockData.lkmex) {
+      const extendedAttributesActivationNonce = await this.getExtendedAttributesActivationNonce();
+      const withActivationNonce = TokenHelpers.tokenNonce(identifier) >= extendedAttributesActivationNonce;
+      const lockedAssetAttributes = LockedAssetAttributes.fromAttributes(withActivationNonce, attributes);
 
-    const extendedAttributesActivationNonce = await this.getExtendedAttributesActivationNonce();
-    const withActivationNonce = TokenHelpers.tokenNonce(identifier) >= extendedAttributesActivationNonce;
-    const lockedAssetAttributes = LockedAssetAttributes.fromAttributes(withActivationNonce, attributes);
+      if (!lockedAssetAttributes.unlockSchedule) {
+        return undefined;
+      }
 
-    if (!lockedAssetAttributes.unlockSchedule) {
-      return undefined;
+      return { unlockSchedule: await this.getUnlockMilestones(lockedAssetAttributes.unlockSchedule, withActivationNonce) };
+    } else if (unlockData.xmex) {
+      const decodedAttributes = LockedTokenAttributes.fromAttributes(attributes);
+
+      return { unlockEpoch: decodedAttributes.unlockEpoch };
     }
 
-    return await this.getUnlockMilestones(lockedAssetAttributes.unlockSchedule, withActivationNonce);
+    return undefined;
   }
 
-  private async hasUnlockSchedule(collection: string): Promise<boolean> {
-    const lockedTokenId = await this.getLockedTokenId();
-    if (!lockedTokenId) {
-      return false;
+  private async getUnlockData(collection: string): Promise<IUnlockToken> {
+    const lockedTokenIds = await this.getLockedTokens();
+    if (!lockedTokenIds) {
+      return {
+        xmex: false,
+        lkmex: false,
+      };
     }
 
-    return collection.startsWith(lockedTokenId);
+    return {
+      xmex: collection.startsWith(lockedTokenIds.xmex as string),
+      lkmex: collection.startsWith(lockedTokenIds.lkmex as string),
+    };
   }
 
   private async getExtendedAttributesActivationNonce(): Promise<number> {
@@ -106,31 +120,37 @@ export class LockedAssetService {
     return parseInt(epoch, 16);
   }
 
-  private lockedTokenId: string | undefined;
+  private lockedTokenIds: ILockedTokens | undefined;
 
-  private async getLockedTokenId(): Promise<string | undefined> {
-    if (this.lockedTokenId) {
-      return this.lockedTokenId;
+  private async getLockedTokens(): Promise<ILockedTokens | undefined> {
+    if (this.lockedTokenIds) {
+      return this.lockedTokenIds;
     }
 
-    const lockedTokenId = await this.cachingService.getOrSetCache(
+    const lockedTokenIds = await this.cachingService.getOrSetCache(
       CacheInfo.LockedTokenID.key,
-      async () => await this.getLockedTokenIdRaw(),
+      async () => await this.getLockedTokensRaw(),
       CacheInfo.LockedTokenID.ttl,
     );
 
-    this.lockedTokenId = lockedTokenId;
+    this.lockedTokenIds = lockedTokenIds;
 
-    return lockedTokenId;
+    return lockedTokenIds;
   }
 
-  private async getLockedTokenIdRaw(): Promise<string> {
+  private async getLockedTokensRaw(): Promise<ILockedTokens> {
     const settings = await this.mexSettingsService.getSettings();
     if (!settings) {
-      return '';
+      return {
+        lkmex: '',
+        xmex: '',
+      };
     }
 
-    return settings.lockedAssetIdentifier;
+    return {
+      lkmex: settings.lockedAssetIdentifier,
+      xmex: settings.lockedAssetIdentifierV2,
+    };
   }
 
   private async getUnlockMilestones(unlockSchedule: UnlockMilestone[], withActivationNonce: boolean): Promise<UnlockMileStoneModel[]> {

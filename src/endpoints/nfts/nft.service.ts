@@ -96,7 +96,7 @@ export class NftService {
     await this.batchProcessNfts(nfts);
 
     for (const nft of nfts) {
-      await this.applyUnlockSchedule(nft);
+      await this.applyUnlockFields(nft);
     }
 
     await this.pluginService.processNfts(nfts, queryOptions?.withScamInfo || queryOptions?.computeScamInfo);
@@ -230,15 +230,15 @@ export class NftService {
 
     await this.applyAssetsAndTicker(nft);
 
-    await this.applyUnlockSchedule(nft);
+    await this.applyUnlockFields(nft);
 
     await this.processNft(nft);
 
     return nft;
   }
 
-  private async applyUnlockSchedule(nft: Nft, fields?: string[]): Promise<void> {
-    if (fields && !fields.includes('unlockSchedule')) {
+  private async applyUnlockFields(nft: Nft, fields?: string[]): Promise<void> {
+    if (fields && (!fields.includes('unlockSchedule') && !fields.includes('unlockEpoch'))) {
       return;
     }
 
@@ -247,7 +247,13 @@ export class NftService {
     }
 
     try {
-      nft.unlockSchedule = await this.lockedAssetService.getUnlockSchedule(nft.identifier, nft.attributes);
+      const unlockFields = await this.lockedAssetService.getUnlockFields(nft.identifier, nft.attributes);
+      if (unlockFields?.unlockEpoch) {
+        nft.unlockEpoch = unlockFields.unlockEpoch;
+      } else if (unlockFields?.unlockSchedule) {
+        nft.unlockSchedule = unlockFields.unlockSchedule;
+      }
+
     } catch (error) {
       this.logger.error(`An error occurred while applying unlock schedule for NFT with identifier '${nft.identifier}' and attributes '${nft.attributes}'`);
       this.logger.error(error);
@@ -462,7 +468,7 @@ export class NftService {
     }
 
     for (const nft of nfts) {
-      await this.applyUnlockSchedule(nft, fields);
+      await this.applyUnlockFields(nft, fields);
     }
 
     const withScamInfo = (queryOptions?.withScamInfo || queryOptions?.computeScamInfo) && (!fields || fields.includes('scamInfo'));

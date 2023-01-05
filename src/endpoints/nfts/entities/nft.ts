@@ -131,4 +131,8 @@ export class Nft {
   @Field(() => [UnlockMileStoneModel], { description: "Unlock mile stone model for the given NFT.", nullable: true })
   @ApiProperty({ type: [UnlockMileStoneModel], nullable: true })
   unlockSchedule?: UnlockMileStoneModel[] | undefined = undefined;
+
+  @Field(() => [Number], { description: "Unlock epoch for the given NFT.", nullable: true })
+  @ApiProperty({ type: [Number], nullable: true })
+  unlockEpoch?: number | undefined = undefined;
 }
