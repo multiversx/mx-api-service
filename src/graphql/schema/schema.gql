@@ -1689,6 +1689,9 @@ type Nft {
   """NFT type for the given NFT."""
   type: NftType!
 
+  """Unlock epoch for the given NFT."""
+  unlockEpoch: Float
+
   """Unlock mile stone model for the given NFT."""
   unlockSchedule: [UnlockMileStoneModel!]
 
@@ -1779,6 +1782,9 @@ type NftAccount {
   """NFT type for the given NFT."""
   type: NftType!
 
+  """Unlock epoch for the given NFT."""
+  unlockEpoch: Float
+
   """Unlock mile stone model for the given NFT."""
   unlockSchedule: [UnlockMileStoneModel!]
 
@@ -1861,6 +1867,9 @@ type NftAccountFlat {
 
   """NFT type for the given NFT."""
   type: NftType!
+
+  """Unlock epoch for the given NFT."""
+  unlockEpoch: Float
 
   """Unlock mile stone model for the given NFT."""
   unlockSchedule: [UnlockMileStoneModel!]
