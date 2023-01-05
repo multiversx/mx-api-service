@@ -45,7 +45,7 @@ export class LockedAssetService {
     return undefined;
   }
 
-  private async getUnlockData(collection: string): Promise<IUnlockToken> {
+  private async getUnlockData(collection: string): Promise<ILockedTokens> {
     const lockedTokenIds = await this.getLockedTokens();
     if (!lockedTokenIds) {
       return {
