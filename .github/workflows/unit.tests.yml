@@ -3,9 +3,6 @@
 
 name: Unit tests
 
-env:
-  CODECOV_VERSION: 'v0.3.1'
-
 on:
   push:
     branches: [main, development]
@@ -35,11 +32,8 @@ jobs:
         run: npm run test:cov
       - uses: codecov/codecov-action@v3
         with:
-          directory: ./coverage/reports/
-          version: ${{ env.CODECOV_VERSION }}
+          files: ./coverage/unit/clover.xml
           flags: unittests
-          files: ./unit/clover.xml
           name: codecov-umbrella
           fail_ci_if_error: true
-          path_to_write_report: ./coverage/codecov_report.txt
           verbose: true
