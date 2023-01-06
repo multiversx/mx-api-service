@@ -35,9 +35,10 @@ jobs:
         run: npm run test:cov
       - uses: codecov/codecov-action@v3
         with:
-          directory: ./coverage/reports/unit/clover.xml
+          directory: ./coverage/reports/
           version: ${{ env.CODECOV_VERSION }}
           flags: unittests
+          files: ./unit/clover.xml
           name: codecov-umbrella
           fail_ci_if_error: true
           verbose: true
