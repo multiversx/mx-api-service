@@ -13,4 +13,7 @@ export class TokenWithBalance extends Token {
 
   @ApiProperty({ type: Number, nullable: true })
   valueUsd: number | undefined = undefined;
+
+  @ApiProperty({ type: String, nullable: true })
+  attributes: string | undefined = undefined;
 }

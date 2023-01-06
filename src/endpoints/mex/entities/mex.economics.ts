@@ -1,5 +1,6 @@
 import { Field, Float, ObjectType } from '@nestjs/graphql';
 import { ApiProperty } from '@nestjs/swagger';
+import { MexSettings } from './mex.settings';
 
 @ObjectType("MexEconomics", { description: "MexEconomics object type." })
 export class MexEconomics {
@@ -30,4 +31,22 @@ export class MexEconomics {
   @Field(() => Float, { description: "Mex tokens pairs." })
   @ApiProperty({ type: Number, example: 15 })
   marketPairs: number = 0;
+
+  static fromQueryResponse(response: any, settings: MexSettings): MexEconomics {
+    const totalSupply = 8_045_920_000_000;
+    const price = Number(response.mexPriceUSD);
+    const circulatingSupply = Number(response.mexSupply);
+    const marketCap = Math.round(circulatingSupply * price);
+    const volume24h = Math.round(Number(response.factory.totalVolumeUSD24h));
+    const marketPairs = settings.pairContracts.length;
+
+    return new MexEconomics({
+      totalSupply,
+      price,
+      circulatingSupply,
+      marketCap,
+      volume24h,
+      marketPairs,
+    });
+  }
 }
