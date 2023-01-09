@@ -6,6 +6,7 @@ export class MexSettings {
   pairContracts: string[] = [];
   farmContracts: string[] = [];
   wrapContracts: string[] = [];
+  routerFactoryContract: string = '';
   distributionContract: string = '';
   lockedAssetContract: string = '';
   lockedAssetIdentifier: string = '';
@@ -28,6 +29,7 @@ export class MexSettings {
     settings.wrapContracts = response.wrappingInfo.map((x: any) => x.address);
     settings.distributionContract = response.distribution.address;
     settings.lockedAssetContract = response.lockedAssetFactory.address;
+    settings.routerFactoryContract = response.factory.address;
 
     const lockedAssetIdentifiers = response.proxy
       .map((proxy: any) => proxy.lockedAssetTokens.map((token: any) => token.collection))
