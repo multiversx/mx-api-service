@@ -45,10 +45,10 @@ describe('Dapp Config Service', () => {
           "egldDenomination": "18",
           "gasPerDataByte": "1500",
           "apiTimeout": "4000",
-          "walletConnectDeepLink": "https://maiar.page.link/?apn=com.elrond.maiar.wallet&isi=1519405832&ibi=com.elrond.maiar.wallet&link=https://maiar.com/",
-          "walletAddress": "https://devnet-wallet.elrond.com",
-          "apiAddress": "https://devnet-api.elrond.com",
-          "explorerAddress": "http://devnet-explorer.elrond.com",
+          "walletConnectDeepLink": "https://maiar.page.link/?apn=com.multiversx.maiar.wallet&isi=1519405832&ibi=com.multiversx.maiar.wallet&link=https://maiar.com/",
+          "walletAddress": "https://devnet-wallet.multiversx.com",
+          "apiAddress": "https://devnet-api.multiversx.com",
+          "explorerAddress": "http://devnet-explorer.multiversx.com",
           "chainId": "D",
         })));
 
