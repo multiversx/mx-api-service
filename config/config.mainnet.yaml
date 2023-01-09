@@ -41,9 +41,9 @@ aws:
   s3Region: ''
 urls:
   api:
-    - 'https://api.elrond.com'
-    - 'https://devnet-api.elrond.com'
-    - 'https://testnet-api.elrond.com'
+    - 'https://api.multiversx.com'
+    - 'https://devnet-api.multiversx.com'
+    - 'https://testnet-api.multiversx.com'
   elastic:
     - 'https://index.elrond.com'
   mex:
@@ -52,8 +52,8 @@ urls:
     - 'https://gateway.elrond.com'
   redis: '127.0.0.1'
   rabbitmq: 'amqp://127.0.0.1:5672'
-  providers: 'https://delegation-api.elrond.com/providers'
-  delegation: 'https://delegation-api.elrond.com'
+  providers: 'https://delegation-api.multiversx.com/providers'
+  delegation: 'https://delegation-api.multiversx.com'
   media: 'https://media.elrond.com'
   nftThumbnails: 'https://media.elrond.com/nfts/thumbnail'
   tmp: '/tmp'
