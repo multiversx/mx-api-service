@@ -9,6 +9,7 @@ import { Transaction } from 'src/endpoints/transactions/entities/transaction';
 import '@elrondnetwork/erdnest/lib/src/utils/extensions/jest.extensions';
 import '@elrondnetwork/erdnest/lib/src/utils/extensions/array.extensions';
 import { TransactionQueryOptions } from 'src/endpoints/transactions/entities/transactions.query.options';
+import { TransactionDetailed } from 'src/endpoints/transactions/entities/transaction.detailed';
 
 describe('Transaction Service', () => {
   let transactionService: TransactionService;
@@ -98,44 +99,103 @@ describe('Transaction Service', () => {
       }
       expect(results).toHaveLength(5);
     });
+
+    it('should return 2 transactions with hashes filter applied', async () => {
+      const txFilters = new TransactionFilter();
+      txFilters.hashes = [
+        "29a2bed2543197e69c9bf16b30c4b0196f5e7a59584aba2e1a2127bf06cdfd2d",
+        "0cbaeb61cd2d901e7363b83e35750d0cbf2045ed853ef8f7af7cefdef622671e"];
+
+      const queryOptions = new TransactionQueryOptions();
+      queryOptions.withScResults = true;
+
+      const results = await transactionService.getTransactions(
+        txFilters,
+        new QueryPagination({ size: 2 }));
+
+      for (const result of results) {
+        expect(result).toHaveStructure(Object.keys(new Transaction()));
+      }
+    });
+
+    it('should return 2 transactions with hashes filter applied and withScResults', async () => {
+      const txFilters = new TransactionFilter();
+      txFilters.hashes = [
+        "29a2bed2543197e69c9bf16b30c4b0196f5e7a59584aba2e1a2127bf06cdfd2d",
+        "0cbaeb61cd2d901e7363b83e35750d0cbf2045ed853ef8f7af7cefdef622671e"];
+
+      const queryOptions = new TransactionQueryOptions();
+      queryOptions.withScResults = true;
+
+      const results = await transactionService.getTransactions(
+        txFilters,
+        new QueryPagination({ size: 2 }),
+        queryOptions);
+
+      const txResults = results.map((result) => result.txHash);
+
+      expect(results).toHaveLength(2);
+      expect(txResults.includes("29a2bed2543197e69c9bf16b30c4b0196f5e7a59584aba2e1a2127bf06cdfd2d")).toBeTruthy();
+      expect(txResults.includes("0cbaeb61cd2d901e7363b83e35750d0cbf2045ed853ef8f7af7cefdef622671e")).toBeTruthy();
+    });
   });
 
-  it('should return 2 transactions with hashes filter applied', async () => {
-    const txFilters = new TransactionFilter();
-    txFilters.hashes = [
-      "29a2bed2543197e69c9bf16b30c4b0196f5e7a59584aba2e1a2127bf06cdfd2d",
-      "0cbaeb61cd2d901e7363b83e35750d0cbf2045ed853ef8f7af7cefdef622671e"];
 
-    const queryOptions = new TransactionQueryOptions();
-    queryOptions.withScResults = true;
+  describe('getTransaction', () => {
+    it('should return transaction details', async () => {
+      const transaction: string = "5b785adb29f341195351b0c74fb321ebec99188710df53e85bfae91bd57b802b";
 
-    const results = await transactionService.getTransactions(
-      txFilters,
-      new QueryPagination({ size: 2 }));
+      const result = await transactionService.getTransaction(transaction);
 
-    for (const result of results) {
-      expect(result).toHaveStructure(Object.keys(new Transaction()));
-    }
-  });
+      expect(result).toHaveStructure(Object.keys(new TransactionDetailed()));
+    });
 
-  it('should return 2 transactions with hashes filter applied and withScResults', async () => {
-    const txFilters = new TransactionFilter();
-    txFilters.hashes = [
-      "29a2bed2543197e69c9bf16b30c4b0196f5e7a59584aba2e1a2127bf06cdfd2d",
-      "0cbaeb61cd2d901e7363b83e35750d0cbf2045ed853ef8f7af7cefdef622671e"];
+    it('should verify if given transaction contain multiPairSwap method and all tokens are described accordingly ', async () => {
+      const transaction: string = "5b785adb29f341195351b0c74fb321ebec99188710df53e85bfae91bd57b802b";
 
-    const queryOptions = new TransactionQueryOptions();
-    queryOptions.withScResults = true;
+      const result = await transactionService.getTransaction(transaction);
 
-    const results = await transactionService.getTransactions(
-      txFilters,
-      new QueryPagination({ size: 2 }),
-      queryOptions);
+      if (!result) {
+        throw new Error("Properties are not defined");
+      }
 
-    const txResults = results.map((result) => result.txHash);
+      expect(result.function).toStrictEqual('multiPairSwap');
 
-    expect(results).toHaveLength(2);
-    expect(txResults.includes("29a2bed2543197e69c9bf16b30c4b0196f5e7a59584aba2e1a2127bf06cdfd2d")).toBeTruthy();
-    expect(txResults.includes("0cbaeb61cd2d901e7363b83e35750d0cbf2045ed853ef8f7af7cefdef622671e")).toBeTruthy();
+      expect(result).toEqual(expect.objectContaining({
+        action: expect.objectContaining({
+          arguments: expect.objectContaining({
+            transfers: expect.arrayContaining([
+              expect.objectContaining({
+                type: "FungibleESDT",
+                name: "QoWatt",
+                ticker: "QWT",
+                svgUrl: "https://media.elrond.com/tokens/asset/QWT-46ac01/logo.svg",
+                token: "QWT-46ac01",
+                decimals: 6,
+                value: "122194904",
+              }),
+              expect.objectContaining({
+                type: "FungibleESDT",
+                name: "WrappedEGLD",
+                ticker: "WEGLD",
+                svgUrl: "https://media.elrond.com/tokens/asset/WEGLD-bd4d79/logo.svg",
+                token: "WEGLD-bd4d79",
+                decimals: 18,
+                value: "30659052424942810",
+              }),
+              expect.objectContaining({
+                type: "FungibleESDT",
+                name: "Utrust",
+                ticker: "UTK",
+                svgUrl: "https://media.elrond.com/tokens/asset/UTK-2f80e9/logo.svg",
+                token: "UTK-2f80e9",
+                decimals: 18,
+                value: "13834977159071822280",
+              }),
+            ]),
+          }),
+        }),
+      }));
+    });
   });
 });
