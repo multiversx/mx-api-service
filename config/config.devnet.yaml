@@ -37,7 +37,7 @@ image:
 aws:
   s3KeyId: ''
   s3Secret: ''
-  s3Bucket: 'devnet-media.elrond.com'
+  s3Bucket: 'devnet-media.multiversx.com'
   s3Region: ''
 urls:
   api:
@@ -46,19 +46,19 @@ urls:
     - 'https://api.multiversx.com'
     - 'http://localhost:3001'
   elastic:
-    - 'https://devnet-index.elrond.com'
+    - 'https://devnet-index.multiversx.com'
   gateway:
     - 'https://devnet-gateway.multiversx.com'
   redis: '127.0.0.1'
   rabbitmq: 'amqp://127.0.0.1:5672'
   providers: 'https://devnet-delegation-api.multiversx.com/providers'
   delegation: 'https://devnet-delegation-api.multiversx.com'
-  media: 'https://devnet-media.elrond.com'
-  nftThumbnails: 'https://devnet-media.elrond.com/nfts/thumbnail'
+  media: 'https://devnet-media.multiversx.com'
+  nftThumbnails: 'https://devnet-media.multiversx.com/nfts/thumbnail'
   tmp: '/tmp'
   ipfs: 'https://ipfs.io/ipfs'
-  socket: 'devnet-socket-fra.elrond.com'
-  maiarId: 'https://devnet-id.maiar.com'
+  socket: 'devnet-socket-fra.multiversx.com'
+  maiarId: 'https://devnet-id-api.multiversx.com'
 indexer:
   type: 'elastic'
   maxPagination: 10000

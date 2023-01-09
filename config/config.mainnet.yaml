@@ -45,21 +45,21 @@ urls:
     - 'https://devnet-api.multiversx.com'
     - 'https://testnet-api.multiversx.com'
   elastic:
-    - 'https://index.elrond.com'
+    - 'https://index.multiversx.com'
   mex:
-    - 'https://mex-indexer.elrond.com'
+    - 'https://mex-indexer.multiversx.com'
   gateway:
-    - 'https://gateway.elrond.com'
+    - 'https://gateway.multiversx.com'
   redis: '127.0.0.1'
   rabbitmq: 'amqp://127.0.0.1:5672'
   providers: 'https://delegation-api.multiversx.com/providers'
   delegation: 'https://delegation-api.multiversx.com'
-  media: 'https://media.elrond.com'
-  nftThumbnails: 'https://media.elrond.com/nfts/thumbnail'
+  media: 'https://media.multiversx.com'
+  nftThumbnails: 'https://media.multiversx.com/nfts/thumbnail'
   tmp: '/tmp'
   ipfs: 'https://ipfs.io/ipfs'
-  socket: 'socket-fra.elrond.com'
-  maiarId: 'https://id.maiar.com'
+  socket: 'socket-fra.multiversx.com'
+  maiarId: 'https://id-api.multiversx.com'
 indexer:
   type: 'elastic'
   maxPagination: 10000

@@ -45,19 +45,19 @@ urls:
     - 'https://devnet-api.multiversx.com'
     - 'https://api.multiversx.com'
   elastic:
-    - 'https://testnet-index.elrond.com'
+    - 'https://testnet-index.multiversx.com'
   gateway:
-    - 'https://testnet-gateway.elrond.com'
+    - 'https://testnet-gateway.multiversx.com'
   redis: '127.0.0.1'
   rabbitmq: 'amqp://127.0.0.1:5672'
   providers: 'https://testnet-delegation-api.multiversx.com/providers'
   delegation: 'https://testnet-delegation-api.multiversx.com'
-  media: 'https://testnet-media.elrond.com'
-  nftThumbnails: 'https://testnet-media.elrond.com/nfts/thumbnail'
+  media: 'https://testnet-media.multiversx.com'
+  nftThumbnails: 'https://testnet-media.multiversx.com/nfts/thumbnail'
   tmp: '/tmp'
   ipfs: 'https://ipfs.io/ipfs'
-  socket: 'testnet-socket-fra.elrond.com'
-  maiarId: 'https://testnet-id.maiar.com'
+  socket: 'testnet-socket-fra.multiversx.com'
+  maiarId: 'https://testnet-id-api.multiversx.com'
 database:
   enabled: false
   url: 'mongodb://127.0.0.1:27017/api?authSource=admin'
