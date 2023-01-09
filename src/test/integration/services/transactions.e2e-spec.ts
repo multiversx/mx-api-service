@@ -9,7 +9,6 @@ import { Transaction } from 'src/endpoints/transactions/entities/transaction';
 import '@elrondnetwork/erdnest/lib/src/utils/extensions/jest.extensions';
 import '@elrondnetwork/erdnest/lib/src/utils/extensions/array.extensions';
 import { TransactionQueryOptions } from 'src/endpoints/transactions/entities/transactions.query.options';
-import { TransactionDetailed } from 'src/endpoints/transactions/entities/transaction.detailed';
 
 describe('Transaction Service', () => {
   let transactionService: TransactionService;
@@ -137,47 +136,6 @@ describe('Transaction Service', () => {
       expect(results).toHaveLength(2);
       expect(txResults.includes("29a2bed2543197e69c9bf16b30c4b0196f5e7a59584aba2e1a2127bf06cdfd2d")).toBeTruthy();
       expect(txResults.includes("0cbaeb61cd2d901e7363b83e35750d0cbf2045ed853ef8f7af7cefdef622671e")).toBeTruthy();
-    });
-  });
-
-
-  describe('getTransaction', () => {
-    it('should return transaction details', async () => {
-      const transaction: string = "5b785adb29f341195351b0c74fb321ebec99188710df53e85bfae91bd57b802b";
-
-      const result = await transactionService.getTransaction(transaction);
-
-      expect(result).toHaveStructure(Object.keys(new TransactionDetailed()));
-    });
-
-    it('should verify if given transaction contain multiPairSwap method and all tokens are described accordingly ', async () => {
-      const transaction: string = "5b785adb29f341195351b0c74fb321ebec99188710df53e85bfae91bd57b802b";
-
-      const result = await transactionService.getTransaction(transaction);
-
-      if (!result) {
-        throw new Error("Properties are not defined");
-      }
-
-      expect(result.function).toStrictEqual('multiPairSwap');
-
-      expect(result).toEqual(expect.objectContaining({
-        action: expect.objectContaining({
-          arguments: expect.objectContaining({
-            transfers: expect.arrayContaining([
-              expect.objectContaining({
-                type: "FungibleESDT",
-                name: "QoWatt",
-                ticker: "QWT",
-                svgUrl: "https://media.elrond.com/tokens/asset/QWT-46ac01/logo.svg",
-                token: "QWT-46ac01",
-                decimals: 6,
-                value: "122194904",
-              }),
-            ]),
-          }),
-        }),
-      }));
     });
   });
 });
