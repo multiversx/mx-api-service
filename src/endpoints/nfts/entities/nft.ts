@@ -7,9 +7,9 @@ import { NftType } from "./nft.type";
 import { ComplexityEstimation, SwaggerUtils } from "@elrondnetwork/erdnest";
 import { Field, Float, ID, ObjectType } from "@nestjs/graphql";
 import { NftCollection } from "src/endpoints/collections/entities/nft.collection";
-import { UnlockMileStoneModel } from "../../../common/entities/unlock-schedule";
 import { Account } from "src/endpoints/accounts/entities/account";
 import { NftRarities } from "./nft.rarities";
+import { UnlockMileStoneModel } from "src/common/locked-asset/model/unlock.milestone.model";
 
 @ObjectType("Nft", { description: "NFT object type." })
 export class Nft {
