@@ -1,4 +1,4 @@
-Unified REST API facade for providing data related to the Elrond blockchain.
+Unified REST API facade for providing data related to the Multiversx blockchain.
 
 ## Quick start
 
@@ -19,7 +19,7 @@ After running the sample, you can stop the Docker container with `docker-compose
 
 ## Available Scripts
 
-This is an Elrond project built on Nest.js framework.
+This is an Multiversx project built on Nest.js framework.
 
 ### `npm run start:prod`
 
@@ -61,10 +61,10 @@ $ npm run test:cov
 It depends on the following external systems:
 - gateway: 
   - provides access to node information, such as network settings, account balance, sending transactions, etc
-  - docs: https://docs.elrond.com/sdk-and-tools/proxy/
+  - docs: https://docs.multiversx.com/sdk-and-tools/proxy/
 - index: 
   - a database that indexes data that can be queries, such as transactions, blocks, nfts, etc.
-  - docs: https://docs.elrond.com/sdk-and-tools/elastic-search/
+  - docs: https://docs.multiversx.com/sdk-and-tools/elastic-search/
 - delegation: used to fetch providers list from the delegation API
 
 It uses on the following internal systems:
