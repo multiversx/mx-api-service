@@ -59,7 +59,7 @@ urls:
   tmp: '/tmp'
   ipfs: 'https://ipfs.io/ipfs'
   socket: 'socket-fra.elrond.com'
-  maiarId: 'https://id.maiar.com'
+  maiarId: 'https://id-api.multiversx.com'
 indexer:
   type: 'elastic'
   maxPagination: 10000

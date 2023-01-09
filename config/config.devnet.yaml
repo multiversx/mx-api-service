@@ -58,7 +58,7 @@ urls:
   tmp: '/tmp'
   ipfs: 'https://ipfs.io/ipfs'
   socket: 'devnet-socket-fra.elrond.com'
-  maiarId: 'https://devnet-id.maiar.com'
+  maiarId: 'https://devnet-id-api.multiversx.com'
 indexer:
   type: 'elastic'
   maxPagination: 10000
