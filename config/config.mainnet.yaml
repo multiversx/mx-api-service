@@ -103,4 +103,4 @@ nftProcess:
   maxRetries: 3
 transaction-action:
   mex:
-  microServiceUrl: 'https://graph.maiar.exchange/graphql'
+    microServiceUrl: 'https://graph.maiar.exchange/graphql'
