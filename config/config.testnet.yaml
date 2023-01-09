@@ -41,17 +41,17 @@ aws:
   s3Region: ''
 urls:
   api:
-    - 'https://testnet-api.elrond.com'
-    - 'https://devnet-api.elrond.com'
-    - 'https://api.elrond.com'
+    - 'https://testnet-api.multiversx.com'
+    - 'https://devnet-api.multiversx.com'
+    - 'https://api.multiversx.com'
   elastic:
     - 'https://testnet-index.elrond.com'
   gateway:
-    - 'https://testnet-gateway.elrond.com'
+    - 'https://testnet-gateway.multiversx.com'
   redis: '127.0.0.1'
   rabbitmq: 'amqp://127.0.0.1:5672'
-  providers: 'https://testnet-delegation-api.elrond.com/providers'
-  delegation: 'https://testnet-delegation-api.elrond.com'
+  providers: 'https://testnet-delegation-api.multiversx.com/providers'
+  delegation: 'https://testnet-delegation-api.multiversx.com'
   media: 'https://testnet-media.elrond.com'
   nftThumbnails: 'https://testnet-media.elrond.com/nfts/thumbnail'
   tmp: '/tmp'
