@@ -28,7 +28,7 @@ export class MexController {
   @ApiExcludeEndpoint()
   @ApiResponse({
     status: 200,
-    description: 'The settings of the Maiar Exchange',
+    description: 'The settings of the xExchange',
   })
   async getMexSettings(): Promise<MexSettings> {
     const settings = await this.mexSettingsService.getSettings();
@@ -39,14 +39,14 @@ export class MexController {
   }
 
   @Get("/mex/economics")
-  @ApiOperation({ summary: 'Maiar Exchange economics', description: 'Returns economics details of Maiar Exchange' })
+  @ApiOperation({ summary: 'xExchange economics', description: 'Returns economics details of xExchange' })
   @ApiOkResponse({ type: MexEconomics })
   async getMexEconomics(): Promise<MexEconomics> {
     return await this.mexEconomicsService.getMexEconomics();
   }
 
   @Get("/mex/pairs")
-  @ApiOperation({ summary: 'Maiar Exchange pairs', description: 'Returns active liquidity pools available on Maiar Exchange' })
+  @ApiOperation({ summary: 'xExchange pairs', description: 'Returns active liquidity pools available on xExchange' })
   @ApiOkResponse({ type: [MexPair] })
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
@@ -58,7 +58,7 @@ export class MexController {
   }
 
   @Get("/mex/tokens")
-  @ApiOperation({ summary: 'Maiar Exchange tokens details', description: 'Returns a list of tokens listed on Maiar Exchange' })
+  @ApiOperation({ summary: 'xExchange tokens details', description: 'Returns a list of tokens listed on xExchange' })
   @ApiOkResponse({ type: [MexToken] })
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
@@ -70,7 +70,7 @@ export class MexController {
   }
 
   @Get("/mex/tokens/:identifier")
-  @ApiOperation({ summary: 'Maiar Exchange token details', description: 'Returns a specific token listed on Maiar Exchange' })
+  @ApiOperation({ summary: 'xExchange token details', description: 'Returns a specific token listed on xExchange' })
   @ApiOkResponse({ type: MexToken })
   @ApiNotFoundResponse({ description: 'Token not found' })
   async getMexTokenIdentifier(
@@ -85,7 +85,7 @@ export class MexController {
   }
 
   @Get("/mex/farms")
-  @ApiOperation({ summary: 'Maiar Exchange farms details', description: 'Returns a list of farms listed on Maiar Exchange' })
+  @ApiOperation({ summary: 'xExchange farms details', description: 'Returns a list of farms listed on xExchange' })
   @ApiOkResponse({ type: [MexFarm] })
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
@@ -97,7 +97,7 @@ export class MexController {
   }
 
   @Get("/mex/pairs/:baseId/:quoteId")
-  @ApiOperation({ summary: 'Maiar Exchange pairs details', description: 'Returns liquidity pool details by providing a combination of two tokens' })
+  @ApiOperation({ summary: 'xExchange pairs details', description: 'Returns liquidity pool details by providing a combination of two tokens' })
   @ApiOkResponse({ type: MexPair })
   async getMexPair(
     @Param('baseId') baseId: string,
@@ -112,7 +112,7 @@ export class MexController {
   }
 
   @Get("/mex-economics")
-  @ApiOperation({ deprecated: true, summary: 'Maiar Exchange economics', description: 'Returns economics details of Maiar Exchange' })
+  @ApiOperation({ deprecated: true, summary: 'xExchange economics', description: 'Returns economics details of xExchange' })
   @ApiOkResponse({ type: MexEconomics })
   async getMexEconomicsLegacy(): Promise<any> {
     return await this.mexEconomicsService.getMexEconomics();
@@ -123,7 +123,7 @@ export class MexController {
   @ApiExcludeEndpoint()
   @ApiResponse({
     status: 200,
-    description: 'The settings of the Maiar Exchange',
+    description: 'The settings of the xExchange',
   })
   async getMexSettingsLegacy(): Promise<MexSettings> {
     const settings = await this.mexSettingsService.getSettings();
@@ -137,8 +137,8 @@ export class MexController {
   @Get("/mex-pairs")
   @ApiOperation({
     deprecated: true,
-    summary: 'Maiar Exchange pairs',
-    description: 'Returns active liquidity pools available on Maiar Exchange',
+    summary: 'xExchange pairs',
+    description: 'Returns active liquidity pools available on xExchange',
   })
   @ApiResponse({
     status: 200,
@@ -157,8 +157,8 @@ export class MexController {
   @Get("/mex-tokens")
   @ApiOperation({
     deprecated: true,
-    summary: 'Maiar Exchange tokens details',
-    description: 'Returns a list of tokens listed on Maiar Exchange',
+    summary: 'xExchange tokens details',
+    description: 'Returns a list of tokens listed on xExchange',
   })
   @ApiResponse({
     status: 200,
@@ -177,7 +177,7 @@ export class MexController {
   @Get("/mex-pairs/:baseId/:quoteId")
   @ApiOperation({
     deprecated: true,
-    summary: 'Maiar Exchange pairs details',
+    summary: 'xExchange pairs details',
     description: 'Returns liquidity pool details by providing a combination of two tokens',
   })
   @ApiResponse({
