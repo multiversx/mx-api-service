@@ -8,9 +8,9 @@ import { TokenHelpers } from '../../utils/token.helpers';
 import { GatewayComponentRequest } from '../gateway/entities/gateway.component.request';
 import { GatewayService } from '../gateway/gateway.service';
 import { MexSettingsService } from 'src/endpoints/mex/mex.settings.service';
-import { UnlockFieldsInterface } from './model/unlock.fields.interface';
-import { LockedTokensInterface } from './model/locked.tokens.interface';
-import { UnlockMileStoneModel } from './model/unlock.milestone.model';
+import { UnlockFieldsInterface } from './entities/unlock.fields.interface';
+import { LockedTokensInterface } from './entities/locked.tokens.interface';
+import { UnlockMileStoneModel } from './entities/unlock.milestone.model';
 
 @Injectable()
 export class LockedAssetService {

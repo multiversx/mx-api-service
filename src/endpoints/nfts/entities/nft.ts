@@ -9,7 +9,7 @@ import { Field, Float, ID, ObjectType } from "@nestjs/graphql";
 import { NftCollection } from "src/endpoints/collections/entities/nft.collection";
 import { Account } from "src/endpoints/accounts/entities/account";
 import { NftRarities } from "./nft.rarities";
-import { UnlockMileStoneModel } from "src/common/locked-asset/model/unlock.milestone.model";
+import { UnlockMileStoneModel } from "src/common/locked-asset/entities/unlock.milestone.model";
 
 @ObjectType("Nft", { description: "NFT object type." })
 export class Nft {
