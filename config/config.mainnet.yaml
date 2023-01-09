@@ -37,7 +37,7 @@ image:
 aws:
   s3KeyId: ''
   s3Secret: ''
-  s3Bucket: 'media.elrond.com'
+  s3Bucket: 'media.multiversx.com'
   s3Region: ''
 urls:
   api:
