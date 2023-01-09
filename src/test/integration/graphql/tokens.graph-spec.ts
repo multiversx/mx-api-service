@@ -243,7 +243,7 @@ describe('Tokens', () => {
         .expect(200)
         .then(res => {
           expect(res.body.data.tokenAccounts[0]).toEqual(expect.objectContaining({
-            address: "erd1qqqqqqqqqqqqqpgq7qhsw8kffad85jtt79t9ym0a4ycvan9a2jps0zkpen",
+            address: "erd1qqqqqqqqqqqqqpgqa0fsfshnff4n76jhcye6k7uvd7qacsq42jpsp6shh2",
             balance: res.body.data.tokenAccounts[0].balance,
           }));
         });
