@@ -37,7 +37,7 @@ image:
 aws:
   s3KeyId: ''
   s3Secret: ''
-  s3Bucket: 'testnet-media.multiversx.com'
+  s3Bucket: 'testnet-media.elrond.com'
   s3Region: ''
 urls:
   api:
@@ -45,19 +45,19 @@ urls:
     - 'https://devnet-api.multiversx.com'
     - 'https://api.multiversx.com'
   elastic:
-    - 'https://testnet-index.multiversx.com'
+    - 'https://testnet-index.elrond.com'
   gateway:
-    - 'https://testnet-gateway.multiversx.com'
+    - 'https://testnet-gateway.elrond.com'
   redis: '127.0.0.1'
   rabbitmq: 'amqp://127.0.0.1:5672'
   providers: 'https://testnet-delegation-api.multiversx.com/providers'
   delegation: 'https://testnet-delegation-api.multiversx.com'
-  media: 'https://testnet-media.multiversx.com'
-  nftThumbnails: 'https://testnet-media.multiversx.com/nfts/thumbnail'
+  media: 'https://testnet-media.elrond.com'
+  nftThumbnails: 'https://testnet-media.elrond.com/nfts/thumbnail'
   tmp: '/tmp'
   ipfs: 'https://ipfs.io/ipfs'
-  socket: 'testnet-socket-fra.multiversx.com'
-  maiarId: 'https://testnet-id-api.multiversx.com'
+  socket: 'testnet-socket-fra.elrond.com'
+  maiarId: 'https://testnet-id.maiar.com'
 database:
   enabled: false
   url: 'mongodb://127.0.0.1:27017/api?authSource=admin'
@@ -101,4 +101,4 @@ nftProcess:
   maxRetries: 3
 transaction-action:
   mex:
-    microServiceUrl: 'https://testnet-exchange-graph.elrond.com/graphql'
+microServiceUrl: 'https://testnet-exchange-graph.elrond.com/graphql'

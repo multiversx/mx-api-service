@@ -4,7 +4,6 @@ api:
   public: true
   private: true
   graphql: true
-
 cron:
   transactionProcessor: false
   transactionProcessorMaxLookBehind: 1000
@@ -20,18 +19,17 @@ urls:
     - 'https://devnet-api.multiversx.com'
     - 'https://testnet-api.multiversx.com'
   elastic:
-    - 'https://index.multiversx.com'
+    - 'https://index.elrond.com'
   mex:
-    - 'https://mex-indexer.multiversx.com'
-  gateway:
-    - 'https://gateway.multiversx.com'
+@@ -27,8 +27,8 @@ urls:
+    - 'https://gateway.elrond.com'
   redis: '127.0.0.1'
   rabbitmq: 'amqp://127.0.0.1:5672'
   providers: 'https://internal-delegation-api.multiversx.com/providers'
   delegation: 'https://delegation-api.multiversx.com'
-  media: 'https://media.multiversx.com'
-  nftThumbnails: 'https://media.multiversx.com/nfts/thumbnail'
-  maiarId: 'https://id-api.multiversx.com'
+  media: 'https://media.elrond.com'
+  nftThumbnails: 'https://media.elrond.com/nfts/thumbnail'
+  maiarId: 'https://id.maiar.com'
 database:
   enabled: false
   url: 'mongodb://127.0.0.1:27017/api?authSource=admin'
@@ -73,4 +71,4 @@ test:
   mockPath: './src/test/mocks/'
 transaction-action:
   mex:
-    microServiceUrl: 'https://graph.maiar.exchange/graphql'
+microServiceUrl: 'https://graph.maiar.exchange/graphql'
