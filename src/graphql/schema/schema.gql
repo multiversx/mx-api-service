@@ -2428,24 +2428,22 @@ type Query {
     input: GetIndentityInput!
   ): [Identity!]!
 
-  """Retrieve economics details of Maiar Exchange."""
+  """Retrieve economics details of xExchange."""
   mexEconomics: MexEconomics!
 
-  """Retrieve a list of farms listed on Maiar Exchange."""
+  """Retrieve a list of farms listed on xExchange."""
   mexFarms(
     """Input to retrieve the given farms for."""
     input: GetMexFarmsInput!
   ): [MexFarm!]!
 
-  """Retrieve one mex pair listed on Maiar Exchange for the given input."""
+  """Retrieve one mex pair listed on xExchange for the given input."""
   mexPair(
     """Input to retrieve the given tokens mex pair for."""
     input: GetMexTokenPairsByQuotePairIdInput!
   ): MexPair!
 
-  """
-  Retrieve all mex token pairs listed on Maiar Exchange for the given input.
-  """
+  """Retrieve all mex token pairs listed on xExchange for the given input."""
   mexPairs(
     """Input to retrieve the given tokens for."""
     input: GetMexTokenPairsInput!
@@ -2457,7 +2455,7 @@ type Query {
     input: GetMexTokenInput!
   ): MexToken
 
-  """Retrieve all tokens listed on Maiar Exchange for the given input."""
+  """Retrieve all tokens listed on xExchange for the given input."""
   mexTokens(
     """Input to retrieve the given tokens for."""
     input: GetMexTokensInput!
