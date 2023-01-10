@@ -336,8 +336,8 @@ export class CacheInfo {
     ttl: Constants.oneDay(),
   };
 
-  static LockedTokenID: CacheInfo = {
-    key: "lockedTokenID",
+  static LockedTokenIDs: CacheInfo = {
+    key: "lockedTokenIDs",
     ttl: Constants.oneHour(),
   };
 
