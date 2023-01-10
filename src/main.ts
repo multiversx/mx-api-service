@@ -224,10 +224,10 @@ async function configurePublicApp(publicApp: NestExpressApplication, apiConfigSe
   );
 
   let documentBuilder = new DocumentBuilder()
-    .setTitle('Elrond API')
+    .setTitle('Multiversx API')
     .setDescription(description)
     .setVersion('1.0.0')
-    .setExternalDoc('Find out more about Elrond API', 'https://docs.elrond.com/sdk-and-tools/rest-api/rest-api/');
+    .setExternalDoc('Find out more about Multiversx API', 'https://docs.multiversx.com/sdk-and-tools/rest-api/rest-api/');
 
   const apiUrls = apiConfigService.getApiUrls();
   for (const apiUrl of apiUrls) {
@@ -236,16 +236,16 @@ async function configurePublicApp(publicApp: NestExpressApplication, apiConfigSe
 
   const config = documentBuilder.build();
   const options = {
-    customSiteTitle: 'Elrond API',
+    customSiteTitle: 'Multiversx API',
     customCss: `.topbar-wrapper img 
           {
-            content:url(\'/img/customElrondLogo.png\'); width:250px; height:auto;
+            content:url(\'/img/mvx-ledger-icon-mint.png\'); width:100px; height:auto;
           }
           .swagger-ui .topbar { background-color: #FAFAFA; }
           .swagger-ui .scheme-container {background-color: #FAFAFA;}`,
 
 
-    customfavIcon: '/img/customElrondFavIcon.png',
+    customfavIcon: '/img/mvx-ledger-icon-mint.png',
     swaggerOptions: {
       filter: true,
       displayRequestDuration: true,
