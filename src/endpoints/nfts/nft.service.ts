@@ -247,15 +247,16 @@ export class NftService {
     }
 
     try {
-      const unlockFields = await this.lockedAssetService.getUnlockFields(nft.identifier, nft.attributes);
-      if (unlockFields?.unlockEpoch) {
-        nft.unlockEpoch = unlockFields.unlockEpoch;
-      } else if (unlockFields?.unlockSchedule) {
-        nft.unlockSchedule = unlockFields.unlockSchedule;
-      }
-
+      nft.unlockSchedule = await this.lockedAssetService.getLkmexUnlockSchedule(nft.identifier, nft.attributes);
     } catch (error) {
       this.logger.error(`An error occurred while applying unlock schedule for NFT with identifier '${nft.identifier}' and attributes '${nft.attributes}'`);
+      this.logger.error(error);
+    }
+
+    try {
+      nft.unlockEpoch = await this.lockedAssetService.getXmexUnlockEpoch(nft.identifier, nft.attributes);
+    } catch (error) {
+      this.logger.error(`An error occurred while applying unlock epoch for NFT with identifier '${nft.identifier}' and attributes '${nft.attributes}'`);
       this.logger.error(error);
     }
   }
