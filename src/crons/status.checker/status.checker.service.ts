@@ -125,32 +125,32 @@ export class StatusCheckerService {
   @Cron(CronExpression.EVERY_MINUTE)
   async handleIdentitiesCount() {
     await Locker.lock('Status Checker Identities Count', async () => {
-      const count = await this.identitiesService.getAllIdentities();
-      this.apiStatusMetricsService.setTotalIdentities(count.length);
+      const identities = await this.identitiesService.getAllIdentities();
+      this.apiStatusMetricsService.setTotalIdentities(identities.length);
     }, true);
   }
 
   @Cron(CronExpression.EVERY_MINUTE)
   async handleNodesCount() {
     await Locker.lock('Status Checker Nodes Count', async () => {
-      const count = await this.nodeService.getAllNodes();
-      this.apiStatusMetricsService.setTotalNodes(count.length);
+      const nodes = await this.nodeService.getAllNodes();
+      this.apiStatusMetricsService.setTotalNodes(nodes.length);
     }, true);
   }
 
   @Cron(CronExpression.EVERY_MINUTE)
   async handleProvidersCount() {
     await Locker.lock('Status Checker Providers Count', async () => {
-      const count = await this.providerService.getAllProviders();
-      this.apiStatusMetricsService.setTotalProviders(count.length);
+      const providers = await this.providerService.getAllProviders();
+      this.apiStatusMetricsService.setTotalProviders(providers.length);
     }, true);
   }
 
   @Cron(CronExpression.EVERY_MINUTE)
   async handleShardsCount() {
     await Locker.lock('Status Checker Shards Count', async () => {
-      const count = await this.shardService.getAllShards();
-      this.apiStatusMetricsService.setTotalShards(count.length);
+      const shards = await this.shardService.getAllShards();
+      this.apiStatusMetricsService.setTotalShards(shards.length);
     }, true);
   }
 
@@ -219,6 +219,19 @@ export class StatusCheckerService {
       } else {
         this.logger.error(`Invalid token count '${tokenCount}'`);
         this.apiStatusMetricsService.setCheckTokenCountResult('error');
+      }
+    }, true);
+  }
+
+  @Cron(CronExpression.EVERY_MINUTE)
+  async checkNodeCount() {
+    await Locker.lock('Status Checker Check node count', async () => {
+      const allNodes = await this.nodeService.getAllNodes();
+      if (allNodes.length > 5000) {
+        this.apiStatusMetricsService.setCheckNodeCountResult('success');
+      } else {
+        this.logger.error(`Invalid node count '${allNodes}'`);
+        this.apiStatusMetricsService.setCheckNodeCountResult('error');
       }
     }, true);
   }

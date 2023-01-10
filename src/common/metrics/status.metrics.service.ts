@@ -22,8 +22,8 @@ export class StatusMetricsService {
   private static totalMexPairsMetric: Gauge<string>;
   private static totalMexFarmsMetric: Gauge<string>;
   private static totalMexTokensMetric: Gauge<string>;
-  private static checkMexEconomicsMetric: Gauge<string>;
-  private static checkEconomicsMetric: Gauge<string>;
+  private static mexEconomicsMetric: Gauge<string>;
+  private static economicsMetric: Gauge<string>;
   private static checkTokenCountMetric: Gauge<string>;
   private static checkNodeCountMetric: Gauge<string>;
   private static checkProviderCountMetric: Gauge<string>;
@@ -189,19 +189,19 @@ export class StatusMetricsService {
       });
     }
 
-    if (!StatusMetricsService.checkMexEconomicsMetric) {
-      StatusMetricsService.checkMexEconomicsMetric = new Gauge({
-        name: 'check_mex_economics',
-        help: 'check_mex_economics',
-        labelNames: ['result'],
+    if (!StatusMetricsService.mexEconomicsMetric) {
+      StatusMetricsService.mexEconomicsMetric = new Gauge({
+        name: 'mex_economics',
+        help: 'mex_economics',
+        labelNames: ['name'],
       });
     }
 
-    if (!StatusMetricsService.checkEconomicsMetric) {
-      StatusMetricsService.checkEconomicsMetric = new Gauge({
-        name: 'check_economics',
-        help: 'check_economics',
-        labelNames: ['result'],
+    if (!StatusMetricsService.economicsMetric) {
+      StatusMetricsService.economicsMetric = new Gauge({
+        name: 'economics',
+        help: 'economics',
+        labelNames: ['name'],
       });
     }
 
@@ -249,7 +249,7 @@ export class StatusMetricsService {
       StatusMetricsService.checkTokenAccountsMetric = new Gauge({
         name: 'check_token_accounts',
         help: 'check_token_accounts',
-        labelNames: ['result'],
+        labelNames: [],
       });
     }
 
@@ -257,7 +257,7 @@ export class StatusMetricsService {
       StatusMetricsService.checkTokenTransactionsMetric = new Gauge({
         name: 'check_token_transactions',
         help: 'check_token_transactions',
-        labelNames: ['result'],
+        labelNames: [],
       });
     }
 
@@ -265,7 +265,7 @@ export class StatusMetricsService {
       StatusMetricsService.checkValidatorNodeCountMetric = new Gauge({
         name: 'check_validator_node_count',
         help: 'check_validator_node_count',
-        labelNames: ['result'],
+        labelNames: [],
       });
     }
 
@@ -363,15 +363,19 @@ export class StatusMetricsService {
   }
 
   setMexEconomicsValue(name: string, value: number) {
-    StatusMetricsService.checkMexEconomicsMetric.labels(name.toString()).set(value);
+    StatusMetricsService.mexEconomicsMetric.labels(name.toString()).set(value);
   }
 
   setEconomicsValue(name: string, value: number) {
-    StatusMetricsService.checkEconomicsMetric.labels(name.toString()).set(value);
+    StatusMetricsService.economicsMetric.labels(name.toString()).set(value);
   }
 
   setCheckTokenCountResult(result: 'success' | 'error') {
     StatusMetricsService.checkTokenCountMetric.labels(result).inc();
+  }
+
+  setCheckNodeCountResult(result: 'success' | 'error') {
+    StatusMetricsService.checkNodeCountMetric.labels(result).inc();
   }
 
   setCheckProviderCountResult(result: 'success' | 'error') {
