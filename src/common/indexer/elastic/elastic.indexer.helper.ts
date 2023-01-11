@@ -294,6 +294,14 @@ export class ElasticIndexerHelper {
       elasticQuery = elasticQuery.withDateRangeFilter('timestamp', filter.before, filter.after);
     }
 
+    if (filter.senderOrReceiver) {
+      elasticQuery = elasticQuery
+        .withMustCondition(QueryType.Should([
+          QueryType.Match('sender', filter.senderOrReceiver),
+          QueryType.Match('receiver', filter.senderOrReceiver),
+        ]));
+    }
+
     return elasticQuery;
   }
 
@@ -457,6 +465,14 @@ export class ElasticIndexerHelper {
       }
 
       elasticQuery = elasticQuery.withMustMultiShouldCondition(keys, key => QueryType.Match(key, address));
+    }
+
+    if (filter.senderOrReceiver) {
+      elasticQuery = elasticQuery
+        .withMustCondition(QueryType.Should([
+          QueryType.Match('sender', filter.senderOrReceiver),
+          QueryType.Match('receiver', filter.senderOrReceiver),
+        ]));
     }
 
     return elasticQuery;
