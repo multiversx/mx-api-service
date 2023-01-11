@@ -141,7 +141,7 @@ describe('Transaction Service', () => {
 
   it(`should return a list of transfers between two accounts (first address is always sender and seconds adress is always receiver)`, async () => {
     const sender = 'erd18kmncel8a32yd94ktzlqag9etdrpdnyph8wus2nqyd4lp865gncq40znww';
-    const receiver = 'erd1sdslvlxvfnnflzj42l8czrcngq3xjjzkjp3rgul4ttk6hntr4qdsv6sets'
+    const receiver = 'erd1sdslvlxvfnnflzj42l8czrcngq3xjjzkjp3rgul4ttk6hntr4qdsv6sets';
     const transactionFilter = new TransactionFilter();
     transactionFilter.sender = sender;
     transactionFilter.receivers = [receiver];
@@ -157,7 +157,7 @@ describe('Transaction Service', () => {
 
   it(`should return a list of transfers between two accounts`, async () => {
     const sender = 'erd18kmncel8a32yd94ktzlqag9etdrpdnyph8wus2nqyd4lp865gncq40znww';
-    const receiver = 'erd1sdslvlxvfnnflzj42l8czrcngq3xjjzkjp3rgul4ttk6hntr4qdsv6sets'
+    const receiver = 'erd1sdslvlxvfnnflzj42l8czrcngq3xjjzkjp3rgul4ttk6hntr4qdsv6sets';
     const transactionFilter = new TransactionFilter();
     transactionFilter.address = sender;
     transactionFilter.senderOrReceiver = receiver;

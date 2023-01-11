@@ -659,7 +659,7 @@ export class AccountController {
       before,
       after,
       order,
-      senderOrReceiver
+      senderOrReceiver,
     }), new QueryPagination({ from, size }), options, address);
   }
 
@@ -773,7 +773,7 @@ export class AccountController {
       before,
       after,
       order,
-      senderOrReceiver
+      senderOrReceiver,
     }),
       new QueryPagination({ from, size }),
       options,
