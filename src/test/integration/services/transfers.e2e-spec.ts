@@ -61,7 +61,7 @@ describe('Transfer Service', () => {
 
         for (const transfer of transfers) {
           expect(transfer.sender).toBe(transactionSender);
-          expect([transactionSender, transactionReceiver].includes(transfer.receiver)).toBe(true); //it can be an ESDNFTTransfer which is a self transaction
+          expect(transfer.receiver).toBe(transactionReceiver);
         }
       });
 
@@ -132,20 +132,18 @@ describe('Transfer Service', () => {
       it(`should return transfers for an address`, async () => {
         const address = transactionSender;
         const transactionFilter = new TransactionFilter();
+        transactionFilter.address = address;
 
         const transfers = await transferService.getTransfers(transactionFilter, { from: 0, size: 25 }, new TransactionQueryOptions());
         expect(transfers).toBeInstanceOf(Array);
         expect(transfers.length).toBeGreaterThan(0);
 
         for (const transfer of transfers) {
-          expect(transfer.sender === address && transfer.receiver === address).toStrictEqual(true);
+          expect(transfer.sender === address || transfer.receiver === address).toStrictEqual(true);
         }
-
-        const accountTransactionsList = await transferService.getTransfers(new TransactionFilter(), { from: 0, size: 25 }, new TransactionQueryOptions());
-        expect(transfers).toEqual(accountTransactionsList);
       });
 
-      it(`should return transfers for an address with self transactions`, async () => {
+      it(`should return self transfers for an address`, async () => {
         const address = transactionSender;
         const transactionFilter = new TransactionFilter();
         transactionFilter.sender = address;
