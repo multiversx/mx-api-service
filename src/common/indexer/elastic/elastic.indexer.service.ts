@@ -218,8 +218,6 @@ export class ElasticIndexerService implements IndexerInterface {
       .withPagination({ from: pagination.from, size: pagination.size })
       .withSort([timestamp, nonce]);
 
-    console.log(JSON.stringify(elasticQuery.toJson()));
-
     const elasticOperations = await this.elasticService.getList('operations', 'txHash', elasticQuery);
     return elasticOperations;
   }
@@ -366,8 +364,6 @@ export class ElasticIndexerService implements IndexerInterface {
     const elasticQuery = this.indexerHelper.buildTransactionFilterQuery(filter, address)
       .withPagination({ from: pagination.from, size: pagination.size })
       .withSort([timestamp, nonce]);
-
-    console.log(JSON.stringify(elasticQuery.toJson()));
 
     return await this.elasticService.getList('transactions', 'txHash', elasticQuery);
   }
