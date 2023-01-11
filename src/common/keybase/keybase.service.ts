@@ -180,7 +180,7 @@ export class KeybaseService {
       return;
     }
 
-    const html = multiversxResults.data || elrondResults.data;
+    const html = multiversxResults?.data || elrondResults?.data;
 
     const networkRegex = network !== "mainnet" ? `${network}\/` : '';
 
