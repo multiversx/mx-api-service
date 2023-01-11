@@ -138,4 +138,36 @@ describe('Transaction Service', () => {
     expect(txResults.includes("29a2bed2543197e69c9bf16b30c4b0196f5e7a59584aba2e1a2127bf06cdfd2d")).toBeTruthy();
     expect(txResults.includes("0cbaeb61cd2d901e7363b83e35750d0cbf2045ed853ef8f7af7cefdef622671e")).toBeTruthy();
   });
+
+  it(`should return a list of transfers between two accounts (first address is always sender and seconds adress is always receiver)`, async () => {
+    const sender = 'erd18kmncel8a32yd94ktzlqag9etdrpdnyph8wus2nqyd4lp865gncq40znww';
+    const receiver = 'erd1sdslvlxvfnnflzj42l8czrcngq3xjjzkjp3rgul4ttk6hntr4qdsv6sets'
+    const transactionFilter = new TransactionFilter();
+    transactionFilter.sender = sender;
+    transactionFilter.receivers = [receiver];
+
+    const transfers = await transactionService.getTransactions(transactionFilter, { from: 0, size: 25 }, new TransactionQueryOptions());
+    expect(transfers.length).toBeGreaterThan(0);
+
+    for (const transfer of transfers) {
+      expect(transfer.sender).toBe(sender);
+      expect([sender, receiver].includes(transfer.receiver)).toBe(true); //it can be an ESDNFTTransfer which is a self transaction
+    }
+  });
+
+  it(`should return a list of transfers between two accounts`, async () => {
+    const sender = 'erd18kmncel8a32yd94ktzlqag9etdrpdnyph8wus2nqyd4lp865gncq40znww';
+    const receiver = 'erd1sdslvlxvfnnflzj42l8czrcngq3xjjzkjp3rgul4ttk6hntr4qdsv6sets'
+    const transactionFilter = new TransactionFilter();
+    transactionFilter.address = sender;
+    transactionFilter.senderOrReceiver = receiver;
+
+    const transfers = await transactionService.getTransactions(transactionFilter, { from: 0, size: 25 }, new TransactionQueryOptions());
+    expect(transfers.length).toBeGreaterThan(0);
+
+    for (const transfer of transfers) {
+      expect([sender, receiver].includes(transfer.sender)).toBe(true);
+      expect([sender, receiver].includes(transfer.receiver)).toBe(true);
+    }
+  });
 });
