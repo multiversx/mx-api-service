@@ -6,6 +6,7 @@ import { NotifierEvent as NotifierEvent } from './entities/notifier.event';
 import { NotifierEventIdentifier } from './entities/notifier.event.identifier';
 import { RabbitMqTokenHandlerService } from './rabbitmq.token.handler.service';
 import { OriginLogger } from '@multiversx/sdk-nestjs';
+import { RabbitMqEventsHandlerService } from './rabbitmq.events.handler.service';
 
 @Injectable()
 export class RabbitMqConsumer {
@@ -14,6 +15,7 @@ export class RabbitMqConsumer {
   constructor(
     private readonly nftHandlerService: RabbitMqNftHandlerService,
     private readonly tokenHandlerService: RabbitMqTokenHandlerService,
+    private readonly eventsHandlerService: RabbitMqEventsHandlerService,
   ) { }
 
   @CompetingRabbitConsumer({
@@ -34,6 +36,8 @@ export class RabbitMqConsumer {
   }
 
   private async handleEvent(event: NotifierEvent): Promise<void> {
+    await this.eventsHandlerService.sendNotification(event);
+
     switch (event.identifier) {
       case NotifierEventIdentifier.ESDTNFTCreate:
         await this.nftHandlerService.handleNftCreateEvent(event);
