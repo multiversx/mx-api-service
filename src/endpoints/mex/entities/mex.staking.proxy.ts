@@ -18,4 +18,13 @@ export class MexStakingProxy {
   @Field(() => String, { description: "Dual Yield token collection." })
   @ApiProperty()
   dualYieldTokenCollection: string = '';
+
+  static fromQueryResponse(response: any): MexStakingProxy {
+    const stakingProxy = new MexStakingProxy();
+    stakingProxy.address = response.address;
+    stakingProxy.dualYieldTokenName = response.dualYieldToken.name;
+    stakingProxy.dualYieldTokenCollection = response.dualYieldToken.collection;
+
+    return stakingProxy;
+  }
 }

@@ -165,7 +165,9 @@ export class AccountDetailedResolver extends AccountDetailedQuery {
         creator: input.creator,
         hasUris: input.hasUris,
         includeFlagged: input.includeFlagged,
+        excludeMetaESDT: input.excludeMetaESDT,
       }),
+      undefined,
       new NftQueryOptions({
         withSupply: input.withSupply,
       }),

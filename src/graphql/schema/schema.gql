@@ -647,6 +647,21 @@ type EsdtLockedAccount {
   name: String
 }
 
+"""Esdt type enum."""
+enum EsdtType {
+  """Fungible ESDT token type."""
+  FungibleESDT
+
+  """Meta ESDT token type."""
+  MetaESDT
+
+  """Non-fungible ESDT token type."""
+  NonFungibleESDT
+
+  """Semi-fungible ESDT token type."""
+  SemiFungibleESDT
+}
+
 """Input to retrieve the given detailed account for."""
 input GetAccountDetailedInput {
   """Address to retrieve the corresponding detailed account for."""
@@ -834,6 +849,11 @@ input GetNftCollectionsCountInput {
   """Can update attributes to retrieve for the given result set."""
   canUpdateAttributes: String
 
+  """
+  Do not include collections of type "MetaESDT" in the responsee for the given result set.
+  """
+  excludeMetaESDT: Boolean
+
   """Collection identifier to retrieve for the given result set."""
   search: ID
 
@@ -863,6 +883,11 @@ input GetNftCollectionsInput {
 
   """Can update attributes to retrieve for the given result set."""
   canUpdateAttributes: String
+
+  """
+  Do not include collections of type "MetaESDT" in the responsee for the given result set.
+  """
+  excludeMetaESDT: Boolean
 
   """Number of NFT collections to skip for the given result set."""
   from: Float = 0
@@ -895,6 +920,11 @@ input GetNftsAccountInput {
 
   """Creator to retrieve for the given result set."""
   creator: String
+
+  """
+  Do not include collections of type "MetaESDT" in the responsee for the given result set.
+  """
+  excludeMetaESDT: Boolean
 
   """Number of collections to skip for the given result set."""
   from: Float = 0
@@ -1829,6 +1859,9 @@ type MexFarm {
 
   """Mex farm type."""
   type: MexFarmType!
+
+  """Mex farm version."""
+  version: String
 }
 
 """MexFarmType object type."""
@@ -2061,6 +2094,9 @@ type Nft {
   """NFT type for the given NFT."""
   type: NftType!
 
+  """Unlock epoch for the given NFT."""
+  unlockEpoch: Float
+
   """Unlock mile stone model for the given NFT."""
   unlockSchedule: [UnlockMileStoneModel!]
 
@@ -2151,6 +2187,9 @@ type NftAccount {
   """NFT type for the given NFT."""
   type: NftType!
 
+  """Unlock epoch for the given NFT."""
+  unlockEpoch: Float
+
   """Unlock mile stone model for the given NFT."""
   unlockSchedule: [UnlockMileStoneModel!]
 
@@ -2234,6 +2273,9 @@ type NftAccountFlat {
   """NFT type for the given NFT."""
   type: NftType!
 
+  """Unlock epoch for the given NFT."""
+  unlockEpoch: Float
+
   """Unlock mile stone model for the given NFT."""
   unlockSchedule: [UnlockMileStoneModel!]
 
@@ -2252,19 +2294,23 @@ type NftCollection {
   """Assets for the given NFT collection."""
   assets: TokenAssets
 
+  """If the given NFT collection can add special role."""
+  canAddSpecialRoles: Boolean
+
+  """If the given NFT collection can change owner."""
+  canChangeOwner: Boolean
+
   """If the given NFT collection can freeze."""
   canFreeze: Boolean
 
   """If the given NFT collection can pause."""
   canPause: Boolean
 
-  """
-  If the given NFT collection can transfer the underlying tokens by default.
-  """
-  canTransfer: Boolean
-
   """If the given NFT collection can transfer NFT create role."""
   canTransferNftCreateRole: Boolean
+
+  """If the given NFT collection can upgrade."""
+  canUpgrade: Boolean
 
   """If the given NFT collection can wipe."""
   canWipe: Boolean
@@ -2281,8 +2327,8 @@ type NftCollection {
   """Owner account for the given NFT collection."""
   owner: Account
 
-  """Roles list for the given NFT collection."""
-  roles: [CollectionRoles!]
+  """Scam information for the underlying collection."""
+  scamInfo: ScamInformation
 
   """Ticker for the given NFT collection."""
   ticker: ID!
@@ -2302,19 +2348,23 @@ type NftCollectionAccount {
   """Assets for the given NFT collection."""
   assets: TokenAssets
 
+  """If the given NFT collection can add special role."""
+  canAddSpecialRoles: Boolean
+
+  """If the given NFT collection can change owner."""
+  canChangeOwner: Boolean
+
   """If the given NFT collection can freeze."""
   canFreeze: Boolean
 
   """If the given NFT collection can pause."""
   canPause: Boolean
 
-  """
-  If the given NFT collection can transfer the underlying tokens by default.
-  """
-  canTransfer: Boolean
-
   """If the given NFT collection can transfer NFT create role."""
   canTransferNftCreateRole: Boolean
+
+  """If the given NFT collection can upgrade."""
+  canUpgrade: Boolean
 
   """If the given NFT collection can wipe."""
   canWipe: Boolean
@@ -2334,8 +2384,8 @@ type NftCollectionAccount {
   """Owner account for the given NFT collection."""
   owner: Account
 
-  """Roles list for the given NFT collection."""
-  roles: [CollectionRoles!]
+  """Scam information for the underlying collection."""
+  scamInfo: ScamInformation
 
   """Ticker for the given NFT collection."""
   ticker: ID!
@@ -2354,19 +2404,23 @@ type NftCollectionAccountFlat {
   """Assets for the given NFT collection."""
   assets: TokenAssets
 
+  """If the given NFT collection can add special role."""
+  canAddSpecialRoles: Boolean
+
+  """If the given NFT collection can change owner."""
+  canChangeOwner: Boolean
+
   """If the given NFT collection can freeze."""
   canFreeze: Boolean
 
   """If the given NFT collection can pause."""
   canPause: Boolean
 
-  """
-  If the given NFT collection can transfer the underlying tokens by default.
-  """
-  canTransfer: Boolean
-
   """If the given NFT collection can transfer NFT create role."""
   canTransferNftCreateRole: Boolean
+
+  """If the given NFT collection can upgrade."""
+  canUpgrade: Boolean
 
   """If the given NFT collection can wipe."""
   canWipe: Boolean
@@ -2383,8 +2437,8 @@ type NftCollectionAccountFlat {
   """Name for the given NFT collection."""
   name: String!
 
-  """Roles list for the given NFT collection."""
-  roles: [CollectionRoles!]
+  """Scam information for the underlying collection."""
+  scamInfo: ScamInformation
 
   """Ticker for the given NFT collection."""
   ticker: ID!
@@ -2422,6 +2476,9 @@ type NftMetadata {
   """Description for the given NFT metadata."""
   description: String!
 
+  """NFT Metadata fetch error."""
+  error: NftMetadataError
+
   """File name for the given NFT metadata."""
   fileName: String!
 
@@ -2430,6 +2487,40 @@ type NftMetadata {
 
   """File URI for the given NFT metadata."""
   fileUri: String!
+}
+
+"""NFT Metadata error."""
+type NftMetadataError {
+  """Error code"""
+  code: NftMetadataErrorCode!
+
+  """Error message"""
+  message: String!
+
+  """Timestamp when the error was generated"""
+  timestamp: Float!
+}
+
+"""NFT Metadata error code"""
+enum NftMetadataErrorCode {
+  """Metadata is empty"""
+  emptyMetadata
+
+  """Invalid contentm type (should be application/json)"""
+  invalidContentType
+
+  """IPFS error"""
+  ipfsError
+  jsonParseError
+
+  """IPFS link does not have any underlying resource"""
+  notFound
+
+  """IPFS request timeout"""
+  timeout
+
+  """Unknown error"""
+  unknownError
 }
 
 """NFT rank object type"""
@@ -2772,24 +2863,22 @@ type Query {
     input: GetIndentityInput!
   ): [Identity!]!
 
-  """Retrieve economics details of Maiar Exchange."""
+  """Retrieve economics details of xExchange."""
   mexEconomics: MexEconomics!
 
-  """Retrieve a list of farms listed on Maiar Exchange."""
+  """Retrieve a list of farms listed on xExchange."""
   mexFarms(
     """Input to retrieve the given farms for."""
     input: GetMexFarmsInput!
   ): [MexFarm!]!
 
-  """Retrieve one mex pair listed on Maiar Exchange for the given input."""
+  """Retrieve one mex pair listed on xExchange for the given input."""
   mexPair(
     """Input to retrieve the given tokens mex pair for."""
     input: GetMexTokenPairsByQuotePairIdInput!
   ): MexPair!
 
-  """
-  Retrieve all mex token pairs listed on Maiar Exchange for the given input.
-  """
+  """Retrieve all mex token pairs listed on xExchange for the given input."""
   mexPairs(
     """Input to retrieve the given tokens for."""
     input: GetMexTokenPairsInput!
@@ -2801,7 +2890,7 @@ type Query {
     input: GetMexTokenInput!
   ): MexToken
 
-  """Retrieve all tokens listed on Maiar Exchange for the given input."""
+  """Retrieve all tokens listed on xExchange for the given input."""
   mexTokens(
     """Input to retrieve the given tokens for."""
     input: GetMexTokensInput!
@@ -3197,8 +3286,14 @@ type TokenAccount {
   """Token account address."""
   address: String!
 
+  """Token attributes if MetaESDT."""
+  attributes: String
+
   """Token balance account amount."""
   balance: String!
+
+  """Token identifier if MetaESDT."""
+  identifier: String
 }
 
 """Token assets object type."""
@@ -3244,26 +3339,37 @@ type TokenDetailed {
   """Token burn amount details."""
   burnt: String!
 
+  """Token canAddSpecialRoles property in case of type MetaESDT."""
+  canAddSpecialRoles: Boolean
+
   """Token canBurn property."""
-  canBurn: Boolean!
+  canBurn: Boolean
 
   """Token canChangeOwner property."""
-  canChangeOwner: Boolean!
+  canChangeOwner: Boolean
 
   """Token canFreeze property."""
-  canFreeze: Boolean!
+  canFreeze: Boolean
 
   """Token canMint property."""
-  canMint: Boolean!
+  canMint: Boolean
 
   """Token canPause property."""
   canPause: Boolean!
 
+  """
+  If the given NFT collection can transfer the underlying tokens by default.
+  """
+  canTransfer: Boolean
+
+  """Token canFreeze property."""
+  canTransferNftCreateRole: Boolean
+
   """Token canUpgrade property."""
   canUpgrade: Boolean!
 
-  """Token canUpgrade property."""
-  canWipe: Boolean!
+  """Token canWipe property."""
+  canWipe: Boolean
 
   """Token circulating supply amount details."""
   circulatingSupply: String
@@ -3304,8 +3410,14 @@ type TokenDetailed {
   """Token ticker."""
   ticker: String!
 
+  """Creation timestamp."""
+  timestamp: Float!
+
   """Tokens transactions."""
   transactions: Float
+
+  """Token type."""
+  type: TokenType!
 }
 
 """TokenRoles object type."""
@@ -3313,11 +3425,29 @@ type TokenRoles {
   """Token address with role."""
   address: String
 
+  """Token canAddQuantity property."""
+  canAddQuantity: Boolean
+
+  """Token canAddUri property."""
+  canAddUri: Boolean
+
+  """Token canBurn property."""
+  canBurn: Boolean
+
+  """Token canCreate property."""
+  canCreate: Boolean
+
   """Token canLocalBurn property."""
-  canLocalBurn: Boolean!
+  canLocalBurn: Boolean
 
   """Token canLocalMint property."""
-  canLocalMint: Boolean!
+  canLocalMint: Boolean
+
+  """Token canTransfer property."""
+  canTransfer: Boolean
+
+  """Token canUpdateAttributes property."""
+  canUpdateAttributes: Boolean
 
   """Token roles details."""
   roles: [String!]!
@@ -3359,18 +3489,18 @@ type TokenSupplyResult {
   supply: String!
 }
 
-"""Token type object type."""
+"""Token Type object."""
 enum TokenType {
-  """Fungible ESDT token type."""
+  """FungibleESDT."""
   FungibleESDT
 
-  """Meta ESDT token type."""
+  """MetaESDT."""
   MetaESDT
 
-  """Non-fungible ESDT token type."""
+  """NonFungibleESDT."""
   NonFungibleESDT
 
-  """Semi-fungible ESDT token type."""
+  """SemiFungibleESDT."""
   SemiFungibleESDT
 }
 
@@ -3694,7 +3824,7 @@ type TransactionOperation {
   decimals: Float
 
   """ESDT type for the transaction operation."""
-  esdtType: TokenType
+  esdtType: EsdtType
 
   """Identifier for the transaction operation."""
   id: ID!
@@ -3722,6 +3852,9 @@ type TransactionOperation {
 
   """SVG URL for the transaction operation."""
   svgUrl: String
+
+  """Token ticker for the transaction operation."""
+  ticker: String!
 
   """Transaction operation type for the transaction operation."""
   type: TransactionOperationType!

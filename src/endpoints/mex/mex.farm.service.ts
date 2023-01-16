@@ -5,7 +5,6 @@ import { QueryPagination } from "src/common/entities/query.pagination";
 import { CacheInfo } from "src/utils/cache.info";
 import { GraphQlService } from "src/common/graphql/graphql.service";
 import { MexFarm } from "./entities/mex.farm";
-import { MexFarmType } from "./entities/mex.farm.type";
 import { MexTokenService } from "./mex.token.service";
 import { MexStakingProxy } from "./entities/mex.staking.proxy";
 
@@ -40,32 +39,91 @@ export class MexFarmService {
     );
   }
 
+  async getMexFarmsCount(): Promise<number> {
+    const mexFarms = await this.getAllMexFarms();
+
+    return mexFarms.length;
+  }
+
   private async getAllMexFarmsRaw(): Promise<MexFarm[]> {
     const query = gql`
       query {
         farms {
-          address
-          farmToken {
-            collection
-            name
-            ticker
-            __typename
+          ... on FarmModelV1_2 {
+            version
+            address
+            farmToken {
+              collection
+              name
+              ticker
+              __typename
+            }
+            farmingToken {
+              name
+              identifier
+              decimals
+              __typename
+            }
+            farmedToken {
+              name
+              identifier
+              decimals
+              __typename
+            }
+            farmTokenPriceUSD
+            farmingTokenPriceUSD
+            farmedTokenPriceUSD
           }
-          farmingToken {
-            name
-            identifier
-            decimals
-            __typename
+          ... on FarmModelV1_3 {
+            version
+            address
+            farmToken {
+              collection
+              name
+              ticker
+              __typename
+            }
+            farmingToken {
+              name
+              identifier
+              decimals
+              __typename
+            }
+            farmedToken {
+              name
+              identifier
+              decimals
+              __typename
+            }
+            farmTokenPriceUSD
+            farmingTokenPriceUSD
+            farmedTokenPriceUSD
           }
-          farmedToken {
-            name
-            identifier
-            decimals
-            __typename
+          ... on FarmModelV2 {
+            version
+            address
+            farmToken {
+              collection
+              name
+              ticker
+              __typename
+            }
+            farmingToken {
+              name
+              identifier
+              decimals
+              __typename
+            }
+            farmedToken {
+              name
+              identifier
+              decimals
+              __typename
+            }
+            farmTokenPriceUSD
+            farmingTokenPriceUSD
+            farmedTokenPriceUSD
           }
-          farmTokenPriceUSD
-          farmingTokenPriceUSD
-          farmedTokenPriceUSD
         }
         stakingFarms {
           address
@@ -85,61 +143,16 @@ export class MexFarmService {
       }
     `;
 
-    const result: any = await this.graphQlService.getData(query, {});
-    if (!result) {
+    const response: any = await this.graphQlService.getData(query, {});
+    if (!response) {
       return [];
     }
 
     const pairs = await this.mexTokenService.getIndexedMexTokens();
 
-    const farms = result.farms.map((farm: any) => {
-      let price = Number(farm.farmTokenPriceUSD);
+    const farms = response.farms.map((farmResponse: any) => MexFarm.fromFarmQueryResponse(farmResponse));
 
-      const symbol = farm.farmToken.collection.split('-')[0];
-      if (['EGLDUSDCF', 'EGLDUSDCFL'].includes(symbol)) {
-        price = price / (10 ** 12) * 2;
-      }
-
-      const mexFarm = new MexFarm();
-      mexFarm.type = MexFarmType.standard;
-      mexFarm.address = farm.address;
-      mexFarm.id = farm.farmToken.collection;
-      mexFarm.symbol = symbol;
-      mexFarm.name = farm.farmToken.name;
-      mexFarm.price = price;
-      mexFarm.farmingId = farm.farmingToken.identifier;
-      mexFarm.farmingSymbol = farm.farmingToken.identifier.split('-')[0];
-      mexFarm.farmingName = farm.farmingToken.name;
-      mexFarm.farmingPrice = Number(farm.farmingTokenPriceUSD);
-      mexFarm.farmedId = farm.farmedToken.identifier;
-      mexFarm.farmedSymbol = farm.farmedToken.identifier.split('-')[0];
-      mexFarm.farmedName = farm.farmedToken.name;
-      mexFarm.farmedPrice = Number(farm.farmedTokenPriceUSD);
-
-      return mexFarm;
-    });
-
-    const stakingFarms = result.stakingFarms.map((stakingFarm: any) => {
-      const price = pairs[stakingFarm.farmingToken.identifier]?.price ?? 0;
-
-      const mexFarm = new MexFarm();
-      mexFarm.type = MexFarmType.metastaking;
-      mexFarm.address = stakingFarm.address;
-      mexFarm.id = stakingFarm.farmToken.collection;
-      mexFarm.symbol = stakingFarm.farmToken.collection.split('-')[0];
-      mexFarm.name = stakingFarm.farmToken.name;
-      mexFarm.price = price;
-      mexFarm.farmingId = stakingFarm.farmingToken.identifier;
-      mexFarm.farmingSymbol = stakingFarm.farmingToken.identifier.split('-')[0];
-      mexFarm.farmingName = stakingFarm.farmingToken.name;
-      mexFarm.farmingPrice = price;
-      mexFarm.farmedId = stakingFarm.farmingToken.identifier;
-      mexFarm.farmedSymbol = stakingFarm.farmingToken.identifier.split('-')[0];
-      mexFarm.farmedName = stakingFarm.farmingToken.name;
-      mexFarm.farmedPrice = price;
-
-      return mexFarm;
-    });
+    const stakingFarms = response.stakingFarms.map((stakingFarm: any) => MexFarm.fromStakingFarmResponse(stakingFarm, pairs));
 
     return [...farms, ...stakingFarms];
   }
@@ -165,20 +178,12 @@ export class MexFarmService {
         }
       }`;
 
-    const result: any = await this.graphQlService.getData(query, {});
-    if (!result) {
+    const response: any = await this.graphQlService.getData(query, {});
+    if (!response) {
       return [];
     }
 
-    const stakingProxies = result.stakingProxies.map((stakingProxyRaw: any) => {
-      const stakingProxy = new MexStakingProxy();
-      stakingProxy.address = stakingProxyRaw.address;
-      stakingProxy.dualYieldTokenName = stakingProxyRaw.dualYieldToken.name;
-      stakingProxy.dualYieldTokenCollection = stakingProxyRaw.dualYieldToken.collection;
-
-      return stakingProxy;
-    });
-
+    const stakingProxies = response.stakingProxies.map((stakingProxyRaw: any) => MexStakingProxy.fromQueryResponse(stakingProxyRaw));
     return stakingProxies;
   }
 }

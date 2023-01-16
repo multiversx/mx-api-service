@@ -4,6 +4,7 @@ import { Injectable } from "@nestjs/common";
 import { NftMetadata } from "src/endpoints/nfts/entities/nft.metadata";
 import { TokenHelpers } from "src/utils/token.helpers";
 import { ApiConfigService } from "../../common/api-config/api.config.service";
+import { NftMetadataErrorCode } from "./entities/nft.metadata.error.code";
 
 @Injectable()
 export class NftExtendedAttributesService {
@@ -59,40 +60,39 @@ export class NftExtendedAttributesService {
     let data: any;
 
     try {
-      result = await this.apiService.get(processedIpfsUri, { timeout: 5000 });
+      result = await this.apiService.get(processedIpfsUri, { timeout: 10000 });
       data = result.data;
     } catch (error: any) {
       const status = error?.status;
       if (status === 400 && error.response) {
-        return this.createError('ipfs_error', `IPFS error when fetching metadata: ${error.response}`);
+        return this.createError(NftMetadataErrorCode.ipfsError, `IPFS error when fetching metadata: ${error.response}`);
       } else if (status === 404) {
-        return this.createError('not_found', 'Metadata file not found on IPFS');
-      } else if (error.message === 'timeout of 5000ms exceeded') {
-        return this.createError('timeout', 'Timeout exceeded when fetching metadata');
+        return this.createError(NftMetadataErrorCode.notFound, 'Metadata file not found on IPFS');
+      } else if (error.message === 'timeout of 10000ms exceeded') {
+        return this.createError(NftMetadataErrorCode.timeout, 'Timeout exceeded when fetching metadata');
       }
 
-      this.logger.error(`Unknown error when fetching metadata '${metadata}'`);
       this.logger.error(error);
-      return this.createError('unknown_error', `Unknown error when fetching metadata '${metadata}'`);
+      return this.createError(NftMetadataErrorCode.unknownError, `Unknown error when fetching metadata '${metadata}'`);
     }
 
     const contentType = result.headers['content-type'];
     if (contentType !== 'application/json') {
-      return this.createError('invalid_content_type', `Invalid content type '${contentType}`);
+      return this.createError(NftMetadataErrorCode.invalidContentType, `Invalid content type '${contentType}`);
     }
 
     if (typeof data === 'string') {
       try {
         data = JSON.parse(data);
       } catch (error) {
-        return this.createError('json_parse_error', 'Error when parsing as JSON');
+        return this.createError(NftMetadataErrorCode.jsonParseError, 'Error when parsing as JSON');
       }
     }
 
     ApiUtils.cleanupApiValueRecursively(data);
 
     if (Object.keys(data).length === 0) {
-      return this.createError('empty_metadata', 'Metadata value is empty');
+      return this.createError(NftMetadataErrorCode.emptyMetadata, 'Metadata value is empty');
     }
 
     if (typeof data !== 'object' && !Array.isArray(data)) {
@@ -102,7 +102,9 @@ export class NftExtendedAttributesService {
     return data;
   }
 
-  private createError(code: string, message: string) {
+  private createError(code: NftMetadataErrorCode, message: string) {
+    this.logger.error(message);
+
     return {
       error: {
         code,

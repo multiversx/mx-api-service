@@ -17,4 +17,7 @@ export class TokenWithBalance extends Token {
   @Field(() => Float, { description: 'ValueUsd token for the given token account.', nullable: true })
   @ApiProperty({ type: Number, nullable: true })
   valueUsd: number | undefined = undefined;
+
+  @ApiProperty({ type: String, nullable: true })
+  attributes: string | undefined = undefined;
 }

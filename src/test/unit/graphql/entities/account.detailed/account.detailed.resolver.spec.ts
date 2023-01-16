@@ -194,6 +194,7 @@ describe.skip(AccountDetailedResolver, () => {
         hasUris: input.hasUris,
         includeFlagged: input.includeFlagged,
       }),
+      undefined,
       new NftQueryOptions({
         withSupply: input.withSupply,
       }),

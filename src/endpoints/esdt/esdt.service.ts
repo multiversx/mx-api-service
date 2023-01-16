@@ -6,23 +6,15 @@ import { VmQueryService } from "src/endpoints/vm.query/vm.query.service";
 import { TokenHelpers } from "src/utils/token.helpers";
 import { ApiConfigService } from "../../common/api-config/api.config.service";
 import { GatewayService } from "../../common/gateway/gateway.service";
-import { MexTokenService } from "../mex/mex.token.service";
-import { TokenAssets } from "../../common/assets/entities/token.assets";
-import { TokenDetailed } from "../tokens/entities/token.detailed";
 import { TokenRoles } from "../tokens/entities/token.roles";
 import { AssetsService } from "../../common/assets/assets.service";
-import { TransactionService } from "../transactions/transaction.service";
 import { EsdtLockedAccount } from "./entities/esdt.locked.account";
 import { EsdtSupply } from "./entities/esdt.supply";
-import { AddressUtils, ApiUtils, BinaryUtils, Constants, NumberUtils, CachingService } from "@elrondnetwork/erdnest";
+import { AddressUtils, BinaryUtils, Constants, CachingService } from "@elrondnetwork/erdnest";
 import { IndexerService } from "src/common/indexer/indexer.service";
-import { TransactionFilter } from "../transactions/entities/transaction.filter";
-import { OriginLogger } from "@elrondnetwork/erdnest";
 
 @Injectable()
 export class EsdtService {
-  private readonly logger = new OriginLogger(EsdtService.name);
-
   constructor(
     private readonly gatewayService: GatewayService,
     private readonly apiConfigService: ApiConfigService,
@@ -31,123 +23,7 @@ export class EsdtService {
     private readonly indexerService: IndexerService,
     @Inject(forwardRef(() => AssetsService))
     private readonly assetsService: AssetsService,
-    @Inject(forwardRef(() => TransactionService))
-    private readonly transactionService: TransactionService,
-    private readonly mexTokenService: MexTokenService,
   ) { }
-
-  async getAllEsdtTokens(): Promise<TokenDetailed[]> {
-    return await this.cachingService.getOrSetCache(
-      CacheInfo.AllEsdtTokens.key,
-      async () => await this.getAllEsdtTokensRaw(),
-      CacheInfo.AllEsdtTokens.ttl
-    );
-  }
-
-  async getAllEsdtTokensRaw(): Promise<TokenDetailed[]> {
-    let tokensIdentifiers: string[];
-    try {
-      const getFungibleTokensResult = await this.gatewayService.get('network/esdt/fungible-tokens', GatewayComponentRequest.allFungibleTokens);
-
-      tokensIdentifiers = getFungibleTokensResult.tokens;
-    } catch (error) {
-      this.logger.error('Error when getting fungible tokens from gateway');
-      this.logger.error(error);
-      return [];
-    }
-
-    const tokensProperties = await this.cachingService.batchProcess(
-      tokensIdentifiers,
-      token => CacheInfo.EsdtProperties(token).key,
-      async (identifier: string) => await this.getEsdtTokenPropertiesRaw(identifier),
-      Constants.oneDay(),
-      true
-    );
-
-    const tokensAssets = await this.cachingService.batchProcess(
-      tokensIdentifiers,
-      token => CacheInfo.EsdtAssets(token).key,
-      async (identifier: string) => await this.getEsdtTokenAssetsRaw(identifier),
-      Constants.oneDay(),
-      true
-    );
-
-    let tokens = tokensProperties.zip(tokensAssets, (first, second) => ApiUtils.mergeObjects(new TokenDetailed, { ...first, assets: second }));
-
-    await this.batchProcessTokens(tokens);
-
-    await this.applyMexPrices(tokens);
-
-    tokens = tokens.sortedDescending(token => token.assets ? 1 : 0, token => token.marketCap ?? 0, token => token.transactions ?? 0);
-
-    return tokens;
-  }
-
-  private async applyMexPrices(tokens: TokenDetailed[]): Promise<void> {
-    try {
-      const indexedTokens = await this.mexTokenService.getMexPricesRaw();
-      for (const token of tokens) {
-        const price = indexedTokens[token.identifier];
-        if (price) {
-          const supply = await this.getTokenSupply(token.identifier);
-
-          if (token.assets && token.identifier.split('-')[0] === 'EGLDUSDC') {
-            price.price = price.price / (10 ** 12) * 2;
-          }
-
-          if (price.isToken) {
-            token.price = price.price;
-            token.marketCap = price.price * NumberUtils.denominateString(supply.circulatingSupply, token.decimals);
-          }
-
-          token.supply = supply.totalSupply;
-          token.circulatingSupply = supply.circulatingSupply;
-        }
-      }
-    } catch (error) {
-      this.logger.error('Could not apply mex tokens prices');
-      this.logger.error(error);
-    }
-  }
-
-  async batchProcessTokens(tokens: TokenDetailed[]) {
-    await this.cachingService.batchApplyAll(
-      tokens,
-      token => CacheInfo.TokenTransactions(token.identifier).key,
-      token => this.getTransactionCount(token),
-      (token, transactions) => token.transactions = transactions,
-      CacheInfo.TokenTransactions('').ttl,
-    );
-
-    await this.cachingService.batchApplyAll(
-      tokens,
-      token => CacheInfo.TokenAccounts(token.identifier).key,
-      token => this.getAccountsCount(token),
-      (token, accounts) => token.accounts = accounts,
-      CacheInfo.TokenAccounts('').ttl,
-    );
-  }
-
-  private async getTransactionCount(token: TokenDetailed): Promise<number> {
-    return await this.transactionService.getTransactionCount(new TransactionFilter({ tokens: [token.identifier, ...token.assets?.extraTokens ?? []] }));
-  }
-
-  private async getAccountsCount(token: TokenDetailed): Promise<number> {
-    let accounts = await this.cachingService.getCacheRemote<number>(CacheInfo.TokenAccountsExtra(token.identifier).key);
-    if (!accounts) {
-      accounts = await this.getEsdtAccountsCount(token.identifier);
-    }
-
-    return accounts;
-  }
-
-  async getEsdtAccountsCount(identifier: string): Promise<number> {
-    return await this.indexerService.getEsdtAccountsCount(identifier);
-  }
-
-  private async getEsdtTokenAssetsRaw(identifier: string): Promise<TokenAssets | undefined> {
-    return await this.assetsService.getTokenAssets(identifier);
-  }
 
   async getEsdtTokenProperties(identifier: string): Promise<TokenProperties | undefined> {
     const properties = await this.cachingService.getOrSetCache(
@@ -409,26 +285,5 @@ export class EsdtService {
 
   async getAccountEsdtByAddressesAndIdentifier(identifier: string, addresses: string[]): Promise<any[]> {
     return await this.indexerService.getAccountEsdtByAddressesAndIdentifier(identifier, addresses);
-  }
-
-  async getTokenMarketCap(): Promise<number> {
-    return await this.cachingService.getOrSetCache(
-      CacheInfo.TokenMarketCap.key,
-      async () => await this.getTokenMarketCapRaw(),
-      CacheInfo.TokenMarketCap.ttl,
-    );
-  }
-
-  async getTokenMarketCapRaw(): Promise<number> {
-    let totalMarketCap = 0;
-
-    const tokens = await this.getAllEsdtTokens();
-    for (const token of tokens) {
-      if (token.price && token.marketCap) {
-        totalMarketCap += token.marketCap;
-      }
-    }
-
-    return totalMarketCap;
   }
 }

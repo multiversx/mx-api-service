@@ -12,4 +12,6 @@ export class TokenWithRolesFilter {
   canMint?: boolean;
 
   canBurn?: boolean;
+
+  includeMetaESDT?: boolean;
 }

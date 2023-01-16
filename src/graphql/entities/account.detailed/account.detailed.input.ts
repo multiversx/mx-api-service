@@ -95,6 +95,9 @@ export class GetNftsAccountInput {
 
   @Field(() => EsdtDataSource, { name: "source", description: "Source to retrieve for the given result set.", nullable: true })
   source: EsdtDataSource | undefined = undefined;
+
+  @Field(() => Boolean, { name: "excludeMetaESDT", description: `Do not include collections of type "MetaESDT" in the responsee for the given result set.`, nullable: true })
+  excludeMetaESDT: boolean | undefined = undefined;
 }
 
 @InputType({ description: "Input to retrieve the given tokens for." })
