@@ -4,18 +4,22 @@ import { NftModule } from 'src/endpoints/nfts/nft.module';
 import { NftWorkerModule } from 'src/queue.worker/nft.worker/nft.worker.module';
 import { ApiConfigModule } from '../api-config/api.config.module';
 import { ApiConfigService } from '../api-config/api.config.service';
-import { RabbitMqNftConsumer } from './rabbitmq.nft.consumer';
+import { RabbitMqConsumer } from './rabbitmq.consumer';
 import { RabbitMqNftHandlerService } from './rabbitmq.nft.handler.service';
+import { RabbitMqEventsHandlerService } from './rabbitmq.events.handler.service';
+import { EventsModule } from '../events/events.module';
 
 @Module({
   imports: [
     ApiConfigModule,
     NftModule,
     NftWorkerModule,
+    EventsModule,
   ],
   providers: [
-    RabbitMqNftConsumer,
+    RabbitMqConsumer,
     RabbitMqNftHandlerService,
+    RabbitMqEventsHandlerService,
   ],
 })
 export class RabbitMqModule {

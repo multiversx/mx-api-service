@@ -25,11 +25,16 @@ flags:
   indexer-v3: true
 features:
   eventsNotifier:
-    enabled: false
+    enabled: true
     port: 5674
     url: 'amqp://guest:guest@127.0.0.1:5672'
     exchange: 'all_events'
     queue: 'api-process-logs-and-events'
+  # This feature depends on eventsNotifier, hence
+  # will use the same exchange and queue
+  liveEventsWebsocket:
+    enabled: true
+    port: 9001
 image:
   width: 600
   height: 600
