@@ -621,6 +621,17 @@ describe('API Config', () => {
     });
   });
 
+  describe("getDataApiUrl", () => {
+    it("should return data api url", () => {
+      jest
+        .spyOn(ConfigService.prototype, "get")
+        .mockImplementation(jest.fn(() => undefined));
+
+      const results = apiConfigService.getDataApiUrl();
+      expect(results).toEqual(undefined);
+    });
+  });
+
   describe("getProvidersUrl", () => {
     it("should return providers url", () => {
       jest
