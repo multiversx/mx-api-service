@@ -149,12 +149,17 @@ export class KeybaseService {
 
   async confirmKeybasesAgainstGithubForIdentity(identity: string): Promise<boolean> {
     try {
-      const result = await this.githubService.getRepoFileContents(identity, 'elrond', 'keys.json');
-      if (!result) {
+      const [elrondResults, multiversxResults] = await Promise.all([
+        this.githubService.getRepoFileContents(identity, 'elrond', 'keys.json'),
+        this.githubService.getRepoFileContents(identity, 'multiversx', 'keys.json'),
+      ]);
+
+      if (!elrondResults && !multiversxResults) {
         return false;
       }
 
-      const keys = JSON.parse(result);
+      //@ts-ignore
+      const keys = multiversxResults ? JSON.parse(multiversxResults) : JSON.parse(elrondResults);
 
       this.logger.log(`github.com validation: for identity '${identity}', found ${keys.length} keys`);
 
@@ -198,26 +203,31 @@ export class KeybaseService {
     const network = this.apiConfigService.getNetwork();
     const networkSuffix = network !== "mainnet" ? `/${network}` : '';
 
-    // eslint-disable-next-line require-await
-    const result = await this.apiService.get(`https://keybase.pub/${identity}/elrond${networkSuffix}`, { timeout: 100000 }, async (error) => error.response?.status === HttpStatus.NOT_FOUND);
+    const [elrondResults, multiversxResults] = await Promise.all([
+      // eslint-disable-next-line require-await
+      this.apiService.get(`https://keybase.pub/${identity}/elrond${networkSuffix}`, { timeout: 100000 }, async (error) => error.response?.status === HttpStatus.NOT_FOUND),
+      // eslint-disable-next-line require-await
+      this.apiService.get(`https://keybase.pub/${identity}/multiversx${networkSuffix}`, { timeout: 100000 }, async (error) => error.response?.status === HttpStatus.NOT_FOUND),
+    ]);
 
-    if (!result) {
+
+    if (!elrondResults && !multiversxResults) {
       this.logger.log(`For identity '${identity}', no keybase.pub entry was found`);
       return;
     }
 
-    const html = result.data;
+    const html = multiversxResults?.data || elrondResults?.data;
 
     const networkRegex = network !== "mainnet" ? `${network}\/` : '';
 
-    const nodesRegex = new RegExp(`https:\/\/keybase.pub\/${identity}\/elrond\/${networkRegex}[0-9a-f]{192}`, 'g');
+    const nodesRegex = new RegExp(`https:\/\/keybase.pub\/${identity}\/(elrond|multiversx)\/${networkRegex}[0-9a-f]{192}`, 'g');
     const blses: string[] = [];
     for (const keybaseUrl of html.match(nodesRegex) || []) {
       const bls = keybaseUrl.match(/[0-9a-f]{192}/)[0];
       blses.push(bls);
     }
 
-    const providersRegex = new RegExp("https:\/\/keybase.pub\/" + identity + "\/elrond\/" + networkRegex + "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqq[0-9a-z]{14}", 'g');
+    const providersRegex = new RegExp("https:\/\/keybase.pub\/" + identity + "\/(elrond|multiversx)\/" + networkRegex + "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqq[0-9a-z]{14}", 'g');
     const addresses: string[] = [];
     for (const keybaseUrl of html.match(providersRegex) || []) {
       const bls = keybaseUrl.match(/erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqq[0-9a-z]{14}/)[0];

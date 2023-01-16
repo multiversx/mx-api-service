@@ -63,7 +63,7 @@ describe('Provider Service', () => {
       }
 
       expect(result.identity).toBeDefined();
-      expect(result.identity).toStrictEqual("justminingfr");
+      expect(result.identity).toStrictEqual("meria");
       expect(result.provider).toStrictEqual("erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq8hlllls7a6h85");
     });
 

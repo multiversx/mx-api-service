@@ -34,7 +34,7 @@ export interface IndexerInterface {
 
   getTransfersCount(filter: TransactionFilter): Promise<number>
 
-  getTokenCountForAddress(address: string): Promise<number>
+  getTokenCountForAddress(address: string, filter: TokenFilter): Promise<number>
 
   getTokenAccountsCount(identifier: string): Promise<number | undefined>
 

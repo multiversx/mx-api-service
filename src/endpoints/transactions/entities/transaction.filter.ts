@@ -26,4 +26,5 @@ export class TransactionFilter {
   order?: SortOrder;
   type?: TransactionType;
   tokens?: string[];
+  senderOrReceiver?: string;
 }

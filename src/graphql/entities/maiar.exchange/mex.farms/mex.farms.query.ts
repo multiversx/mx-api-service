@@ -7,7 +7,7 @@ import { GetMexFarmsInput } from "./mex.farms.input";
 export class MexFarmsQuery {
   constructor(protected readonly mexFarmsService: MexFarmService) { }
 
-  @Query(() => [MexFarm], { name: "mexFarms", description: "Retrieve a list of farms listed on Maiar Exchange." })
+  @Query(() => [MexFarm], { name: "mexFarms", description: "Retrieve a list of farms listed on xExchange." })
   public async getMexFarms(@Args("input", { description: "Input to retrieve the given farms for." }) input: GetMexFarmsInput): Promise<MexFarm[]> {
     return await this.mexFarmsService.getMexFarms(GetMexFarmsInput.resolve(input));
   }

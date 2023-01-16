@@ -5,9 +5,10 @@ import { CollectionService } from "src/endpoints/collections/collection.service"
 import { CollectionFilter } from 'src/endpoints/collections/entities/collection.filter';
 import { PublicAppModule } from "src/public.app.module";
 import { IndexerService } from "src/common/indexer/indexer.service";
-import { NftCollection } from 'src/endpoints/collections/entities/nft.collection';
 import { ElasticService, TokenUtils } from '@elrondnetwork/erdnest';
 import { EsdtAddressService } from 'src/endpoints/esdt/esdt.address.service';
+import { NftType } from 'src/endpoints/nfts/entities/nft.type';
+import { NftCollectionDetailed } from 'src/endpoints/collections/entities/nft.collection.detailed';
 
 describe('Collection Service', () => {
   let collectionService: CollectionService;
@@ -47,6 +48,24 @@ describe('Collection Service', () => {
       const collection = results.map((result) => result.collection);
       expect(collection.includes("SURACING-8f6ed4")).toBeTruthy();
     });
+
+    it('should return a list of collections without collections of type MetaESDT when "excludeMetaESDT" filter is applied', async () => {
+      const filter = new CollectionFilter();
+      filter.excludeMetaESDT = true;
+      const results = await collectionService.getNftCollections(new QueryPagination(), filter);
+
+      for (const result of results) {
+        expect(result.type).not.toEqual("MetaESDT");
+      }
+    });
+
+    it('should return an empty list of collections if excludeMetaESDT and type filters are applied ', async () => {
+      const filter = new CollectionFilter();
+      filter.excludeMetaESDT = true;
+      filter.type = [NftType.MetaESDT];
+      const results = await collectionService.getNftCollections(new QueryPagination(), filter);
+      expect(results).toStrictEqual([]);
+    });
   });
 
   describe('getNftCollectionsByIds', () => {
@@ -70,6 +89,16 @@ describe('Collection Service', () => {
       const results = await collectionService.getNftCollectionCount(new CollectionFilter());
       expect(results).toStrictEqual(5100);
     });
+
+    it('should verifiy if collections count are different when excludeMetaESDT filter is applied', async () => {
+      const filter = new CollectionFilter();
+      filter.excludeMetaESDT = true;
+
+      const results = await collectionService.getNftCollectionCount(new CollectionFilter());
+      const resultsexcludeMetaESDT = await collectionService.getNftCollectionCount(filter);
+
+      expect(resultsexcludeMetaESDT).toBeLessThan(results);
+    });
   });
 
   describe('getNftCollection', () => {
@@ -77,7 +106,7 @@ describe('Collection Service', () => {
       const collectionIdentifier: string = "EBULB-36c762";
       const result = await collectionService.getNftCollection(collectionIdentifier);
 
-      expect(result).toHaveStructure(Object.keys(new NftCollection()));
+      expect(result).toHaveStructure(Object.keys(new NftCollectionDetailed()));
     });
 
     it('should return undefined if collection does not exist', async () => {
@@ -116,11 +145,18 @@ describe('Collection Service', () => {
       const result = await collectionService.getCollectionForAddressWithRole(address, collection);
 
       expect(result).toEqual(expect.objectContaining({
-        collection: collection,
-        owner: address,
+        role: expect.objectContaining({
+          canCreate: true,
+          canBurn: false,
+          canAddQuantity: false,
+          canUpdateAttributes: false,
+          canAddUri: false,
+          canTransfer: undefined,
+          roles: ['ESDTRoleNFTCreate'],
+        }),
+        canTransfer: true,
         canCreate: true,
         canBurn: false,
-        canAddQuantity: undefined,
         canUpdateAttributes: false,
         canAddUri: false,
       }));
@@ -142,14 +178,21 @@ describe('Collection Service', () => {
   describe('getCollectionsWithRolesForAddress', () => {
     it('should return one collection where address has roles', async () => {
       const address: string = "erd1qqqqqqqqqqqqqpgq09vq93grfqy7x5fhgmh44ncqfp3xaw57ys5s7j9fed";
-      const result = await collectionService.getCollectionsWithRolesForAddress(address, new CollectionFilter(), new QueryPagination({ size: 1 }));
+      const results = await collectionService.getCollectionsWithRolesForAddress(address, new CollectionFilter(), new QueryPagination({ size: 1 }));
 
-      expect(result).toEqual(expect.arrayContaining([
+      expect(results).toEqual(expect.arrayContaining([
         expect.objectContaining({
-          owner: address,
+          role: expect.objectContaining({
+            canCreate: true,
+            canBurn: false,
+            canAddQuantity: false,
+            canUpdateAttributes: false,
+            canAddUri: false,
+            canTransfer: undefined,
+          }),
+          canTransfer: true,
           canCreate: true,
           canBurn: false,
-          canAddQuantity: undefined,
           canUpdateAttributes: false,
           canAddUri: false,
         }),

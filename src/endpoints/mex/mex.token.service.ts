@@ -91,11 +91,19 @@ export class MexTokenService {
 
       const settings = await this.mexSettingsService.getSettings();
       if (settings) {
-        const lkmexIdentifier = settings.lockedAssetIdentifier;
-        if (lkmexIdentifier) {
-          const mexToken = tokens.find(x => x.symbol === 'MEX');
-          if (mexToken) {
+        const mexToken = tokens.find(x => x.symbol === 'MEX');
+        if (mexToken) {
+          const lkmexIdentifier = settings.lockedAssetIdentifier;
+          if (lkmexIdentifier) {
             result[lkmexIdentifier] = {
+              price: mexToken.price,
+              isToken: false,
+            };
+          }
+
+          const xmexIdentifier = settings.lockedAssetIdentifierV2;
+          if (xmexIdentifier) {
+            result[xmexIdentifier] = {
               price: mexToken.price,
               isToken: false,
             };
@@ -133,6 +141,12 @@ export class MexTokenService {
     }
 
     return result;
+  }
+
+  async getMexTokensCount(): Promise<number> {
+    const mexTokens = await this.getAllMexTokens();
+
+    return mexTokens.length;
   }
 
   private async getAllMexTokens(): Promise<MexToken[]> {

@@ -6,7 +6,7 @@ import { MexEconomicsService } from "src/endpoints/mex/mex.economics.service";
 export class MexEconomicsQuery {
   constructor(protected readonly mexEconomicsService: MexEconomicsService) { }
 
-  @Query(() => MexEconomics, { name: "mexEconomics", description: "Retrieve economics details of Maiar Exchange." })
+  @Query(() => MexEconomics, { name: "mexEconomics", description: "Retrieve economics details of xExchange." })
   public async getMexEconomics(): Promise<MexEconomics> {
     return await this.mexEconomicsService.getMexEconomics();
   }

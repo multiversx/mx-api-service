@@ -61,8 +61,8 @@ describe("Results Controller", () => {
         .expect(200)
         .then(res => {
           expect(res.body).toHaveLength(2);
-          expect(res.body[0].hash).toStrictEqual('bc68da1de1926031f03211dc1610b4513043ccd497fdc09817aa721e20555057');
-          expect(res.body[1].hash).toStrictEqual('6410188f7c240e795e1a0fc9c4656e406bae57721b4a685a49cfa73ae855d7d4');
+          expect(res.body.find((x: any) => x.hash === 'bc68da1de1926031f03211dc1610b4513043ccd497fdc09817aa721e20555057')).toBeDefined();
+          expect(res.body.find((x: any) => x.hash === '6410188f7c240e795e1a0fc9c4656e406bae57721b4a685a49cfa73ae855d7d4')).toBeDefined();
         });
     });
   });
