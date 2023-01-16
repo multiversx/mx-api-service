@@ -200,7 +200,7 @@ export class CacheInfo {
     const isCurrentDate = moment().format('YYYY-MM-DD') === date;
     return {
       key: `esdt:${metric}:${identifier}:${date}`,
-      ttl: isCurrentDate ? Constants.oneSecond() * 12 : Constants.oneWeek(),
+      ttl: isCurrentDate ? Constants.oneMinute() * 5 : Constants.oneWeek(),
     };
   }
 
