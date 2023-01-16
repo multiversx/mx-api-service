@@ -292,6 +292,10 @@ export class ApiConfigService {
     return isCronActive;
   }
 
+  getIsApiStatusCheckerActive(): boolean {
+    return this.configService.get<boolean>('cron.statusChecker') ?? false;
+  }
+
   getIsElasticUpdaterCronActive(): boolean {
     return this.configService.get<boolean>('cron.elasticUpdater') ?? false;
   }
