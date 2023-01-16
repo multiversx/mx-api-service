@@ -45,33 +45,14 @@ describe('API Config', () => {
     });
   });
 
-  describe('getApiUrl', () => {
-    it("should return api url", () => {
-      jest
-        .spyOn(ConfigService.prototype, "get")
-        .mockImplementation(jest.fn(() => "https://api.elrond.com"));
-
-      const result = apiConfigService.getApiUrl();
-      expect(result).toStrictEqual("https://api.elrond.com");
-    });
-
-    it("should throw error because test simulates that api url is not defined", () => {
-      jest
-        .spyOn(ConfigService.prototype, 'get')
-        .mockImplementation(jest.fn(() => undefined));
-
-      expect(() => apiConfigService.getApiUrl()).toThrowError('No API url present');
-    });
-  });
-
   describe('getDataApiUrl', () => {
     it("should return data api url", () => {
       jest
         .spyOn(ConfigService.prototype, "get")
-        .mockImplementation(jest.fn(() => "https://tools.elrond.com/data-api/graphql"));
+        .mockImplementation(jest.fn(() => "https://tools.multiversx.com/data-api/graphql"));
 
       const result = apiConfigService.getDataApiUrl();
-      expect(result).toStrictEqual("https://tools.elrond.com/data-api/graphql");
+      expect(result).toStrictEqual("https://tools.multiversx.com/data-api/graphql");
     });
   });
 
@@ -656,17 +637,6 @@ describe('API Config', () => {
         .mockImplementation(jest.fn(() => undefined));
 
       expect(() => apiConfigService.getProvidersUrl()).toThrowError('No providers url present');
-    });
-  });
-
-  describe("getDataApiUrl", () => {
-    it("should return data api url", () => {
-      jest
-        .spyOn(ConfigService.prototype, "get")
-        .mockImplementation(jest.fn(() => undefined));
-
-      const results = apiConfigService.getDataApiUrl();
-      expect(results).toEqual(undefined);
     });
   });
 
