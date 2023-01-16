@@ -23,16 +23,16 @@ describe('API Config', () => {
       jest
         .spyOn(ConfigService.prototype, "get")
         .mockImplementation(jest.fn(() => [
-          'https://api.elrond.com',
-          'https://devnet-api.elrond.com',
-          'https://testnet-api.elrond.com',
+          'https://api.multiversx.com',
+          'https://devnet-api.multiversx.com',
+          'https://testnet-api.multiversx.com',
         ]));
 
       const results = apiConfigService.getApiUrls();
       expect(results).toEqual(expect.arrayContaining([
-        'https://api.elrond.com',
-        'https://devnet-api.elrond.com',
-        'https://testnet-api.elrond.com',
+        'https://api.multiversx.com',
+        'https://devnet-api.multiversx.com',
+        'https://testnet-api.multiversx.com',
       ]));
     });
 
@@ -98,10 +98,10 @@ describe('API Config', () => {
     it("should return gateway url", () => {
       jest
         .spyOn(ConfigService.prototype, "get")
-        .mockImplementation(jest.fn(() => ['https://gateway.elrond.com']));
+        .mockImplementation(jest.fn(() => ['https://gateway.multiversx.com']));
 
       const results = apiConfigService.getGatewayUrl();
-      expect(results).toEqual('https://gateway.elrond.com');
+      expect(results).toEqual('https://gateway.multiversx.com');
     });
 
     it("should throw error because test simulates that gateway url is not defined", () => {
@@ -339,10 +339,10 @@ describe('API Config', () => {
     it("should return vm query url", () => {
       jest
         .spyOn(ConfigService.prototype, "get")
-        .mockImplementation(jest.fn(() => ['https://gateway.elrond.com']));
+        .mockImplementation(jest.fn(() => ['https://gateway.multiversx.com']));
 
       const results = apiConfigService.getVmQueryUrl();
-      expect(results).toEqual('https://gateway.elrond.com');
+      expect(results).toEqual('https://gateway.multiversx.com');
     });
 
     it("should throw error because test simulates that vm query url is not defined", () => {
@@ -644,10 +644,10 @@ describe('API Config', () => {
     it("should return providers url", () => {
       jest
         .spyOn(ConfigService.prototype, "get")
-        .mockImplementation(jest.fn(() => 'https://internal-delegation-api.elrond.com/providers'));
+        .mockImplementation(jest.fn(() => 'https://internal-delegation-api.multiversx.com/providers'));
 
       const results = apiConfigService.getProvidersUrl();
-      expect(results).toEqual('https://internal-delegation-api.elrond.com/providers');
+      expect(results).toEqual('https://internal-delegation-api.multiversx.com/providers');
     });
 
     it("should throw error because test simulates that providers url is not defined", () => {
@@ -1609,17 +1609,17 @@ describe('API Config', () => {
       jest
         .spyOn(ConfigService.prototype, "get")
         .mockImplementation(jest.fn(() => [
-          'https://api.elrond.com',
-          'https://devnet-api.elrond.com',
-          'https://testnet-api.elrond.com',
+          'https://api.multiversx.com',
+          'https://devnet-api.multiversx.com',
+          'https://testnet-api.multiversx.com',
         ]));
 
       const results = apiConfigService.getConfig('urls.api');
 
       expect(results).toEqual(expect.arrayContaining([
-        'https://api.elrond.com',
-        'https://devnet-api.elrond.com',
-        'https://testnet-api.elrond.com',
+        'https://api.multiversx.com',
+        'https://devnet-api.multiversx.com',
+        'https://testnet-api.multiversx.com',
       ]));
     });
   });

@@ -16,12 +16,14 @@ import { CacheInfo } from 'src/utils/cache.info';
 import { GatewayComponentRequest } from 'src/common/gateway/entities/gateway.component.request';
 import { NumberUtils, CachingService, ApiService } from '@elrondnetwork/erdnest';
 import { About } from './entities/about';
-import { EsdtService } from '../esdt/esdt.service';
 import { PluginService } from 'src/common/plugins/plugin.service';
+import { TokenService } from '../tokens/token.service';
 
 @Injectable()
 export class NetworkService {
   constructor(
+    @Inject(forwardRef(() => TokenService))
+    private readonly tokenService: TokenService,
     private readonly apiConfigService: ApiConfigService,
     private readonly cachingService: CachingService,
     private readonly gatewayService: GatewayService,
@@ -37,8 +39,6 @@ export class NetworkService {
     private readonly apiService: ApiService,
     @Inject(forwardRef(() => StakeService))
     private readonly stakeService: StakeService,
-    @Inject(forwardRef(() => EsdtService))
-    private readonly esdtService: EsdtService,
     private readonly pluginService: PluginService,
   ) { }
 
@@ -148,7 +148,7 @@ export class NetworkService {
         'getTotalStakeByType',
       ),
       this.pluginsService.getEgldPrice(),
-      this.esdtService.getTokenMarketCapRaw(),
+      this.tokenService.getTokenMarketCapRaw(),
     ]);
 
 

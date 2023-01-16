@@ -9,10 +9,13 @@ cron:
   transactionProcessorMaxLookBehind: 100
   transactionCompleted: false
   transactionCompletedMaxLookBehind: 100
+  transactionBatch: false
+  transactionBatchMaxLookBehind: 100
   cacheWarmer: true
   fastWarm: true
   queueWorker: true
   elasticUpdater: false
+  statusChecker: false
 flags:
   useRequestCaching: true
   useKeepAliveAgent: true
@@ -39,23 +42,23 @@ aws:
   s3Region: ''
 urls:
   api:
-    - 'https://testnet-api.elrond.com'
-    - 'https://devnet-api.elrond.com'
-    - 'https://api.elrond.com'
+    - 'https://testnet-api.multiversx.com'
+    - 'https://devnet-api.multiversx.com'
+    - 'https://api.multiversx.com'
   elastic:
     - 'https://testnet-index.elrond.com'
   gateway:
-    - 'https://testnet-gateway.elrond.com'
+    - 'https://testnet-gateway.multiversx.com'
   redis: '127.0.0.1'
   rabbitmq: 'amqp://127.0.0.1:5672'
-  providers: 'https://testnet-delegation-api.elrond.com/providers'
-  delegation: 'https://testnet-delegation-api.elrond.com'
+  providers: 'https://testnet-delegation-api.multiversx.com/providers'
+  delegation: 'https://testnet-delegation-api.multiversx.com'
   media: 'https://testnet-media.elrond.com'
   nftThumbnails: 'https://testnet-media.elrond.com/nfts/thumbnail'
   tmp: '/tmp'
   ipfs: 'https://ipfs.io/ipfs'
   socket: 'testnet-socket-fra.elrond.com'
-  maiarId: 'https://testnet-id.maiar.com'
+  maiarId: 'https://testnet-id-api.multiversx.com'
   apiUrl: 'https://testnet-api.elrond.com'
   dataApiUrl: 'https://testnet-tools.elrond.com/data-api/graphql'
 signerPrivateKeyPath: ''
