@@ -640,17 +640,6 @@ describe('API Config', () => {
     });
   });
 
-  describe("getDataUrl", () => {
-    it("should return data url", () => {
-      jest
-        .spyOn(ConfigService.prototype, "get")
-        .mockImplementation(jest.fn(() => undefined));
-
-      const results = apiConfigService.getDataUrl();
-      expect(results).toEqual(undefined);
-    });
-  });
-
   describe("getTempUrl", () => {
     it("should return temp url", () => {
       jest
