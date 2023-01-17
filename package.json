@@ -12,6 +12,7 @@
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start:custom": "npm run copy-custom-config & nest start",
+    "start:custom:debug": "npm run copy-custom-config & nest start --watch --debug",
     "start:custom:devnet": "npm run copy-custom-devnet-config & nest start",
     "start:custom:testnet": "npm run copy-custom-testnet-config & nest start",
     "start:custom:mainnet": "npm run copy-custom-mainnet-config & nest start",

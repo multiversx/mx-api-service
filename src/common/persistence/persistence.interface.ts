@@ -17,4 +17,8 @@ export interface PersistenceInterface {
   setMetadata(identifier: string, value: any): Promise<void>
 
   getCollectionTraits(collection: string): Promise<CollectionTrait[] | null>
+
+  getKeybaseConfirmationForIdentity(identity: string): Promise<string[] | undefined>
+
+  setKeybaseConfirmationForIdentity(identity: string, keys: string[]): Promise<void>
 }
