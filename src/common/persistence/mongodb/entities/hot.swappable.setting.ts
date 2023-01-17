@@ -1,8 +1,8 @@
 import { Column, Entity, Index, ObjectIdColumn } from 'typeorm';
 
-@Entity('settings')
+@Entity('hot_swappable_settings')
 @Index(['name'], { unique: true })
-export class SettingDb {
+export class HotSwappableSettingDb {
   // dummy
   @ObjectIdColumn()
   identifier?: string;

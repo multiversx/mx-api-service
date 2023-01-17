@@ -162,8 +162,8 @@ async function configurePublicApp(publicApp: NestExpressApplication, apiConfigSe
   const apiMetricsService = publicApp.get<ApiMetricsService>(ApiMetricsService);
   const pluginService = publicApp.get<PluginService>(PluginService);
   const httpAdapterHostService = publicApp.get<HttpAdapterHost>(HttpAdapterHost);
-  const settingsService = publicApp.get<SettingsService>(SettingsService);
   const cachingService = publicApp.get<CachingService>(CachingService);
+  const settingsService = publicApp.get<SettingsService>(SettingsService);
 
   if (apiConfigService.getIsAuthActive()) {
     publicApp.useGlobalGuards(new JwtOrNativeAuthGuard(new ErdnestConfigServiceImpl(apiConfigService), cachingService));
@@ -256,6 +256,11 @@ async function configurePublicApp(publicApp: NestExpressApplication, apiConfigSe
   const document = SwaggerModule.createDocument(publicApp, config);
   SwaggerModule.setup('docs', publicApp, document, options);
   SwaggerModule.setup('', publicApp, document, options);
+
+  const logger = new Logger('Public App initializer');
+  logger.log(`Use request caching: ${await settingsService.getUseRequestCachingFlag()}`);
+  logger.log(`Use request logging: ${await settingsService.getUseRequestLoggingFlag()}`);
+  logger.log(`Use vm query tracing: ${await settingsService.getUseVmQueryTracingFlag()}`);
 }
 
 // eslint-disable-next-line @typescript-eslint/no-floating-promises

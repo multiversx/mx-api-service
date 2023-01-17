@@ -9,7 +9,7 @@ import { KeybaseConfirmationDb } from "./entities/keybase.confirmation.db";
 import { NftMediaDb } from "./entities/nft.media.db";
 import { NftMetadataDb } from "./entities/nft.metadata.db";
 import { NftTraitSummaryDb } from "./entities/nft.trait.summary.db";
-import { SettingDb } from "./entities/setting.db";
+import { HotSwappableSettingDb } from "./entities/hot.swappable.setting";
 
 @Injectable()
 export class MongoDbService implements PersistenceInterface {
@@ -24,8 +24,8 @@ export class MongoDbService implements PersistenceInterface {
     private readonly keybaseConfirmationRepository: Repository<KeybaseConfirmationDb>,
     @InjectRepository(NftTraitSummaryDb)
     private readonly nftTraitSummaryRepository: Repository<NftTraitSummaryDb>,
-    @InjectRepository(SettingDb)
-    private readonly settingsRepository: Repository<SettingDb>,
+    @InjectRepository(HotSwappableSettingDb)
+    private readonly settingsRepository: Repository<HotSwappableSettingDb>,
   ) { }
 
   async getMetadata(identifier: string): Promise<any | null> {
