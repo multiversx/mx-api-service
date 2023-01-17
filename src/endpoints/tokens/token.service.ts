@@ -19,7 +19,7 @@ import { SortOrder } from "src/common/entities/sort.order";
 import { TokenSort } from "./entities/token.sort";
 import { TokenWithRoles } from "./entities/token.with.roles";
 import { TokenWithRolesFilter } from "./entities/token.with.roles.filter";
-import { AddressUtils, ApiUtils, BinaryUtils, CachingService, Constants, NumberUtils, TokenUtils } from "@elrondnetwork/erdnest";
+import { AddressUtils, ApiUtils, CachingService, Constants, NumberUtils, TokenUtils } from "@elrondnetwork/erdnest";
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { OriginLogger } from "@elrondnetwork/erdnest";
 import { TokenLogo } from "./entities/token.logo";
@@ -276,29 +276,27 @@ export class TokenService {
       return undefined;
     }
 
-    let gatewayUrl = `address/${address}/esdt/${identifier}`;
+
+    let tokenWithBalance: TokenDetailedWithBalance;
 
     if (TokenUtils.isNft(identifier)) {
-      const nonceHex = identifier.split('-').last();
-      const nonceNumeric = BinaryUtils.hexToNumber(nonceHex);
+      const nftData = await this.gatewayService.getAddressNft(address, identifier);
 
-      gatewayUrl = `address/${address}/nft/${esdtIdentifier}/nonce/${nonceNumeric}`;
+      tokenWithBalance = new TokenDetailedWithBalance(nftData);
+    } else {
+      const esdtData = await this.gatewayService.getAddressEsdt(address, identifier);
+
+      tokenWithBalance = new TokenDetailedWithBalance(esdtData);
     }
 
     const token = tokens[0];
     // eslint-disable-next-line require-await
-    const esdt = await this.gatewayService.getAddressEsdtToken(address, identifier);
+    const esdt = await this.gatewayService.getAddressEsdt(address, identifier);
 
     if (!esdt || esdt.balance === '0') {
       return undefined;
     }
 
-    let tokenWithBalance: TokenDetailedWithBalance = {
-      ...token,
-      balance: esdt.tokenData.balance,
-      attributes: esdt.tokenData.attributes,
-      valueUsd: undefined,
-    };
     tokenWithBalance = ApiUtils.mergeObjects(new TokenDetailedWithBalance(), tokenWithBalance);
 
     this.applyValueUsd(tokenWithBalance);
@@ -654,9 +652,7 @@ export class TokenService {
   async getAllTokensRaw(): Promise<TokenDetailed[]> {
     let tokensIdentifiers: string[];
     try {
-      const getFungibleTokensResult = await this.gatewayService.get('network/esdt/fungible-tokens', GatewayComponentRequest.allFungibleTokens);
-
-      tokensIdentifiers = getFungibleTokensResult.tokens;
+      tokensIdentifiers = await this.gatewayService.getEsdtFungibleTokens();
     } catch (error) {
       this.logger.error('Error when getting fungible tokens from gateway');
       this.logger.error(error);

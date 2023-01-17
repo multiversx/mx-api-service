@@ -1,4 +1,4 @@
-import { ApiService, ApiSettings, PerformanceProfiler } from "@elrondnetwork/erdnest";
+import { ApiService, ApiSettings, BinaryUtils, PerformanceProfiler } from "@elrondnetwork/erdnest";
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { ApiConfigService } from "../api-config/api.config.service";
 import { ApiMetricsService } from "../metrics/api.metrics.service";
@@ -11,6 +11,7 @@ import { HeartBeatsStatus } from "./entities/heartbeats.status";
 import { NetworkConfig } from "./entities/network.config";
 import { NetworkEconomics } from "./entities/network.economics";
 import { NetworkStatus } from "./entities/network.status";
+import { NftData } from "./entities/nft.data";
 import { TokenData } from "./entities/token.data";
 import { Transaction } from "./entities/transaction";
 
@@ -70,7 +71,7 @@ export class GatewayService {
     return result;
   }
 
-  async getAddressEsdtToken(address: string, identifier: string): Promise<TokenData> {
+  async getAddressEsdt(address: string, identifier: string): Promise<TokenData> {
     // eslint-disable-next-line require-await
     const result = await this.get(`address/${address}/esdt/${identifier}`, GatewayComponentRequest.addressEsdtBalance, async (error) => {
       const errorMessage = error?.response?.data?.error;
@@ -80,7 +81,26 @@ export class GatewayService {
 
       return false;
     });
-    return result.tokenData;
+
+    return new TokenData(result.tokenData);
+  }
+
+  async getAddressNft(address: string, identifier: string): Promise<NftData> {
+    const esdtIdentifier = identifier.split('-').slice(0, 2).join('-');
+    const nonceHex = identifier.split('-').last();
+    const nonceNumeric = BinaryUtils.hexToNumber(nonceHex);
+
+    // eslint-disable-next-line require-await
+    const result = await this.get(`address/${address}/nft/${esdtIdentifier}/nonce/${nonceNumeric}`, GatewayComponentRequest.addressNftByNonce, async (error) => {
+      const errorMessage = error?.response?.data?.error;
+      if (errorMessage && errorMessage.includes('account was not found')) {
+        return true;
+      }
+
+      return false;
+    });
+
+    return new NftData(result.tokenData);
   }
 
   async getTransaction(txHash: string): Promise<Transaction> {
