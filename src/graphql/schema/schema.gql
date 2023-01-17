@@ -3517,20 +3517,26 @@ type TokenWithBalanceAccountFlat {
   """Token burnt details."""
   burnt: String!
 
+  """Token canAddSpecialRoles property in case of type MetaESDT."""
+  canAddSpecialRoles: Boolean
+
   """Token canBurn property."""
-  canBurn: Boolean!
+  canBurn: Boolean
 
   """Token canChangeOwner property."""
-  canChangeOwner: Boolean!
+  canChangeOwner: Boolean
 
   """Token canFreeze property."""
-  canFreeze: Boolean!
+  canFreeze: Boolean
 
   """Token canMint property."""
-  canMint: Boolean!
+  canMint: Boolean
 
   """Token canPause property."""
   canPause: Boolean!
+
+  """Token canFreeze property."""
+  canTransferNftCreateRole: Boolean
 
   """Token canUpgrade property."""
   canUpgrade: Boolean!
@@ -3571,8 +3577,14 @@ type TokenWithBalanceAccountFlat {
   """Token ticker."""
   ticker: String!
 
+  """Creation timestamp."""
+  timestamp: Float!
+
   """Tokens transactions."""
   transactions: Float
+
+  """Token type."""
+  type: TokenType!
 
   """ValueUsd token for the given token account."""
   valueUsd: Float

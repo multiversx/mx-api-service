@@ -177,8 +177,9 @@ export class CacheWarmerService {
   }
 
   async handleKeybaseAgainstKeybasePubInvalidations() {
-    await Locker.lock('Keybase against keybase.pub / keybase.io invalidations', async () => {
-      await this.keybaseService.confirmKeybasesAgainstKeybasePub();
+    await Locker.lock('Keybase against database / keybase.pub / keybase.io invalidations', async () => {
+      await this.keybaseService.confirmKeybasesAgainstDatabase();
+      await this.keybaseService.confirmKeybasesAgainstGithubOrKeybasePub();
       await this.keybaseService.confirmIdentityProfilesAgainstKeybaseIo();
 
       await this.handleKeybaseAgainstCacheInvalidations();

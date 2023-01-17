@@ -5,7 +5,6 @@ import { Keybase } from "./entities/keybase";
 import { KeybaseIdentity } from "./entities/keybase.identity";
 import { KeybaseState } from "./entities/keybase.state";
 import { CacheInfo } from "../../utils/cache.info";
-import asyncPool from "tiny-async-pool";
 import { GithubService } from "../github/github.service";
 import { ApiService, ApiUtils, CachingService, Constants, OriginLogger } from "@elrondnetwork/erdnest";
 import { ApiConfigService } from "../api-config/api.config.service";
@@ -93,7 +92,7 @@ export class KeybaseService {
     return keybaseGetResults.filter(x => x !== undefined && x !== null);
   }
 
-  async confirmKeybasesAgainstKeybasePub(): Promise<void> {
+  private async getDistinctIdentities(): Promise<string[]> {
     const providerKeybases: Keybase[] = await this.getProvidersKeybasesRaw();
     const nodeKeybases: Keybase[] = await this.getNodesKeybasesRaw();
 
@@ -101,19 +100,26 @@ export class KeybaseService {
 
     const distinctIdentities = allKeybases.map(x => x.identity ?? '').filter(x => x !== '').distinct().shuffle();
 
-    await asyncPool(
-      1,
-      distinctIdentities,
-      identity => this.confirmKeybasesForIdentity(identity)
-    );
+    return distinctIdentities;
   }
 
-  async confirmKeybasesForIdentity(identity: string): Promise<void> {
-    const databaseSuccess = await this.confirmKeybasesAgainstDatabaseForIdentity(identity);
-    if (databaseSuccess) {
-      return;
-    }
+  async confirmKeybasesAgainstDatabase(): Promise<void> {
+    const distinctIdentities = await this.getDistinctIdentities();
 
+    for (const identity of distinctIdentities) {
+      await this.confirmKeybasesAgainstDatabaseForIdentity(identity);
+    }
+  }
+
+  async confirmKeybasesAgainstGithubOrKeybasePub(): Promise<void> {
+    const distinctIdentities = await this.getDistinctIdentities();
+
+    for (const identity of distinctIdentities) {
+      await this.confirmKeybasesAgainstGithubOrKeybasePubForIdentity(identity);
+    }
+  }
+
+  async confirmKeybasesAgainstGithubOrKeybasePubForIdentity(identity: string): Promise<void> {
     const githubSuccess = await this.confirmKeybasesAgainstGithubForIdentity(identity);
     if (githubSuccess) {
       return;
