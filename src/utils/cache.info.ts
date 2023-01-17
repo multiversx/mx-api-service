@@ -196,10 +196,10 @@ export class CacheInfo {
     };
   }
 
-  static HistoricalQuoteMetric(metric: 'price' | 'market_cap', identifier: string, date: string): CacheInfo {
-    const isCurrentDate = moment().format('YYYY-MM-DD') === date;
+  static HistoricalPrice(identifier: string, date: Date): CacheInfo {
+    const isCurrentDate = moment().startOf('day').isSame(date, 'date');
     return {
-      key: `esdt:${metric}:${identifier}:${date}`,
+      key: `historical-price:${identifier}:${moment(date).format('YYYY-MM-DD')}`,
       ttl: isCurrentDate ? Constants.oneMinute() * 5 : Constants.oneWeek(),
     };
   }

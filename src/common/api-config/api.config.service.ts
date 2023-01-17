@@ -727,14 +727,10 @@ export class ApiConfigService {
   }
 
   getDataApiUrl(): string | undefined {
-    return this.configService.get<string>('urls.dataApiUrl');
+    return this.configService.get<string | undefined>('urls.dataApiUrl');
   }
 
-  getSignerPrivateKeyPath(): string {
-    const signerPrivateKeyPath = this.configService.get<string>('signerPrivateKeyPath');
-    if (!signerPrivateKeyPath) {
-      throw new Error('No signerPrivateKeyPath present');
-    }
-    return signerPrivateKeyPath;
+  getSignerPrivateKeyPath(): string | undefined {
+    return this.configService.get<string | undefined>('signerPrivateKeyPath');
   }
 }
