@@ -29,6 +29,7 @@ import { BatchTransactionProcessorModule } from './crons/transaction.processor/b
 import { GraphqlComplexityInterceptor } from './graphql/interceptors/graphql.complexity.interceptor';
 import { GraphQLMetricsInterceptor } from './graphql/interceptors/graphql.metrics.interceptor';
 import { ApiMetricsService } from './common/metrics/api.metrics.service';
+import { SettingsService } from './common/settings/settings.service';
 import { StatusCheckerModule } from './crons/status.checker/status.checker.module';
 import { JwtOrNativeAuthGuard } from './utils/jwt.or.native.auth.guard';
 
@@ -141,10 +142,7 @@ async function bootstrap() {
   logger.log(`Elastic updater active: ${apiConfigService.getIsElasticUpdaterCronActive()}`);
   logger.log(`Events notifier active: ${apiConfigService.isEventsNotifierFeatureActive()}`);
 
-  logger.log(`Use request caching: ${apiConfigService.getUseRequestCachingFlag()}`);
-  logger.log(`Use request logging: ${apiConfigService.getUseRequestLoggingFlag()}`);
   logger.log(`Use tracing: ${apiConfigService.getUseTracingFlag()}`);
-  logger.log(`Use vm query tracing: ${apiConfigService.getUseVmQueryTracingFlag()}`);
   logger.log(`Process NFTs flag: ${apiConfigService.getIsProcessNftsFlagActive()}`);
   logger.log(`Indexer v3 flag: ${apiConfigService.getIsIndexerV3FlagActive()}`);
   logger.log(`Staking v4 enabled: ${apiConfigService.isStakingV4Enabled()}`);
@@ -165,6 +163,7 @@ async function configurePublicApp(publicApp: NestExpressApplication, apiConfigSe
   const pluginService = publicApp.get<PluginService>(PluginService);
   const httpAdapterHostService = publicApp.get<HttpAdapterHost>(HttpAdapterHost);
   const cachingService = publicApp.get<CachingService>(CachingService);
+  const settingsService = publicApp.get<SettingsService>(SettingsService);
 
   if (apiConfigService.getIsAuthActive()) {
     publicApp.useGlobalGuards(new JwtOrNativeAuthGuard(new ErdnestConfigServiceImpl(apiConfigService), cachingService));
@@ -186,8 +185,8 @@ async function configurePublicApp(publicApp: NestExpressApplication, apiConfigSe
   // @ts-ignore
   globalInterceptors.push(new LoggingInterceptor(metricsService));
 
-  if (apiConfigService.getUseRequestCachingFlag()) {
-
+  const getUseRequestCachingFlag = await settingsService.getUseRequestCachingFlag();
+  if (getUseRequestCachingFlag) {
     const cachingInterceptor = new CachingInterceptor(
       cachingService,
       // @ts-ignore
@@ -199,7 +198,8 @@ async function configurePublicApp(publicApp: NestExpressApplication, apiConfigSe
     globalInterceptors.push(cachingInterceptor);
   }
 
-  if (apiConfigService.getUseRequestLoggingFlag()) {
+  const getUseRequestLoggingFlag = await settingsService.getUseRequestLoggingFlag();
+  if (getUseRequestLoggingFlag) {
     // @ts-ignore
     globalInterceptors.push(new LogRequestsInterceptor(httpAdapterHostService));
   }
@@ -256,6 +256,11 @@ async function configurePublicApp(publicApp: NestExpressApplication, apiConfigSe
   const document = SwaggerModule.createDocument(publicApp, config);
   SwaggerModule.setup('docs', publicApp, document, options);
   SwaggerModule.setup('', publicApp, document, options);
+
+  const logger = new Logger('Public App initializer');
+  logger.log(`Use request caching: ${await settingsService.getUseRequestCachingFlag()}`);
+  logger.log(`Use request logging: ${await settingsService.getUseRequestLoggingFlag()}`);
+  logger.log(`Use vm query tracing: ${await settingsService.getUseVmQueryTracingFlag()}`);
 }
 
 // eslint-disable-next-line @typescript-eslint/no-floating-promises

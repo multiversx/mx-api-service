@@ -9,6 +9,7 @@ import { KeybaseConfirmationDb } from "./entities/keybase.confirmation.db";
 import { NftMediaDb } from "./entities/nft.media.db";
 import { NftMetadataDb } from "./entities/nft.metadata.db";
 import { NftTraitSummaryDb } from "./entities/nft.trait.summary.db";
+import { HotSwappableSettingDb } from "./entities/hot.swappable.setting";
 
 @Injectable()
 export class MongoDbService implements PersistenceInterface {
@@ -23,6 +24,8 @@ export class MongoDbService implements PersistenceInterface {
     private readonly keybaseConfirmationRepository: Repository<KeybaseConfirmationDb>,
     @InjectRepository(NftTraitSummaryDb)
     private readonly nftTraitSummaryRepository: Repository<NftTraitSummaryDb>,
+    @InjectRepository(HotSwappableSettingDb)
+    private readonly settingsRepository: Repository<HotSwappableSettingDb>,
   ) { }
 
   async getMetadata(identifier: string): Promise<any | null> {
@@ -185,6 +188,43 @@ export class MongoDbService implements PersistenceInterface {
       this.logger.error(`An unexpected error occurred when fetching NFT trait summary from DB for collection identifier '${collection}'`);
       this.logger.error(error);
       return null;
+    }
+  }
+
+  async getSetting<T>(name: string): Promise<T | undefined> {
+    try {
+      const setting = await this.settingsRepository.findOne({ where: { name } });
+      if (!setting) {
+        return undefined;
+      }
+
+      return JSON.parse(setting.value) as T;
+    } catch {
+      return undefined;
+    }
+  }
+
+  async setSetting<T>(name: string, value: T): Promise<void> {
+    let item = await this.settingsRepository.findOne({ where: { name } });
+    if (!item) {
+      item = new HotSwappableSettingDb();
+    }
+
+    item.name = name;
+    item.value = value;
+
+    await this.save(this.settingsRepository, item);
+  }
+
+  async getAllSettings(): Promise<{ name: string, value: any }[]> {
+    try {
+      const settings = await this.settingsRepository.find();
+      return settings.map(setting => ({
+        name: setting.name,
+        value: setting.value,
+      }));
+    } catch {
+      return [];
     }
   }
 }
