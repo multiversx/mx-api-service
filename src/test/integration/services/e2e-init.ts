@@ -69,7 +69,7 @@ export default class Initializer {
         // eslint-disable-next-line require-await
         .mockImplementation(jest.fn(async () => queue));
 
-      jest.spyOn(KeybaseService.prototype, 'confirmKeybasesAgainstKeybasePub')
+      jest.spyOn(KeybaseService.prototype, 'confirmKeybasesAgainstGithubOrKeybasePub')
         .mockImplementation(jest.fn(async () => {
           const providers = await providerService.getProviderAddresses();
           for (const provider of providers) {
