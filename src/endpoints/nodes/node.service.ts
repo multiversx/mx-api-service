@@ -257,7 +257,7 @@ export class NodeService {
   }
 
   private async getNodesOwnerAndProvider(nodes: Node[]) {
-    const blses = nodes.filter(node => node.type === NodeType.validator).map(node => node.bls);
+    const blses = nodes.map(node => node.bls);
     const epoch = await this.blockService.getCurrentEpoch();
     const owners = await this.getOwners(blses, epoch);
 
@@ -529,6 +529,9 @@ export class NodeService {
       } else if (validatorStatus && validatorStatus.includes('leaving')) {
         nodeType = NodeType.validator;
         nodeStatus = NodeStatus.leaving;
+      } else if (validatorStatus === 'inactive') {
+        nodeType = NodeType.validator;
+        nodeStatus = NodeStatus.inactive;
       } else if (peerType === 'observer') {
         nodeType = NodeType.observer;
         nodeStatus = undefined;

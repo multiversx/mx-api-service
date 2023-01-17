@@ -14,6 +14,7 @@ export class SCCallActionRecognizerService implements TransactionActionRecognize
     'ESDTNFTAddQuantity',
     'ESDTNFTAddURI',
     'ESDTNFTUpdateAttributes',
+    'SaveKeyValue',
   ];
 
   // eslint-disable-next-line require-await

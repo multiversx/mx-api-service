@@ -5,23 +5,15 @@ import { VmQueryService } from "src/endpoints/vm.query/vm.query.service";
 import { TokenHelpers } from "src/utils/token.helpers";
 import { ApiConfigService } from "../../common/api-config/api.config.service";
 import { GatewayService } from "../../common/gateway/gateway.service";
-import { MexTokenService } from "../mex/mex.token.service";
-import { TokenAssets } from "../../common/assets/entities/token.assets";
-import { TokenDetailed } from "../tokens/entities/token.detailed";
 import { TokenRoles } from "../tokens/entities/token.roles";
 import { AssetsService } from "../../common/assets/assets.service";
-import { TransactionService } from "../transactions/transaction.service";
 import { EsdtLockedAccount } from "./entities/esdt.locked.account";
 import { EsdtSupply } from "./entities/esdt.supply";
-import { AddressUtils, ApiUtils, BinaryUtils, Constants, NumberUtils, CachingService } from "@elrondnetwork/erdnest";
+import { AddressUtils, BinaryUtils, Constants, CachingService } from "@elrondnetwork/erdnest";
 import { IndexerService } from "src/common/indexer/indexer.service";
-import { TransactionFilter } from "../transactions/entities/transaction.filter";
-import { OriginLogger } from "@elrondnetwork/erdnest";
 
 @Injectable()
 export class EsdtService {
-  private readonly logger = new OriginLogger(EsdtService.name);
-
   constructor(
     private readonly gatewayService: GatewayService,
     private readonly apiConfigService: ApiConfigService,
@@ -30,9 +22,6 @@ export class EsdtService {
     private readonly indexerService: IndexerService,
     @Inject(forwardRef(() => AssetsService))
     private readonly assetsService: AssetsService,
-    @Inject(forwardRef(() => TransactionService))
-    private readonly transactionService: TransactionService,
-    private readonly mexTokenService: MexTokenService,
   ) { }
 
   async getAllEsdtTokens(): Promise<TokenDetailed[]> {
@@ -408,26 +397,5 @@ export class EsdtService {
 
   async getAccountEsdtByAddressesAndIdentifier(identifier: string, addresses: string[]): Promise<any[]> {
     return await this.indexerService.getAccountEsdtByAddressesAndIdentifier(identifier, addresses);
-  }
-
-  async getTokenMarketCap(): Promise<number> {
-    return await this.cachingService.getOrSetCache(
-      CacheInfo.TokenMarketCap.key,
-      async () => await this.getTokenMarketCapRaw(),
-      CacheInfo.TokenMarketCap.ttl,
-    );
-  }
-
-  async getTokenMarketCapRaw(): Promise<number> {
-    let totalMarketCap = 0;
-
-    const tokens = await this.getAllEsdtTokens();
-    for (const token of tokens) {
-      if (token.price && token.marketCap) {
-        totalMarketCap += token.marketCap;
-      }
-    }
-
-    return totalMarketCap;
   }
 }
