@@ -70,6 +70,10 @@ export class PersistenceService implements PersistenceInterface {
     return await this.execute(this.getSetting.name, this.persistenceInterface.getSetting(name));
   }
 
+  async setSetting<T>(name: string, value: T): Promise<void> {
+    return await this.execute(this.setSetting.name, this.persistenceInterface.setSetting(name, value));
+  }
+
   async getAllSettings(): Promise<{ name: string, value: any }[]> {
     return await this.execute(this.getAllSettings.name, this.persistenceInterface.getAllSettings());
   }

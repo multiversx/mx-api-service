@@ -24,5 +24,7 @@ export interface PersistenceInterface {
 
   getSetting<T>(name: string): Promise<T | undefined>
 
+  setSetting<T>(name: string, value: T): Promise<void>
+
   getAllSettings(): Promise<{ name: string, value: any }[]>
 }

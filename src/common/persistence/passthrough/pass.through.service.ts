@@ -52,6 +52,10 @@ export class PassThroughService implements PersistenceInterface {
     return undefined;
   }
 
+  async setSetting<T>(_name: string, _value: T): Promise<void> {
+
+  }
+
   async getAllSettings(): Promise<{ name: string, value: any }[]> {
     return [];
   }

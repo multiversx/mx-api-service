@@ -14,15 +14,15 @@ export class SettingsService {
   ) { }
 
   async getUseRequestCachingFlag(): Promise<boolean> {
-    return await this.getSetting<boolean>('USE_REQUEST_CACHING', this.apiConfigService.getUseRequestCachingFlag());
+    return await this.getSetting<boolean>('UseRequestCaching', this.apiConfigService.getUseRequestCachingFlag());
   }
 
   async getUseRequestLoggingFlag(): Promise<boolean> {
-    return await this.getSetting<boolean>('USE_REQUEST_LOGGING', this.apiConfigService.getUseRequestLoggingFlag());
+    return await this.getSetting<boolean>('UseRequestLogging', this.apiConfigService.getUseRequestLoggingFlag());
   }
 
   async getUseVmQueryTracingFlag(): Promise<boolean> {
-    return await this.getSetting<boolean>('USE_VM_QUERY_TRACING', this.apiConfigService.getUseVmQueryTracingFlag());
+    return await this.getSetting<boolean>('UseVmQueryTracing', this.apiConfigService.getUseVmQueryTracingFlag());
   }
 
   private async getSetting<T>(name: string, fallbackValue: T): Promise<T> {
@@ -30,6 +30,9 @@ export class SettingsService {
       CacheInfo.Setting(name).key,
       async () => {
         const value = await this.persistenceService.getSetting<T>(name);
+        if (!value) {
+          await this.persistenceService.setSetting(name, fallbackValue);
+        }
         return value ?? fallbackValue;
       },
       CacheInfo.Setting(name).ttl,

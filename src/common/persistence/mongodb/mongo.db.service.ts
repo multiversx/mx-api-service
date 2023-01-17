@@ -204,6 +204,18 @@ export class MongoDbService implements PersistenceInterface {
     }
   }
 
+  async setSetting<T>(name: string, value: T): Promise<void> {
+    let item = await this.settingsRepository.findOne({ where: { name } });
+    if (!item) {
+      item = new HotSwappableSettingDb();
+    }
+
+    item.name = name;
+    item.value = value;
+
+    await this.save(this.settingsRepository, item);
+  }
+
   async getAllSettings(): Promise<{ name: string, value: any }[]> {
     try {
       const settings = await this.settingsRepository.find();
