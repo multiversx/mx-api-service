@@ -54,6 +54,14 @@ export class PersistenceService implements PersistenceInterface {
     await this.execute('setMetadata', this.persistenceInterface.setMetadata(identifier, value));
   }
 
+  async getKeybaseConfirmationForIdentity(identity: string): Promise<string[] | undefined> {
+    return await this.execute('getKeybaseConfirmationForIdentity', this.persistenceInterface.getKeybaseConfirmationForIdentity(identity));
+  }
+
+  async setKeybaseConfirmationForIdentity(identity: string, keys: string[]): Promise<void> {
+    await this.execute('setKeybaseConfirmationForIdentity', this.persistenceInterface.setKeybaseConfirmationForIdentity(identity, keys));
+  }
+
   async getCollectionTraits(identifier: string): Promise<CollectionTrait[] | null> {
     return await this.execute(this.getCollectionTraits.name, this.persistenceInterface.getCollectionTraits(identifier));
   }

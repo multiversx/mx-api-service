@@ -26,6 +26,7 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
       - run: npm ci
+      - run: npm run init
       - run: npm test
       - name: Collect code coverage
         run: npm run test:cov

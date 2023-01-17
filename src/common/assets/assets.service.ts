@@ -13,6 +13,7 @@ import { MexSettings } from "src/endpoints/mex/entities/mex.settings";
 import { DnsContracts } from "src/utils/dns.contracts";
 import { NftRankAlgorithm } from "./entities/nft.rank.algorithm";
 import { NftRank } from "./entities/nft.rank";
+import { MexStakingProxy } from "src/endpoints/mex/entities/mex.staking.proxy";
 const rimraf = require("rimraf");
 const path = require('path');
 const fs = require('fs');
@@ -51,7 +52,7 @@ export class AssetsService {
             // Print data
             logger.log(data.toString('utf8'));
           });
-        }).clone('https://github.com/ElrondNetwork/assets.git', localGitPath, undefined, (err) => {
+        }).clone('https://github.com/multiversx/mx-assets.git', localGitPath, undefined, (err) => {
           if (err) {
             reject(err);
           } else {
@@ -183,12 +184,11 @@ export class AssetsService {
     );
   }
 
-  getAllAccountAssetsRaw(providers?: Provider[], identities?: Identity[], pairs?: MexPair[], farms?: MexFarm[], mexSettings?: MexSettings): { [key: string]: AccountAssets } {
+  getAllAccountAssetsRaw(providers?: Provider[], identities?: Identity[], pairs?: MexPair[], farms?: MexFarm[], mexSettings?: MexSettings, stakingProxies?: MexStakingProxy[]): { [key: string]: AccountAssets } {
     const accountAssetsPath = this.getAccountAssetsPath();
     if (!fs.existsSync(accountAssetsPath)) {
       return {};
     }
-
     const fileNames = FileUtils.getFiles(accountAssetsPath);
 
     const allAssets: { [key: string]: AccountAssets } = {};
@@ -199,8 +199,8 @@ export class AssetsService {
         const assets = this.readAccountAssets(assetsPath);
         if (assets.icon) {
           const relativePath = this.getRelativePath(`accounts/icons/${assets.icon}`);
-          assets.iconPng = `https://raw.githubusercontent.com/ElrondNetwork/assets/master/${relativePath}.png`;
-          assets.iconSvg = `https://raw.githubusercontent.com/ElrondNetwork/assets/master/${relativePath}.svg`;
+          assets.iconPng = `https://raw.githubusercontent.com/multiversx/mx-assets/master/${relativePath}.png`;
+          assets.iconSvg = `https://raw.githubusercontent.com/multiversx/mx-assets/master/${relativePath}.svg`;
 
           delete assets.icon;
         }
@@ -231,8 +231,8 @@ export class AssetsService {
     if (pairs) {
       for (const pair of pairs) {
         allAssets[pair.address] = new AccountAssets({
-          name: `Maiar Exchange: ${pair.baseSymbol}/${pair.quoteSymbol} Liquidity Pool`,
-          tags: ['mex', 'liquiditypool'],
+          name: `xExchange: ${pair.baseSymbol}/${pair.quoteSymbol} Liquidity Pool`,
+          tags: ['xexchange', 'liquiditypool'],
         });
       }
     }
@@ -240,8 +240,8 @@ export class AssetsService {
     if (farms) {
       for (const farm of farms) {
         allAssets[farm.address] = new AccountAssets({
-          name: `Maiar Exchange: ${farm.name} Farm`,
-          tags: ['mex', 'farm'],
+          name: `xExchange: ${farm.name} Farm`,
+          tags: ['xexchange', 'farm'],
         });
       }
     }
@@ -250,26 +250,35 @@ export class AssetsService {
       for (const [index, wrapContract] of mexSettings.wrapContracts.entries()) {
         allAssets[wrapContract] = new AccountAssets({
           name: `ESDT: WrappedEGLD Contract Shard ${index}`,
-          tags: ['mex', 'wegld'],
+          tags: ['xexchange', 'wegld'],
         });
       }
 
       allAssets[mexSettings.lockedAssetContract] = new AccountAssets({
-        name: `Maiar Exchange: Locked asset Contract`,
-        tags: ['mex', 'lockedasset'],
+        name: `xExchange: Locked asset Contract`,
+        tags: ['xexchange', 'lockedasset'],
       });
 
       allAssets[mexSettings.distributionContract] = new AccountAssets({
-        name: `Maiar Exchange: Distribution Contract`,
-        tags: ['mex', 'lockedasset'],
+        name: `xExchange: Distribution Contract`,
+        tags: ['xexchange', 'lockedasset'],
       });
+    }
+
+    if (stakingProxies) {
+      for (const stakingProxy of stakingProxies) {
+        allAssets[stakingProxy.address] = new AccountAssets({
+          name: `xExchange: ${stakingProxy.dualYieldTokenName} Contract`,
+          tags: ['xexchange', 'metastaking'],
+        });
+      }
     }
 
     for (const [index, address] of DnsContracts.addresses.entries()) {
       allAssets[address] = new AccountAssets({
-        name: `Elrond DNS: Contract ${index}`,
+        name: `Multiversx DNS: Contract ${index}`,
         tags: ['dns'],
-        icon: 'elrond',
+        icon: 'multiversx',
       });
     }
 

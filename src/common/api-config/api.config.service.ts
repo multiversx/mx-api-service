@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { DatabaseConnectionOptions } from '../persistence/database/entities/connection.options';
+import { DatabaseConnectionOptions } from '../persistence/entities/connection.options';
 
 @Injectable()
 export class ApiConfigService {
@@ -275,6 +275,14 @@ export class ApiConfigService {
     return this.configService.get<number>('cron.transactionCompletedMaxLookBehind') ?? 100;
   }
 
+  getIsTransactionBatchCronActive(): boolean {
+    return this.configService.get<boolean>('cron.transactionBatch') ?? false;
+  }
+
+  getTransactionBatchMaxLookBehind(): number {
+    return this.configService.get<number>('cron.transactionBatchMaxLookBehind') ?? 100;
+  }
+
   getIsCacheWarmerCronActive(): boolean {
     const isCronActive = this.configService.get<boolean>('cron.cacheWarmer');
     if (isCronActive === undefined) {
@@ -282,6 +290,10 @@ export class ApiConfigService {
     }
 
     return isCronActive;
+  }
+
+  getIsApiStatusCheckerActive(): boolean {
+    return this.configService.get<boolean>('cron.statusChecker') ?? false;
   }
 
   getIsElasticUpdaterCronActive(): boolean {

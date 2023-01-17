@@ -1,4 +1,4 @@
-import { Inject, Injectable } from "@nestjs/common";
+import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { Cron, CronExpression, SchedulerRegistry } from "@nestjs/schedule";
 import { IdentitiesService } from "src/endpoints/identities/identities.service";
 import { NodeService } from "src/endpoints/nodes/node.service";
@@ -25,6 +25,7 @@ import AsyncLock from "async-lock";
 import { CachingService, Constants, Locker, OriginLogger } from "@elrondnetwork/erdnest";
 import { DelegationLegacyService } from "src/endpoints/delegation.legacy/delegation.legacy.service";
 import { SettingsService } from "src/common/settings/settings.service";
+import { TokenService } from "src/endpoints/tokens/token.service";
 
 @Injectable()
 export class CacheWarmerService {
@@ -42,6 +43,7 @@ export class CacheWarmerService {
     @Inject('PUBSUB_SERVICE') private clientProxy: ClientProxy,
     private readonly apiConfigService: ApiConfigService,
     private readonly settingsService: SettingsService,
+    @Inject(forwardRef(() => NetworkService))
     private readonly networkService: NetworkService,
     private readonly accountService: AccountService,
     private readonly gatewayService: GatewayService,
@@ -53,6 +55,7 @@ export class CacheWarmerService {
     private readonly mexSettingsService: MexSettingsService,
     private readonly mexFarmsService: MexFarmService,
     private readonly delegationLegacyService: DelegationLegacyService,
+    private readonly tokenService: TokenService,
   ) {
     this.lock = new AsyncLock();
 
@@ -137,7 +140,7 @@ export class CacheWarmerService {
   @Cron(CronExpression.EVERY_MINUTE)
   async handleEsdtTokenInvalidations() {
     await Locker.lock('All Tokens invalidations', async () => {
-      const tokens = await this.esdtService.getAllEsdtTokensRaw();
+      const tokens = await this.tokenService.getAllTokensRaw();
       await this.invalidateKey(CacheInfo.AllEsdtTokens.key, tokens, CacheInfo.AllEsdtTokens.ttl);
     }, true);
   }
@@ -176,8 +179,9 @@ export class CacheWarmerService {
   }
 
   async handleKeybaseAgainstKeybasePubInvalidations() {
-    await Locker.lock('Keybase against keybase.pub / keybase.io invalidations', async () => {
-      await this.keybaseService.confirmKeybasesAgainstKeybasePub();
+    await Locker.lock('Keybase against database / keybase.pub / keybase.io invalidations', async () => {
+      await this.keybaseService.confirmKeybasesAgainstDatabase();
+      await this.keybaseService.confirmKeybasesAgainstGithubOrKeybasePub();
       await this.keybaseService.confirmIdentityProfilesAgainstKeybaseIo();
 
       await this.handleKeybaseAgainstCacheInvalidations();
@@ -238,8 +242,9 @@ export class CacheWarmerService {
       const pairs = await this.mexPairsService.getAllMexPairs();
       const farms = await this.mexFarmsService.getAllMexFarms();
       const settings = await this.mexSettingsService.getSettings();
+      const stakingProxies = await this.mexFarmsService.getAllStakingProxies();
 
-      const accountLabels = await this.assetsService.getAllAccountAssetsRaw(providers, identities, pairs, farms, settings ?? undefined);
+      const accountLabels = await this.assetsService.getAllAccountAssetsRaw(providers, identities, pairs, farms, settings ?? undefined, stakingProxies);
       await this.invalidateKey(CacheInfo.AccountAssets.key, accountLabels, CacheInfo.AccountAssets.ttl);
 
       const collectionRanks = await this.assetsService.getAllCollectionRanksRaw();

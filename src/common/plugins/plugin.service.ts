@@ -2,6 +2,7 @@ import { Injectable } from "@nestjs/common";
 import { NestExpressApplication } from "@nestjs/platform-express";
 import { AccountDetailed } from "src/endpoints/accounts/entities/account.detailed";
 import { NftCollection } from "src/endpoints/collections/entities/nft.collection";
+import { About } from "src/endpoints/network/entities/about";
 import { Nft } from "src/endpoints/nfts/entities/nft";
 import { Transaction } from "src/endpoints/transactions/entities/transaction";
 
@@ -20,4 +21,6 @@ export class PluginService {
   async bootstrapPublicApp(_application: NestExpressApplication): Promise<void> { }
 
   async batchProcessNfts(_nfts: Nft[], _withScamInfo?: boolean): Promise<void> { }
+
+  async processAbout(_about: About): Promise<void> { }
 }

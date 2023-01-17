@@ -58,7 +58,9 @@ describe("collections Controller", () => {
             canWipe: false,
             canPause: false,
             canTransferNftCreateRole: false,
-            roles: [],
+            canChangeOwner: false,
+            canUpgrade: true,
+            canAddSpecialRoles: true,
             traits: [],
           }];
 
@@ -88,7 +90,9 @@ describe("collections Controller", () => {
             canWipe: false,
             canPause: false,
             canTransferNftCreateRole: false,
-            roles: [],
+            canChangeOwner: false,
+            canUpgrade: true,
+            canAddSpecialRoles: true,
             traits: [],
           },
           {
@@ -102,7 +106,9 @@ describe("collections Controller", () => {
             canWipe: false,
             canPause: false,
             canTransferNftCreateRole: false,
-            roles: [],
+            canChangeOwner: true,
+            canUpgrade: true,
+            canAddSpecialRoles: true,
             traits: [],
           },
         ];
@@ -255,7 +261,11 @@ describe("collections Controller", () => {
         canFreeze: false,
         canWipe: false,
         canPause: false,
+        canTransfer: true,
         canTransferNftCreateRole: false,
+        canChangeOwner: false,
+        canUpgrade: true,
+        canAddSpecialRoles: true,
         roles: [
           {
             address: "erd1qqqqqqqqqqqqqpgq8ne37ed06034qxfhm09f03ykjfqwx8s7hvrqackmzt",
@@ -264,7 +274,6 @@ describe("collections Controller", () => {
             canAddQuantity: false,
             canUpdateAttributes: false,
             canAddUri: false,
-            canTransferRole: false,
             roles: [
               "ESDTRoleNFTCreate",
             ],

@@ -2,6 +2,7 @@ import { Module } from "@nestjs/common";
 import { TypeOrmModule, TypeOrmModuleOptions } from "@nestjs/typeorm";
 import { ApiConfigModule } from "../../api-config/api.config.module";
 import { ApiConfigService } from "../../api-config/api.config.service";
+import { KeybaseConfirmationDb } from "./entities/keybase.confirmation.db";
 import { NftMediaDb } from "./entities/nft.media.db";
 import { NftMetadataDb } from "./entities/nft.metadata.db";
 import { NftTraitSummaryDb } from "./entities/nft.trait.summary.db";
@@ -15,7 +16,7 @@ import { MongoDbService } from "./mongo.db.service";
       useFactory: (apiConfigService: ApiConfigService) => {
         const options: TypeOrmModuleOptions = {
           type: 'mongodb',
-          entities: [NftMetadataDb, NftMediaDb, NftTraitSummaryDb, SettingDb],
+          entities: [NftMetadataDb, NftMediaDb, NftTraitSummaryDb, KeybaseConfirmationDb, SettingDb],
           url: apiConfigService.getDatabaseUrl(),
           keepAlive: 120000,
           sslValidate: false,
@@ -28,9 +29,9 @@ import { MongoDbService } from "./mongo.db.service";
       },
       inject: [ApiConfigService],
     }),
-    TypeOrmModule.forFeature([NftMetadataDb, NftMediaDb, NftTraitSummaryDb, SettingDb]),
+    TypeOrmModule.forFeature([NftMetadataDb, NftMediaDb, NftTraitSummaryDb, KeybaseConfirmationDb, SettingDb]),
   ],
   providers: [MongoDbService],
-  exports: [MongoDbService, TypeOrmModule.forFeature([NftMetadataDb, NftMediaDb, NftTraitSummaryDb, SettingDb])],
+  exports: [MongoDbService, TypeOrmModule.forFeature([NftMetadataDb, NftMediaDb, NftTraitSummaryDb, KeybaseConfirmationDb, SettingDb])],
 })
 export class MongoDbModule { }

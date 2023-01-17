@@ -5,6 +5,7 @@ import { CollectionTrait } from "src/endpoints/collections/entities/collection.t
 import { NftMedia } from "src/endpoints/nfts/entities/nft.media";
 import { ObjectLiteral, Repository } from "typeorm";
 import { PersistenceInterface } from "../persistence.interface";
+import { KeybaseConfirmationDb } from "./entities/keybase.confirmation.db";
 import { NftMediaDb } from "./entities/nft.media.db";
 import { NftMetadataDb } from "./entities/nft.metadata.db";
 import { NftTraitSummaryDb } from "./entities/nft.trait.summary.db";
@@ -19,6 +20,8 @@ export class MongoDbService implements PersistenceInterface {
     private readonly nftMetadataRepository: Repository<NftMetadataDb>,
     @InjectRepository(NftMediaDb)
     private readonly nftMediaRepository: Repository<NftMediaDb>,
+    @InjectRepository(KeybaseConfirmationDb)
+    private readonly keybaseConfirmationRepository: Repository<KeybaseConfirmationDb>,
     @InjectRepository(NftTraitSummaryDb)
     private readonly nftTraitSummaryRepository: Repository<NftTraitSummaryDb>,
     @InjectRepository(SettingDb)
@@ -138,6 +141,39 @@ export class MongoDbService implements PersistenceInterface {
     value.content = media;
 
     await this.save(this.nftMediaRepository, value);
+  }
+
+  async getKeybaseConfirmationForIdentity(identity: string): Promise<string[] | undefined> {
+    try {
+      const keybaseConfirmation: KeybaseConfirmationDb | null = await this.keybaseConfirmationRepository.findOne({ where: { identity } });
+      if (!keybaseConfirmation) {
+        return undefined;
+      }
+
+      return keybaseConfirmation.keys;
+    } catch (error) {
+      this.logger.error(`An unexpected error occurred when fetching keybase confirmation from DB for identity '${identity}'`);
+      this.logger.error(error);
+      return undefined;
+    }
+  }
+
+  async setKeybaseConfirmationForIdentity(identity: string, keys: string[]): Promise<void> {
+    try {
+      let keybaseConfirmation = await this.keybaseConfirmationRepository.findOne({ where: { identity } });
+      if (!keybaseConfirmation) {
+        keybaseConfirmation = new KeybaseConfirmationDb();
+      }
+
+      keybaseConfirmation.identity = identity;
+      keybaseConfirmation.keys = keys;
+
+      await this.save(this.keybaseConfirmationRepository, keybaseConfirmation);
+    }
+    catch (error) {
+      this.logger.error(`An unexpected error occurred when setting keybase confirmation from DB for identity '${identity}'`);
+      this.logger.error(error);
+    }
   }
 
   async getCollectionTraits(collection: string): Promise<CollectionTrait[] | null> {
