@@ -1,6 +1,6 @@
 import { Column, Entity, Index, ObjectIdColumn } from 'typeorm';
 
-@Entity('keybase_confirmation')
+@Entity('keybase_confirmations')
 @Index(['identity'], { unique: true })
 export class KeybaseConfirmationDb {
   // dummy
