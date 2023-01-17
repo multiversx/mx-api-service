@@ -66,12 +66,13 @@ describe('API Config', () => {
       expect(result).toStrictEqual("erd1");
     });
 
-    it("should throw error because test simulates that signer private key path is not defined", () => {
+    it("should return undefined", () => {
       jest
         .spyOn(ConfigService.prototype, 'get')
         .mockImplementation(jest.fn(() => undefined));
 
-      expect(() => apiConfigService.getSignerPrivateKeyPath()).toThrowError('No signerPrivateKeyPath present');
+      const result = apiConfigService.getSignerPrivateKeyPath();
+      expect(result).toBeUndefined();
     });
   });
 
