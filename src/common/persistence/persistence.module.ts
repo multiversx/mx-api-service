@@ -6,6 +6,10 @@ import { PassThroughModule } from "./passthrough/pass.through.module";
 import { PassThroughService } from "./passthrough/pass.through.service";
 import { PersistenceInterface } from "./persistence.interface";
 import { PersistenceService } from "./persistence.service";
+import { UserDbService } from "./userdb/user.db.service";
+import { UserDbModule } from "./userdb/user.db.module";
+import { TransactionDbService } from "./transactiondb/transactiondb.service";
+import { TransactionDbModule } from "./transactiondb/transactiondb.module";
 
 @Global()
 @Module({})
@@ -24,6 +28,8 @@ export class PersistenceModule {
       module: PersistenceModule,
       imports: [
         persistenceModule,
+        UserDbModule,
+        TransactionDbModule,
       ],
       providers: [
         {
@@ -31,8 +37,10 @@ export class PersistenceModule {
           useClass: persistenceInterface,
         },
         PersistenceService,
+        UserDbService,
+        TransactionDbService,
       ],
-      exports: ['PersistenceInterface', PersistenceService],
+      exports: ['PersistenceInterface', PersistenceService, UserDbService, TransactionDbService],
     };
   }
 }

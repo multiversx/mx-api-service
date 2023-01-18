@@ -4,7 +4,7 @@ import { NftService } from 'src/endpoints/nfts/nft.service';
 import { ProcessNftSettings } from 'src/endpoints/process-nfts/entities/process.nft.settings';
 import { NftWorkerService } from 'src/queue.worker/nft.worker/nft.worker.service';
 import { CacheInfo } from '../../utils/cache.info';
-import { NotifierEventIdentifier } from './entities/notifier.event.identifier';
+import { NftNotifierEventIdentifier } from './entities/notifier.event.identifier';
 import { NotifierEvent } from './entities/notifier.event';
 import { BinaryUtils, CachingService } from '@elrondnetwork/erdnest';
 import { IndexerService } from '../indexer/indexer.service';
@@ -48,7 +48,7 @@ export class RabbitMqNftHandlerService {
   }
 
   public async handleNftUpdateAttributesEvent(event: NotifierEvent): Promise<boolean | null> {
-    if (event.identifier !== NotifierEventIdentifier.ESDTNFTUpdateAttributes) {
+    if (event.identifier !== NftNotifierEventIdentifier.ESDTNFTUpdateAttributes) {
       return null;
     }
 
@@ -77,7 +77,7 @@ export class RabbitMqNftHandlerService {
   }
 
   public async handleNftCreateEvent(event: NotifierEvent): Promise<boolean | null> {
-    if (event.identifier !== NotifierEventIdentifier.ESDTNFTCreate) {
+    if (event.identifier !== NftNotifierEventIdentifier.ESDTNFTCreate) {
       return null;
     }
 

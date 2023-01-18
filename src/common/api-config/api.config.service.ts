@@ -350,6 +350,14 @@ export class ApiConfigService {
     return exchange;
   }
 
+  getLiveWebsocketEventsAllowedReceivers(): string[] {
+    const receivers = this.configService.get<string[]>('features.liveWebsocketEvents.allowedReceivers');
+    if (!receivers) {
+      throw new Error('No live websocket events allowed receivers present');
+    }
+
+    return receivers;
+  }
   getIsProcessNftsFlagActive(): boolean {
     return this.configService.get<boolean>('flags.processNfts') ?? false;
   }

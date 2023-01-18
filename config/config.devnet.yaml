@@ -32,9 +32,11 @@ features:
     queue: 'api-process-logs-and-events'
   # This feature depends on eventsNotifier, hence
   # will use the same exchange and queue
-  liveEventsWebsocket:
+  liveWebsocketEvents:
     enabled: true
     port: 9001
+    allowedReceivers: 
+     - 'erd196p5utv4r3w2kahnzcqcdht8hwfv92mpvx6qudwl92uvvhp5qezqu88r8h'
 image:
   width: 600
   height: 600
@@ -68,9 +70,9 @@ indexer:
   type: 'elastic'
   maxPagination: 10000
 database:
-  enabled: false
+  enabled: true
+  type: 'mongodb'
   url: 'mongodb://127.0.0.1:27017/api?authSource=admin'
-  type: 'mysql'
   host: 'localhost'
   port: 3306
   username: 'root'
