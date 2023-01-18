@@ -3873,6 +3873,9 @@ type TransactionOperation {
 
   """Value for the transaction operation."""
   value: String
+
+  """Value for the transaction operation in USD."""
+  valueUSD: String
 }
 
 """Transaction operation action object type."""
