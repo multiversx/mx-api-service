@@ -278,18 +278,18 @@ export class TokenService {
 
 
     let tokenWithBalance: TokenDetailedWithBalance;
+    const token = tokens[0];
 
     if (TokenUtils.isNft(identifier)) {
       const nftData = await this.gatewayService.getAddressNft(address, identifier);
 
-      tokenWithBalance = new TokenDetailedWithBalance(nftData);
+      tokenWithBalance = new TokenDetailedWithBalance({ ...token, ...nftData });
     } else {
       const esdtData = await this.gatewayService.getAddressEsdt(address, identifier);
 
-      tokenWithBalance = new TokenDetailedWithBalance(esdtData);
+      tokenWithBalance = new TokenDetailedWithBalance({ ...token, ...esdtData });
     }
 
-    const token = tokens[0];
     // eslint-disable-next-line require-await
     const esdt = await this.gatewayService.getAddressEsdt(address, identifier);
 
