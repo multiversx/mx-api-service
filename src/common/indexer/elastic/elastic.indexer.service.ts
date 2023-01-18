@@ -314,8 +314,7 @@ export class ElasticIndexerService implements IndexerInterface {
   }
 
   async getAccountScResults(address: string, pagination: QueryPagination): Promise<any[]> {
-    const elasticQuery: ElasticQuery = this.indexerHelper.buildSmartContractResultFilterQuery(address);
-    elasticQuery
+    const elasticQuery: ElasticQuery = this.indexerHelper.buildSmartContractResultFilterQuery(address)
       .withPagination(pagination)
       .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }]);
 
@@ -424,10 +423,15 @@ export class ElasticIndexerService implements IndexerInterface {
   }
 
   async getScResultsForTransactions(elasticTransactions: any[]): Promise<any[]> {
+    const hashes = elasticTransactions.filter(x => x.hasScResults === true).map(x => x.txHash);
+    if (hashes.length === 0) {
+      return [];
+    }
+
     const elasticQuery = ElasticQuery.create()
       .withPagination({ from: 0, size: 10000 })
       .withSort([{ name: 'timestamp', order: ElasticSortOrder.ascending }])
-      .withTerms(new TermsQuery('originalTxHash', elasticTransactions.filter(x => x.hasScResults === true).map(x => x.txHash)));
+      .withTerms(new TermsQuery('originalTxHash', hashes));
 
     return await this.elasticService.getList('scresults', 'scHash', elasticQuery);
   }

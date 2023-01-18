@@ -191,7 +191,7 @@ export class CacheInfo {
   static EsdtAssets(identifier: string): CacheInfo {
     return {
       key: `esdt:assets:${identifier}`,
-      ttl: Constants.oneDay(),
+      ttl: Constants.oneHour(),
     };
   }
 
@@ -336,8 +336,8 @@ export class CacheInfo {
     ttl: Constants.oneDay(),
   };
 
-  static LockedTokenID: CacheInfo = {
-    key: "lockedTokenID",
+  static LockedTokenIDs: CacheInfo = {
+    key: "lockedTokenIDs",
     ttl: Constants.oneHour(),
   };
 
@@ -473,6 +473,13 @@ export class CacheInfo {
   static Username(address: string): CacheInfo {
     return {
       key: `username:${address}`,
+      ttl: Constants.oneHour(),
+    };
+  }
+
+  static Setting(name: string): CacheInfo {
+    return {
+      key: `api:settings:${name}`,
       ttl: Constants.oneHour(),
     };
   }

@@ -24,6 +24,7 @@ import { MexFarmService } from "src/endpoints/mex/mex.farm.service";
 import AsyncLock from "async-lock";
 import { CachingService, Constants, Locker, OriginLogger } from "@elrondnetwork/erdnest";
 import { DelegationLegacyService } from "src/endpoints/delegation.legacy/delegation.legacy.service";
+import { SettingsService } from "src/common/settings/settings.service";
 import { TokenService } from "src/endpoints/tokens/token.service";
 
 @Injectable()
@@ -41,6 +42,7 @@ export class CacheWarmerService {
     private readonly cachingService: CachingService,
     @Inject('PUBSUB_SERVICE') private clientProxy: ClientProxy,
     private readonly apiConfigService: ApiConfigService,
+    private readonly settingsService: SettingsService,
     @Inject(forwardRef(() => NetworkService))
     private readonly networkService: NetworkService,
     private readonly accountService: AccountService,
@@ -177,8 +179,9 @@ export class CacheWarmerService {
   }
 
   async handleKeybaseAgainstKeybasePubInvalidations() {
-    await Locker.lock('Keybase against keybase.pub / keybase.io invalidations', async () => {
-      await this.keybaseService.confirmKeybasesAgainstKeybasePub();
+    await Locker.lock('Keybase against database / keybase.pub / keybase.io invalidations', async () => {
+      await this.keybaseService.confirmKeybasesAgainstDatabase();
+      await this.keybaseService.confirmKeybasesAgainstGithubOrKeybasePub();
       await this.keybaseService.confirmIdentityProfilesAgainstKeybaseIo();
 
       await this.handleKeybaseAgainstCacheInvalidations();
@@ -303,6 +306,16 @@ export class CacheWarmerService {
       if (settings) {
         await this.invalidateKey(CacheInfo.MexSettings.key, settings, CacheInfo.MexSettings.ttl);
       }
+    });
+  }
+
+  @Cron(CronExpression.EVERY_10_MINUTES)
+  async handleApiSettings() {
+    await Locker.lock('Api settings invalidations', async () => {
+      const settings = await this.settingsService.getAllSettings();
+      await Promise.all(settings.map(async (setting) => {
+        await this.invalidateKey(CacheInfo.Setting(setting.name).key, setting.value, CacheInfo.Setting(setting.name).ttl);
+      }));
     });
   }
 

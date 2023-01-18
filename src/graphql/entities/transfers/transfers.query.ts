@@ -11,8 +11,9 @@ import { GetTransfersCountInput, GetTransfersInput } from "./transfers.input";
 @Resolver()
 export class TransferQuery {
   constructor(
+    protected readonly apiConfigService: ApiConfigService,
     protected readonly transferService: TransferService,
-    protected readonly apiConfigService: ApiConfigService) { }
+  ) { }
 
   @Query(() => [Transaction], { name: "transfers", description: "Retrieve all transfers for the given input." })
   public async getTransfers(@Args("input", { description: "Input to retreive the given transfers for." }) input: GetTransfersInput): Promise<Transaction[]> {

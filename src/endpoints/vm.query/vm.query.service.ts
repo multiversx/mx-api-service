@@ -8,7 +8,7 @@ import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.com
 import { GatewayService } from "src/common/gateway/gateway.service";
 import { ProtocolService } from "src/common/protocol/protocol.service";
 import { MetricsEvents } from "src/utils/metrics-events.constants";
-
+import { SettingsService } from "src/common/settings/settings.service";
 
 @Injectable()
 export class VmQueryService {
@@ -21,6 +21,8 @@ export class VmQueryService {
     private readonly protocolService: ProtocolService,
     private readonly apiConfigService: ApiConfigService,
     private readonly eventEmitter: EventEmitter2,
+    private readonly settingsService: SettingsService,
+    private readonly metricsService: ApiMetricsService,
   ) { }
 
   private async computeTtls(): Promise<{ localTtl: number, remoteTtl: number; }> {
@@ -112,7 +114,8 @@ export class VmQueryService {
     } finally {
       profiler.stop();
 
-      if (this.apiConfigService.getUseVmQueryTracingFlag()) {
+      const useVmQueryTracingFlag = await this.settingsService.getUseVmQueryTracingFlag();
+      if (useVmQueryTracingFlag) {
         const metricsEvent = new LogMetricsEvent();
         metricsEvent.args = [contract, func, profiler.duration];
         this.eventEmitter.emit(

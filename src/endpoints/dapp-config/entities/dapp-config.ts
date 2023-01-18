@@ -36,7 +36,7 @@ export class DappConfig {
   apiTimeout: string = '';
 
   @Field(() => String, { description: 'Wallet connect url details' })
-  @ApiProperty({ type: String, example: 'https://maiar.page.link/?apn=com.elrond.maiar.wallet&isi=1519405832&ibi=com.elrond.maiar.wallet&link=https://maiar.com/' })
+  @ApiProperty({ type: String, example: 'https://maiar.page.link/?apn=com.multiversx.maiar.wallet&isi=1519405832&ibi=com.multiversx.maiar.wallet&link=https://maiar.com/' })
   walletConnectDeepLink: string = '';
 
   @Field(() => [String], { description: 'Bridge wallet url details' })
@@ -44,15 +44,15 @@ export class DappConfig {
   walletConnectBridgeAddresses: string = '';
 
   @Field(() => String, { description: 'Wallet url details' })
-  @ApiProperty({ type: String, example: 'https://wallet.elrond.com' })
+  @ApiProperty({ type: String, example: 'https://wallet.multiversx.com' })
   walletAddress: string = '';
 
   @Field(() => String, { description: 'Api url details' })
-  @ApiProperty({ type: String, example: 'https://api.elrond.com' })
+  @ApiProperty({ type: String, example: 'https://api.multiversx.com' })
   apiAddress: string = '';
 
   @Field(() => String, { description: 'Explorer address details' })
-  @ApiProperty({ type: String, example: 'https://explorer.elrond.com' })
+  @ApiProperty({ type: String, example: 'https://explorer.multiversx.com' })
   explorerAddress: string = '';
 
   @Field(() => String, { description: 'ChainID details' })
