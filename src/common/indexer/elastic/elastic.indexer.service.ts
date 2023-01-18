@@ -5,7 +5,7 @@ import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { NftType } from "src/endpoints/nfts/entities/nft.type";
 import { CollectionFilter } from "src/endpoints/collections/entities/collection.filter";
 import { QueryPagination } from "src/common/entities/query.pagination";
-import { TokenType } from "src/endpoints/tokens/entities/token.type";
+import { EsdtType } from "src/endpoints/esdt/entities/esdt.type";
 import { BlockFilter } from "src/endpoints/blocks/entities/block.filter";
 import { NftFilter } from "src/endpoints/nfts/entities/nft.filter";
 import { TransactionFilter } from "src/endpoints/transactions/entities/transaction.filter";
@@ -17,6 +17,7 @@ import { TokenFilter } from "src/endpoints/tokens/entities/token.filter";
 import { Block } from "../entities/block";
 import { Tag } from "../entities/tag";
 import { ElasticIndexerHelper } from "./elastic.indexer.helper";
+import { TokenType } from "../entities";
 
 @Injectable()
 export class ElasticIndexerService implements IndexerInterface {
@@ -94,12 +95,23 @@ export class ElasticIndexerService implements IndexerInterface {
     return await this.elasticService.getCount('operations', elasticQuery);
   }
 
-  async getTokenCountForAddress(address: string): Promise<number> {
-    const query = ElasticQuery.create()
-      .withMustNotCondition(QueryType.Exists('identifier'))
+  async getTokenCountForAddress(address: string, filter: TokenFilter): Promise<number> {
+    let query = ElasticQuery.create()
       .withMustCondition(QueryType.Match('address', address));
 
+    query = this.buildTokenFilter(query, filter);
+
     return await this.elasticService.getCount('accountsesdt', query);
+  }
+
+  async getTokensForAddress(address: string, queryPagination: QueryPagination, filter: TokenFilter): Promise<any[]> {
+    let query = ElasticQuery.create()
+      .withMustCondition(QueryType.Match('address', address))
+      .withPagination({ from: queryPagination.from, size: queryPagination.size });
+
+    query = this.buildTokenFilter(query, filter);
+
+    return await this.elasticService.getList('accountsesdt', 'token', query);
   }
 
   async getTokenAccountsCount(identifier: string): Promise<number | undefined> {
@@ -356,11 +368,16 @@ export class ElasticIndexerService implements IndexerInterface {
     return await this.elasticService.getList('transactions', 'txHash', elasticQuery);
   }
 
-  async getTokensForAddress(address: string, queryPagination: QueryPagination, filter: TokenFilter): Promise<any[]> {
-    let query = ElasticQuery.create()
-      .withMustNotCondition(QueryType.Exists('identifier'))
-      .withMustCondition(QueryType.Match('address', address))
-      .withPagination({ from: queryPagination.from, size: queryPagination.size });
+  private buildTokenFilter(query: ElasticQuery, filter: TokenFilter): ElasticQuery {
+    if (filter.includeMetaESDT === true) {
+      query = query.withMustMultiShouldCondition([TokenType.FungibleESDT, TokenType.MetaESDT], type => QueryType.Match('type', type));
+    } else {
+      query = query.withMustNotCondition(QueryType.Exists('identifier'));
+    }
+
+    if (filter.type) {
+      query = query.withMustMatchCondition('type', filter.type);
+    }
 
     if (filter.identifier) {
       query = query.withMustCondition(QueryType.Match('token', filter.identifier));
@@ -378,7 +395,7 @@ export class ElasticIndexerService implements IndexerInterface {
       query = query.withMustCondition(QueryType.Nested('data.name', filter.search));
     }
 
-    return await this.elasticService.getList('accountsesdt', 'token', query);
+    return query;
   }
 
   async getTransactionLogs(hashes: string[]): Promise<any[]> {
@@ -528,7 +545,7 @@ export class ElasticIndexerService implements IndexerInterface {
         'data.uris',
       ])
       .withMustExistCondition('identifier')
-      .withMustMultiShouldCondition([TokenType.NonFungibleESDT, TokenType.SemiFungibleESDT], type => QueryType.Match('type', type))
+      .withMustMultiShouldCondition([EsdtType.NonFungibleESDT, EsdtType.SemiFungibleESDT], type => QueryType.Match('type', type))
       .withPagination({ from: 0, size: 10000 });
 
     return await this.elasticService.getScrollableList('tokens', 'identifier', query, action);
@@ -571,6 +588,11 @@ export class ElasticIndexerService implements IndexerInterface {
     filter: CollectionFilter,
     pagination: QueryPagination
   ): Promise<{ collection: string, count: number, balance: number }[]> {
+    const types = [NftType.SemiFungibleESDT, NftType.NonFungibleESDT];
+    if (!filter.excludeMetaESDT) {
+      types.push(NftType.MetaESDT);
+    }
+
     const elasticQuery = ElasticQuery.create()
       .withMustExistCondition('identifier')
       .withMustMatchCondition('address', address)
@@ -579,7 +601,7 @@ export class ElasticIndexerService implements IndexerInterface {
       .withMustMultiShouldCondition(filter.identifiers, identifier => QueryType.Match('token', identifier, QueryOperator.AND))
       .withSearchWildcardCondition(filter.search, ['token', 'name'])
       .withMustMultiShouldCondition(filter.type, type => QueryType.Match('type', type))
-      .withMustMultiShouldCondition([NftType.SemiFungibleESDT, NftType.NonFungibleESDT, NftType.MetaESDT], type => QueryType.Match('type', type))
+      .withMustMultiShouldCondition(types, type => QueryType.Match('type', type))
       .withExtra({
         aggs: {
           collections: {

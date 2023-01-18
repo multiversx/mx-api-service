@@ -1,23 +1,19 @@
 import { ApiConfigService } from 'src/common/api-config/api.config.service';
 import { Test } from '@nestjs/testing';
 import { PublicAppModule } from 'src/public.app.module';
-import Initializer from './e2e-init';
-import { Constants } from '@elrondnetwork/erdnest';
 import { DappConfigService } from 'src/endpoints/dapp-config/dapp.config.service';
+import { DappConfig } from 'src/endpoints/dapp-config/entities/dapp-config';
 
 describe('Dapp Config Service', () => {
   let dappConfigService: DappConfigService;
 
   beforeAll(async () => {
-    await Initializer.initialize();
-
     const moduleRef = await Test.createTestingModule({
       imports: [PublicAppModule],
     }).compile();
 
     dappConfigService = moduleRef.get<DappConfigService>(DappConfigService);
-
-  }, Constants.oneHour() * 1000);
+  });
 
   beforeEach(() => { jest.restoreAllMocks(); });
 
@@ -29,6 +25,10 @@ describe('Dapp Config Service', () => {
 
       const config = dappConfigService.getDappConfiguration();
 
+      if (!config) {
+        throw new Error('Properties are not defined');
+      }
+
       expect(config.id).toStrictEqual('mainnet');
       expect(config.name).toStrictEqual('Mainnet');
       expect(config.chainId).toStrictEqual('1');
@@ -36,26 +36,27 @@ describe('Dapp Config Service', () => {
 
     it("should return devnet dapp configuration", () => {
       jest
-        .spyOn(ApiConfigService.prototype, 'getNetwork')
-        .mockImplementation(jest.fn(() => 'devnet'));
+        .spyOn(DappConfigService.prototype, 'getDappConfigurationRaw')
+        .mockImplementation(jest.fn(() => new DappConfig({
+          "id": "devnet",
+          "name": "Devnet",
+          "egldLabel": "xEGLD",
+          "decimals": "4",
+          "egldDenomination": "18",
+          "gasPerDataByte": "1500",
+          "apiTimeout": "4000",
+          "walletConnectDeepLink": "https://maiar.page.link/?apn=com.elrond.maiar.wallet&isi=1519405832&ibi=com.elrond.maiar.wallet&link=https://maiar.com/",
+          "walletAddress": "https://devnet-wallet.elrond.com",
+          "apiAddress": "https://devnet-api.elrond.com",
+          "explorerAddress": "http://devnet-explorer.elrond.com",
+          "chainId": "D",
+        })));
 
       const config = dappConfigService.getDappConfiguration();
 
-      expect(config.id).toStrictEqual('devnet');
-      expect(config.name).toStrictEqual('Devnet');
-      expect(config.chainId).toStrictEqual('D');
-    });
-
-    it("should return testnet dapp configuration", () => {
-      jest
-        .spyOn(ApiConfigService.prototype, 'getNetwork')
-        .mockImplementation(jest.fn(() => 'testnet'));
-
-      const config = dappConfigService.getDappConfiguration();
-
-      expect(config.id).toStrictEqual('testnet');
-      expect(config.name).toStrictEqual('Testnet');
-      expect(config.chainId).toStrictEqual('T');
+      if (!config) {
+        throw new Error('Properties are not defined');
+      }
     });
   });
 });

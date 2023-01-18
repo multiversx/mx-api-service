@@ -9,6 +9,8 @@ cron:
   transactionProcessorMaxLookBehind: 100
   transactionCompleted: false
   transactionCompletedMaxLookBehind: 100
+  transactionBatch: false
+  transactionBatchMaxLookBehind: 100
   cacheWarmer: true
   fastWarm: true
   queueWorker: true

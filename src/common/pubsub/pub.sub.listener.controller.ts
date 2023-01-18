@@ -41,4 +41,10 @@ export class PubSubListenerController {
       await this.webSocketPublisherService.onTransactionPendingResults(transaction);
     }
   }
+
+  @EventPattern('onBatchUpdated')
+  async onBatchUpdated(payload: { address: string, batchId: string, txHashes: string[] }) {
+    this.logger.log(`Notifying batch updated for address ${payload.address}, batch id '${payload.batchId}', hashes ${payload.txHashes}`);
+    await this.webSocketPublisherService.onBatchUpdated(payload.address, payload.batchId, payload.txHashes);
+  }
 }
