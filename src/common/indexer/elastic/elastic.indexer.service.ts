@@ -314,8 +314,7 @@ export class ElasticIndexerService implements IndexerInterface {
   }
 
   async getAccountScResults(address: string, pagination: QueryPagination): Promise<any[]> {
-    const elasticQuery: ElasticQuery = this.indexerHelper.buildSmartContractResultFilterQuery(address);
-    elasticQuery
+    const elasticQuery: ElasticQuery = this.indexerHelper.buildSmartContractResultFilterQuery(address)
       .withPagination(pagination)
       .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }]);
 
