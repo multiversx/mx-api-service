@@ -1,9 +1,7 @@
 import { ErrorLoggerAsync, PassthroughAsync } from "@elrondnetwork/erdnest";
-import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import configuration from "config/configuration";
-import { PerformanceProfiler } from "@elrondnetwork/erdnest";
-import { forwardRef, Inject, Injectable } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import { CollectionTrait } from "src/endpoints/collections/entities/collection.trait";
 import { NftMedia } from "src/endpoints/nfts/entities/nft.media";
 import { ObjectLiteral, Repository } from "typeorm";
@@ -13,25 +11,24 @@ import { NftTraitSummaryDb } from "./entities/nft.trait.summary.db";
 import { PersistenceInterface } from "./persistence.interface";
 import { MetricsEvents } from "src/utils/metrics-events.constants";
 import { LogPerformanceAsync } from "src/utils/log.performance.decorator";
+import { KeybaseConfirmationDb } from "./entities/keybase.confirmation.db";
+import { HotSwappableSettingDb } from "./entities/hot.swappable.setting";
 
 const isPassThrough = process.env.PERSISTENCE === 'passthrough' || configuration().database?.enabled === false;
 
-
 @Injectable()
 export class PersistenceService implements PersistenceInterface {
-
   constructor(
-
     @InjectRepository(NftMetadataDb)
     private readonly nftMetadataRepository: Repository<NftMetadataDb>,
     @InjectRepository(NftMediaDb)
     private readonly nftMediaRepository: Repository<NftMediaDb>,
     @InjectRepository(NftTraitSummaryDb)
     private readonly nftTraitSummaryRepository: Repository<NftTraitSummaryDb>,
-    @Inject('PersistenceInterface')
-    private readonly persistenceInterface: PersistenceInterface,
-    @Inject(forwardRef(() => ApiMetricsService))
-    private readonly metricsService: ApiMetricsService,
+    @InjectRepository(KeybaseConfirmationDb)
+    private readonly keybaseConfirmationRepository: Repository<KeybaseConfirmationDb>,
+    @InjectRepository(HotSwappableSettingDb)
+    private readonly settingsRepository: Repository<HotSwappableSettingDb>,
   ) { }
 
   @PassthroughAsync(isPassThrough, null)
@@ -151,39 +148,68 @@ export class PersistenceService implements PersistenceInterface {
     return summary.traitTypes;
   }
 
-  async deleteMetadata(identifier: string): Promise<void> {
-    await this.execute('deleteMetadata', this.persistenceInterface.deleteMetadata(identifier));
-  }
-
-  async batchGetMetadata(identifiers: string[]): Promise<{ [key: string]: any; }> {
-    return await this.execute('batchGetMetadata', this.persistenceInterface.batchGetMetadata(identifiers));
-  }
-
-  async setMetadata(identifier: string, value: any): Promise<void> {
-    await this.execute('setMetadata', this.persistenceInterface.setMetadata(identifier, value));
-  }
-
+  @PassthroughAsync(isPassThrough, null)
+  @LogPerformanceAsync(MetricsEvents.SetPersistenceDuration, 'getKeybaseConfirmationForIdentity')
+  @ErrorLoggerAsync({ logArgs: true })
   async getKeybaseConfirmationForIdentity(identity: string): Promise<string[] | undefined> {
-    return await this.execute('getKeybaseConfirmationForIdentity', this.persistenceInterface.getKeybaseConfirmationForIdentity(identity));
+    const keybaseConfirmation: KeybaseConfirmationDb | null = await this.keybaseConfirmationRepository.findOne({ where: { identity } });
+    if (!keybaseConfirmation) {
+      return undefined;
+    }
+
+    return keybaseConfirmation.keys;
   }
 
+  @PassthroughAsync(isPassThrough, null)
+  @LogPerformanceAsync(MetricsEvents.SetPersistenceDuration, 'setKeybaseConfirmationForIdentity')
+  @ErrorLoggerAsync({ logArgs: true })
   async setKeybaseConfirmationForIdentity(identity: string, keys: string[]): Promise<void> {
-    await this.execute('setKeybaseConfirmationForIdentity', this.persistenceInterface.setKeybaseConfirmationForIdentity(identity, keys));
+    let keybaseConfirmation = await this.keybaseConfirmationRepository.findOne({ where: { identity } });
+    if (!keybaseConfirmation) {
+      keybaseConfirmation = new KeybaseConfirmationDb();
+    }
+
+    keybaseConfirmation.identity = identity;
+    keybaseConfirmation.keys = keys;
+
+    await this.save(this.keybaseConfirmationRepository, keybaseConfirmation);
   }
 
-  async getCollectionTraits(identifier: string): Promise<CollectionTrait[] | null> {
-    return await this.execute(this.getCollectionTraits.name, this.persistenceInterface.getCollectionTraits(identifier));
-  }
-
+  @PassthroughAsync(isPassThrough, null)
+  @LogPerformanceAsync(MetricsEvents.SetPersistenceDuration, 'getSetting')
+  @ErrorLoggerAsync({ logArgs: true })
   async getSetting<T>(name: string): Promise<T | undefined> {
-    return await this.execute(this.getSetting.name, this.persistenceInterface.getSetting(name));
+    const setting = await this.settingsRepository.findOne({ where: { name } });
+    if (!setting) {
+      return undefined;
+    }
+
+    return JSON.parse(setting.value) as T;
   }
 
+  @PassthroughAsync(isPassThrough, null)
+  @LogPerformanceAsync(MetricsEvents.SetPersistenceDuration, 'setSetting')
+  @ErrorLoggerAsync({ logArgs: true })
   async setSetting<T>(name: string, value: T): Promise<void> {
-    return await this.execute(this.setSetting.name, this.persistenceInterface.setSetting(name, value));
+    let item = await this.settingsRepository.findOne({ where: { name } });
+    if (!item) {
+      item = new HotSwappableSettingDb();
+    }
+
+    item.name = name;
+    item.value = value;
+
+    await this.save(this.settingsRepository, item);
   }
 
+  @PassthroughAsync(isPassThrough, null)
+  @LogPerformanceAsync(MetricsEvents.SetPersistenceDuration, 'getAllSettings')
+  @ErrorLoggerAsync({ logArgs: true })
   async getAllSettings(): Promise<{ name: string, value: any }[]> {
-    return await this.execute(this.getAllSettings.name, this.persistenceInterface.getAllSettings());
+    const settings = await this.settingsRepository.find();
+    return settings.map(setting => ({
+      name: setting.name,
+      value: setting.value,
+    }));
   }
 }

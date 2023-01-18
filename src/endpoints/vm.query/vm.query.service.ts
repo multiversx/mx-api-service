@@ -2,7 +2,6 @@ import { OriginLogger } from "@elrondnetwork/erdnest";
 import { PerformanceProfiler, CachingService } from "@elrondnetwork/erdnest";
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { LogMetricsEvent } from "src/common/entities/log.metrics.event";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
 import { GatewayService } from "src/common/gateway/gateway.service";
@@ -19,10 +18,8 @@ export class VmQueryService {
     private readonly cachingService: CachingService,
     private readonly gatewayService: GatewayService,
     private readonly protocolService: ProtocolService,
-    private readonly apiConfigService: ApiConfigService,
     private readonly eventEmitter: EventEmitter2,
     private readonly settingsService: SettingsService,
-    private readonly metricsService: ApiMetricsService,
   ) { }
 
   private async computeTtls(): Promise<{ localTtl: number, remoteTtl: number; }> {

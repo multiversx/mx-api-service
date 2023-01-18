@@ -12,7 +12,6 @@ import { VmQueryService } from "./vm.query.service";
     GatewayModule,
     ProtocolModule,
     ApiConfigModule,
-    ApiMetricsModule,
     SettingsModule,
   ],
   providers: [
