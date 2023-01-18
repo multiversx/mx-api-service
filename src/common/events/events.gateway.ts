@@ -9,7 +9,6 @@ import { Server, Socket } from 'socket.io';
 import { UseFilters } from '@nestjs/common';
 import { OriginLogger } from '@elrondnetwork/erdnest';
 
-@Injectable()
 @UseFilters(new BaseWsExceptionFilter())
 @WebSocketGateway(3100, {
   cors: {
@@ -44,6 +43,7 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   // eslint-disable-next-line require-await
   async sendNotification(data: any) {
-    this.logger.warn(`got following data: ${data}`);
+    // this.logger.warn(`got following data: ${data}`);
+    data = data;
   }
 }

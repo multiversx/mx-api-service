@@ -32,18 +32,15 @@ features:
     url: 'amqp://guest:guest@127.0.0.1:5673'
     exchange: 'all_events'
     queue: 'api-process-logs-and-events'
-<<<<<<< HEAD
   guestCaching:
     enabled: false
     hitsThreshold: 100
     ttl: 12
-=======
   # This feature depends on eventsNotifier, hence
   # will use the same exchange and queue
   liveEventsWebsocket:
     enabled: true
     port: 9001
->>>>>>> 998543b8 (Add events gateway module)
 image:
   width: 600
   height: 600

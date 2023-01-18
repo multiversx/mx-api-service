@@ -21,8 +21,10 @@ import { MongoDbService } from "./mongo.db.service";
           keepAlive: 120000,
           sslValidate: false,
           retryAttempts: 300,
+          useNewUrlParser: true,
           useUnifiedTopology: true,
           synchronize: true,
+          autoLoadEntities: true,
         };
 
         return options;
