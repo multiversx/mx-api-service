@@ -29,7 +29,6 @@ import { TransactionLoggingInterceptor } from './interceptors/transaction.loggin
 import { BatchTransactionProcessorModule } from './crons/transaction.processor/batch.transaction.processor.module';
 import { GraphqlComplexityInterceptor } from './graphql/interceptors/graphql.complexity.interceptor';
 import { GraphQLMetricsInterceptor } from './graphql/interceptors/graphql.metrics.interceptor';
-import { ApiMetricsService } from './common/metrics/api.metrics.service';
 import { SettingsService } from './common/settings/settings.service';
 import { StatusCheckerModule } from './crons/status.checker/status.checker.module';
 import { JwtOrNativeAuthGuard } from './utils/jwt.or.native.auth.guard';
