@@ -109,7 +109,9 @@ export class AccountService {
         }
       }
 
-      account.username = await this.usernameService.getUsernameForAddress(address) ?? undefined;
+      if (!AddressUtils.isSmartContractAddress(address)) {
+        account.username = await this.usernameService.getUsernameForAddress(address) ?? undefined;
+      }
 
       await this.pluginService.processAccount(account);
       return account;
