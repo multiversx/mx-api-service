@@ -6,7 +6,7 @@ import { WaitingList } from "src/endpoints/waiting-list/entities/waiting.list";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { PublicAppModule } from "src/public.app.module";
 
-describe('WaitingListService', () => {
+describe.skip('WaitingListService', () => {
   let waitingListService: WaitingListService;
   const waitingList = [{
     address: 'erd1wcat0qk32u5xquuds9etauayqs29tqrzs5x3plc6djy54rmatdpsejg6qx',

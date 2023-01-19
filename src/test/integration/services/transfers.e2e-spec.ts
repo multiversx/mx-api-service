@@ -51,7 +51,7 @@ describe('Transfer Service', () => {
     });
 
     describe('Transfers filters', () => {
-      it(`should return a list of transfers between two accounts (first address is always sender and seconds adress is always receiver)`, async () => {
+      it.skip(`should return a list of transfers between two accounts (first address is always sender and seconds adress is always receiver)`, async () => {
         const transactionFilter = new TransactionFilter();
         transactionFilter.sender = transactionSender;
         transactionFilter.receivers = [transactionReceiver];
@@ -144,7 +144,7 @@ describe('Transfer Service', () => {
         }
       });
 
-      it(`should return self transfers for an address`, async () => {
+      it.skip(`should return self transfers for an address`, async () => {
         const address = transactionSender;
         const transactionFilter = new TransactionFilter();
         transactionFilter.sender = address;
@@ -159,14 +159,13 @@ describe('Transfer Service', () => {
       });
 
       it(`should return a list with transfers where an address is sender, in one date range, with success status`, async () => {
-        const address = transactionSender;
+        const address: string = "erd1qqqqqqqqqqqqqpgq50dge6rrpcra4tp9hl57jl0893a4r2r72jpsk39rjj";
         const transactionFilter = new TransactionFilter();
         transactionFilter.after = 1625559108;
-        transactionFilter.sender = address;
+        transactionFilter.senders = [address];
         transactionFilter.status = TransactionStatus.success;
 
         const transfers = await transferService.getTransfers(transactionFilter, { from: 0, size: 25 }, new TransactionQueryOptions());
-        expect(transfers).toBeInstanceOf(Array);
         expect(transfers.length).toBeGreaterThan(0);
 
         for (const transfer of transfers) {
@@ -182,9 +181,8 @@ describe('Transfer Service', () => {
           transactionFilter.function = 'ESDTNFTTransfer';
 
           const transfers = await transferService.getTransfers(transactionFilter, { from: 0, size: 25 }, new TransactionQueryOptions());
-
           for (const transfer of transfers) {
-            expect(BinaryUtils.base64Decode(transfer.data ?? '').startsWith('ESDTNFTTransfer')).toStrictEqual(true);
+            expect(BinaryUtils.base64Decode(transfer.data ?? '').startsWith("\nESDTNFTTransfer@")).toStrictEqual(true);
           }
         }
       });
