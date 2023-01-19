@@ -236,10 +236,6 @@ export class ApiConfigService {
     return delegationUrl;
   }
 
-  getDataUrl(): string | undefined {
-    return this.configService.get<string>('urls.dataUrl');
-  }
-
   getTempUrl(): string {
     const tmpUrl = this.configService.get<string>('urls.tmp');
     if (!tmpUrl) {
