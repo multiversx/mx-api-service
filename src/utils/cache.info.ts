@@ -432,6 +432,13 @@ export class CacheInfo {
     ttl: Constants.oneMinute(),
   };
 
+  static DelegationProvider(address: string): CacheInfo {
+    return {
+      key: `delegationProvider:${address}`,
+      ttl: Constants.oneMinute(),
+    };
+  }
+
   static GlobalStake: CacheInfo = {
     key: 'stake',
     ttl: Constants.oneMinute() * 10,
