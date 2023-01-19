@@ -1,6 +1,5 @@
 import { Constants, CachingService } from "@elrondnetwork/erdnest";
 import { Injectable } from "@nestjs/common";
-import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { CacheInfo } from "src/utils/cache.info";
 import { TransactionDetailed } from "./entities/transaction.detailed";
 import { PluginService } from "src/common/plugins/plugin.service";
@@ -10,22 +9,12 @@ export class TransactionPriceService {
 
   constructor(
     private readonly cachingService: CachingService,
-    private readonly apiConfigService: ApiConfigService,
     private readonly pluginsService: PluginService,
   ) { }
 
   async getTransactionPrice(transaction: TransactionDetailed): Promise<number | undefined> {
-    const dataUrl = this.apiConfigService.getDataApiUrl();
-    if (!dataUrl) {
-      return undefined;
-    }
-
     const transactionDate = transaction.getDate();
     if (!transactionDate) {
-      return undefined;
-    }
-
-    if (transactionDate.isLessThan(new Date(2020, 9, 10))) {
       return undefined;
     }
 
