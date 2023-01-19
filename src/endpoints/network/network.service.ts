@@ -15,15 +15,16 @@ import { DataApiService } from 'src/common/external/data.api.service';
 import { GatewayService } from 'src/common/gateway/gateway.service';
 import { DataQuoteType } from 'src/common/external/entities/data.quote.type';
 import { CacheInfo } from 'src/utils/cache.info';
-import { GatewayComponentRequest } from 'src/common/gateway/entities/gateway.component.request';
 import { NumberUtils, CachingService, ApiService } from '@elrondnetwork/erdnest';
 import { About } from './entities/about';
-import { EsdtService } from '../esdt/esdt.service';
 import { PluginService } from 'src/common/plugins/plugin.service';
+import { TokenService } from '../tokens/token.service';
 
 @Injectable()
 export class NetworkService {
   constructor(
+    @Inject(forwardRef(() => TokenService))
+    private readonly tokenService: TokenService,
     private readonly apiConfigService: ApiConfigService,
     private readonly cachingService: CachingService,
     private readonly gatewayService: GatewayService,
@@ -38,8 +39,6 @@ export class NetworkService {
     private readonly apiService: ApiService,
     @Inject(forwardRef(() => StakeService))
     private readonly stakeService: StakeService,
-    @Inject(forwardRef(() => EsdtService))
-    private readonly esdtService: EsdtService,
     private readonly pluginService: PluginService,
   ) { }
 
@@ -80,16 +79,17 @@ export class NetworkService {
   }
 
   async getNetworkConfig(): Promise<NetworkConfig> {
+    const metaChainShard = this.apiConfigService.getMetaChainShardId();
     const [
       {
-        config: { erd_round_duration, erd_rounds_per_epoch },
+        erd_round_duration, erd_rounds_per_epoch,
       },
       {
-        status: { erd_rounds_passed_in_current_epoch },
+        erd_rounds_passed_in_current_epoch,
       },
     ] = await Promise.all([
-      this.gatewayService.get('network/config', GatewayComponentRequest.networkConfig),
-      this.gatewayService.get('network/status/4294967295', GatewayComponentRequest.networkStatus),
+      this.gatewayService.getNetworkConfig(),
+      this.gatewayService.getNetworkStatus(metaChainShard),
     ]);
 
     const roundsPassed = erd_rounds_passed_in_current_epoch;
@@ -108,7 +108,7 @@ export class NetworkService {
   }
 
   async getMinimumAuctionTopUp(): Promise<string | undefined> {
-    const auctions = await this.gatewayService.getAuctions();
+    const auctions = await this.gatewayService.getValidatorAuctions();
 
     if (auctions.length === 0) {
       return undefined;
@@ -133,23 +133,20 @@ export class NetworkService {
         account: { balance },
       },
       {
-        metrics: { erd_total_supply },
+        erd_total_supply,
       },
       [, totalWaitingStakeBase64],
       priceValue,
       tokenMarketCap,
     ] = await Promise.all([
-      this.gatewayService.get(
-        `address/${this.apiConfigService.getAuctionContractAddress()}`,
-        GatewayComponentRequest.addressDetails
-      ),
-      this.gatewayService.get('network/economics', GatewayComponentRequest.networkEconomics),
+      this.gatewayService.getAddressDetails(`${this.apiConfigService.getAuctionContractAddress()}`),
+      this.gatewayService.getNetworkEconomics(),
       this.vmQueryService.vmQuery(
         this.apiConfigService.getDelegationContractAddress(),
         'getTotalStakeByType',
       ),
       this.dataApiService.getQuotesHistoricalLatest(DataQuoteType.price),
-      this.esdtService.getTokenMarketCapRaw(),
+      this.tokenService.getTokenMarketCapRaw(),
     ]);
 
 
@@ -202,24 +199,20 @@ export class NetworkService {
 
     const [
       {
-        config: {
-          erd_num_shards_without_meta: shards,
-          erd_round_duration: refreshRate,
-        },
+        erd_num_shards_without_meta: shards,
+        erd_round_duration: refreshRate,
       },
       {
-        status: {
-          erd_epoch_number: epoch,
-          erd_rounds_passed_in_current_epoch: roundsPassed,
-          erd_rounds_per_epoch: roundsPerEpoch,
-        },
+        erd_epoch_number: epoch,
+        erd_rounds_passed_in_current_epoch: roundsPassed,
+        erd_rounds_per_epoch: roundsPerEpoch,
       },
       blocks,
       accounts,
       transactions,
     ] = await Promise.all([
-      this.gatewayService.get('network/config', GatewayComponentRequest.networkConfig),
-      this.gatewayService.get(`network/status/${metaChainShard}`, GatewayComponentRequest.networkStatus),
+      this.gatewayService.getNetworkConfig(),
+      this.gatewayService.getNetworkStatus(metaChainShard),
       this.blockService.getBlocksCount(new BlockFilter()),
       this.accountService.getAccountsCount(),
       this.transactionService.getTransactionCount(new TransactionFilter()),
@@ -243,10 +236,7 @@ export class NetworkService {
     const stake = await this.stakeService.getGlobalStake();
     const {
       account: { balance: stakedBalance },
-    } = await this.gatewayService.get(
-      `address/${this.apiConfigService.getAuctionContractAddress()}`,
-      GatewayComponentRequest.addressDetails
-    );
+    } = await this.gatewayService.getAddressDetails(`${this.apiConfigService.getAuctionContractAddress()}`);
     let [activeStake] = await this.vmQueryService.vmQuery(
       this.apiConfigService.getDelegationContractAddress(),
       'getTotalActiveStake',

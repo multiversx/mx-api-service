@@ -1,5 +1,6 @@
 import { Field, ObjectType } from "@nestjs/graphql";
 import { ApiProperty } from "@nestjs/swagger";
+import { NftMetadataError } from "./nft.metadata.error";
 
 @ObjectType("NftMetadata", { description: "NFT metadata object type." })
 export class NftMetadata {
@@ -22,4 +23,8 @@ export class NftMetadata {
   @Field(() => String, { description: "File name for the given NFT metadata." })
   @ApiProperty()
   fileName: string = '';
+
+  @Field(() => NftMetadataError, { description: "NFT Metadata fetch error.", nullable: true })
+  @ApiProperty({ type: NftMetadataError, nullable: true })
+  error: NftMetadataError | undefined = undefined;
 }

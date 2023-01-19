@@ -41,6 +41,7 @@ describe('Provider Service', () => {
       }
 
       expect(result.hasOwnProperty("provider")).toBeTruthy();
+      expect(result.hasOwnProperty("owner")).toBeTruthy();
       expect(result.hasOwnProperty("serviceFee")).toBeTruthy();
       expect(result.hasOwnProperty("delegationCap")).toBeTruthy();
       expect(result.hasOwnProperty("apr")).toBeTruthy();
@@ -63,8 +64,9 @@ describe('Provider Service', () => {
       }
 
       expect(result.identity).toBeDefined();
-      expect(result.identity).toStrictEqual("justminingfr");
+      expect(result.identity).toStrictEqual("meria");
       expect(result.provider).toStrictEqual("erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq8hlllls7a6h85");
+      expect(result.owner).toStrictEqual("erd1fx5t2nwq4fh9jws5xqfl85hr0l8tuqks9sr7ut9wrpkp7dugzxnqyksfyg");
     });
 
     it("should return provider addresses", async () => {
@@ -111,6 +113,7 @@ describe('Provider Service', () => {
 
       for (const result of results) {
         expect(result.hasOwnProperty("provider")).toBeTruthy();
+        expect(result.hasOwnProperty("owner")).toBeTruthy();
         expect(result.hasOwnProperty("serviceFee")).toBeTruthy();
         expect(result.hasOwnProperty("delegationCap")).toBeTruthy();
         expect(result.hasOwnProperty("apr")).toBeTruthy();
@@ -138,6 +141,7 @@ describe('Provider Service', () => {
 
       for (const result of results) {
         expect(result.hasOwnProperty("provider")).toBeTruthy();
+        expect(result.hasOwnProperty("owner")).toBeTruthy();
         expect(result.hasOwnProperty("serviceFee")).toBeTruthy();
         expect(result.hasOwnProperty("delegationCap")).toBeTruthy();
         expect(result.hasOwnProperty("apr")).toBeTruthy();

@@ -1,5 +1,5 @@
 import { PerformanceProfiler } from "@elrondnetwork/erdnest";
-import { Inject, Injectable } from "@nestjs/common";
+import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { CollectionTrait } from "src/endpoints/collections/entities/collection.trait";
 import { NftMedia } from "src/endpoints/nfts/entities/nft.media";
 import { ApiMetricsService } from "../metrics/api.metrics.service";
@@ -10,6 +10,7 @@ export class PersistenceService implements PersistenceInterface {
   constructor(
     @Inject('PersistenceInterface')
     private readonly persistenceInterface: PersistenceInterface,
+    @Inject(forwardRef(() => ApiMetricsService))
     private readonly metricsService: ApiMetricsService,
   ) { }
 
@@ -53,7 +54,27 @@ export class PersistenceService implements PersistenceInterface {
     await this.execute('setMetadata', this.persistenceInterface.setMetadata(identifier, value));
   }
 
+  async getKeybaseConfirmationForIdentity(identity: string): Promise<string[] | undefined> {
+    return await this.execute('getKeybaseConfirmationForIdentity', this.persistenceInterface.getKeybaseConfirmationForIdentity(identity));
+  }
+
+  async setKeybaseConfirmationForIdentity(identity: string, keys: string[]): Promise<void> {
+    await this.execute('setKeybaseConfirmationForIdentity', this.persistenceInterface.setKeybaseConfirmationForIdentity(identity, keys));
+  }
+
   async getCollectionTraits(identifier: string): Promise<CollectionTrait[] | null> {
     return await this.execute(this.getCollectionTraits.name, this.persistenceInterface.getCollectionTraits(identifier));
+  }
+
+  async getSetting<T>(name: string): Promise<T | undefined> {
+    return await this.execute(this.getSetting.name, this.persistenceInterface.getSetting(name));
+  }
+
+  async setSetting<T>(name: string, value: T): Promise<void> {
+    return await this.execute(this.setSetting.name, this.persistenceInterface.setSetting(name, value));
+  }
+
+  async getAllSettings(): Promise<{ name: string, value: any }[]> {
+    return await this.execute(this.getAllSettings.name, this.persistenceInterface.getAllSettings());
   }
 }
