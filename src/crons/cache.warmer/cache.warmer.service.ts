@@ -230,9 +230,9 @@ export class CacheWarmerService {
     }, true);
   }
 
-  @Cron(CronExpression.EVERY_MINUTE)
+  @Cron(CronExpression.EVERY_10_MINUTES)
   async handleTokenAssetsInvalidations() {
-    await Locker.lock('Token assets invalidations', async () => {
+    await Locker.lock('Token / Account assets invalidations', async () => {
       await this.assetsService.checkout();
       const assets = this.assetsService.getAllTokenAssetsRaw();
       await this.invalidateKey(CacheInfo.TokenAssets.key, assets, CacheInfo.TokenAssets.ttl);
