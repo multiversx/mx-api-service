@@ -2,7 +2,7 @@ import { Test } from "@nestjs/testing";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { Identity } from "src/endpoints/identities/entities/identity";
 import { IdentitiesService } from "src/endpoints/identities/identities.service";
-import { Provider } from "src/endpoints/providers/entities/provider";
+import { Providers } from "src/endpoints/providers/entities/providers";
 import { ProviderService } from "src/endpoints/providers/provider.service";
 import '@elrondnetwork/erdnest/lib/src/utils/extensions/jest.extensions';
 import '@elrondnetwork/erdnest/lib/src/utils/extensions/array.extensions';
@@ -14,7 +14,7 @@ describe('Identities Service', () => {
   let providerService: ProviderService;
   let apiConfigService: ApiConfigService;
   let identities: Identity[];
-  let providers: Provider[];
+  let providers: Providers[];
 
   const ids: string[] = ['justminingfr', 'staking_agency', 'istari_vision'];
 

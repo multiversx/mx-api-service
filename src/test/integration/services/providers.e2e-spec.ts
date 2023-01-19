@@ -1,13 +1,13 @@
 import { ApiConfigService } from 'src/common/api-config/api.config.service';
-import { ProviderFilter } from 'src/endpoints/providers/entities/provider.filter';
 import { Test } from '@nestjs/testing';
 import { ProviderService } from 'src/endpoints/providers/provider.service';
 import { PublicAppModule } from 'src/public.app.module';
-import { Provider } from 'src/endpoints/providers/entities/provider';
 import '@elrondnetwork/erdnest/lib/src/utils/extensions/array.extensions';
 import '@elrondnetwork/erdnest/lib/src/utils/extensions/jest.extensions';
 import { CachingService } from '@elrondnetwork/erdnest';
-import { ProviderConfig } from 'src/endpoints/providers/entities/provider.config';
+import { ProvidersConfig } from 'src/endpoints/providers/entities/providers.config';
+import { Providers } from 'src/endpoints/providers/entities/providers';
+import { ProvidersFilter } from 'src/endpoints/providers/entities/providers.filter';
 
 describe('Provider Service', () => {
   let providerService: ProviderService;
@@ -53,6 +53,10 @@ describe('Provider Service', () => {
       expect(result.hasOwnProperty("topUp")).toBeTruthy();
       expect(result.hasOwnProperty("locked")).toBeTruthy();
       expect(result.hasOwnProperty("featured")).toBeTruthy();
+      expect(result.hasOwnProperty("automaticActivation")).toBeTruthy();
+      expect(result.hasOwnProperty("initialOwnerFunds")).toBeTruthy();
+      expect(result.hasOwnProperty("checkCapOnRedelegate")).toBeTruthy();
+      expect(result.hasOwnProperty("totalUnStaked")).toBeTruthy();
     });
 
     it("should verify if identity of provider is defined", async () => {
@@ -67,6 +71,9 @@ describe('Provider Service', () => {
       expect(result.identity).toStrictEqual("meria");
       expect(result.provider).toStrictEqual("erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq8hlllls7a6h85");
       expect(result.owner).toStrictEqual("erd1fx5t2nwq4fh9jws5xqfl85hr0l8tuqks9sr7ut9wrpkp7dugzxnqyksfyg");
+      expect(result.automaticActivation).toStrictEqual(false);
+      expect(result.initialOwnerFunds).toStrictEqual("1250000000000000000000");
+      expect(result.checkCapOnRedelegate).toStrictEqual(false);
     });
 
     it("should return provider addresses", async () => {
@@ -79,7 +86,7 @@ describe('Provider Service', () => {
       const address: string = "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq8hlllls7a6h85";
       const results = await providerService.getProviderConfig(address);
 
-      expect(results).toHaveStructure(Object.keys(new ProviderConfig()));
+      expect(results).toHaveStructure(Object.keys(new ProvidersConfig()));
     });
 
     it("should return providerd metadata", async () => {
@@ -131,12 +138,12 @@ describe('Provider Service', () => {
       const results = await providerService.getAllProvidersRaw();
 
       for (const result of results) {
-        expect(result).toHaveStructure(Object.keys(new Provider()));
+        expect(result).toHaveStructure(Object.keys(new Providers()));
       }
     });
 
     it("should return provider details", async () => {
-      const filter = new ProviderFilter();
+      const filter = new ProvidersFilter();
       const results = await providerService.getProviders(filter);
 
       for (const result of results) {
@@ -156,7 +163,7 @@ describe('Provider Service', () => {
     });
 
     it("should be filtered by identity", async () => {
-      const filter = new ProviderFilter();
+      const filter = new ProvidersFilter();
       filter.identity = "justminingfr";
       const results = await providerService.getProviders(filter);
 
@@ -166,7 +173,7 @@ describe('Provider Service', () => {
     });
 
     it("should verify if providers contains minimum one node", async () => {
-      const filter = new ProviderFilter();
+      const filter = new ProvidersFilter();
       filter.identity = "justminingfr";
 
       const results = await providerService.getProviders(filter);
@@ -177,7 +184,7 @@ describe('Provider Service', () => {
     });
 
     it("should verify providers with more than 30 nodes should have identity", async () => {
-      const filter = new ProviderFilter();
+      const filter = new ProvidersFilter();
       const results = await providerService.getProviders(filter);
 
       for (const result of results) {
@@ -187,16 +194,16 @@ describe('Provider Service', () => {
       }
     });
 
-    it("should verify if provider contain idenity property", async () => {
-      const filter = new ProviderFilter();
-      filter.identity = "justminingfr";
+    it("should verify if provider contain identity property", async () => {
+      const filter = new ProvidersFilter();
+      filter.identity = "meria";
 
       const results = await providerService.getProviders(filter);
 
       for (const result of results) {
         if (result.numNodes > 30) {
           expect(result.identity).toBeDefined();
-          expect(result.identity).toStrictEqual("justminingfr");
+          expect(result.identity).toStrictEqual("meria");
         }
       }
     });
@@ -212,7 +219,7 @@ describe('Provider Service', () => {
             'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzhllllsp9wvyl',
           partnerstaking:
             'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq9hllllsz2je7q',
-          justminingfr:
+          meria:
             'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq8hlllls7a6h85',
           thepalmtreenw:
             'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqy8lllls62y8s5',
@@ -222,8 +229,6 @@ describe('Provider Service', () => {
             'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqx8llllsxavffq',
           everstake:
             'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq28llllsu54ydr',
-          heliosstaking:
-            'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqx0llllsdx93z0',
           mgstaking:
             'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq9lllllsf3mp40',
           unitedgroup:
@@ -242,10 +247,12 @@ describe('Provider Service', () => {
             'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq40llllsfjmn54',
         };
 
-        const providers = await providerService.getProviders(new ProviderFilter());
+        const providers = await providerService.getProviders(new ProvidersFilter());
 
         for (const identityVIP of Object.keys(vipProviders)) {
           const providerVIP = providers.find(({ identity }) => identity === identityVIP);
+
+          console.log(identityVIP);
           if (!providerVIP) {
             throw new Error('ProviderVIP must be defined');
           }
@@ -258,7 +265,7 @@ describe('Provider Service', () => {
     });
 
     it(`should return providers details with "providers" filter applied`, async () => {
-      const filter = new ProviderFilter();
+      const filter = new ProvidersFilter();
       filter.providers = ["erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqc0llllsayxegu", "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq8hlllls7a6h85"];
       const results = await providerService.getProviders(filter);
 
