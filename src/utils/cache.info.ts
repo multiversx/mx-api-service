@@ -195,6 +195,14 @@ export class CacheInfo {
     };
   }
 
+  static HistoricalPrice(identifier: string, date: Date): CacheInfo {
+    const isCurrentDate = date.startOfDay() === new Date().startOfDay();
+    return {
+      key: `historical-price:${identifier}:${date.toISODateString()}`,
+      ttl: isCurrentDate ? Constants.oneMinute() * 5 : Constants.oneWeek(),
+    };
+  }
+
   static NftMetadata(identifier: string): CacheInfo {
     return {
       key: `nftMetadata:${identifier}`,

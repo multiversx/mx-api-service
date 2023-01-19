@@ -45,6 +45,37 @@ describe('API Config', () => {
     });
   });
 
+  describe('getDataApiUrl', () => {
+    it("should return data api url", () => {
+      jest
+        .spyOn(ConfigService.prototype, "get")
+        .mockImplementation(jest.fn(() => "https://tools.multiversx.com/data-api/graphql"));
+
+      const result = apiConfigService.getDataApiUrl();
+      expect(result).toStrictEqual("https://tools.multiversx.com/data-api/graphql");
+    });
+  });
+
+  describe('getSignerPrivateKeyPath', () => {
+    it("should return signer private key path", () => {
+      jest
+        .spyOn(ConfigService.prototype, "get")
+        .mockImplementation(jest.fn(() => "erd1"));
+
+      const result = apiConfigService.getSignerPrivateKeyPath();
+      expect(result).toStrictEqual("erd1");
+    });
+
+    it("should return undefined", () => {
+      jest
+        .spyOn(ConfigService.prototype, 'get')
+        .mockImplementation(jest.fn(() => undefined));
+
+      const result = apiConfigService.getSignerPrivateKeyPath();
+      expect(result).toBeUndefined();
+    });
+  });
+
   describe("getGatewayUrl", () => {
     it("should return gateway url", () => {
       jest
@@ -607,17 +638,6 @@ describe('API Config', () => {
         .mockImplementation(jest.fn(() => undefined));
 
       expect(() => apiConfigService.getProvidersUrl()).toThrowError('No providers url present');
-    });
-  });
-
-  describe("getDataUrl", () => {
-    it("should return data url", () => {
-      jest
-        .spyOn(ConfigService.prototype, "get")
-        .mockImplementation(jest.fn(() => undefined));
-
-      const results = apiConfigService.getDataUrl();
-      expect(results).toEqual(undefined);
     });
   });
 

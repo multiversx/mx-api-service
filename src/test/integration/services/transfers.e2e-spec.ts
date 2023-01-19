@@ -51,7 +51,7 @@ describe('Transfer Service', () => {
     });
 
     describe('Transfers filters', () => {
-      it.skip(`should return a list of transfers between two accounts (first address is always sender and seconds adress is always receiver)`, async () => {
+      it.skip(`should return a list of transfers between two accounts (first address is always sender and seconds address is always receiver)`, async () => {
         const transactionFilter = new TransactionFilter();
         transactionFilter.sender = transactionSender;
         transactionFilter.receivers = [transactionReceiver];
