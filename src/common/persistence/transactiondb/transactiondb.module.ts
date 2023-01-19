@@ -20,7 +20,7 @@ import {
           sslValidate: false,
           retryAttempts: 300,
           useUnifiedTopology: true,
-          autoLoadEntities: true,
+          synchronize: true,
         };
 
         return options;

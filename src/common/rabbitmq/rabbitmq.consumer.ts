@@ -23,6 +23,9 @@ export class RabbitMqConsumer {
   async consumeEvents(rawEvents: any) {
     try {
       const events = rawEvents?.events;
+      console.log(events);
+      await this.eventsHandlerService.sendNotification(rawEvents);
+
       if (events) {
         await Promise.all(events.map((event: any) => this.handleEvent(event)));
       }
@@ -33,8 +36,6 @@ export class RabbitMqConsumer {
   }
 
   private async handleEvent(event: NotifierEvent) {
-    await this.eventsHandlerService.sendNotification(event);
-
     await this.nftHandlerService.handleNftCreateEvent(event) ??
       await this.nftHandlerService.handleNftUpdateAttributesEvent(event);
   }

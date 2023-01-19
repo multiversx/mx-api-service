@@ -37,14 +37,14 @@ export class AuthService {
     const transaction = await this.transactionDbService.findTransaction(
       transaction_address,
     );
-    console.log(transaction);
+
     if (transaction) {
       throw new HttpException(
         `Transaction ${transaction_address} already processed.`,
         HttpStatus.BAD_REQUEST,
       );
     }
-    console.log(`${this.apiConfigService.getApiUrls()[0]}/transaction/${transaction_address}`);
+
     // Get transaction details
     const tx_data = (
       await this.apiService
@@ -61,7 +61,7 @@ export class AuthService {
           );
         })
     ).data.data.transaction;
-    console.warn(tx_data);
+
     // Verify transaction was successful
     if (tx_data.status != 'success') {
       throw new HttpException(
