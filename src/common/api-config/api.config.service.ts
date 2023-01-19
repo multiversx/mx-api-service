@@ -717,20 +717,4 @@ export class ApiConfigService {
   getIndexerMaxPagination(): number {
     return this.configService.get<number>('indexer.maxPagination') ?? 10000;
   }
-
-  getApiUrl(): string {
-    const apiUrl = this.configService.get<string>('urls.apiUrl');
-    if (!apiUrl) {
-      throw new Error('No API url present');
-    }
-    return apiUrl;
-  }
-
-  getDataApiUrl(): string | undefined {
-    return this.configService.get<string | undefined>('urls.dataApiUrl');
-  }
-
-  getSignerPrivateKeyPath(): string | undefined {
-    return this.configService.get<string | undefined>('signerPrivateKeyPath');
-  }
 }

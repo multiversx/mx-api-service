@@ -59,7 +59,6 @@ urls:
   ipfs: 'https://ipfs.io/ipfs'
   socket: 'testnet-socket-fra.elrond.com'
   maiarId: 'https://testnet-id-api.multiversx.com'
-  apiUrl: 'https://testnet-api.multiversx.com'
   dataApiUrl: 'https://testnet-tools.multiversx.com/data-api/graphql'
 signerPrivateKeyPath: ''
 database:

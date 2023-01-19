@@ -60,7 +60,6 @@ urls:
   ipfs: 'https://ipfs.io/ipfs'
   socket: 'devnet-socket-fra.elrond.com'
   maiarId: 'https://devnet-id-api.multiversx.com'
-  apiUrl: 'https://devnet-api.multiversx.com'
   dataApiUrl: 'https://devnet-tools.multiversx.com/data-api/graphql'
 signerPrivateKeyPath: ''
 indexer:
