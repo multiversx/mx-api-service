@@ -20,6 +20,9 @@ import { ElasticUpdaterModule } from './crons/elastic.updater/elastic.updater.mo
 import { PluginService } from './common/plugins/plugin.service';
 import { TransactionCompletedModule } from './crons/transaction.processor/transaction.completed.module';
 import { SocketAdapter } from './common/websockets/socket-adapter';
+import {
+  RedisIoAdapter,
+} from './common/websockets/redis-io-adapter';
 import { ApiConfigModule } from './common/api-config/api.config.module';
 import { CachingService, LoggerInitializer, LoggingInterceptor, MetricsService, CachingInterceptor, LogRequestsInterceptor, FieldsInterceptor, ExtractInterceptor, CleanupInterceptor, PaginationInterceptor, QueryCheckInterceptor, ComplexityInterceptor, OriginInterceptor, RequestCpuTimeInterceptor, GuestCachingInterceptor, GuestCachingService } from '@multiversx/sdk-nestjs';
 import { ErdnestConfigServiceImpl } from './common/api-config/erdnest.config.service.impl';
@@ -106,6 +109,9 @@ async function bootstrap() {
 
   if (apiConfigService.isEventsNotifierFeatureActive()) {
     const eventsNotifierApp = await NestFactory.create(RabbitMqModule.register());
+    const redisIoAdapter = new RedisIoAdapter(eventsNotifierApp);
+    await redisIoAdapter.connectToRedis();
+    eventsNotifierApp.useWebSocketAdapter(redisIoAdapter);
     await eventsNotifierApp.listen(apiConfigService.getEventsNotifierFeaturePort());
   }
 

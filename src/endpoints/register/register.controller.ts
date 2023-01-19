@@ -47,6 +47,7 @@ export class RegisterController {
     async registerUser(
         @Body() body: UserRegistration,
     ) {
+        // TODO: Validate user flow
         this.logger.log('Starting user registration');
 
         try {

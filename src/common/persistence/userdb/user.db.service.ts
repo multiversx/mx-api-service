@@ -14,6 +14,7 @@ export class UserDbService {
         private readonly userDbRepository: Repository<User>,
     ) { }
 
+    // eslint-disable-next-line require-await
     async createUser(user: User) {
         this.logger.log(`Creating new user: ${user.address}`);
         await this.userDbRepository.save(user);

@@ -14,14 +14,15 @@ export class TransactionDbService {
         private transactionDbRepository: Repository<TransactionDb>,
     ) { }
 
+    // eslint-disable-next-line require-await
     async createTransaction(transaction: TransactionDb) {
         this.logger.log(`Creating new transaction: ${transaction.tx_hash}`);
 
-        await this.transactionDbRepository.save({ tx_hash: transaction.tx_hash });
+        await this.transactionDbRepository.save(transaction);
     }
 
     async findTransaction(txId: string): Promise<TransactionDb | null> {
-        return await this.transactionDbRepository.findOneBy({ tx_hash: txId });
+        return await this.transactionDbRepository.findOne({ where: { tx_hash: txId } });
     }
 
     async findAllTransactions(): Promise<TransactionDb[]> {

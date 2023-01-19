@@ -19,7 +19,6 @@ import { UserDbService } from "./user.db.service";
                     retryAttempts: 300,
                     useUnifiedTopology: true,
                     synchronize: true,
-                    autoLoadEntities: true,
                 };
 
                 return options;
