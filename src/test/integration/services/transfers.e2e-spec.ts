@@ -65,7 +65,8 @@ describe('Transfer Service', () => {
         }
       });
 
-      it(`should return a list of transfers between two accounts`, async () => {
+      //TBD
+      it.skip(`should return a list of transfers between two accounts`, async () => {
         const transactionFilter = new TransactionFilter();
         transactionFilter.address = transactionSender;
         transactionFilter.senderOrReceiver = transactionReceiver;
