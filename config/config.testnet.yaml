@@ -102,4 +102,4 @@ nftProcess:
   maxRetries: 3
 transaction-action:
   mex:
-    microServiceUrl: 'https://testnet-exchange-graph.elrond.com/graphql'
+    microServiceUrl: 'https://testnet-graph.xexchange.com/graphql'
