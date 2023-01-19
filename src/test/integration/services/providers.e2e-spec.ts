@@ -252,7 +252,6 @@ describe('Provider Service', () => {
         for (const identityVIP of Object.keys(vipProviders)) {
           const providerVIP = providers.find(({ identity }) => identity === identityVIP);
 
-          console.log(identityVIP);
           if (!providerVIP) {
             throw new Error('ProviderVIP must be defined');
           }

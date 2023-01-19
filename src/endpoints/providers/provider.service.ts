@@ -43,6 +43,7 @@ export class ProviderService {
       provider.initialOwnerFunds = delegationData.initialOwnerFunds;
       provider.checkCapOnRedelegate = delegationData.checkCapOnRedelegate;
       provider.totalUnStaked = delegationData.totalUnStaked;
+      provider.createdNonce = delegationData.createdNonce;
     }
 
     return provider;

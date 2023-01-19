@@ -1,4 +1,3 @@
-import { SwaggerUtils } from "@elrondnetwork/erdnest";
 import { ObjectType } from "@nestjs/graphql";
 import { ApiProperty } from "@nestjs/swagger";
 import { Providers } from "./providers";
@@ -16,9 +15,12 @@ export class Provider extends Providers {
   @ApiProperty({ type: Boolean, default: false })
   automaticActivation?: boolean = false;
 
-  @ApiProperty(SwaggerUtils.amountPropertyOptions())
+  @ApiProperty({ type: Boolean, default: false })
   checkCapOnRedelegate?: boolean = false;
 
-  @ApiProperty(SwaggerUtils.amountPropertyOptions())
+  @ApiProperty({ type: String })
   totalUnStaked?: string = "";
+
+  @ApiProperty({ type: Number })
+  createdNonce?: number = 0;
 }

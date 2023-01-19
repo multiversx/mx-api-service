@@ -11,4 +11,5 @@ export class DelegationData {
   initialOwnerFunds: string = "";
   checkCapOnRedelegate: boolean = false;
   totalUnStaked: string = "";
+  createdNonce: number = 0;
 }
