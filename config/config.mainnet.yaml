@@ -61,8 +61,6 @@ urls:
   ipfs: 'https://ipfs.io/ipfs'
   socket: 'socket-fra.elrond.com'
   maiarId: 'https://id-api.multiversx.com'
-  dataApiUrl: 'https://tools.multiversx.com/data-api/graphql'
-signerPrivateKeyPath: ''
 indexer:
   type: 'elastic'
   maxPagination: 10000
