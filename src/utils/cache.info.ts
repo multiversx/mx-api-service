@@ -1,5 +1,4 @@
 import { Constants } from "@elrondnetwork/erdnest";
-import moment from "moment";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { BlockFilter } from "src/endpoints/blocks/entities/block.filter";
 
@@ -197,9 +196,9 @@ export class CacheInfo {
   }
 
   static HistoricalPrice(identifier: string, date: Date): CacheInfo {
-    const isCurrentDate = moment().startOf('day').isSame(date, 'date');
+    const isCurrentDate = date.startOfDay() === new Date().startOfDay();
     return {
-      key: `historical-price:${identifier}:${moment(date).format('YYYY-MM-DD')}`,
+      key: `historical-price:${identifier}:${date.toISODateString()}`,
       ttl: isCurrentDate ? Constants.oneMinute() * 5 : Constants.oneWeek(),
     };
   }

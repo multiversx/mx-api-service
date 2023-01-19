@@ -3875,7 +3875,7 @@ type TransactionOperation {
   value: String
 
   """Value for the transaction operation in USD."""
-  valueUSD: String
+  valueUSD: Float
 }
 
 """Transaction operation action object type."""

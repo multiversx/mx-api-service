@@ -47,9 +47,9 @@ export class TransactionOperation {
   @ApiProperty({ type: String })
   value?: string;
 
-  @Field(() => String, { description: 'Value for the transaction operation in USD.', nullable: true })
-  @ApiProperty({ type: String })
-  valueUSD?: string;
+  @Field(() => Number, { description: 'Value for the transaction operation in USD.', nullable: true })
+  @ApiProperty({ type: Number })
+  valueUSD?: number;
 
   @Field(() => String, { description: 'Sender address for the transaction operation.' })
   @ApiProperty({ type: String })

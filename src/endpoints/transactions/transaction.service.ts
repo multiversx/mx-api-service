@@ -169,7 +169,6 @@ export class TransactionService {
     await this.processTransactions(transactions, {
       withScamInfo: queryOptions?.withScamInfo ?? false,
       withUsername: queryOptions?.withUsername ?? false,
-      withEsdtPrices: queryOptions?.withEsdtPrices ?? false,
     });
 
     return transactions;
@@ -196,7 +195,7 @@ export class TransactionService {
     if (transaction !== null) {
       transaction.price = await this.getTransactionPrice(transaction);
 
-      await this.processTransactions([transaction], { withScamInfo: true, withUsername: true, withEsdtPrices: true });
+      await this.processTransactions([transaction], { withScamInfo: true, withUsername: true });
 
       if (transaction.pendingResults === true && transaction.results) {
         for (const result of transaction.results) {
@@ -315,9 +314,9 @@ export class TransactionService {
     }
   }
 
-  async processTransactions(transactions: Transaction[], options: { withScamInfo: boolean, withUsername: boolean, withEsdtPrices: boolean }): Promise<void> {
+  async processTransactions(transactions: Transaction[], options: { withScamInfo: boolean, withUsername: boolean }): Promise<void> {
     try {
-      await this.pluginsService.processTransactions(transactions, options.withScamInfo, options.withEsdtPrices);
+      await this.pluginsService.processTransactions(transactions, options.withScamInfo);
     } catch (error) {
       this.logger.error(`Unhandled error when processing plugin transaction for transactions with hashes '${transactions.map(x => x.txHash).join(',')}'`);
       this.logger.error(error);
