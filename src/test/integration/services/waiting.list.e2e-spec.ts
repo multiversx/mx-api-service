@@ -1,12 +1,12 @@
-import { WaitingListModule } from "src/endpoints/waiting-list/waiting.list.module";
 import { Test } from "@nestjs/testing";
 import '@elrondnetwork/erdnest/lib/src/utils/extensions/jest.extensions';
 import { CachingService } from "@elrondnetwork/erdnest";
 import { WaitingListService } from "src/endpoints/waiting-list/waiting.list.service";
 import { WaitingList } from "src/endpoints/waiting-list/entities/waiting.list";
 import { QueryPagination } from "src/common/entities/query.pagination";
+import { PublicAppModule } from "src/public.app.module";
 
-describe('WaitingListService', () => {
+describe('Waiting List Service', () => {
   let waitingListService: WaitingListService;
   const waitingList = [{
     address: 'erd1wcat0qk32u5xquuds9etauayqs29tqrzs5x3plc6djy54rmatdpsejg6qx',
@@ -18,7 +18,7 @@ describe('WaitingListService', () => {
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
-      imports: [WaitingListModule],
+      imports: [PublicAppModule],
     }).compile();
 
     waitingListService = moduleRef.get<WaitingListService>(WaitingListService);
