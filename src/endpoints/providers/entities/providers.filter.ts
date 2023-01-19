@@ -1,5 +1,5 @@
-export class ProviderFilter {
-  constructor(init?: Partial<ProviderFilter>) {
+export class ProvidersFilter {
+  constructor(init?: Partial<ProvidersFilter>) {
     Object.assign(this, init);
   }
 
