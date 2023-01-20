@@ -205,7 +205,7 @@ describe("Tokens Controller", () => {
         .expect(200)
         .then(res => {
           expect(res.body).toHaveLength(25);
-          expect(res.body[0].address).toStrictEqual('erd1qqqqqqqqqqqqqpgq7qhsw8kffad85jtt79t9ym0a4ycvan9a2jps0zkpen');
+          expect(res.body[0].address).toStrictEqual('erd1qqqqqqqqqqqqqpgqa0fsfshnff4n76jhcye6k7uvd7qacsq42jpsp6shh2');
         });
     });
 
@@ -227,7 +227,7 @@ describe("Tokens Controller", () => {
         .get(`${path}/${identifier}/roles`)
         .expect(200)
         .then(res => {
-          expect(res.body).toHaveLength(17);
+          expect(res.body).toHaveLength(20);
 
           for (const item of res.body) {
             expect(item.address).toBeDefined();

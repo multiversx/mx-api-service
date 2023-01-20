@@ -6,12 +6,15 @@ changelog:
     - title: Breaking Changes 🛠
       labels:
         - breaking-change
-    - title: Bugfixes 🐛
+    - title: Hotfixes 🔥
       labels:
-        - bug
+        - hotfix
     - title: Exciting New Features 🎉
       labels:
         - feature
+    - title: Bugfixes 🐛
+      labels:
+        - bugfix
     - title: Other Notable Changes
       labels:
         - "*"

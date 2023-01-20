@@ -90,7 +90,7 @@ describe('Network Service', () => {
 
   describe("getMinimumAuctionTopUp", () => {
     it("Should correctly calculate minimum auction topup", async () => {
-      jest.spyOn(GatewayService.prototype, "getAuctions")
+      jest.spyOn(GatewayService.prototype, "getValidatorAuctions")
         .mockImplementation(jest.fn(() => Promise.resolve([
           new Auction({
             "qualifiedTopUp": "2500000000000000000000",
@@ -118,7 +118,7 @@ describe('Network Service', () => {
     });
 
     it("Should correctly calculate minimum auction topup even if values come sorted wrongly", async () => {
-      jest.spyOn(GatewayService.prototype, "getAuctions")
+      jest.spyOn(GatewayService.prototype, "getValidatorAuctions")
         .mockImplementation(jest.fn(() => Promise.resolve([
           new Auction({
             "qualifiedTopUp": "2400000000000000000000",
@@ -146,7 +146,7 @@ describe('Network Service', () => {
     });
 
     it("Should return correctly minimum auction topup if all values are selected", async () => {
-      jest.spyOn(GatewayService.prototype, "getAuctions")
+      jest.spyOn(GatewayService.prototype, "getValidatorAuctions")
         .mockImplementation(jest.fn(() => Promise.resolve([
           new Auction({
             "qualifiedTopUp": "2500000000000000000000",
@@ -174,7 +174,7 @@ describe('Network Service', () => {
     });
 
     it("Should return undefined as minimum auction topup if all values are not selected", async () => {
-      jest.spyOn(GatewayService.prototype, "getAuctions")
+      jest.spyOn(GatewayService.prototype, "getValidatorAuctions")
         .mockImplementation(jest.fn(() => Promise.resolve([
           new Auction({
             "qualifiedTopUp": "2500000000000000000000",
@@ -202,7 +202,7 @@ describe('Network Service', () => {
     });
 
     it("Should return undefined as minimum auction topup if no auctions", async () => {
-      jest.spyOn(GatewayService.prototype, "getAuctions")
+      jest.spyOn(GatewayService.prototype, "getValidatorAuctions")
         .mockImplementation(jest.fn(() => Promise.resolve([])));
 
       const minimumAuctionTopUp = await networkService.getMinimumAuctionTopUp();
