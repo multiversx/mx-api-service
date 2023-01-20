@@ -20,7 +20,7 @@ import '@elrondnetwork/erdnest/lib/src/utils/extensions/number.extensions';
 import { AuctionNode } from 'src/common/gateway/entities/auction.node';
 import { CachingService, FileUtils } from '@elrondnetwork/erdnest';
 import { AccountService } from 'src/endpoints/accounts/account.service';
-import { HeartBeatsStatus } from 'src/common/gateway/entities/heartbeats.status';
+import { HeartbeatStatus } from 'src/common/gateway/entities/heartbeat.status';
 import { GatewayService } from 'src/common/gateway/gateway.service';
 import { TrieStatistics } from 'src/common/gateway/entities/trie.statistics';
 
@@ -548,7 +548,7 @@ describe('Node Service', () => {
   describe.skip('getSyncProgress', () => {
     it('should return syncProgress from shard 0', async () => {
       const heartbeatStatus = [
-        new HeartBeatsStatus({
+        new HeartbeatStatus({
           timeStamp: "2022-11-15T08:44:00Z",
           publicKey: "007440278bb33128094b542d5254c1a9b8010ccb0536f7b3ed8b8fe6d45c8cac269988836cc7bbd52dba8152ce5e4e0791e96c3f1f8817861e60833a77e2ca8043891e647810b2f0d4884e83d0f5c067e76d84951762860cc46e8aa33ca18601",
           versionNumber: "v1.3.44.0-0-1d59de276d/go1.17.6/linux-amd64/4c155d4009",
@@ -564,7 +564,7 @@ describe('Node Service', () => {
           numTrieNodesReceived: 1,
         }),
 
-        new HeartBeatsStatus({
+        new HeartbeatStatus({
           timeStamp: "2022-11-15T08:45:58Z",
           publicKey: "00198be6aae517a382944cd5a97845857f3b122bb1edf1588d60ed421d32d16ea2767f359a0d714fae3a35c1b0cf4e1141d701d5d1d24160e49eeaebeab21e2f89a2b7c44f3a313383d542e69800cfb6e115406d3d8114b4044ef5a04acf0408",
           versionNumber: "v1.3.48.0-0-312a0dac20/go1.17.6/linux-amd64/586a3a37b9",

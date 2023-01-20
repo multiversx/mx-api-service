@@ -7,7 +7,7 @@ import { Auction } from "./entities/auction";
 import { EsdtAddressRoles } from "./entities/esdt.roles";
 import { EsdtSupply } from "./entities/esdt.supply";
 import { GatewayComponentRequest } from "./entities/gateway.component.request";
-import { HeartBeatsStatus } from "./entities/heartbeats.status";
+import { HeartbeatStatus } from "./entities/heartbeat.status";
 import { TrieStatistics } from "./entities/trie.statistics";
 import { NetworkConfig } from "./entities/network.config";
 import { NetworkEconomics } from "./entities/network.economics";
@@ -47,7 +47,7 @@ export class GatewayService {
     return result.metrics;
   }
 
-  async getNodeHeartbeatStatus(): Promise<HeartBeatsStatus[]> {
+  async getNodeHeartbeatStatus(): Promise<HeartbeatStatus[]> {
     const result = await this.get('node/heartbeatstatus', GatewayComponentRequest.nodeHeartbeat);
     return result.heartbeats;
   }

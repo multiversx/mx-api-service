@@ -1,5 +1,5 @@
-export class HeartBeatsStatus {
-  constructor(init?: Partial<HeartBeatsStatus>) {
+export class HeartbeatStatus {
+  constructor(init?: Partial<HeartbeatStatus>) {
     Object.assign(this, init);
   }
 
