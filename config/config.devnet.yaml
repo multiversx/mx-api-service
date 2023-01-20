@@ -105,4 +105,4 @@ transaction-action:
   mex:
     microServiceUrl: 'https://devnet-graph.xexchange.com/graphql'
 marketplace:
-  url: 'https://devnet-nfts-graph.elrond.com/graphql'
+  url: 'https://devnet-nfts-graph.multiversx.com/graphql'
