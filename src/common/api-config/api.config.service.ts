@@ -717,4 +717,8 @@ export class ApiConfigService {
   getIndexerMaxPagination(): number {
     return this.configService.get<number>('indexer.maxPagination') ?? 10000;
   }
+
+  isNodeSyncProgressEnabled(): boolean {
+    return this.configService.get<boolean>('features.nodeSyncProgress') ?? false;
+  }
 }
