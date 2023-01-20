@@ -171,22 +171,19 @@ export class CacheWarmerService {
 
   @Lock({ name: 'Keybase against keybase.pub / keybase.io invalidations', verbose: true })
   async handleKeybaseAgainstKeybasePubInvalidations() {
-    await Locker.lock('Keybase against database / keybase.pub / keybase.io invalidations', async () => {
-      await this.keybaseService.confirmKeybasesAgainstDatabase();
-      await this.keybaseService.confirmKeybasesAgainstGithubOrKeybasePub();
-      await this.keybaseService.confirmIdentityProfilesAgainstKeybaseIo();
+    await this.keybaseService.confirmKeybasesAgainstDatabase();
+    await this.keybaseService.confirmKeybasesAgainstGithubOrKeybasePub();
+    await this.keybaseService.confirmIdentityProfilesAgainstKeybaseIo();
 
-      await this.handleKeybaseAgainstCacheInvalidations();
-    });
+    await this.handleKeybaseAgainstCacheInvalidations();
   }
 
   @Cron(CronExpression.EVERY_MINUTE)
+  @Lock({ name: 'Current price invalidations', verbose: true })
   async handleCurrentPriceInvalidations() {
     const currentPrice = await this.pluginsService.getEgldPrice();
     if (currentPrice) {
-      await Locker.lock('Current price invalidations', async () => {
-        await this.invalidateKey(CacheInfo.CurrentPrice.key, currentPrice, CacheInfo.CurrentPrice.ttl);
-      }, true);
+      await this.invalidateKey(CacheInfo.CurrentPrice.key, currentPrice, CacheInfo.CurrentPrice.ttl);
     }
   }
 
@@ -294,13 +291,12 @@ export class CacheWarmerService {
   }
 
   @Cron(CronExpression.EVERY_10_MINUTES)
+  @Lock({ name: 'Api settings invalidations' })
   async handleApiSettings() {
-    await Locker.lock('Api settings invalidations', async () => {
-      const settings = await this.settingsService.getAllSettings();
-      await Promise.all(settings.map(async (setting) => {
-        await this.invalidateKey(CacheInfo.Setting(setting.name).key, setting.value, CacheInfo.Setting(setting.name).ttl);
-      }));
-    });
+    const settings = await this.settingsService.getAllSettings();
+    await Promise.all(settings.map(async (setting) => {
+      await this.invalidateKey(CacheInfo.Setting(setting.name).key, setting.value, CacheInfo.Setting(setting.name).ttl);
+    }));
   }
 
   private async invalidateKey(key: string, data: any, ttl: number) {
