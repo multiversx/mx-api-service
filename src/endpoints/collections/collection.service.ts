@@ -198,13 +198,14 @@ export class CollectionService {
       await this.applyAuctionsStats(collection);
     }
 
-    collection.type = elasticCollection.type as NftType;
-    collection.timestamp = elasticCollection.timestamp;
-    collection.traits = await this.persistenceService.getCollectionTraits(identifier) ?? [];
+    const collectionDetailed = ApiUtils.mergeObjects(new NftCollectionDetailed(), collection);
+    collectionDetailed.timestamp = elasticCollection.timestamp;
+    collectionDetailed.traits = await this.persistenceService.getCollectionTraits(identifier) ?? [];
 
-    await this.pluginService.processCollections([collection]);
-    await this.applyCollectionRoles(collection, elasticCollection);
-    return collection;
+    await this.pluginService.processCollections([collectionDetailed]);
+    await this.applyCollectionRoles(collectionDetailed, elasticCollection);
+
+    return collectionDetailed;
   }
 
   async applyCollectionRoles(collection: NftCollectionDetailed | TokenDetailed, elasticCollection: any) {
