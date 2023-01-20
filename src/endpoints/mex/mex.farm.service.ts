@@ -39,6 +39,12 @@ export class MexFarmService {
     );
   }
 
+  async getMexFarmsCount(): Promise<number> {
+    const mexFarms = await this.getAllMexFarms();
+
+    return mexFarms.length;
+  }
+
   private async getAllMexFarmsRaw(): Promise<MexFarm[]> {
     const query = gql`
       query {

@@ -15,6 +15,7 @@ cron:
   fastWarm: true
   queueWorker: true
   elasticUpdater: false
+  statusChecker: false
 flags:
   useRequestCaching: true
   useKeepAliveAgent: true
@@ -45,24 +46,24 @@ aws:
 urls:
   self: 'https://devnet-api.elrond.com'
   api:
-    - 'https://devnet-api.elrond.com'
-    - 'https://testnet-api.elrond.com'
-    - 'https://api.elrond.com'
+    - 'https://devnet-api.multiversx.com'
+    - 'https://testnet-api.multiversx.com'
+    - 'https://api.multiversx.com'
     - 'http://localhost:3001'
   elastic:
     - 'https://devnet-index.elrond.com'
   gateway:
-    - 'https://devnet-gateway.elrond.com'
+    - 'https://devnet-gateway.multiversx.com'
   redis: '127.0.0.1'
   rabbitmq: 'amqp://127.0.0.1:5672'
-  providers: 'https://devnet-delegation-api.elrond.com/providers'
-  delegation: 'https://devnet-delegation-api.elrond.com'
+  providers: 'https://devnet-delegation-api.multiversx.com/providers'
+  delegation: 'https://devnet-delegation-api.multiversx.com'
   media: 'https://devnet-media.elrond.com'
   nftThumbnails: 'https://devnet-media.elrond.com/nfts/thumbnail'
   tmp: '/tmp'
   ipfs: 'https://ipfs.io/ipfs'
   socket: 'devnet-socket-fra.elrond.com'
-  maiarId: 'https://devnet-id.maiar.com'
+  maiarId: 'https://devnet-id-api.multiversx.com'
 indexer:
   type: 'elastic'
   maxPagination: 10000

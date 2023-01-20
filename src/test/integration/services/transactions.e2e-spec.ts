@@ -9,6 +9,8 @@ import { Transaction } from 'src/endpoints/transactions/entities/transaction';
 import '@elrondnetwork/erdnest/lib/src/utils/extensions/jest.extensions';
 import '@elrondnetwork/erdnest/lib/src/utils/extensions/array.extensions';
 import { TransactionQueryOptions } from 'src/endpoints/transactions/entities/transactions.query.options';
+import { TransactionDetailed } from 'src/endpoints/transactions/entities/transaction.detailed';
+import { TransactionOptionalFieldOption } from 'src/endpoints/transactions/entities/transaction.optional.field.options';
 
 describe('Transaction Service', () => {
   let transactionService: TransactionService;
@@ -137,5 +139,71 @@ describe('Transaction Service', () => {
     expect(results).toHaveLength(2);
     expect(txResults.includes("29a2bed2543197e69c9bf16b30c4b0196f5e7a59584aba2e1a2127bf06cdfd2d")).toBeTruthy();
     expect(txResults.includes("0cbaeb61cd2d901e7363b83e35750d0cbf2045ed853ef8f7af7cefdef622671e")).toBeTruthy();
+  });
+
+  describe('getTransaction', () => {
+    it('should return transaction details', async () => {
+      const txHash: string = "4302d0af550e47a21e5d183f0918af7dbc015f1e7dea6d2ab2025ee675bf8517";
+      const result = await transactionService.getTransaction(txHash);
+
+      expect(result).toHaveStructure(Object.keys(new TransactionDetailed()));
+    });
+
+    it('should return operations attribute for a given transaction', async () => {
+      const txHash: string = "4302d0af550e47a21e5d183f0918af7dbc015f1e7dea6d2ab2025ee675bf8517";
+      const result = await transactionService.getTransaction(txHash, [TransactionOptionalFieldOption.operations]);
+
+      expect(result?.operations).toBeDefined();
+      expect(result?.operations[0].id).toStrictEqual(txHash);
+      expect(result?.operations[0].action).toStrictEqual("transfer");
+    });
+
+    it('should return logs attribute for a given transaction', async () => {
+      const txHash: string = "4302d0af550e47a21e5d183f0918af7dbc015f1e7dea6d2ab2025ee675bf8517";
+      const result = await transactionService.getTransaction(txHash, [TransactionOptionalFieldOption.logs]);
+
+      expect(result?.logs).toBeDefined();
+      expect(result?.logs?.address).toStrictEqual("erd1qqqqqqqqqqqqqpgqmuk0q2saj0mgutxm4teywre6dl8wqf58xamqdrukln");
+      expect(result?.logs?.addressAssets).toEqual(expect.objectContaining({
+        name: "ESDT: WrappedEGLD Contract Shard 2",
+        tags: expect.arrayContaining([
+          "mex",
+          "wegld",
+        ]),
+      }));
+    });
+  });
+
+  it(`should return a list of transfers between two accounts (first address is always sender and seconds adress is always receiver)`, async () => {
+    const sender = 'erd18kmncel8a32yd94ktzlqag9etdrpdnyph8wus2nqyd4lp865gncq40znww';
+    const receiver = 'erd1sdslvlxvfnnflzj42l8czrcngq3xjjzkjp3rgul4ttk6hntr4qdsv6sets';
+    const transactionFilter = new TransactionFilter();
+    transactionFilter.sender = sender;
+    transactionFilter.receivers = [receiver];
+
+    const transfers = await transactionService.getTransactions(transactionFilter, { from: 0, size: 25 }, new TransactionQueryOptions());
+    expect(transfers.length).toBeGreaterThan(0);
+
+    for (const transfer of transfers) {
+      expect(transfer.sender).toBe(sender);
+      expect([sender, receiver].includes(transfer.receiver)).toBe(true); //it can be an ESDNFTTransfer which is a self transaction
+    }
+  });
+
+  //TBD
+  it.skip(`should return a list of transfers between two accounts`, async () => {
+    const sender = 'erd18kmncel8a32yd94ktzlqag9etdrpdnyph8wus2nqyd4lp865gncq40znww';
+    const receiver = 'erd1sdslvlxvfnnflzj42l8czrcngq3xjjzkjp3rgul4ttk6hntr4qdsv6sets';
+    const transactionFilter = new TransactionFilter();
+    transactionFilter.address = sender;
+    transactionFilter.senderOrReceiver = receiver;
+
+    const transfers = await transactionService.getTransactions(transactionFilter, { from: 0, size: 25 }, new TransactionQueryOptions());
+    expect(transfers.length).toBeGreaterThan(0);
+
+    for (const transfer of transfers) {
+      expect([sender, receiver].includes(transfer.sender)).toBe(true);
+      expect([sender, receiver].includes(transfer.receiver)).toBe(true);
+    }
   });
 });

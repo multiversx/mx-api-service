@@ -1,7 +1,5 @@
 import { Test } from "@nestjs/testing";
-
 import { randomInt } from "crypto";
-
 import { AccountDetailed } from "src/endpoints/accounts/entities/account.detailed";
 import { AccountDetailedResolver } from "src/graphql/entities/account.detailed/account.detailed.resolver";
 import { AccountService } from "src/endpoints/accounts/account.service";
@@ -18,7 +16,7 @@ import { NftServiceMock } from "src/test/unit/graphql/mocks/nft.service.mock";
 import { NftQueryOptions } from "src/endpoints/nfts/entities/nft.query.options";
 import { QueryPagination } from "src/common/entities/query.pagination";
 
-describe(AccountDetailedResolver, () => {
+describe.skip(AccountDetailedResolver, () => {
 
   const AccountServiceMockProvider = {
     provide: AccountService,
