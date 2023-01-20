@@ -48,6 +48,10 @@ export class WebSocketPublisherService {
     await this.emitTransactionEvent(transaction, 'transactionPendingResults');
   }
 
+  onBatchUpdated(address: string, batchId: string, txHashes: string[]) {
+    this.server?.to(address).emit('batchUpdated', { batchId, txHashes });
+  }
+
   private async emitTransactionEvent(transaction: ShardTransaction, eventName: string) {
     this.server?.to(transaction.sender).emit(eventName, transaction.hash);
 

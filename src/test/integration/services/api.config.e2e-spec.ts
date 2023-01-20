@@ -1,7 +1,7 @@
 import { Test } from "@nestjs/testing";
 import { ConfigService } from "@nestjs/config";
 import { ApiConfigModule } from "src/common/api-config/api.config.module";
-import { DatabaseConnectionOptions } from "src/common/persistence/database/entities/connection.options";
+import { DatabaseConnectionOptions } from "src/common/persistence/entities/connection.options";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 
 describe('API Config', () => {
@@ -23,16 +23,16 @@ describe('API Config', () => {
       jest
         .spyOn(ConfigService.prototype, "get")
         .mockImplementation(jest.fn(() => [
-          'https://api.elrond.com',
-          'https://devnet-api.elrond.com',
-          'https://testnet-api.elrond.com',
+          'https://api.multiversx.com',
+          'https://devnet-api.multiversx.com',
+          'https://testnet-api.multiversx.com',
         ]));
 
       const results = apiConfigService.getApiUrls();
       expect(results).toEqual(expect.arrayContaining([
-        'https://api.elrond.com',
-        'https://devnet-api.elrond.com',
-        'https://testnet-api.elrond.com',
+        'https://api.multiversx.com',
+        'https://devnet-api.multiversx.com',
+        'https://testnet-api.multiversx.com',
       ]));
     });
 
@@ -45,14 +45,45 @@ describe('API Config', () => {
     });
   });
 
+  describe('getDataApiUrl', () => {
+    it("should return data api url", () => {
+      jest
+        .spyOn(ConfigService.prototype, "get")
+        .mockImplementation(jest.fn(() => "https://tools.multiversx.com/data-api/graphql"));
+
+      const result = apiConfigService.getDataApiUrl();
+      expect(result).toStrictEqual("https://tools.multiversx.com/data-api/graphql");
+    });
+  });
+
+  describe('getSignerPrivateKeyPath', () => {
+    it("should return signer private key path", () => {
+      jest
+        .spyOn(ConfigService.prototype, "get")
+        .mockImplementation(jest.fn(() => "erd1"));
+
+      const result = apiConfigService.getSignerPrivateKeyPath();
+      expect(result).toStrictEqual("erd1");
+    });
+
+    it("should return undefined", () => {
+      jest
+        .spyOn(ConfigService.prototype, 'get')
+        .mockImplementation(jest.fn(() => undefined));
+
+      const result = apiConfigService.getSignerPrivateKeyPath();
+      expect(result).toBeUndefined();
+    });
+  });
+
   describe("getGatewayUrl", () => {
     it("should return gateway url", () => {
       jest
         .spyOn(ConfigService.prototype, "get")
-        .mockImplementation(jest.fn(() => ['https://gateway.elrond.com']));
+        .mockImplementation(jest.fn(() => ['https://gateway.multiversx.com']));
 
       const results = apiConfigService.getGatewayUrl();
-      expect(results).toEqual('https://gateway.elrond.com');
+      expect(results).toEqual('https://gateway.multiversx.com');
     });
 
     it("should throw error because test simulates that gateway url is not defined", () => {
@@ -290,10 +321,10 @@ describe('API Config', () => {
     it("should return vm query url", () => {
       jest
         .spyOn(ConfigService.prototype, "get")
-        .mockImplementation(jest.fn(() => ['https://gateway.elrond.com']));
+        .mockImplementation(jest.fn(() => ['https://gateway.multiversx.com']));
 
       const results = apiConfigService.getVmQueryUrl();
-      expect(results).toEqual('https://gateway.elrond.com');
+      expect(results).toEqual('https://gateway.multiversx.com');
     });
 
     it("should throw error because test simulates that vm query url is not defined", () => {
@@ -595,10 +626,10 @@ describe('API Config', () => {
     it("should return providers url", () => {
       jest
         .spyOn(ConfigService.prototype, "get")
-        .mockImplementation(jest.fn(() => 'https://internal-delegation-api.elrond.com/providers'));
+        .mockImplementation(jest.fn(() => 'https://internal-delegation-api.multiversx.com/providers'));
 
       const results = apiConfigService.getProvidersUrl();
-      expect(results).toEqual('https://internal-delegation-api.elrond.com/providers');
+      expect(results).toEqual('https://internal-delegation-api.multiversx.com/providers');
     });
 
     it("should throw error because test simulates that providers url is not defined", () => {
@@ -607,17 +638,6 @@ describe('API Config', () => {
         .mockImplementation(jest.fn(() => undefined));
 
       expect(() => apiConfigService.getProvidersUrl()).toThrowError('No providers url present');
-    });
-  });
-
-  describe("getDataUrl", () => {
-    it("should return data url", () => {
-      jest
-        .spyOn(ConfigService.prototype, "get")
-        .mockImplementation(jest.fn(() => undefined));
-
-      const results = apiConfigService.getDataUrl();
-      expect(results).toEqual(undefined);
     });
   });
 
@@ -1560,17 +1580,17 @@ describe('API Config', () => {
       jest
         .spyOn(ConfigService.prototype, "get")
         .mockImplementation(jest.fn(() => [
-          'https://api.elrond.com',
-          'https://devnet-api.elrond.com',
-          'https://testnet-api.elrond.com',
+          'https://api.multiversx.com',
+          'https://devnet-api.multiversx.com',
+          'https://testnet-api.multiversx.com',
         ]));
 
       const results = apiConfigService.getConfig('urls.api');
 
       expect(results).toEqual(expect.arrayContaining([
-        'https://api.elrond.com',
-        'https://devnet-api.elrond.com',
-        'https://testnet-api.elrond.com',
+        'https://api.multiversx.com',
+        'https://devnet-api.multiversx.com',
+        'https://testnet-api.multiversx.com',
       ]));
     });
   });

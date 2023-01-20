@@ -36,7 +36,27 @@ export class PassThroughService implements PersistenceInterface {
 
   }
 
+  async getKeybaseConfirmationForIdentity(_identity: string): Promise<string[] | undefined> {
+    return undefined;
+  }
+
+  async setKeybaseConfirmationForIdentity(_identity: string, _keys: string[]): Promise<void> {
+
+  }
+
   async getCollectionTraits(_collection: string): Promise<CollectionTrait[] | null> {
     return null;
+  }
+
+  async getSetting<T>(_name: string): Promise<T | undefined> {
+    return undefined;
+  }
+
+  async setSetting<T>(_name: string, _value: T): Promise<void> {
+
+  }
+
+  async getAllSettings(): Promise<{ name: string, value: any }[]> {
+    return [];
   }
 }

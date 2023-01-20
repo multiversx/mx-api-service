@@ -80,8 +80,8 @@ export class IndexerService implements IndexerInterface {
     return await this.execute('getTransfersCount', this.indexerInterface.getTransfersCount(filter));
   }
 
-  async getTokenCountForAddress(address: string): Promise<number> {
-    return await this.execute('getTokenCountForAddress', this.indexerInterface.getTokenCountForAddress(address));
+  async getTokenCountForAddress(address: string, filter: TokenFilter): Promise<number> {
+    return await this.execute('getTokenCountForAddress', this.indexerInterface.getTokenCountForAddress(address, filter));
   }
 
   async getTokenAccountsCount(identifier: string): Promise<number | undefined> {

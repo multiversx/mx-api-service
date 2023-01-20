@@ -7,7 +7,7 @@ export class DappConfigQuery {
   constructor(protected readonly dappConfigService: DappConfigService) { }
 
   @Query(() => DappConfig, { name: "dappConfig", description: "Retrieve configuration used in dapp." })
-  public async getDappConfig(): Promise<DappConfig> {
+  public async getDappConfig(): Promise<DappConfig | undefined> {
     return await this.dappConfigService.getDappConfiguration();
   }
 }

@@ -135,6 +135,13 @@ export class CacheInfo {
     };
   }
 
+  static TransactionBatchShardNonce(shard: number): CacheInfo {
+    return {
+      key: `batchShardNonce:${shard}`,
+      ttl: Number.MAX_SAFE_INTEGER,
+    };
+  }
+
   static TokenAssets: CacheInfo = {
     key: 'tokenAssets',
     ttl: Constants.oneDay(),
@@ -184,7 +191,15 @@ export class CacheInfo {
   static EsdtAssets(identifier: string): CacheInfo {
     return {
       key: `esdt:assets:${identifier}`,
-      ttl: Constants.oneDay(),
+      ttl: Constants.oneHour(),
+    };
+  }
+
+  static HistoricalPrice(identifier: string, date: Date): CacheInfo {
+    const isCurrentDate = date.startOfDay() === new Date().startOfDay();
+    return {
+      key: `historical-price:${identifier}:${date.toISODateString()}`,
+      ttl: isCurrentDate ? Constants.oneMinute() * 5 : Constants.oneWeek(),
     };
   }
 
@@ -329,8 +344,8 @@ export class CacheInfo {
     ttl: Constants.oneDay(),
   };
 
-  static LockedTokenID: CacheInfo = {
-    key: "lockedTokenID",
+  static LockedTokenIDs: CacheInfo = {
+    key: "lockedTokenIDs",
     ttl: Constants.oneHour(),
   };
 
@@ -338,6 +353,20 @@ export class CacheInfo {
     key: "currentEpoch",
     ttl: Constants.oneMinute(),
   };
+
+  static TransactionBatch(sender: string, batchId: string): CacheInfo {
+    return {
+      key: `transactionbatch:${sender}:${batchId}`,
+      ttl: Constants.oneMinute() * 20,
+    };
+  }
+
+  static PendingTransaction(hash: string): CacheInfo {
+    return {
+      key: `pendingtransaction:${hash}`,
+      ttl: Constants.oneMinute() * 15,
+    };
+  }
 
   static AccountsCount: CacheInfo = {
     key: "account:count",
@@ -452,6 +481,13 @@ export class CacheInfo {
   static Username(address: string): CacheInfo {
     return {
       key: `username:${address}`,
+      ttl: Constants.oneHour(),
+    };
+  }
+
+  static Setting(name: string): CacheInfo {
+    return {
+      key: `api:settings:${name}`,
       ttl: Constants.oneHour(),
     };
   }

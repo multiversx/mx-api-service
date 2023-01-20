@@ -236,10 +236,6 @@ export class ApiConfigService {
     return delegationUrl;
   }
 
-  getDataUrl(): string | undefined {
-    return this.configService.get<string>('urls.dataUrl');
-  }
-
   getTempUrl(): string {
     const tmpUrl = this.configService.get<string>('urls.tmp');
     if (!tmpUrl) {
@@ -275,6 +271,14 @@ export class ApiConfigService {
     return this.configService.get<number>('cron.transactionCompletedMaxLookBehind') ?? 100;
   }
 
+  getIsTransactionBatchCronActive(): boolean {
+    return this.configService.get<boolean>('cron.transactionBatch') ?? false;
+  }
+
+  getTransactionBatchMaxLookBehind(): number {
+    return this.configService.get<number>('cron.transactionBatchMaxLookBehind') ?? 100;
+  }
+
   getIsCacheWarmerCronActive(): boolean {
     const isCronActive = this.configService.get<boolean>('cron.cacheWarmer');
     if (isCronActive === undefined) {
@@ -282,6 +286,10 @@ export class ApiConfigService {
     }
 
     return isCronActive;
+  }
+
+  getIsApiStatusCheckerActive(): boolean {
+    return this.configService.get<boolean>('cron.statusChecker') ?? false;
   }
 
   getIsElasticUpdaterCronActive(): boolean {
