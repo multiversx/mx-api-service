@@ -16,6 +16,7 @@ import { CacheInfo } from 'src/utils/cache.info';
 import { NumberUtils, CachingService, ApiService } from '@elrondnetwork/erdnest';
 import { About } from './entities/about';
 import { PluginService } from 'src/common/plugins/plugin.service';
+import { SmartContractResultService } from '../sc-results/scresult.service';
 import { TokenService } from '../tokens/token.service';
 
 @Injectable()
@@ -39,6 +40,7 @@ export class NetworkService {
     @Inject(forwardRef(() => StakeService))
     private readonly stakeService: StakeService,
     private readonly pluginService: PluginService,
+    private readonly smartContractResultService: SmartContractResultService
   ) { }
 
   async getConstants(): Promise<NetworkConstants> {
@@ -209,12 +211,14 @@ export class NetworkService {
       blocks,
       accounts,
       transactions,
+      scResults,
     ] = await Promise.all([
       this.gatewayService.getNetworkConfig(),
       this.gatewayService.getNetworkStatus(metaChainShard),
       this.blockService.getBlocksCount(new BlockFilter()),
       this.accountService.getAccountsCount(),
       this.transactionService.getTransactionCount(new TransactionFilter()),
+      this.smartContractResultService.getScResultsCount(),
     ]);
 
     return {
@@ -222,6 +226,7 @@ export class NetworkService {
       blocks,
       accounts,
       transactions,
+      scResults,
       refreshRate,
       epoch,
       roundsPassed: roundsPassed % roundsPerEpoch,
