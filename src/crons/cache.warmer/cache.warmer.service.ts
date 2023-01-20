@@ -122,15 +122,13 @@ export class CacheWarmerService {
 
   @Lock({ name: 'Node auction invalidations', verbose: true })
   async handleNodeAuctionInvalidations() {
-    await Locker.lock('Node auction invalidations', async () => {
-      await this.lock.acquire('nodes', async () => {
-        const nodes = await this.nodeService.getAllNodes();
-        const auctions = await this.gatewayService.getValidatorAuctions();
+    await this.lock.acquire('node auctions', async () => {
+      const nodes = await this.nodeService.getAllNodes();
+      const auctions = await this.gatewayService.getValidatorAuctions();
 
-        this.nodeService.processAuctions(nodes, auctions);
+      this.nodeService.processAuctions(nodes, auctions);
 
-        await this.invalidateKey(CacheInfo.Nodes.key, nodes, CacheInfo.Nodes.ttl);
-      });
+      await this.invalidateKey(CacheInfo.Nodes.key, nodes, CacheInfo.Nodes.ttl);
     });
   }
 
