@@ -173,4 +173,37 @@ describe('Transaction Service', () => {
       }));
     });
   });
+
+  it(`should return a list of transfers between two accounts (first address is always sender and seconds adress is always receiver)`, async () => {
+    const sender = 'erd18kmncel8a32yd94ktzlqag9etdrpdnyph8wus2nqyd4lp865gncq40znww';
+    const receiver = 'erd1sdslvlxvfnnflzj42l8czrcngq3xjjzkjp3rgul4ttk6hntr4qdsv6sets';
+    const transactionFilter = new TransactionFilter();
+    transactionFilter.sender = sender;
+    transactionFilter.receivers = [receiver];
+
+    const transfers = await transactionService.getTransactions(transactionFilter, { from: 0, size: 25 }, new TransactionQueryOptions());
+    expect(transfers.length).toBeGreaterThan(0);
+
+    for (const transfer of transfers) {
+      expect(transfer.sender).toBe(sender);
+      expect([sender, receiver].includes(transfer.receiver)).toBe(true); //it can be an ESDNFTTransfer which is a self transaction
+    }
+  });
+
+  //TBD
+  it.skip(`should return a list of transfers between two accounts`, async () => {
+    const sender = 'erd18kmncel8a32yd94ktzlqag9etdrpdnyph8wus2nqyd4lp865gncq40znww';
+    const receiver = 'erd1sdslvlxvfnnflzj42l8czrcngq3xjjzkjp3rgul4ttk6hntr4qdsv6sets';
+    const transactionFilter = new TransactionFilter();
+    transactionFilter.address = sender;
+    transactionFilter.senderOrReceiver = receiver;
+
+    const transfers = await transactionService.getTransactions(transactionFilter, { from: 0, size: 25 }, new TransactionQueryOptions());
+    expect(transfers.length).toBeGreaterThan(0);
+
+    for (const transfer of transfers) {
+      expect([sender, receiver].includes(transfer.sender)).toBe(true);
+      expect([sender, receiver].includes(transfer.receiver)).toBe(true);
+    }
+  });
 });

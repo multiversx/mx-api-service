@@ -92,6 +92,10 @@ export class ProviderService {
         if (delegationData.featured) {
           element.featured = delegationData.featured;
         }
+
+        if (delegationData.owner) {
+          element.owner = delegationData.owner;
+        }
       }
 
       // Add Nodes details for provider
@@ -101,9 +105,6 @@ export class ProviderService {
       element.stake = nodesInfos.stake;
       element.topUp = nodesInfos.topUp;
       element.locked = nodesInfos.locked;
-
-      // @ts-ignore
-      delete element.owner;
     });
 
     providers.sort((a, b) => {
