@@ -595,6 +595,10 @@ export class NodeService {
 
       if (this.apiConfigService.isNodeSyncProgressEnabled() && numTrieNodesReceived > 0) {
         node.syncProgress = numTrieNodesReceived / nodesPerShardDict[shard];
+
+        if (node.syncProgress > 1) {
+          node.syncProgress = 1;
+        }
       }
 
       node.issues = this.getIssues(node, config.erd_latest_tag_software_version);
