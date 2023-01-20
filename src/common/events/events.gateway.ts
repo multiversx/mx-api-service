@@ -14,16 +14,11 @@ import { UseFilters, UseGuards, UsePipes } from '@nestjs/common';
 import { OriginLogger } from '@elrondnetwork/erdnest';
 import { AuthGuardWs } from '../auth/auth.guard';
 import { UserDb } from '../persistence/userdb/entities/user.db';
-import {
-  SubscriptionEntry,
-} from './entities/subscription.entry';
+import { SubscriptionEntry } from './entities/subscription.entry';
 import { Notification } from './events.types';
-import {
-  ValidationPipe,
-} from './validation.pipe';
-const MAX_CONNECTIONS = 2;
+import { ValidationPipe } from './validation.pipe';
+import { ApiConfigService } from '../api-config/api.config.service';
 
-type MyServer = Server
 
 @UseGuards(AuthGuardWs)
 @UseFilters(new BaseWsExceptionFilter())
@@ -34,21 +29,21 @@ type MyServer = Server
 })
 export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
-  server: MyServer | undefined;
+  server: Server | undefined;
   private readonly logger = new OriginLogger(EventsGateway.name);
 
-  constructor(private authGuardWs: AuthGuardWs) { }
+  constructor(private readonly apiConfigService: ApiConfigService, private authGuardWs: AuthGuardWs) { }
 
   /**
    *
    * @param socket Socket
    */
   async handleConnection(socket: Socket) {
-    const user_details: UserDb = { address: '', availability: 0 };
+    const userDetails: UserDb = { address: '', availability: 0 };
     // A client has connected
-    const allow = await this.authGuardWs.validateRequest(socket, user_details);
+    const allowConnection: boolean = await this.authGuardWs.validateRequest(socket, userDetails);
 
-    if (!allow) {
+    if (!allowConnection) {
       this.logger.error(
         `Client ${socket.client} disconnected due to unaothorized request.`,
       );
@@ -58,26 +53,27 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     // Validate if user has already more connections than allowed across all nodes
     const user_connections = await this.server?.sockets.adapter.sockets(
-      new Set([user_details.address]),
+      new Set([userDetails.address]),
     );
 
-    if (user_connections && user_connections.size >= MAX_CONNECTIONS) {
+    const maxConnections = this.apiConfigService.getLiveWebsocketEventsMaxConnections();
+    if (user_connections && user_connections.size >= maxConnections) {
       this.logger.error(
-        `Client ${user_details.address} has already ${MAX_CONNECTIONS} connections.`,
+        `Client ${userDetails.address} has already ${maxConnections} connections.`,
       );
       socket.disconnect(true);
       return;
     }
 
     // Join address room to keep track of connectiosn
-    await socket.join(user_details.address);
-    await this.server?.in(socket.id).socketsJoin(
-      user_details.address,
+    await socket.join(userDetails.address);
+    this.server?.in(socket.id).socketsJoin(
+      userDetails.address,
     );
 
     // Join availability room to disconnect all sockets at once
-    await socket.join(user_details.availability.toString());
-    await this.server?.in(socket.id).socketsJoin(
+    await socket.join(userDetails.availability.toString());
+    this.server?.in(socket.id).socketsJoin(
       socket.id,
     );
 
@@ -133,10 +129,9 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   // eslint-disable-next-line require-await
   async sendNotification(data: Notification) {
     this.logger.log('Sending notification to connected users.');
-    console.log(data);
+
     if (data.events) {
       for (const event of data.events) {
-        console.log("Here", event);
         const address = event.address;
         const identifier = event.identifier;
         this.server?.to(address)

@@ -5,15 +5,20 @@ import configuration from 'config/configuration';
 import { NotifierEvent as NotifierEvent } from './entities/notifier.event';
 import { OriginLogger } from '@elrondnetwork/erdnest';
 import { RabbitMqEventsHandlerService } from './rabbitmq.events.handler.service';
+import { ApiConfigService } from '../api-config/api.config.service';
 
 @Injectable()
 export class RabbitMqConsumer {
   private readonly logger = new OriginLogger(RabbitMqConsumer.name);
+  private isLiveWsEnabled: boolean = false;
 
   constructor(
     private readonly nftHandlerService: RabbitMqNftHandlerService,
     private readonly eventsHandlerService: RabbitMqEventsHandlerService,
-  ) { }
+    private readonly apiConfigService: ApiConfigService,
+  ) {
+    this.isLiveWsEnabled = this.apiConfigService.isLiveWebsocketEventsFeatureEnabled();
+  }
 
   @CompetingRabbitConsumer({
     exchange: 'all_events',
@@ -23,8 +28,8 @@ export class RabbitMqConsumer {
   async consumeEvents(rawEvents: any) {
     try {
       const events = rawEvents?.events;
-      console.log(events);
-      await this.eventsHandlerService.sendNotification(rawEvents);
+
+      this.isLiveWsEnabled && await this.eventsHandlerService.sendNotification(rawEvents);
 
       if (events) {
         await Promise.all(events.map((event: any) => this.handleEvent(event)));
