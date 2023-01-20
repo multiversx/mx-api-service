@@ -19,8 +19,7 @@ import { MexEconomicsService } from "src/endpoints/mex/mex.economics.service";
 import { MexPairService } from "src/endpoints/mex/mex.pair.service";
 import { MexTokenService } from "src/endpoints/mex/mex.token.service";
 import { MexFarmService } from "src/endpoints/mex/mex.farm.service";
-import AsyncLock from "async-lock";
-import { CachingService, Constants, OriginLogger, Lock, Locker } from "@elrondnetwork/erdnest";
+import { CachingService, Constants, Lock, Locker } from "@elrondnetwork/erdnest";
 import { DelegationLegacyService } from "src/endpoints/delegation.legacy/delegation.legacy.service";
 import { PluginService } from "src/common/plugins/plugin.service";
 import { SettingsService } from "src/common/settings/settings.service";
@@ -28,9 +27,6 @@ import { TokenService } from "src/endpoints/tokens/token.service";
 
 @Injectable()
 export class CacheWarmerService {
-  private readonly lock: AsyncLock;
-  private readonly logger = new OriginLogger(CacheWarmerService.name);
-
   constructor(
     private readonly nodeService: NodeService,
     private readonly esdtService: EsdtService,
@@ -56,8 +52,6 @@ export class CacheWarmerService {
     private readonly delegationLegacyService: DelegationLegacyService,
     private readonly tokenService: TokenService,
   ) {
-    this.lock = new AsyncLock();
-
     this.configCronJob(
       'handleKeybaseAgainstKeybasePubInvalidations',
       CronExpression.EVERY_MINUTE,
@@ -96,21 +90,15 @@ export class CacheWarmerService {
   @Cron(CronExpression.EVERY_MINUTE)
   @Lock({ name: 'About invalidation', verbose: true })
   async handleAboutInvalidation() {
-    await this.lock.acquire('about', async () => {
-      const about = await this.networkService.getAboutRaw();
-      await this.invalidateKey(CacheInfo.About.key, about, CacheInfo.About.ttl);
-    });
+    const about = await this.networkService.getAboutRaw();
+    await this.invalidateKey(CacheInfo.About.key, about, CacheInfo.About.ttl);
   }
 
   @Cron(CronExpression.EVERY_MINUTE)
   @Lock({ name: 'Node invalidations', verbose: true })
   async handleNodeInvalidations() {
-    this.logger.log('Invalidating nodes');
-
-    await this.lock.acquire('nodes', async () => {
-      const nodes = await this.nodeService.getAllNodesRaw();
-      await this.invalidateKey(CacheInfo.Nodes.key, nodes, CacheInfo.Nodes.ttl);
-    });
+    const nodes = await this.nodeService.getAllNodesRaw();
+    await this.invalidateKey(CacheInfo.Nodes.key, nodes, CacheInfo.Nodes.ttl);
   }
 
   @Cron(CronExpression.EVERY_MINUTE)
@@ -122,14 +110,12 @@ export class CacheWarmerService {
 
   @Lock({ name: 'Node auction invalidations', verbose: true })
   async handleNodeAuctionInvalidations() {
-    await this.lock.acquire('node auctions', async () => {
-      const nodes = await this.nodeService.getAllNodes();
-      const auctions = await this.gatewayService.getValidatorAuctions();
+    const nodes = await this.nodeService.getAllNodes();
+    const auctions = await this.gatewayService.getValidatorAuctions();
 
-      this.nodeService.processAuctions(nodes, auctions);
+    this.nodeService.processAuctions(nodes, auctions);
 
-      await this.invalidateKey(CacheInfo.Nodes.key, nodes, CacheInfo.Nodes.ttl);
-    });
+    await this.invalidateKey(CacheInfo.Nodes.key, nodes, CacheInfo.Nodes.ttl);
   }
 
   @Cron(CronExpression.EVERY_MINUTE)
