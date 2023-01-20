@@ -3270,7 +3270,7 @@ type Stats {
   """Rounds per epoch details."""
   roundsPerEpoch: Float!
 
-  """Total number of transactions and smart contract results."""
+  """Total number of smart contract results."""
   scResults: Float!
 
   """Shards available on blockchain."""
