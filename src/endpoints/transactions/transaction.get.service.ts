@@ -94,19 +94,15 @@ export class TransactionGetService {
       }
 
       if (!fields || fields.length === 0 || fields.includes(TransactionOptionalFieldOption.logs) || fields.includes(TransactionOptionalFieldOption.operations)) {
-        let logs: TransactionLog[] = [];
+        const logs = await this.getTransactionLogsFromElastic(hashes);
 
-        if (!fields || fields.length === 0 || fields.includes(TransactionOptionalFieldOption.logs)) {
-          logs = await this.getTransactionLogsFromElastic(hashes);
-
-          for (const log of logs) {
-            if (log.id === txHash) {
-              transactionDetailed.logs = log;
-            } else if (transactionDetailed.results) {
-              const foundScResult = transactionDetailed.results.find(({ hash }) => log.id === hash);
-              if (foundScResult) {
-                foundScResult.logs = log;
-              }
+        for (const log of logs) {
+          if (log.id === txHash) {
+            transactionDetailed.logs = log;
+          } else if (transactionDetailed.results) {
+            const foundScResult = transactionDetailed.results.find(({ hash }) => log.id === hash);
+            if (foundScResult) {
+              foundScResult.logs = log;
             }
           }
         }
