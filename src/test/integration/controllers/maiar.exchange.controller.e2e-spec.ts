@@ -3,7 +3,7 @@ import { Test } from '@nestjs/testing';
 import { PublicAppModule } from 'src/public.app.module';
 import request = require('supertest');
 
-describe("Maiar Exchange Controller", () => {
+describe("xExchange Controller", () => {
   let app: INestApplication;
   const path: string = "/mex";
 
@@ -16,7 +16,7 @@ describe("Maiar Exchange Controller", () => {
     await app.init();
   });
 
-  it("should returns economics details of Maiar Exchange ", async () => {
+  it("should returns economics details of xExchange ", async () => {
     await request(app.getHttpServer())
       .get(`${path}/economics`)
       .expect(200)
@@ -30,7 +30,7 @@ describe("Maiar Exchange Controller", () => {
       });
   });
 
-  it("should returns 25 active liquidity pools available on Maiar Exchange ", async () => {
+  it("should returns 25 active liquidity pools available on xExchange ", async () => {
     await request(app.getHttpServer())
       .get(`${path}/pairs`)
       .expect(200)
@@ -39,7 +39,7 @@ describe("Maiar Exchange Controller", () => {
       });
   });
 
-  it("should returns list of 25 tokens listed on Maiar Exchange ", async () => {
+  it("should returns list of 25 tokens listed on xExchange ", async () => {
     await request(app.getHttpServer())
       .get(`${path}/tokens`)
       .expect(200)
@@ -48,7 +48,7 @@ describe("Maiar Exchange Controller", () => {
       });
   });
 
-  it("should returns list of farms listed on Maiar Exchange ", async () => {
+  it("should returns list of farms listed on xExchange ", async () => {
     await request(app.getHttpServer())
       .get(`${path}/farms`)
       .expect(200)

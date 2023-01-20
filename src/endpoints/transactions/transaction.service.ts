@@ -160,13 +160,16 @@ export class TransactionService {
       }
     }
 
-    if (queryOptions && (queryOptions.withScResults || queryOptions.withOperations || queryOptions.withLogs) && elasticTransactions.some(x => x.hasScResults === true)) {
+    if (queryOptions && (queryOptions.withScResults || queryOptions.withOperations || queryOptions.withLogs)) {
       queryOptions.withScResultLogs = queryOptions.withLogs;
 
       transactions = await this.getExtraDetailsForTransactions(elasticTransactions, transactions, queryOptions);
     }
 
-    await this.processTransactions(transactions, { withScamInfo: queryOptions?.withScamInfo ?? false, withUsername: queryOptions?.withUsername ?? false });
+    await this.processTransactions(transactions, {
+      withScamInfo: queryOptions?.withScamInfo ?? false,
+      withUsername: queryOptions?.withUsername ?? false,
+    });
 
     return transactions;
   }

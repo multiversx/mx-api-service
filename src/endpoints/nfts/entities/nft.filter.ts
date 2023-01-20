@@ -24,6 +24,7 @@ export class NftFilter {
   isWhitelistedStorage?: boolean;
   isNsfw?: boolean;
   traits?: Record<string, string>;
+  excludeMetaESDT?: boolean;
 
   sort?: SortCollectionNfts | string;
   order?: SortOrder;

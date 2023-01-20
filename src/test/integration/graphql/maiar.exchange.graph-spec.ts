@@ -3,7 +3,7 @@ import { Test, TestingModule } from "@nestjs/testing";
 import { PublicAppModule } from "src/public.app.module";
 import request = require('supertest');
 
-describe('Maiar Exchange', () => {
+describe('xExchange', () => {
   let app: INestApplication;
   const gql = '/graphql';
 
@@ -17,7 +17,7 @@ describe('Maiar Exchange', () => {
   });
 
   describe('Query - Get Mex Economics', () => {
-    it('should returns economics details of Maiar Exchange', async () => {
+    it('should returns economics details of xExchange', async () => {
       await request(app.getHttpServer())
         .post(gql)
         .send({
@@ -40,7 +40,7 @@ describe('Maiar Exchange', () => {
   });
 
   describe('Query - Get Mex Pairs', () => {
-    it('should returns economics details of Maiar Exchange', async () => {
+    it('should returns economics details of xExchange', async () => {
       await request(app.getHttpServer())
         .post(gql)
         .send({
@@ -150,7 +150,7 @@ describe('Maiar Exchange', () => {
   });
 
   describe('Query - Get Mex Tokens', () => {
-    it('should returns a list of tokens listed on Maiar Exchange', async () => {
+    it('should returns a list of tokens listed on xExchange', async () => {
       await request(app.getHttpServer())
         .post(gql)
         .send({
@@ -170,7 +170,7 @@ describe('Maiar Exchange', () => {
         });
     });
 
-    it('should returns a list of tokens listed on Maiar Exchange', async () => {
+    it('should returns a list of tokens listed on xExchange', async () => {
       const mexTokenIdentifier = {
         id: `"MEX-455c57"`,
       };
@@ -221,7 +221,7 @@ describe('Maiar Exchange', () => {
   });
 
   describe('Query - Get Mex Farms', () => {
-    it('should returns a list of farms listed on Maiar Exchange', async () => {
+    it('should returns a list of farms listed on xExchange', async () => {
       await request(app.getHttpServer())
         .post(gql)
         .send({
