@@ -34,19 +34,19 @@ export class AuthGuardWs implements CanActivate {
    */
   async validateRequest(
     socket: Socket,
-    user_details: User | null,
+    userDetails: User | null,
   ): Promise<boolean> {
-    const access_token = socket.handshake.auth.token;
+    const accessToken = socket.handshake.auth.token;
 
     // If no authentication token was provided, deny request
-    if (!access_token) {
+    if (!accessToken) {
       return false;
     }
 
     try {
       // Validate access token
       const details = await this.nativeAuthService.validateAndReturnAccessToken(
-        access_token,
+        accessToken,
       );
 
       // Validate that the user address from token is registered
@@ -65,9 +65,9 @@ export class AuthGuardWs implements CanActivate {
         return false;
       }
 
-      if (user_details) {
-        user_details.address = user.address;
-        user_details.availability = user.availability;
+      if (userDetails) {
+        userDetails.address = user.address;
+        userDetails.availability = user.availability;
       }
 
       return true;

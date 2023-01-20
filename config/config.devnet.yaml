@@ -38,9 +38,12 @@ features:
     ttl: 12
   # This feature depends on eventsNotifier, hence
   # will use the same exchange and queue
-  liveEventsWebsocket:
-    enabled: true
-    port: 9001
+  liveWebsocketEvents:
+    enabled: false
+    egldPerTimeUnit: 1000000000000000000 / 730
+    maxConnections: 2,
+    allowedReceivers: 
+     - 'erd196p5utv4r3w2kahnzcqcdht8hwfv92mpvx6qudwl92uvvhp5qezqu88r8h'
 image:
   width: 600
   height: 600

@@ -7,16 +7,21 @@ import { NftNotifierEventIdentifier } from './entities/notifier.event.identifier
 import { RabbitMqTokenHandlerService } from './rabbitmq.token.handler.service';
 import { OriginLogger } from '@multiversx/sdk-nestjs';
 import { RabbitMqEventsHandlerService } from './rabbitmq.events.handler.service';
+import { ApiConfigService } from '../api-config/api.config.service';
 
 @Injectable()
 export class RabbitMqConsumer {
   private readonly logger = new OriginLogger(RabbitMqConsumer.name);
+  private isLiveWsEnabled: boolean = false;
 
   constructor(
     private readonly nftHandlerService: RabbitMqNftHandlerService,
     private readonly tokenHandlerService: RabbitMqTokenHandlerService,
     private readonly eventsHandlerService: RabbitMqEventsHandlerService,
-  ) { }
+    private readonly apiConfigService: ApiConfigService,
+  ) {
+    this.isLiveWsEnabled = this.apiConfigService.isLiveWebsocketEventsFeatureEnabled();
+  }
 
   @CompetingRabbitConsumer({
     exchange: 'all_events',
@@ -26,8 +31,8 @@ export class RabbitMqConsumer {
   async consumeEvents(rawEvents: any) {
     try {
       const events = rawEvents?.events;
-      console.log(events);
-      await this.eventsHandlerService.sendNotification(rawEvents);
+
+      this.isLiveWsEnabled && await this.eventsHandlerService.sendNotification(rawEvents);
 
       if (events) {
         await Promise.all(events.map((event: any) => this.handleEvent(event)));
