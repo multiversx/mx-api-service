@@ -226,11 +226,11 @@ export class NetworkService {
       blocks,
       accounts,
       transactions,
+      scResults,
       refreshRate,
       epoch,
       roundsPassed: roundsPassed % roundsPerEpoch,
       roundsPerEpoch,
-      totalTransactions: transactions + scResults,
     };
   }
 
