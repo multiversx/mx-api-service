@@ -20,12 +20,12 @@ export class ApiConfigService {
   }
 
   getSelfUrl(): string {
-    const guestCacheUrl = this.configService.get<string>('urls.self');
-    if (!guestCacheUrl) {
+    const selfUrl = this.configService.get<string>('urls.self');
+    if (!selfUrl) {
       throw new Error('No self url present');
     }
 
-    return guestCacheUrl;
+    return selfUrl;
   }
 
   isGuestCachingFeatureActive(): boolean {
