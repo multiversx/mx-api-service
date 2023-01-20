@@ -199,6 +199,7 @@ export class CollectionService {
     }
 
     const collectionDetailed = ApiUtils.mergeObjects(new NftCollectionDetailed(), collection);
+    collectionDetailed.type = elasticCollection.type as NftType;
     collectionDetailed.timestamp = elasticCollection.timestamp;
     collectionDetailed.traits = await this.persistenceService.getCollectionTraits(identifier) ?? [];
 
