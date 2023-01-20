@@ -195,6 +195,14 @@ export class CacheInfo {
     };
   }
 
+  static HistoricalPrice(identifier: string, date: Date): CacheInfo {
+    const isCurrentDate = date.startOfDay() === new Date().startOfDay();
+    return {
+      key: `historical-price:${identifier}:${date.toISODateString()}`,
+      ttl: isCurrentDate ? Constants.oneMinute() * 5 : Constants.oneWeek(),
+    };
+  }
+
   static NftMetadata(identifier: string): CacheInfo {
     return {
       key: `nftMetadata:${identifier}`,
@@ -336,8 +344,8 @@ export class CacheInfo {
     ttl: Constants.oneDay(),
   };
 
-  static LockedTokenID: CacheInfo = {
-    key: "lockedTokenID",
+  static LockedTokenIDs: CacheInfo = {
+    key: "lockedTokenIDs",
     ttl: Constants.oneHour(),
   };
 
@@ -473,6 +481,13 @@ export class CacheInfo {
   static Username(address: string): CacheInfo {
     return {
       key: `username:${address}`,
+      ttl: Constants.oneHour(),
+    };
+  }
+
+  static Setting(name: string): CacheInfo {
+    return {
+      key: `api:settings:${name}`,
       ttl: Constants.oneHour(),
     };
   }

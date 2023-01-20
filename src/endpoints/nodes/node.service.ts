@@ -20,6 +20,7 @@ import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.com
 import { Auction } from "src/common/gateway/entities/auction";
 import { AddressUtils, Constants, CachingService } from "@elrondnetwork/erdnest";
 import { NodeSort } from "./entities/node.sort";
+import { ProtocolService } from "src/common/protocol/protocol.service";
 
 @Injectable()
 export class NodeService {
@@ -36,6 +37,7 @@ export class NodeService {
     private readonly providerService: ProviderService,
     @Inject(forwardRef(() => BlockService))
     private readonly blockService: BlockService,
+    private readonly protocolService: ProtocolService,
   ) { }
 
   private getIssues(node: Node, version: string | undefined): string[] {
@@ -323,7 +325,7 @@ export class NodeService {
     await this.getNodesStakeDetails(nodes);
 
     if (this.apiConfigService.isStakingV4Enabled()) {
-      const auctions = await this.gatewayService.getAuctions();
+      const auctions = await this.gatewayService.getValidatorAuctions();
       this.processAuctions(nodes, auctions);
     }
 
@@ -463,20 +465,29 @@ export class NodeService {
 
   async getHeartbeat(): Promise<Node[]> {
     const [
-      { heartbeats },
+      heartbeats,
       { statistics },
-      { config },
+      config,
     ] = await Promise.all([
-      this.gatewayService.get('node/heartbeatstatus', GatewayComponentRequest.nodeHeartbeat),
+      this.gatewayService.getNodeHeartbeatStatus(),
       this.gatewayService.get('validator/statistics', GatewayComponentRequest.validatorStatistics),
-      this.gatewayService.get('network/config', GatewayComponentRequest.networkConfig),
+      this.gatewayService.getNetworkConfig(),
     ]);
 
     const nodes: Node[] = [];
 
-    const blses =
-      [...Object.keys(statistics), ...heartbeats.map((item: any) => item.publicKey)].distinct();
+    const blses = [...Object.keys(statistics), ...heartbeats.map((item: any) => item.publicKey)].distinct();
 
+    const nodesPerShardDict: Record<string, number> = {};
+    if (this.apiConfigService.isNodeSyncProgressEnabled()) {
+      const shardIds = await this.protocolService.getShardIds();
+
+      for (const shardId of shardIds) {
+        const shardTrieStatistics = await this.gatewayService.getTrieStatistics(shardId);
+
+        nodesPerShardDict[shardId] = shardTrieStatistics.accounts_snapshot_num_nodes;
+      }
+    }
 
     for (const bls of blses) {
       const heartbeat = heartbeats.find((beat: any) => beat.publicKey === bls) || {};
@@ -503,6 +514,7 @@ export class NodeService {
         validatorStatus,
         nonce,
         numInstances: instances,
+        numTrieNodesReceived,
       } = item;
 
       let {
@@ -579,6 +591,14 @@ export class NodeService {
 
       if (node.online === undefined) {
         node.online = false;
+      }
+
+      if (this.apiConfigService.isNodeSyncProgressEnabled() && numTrieNodesReceived > 0) {
+        node.syncProgress = numTrieNodesReceived / nodesPerShardDict[shard];
+
+        if (node.syncProgress > 1) {
+          node.syncProgress = 1;
+        }
       }
 
       node.issues = this.getIssues(node, config.erd_latest_tag_software_version);

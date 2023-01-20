@@ -565,6 +565,15 @@ describe('Nft Service', () => {
 
       expect(results).toBeUndefined();
     });
+
+    it("should return XMEX-fda355-15 token details from a specific account", async () => {
+      const address: string = "erd1wqgvggslggjgjjl0wpgjhknr2carzd07l4s0cqvqyt5haqmlsvks05vqvp";
+      const identifier: string = "XMEX-fda355-15";
+      const results = await nftService.getNftForAddress(address, identifier);
+
+      expect(results?.unlockEpoch).toStrictEqual(1410);
+    });
+
   });
 
   describe("NFT Owners", () => {
@@ -788,6 +797,14 @@ describe('Nft Service', () => {
       const nft = await nftService.getSingleNft(identifier);
 
       expect(nft?.scamInfo).toBeUndefined();
+    });
+
+    it("should return token details and unlockEpoch should be defined", async () => {
+      const identifier = 'XMEX-fda355-21';
+
+      const nft = await nftService.getSingleNft(identifier);
+
+      expect(nft?.unlockEpoch).toStrictEqual(1140);
     });
 
     it("should return scam info for address NFT", async () => {

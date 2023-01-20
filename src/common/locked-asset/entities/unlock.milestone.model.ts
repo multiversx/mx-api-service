@@ -1,5 +1,5 @@
-import { Field, Float, ObjectType } from '@nestjs/graphql';
-import { ApiProperty } from '@nestjs/swagger';
+import { Field, Float, ObjectType } from "@nestjs/graphql";
+import { ApiProperty } from "@nestjs/swagger";
 
 @ObjectType('UnlockMileStoneModel', { description: 'Unlock mile stone model object type.' })
 export class UnlockMileStoneModel {

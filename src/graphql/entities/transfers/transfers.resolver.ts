@@ -6,8 +6,10 @@ import { TransferQuery } from "./transfers.query";
 
 @Resolver(() => Transaction)
 export class TransferResolver extends TransferQuery {
-  constructor(transferService: TransferService,
-    apiConfigService: ApiConfigService) {
-    super(transferService, apiConfigService);
+  constructor(
+    apiConfigService: ApiConfigService,
+    transferService: TransferService
+  ) {
+    super(apiConfigService, transferService);
   }
 }

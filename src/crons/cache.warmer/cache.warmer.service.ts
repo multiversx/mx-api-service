@@ -9,9 +9,7 @@ import { NetworkService } from "src/endpoints/network/network.service";
 import { AccountService } from "src/endpoints/accounts/account.service";
 import { CronJob } from "cron";
 import { KeybaseService } from "src/common/keybase/keybase.service";
-import { DataApiService } from "src/common/external/data.api.service";
 import { GatewayService } from "src/common/gateway/gateway.service";
-import { DataQuoteType } from "src/common/external/entities/data.quote.type";
 import { EsdtService } from "src/endpoints/esdt/esdt.service";
 import { CacheInfo } from "src/utils/cache.info";
 import { AssetsService } from "src/common/assets/assets.service";
@@ -24,6 +22,8 @@ import { MexFarmService } from "src/endpoints/mex/mex.farm.service";
 import AsyncLock from "async-lock";
 import { CachingService, Constants, Locker, OriginLogger } from "@elrondnetwork/erdnest";
 import { DelegationLegacyService } from "src/endpoints/delegation.legacy/delegation.legacy.service";
+import { PluginService } from "src/common/plugins/plugin.service";
+import { SettingsService } from "src/common/settings/settings.service";
 import { TokenService } from "src/endpoints/tokens/token.service";
 
 @Injectable()
@@ -37,10 +37,11 @@ export class CacheWarmerService {
     private readonly identitiesService: IdentitiesService,
     private readonly providerService: ProviderService,
     private readonly keybaseService: KeybaseService,
-    private readonly dataApiService: DataApiService,
+    private readonly pluginsService: PluginService,
     private readonly cachingService: CachingService,
     @Inject('PUBSUB_SERVICE') private clientProxy: ClientProxy,
     private readonly apiConfigService: ApiConfigService,
+    private readonly settingsService: SettingsService,
     @Inject(forwardRef(() => NetworkService))
     private readonly networkService: NetworkService,
     private readonly accountService: AccountService,
@@ -126,7 +127,7 @@ export class CacheWarmerService {
     await Locker.lock('Node auction invalidations', async () => {
       await this.lock.acquire('nodes', async () => {
         const nodes = await this.nodeService.getAllNodes();
-        const auctions = await this.gatewayService.getAuctions();
+        const auctions = await this.gatewayService.getValidatorAuctions();
 
         this.nodeService.processAuctions(nodes, auctions);
 
@@ -177,8 +178,9 @@ export class CacheWarmerService {
   }
 
   async handleKeybaseAgainstKeybasePubInvalidations() {
-    await Locker.lock('Keybase against keybase.pub / keybase.io invalidations', async () => {
-      await this.keybaseService.confirmKeybasesAgainstKeybasePub();
+    await Locker.lock('Keybase against database / keybase.pub / keybase.io invalidations', async () => {
+      await this.keybaseService.confirmKeybasesAgainstDatabase();
+      await this.keybaseService.confirmKeybasesAgainstGithubOrKeybasePub();
       await this.keybaseService.confirmIdentityProfilesAgainstKeybaseIo();
 
       await this.handleKeybaseAgainstCacheInvalidations();
@@ -187,9 +189,9 @@ export class CacheWarmerService {
 
   @Cron(CronExpression.EVERY_MINUTE)
   async handleCurrentPriceInvalidations() {
-    if (this.apiConfigService.getDataUrl()) {
+    const currentPrice = await this.pluginsService.getEgldPrice();
+    if (currentPrice) {
       await Locker.lock('Current price invalidations', async () => {
-        const currentPrice = await this.dataApiService.getQuotesHistoricalLatest(DataQuoteType.price);
         await this.invalidateKey(CacheInfo.CurrentPrice.key, currentPrice, CacheInfo.CurrentPrice.ttl);
       }, true);
     }
@@ -227,9 +229,9 @@ export class CacheWarmerService {
     }, true);
   }
 
-  @Cron(CronExpression.EVERY_MINUTE)
+  @Cron(CronExpression.EVERY_10_MINUTES)
   async handleTokenAssetsInvalidations() {
-    await Locker.lock('Token assets invalidations', async () => {
+    await Locker.lock('Token / Account assets invalidations', async () => {
       await this.assetsService.checkout();
       const assets = this.assetsService.getAllTokenAssetsRaw();
       await this.invalidateKey(CacheInfo.TokenAssets.key, assets, CacheInfo.TokenAssets.ttl);
@@ -303,6 +305,16 @@ export class CacheWarmerService {
       if (settings) {
         await this.invalidateKey(CacheInfo.MexSettings.key, settings, CacheInfo.MexSettings.ttl);
       }
+    });
+  }
+
+  @Cron(CronExpression.EVERY_10_MINUTES)
+  async handleApiSettings() {
+    await Locker.lock('Api settings invalidations', async () => {
+      const settings = await this.settingsService.getAllSettings();
+      await Promise.all(settings.map(async (setting) => {
+        await this.invalidateKey(CacheInfo.Setting(setting.name).key, setting.value, CacheInfo.Setting(setting.name).ttl);
+      }));
     });
   }
 

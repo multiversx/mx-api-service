@@ -171,7 +171,7 @@ export class EsdtAddressService {
   }
 
   private async applyRolesToAccountCollections(address: string, collections: NftCollectionWithRoles[]): Promise<void> {
-    const rolesResult = await this.gatewayService.get(`address/${address}/esdts/roles`, GatewayComponentRequest.addressEsdtAllRoles);
+    const rolesResult = await this.gatewayService.getAddressEsdtRoles(address);
     const roles = rolesResult.roles;
 
     for (const collection of collections) {

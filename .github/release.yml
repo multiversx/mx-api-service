@@ -6,6 +6,9 @@ changelog:
     - title: Breaking Changes 🛠
       labels:
         - breaking-change
+    - title: Hotfixes 🔥
+      labels:
+        - hotfix
     - title: Exciting New Features 🎉
       labels:
         - feature
