@@ -2615,6 +2615,11 @@ type Node {
   """Status for the given node."""
   status: NodeStatus
 
+  """
+  Sync progress in case the node is currently in sync mode. If specified, the value can be between 0 and 1.
+  """
+  syncProgress: Float
+
   """Temp rating for the given node."""
   tempRating: Float!
 
@@ -3307,6 +3312,9 @@ type Stats {
   """Rounds per epoch details."""
   roundsPerEpoch: Float!
 
+  """Total number of smart contract results."""
+  scResults: Float!
+
   """Shards available on blockchain."""
   shards: Float!
 
@@ -3915,6 +3923,9 @@ type TransactionOperation {
 
   """Value for the transaction operation."""
   value: String
+
+  """Value for the transaction operation in USD."""
+  valueUSD: Float
 }
 
 """Transaction operation action object type."""

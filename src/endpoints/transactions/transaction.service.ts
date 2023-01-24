@@ -166,7 +166,10 @@ export class TransactionService {
       transactions = await this.getExtraDetailsForTransactions(elasticTransactions, transactions, queryOptions);
     }
 
-    await this.processTransactions(transactions, { withScamInfo: queryOptions?.withScamInfo ?? false, withUsername: queryOptions?.withUsername ?? false });
+    await this.processTransactions(transactions, {
+      withScamInfo: queryOptions?.withScamInfo ?? false,
+      withUsername: queryOptions?.withUsername ?? false,
+    });
 
     return transactions;
   }

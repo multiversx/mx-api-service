@@ -236,10 +236,6 @@ export class ApiConfigService {
     return delegationUrl;
   }
 
-  getDataUrl(): string | undefined {
-    return this.configService.get<string>('urls.dataUrl');
-  }
-
   getTempUrl(): string {
     const tmpUrl = this.configService.get<string>('urls.tmp');
     if (!tmpUrl) {
@@ -720,5 +716,9 @@ export class ApiConfigService {
 
   getIndexerMaxPagination(): number {
     return this.configService.get<number>('indexer.maxPagination') ?? 10000;
+  }
+
+  isNodeSyncProgressEnabled(): boolean {
+    return this.configService.get<boolean>('features.nodeSyncProgress.enabled') ?? false;
   }
 }

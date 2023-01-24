@@ -230,7 +230,7 @@ export class StatusCheckerService {
       if (allNodes.length > 5000) {
         this.apiStatusMetricsService.setCheckNodeCountResult('success');
       } else {
-        this.logger.error(`Invalid node count '${allNodes}'`);
+        this.logger.error(`Invalid node count '${allNodes.length}'`);
         this.apiStatusMetricsService.setCheckNodeCountResult('error');
       }
     }, true);
