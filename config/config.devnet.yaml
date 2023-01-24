@@ -33,7 +33,7 @@ features:
   # This feature depends on eventsNotifier, hence
   # will use the same exchange and queue
   liveWebsocketEvents:
-    enabled: false
+    enabled: true
     egldPerTimeUnit: 1000000000000000000 / 730
     maxConnections: 2,
     allowedReceivers: 

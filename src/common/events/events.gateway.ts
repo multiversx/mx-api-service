@@ -18,6 +18,7 @@ import { SubscriptionEntry } from './entities/subscription.entry';
 import { Notification } from './events.types';
 import { ValidationPipe } from './validation.pipe';
 import { ApiConfigService } from '../api-config/api.config.service';
+import { Cron, CronExpression } from '@nestjs/schedule';
 
 
 @UseGuards(AuthGuardWs)
@@ -155,6 +156,14 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   ) {
     this.logger.log(`Received subscription entries from client ${client.id}.`);
     await this.parseSubscriptionEntries(client, subscriptionEntries);
+  }
+
+  @Cron(CronExpression.EVERY_HOUR)
+  handleCron() {
+    // Get timestamp to fixed Hours
+    const currentTimestamp =
+      Math.floor(new Date().getTime() / 1000 / 60 / 60) * 60 * 60 * 1000;
+    this.closeSocketsByAvailability(currentTimestamp);
   }
 
   /**
