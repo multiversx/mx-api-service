@@ -56,7 +56,7 @@ export class TransactionPriceService {
       return cachedPrice;
     }
 
-    const price = await this.pluginsService.getEgldPrice(date.getTime() / 1000), ;
+    const price = await this.pluginsService.getEgldPrice(date.getTime() / 1000);
     if (price) {
       await this.cachingService.setCache(cacheKey, price, Constants.oneDay() * 7);
     }
