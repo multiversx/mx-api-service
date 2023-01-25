@@ -17,7 +17,7 @@ import { SmartContractResultService } from '../sc-results/scresult.service';
 import { TransactionType } from '../transactions/entities/transaction.type';
 import { AssetsService } from 'src/common/assets/assets.service';
 import { TransactionFilter } from '../transactions/entities/transaction.filter';
-import { AddressUtils, ApiUtils, BinaryUtils, CachingService } from '@elrondnetwork/erdnest';
+import { AddressUtils, ApiService, ApiUtils, BinaryUtils, CachingService } from '@elrondnetwork/erdnest';
 import { GatewayService } from 'src/common/gateway/gateway.service';
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { AccountOptionalFieldOption } from './entities/account.optional.field.options';
@@ -25,6 +25,7 @@ import { AccountAssets } from 'src/common/assets/entities/account.assets';
 import { OriginLogger } from '@elrondnetwork/erdnest';
 import { CacheInfo } from 'src/utils/cache.info';
 import { UsernameService } from '../usernames/username.service';
+import { AccountVerification } from './entities/account.verification';
 
 @Injectable()
 export class AccountService {
@@ -48,6 +49,7 @@ export class AccountService {
     private readonly smartContractResultService: SmartContractResultService,
     private readonly assetsService: AssetsService,
     private readonly usernameService: UsernameService,
+    private readonly apiService: ApiService
   ) { }
 
   async getAccountsCount(): Promise<number> {
@@ -75,6 +77,15 @@ export class AccountService {
     }
 
     return this.getAccountRaw(address, txCount, scrCount);
+  }
+
+  async getAccountVerification(address: string): Promise<AccountVerification | null> {
+    if (!AddressUtils.isAddressValid(address)) {
+      return null;
+    }
+
+    const verificationResponse = await this.apiService.get(`${this.apiConfigService.getVerifierUrl()}/verifier/${address}`);
+    return verificationResponse.data;
   }
 
   async getAccountSimple(address: string): Promise<AccountDetailed | null> {
@@ -105,6 +116,18 @@ export class AccountService {
         const deployedAt = await this.getAccountDeployedAt(address);
         if (deployedAt) {
           account.deployedAt = deployedAt;
+        }
+      }
+
+      if (AddressUtils.isSmartContractAddress(address)) {
+        account.isVerified = false;
+        try {
+          const { data } = await this.apiService.get(`${this.apiConfigService.getVerifierUrl()}/verifier/${address}/exists`);
+          if (data.exists) {
+            account.isVerified = true;
+          }
+        } catch {
+          // ignore
         }
       }
 
@@ -173,7 +196,7 @@ export class AccountService {
   }
 
   public async getAccountsForAddresses(addresses: Array<string>): Promise<Array<Account>> {
-    const assets: { [key: string]: AccountAssets } = await this.assetsService.getAllAccountAssets();
+    const assets: { [key: string]: AccountAssets; } = await this.assetsService.getAllAccountAssets();
 
     const accountsRaw = await this.indexerService.getAccountsForAddresses(addresses);
     const accounts: Array<Account> = accountsRaw.map(account => ApiUtils.mergeObjects(new Account(), account));
