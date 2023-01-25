@@ -22,7 +22,7 @@ export class ApiConfigService {
   getVerifierUrl(): string {
     const verifierUrl = this.configService.get<string>('urls.verifier');
     if (!verifierUrl) {
-      throw new Error('No verifier urls present');
+      throw new Error('No verifier url present');
     }
 
     return verifierUrl;
