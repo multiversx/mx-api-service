@@ -64,14 +64,14 @@ describe('API Config', () => {
     });
   });
 
-  describe("getGatewayUrl", () => {
-    it("should return verifier (play-api.elrond.com) url", () => {
+  describe("getVerifierUrl", () => {
+    it("should return verifier (play-api.multiversx.com) url", () => {
       jest
         .spyOn(ConfigService.prototype, "get")
-        .mockImplementation(jest.fn(() => 'https://play-api.elrond.com'));
+        .mockImplementation(jest.fn(() => 'https://play-api.multiversx.com'));
 
       const results = apiConfigService.getVerifierUrl();
-      expect(results).toEqual('https://play-api.elrond.com');
+      expect(results).toEqual('https://play-api.multiversx.com');
     });
 
     it("should throw error because test simulates that verifier url is not defined", () => {
