@@ -392,7 +392,7 @@ export class ApiConfigService {
   getLiveWebsocketEventsMaxConnections(): number {
     const maxConnections = this.configService.get<number>('features.liveWebsocketEvents.maxConnections');
     if (!maxConnections) {
-      throw new Error('No live websocket events max connections set');
+      return 2;
     }
 
     return maxConnections;
