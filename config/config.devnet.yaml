@@ -50,7 +50,7 @@ urls:
     - 'https://devnet-index.elrond.com'
   gateway:
     - 'https://devnet-gateway.multiversx.com'
-  verifier: 'https://play-api.elrond.com'
+  verifier: 'https://play-api.multiversx.com'
   redis: '127.0.0.1'
   rabbitmq: 'amqp://127.0.0.1:5672'
   providers: 'https://devnet-delegation-api.multiversx.com/providers'

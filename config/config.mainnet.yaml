@@ -51,7 +51,7 @@ urls:
     - 'https://mex-indexer.elrond.com'
   gateway:
     - 'https://gateway.multiversx.com'
-  verifier: 'https://play-api.elrond.com'
+  verifier: 'https://play-api.multiversx.com'
   redis: '127.0.0.1'
   rabbitmq: 'amqp://127.0.0.1:5672'
   providers: 'https://delegation-api.multiversx.com/providers'
