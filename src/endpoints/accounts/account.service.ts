@@ -122,8 +122,9 @@ export class AccountService {
       if (AddressUtils.isSmartContractAddress(address)) {
         account.isVerified = false;
         try {
-          const { data } = await this.apiService.get(`${this.apiConfigService.getVerifierUrl()}/verifier/${address}/exists`);
-          if (data.exists) {
+          const { data } = await this.apiService.get(`${this.apiConfigService.getVerifierUrl()}/verifier/${address}/codehash`);
+
+          if (data.codeHash === Buffer.from(account.codeHash, 'base64').toString('hex')) {
             account.isVerified = true;
           }
         } catch {
