@@ -10,7 +10,7 @@ import {
   WsException,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { UseFilters, UseGuards, UsePipes } from '@nestjs/common';
+import { UseFilters, UseGuards, UsePipes, UseInterceptors } from '@nestjs/common';
 import { OriginLogger } from '@elrondnetwork/erdnest';
 import { AuthGuardWs } from '../auth/auth.guard';
 import { UserDb } from '../persistence/userdb/entities/user.db';
@@ -19,6 +19,7 @@ import { Notification } from './events.types';
 import { ValidationPipe } from './validation.pipe';
 import { ApiConfigService } from '../api-config/api.config.service';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import { EventMetricsInterceptor } from 'src/interceptors/event.metrics.interceptor';
 
 
 @UseGuards(AuthGuardWs)
@@ -53,12 +54,10 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
 
     // Validate if user has already more connections than allowed across all nodes
-    const user_connections = await this.server?.sockets.adapter.sockets(
-      new Set([userDetails.address]),
-    );
-
+    const userConnections = await this.server?.in(userDetails.address).fetchSockets();
     const maxConnections = this.apiConfigService.getLiveWebsocketEventsMaxConnections();
-    if (user_connections && user_connections.size >= maxConnections) {
+
+    if (userConnections && userConnections?.length >= maxConnections) {
       this.logger.error(
         `Client ${userDetails.address} has already ${maxConnections} connections.`,
       );
@@ -75,7 +74,7 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     // Join availability room to disconnect all sockets at once
     await socket.join(userDetails.availability.toString());
     this.server?.in(socket.id).socketsJoin(
-      socket.id,
+      userDetails.availability.toString(),
     );
 
     this.logger.log(`Client ${socket.id} connected.`);
@@ -88,7 +87,7 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   // eslint-disable-next-line require-await
   async handleDisconnect(socket: Socket) {
     // A client has disconnected
-    this.logger.warn(`Client ${socket.id} disconnected.`);
+    this.logger.log(`Client ${socket.id} disconnected.`);
   }
 
   /**
@@ -128,6 +127,7 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
    * @param data Notification
    */
   // eslint-disable-next-line require-await
+  @UseInterceptors(new EventMetricsInterceptor())
   async sendNotification(data: Notification) {
     this.logger.log('Sending notification to connected users.');
 

@@ -12,7 +12,6 @@ export class RabbitMqEventsHandlerService {
     ) { }
 
     async sendNotification(data: EventNotification) {
-        // this.logger.log(`Sending data on Event Websocket for transaction: ${data.txHash}`);
         await this.eventsGateway.sendNotification(data);
     }
 
