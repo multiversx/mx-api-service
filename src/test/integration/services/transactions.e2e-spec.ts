@@ -160,15 +160,20 @@ describe('Transaction Service', () => {
 
     it('should return logs attribute for a given transaction', async () => {
       const txHash: string = "4302d0af550e47a21e5d183f0918af7dbc015f1e7dea6d2ab2025ee675bf8517";
-      const result = await transactionService.getTransaction(txHash, [TransactionOptionalFieldOption.logs]);
+      const results = await transactionService.getTransaction(txHash, [TransactionOptionalFieldOption.logs]);
 
-      expect(result?.logs).toBeDefined();
-      expect(result?.logs?.address).toStrictEqual("erd1qqqqqqqqqqqqqpgqmuk0q2saj0mgutxm4teywre6dl8wqf58xamqdrukln");
-      expect(result?.logs?.addressAssets).toEqual(expect.objectContaining({
-        name: "ESDT: WrappedEGLD Contract Shard 2",
-        tags: expect.arrayContaining([
-          "mex",
-          "wegld",
+      if (!results) {
+        throw new Error("Properties are not defined");
+      }
+
+      expect(results.logs).toEqual(expect.objectContaining({
+        id: '4302d0af550e47a21e5d183f0918af7dbc015f1e7dea6d2ab2025ee675bf8517',
+        address: 'erd1qqqqqqqqqqqqqpgqmuk0q2saj0mgutxm4teywre6dl8wqf58xamqdrukln',
+        events: expect.arrayContaining([
+          expect.objectContaining({
+            identifier: 'ESDTTransfer',
+            address: 'erd10pccteep4cvw3vcjgrrfdn774qm8znvvxy7dpm75z8l0hrsauulqx082y9',
+          }),
         ]),
       }));
     });
