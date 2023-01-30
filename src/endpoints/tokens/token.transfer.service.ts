@@ -225,7 +225,7 @@ export class TokenTransferService {
       let name: string | undefined = undefined;
 
       if (identifier) {
-        name = elasticNfts[0].data.name;
+        name = elasticNfts.length ? elasticNfts[0]?.data?.name : null;
       }
 
       const type = nonce ? TransactionOperationType.nft : TransactionOperationType.esdt;
