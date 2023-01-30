@@ -13,6 +13,9 @@ import { SmartContractResult } from "../sc-results/entities/smart.contract.resul
 import { TransactionDetailed } from "../transactions/entities/transaction.detailed";
 import { BinaryUtils, CachingService } from "@elrondnetwork/erdnest";
 import { OriginLogger } from "@elrondnetwork/erdnest";
+import { NftService } from "../nfts/nft.service";
+import { QueryPagination } from "src/common/entities/query.pagination";
+import { NftFilter } from "../nfts/entities/nft.filter";
 
 @Injectable()
 export class TokenTransferService {
@@ -22,7 +25,8 @@ export class TokenTransferService {
     private readonly cachingService: CachingService,
     @Inject(forwardRef(() => EsdtService))
     private readonly esdtService: EsdtService,
-    private readonly assetsService: AssetsService
+    private readonly assetsService: AssetsService,
+    private readonly nftService: NftService
   ) { }
 
   getTokenTransfer(elasticTransaction: any): { tokenIdentifier: string, tokenAmount: string } | undefined {
@@ -130,7 +134,7 @@ export class TokenTransferService {
         if (!operation) {
           const action = this.getOperationEsdtActionByEventIdentifier(event.identifier);
           if (action) {
-            operation = this.getTransactionNftOperation(txHash, log, event, action, tokensProperties);
+            operation = await this.getTransactionNftOperation(txHash, log, event, action, tokensProperties);
           }
         }
 
@@ -198,7 +202,7 @@ export class TokenTransferService {
     }
   }
 
-  private getTransactionNftOperation(txHash: string, log: TransactionLog, event: TransactionLogEvent, action: TransactionOperationAction, tokensProperties: { [key: string]: TokenTransferProperties | null }): TransactionOperation | undefined {
+  private async getTransactionNftOperation(txHash: string, log: TransactionLog, event: TransactionLogEvent, action: TransactionOperationAction, tokensProperties: { [key: string]: TokenTransferProperties | null }): Promise<TransactionOperation | undefined> {
     try {
       let identifier = BinaryUtils.base64Decode(event.topics[0]);
       const nonce = BinaryUtils.tryBase64ToHex(event.topics[1]);
@@ -206,15 +210,22 @@ export class TokenTransferService {
       const receiver = BinaryUtils.tryBase64ToAddress(event.topics[3]) ?? log.address;
       const properties = tokensProperties[identifier];
       const decimals = properties ? properties.decimals : undefined;
-      const name = properties ? properties.name : undefined;
       const esdtType = properties ? properties.type : undefined;
       const svgUrl = properties ? properties.svgUrl : undefined;
       const ticker = properties ? properties.ticker : undefined;
 
       let collection: string | undefined = undefined;
+
       if (nonce) {
         collection = identifier;
         identifier = `${collection}-${nonce}`;
+      }
+
+      const nfts = await this.nftService.getNftsInternal(new QueryPagination({ from: 0, size: 1 }), new NftFilter(), identifier);
+      let name: string | undefined = undefined;
+
+      if (identifier) {
+        name = nfts[0].name;
       }
 
       const type = nonce ? TransactionOperationType.nft : TransactionOperationType.esdt;
