@@ -180,6 +180,7 @@ export class CacheWarmerService {
       await this.guestCachingWarmer.recompute({
         targetUrl: this.apiConfigService.getSelfUrl(),
         cacheTriggerHitsThreshold: this.apiConfigService.getGuestCachingHitsThreshold(),
+        cacheTtl: this.apiConfigService.getGuestCachingTtl(),
       });
     }
   }

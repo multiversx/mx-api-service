@@ -36,6 +36,10 @@ export class ApiConfigService {
     return this.configService.get<number>('features.guestCaching.hitsThreshold') ?? 100;
   }
 
+  getGuestCachingTtl(): number {
+    return this.configService.get<number>('features.guestCaching.ttl') ?? 12;
+  }
+
   getGatewayUrl(): string {
     const gatewayUrls = this.configService.get<string[]>('urls.gateway');
     if (!gatewayUrls) {
