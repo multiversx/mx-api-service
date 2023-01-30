@@ -615,7 +615,7 @@ export class ElasticIndexerService implements IndexerInterface {
                 {
                   collection: {
                     terms: {
-                      field: 'token.keyword',
+                      field: this.apiConfigService.getIsIndexerV5FlagActive() ? 'token' : 'token.keyword',
                     },
                   },
                 },

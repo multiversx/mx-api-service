@@ -375,6 +375,10 @@ export class ApiConfigService {
     return this.configService.get<boolean>('flags.indexer-v3') ?? false;
   }
 
+  getIsIndexerV5FlagActive(): boolean {
+    return this.configService.get<boolean>('flags.indexer-v5') ?? false;
+  }
+
   isGraphQlActive(): boolean {
     return this.configService.get<boolean>('api.graphql') ?? false;
   }
