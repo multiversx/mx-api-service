@@ -13,9 +13,9 @@ import { SmartContractResult } from "../sc-results/entities/smart.contract.resul
 import { TransactionDetailed } from "../transactions/entities/transaction.detailed";
 import { BinaryUtils, CachingService } from "@elrondnetwork/erdnest";
 import { OriginLogger } from "@elrondnetwork/erdnest";
-import { NftService } from "../nfts/nft.service";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { NftFilter } from "../nfts/entities/nft.filter";
+import { IndexerService } from "src/common/indexer/indexer.service";
 
 @Injectable()
 export class TokenTransferService {
@@ -26,7 +26,7 @@ export class TokenTransferService {
     @Inject(forwardRef(() => EsdtService))
     private readonly esdtService: EsdtService,
     private readonly assetsService: AssetsService,
-    private readonly nftService: NftService
+    private readonly indexerService: IndexerService,
   ) { }
 
   getTokenTransfer(elasticTransaction: any): { tokenIdentifier: string, tokenAmount: string } | undefined {
@@ -221,11 +221,11 @@ export class TokenTransferService {
         identifier = `${collection}-${nonce}`;
       }
 
-      const nfts = await this.nftService.getNftsInternal(new QueryPagination({ from: 0, size: 1 }), new NftFilter(), identifier);
+      const elasticNfts = await this.indexerService.getNfts(new QueryPagination({ from: 0, size: 1 }), new NftFilter(), identifier);
       let name: string | undefined = undefined;
 
       if (identifier) {
-        name = nfts[0].name;
+        name = elasticNfts[0].data.name;
       }
 
       const type = nonce ? TransactionOperationType.nft : TransactionOperationType.esdt;
