@@ -292,7 +292,7 @@ export class EsdtAddressService {
     return nftAccounts;
   }
 
-  private async getAllEsdtsForAddressFromGatewayRaw(address: string): Promise<{ [key: string]: any; }> {
+  private async getAllEsdtsForAddressFromGatewayRaw(address: string): Promise<{ [key: string]: any }> {
     // eslint-disable-next-line require-await
     const esdtResult = await this.gatewayService.get(`address/${address}/esdt`, GatewayComponentRequest.addressEsdt, async (error) => {
       const errorMessage = error?.response?.data?.error;
@@ -310,9 +310,9 @@ export class EsdtAddressService {
     return esdtResult.esdts;
   }
 
-  private pendingRequestsDictionary: { [key: string]: any; } = {};
+  private pendingRequestsDictionary: { [key: string]: any } = {};
 
-  async getAllEsdtsForAddressFromGateway(address: string): Promise<{ [key: string]: any; }> {
+  async getAllEsdtsForAddressFromGateway(address: string): Promise<{ [key: string]: any }> {
     let pendingRequest = this.pendingRequestsDictionary[address];
     if (pendingRequest) {
       const result = await pendingRequest;
@@ -320,7 +320,7 @@ export class EsdtAddressService {
       return result;
     }
 
-    const cachedValue = await this.cachingService.getCacheLocal<{ [key: string]: any; }>(`address:${address}:esdts`);
+    const cachedValue = await this.cachingService.getCacheLocal<{ [key: string]: any }>(`address:${address}:esdts`);
 
     if (cachedValue) {
       this.metricsService.incrementCachedApiHit('Gateway.AccountEsdts');
@@ -330,7 +330,7 @@ export class EsdtAddressService {
     pendingRequest = this.getAllEsdtsForAddressFromGatewayRaw(address);
     this.pendingRequestsDictionary[address] = pendingRequest;
 
-    let esdts: { [key: string]: any; };
+    let esdts: { [key: string]: any };
     try {
       esdts = await pendingRequest;
     } finally {

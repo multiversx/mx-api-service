@@ -75,7 +75,7 @@ export class NftMediaService {
         continue;
       }
 
-      let fileProperties: { contentType: string, contentLength: number; } | null | undefined = null;
+      let fileProperties: { contentType: string, contentLength: number } | null | undefined = null;
 
       try {
         const cacheIdentifier = `${nft.identifier}-${TokenHelpers.getUrlHash(uri)}`;
@@ -128,7 +128,7 @@ export class NftMediaService {
     return TokenHelpers.computeNftUri(url, prefix);
   }
 
-  private async getFileProperties(uri: string): Promise<{ contentType: string, contentLength: number; } | null> {
+  private async getFileProperties(uri: string): Promise<{ contentType: string, contentLength: number } | null> {
     return await this.cachingService.getOrSetCache(
       CacheInfo.NftMediaProperties(uri).key,
       async () => await this.getFilePropertiesRaw(uri),
@@ -136,12 +136,12 @@ export class NftMediaService {
     );
   }
 
-  private async getFilePropertiesRaw(uri: string): Promise<{ contentType: string, contentLength: number; } | null> {
+  private async getFilePropertiesRaw(uri: string): Promise<{ contentType: string, contentLength: number } | null> {
     return await this.getFilePropertiesFromHeaders(uri, this.NFT_THUMBNAIL_PREFIX) ??
       await this.getFilePropertiesFromHeaders(uri, this.apiConfigService.getIpfsUrl());
   }
 
-  private async getFilePropertiesFromHeaders(uri: string, prefix: string): Promise<{ contentType: string, contentLength: number; } | null> {
+  private async getFilePropertiesFromHeaders(uri: string, prefix: string): Promise<{ contentType: string, contentLength: number } | null> {
     const url = this.getUrl(uri, prefix);
     if (url.endsWith('.json')) {
       return null;

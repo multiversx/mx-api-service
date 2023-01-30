@@ -75,7 +75,7 @@ export class ProviderService {
     let providers = await this.getAllProviders();
     const nodes = await this.nodeService.getAllNodes();
 
-    const nodesGroupedByProvider: { [key: string]: any[]; } = nodes.groupBy(x => x.provider);
+    const nodesGroupedByProvider: { [key: string]: any[] } = nodes.groupBy(x => x.provider);
 
     const providersDelegationData: DelegationData[] = await this.getDelegationProviders();
 

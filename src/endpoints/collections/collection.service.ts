@@ -121,8 +121,8 @@ export class CollectionService {
     return nftCollections;
   }
 
-  async batchGetCollectionsProperties(identifiers: string[]): Promise<{ [key: string]: TokenProperties | undefined; }> {
-    const collectionsProperties: { [key: string]: TokenProperties | undefined; } = {};
+  async batchGetCollectionsProperties(identifiers: string[]): Promise<{ [key: string]: TokenProperties | undefined }> {
+    const collectionsProperties: { [key: string]: TokenProperties | undefined } = {};
     await this.cachingService.batchApplyAll(
       identifiers,
       identifier => CacheInfo.EsdtProperties(identifier).key,
@@ -134,8 +134,8 @@ export class CollectionService {
     return collectionsProperties;
   }
 
-  async batchGetCollectionsAssets(identifiers: string[]): Promise<{ [key: string]: TokenAssets | undefined; }> {
-    const collectionsAssets: { [key: string]: TokenAssets | undefined; } = {};
+  async batchGetCollectionsAssets(identifiers: string[]): Promise<{ [key: string]: TokenAssets | undefined }> {
+    const collectionsAssets: { [key: string]: TokenAssets | undefined } = {};
 
     await this.cachingService.batchApplyAll(
       identifiers,

@@ -215,7 +215,7 @@ export class TransactionService {
     return transaction;
   }
 
-  async applyAssets(transactions: Transaction[], options: { withUsernameAssets: boolean; }): Promise<void> {
+  async applyAssets(transactions: Transaction[], options: { withUsernameAssets: boolean }): Promise<void> {
     function getAssets(address: string) {
       return accountAssets[address] ?? usernameAssets[address];
     }
@@ -314,7 +314,7 @@ export class TransactionService {
     }
   }
 
-  async processTransactions(transactions: Transaction[], options: { withScamInfo: boolean, withUsername: boolean; }): Promise<void> {
+  async processTransactions(transactions: Transaction[], options: { withScamInfo: boolean, withUsername: boolean }): Promise<void> {
     try {
       await this.pluginsService.processTransactions(transactions, options.withScamInfo);
     } catch (error) {

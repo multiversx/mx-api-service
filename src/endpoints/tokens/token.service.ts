@@ -313,7 +313,7 @@ export class TokenService {
   async getAllTokensForAddress(address: string, filter: TokenFilter): Promise<TokenWithBalance[]> {
     const tokens = await this.getFilteredTokens(filter);
 
-    const tokensIndexed: { [index: string]: Token; } = {};
+    const tokensIndexed: { [index: string]: Token } = {};
     for (const token of tokens) {
       tokensIndexed[token.identifier] = token;
     }

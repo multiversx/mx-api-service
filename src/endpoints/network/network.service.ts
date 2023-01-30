@@ -234,7 +234,7 @@ export class NetworkService {
     };
   }
 
-  async getApr(): Promise<{ apr: number; topUpApr: number; baseApr: number; }> {
+  async getApr(): Promise<{ apr: number; topUpApr: number; baseApr: number }> {
     const stats = await this.getStats();
     const config = await this.getNetworkConfig();
     const stake = await this.stakeService.getGlobalStake();

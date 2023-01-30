@@ -3,7 +3,7 @@ import { ShardTransaction } from "@elrondnetwork/transaction-processor";
 import { Logger } from "@nestjs/common";
 import { TransactionExtractorInterface } from "./transaction.extractor.interface";
 
-export class TransferOwnershipExtractor implements TransactionExtractorInterface<{ identifier: string; }> {
+export class TransferOwnershipExtractor implements TransactionExtractorInterface<{ identifier: string }> {
   extract(transaction: ShardTransaction) {
     if (transaction.getDataFunctionName() !== 'transferOwnership') {
       return undefined;

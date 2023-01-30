@@ -591,7 +591,7 @@ export class ElasticIndexerService implements IndexerInterface {
     address: string,
     filter: CollectionFilter,
     pagination: QueryPagination
-  ): Promise<{ collection: string, count: number, balance: number; }[]> {
+  ): Promise<{ collection: string, count: number, balance: number }[]> {
     const types = [NftType.SemiFungibleESDT, NftType.NonFungibleESDT];
     if (!filter.excludeMetaESDT) {
       types.push(NftType.MetaESDT);
@@ -636,7 +636,7 @@ export class ElasticIndexerService implements IndexerInterface {
 
     const buckets = result?.data?.aggregations?.collections?.buckets;
 
-    let data: { collection: string, count: number, balance: number; }[] = buckets.map((bucket: any) => ({
+    let data: { collection: string, count: number, balance: number }[] = buckets.map((bucket: any) => ({
       collection: bucket.key.collection,
       count: bucket.doc_count,
       balance: bucket.balance.value,

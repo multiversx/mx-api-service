@@ -4,7 +4,7 @@ import { Logger } from "@nestjs/common";
 import { TransactionDetailed } from "src/endpoints/transactions/entities/transaction.detailed";
 import { TransactionExtractorInterface } from "./transaction.extractor.interface";
 
-export class NftCreateTransactionExtractor implements TransactionExtractorInterface<{ collection: string; }> {
+export class NftCreateTransactionExtractor implements TransactionExtractorInterface<{ collection: string }> {
   private readonly logger = new OriginLogger(NftCreateTransactionExtractor.name);
 
   canDetectNftCreateTransactionFromLogs(transaction: ShardTransaction): Boolean {

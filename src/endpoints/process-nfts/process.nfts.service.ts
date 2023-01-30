@@ -36,7 +36,7 @@ export class ProcessNftsService {
     } else if (processNftRequest.identifier) {
       const processed = await this.processNft(processNftRequest.identifier, settings);
 
-      const result: { [key: string]: boolean; } = {};
+      const result: { [key: string]: boolean } = {};
       result[processNftRequest.identifier] = processed;
 
       return result;
@@ -68,7 +68,7 @@ export class ProcessNftsService {
     return result;
   }
 
-  public async processCollection(collection: string, settings: ProcessNftSettings): Promise<{ [key: string]: boolean; }> {
+  public async processCollection(collection: string, settings: ProcessNftSettings): Promise<{ [key: string]: boolean }> {
     const nfts = await this.nftService.getNfts({ from: 0, size: 10000 }, { collection });
 
     const results = await asyncPool(
@@ -77,7 +77,7 @@ export class ProcessNftsService {
       async (nft: Nft) => await this.nftWorkerService.addProcessNftQueueJob(nft, settings)
     );
 
-    const result: { [key: string]: boolean; } = {};
+    const result: { [key: string]: boolean } = {};
     for (const [index, nft] of nfts.entries()) {
       result[nft.identifier] = results[index];
     }

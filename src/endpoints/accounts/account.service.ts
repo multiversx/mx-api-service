@@ -173,7 +173,7 @@ export class AccountService {
   }
 
   public async getAccountsForAddresses(addresses: Array<string>): Promise<Array<Account>> {
-    const assets: { [key: string]: AccountAssets; } = await this.assetsService.getAllAccountAssets();
+    const assets: { [key: string]: AccountAssets } = await this.assetsService.getAllAccountAssets();
 
     const accountsRaw = await this.indexerService.getAccountsForAddresses(addresses);
     const accounts: Array<Account> = accountsRaw.map(account => ApiUtils.mergeObjects(new Account(), account));

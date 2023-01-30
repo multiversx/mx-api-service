@@ -74,7 +74,7 @@ export class IdentitiesService {
     return nodesInfo;
   }
 
-  private getStakeDistributionForIdentity(locked: bigint, identity: any): { [key: string]: number; } {
+  private getStakeDistributionForIdentity(locked: bigint, identity: any): { [key: string]: number } {
     const distribution = identity.nodes.reduce((accumulator: any, current: any) => {
       const stake = current.stake ? BigInt(current.stake) : BigInt(0);
       const topUp = current.topUp ? BigInt(current.topUp) : BigInt(0);

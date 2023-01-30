@@ -109,7 +109,7 @@ export class TransactionProcessorService {
       return [];
     }
 
-    const tryExtractTransferOwnership: TransactionExtractorInterface<{ identifier: string; }> = new TransferOwnershipExtractor();
+    const tryExtractTransferOwnership: TransactionExtractorInterface<{ identifier: string }> = new TransferOwnershipExtractor();
     const metadataTransferOwnership = tryExtractTransferOwnership.extract(transaction);
     if (metadataTransferOwnership) {
       this.logger.log(`Detected NFT Transfer ownership for collection with identifier '${metadataTransferOwnership.identifier}'`);

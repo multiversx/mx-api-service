@@ -146,7 +146,7 @@ describe('Transaction Utils', () => {
   });
 
   it('tryExtractTransferOwnership', () => {
-    let tryExtractTransferOwnership: TransactionExtractorInterface<{ identifier: string; }>;
+    let tryExtractTransferOwnership: TransactionExtractorInterface<{ identifier: string }>;
 
     let transaction = new ShardTransaction();
     transaction.data = 'dGVzdFRyYW5zYWN0aW9u';

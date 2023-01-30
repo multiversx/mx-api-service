@@ -17,7 +17,7 @@ export class ProcessNftsPublicController {
   public async generateThumbnails(
     @Jwt('address') address: string,
     @Body() processNftRequest: ProcessNftRequest,
-  ): Promise<{ [key: string]: boolean; }> {
+  ): Promise<{ [key: string]: boolean }> {
     try {
       return await this.processNftService.processWithOwnerCheck(address, processNftRequest);
     } catch (error: any) {

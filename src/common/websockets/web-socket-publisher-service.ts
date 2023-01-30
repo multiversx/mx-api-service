@@ -71,7 +71,7 @@ export class WebSocketPublisherService {
     }
   }
 
-  private getAddressesFromSocketQuery(socket: Socket): { addresses: string[], error?: string; } {
+  private getAddressesFromSocketQuery(socket: Socket): { addresses: string[], error?: string } {
     const rawAddresses = socket.handshake.query.address as string | undefined;
     if (!rawAddresses) {
       return { addresses: [], error: 'Validation failed (an address is expected)' };

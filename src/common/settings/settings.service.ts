@@ -39,7 +39,7 @@ export class SettingsService {
     );
   }
 
-  public async getAllSettings(): Promise<{ name: string, value: any; }[]> {
+  public async getAllSettings(): Promise<{ name: string, value: any }[]> {
     return await this.persistenceService.getAllSettings();
   }
 }

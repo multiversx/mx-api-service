@@ -111,7 +111,7 @@ export class AssetsService {
     return name;
   }
 
-  async getAllTokenAssets(): Promise<{ [key: string]: TokenAssets; }> {
+  async getAllTokenAssets(): Promise<{ [key: string]: TokenAssets }> {
     return await this.cachingService.getOrSetCache(
       CacheInfo.TokenAssets.key,
       async () => await this.getAllTokenAssetsRaw(),
@@ -119,7 +119,7 @@ export class AssetsService {
     );
   }
 
-  getAllTokenAssetsRaw(): { [key: string]: TokenAssets; } {
+  getAllTokenAssetsRaw(): { [key: string]: TokenAssets } {
     const tokensPath = this.getTokenAssetsPath();
     if (!fs.existsSync(tokensPath)) {
       return {};
@@ -128,7 +128,7 @@ export class AssetsService {
     const tokenIdentifiers = FileUtils.getDirectories(tokensPath);
 
     // for every folder, create a TokenAssets entity with the contents of info.json and the urls from github
-    const assets: { [key: string]: TokenAssets; } = {};
+    const assets: { [key: string]: TokenAssets } = {};
     for (const tokenIdentifier of tokenIdentifiers) {
       const tokenPath = path.join(tokensPath, tokenIdentifier);
       try {
@@ -148,7 +148,7 @@ export class AssetsService {
     return allCollectionRanks[identifier];
   }
 
-  async getAllCollectionRanks(): Promise<{ [key: string]: NftRank[]; }> {
+  async getAllCollectionRanks(): Promise<{ [key: string]: NftRank[] }> {
     return await this.cachingService.getOrSetCache(
       CacheInfo.CollectionRanks.key,
       async () => await this.getAllCollectionRanksRaw(),
@@ -156,10 +156,10 @@ export class AssetsService {
     );
   }
 
-  async getAllCollectionRanksRaw(): Promise<{ [key: string]: NftRank[]; }> {
+  async getAllCollectionRanksRaw(): Promise<{ [key: string]: NftRank[] }> {
     const allTokenAssets = await this.getAllTokenAssets();
 
-    const result: { [key: string]: NftRank[]; } = {};
+    const result: { [key: string]: NftRank[] } = {};
     const assetsPath = this.getTokenAssetsPath();
 
     for (const identifier of Object.keys(allTokenAssets)) {
@@ -176,7 +176,7 @@ export class AssetsService {
     return result;
   }
 
-  async getAllAccountAssets(): Promise<{ [key: string]: AccountAssets; }> {
+  async getAllAccountAssets(): Promise<{ [key: string]: AccountAssets }> {
     return await this.cachingService.getOrSetCache(
       CacheInfo.AccountAssets.key,
       async () => await this.getAllAccountAssetsRaw(),
@@ -184,14 +184,14 @@ export class AssetsService {
     );
   }
 
-  getAllAccountAssetsRaw(providers?: Provider[], identities?: Identity[], pairs?: MexPair[], farms?: MexFarm[], mexSettings?: MexSettings, stakingProxies?: MexStakingProxy[]): { [key: string]: AccountAssets; } {
+  getAllAccountAssetsRaw(providers?: Provider[], identities?: Identity[], pairs?: MexPair[], farms?: MexFarm[], mexSettings?: MexSettings, stakingProxies?: MexStakingProxy[]): { [key: string]: AccountAssets } {
     const accountAssetsPath = this.getAccountAssetsPath();
     if (!fs.existsSync(accountAssetsPath)) {
       return {};
     }
     const fileNames = FileUtils.getFiles(accountAssetsPath);
 
-    const allAssets: { [key: string]: AccountAssets; } = {};
+    const allAssets: { [key: string]: AccountAssets } = {};
     for (const fileName of fileNames) {
       const assetsPath = path.join(accountAssetsPath, fileName);
       const address = fileName.removeSuffix('.json');

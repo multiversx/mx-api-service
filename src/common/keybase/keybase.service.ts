@@ -57,7 +57,7 @@ export class KeybaseService {
     return keybasesNodesArr;
   }
 
-  async confirmKeybasesAgainstCache(): Promise<{ [key: string]: KeybaseState; }> {
+  async confirmKeybasesAgainstCache(): Promise<{ [key: string]: KeybaseState }> {
     const keybaseProvidersArr: Keybase[] = await this.getProvidersKeybasesRaw();
     const keybasesNodesArr: Keybase[] = await this.getNodesKeybasesRaw();
 
@@ -68,7 +68,7 @@ export class KeybaseService {
 
     const confirmedKeybases = keybasesArr.zip<(boolean | undefined), KeybaseState>(keybaseGetResults, (first, second) => ({ identity: first.identity, confirmed: second ?? false }));
 
-    const keybasesDict: { [key: string]: KeybaseState; } = {};
+    const keybasesDict: { [key: string]: KeybaseState } = {};
     for (const [index, confirmedKeybase] of confirmedKeybases.entries()) {
       const key = keybasesArr[index].key;
       if (key !== undefined) {
@@ -276,7 +276,7 @@ export class KeybaseService {
     );
   }
 
-  async getCachedNodesAndProvidersKeybases(): Promise<{ [key: string]: KeybaseState; } | undefined> {
+  async getCachedNodesAndProvidersKeybases(): Promise<{ [key: string]: KeybaseState } | undefined> {
     return await this.cachingService.getOrSetCache(
       CacheInfo.Keybases.key,
       async () => await this.confirmKeybasesAgainstCache(),
