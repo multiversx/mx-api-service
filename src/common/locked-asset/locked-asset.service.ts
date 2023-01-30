@@ -5,7 +5,6 @@ import { VmQueryService } from '../../endpoints/vm.query/vm.query.service';
 import { CacheInfo } from '../../utils/cache.info';
 import { CachingService, Constants } from '@elrondnetwork/erdnest';
 import { TokenHelpers } from '../../utils/token.helpers';
-import { GatewayComponentRequest } from '../gateway/entities/gateway.component.request';
 import { GatewayService } from '../gateway/gateway.service';
 import { MexSettingsService } from 'src/endpoints/mex/mex.settings.service';
 import { LockedTokensInterface } from './entities/locked.tokens.interface';
@@ -27,7 +26,7 @@ export class LockedAssetService {
       return undefined;
     }
 
-    if (!identifier.startsWith(lockedTokenIds.lkmex)) {
+    if (!lockedTokenIds.lkmex || !identifier.startsWith(lockedTokenIds.lkmex)) {
       return undefined;
     }
 
@@ -48,7 +47,7 @@ export class LockedAssetService {
       return undefined;
     }
 
-    if (!identifier.startsWith(lockedTokenIds.xmex)) {
+    if (!lockedTokenIds.xmex || !identifier.startsWith(lockedTokenIds.xmex)) {
       return undefined;
     }
 
@@ -117,22 +116,12 @@ export class LockedAssetService {
     return parseInt(epoch, 16);
   }
 
-  private lockedTokenIds: LockedTokensInterface | undefined;
-
   private async getLockedTokens(): Promise<LockedTokensInterface | undefined> {
-    if (this.lockedTokenIds) {
-      return this.lockedTokenIds;
-    }
-
-    const lockedTokenIds = await this.cachingService.getOrSetCache(
+    return await this.cachingService.getOrSetCache(
       CacheInfo.LockedTokenIDs.key,
       async () => await this.getLockedTokensRaw(),
       CacheInfo.LockedTokenIDs.ttl,
     );
-
-    this.lockedTokenIds = lockedTokenIds;
-
-    return lockedTokenIds;
   }
 
   private async getLockedTokensRaw(): Promise<LockedTokensInterface> {
@@ -209,7 +198,7 @@ export class LockedAssetService {
 
   private async getCurrentEpoch(): Promise<number> {
     const metaChainShard = this.apiConfigService.getMetaChainShardId();
-    const res = await this.gatewayService.get(`network/status/${metaChainShard}`, GatewayComponentRequest.networkStatus);
-    return res.status.erd_epoch_number;
+    const res = await this.gatewayService.getNetworkStatus(metaChainShard);
+    return res.erd_epoch_number;
   }
 }

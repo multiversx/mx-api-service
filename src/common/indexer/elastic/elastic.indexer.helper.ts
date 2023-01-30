@@ -137,7 +137,9 @@ export class ElasticIndexerHelper {
     }
 
     if (filter.type !== undefined) {
-      elasticQuery = elasticQuery.withMustCondition(QueryType.Match('type', filter.type));
+      const types = (filter.type ?? '').split(',');
+
+      elasticQuery = elasticQuery.withMustMultiShouldCondition(types, type => QueryType.Match('type', type));
     }
 
     if (identifier !== undefined) {
