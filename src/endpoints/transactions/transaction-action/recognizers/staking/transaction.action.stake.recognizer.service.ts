@@ -1,4 +1,4 @@
-import { BinaryUtils, Constants, NumberUtils, CachingService } from "@elrondnetwork/erdnest";
+import { BinaryUtils, Constants, NumberUtils, CachingService } from "@multiversx/sdk-nestjs";
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { IdentitiesService } from "src/endpoints/identities/identities.service";
 import { ProviderService } from "src/endpoints/providers/provider.service";
@@ -18,8 +18,8 @@ export class StakeActionRecognizerService implements TransactionActionRecognizer
     private readonly cachingService: CachingService,
   ) { }
 
-  private async getProviders(): Promise<{ [key: string]: { providerName: string, providerAvatar: string } }> {
-    let providersDetails = await this.cachingService.getCacheLocal<{ [key: string]: { providerName: string, providerAvatar: string } }>('plugins:staking:providerAddresses');
+  private async getProviders(): Promise<{ [key: string]: { providerName: string, providerAvatar: string; }; }> {
+    let providersDetails = await this.cachingService.getCacheLocal<{ [key: string]: { providerName: string, providerAvatar: string; }; }>('plugins:staking:providerAddresses');
     if (!providersDetails) {
       const providers = await this.providerService.getAllProviders();
       const identities = await this.identitiesService.getAllIdentities();
@@ -76,7 +76,7 @@ export class StakeActionRecognizerService implements TransactionActionRecognizer
     }
   }
 
-  private getDelegateAction(metadata: TransactionMetadata, providerDetails: { providerName: string, providerAvatar: string }): TransactionAction | undefined {
+  private getDelegateAction(metadata: TransactionMetadata, providerDetails: { providerName: string, providerAvatar: string; }): TransactionAction | undefined {
     const value = metadata.value;
     const valueDenominated = NumberUtils.toDenominatedString(value, 18);
 
@@ -92,7 +92,7 @@ export class StakeActionRecognizerService implements TransactionActionRecognizer
     return result;
   }
 
-  private getUnDelegateAction(metadata: TransactionMetadata, providerDetails: { providerName: string, providerAvatar: string }): TransactionAction | undefined {
+  private getUnDelegateAction(metadata: TransactionMetadata, providerDetails: { providerName: string, providerAvatar: string; }): TransactionAction | undefined {
     const value = BinaryUtils.hexToBigInt(metadata.functionArgs[0]);
     const valueDenominated = NumberUtils.toDenominatedString(value, 18);
 
@@ -108,7 +108,7 @@ export class StakeActionRecognizerService implements TransactionActionRecognizer
     return result;
   }
 
-  private getAction(metadata: TransactionMetadata, providerDetails: { providerName: string, providerAvatar: string }, action: string): TransactionAction | undefined {
+  private getAction(metadata: TransactionMetadata, providerDetails: { providerName: string, providerAvatar: string; }, action: string): TransactionAction | undefined {
     const result = new TransactionAction();
     result.category = TransactionActionCategory.stake;
     result.name = metadata.functionName ?? '';

@@ -1,4 +1,4 @@
-import { CachingService } from "@elrondnetwork/erdnest";
+import { CachingService } from "@multiversx/sdk-nestjs";
 import { ShardTransaction, TransactionProcessor } from "@elrondnetwork/transaction-processor";
 import { Inject, Injectable, Logger } from "@nestjs/common";
 import { ClientProxy } from "@nestjs/microservices";
@@ -33,7 +33,7 @@ export class BatchTransactionProcessorService {
 
     const pendingTransactionsCached: string[] = await this.cachingService.batchGetCacheRemote(keys);
 
-    const pendingTransactions: { [key: string]: { batchId: string, address: string, date: Date } } = {};
+    const pendingTransactions: { [key: string]: { batchId: string, address: string, date: Date; }; } = {};
     for (const [index, key] of keys.entries()) {
       const newKey = key.replace('pendingtransaction:', '');
       if (!pendingTransactionsCached[index]) {
@@ -54,7 +54,7 @@ export class BatchTransactionProcessorService {
       return;
     }
 
-    const processedTransactions: { batchId: string, hash: string, address: string }[] = [];
+    const processedTransactions: { batchId: string, hash: string, address: string; }[] = [];
 
     for (const hash of Object.keys(pendingTransactions)) {
       const date = pendingTransactions[hash].date;
@@ -152,18 +152,18 @@ export class BatchTransactionProcessorService {
   }
 
   private async handleTransactionBatches(transactions: ShardTransaction[]): Promise<void> {
-    const transactionsIndexed: { [key: string]: ShardTransaction } = {};
+    const transactionsIndexed: { [key: string]: ShardTransaction; } = {};
     for (const transaction of transactions) {
       transactionsIndexed[transaction.hash] = transaction;
     }
 
-    const processedTransactions: { batchId: string, hash: string, address: string }[] = [];
+    const processedTransactions: { batchId: string, hash: string, address: string; }[] = [];
 
     const keys = transactions.map(transaction => CacheInfo.PendingTransaction(transaction.hash).key);
 
     const pendingTransactionsCached: string[] = await this.cachingService.batchGetCacheRemote<string>(keys);
 
-    const pendingTransactions: { [key: string]: { batchId: string, address: string, date: Date } } = {};
+    const pendingTransactions: { [key: string]: { batchId: string, address: string, date: Date; }; } = {};
     for (const [index, key] of keys.entries()) {
       const newKey = key.replace('pendingtransaction:', '');
       if (!pendingTransactionsCached[index]) {

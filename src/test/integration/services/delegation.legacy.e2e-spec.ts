@@ -1,7 +1,7 @@
 import { Test } from "@nestjs/testing";
 import { AccountModule } from "src/endpoints/accounts/account.module";
 import { DelegationLegacyModule } from "src/endpoints/delegation.legacy/delegation.legacy.module";
-import '@elrondnetwork/erdnest/lib/src/utils/extensions/jest.extensions';
+import '@multiversx/sdk-nestjs/lib/src/utils/extensions/jest.extensions';
 import { DelegationLegacyService } from "src/endpoints/delegation.legacy/delegation.legacy.service";
 import { AccountService } from "src/endpoints/accounts/account.service";
 import { DelegationLegacy } from "src/endpoints/delegation.legacy/entities/delegation.legacy";

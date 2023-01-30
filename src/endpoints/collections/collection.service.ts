@@ -16,7 +16,7 @@ import { CollectionRoles } from "../tokens/entities/collection.roles";
 import { TokenHelpers } from "src/utils/token.helpers";
 import { NftCollectionAccount } from "./entities/nft.collection.account";
 import { PluginService } from "src/common/plugins/plugin.service";
-import { ApiUtils, BinaryUtils, CachingService, TokenUtils } from "@elrondnetwork/erdnest";
+import { ApiUtils, BinaryUtils, CachingService, TokenUtils } from "@multiversx/sdk-nestjs";
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { Collection } from "src/common/indexer/entities";
 import { PersistenceService } from "src/common/persistence/persistence.service";
@@ -121,8 +121,8 @@ export class CollectionService {
     return nftCollections;
   }
 
-  async batchGetCollectionsProperties(identifiers: string[]): Promise<{ [key: string]: TokenProperties | undefined }> {
-    const collectionsProperties: { [key: string]: TokenProperties | undefined } = {};
+  async batchGetCollectionsProperties(identifiers: string[]): Promise<{ [key: string]: TokenProperties | undefined; }> {
+    const collectionsProperties: { [key: string]: TokenProperties | undefined; } = {};
     await this.cachingService.batchApplyAll(
       identifiers,
       identifier => CacheInfo.EsdtProperties(identifier).key,
@@ -134,8 +134,8 @@ export class CollectionService {
     return collectionsProperties;
   }
 
-  async batchGetCollectionsAssets(identifiers: string[]): Promise<{ [key: string]: TokenAssets | undefined }> {
-    const collectionsAssets: { [key: string]: TokenAssets | undefined } = {};
+  async batchGetCollectionsAssets(identifiers: string[]): Promise<{ [key: string]: TokenAssets | undefined; }> {
+    const collectionsAssets: { [key: string]: TokenAssets | undefined; } = {};
 
     await this.cachingService.batchApplyAll(
       identifiers,

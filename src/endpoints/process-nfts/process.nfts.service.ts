@@ -1,4 +1,4 @@
-import { AddressUtils, CachingService } from "@elrondnetwork/erdnest";
+import { AddressUtils, CachingService } from "@multiversx/sdk-nestjs";
 import { Injectable } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { CacheInfo } from "src/utils/cache.info";
@@ -10,7 +10,7 @@ import { Nft } from "../nfts/entities/nft";
 import { NftService } from "../nfts/nft.service";
 import { ProcessNftRequest } from "./entities/process.nft.request";
 import { ProcessNftSettings } from "./entities/process.nft.settings";
-import { OriginLogger } from "@elrondnetwork/erdnest";
+import { OriginLogger } from "@multiversx/sdk-nestjs";
 
 @Injectable()
 export class ProcessNftsService {
@@ -36,7 +36,7 @@ export class ProcessNftsService {
     } else if (processNftRequest.identifier) {
       const processed = await this.processNft(processNftRequest.identifier, settings);
 
-      const result: { [key: string]: boolean } = {};
+      const result: { [key: string]: boolean; } = {};
       result[processNftRequest.identifier] = processed;
 
       return result;
@@ -68,7 +68,7 @@ export class ProcessNftsService {
     return result;
   }
 
-  public async processCollection(collection: string, settings: ProcessNftSettings): Promise<{ [key: string]: boolean }> {
+  public async processCollection(collection: string, settings: ProcessNftSettings): Promise<{ [key: string]: boolean; }> {
     const nfts = await this.nftService.getNfts({ from: 0, size: 10000 }, { collection });
 
     const results = await asyncPool(
@@ -77,7 +77,7 @@ export class ProcessNftsService {
       async (nft: Nft) => await this.nftWorkerService.addProcessNftQueueJob(nft, settings)
     );
 
-    const result: { [key: string]: boolean } = {};
+    const result: { [key: string]: boolean; } = {};
     for (const [index, nft] of nfts.entries()) {
       result[nft.identifier] = results[index];
     }

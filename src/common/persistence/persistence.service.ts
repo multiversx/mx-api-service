@@ -1,4 +1,4 @@
-import { PerformanceProfiler } from "@elrondnetwork/erdnest";
+import { PerformanceProfiler } from "@multiversx/sdk-nestjs";
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { CollectionTrait } from "src/endpoints/collections/entities/collection.trait";
 import { NftMedia } from "src/endpoints/nfts/entities/nft.media";
@@ -74,7 +74,7 @@ export class PersistenceService implements PersistenceInterface {
     return await this.execute(this.setSetting.name, this.persistenceInterface.setSetting(name, value));
   }
 
-  async getAllSettings(): Promise<{ name: string, value: any }[]> {
+  async getAllSettings(): Promise<{ name: string, value: any; }[]> {
     return await this.execute(this.getAllSettings.name, this.persistenceInterface.getAllSettings());
   }
 }

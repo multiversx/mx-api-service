@@ -18,14 +18,14 @@ import { GatewayComponentRequest } from 'src/common/gateway/entities/gateway.com
 import { TransactionActionService } from './transaction-action/transaction.action.service';
 import { TransactionDecodeDto } from './entities/dtos/transaction.decode.dto';
 import { TransactionStatus } from './entities/transaction.status';
-import { AddressUtils, ApiUtils, Constants, CachingService, PendingExecuter } from '@elrondnetwork/erdnest';
+import { AddressUtils, ApiUtils, Constants, CachingService, PendingExecuter } from '@multiversx/sdk-nestjs';
 import { TransactionUtils } from './transaction.utils';
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { TransactionOperation } from './entities/transaction.operation';
 import { AssetsService } from 'src/common/assets/assets.service';
 import { AccountAssets } from 'src/common/assets/entities/account.assets';
 import crypto from 'crypto-js';
-import { OriginLogger } from '@elrondnetwork/erdnest';
+import { OriginLogger } from '@multiversx/sdk-nestjs';
 import { ApiConfigService } from 'src/common/api-config/api.config.service';
 import { UsernameService } from '../usernames/username.service';
 
@@ -215,7 +215,7 @@ export class TransactionService {
     return transaction;
   }
 
-  async applyAssets(transactions: Transaction[], options: { withUsernameAssets: boolean }): Promise<void> {
+  async applyAssets(transactions: Transaction[], options: { withUsernameAssets: boolean; }): Promise<void> {
     function getAssets(address: string) {
       return accountAssets[address] ?? usernameAssets[address];
     }
@@ -314,7 +314,7 @@ export class TransactionService {
     }
   }
 
-  async processTransactions(transactions: Transaction[], options: { withScamInfo: boolean, withUsername: boolean }): Promise<void> {
+  async processTransactions(transactions: Transaction[], options: { withScamInfo: boolean, withUsername: boolean; }): Promise<void> {
     try {
       await this.pluginsService.processTransactions(transactions, options.withScamInfo);
     } catch (error) {

@@ -5,10 +5,10 @@ import { AssetsService } from "src/common/assets/assets.service";
 import { NftService } from "src/endpoints/nfts/nft.service";
 import asyncPool from "tiny-async-pool";
 import { PersistenceInterface } from "src/common/persistence/persistence.interface";
-import { BatchUtils, Lock } from "@elrondnetwork/erdnest";
+import { BatchUtils, Lock } from "@multiversx/sdk-nestjs";
 import { NftMedia } from "src/endpoints/nfts/entities/nft.media";
 import { IndexerService } from "src/common/indexer/indexer.service";
-import { OriginLogger } from "@elrondnetwork/erdnest";
+import { OriginLogger } from "@multiversx/sdk-nestjs";
 
 @Injectable()
 export class ElasticUpdaterService {
@@ -71,7 +71,7 @@ export class ElasticUpdaterService {
     });
   }
 
-  private async updateMetadataForTokens(items: { identifier: string, metadata: any }[]): Promise<void> {
+  private async updateMetadataForTokens(items: { identifier: string, metadata: any; }[]): Promise<void> {
     const indexedItems = items.toRecord(item => item.identifier);
 
     const metadataResult = await BatchUtils.batchGet(
@@ -81,7 +81,7 @@ export class ElasticUpdaterService {
       100,
     );
 
-    const itemsToUpdate: { identifier: string, metadata: any }[] = [];
+    const itemsToUpdate: { identifier: string, metadata: any; }[] = [];
 
     for (const identifier of Object.keys(metadataResult)) {
       const item: any = indexedItems[identifier];
@@ -107,7 +107,7 @@ export class ElasticUpdaterService {
     );
   }
 
-  private async updateMediaForTokens(items: { identifier: string, media: NftMedia[] }[]): Promise<void> {
+  private async updateMediaForTokens(items: { identifier: string, media: NftMedia[]; }[]): Promise<void> {
     const indexedItems = items.toRecord(item => item.identifier);
 
     const mediaResult = await BatchUtils.batchGet(
@@ -117,7 +117,7 @@ export class ElasticUpdaterService {
       100
     );
 
-    const itemsToUpdate: { identifier: string, media: NftMedia[] }[] = [];
+    const itemsToUpdate: { identifier: string, media: NftMedia[]; }[] = [];
 
     for (const identifier of Object.keys(mediaResult)) {
       const item: any = indexedItems[identifier];
@@ -143,8 +143,8 @@ export class ElasticUpdaterService {
     );
   }
 
-  private async updateIsWhitelistedStorageForTokens(items: { identifier: string, uris: string[] | undefined, isWhitelistedStorage: boolean | undefined }[]): Promise<void> {
-    const itemsToUpdate: { identifier: string, isWhitelistedStorage: boolean }[] = [];
+  private async updateIsWhitelistedStorageForTokens(items: { identifier: string, uris: string[] | undefined, isWhitelistedStorage: boolean | undefined; }[]): Promise<void> {
+    const itemsToUpdate: { identifier: string, isWhitelistedStorage: boolean; }[] = [];
 
     for (const item of items) {
       const computedIsWhitelistedStorage = this.nftService.isWhitelistedStorage(item.uris);

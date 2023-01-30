@@ -1,7 +1,7 @@
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { Tag } from "./entities/tag";
-import { ApiUtils, CachingService } from "@elrondnetwork/erdnest";
+import { ApiUtils, CachingService } from "@multiversx/sdk-nestjs";
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { CacheInfo } from "src/utils/cache.info";
 

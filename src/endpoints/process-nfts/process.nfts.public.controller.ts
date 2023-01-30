@@ -1,4 +1,4 @@
-import { Jwt, JwtAuthenticateGuard } from "@elrondnetwork/erdnest";
+import { Jwt, JwtAuthenticateGuard } from "@multiversx/sdk-nestjs";
 import { BadRequestException, Body, Controller, Post, UseGuards } from "@nestjs/common";
 import { ApiOperation, ApiResponse } from "@nestjs/swagger";
 import { ProcessNftRequest } from "./entities/process.nft.request";
@@ -17,7 +17,7 @@ export class ProcessNftsPublicController {
   public async generateThumbnails(
     @Jwt('address') address: string,
     @Body() processNftRequest: ProcessNftRequest,
-  ): Promise<{ [key: string]: boolean }> {
+  ): Promise<{ [key: string]: boolean; }> {
     try {
       return await this.processNftService.processWithOwnerCheck(address, processNftRequest);
     } catch (error: any) {

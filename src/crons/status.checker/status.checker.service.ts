@@ -1,4 +1,4 @@
-import { Locker, OriginLogger } from "@elrondnetwork/erdnest";
+import { Locker, OriginLogger } from "@multiversx/sdk-nestjs";
 import { Injectable } from "@nestjs/common";
 import { Cron, CronExpression } from "@nestjs/schedule";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
@@ -352,7 +352,7 @@ export class StatusCheckerService {
     }, true);
   }
 
-  async getCurrentRoundAndNonce(shardId: number): Promise<{ round: number, nonce: number }> {
+  async getCurrentRoundAndNonce(shardId: number): Promise<{ round: number, nonce: number; }> {
     const result = await this.gatewayService.get(`network/status/${shardId}`, GatewayComponentRequest.networkStatus);
     return {
       round: result.status.erd_current_round,

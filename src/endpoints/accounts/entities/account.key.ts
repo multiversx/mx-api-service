@@ -1,5 +1,5 @@
 
-import { SwaggerUtils } from "@elrondnetwork/erdnest";
+import { SwaggerUtils } from "@multiversx/sdk-nestjs";
 import { Field, ObjectType } from "@nestjs/graphql";
 import { ApiProperty } from "@nestjs/swagger";
 

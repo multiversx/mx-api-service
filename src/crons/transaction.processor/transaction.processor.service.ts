@@ -9,8 +9,8 @@ import { CacheInfo } from "src/utils/cache.info";
 import { SftChangeTransactionExtractor } from "./extractor/sft.change.transaction.extractor";
 import { TransactionExtractorInterface } from "./extractor/transaction.extractor.interface";
 import { TransferOwnershipExtractor } from "./extractor/transfer.ownership.extractor";
-import { PerformanceProfiler, CachingService, BinaryUtils } from "@elrondnetwork/erdnest";
-import { OriginLogger } from "@elrondnetwork/erdnest";
+import { PerformanceProfiler, CachingService, BinaryUtils } from "@multiversx/sdk-nestjs";
+import { OriginLogger } from "@multiversx/sdk-nestjs";
 
 @Injectable()
 export class TransactionProcessorService {
@@ -109,7 +109,7 @@ export class TransactionProcessorService {
       return [];
     }
 
-    const tryExtractTransferOwnership: TransactionExtractorInterface<{ identifier: string }> = new TransferOwnershipExtractor();
+    const tryExtractTransferOwnership: TransactionExtractorInterface<{ identifier: string; }> = new TransferOwnershipExtractor();
     const metadataTransferOwnership = tryExtractTransferOwnership.extract(transaction);
     if (metadataTransferOwnership) {
       this.logger.log(`Detected NFT Transfer ownership for collection with identifier '${metadataTransferOwnership.identifier}'`);

@@ -9,7 +9,7 @@ import { NftType } from "./entities/nft.type";
 import { NftService } from "./nft.service";
 import { QueryPagination } from 'src/common/entities/query.pagination';
 import { NftQueryOptions } from './entities/nft.query.options';
-import { ParseAddressPipe, ParseBoolPipe, ParseArrayPipe, ParseIntPipe, ParseNftPipe, ParseCollectionPipe, ApplyComplexity, ParseAddressArrayPipe, ParseBlockHashPipe, ParseEnumPipe, ParseRecordPipe } from '@elrondnetwork/erdnest';
+import { ParseAddressPipe, ParseBoolPipe, ParseArrayPipe, ParseIntPipe, ParseNftPipe, ParseCollectionPipe, ApplyComplexity, ParseAddressArrayPipe, ParseBlockHashPipe, ParseEnumPipe, ParseRecordPipe } from '@multiversx/sdk-nestjs';
 import { TransactionDetailed } from '../transactions/entities/transaction.detailed';
 import { TransactionStatus } from '../transactions/entities/transaction.status';
 import { SortOrder } from 'src/common/entities/sort.order';
@@ -178,7 +178,7 @@ export class NftController {
   @ApiNotFoundResponse({ description: 'Token not found' })
   async getNftSupply(
     @Param('identifier', ParseNftPipe) identifier: string
-  ): Promise<{ supply: string }> {
+  ): Promise<{ supply: string; }> {
     const totalSupply = await this.nftService.getNftSupply(identifier);
     if (!totalSupply) {
       throw new NotFoundException();

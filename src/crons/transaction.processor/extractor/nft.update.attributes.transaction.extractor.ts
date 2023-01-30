@@ -1,9 +1,9 @@
-import { BinaryUtils } from "@elrondnetwork/erdnest";
+import { BinaryUtils } from "@multiversx/sdk-nestjs";
 import { ShardTransaction } from "@elrondnetwork/transaction-processor";
 import { Logger } from "@nestjs/common";
 import { TransactionExtractorInterface } from "./transaction.extractor.interface";
 
-export class NftUpdateAttributesTransactionExtractor implements TransactionExtractorInterface<{ identifier: string }> {
+export class NftUpdateAttributesTransactionExtractor implements TransactionExtractorInterface<{ identifier: string; }> {
   extract(transaction: ShardTransaction) {
     if (transaction.getDataFunctionName() !== 'ESDTNFTUpdateAttributes') {
       return undefined;

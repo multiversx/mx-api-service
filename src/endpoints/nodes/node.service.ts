@@ -18,7 +18,7 @@ import { CacheInfo } from "src/utils/cache.info";
 import { Stake } from "../stake/entities/stake";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
 import { Auction } from "src/common/gateway/entities/auction";
-import { AddressUtils, Constants, CachingService } from "@elrondnetwork/erdnest";
+import { AddressUtils, Constants, CachingService } from "@multiversx/sdk-nestjs";
 import { NodeSort } from "./entities/node.sort";
 import { ProtocolService } from "src/common/protocol/protocol.service";
 
@@ -245,7 +245,7 @@ export class NodeService {
   }
 
   private async getNodesIdentities(nodes: Node[]) {
-    const keybases: { [key: string]: KeybaseState } | undefined = await this.keybaseService.getCachedNodesAndProvidersKeybases();
+    const keybases: { [key: string]: KeybaseState; } | undefined = await this.keybaseService.getCachedNodesAndProvidersKeybases();
 
     if (keybases) {
       for (const node of nodes) {

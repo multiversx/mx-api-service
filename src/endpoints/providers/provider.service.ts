@@ -9,8 +9,8 @@ import { NodesInfos } from "./entities/nodes.infos";
 import { DelegationData } from "./entities/delegation.data";
 import { KeybaseService } from "src/common/keybase/keybase.service";
 import { CacheInfo } from "src/utils/cache.info";
-import { AddressUtils, Constants, CachingService, ApiService } from "@elrondnetwork/erdnest";
-import { OriginLogger } from "@elrondnetwork/erdnest";
+import { AddressUtils, Constants, CachingService, ApiService } from "@multiversx/sdk-nestjs";
+import { OriginLogger } from "@multiversx/sdk-nestjs";
 
 @Injectable()
 export class ProviderService {
@@ -75,7 +75,7 @@ export class ProviderService {
     let providers = await this.getAllProviders();
     const nodes = await this.nodeService.getAllNodes();
 
-    const nodesGroupedByProvider: { [key: string]: any[] } = nodes.groupBy(x => x.provider);
+    const nodesGroupedByProvider: { [key: string]: any[]; } = nodes.groupBy(x => x.provider);
 
     const providersDelegationData: DelegationData[] = await this.getDelegationProviders();
 

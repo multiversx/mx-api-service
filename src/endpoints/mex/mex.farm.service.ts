@@ -1,4 +1,4 @@
-import { Constants, CachingService } from "@elrondnetwork/erdnest";
+import { Constants, CachingService } from "@multiversx/sdk-nestjs";
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { gql } from "graphql-request";
 import { QueryPagination } from "src/common/entities/query.pagination";

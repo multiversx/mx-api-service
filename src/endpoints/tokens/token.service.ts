@@ -19,9 +19,9 @@ import { SortOrder } from "src/common/entities/sort.order";
 import { TokenSort } from "./entities/token.sort";
 import { TokenWithRoles } from "./entities/token.with.roles";
 import { TokenWithRolesFilter } from "./entities/token.with.roles.filter";
-import { AddressUtils, ApiUtils, CachingService, Constants, NumberUtils, TokenUtils } from "@elrondnetwork/erdnest";
+import { AddressUtils, ApiUtils, CachingService, Constants, NumberUtils, TokenUtils } from "@multiversx/sdk-nestjs";
 import { IndexerService } from "src/common/indexer/indexer.service";
-import { OriginLogger } from "@elrondnetwork/erdnest";
+import { OriginLogger } from "@multiversx/sdk-nestjs";
 import { TokenLogo } from "./entities/token.logo";
 import { AssetsService } from "src/common/assets/assets.service";
 import { CacheInfo } from "src/utils/cache.info";
@@ -313,7 +313,7 @@ export class TokenService {
   async getAllTokensForAddress(address: string, filter: TokenFilter): Promise<TokenWithBalance[]> {
     const tokens = await this.getFilteredTokens(filter);
 
-    const tokensIndexed: { [index: string]: Token } = {};
+    const tokensIndexed: { [index: string]: Token; } = {};
     for (const token of tokens) {
       tokensIndexed[token.identifier] = token;
     }

@@ -12,7 +12,7 @@ import { TransactionOperationAction } from "src/endpoints/transactions/entities/
 import { TransactionOperationType } from "src/endpoints/transactions/entities/transaction.operation.type";
 import { EsdtType } from "src/endpoints/esdt/entities/esdt.type";
 import { TransactionUtils } from "src/endpoints/transactions/transaction.utils";
-import '@elrondnetwork/erdnest/lib/src/utils/extensions/array.extensions';
+import '@multiversx/sdk-nestjs/lib/src/utils/extensions/array.extensions';
 
 describe('Transaction Utils', () => {
   it('tryExtractCollectionIdentifierFromChangeSftToMetaEsdTransaction', () => {
@@ -146,7 +146,7 @@ describe('Transaction Utils', () => {
   });
 
   it('tryExtractTransferOwnership', () => {
-    let tryExtractTransferOwnership: TransactionExtractorInterface<{ identifier: string }>;
+    let tryExtractTransferOwnership: TransactionExtractorInterface<{ identifier: string; }>;
 
     let transaction = new ShardTransaction();
     transaction.data = 'dGVzdFRyYW5zYWN0aW9u';

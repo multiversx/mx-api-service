@@ -1,5 +1,5 @@
-import { OriginLogger } from "@elrondnetwork/erdnest";
-import { PerformanceProfiler, CachingService } from "@elrondnetwork/erdnest";
+import { OriginLogger } from "@multiversx/sdk-nestjs";
+import { PerformanceProfiler, CachingService } from "@multiversx/sdk-nestjs";
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
 import { GatewayService } from "src/common/gateway/gateway.service";
@@ -20,7 +20,7 @@ export class VmQueryService {
     private readonly metricsService: ApiMetricsService,
   ) { }
 
-  private async computeTtls(): Promise<{ localTtl: number, remoteTtl: number }> {
+  private async computeTtls(): Promise<{ localTtl: number, remoteTtl: number; }> {
     const secondsRemainingUntilNextRound = await this.protocolService.getSecondsRemainingUntilNextRound();
 
     // no need to store value remotely just to evict it one second later

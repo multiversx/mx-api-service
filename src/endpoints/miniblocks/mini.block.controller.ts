@@ -1,4 +1,4 @@
-import { ParseBlockHashPipe } from "@elrondnetwork/erdnest";
+import { ParseBlockHashPipe } from "@multiversx/sdk-nestjs";
 import { Controller, Get, HttpException, HttpStatus, Param } from "@nestjs/common";
 import { ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiTags } from "@nestjs/swagger";
 import { MiniBlockDetailed } from "./entities/mini.block.detailed";

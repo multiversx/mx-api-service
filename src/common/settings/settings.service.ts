@@ -1,4 +1,4 @@
-import { CachingService } from '@elrondnetwork/erdnest';
+import { CachingService } from '@multiversx/sdk-nestjs';
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { CacheInfo } from 'src/utils/cache.info';
 import { ApiConfigService } from '../api-config/api.config.service';
@@ -39,7 +39,7 @@ export class SettingsService {
     );
   }
 
-  public async getAllSettings(): Promise<{ name: string, value: any }[]> {
+  public async getAllSettings(): Promise<{ name: string, value: any; }[]> {
     return await this.persistenceService.getAllSettings();
   }
 }

@@ -1,4 +1,4 @@
-import { CachingService } from "@elrondnetwork/erdnest";
+import { CachingService } from "@multiversx/sdk-nestjs";
 import { Inject, Injectable } from "@nestjs/common";
 import { CacheInfo } from "src/utils/cache.info";
 import { PersistenceService } from "src/common/persistence/persistence.service";
@@ -6,7 +6,7 @@ import { Nft } from "src/endpoints/nfts/entities/nft";
 import { NftType } from "src/endpoints/nfts/entities/nft.type";
 import { NftExtendedAttributesService } from "src/endpoints/nfts/nft.extendedattributes.service";
 import { ClientProxy } from "@nestjs/microservices";
-import { OriginLogger } from "@elrondnetwork/erdnest";
+import { OriginLogger } from "@multiversx/sdk-nestjs";
 import { CachingUtils } from "src/utils/caching.utils";
 
 

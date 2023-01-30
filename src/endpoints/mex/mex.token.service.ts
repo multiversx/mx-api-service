@@ -7,9 +7,9 @@ import { MexPair } from "./entities/mex.pair";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { MexFarmService } from "./mex.farm.service";
 import { MexSettingsService } from "./mex.settings.service";
-import { Constants, CachingService } from "@elrondnetwork/erdnest";
+import { Constants, CachingService } from "@multiversx/sdk-nestjs";
 import { MexPairType } from "./entities/mex.pair.type";
-import { OriginLogger } from "@elrondnetwork/erdnest";
+import { OriginLogger } from "@multiversx/sdk-nestjs";
 import { QueryPagination } from "src/common/entities/query.pagination";
 
 @Injectable()
@@ -52,7 +52,7 @@ export class MexTokenService {
     return mexTokens.find(x => x.id === identifier);
   }
 
-  async getMexPrices(): Promise<Record<string, { price: number, isToken: boolean }>> {
+  async getMexPrices(): Promise<Record<string, { price: number, isToken: boolean; }>> {
     return await this.cachingService.getOrSetCache(
       CacheInfo.MexPrices.key,
       async () => await this.getMexPricesRaw(),
@@ -61,9 +61,9 @@ export class MexTokenService {
     );
   }
 
-  async getMexPricesRaw(): Promise<Record<string, { price: number, isToken: boolean }>> {
+  async getMexPricesRaw(): Promise<Record<string, { price: number, isToken: boolean; }>> {
     try {
-      const result: Record<string, { price: number, isToken: boolean }> = {};
+      const result: Record<string, { price: number, isToken: boolean; }> = {};
 
       const tokens = await this.getAllMexTokens();
       for (const token of tokens) {

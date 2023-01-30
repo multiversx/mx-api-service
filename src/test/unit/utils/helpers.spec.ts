@@ -1,4 +1,4 @@
-import { ApiUtils } from "@elrondnetwork/erdnest";
+import { ApiUtils } from "@multiversx/sdk-nestjs";
 
 describe('API helpers', () => {
   describe('Cleanup API response helper', () => {

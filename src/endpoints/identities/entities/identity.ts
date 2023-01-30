@@ -1,4 +1,4 @@
-import { SwaggerUtils } from "@elrondnetwork/erdnest";
+import { SwaggerUtils } from "@multiversx/sdk-nestjs";
 import { Field, Float, ObjectType } from "@nestjs/graphql";
 import { ApiProperty } from "@nestjs/swagger";
 import GraphQLJSON from "graphql-type-json";
@@ -59,7 +59,7 @@ export class Identity {
 
   @Field(() => GraphQLJSON, { description: "Provider distribution details.", nullable: true })
   @ApiProperty()
-  distribution?: { [index: string]: number | undefined } = {};
+  distribution?: { [index: string]: number | undefined; } = {};
 
   @Field(() => [String], { description: "Providers details.", nullable: true })
   @ApiProperty({ type: [String] })

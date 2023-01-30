@@ -19,7 +19,7 @@ import { MexEconomicsService } from "src/endpoints/mex/mex.economics.service";
 import { MexPairService } from "src/endpoints/mex/mex.pair.service";
 import { MexTokenService } from "src/endpoints/mex/mex.token.service";
 import { MexFarmService } from "src/endpoints/mex/mex.farm.service";
-import { CachingService, Constants, Lock, Locker, GuestCachingWarmer } from "@elrondnetwork/erdnest";
+import { CachingService, Constants, Lock, Locker, GuestCachingWarmer } from "@multiversx/sdk-nestjs";
 import { DelegationLegacyService } from "src/endpoints/delegation.legacy/delegation.legacy.service";
 import { PluginService } from "src/common/plugins/plugin.service";
 import { SettingsService } from "src/common/settings/settings.service";

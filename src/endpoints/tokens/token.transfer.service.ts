@@ -11,8 +11,8 @@ import { TransactionLogEvent } from "../transactions/entities/transaction.log.ev
 import { TransactionOperationType } from "../transactions/entities/transaction.operation.type";
 import { SmartContractResult } from "../sc-results/entities/smart.contract.result";
 import { TransactionDetailed } from "../transactions/entities/transaction.detailed";
-import { BinaryUtils, CachingService } from "@elrondnetwork/erdnest";
-import { OriginLogger } from "@elrondnetwork/erdnest";
+import { BinaryUtils, CachingService } from "@multiversx/sdk-nestjs";
+import { OriginLogger } from "@multiversx/sdk-nestjs";
 
 @Injectable()
 export class TokenTransferService {
@@ -25,7 +25,7 @@ export class TokenTransferService {
     private readonly assetsService: AssetsService
   ) { }
 
-  getTokenTransfer(elasticTransaction: any): { tokenIdentifier: string, tokenAmount: string } | undefined {
+  getTokenTransfer(elasticTransaction: any): { tokenIdentifier: string, tokenAmount: string; } | undefined {
     if (!elasticTransaction.data) {
       return undefined;
     }
@@ -51,7 +51,7 @@ export class TokenTransferService {
     return { tokenIdentifier: token, tokenAmount: esdtValue };
   }
 
-  private async getTokenTransferPropertiesFromLogs(logs: TransactionLog[]): Promise<{ [key: string]: TokenTransferProperties | null }> {
+  private async getTokenTransferPropertiesFromLogs(logs: TransactionLog[]): Promise<{ [key: string]: TokenTransferProperties | null; }> {
     const identifiers: string[] = [];
     for (const log of logs) {
       for (const event of log.events) {
@@ -63,7 +63,7 @@ export class TokenTransferService {
     }
 
     const tokenProperties: {
-      [key: string]: TokenTransferProperties | null
+      [key: string]: TokenTransferProperties | null;
     } = {};
 
     await this.cachingService.batchApplyAll(
@@ -198,7 +198,7 @@ export class TokenTransferService {
     }
   }
 
-  private getTransactionNftOperation(txHash: string, log: TransactionLog, event: TransactionLogEvent, action: TransactionOperationAction, tokensProperties: { [key: string]: TokenTransferProperties | null }): TransactionOperation | undefined {
+  private getTransactionNftOperation(txHash: string, log: TransactionLog, event: TransactionLogEvent, action: TransactionOperationAction, tokensProperties: { [key: string]: TokenTransferProperties | null; }): TransactionOperation | undefined {
     try {
       let identifier = BinaryUtils.base64Decode(event.topics[0]);
       const nonce = BinaryUtils.tryBase64ToHex(event.topics[1]);

@@ -4,7 +4,7 @@ import { TransactionFilter } from "../transactions/entities/transaction.filter";
 import { TransactionType } from "../transactions/entities/transaction.type";
 import { Transaction } from "../transactions/entities/transaction";
 import { TransactionService } from "../transactions/transaction.service";
-import { ApiUtils } from "@elrondnetwork/erdnest";
+import { ApiUtils } from "@multiversx/sdk-nestjs";
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { TransactionQueryOptions } from "../transactions/entities/transactions.query.options";
 

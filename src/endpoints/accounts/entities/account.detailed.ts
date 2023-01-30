@@ -1,4 +1,4 @@
-import { ComplexityEstimation } from "@elrondnetwork/erdnest";
+import { ComplexityEstimation } from "@multiversx/sdk-nestjs";
 import { Field, Float, ObjectType } from "@nestjs/graphql";
 import { ApiProperty } from "@nestjs/swagger";
 import { ScamInfo } from "src/common/entities/scam-info.dto";

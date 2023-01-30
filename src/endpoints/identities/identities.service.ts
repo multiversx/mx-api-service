@@ -1,4 +1,4 @@
-import { CachingService } from "@elrondnetwork/erdnest";
+import { CachingService } from "@multiversx/sdk-nestjs";
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import BigNumber from "bignumber.js";
 import { CacheInfo } from "src/utils/cache.info";
@@ -74,7 +74,7 @@ export class IdentitiesService {
     return nodesInfo;
   }
 
-  private getStakeDistributionForIdentity(locked: bigint, identity: any): { [key: string]: number } {
+  private getStakeDistributionForIdentity(locked: bigint, identity: any): { [key: string]: number; } {
     const distribution = identity.nodes.reduce((accumulator: any, current: any) => {
       const stake = current.stake ? BigInt(current.stake) : BigInt(0);
       const topUp = current.topUp ? BigInt(current.topUp) : BigInt(0);

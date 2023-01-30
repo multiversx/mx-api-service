@@ -1,6 +1,6 @@
 import { EsdtLockedAccount } from "./esdt.locked.account";
 import { ApiProperty } from "@nestjs/swagger";
-import { SwaggerUtils } from "@elrondnetwork/erdnest";
+import { SwaggerUtils } from "@multiversx/sdk-nestjs";
 
 export class EsdtSupply {
   constructor(init?: Partial<EsdtSupply>) {
