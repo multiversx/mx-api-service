@@ -84,6 +84,12 @@ export class CacheWarmerService {
       this.schedulerRegistry.addCronJob(this.handleNodeAuctionInvalidations.name, handleNodeAuctionInvalidationsCronJob);
       handleNodeAuctionInvalidationsCronJob.start();
     }
+
+    if (this.apiConfigService.isUpdateCollectionExtraDetailsEnabled()) {
+      const handleUpdateCollectionExtraDetailsCronJob = new CronJob(CronExpression.EVERY_MINUTE, async () => await this.handleUpdateCollectionExtraDetails());
+      this.schedulerRegistry.addCronJob(this.handleUpdateCollectionExtraDetails.name, handleUpdateCollectionExtraDetailsCronJob);
+      handleUpdateCollectionExtraDetailsCronJob.start();
+    }
   }
 
   private configCronJob(name: string, fastExpression: string, normalExpression: string, callback: () => Promise<void>) {
@@ -292,7 +298,6 @@ export class CacheWarmerService {
     }));
   }
 
-  @Cron(CronExpression.EVERY_MINUTE)
   @Lock({ name: 'Elastic updater: Update collection isVerified, nftCount, holderCount', verbose: true })
   async handleUpdateCollectionExtraDetails() {
     const allAssets = await this.assetsService.getAllTokenAssets();
