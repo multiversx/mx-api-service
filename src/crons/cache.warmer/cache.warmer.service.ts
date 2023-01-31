@@ -58,26 +58,26 @@ export class CacheWarmerService {
     private readonly indexerService: IndexerService,
     private readonly nftService: NftService,
   ) {
-    // this.configCronJob(
-    //   'handleKeybaseAgainstKeybasePubInvalidations',
-    //   CronExpression.EVERY_MINUTE,
-    //   CronExpression.EVERY_30_MINUTES,
-    //   async () => await this.handleKeybaseAgainstKeybasePubInvalidations()
-    // );
+    this.configCronJob(
+      'handleKeybaseAgainstKeybasePubInvalidations',
+      CronExpression.EVERY_MINUTE,
+      CronExpression.EVERY_30_MINUTES,
+      async () => await this.handleKeybaseAgainstKeybasePubInvalidations()
+    );
 
-    // this.configCronJob(
-    //   'handleKeybaseAgainstCacheInvalidations',
-    //   CronExpression.EVERY_MINUTE,
-    //   CronExpression.EVERY_10_MINUTES,
-    //   async () => await this.handleKeybaseAgainstCacheInvalidations()
-    // );
+    this.configCronJob(
+      'handleKeybaseAgainstCacheInvalidations',
+      CronExpression.EVERY_MINUTE,
+      CronExpression.EVERY_10_MINUTES,
+      async () => await this.handleKeybaseAgainstCacheInvalidations()
+    );
 
-    // this.configCronJob(
-    //   'handleIdentityInvalidations',
-    //   CronExpression.EVERY_MINUTE,
-    //   CronExpression.EVERY_5_MINUTES,
-    //   async () => await this.handleIdentityInvalidations()
-    // );
+    this.configCronJob(
+      'handleIdentityInvalidations',
+      CronExpression.EVERY_MINUTE,
+      CronExpression.EVERY_5_MINUTES,
+      async () => await this.handleIdentityInvalidations()
+    );
 
     if (this.apiConfigService.isStakingV4Enabled()) {
       const handleNodeAuctionInvalidationsCronJob = new CronJob(this.apiConfigService.getStakingV4CronExpression(), async () => await this.handleNodeAuctionInvalidations());
@@ -86,12 +86,12 @@ export class CacheWarmerService {
     }
   }
 
-  // private configCronJob(name: string, fastExpression: string, normalExpression: string, callback: () => Promise<void>) {
-  //   const cronTime = this.apiConfigService.getIsFastWarmerCronActive() ? fastExpression : normalExpression;
-  //   const cronJob = new CronJob(cronTime, async () => await callback());
-  //   this.schedulerRegistry.addCronJob(name, cronJob);
-  //   cronJob.start();
-  // }
+  private configCronJob(name: string, fastExpression: string, normalExpression: string, callback: () => Promise<void>) {
+    const cronTime = this.apiConfigService.getIsFastWarmerCronActive() ? fastExpression : normalExpression;
+    const cronJob = new CronJob(cronTime, async () => await callback());
+    this.schedulerRegistry.addCronJob(name, cronJob);
+    cronJob.start();
+  }
 
   @Cron(CronExpression.EVERY_MINUTE)
   @Lock({ name: 'About invalidation', verbose: true })
