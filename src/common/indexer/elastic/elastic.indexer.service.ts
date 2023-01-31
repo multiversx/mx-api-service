@@ -665,4 +665,16 @@ export class ElasticIndexerService implements IndexerInterface {
   async setMetadataForToken(identifier: string, value: any): Promise<void> {
     return await this.elasticService.setCustomValue('tokens', identifier, 'metadata', value);
   }
+
+  async setIsVerifiedForToken(identifier: string, isVerified: boolean): Promise<void> {
+    return await this.elasticService.setCustomValue('tokens', identifier, 'isVerified', isVerified);
+  }
+
+  async setHolderCountForToken(identifier: string, holderCount: number): Promise<void> {
+    return await this.elasticService.setCustomValue('tokens', identifier, 'holderCount', holderCount);
+  }
+
+  async setNftCountForToken(identifier: string, nftCount: number): Promise<void> {
+    return await this.elasticService.setCustomValue('tokens', identifier, 'nftCount', nftCount);
+  }
 }
