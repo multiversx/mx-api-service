@@ -72,16 +72,20 @@ export class CollectionService {
         continue;
       }
 
-      nftCollection.type = indexedCollection.type;
-      nftCollection.timestamp = indexedCollection.timestamp;
-      nftCollection.isVerified = indexedCollection.api_isVerified;
-      nftCollection.nftCount = indexedCollection.api_nftCount;
-      nftCollection.holderCount = indexedCollection.api_holderCount;
+      this.applyPropertiesToCollectionFromElasticSearch(nftCollection, indexedCollection);
     }
 
     await this.pluginService.processCollections(nftCollections);
 
     return nftCollections;
+  }
+
+  applyPropertiesToCollectionFromElasticSearch(nftCollection: NftCollection, indexedCollection: Collection) {
+    nftCollection.type = indexedCollection.type as NftType;
+    nftCollection.timestamp = indexedCollection.timestamp;
+    nftCollection.isVerified = indexedCollection.api_isVerified;
+    nftCollection.nftCount = indexedCollection.api_nftCount;
+    nftCollection.holderCount = indexedCollection.api_holderCount;
   }
 
   async applyPropertiesToCollections(collectionsIdentifiers: string[]): Promise<NftCollection[]> {
@@ -195,8 +199,8 @@ export class CollectionService {
 
     const collectionDetailed = ApiUtils.mergeObjects(new NftCollectionDetailed(), collection);
 
-    collectionDetailed.type = elasticCollection.type as NftType;
-    collectionDetailed.timestamp = elasticCollection.timestamp;
+    this.applyPropertiesToCollectionFromElasticSearch(collectionDetailed, elasticCollection);
+
     collectionDetailed.traits = await this.persistenceService.getCollectionTraits(identifier) ?? [];
 
     await this.pluginService.processCollections([collectionDetailed]);

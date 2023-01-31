@@ -86,9 +86,9 @@ export class NftCollection {
 
   @Field(() => Number, { description: 'Number of holders. Will be returned only if the collection is verified.', nullable: true })
   @ApiProperty({ type: Number, nullable: true })
-  holderCount: boolean | undefined = undefined;
+  holderCount: number | undefined = undefined;
 
   @Field(() => Number, { description: 'Number of NFTs for this collection. Will be returned only if the collection is verified.', nullable: true })
   @ApiProperty({ type: Number, nullable: true })
-  nftCount: boolean | undefined = undefined;
+  nftCount: number | undefined = undefined;
 }
