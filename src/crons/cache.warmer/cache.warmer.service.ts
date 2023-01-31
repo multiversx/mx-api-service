@@ -206,25 +206,26 @@ export class CacheWarmerService {
     const result = await this.gatewayService.getRaw('validator/statistics', GatewayComponentRequest.validatorStatistics);
     await this.invalidateKey('validatorstatistics', JSON.stringify(result.data), Constants.oneMinute() * 2);
   }
+
   @Cron(CronExpression.EVERY_MINUTE)
   @Lock({ name: 'Token / account assets invalidations', verbose: true })
   async handleTokenAssetsInvalidations() {
-    // await this.assetsService.checkout();
+    await this.assetsService.checkout();
     const assets = this.assetsService.getAllTokenAssetsRaw();
     await this.invalidateKey(CacheInfo.TokenAssets.key, assets, CacheInfo.TokenAssets.ttl);
 
-    // const providers = await this.providerService.getAllProviders();
-    // const identities = await this.identitiesService.getAllIdentities();
-    // const pairs = await this.mexPairsService.getAllMexPairs();
-    // const farms = await this.mexFarmsService.getAllMexFarms();
-    // const settings = await this.mexSettingsService.getSettings();
-    // const stakingProxies = await this.mexFarmsService.getAllStakingProxies();
+    const providers = await this.providerService.getAllProviders();
+    const identities = await this.identitiesService.getAllIdentities();
+    const pairs = await this.mexPairsService.getAllMexPairs();
+    const farms = await this.mexFarmsService.getAllMexFarms();
+    const settings = await this.mexSettingsService.getSettings();
+    const stakingProxies = await this.mexFarmsService.getAllStakingProxies();
 
-    // const accountLabels = await this.assetsService.getAllAccountAssetsRaw(providers, identities, pairs, farms, settings ?? undefined, stakingProxies);
-    // await this.invalidateKey(CacheInfo.AccountAssets.key, accountLabels, CacheInfo.AccountAssets.ttl);
+    const accountLabels = await this.assetsService.getAllAccountAssetsRaw(providers, identities, pairs, farms, settings ?? undefined, stakingProxies);
+    await this.invalidateKey(CacheInfo.AccountAssets.key, accountLabels, CacheInfo.AccountAssets.ttl);
 
-    // const collectionRanks = await this.assetsService.getAllCollectionRanksRaw();
-    // await this.invalidateKey(CacheInfo.CollectionRanks.key, collectionRanks, CacheInfo.CollectionRanks.ttl);
+    const collectionRanks = await this.assetsService.getAllCollectionRanksRaw();
+    await this.invalidateKey(CacheInfo.CollectionRanks.key, collectionRanks, CacheInfo.CollectionRanks.ttl);
   }
 
   @Cron(CronExpression.EVERY_10_MINUTES)
