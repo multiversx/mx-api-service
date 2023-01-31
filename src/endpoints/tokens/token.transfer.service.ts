@@ -16,6 +16,7 @@ import { OriginLogger } from "@elrondnetwork/erdnest";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { NftFilter } from "../nfts/entities/nft.filter";
 import { IndexerService } from "src/common/indexer/indexer.service";
+import { TokenAccount } from "src/common/indexer/entities";
 
 @Injectable()
 export class TokenTransferService {
@@ -134,12 +135,24 @@ export class TokenTransferService {
         if (!operation) {
           const action = this.getOperationEsdtActionByEventIdentifier(event.identifier);
           if (action) {
-            operation = await this.getTransactionNftOperation(txHash, log, event, action, tokensProperties);
+            operation = this.getTransactionNftOperation(txHash, log, event, action, tokensProperties);
           }
         }
 
         if (operation) {
           operations.push(operation);
+        }
+      }
+    }
+
+    const distinctNftIdentifiers = operations.filter(x => x.type === TransactionOperationType.nft).map(x => x.identifier).distinct();
+    if (distinctNftIdentifiers.length > 0) {
+      const elasticNfts = await this.indexerService.getNfts(new QueryPagination({ from: 0, size: distinctNftIdentifiers.length }), new NftFilter({ identifiers: distinctNftIdentifiers }));
+      const elasticNftsDict = elasticNfts.toRecord<TokenAccount>(x => x.identifier);
+
+      for (const operation of operations) {
+        if (elasticNftsDict[operation.identifier]) {
+          operation.name = elasticNftsDict[operation.identifier].data?.name;
         }
       }
     }
@@ -202,7 +215,7 @@ export class TokenTransferService {
     }
   }
 
-  private async getTransactionNftOperation(txHash: string, log: TransactionLog, event: TransactionLogEvent, action: TransactionOperationAction, tokensProperties: { [key: string]: TokenTransferProperties | null }): Promise<TransactionOperation | undefined> {
+  private getTransactionNftOperation(txHash: string, log: TransactionLog, event: TransactionLogEvent, action: TransactionOperationAction, tokensProperties: { [key: string]: TokenTransferProperties | null }): TransactionOperation | undefined {
     try {
       let identifier = BinaryUtils.base64Decode(event.topics[0]);
       const nonce = BinaryUtils.tryBase64ToHex(event.topics[1]);
@@ -210,6 +223,7 @@ export class TokenTransferService {
       const receiver = BinaryUtils.tryBase64ToAddress(event.topics[3]) ?? log.address;
       const properties = tokensProperties[identifier];
       const decimals = properties ? properties.decimals : undefined;
+      const name = properties ? properties.name : undefined;
       const esdtType = properties ? properties.type : undefined;
       const svgUrl = properties ? properties.svgUrl : undefined;
       const ticker = properties ? properties.ticker : undefined;
@@ -219,13 +233,6 @@ export class TokenTransferService {
       if (nonce) {
         collection = identifier;
         identifier = `${collection}-${nonce}`;
-      }
-
-      const elasticNfts = await this.indexerService.getNfts(new QueryPagination({ from: 0, size: 1 }), new NftFilter(), identifier);
-      let name: string | undefined = undefined;
-
-      if (identifier) {
-        name = elasticNfts.length ? elasticNfts[0]?.data?.name : null;
       }
 
       const type = nonce ? TransactionOperationType.nft : TransactionOperationType.esdt;
