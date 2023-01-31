@@ -22,6 +22,7 @@ import { NftRank } from "src/common/assets/entities/nft.rank";
 import { SortCollectionNfts } from "./entities/sort.collection.nfts";
 import { NftCollectionDetailed } from "./entities/nft.collection.detailed";
 import { Response } from "express";
+import { SortCollections } from "./entities/sort.collections";
 
 @Controller()
 @ApiTags('collections')
@@ -50,6 +51,8 @@ export class CollectionController {
   @ApiQuery({ name: 'canAddUri', description: 'Filter by address with canAddUri role', required: false })
   @ApiQuery({ name: 'canTransferRole', description: 'Filter by address with canTransferRole role', required: false })
   @ApiQuery({ name: 'excludeMetaESDT', description: 'Do not include collections of type "MetaESDT" in the response', required: false })
+  @ApiQuery({ name: 'sort', description: 'Sorting criteria', required: false, enum: SortCollections })
+  @ApiQuery({ name: 'order', description: 'Sorting order (asc / desc)', required: false, enum: SortOrder })
   async getNftCollections(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
@@ -66,6 +69,8 @@ export class CollectionController {
     @Query('canAddUri', new ParseAddressPipe) canAddUri?: string,
     @Query('canTransferRole', new ParseAddressPipe) canTransferRole?: string,
     @Query('excludeMetaESDT', new ParseBoolPipe) excludeMetaESDT?: boolean,
+    @Query('sort', new ParseEnumPipe(SortCollections)) sort?: SortCollections,
+    @Query('order', new ParseEnumPipe(SortOrder)) order?: SortOrder,
   ): Promise<NftCollection[]> {
     return await this.collectionService.getNftCollections(new QueryPagination({ from, size }), new CollectionFilter({
       search,
@@ -80,6 +85,8 @@ export class CollectionController {
       canAddUri,
       canTransferRole,
       excludeMetaESDT,
+      sort,
+      order,
     }));
   }
 

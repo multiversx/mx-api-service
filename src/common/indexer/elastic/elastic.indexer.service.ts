@@ -18,6 +18,7 @@ import { Block } from "../entities/block";
 import { Tag } from "../entities/tag";
 import { ElasticIndexerHelper } from "./elastic.indexer.helper";
 import { TokenType } from "../entities";
+import { SortCollections } from "src/endpoints/collections/entities/sort.collections";
 
 @Injectable()
 export class ElasticIndexerService implements IndexerInterface {
@@ -243,14 +244,17 @@ export class ElasticIndexerService implements IndexerInterface {
     let elasticQuery = this.indexerHelper.buildCollectionRolesFilter(filter, address)
       .withPagination(pagination);
 
-    if (this.apiConfigService.isUpdateCollectionExtraDetailsEnabled()) {
+    const sort = filter.sort ?? SortCollections.timestamp;
+    const order = filter.order === SortOrder.asc ? ElasticSortOrder.ascending : ElasticSortOrder.descending;
+
+    if (sort === SortCollections.verifiedAndHolderCount) {
       elasticQuery = elasticQuery.withSort([
-        { name: 'api_isVerified', order: ElasticSortOrder.descending },
-        { name: 'api_holderCount', order: ElasticSortOrder.descending },
+        { name: 'api_isVerified', order },
+        { name: 'api_holderCount', order },
       ]);
     } else {
       elasticQuery = elasticQuery.withSort([
-        { name: 'timestamp', order: ElasticSortOrder.descending },
+        { name: 'timestamp', order },
       ]);
     }
 
