@@ -48,6 +48,7 @@ import { OriginLogger } from '@multiversx/sdk-nestjs';
 import { AccountDelegation } from '../stake/entities/account.delegation';
 import { DelegationService } from '../delegation/delegation.service';
 import { TokenType } from '../tokens/entities/token.type';
+import { AccountVerification } from './entities/account.verification';
 
 @Controller()
 @ApiTags('accounts')
@@ -116,6 +117,19 @@ export class AccountController {
       this.logger.error(`Error in getAccountDeferred for address ${address}`);
       this.logger.error(error);
       throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
+    }
+  }
+
+  @Get("/accounts/:address/verification")
+  @ApiOperation({ summary: 'Account verification details', description: 'Returns contract verification details' })
+  @ApiOkResponse({ type: AccountVerification })
+  async getAccountVerification(@Param('address', ParseAddressPipe) address: string): Promise<AccountVerification | null> {
+    try {
+      return await this.accountService.getAccountVerification(address);
+    } catch (error) {
+      this.logger.error(`Error in getAccountVerification for address ${address}`);
+      this.logger.error(error);
+      throw new HttpException('Account verification not found', HttpStatus.NOT_FOUND);
     }
   }
 
