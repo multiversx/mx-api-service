@@ -72,6 +72,7 @@ export class MexSettingsService {
     return new Set<string>([
       settings.distributionContract,
       settings.lockedAssetContract,
+      settings.routerFactoryContract,
       ...settings.farmContracts,
       ...settings.pairContracts,
       ...settings.wrapContracts,
@@ -138,6 +139,9 @@ export class MexSettingsService {
         address
       }
       stakingProxies {
+        address
+      }
+      factory {
         address
       }
     }

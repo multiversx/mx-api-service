@@ -100,45 +100,45 @@ describe('Transaction Service', () => {
       }
       expect(results).toHaveLength(5);
     });
-  });
 
-  it('should return 2 transactions with hashes filter applied', async () => {
-    const txFilters = new TransactionFilter();
-    txFilters.hashes = [
-      "29a2bed2543197e69c9bf16b30c4b0196f5e7a59584aba2e1a2127bf06cdfd2d",
-      "0cbaeb61cd2d901e7363b83e35750d0cbf2045ed853ef8f7af7cefdef622671e"];
+    it('should return 2 transactions with hashes filter applied', async () => {
+      const txFilters = new TransactionFilter();
+      txFilters.hashes = [
+        "29a2bed2543197e69c9bf16b30c4b0196f5e7a59584aba2e1a2127bf06cdfd2d",
+        "0cbaeb61cd2d901e7363b83e35750d0cbf2045ed853ef8f7af7cefdef622671e"];
 
-    const queryOptions = new TransactionQueryOptions();
-    queryOptions.withScResults = true;
+      const queryOptions = new TransactionQueryOptions();
+      queryOptions.withScResults = true;
 
-    const results = await transactionService.getTransactions(
-      txFilters,
-      new QueryPagination({ size: 2 }));
+      const results = await transactionService.getTransactions(
+        txFilters,
+        new QueryPagination({ size: 2 }));
 
-    for (const result of results) {
-      expect(result).toHaveStructure(Object.keys(new Transaction()));
-    }
-  });
+      for (const result of results) {
+        expect(result).toHaveStructure(Object.keys(new Transaction()));
+      }
+    });
 
-  it('should return 2 transactions with hashes filter applied and withScResults', async () => {
-    const txFilters = new TransactionFilter();
-    txFilters.hashes = [
-      "29a2bed2543197e69c9bf16b30c4b0196f5e7a59584aba2e1a2127bf06cdfd2d",
-      "0cbaeb61cd2d901e7363b83e35750d0cbf2045ed853ef8f7af7cefdef622671e"];
+    it('should return 2 transactions with hashes filter applied and withScResults', async () => {
+      const txFilters = new TransactionFilter();
+      txFilters.hashes = [
+        "29a2bed2543197e69c9bf16b30c4b0196f5e7a59584aba2e1a2127bf06cdfd2d",
+        "0cbaeb61cd2d901e7363b83e35750d0cbf2045ed853ef8f7af7cefdef622671e"];
 
-    const queryOptions = new TransactionQueryOptions();
-    queryOptions.withScResults = true;
+      const queryOptions = new TransactionQueryOptions();
+      queryOptions.withScResults = true;
 
-    const results = await transactionService.getTransactions(
-      txFilters,
-      new QueryPagination({ size: 2 }),
-      queryOptions);
+      const results = await transactionService.getTransactions(
+        txFilters,
+        new QueryPagination({ size: 2 }),
+        queryOptions);
 
-    const txResults = results.map((result) => result.txHash);
+      const txResults = results.map((result) => result.txHash);
 
-    expect(results).toHaveLength(2);
-    expect(txResults.includes("29a2bed2543197e69c9bf16b30c4b0196f5e7a59584aba2e1a2127bf06cdfd2d")).toBeTruthy();
-    expect(txResults.includes("0cbaeb61cd2d901e7363b83e35750d0cbf2045ed853ef8f7af7cefdef622671e")).toBeTruthy();
+      expect(results).toHaveLength(2);
+      expect(txResults.includes("29a2bed2543197e69c9bf16b30c4b0196f5e7a59584aba2e1a2127bf06cdfd2d")).toBeTruthy();
+      expect(txResults.includes("0cbaeb61cd2d901e7363b83e35750d0cbf2045ed853ef8f7af7cefdef622671e")).toBeTruthy();
+    });
   });
 
   describe('getTransaction', () => {
