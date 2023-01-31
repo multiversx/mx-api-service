@@ -64,6 +64,25 @@ describe('API Config', () => {
     });
   });
 
+  describe("getVerifierUrl", () => {
+    it("should return verifier (play-api.multiversx.com) url", () => {
+      jest
+        .spyOn(ConfigService.prototype, "get")
+        .mockImplementation(jest.fn(() => 'https://play-api.multiversx.com'));
+
+      const results = apiConfigService.getVerifierUrl();
+      expect(results).toEqual('https://play-api.multiversx.com');
+    });
+
+    it("should throw error because test simulates that verifier url is not defined", () => {
+      jest
+        .spyOn(ConfigService.prototype, 'get')
+        .mockImplementation(jest.fn(() => undefined));
+
+      expect(() => apiConfigService.getVerifierUrl()).toThrowError('No verifier url present');
+    });
+  });
+
   describe("getElasticUrl", () => {
     it("should return elastic url", () => {
       jest
