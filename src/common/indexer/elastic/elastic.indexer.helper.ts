@@ -137,7 +137,9 @@ export class ElasticIndexerHelper {
     }
 
     if (filter.type !== undefined) {
-      elasticQuery = elasticQuery.withMustCondition(QueryType.Match('type', filter.type));
+      const types = (filter.type ?? '').split(',');
+
+      elasticQuery = elasticQuery.withMustMultiShouldCondition(types, type => QueryType.Match('type', type));
     }
 
     if (identifier !== undefined) {
@@ -292,6 +294,14 @@ export class ElasticIndexerHelper {
 
     if (filter.before || filter.after) {
       elasticQuery = elasticQuery.withDateRangeFilter('timestamp', filter.before, filter.after);
+    }
+
+    if (filter.senderOrReceiver) {
+      elasticQuery = elasticQuery
+        .withMustCondition(QueryType.Should([
+          QueryType.Match('sender', filter.senderOrReceiver),
+          QueryType.Match('receiver', filter.senderOrReceiver),
+        ]));
     }
 
     return elasticQuery;
@@ -457,6 +467,14 @@ export class ElasticIndexerHelper {
       }
 
       elasticQuery = elasticQuery.withMustMultiShouldCondition(keys, key => QueryType.Match(key, address));
+    }
+
+    if (filter.senderOrReceiver) {
+      elasticQuery = elasticQuery
+        .withMustCondition(QueryType.Should([
+          QueryType.Match('sender', filter.senderOrReceiver),
+          QueryType.Match('receiver', filter.senderOrReceiver),
+        ]));
     }
 
     return elasticQuery;

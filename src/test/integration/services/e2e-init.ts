@@ -69,7 +69,7 @@ export default class Initializer {
         // eslint-disable-next-line require-await
         .mockImplementation(jest.fn(async () => queue));
 
-      jest.spyOn(KeybaseService.prototype, 'confirmKeybasesAgainstKeybasePub')
+      jest.spyOn(KeybaseService.prototype, 'confirmKeybasesAgainstGithubOrKeybasePub')
         .mockImplementation(jest.fn(async () => {
           const providers = await providerService.getProviderAddresses();
           for (const provider of providers) {
@@ -92,7 +92,7 @@ export default class Initializer {
       async () => await Initializer.cachingService.flushDb(),
     );
 
-    await this.execute('Confirm keybases against keybase.pub', async () => await keybaseService.confirmKeybasesAgainstKeybasePub());
+    await this.execute('Confirm keybases against keybase.pub', async () => await keybaseService.confirmKeybasesAgainstGithubOrKeybasePub());
     await this.execute('Confirm keybase against keybase.io', async () => await keybaseService.confirmIdentityProfilesAgainstKeybaseIo());
     await this.fetch(CacheInfo.Keybases.key, async () => await keybaseService.confirmKeybasesAgainstCache());
     await this.fetch(CacheInfo.Nodes.key, async () => await nodeService.getAllNodesRaw());

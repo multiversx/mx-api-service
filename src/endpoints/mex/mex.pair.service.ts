@@ -45,6 +45,12 @@ export class MexPairService {
     );
   }
 
+  async getMexPairsCount(): Promise<number> {
+    const mexPairs = await this.getAllMexPairs();
+
+    return mexPairs.length;
+  }
+
   async getAllMexPairsRaw(): Promise<MexPair[]> {
     try {
       const settings = await this.mexSettingService.getSettings();
@@ -188,6 +194,7 @@ export class MexPairService {
         return MexPairType.experimental;
       case 'Jungle':
       case 'Jungle-Experimental':
+      case 'Jungle-Community':
         return MexPairType.jungle;
       case 'Unlisted':
         return MexPairType.unlisted;

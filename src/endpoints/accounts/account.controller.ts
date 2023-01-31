@@ -48,6 +48,7 @@ import { OriginLogger } from '@elrondnetwork/erdnest';
 import { AccountDelegation } from '../stake/entities/account.delegation';
 import { DelegationService } from '../delegation/delegation.service';
 import { TokenType } from '../tokens/entities/token.type';
+import { AccountVerification } from './entities/account.verification';
 
 @Controller()
 @ApiTags('accounts')
@@ -116,6 +117,19 @@ export class AccountController {
       this.logger.error(`Error in getAccountDeferred for address ${address}`);
       this.logger.error(error);
       throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
+    }
+  }
+
+  @Get("/accounts/:address/verification")
+  @ApiOperation({ summary: 'Account verification details', description: 'Returns contract verification details' })
+  @ApiOkResponse({ type: AccountVerification })
+  async getAccountVerification(@Param('address', ParseAddressPipe) address: string): Promise<AccountVerification | null> {
+    try {
+      return await this.accountService.getAccountVerification(address);
+    } catch (error) {
+      this.logger.error(`Error in getAccountVerification for address ${address}`);
+      this.logger.error(error);
+      throw new HttpException('Account verification not found', HttpStatus.NOT_FOUND);
     }
   }
 
@@ -618,6 +632,7 @@ export class AccountController {
   @ApiQuery({ name: 'withScamInfo', description: 'Returns scam information', required: false, type: Boolean })
   @ApiQuery({ name: 'withUsername', description: 'Integrates username in assets for all addresses present in the transactions', required: false, type: Boolean })
   @ApiQuery({ name: 'computeScamInfo', required: false, type: Boolean })
+  @ApiQuery({ name: 'senderOrReceiver', description: 'One address that current address interacted with', required: false })
   async getAccountTransactions(
     @Param('address', ParseAddressPipe) address: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
@@ -640,6 +655,7 @@ export class AccountController {
     @Query('withLogs', new ParseBoolPipe) withLogs?: boolean,
     @Query('withScamInfo', new ParseBoolPipe) withScamInfo?: boolean,
     @Query('withUsername', new ParseBoolPipe) withUsername?: boolean,
+    @Query('senderOrReceiver', ParseAddressPipe) senderOrReceiver?: string,
   ) {
     const options = TransactionQueryOptions.applyDefaultOptions(size, { withScResults, withOperations, withLogs, withScamInfo, withUsername });
 
@@ -657,6 +673,7 @@ export class AccountController {
       before,
       after,
       order,
+      senderOrReceiver,
     }), new QueryPagination({ from, size }), options, address);
   }
 
@@ -727,6 +744,7 @@ export class AccountController {
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
   @ApiQuery({ name: 'withScamInfo', description: 'Returns scam information', required: false, type: Boolean })
   @ApiQuery({ name: 'withUsername', description: 'Integrates username in assets for all addresses present in the transactions', required: false, type: Boolean })
+  @ApiQuery({ name: 'senderOrReceiver', description: 'One address that current address interacted with', required: false })
   async getAccountTransfers(
     @Param('address', ParseAddressPipe) address: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
@@ -746,6 +764,7 @@ export class AccountController {
     @Query('order', new ParseEnumPipe(SortOrder)) order?: SortOrder,
     @Query('withScamInfo', new ParseBoolPipe) withScamInfo?: boolean,
     @Query('withUsername', new ParseBoolPipe) withUsername?: boolean,
+    @Query('senderOrReceiver', ParseAddressPipe) senderOrReceiver?: string,
   ): Promise<Transaction[]> {
     if (!this.apiConfigService.getIsIndexerV3FlagActive()) {
       throw new HttpException('Endpoint not live yet', HttpStatus.NOT_IMPLEMENTED);
@@ -768,6 +787,7 @@ export class AccountController {
       before,
       after,
       order,
+      senderOrReceiver,
     }),
       new QueryPagination({ from, size }),
       options,

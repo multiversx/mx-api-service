@@ -19,6 +19,15 @@ export class ApiConfigService {
     return apiUrls;
   }
 
+  getVerifierUrl(): string {
+    const verifierUrl = this.configService.get<string>('urls.verifier');
+    if (!verifierUrl) {
+      throw new Error('No verifier url present');
+    }
+
+    return verifierUrl;
+  }
+
   getGatewayUrl(): string {
     const gatewayUrls = this.configService.get<string[]>('urls.gateway');
     if (!gatewayUrls) {
@@ -236,10 +245,6 @@ export class ApiConfigService {
     return delegationUrl;
   }
 
-  getDataUrl(): string | undefined {
-    return this.configService.get<string>('urls.dataUrl');
-  }
-
   getTempUrl(): string {
     const tmpUrl = this.configService.get<string>('urls.tmp');
     if (!tmpUrl) {
@@ -290,6 +295,10 @@ export class ApiConfigService {
     }
 
     return isCronActive;
+  }
+
+  getIsApiStatusCheckerActive(): boolean {
+    return this.configService.get<boolean>('cron.statusChecker') ?? false;
   }
 
   getIsElasticUpdaterCronActive(): boolean {
@@ -356,6 +365,10 @@ export class ApiConfigService {
 
   getIsIndexerV3FlagActive(): boolean {
     return this.configService.get<boolean>('flags.indexer-v3') ?? false;
+  }
+
+  getIsIndexerV5FlagActive(): boolean {
+    return this.configService.get<boolean>('flags.indexer-v5') ?? false;
   }
 
   isGraphQlActive(): boolean {
@@ -716,5 +729,9 @@ export class ApiConfigService {
 
   getIndexerMaxPagination(): number {
     return this.configService.get<number>('indexer.maxPagination') ?? 10000;
+  }
+
+  isNodeSyncProgressEnabled(): boolean {
+    return this.configService.get<boolean>('features.nodeSyncProgress.enabled') ?? false;
   }
 }
