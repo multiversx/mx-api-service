@@ -93,21 +93,21 @@ export class CacheWarmerService {
   //   cronJob.start();
   // }
 
-  // @Cron(CronExpression.EVERY_MINUTE)
+  @Cron(CronExpression.EVERY_MINUTE)
   @Lock({ name: 'About invalidation', verbose: true })
   async handleAboutInvalidation() {
     const about = await this.networkService.getAboutRaw();
     await this.invalidateKey(CacheInfo.About.key, about, CacheInfo.About.ttl);
   }
 
-  // @Cron(CronExpression.EVERY_MINUTE)
+  @Cron(CronExpression.EVERY_MINUTE)
   @Lock({ name: 'Node invalidations', verbose: true })
   async handleNodeInvalidations() {
     const nodes = await this.nodeService.getAllNodesRaw();
     await this.invalidateKey(CacheInfo.Nodes.key, nodes, CacheInfo.Nodes.ttl);
   }
 
-  // @Cron(CronExpression.EVERY_MINUTE)
+  @Cron(CronExpression.EVERY_MINUTE)
   @Lock({ name: 'Delegation legacy invalidations', verbose: true })
   async handleDelegationLegacyInvalidations() {
     const delegation = await this.delegationLegacyService.getDelegationRaw();
@@ -124,7 +124,7 @@ export class CacheWarmerService {
     await this.invalidateKey(CacheInfo.Nodes.key, nodes, CacheInfo.Nodes.ttl);
   }
 
-  // @Cron(CronExpression.EVERY_MINUTE)
+  @Cron(CronExpression.EVERY_MINUTE)
   @Lock({ name: 'All Tokens invalidations', verbose: true })
   async handleEsdtTokenInvalidations() {
     const tokens = await this.tokenService.getAllTokensRaw();
@@ -137,7 +137,7 @@ export class CacheWarmerService {
     await this.invalidateKey(CacheInfo.Identities.key, identities, CacheInfo.Identities.ttl);
   }
 
-  // @Cron(CronExpression.EVERY_MINUTE)
+  @Cron(CronExpression.EVERY_MINUTE)
   @Lock({ name: 'Providers invalidations', verbose: true })
   async handleProviderInvalidations() {
     const providers = await this.providerService.getAllProvidersRaw();
@@ -170,7 +170,7 @@ export class CacheWarmerService {
     await this.handleKeybaseAgainstCacheInvalidations();
   }
 
-  // @Cron(CronExpression.EVERY_MINUTE)
+  @Cron(CronExpression.EVERY_MINUTE)
   @Lock({ name: 'Current price invalidations', verbose: true })
   async handleCurrentPriceInvalidations() {
     const currentPrice = await this.pluginsService.getEgldPrice();
@@ -179,28 +179,28 @@ export class CacheWarmerService {
     }
   }
 
-  // @Cron(CronExpression.EVERY_MINUTE)
+  @Cron(CronExpression.EVERY_MINUTE)
   @Lock({ name: 'Economics invalidations', verbose: true })
   async handleEconomicsInvalidations() {
     const economics = await this.networkService.getEconomicsRaw();
     await this.invalidateKey(CacheInfo.Economics.key, economics, CacheInfo.Economics.ttl);
   }
 
-  // @Cron(CronExpression.EVERY_MINUTE)
+  @Cron(CronExpression.EVERY_MINUTE)
   @Lock({ name: 'Accounts invalidations', verbose: true })
   async handleAccountInvalidations() {
     const accounts = await this.accountService.getAccountsRaw({ from: 0, size: 25 });
     await this.invalidateKey(CacheInfo.Top25Accounts.key, accounts, CacheInfo.Top25Accounts.ttl);
   }
 
-  // @Cron(CronExpression.EVERY_MINUTE)
+  @Cron(CronExpression.EVERY_MINUTE)
   @Lock({ name: 'Heartbeatstatus invalidations', verbose: true })
   async handleHeartbeatStatusInvalidations() {
     const result = await this.gatewayService.getRaw('node/heartbeatstatus', GatewayComponentRequest.nodeHeartbeat);
     await this.invalidateKey('heartbeatstatus', JSON.stringify(result.data), Constants.oneMinute() * 2);
   }
 
-  // @Cron(CronExpression.EVERY_MINUTE)
+  @Cron(CronExpression.EVERY_MINUTE)
   @Lock({ name: 'Validator statistics invalidations', verbose: true })
   async handleValidatorStatisticsInvalidations() {
     const result = await this.gatewayService.getRaw('validator/statistics', GatewayComponentRequest.validatorStatistics);
@@ -250,7 +250,7 @@ export class CacheWarmerService {
     }
   }
 
-  // @Cron(CronExpression.EVERY_MINUTE)
+  @Cron(CronExpression.EVERY_MINUTE)
   async handleMexInvalidations() {
     await Locker.lock('Refreshing mex pairs', async () => {
       await this.mexPairsService.refreshMexPairs();

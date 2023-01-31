@@ -64,9 +64,9 @@ export class CollectionService {
       indexedCollections[collection.token] = collection;
     }
 
-    const nftColections: NftCollection[] = await this.applyPropertiesToCollections(collectionsIdentifiers);
+    const nftCollections: NftCollection[] = await this.applyPropertiesToCollections(collectionsIdentifiers);
 
-    for (const nftCollection of nftColections) {
+    for (const nftCollection of nftCollections) {
       const indexedCollection = indexedCollections[nftCollection.collection];
       if (!indexedCollection) {
         continue;
@@ -74,11 +74,14 @@ export class CollectionService {
 
       nftCollection.type = indexedCollection.type;
       nftCollection.timestamp = indexedCollection.timestamp;
+      nftCollection.isVerified = indexedCollection.api_isVerified;
+      nftCollection.nftCount = indexedCollection.api_nftCount;
+      nftCollection.holderCount = indexedCollection.api_holderCount;
     }
 
-    await this.pluginService.processCollections(nftColections);
+    await this.pluginService.processCollections(nftCollections);
 
-    return nftColections;
+    return nftCollections;
   }
 
   async applyPropertiesToCollections(collectionsIdentifiers: string[]): Promise<NftCollection[]> {
