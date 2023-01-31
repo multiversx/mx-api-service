@@ -145,6 +145,7 @@ async function bootstrap() {
   logger.log(`Use tracing: ${apiConfigService.getUseTracingFlag()}`);
   logger.log(`Process NFTs flag: ${apiConfigService.getIsProcessNftsFlagActive()}`);
   logger.log(`Indexer v3 flag: ${apiConfigService.getIsIndexerV3FlagActive()}`);
+  logger.log(`Indexer v5 flag: ${apiConfigService.getIsIndexerV5FlagActive()}`);
   logger.log(`Staking v4 enabled: ${apiConfigService.isStakingV4Enabled()}`);
   logger.log(`Events notifier enabled: ${apiConfigService.isEventsNotifierFeatureActive()}`);
   logger.log(`Guest caching enabled: ${apiConfigService.isGuestCachingFeatureActive()}`);
