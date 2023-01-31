@@ -19,14 +19,18 @@ import { MexEconomicsService } from "src/endpoints/mex/mex.economics.service";
 import { MexPairService } from "src/endpoints/mex/mex.pair.service";
 import { MexTokenService } from "src/endpoints/mex/mex.token.service";
 import { MexFarmService } from "src/endpoints/mex/mex.farm.service";
-import { CachingService, Constants, Lock, Locker } from "@elrondnetwork/erdnest";
+import { CachingService, Constants, Lock, Locker, OriginLogger } from "@elrondnetwork/erdnest";
 import { DelegationLegacyService } from "src/endpoints/delegation.legacy/delegation.legacy.service";
 import { PluginService } from "src/common/plugins/plugin.service";
 import { SettingsService } from "src/common/settings/settings.service";
 import { TokenService } from "src/endpoints/tokens/token.service";
+import { IndexerService } from "src/common/indexer/indexer.service";
+import { NftService } from "src/endpoints/nfts/nft.service";
 
 @Injectable()
 export class CacheWarmerService {
+  private readonly logger = new OriginLogger(CacheWarmerService.name);
+
   constructor(
     private readonly nodeService: NodeService,
     private readonly esdtService: EsdtService,
@@ -51,27 +55,29 @@ export class CacheWarmerService {
     private readonly mexFarmsService: MexFarmService,
     private readonly delegationLegacyService: DelegationLegacyService,
     private readonly tokenService: TokenService,
+    private readonly indexerService: IndexerService,
+    private readonly nftService: NftService,
   ) {
-    this.configCronJob(
-      'handleKeybaseAgainstKeybasePubInvalidations',
-      CronExpression.EVERY_MINUTE,
-      CronExpression.EVERY_30_MINUTES,
-      async () => await this.handleKeybaseAgainstKeybasePubInvalidations()
-    );
+    // this.configCronJob(
+    //   'handleKeybaseAgainstKeybasePubInvalidations',
+    //   CronExpression.EVERY_MINUTE,
+    //   CronExpression.EVERY_30_MINUTES,
+    //   async () => await this.handleKeybaseAgainstKeybasePubInvalidations()
+    // );
 
-    this.configCronJob(
-      'handleKeybaseAgainstCacheInvalidations',
-      CronExpression.EVERY_MINUTE,
-      CronExpression.EVERY_10_MINUTES,
-      async () => await this.handleKeybaseAgainstCacheInvalidations()
-    );
+    // this.configCronJob(
+    //   'handleKeybaseAgainstCacheInvalidations',
+    //   CronExpression.EVERY_MINUTE,
+    //   CronExpression.EVERY_10_MINUTES,
+    //   async () => await this.handleKeybaseAgainstCacheInvalidations()
+    // );
 
-    this.configCronJob(
-      'handleIdentityInvalidations',
-      CronExpression.EVERY_MINUTE,
-      CronExpression.EVERY_5_MINUTES,
-      async () => await this.handleIdentityInvalidations()
-    );
+    // this.configCronJob(
+    //   'handleIdentityInvalidations',
+    //   CronExpression.EVERY_MINUTE,
+    //   CronExpression.EVERY_5_MINUTES,
+    //   async () => await this.handleIdentityInvalidations()
+    // );
 
     if (this.apiConfigService.isStakingV4Enabled()) {
       const handleNodeAuctionInvalidationsCronJob = new CronJob(this.apiConfigService.getStakingV4CronExpression(), async () => await this.handleNodeAuctionInvalidations());
@@ -80,28 +86,28 @@ export class CacheWarmerService {
     }
   }
 
-  private configCronJob(name: string, fastExpression: string, normalExpression: string, callback: () => Promise<void>) {
-    const cronTime = this.apiConfigService.getIsFastWarmerCronActive() ? fastExpression : normalExpression;
-    const cronJob = new CronJob(cronTime, async () => await callback());
-    this.schedulerRegistry.addCronJob(name, cronJob);
-    cronJob.start();
-  }
+  // private configCronJob(name: string, fastExpression: string, normalExpression: string, callback: () => Promise<void>) {
+  //   const cronTime = this.apiConfigService.getIsFastWarmerCronActive() ? fastExpression : normalExpression;
+  //   const cronJob = new CronJob(cronTime, async () => await callback());
+  //   this.schedulerRegistry.addCronJob(name, cronJob);
+  //   cronJob.start();
+  // }
 
-  @Cron(CronExpression.EVERY_MINUTE)
+  // @Cron(CronExpression.EVERY_MINUTE)
   @Lock({ name: 'About invalidation', verbose: true })
   async handleAboutInvalidation() {
     const about = await this.networkService.getAboutRaw();
     await this.invalidateKey(CacheInfo.About.key, about, CacheInfo.About.ttl);
   }
 
-  @Cron(CronExpression.EVERY_MINUTE)
+  // @Cron(CronExpression.EVERY_MINUTE)
   @Lock({ name: 'Node invalidations', verbose: true })
   async handleNodeInvalidations() {
     const nodes = await this.nodeService.getAllNodesRaw();
     await this.invalidateKey(CacheInfo.Nodes.key, nodes, CacheInfo.Nodes.ttl);
   }
 
-  @Cron(CronExpression.EVERY_MINUTE)
+  // @Cron(CronExpression.EVERY_MINUTE)
   @Lock({ name: 'Delegation legacy invalidations', verbose: true })
   async handleDelegationLegacyInvalidations() {
     const delegation = await this.delegationLegacyService.getDelegationRaw();
@@ -118,7 +124,7 @@ export class CacheWarmerService {
     await this.invalidateKey(CacheInfo.Nodes.key, nodes, CacheInfo.Nodes.ttl);
   }
 
-  @Cron(CronExpression.EVERY_MINUTE)
+  // @Cron(CronExpression.EVERY_MINUTE)
   @Lock({ name: 'All Tokens invalidations', verbose: true })
   async handleEsdtTokenInvalidations() {
     const tokens = await this.tokenService.getAllTokensRaw();
@@ -131,7 +137,7 @@ export class CacheWarmerService {
     await this.invalidateKey(CacheInfo.Identities.key, identities, CacheInfo.Identities.ttl);
   }
 
-  @Cron(CronExpression.EVERY_MINUTE)
+  // @Cron(CronExpression.EVERY_MINUTE)
   @Lock({ name: 'Providers invalidations', verbose: true })
   async handleProviderInvalidations() {
     const providers = await this.providerService.getAllProvidersRaw();
@@ -164,7 +170,7 @@ export class CacheWarmerService {
     await this.handleKeybaseAgainstCacheInvalidations();
   }
 
-  @Cron(CronExpression.EVERY_MINUTE)
+  // @Cron(CronExpression.EVERY_MINUTE)
   @Lock({ name: 'Current price invalidations', verbose: true })
   async handleCurrentPriceInvalidations() {
     const currentPrice = await this.pluginsService.getEgldPrice();
@@ -173,52 +179,52 @@ export class CacheWarmerService {
     }
   }
 
-  @Cron(CronExpression.EVERY_MINUTE)
+  // @Cron(CronExpression.EVERY_MINUTE)
   @Lock({ name: 'Economics invalidations', verbose: true })
   async handleEconomicsInvalidations() {
     const economics = await this.networkService.getEconomicsRaw();
     await this.invalidateKey(CacheInfo.Economics.key, economics, CacheInfo.Economics.ttl);
   }
 
-  @Cron(CronExpression.EVERY_MINUTE)
+  // @Cron(CronExpression.EVERY_MINUTE)
   @Lock({ name: 'Accounts invalidations', verbose: true })
   async handleAccountInvalidations() {
     const accounts = await this.accountService.getAccountsRaw({ from: 0, size: 25 });
     await this.invalidateKey(CacheInfo.Top25Accounts.key, accounts, CacheInfo.Top25Accounts.ttl);
   }
 
-  @Cron(CronExpression.EVERY_MINUTE)
+  // @Cron(CronExpression.EVERY_MINUTE)
   @Lock({ name: 'Heartbeatstatus invalidations', verbose: true })
   async handleHeartbeatStatusInvalidations() {
     const result = await this.gatewayService.getRaw('node/heartbeatstatus', GatewayComponentRequest.nodeHeartbeat);
     await this.invalidateKey('heartbeatstatus', JSON.stringify(result.data), Constants.oneMinute() * 2);
   }
 
-  @Cron(CronExpression.EVERY_MINUTE)
+  // @Cron(CronExpression.EVERY_MINUTE)
   @Lock({ name: 'Validator statistics invalidations', verbose: true })
   async handleValidatorStatisticsInvalidations() {
     const result = await this.gatewayService.getRaw('validator/statistics', GatewayComponentRequest.validatorStatistics);
     await this.invalidateKey('validatorstatistics', JSON.stringify(result.data), Constants.oneMinute() * 2);
   }
-  @Cron(CronExpression.EVERY_10_MINUTES)
+  @Cron(CronExpression.EVERY_MINUTE)
   @Lock({ name: 'Token / account assets invalidations', verbose: true })
   async handleTokenAssetsInvalidations() {
-    await this.assetsService.checkout();
+    // await this.assetsService.checkout();
     const assets = this.assetsService.getAllTokenAssetsRaw();
     await this.invalidateKey(CacheInfo.TokenAssets.key, assets, CacheInfo.TokenAssets.ttl);
 
-    const providers = await this.providerService.getAllProviders();
-    const identities = await this.identitiesService.getAllIdentities();
-    const pairs = await this.mexPairsService.getAllMexPairs();
-    const farms = await this.mexFarmsService.getAllMexFarms();
-    const settings = await this.mexSettingsService.getSettings();
-    const stakingProxies = await this.mexFarmsService.getAllStakingProxies();
+    // const providers = await this.providerService.getAllProviders();
+    // const identities = await this.identitiesService.getAllIdentities();
+    // const pairs = await this.mexPairsService.getAllMexPairs();
+    // const farms = await this.mexFarmsService.getAllMexFarms();
+    // const settings = await this.mexSettingsService.getSettings();
+    // const stakingProxies = await this.mexFarmsService.getAllStakingProxies();
 
-    const accountLabels = await this.assetsService.getAllAccountAssetsRaw(providers, identities, pairs, farms, settings ?? undefined, stakingProxies);
-    await this.invalidateKey(CacheInfo.AccountAssets.key, accountLabels, CacheInfo.AccountAssets.ttl);
+    // const accountLabels = await this.assetsService.getAllAccountAssetsRaw(providers, identities, pairs, farms, settings ?? undefined, stakingProxies);
+    // await this.invalidateKey(CacheInfo.AccountAssets.key, accountLabels, CacheInfo.AccountAssets.ttl);
 
-    const collectionRanks = await this.assetsService.getAllCollectionRanksRaw();
-    await this.invalidateKey(CacheInfo.CollectionRanks.key, collectionRanks, CacheInfo.CollectionRanks.ttl);
+    // const collectionRanks = await this.assetsService.getAllCollectionRanksRaw();
+    // await this.invalidateKey(CacheInfo.CollectionRanks.key, collectionRanks, CacheInfo.CollectionRanks.ttl);
   }
 
   @Cron(CronExpression.EVERY_10_MINUTES)
@@ -244,7 +250,7 @@ export class CacheWarmerService {
     }
   }
 
-  @Cron(CronExpression.EVERY_MINUTE)
+  // @Cron(CronExpression.EVERY_MINUTE)
   async handleMexInvalidations() {
     await Locker.lock('Refreshing mex pairs', async () => {
       await this.mexPairsService.refreshMexPairs();
@@ -283,6 +289,32 @@ export class CacheWarmerService {
     await Promise.all(settings.map(async (setting) => {
       await this.invalidateKey(CacheInfo.Setting(setting.name).key, setting.value, CacheInfo.Setting(setting.name).ttl);
     }));
+  }
+
+  @Cron(CronExpression.EVERY_MINUTE)
+  @Lock({ name: 'Elastic updater: Update collection isVerified, nftCount, holderCount', verbose: true })
+  async handleUpdateCollectionExtraDetails() {
+    const allAssets = await this.assetsService.getAllTokenAssets();
+
+    console.log({ allAssets: Object.keys(allAssets).length });
+
+    for (const key of Object.keys(allAssets)) {
+      const collection = await this.indexerService.getCollection(key);
+      if (!collection) {
+        continue;
+      }
+
+      this.logger.log(`Setting isVerified to true for collection with identifier '${key}'`);
+      await this.indexerService.setIsVerifiedForToken(key, true);
+
+      const nftCount = await this.nftService.getNftCount({ collection: collection._id });
+      await this.indexerService.setNftCountForToken(key, nftCount);
+      this.logger.log(`Setting nftCount to ${nftCount} for collection with identifier '${key}'`);
+
+      const holderCount = await this.esdtService.countAllAccounts([collection._id]);
+      await this.indexerService.setHolderCountForToken(key, holderCount);
+      this.logger.log(`Setting holderCount to ${holderCount} for collection with identifier '${key}'`);
+    }
   }
 
   private async invalidateKey(key: string, data: any, ttl: number) {

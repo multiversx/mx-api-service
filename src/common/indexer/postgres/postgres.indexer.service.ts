@@ -609,4 +609,16 @@ export class PostgresIndexerService implements IndexerInterface {
   async setMetadataForToken(_identifier: string, _value: any): Promise<void> {
     // TODO custom columns cannot be added
   }
+
+  async setIsVerifiedForToken(_identifier: string, _isVerified: boolean): Promise<void> {
+    // TODO custom columns cannot be added
+  }
+
+  async setHolderCountForToken(_identifier: string, _holderCount: number): Promise<void> {
+    // TODO custom columns cannot be added
+  }
+
+  async setNftCountForToken(_identifier: string, _nftCount: number): Promise<void> {
+    // TODO custom columns cannot be added
+  }
 }

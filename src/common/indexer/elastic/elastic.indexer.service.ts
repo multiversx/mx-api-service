@@ -242,7 +242,10 @@ export class ElasticIndexerService implements IndexerInterface {
   async getNftCollections(pagination: QueryPagination, filter: CollectionFilter, address?: string): Promise<any[]> {
     const elasticQuery = this.indexerHelper.buildCollectionRolesFilter(filter, address)
       .withPagination(pagination)
-      .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }]);
+      .withSort([
+        { name: 'api_isVerified', order: ElasticSortOrder.descending },
+        { name: 'api_holderCount', order: ElasticSortOrder.descending },
+      ]);
 
     return await this.elasticService.getList('tokens', 'identifier', elasticQuery);
   }
