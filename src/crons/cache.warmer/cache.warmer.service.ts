@@ -297,8 +297,6 @@ export class CacheWarmerService {
   async handleUpdateCollectionExtraDetails() {
     const allAssets = await this.assetsService.getAllTokenAssets();
 
-    console.log({ allAssets: Object.keys(allAssets).length });
-
     for (const key of Object.keys(allAssets)) {
       const collection = await this.indexerService.getCollection(key);
       if (!collection) {
