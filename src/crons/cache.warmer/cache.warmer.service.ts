@@ -86,7 +86,7 @@ export class CacheWarmerService {
     }
 
     if (this.apiConfigService.isUpdateCollectionExtraDetailsEnabled()) {
-      const handleUpdateCollectionExtraDetailsCronJob = new CronJob(CronExpression.EVERY_MINUTE, async () => await this.handleUpdateCollectionExtraDetails());
+      const handleUpdateCollectionExtraDetailsCronJob = new CronJob(CronExpression.EVERY_10_MINUTES, async () => await this.handleUpdateCollectionExtraDetails());
       this.schedulerRegistry.addCronJob(this.handleUpdateCollectionExtraDetails.name, handleUpdateCollectionExtraDetailsCronJob);
       handleUpdateCollectionExtraDetailsCronJob.start();
     }
