@@ -171,6 +171,9 @@ type AccountDetailed {
   """If the given detailed account is upgradeable."""
   isUpgradeable: Boolean
 
+  """If the given detailed account is verified."""
+  isVerified: Boolean
+
   """Returns all nodes in the node queue where the account is owner."""
   keys: [AccountKey!]!
 
