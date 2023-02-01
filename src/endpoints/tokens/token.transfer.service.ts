@@ -11,8 +11,8 @@ import { TransactionLogEvent } from "../transactions/entities/transaction.log.ev
 import { TransactionOperationType } from "../transactions/entities/transaction.operation.type";
 import { SmartContractResult } from "../sc-results/entities/smart.contract.result";
 import { TransactionDetailed } from "../transactions/entities/transaction.detailed";
-import { BinaryUtils, CachingService } from "@elrondnetwork/erdnest";
-import { OriginLogger } from "@elrondnetwork/erdnest";
+import { BinaryUtils, CachingService } from "@multiversx/sdk-nestjs";
+import { OriginLogger } from "@multiversx/sdk-nestjs";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { NftFilter } from "../nfts/entities/nft.filter";
 import { IndexerService } from "src/common/indexer/indexer.service";
@@ -68,7 +68,7 @@ export class TokenTransferService {
     }
 
     const tokenProperties: {
-      [key: string]: TokenTransferProperties | null
+      [key: string]: TokenTransferProperties | null;
     } = {};
 
     await this.cachingService.batchApplyAll(

@@ -6,9 +6,9 @@ import { NftWorkerService } from 'src/queue.worker/nft.worker/nft.worker.service
 import { CacheInfo } from '../../utils/cache.info';
 import { NotifierEventIdentifier } from './entities/notifier.event.identifier';
 import { NotifierEvent } from './entities/notifier.event';
-import { BinaryUtils, CachingService } from '@elrondnetwork/erdnest';
+import { BinaryUtils, CachingService } from '@multiversx/sdk-nestjs';
 import { IndexerService } from '../indexer/indexer.service';
-import { OriginLogger } from '@elrondnetwork/erdnest';
+import { OriginLogger } from '@multiversx/sdk-nestjs';
 
 @Injectable()
 export class RabbitMqNftHandlerService {

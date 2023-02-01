@@ -1,4 +1,4 @@
-import { CachingService, DecoratorUtils, ErdnestConfigService, ERDNEST_CONFIG_SERVICE, JwtAuthenticateGuard, NativeAuthGuard, NoAuthOptions } from '@elrondnetwork/erdnest';
+import { CachingService, DecoratorUtils, ErdnestConfigService, ERDNEST_CONFIG_SERVICE, JwtAuthenticateGuard, NativeAuthGuard, NoAuthOptions } from '@multiversx/sdk-nestjs';
 import { Injectable, CanActivate, ExecutionContext, Inject } from '@nestjs/common';
 
 @Injectable()

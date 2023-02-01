@@ -1,6 +1,6 @@
 import { Test } from "@nestjs/testing";
-import '@elrondnetwork/erdnest/lib/src/utils/extensions/jest.extensions';
-import '@elrondnetwork/erdnest/lib/src/utils/extensions/array.extensions';
+import '@multiversx/sdk-nestjs/lib/src/utils/extensions/jest.extensions';
+import '@multiversx/sdk-nestjs/lib/src/utils/extensions/array.extensions';
 import { PublicAppModule } from "src/public.app.module";
 import { DelegationService } from "src/endpoints/delegation/delegation.service";
 import { Delegation } from "src/endpoints/delegation/entities/delegation";

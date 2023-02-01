@@ -6,10 +6,10 @@ import { TransferModule } from 'src/endpoints/transfers/transfer.module';
 import { TransferService } from 'src/endpoints/transfers/transfer.service';
 import { ApiConfigService } from 'src/common/api-config/api.config.service';
 import { ApiConfigModule } from 'src/common/api-config/api.config.module';
-import { BinaryUtils, Constants, ElasticQuery, ElasticService } from '@elrondnetwork/erdnest';
+import { BinaryUtils, Constants, ElasticQuery, ElasticService } from '@multiversx/sdk-nestjs';
 import { TransactionQueryOptions } from 'src/endpoints/transactions/entities/transactions.query.options';
-import '@elrondnetwork/erdnest/lib/src/utils/extensions/jest.extensions';
-import '@elrondnetwork/erdnest/lib/src/utils/extensions/number.extensions';
+import '@multiversx/sdk-nestjs/lib/src/utils/extensions/jest.extensions';
+import '@multiversx/sdk-nestjs/lib/src/utils/extensions/number.extensions';
 
 describe('Transfer Service', () => {
   let transferService: TransferService;

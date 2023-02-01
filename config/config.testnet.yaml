@@ -31,6 +31,10 @@ features:
     url: 'amqp://guest:guest@127.0.0.1:5672'
     exchange: 'all_events'
     queue: 'api-process-logs-and-events'
+  guestCaching:
+    enabled: false
+    hitsThreshold: 100
+    ttl: 12
 image:
   width: 600
   height: 600
@@ -41,6 +45,7 @@ aws:
   s3Bucket: 'testnet-media.elrond.com'
   s3Region: ''
 urls:
+  self: 'https://testnet-api.elrond.com'
   api:
     - 'https://testnet-api.multiversx.com'
     - 'https://devnet-api.multiversx.com'

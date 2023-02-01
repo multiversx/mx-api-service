@@ -1,5 +1,5 @@
 import { Test } from "@nestjs/testing";
-import { ApiService } from '@elrondnetwork/erdnest';
+import { ApiService } from '@multiversx/sdk-nestjs';
 import { UsernameService } from "src/endpoints/usernames/username.service";
 import { PublicAppModule } from "src/public.app.module";
 

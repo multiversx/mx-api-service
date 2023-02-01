@@ -19,7 +19,7 @@ import { MexEconomicsService } from "src/endpoints/mex/mex.economics.service";
 import { MexPairService } from "src/endpoints/mex/mex.pair.service";
 import { MexTokenService } from "src/endpoints/mex/mex.token.service";
 import { MexFarmService } from "src/endpoints/mex/mex.farm.service";
-import { CachingService, Constants, Lock, Locker, OriginLogger } from "@elrondnetwork/erdnest";
+import { CachingService, Constants, Lock, Locker, GuestCachingWarmer } from "@multiversx/sdk-nestjs";
 import { DelegationLegacyService } from "src/endpoints/delegation.legacy/delegation.legacy.service";
 import { PluginService } from "src/common/plugins/plugin.service";
 import { SettingsService } from "src/common/settings/settings.service";
@@ -57,6 +57,7 @@ export class CacheWarmerService {
     private readonly tokenService: TokenService,
     private readonly indexerService: IndexerService,
     private readonly nftService: NftService,
+    private readonly guestCachingWarmer: GuestCachingWarmer,
   ) {
     this.configCronJob(
       'handleKeybaseAgainstKeybasePubInvalidations',
@@ -182,6 +183,18 @@ export class CacheWarmerService {
     const currentPrice = await this.pluginsService.getEgldPrice();
     if (currentPrice) {
       await this.invalidateKey(CacheInfo.CurrentPrice.key, currentPrice, CacheInfo.CurrentPrice.ttl);
+    }
+  }
+
+  @Cron("*/6 * * * * *")
+  @Lock({ name: 'Guest caching recompute', verbose: true })
+  async handleGuestCaching() {
+    if (this.apiConfigService.isGuestCachingFeatureActive()) {
+      await this.guestCachingWarmer.recompute({
+        targetUrl: this.apiConfigService.getSelfUrl(),
+        cacheTriggerHitsThreshold: this.apiConfigService.getGuestCachingHitsThreshold(),
+        cacheTtl: this.apiConfigService.getGuestCachingTtl(),
+      });
     }
   }
 

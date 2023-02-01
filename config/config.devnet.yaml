@@ -24,6 +24,7 @@ flags:
   useVmQueryTracing: false
   processNfts: true
   indexer-v3: true
+  indexer-v5: true
 features:
   eventsNotifier:
     enabled: false
@@ -31,6 +32,10 @@ features:
     url: 'amqp://guest:guest@127.0.0.1:5672'
     exchange: 'all_events'
     queue: 'api-process-logs-and-events'
+  guestCaching:
+    enabled: false
+    hitsThreshold: 100
+    ttl: 12
 image:
   width: 600
   height: 600
@@ -41,6 +46,7 @@ aws:
   s3Bucket: 'devnet-media.elrond.com'
   s3Region: ''
 urls:
+  self: 'https://devnet-api.elrond.com'
   api:
     - 'https://devnet-api.multiversx.com'
     - 'https://testnet-api.multiversx.com'
