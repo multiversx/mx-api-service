@@ -284,16 +284,8 @@ export class IndexerService implements IndexerInterface {
     return await this.execute('setMetadataForToken', this.indexerInterface.setMetadataForToken(identifier, value));
   }
 
-  async setIsVerifiedForToken(identifier: string, isVerified: boolean): Promise<void> {
-    return await this.execute('setIsVerifiedForToken', this.indexerInterface.setIsVerifiedForToken(identifier, isVerified));
-  }
-
-  async setHolderCountForToken(identifier: string, holderCount: number): Promise<void> {
-    return await this.execute('setHolderCountForToken', this.indexerInterface.setHolderCountForToken(identifier, holderCount));
-  }
-
-  async setNftCountForToken(identifier: string, nftCount: number): Promise<void> {
-    return await this.execute('setNftCountForToken', this.indexerInterface.setNftCountForToken(identifier, nftCount));
+  async setExtraCollectionFields(identifier: string, isVerified: boolean, holderCount: number, nftCount: number): Promise<void> {
+    return await this.execute('setExtraCollectionFields', this.indexerInterface.setExtraCollectionFields(identifier, isVerified, holderCount, nftCount));
   }
 
   async getNftCollectionsByIds(identifiers: string[]): Promise<Collection[]> {

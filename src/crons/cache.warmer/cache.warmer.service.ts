@@ -19,7 +19,7 @@ import { MexEconomicsService } from "src/endpoints/mex/mex.economics.service";
 import { MexPairService } from "src/endpoints/mex/mex.pair.service";
 import { MexTokenService } from "src/endpoints/mex/mex.token.service";
 import { MexFarmService } from "src/endpoints/mex/mex.farm.service";
-import { CachingService, Constants, Lock, Locker, GuestCachingWarmer } from "@multiversx/sdk-nestjs";
+import { CachingService, Constants, Lock, Locker, GuestCachingWarmer, OriginLogger } from "@multiversx/sdk-nestjs";
 import { DelegationLegacyService } from "src/endpoints/delegation.legacy/delegation.legacy.service";
 import { PluginService } from "src/common/plugins/plugin.service";
 import { SettingsService } from "src/common/settings/settings.service";
@@ -321,16 +321,11 @@ export class CacheWarmerService {
         continue;
       }
 
-      this.logger.log(`Setting isVerified to true for collection with identifier '${key}'`);
-      await this.indexerService.setIsVerifiedForToken(key, true);
-
       const nftCount = await this.nftService.getNftCount({ collection: collection._id });
-      await this.indexerService.setNftCountForToken(key, nftCount);
-      this.logger.log(`Setting nftCount to ${nftCount} for collection with identifier '${key}'`);
-
       const holderCount = await this.esdtService.countAllAccounts([collection._id]);
-      await this.indexerService.setHolderCountForToken(key, holderCount);
-      this.logger.log(`Setting holderCount to ${holderCount} for collection with identifier '${key}'`);
+
+      this.logger.log(`Setting isVerified to true, nftCount to ${nftCount}, holderCount to ${holderCount} for collection with identifier '${key}'`);
+      await this.indexerService.setExtraCollectionFields(key, true, nftCount, holderCount);
     }
   }
 

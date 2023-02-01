@@ -610,15 +610,7 @@ export class PostgresIndexerService implements IndexerInterface {
     // TODO custom columns cannot be added
   }
 
-  async setIsVerifiedForToken(_identifier: string, _isVerified: boolean): Promise<void> {
-    // TODO custom columns cannot be added
-  }
-
-  async setHolderCountForToken(_identifier: string, _holderCount: number): Promise<void> {
-    // TODO custom columns cannot be added
-  }
-
-  async setNftCountForToken(_identifier: string, _nftCount: number): Promise<void> {
+  async setExtraCollectionFields(_identifier: string, _isVerified: boolean, _holderCount: number, _nftCount: number): Promise<void> {
     // TODO custom columns cannot be added
   }
 }

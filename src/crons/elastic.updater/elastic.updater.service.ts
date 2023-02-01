@@ -22,7 +22,7 @@ export class ElasticUpdaterService {
     private readonly persistenceService: PersistenceInterface,
   ) { }
 
-  // @Cron(CronExpression.EVERY_DAY_AT_1AM)
+  @Cron(CronExpression.EVERY_DAY_AT_1AM)
   @Lock({ name: 'Elastic updater: Update assets', verbose: true })
   async handleUpdateAssets() {
     const allAssets = await this.assetsService.getAllTokenAssets();
@@ -43,23 +43,7 @@ export class ElasticUpdaterService {
     }
   }
 
-  @Cron(CronExpression.EVERY_MINUTE)
-  @Lock({ name: 'Elastic updater: Update collection isVerified, nftCount, holderCount', verbose: true })
-  async handleUpdateCollectionExtraDetails() {
-    const allAssets = await this.assetsService.getAllTokenAssets();
-
-    for (const key of Object.keys(allAssets)) {
-      const collection = await this.indexerService.getCollection(key);
-      if (!collection) {
-        continue;
-      }
-
-      this.logger.log(`Setting isVerified to true for collection with identifier '${key}'`);
-      await this.indexerService.setIsVerifiedForToken(key, true);
-    }
-  }
-
-  // @Cron(CronExpression.EVERY_HOUR)
+  @Cron(CronExpression.EVERY_HOUR)
   @Lock({ name: 'Elastic updater: Update tokens isWhitelisted, media, metadata', verbose: true })
   async handleUpdateTokenExtraDetails() {
     await this.indexerService.getAllTokensMetadata(async items => {

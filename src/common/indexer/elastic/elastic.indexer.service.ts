@@ -680,15 +680,11 @@ export class ElasticIndexerService implements IndexerInterface {
     return await this.elasticService.setCustomValue('tokens', identifier, 'metadata', value);
   }
 
-  async setIsVerifiedForToken(identifier: string, isVerified: boolean): Promise<void> {
-    return await this.elasticService.setCustomValue('tokens', identifier, 'isVerified', isVerified);
-  }
-
-  async setHolderCountForToken(identifier: string, holderCount: number): Promise<void> {
-    return await this.elasticService.setCustomValue('tokens', identifier, 'holderCount', holderCount);
-  }
-
-  async setNftCountForToken(identifier: string, nftCount: number): Promise<void> {
-    return await this.elasticService.setCustomValue('tokens', identifier, 'nftCount', nftCount);
+  async setExtraCollectionFields(identifier: string, isVerified: boolean, holderCount: number, nftCount: number): Promise<void> {
+    return await this.elasticService.setCustomValues('tokens', identifier, {
+      isVerified,
+      holderCount,
+      nftCount,
+    });
   }
 }
