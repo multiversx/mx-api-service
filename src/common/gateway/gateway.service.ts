@@ -15,7 +15,7 @@ import { TokenData } from "./entities/token.data";
 import { Transaction } from "./entities/transaction";
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { ApiConfigService } from "../api-config/api.config.service";
-import { ApiService, ApiSettings, BinaryUtils } from "@elrondnetwork/erdnest";
+import { ApiService, ApiSettings, BinaryUtils } from "@multiversx/sdk-nestjs";
 
 @Injectable()
 export class GatewayService {
