@@ -21,6 +21,7 @@ import { ApiConfigService } from '../api-config/api.config.service';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { EventsMetricsService } from '../events-metrics/events-metrics.service';
 import { AuthService } from '../auth/auth.service';
+import { EventsMetrics } from '../events-metrics/events-metrics.map.type';
 
 @UseGuards(AuthGuardWs)
 @UseFilters(new BaseWsExceptionFilter())
@@ -132,15 +133,18 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   // eslint-disable-next-line require-await
   async sendNotification(data: Notification) {
     this.logger.log('Sending notification to connected users.');
-    this.eventsMetricsService.incrementMetrics();
+
     if (data.events) {
       for (const event of data.events) {
         const address = event.address;
         const identifier = event.identifier;
-        this.server?.to(address)
-          .to(identifier)
-          .to(address + identifier)
+        this.server?.to(ADDRESS_PREFIX + address)
+          .to(ID_PREFIX + identifier)
+          .to(ID_PREFIX + ADDRESS_PREFIX + address + identifier)
           .emit('notifications', event);
+
+        // For each event, increment metrics
+        this.eventsMetricsService.incrementMetrics(event);
       }
     }
   }
@@ -169,20 +173,34 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   // eslint-disable-next-line require-await
-  @Cron(CronExpression.EVERY_10_SECONDS)
+  @Cron(CronExpression.EVERY_5_SECONDS)
   async createMetricsMap() {
     // Retrieve all rooms from across all servers
     const rooms = this.server?.sockets.adapter.rooms ?? [];
-    console.log(rooms);
+    const metricsMap: EventsMetrics = new Map();
+
     // Extract rooms that are IDENTIFIERS/ADDRESSES/BOTH
     for (const room of rooms) {
-      if (!(room[0].includes(ID_PREFIX) || room[0].includes(ADDRESS_PREFIX) || room[0].includes(ID_PREFIX + ADDRESS_PREFIX))) {
+      const roomName = room[0];
+      const roomSockets = room[1];
+      if (!(roomName.includes(ID_PREFIX) || roomName.includes(ADDRESS_PREFIX) || roomName.includes(ID_PREFIX + ADDRESS_PREFIX))) {
         continue;
       }
+      metricsMap.set(roomName, []);
 
-      console.log(room[1]);
+      // For each socket from the room, get the address room that it contains
+      const walletAddresRegx = new RegExp("^erd1[a-zA-Z0-9]{58}$");
+      for (const socket of roomSockets) {
+        const socketRooms = this.server?.sockets.sockets.get(socket)?.rooms ?? [];
+
+        for (const room of socketRooms) {
+          if (walletAddresRegx.test(room)) {
+            metricsMap.get(roomName)?.push(room);
+          }
+        }
+        this.eventsMetricsService.setMetricsMap(metricsMap);
+      }
     }
-    this.eventsMetricsService.setMetricsMap(new Map());
   }
   /**
    * Close all sockets for a given availability
@@ -191,3 +209,4 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     this.server?.in(availability.toString()).disconnectSockets();
   }
 }
+
