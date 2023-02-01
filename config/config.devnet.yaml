@@ -29,7 +29,7 @@ features:
   eventsNotifier:
     enabled: false
     port: 5674
-    url: 'amqp://guest:guest@127.0.0.1:5672'
+    url: 'amqp://guest:guest@127.0.0.1:5673'
     exchange: 'all_events'
     queue: 'api-process-logs-and-events'
   guestCaching:
