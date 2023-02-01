@@ -190,6 +190,10 @@ export class NftThumbnailService {
       action: async () => await this.apiService.get(fileUrl, { responseType: 'arraybuffer', timeout: this.API_TIMEOUT_MILLISECONDS }),
     });
 
+    if (!fileResult) {
+      return GenerateThumbnailResult.pendingUploadAsset;
+    }
+
     const file = fileResult.data;
 
     const urlIdentifier = TokenHelpers.getThumbnailUrlIdentifier(nftIdentifier, fileUrl);
