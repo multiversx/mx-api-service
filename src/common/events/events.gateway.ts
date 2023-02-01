@@ -10,17 +10,17 @@ import {
   WsException,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { UseFilters, UseGuards, UsePipes, UseInterceptors } from '@nestjs/common';
+import { UseFilters, UseGuards, UsePipes } from '@nestjs/common';
 import { OriginLogger } from '@elrondnetwork/erdnest';
 import { AuthGuardWs } from '../auth/auth.guard';
 import { UserDb } from '../persistence/userdb/entities/user.db';
 import { SubscriptionEntry } from './entities/subscription.entry';
-import { Notification } from './events.types';
+import { Notification, ID_PREFIX, ADDRESS_PREFIX } from './events.types';
 import { ValidationPipe } from './validation.pipe';
 import { ApiConfigService } from '../api-config/api.config.service';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { EventMetricsInterceptor } from 'src/interceptors/event.metrics.interceptor';
-
+import { EventsMetricsService } from '../events-metrics/events-metrics.service';
+import { AuthService } from '../auth/auth.service';
 
 @UseGuards(AuthGuardWs)
 @UseFilters(new BaseWsExceptionFilter())
@@ -34,32 +34,23 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   server: Server | undefined;
   private readonly logger = new OriginLogger(EventsGateway.name);
 
-  constructor(private readonly apiConfigService: ApiConfigService, private authGuardWs: AuthGuardWs) { }
+  constructor(private readonly apiConfigService: ApiConfigService, private readonly authService: AuthService, private readonly eventsMetricsService: EventsMetricsService) { }
 
   /**
    *
    * @param socket Socket
    */
   async handleConnection(socket: Socket) {
+    // eslint-disable-next-line prefer-const
     const userDetails: UserDb = { address: '', availability: 0 };
     // A client has connected
-    const allowConnection: boolean = await this.authGuardWs.validateRequest(socket, userDetails);
+    const allowConnection: boolean = await this.authService.validateRequest(socket, userDetails);
 
+    console.log("user details are", userDetails);
     if (!allowConnection) {
+      console.log("here?");
       this.logger.error(
         `Client ${socket.client} disconnected due to unaothorized request.`,
-      );
-      socket.disconnect(true);
-      return;
-    }
-
-    // Validate if user has already more connections than allowed across all nodes
-    const userConnections = await this.server?.in(userDetails.address).fetchSockets();
-    const maxConnections = this.apiConfigService.getLiveWebsocketEventsMaxConnections();
-
-    if (userConnections && userConnections?.length >= maxConnections) {
-      this.logger.error(
-        `Client ${userDetails.address} has already ${maxConnections} connections.`,
       );
       socket.disconnect(true);
       return;
@@ -76,6 +67,18 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     this.server?.in(socket.id).socketsJoin(
       userDetails.availability.toString(),
     );
+
+    // Validate if user has already more connections than allowed across all nodes
+    const userConnections = await this.server?.in(userDetails.address).fetchSockets();
+    const maxConnections = this.apiConfigService.getLiveWebsocketEventsMaxConnections();
+
+    if (userConnections && userConnections?.length >= maxConnections) {
+      this.logger.error(
+        `Client ${userDetails.address} has already ${maxConnections} connections.`,
+      );
+      socket.disconnect(true);
+      return;
+    }
 
     this.logger.log(`Client ${socket.id} connected.`);
   }
@@ -114,9 +117,9 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
       // Parse each event and populate table as follows
       // Add all clients to the event that has respective TxHash
-      address && !identifier && await socket.join(address);
-      identifier && await socket.join(identifier);
-      address && identifier && await socket.join(address + identifier);
+      address && !identifier && await socket.join(ADDRESS_PREFIX + address);
+      identifier && await socket.join(ID_PREFIX + identifier);
+      address && identifier && await socket.join(ID_PREFIX + ADDRESS_PREFIX + address + identifier);
     }
   }
 
@@ -127,10 +130,9 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
    * @param data Notification
    */
   // eslint-disable-next-line require-await
-  @UseInterceptors(new EventMetricsInterceptor())
   async sendNotification(data: Notification) {
     this.logger.log('Sending notification to connected users.');
-
+    this.eventsMetricsService.incrementMetrics();
     if (data.events) {
       for (const event of data.events) {
         const address = event.address;
@@ -166,6 +168,22 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     this.closeSocketsByAvailability(currentTimestamp);
   }
 
+  // eslint-disable-next-line require-await
+  @Cron(CronExpression.EVERY_10_SECONDS)
+  async createMetricsMap() {
+    // Retrieve all rooms from across all servers
+    const rooms = this.server?.sockets.adapter.rooms ?? [];
+    console.log(rooms);
+    // Extract rooms that are IDENTIFIERS/ADDRESSES/BOTH
+    for (const room of rooms) {
+      if (!(room[0].includes(ID_PREFIX) || room[0].includes(ADDRESS_PREFIX) || room[0].includes(ID_PREFIX + ADDRESS_PREFIX))) {
+        continue;
+      }
+
+      console.log(room[1]);
+    }
+    this.eventsMetricsService.setMetricsMap(new Map());
+  }
   /**
    * Close all sockets for a given availability
    */

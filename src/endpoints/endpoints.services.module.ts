@@ -37,7 +37,6 @@ import { AuthModule } from "src/common/auth/auth.module";
 @Module({
   imports: [
     AccountModule,
-    AuthModule,
     BlockModule,
     CollectionModule,
     DelegationModule,
@@ -57,6 +56,7 @@ import { AuthModule } from "src/common/auth/auth.module";
     StakeModule,
     TokenModule,
     RoundModule,
+    AuthModule,
     RegisterModule,
     TransactionModule,
     UsernameModule,
@@ -77,7 +77,7 @@ import { AuthModule } from "src/common/auth/auth.module";
     MiniBlockModule, NetworkModule, NftModule, NftMediaModule, TagModule, NodeModule, ProviderModule,
     RoundModule, SmartContractResultModule, ShardModule, StakeModule, TokenModule, RoundModule, TransactionModule, UsernameModule, VmQueryModule,
     WaitingListModule, EsdtModule, BlsModule, DappConfigModule, TransferModule, TransactionActionModule, WebsocketModule, MexModule,
-    ProcessNftsModule, TransactionsBatchModule, RegisterModule, AuthModule,
+    ProcessNftsModule, TransactionsBatchModule, AuthModule, RegisterModule,
   ],
 })
 export class EndpointsServicesModule { }

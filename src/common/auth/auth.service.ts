@@ -3,6 +3,9 @@ import { TransactionDbService } from '../persistence/transactiondb/transactiondb
 import { ApiService, OriginLogger } from '@elrondnetwork/erdnest';
 import { ApiConfigService } from '../api-config/api.config.service';
 import { NativeAuthService } from '../nativeauth/nativeauth.service';
+import { UserDbService } from '../persistence/userdb/user.db.service';
+import { Socket } from 'socket.io';
+import { UserDb } from '../persistence/userdb/entities/user.db';
 
 @Injectable()
 export class AuthService {
@@ -10,6 +13,7 @@ export class AuthService {
   constructor(
     private readonly apiService: ApiService,
     private readonly transactionDbService: TransactionDbService,
+    private readonly userDbService: UserDbService,
     private readonly apiConfigService: ApiConfigService,
     private readonly nativeAuthService: NativeAuthService,
   ) { }
@@ -105,5 +109,59 @@ export class AuthService {
     }
 
     return [tokenData.address, ...this.computeUserAvailability(parseInt(txData.value, 10))];
+  }
+
+  /**
+   * Validate request
+   *  - Auth Token has to be valid
+   *  - User has to exist
+   *  - User availability must not be expired
+   *
+   * @param socket
+   * @returns
+   */
+  async validateRequest(
+    socket: Socket,
+    userDetails: UserDb | null,
+  ): Promise<boolean> {
+    const accessToken = socket.handshake.auth.token;
+
+    // If no authentication token was provided, deny request
+    if (!accessToken) {
+      return false;
+    }
+
+    try {
+      // Validate access token
+      const details = await this.nativeAuthService.validateAndReturnAccessToken(
+        accessToken,
+      );
+
+      // Validate that the user address from token is registered
+      const user = await this.userDbService.findUser(details.address);
+      if (!user) {
+        this.logger.error(`User with address ${details.address} not found`);
+        return false;
+      }
+
+      const date = new Date(user.availability);
+      // Check if date is expired
+      if (date.getTime() < Date.now()) {
+        this.logger.error(
+          `User with address ${details.address} access expired on ${date}`,
+        );
+        return false;
+      }
+
+      if (userDetails) {
+        userDetails.address = user.address;
+        userDetails.availability = user.availability;
+      }
+
+      return true;
+    } catch (error) {
+      this.logger.error(error);
+      return false;
+    }
   }
 }

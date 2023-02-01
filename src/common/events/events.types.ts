@@ -18,3 +18,6 @@ export interface SubscriptionEntry {
   address: string;
   identifier: string;
 }
+
+export const ID_PREFIX: string = "id_";
+export const ADDRESS_PREFIX: string = "addr_";
