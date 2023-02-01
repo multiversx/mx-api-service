@@ -592,7 +592,7 @@ export class NftService {
   }
 
   private getNftRankAlgorithmFromAssets(assets?: TokenAssets): NftRankAlgorithm {
-    return assets?.preferredRankAlgorithm ?? NftRankAlgorithm.jaccardDistances;
+    return assets?.preferredRankAlgorithm ?? NftRankAlgorithm.openRarity;
   }
 
   private getNftRankElasticKey(algorithm: NftRankAlgorithm) {
