@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-// import { OriginLogger } from '@elrondnetwork/erdnest';
+// import { OriginLogger } from '@multiversx/sdk-nestjs';
 import { EventsGateway } from '../events/events.gateway';
 import { EventNotification } from '../events/entities/event.notification';
 

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { EventsGateway } from '../events/events.gateway';
-import { OriginLogger } from '@elrondnetwork/erdnest';
+import { OriginLogger } from '@multiversx/sdk-nestjs';
 import { EventsMetrics } from './events-metrics.map.type';
 
 /**

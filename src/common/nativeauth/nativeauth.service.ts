@@ -1,4 +1,4 @@
-import { OriginLogger } from "@elrondnetwork/erdnest";
+import { OriginLogger } from "@multiversx/sdk-nestjs";
 import { NativeAuthServer } from "@elrondnetwork/native-auth";
 import { Injectable } from "@nestjs/common";
 import configuration from "config/configuration";

@@ -11,7 +11,7 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { UseFilters, UseGuards, UsePipes } from '@nestjs/common';
-import { OriginLogger } from '@elrondnetwork/erdnest';
+import { OriginLogger } from '@multiversx/sdk-nestjs';
 import { AuthGuardWs } from '../auth/auth.guard';
 import { UserDb } from '../persistence/userdb/entities/user.db';
 import { SubscriptionEntry } from './entities/subscription.entry';
