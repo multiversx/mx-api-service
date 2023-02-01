@@ -1,4 +1,4 @@
-import { SwaggerUtils } from "@elrondnetwork/erdnest";
+import { SwaggerUtils } from "@multiversx/sdk-nestjs";
 import { Field, Float, ObjectType } from "@nestjs/graphql";
 import { ApiProperty } from "@nestjs/swagger";
 import { NodeStatus } from "./node.status";
@@ -129,4 +129,8 @@ export class Node {
   @Field(() => Boolean, { description: "Full history details for the given node.", nullable: true })
   @ApiProperty({ type: Boolean, nullable: true })
   fullHistory: boolean | undefined = undefined;
+
+  @Field(() => Number, { description: "Sync progress in case the node is currently in sync mode. If specified, the value can be between 0 and 1.", nullable: true })
+  @ApiProperty({ type: Number, nullable: true })
+  syncProgress: number | undefined = undefined;
 }

@@ -15,6 +15,7 @@ cron:
   fastWarm: false
   queueWorker: true
   elasticUpdater: false
+  statusChecker: false
 flags:
   useRequestCaching: true
   useKeepAliveAgent: true
@@ -30,6 +31,10 @@ features:
     url: 'amqp://guest:guest@127.0.0.1:5672'
     exchange: 'all_events'
     queue: 'api-process-logs-and-events'
+  guestCaching:
+    enabled: false
+    hitsThreshold: 100
+    ttl: 12
 image:
   width: 600
   height: 600
@@ -40,26 +45,28 @@ aws:
   s3Bucket: 'media.elrond.com'
   s3Region: ''
 urls:
+  self: 'https://api.elrond.com'
   api:
-    - 'https://api.elrond.com'
-    - 'https://devnet-api.elrond.com'
-    - 'https://testnet-api.elrond.com'
+    - 'https://api.multiversx.com'
+    - 'https://devnet-api.multiversx.com'
+    - 'https://testnet-api.multiversx.com'
   elastic:
     - 'https://index.elrond.com'
   mex:
     - 'https://mex-indexer.elrond.com'
   gateway:
-    - 'https://gateway.elrond.com'
+    - 'https://gateway.multiversx.com'
+  verifier: 'https://play-api.multiversx.com'
   redis: '127.0.0.1'
   rabbitmq: 'amqp://127.0.0.1:5672'
-  providers: 'https://delegation-api.elrond.com/providers'
-  delegation: 'https://delegation-api.elrond.com'
+  providers: 'https://delegation-api.multiversx.com/providers'
+  delegation: 'https://delegation-api.multiversx.com'
   media: 'https://media.elrond.com'
   nftThumbnails: 'https://media.elrond.com/nfts/thumbnail'
   tmp: '/tmp'
   ipfs: 'https://ipfs.io/ipfs'
   socket: 'socket-fra.elrond.com'
-  maiarId: 'https://id.maiar.com'
+  maiarId: 'https://id-api.multiversx.com'
 indexer:
   type: 'elastic'
   maxPagination: 10000
@@ -103,4 +110,4 @@ nftProcess:
   maxRetries: 3
 transaction-action:
   mex:
-    microServiceUrl: 'https://graph.maiar.exchange/graphql'
+    microServiceUrl: 'https://graph.xexchange.com/graphql'

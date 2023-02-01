@@ -8,7 +8,6 @@ import { QueryPagination } from 'src/common/entities/query.pagination';
 import { AccountKey } from './entities/account.key';
 import { DeployedContract } from './entities/deployed.contract';
 import { TransactionService } from '../transactions/transaction.service';
-import { GatewayComponentRequest } from 'src/common/gateway/entities/gateway.component.request';
 import { PluginService } from 'src/common/plugins/plugin.service';
 import { AccountEsdtHistory } from "./entities/account.esdt.history";
 import { AccountHistory } from "./entities/account.history";
@@ -18,14 +17,15 @@ import { SmartContractResultService } from '../sc-results/scresult.service';
 import { TransactionType } from '../transactions/entities/transaction.type';
 import { AssetsService } from 'src/common/assets/assets.service';
 import { TransactionFilter } from '../transactions/entities/transaction.filter';
-import { AddressUtils, ApiUtils, BinaryUtils, CachingService } from '@elrondnetwork/erdnest';
+import { AddressUtils, ApiService, ApiUtils, BinaryUtils, CachingService } from '@multiversx/sdk-nestjs';
 import { GatewayService } from 'src/common/gateway/gateway.service';
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { AccountOptionalFieldOption } from './entities/account.optional.field.options';
 import { AccountAssets } from 'src/common/assets/entities/account.assets';
-import { OriginLogger } from '@elrondnetwork/erdnest';
+import { OriginLogger } from '@multiversx/sdk-nestjs';
 import { CacheInfo } from 'src/utils/cache.info';
 import { UsernameService } from '../usernames/username.service';
+import { AccountVerification } from './entities/account.verification';
 
 @Injectable()
 export class AccountService {
@@ -49,6 +49,7 @@ export class AccountService {
     private readonly smartContractResultService: SmartContractResultService,
     private readonly assetsService: AssetsService,
     private readonly usernameService: UsernameService,
+    private readonly apiService: ApiService
   ) { }
 
   async getAccountsCount(): Promise<number> {
@@ -78,6 +79,15 @@ export class AccountService {
     return this.getAccountRaw(address, txCount, scrCount);
   }
 
+  async getAccountVerification(address: string): Promise<AccountVerification | null> {
+    if (!AddressUtils.isAddressValid(address)) {
+      return null;
+    }
+
+    const verificationResponse = await this.apiService.get(`${this.apiConfigService.getVerifierUrl()}/verifier/${address}`);
+    return verificationResponse.data;
+  }
+
   async getAccountSimple(address: string): Promise<AccountDetailed | null> {
     if (!AddressUtils.isAddressValid(address)) {
       return null;
@@ -92,7 +102,7 @@ export class AccountService {
     try {
       const {
         account: { nonce, balance, code, codeHash, rootHash, developerReward, ownerAddress, codeMetadata },
-      } = await this.gatewayService.get(`address/${address}`, GatewayComponentRequest.addressDetails);
+      } = await this.gatewayService.getAddressDetails(address);
 
       const shard = AddressUtils.computeShard(AddressUtils.bech32Decode(address));
       let account = new AccountDetailed({ address, nonce, balance, code, codeHash, rootHash, txCount, scrCount, shard, developerReward, ownerAddress, scamInfo: undefined, assets: assets[address], nftCollections: undefined, nfts: undefined });
@@ -106,6 +116,19 @@ export class AccountService {
         const deployedAt = await this.getAccountDeployedAt(address);
         if (deployedAt) {
           account.deployedAt = deployedAt;
+        }
+      }
+
+      if (AddressUtils.isSmartContractAddress(address)) {
+        account.isVerified = false;
+        try {
+          const { data } = await this.apiService.get(`${this.apiConfigService.getVerifierUrl()}/verifier/${address}/codehash`);
+
+          if (data.codeHash === Buffer.from(account.codeHash, 'base64').toString('hex')) {
+            account.isVerified = true;
+          }
+        } catch {
+          // ignore
         }
       }
 
@@ -174,7 +197,7 @@ export class AccountService {
   }
 
   public async getAccountsForAddresses(addresses: Array<string>): Promise<Array<Account>> {
-    const assets: { [key: string]: AccountAssets } = await this.assetsService.getAllAccountAssets();
+    const assets: { [key: string]: AccountAssets; } = await this.assetsService.getAllAccountAssets();
 
     const accountsRaw = await this.indexerService.getAccountsForAddresses(addresses);
     const accounts: Array<Account> = accountsRaw.map(account => ApiUtils.mergeObjects(new Account(), account));
@@ -208,7 +231,7 @@ export class AccountService {
       encodedUserDeferredPaymentList,
       [encodedNumBlocksBeforeUnBond],
       {
-        status: { erd_nonce: erdNonceString },
+        erd_nonce,
       },
     ] = await Promise.all([
       this.vmQueryService.vmQuery(
@@ -221,11 +244,11 @@ export class AccountService {
         this.apiConfigService.getDelegationContractAddress(),
         'getNumBlocksBeforeUnBond',
       ),
-      this.gatewayService.get(`network/status/${this.apiConfigService.getDelegationContractShardId()}`, GatewayComponentRequest.networkStatus),
+      this.gatewayService.getNetworkStatus(`${this.apiConfigService.getDelegationContractShardId()}`),
     ]);
 
     const numBlocksBeforeUnBond = parseInt(BinaryUtils.base64ToBigInt(encodedNumBlocksBeforeUnBond).toString());
-    const erdNonce = parseInt(erdNonceString);
+    const erdNonce = erd_nonce;
 
     const data: AccountDeferred[] = encodedUserDeferredPaymentList.reduce((result: AccountDeferred[], _, index, array) => {
       if (index % 2 === 0) {

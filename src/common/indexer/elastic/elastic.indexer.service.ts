@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { ElasticService, ElasticQuery, QueryOperator, QueryType, QueryConditionOptions, ElasticSortOrder, ElasticSortProperty, TermsQuery, BinaryUtils, RangeGreaterThanOrEqual } from "@elrondnetwork/erdnest";
+import { ElasticService, ElasticQuery, QueryOperator, QueryType, QueryConditionOptions, ElasticSortOrder, ElasticSortProperty, TermsQuery, BinaryUtils, RangeGreaterThanOrEqual } from "@multiversx/sdk-nestjs";
 import { IndexerInterface } from "../indexer.interface";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { NftType } from "src/endpoints/nfts/entities/nft.type";
@@ -314,8 +314,7 @@ export class ElasticIndexerService implements IndexerInterface {
   }
 
   async getAccountScResults(address: string, pagination: QueryPagination): Promise<any[]> {
-    const elasticQuery: ElasticQuery = this.indexerHelper.buildSmartContractResultFilterQuery(address);
-    elasticQuery
+    const elasticQuery: ElasticQuery = this.indexerHelper.buildSmartContractResultFilterQuery(address)
       .withPagination(pagination)
       .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }]);
 
@@ -616,7 +615,7 @@ export class ElasticIndexerService implements IndexerInterface {
                 {
                   collection: {
                     terms: {
-                      field: 'token.keyword',
+                      field: this.apiConfigService.getIsIndexerV5FlagActive() ? 'token' : 'token.keyword',
                     },
                   },
                 },

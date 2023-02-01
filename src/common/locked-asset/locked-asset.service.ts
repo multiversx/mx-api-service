@@ -1,14 +1,14 @@
 import { Injectable } from '@nestjs/common';
-import { LockedAssetAttributes, UnlockMilestone } from '@elrondnetwork/erdjs-dex';
+import { LockedAssetAttributes, UnlockMilestone, LockedTokenAttributes } from '@elrondnetwork/erdjs-dex';
 import { ApiConfigService } from '../api-config/api.config.service';
 import { VmQueryService } from '../../endpoints/vm.query/vm.query.service';
 import { CacheInfo } from '../../utils/cache.info';
-import { CachingService, Constants } from '@elrondnetwork/erdnest';
-import { UnlockMileStoneModel } from '../entities/unlock-schedule';
+import { CachingService, Constants } from '@multiversx/sdk-nestjs';
 import { TokenHelpers } from '../../utils/token.helpers';
-import { GatewayComponentRequest } from '../gateway/entities/gateway.component.request';
 import { GatewayService } from '../gateway/gateway.service';
 import { MexSettingsService } from 'src/endpoints/mex/mex.settings.service';
+import { LockedTokensInterface } from './entities/locked.tokens.interface';
+import { UnlockMileStoneModel } from './entities/unlock.milestone.model';
 
 @Injectable()
 export class LockedAssetService {
@@ -20,9 +20,13 @@ export class LockedAssetService {
     private readonly mexSettingsService: MexSettingsService,
   ) { }
 
-  async getUnlockSchedule(identifier: string, attributes: string): Promise<UnlockMileStoneModel[] | undefined> {
-    const hasUnlockSchedule = await this.hasUnlockSchedule(identifier);
-    if (!hasUnlockSchedule) {
+  async getLkmexUnlockSchedule(identifier: string, attributes: string): Promise<UnlockMileStoneModel[] | undefined> {
+    const lockedTokenIds = await this.getLockedTokens();
+    if (!lockedTokenIds) {
+      return undefined;
+    }
+
+    if (!lockedTokenIds.lkmex || !identifier.startsWith(lockedTokenIds.lkmex)) {
       return undefined;
     }
 
@@ -37,13 +41,19 @@ export class LockedAssetService {
     return await this.getUnlockMilestones(lockedAssetAttributes.unlockSchedule, withActivationNonce);
   }
 
-  private async hasUnlockSchedule(collection: string): Promise<boolean> {
-    const lockedTokenId = await this.getLockedTokenId();
-    if (!lockedTokenId) {
-      return false;
+  async getXmexUnlockEpoch(identifier: string, attributes: string): Promise<number | undefined> {
+    const lockedTokenIds = await this.getLockedTokens();
+    if (!lockedTokenIds) {
+      return undefined;
     }
 
-    return collection.startsWith(lockedTokenId);
+    if (!lockedTokenIds.xmex || !identifier.startsWith(lockedTokenIds.xmex)) {
+      return undefined;
+    }
+
+    const decodedAttributes = LockedTokenAttributes.fromAttributes(attributes);
+
+    return decodedAttributes.unlockEpoch;
   }
 
   private async getExtendedAttributesActivationNonce(): Promise<number> {
@@ -106,31 +116,27 @@ export class LockedAssetService {
     return parseInt(epoch, 16);
   }
 
-  private lockedTokenId: string | undefined;
-
-  private async getLockedTokenId(): Promise<string | undefined> {
-    if (this.lockedTokenId) {
-      return this.lockedTokenId;
-    }
-
-    const lockedTokenId = await this.cachingService.getOrSetCache(
-      CacheInfo.LockedTokenID.key,
-      async () => await this.getLockedTokenIdRaw(),
-      CacheInfo.LockedTokenID.ttl,
+  private async getLockedTokens(): Promise<LockedTokensInterface | undefined> {
+    return await this.cachingService.getOrSetCache(
+      CacheInfo.LockedTokenIDs.key,
+      async () => await this.getLockedTokensRaw(),
+      CacheInfo.LockedTokenIDs.ttl,
     );
-
-    this.lockedTokenId = lockedTokenId;
-
-    return lockedTokenId;
   }
 
-  private async getLockedTokenIdRaw(): Promise<string> {
+  private async getLockedTokensRaw(): Promise<LockedTokensInterface> {
     const settings = await this.mexSettingsService.getSettings();
     if (!settings) {
-      return '';
+      return {
+        lkmex: '',
+        xmex: '',
+      };
     }
 
-    return settings.lockedAssetIdentifier;
+    return {
+      lkmex: settings.lockedAssetIdentifier,
+      xmex: settings.lockedAssetIdentifierV2,
+    };
   }
 
   private async getUnlockMilestones(unlockSchedule: UnlockMilestone[], withActivationNonce: boolean): Promise<UnlockMileStoneModel[]> {
@@ -192,7 +198,7 @@ export class LockedAssetService {
 
   private async getCurrentEpoch(): Promise<number> {
     const metaChainShard = this.apiConfigService.getMetaChainShardId();
-    const res = await this.gatewayService.get(`network/status/${metaChainShard}`, GatewayComponentRequest.networkStatus);
-    return res.status.erd_epoch_number;
+    const res = await this.gatewayService.getNetworkStatus(metaChainShard);
+    return res.erd_epoch_number;
   }
 }

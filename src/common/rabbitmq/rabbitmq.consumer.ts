@@ -3,9 +3,9 @@ import { CompetingRabbitConsumer } from './rabbitmq.consumers';
 import { RabbitMqNftHandlerService } from './rabbitmq.nft.handler.service';
 import configuration from 'config/configuration';
 import { NotifierEvent as NotifierEvent } from './entities/notifier.event';
-import { OriginLogger } from '@elrondnetwork/erdnest';
 import { NotifierEventIdentifier } from './entities/notifier.event.identifier';
 import { RabbitMqTokenHandlerService } from './rabbitmq.token.handler.service';
+import { OriginLogger } from '@multiversx/sdk-nestjs';
 
 @Injectable()
 export class RabbitMqConsumer {

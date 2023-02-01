@@ -3,7 +3,7 @@ import { Args, Float, Resolver, Query } from "@nestjs/graphql";
 import { Account } from "src/endpoints/accounts/entities/account";
 import { AccountService } from "src/endpoints/accounts/account.service";
 import { GetAccountsInput } from "src/graphql/entities/account/account.input";
-import { ApplyComplexity } from "@elrondnetwork/erdnest";
+import { ApplyComplexity } from "@multiversx/sdk-nestjs";
 
 @Resolver()
 export class AccountQuery {

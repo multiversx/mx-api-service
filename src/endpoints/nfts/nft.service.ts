@@ -19,11 +19,11 @@ import { EsdtDataSource } from "../esdt/entities/esdt.data.source";
 import { EsdtAddressService } from "../esdt/esdt.address.service";
 import { PersistenceService } from "src/common/persistence/persistence.service";
 import { MexTokenService } from "../mex/mex.token.service";
-import { ApiUtils, BinaryUtils, NumberUtils, RecordUtils, CachingService, BatchUtils, TokenUtils } from "@elrondnetwork/erdnest";
+import { ApiUtils, BinaryUtils, NumberUtils, RecordUtils, CachingService, BatchUtils, TokenUtils } from "@multiversx/sdk-nestjs";
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { LockedAssetService } from "../../common/locked-asset/locked-asset.service";
 import { CollectionAccount } from "../collections/entities/collection.account";
-import { OriginLogger } from "@elrondnetwork/erdnest";
+import { OriginLogger } from "@multiversx/sdk-nestjs";
 import { NftRankAlgorithm } from "src/common/assets/entities/nft.rank.algorithm";
 import { NftRarity } from "./entities/nft.rarity";
 import { NftRarities } from "./entities/nft.rarities";
@@ -96,7 +96,7 @@ export class NftService {
     await this.batchProcessNfts(nfts);
 
     for (const nft of nfts) {
-      await this.applyUnlockSchedule(nft);
+      await this.applyUnlockFields(nft);
     }
 
     await this.pluginService.processNfts(nfts, queryOptions?.withScamInfo || queryOptions?.computeScamInfo);
@@ -230,15 +230,15 @@ export class NftService {
 
     await this.applyAssetsAndTicker(nft);
 
-    await this.applyUnlockSchedule(nft);
+    await this.applyUnlockFields(nft);
 
     await this.processNft(nft);
 
     return nft;
   }
 
-  private async applyUnlockSchedule(nft: Nft, fields?: string[]): Promise<void> {
-    if (fields && !fields.includes('unlockSchedule')) {
+  private async applyUnlockFields(nft: Nft, fields?: string[]): Promise<void> {
+    if (fields && (!fields.includes('unlockSchedule') && !fields.includes('unlockEpoch'))) {
       return;
     }
 
@@ -247,9 +247,16 @@ export class NftService {
     }
 
     try {
-      nft.unlockSchedule = await this.lockedAssetService.getUnlockSchedule(nft.identifier, nft.attributes);
+      nft.unlockSchedule = await this.lockedAssetService.getLkmexUnlockSchedule(nft.identifier, nft.attributes);
     } catch (error) {
       this.logger.error(`An error occurred while applying unlock schedule for NFT with identifier '${nft.identifier}' and attributes '${nft.attributes}'`);
+      this.logger.error(error);
+    }
+
+    try {
+      nft.unlockEpoch = await this.lockedAssetService.getXmexUnlockEpoch(nft.identifier, nft.attributes);
+    } catch (error) {
+      this.logger.error(`An error occurred while applying unlock epoch for NFT with identifier '${nft.identifier}' and attributes '${nft.attributes}'`);
       this.logger.error(error);
     }
   }
@@ -462,7 +469,7 @@ export class NftService {
     }
 
     for (const nft of nfts) {
-      await this.applyUnlockSchedule(nft, fields);
+      await this.applyUnlockFields(nft, fields);
     }
 
     const withScamInfo = (queryOptions?.withScamInfo || queryOptions?.computeScamInfo) && (!fields || fields.includes('scamInfo'));

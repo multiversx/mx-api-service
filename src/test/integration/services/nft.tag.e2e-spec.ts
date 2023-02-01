@@ -1,5 +1,5 @@
 import { Test } from "@nestjs/testing";
-import '@elrondnetwork/erdnest/lib/src/utils/extensions/jest.extensions';
+import '@multiversx/sdk-nestjs/lib/src/utils/extensions/jest.extensions';
 import { PublicAppModule } from "src/public.app.module";
 import { TagService } from "src/endpoints/nfttags/tag.service";
 import { Tag } from "src/endpoints/nfttags/entities/tag";

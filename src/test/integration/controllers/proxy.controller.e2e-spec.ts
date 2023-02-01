@@ -1,6 +1,6 @@
 import { Test } from '@nestjs/testing';
 import { PublicAppModule } from 'src/public.app.module';
-import '@elrondnetwork/erdnest/lib/src/utils/extensions/jest.extensions';
+import '@multiversx/sdk-nestjs/lib/src/utils/extensions/jest.extensions';
 import { ProxyController } from 'src/endpoints/proxy/proxy.controller';
 
 describe('Proxy Controller', () => {
@@ -46,11 +46,7 @@ describe('Proxy Controller', () => {
       const address: string = "erd1qga7ze0l03chfgru0a32wxqf2226nzrxnyhzer9lmudqhjgy7ycqjjyknz";
       const result = await proxyController.getAddressNonce(address);
 
-      expect(result).toEqual(expect.objectContaining({
-        data: expect.objectContaining({
-          nonce: 42,
-        }),
-      }));
+      expect(result.data.nonce).toStrictEqual(45);
     });
   });
 
