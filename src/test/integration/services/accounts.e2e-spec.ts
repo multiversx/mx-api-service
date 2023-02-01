@@ -2,9 +2,9 @@ import { Test } from '@nestjs/testing';
 import { AccountService } from 'src/endpoints/accounts/account.service';
 import { PublicAppModule } from 'src/public.app.module';
 import { DeployedContract } from 'src/endpoints/accounts/entities/deployed.contract';
-import '@elrondnetwork/erdnest/lib/src/utils/extensions/jest.extensions';
+import '@multiversx/sdk-nestjs/lib/src/utils/extensions/jest.extensions';
 import { ApiConfigService } from 'src/common/api-config/api.config.service';
-import { AddressUtils, CachingService, ElasticService } from '@elrondnetwork/erdnest';
+import { AddressUtils, CachingService, ElasticService } from '@multiversx/sdk-nestjs';
 import { AccountKey } from 'src/endpoints/accounts/entities/account.key';
 import { AccountEsdtHistory } from 'src/endpoints/accounts/entities/account.esdt.history';
 

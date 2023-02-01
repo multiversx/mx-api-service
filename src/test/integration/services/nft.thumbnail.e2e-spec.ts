@@ -7,8 +7,6 @@ import { GenerateThumbnailResult } from "src/queue.worker/nft.worker/queue/job-s
 import { NftThumbnailModule } from "src/queue.worker/nft.worker/queue/job-services/thumbnails/nft.thumbnail.module";
 import { NftThumbnailService } from "src/queue.worker/nft.worker/queue/job-services/thumbnails/nft.thumbnail.service";
 
-
-
 describe('Nft Queue Service', () => {
   let nftQueueService: NftThumbnailService;
   let nftService: NftService;

@@ -19,6 +19,27 @@ export class ApiConfigService {
     return apiUrls;
   }
 
+  getSelfUrl(): string {
+    const selfUrl = this.configService.get<string>('urls.self');
+    if (!selfUrl) {
+      throw new Error('No self url present');
+    }
+
+    return selfUrl;
+  }
+
+  isGuestCachingFeatureActive(): boolean {
+    return this.configService.get<boolean>('features.guestCaching.enabled') ?? false;
+  }
+
+  getGuestCachingHitsThreshold(): number {
+    return this.configService.get<number>('features.guestCaching.hitsThreshold') ?? 100;
+  }
+
+  getGuestCachingTtl(): number {
+    return this.configService.get<number>('features.guestCaching.ttl') ?? 12;
+  }
+
   getVerifierUrl(): string {
     const verifierUrl = this.configService.get<string>('urls.verifier');
     if (!verifierUrl) {

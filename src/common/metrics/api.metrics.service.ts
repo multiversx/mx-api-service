@@ -1,4 +1,4 @@
-import { MetricsService } from "@elrondnetwork/erdnest";
+import { MetricsService } from "@multiversx/sdk-nestjs";
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { OnEvent } from '@nestjs/event-emitter';
 import { register, Histogram, Gauge } from 'prom-client';

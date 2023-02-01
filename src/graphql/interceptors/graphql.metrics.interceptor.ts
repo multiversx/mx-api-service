@@ -1,4 +1,4 @@
-import { PerformanceProfiler } from '@elrondnetwork/erdnest';
+import { PerformanceProfiler } from '@multiversx/sdk-nestjs';
 import {
   Injectable,
   NestInterceptor,

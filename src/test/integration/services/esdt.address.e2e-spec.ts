@@ -5,7 +5,7 @@ import { NftCollection } from 'src/endpoints/collections/entities/nft.collection
 import { NftCollectionWithRoles } from 'src/endpoints/collections/entities/nft.collection.with.roles';
 import { NftType } from 'src/endpoints/nfts/entities/nft.type';
 import { CollectionFilter } from 'src/endpoints/collections/entities/collection.filter';
-import '@elrondnetwork/erdnest/lib/src/utils/extensions/jest.extensions';
+import '@multiversx/sdk-nestjs/lib/src/utils/extensions/jest.extensions';
 import { PublicAppModule } from 'src/public.app.module';
 import { NftFilter } from 'src/endpoints/nfts/entities/nft.filter';
 

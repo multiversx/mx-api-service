@@ -4,7 +4,7 @@ import { TokenAssets } from "src/common/assets/entities/token.assets";
 import { NftMedia } from "./nft.media";
 import { NftMetadata } from "./nft.metadata";
 import { NftType } from "./nft.type";
-import { ComplexityEstimation, SwaggerUtils } from "@elrondnetwork/erdnest";
+import { ComplexityEstimation, SwaggerUtils } from "@multiversx/sdk-nestjs";
 import { Field, Float, ID, ObjectType } from "@nestjs/graphql";
 import { NftCollection } from "src/endpoints/collections/entities/nft.collection";
 import { Account } from "src/endpoints/accounts/entities/account";

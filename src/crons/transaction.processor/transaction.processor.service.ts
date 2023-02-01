@@ -9,10 +9,10 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { SftChangeTransactionExtractor } from "./extractor/sft.change.transaction.extractor";
 import { TransactionExtractorInterface } from "./extractor/transaction.extractor.interface";
 import { TransferOwnershipExtractor } from "./extractor/transfer.ownership.extractor";
-import { PerformanceProfiler, CachingService, BinaryUtils } from "@elrondnetwork/erdnest";
-import { OriginLogger } from "@elrondnetwork/erdnest";
 import { MetricsEvents } from "src/utils/metrics-events.constants";
 import { LogMetricsEvent } from "src/common/entities/log.metrics.event";
+import { PerformanceProfiler, CachingService, BinaryUtils, OriginLogger } from "@multiversx/sdk-nestjs";
+
 
 @Injectable()
 export class TransactionProcessorService {

@@ -1,5 +1,5 @@
-import { OriginLogger } from "@elrondnetwork/erdnest";
-import { PerformanceProfiler, CachingService } from "@elrondnetwork/erdnest";
+import { OriginLogger } from "@multiversx/sdk-nestjs";
+import { PerformanceProfiler, CachingService } from "@multiversx/sdk-nestjs";
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { LogMetricsEvent } from "src/common/entities/log.metrics.event";

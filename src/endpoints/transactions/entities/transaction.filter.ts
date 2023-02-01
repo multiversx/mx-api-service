@@ -1,4 +1,4 @@
-import { QueryConditionOptions } from "@elrondnetwork/erdnest";
+import { QueryConditionOptions } from "@multiversx/sdk-nestjs";
 import { SortOrder } from "src/common/entities/sort.order";
 import { TransactionStatus } from "./transaction.status";
 import { TransactionType } from "./transaction.type";
