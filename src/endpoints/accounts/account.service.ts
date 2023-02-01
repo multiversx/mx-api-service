@@ -113,28 +113,20 @@ export class AccountService {
         account = { ...account, ...codeAttributes };
       }
 
-      const deployTxHash = await this.getAccountDeployedTxHash(address);
-      if (deployTxHash) {
-        account.deployTxHash = deployTxHash;
-      }
+      if (AddressUtils.isSmartContractAddress(address)) {
+        const deployTxHash = await this.getAccountDeployedTxHash(address);
+        if (deployTxHash) {
+          account.deployTxHash = deployTxHash;
+        }
 
-      if (account.code) {
         const deployedAt = await this.getAccountDeployedAt(address);
         if (deployedAt) {
           account.deployedAt = deployedAt;
         }
-      }
 
-      if (AddressUtils.isSmartContractAddress(address)) {
-        account.isVerified = false;
-        try {
-          const { data } = await this.apiService.get(`${this.apiConfigService.getVerifierUrl()}/verifier/${address}/codehash`);
-
-          if (data.codeHash === Buffer.from(account.codeHash, 'base64').toString('hex')) {
-            account.isVerified = true;
-          }
-        } catch {
-          // ignore
+        const isVerified = await this.getAccountIsVerified(address, account.codeHash);
+        if (isVerified) {
+          account.isVerified = isVerified;
         }
       }
 
@@ -195,12 +187,42 @@ export class AccountService {
   }
 
   async getAccountDeployedTxHash(address: string): Promise<string | null> {
+    return await this.cachingService.getOrSetCache(
+      CacheInfo.AccountDeployTxHash(address).key,
+      async () => await this.getAccountDeployedTxHashRaw(address),
+      CacheInfo.AccountDeployTxHash(address).ttl,
+    );
+  }
+
+  async getAccountDeployedTxHashRaw(address: string): Promise<string | null> {
     const scDeploy = await this.indexerService.getScDeploy(address);
     if (!scDeploy) {
       return null;
     }
 
     return scDeploy.deployTxHash;
+  }
+
+  async getAccountIsVerified(address: string, codeHash: string): Promise<boolean | null> {
+    return await this.cachingService.getOrSetCache(
+      CacheInfo.AccountIsVerified(address).key,
+      async () => await this.getAccountIsVerifiedRaw(address, codeHash),
+      CacheInfo.AccountIsVerified(address).ttl
+    );
+  }
+
+  async getAccountIsVerifiedRaw(address: string, codeHash: string): Promise<boolean | null> {
+    try {
+      const { data } = await this.apiService.get(`${this.apiConfigService.getVerifierUrl()}/verifier/${address}/codehash`, undefined,);
+
+      if (data.codeHash === Buffer.from(codeHash, 'base64').toString('hex')) {
+        return true;
+      }
+    } catch {
+      // ignore
+    }
+
+    return null;
   }
 
   async getAccounts(queryPagination: QueryPagination): Promise<Account[]> {
@@ -394,9 +416,7 @@ export class AccountService {
   }
 
   async getContractUpgrades(queryPagination: QueryPagination, address: string): Promise<ContractUpgrades[] | null> {
-    const { from, size } = queryPagination;
     const details = await this.indexerService.getScDeploy(address);
-
     if (!details) {
       return null;
     }
@@ -407,7 +427,7 @@ export class AccountService {
       timestamp: item.timestamp,
     }));
 
-    return upgrades.slice(from, from + size);
+    return upgrades.slice(queryPagination.from, queryPagination.from + queryPagination.size);
   }
 
   async getAccountHistory(address: string, pagination: QueryPagination): Promise<AccountHistory[]> {
