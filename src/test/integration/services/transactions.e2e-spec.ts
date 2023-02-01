@@ -6,8 +6,8 @@ import { TransactionFilter } from 'src/endpoints/transactions/entities/transacti
 import { TransactionUtils } from 'src/endpoints/transactions/transaction.utils';
 import { QueryPagination } from 'src/common/entities/query.pagination';
 import { Transaction } from 'src/endpoints/transactions/entities/transaction';
-import '@elrondnetwork/erdnest/lib/src/utils/extensions/jest.extensions';
-import '@elrondnetwork/erdnest/lib/src/utils/extensions/array.extensions';
+import '@multiversx/sdk-nestjs/lib/src/utils/extensions/jest.extensions';
+import '@multiversx/sdk-nestjs/lib/src/utils/extensions/array.extensions';
 import { TransactionQueryOptions } from 'src/endpoints/transactions/entities/transactions.query.options';
 import { TransactionDetailed } from 'src/endpoints/transactions/entities/transaction.detailed';
 import { TransactionOptionalFieldOption } from 'src/endpoints/transactions/entities/transaction.optional.field.options';
