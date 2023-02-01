@@ -1,10 +1,9 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { CacheInfo } from '../../utils/cache.info';
 import { NotifierEvent } from './entities/notifier.event';
-import { BinaryUtils, CachingService } from '@elrondnetwork/erdnest';
-import { OriginLogger } from '@elrondnetwork/erdnest';
 import { EsdtService } from 'src/endpoints/esdt/esdt.service';
 import { ClientProxy } from '@nestjs/microservices';
+import { BinaryUtils, CachingService, OriginLogger } from '@multiversx/sdk-nestjs';
 
 @Injectable()
 export class RabbitMqTokenHandlerService {
