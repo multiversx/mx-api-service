@@ -324,8 +324,8 @@ export class CacheWarmerService {
       const nftCount = await this.nftService.getNftCount({ collection: collection._id });
       const holderCount = await this.esdtService.countAllAccounts([collection._id]);
 
-      this.logger.log(`Setting isVerified to true, nftCount to ${nftCount}, holderCount to ${holderCount} for collection with identifier '${key}'`);
-      await this.indexerService.setExtraCollectionFields(key, true, nftCount, holderCount);
+      this.logger.log(`Setting isVerified to true, holderCount to ${holderCount}, nftCount to ${nftCount} for collection with identifier '${key}'`);
+      await this.indexerService.setExtraCollectionFields(key, true, holderCount, nftCount);
     }
   }
 
