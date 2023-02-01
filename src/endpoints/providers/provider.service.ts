@@ -9,8 +9,8 @@ import { NodesInfos } from "./entities/nodes.infos";
 import { DelegationData } from "./entities/delegation.data";
 import { KeybaseService } from "src/common/keybase/keybase.service";
 import { CacheInfo } from "src/utils/cache.info";
-import { AddressUtils, Constants, CachingService, ApiService } from "@elrondnetwork/erdnest";
-import { OriginLogger } from "@elrondnetwork/erdnest";
+import { AddressUtils, Constants, CachingService, ApiService } from "@multiversx/sdk-nestjs";
+import { OriginLogger } from "@multiversx/sdk-nestjs";
 
 @Injectable()
 export class ProviderService {
@@ -92,6 +92,10 @@ export class ProviderService {
         if (delegationData.featured) {
           element.featured = delegationData.featured;
         }
+
+        if (delegationData.owner) {
+          element.owner = delegationData.owner;
+        }
       }
 
       // Add Nodes details for provider
@@ -101,9 +105,6 @@ export class ProviderService {
       element.stake = nodesInfos.stake;
       element.topUp = nodesInfos.topUp;
       element.locked = nodesInfos.locked;
-
-      // @ts-ignore
-      delete element.owner;
     });
 
     providers.sort((a, b) => {

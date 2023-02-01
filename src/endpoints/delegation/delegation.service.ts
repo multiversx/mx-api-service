@@ -3,7 +3,7 @@ import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { VmQueryService } from "src/endpoints/vm.query/vm.query.service";
 import { Delegation } from "./entities/delegation";
 import { NodeService } from "../nodes/node.service";
-import { ApiService, CachingService, OriginLogger } from "@elrondnetwork/erdnest";
+import { ApiService, CachingService, OriginLogger } from "@multiversx/sdk-nestjs";
 import { CacheInfo } from "src/utils/cache.info";
 import { AccountDelegation } from "../stake/entities/account.delegation";
 

@@ -1,5 +1,5 @@
-import { CachingService, OriginLogger } from "@elrondnetwork/erdnest";
-import { ApiService, Constants } from "@elrondnetwork/erdnest";
+import { CachingService, OriginLogger } from "@multiversx/sdk-nestjs";
+import { ApiService, Constants } from "@multiversx/sdk-nestjs";
 import { HttpStatus, Injectable } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { NftMedia } from "src/endpoints/nfts/entities/nft.media";

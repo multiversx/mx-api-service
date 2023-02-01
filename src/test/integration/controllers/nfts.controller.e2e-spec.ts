@@ -1,4 +1,4 @@
-import { ComplexityInterceptor } from '@elrondnetwork/erdnest';
+import { ComplexityInterceptor } from '@multiversx/sdk-nestjs';
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { PublicAppModule } from 'src/public.app.module';

@@ -1,5 +1,5 @@
-import { ApiUtils, OriginLogger } from "@elrondnetwork/erdnest";
-import { MatchUtils, ApiService } from "@elrondnetwork/erdnest";
+import { ApiUtils, OriginLogger } from "@multiversx/sdk-nestjs";
+import { MatchUtils, ApiService } from "@multiversx/sdk-nestjs";
 import { Injectable } from "@nestjs/common";
 import { NftMetadata } from "src/endpoints/nfts/entities/nft.metadata";
 import { TokenHelpers } from "src/utils/token.helpers";

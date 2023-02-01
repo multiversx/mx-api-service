@@ -1,4 +1,4 @@
-import { AddressUtils } from "@elrondnetwork/erdnest";
+import { AddressUtils } from "@multiversx/sdk-nestjs";
 import { Injectable } from "@nestjs/common";
 import { TransactionAction } from "../../entities/transaction.action";
 import { TransactionActionCategory } from "../../entities/transaction.action.category";
@@ -14,6 +14,7 @@ export class SCCallActionRecognizerService implements TransactionActionRecognize
     'ESDTNFTAddQuantity',
     'ESDTNFTAddURI',
     'ESDTNFTUpdateAttributes',
+    'SaveKeyValue',
   ];
 
   // eslint-disable-next-line require-await
