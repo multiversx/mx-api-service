@@ -19,6 +19,15 @@ export class ApiConfigService {
     return apiUrls;
   }
 
+  getVerifierUrl(): string {
+    const verifierUrl = this.configService.get<string>('urls.verifier');
+    if (!verifierUrl) {
+      throw new Error('No verifier url present');
+    }
+
+    return verifierUrl;
+  }
+
   getGatewayUrl(): string {
     const gatewayUrls = this.configService.get<string[]>('urls.gateway');
     if (!gatewayUrls) {
