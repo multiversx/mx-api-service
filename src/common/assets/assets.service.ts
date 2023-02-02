@@ -5,7 +5,6 @@ import { TokenAssets } from "src/common/assets/entities/token.assets";
 import { ApiConfigService } from "../api-config/api.config.service";
 import { AccountAssets } from "./entities/account.assets";
 import { ApiUtils, CachingService, FileUtils, OriginLogger } from "@multiversx/sdk-nestjs";
-import { Provider } from "src/endpoints/providers/entities/provider";
 import { MexPair } from "src/endpoints/mex/entities/mex.pair";
 import { Identity } from "src/endpoints/identities/entities/identity";
 import { MexFarm } from "src/endpoints/mex/entities/mex.farm";
