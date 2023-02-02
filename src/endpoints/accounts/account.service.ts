@@ -1,4 +1,4 @@
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { forwardRef, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { AccountDetailed } from './entities/account.detailed';
 import { Account } from './entities/account';
 import { VmQueryService } from 'src/endpoints/vm.query/vm.query.service';
@@ -8,7 +8,6 @@ import { QueryPagination } from 'src/common/entities/query.pagination';
 import { AccountKey } from './entities/account.key';
 import { DeployedContract } from './entities/deployed.contract';
 import { TransactionService } from '../transactions/transaction.service';
-import { GatewayComponentRequest } from 'src/common/gateway/entities/gateway.component.request';
 import { PluginService } from 'src/common/plugins/plugin.service';
 import { AccountEsdtHistory } from "./entities/account.esdt.history";
 import { AccountHistory } from "./entities/account.history";
@@ -18,14 +17,16 @@ import { SmartContractResultService } from '../sc-results/scresult.service';
 import { TransactionType } from '../transactions/entities/transaction.type';
 import { AssetsService } from 'src/common/assets/assets.service';
 import { TransactionFilter } from '../transactions/entities/transaction.filter';
-import { AddressUtils, ApiUtils, BinaryUtils, CachingService } from '@elrondnetwork/erdnest';
+import { AddressUtils, ApiService, ApiUtils, BinaryUtils, CachingService } from '@multiversx/sdk-nestjs';
 import { GatewayService } from 'src/common/gateway/gateway.service';
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { AccountOptionalFieldOption } from './entities/account.optional.field.options';
 import { AccountAssets } from 'src/common/assets/entities/account.assets';
-import { OriginLogger } from '@elrondnetwork/erdnest';
+import { OriginLogger } from '@multiversx/sdk-nestjs';
 import { CacheInfo } from 'src/utils/cache.info';
 import { UsernameService } from '../usernames/username.service';
+import { ContractUpgrades } from './entities/contract.upgrades';
+import { AccountVerification } from './entities/account.verification';
 
 @Injectable()
 export class AccountService {
@@ -49,6 +50,7 @@ export class AccountService {
     private readonly smartContractResultService: SmartContractResultService,
     private readonly assetsService: AssetsService,
     private readonly usernameService: UsernameService,
+    private readonly apiService: ApiService
   ) { }
 
   async getAccountsCount(): Promise<number> {
@@ -78,6 +80,15 @@ export class AccountService {
     return this.getAccountRaw(address, txCount, scrCount);
   }
 
+  async getAccountVerification(address: string): Promise<AccountVerification | null> {
+    if (!AddressUtils.isAddressValid(address)) {
+      return null;
+    }
+
+    const verificationResponse = await this.apiService.get(`${this.apiConfigService.getVerifierUrl()}/verifier/${address}`);
+    return verificationResponse.data;
+  }
+
   async getAccountSimple(address: string): Promise<AccountDetailed | null> {
     if (!AddressUtils.isAddressValid(address)) {
       return null;
@@ -92,7 +103,7 @@ export class AccountService {
     try {
       const {
         account: { nonce, balance, code, codeHash, rootHash, developerReward, ownerAddress, codeMetadata },
-      } = await this.gatewayService.get(`address/${address}`, GatewayComponentRequest.addressDetails);
+      } = await this.gatewayService.getAddressDetails(address);
 
       const shard = AddressUtils.computeShard(AddressUtils.bech32Decode(address));
       let account = new AccountDetailed({ address, nonce, balance, code, codeHash, rootHash, txCount, scrCount, shard, developerReward, ownerAddress, scamInfo: undefined, assets: assets[address], nftCollections: undefined, nfts: undefined });
@@ -102,10 +113,20 @@ export class AccountService {
         account = { ...account, ...codeAttributes };
       }
 
-      if (account.code) {
+      if (AddressUtils.isSmartContractAddress(address) && account.code) {
+        const deployTxHash = await this.getAccountDeployedTxHash(address);
+        if (deployTxHash) {
+          account.deployTxHash = deployTxHash;
+        }
+
         const deployedAt = await this.getAccountDeployedAt(address);
         if (deployedAt) {
           account.deployedAt = deployedAt;
+        }
+
+        const isVerified = await this.getAccountIsVerified(address, account.codeHash);
+        if (isVerified) {
+          account.isVerified = isVerified;
         }
       }
 
@@ -165,6 +186,46 @@ export class AccountService {
     return transaction.timestamp;
   }
 
+  async getAccountDeployedTxHash(address: string): Promise<string | null> {
+    return await this.cachingService.getOrSetCache(
+      CacheInfo.AccountDeployTxHash(address).key,
+      async () => await this.getAccountDeployedTxHashRaw(address),
+      CacheInfo.AccountDeployTxHash(address).ttl,
+    );
+  }
+
+  async getAccountDeployedTxHashRaw(address: string): Promise<string | null> {
+    const scDeploy = await this.indexerService.getScDeploy(address);
+    if (!scDeploy) {
+      return null;
+    }
+
+    return scDeploy.deployTxHash;
+  }
+
+  async getAccountIsVerified(address: string, codeHash: string): Promise<boolean | null> {
+    return await this.cachingService.getOrSetCache(
+      CacheInfo.AccountIsVerified(address).key,
+      async () => await this.getAccountIsVerifiedRaw(address, codeHash),
+      CacheInfo.AccountIsVerified(address).ttl
+    );
+  }
+
+  async getAccountIsVerifiedRaw(address: string, codeHash: string): Promise<boolean | null> {
+    try {
+      // eslint-disable-next-line require-await
+      const { data } = await this.apiService.get(`${this.apiConfigService.getVerifierUrl()}/verifier/${address}/codehash`, undefined, async (error) => error.response?.status === HttpStatus.NOT_FOUND);
+
+      if (data.codeHash === Buffer.from(codeHash, 'base64').toString('hex')) {
+        return true;
+      }
+    } catch {
+      // ignore
+    }
+
+    return null;
+  }
+
   async getAccounts(queryPagination: QueryPagination): Promise<Account[]> {
     return await this.cachingService.getOrSetCache(
       CacheInfo.Accounts(queryPagination).key,
@@ -174,7 +235,7 @@ export class AccountService {
   }
 
   public async getAccountsForAddresses(addresses: Array<string>): Promise<Array<Account>> {
-    const assets: { [key: string]: AccountAssets } = await this.assetsService.getAllAccountAssets();
+    const assets: { [key: string]: AccountAssets; } = await this.assetsService.getAllAccountAssets();
 
     const accountsRaw = await this.indexerService.getAccountsForAddresses(addresses);
     const accounts: Array<Account> = accountsRaw.map(account => ApiUtils.mergeObjects(new Account(), account));
@@ -208,7 +269,7 @@ export class AccountService {
       encodedUserDeferredPaymentList,
       [encodedNumBlocksBeforeUnBond],
       {
-        status: { erd_nonce: erdNonceString },
+        erd_nonce,
       },
     ] = await Promise.all([
       this.vmQueryService.vmQuery(
@@ -221,11 +282,11 @@ export class AccountService {
         this.apiConfigService.getDelegationContractAddress(),
         'getNumBlocksBeforeUnBond',
       ),
-      this.gatewayService.get(`network/status/${this.apiConfigService.getDelegationContractShardId()}`, GatewayComponentRequest.networkStatus),
+      this.gatewayService.getNetworkStatus(`${this.apiConfigService.getDelegationContractShardId()}`),
     ]);
 
     const numBlocksBeforeUnBond = parseInt(BinaryUtils.base64ToBigInt(encodedNumBlocksBeforeUnBond).toString());
-    const erdNonce = parseInt(erdNonceString);
+    const erdNonce = erd_nonce;
 
     const data: AccountDeferred[] = encodedUserDeferredPaymentList.reduce((result: AccountDeferred[], _, index, array) => {
       if (index % 2 === 0) {
@@ -353,6 +414,21 @@ export class AccountService {
 
   async getAccountContractsCount(address: string): Promise<number> {
     return await this.indexerService.getAccountContractsCount(address);
+  }
+
+  async getContractUpgrades(queryPagination: QueryPagination, address: string): Promise<ContractUpgrades[] | null> {
+    const details = await this.indexerService.getScDeploy(address);
+    if (!details) {
+      return null;
+    }
+
+    const upgrades = details.upgrades.map(item => ApiUtils.mergeObjects(new ContractUpgrades(), {
+      address: item.upgrader,
+      txHash: item.upgradeTxHash,
+      timestamp: item.timestamp,
+    }));
+
+    return upgrades.slice(queryPagination.from, queryPagination.from + queryPagination.size);
   }
 
   async getAccountHistory(address: string, pagination: QueryPagination): Promise<AccountHistory[]> {

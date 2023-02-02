@@ -14,11 +14,11 @@ import { NodeType } from 'src/endpoints/nodes/entities/node.type';
 import { NodeStatus } from 'src/endpoints/nodes/entities/node.status';
 import { NodeSort } from 'src/endpoints/nodes/entities/node.sort';
 import { Auction } from 'src/common/gateway/entities/auction';
-import '@elrondnetwork/erdnest/lib/src/utils/extensions/array.extensions';
-import '@elrondnetwork/erdnest/lib/src/utils/extensions/jest.extensions';
-import '@elrondnetwork/erdnest/lib/src/utils/extensions/number.extensions';
+import '@multiversx/sdk-nestjs/lib/src/utils/extensions/array.extensions';
+import '@multiversx/sdk-nestjs/lib/src/utils/extensions/jest.extensions';
+import '@multiversx/sdk-nestjs/lib/src/utils/extensions/number.extensions';
 import { AuctionNode } from 'src/common/gateway/entities/auction.node';
-import { CachingService, FileUtils } from '@elrondnetwork/erdnest';
+import { CachingService, FileUtils } from '@multiversx/sdk-nestjs';
 import { AccountService } from 'src/endpoints/accounts/account.service';
 
 describe('Node Service', () => {
@@ -83,7 +83,7 @@ describe('Node Service', () => {
 
   describe('Nodes', () => {
     it('should be in sync with keybase confirmations', async () => {
-      const nodeKeybases: { [key: string]: KeybaseState } | undefined = await cachingService.getCache('nodeKeybases');
+      const nodeKeybases: { [key: string]: KeybaseState; } | undefined = await cachingService.getCache('nodeKeybases');
       expect(nodeKeybases).toBeDefined();
 
       if (nodeKeybases) {

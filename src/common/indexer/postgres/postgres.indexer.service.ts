@@ -1,4 +1,4 @@
-import { BinaryUtils } from "@elrondnetwork/erdnest";
+import { BinaryUtils } from "@multiversx/sdk-nestjs";
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { QueryPagination } from "src/common/entities/query.pagination";
@@ -607,6 +607,10 @@ export class PostgresIndexerService implements IndexerInterface {
   }
 
   async setMetadataForToken(_identifier: string, _value: any): Promise<void> {
+    // TODO custom columns cannot be added
+  }
+
+  async setExtraCollectionFields(_identifier: string, _isVerified: boolean, _holderCount: number, _nftCount: number): Promise<void> {
     // TODO custom columns cannot be added
   }
 }

@@ -1,4 +1,4 @@
-import { CachingService, Constants } from '@elrondnetwork/erdnest';
+import { CachingService, Constants } from '@multiversx/sdk-nestjs';
 import { Test } from '@nestjs/testing';
 import { ApiConfigModule } from 'src/common/api-config/api.config.module';
 import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';

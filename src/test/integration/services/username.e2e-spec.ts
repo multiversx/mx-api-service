@@ -1,14 +1,14 @@
 import { Test } from "@nestjs/testing";
-import { UsernameModule } from "src/endpoints/usernames/username.module";
-import { ApiService } from '@elrondnetwork/erdnest';
+import { ApiService } from '@multiversx/sdk-nestjs';
 import { UsernameService } from "src/endpoints/usernames/username.service";
+import { PublicAppModule } from "src/public.app.module";
 
 describe('Username Service', () => {
   let usernameService: UsernameService;
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
-      imports: [UsernameModule],
+      imports: [PublicAppModule],
     }).compile();
 
     usernameService = moduleRef.get<UsernameService>(UsernameService);

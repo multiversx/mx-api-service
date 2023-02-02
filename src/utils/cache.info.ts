@@ -1,4 +1,4 @@
-import { Constants } from "@elrondnetwork/erdnest";
+import { Constants } from "@multiversx/sdk-nestjs";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { BlockFilter } from "src/endpoints/blocks/entities/block.filter";
 
@@ -191,7 +191,17 @@ export class CacheInfo {
   static EsdtAssets(identifier: string): CacheInfo {
     return {
       key: `esdt:assets:${identifier}`,
-      ttl: Constants.oneDay(),
+      ttl: Constants.oneHour(),
+    };
+  }
+
+  static HistoricalPrice(identifier: string, date: Date): CacheInfo {
+    const isCurrentDate = date.toISODateString() === new Date().toISODateString();
+    const ttl = isCurrentDate ? Constants.oneMinute() * 5 : Constants.oneWeek();
+
+    return {
+      key: `historical-price:${identifier}:${date.toISODateString()}`,
+      ttl,
     };
   }
 
@@ -336,8 +346,8 @@ export class CacheInfo {
     ttl: Constants.oneDay(),
   };
 
-  static LockedTokenID: CacheInfo = {
-    key: "lockedTokenID",
+  static LockedTokenIDs: CacheInfo = {
+    key: "lockedTokenIDs",
     ttl: Constants.oneHour(),
   };
 
@@ -375,7 +385,21 @@ export class CacheInfo {
   static AccountDeployedAt(address: string): CacheInfo {
     return {
       key: `accountDeployedAt:${address}`,
-      ttl: Constants.oneWeek(),
+      ttl: Constants.oneDay(),
+    };
+  }
+
+  static AccountDeployTxHash(address: string): CacheInfo {
+    return {
+      key: `accountDeployTxHash:${address}`,
+      ttl: Constants.oneDay(),
+    };
+  }
+
+  static AccountIsVerified(address: string): CacheInfo {
+    return {
+      key: `accountIsVerified:${address}`,
+      ttl: Constants.oneMinute() * 10,
     };
   }
 
@@ -473,6 +497,20 @@ export class CacheInfo {
   static Username(address: string): CacheInfo {
     return {
       key: `username:${address}`,
+      ttl: Constants.oneHour(),
+    };
+  }
+
+  static ContractUpgrades(address: string): CacheInfo {
+    return {
+      key: `contractUpgrades:${address}`,
+      ttl: Constants.oneHour(),
+    };
+  }
+
+  static Setting(name: string): CacheInfo {
+    return {
+      key: `api:settings:${name}`,
       ttl: Constants.oneHour(),
     };
   }

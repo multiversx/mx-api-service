@@ -1,5 +1,5 @@
-import { ApiService, CachingService } from "@elrondnetwork/erdnest";
-import { BinaryUtils, Constants } from "@elrondnetwork/erdnest";
+import { ApiService, CachingService } from "@multiversx/sdk-nestjs";
+import { BinaryUtils, Constants } from "@multiversx/sdk-nestjs";
 import { HttpStatus, Inject, Injectable } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { CacheInfo } from "src/utils/cache.info";
@@ -10,7 +10,7 @@ import { NftMedia } from "src/endpoints/nfts/entities/nft.media";
 import { NftType } from "src/endpoints/nfts/entities/nft.type";
 import { TokenHelpers } from "src/utils/token.helpers";
 import { ClientProxy } from "@nestjs/microservices";
-import { OriginLogger } from "@elrondnetwork/erdnest";
+import { OriginLogger } from "@multiversx/sdk-nestjs";
 import { CachingUtils } from "src/utils/caching.utils";
 
 @Injectable()

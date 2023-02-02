@@ -1,4 +1,4 @@
-import { QueryConditionOptions } from "@elrondnetwork/erdnest";
+import { QueryConditionOptions } from "@multiversx/sdk-nestjs";
 import { Field, Float, InputType } from "@nestjs/graphql";
 
 import { TransactionFilter } from "src/endpoints/transactions/entities/transaction.filter";

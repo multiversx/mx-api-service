@@ -10,7 +10,6 @@ import { TokenAccount } from "./entities/token.account";
 import { EsdtType } from "../esdt/entities/esdt.type";
 import { EsdtAddressService } from "../esdt/esdt.address.service";
 import { GatewayService } from "src/common/gateway/gateway.service";
-import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { TokenProperties } from "./entities/token.properties";
 import { TokenRoles } from "./entities/token.roles";
@@ -20,9 +19,9 @@ import { SortOrder } from "src/common/entities/sort.order";
 import { TokenSort } from "./entities/token.sort";
 import { TokenWithRoles } from "./entities/token.with.roles";
 import { TokenWithRolesFilter } from "./entities/token.with.roles.filter";
-import { AddressUtils, ApiUtils, BinaryUtils, CachingService, Constants, NumberUtils, TokenUtils } from "@elrondnetwork/erdnest";
+import { AddressUtils, ApiUtils, CachingService, Constants, NumberUtils, TokenUtils } from "@multiversx/sdk-nestjs";
 import { IndexerService } from "src/common/indexer/indexer.service";
-import { OriginLogger } from "@elrondnetwork/erdnest";
+import { OriginLogger } from "@multiversx/sdk-nestjs";
 import { TokenLogo } from "./entities/token.logo";
 import { AssetsService } from "src/common/assets/assets.service";
 import { CacheInfo } from "src/utils/cache.info";
@@ -277,36 +276,27 @@ export class TokenService {
       return undefined;
     }
 
-    let gatewayUrl = `address/${address}/esdt/${identifier}`;
+
+    let tokenWithBalance: TokenDetailedWithBalance;
+    const token = tokens[0];
 
     if (TokenUtils.isNft(identifier)) {
-      const nonceHex = identifier.split('-').last();
-      const nonceNumeric = BinaryUtils.hexToNumber(nonceHex);
+      const nftData = await this.gatewayService.getAddressNft(address, identifier);
 
-      gatewayUrl = `address/${address}/nft/${esdtIdentifier}/nonce/${nonceNumeric}`;
+      tokenWithBalance = new TokenDetailedWithBalance({ ...token, ...nftData });
+    } else {
+      const esdtData = await this.gatewayService.getAddressEsdt(address, identifier);
+
+      tokenWithBalance = new TokenDetailedWithBalance({ ...token, ...esdtData });
     }
 
-    const token = tokens[0];
     // eslint-disable-next-line require-await
-    const esdt = await this.gatewayService.get(gatewayUrl, GatewayComponentRequest.addressEsdtBalance, async (error) => {
-      const errorMessage = error?.response?.data?.error;
-      if (errorMessage && errorMessage.includes('account was not found')) {
-        return true;
-      }
+    const esdt = await this.gatewayService.getAddressEsdt(address, identifier);
 
-      return false;
-    });
-
-    if (!esdt || !esdt.tokenData || esdt.tokenData.balance === '0') {
+    if (!esdt || esdt.balance === '0') {
       return undefined;
     }
 
-    let tokenWithBalance: TokenDetailedWithBalance = {
-      ...token,
-      balance: esdt.tokenData.balance,
-      attributes: esdt.tokenData.attributes,
-      valueUsd: undefined,
-    };
     tokenWithBalance = ApiUtils.mergeObjects(new TokenDetailedWithBalance(), tokenWithBalance);
 
     this.applyValueUsd(tokenWithBalance);
@@ -662,9 +652,7 @@ export class TokenService {
   async getAllTokensRaw(): Promise<TokenDetailed[]> {
     let tokensIdentifiers: string[];
     try {
-      const getFungibleTokensResult = await this.gatewayService.get('network/esdt/fungible-tokens', GatewayComponentRequest.allFungibleTokens);
-
-      tokensIdentifiers = getFungibleTokensResult.tokens;
+      tokensIdentifiers = await this.gatewayService.getEsdtFungibleTokens();
     } catch (error) {
       this.logger.error('Error when getting fungible tokens from gateway');
       this.logger.error(error);

@@ -3,7 +3,7 @@ import { ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } f
 import { ProviderService } from "./provider.service";
 import { Provider } from "./entities/provider";
 import { ProviderFilter } from "./entities/provider.filter";
-import { ParseAddressArrayPipe, ParseAddressPipe } from "@elrondnetwork/erdnest";
+import { ParseAddressArrayPipe, ParseAddressPipe } from "@multiversx/sdk-nestjs";
 
 @Controller()
 @ApiTags('providers')

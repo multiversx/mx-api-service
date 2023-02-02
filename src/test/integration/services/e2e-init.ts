@@ -1,5 +1,5 @@
-import { CachingService } from "@elrondnetwork/erdnest";
-import { Constants, FileUtils } from "@elrondnetwork/erdnest";
+import { CachingService } from "@multiversx/sdk-nestjs";
+import { Constants, FileUtils } from "@multiversx/sdk-nestjs";
 import { Test } from "@nestjs/testing";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { CacheInfo } from "src/utils/cache.info";
@@ -8,7 +8,7 @@ import { KeybaseService } from "src/common/keybase/keybase.service";
 import { NodeService } from "src/endpoints/nodes/node.service";
 import { ProviderService } from "src/endpoints/providers/provider.service";
 import { PublicAppModule } from "src/public.app.module";
-import '@elrondnetwork/erdnest/lib/src/utils/extensions/jest.extensions';
+import '@multiversx/sdk-nestjs/lib/src/utils/extensions/jest.extensions';
 import { TokenService } from "src/endpoints/tokens/token.service";
 
 export default class Initializer {
@@ -69,7 +69,7 @@ export default class Initializer {
         // eslint-disable-next-line require-await
         .mockImplementation(jest.fn(async () => queue));
 
-      jest.spyOn(KeybaseService.prototype, 'confirmKeybasesAgainstKeybasePub')
+      jest.spyOn(KeybaseService.prototype, 'confirmKeybasesAgainstGithubOrKeybasePub')
         .mockImplementation(jest.fn(async () => {
           const providers = await providerService.getProviderAddresses();
           for (const provider of providers) {
@@ -92,7 +92,7 @@ export default class Initializer {
       async () => await Initializer.cachingService.flushDb(),
     );
 
-    await this.execute('Confirm keybases against keybase.pub', async () => await keybaseService.confirmKeybasesAgainstKeybasePub());
+    await this.execute('Confirm keybases against keybase.pub', async () => await keybaseService.confirmKeybasesAgainstGithubOrKeybasePub());
     await this.execute('Confirm keybase against keybase.io', async () => await keybaseService.confirmIdentityProfilesAgainstKeybaseIo());
     await this.fetch(CacheInfo.Keybases.key, async () => await keybaseService.confirmKeybasesAgainstCache());
     await this.fetch(CacheInfo.Nodes.key, async () => await nodeService.getAllNodesRaw());

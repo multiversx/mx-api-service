@@ -8,7 +8,7 @@ import { GetMexTokenInput, GetMexTokensInput } from "./mex.token.input";
 export class MexTokensQuery {
   constructor(protected readonly mexTokenService: MexTokenService) { }
 
-  @Query(() => [MexToken], { name: "mexTokens", description: "Retrieve all tokens listed on Maiar Exchange for the given input." })
+  @Query(() => [MexToken], { name: "mexTokens", description: "Retrieve all tokens listed on xExchange for the given input." })
   public async getMexTokens(@Args("input", { description: "Input to retrieve the given tokens for." }) input: GetMexTokensInput): Promise<MexToken[]> {
     return await this.mexTokenService.getMexTokens(GetMexTokensInput.resolve(input));
   }
