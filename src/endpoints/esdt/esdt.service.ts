@@ -9,7 +9,7 @@ import { TokenRoles } from "../tokens/entities/token.roles";
 import { AssetsService } from "../../common/assets/assets.service";
 import { EsdtLockedAccount } from "./entities/esdt.locked.account";
 import { EsdtSupply } from "./entities/esdt.supply";
-import { AddressUtils, BinaryUtils, Constants, CachingService } from "@multiversx/sdk-nestjs";
+import { BinaryUtils, Constants, CachingService } from "@multiversx/sdk-nestjs";
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { EsdtType } from "./entities/esdt.type";
 import { ElasticIndexerService } from "src/common/indexer/elastic/elastic.indexer.service";
