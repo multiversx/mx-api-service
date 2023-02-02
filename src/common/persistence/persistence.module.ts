@@ -1,5 +1,4 @@
 import { DynamicModule, Global, Module } from "@nestjs/common";
-import { EventEmitterModule } from "@nestjs/event-emitter";
 import { getRepositoryToken, TypeOrmModule, TypeOrmModuleOptions } from "@nestjs/typeorm";
 import configuration from "config/configuration";
 import { ApiConfigModule } from "../api-config/api.config.module";
@@ -20,7 +19,7 @@ export class PersistenceModule {
     if (isPassThrough) {
       return {
         module: PersistenceModule,
-        imports: [EventEmitterModule.forRoot()],
+        imports: [],
         providers: [
           {
             provide: getRepositoryToken(NftMetadataDb),
@@ -51,7 +50,6 @@ export class PersistenceModule {
     return {
       module: PersistenceModule,
       imports: [
-        EventEmitterModule.forRoot(),
         TypeOrmModule.forRootAsync({
           imports: [ApiConfigModule],
           useFactory: (apiConfigService: ApiConfigService) => {

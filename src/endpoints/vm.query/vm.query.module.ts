@@ -1,4 +1,5 @@
 import { Module } from "@nestjs/common";
+import { EventEmitterModule } from "@nestjs/event-emitter";
 import { ApiConfigModule } from "src/common/api-config/api.config.module";
 import { GatewayModule } from "src/common/gateway/gateway.module";
 import { ProtocolModule } from "src/common/protocol/protocol.module";
@@ -13,6 +14,7 @@ import { VmQueryService } from "./vm.query.service";
     ProtocolModule,
     ApiConfigModule,
     SettingsModule,
+    EventEmitterModule.forRoot(),
   ],
   providers: [
     VmQueryService,
