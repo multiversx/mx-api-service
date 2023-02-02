@@ -141,4 +141,6 @@ export interface IndexerInterface {
   setMediaForToken(identifier: string, value: NftMedia[]): Promise<void>
 
   setMetadataForToken(identifier: string, value: any): Promise<void>
+
+  setExtraCollectionFields(identifier: string, isVerified: boolean, holderCount: number, nftCount: number): Promise<void>
 }

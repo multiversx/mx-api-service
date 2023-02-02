@@ -2327,8 +2327,21 @@ type NftCollection {
   """Decimals for the given NFT collection."""
   decimals: Float
 
+  """
+  Number of holders. Will be returned only if the collection is verified.
+  """
+  holderCount: Float
+
+  """Returns true if the collection is verified."""
+  isVerified: Boolean
+
   """Name for the given NFT collection."""
   name: String!
+
+  """
+  Number of NFTs for this collection. Will be returned only if the collection is verified.
+  """
+  nftCount: Float
 
   """Owner account for the given NFT collection."""
   owner: Account
@@ -2384,8 +2397,21 @@ type NftCollectionAccount {
   """Decimals for the given NFT collection."""
   decimals: Float
 
+  """
+  Number of holders. Will be returned only if the collection is verified.
+  """
+  holderCount: Float
+
+  """Returns true if the collection is verified."""
+  isVerified: Boolean
+
   """Name for the given NFT collection."""
   name: String!
+
+  """
+  Number of NFTs for this collection. Will be returned only if the collection is verified.
+  """
+  nftCount: Float
 
   """Owner account for the given NFT collection."""
   owner: Account
@@ -2440,8 +2466,21 @@ type NftCollectionAccountFlat {
   """Decimals for the given NFT collection."""
   decimals: Float
 
+  """
+  Number of holders. Will be returned only if the collection is verified.
+  """
+  holderCount: Float
+
+  """Returns true if the collection is verified."""
+  isVerified: Boolean
+
   """Name for the given NFT collection."""
   name: String!
+
+  """
+  Number of NFTs for this collection. Will be returned only if the collection is verified.
+  """
+  nftCount: Float
 
   """Scam information for the underlying collection."""
   scamInfo: ScamInformation
