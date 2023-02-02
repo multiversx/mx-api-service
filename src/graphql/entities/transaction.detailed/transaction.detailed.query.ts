@@ -1,6 +1,6 @@
 import { Args, Resolver, Query } from "@nestjs/graphql";
 
-import { ApplyComplexity } from "@elrondnetwork/erdnest";
+import { ApplyComplexity } from "@multiversx/sdk-nestjs";
 
 import { GetTransactionDetailedInput, GetTransactionsInput } from "src/graphql/entities/transaction.detailed/transaction.detailed.input";
 import { Transaction } from "src/endpoints/transactions/entities/transaction";

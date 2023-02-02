@@ -7,7 +7,7 @@ import { MexSettings } from "../../../../mex/entities/mex.settings";
 import { TokenTransferService } from "src/endpoints/tokens/token.transfer.service";
 import { MexSettingsService } from "../../../../mex/mex.settings.service";
 import { TransactionActionEsdtNftRecognizerService } from "../esdt/transaction.action.esdt.nft.recognizer.service";
-import { BinaryUtils, NumberUtils } from "@elrondnetwork/erdnest";
+import { BinaryUtils, NumberUtils } from "@multiversx/sdk-nestjs";
 
 @Injectable()
 export class MexPairActionRecognizerService {
@@ -19,7 +19,7 @@ export class MexPairActionRecognizerService {
   ) { }
 
   async recognize(settings: MexSettings, metadata: TransactionMetadata): Promise<TransactionAction | undefined> {
-    if (!settings.pairContracts.includes(metadata.receiver)) {
+    if (!settings.pairContracts.includes(metadata.receiver) && settings.routerFactoryContract !== metadata.receiver) {
       return undefined;
     }
 
@@ -33,6 +33,8 @@ export class MexPairActionRecognizerService {
       case MexFunction.removeLiquidity:
       case MexFunction.removeLiquidityProxy:
         return this.getRemoveLiquidityAction(metadata);
+      case MexFunction.multiPairSwap:
+        return this.getMultiSwapAction(metadata);
       default:
         return undefined;
     }
@@ -73,6 +75,61 @@ export class MexPairActionRecognizerService {
     }
 
     return this.transactionActionEsdtNftRecognizerService.getMultiTransferAction(metadata, TransactionActionCategory.mex, 'swap', description);
+  }
+
+  private async getMultiSwapAction(metadata: TransactionMetadata): Promise<TransactionAction | undefined> {
+    const transfers = this.mexSettingsService.getTransfers(metadata);
+    if (!transfers) {
+      return undefined;
+    }
+
+    const pair1Properties = transfers[0].properties;
+    if (!pair1Properties) {
+      return undefined;
+    }
+
+    const pair1Value = transfers[0].value;
+    const pair1ValueDenominated = NumberUtils.toDenominatedString(pair1Value, pair1Properties.decimals);
+
+    const numberOrArgumentsForOneSwap = 4;
+    const numberOfSwaps = metadata.functionArgs.length / numberOrArgumentsForOneSwap;
+
+    const swaps = [{
+      properties: pair1Properties,
+      value: pair1Value,
+      denominatedValue: pair1ValueDenominated,
+    }];
+
+    for (let i = 0; i < numberOfSwaps; i++) {
+      const tokenIdentifier = BinaryUtils.hexToString(metadata.functionArgs[i * numberOrArgumentsForOneSwap + 2]);
+      const value = BinaryUtils.hexToBigInt(metadata.functionArgs[i * numberOrArgumentsForOneSwap + 3]);
+
+      const pairProperties = await this.tokenTransferService.getTokenTransferProperties(tokenIdentifier);
+      if (!pairProperties) {
+        return undefined;
+      }
+
+      const denominatedValue = NumberUtils.toDenominatedString(value, pairProperties.decimals);
+
+      metadata.transfers?.push({
+        value: value,
+        properties: pairProperties,
+      });
+
+      swaps.push({
+        denominatedValue,
+        value,
+        properties: pairProperties,
+      });
+    }
+
+    const firstSwap = swaps[0];
+    const lastSwap = swaps[swaps.length - 1];
+    const intermediateSwaps = swaps.slice(1, swaps.length - 1);
+
+    const description = `Swap ${firstSwap.denominatedValue} ${firstSwap.properties.ticker} for a minimum of ${lastSwap.denominatedValue} ${lastSwap.properties.ticker} with intermediate pair(s) ${intermediateSwaps.map(s => s.properties.ticker).join(', ')}`;
+
+    return this.transactionActionEsdtNftRecognizerService.getMultiTransferAction(metadata, TransactionActionCategory.mex, 'multiSwap', description);
   }
 
   private getAddLiquidityAction(metadata: TransactionMetadata): TransactionAction | undefined {

@@ -6,10 +6,11 @@ import { TransferModule } from 'src/endpoints/transfers/transfer.module';
 import { TransferService } from 'src/endpoints/transfers/transfer.service';
 import { ApiConfigService } from 'src/common/api-config/api.config.service';
 import { ApiConfigModule } from 'src/common/api-config/api.config.module';
-import { BinaryUtils, Constants, ElasticQuery, ElasticService } from '@elrondnetwork/erdnest';
+import { BinaryUtils, Constants, ElasticQuery, ElasticService } from '@multiversx/sdk-nestjs';
 import { TransactionQueryOptions } from 'src/endpoints/transactions/entities/transactions.query.options';
-import '@elrondnetwork/erdnest/lib/src/utils/extensions/jest.extensions';
-import '@elrondnetwork/erdnest/lib/src/utils/extensions/number.extensions';
+import { QueryPagination } from 'src/common/entities/query.pagination';
+import '@multiversx/sdk-nestjs/lib/src/utils/extensions/jest.extensions';
+import '@multiversx/sdk-nestjs/lib/src/utils/extensions/number.extensions';
 
 describe('Transfer Service', () => {
   let transferService: TransferService;
@@ -204,6 +205,17 @@ describe('Transfer Service', () => {
         expect(!transactionsHashes.includes('INVALIDTXHASH'));
       });
 
+      it(`should return transfers with function "claim_rewards"`, async () => {
+        const transactionFilter = new TransactionFilter();
+        transactionFilter.function = "claim_rewards";
+
+        const transfers = await transferService.getTransfers(transactionFilter, new QueryPagination(), new TransactionQueryOptions());
+        expect(transfers).toHaveLength(25);
+
+        for (const tranfer of transfers) {
+          expect(tranfer.function).toStrictEqual('claim_rewards');
+        }
+      });
     });
   });
 

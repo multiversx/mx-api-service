@@ -19,6 +19,36 @@ export class ApiConfigService {
     return apiUrls;
   }
 
+  getSelfUrl(): string {
+    const selfUrl = this.configService.get<string>('urls.self');
+    if (!selfUrl) {
+      throw new Error('No self url present');
+    }
+
+    return selfUrl;
+  }
+
+  isGuestCachingFeatureActive(): boolean {
+    return this.configService.get<boolean>('features.guestCaching.enabled') ?? false;
+  }
+
+  getGuestCachingHitsThreshold(): number {
+    return this.configService.get<number>('features.guestCaching.hitsThreshold') ?? 100;
+  }
+
+  getGuestCachingTtl(): number {
+    return this.configService.get<number>('features.guestCaching.ttl') ?? 12;
+  }
+
+  getVerifierUrl(): string {
+    const verifierUrl = this.configService.get<string>('urls.verifier');
+    if (!verifierUrl) {
+      throw new Error('No verifier url present');
+    }
+
+    return verifierUrl;
+  }
+
   getGatewayUrl(): string {
     const gatewayUrls = this.configService.get<string[]>('urls.gateway');
     if (!gatewayUrls) {
@@ -356,6 +386,10 @@ export class ApiConfigService {
 
   getIsIndexerV3FlagActive(): boolean {
     return this.configService.get<boolean>('flags.indexer-v3') ?? false;
+  }
+
+  getIsIndexerV5FlagActive(): boolean {
+    return this.configService.get<boolean>('flags.indexer-v5') ?? false;
   }
 
   isGraphQlActive(): boolean {
@@ -720,5 +754,9 @@ export class ApiConfigService {
 
   isNodeSyncProgressEnabled(): boolean {
     return this.configService.get<boolean>('features.nodeSyncProgress.enabled') ?? false;
+  }
+
+  isUpdateCollectionExtraDetailsEnabled(): boolean {
+    return this.configService.get<boolean>('features.updateCollectionExtraDetails.enabled') ?? false;
   }
 }

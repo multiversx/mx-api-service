@@ -4,9 +4,9 @@ import { Identity } from "src/endpoints/identities/entities/identity";
 import { IdentitiesService } from "src/endpoints/identities/identities.service";
 import { Providers } from "src/endpoints/providers/entities/providers";
 import { ProviderService } from "src/endpoints/providers/provider.service";
-import '@elrondnetwork/erdnest/lib/src/utils/extensions/jest.extensions';
-import '@elrondnetwork/erdnest/lib/src/utils/extensions/array.extensions';
-import '@elrondnetwork/erdnest/lib/src/utils/extensions/number.extensions';
+import '@multiversx/sdk-nestjs/lib/src/utils/extensions/jest.extensions';
+import '@multiversx/sdk-nestjs/lib/src/utils/extensions/array.extensions';
+import '@multiversx/sdk-nestjs/lib/src/utils/extensions/number.extensions';
 import { PublicAppModule } from "src/public.app.module";
 
 describe('Identities Service', () => {

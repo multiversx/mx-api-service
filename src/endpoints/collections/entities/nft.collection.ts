@@ -79,4 +79,16 @@ export class NftCollection {
   @Field(() => [CollectionTrait], { description: 'Trait list for the given NFT collection.', nullable: true })
   @ApiProperty({ type: CollectionTrait, isArray: true })
   traits: CollectionTrait[] = [];
+
+  @Field(() => Boolean, { description: 'Returns true if the collection is verified.', nullable: true })
+  @ApiProperty({ type: Boolean, nullable: true })
+  isVerified: boolean | undefined = undefined;
+
+  @Field(() => Number, { description: 'Number of holders. Will be returned only if the collection is verified.', nullable: true })
+  @ApiProperty({ type: Number, nullable: true })
+  holderCount: number | undefined = undefined;
+
+  @Field(() => Number, { description: 'Number of NFTs for this collection. Will be returned only if the collection is verified.', nullable: true })
+  @ApiProperty({ type: Number, nullable: true })
+  nftCount: number | undefined = undefined;
 }

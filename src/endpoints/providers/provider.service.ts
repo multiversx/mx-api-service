@@ -7,11 +7,11 @@ import { NodesInfos } from "./entities/nodes.infos";
 import { DelegationData } from "./entities/delegation.data";
 import { KeybaseService } from "src/common/keybase/keybase.service";
 import { CacheInfo } from "src/utils/cache.info";
-import { AddressUtils, Constants, CachingService, ApiService } from "@elrondnetwork/erdnest";
-import { OriginLogger } from "@elrondnetwork/erdnest";
 import { Providers } from "./entities/providers";
 import { ProvidersFilter } from "./entities/providers.filter";
 import { Provider } from "./entities/provider";
+import { AddressUtils, Constants, CachingService, ApiService } from "@multiversx/sdk-nestjs";
+import { OriginLogger } from "@multiversx/sdk-nestjs";
 
 @Injectable()
 export class ProviderService {

@@ -1,4 +1,4 @@
-import { PerformanceProfiler } from "@elrondnetwork/erdnest";
+import { PerformanceProfiler } from "@multiversx/sdk-nestjs";
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { CollectionTrait } from "src/endpoints/collections/entities/collection.trait";
 import { NftMedia } from "src/endpoints/nfts/entities/nft.media";

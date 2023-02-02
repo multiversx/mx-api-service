@@ -1,4 +1,4 @@
-import { ApiService, ApiSettings, BinaryUtils, PerformanceProfiler } from "@elrondnetwork/erdnest";
+import { ApiService, ApiSettings, BinaryUtils, PerformanceProfiler } from "@multiversx/sdk-nestjs";
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { ApiConfigService } from "../api-config/api.config.service";
 import { ApiMetricsService } from "../metrics/api.metrics.service";

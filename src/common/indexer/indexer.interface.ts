@@ -60,7 +60,7 @@ export interface IndexerInterface {
 
   getTransaction(txHash: string): Promise<Transaction | null>
 
-  getScDeploy(address: string): Promise<ScDeploy>
+  getScDeploy(address: string): Promise<ScDeploy | undefined>
 
   getScResult(scHash: string): Promise<ScResult>
 
@@ -141,4 +141,6 @@ export interface IndexerInterface {
   setMediaForToken(identifier: string, value: NftMedia[]): Promise<void>
 
   setMetadataForToken(identifier: string, value: any): Promise<void>
+
+  setExtraCollectionFields(identifier: string, isVerified: boolean, holderCount: number, nftCount: number): Promise<void>
 }

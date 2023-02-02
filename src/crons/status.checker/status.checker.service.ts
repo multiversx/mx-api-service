@@ -1,4 +1,4 @@
-import { Locker, OriginLogger } from "@elrondnetwork/erdnest";
+import { Locker, OriginLogger } from "@multiversx/sdk-nestjs";
 import { Injectable } from "@nestjs/common";
 import { Cron, CronExpression } from "@nestjs/schedule";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";

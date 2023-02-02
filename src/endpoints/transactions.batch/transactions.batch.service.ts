@@ -1,6 +1,6 @@
 import { Address, Transaction as ErdJsTransaction, TransactionHash, TransactionOptions, TransactionPayload, TransactionVersion } from "@elrondnetwork/erdjs/out";
 import { Signature } from "@elrondnetwork/erdjs/out/signature";
-import { BinaryUtils, CachingService } from "@elrondnetwork/erdnest";
+import { BinaryUtils, CachingService } from "@multiversx/sdk-nestjs";
 import { Injectable, Logger } from "@nestjs/common";
 import { TransactionBatch } from "./entities/transaction.batch";
 import { TransactionBatchStatus } from "./entities/transaction.batch.status";

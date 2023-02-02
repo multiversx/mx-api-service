@@ -9,7 +9,7 @@ import { NodeSort } from "./entities/node.sort";
 import { SortNodes } from "src/common/entities/sort.nodes";
 import { NodeFilter } from "./entities/node.filter";
 import { QueryPagination } from "src/common/entities/query.pagination";
-import { ParseAddressPipe, ParseBlsHashPipe, ParseBoolPipe, ParseEnumPipe, ParseIntPipe } from "@elrondnetwork/erdnest";
+import { ParseAddressPipe, ParseBlsHashPipe, ParseBoolPipe, ParseEnumPipe, ParseIntPipe } from "@multiversx/sdk-nestjs";
 
 @Controller()
 @ApiTags('nodes')

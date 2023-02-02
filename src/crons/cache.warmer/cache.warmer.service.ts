@@ -19,14 +19,18 @@ import { MexEconomicsService } from "src/endpoints/mex/mex.economics.service";
 import { MexPairService } from "src/endpoints/mex/mex.pair.service";
 import { MexTokenService } from "src/endpoints/mex/mex.token.service";
 import { MexFarmService } from "src/endpoints/mex/mex.farm.service";
-import { CachingService, Constants, Lock, Locker } from "@elrondnetwork/erdnest";
+import { CachingService, Constants, Lock, Locker, GuestCachingWarmer, OriginLogger } from "@multiversx/sdk-nestjs";
 import { DelegationLegacyService } from "src/endpoints/delegation.legacy/delegation.legacy.service";
 import { PluginService } from "src/common/plugins/plugin.service";
 import { SettingsService } from "src/common/settings/settings.service";
 import { TokenService } from "src/endpoints/tokens/token.service";
+import { IndexerService } from "src/common/indexer/indexer.service";
+import { NftService } from "src/endpoints/nfts/nft.service";
 
 @Injectable()
 export class CacheWarmerService {
+  private readonly logger = new OriginLogger(CacheWarmerService.name);
+
   constructor(
     private readonly nodeService: NodeService,
     private readonly esdtService: EsdtService,
@@ -51,6 +55,9 @@ export class CacheWarmerService {
     private readonly mexFarmsService: MexFarmService,
     private readonly delegationLegacyService: DelegationLegacyService,
     private readonly tokenService: TokenService,
+    private readonly indexerService: IndexerService,
+    private readonly nftService: NftService,
+    private readonly guestCachingWarmer: GuestCachingWarmer,
   ) {
     this.configCronJob(
       'handleKeybaseAgainstKeybasePubInvalidations',
@@ -77,6 +84,12 @@ export class CacheWarmerService {
       const handleNodeAuctionInvalidationsCronJob = new CronJob(this.apiConfigService.getStakingV4CronExpression(), async () => await this.handleNodeAuctionInvalidations());
       this.schedulerRegistry.addCronJob(this.handleNodeAuctionInvalidations.name, handleNodeAuctionInvalidationsCronJob);
       handleNodeAuctionInvalidationsCronJob.start();
+    }
+
+    if (this.apiConfigService.isUpdateCollectionExtraDetailsEnabled()) {
+      const handleUpdateCollectionExtraDetailsCronJob = new CronJob(CronExpression.EVERY_10_MINUTES, async () => await this.handleUpdateCollectionExtraDetails());
+      this.schedulerRegistry.addCronJob(this.handleUpdateCollectionExtraDetails.name, handleUpdateCollectionExtraDetailsCronJob);
+      handleUpdateCollectionExtraDetailsCronJob.start();
     }
   }
 
@@ -173,6 +186,18 @@ export class CacheWarmerService {
     }
   }
 
+  @Cron("*/6 * * * * *")
+  @Lock({ name: 'Guest caching recompute', verbose: true })
+  async handleGuestCaching() {
+    if (this.apiConfigService.isGuestCachingFeatureActive()) {
+      await this.guestCachingWarmer.recompute({
+        targetUrl: this.apiConfigService.getSelfUrl(),
+        cacheTriggerHitsThreshold: this.apiConfigService.getGuestCachingHitsThreshold(),
+        cacheTtl: this.apiConfigService.getGuestCachingTtl(),
+      });
+    }
+  }
+
   @Cron(CronExpression.EVERY_MINUTE)
   @Lock({ name: 'Economics invalidations', verbose: true })
   async handleEconomicsInvalidations() {
@@ -200,7 +225,8 @@ export class CacheWarmerService {
     const result = await this.gatewayService.getRaw('validator/statistics', GatewayComponentRequest.validatorStatistics);
     await this.invalidateKey('validatorstatistics', JSON.stringify(result.data), Constants.oneMinute() * 2);
   }
-  @Cron(CronExpression.EVERY_10_MINUTES)
+
+  @Cron(CronExpression.EVERY_MINUTE)
   @Lock({ name: 'Token / account assets invalidations', verbose: true })
   async handleTokenAssetsInvalidations() {
     await this.assetsService.checkout();
@@ -283,6 +309,24 @@ export class CacheWarmerService {
     await Promise.all(settings.map(async (setting) => {
       await this.invalidateKey(CacheInfo.Setting(setting.name).key, setting.value, CacheInfo.Setting(setting.name).ttl);
     }));
+  }
+
+  @Lock({ name: 'Elastic updater: Update collection isVerified, nftCount, holderCount', verbose: true })
+  async handleUpdateCollectionExtraDetails() {
+    const allAssets = await this.assetsService.getAllTokenAssets();
+
+    for (const key of Object.keys(allAssets)) {
+      const collection = await this.indexerService.getCollection(key);
+      if (!collection) {
+        continue;
+      }
+
+      const nftCount = await this.nftService.getNftCount({ collection: collection._id });
+      const holderCount = await this.esdtService.countAllAccounts([collection._id]);
+
+      this.logger.log(`Setting isVerified to true, holderCount to ${holderCount}, nftCount to ${nftCount} for collection with identifier '${key}'`);
+      await this.indexerService.setExtraCollectionFields(key, true, holderCount, nftCount);
+    }
   }
 
   private async invalidateKey(key: string, data: any, ttl: number) {

@@ -2,12 +2,12 @@ import { ApiConfigService } from 'src/common/api-config/api.config.service';
 import { Test } from '@nestjs/testing';
 import { ProviderService } from 'src/endpoints/providers/provider.service';
 import { PublicAppModule } from 'src/public.app.module';
-import '@elrondnetwork/erdnest/lib/src/utils/extensions/array.extensions';
-import '@elrondnetwork/erdnest/lib/src/utils/extensions/jest.extensions';
-import { CachingService } from '@elrondnetwork/erdnest';
-import { ProvidersConfig } from 'src/endpoints/providers/entities/providers.config';
-import { Providers } from 'src/endpoints/providers/entities/providers';
 import { ProvidersFilter } from 'src/endpoints/providers/entities/providers.filter';
+import { Provider } from 'src/endpoints/providers/entities/provider';
+import '@multiversx/sdk-nestjs/lib/src/utils/extensions/array.extensions';
+import '@multiversx/sdk-nestjs/lib/src/utils/extensions/jest.extensions';
+import { CachingService } from '@multiversx/sdk-nestjs';
+import { ProviderConfig } from 'src/endpoints/providers/entities/provider.config';
 
 describe('Provider Service', () => {
   let providerService: ProviderService;
@@ -210,7 +210,7 @@ describe('Provider Service', () => {
 
     it('some providers should be included', async () => {
       if (!apiConfigService.getMockNodes()) {
-        const vipProviders: { [key: string]: string } = {
+        const vipProviders: { [key: string]: string; } = {
           staking_agency:
             'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqhllllsajxzat',
           istari_vision:

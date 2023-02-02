@@ -1,14 +1,14 @@
-import { Inject, Injectable } from "@nestjs/common";
+import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { Cron, CronExpression } from "@nestjs/schedule";
 import * as JsonDiff from "json-diff";
 import { AssetsService } from "src/common/assets/assets.service";
 import { NftService } from "src/endpoints/nfts/nft.service";
 import asyncPool from "tiny-async-pool";
 import { PersistenceInterface } from "src/common/persistence/persistence.interface";
-import { BatchUtils, Lock } from "@elrondnetwork/erdnest";
+import { BatchUtils, Lock } from "@multiversx/sdk-nestjs";
 import { NftMedia } from "src/endpoints/nfts/entities/nft.media";
 import { IndexerService } from "src/common/indexer/indexer.service";
-import { OriginLogger } from "@elrondnetwork/erdnest";
+import { OriginLogger } from "@multiversx/sdk-nestjs";
 
 @Injectable()
 export class ElasticUpdaterService {
@@ -18,7 +18,7 @@ export class ElasticUpdaterService {
     private readonly assetsService: AssetsService,
     private readonly indexerService: IndexerService,
     private readonly nftService: NftService,
-    @Inject('PersistenceService')
+    @Inject(forwardRef(() => 'PersistenceService'))
     private readonly persistenceService: PersistenceInterface,
   ) { }
 
