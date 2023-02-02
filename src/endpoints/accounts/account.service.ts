@@ -1,4 +1,4 @@
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { forwardRef, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { AccountDetailed } from './entities/account.detailed';
 import { Account } from './entities/account';
 import { VmQueryService } from 'src/endpoints/vm.query/vm.query.service';
@@ -113,7 +113,7 @@ export class AccountService {
         account = { ...account, ...codeAttributes };
       }
 
-      if (AddressUtils.isSmartContractAddress(address)) {
+      if (AddressUtils.isSmartContractAddress(address) && account.code) {
         const deployTxHash = await this.getAccountDeployedTxHash(address);
         if (deployTxHash) {
           account.deployTxHash = deployTxHash;
@@ -213,7 +213,8 @@ export class AccountService {
 
   async getAccountIsVerifiedRaw(address: string, codeHash: string): Promise<boolean | null> {
     try {
-      const { data } = await this.apiService.get(`${this.apiConfigService.getVerifierUrl()}/verifier/${address}/codehash`, undefined,);
+      // eslint-disable-next-line require-await
+      const { data } = await this.apiService.get(`${this.apiConfigService.getVerifierUrl()}/verifier/${address}/codehash`, undefined, async (error) => error.response?.status === HttpStatus.NOT_FOUND);
 
       if (data.codeHash === Buffer.from(codeHash, 'base64').toString('hex')) {
         return true;
