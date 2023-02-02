@@ -701,6 +701,7 @@ export class ElasticIndexerService implements IndexerInterface {
       },
     );
     return properties;
+  }
 
   async setExtraCollectionFields(identifier: string, isVerified: boolean, holderCount: number, nftCount: number): Promise<void> {
     return await this.elasticService.setCustomValues('tokens', identifier, {
