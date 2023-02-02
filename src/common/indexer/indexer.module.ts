@@ -1,4 +1,5 @@
 import { DynamicModule, Global, Module, Type } from "@nestjs/common";
+import { EventEmitter2 } from "@nestjs/event-emitter";
 import configuration from "config/configuration";
 import { ElasticIndexerModule } from "./elastic/elastic.indexer.module";
 import { ElasticIndexerService } from "./elastic/elastic.indexer.service";
@@ -31,6 +32,7 @@ export class IndexerModule {
           useClass: indexerInterface,
         },
         IndexerService,
+        EventEmitter2,
       ],
       exports: ['IndexerInterface', IndexerService],
     };

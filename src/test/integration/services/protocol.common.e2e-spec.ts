@@ -2,6 +2,7 @@ import { Test } from "@nestjs/testing";
 import { ProtocolModule } from "src/common/protocol/protocol.module";
 import { CachingService } from "@multiversx/sdk-nestjs";
 import { ProtocolService } from "src/common/protocol/protocol.service";
+import { EventEmitter2 } from "@nestjs/event-emitter";
 
 describe('Protocol Service', () => {
   let protocolService: ProtocolService;
@@ -9,6 +10,7 @@ describe('Protocol Service', () => {
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
       imports: [ProtocolModule],
+      providers: [EventEmitter2],
     }).compile();
 
     protocolService = moduleRef.get<ProtocolService>(ProtocolService);

@@ -1,4 +1,5 @@
 import { Global, Module } from "@nestjs/common";
+import { EventEmitter2 } from "@nestjs/event-emitter";
 import { DynamicModuleUtils } from "src/utils/dynamic.module.utils";
 import { ApiConfigModule } from "../api-config/api.config.module";
 import { GatewayService } from "./gateway.service";
@@ -11,6 +12,7 @@ import { GatewayService } from "./gateway.service";
   ],
   providers: [
     GatewayService,
+    EventEmitter2,
   ],
   exports: [
     GatewayService,
