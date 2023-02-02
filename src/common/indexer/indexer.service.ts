@@ -132,7 +132,7 @@ export class IndexerService implements IndexerInterface {
     return await this.execute('getTransaction', this.indexerInterface.getTransaction(txHash));
   }
 
-  async getScDeploy(address: string): Promise<ScDeploy> {
+  async getScDeploy(address: string): Promise<ScDeploy | undefined> {
     return await this.execute('getScDeploy', this.indexerInterface.getScDeploy(address));
   }
 
