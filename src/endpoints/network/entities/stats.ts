@@ -38,4 +38,8 @@ export class Stats {
   @Field(() => Float, { description: "Total number of transactions." })
   @ApiProperty()
   transactions: number = 0;
+
+  @Field(() => Float, { description: "Total number of smart contract results." })
+  @ApiProperty()
+  scResults: number = 0;
 }

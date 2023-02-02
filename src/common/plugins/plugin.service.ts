@@ -22,5 +22,11 @@ export class PluginService {
 
   async batchProcessNfts(_nfts: Nft[], _withScamInfo?: boolean): Promise<void> { }
 
+  // eslint-disable-next-line require-await
+  async getEgldPrice(_timestamp?: number): Promise<number | undefined> { return undefined; }
+
+  // eslint-disable-next-line require-await
+  async getEsdtTokenPrice(_identifier: string, _timestamp?: number): Promise<number | undefined> { return undefined; }
+
   async processAbout(_about: About): Promise<void> { }
 }

@@ -1,4 +1,4 @@
-import { AddressUtils, QueryConditionOptions } from "@elrondnetwork/erdnest";
+import { AddressUtils, QueryConditionOptions } from "@multiversx/sdk-nestjs";
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { QueryPagination } from "src/common/entities/query.pagination";

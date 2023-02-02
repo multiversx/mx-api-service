@@ -1,4 +1,4 @@
-import { FileUtils } from "@elrondnetwork/erdnest";
+import { FileUtils } from "@multiversx/sdk-nestjs";
 import { Injectable } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { DappConfig } from "./entities/dapp-config";

@@ -1,4 +1,4 @@
-import { Constants, CachingService, ApiService, OriginLogger, BinaryUtils, AddressUtils } from "@elrondnetwork/erdnest";
+import { Constants, CachingService, ApiService, OriginLogger, BinaryUtils, AddressUtils } from "@multiversx/sdk-nestjs";
 import { HttpStatus, Injectable } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { CacheInfo } from "src/utils/cache.info";

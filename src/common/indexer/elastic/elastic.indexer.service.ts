@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { ElasticService, ElasticQuery, QueryOperator, QueryType, QueryConditionOptions, ElasticSortOrder, ElasticSortProperty, TermsQuery, BinaryUtils, RangeGreaterThanOrEqual } from "@elrondnetwork/erdnest";
+import { ElasticService, ElasticQuery, QueryOperator, QueryType, QueryConditionOptions, ElasticSortOrder, ElasticSortProperty, TermsQuery, BinaryUtils, RangeGreaterThanOrEqual } from "@multiversx/sdk-nestjs";
 import { IndexerInterface } from "../indexer.interface";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { NftType } from "src/endpoints/nfts/entities/nft.type";
@@ -18,6 +18,7 @@ import { Block } from "../entities/block";
 import { Tag } from "../entities/tag";
 import { ElasticIndexerHelper } from "./elastic.indexer.helper";
 import { TokenType } from "../entities";
+import { SortCollections } from "src/endpoints/collections/entities/sort.collections";
 
 @Injectable()
 export class ElasticIndexerService implements IndexerInterface {
@@ -240,9 +241,22 @@ export class ElasticIndexerService implements IndexerInterface {
   }
 
   async getNftCollections(pagination: QueryPagination, filter: CollectionFilter, address?: string): Promise<any[]> {
-    const elasticQuery = this.indexerHelper.buildCollectionRolesFilter(filter, address)
-      .withPagination(pagination)
-      .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }]);
+    let elasticQuery = this.indexerHelper.buildCollectionRolesFilter(filter, address)
+      .withPagination(pagination);
+
+    const sort = filter.sort ?? SortCollections.timestamp;
+    const order = filter.order === SortOrder.asc ? ElasticSortOrder.ascending : ElasticSortOrder.descending;
+
+    if (sort === SortCollections.verifiedAndHolderCount) {
+      elasticQuery = elasticQuery.withSort([
+        { name: 'api_isVerified', order },
+        { name: 'api_holderCount', order },
+      ]);
+    } else {
+      elasticQuery = elasticQuery.withSort([
+        { name: 'timestamp', order },
+      ]);
+    }
 
     return await this.elasticService.getList('tokens', 'identifier', elasticQuery);
   }
@@ -314,8 +328,7 @@ export class ElasticIndexerService implements IndexerInterface {
   }
 
   async getAccountScResults(address: string, pagination: QueryPagination): Promise<any[]> {
-    const elasticQuery: ElasticQuery = this.indexerHelper.buildSmartContractResultFilterQuery(address);
-    elasticQuery
+    const elasticQuery: ElasticQuery = this.indexerHelper.buildSmartContractResultFilterQuery(address)
       .withPagination(pagination)
       .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }]);
 
@@ -616,7 +629,7 @@ export class ElasticIndexerService implements IndexerInterface {
                 {
                   collection: {
                     terms: {
-                      field: 'token.keyword',
+                      field: this.apiConfigService.getIsIndexerV5FlagActive() ? 'token' : 'token.keyword',
                     },
                   },
                 },
@@ -688,5 +701,12 @@ export class ElasticIndexerService implements IndexerInterface {
       },
     );
     return properties;
+
+  async setExtraCollectionFields(identifier: string, isVerified: boolean, holderCount: number, nftCount: number): Promise<void> {
+    return await this.elasticService.setCustomValues('tokens', identifier, {
+      isVerified,
+      holderCount,
+      nftCount,
+    });
   }
 }

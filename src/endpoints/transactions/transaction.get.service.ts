@@ -1,5 +1,4 @@
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
-import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
 import { GatewayService } from "src/common/gateway/gateway.service";
 import { SmartContractResult } from "../sc-results/entities/smart.contract.result";
 import { Transaction } from "./entities/transaction";
@@ -8,10 +7,10 @@ import { TransactionLog } from "./entities/transaction.log";
 import { TransactionOptionalFieldOption } from "./entities/transaction.optional.field.options";
 import { TransactionReceipt } from "./entities/transaction.receipt";
 import { TokenTransferService } from "../tokens/token.transfer.service";
-import { ApiUtils, BinaryUtils } from "@elrondnetwork/erdnest";
+import { ApiUtils, BinaryUtils } from "@multiversx/sdk-nestjs";
 import { TransactionUtils } from "./transaction.utils";
 import { IndexerService } from "src/common/indexer/indexer.service";
-import { OriginLogger } from "@elrondnetwork/erdnest";
+import { OriginLogger } from "@multiversx/sdk-nestjs";
 
 @Injectable()
 export class TransactionGetService {
@@ -94,7 +93,7 @@ export class TransactionGetService {
         }
       }
 
-      if (!fields || fields.length === 0 || fields.includes(TransactionOptionalFieldOption.logs)) {
+      if (!fields || fields.length === 0 || fields.includes(TransactionOptionalFieldOption.logs) || fields.includes(TransactionOptionalFieldOption.operations)) {
         const logs = await this.getTransactionLogsFromElastic(hashes);
 
         if (!fields || fields.length === 0 || fields.includes(TransactionOptionalFieldOption.operations)) {
@@ -132,19 +131,13 @@ export class TransactionGetService {
   async tryGetTransactionFromGateway(txHash: string, queryInElastic: boolean = true): Promise<TransactionDetailed | null> {
     try {
       // eslint-disable-next-line require-await
-      const transactionResult = await this.gatewayService.get(`transaction/${txHash}?withResults=true`, GatewayComponentRequest.transactionDetails, async (error) => {
-        if (error.response.data.error === 'transaction not found') {
-          return true;
-        }
-
-        return false;
-      });
+      const transactionResult = await this.gatewayService.getTransaction(txHash);
 
       if (!transactionResult) {
         return null;
       }
 
-      const transaction = transactionResult.transaction;
+      const transaction = transactionResult;
 
       if (!transaction) {
         return null;

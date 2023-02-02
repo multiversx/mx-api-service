@@ -3,7 +3,7 @@ import { Round } from "src/endpoints/rounds/entities/round";
 import { RoundFilter } from "src/endpoints/rounds/entities/round.filter";
 import { RoundService } from "src/endpoints/rounds/round.service";
 import { PublicAppModule } from "src/public.app.module";
-import '@elrondnetwork/erdnest/lib/src/utils/extensions/jest.extensions';
+import '@multiversx/sdk-nestjs/lib/src/utils/extensions/jest.extensions';
 import { RoundDetailed } from "src/endpoints/rounds/entities/round.detailed";
 
 describe('Rounds Service', () => {

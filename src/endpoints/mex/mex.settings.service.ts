@@ -1,4 +1,4 @@
-import { Constants, CachingService } from "@elrondnetwork/erdnest";
+import { Constants, CachingService } from "@multiversx/sdk-nestjs";
 import { Injectable } from "@nestjs/common";
 import { gql } from "graphql-request";
 import { CacheInfo } from "src/utils/cache.info";
@@ -72,6 +72,7 @@ export class MexSettingsService {
     return new Set<string>([
       settings.distributionContract,
       settings.lockedAssetContract,
+      settings.routerFactoryContract,
       ...settings.farmContracts,
       ...settings.pairContracts,
       ...settings.wrapContracts,
@@ -138,6 +139,9 @@ export class MexSettingsService {
         address
       }
       stakingProxies {
+        address
+      }
+      factory {
         address
       }
     }

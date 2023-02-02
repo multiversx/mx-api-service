@@ -1,4 +1,4 @@
-import { PerformanceProfiler } from "@elrondnetwork/erdnest";
+import { PerformanceProfiler } from "@multiversx/sdk-nestjs";
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { BlockFilter } from "src/endpoints/blocks/entities/block.filter";
 import { CollectionFilter } from "src/endpoints/collections/entities/collection.filter";
@@ -132,7 +132,7 @@ export class IndexerService implements IndexerInterface {
     return await this.execute('getTransaction', this.indexerInterface.getTransaction(txHash));
   }
 
-  async getScDeploy(address: string): Promise<ScDeploy> {
+  async getScDeploy(address: string): Promise<ScDeploy | undefined> {
     return await this.execute('getScDeploy', this.indexerInterface.getScDeploy(address));
   }
 
@@ -282,6 +282,10 @@ export class IndexerService implements IndexerInterface {
 
   async setMetadataForToken(identifier: string, value: any): Promise<void> {
     return await this.execute('setMetadataForToken', this.indexerInterface.setMetadataForToken(identifier, value));
+  }
+
+  async setExtraCollectionFields(identifier: string, isVerified: boolean, holderCount: number, nftCount: number): Promise<void> {
+    return await this.execute('setExtraCollectionFields', this.indexerInterface.setExtraCollectionFields(identifier, isVerified, holderCount, nftCount));
   }
 
   async getNftCollectionsByIds(identifiers: string[]): Promise<Collection[]> {

@@ -1,4 +1,4 @@
-import { Constants, CachingService } from "@elrondnetwork/erdnest";
+import { Constants, CachingService } from "@multiversx/sdk-nestjs";
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { gql } from "graphql-request";
 import { QueryPagination } from "src/common/entities/query.pagination";
@@ -37,6 +37,12 @@ export class MexFarmService {
       CacheInfo.MexFarms.ttl,
       Constants.oneSecond() * 30,
     );
+  }
+
+  async getMexFarmsCount(): Promise<number> {
+    const mexFarms = await this.getAllMexFarms();
+
+    return mexFarms.length;
   }
 
   private async getAllMexFarmsRaw(): Promise<MexFarm[]> {

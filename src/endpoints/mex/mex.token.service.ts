@@ -7,9 +7,9 @@ import { MexPair } from "./entities/mex.pair";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { MexFarmService } from "./mex.farm.service";
 import { MexSettingsService } from "./mex.settings.service";
-import { Constants, CachingService } from "@elrondnetwork/erdnest";
+import { Constants, CachingService } from "@multiversx/sdk-nestjs";
 import { MexPairType } from "./entities/mex.pair.type";
-import { OriginLogger } from "@elrondnetwork/erdnest";
+import { OriginLogger } from "@multiversx/sdk-nestjs";
 import { QueryPagination } from "src/common/entities/query.pagination";
 
 @Injectable()
@@ -141,6 +141,12 @@ export class MexTokenService {
     }
 
     return result;
+  }
+
+  async getMexTokensCount(): Promise<number> {
+    const mexTokens = await this.getAllMexTokens();
+
+    return mexTokens.length;
   }
 
   private async getAllMexTokens(): Promise<MexToken[]> {

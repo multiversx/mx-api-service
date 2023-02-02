@@ -1,4 +1,4 @@
-import { ApiService } from "@elrondnetwork/erdnest";
+import { ApiService } from "@multiversx/sdk-nestjs";
 import { Test } from "@nestjs/testing";
 import { PublicAppModule } from "src/public.app.module";
 
