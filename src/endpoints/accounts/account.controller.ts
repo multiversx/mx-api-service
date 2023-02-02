@@ -48,6 +48,7 @@ import { OriginLogger } from '@multiversx/sdk-nestjs';
 import { AccountDelegation } from '../stake/entities/account.delegation';
 import { DelegationService } from '../delegation/delegation.service';
 import { TokenType } from '../tokens/entities/token.type';
+import { ContractUpgrades } from './entities/contract.upgrades';
 import { AccountVerification } from './entities/account.verification';
 
 @Controller()
@@ -907,6 +908,23 @@ export class AccountController {
   @ApiExcludeEndpoint()
   getAccountContractsCountAlternative(@Param('address', ParseAddressPipe) address: string): Promise<number> {
     return this.accountService.getAccountContractsCount(address);
+  }
+
+  @Get("/accounts/:address/upgrades")
+  @ApiOperation({ summary: 'Account upgrades details', description: 'Returns all upgrades details for a specific contract address' })
+  @ApiOkResponse({ type: ContractUpgrades })
+  getContractUpgrades(
+    @Param('address', ParseAddressPipe) address: string,
+    @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
+    @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
+  ): Promise<ContractUpgrades[] | null> {
+    const upgrades = this.accountService.getContractUpgrades(new QueryPagination({ from, size }), address);
+
+    if (!upgrades) {
+      throw new NotFoundException();
+    }
+
+    return upgrades;
   }
 
   @Get("/accounts/:address/results")

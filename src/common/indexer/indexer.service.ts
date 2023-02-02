@@ -145,7 +145,7 @@ export class IndexerService implements IndexerInterface {
   }
 
   @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
-  async getScDeploy(address: string): Promise<ScDeploy> {
+  async getScDeploy(address: string): Promise<ScDeploy | undefined> {
     return await this.indexerInterface.getScDeploy(address);
   }
 

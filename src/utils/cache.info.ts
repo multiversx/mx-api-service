@@ -385,7 +385,21 @@ export class CacheInfo {
   static AccountDeployedAt(address: string): CacheInfo {
     return {
       key: `accountDeployedAt:${address}`,
-      ttl: Constants.oneWeek(),
+      ttl: Constants.oneDay(),
+    };
+  }
+
+  static AccountDeployTxHash(address: string): CacheInfo {
+    return {
+      key: `accountDeployTxHash:${address}`,
+      ttl: Constants.oneDay(),
+    };
+  }
+
+  static AccountIsVerified(address: string): CacheInfo {
+    return {
+      key: `accountIsVerified:${address}`,
+      ttl: Constants.oneMinute() * 10,
     };
   }
 
@@ -483,6 +497,13 @@ export class CacheInfo {
   static Username(address: string): CacheInfo {
     return {
       key: `username:${address}`,
+      ttl: Constants.oneHour(),
+    };
+  }
+
+  static ContractUpgrades(address: string): CacheInfo {
+    return {
+      key: `contractUpgrades:${address}`,
       ttl: Constants.oneHour(),
     };
   }
