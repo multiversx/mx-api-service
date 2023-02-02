@@ -1,4 +1,4 @@
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { forwardRef, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { AccountDetailed } from './entities/account.detailed';
 import { Account } from './entities/account';
 import { VmQueryService } from 'src/endpoints/vm.query/vm.query.service';
@@ -25,6 +25,7 @@ import { AccountAssets } from 'src/common/assets/entities/account.assets';
 import { OriginLogger } from '@multiversx/sdk-nestjs';
 import { CacheInfo } from 'src/utils/cache.info';
 import { UsernameService } from '../usernames/username.service';
+import { ContractUpgrades } from './entities/contract.upgrades';
 import { AccountVerification } from './entities/account.verification';
 
 @Injectable()
@@ -112,23 +113,20 @@ export class AccountService {
         account = { ...account, ...codeAttributes };
       }
 
-      if (account.code) {
+      if (AddressUtils.isSmartContractAddress(address) && account.code) {
+        const deployTxHash = await this.getAccountDeployedTxHash(address);
+        if (deployTxHash) {
+          account.deployTxHash = deployTxHash;
+        }
+
         const deployedAt = await this.getAccountDeployedAt(address);
         if (deployedAt) {
           account.deployedAt = deployedAt;
         }
-      }
 
-      if (AddressUtils.isSmartContractAddress(address)) {
-        account.isVerified = false;
-        try {
-          const { data } = await this.apiService.get(`${this.apiConfigService.getVerifierUrl()}/verifier/${address}/codehash`);
-
-          if (data.codeHash === Buffer.from(account.codeHash, 'base64').toString('hex')) {
-            account.isVerified = true;
-          }
-        } catch {
-          // ignore
+        const isVerified = await this.getAccountIsVerified(address, account.codeHash);
+        if (isVerified) {
+          account.isVerified = isVerified;
         }
       }
 
@@ -186,6 +184,46 @@ export class AccountService {
     }
 
     return transaction.timestamp;
+  }
+
+  async getAccountDeployedTxHash(address: string): Promise<string | null> {
+    return await this.cachingService.getOrSetCache(
+      CacheInfo.AccountDeployTxHash(address).key,
+      async () => await this.getAccountDeployedTxHashRaw(address),
+      CacheInfo.AccountDeployTxHash(address).ttl,
+    );
+  }
+
+  async getAccountDeployedTxHashRaw(address: string): Promise<string | null> {
+    const scDeploy = await this.indexerService.getScDeploy(address);
+    if (!scDeploy) {
+      return null;
+    }
+
+    return scDeploy.deployTxHash;
+  }
+
+  async getAccountIsVerified(address: string, codeHash: string): Promise<boolean | null> {
+    return await this.cachingService.getOrSetCache(
+      CacheInfo.AccountIsVerified(address).key,
+      async () => await this.getAccountIsVerifiedRaw(address, codeHash),
+      CacheInfo.AccountIsVerified(address).ttl
+    );
+  }
+
+  async getAccountIsVerifiedRaw(address: string, codeHash: string): Promise<boolean | null> {
+    try {
+      // eslint-disable-next-line require-await
+      const { data } = await this.apiService.get(`${this.apiConfigService.getVerifierUrl()}/verifier/${address}/codehash`, undefined, async (error) => error.response?.status === HttpStatus.NOT_FOUND);
+
+      if (data.codeHash === Buffer.from(codeHash, 'base64').toString('hex')) {
+        return true;
+      }
+    } catch {
+      // ignore
+    }
+
+    return null;
   }
 
   async getAccounts(queryPagination: QueryPagination): Promise<Account[]> {
@@ -376,6 +414,21 @@ export class AccountService {
 
   async getAccountContractsCount(address: string): Promise<number> {
     return await this.indexerService.getAccountContractsCount(address);
+  }
+
+  async getContractUpgrades(queryPagination: QueryPagination, address: string): Promise<ContractUpgrades[] | null> {
+    const details = await this.indexerService.getScDeploy(address);
+    if (!details) {
+      return null;
+    }
+
+    const upgrades = details.upgrades.map(item => ApiUtils.mergeObjects(new ContractUpgrades(), {
+      address: item.upgrader,
+      txHash: item.upgradeTxHash,
+      timestamp: item.timestamp,
+    }));
+
+    return upgrades.slice(queryPagination.from, queryPagination.from + queryPagination.size);
   }
 
   async getAccountHistory(address: string, pagination: QueryPagination): Promise<AccountHistory[]> {

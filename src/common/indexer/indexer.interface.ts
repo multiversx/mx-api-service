@@ -60,7 +60,7 @@ export interface IndexerInterface {
 
   getTransaction(txHash: string): Promise<Transaction | null>
 
-  getScDeploy(address: string): Promise<ScDeploy>
+  getScDeploy(address: string): Promise<ScDeploy | undefined>
 
   getScResult(scHash: string): Promise<ScResult>
 

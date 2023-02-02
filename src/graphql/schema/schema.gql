@@ -141,6 +141,9 @@ type AccountDetailed {
   """Returns staking information related to the legacy delegation pool."""
   delegationLegacy: AccountDelegationLegacy!
 
+  """DeployTxHash for the given detailed account."""
+  deployTxHash: String
+
   """Deployment timestamp for the given detailed account."""
   deployedAt: Float
 
