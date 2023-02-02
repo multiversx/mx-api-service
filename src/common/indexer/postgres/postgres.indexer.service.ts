@@ -609,4 +609,8 @@ export class PostgresIndexerService implements IndexerInterface {
   async setMetadataForToken(_identifier: string, _value: any): Promise<void> {
     // TODO custom columns cannot be added
   }
+
+  async setExtraCollectionFields(_identifier: string, _isVerified: boolean, _holderCount: number, _nftCount: number): Promise<void> {
+    // TODO custom columns cannot be added
+  }
 }

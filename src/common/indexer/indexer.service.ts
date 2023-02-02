@@ -284,6 +284,10 @@ export class IndexerService implements IndexerInterface {
     return await this.execute('setMetadataForToken', this.indexerInterface.setMetadataForToken(identifier, value));
   }
 
+  async setExtraCollectionFields(identifier: string, isVerified: boolean, holderCount: number, nftCount: number): Promise<void> {
+    return await this.execute('setExtraCollectionFields', this.indexerInterface.setExtraCollectionFields(identifier, isVerified, holderCount, nftCount));
+  }
+
   async getNftCollectionsByIds(identifiers: string[]): Promise<Collection[]> {
     return await this.execute('getNftCollectionsByIds', this.indexerInterface.getNftCollectionsByIds(identifiers));
   }
