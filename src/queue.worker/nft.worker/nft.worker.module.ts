@@ -14,7 +14,7 @@ import { NftThumbnailModule } from './queue/job-services/thumbnails/nft.thumbnai
     NftMetadataModule,
     NftThumbnailModule,
     NftAssetModule,
-    PersistenceModule,
+    PersistenceModule.forRoot(),
   ],
   providers: [
     NftWorkerService,
