@@ -1,4 +1,4 @@
-import { ParseArrayPipe } from "@elrondnetwork/erdnest";
+import { ParseArrayPipe } from "@multiversx/sdk-nestjs";
 import { Controller, Get, HttpException, HttpStatus, Param, Query } from "@nestjs/common";
 import { ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { Identity } from "./entities/identity";

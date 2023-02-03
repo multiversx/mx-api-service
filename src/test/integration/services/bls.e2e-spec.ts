@@ -1,6 +1,6 @@
 import { Test } from "@nestjs/testing";
 import { PublicAppModule } from "src/public.app.module";
-import { ElasticService, FileUtils } from "@elrondnetwork/erdnest";
+import { ElasticService, FileUtils } from "@multiversx/sdk-nestjs";
 import { BlsService } from "src/endpoints/bls/bls.service";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 

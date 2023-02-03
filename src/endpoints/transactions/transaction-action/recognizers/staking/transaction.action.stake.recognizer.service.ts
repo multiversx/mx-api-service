@@ -1,4 +1,4 @@
-import { BinaryUtils, Constants, NumberUtils, CachingService } from "@elrondnetwork/erdnest";
+import { BinaryUtils, Constants, NumberUtils, CachingService } from "@multiversx/sdk-nestjs";
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { IdentitiesService } from "src/endpoints/identities/identities.service";
 import { ProviderService } from "src/endpoints/providers/provider.service";

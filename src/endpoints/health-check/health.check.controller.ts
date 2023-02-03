@@ -1,4 +1,4 @@
-import { NoAuth } from "@elrondnetwork/erdnest";
+import { NoAuth } from "@multiversx/sdk-nestjs";
 import { Controller, Get } from "@nestjs/common";
 import { ApiOperation } from "@nestjs/swagger";
 

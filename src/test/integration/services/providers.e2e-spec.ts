@@ -4,9 +4,9 @@ import { Test } from '@nestjs/testing';
 import { ProviderService } from 'src/endpoints/providers/provider.service';
 import { PublicAppModule } from 'src/public.app.module';
 import { Provider } from 'src/endpoints/providers/entities/provider';
-import '@elrondnetwork/erdnest/lib/src/utils/extensions/array.extensions';
-import '@elrondnetwork/erdnest/lib/src/utils/extensions/jest.extensions';
-import { CachingService } from '@elrondnetwork/erdnest';
+import '@multiversx/sdk-nestjs/lib/src/utils/extensions/array.extensions';
+import '@multiversx/sdk-nestjs/lib/src/utils/extensions/jest.extensions';
+import { CachingService } from '@multiversx/sdk-nestjs';
 import { ProviderConfig } from 'src/endpoints/providers/entities/provider.config';
 
 describe('Provider Service', () => {
@@ -41,6 +41,7 @@ describe('Provider Service', () => {
       }
 
       expect(result.hasOwnProperty("provider")).toBeTruthy();
+      expect(result.hasOwnProperty("owner")).toBeTruthy();
       expect(result.hasOwnProperty("serviceFee")).toBeTruthy();
       expect(result.hasOwnProperty("delegationCap")).toBeTruthy();
       expect(result.hasOwnProperty("apr")).toBeTruthy();
@@ -63,8 +64,9 @@ describe('Provider Service', () => {
       }
 
       expect(result.identity).toBeDefined();
-      expect(result.identity).toStrictEqual("justminingfr");
+      expect(result.identity).toStrictEqual("meria");
       expect(result.provider).toStrictEqual("erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq8hlllls7a6h85");
+      expect(result.owner).toStrictEqual("erd1fx5t2nwq4fh9jws5xqfl85hr0l8tuqks9sr7ut9wrpkp7dugzxnqyksfyg");
     });
 
     it("should return provider addresses", async () => {
@@ -111,6 +113,7 @@ describe('Provider Service', () => {
 
       for (const result of results) {
         expect(result.hasOwnProperty("provider")).toBeTruthy();
+        expect(result.hasOwnProperty("owner")).toBeTruthy();
         expect(result.hasOwnProperty("serviceFee")).toBeTruthy();
         expect(result.hasOwnProperty("delegationCap")).toBeTruthy();
         expect(result.hasOwnProperty("apr")).toBeTruthy();
@@ -138,6 +141,7 @@ describe('Provider Service', () => {
 
       for (const result of results) {
         expect(result.hasOwnProperty("provider")).toBeTruthy();
+        expect(result.hasOwnProperty("owner")).toBeTruthy();
         expect(result.hasOwnProperty("serviceFee")).toBeTruthy();
         expect(result.hasOwnProperty("delegationCap")).toBeTruthy();
         expect(result.hasOwnProperty("apr")).toBeTruthy();
@@ -199,7 +203,7 @@ describe('Provider Service', () => {
 
     it('some providers should be included', async () => {
       if (!apiConfigService.getMockNodes()) {
-        const vipProviders: { [key: string]: string } = {
+        const vipProviders: { [key: string]: string; } = {
           staking_agency:
             'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqhllllsajxzat',
           istari_vision:
@@ -208,7 +212,7 @@ describe('Provider Service', () => {
             'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzhllllsp9wvyl',
           partnerstaking:
             'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq9hllllsz2je7q',
-          justminingfr:
+          meria:
             'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq8hlllls7a6h85',
           thepalmtreenw:
             'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqy8lllls62y8s5',

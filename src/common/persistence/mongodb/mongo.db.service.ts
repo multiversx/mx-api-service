@@ -1,13 +1,15 @@
-import { OriginLogger } from "@elrondnetwork/erdnest";
+import { OriginLogger } from "@multiversx/sdk-nestjs";
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { CollectionTrait } from "src/endpoints/collections/entities/collection.trait";
 import { NftMedia } from "src/endpoints/nfts/entities/nft.media";
 import { ObjectLiteral, Repository } from "typeorm";
 import { PersistenceInterface } from "../persistence.interface";
+import { KeybaseConfirmationDb } from "./entities/keybase.confirmation.db";
 import { NftMediaDb } from "./entities/nft.media.db";
 import { NftMetadataDb } from "./entities/nft.metadata.db";
 import { NftTraitSummaryDb } from "./entities/nft.trait.summary.db";
+import { HotSwappableSettingDb } from "./entities/hot.swappable.setting";
 
 @Injectable()
 export class MongoDbService implements PersistenceInterface {
@@ -18,8 +20,12 @@ export class MongoDbService implements PersistenceInterface {
     private readonly nftMetadataRepository: Repository<NftMetadataDb>,
     @InjectRepository(NftMediaDb)
     private readonly nftMediaRepository: Repository<NftMediaDb>,
+    @InjectRepository(KeybaseConfirmationDb)
+    private readonly keybaseConfirmationRepository: Repository<KeybaseConfirmationDb>,
     @InjectRepository(NftTraitSummaryDb)
     private readonly nftTraitSummaryRepository: Repository<NftTraitSummaryDb>,
+    @InjectRepository(HotSwappableSettingDb)
+    private readonly settingsRepository: Repository<HotSwappableSettingDb>,
   ) { }
 
   async getMetadata(identifier: string): Promise<any | null> {
@@ -137,6 +143,39 @@ export class MongoDbService implements PersistenceInterface {
     await this.save(this.nftMediaRepository, value);
   }
 
+  async getKeybaseConfirmationForIdentity(identity: string): Promise<string[] | undefined> {
+    try {
+      const keybaseConfirmation: KeybaseConfirmationDb | null = await this.keybaseConfirmationRepository.findOne({ where: { identity } });
+      if (!keybaseConfirmation) {
+        return undefined;
+      }
+
+      return keybaseConfirmation.keys;
+    } catch (error) {
+      this.logger.error(`An unexpected error occurred when fetching keybase confirmation from DB for identity '${identity}'`);
+      this.logger.error(error);
+      return undefined;
+    }
+  }
+
+  async setKeybaseConfirmationForIdentity(identity: string, keys: string[]): Promise<void> {
+    try {
+      let keybaseConfirmation = await this.keybaseConfirmationRepository.findOne({ where: { identity } });
+      if (!keybaseConfirmation) {
+        keybaseConfirmation = new KeybaseConfirmationDb();
+      }
+
+      keybaseConfirmation.identity = identity;
+      keybaseConfirmation.keys = keys;
+
+      await this.save(this.keybaseConfirmationRepository, keybaseConfirmation);
+    }
+    catch (error) {
+      this.logger.error(`An unexpected error occurred when setting keybase confirmation from DB for identity '${identity}'`);
+      this.logger.error(error);
+    }
+  }
+
   async getCollectionTraits(collection: string): Promise<CollectionTrait[] | null> {
     try {
       const summary: NftTraitSummaryDb | null = await this.nftTraitSummaryRepository.findOne({ where: { identifier: collection } });
@@ -149,6 +188,43 @@ export class MongoDbService implements PersistenceInterface {
       this.logger.error(`An unexpected error occurred when fetching NFT trait summary from DB for collection identifier '${collection}'`);
       this.logger.error(error);
       return null;
+    }
+  }
+
+  async getSetting<T>(name: string): Promise<T | undefined> {
+    try {
+      const setting = await this.settingsRepository.findOne({ where: { name } });
+      if (!setting) {
+        return undefined;
+      }
+
+      return JSON.parse(setting.value) as T;
+    } catch {
+      return undefined;
+    }
+  }
+
+  async setSetting<T>(name: string, value: T): Promise<void> {
+    let item = await this.settingsRepository.findOne({ where: { name } });
+    if (!item) {
+      item = new HotSwappableSettingDb();
+    }
+
+    item.name = name;
+    item.value = value;
+
+    await this.save(this.settingsRepository, item);
+  }
+
+  async getAllSettings(): Promise<{ name: string, value: any }[]> {
+    try {
+      const settings = await this.settingsRepository.find();
+      return settings.map(setting => ({
+        name: setting.name,
+        value: setting.value,
+      }));
+    } catch {
+      return [];
     }
   }
 }

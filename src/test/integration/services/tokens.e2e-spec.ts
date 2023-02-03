@@ -4,13 +4,13 @@ import { PublicAppModule } from 'src/public.app.module';
 import { TokenDetailed } from 'src/endpoints/tokens/entities/token.detailed';
 import { ApiConfigService } from 'src/common/api-config/api.config.service';
 import { Test } from '@nestjs/testing';
-import '@elrondnetwork/erdnest/lib/src/utils/extensions/jest.extensions';
+import '@multiversx/sdk-nestjs/lib/src/utils/extensions/jest.extensions';
 import { TokenDetailedWithBalance } from 'src/endpoints/tokens/entities/token.detailed.with.balance';
 import { TokenSort } from 'src/endpoints/tokens/entities/token.sort';
 import { SortOrder } from 'src/common/entities/sort.order';
 import { TokenWithRolesFilter } from 'src/endpoints/tokens/entities/token.with.roles.filter';
 import { QueryPagination } from 'src/common/entities/query.pagination';
-import { CachingService, ElasticQuery, ElasticService, FileUtils } from '@elrondnetwork/erdnest';
+import { CachingService, ElasticQuery, ElasticService, FileUtils } from '@multiversx/sdk-nestjs';
 import { GatewayModule } from 'src/common/gateway/gateway.module';
 import { TokenFilter } from 'src/endpoints/tokens/entities/token.filter';
 import { EsdtLockedAccount } from 'src/endpoints/esdt/entities/esdt.locked.account';
@@ -644,10 +644,10 @@ describe('Token Service', () => {
 
     it("should return a list of two tokens for a specific address with source ELASTIC and identifiers filter applied", async () => {
       const MOCK_PATH = apiConfigService.getMockPath();
-      const address: string = "erd1qqqqqqqqqqqqqpgq6wegs2xkypfpync8mn2sa5cmpqjlvrhwz5nqgepyg8";
+      const address: string = "erd1qqqqqqqqqqqqqpgqa0fsfshnff4n76jhcye6k7uvd7qacsq42jpsp6shh2";
 
       const filter: TokenFilter = new TokenFilter();
-      filter.identifiers = ["WATER-9ed400", "RIDE-7d18e9"];
+      filter.identifiers = ["WEGLD-bd4d79", "MEX-455c57"];
 
       jest
         .spyOn(ElasticService.prototype, 'get')
@@ -659,8 +659,8 @@ describe('Token Service', () => {
 
       expect(results).toEqual(
         expect.arrayContaining([
-          expect.objectContaining({ identifier: "WATER-9ed400" }),
-          expect.objectContaining({ identifier: "RIDE-7d18e9" }),
+          expect.objectContaining({ identifier: "WEGLD-bd4d79" }),
+          expect.objectContaining({ identifier: "MEX-455c57" }),
         ])
       );
     });

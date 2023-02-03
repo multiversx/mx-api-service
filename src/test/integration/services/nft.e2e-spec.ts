@@ -1,8 +1,8 @@
 import { NftQueryOptions } from 'src/endpoints/nfts/entities/nft.query.options';
 import { Test } from "@nestjs/testing";
 import { NftService } from "src/endpoints/nfts/nft.service";
-import '@elrondnetwork/erdnest/lib/src/utils/extensions/jest.extensions';
-import '@elrondnetwork/erdnest/lib/src/utils/extensions/array.extensions';
+import '@multiversx/sdk-nestjs/lib/src/utils/extensions/jest.extensions';
+import '@multiversx/sdk-nestjs/lib/src/utils/extensions/array.extensions';
 import { PublicAppModule } from "src/public.app.module";
 import { NftFilter } from "src/endpoints/nfts/entities/nft.filter";
 import { NftType } from "src/endpoints/nfts/entities/nft.type";
@@ -11,7 +11,7 @@ import { EsdtAddressService } from 'src/endpoints/esdt/esdt.address.service';
 import { NftAccount } from 'src/endpoints/nfts/entities/nft.account';
 import { ApiConfigService } from 'src/common/api-config/api.config.service';
 import { QueryPagination } from 'src/common/entities/query.pagination';
-import { CachingService } from '@elrondnetwork/erdnest';
+import { CachingService } from '@multiversx/sdk-nestjs';
 import { PluginService } from 'src/common/plugins/plugin.service';
 import { Nft } from 'src/endpoints/nfts/entities/nft';
 import { ScamType } from 'src/common/entities/scam-type.enum';
@@ -565,6 +565,15 @@ describe('Nft Service', () => {
 
       expect(results).toBeUndefined();
     });
+
+    it("should return XMEX-fda355-15 token details from a specific account", async () => {
+      const address: string = "erd1wqgvggslggjgjjl0wpgjhknr2carzd07l4s0cqvqyt5haqmlsvks05vqvp";
+      const identifier: string = "XMEX-fda355-15";
+      const results = await nftService.getNftForAddress(address, identifier);
+
+      expect(results?.unlockEpoch).toStrictEqual(1410);
+    });
+
   });
 
   describe("NFT Owners", () => {
@@ -788,6 +797,14 @@ describe('Nft Service', () => {
       const nft = await nftService.getSingleNft(identifier);
 
       expect(nft?.scamInfo).toBeUndefined();
+    });
+
+    it("should return token details and unlockEpoch should be defined", async () => {
+      const identifier = 'XMEX-fda355-21';
+
+      const nft = await nftService.getSingleNft(identifier);
+
+      expect(nft?.unlockEpoch).toStrictEqual(1140);
     });
 
     it("should return scam info for address NFT", async () => {
