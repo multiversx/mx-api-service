@@ -4,7 +4,7 @@ import { ProviderService } from 'src/endpoints/providers/provider.service';
 import { PublicAppModule } from 'src/public.app.module';
 import { ProviderFilter } from 'src/endpoints/providers/entities/provider.filter';
 import { CachingService } from '@multiversx/sdk-nestjs';
-import { ProvidersConfig } from 'src/endpoints/providers/entities/providers.config';
+import { ProviderConfig } from 'src/endpoints/providers/entities/provider.config';
 import { Providers } from 'src/endpoints/providers/entities/providers';
 import '@multiversx/sdk-nestjs/lib/src/utils/extensions/array.extensions';
 import '@multiversx/sdk-nestjs/lib/src/utils/extensions/jest.extensions';
@@ -86,7 +86,7 @@ describe('Provider Service', () => {
       const address: string = "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq8hlllls7a6h85";
       const results = await providerService.getProviderConfig(address);
 
-      expect(results).toHaveStructure(Object.keys(new ProvidersConfig()));
+      expect(results).toHaveStructure(Object.keys(new ProviderConfig()));
     });
 
     it("should return providerd metadata", async () => {

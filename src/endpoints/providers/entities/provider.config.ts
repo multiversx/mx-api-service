@@ -1,5 +1,5 @@
-export class ProvidersConfig {
-  constructor(init?: Partial<ProvidersConfig>) {
+export class ProviderConfig {
+  constructor(init?: Partial<ProviderConfig>) {
     Object.assign(this, init);
   }
 

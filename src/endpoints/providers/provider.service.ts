@@ -1,7 +1,7 @@
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { VmQueryService } from "src/endpoints/vm.query/vm.query.service";
-import { ProvidersConfig } from "./entities/providers.config";
+import { ProviderConfig } from "./entities/provider.config";
 import { NodeService } from "../nodes/node.service";
 import { NodesInfos } from "./entities/nodes.infos";
 import { DelegationData } from "./entities/delegation.data";
@@ -274,7 +274,7 @@ export class ProviderService {
     return value;
   }
 
-  async getProviderConfig(address: string): Promise<ProvidersConfig> {
+  async getProviderConfig(address: string): Promise<ProviderConfig> {
     const [
       ownerBase64,
       serviceFeeBase64,
