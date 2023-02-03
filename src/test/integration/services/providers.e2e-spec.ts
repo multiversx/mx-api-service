@@ -7,7 +7,6 @@ import { CachingService } from '@multiversx/sdk-nestjs';
 import { ProviderConfig } from 'src/endpoints/providers/entities/provider.config';
 import '@multiversx/sdk-nestjs/lib/src/utils/extensions/array.extensions';
 import '@multiversx/sdk-nestjs/lib/src/utils/extensions/jest.extensions';
-import { Provider } from 'src/endpoints/providers/entities/provider';
 
 describe('Provider Service', () => {
   let providerService: ProviderService;
@@ -138,7 +137,16 @@ describe('Provider Service', () => {
       const results = await providerService.getAllProvidersRaw();
 
       for (const result of results) {
-        expect(result).toHaveStructure(Object.keys(new Provider));
+        expect(result.provider).toBeDefined();
+        expect(result.serviceFee).toBeDefined();
+        expect(result.delegationCap).toBeDefined();
+        expect(result.apr).toBeDefined();
+        expect(result.numUsers).toBeDefined();
+        expect(result.cumulatedRewards).toBeDefined();
+        expect(result.stake).toBeDefined();
+        expect(result.topUp).toBeDefined();
+        expect(result.locked).toBeDefined();
+        expect(result.featured).toBeDefined();
       }
     });
 
