@@ -104,8 +104,6 @@ export class EsdtService {
 
     if (type === 'FungibleESDT') {
       // @ts-ignore
-      delete tokenProps.canAddSpecialRoles;
-      // @ts-ignore
       delete tokenProps.canTransferNFTCreateRole;
       // @ts-ignore
       delete tokenProps.NFTCreateStopped;
