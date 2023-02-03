@@ -14,7 +14,7 @@ import { VmQueryService } from "./vm.query.service";
     ProtocolModule,
     ApiConfigModule,
     SettingsModule,
-    EventEmitterModule.forRoot(),
+    EventEmitterModule.forRoot({ maxListeners: 1 }),
   ],
   providers: [
     VmQueryService,

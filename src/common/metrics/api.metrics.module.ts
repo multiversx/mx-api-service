@@ -7,7 +7,7 @@ import { ApiMetricsService } from "./api.metrics.service";
 @Module({
   imports: [
     MetricsModule,
-    EventEmitterModule.forRoot(),
+    EventEmitterModule.forRoot({ maxListeners: 1 }),
   ],
   providers: [
     ApiMetricsService,
