@@ -5,9 +5,9 @@ import { PublicAppModule } from 'src/public.app.module';
 import { ProviderFilter } from 'src/endpoints/providers/entities/provider.filter';
 import { CachingService } from '@multiversx/sdk-nestjs';
 import { ProviderConfig } from 'src/endpoints/providers/entities/provider.config';
-import { Providers } from 'src/endpoints/providers/entities/providers';
 import '@multiversx/sdk-nestjs/lib/src/utils/extensions/array.extensions';
 import '@multiversx/sdk-nestjs/lib/src/utils/extensions/jest.extensions';
+import { Provider } from 'src/endpoints/providers/entities/provider';
 
 describe('Provider Service', () => {
   let providerService: ProviderService;
@@ -138,7 +138,7 @@ describe('Provider Service', () => {
       const results = await providerService.getAllProvidersRaw();
 
       for (const result of results) {
-        expect(result).toHaveStructure(Object.keys(new Providers()));
+        expect(result).toHaveStructure(Object.keys(new Provider));
       }
     });
 
