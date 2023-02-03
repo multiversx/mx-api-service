@@ -7,7 +7,6 @@ import { NodesInfos } from "./entities/nodes.infos";
 import { DelegationData } from "./entities/delegation.data";
 import { KeybaseService } from "src/common/keybase/keybase.service";
 import { CacheInfo } from "src/utils/cache.info";
-import { Providers } from "./entities/providers";
 import { ProviderFilter } from "./entities/provider.filter";
 import { Provider } from "./entities/provider";
 import { AddressUtils, Constants, CachingService, ApiService } from "@multiversx/sdk-nestjs";
@@ -78,7 +77,7 @@ export class ProviderService {
     return nodesInfos;
   }
 
-  async getProvidersWithStakeInformation(): Promise<Providers[]> {
+  async getProvidersWithStakeInformation(): Promise<Provider[]> {
     return await this.cachingService.getOrSetCache(
       CacheInfo.ProvidersWithStakeInformation.key,
       async () => await this.getProvidersWithStakeInformationRaw(),
@@ -86,7 +85,7 @@ export class ProviderService {
     );
   }
 
-  async getProvidersWithStakeInformationRaw(): Promise<Providers[]> {
+  async getProvidersWithStakeInformationRaw(): Promise<Provider[]> {
     let providers = await this.getAllProviders();
     const nodes = await this.nodeService.getAllNodes();
 
@@ -138,7 +137,7 @@ export class ProviderService {
     return /^[\w]*$/g.test(identity ?? '');
   }
 
-  async getProviders(filter: ProviderFilter): Promise<Providers[]> {
+  async getProviders(filter: ProviderFilter): Promise<Provider[]> {
     return await this.getFilteredProviders(filter);
   }
 
@@ -180,7 +179,7 @@ export class ProviderService {
     }
   }
 
-  async getAllProviders(): Promise<Providers[]> {
+  async getAllProviders(): Promise<Provider[]> {
     return await this.cachingService.getOrSetCache(
       CacheInfo.Providers.key,
       async () => await this.getAllProvidersRaw(),
@@ -188,7 +187,7 @@ export class ProviderService {
     );
   }
 
-  async getAllProvidersRaw(): Promise<Providers[]> {
+  async getAllProvidersRaw(): Promise<Provider[]> {
     const providerAddresses = await this.getProviderAddresses();
 
     const [configs, metadatas, numUsers, cumulatedRewards] = await Promise.all([
@@ -218,7 +217,7 @@ export class ProviderService {
       ),
     ]);
 
-    const providersRaw: Providers[] = providerAddresses.map((provider, index) => {
+    const providersRaw: Provider[] = providerAddresses.map((provider, index) => {
       return {
         provider,
         ...configs[index],
@@ -379,7 +378,7 @@ export class ProviderService {
     return null;
   }
 
-  async getFilteredProviders(filter: ProviderFilter): Promise<Providers[]> {
+  async getFilteredProviders(filter: ProviderFilter): Promise<Provider[]> {
     let providers = await this.getProvidersWithStakeInformation();
 
     if (filter.identity) {

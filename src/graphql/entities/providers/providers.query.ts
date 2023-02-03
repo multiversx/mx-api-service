@@ -2,7 +2,6 @@ import { Args, Query, Resolver } from "@nestjs/graphql";
 import { ProviderService } from "src/endpoints/providers/provider.service";
 import { GetProviderByAddressInput, GetProviderInput } from "./providers.input";
 import { NotFoundException } from "@nestjs/common";
-import { Providers } from "src/endpoints/providers/entities/providers";
 import { ProviderFilter } from "src/endpoints/providers/entities/provider.filter";
 import { Provider } from "src/endpoints/providers/entities/provider";
 
@@ -10,8 +9,8 @@ import { Provider } from "src/endpoints/providers/entities/provider";
 export class ProviderQuery {
   constructor(protected readonly providerService: ProviderService) { }
 
-  @Query(() => [Providers], { name: "providers", description: "Retrieve all providers for the given input." })
-  public async getProviders(@Args("input", { description: "Input to retrieve the given identity provider for." }) input: GetProviderInput): Promise<Providers[]> {
+  @Query(() => [Provider], { name: "providers", description: "Retrieve all providers for the given input." })
+  public async getProviders(@Args("input", { description: "Input to retrieve the given identity provider for." }) input: GetProviderInput): Promise<Provider[]> {
     return await this.providerService.getProviders(new ProviderFilter({
       identity: input.identity,
     }));

@@ -4,7 +4,6 @@ import { ProviderService } from "./provider.service";
 import { Provider } from "./entities/provider";
 import { ParseAddressArrayPipe, ParseAddressPipe } from "@multiversx/sdk-nestjs";
 import { ProviderFilter } from "./entities/provider.filter";
-import { Providers } from "./entities/providers";
 
 @Controller()
 @ApiTags('providers')
@@ -13,13 +12,13 @@ export class ProviderController {
 
   @Get("/providers")
   @ApiOperation({ summary: 'Providers', description: 'Returns a list of all providers' })
-  @ApiOkResponse({ type: [Providers] })
+  @ApiOkResponse({ type: [Provider] })
   @ApiQuery({ name: 'identity', description: 'Search by identity', required: false })
   @ApiQuery({ name: 'providers', description: 'Search by multiple providers address', required: false })
   async getProviders(
     @Query('identity') identity?: string,
     @Query('providers', ParseAddressArrayPipe) providers?: string[],
-  ): Promise<Providers[]> {
+  ): Promise<Provider[]> {
     return await this.providerService.getProviders(new ProviderFilter({ identity, providers }));
   }
 

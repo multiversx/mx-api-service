@@ -13,7 +13,7 @@ import { DnsContracts } from "src/utils/dns.contracts";
 import { NftRankAlgorithm } from "./entities/nft.rank.algorithm";
 import { NftRank } from "./entities/nft.rank";
 import { MexStakingProxy } from "src/endpoints/mex/entities/mex.staking.proxy";
-import { Providers } from "src/endpoints/providers/entities/providers";
+import { Provider } from "src/endpoints/providers/entities/provider";
 const rimraf = require("rimraf");
 const path = require('path');
 const fs = require('fs');
@@ -184,7 +184,7 @@ export class AssetsService {
     );
   }
 
-  getAllAccountAssetsRaw(providers?: Providers[], identities?: Identity[], pairs?: MexPair[], farms?: MexFarm[], mexSettings?: MexSettings, stakingProxies?: MexStakingProxy[]): { [key: string]: AccountAssets } {
+  getAllAccountAssetsRaw(providers?: Provider[], identities?: Identity[], pairs?: MexPair[], farms?: MexFarm[], mexSettings?: MexSettings, stakingProxies?: MexStakingProxy[]): { [key: string]: AccountAssets } {
     const accountAssetsPath = this.getAccountAssetsPath();
     if (!fs.existsSync(accountAssetsPath)) {
       return {};
