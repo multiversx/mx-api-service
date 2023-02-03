@@ -2822,48 +2822,6 @@ type ProviderUnstakedTokens {
   expires: String
 }
 
-"""Provider object type."""
-type Providers {
-  """APR details percentage."""
-  apr: Float!
-
-  """Provider cumulated rewards."""
-  cumulatedRewards: String
-
-  """Delegation cap details."""
-  delegationCap: String!
-
-  """Featured details."""
-  featured: Boolean!
-
-  """Provider identity."""
-  identity: String
-
-  """Locked amound details."""
-  locked: String!
-
-  """Total numbers of nodes."""
-  numNodes: Float!
-
-  """Total number of users."""
-  numUsers: Float!
-
-  """Owner address details."""
-  owner: String
-
-  """Provider address details."""
-  provider: String!
-
-  """Service fee details."""
-  serviceFee: Float!
-
-  """Total stake amount."""
-  stake: Float!
-
-  """Top up details."""
-  topUp: String!
-}
-
 type Query {
   """Retrieve general information about API deployment."""
   about: About!
@@ -3045,7 +3003,7 @@ type Query {
   providers(
     """Input to retrieve the given identity provider for."""
     input: GetProviderInput!
-  ): [Providers!]!
+  ): [Provider!]!
 
   """Retrieve the smart contract details for the given input."""
   result(
