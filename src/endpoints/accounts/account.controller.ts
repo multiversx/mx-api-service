@@ -33,7 +33,7 @@ import { ProviderStake } from '../stake/entities/provider.stake';
 import { TokenDetailedWithBalance } from '../tokens/entities/token.detailed.with.balance';
 import { NftCollectionAccount } from '../collections/entities/nft.collection.account';
 import { TokenWithRoles } from '../tokens/entities/token.with.roles';
-import { ParseAddressPipe, ParseArrayPipe, ParseBlockHashPipe, ParseCollectionPipe, ParseNftPipe, ParseBoolPipe, ParseEnumArrayPipe, ParseEnumPipe, ParseIntPipe, ParseTokenOrNftPipe, ParseTransactionHashPipe, ParseAddressArrayPipe, ApplyComplexity } from '@elrondnetwork/erdnest';
+import { ParseAddressPipe, ParseArrayPipe, ParseBlockHashPipe, ParseCollectionPipe, ParseNftPipe, ParseBoolPipe, ParseEnumArrayPipe, ParseEnumPipe, ParseIntPipe, ParseTokenOrNftPipe, ParseTransactionHashPipe, ParseAddressArrayPipe, ApplyComplexity } from '@multiversx/sdk-nestjs';
 import { QueryPagination } from 'src/common/entities/query.pagination';
 import { TransactionQueryOptions } from '../transactions/entities/transactions.query.options';
 import { TokenWithRolesFilter } from '../tokens/entities/token.with.roles.filter';
@@ -42,9 +42,9 @@ import { TokenFilter } from '../tokens/entities/token.filter';
 import { NftFilter } from '../nfts/entities/nft.filter';
 import { NftQueryOptions } from '../nfts/entities/nft.query.options';
 import { TransactionFilter } from '../transactions/entities/transaction.filter';
-import { ParseTokenPipe } from '@elrondnetwork/erdnest';
+import { ParseTokenPipe } from '@multiversx/sdk-nestjs';
 import { TransactionDetailed } from '../transactions/entities/transaction.detailed';
-import { OriginLogger } from '@elrondnetwork/erdnest';
+import { OriginLogger } from '@multiversx/sdk-nestjs';
 import { AccountDelegation } from '../stake/entities/account.delegation';
 import { DelegationService } from '../delegation/delegation.service';
 import { AccountStats } from '../marketplace/entities/account.stats';
@@ -53,6 +53,8 @@ import { NftMarketplaceService } from '../marketplace/marketplace.service';
 import { StatusAuction } from '../marketplace/entities/auction.state.enum';
 import { Auction } from '../marketplace/entities/account.auctions';
 import { TokenType } from '../tokens/entities/token.type';
+import { ContractUpgrades } from './entities/contract.upgrades';
+import { AccountVerification } from './entities/account.verification';
 
 @Controller()
 @ApiTags('accounts')
@@ -122,6 +124,19 @@ export class AccountController {
       this.logger.error(`Error in getAccountDeferred for address ${address}`);
       this.logger.error(error);
       throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
+    }
+  }
+
+  @Get("/accounts/:address/verification")
+  @ApiOperation({ summary: 'Account verification details', description: 'Returns contract verification details' })
+  @ApiOkResponse({ type: AccountVerification })
+  async getAccountVerification(@Param('address', ParseAddressPipe) address: string): Promise<AccountVerification | null> {
+    try {
+      return await this.accountService.getAccountVerification(address);
+    } catch (error) {
+      this.logger.error(`Error in getAccountVerification for address ${address}`);
+      this.logger.error(error);
+      throw new HttpException('Account verification not found', HttpStatus.NOT_FOUND);
     }
   }
 
@@ -899,6 +914,23 @@ export class AccountController {
   @ApiExcludeEndpoint()
   getAccountContractsCountAlternative(@Param('address', ParseAddressPipe) address: string): Promise<number> {
     return this.accountService.getAccountContractsCount(address);
+  }
+
+  @Get("/accounts/:address/upgrades")
+  @ApiOperation({ summary: 'Account upgrades details', description: 'Returns all upgrades details for a specific contract address' })
+  @ApiOkResponse({ type: ContractUpgrades })
+  getContractUpgrades(
+    @Param('address', ParseAddressPipe) address: string,
+    @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
+    @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
+  ): Promise<ContractUpgrades[] | null> {
+    const upgrades = this.accountService.getContractUpgrades(new QueryPagination({ from, size }), address);
+
+    if (!upgrades) {
+      throw new NotFoundException();
+    }
+
+    return upgrades;
   }
 
   @Get("/accounts/:address/results")

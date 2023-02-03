@@ -1,4 +1,4 @@
-import { ParseBlockHashPipe, ParseEnumPipe, ParseIntPipe, ParseArrayPipe, ParseAddressArrayPipe, ParseBoolPipe } from "@elrondnetwork/erdnest";
+import { ParseBlockHashPipe, ParseEnumPipe, ParseIntPipe, ParseArrayPipe, ParseAddressArrayPipe, ParseBoolPipe } from "@multiversx/sdk-nestjs";
 import { Controller, DefaultValuePipe, Get, Query } from "@nestjs/common";
 import { ApiExcludeEndpoint, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { QueryPagination } from "src/common/entities/query.pagination";
@@ -33,6 +33,7 @@ export class TransferController {
   @ApiQuery({ name: 'order', description: 'Sort order (asc/desc)', required: false, enum: SortOrder })
   @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
+  @ApiQuery({ name: 'function', description: 'Filter transfers by function name', required: false })
   @ApiQuery({ name: 'withScamInfo', description: 'Returns scam information', required: false, type: Boolean })
   @ApiQuery({ name: 'withUsername', description: 'Integrates username in assets for all addresses present in the transactions', required: false, type: Boolean })
   async getAccountTransfers(
@@ -41,6 +42,7 @@ export class TransferController {
     @Query('receiver', ParseAddressArrayPipe) receiver?: string[],
     @Query('sender', ParseAddressArrayPipe) sender?: string[],
     @Query('token') token?: string,
+    @Query('function') scFunction?: string,
     @Query('senderShard', ParseIntPipe) senderShard?: number,
     @Query('receiverShard', ParseIntPipe) receiverShard?: number,
     @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash?: string,
@@ -59,6 +61,7 @@ export class TransferController {
       senders: sender,
       receivers: receiver,
       token,
+      function: scFunction,
       senderShard,
       receiverShard,
       miniBlockHash,

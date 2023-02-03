@@ -1,4 +1,4 @@
-import { Jwt, JwtAuthenticateGuard } from "@elrondnetwork/erdnest";
+import { Jwt, JwtAuthenticateGuard } from "@multiversx/sdk-nestjs";
 import { Body, Controller, Get, HttpException, HttpStatus, Logger, Param, Post, UseGuards, Headers } from "@nestjs/common";
 import { TransactionBatchSimplified } from "./entities/transaction.batch.simplified";
 import { TransactionBatchSimplifiedResult } from "./entities/transaction.batch.simplified.result";

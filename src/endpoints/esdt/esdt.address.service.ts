@@ -16,9 +16,9 @@ import { NftCollectionWithRoles } from "../collections/entities/nft.collection.w
 import { CollectionService } from "../collections/collection.service";
 import { CollectionFilter } from "../collections/entities/collection.filter";
 import { CollectionRoles } from "../tokens/entities/collection.roles";
-import { AddressUtils, ApiUtils, BinaryUtils, CachingService, MetricsService } from "@elrondnetwork/erdnest";
+import { AddressUtils, ApiUtils, BinaryUtils, CachingService, MetricsService } from "@multiversx/sdk-nestjs";
 import { IndexerService } from "src/common/indexer/indexer.service";
-import { OriginLogger } from "@elrondnetwork/erdnest";
+import { OriginLogger } from "@multiversx/sdk-nestjs";
 
 @Injectable()
 export class EsdtAddressService {
@@ -310,7 +310,7 @@ export class EsdtAddressService {
     return esdtResult.esdts;
   }
 
-  private pendingRequestsDictionary: { [key: string]: any; } = {};
+  private pendingRequestsDictionary: { [key: string]: any } = {};
 
   async getAllEsdtsForAddressFromGateway(address: string): Promise<{ [key: string]: any }> {
     let pendingRequest = this.pendingRequestsDictionary[address];

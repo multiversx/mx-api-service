@@ -1,4 +1,4 @@
-import { AddressUtils, NumberUtils, CachingService } from "@elrondnetwork/erdnest";
+import { AddressUtils, NumberUtils, CachingService } from "@multiversx/sdk-nestjs";
 import { Injectable } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { QueryPagination } from "src/common/entities/query.pagination";

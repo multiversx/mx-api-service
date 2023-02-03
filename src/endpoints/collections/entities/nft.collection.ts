@@ -83,4 +83,16 @@ export class NftCollection {
 
   @ApiProperty({ type: Boolean })
   auctionsStats?: CollectionStats;
+  
+  @Field(() => Boolean, { description: 'Returns true if the collection is verified.', nullable: true })
+  @ApiProperty({ type: Boolean, nullable: true })
+  isVerified: boolean | undefined = undefined;
+
+  @Field(() => Number, { description: 'Number of holders. Will be returned only if the collection is verified.', nullable: true })
+  @ApiProperty({ type: Number, nullable: true })
+  holderCount: number | undefined = undefined;
+
+  @Field(() => Number, { description: 'Number of NFTs for this collection. Will be returned only if the collection is verified.', nullable: true })
+  @ApiProperty({ type: Number, nullable: true })
+  nftCount: number | undefined = undefined;
 }

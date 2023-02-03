@@ -1,4 +1,4 @@
-import { Constants, CachingService } from "@elrondnetwork/erdnest";
+import { Constants, CachingService } from "@multiversx/sdk-nestjs";
 import { Injectable } from "@nestjs/common";
 import { CacheInfo } from "src/utils/cache.info";
 import { TransactionDetailed } from "./entities/transaction.detailed";
@@ -35,18 +35,32 @@ export class TransactionPriceService {
   }
 
   private async getTransactionPriceToday(): Promise<number | undefined> {
-    return await this.cachingService.getOrSetCache(
-      CacheInfo.CurrentPrice.key,
-      async () => await this.pluginsService.getEgldPrice(),
-      CacheInfo.CurrentPrice.ttl
-    );
+    const cachedPrice = await this.cachingService.getCache<number | undefined>(CacheInfo.CurrentPrice.key);
+    if (cachedPrice) {
+      return cachedPrice;
+    }
+
+    const price = await this.pluginsService.getEgldPrice();
+    if (price) {
+      await this.cachingService.setCache(CacheInfo.CurrentPrice.key, price, CacheInfo.CurrentPrice.ttl);
+    }
+
+    return price;
   }
 
   private async getTransactionPriceHistorical(date: Date): Promise<number | undefined> {
-    return await this.cachingService.getOrSetCache(
-      `price:${date.toISODateString()}`,
-      async () => await this.pluginsService.getEgldPrice(date.getTime() / 1000),
-      Constants.oneDay() * 7
-    );
+    const cacheKey = `price:${date.toISODateString()}`;
+
+    const cachedPrice = await this.cachingService.getCache<number | undefined>(cacheKey);
+    if (cachedPrice) {
+      return cachedPrice;
+    }
+
+    const price = await this.pluginsService.getEgldPrice(date.getTime() / 1000);
+    if (price) {
+      await this.cachingService.setCache(cacheKey, price, Constants.oneDay() * 7);
+    }
+
+    return price;
   }
 }

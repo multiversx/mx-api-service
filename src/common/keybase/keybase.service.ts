@@ -6,7 +6,7 @@ import { KeybaseIdentity } from "./entities/keybase.identity";
 import { KeybaseState } from "./entities/keybase.state";
 import { CacheInfo } from "../../utils/cache.info";
 import { GithubService } from "../github/github.service";
-import { ApiService, ApiUtils, CachingService, Constants, OriginLogger } from "@elrondnetwork/erdnest";
+import { ApiService, ApiUtils, CachingService, Constants, OriginLogger } from "@multiversx/sdk-nestjs";
 import { ApiConfigService } from "../api-config/api.config.service";
 import { PersistenceService } from "../persistence/persistence.service";
 

@@ -9,7 +9,7 @@ import { TokenRoles } from "../tokens/entities/token.roles";
 import { AssetsService } from "../../common/assets/assets.service";
 import { EsdtLockedAccount } from "./entities/esdt.locked.account";
 import { EsdtSupply } from "./entities/esdt.supply";
-import { AddressUtils, BinaryUtils, Constants, CachingService } from "@elrondnetwork/erdnest";
+import { AddressUtils, BinaryUtils, Constants, CachingService } from "@multiversx/sdk-nestjs";
 import { IndexerService } from "src/common/indexer/indexer.service";
 
 @Injectable()
@@ -103,8 +103,6 @@ export class EsdtService {
     };
 
     if (type === 'FungibleESDT') {
-      // @ts-ignore
-      delete tokenProps.canAddSpecialRoles;
       // @ts-ignore
       delete tokenProps.canTransferNFTCreateRole;
       // @ts-ignore

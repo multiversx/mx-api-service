@@ -1,5 +1,5 @@
-export class HeartBeatsStatus {
-  constructor(init?: Partial<HeartBeatsStatus>) {
+export class HeartbeatStatus {
+  constructor(init?: Partial<HeartbeatStatus>) {
     Object.assign(this, init);
   }
 
@@ -15,4 +15,5 @@ export class HeartBeatsStatus {
   nonce: number = 0;
   numInstances: number = 0;
   peerSubType: number = 0;
+  numTrieNodesReceived: number = 0;
 }

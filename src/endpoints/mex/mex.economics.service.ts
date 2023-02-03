@@ -1,4 +1,4 @@
-import { CachingService } from "@elrondnetwork/erdnest";
+import { CachingService } from "@multiversx/sdk-nestjs";
 import { BadRequestException, Injectable } from "@nestjs/common";
 import { gql } from "graphql-request";
 import { CacheInfo } from "src/utils/cache.info";

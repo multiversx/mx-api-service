@@ -2,8 +2,8 @@ import { Controller, Get, HttpException, HttpStatus, Param, Query } from "@nestj
 import { ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { ProviderService } from "./provider.service";
 import { Provider } from "./entities/provider";
+import { ParseAddressArrayPipe, ParseAddressPipe } from "@multiversx/sdk-nestjs";
 import { ProviderFilter } from "./entities/provider.filter";
-import { ParseAddressArrayPipe, ParseAddressPipe } from "@elrondnetwork/erdnest";
 
 @Controller()
 @ApiTags('providers')

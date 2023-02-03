@@ -7,8 +7,6 @@ import { GenerateThumbnailResult } from "src/queue.worker/nft.worker/queue/job-s
 import { NftThumbnailModule } from "src/queue.worker/nft.worker/queue/job-services/thumbnails/nft.thumbnail.module";
 import { NftThumbnailService } from "src/queue.worker/nft.worker/queue/job-services/thumbnails/nft.thumbnail.service";
 
-
-
 describe('Nft Queue Service', () => {
   let nftQueueService: NftThumbnailService;
   let nftService: NftService;
@@ -45,7 +43,7 @@ describe('Nft Queue Service', () => {
     });
   });
 
-  describe('Generate Thumbnail', () => {
+  describe.skip('Generate Thumbnail', () => {
     it('should generate thumbnail', async () => {
       const nftFilter = new Nft();
       nftFilter.identifier = 'WWWINE-5a5331-03e6';

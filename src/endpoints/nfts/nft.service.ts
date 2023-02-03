@@ -19,11 +19,11 @@ import { EsdtDataSource } from "../esdt/entities/esdt.data.source";
 import { EsdtAddressService } from "../esdt/esdt.address.service";
 import { PersistenceService } from "src/common/persistence/persistence.service";
 import { MexTokenService } from "../mex/mex.token.service";
-import { ApiUtils, BinaryUtils, NumberUtils, RecordUtils, CachingService, BatchUtils, TokenUtils } from "@elrondnetwork/erdnest";
+import { ApiUtils, BinaryUtils, NumberUtils, RecordUtils, CachingService, BatchUtils, TokenUtils } from "@multiversx/sdk-nestjs";
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { LockedAssetService } from "../../common/locked-asset/locked-asset.service";
 import { CollectionAccount } from "../collections/entities/collection.account";
-import { OriginLogger } from "@elrondnetwork/erdnest";
+import { OriginLogger } from "@multiversx/sdk-nestjs";
 import { NftRankAlgorithm } from "src/common/assets/entities/nft.rank.algorithm";
 import { NftRarity } from "./entities/nft.rarity";
 import { NftRarities } from "./entities/nft.rarities";
@@ -599,7 +599,7 @@ export class NftService {
   }
 
   private getNftRankAlgorithmFromAssets(assets?: TokenAssets): NftRankAlgorithm {
-    return assets?.preferredRankAlgorithm ?? NftRankAlgorithm.jaccardDistances;
+    return assets?.preferredRankAlgorithm ?? NftRankAlgorithm.openRarity;
   }
 
   private getNftRankElasticKey(algorithm: NftRankAlgorithm) {

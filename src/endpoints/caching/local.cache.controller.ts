@@ -1,4 +1,4 @@
-import { CachingService, JwtAdminGuard, JwtAuthenticateGuard } from "@elrondnetwork/erdnest";
+import { CachingService, JwtAdminGuard, JwtAuthenticateGuard } from "@multiversx/sdk-nestjs";
 import { Body, Controller, Delete, Get, HttpException, HttpStatus, Param, Put, UseGuards } from "@nestjs/common";
 import { ApiExcludeController, ApiResponse } from "@nestjs/swagger";
 import { CacheValue } from "./entities/cache.value";

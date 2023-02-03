@@ -7,10 +7,10 @@ import { TransactionLog } from "./entities/transaction.log";
 import { TransactionOptionalFieldOption } from "./entities/transaction.optional.field.options";
 import { TransactionReceipt } from "./entities/transaction.receipt";
 import { TokenTransferService } from "../tokens/token.transfer.service";
-import { ApiUtils, BinaryUtils } from "@elrondnetwork/erdnest";
+import { ApiUtils, BinaryUtils } from "@multiversx/sdk-nestjs";
 import { TransactionUtils } from "./transaction.utils";
 import { IndexerService } from "src/common/indexer/indexer.service";
-import { OriginLogger } from "@elrondnetwork/erdnest";
+import { OriginLogger } from "@multiversx/sdk-nestjs";
 
 @Injectable()
 export class TransactionGetService {
@@ -93,7 +93,7 @@ export class TransactionGetService {
         }
       }
 
-      if (!fields || fields.length === 0 || fields.includes(TransactionOptionalFieldOption.logs)) {
+      if (!fields || fields.length === 0 || fields.includes(TransactionOptionalFieldOption.logs) || fields.includes(TransactionOptionalFieldOption.operations)) {
         const logs = await this.getTransactionLogsFromElastic(hashes);
 
         if (!fields || fields.length === 0 || fields.includes(TransactionOptionalFieldOption.operations)) {

@@ -1,5 +1,5 @@
-import { OriginLogger } from "@elrondnetwork/erdnest";
-import { PerformanceProfiler, CachingService } from "@elrondnetwork/erdnest";
+import { OriginLogger } from "@multiversx/sdk-nestjs";
+import { PerformanceProfiler, CachingService } from "@multiversx/sdk-nestjs";
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
 import { GatewayService } from "src/common/gateway/gateway.service";

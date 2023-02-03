@@ -1,4 +1,4 @@
-import { ApiService, ApiSettings, BinaryUtils, PerformanceProfiler } from "@elrondnetwork/erdnest";
+import { ApiService, ApiSettings, BinaryUtils, PerformanceProfiler } from "@multiversx/sdk-nestjs";
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { ApiConfigService } from "../api-config/api.config.service";
 import { ApiMetricsService } from "../metrics/api.metrics.service";
@@ -7,7 +7,8 @@ import { Auction } from "./entities/auction";
 import { EsdtAddressRoles } from "./entities/esdt.roles";
 import { EsdtSupply } from "./entities/esdt.supply";
 import { GatewayComponentRequest } from "./entities/gateway.component.request";
-import { HeartBeatsStatus } from "./entities/heartbeats.status";
+import { HeartbeatStatus } from "./entities/heartbeat.status";
+import { TrieStatistics } from "./entities/trie.statistics";
 import { NetworkConfig } from "./entities/network.config";
 import { NetworkEconomics } from "./entities/network.economics";
 import { NetworkStatus } from "./entities/network.status";
@@ -46,9 +47,15 @@ export class GatewayService {
     return result.metrics;
   }
 
-  async getNodeHeartbeatStatus(): Promise<HeartBeatsStatus[]> {
+  async getNodeHeartbeatStatus(): Promise<HeartbeatStatus[]> {
     const result = await this.get('node/heartbeatstatus', GatewayComponentRequest.nodeHeartbeat);
     return result.heartbeats;
+  }
+
+  async getTrieStatistics(shardId: number): Promise<TrieStatistics> {
+    const result = await this.get(`network/trie-statistics/${shardId}`, GatewayComponentRequest.trieStatistics);
+
+    return result;
   }
 
   async getAddressDetails(address: string): Promise<Account> {

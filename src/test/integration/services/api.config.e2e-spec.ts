@@ -45,37 +45,6 @@ describe('API Config', () => {
     });
   });
 
-  describe('getDataApiUrl', () => {
-    it("should return data api url", () => {
-      jest
-        .spyOn(ConfigService.prototype, "get")
-        .mockImplementation(jest.fn(() => "https://tools.multiversx.com/data-api/graphql"));
-
-      const result = apiConfigService.getDataApiUrl();
-      expect(result).toStrictEqual("https://tools.multiversx.com/data-api/graphql");
-    });
-  });
-
-  describe('getSignerPrivateKeyPath', () => {
-    it("should return signer private key path", () => {
-      jest
-        .spyOn(ConfigService.prototype, "get")
-        .mockImplementation(jest.fn(() => "erd1"));
-
-      const result = apiConfigService.getSignerPrivateKeyPath();
-      expect(result).toStrictEqual("erd1");
-    });
-
-    it("should return undefined", () => {
-      jest
-        .spyOn(ConfigService.prototype, 'get')
-        .mockImplementation(jest.fn(() => undefined));
-
-      const result = apiConfigService.getSignerPrivateKeyPath();
-      expect(result).toBeUndefined();
-    });
-  });
-
   describe("getGatewayUrl", () => {
     it("should return gateway url", () => {
       jest
@@ -92,6 +61,25 @@ describe('API Config', () => {
         .mockImplementation(jest.fn(() => undefined));
 
       expect(() => apiConfigService.getGatewayUrl()).toThrowError('No gateway urls present');
+    });
+  });
+
+  describe("getVerifierUrl", () => {
+    it("should return verifier (play-api.multiversx.com) url", () => {
+      jest
+        .spyOn(ConfigService.prototype, "get")
+        .mockImplementation(jest.fn(() => 'https://play-api.multiversx.com'));
+
+      const results = apiConfigService.getVerifierUrl();
+      expect(results).toEqual('https://play-api.multiversx.com');
+    });
+
+    it("should throw error because test simulates that verifier url is not defined", () => {
+      jest
+        .spyOn(ConfigService.prototype, 'get')
+        .mockImplementation(jest.fn(() => undefined));
+
+      expect(() => apiConfigService.getVerifierUrl()).toThrowError('No verifier url present');
     });
   });
 

@@ -1,7 +1,7 @@
 import { NftExtendedAttributesService } from 'src/endpoints/nfts/nft.extendedattributes.service';
 import { PublicAppModule } from "src/public.app.module";
 import { Test } from '@nestjs/testing';
-import { CachingService } from '@elrondnetwork/erdnest';
+import { CachingService } from '@multiversx/sdk-nestjs';
 
 describe('Nft Extended Attributes Service', () => {
   let nftExtendedAttributesService: NftExtendedAttributesService;

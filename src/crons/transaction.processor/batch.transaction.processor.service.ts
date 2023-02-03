@@ -1,4 +1,4 @@
-import { CachingService } from "@elrondnetwork/erdnest";
+import { CachingService } from "@multiversx/sdk-nestjs";
 import { ShardTransaction, TransactionProcessor } from "@elrondnetwork/transaction-processor";
 import { Inject, Injectable, Logger } from "@nestjs/common";
 import { ClientProxy } from "@nestjs/microservices";

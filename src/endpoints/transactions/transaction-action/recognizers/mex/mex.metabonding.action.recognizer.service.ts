@@ -1,4 +1,4 @@
-import { BatchUtils, BinaryUtils, NumberUtils } from "@elrondnetwork/erdnest";
+import { BatchUtils, BinaryUtils, NumberUtils } from "@multiversx/sdk-nestjs";
 import { Injectable } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { TransactionAction } from "../../entities/transaction.action";

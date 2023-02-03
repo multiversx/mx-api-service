@@ -1,4 +1,4 @@
-import { AddressUtils, CachingService } from "@elrondnetwork/erdnest";
+import { AddressUtils, CachingService } from "@multiversx/sdk-nestjs";
 import { Injectable } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { CacheInfo } from "src/utils/cache.info";
@@ -10,7 +10,7 @@ import { Nft } from "../nfts/entities/nft";
 import { NftService } from "../nfts/nft.service";
 import { ProcessNftRequest } from "./entities/process.nft.request";
 import { ProcessNftSettings } from "./entities/process.nft.settings";
-import { OriginLogger } from "@elrondnetwork/erdnest";
+import { OriginLogger } from "@multiversx/sdk-nestjs";
 
 @Injectable()
 export class ProcessNftsService {

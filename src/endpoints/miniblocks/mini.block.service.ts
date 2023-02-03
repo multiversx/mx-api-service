@@ -1,4 +1,4 @@
-import { ApiUtils } from "@elrondnetwork/erdnest";
+import { ApiUtils } from "@multiversx/sdk-nestjs";
 import { Injectable } from "@nestjs/common";
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { MiniBlockDetailed } from "./entities/mini.block.detailed";
