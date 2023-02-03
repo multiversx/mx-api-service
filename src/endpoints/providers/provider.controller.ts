@@ -3,7 +3,7 @@ import { ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } f
 import { ProviderService } from "./provider.service";
 import { Provider } from "./entities/provider";
 import { ParseAddressArrayPipe, ParseAddressPipe } from "@multiversx/sdk-nestjs";
-import { ProvidersFilter } from "./entities/providers.filter";
+import { ProviderFilter } from "./entities/provider.filter";
 import { Providers } from "./entities/providers";
 
 @Controller()
@@ -20,7 +20,7 @@ export class ProviderController {
     @Query('identity') identity?: string,
     @Query('providers', ParseAddressArrayPipe) providers?: string[],
   ): Promise<Providers[]> {
-    return await this.providerService.getProviders(new ProvidersFilter({ identity, providers }));
+    return await this.providerService.getProviders(new ProviderFilter({ identity, providers }));
   }
 
   @Get('/providers/:address')

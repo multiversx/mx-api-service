@@ -8,7 +8,7 @@ import { DelegationData } from "./entities/delegation.data";
 import { KeybaseService } from "src/common/keybase/keybase.service";
 import { CacheInfo } from "src/utils/cache.info";
 import { Providers } from "./entities/providers";
-import { ProvidersFilter } from "./entities/providers.filter";
+import { ProviderFilter } from "./entities/provider.filter";
 import { Provider } from "./entities/provider";
 import { AddressUtils, Constants, CachingService, ApiService } from "@multiversx/sdk-nestjs";
 import { OriginLogger } from "@multiversx/sdk-nestjs";
@@ -29,7 +29,7 @@ export class ProviderService {
   ) { }
 
   async getProvider(address: string): Promise<Provider | undefined> {
-    const query = new ProvidersFilter();
+    const query = new ProviderFilter();
     const providers = await this.getProviders(query);
     const provider: Provider | undefined = providers.find(x => x.provider === address);
 
@@ -138,7 +138,7 @@ export class ProviderService {
     return /^[\w]*$/g.test(identity ?? '');
   }
 
-  async getProviders(filter: ProvidersFilter): Promise<Providers[]> {
+  async getProviders(filter: ProviderFilter): Promise<Providers[]> {
     return await this.getFilteredProviders(filter);
   }
 
@@ -379,7 +379,7 @@ export class ProviderService {
     return null;
   }
 
-  async getFilteredProviders(filter: ProvidersFilter): Promise<Providers[]> {
+  async getFilteredProviders(filter: ProviderFilter): Promise<Providers[]> {
     let providers = await this.getProvidersWithStakeInformation();
 
     if (filter.identity) {

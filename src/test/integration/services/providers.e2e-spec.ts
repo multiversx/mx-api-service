@@ -2,7 +2,7 @@ import { ApiConfigService } from 'src/common/api-config/api.config.service';
 import { Test } from '@nestjs/testing';
 import { ProviderService } from 'src/endpoints/providers/provider.service';
 import { PublicAppModule } from 'src/public.app.module';
-import { ProvidersFilter } from 'src/endpoints/providers/entities/providers.filter';
+import { ProviderFilter } from 'src/endpoints/providers/entities/provider.filter';
 import { CachingService } from '@multiversx/sdk-nestjs';
 import { ProvidersConfig } from 'src/endpoints/providers/entities/providers.config';
 import { Providers } from 'src/endpoints/providers/entities/providers';
@@ -143,7 +143,7 @@ describe('Provider Service', () => {
     });
 
     it("should return provider details", async () => {
-      const filter = new ProvidersFilter();
+      const filter = new ProviderFilter();
       const results = await providerService.getProviders(filter);
 
       for (const result of results) {
@@ -163,7 +163,7 @@ describe('Provider Service', () => {
     });
 
     it("should be filtered by identity", async () => {
-      const filter = new ProvidersFilter();
+      const filter = new ProviderFilter();
       filter.identity = "justminingfr";
       const results = await providerService.getProviders(filter);
 
@@ -173,7 +173,7 @@ describe('Provider Service', () => {
     });
 
     it("should verify if providers contains minimum one node", async () => {
-      const filter = new ProvidersFilter();
+      const filter = new ProviderFilter();
       filter.identity = "justminingfr";
 
       const results = await providerService.getProviders(filter);
@@ -184,7 +184,7 @@ describe('Provider Service', () => {
     });
 
     it("should verify providers with more than 30 nodes should have identity", async () => {
-      const filter = new ProvidersFilter();
+      const filter = new ProviderFilter();
       const results = await providerService.getProviders(filter);
 
       for (const result of results) {
@@ -195,7 +195,7 @@ describe('Provider Service', () => {
     });
 
     it("should verify if provider contain identity property", async () => {
-      const filter = new ProvidersFilter();
+      const filter = new ProviderFilter();
       filter.identity = "meria";
 
       const results = await providerService.getProviders(filter);
@@ -247,7 +247,7 @@ describe('Provider Service', () => {
             'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq40llllsfjmn54',
         };
 
-        const providers = await providerService.getProviders(new ProvidersFilter());
+        const providers = await providerService.getProviders(new ProviderFilter());
 
         for (const identityVIP of Object.keys(vipProviders)) {
           const providerVIP = providers.find(({ identity }) => identity === identityVIP);
@@ -264,7 +264,7 @@ describe('Provider Service', () => {
     });
 
     it(`should return providers details with "providers" filter applied`, async () => {
-      const filter = new ProvidersFilter();
+      const filter = new ProviderFilter();
       filter.providers = ["erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqc0llllsayxegu", "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq8hlllls7a6h85"];
       const results = await providerService.getProviders(filter);
 
