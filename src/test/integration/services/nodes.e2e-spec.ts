@@ -6,7 +6,6 @@ import { Test } from "@nestjs/testing";
 import { KeybaseState } from "src/common/keybase/entities/keybase.state";
 import { Node } from "src/endpoints/nodes/entities/node";
 import { NodeService } from "src/endpoints/nodes/node.service";
-import { Providers } from "src/endpoints/providers/entities/providers";
 import { ProviderService } from "src/endpoints/providers/provider.service";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { PublicAppModule } from "src/public.app.module";
@@ -20,13 +19,14 @@ import '@multiversx/sdk-nestjs/lib/src/utils/extensions/number.extensions';
 import { AuctionNode } from 'src/common/gateway/entities/auction.node';
 import { CachingService, FileUtils } from '@multiversx/sdk-nestjs';
 import { AccountService } from 'src/endpoints/accounts/account.service';
+import { Provider } from 'src/endpoints/providers/entities/provider';
 
 describe('Node Service', () => {
   let nodeService: NodeService;
   let cachingService: CachingService;
   let providerService: ProviderService;
   let nodes: Node[];
-  let providers: Providers[];
+  let providers: Provider[];
   let accountService: AccountService;
   let apiConfigService: ApiConfigService;
 
