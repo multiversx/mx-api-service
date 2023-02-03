@@ -15,13 +15,14 @@ import { OriginLogger } from '@multiversx/sdk-nestjs';
 import { AuthGuardWs } from '../auth/auth.guard';
 import { UserDb } from '../persistence/userdb/entities/user.db';
 import { SubscriptionEntry } from './entities/subscription.entry';
-import { Notification, ID_PREFIX, ADDRESS_PREFIX } from './events.types';
+import { Notification } from './events.types';
 import { ValidationPipe } from './validation.pipe';
 import { ApiConfigService } from '../api-config/api.config.service';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { EventsMetricsService } from '../events-metrics/events-metrics.service';
 import { AuthService } from '../auth/auth.service';
 import { EventsMetrics } from '../events-metrics/events-metrics.map.type';
+import { addressToken, idToken, idAddressToken, checkRoomType, trimRoomName } from './events.utils';
 
 @UseGuards(AuthGuardWs)
 @UseFilters(new BaseWsExceptionFilter())
@@ -38,7 +39,8 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   constructor(private readonly apiConfigService: ApiConfigService, private readonly authService: AuthService, private readonly eventsMetricsService: EventsMetricsService) { }
 
   /**
-   *
+   * Connection handling
+   * 
    * @param socket Socket
    */
   async handleConnection(socket: Socket) {
@@ -47,9 +49,7 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     // A client has connected
     const allowConnection: boolean = await this.authService.validateRequest(socket, userDetails);
 
-    console.log("user details are", userDetails);
     if (!allowConnection) {
-      console.log("here?");
       this.logger.error(
         `Client ${socket.client} disconnected due to unaothorized request.`,
       );
@@ -85,7 +85,8 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   /**
-   *
+   * Disconnect handling
+   * 
    * @param socket Socket
    */
   // eslint-disable-next-line require-await
@@ -111,6 +112,7 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
         "Can't subscribe to more than 10 entries per connection.",
       );
     }
+
     // Set client to receive only particular events
     for (const entry of subscriptionEntries) {
       const address = entry.address;
@@ -118,9 +120,9 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
       // Parse each event and populate table as follows
       // Add all clients to the event that has respective TxHash
-      address && !identifier && await socket.join(ADDRESS_PREFIX + address);
-      identifier && await socket.join(ID_PREFIX + identifier);
-      address && identifier && await socket.join(ID_PREFIX + ADDRESS_PREFIX + address + identifier);
+      address && !identifier && await socket.join(addressToken(address));
+      identifier && await socket.join(idToken(identifier));
+      address && identifier && await socket.join(idAddressToken(address, identifier));
     }
   }
 
@@ -138,9 +140,9 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       for (const event of data.events) {
         const address = event.address;
         const identifier = event.identifier;
-        this.server?.to(ADDRESS_PREFIX + address)
-          .to(ID_PREFIX + identifier)
-          .to(ID_PREFIX + ADDRESS_PREFIX + address + identifier)
+        this.server?.to(addressToken(address))
+          .to(idToken(identifier))
+          .to(idAddressToken(address, identifier))
           .emit('notifications', event);
 
         // For each event, increment metrics
@@ -181,11 +183,15 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     // Extract rooms that are IDENTIFIERS/ADDRESSES/BOTH
     for (const room of rooms) {
-      const roomName = room[0];
+      let roomName = room[0];
       const roomSockets = room[1];
-      if (!(roomName.includes(ID_PREFIX) || roomName.includes(ADDRESS_PREFIX) || roomName.includes(ID_PREFIX + ADDRESS_PREFIX))) {
+
+      if (!checkRoomType(roomName)) {
         continue;
       }
+
+      // Substract prefix from room name
+      roomName = trimRoomName(roomName);
       metricsMap.set(roomName, []);
 
       // For each socket from the room, get the address room that it contains
@@ -198,8 +204,9 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
             metricsMap.get(roomName)?.push(room);
           }
         }
-        this.eventsMetricsService.setMetricsMap(metricsMap);
       }
+
+      this.eventsMetricsService.setMetricsMap(metricsMap);
     }
   }
   /**
