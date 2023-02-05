@@ -18,6 +18,7 @@ import { Block } from "../entities/block";
 import { Tag } from "../entities/tag";
 import { ElasticIndexerHelper } from "./elastic.indexer.helper";
 import { TokenType } from "../entities";
+import { SortCollections } from "src/endpoints/collections/entities/sort.collections";
 
 @Injectable()
 export class ElasticIndexerService implements IndexerInterface {
@@ -240,9 +241,22 @@ export class ElasticIndexerService implements IndexerInterface {
   }
 
   async getNftCollections(pagination: QueryPagination, filter: CollectionFilter, address?: string): Promise<any[]> {
-    const elasticQuery = this.indexerHelper.buildCollectionRolesFilter(filter, address)
-      .withPagination(pagination)
-      .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }]);
+    let elasticQuery = this.indexerHelper.buildCollectionRolesFilter(filter, address)
+      .withPagination(pagination);
+
+    const sort = filter.sort ?? SortCollections.timestamp;
+    const order = filter.order === SortOrder.asc ? ElasticSortOrder.ascending : ElasticSortOrder.descending;
+
+    if (sort === SortCollections.verifiedAndHolderCount) {
+      elasticQuery = elasticQuery.withSort([
+        { name: 'api_isVerified', order },
+        { name: 'api_holderCount', order },
+      ]);
+    } else {
+      elasticQuery = elasticQuery.withSort([
+        { name: 'timestamp', order },
+      ]);
+    }
 
     return await this.elasticService.getList('tokens', 'identifier', elasticQuery);
   }
@@ -664,5 +678,13 @@ export class ElasticIndexerService implements IndexerInterface {
 
   async setMetadataForToken(identifier: string, value: any): Promise<void> {
     return await this.elasticService.setCustomValue('tokens', identifier, 'metadata', value);
+  }
+
+  async setExtraCollectionFields(identifier: string, isVerified: boolean, holderCount: number, nftCount: number): Promise<void> {
+    return await this.elasticService.setCustomValues('tokens', identifier, {
+      isVerified,
+      holderCount,
+      nftCount,
+    });
   }
 }

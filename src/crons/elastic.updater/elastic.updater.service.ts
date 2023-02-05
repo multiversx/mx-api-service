@@ -1,4 +1,4 @@
-import { Inject, Injectable } from "@nestjs/common";
+import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { Cron, CronExpression } from "@nestjs/schedule";
 import * as JsonDiff from "json-diff";
 import { AssetsService } from "src/common/assets/assets.service";
@@ -18,7 +18,7 @@ export class ElasticUpdaterService {
     private readonly assetsService: AssetsService,
     private readonly indexerService: IndexerService,
     private readonly nftService: NftService,
-    @Inject('PersistenceService')
+    @Inject(forwardRef(() => 'PersistenceService'))
     private readonly persistenceService: PersistenceInterface,
   ) { }
 

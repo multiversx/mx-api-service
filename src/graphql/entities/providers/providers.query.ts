@@ -1,9 +1,9 @@
 import { Args, Query, Resolver } from "@nestjs/graphql";
 import { ProviderService } from "src/endpoints/providers/provider.service";
-import { Provider } from "src/endpoints/providers/entities/provider";
 import { GetProviderByAddressInput, GetProviderInput } from "./providers.input";
-import { ProviderFilter } from "src/endpoints/providers/entities/provider.filter";
 import { NotFoundException } from "@nestjs/common";
+import { ProviderFilter } from "src/endpoints/providers/entities/provider.filter";
+import { Provider } from "src/endpoints/providers/entities/provider";
 
 @Resolver()
 export class ProviderQuery {

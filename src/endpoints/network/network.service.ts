@@ -225,7 +225,7 @@ export class NetworkService {
       shards,
       blocks,
       accounts,
-      transactions,
+      transactions: transactions + scResults,
       scResults,
       refreshRate,
       epoch,
