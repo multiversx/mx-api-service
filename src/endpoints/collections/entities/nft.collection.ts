@@ -81,9 +81,9 @@ export class NftCollection {
   @ApiProperty({ type: CollectionTrait, isArray: true })
   traits: CollectionTrait[] = [];
 
-  @ApiProperty({ type: Boolean })
+  @ApiProperty({ type: CollectionStats })
   auctionsStats?: CollectionStats;
-  
+
   @Field(() => Boolean, { description: 'Returns true if the collection is verified.', nullable: true })
   @ApiProperty({ type: Boolean, nullable: true })
   isVerified: boolean | undefined = undefined;

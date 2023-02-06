@@ -8,21 +8,21 @@ export class CollectionStats {
   @ApiProperty({ type: String })
   identifier: string = '';
 
-  @ApiProperty({ type: String })
-  activeAuctions: string = '';
+  @ApiProperty({ type: Number })
+  activeAuctions?: number = 0;
 
-  @ApiProperty({ type: String })
-  endedAuctions: string = '';
+  @ApiProperty({ type: Number })
+  endedAuctions: number = 0;
 
-  @ApiProperty({ type: String })
-  maxPrice: string = '';
+  @ApiProperty({ type: Number })
+  maxPrice: number = 0;
 
-  @ApiProperty({ type: String })
-  minPrice: string = '';
+  @ApiProperty({ type: Number })
+  minPrice: number = 0;
 
-  @ApiProperty({ type: String })
-  saleAverage: string = '';
+  @ApiProperty({ type: Number })
+  saleAverage: number = 0;
 
-  @ApiProperty({ type: String })
-  volumeTraded: string = '';
+  @ApiProperty({ type: Number })
+  volumeTraded: number = 0;
 }
