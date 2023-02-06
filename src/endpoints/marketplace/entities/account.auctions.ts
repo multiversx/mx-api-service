@@ -29,6 +29,6 @@ export class Auction {
   @ApiProperty({ type: String })
   marketplaceAuctionId: string = '';
 
-  @ApiProperty({ type: String })
+  @ApiProperty({ type: [String] })
   tags: string[] = [];
 }
