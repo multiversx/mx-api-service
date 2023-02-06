@@ -30,7 +30,6 @@ export class NftMarketplaceService {
       throw new BadRequestException('Count not fetch accountsStats data from Nft Marketplace');
     }
     return {
-      address: result.accountStats.address,
       auctions: result.accountStats.auctions,
       claimable: result.accountStats.claimable,
       collected: result.accountStats.collected,
