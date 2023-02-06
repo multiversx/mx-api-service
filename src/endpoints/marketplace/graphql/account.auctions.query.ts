@@ -30,9 +30,6 @@ export const accountAuctionsQuery = (address: string, state: AuctionState) => {
           marketplace{
             key
           }
-          owner{
-            address
-          }
           tags
           marketplaceAuctionId
           startDate
