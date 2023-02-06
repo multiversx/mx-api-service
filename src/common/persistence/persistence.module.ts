@@ -47,7 +47,7 @@ export class PersistenceModule {
           },
           PersistenceService,
         ],
-        exports: [PersistenceService],
+        exports: [PersistenceService, UserDbModule, TransactionDbModule],
       };
     }
 
@@ -55,7 +55,7 @@ export class PersistenceModule {
       module: PersistenceModule,
       imports: [
         TypeOrmModule.forRootAsync({
-          imports: [ApiConfigModule],
+          imports: [ApiConfigModule, TransactionDbModule, UserDbModule],
           useFactory: (apiConfigService: ApiConfigService) => {
 
             const options: TypeOrmModuleOptions = {

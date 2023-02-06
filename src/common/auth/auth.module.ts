@@ -6,7 +6,7 @@ import { NativeAuthModule } from '../nativeauth/nativeauth.module';
 import { PersistenceModule } from '../persistence/persistence.module';
 
 @Module({
-  imports: [ApiModule, PersistenceModule.register(), NativeAuthModule],
+  imports: [ApiModule, PersistenceModule.forRoot(), NativeAuthModule],
   providers: [AuthService, AuthGuardWs],
   exports: [AuthService, AuthGuardWs],
 })
