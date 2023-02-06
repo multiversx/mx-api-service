@@ -110,7 +110,6 @@ export class NftMarketplaceService {
       accountAuction.endsAt = auction.node.endDate;
       accountAuction.marketplace = auction.node.marketplace.key;
       accountAuction.marketplaceAuctionId = auction.node.marketplaceAuctionId;
-      accountAuction.owner = auction.node.owner.address;
       accountAuction.tags = auction.node.tags;
 
       return accountAuction;

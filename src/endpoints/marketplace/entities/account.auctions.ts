@@ -30,8 +30,5 @@ export class Auction {
   marketplaceAuctionId: string = '';
 
   @ApiProperty({ type: String })
-  owner: string = '';
-
-  @ApiProperty({ type: String })
   tags: string[] = [];
 }
