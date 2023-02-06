@@ -1063,14 +1063,15 @@ export class AccountController {
     return account;
   }
 
-  @Get("/accounts/:address/auctions/state/:state")
+  @Get("/accounts/:address/auctions")
   @ApiOperation({ summary: 'Account auctions', description: 'Returns account auctions for a given address' })
+  @ApiQuery({ name: 'state', description: 'Returns auctions with specified state', required: false })
   @ApiOkResponse({ type: Auction })
   async getAccountAuctions(
     @Param('address') address: string,
-    @Param('state') status: AuctionState
+    @Query('state', new ParseEnumPipe(AuctionState)) state?: AuctionState,
   ): Promise<Auction[]> {
-    const account = await this.nftMarketplaceService.getAccountAuctions(address, status);
+    const account = await this.nftMarketplaceService.getAccountAuctions(address, state);
     if (!account) {
       throw new NotFoundException('Account not found');
     }
