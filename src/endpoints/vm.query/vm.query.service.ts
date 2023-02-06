@@ -1,10 +1,12 @@
 import { OriginLogger } from "@multiversx/sdk-nestjs";
 import { PerformanceProfiler, CachingService } from "@multiversx/sdk-nestjs";
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { LogMetricsEvent } from "src/common/entities/log.metrics.event";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
 import { GatewayService } from "src/common/gateway/gateway.service";
-import { ApiMetricsService } from "src/common/metrics/api.metrics.service";
 import { ProtocolService } from "src/common/protocol/protocol.service";
+import { MetricsEvents } from "src/utils/metrics-events.constants";
 import { SettingsService } from "src/common/settings/settings.service";
 
 @Injectable()
@@ -16,11 +18,11 @@ export class VmQueryService {
     private readonly cachingService: CachingService,
     private readonly gatewayService: GatewayService,
     private readonly protocolService: ProtocolService,
+    private readonly eventEmitter: EventEmitter2,
     private readonly settingsService: SettingsService,
-    private readonly metricsService: ApiMetricsService,
   ) { }
 
-  private async computeTtls(): Promise<{ localTtl: number, remoteTtl: number }> {
+  private async computeTtls(): Promise<{ localTtl: number, remoteTtl: number; }> {
     const secondsRemainingUntilNextRound = await this.protocolService.getSecondsRemainingUntilNextRound();
 
     // no need to store value remotely just to evict it one second later
@@ -111,7 +113,12 @@ export class VmQueryService {
 
       const useVmQueryTracingFlag = await this.settingsService.getUseVmQueryTracingFlag();
       if (useVmQueryTracingFlag) {
-        this.metricsService.setVmQuery(contract, func, profiler.duration);
+        const metricsEvent = new LogMetricsEvent();
+        metricsEvent.args = [contract, func, profiler.duration];
+        this.eventEmitter.emit(
+          MetricsEvents.SetVmQuery,
+          metricsEvent
+        );
       }
     }
   }
