@@ -49,7 +49,7 @@ import { AccountDelegation } from '../stake/entities/account.delegation';
 import { DelegationService } from '../delegation/delegation.service';
 import { AccountStats } from '../marketplace/entities/account.stats';
 import { AccountStatsFilters } from '../marketplace/entities/account.stats.filter';
-import { NftMarketplaceService } from '../marketplace/marketplace.service';
+import { NftMarketplaceService } from '../marketplace/nft.marketplace.service';
 import { Auction } from '../marketplace/entities/account.auctions';
 import { TokenType } from '../tokens/entities/token.type';
 import { ContractUpgrades } from './entities/contract.upgrades';

@@ -22,7 +22,7 @@ import { Collection } from "src/common/indexer/entities";
 import { PersistenceService } from "src/common/persistence/persistence.service";
 import { NftRankAlgorithm } from "src/common/assets/entities/nft.rank.algorithm";
 import { NftRank } from "src/common/assets/entities/nft.rank";
-import { NftMarketplaceService } from "../marketplace/marketplace.service";
+import { NftMarketplaceService } from "../marketplace/nft.marketplace.service";
 import { CollectionStatsFilters } from "../marketplace/entities/collection.stats.filter";
 import { CollectionQueryOptions } from "./entities/collection.query.options";
 import { TokenDetailed } from "../tokens/entities/token.detailed";

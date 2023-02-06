@@ -1,6 +1,6 @@
 import { forwardRef, Module } from "@nestjs/common";
 import { GraphQlModule } from "src/common/graphql/graphql.module";
-import { NftMarketplaceService } from "./marketplace.service";
+import { NftMarketplaceService } from "./nft.marketplace.service";
 
 @Module({
   imports: [
@@ -13,4 +13,4 @@ import { NftMarketplaceService } from "./marketplace.service";
     NftMarketplaceService,
   ],
 })
-export class MarketplaceModule { }
+export class NftMarketplaceModule { }

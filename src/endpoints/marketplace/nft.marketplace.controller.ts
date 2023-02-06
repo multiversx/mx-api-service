@@ -3,7 +3,7 @@ import { ApiExcludeEndpoint, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } fr
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { Auctions } from "./entities/auctions";
 import { AuctionsFilter } from "./entities/auctions.filter";
-import { NftMarketplaceService } from "./marketplace.service";
+import { NftMarketplaceService } from "./nft.marketplace.service";
 
 @Controller()
 @ApiTags('marketplace')
