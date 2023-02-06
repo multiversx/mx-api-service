@@ -12,7 +12,7 @@ import { KeybaseService } from "./keybase.service";
     forwardRef(() => ProviderModule),
     forwardRef(() => GithubModule),
     ApiConfigModule,
-    PersistenceModule,
+    PersistenceModule.forRoot(),
   ],
   providers: [
     KeybaseService,
