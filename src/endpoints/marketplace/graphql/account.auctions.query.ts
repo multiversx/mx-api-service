@@ -1,7 +1,7 @@
 import { gql } from "graphql-request";
-import { StatusAuction } from "../entities/auction.state.enum";
+import { AuctionState } from "../entities/auction.state";
 
-export const accountAuctionsQuery = (address: string, state: StatusAuction) => {
+export const accountAuctionsQuery = (address: string, state: AuctionState) => {
   return gql`
   query{
     auctions(filters:{

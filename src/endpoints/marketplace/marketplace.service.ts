@@ -3,7 +3,6 @@ import { GraphQlService } from "src/common/graphql/graphql.service";
 import { AccountStats } from "./entities/account.stats";
 import { AccountStatsFilters } from "./entities/account.stats.filter";
 import { Auction } from "./entities/account.auctions";
-import { StatusAuction } from "./entities/auction.state.enum";
 import { CollectionStats } from "./entities/collection.stats";
 import { CollectionStatsFilters } from "./entities/collection.stats.filter";
 import { ExploreCollectionsStats } from "./entities/explore.collections.stats";
@@ -15,6 +14,7 @@ import { Auctions } from "./entities/auctions";
 import { auctionsQuery } from "./graphql/auctions.query";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { AuctionsFilter } from "./entities/auctions.filter";
+import { AuctionState } from "./entities/auction.state";
 
 @Injectable()
 export class NftMarketplaceService {
@@ -93,7 +93,7 @@ export class NftMarketplaceService {
   }
 
 
-  async getAccountAuctions(address: string, state: StatusAuction): Promise<Auction[]> {
+  async getAccountAuctions(address: string, state: AuctionState): Promise<Auction[]> {
     const result: any = await this.graphQlService.getDataFromMarketPlace(accountAuctionsQuery(address, state), {});
     if (!result) {
       return [];

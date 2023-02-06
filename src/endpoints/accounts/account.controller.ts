@@ -50,11 +50,11 @@ import { DelegationService } from '../delegation/delegation.service';
 import { AccountStats } from '../marketplace/entities/account.stats';
 import { AccountStatsFilters } from '../marketplace/entities/account.stats.filter';
 import { NftMarketplaceService } from '../marketplace/marketplace.service';
-import { StatusAuction } from '../marketplace/entities/auction.state.enum';
 import { Auction } from '../marketplace/entities/account.auctions';
 import { TokenType } from '../tokens/entities/token.type';
 import { ContractUpgrades } from './entities/contract.upgrades';
 import { AccountVerification } from './entities/account.verification';
+import { AuctionState } from '../marketplace/entities/auction.state';
 
 @Controller()
 @ApiTags('accounts')
@@ -1068,7 +1068,7 @@ export class AccountController {
   @ApiOkResponse({ type: Auction })
   async getAccountAuctions(
     @Param('address') address: string,
-    @Param('state') status: StatusAuction
+    @Param('state') status: AuctionState
   ): Promise<Auction[]> {
     const account = await this.nftMarketplaceService.getAccountAuctions(address, status);
     if (!account) {
