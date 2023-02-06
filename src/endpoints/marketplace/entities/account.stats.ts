@@ -5,27 +5,27 @@ export class AccountStats {
     Object.assign(this, init);
   }
 
-  @ApiProperty({ type: String })
-  auctions: string = '';
+  @ApiProperty({ type: Number })
+  auctions: number = 0;
 
-  @ApiProperty({ type: String })
-  claimable: string = '';
+  @ApiProperty({ type: Number })
+  claimable: number = 0;
 
-  @ApiProperty({ type: String })
-  collected: string = '';
+  @ApiProperty({ type: Number })
+  collected: number = 0;
 
-  @ApiProperty({ type: String })
-  collections: string = '';
+  @ApiProperty({ type: Number })
+  collections: number = 0;
 
-  @ApiProperty({ type: String })
-  creations: string = '';
+  @ApiProperty({ type: Number })
+  creations: number = 0;
 
-  @ApiProperty({ type: String })
-  likes: string = '';
+  @ApiProperty({ type: Number })
+  likes: number = 0;
 
-  @ApiProperty({ type: String })
+  @ApiProperty({ type: Number })
   marketplaceKey: string = '';
 
-  @ApiProperty({ type: String })
-  orders: string = '';
+  @ApiProperty({ type: Number })
+  orders: number = 0;
 }

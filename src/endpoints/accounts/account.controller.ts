@@ -1039,7 +1039,7 @@ export class AccountController {
     return await this.accountService.getAccountTokenHistory(address, tokenIdentifier, new QueryPagination({ from, size }));
   }
 
-  @Get("/accounts/:address/account/stats")
+  @Get("/accounts/:address/auction/stats")
   @ApiOperation({ summary: 'Account stats', description: 'Returns account status details from nft marketplace for a given address' })
   @ApiQuery({ name: 'isOwner', description: 'Returns account stats details where given address is owner', required: false })
   @ApiQuery({ name: 'marketplaceKey', description: 'Return marketplace key details', required: false })
