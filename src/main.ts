@@ -8,6 +8,7 @@ import { PrivateAppModule } from './private.app.module';
 import { CacheWarmerModule } from './crons/cache.warmer/cache.warmer.module';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { Logger, NestInterceptor } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import * as bodyParser from 'body-parser';
 import * as requestIp from 'request-ip';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
@@ -31,7 +32,6 @@ import { TransactionLoggingInterceptor } from './interceptors/transaction.loggin
 import { BatchTransactionProcessorModule } from './crons/transaction.processor/batch.transaction.processor.module';
 import { GraphqlComplexityInterceptor } from './graphql/interceptors/graphql.complexity.interceptor';
 import { GraphQLMetricsInterceptor } from './graphql/interceptors/graphql.metrics.interceptor';
-import { ApiMetricsService } from './common/metrics/api.metrics.service';
 import { SettingsService } from './common/settings/settings.service';
 import { StatusCheckerModule } from './crons/status.checker/status.checker.module';
 import { JwtOrNativeAuthGuard } from './utils/jwt.or.native.auth.guard';
@@ -170,7 +170,7 @@ async function configurePublicApp(publicApp: NestExpressApplication, apiConfigSe
   publicApp.useStaticAssets(join(__dirname, 'public/assets'));
 
   const metricsService = publicApp.get<MetricsService>(MetricsService);
-  const apiMetricsService = publicApp.get<ApiMetricsService>(ApiMetricsService);
+  const eventEmitterService = publicApp.get<EventEmitter2>(EventEmitter2);
   const pluginService = publicApp.get<PluginService>(PluginService);
   const httpAdapterHostService = publicApp.get<HttpAdapterHost>(HttpAdapterHost);
   const cachingService = publicApp.get<CachingService>(CachingService);
@@ -201,7 +201,7 @@ async function configurePublicApp(publicApp: NestExpressApplication, apiConfigSe
   // @ts-ignore
   globalInterceptors.push(new ComplexityInterceptor());
   globalInterceptors.push(new GraphqlComplexityInterceptor());
-  globalInterceptors.push(new GraphQLMetricsInterceptor(apiMetricsService));
+  globalInterceptors.push(new GraphQLMetricsInterceptor(eventEmitterService));
   // @ts-ignore
   globalInterceptors.push(new RequestCpuTimeInterceptor(metricsService));
   // @ts-ignore
