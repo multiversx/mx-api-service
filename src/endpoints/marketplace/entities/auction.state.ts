@@ -1,5 +1,5 @@
 export enum AuctionState {
-  running = 'Running',
-  claimable = 'Claimable',
-  ended = 'Ended'
+  running = 'running',
+  claimable = 'claimable',
+  ended = 'ended'
 }

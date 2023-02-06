@@ -18,10 +18,10 @@ export class Auction {
   status: string = '';
 
   @ApiProperty({ type: Number })
-  creationDate: number = 0;
+  createdAt: number = 0;
 
   @ApiProperty({ type: Number })
-  endDate: number = 0;
+  endsAt: number = 0;
 
   @ApiProperty({ type: String })
   marketplace: string = '';
