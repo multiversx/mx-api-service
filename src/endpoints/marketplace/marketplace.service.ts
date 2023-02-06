@@ -93,7 +93,8 @@ export class NftMarketplaceService {
   }
 
 
-  async getAccountAuctions(address: string, state?: AuctionState): Promise<Auction[]> {
+  async getAccountAuctions(queryPagination: QueryPagination, address: string, state?: AuctionState): Promise<Auction[]> {
+    const { from, size } = queryPagination;
     const result: any = await this.graphQlService.getDataFromMarketPlace(accountAuctionsQuery(address, state), {});
     if (!result) {
       return [];
@@ -115,7 +116,7 @@ export class NftMarketplaceService {
       return accountAuction;
     });
 
-    return auctions;
+    return auctions.slice(from, from + size);
   }
 
   async getAuctionById(auctionId: string): Promise<Auctions | undefined> {
