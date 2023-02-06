@@ -16,7 +16,7 @@ export class JwtOrNativeAuthGuard implements CanActivate {
     }
 
     const jwtGuard = new JwtAuthenticateGuard(this.erdnestConfigService);
-    const nativeAuthGuard = new NativeAuthGuard(this.cachingService);
+    const nativeAuthGuard = new NativeAuthGuard(this.cachingService, this.erdnestConfigService);
 
     try {
       const result = await jwtGuard.canActivate(context);
