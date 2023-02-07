@@ -27,7 +27,7 @@ flags:
   indexer-v5: true
 features:
   eventsNotifier:
-    enabled: true
+    enabled: false
     port: 5674
     url: 'amqp://guest:guest@127.0.0.1:5673'
     exchange: 'all_events'
@@ -36,14 +36,6 @@ features:
     enabled: false
     hitsThreshold: 100
     ttl: 12
-  # This feature depends on eventsNotifier, hence
-  # will use the same exchange and queue
-  liveWebsocketEvents:
-    enabled: true
-    egldPerTimeUnit: 1000000000000000000 / 730
-    maxConnections: 2,
-    allowedReceivers: 
-     - 'erd196p5utv4r3w2kahnzcqcdht8hwfv92mpvx6qudwl92uvvhp5qezqu88r8h'
 image:
   width: 600
   height: 600
