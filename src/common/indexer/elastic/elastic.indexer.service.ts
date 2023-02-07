@@ -681,26 +681,31 @@ export class ElasticIndexerService implements IndexerInterface {
   }
 
   async getEsdtProperties(identifier: string): Promise<any> {
-    const query = ElasticQuery.create()
-      .withMustMatchCondition('token', identifier, QueryOperator.AND)
-      .withMustCondition(
-        QueryType.Match('token', identifier, QueryOperator.AND),
-      )
-      .withFields(["name", "type", "currentOwner", "numDecimals", "properties"])
-      .withMustNotExistCondition('nonce');
+    return await this.elasticService.getItem(
+      'tokens',
+      'identifier',
+      identifier
+    );
+  }
 
-    let properties;
+  async getAllFungibleTokens(): Promise<any[]> {
+    const query = ElasticQuery.create()
+      .withMustMatchCondition('type', TokenType.FungibleESDT)
+      .withFields(["name", "type", "currentOwner", "numDecimals", "properties"])
+      .withMustNotExistCondition('identifier');
+
+    const allTokens: any[] = [];
 
     await this.elasticService.getScrollableList(
       'tokens',
       'identifier',
       query,
+      // @ts-ignore
       // eslint-disable-next-line require-await
-      async (item) => {
-        properties = item[0];
-      },
+      async tokens => allTokens.push(...tokens),
     );
-    return properties;
+
+    return allTokens;
   }
 
   async setExtraCollectionFields(identifier: string, isVerified: boolean, holderCount: number, nftCount: number): Promise<void> {

@@ -58,36 +58,42 @@ export class EsdtService {
   }
 
   async getEsdtTokenPropertiesRaw(identifier: string): Promise<TokenProperties | null> {
-    const elastic = await this.elasticIndexerService.getEsdtProperties(identifier);
+    const elasticProperties = await this.elasticIndexerService.getEsdtProperties(identifier);
+    return this.mapEsdtTokenPropertiesFromElastic(elasticProperties);
+  }
 
-    if (!elastic) {
-      return null;
-    }
+  async getAllFungibleTokenProperties(): Promise<TokenProperties[]> {
+    const elasticProperties = await this.elasticIndexerService.getAllFungibleTokens();
+    return elasticProperties.map(property => this.mapEsdtTokenPropertiesFromElastic(property));
+  }
 
-    const tokenProps: TokenProperties = new TokenProperties({
-      identifier: identifier,
-      name: elastic.name,
-      type: elastic.type as EsdtType,
-      owner: elastic.currentOwner,
-      decimals: elastic.numDecimals,
-      canUpgrade: elastic.properties.canUpgrade,
-      canMint: elastic.properties.canMint,
-      canBurn: elastic.properties.canBurn,
-      canChangeOwner: elastic.properties.canChangeOwner,
-      canPause: elastic.properties.canPause,
-      canFreeze: elastic.properties.canFreeze,
-      canWipe: elastic.properties.canWipe,
-      canAddSpecialRoles: elastic.properties.canAddSpecialRoles,
-      canTransferNFTCreateRole: elastic.properties.canTransferNFTCreateRole,
-      NFTCreateStopped: elastic.properties.NFTCreateStopped,
-    } as unknown as TokenProperties);
+  private mapEsdtTokenPropertiesFromElastic(elasticProperties: any): TokenProperties {
+    const tokenProps = new TokenProperties({
+      identifier: elasticProperties.identifier,
+      name: elasticProperties.name,
+      type: elasticProperties.type as EsdtType,
+      owner: elasticProperties.currentOwner,
+      decimals: elasticProperties.numDecimals,
+      canUpgrade: elasticProperties.properties.canUpgrade,
+      canMint: elasticProperties.properties.canMint,
+      canBurn: elasticProperties.properties.canBurn,
+      canChangeOwner: elasticProperties.properties.canChangeOwner,
+      canPause: elasticProperties.properties.canPause,
+      canFreeze: elasticProperties.properties.canFreeze,
+      canWipe: elasticProperties.properties.canWipe,
+      canAddSpecialRoles: elasticProperties.properties.canAddSpecialRoles,
+      canTransferNFTCreateRole: elasticProperties.properties.canTransferNFTCreateRole,
+      NFTCreateStopped: elasticProperties.properties.NFTCreateStopped,
+      isPaused: elasticProperties.properties.isPaused ?? false,
+    });
 
-    if (elastic.type === 'FungibleESDT') {
+    if (elasticProperties.type === 'FungibleESDT') {
       // @ts-ignore
       delete tokenProps.canTransferNFTCreateRole;
       // @ts-ignore
       delete tokenProps.NFTCreateStopped;
     }
+
     return tokenProps;
   }
 
