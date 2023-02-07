@@ -17,6 +17,8 @@ export class ErdnestConfigServiceImpl implements ErdnestConfigService {
   }
 
   getApiUrl(): string {
-    return this.apiConfigService.getSelfUrl();
+    const network = this.apiConfigService.getNetwork();
+    const prefix = network !== 'mainnet' ? `${network}-` : '';
+    return `https://${prefix}api.multiversx.com`;
   }
 }
