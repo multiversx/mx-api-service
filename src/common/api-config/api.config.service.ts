@@ -415,6 +415,7 @@ export class ApiConfigService {
 
     return receivers;
   }
+
   getIsProcessNftsFlagActive(): boolean {
     return this.configService.get<boolean>('flags.processNfts') ?? false;
   }

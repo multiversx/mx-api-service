@@ -18,7 +18,7 @@ export class AuthService {
     private readonly nativeAuthService: NativeAuthService,
   ) { }
 
-  computeUserAvailability(egldValue: number) {
+  computeUserAvailability(egldValue: number): { availability: number; extraAvailability: number } {
     // Compute number of seconds hours per EGLD
     const timeUnits = Math.floor(
       egldValue / this.apiConfigService.getLiveWebsocketEventsEgldPerTimeUnit(),
@@ -34,7 +34,7 @@ export class AuthService {
       60 *
       1000;
 
-    return [availability, extraAvailability];
+    return { availability, extraAvailability };
   }
 
   /**
@@ -46,7 +46,7 @@ export class AuthService {
   async validateUser(
     accessToken: string,
     transactionAddress: string,
-  ): Promise<any> {
+  ): Promise<{ address: string, availability: number, extraAvailability: number }> {
     // Validate the access token
     const tokenData = await this.nativeAuthService.validateAndReturnAccessToken(
       accessToken,
@@ -108,7 +108,7 @@ export class AuthService {
       );
     }
 
-    return [tokenData.address, ...this.computeUserAvailability(parseInt(txData.value, 10))];
+    return { address: tokenData.address, ...this.computeUserAvailability(parseInt(txData.value, 10)) };
   }
 
   /**

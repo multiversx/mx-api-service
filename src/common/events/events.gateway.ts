@@ -12,7 +12,7 @@ import {
 import { Server, Socket } from 'socket.io';
 import { UseFilters, UseGuards, UsePipes } from '@nestjs/common';
 import { OriginLogger } from '@multiversx/sdk-nestjs';
-import { AuthGuardWs } from '../auth/auth.guard';
+import { AuthGuardWs } from '../auth/auth.guard.ws';
 import { UserDb } from '../persistence/userdb/entities/user.db';
 import { SubscriptionEntry } from './entities/subscription.entry';
 import { Notification } from './events.types';

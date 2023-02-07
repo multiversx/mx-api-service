@@ -60,7 +60,7 @@ export class RegisterController {
 
             // returns user_address, availability date and extra time to
             // add to use in case of being already registered
-            const [user_address, availability, extra_availability] =
+            const { address, availability, extraAvailability } =
                 await this.authService.validateUser(
                     body.access_token,
                     body.transaction_address,
@@ -70,16 +70,16 @@ export class RegisterController {
                 tx_hash: transaction_address,
             });
 
-            const user = await this.userDbService.findUser(user_address);
+            const user = await this.userDbService.findUser(address);
 
             if (user) {
                 await this.userDbService.updateUserAvailability(
-                    user_address,
-                    user.availability + extra_availability,
+                    address,
+                    user.availability + extraAvailability,
                 );
             } else {
                 await this.userDbService.createUser({
-                    address: user_address,
+                    address,
                     availability: availability,
                 });
             }
