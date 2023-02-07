@@ -9,7 +9,6 @@ export function idToken(identifier: string): string {
     return ID_PREFIX + identifier;
 }
 
-
 export function idAddressToken(address: string, identifier: string): string {
     return ID_PREFIX + ADDRESS_PREFIX + address + '_' + identifier;
 }

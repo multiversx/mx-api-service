@@ -106,10 +106,14 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     socket: Socket,
     subscriptionEntries: Array<SubscriptionEntry>,
   ) {
-    if (subscriptionEntries.length > Math.abs(socket.rooms.size - 13)) {
-      this.logger.error("Client's subscription entries are more than 10.");
+    const MAX_SUBSCRIPTION_ENTRIES = 10;
+    const DEFAULT_ROOMS_PER_CONNECTION = 3;
+    const MAX_ROOMS_PER_CONNECTION = MAX_SUBSCRIPTION_ENTRIES + DEFAULT_ROOMS_PER_CONNECTION;
+
+    if (subscriptionEntries.length + socket.rooms.size > MAX_ROOMS_PER_CONNECTION) {
+      this.logger.error(`Client's subscription entries are more than ${MAX_SUBSCRIPTION_ENTRIES}.`);
       throw new WsException(
-        "Can't subscribe to more than 10 entries per connection.",
+        `Can't subscribe to more than ${MAX_SUBSCRIPTION_ENTRIES} entries per connection.`,
       );
     }
 
@@ -120,9 +124,13 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
       // Parse each event and populate table as follows
       // Add all clients to the event that has respective TxHash
-      address && !identifier && await socket.join(addressToken(address));
-      identifier && await socket.join(idToken(identifier));
-      address && identifier && await socket.join(idAddressToken(address, identifier));
+      if (address && !identifier) {
+        await socket.join(addressToken(address));
+      } else if (!address && identifier) {
+        await socket.join(idToken(identifier));
+      } else if (address && identifier) {
+        await socket.join(idAddressToken(address, identifier));
+      }
     }
   }
 
@@ -190,7 +198,7 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
         continue;
       }
 
-      // Substract prefix from room name
+      // Subtract prefix from room name
       roomName = trimRoomName(roomName);
       metricsMap.set(roomName, []);
 
