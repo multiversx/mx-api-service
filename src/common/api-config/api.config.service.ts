@@ -658,27 +658,27 @@ export class ApiConfigService {
     return this.configService.get<number>('nftProcess.maxRetries') ?? 3;
   }
 
-  getMaiarExchangeUrl(): string | undefined {
-    return this.configService.get<string>('transaction-action.mex.microServiceUrl') ?? this.configService.get<string>('plugins.transaction-action.mex.microServiceUrl');
+  getExchangeServiceUrl(): string | undefined {
+    return this.configService.get<string>('urls.exchangeService') ?? this.configService.get<string>('transaction-action.mex.microServiceUrl') ?? this.configService.get<string>('plugins.transaction-action.mex.microServiceUrl');
   }
 
-  getMaiarExchangeUrlMandatory(): string {
-    const microServiceUrl = this.getMaiarExchangeUrl();
+  getExchangeServiceUrlMandatory(): string {
+    const microServiceUrl = this.getExchangeServiceUrl();
     if (!microServiceUrl) {
-      throw new Error('No transaction-action.mex.microServiceUrl present');
+      throw new Error('No exchange service url present');
     }
 
     return microServiceUrl;
   }
 
-  getNftMarketPlaceUrl(): string | undefined {
-    return this.configService.get<string>('marketplace.url');
+  getNftServiceUrl(): string | undefined {
+    return this.configService.get<string>('urls.nftService');
   }
 
-  getNftMarketplaceMandatory(): string {
-    const microServiceUrl = this.getNftMarketPlaceUrl();
+  getNftServiceUrlMandatory(): string {
+    const microServiceUrl = this.getNftServiceUrl();
     if (!microServiceUrl) {
-      throw new Error('No marketplace.url present');
+      throw new Error('No urls.nftService present');
     }
 
     return microServiceUrl;

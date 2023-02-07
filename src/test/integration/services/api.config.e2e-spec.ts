@@ -1434,7 +1434,7 @@ describe('API Config', () => {
         .spyOn(ConfigService.prototype, "get")
         .mockImplementation(jest.fn(() => 'https://graph.maiar.exchange/graphql'));
 
-      const results = apiConfigService.getMaiarExchangeUrlMandatory();
+      const results = apiConfigService.getExchangeServiceUrlMandatory();
       expect(results).toEqual('https://graph.maiar.exchange/graphql');
     });
 
@@ -1443,7 +1443,7 @@ describe('API Config', () => {
         .spyOn(ConfigService.prototype, 'get')
         .mockImplementation(jest.fn(() => undefined));
 
-      expect(() => apiConfigService.getMaiarExchangeUrlMandatory()).toThrowError('No transaction-action.mex.microServiceUrl present');
+      expect(() => apiConfigService.getExchangeServiceUrlMandatory()).toThrowError('No transaction-action.mex.microServiceUrl present');
     });
   });
 

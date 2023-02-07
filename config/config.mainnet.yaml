@@ -67,6 +67,8 @@ urls:
   ipfs: 'https://ipfs.io/ipfs'
   socket: 'socket-fra.elrond.com'
   maiarId: 'https://id-api.multiversx.com'
+  nftService: 'https://nfts-graph.multiversx.com/graphql'
+  exchangeService: 'https://graph.xexchange.com/graphql'
 indexer:
   type: 'elastic'
   maxPagination: 10000
@@ -108,8 +110,3 @@ security:
 nftProcess:
   parallelism: 1
   maxRetries: 3
-transaction-action:
-  mex:
-    microServiceUrl: 'https://graph.xexchange.com/graphql'
-marketplace:
-  url: 'https://nfts-graph.multiversx.com/graphql'

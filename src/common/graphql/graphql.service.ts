@@ -12,7 +12,7 @@ export class GraphQlService {
   ) { }
 
   async getData(query: string, variables: any): Promise<any> {
-    const MAIAR_EXCHANGE_URL = this.apiConfigService.getMaiarExchangeUrlMandatory();
+    const MAIAR_EXCHANGE_URL = this.apiConfigService.getExchangeServiceUrlMandatory();
 
     const graphqlClient = new GraphQLClient(MAIAR_EXCHANGE_URL);
 
@@ -33,7 +33,7 @@ export class GraphQlService {
   }
 
   async getDataFromMarketPlace(query: string, variables: any): Promise<any> {
-    const NFT_MARKETPLACE_URL = this.apiConfigService.getNftMarketplaceMandatory();
+    const NFT_MARKETPLACE_URL = this.apiConfigService.getNftServiceUrlMandatory();
 
     const graphqlClient = new GraphQLClient(NFT_MARKETPLACE_URL);
 

@@ -67,6 +67,8 @@ urls:
   ipfs: 'https://ipfs.io/ipfs'
   socket: 'devnet-socket-fra.elrond.com'
   maiarId: 'https://devnet-id-api.multiversx.com'
+  exchangeService: 'https://devnet-graph.xexchange.com/graphql'
+  nftService: 'https://devnet-nfts-graph.multiversx.com/graphql'
 indexer:
   type: 'elastic'
   maxPagination: 10000
@@ -108,8 +110,3 @@ security:
 nftProcess:
   parallelism: 1
   maxRetries: 3
-transaction-action:
-  mex:
-    microServiceUrl: 'https://devnet-graph.xexchange.com/graphql'
-marketplace:
-  url: 'https://devnet-nfts-graph.multiversx.com/graphql'
