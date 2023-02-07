@@ -3,18 +3,25 @@ import { CompetingRabbitConsumer } from './rabbitmq.consumers';
 import { RabbitMqNftHandlerService } from './rabbitmq.nft.handler.service';
 import configuration from 'config/configuration';
 import { NotifierEvent as NotifierEvent } from './entities/notifier.event';
-import { NotifierEventIdentifier } from './entities/notifier.event.identifier';
+import { NftNotifierEventIdentifier } from './entities/notifier.event.identifier';
 import { RabbitMqTokenHandlerService } from './rabbitmq.token.handler.service';
 import { OriginLogger } from '@multiversx/sdk-nestjs';
+import { RabbitMqEventsHandlerService } from './rabbitmq.events.handler.service';
+import { ApiConfigService } from '../api-config/api.config.service';
 
 @Injectable()
 export class RabbitMqConsumer {
   private readonly logger = new OriginLogger(RabbitMqConsumer.name);
+  private isLiveWsEnabled: boolean = false;
 
   constructor(
     private readonly nftHandlerService: RabbitMqNftHandlerService,
     private readonly tokenHandlerService: RabbitMqTokenHandlerService,
-  ) { }
+    private readonly eventsHandlerService: RabbitMqEventsHandlerService,
+    private readonly apiConfigService: ApiConfigService,
+  ) {
+    this.isLiveWsEnabled = this.apiConfigService.isLiveWebsocketEventsFeatureEnabled();
+  }
 
   @CompetingRabbitConsumer({
     exchange: 'all_events',
@@ -24,6 +31,9 @@ export class RabbitMqConsumer {
   async consumeEvents(rawEvents: any) {
     try {
       const events = rawEvents?.events;
+
+      this.isLiveWsEnabled && await this.eventsHandlerService.sendNotification(rawEvents);
+
       if (events) {
         await Promise.all(events.map((event: any) => this.handleEvent(event)));
       }
@@ -35,13 +45,13 @@ export class RabbitMqConsumer {
 
   private async handleEvent(event: NotifierEvent): Promise<void> {
     switch (event.identifier) {
-      case NotifierEventIdentifier.ESDTNFTCreate:
+      case NftNotifierEventIdentifier.ESDTNFTCreate:
         await this.nftHandlerService.handleNftCreateEvent(event);
         break;
-      case NotifierEventIdentifier.ESDTNFTUpdateAttributes:
+      case NftNotifierEventIdentifier.ESDTNFTUpdateAttributes:
         await this.nftHandlerService.handleNftUpdateAttributesEvent(event);
         break;
-      case NotifierEventIdentifier.transferOwnership:
+      case NftNotifierEventIdentifier.transferOwnership:
         await this.tokenHandlerService.handleTransferOwnershipEvent(event);
         break;
     }

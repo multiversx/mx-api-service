@@ -9,6 +9,10 @@ import { NftMediaDb } from "./entities/nft.media.db";
 import { NftMetadataDb } from "./entities/nft.metadata.db";
 import { NftTraitSummaryDb } from "./entities/nft.trait.summary.db";
 import { PersistenceService } from "./persistence.service";
+import { UserDbService } from "./userdb/user.db.service";
+import { UserDbModule } from "./userdb/user.db.module";
+import { TransactionDbService } from "./transactiondb/transactiondb.service";
+import { TransactionDbModule } from "./transactiondb/transactiondb.module";
 
 @Global()
 @Module({})
@@ -19,7 +23,7 @@ export class PersistenceModule {
     if (isPassThrough) {
       return {
         module: PersistenceModule,
-        imports: [],
+        imports: [UserDbModule, TransactionDbModule],
         providers: [
           {
             provide: getRepositoryToken(NftMetadataDb),
@@ -43,7 +47,7 @@ export class PersistenceModule {
           },
           PersistenceService,
         ],
-        exports: [PersistenceService],
+        exports: [PersistenceService, UserDbModule, TransactionDbModule],
       };
     }
 
@@ -51,7 +55,7 @@ export class PersistenceModule {
       module: PersistenceModule,
       imports: [
         TypeOrmModule.forRootAsync({
-          imports: [ApiConfigModule],
+          imports: [ApiConfigModule, TransactionDbModule, UserDbModule],
           useFactory: (apiConfigService: ApiConfigService) => {
 
             const options: TypeOrmModuleOptions = {
@@ -72,7 +76,7 @@ export class PersistenceModule {
         TypeOrmModule.forFeature([NftMetadataDb, NftMediaDb, NftTraitSummaryDb, KeybaseConfirmationDb, HotSwappableSettingDb]),
       ],
       providers: [PersistenceService],
-      exports: [PersistenceService, TypeOrmModule.forFeature([NftMetadataDb, NftMediaDb, NftTraitSummaryDb, KeybaseConfirmationDb, HotSwappableSettingDb])],
+      exports: [PersistenceService, TypeOrmModule.forFeature([NftMetadataDb, NftMediaDb, NftTraitSummaryDb, KeybaseConfirmationDb, HotSwappableSettingDb]), UserDbService, TransactionDbService],
     };
   }
 }

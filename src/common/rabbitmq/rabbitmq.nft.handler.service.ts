@@ -4,6 +4,7 @@ import { NftService } from 'src/endpoints/nfts/nft.service';
 import { ProcessNftSettings } from 'src/endpoints/process-nfts/entities/process.nft.settings';
 import { NftWorkerService } from 'src/queue.worker/nft.worker/nft.worker.service';
 import { CacheInfo } from '../../utils/cache.info';
+import { NftNotifierEventIdentifier } from './entities/notifier.event.identifier';
 import { NotifierEvent } from './entities/notifier.event';
 import { BinaryUtils, CachingService } from '@multiversx/sdk-nestjs';
 import { IndexerService } from '../indexer/indexer.service';
@@ -46,7 +47,11 @@ export class RabbitMqNftHandlerService {
     return collection.type as NftType;
   }
 
-  public async handleNftUpdateAttributesEvent(event: NotifierEvent): Promise<boolean> {
+  public async handleNftUpdateAttributesEvent(event: NotifierEvent): Promise<boolean | null> {
+    if (event.identifier !== NftNotifierEventIdentifier.ESDTNFTUpdateAttributes) {
+      return null;
+    }
+
     const identifier = this.getNftIdentifier(event.topics);
     const attributes = BinaryUtils.base64Decode(event.topics[3]);
 
@@ -71,7 +76,11 @@ export class RabbitMqNftHandlerService {
     }
   }
 
-  public async handleNftCreateEvent(event: NotifierEvent): Promise<boolean> {
+  public async handleNftCreateEvent(event: NotifierEvent): Promise<boolean | null> {
+    if (event.identifier !== NftNotifierEventIdentifier.ESDTNFTCreate) {
+      return null;
+    }
+
     const identifier = this.getNftIdentifier(event.topics);
 
     const collectionIdentifier = identifier.split('-').slice(0, 2).join('-');

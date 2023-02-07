@@ -380,6 +380,41 @@ export class ApiConfigService {
     return exchange;
   }
 
+  isLiveWebsocketEventsFeatureEnabled(): boolean {
+    const isEnabled = this.configService.get<boolean>('features.liveWebsocketEvents.enabled');
+    if (!isEnabled) {
+      return false;
+    }
+
+    return isEnabled;
+  }
+
+  getLiveWebsocketEventsMaxConnections(): number {
+    const maxConnections = this.configService.get<number>('features.liveWebsocketEvents.maxConnections');
+    if (!maxConnections) {
+      return 2;
+    }
+
+    return maxConnections;
+  }
+
+  getLiveWebsocketEventsEgldPerTimeUnit(): number {
+    const egldPerTimeUnit = this.configService.get<number>('features.liveWebsocketEvents.egldPerTimeUnit');
+    if (!egldPerTimeUnit) {
+      throw new Error('No live websocket events egld per time unit set');
+    }
+
+    return egldPerTimeUnit;
+  }
+
+  getLiveWebsocketEventsAllowedReceivers(): string[] {
+    const receivers = this.configService.get<string[]>('features.liveWebsocketEvents.allowedReceivers');
+    if (!receivers) {
+      throw new Error('No live websocket events allowed receivers present');
+    }
+
+    return receivers;
+  }
   getIsProcessNftsFlagActive(): boolean {
     return this.configService.get<boolean>('flags.processNfts') ?? false;
   }

@@ -33,6 +33,7 @@ import { UsernameController } from "./usernames/username.controller";
 import { VmQueryController } from "./vm.query/vm.query.controller";
 import { WaitingListController } from "./waiting-list/waiting.list.controller";
 import { WebsocketController } from "./websocket/websocket.controller";
+import { RegisterController } from "./register/register.controller";
 
 @Module({
   imports: [
@@ -49,7 +50,7 @@ import { WebsocketController } from "./websocket/websocket.controller";
     ProviderController, ProxyController, RoundController, SmartContractResultController, ShardController, StakeController, StakeController,
     TokenController, TransactionController, UsernameController, VmQueryController, WaitingListController,
     HealthCheckController, DappConfigController, WebsocketController, MexController, TransferController,
-    ProcessNftsPublicController, TransactionsBatchController,
+    ProcessNftsPublicController, TransactionsBatchController, RegisterController,
   ],
 })
 export class EndpointsControllersModule { }

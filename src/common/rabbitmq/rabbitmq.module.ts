@@ -9,6 +9,8 @@ import { ApiConfigService } from '../api-config/api.config.service';
 import { RabbitMqConsumer } from './rabbitmq.consumer';
 import { RabbitMqNftHandlerService } from './rabbitmq.nft.handler.service';
 import { RabbitMqTokenHandlerService } from './rabbitmq.token.handler.service';
+import { RabbitMqEventsHandlerService } from './rabbitmq.events.handler.service';
+import { EventsModule } from '../events/events.module';
 
 @Module({
   imports: [
@@ -16,12 +18,14 @@ import { RabbitMqTokenHandlerService } from './rabbitmq.token.handler.service';
     NftModule,
     NftWorkerModule,
     EsdtModule,
+    EventsModule,
   ],
   providers: [
     DynamicModuleUtils.getPubSubService(),
     RabbitMqConsumer,
     RabbitMqNftHandlerService,
     RabbitMqTokenHandlerService,
+    RabbitMqEventsHandlerService,
   ],
 })
 export class RabbitMqModule {
