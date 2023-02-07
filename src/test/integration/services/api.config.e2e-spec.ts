@@ -1443,7 +1443,7 @@ describe('API Config', () => {
         .spyOn(ConfigService.prototype, 'get')
         .mockImplementation(jest.fn(() => undefined));
 
-      expect(() => apiConfigService.getExchangeServiceUrlMandatory()).toThrowError('No transaction-action.mex.microServiceUrl present');
+      expect(() => apiConfigService.getExchangeServiceUrlMandatory()).toThrowError('No exchange service url present');
     });
   });
 
