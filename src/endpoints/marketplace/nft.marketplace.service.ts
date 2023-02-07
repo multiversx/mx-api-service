@@ -24,7 +24,7 @@ export class NftMarketplaceService {
 
   async getAccountStats(filters: AccountStatsFilters): Promise<AccountStats> {
     const variables = { filters };
-    const result: any = await this.graphQlService.getDataFromMarketPlace(accountStatsQuery, variables);
+    const result: any = await this.graphQlService.getNftServiceData(accountStatsQuery, variables);
 
     if (!result) {
       throw new BadRequestException('Count not fetch accountsStats data from Nft Marketplace');
@@ -43,7 +43,7 @@ export class NftMarketplaceService {
 
   async getCollectionStats(filters: CollectionStatsFilters): Promise<CollectionStats> {
     const variables = { filters };
-    const result: any = await this.graphQlService.getDataFromMarketPlace(collectionStatsQuery, variables);
+    const result: any = await this.graphQlService.getNftServiceData(collectionStatsQuery, variables);
 
     if (!result) {
       throw new BadRequestException('Count not fetch collectionStats data from Nft Marketplace');
@@ -61,7 +61,7 @@ export class NftMarketplaceService {
   }
 
   async getExploreCollectionsStats(): Promise<ExploreCollectionsStats> {
-    const result: any = await this.graphQlService.getDataFromMarketPlace(collectionsStatsQuery, {});
+    const result: any = await this.graphQlService.getNftServiceData(collectionsStatsQuery, {});
 
     if (!result) {
       throw new BadRequestException('Count not fetch exploreCollectionsStats data from Nft Marketplace');
@@ -95,7 +95,7 @@ export class NftMarketplaceService {
 
   async getAccountAuctions(queryPagination: QueryPagination, address: string, state?: AuctionStatus): Promise<Auction[]> {
     const { from, size } = queryPagination;
-    const result: any = await this.graphQlService.getDataFromMarketPlace(accountAuctionsQuery(address, state), {});
+    const result: any = await this.graphQlService.getNftServiceData(accountAuctionsQuery(address, state), {});
     if (!result) {
       return [];
     }
@@ -140,7 +140,7 @@ export class NftMarketplaceService {
       "first": pagination.size,
     };
 
-    const result: any = await this.graphQlService.getDataFromMarketPlace(auctionsQuery, variables);
+    const result: any = await this.graphQlService.getNftServiceData(auctionsQuery, variables);
     if (!result) {
       return [];
     }
