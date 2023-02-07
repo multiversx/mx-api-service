@@ -9,11 +9,15 @@ import { TokenRoles } from "../tokens/entities/token.roles";
 import { AssetsService } from "../../common/assets/assets.service";
 import { EsdtLockedAccount } from "./entities/esdt.locked.account";
 import { EsdtSupply } from "./entities/esdt.supply";
-import { AddressUtils, BinaryUtils, Constants, CachingService } from "@multiversx/sdk-nestjs";
+import { BinaryUtils, Constants, CachingService, AddressUtils, OriginLogger } from "@multiversx/sdk-nestjs";
 import { IndexerService } from "src/common/indexer/indexer.service";
+import { EsdtType } from "./entities/esdt.type";
+import { ElasticIndexerService } from "src/common/indexer/elastic/elastic.indexer.service";
 
 @Injectable()
 export class EsdtService {
+  private readonly logger = new OriginLogger(EsdtService.name);
+
   constructor(
     private readonly gatewayService: GatewayService,
     private readonly apiConfigService: ApiConfigService,
@@ -22,6 +26,7 @@ export class EsdtService {
     private readonly indexerService: IndexerService,
     @Inject(forwardRef(() => AssetsService))
     private readonly assetsService: AssetsService,
+    private readonly elasticIndexerService: ElasticIndexerService
   ) { }
 
   async getEsdtTokenProperties(identifier: string): Promise<TokenProperties | undefined> {
@@ -39,7 +44,36 @@ export class EsdtService {
     return properties;
   }
 
+  async getEsdtAddressesRoles(identifier: string): Promise<TokenRoles[] | undefined> {
+    const addressesRoles = await this.cachingService.getOrSetCache(
+      CacheInfo.EsdtAddressesRoles(identifier).key,
+      async () => await this.getEsdtAddressesRolesRaw(identifier),
+      Constants.oneWeek(),
+      CacheInfo.EsdtAddressesRoles(identifier).ttl
+    );
+
+    if (!addressesRoles) {
+      return undefined;
+    }
+
+    return addressesRoles;
+  }
+
   async getEsdtTokenPropertiesRaw(identifier: string): Promise<TokenProperties | null> {
+    const isIndexerV5Active = await this.elasticIndexerService.isIndexerV5Active();
+    if (isIndexerV5Active) {
+      return await this.getEsdtTokenPropertiesRawFromElastic(identifier);
+    } else {
+      return await this.getEsdtTokenPropertiesRawFromGateway(identifier);
+    }
+  }
+
+  async getEsdtTokenPropertiesRawFromElastic(identifier: string): Promise<TokenProperties | null> {
+    const elasticProperties = await this.elasticIndexerService.getEsdtProperties(identifier);
+    return this.mapEsdtTokenPropertiesFromElastic(elasticProperties);
+  }
+
+  async getEsdtTokenPropertiesRawFromGateway(identifier: string): Promise<TokenProperties | null> {
     const arg = Buffer.from(identifier, 'utf8').toString('hex');
 
     const tokenPropertiesEncoded = await this.vmQueryService.vmQuery(
@@ -114,19 +148,69 @@ export class EsdtService {
     return tokenProps;
   }
 
-  async getEsdtAddressesRoles(identifier: string): Promise<TokenRoles[] | undefined> {
-    const addressesRoles = await this.cachingService.getOrSetCache(
-      CacheInfo.EsdtAddressesRoles(identifier).key,
-      async () => await this.getEsdtAddressesRolesRaw(identifier),
-      Constants.oneWeek(),
-      CacheInfo.EsdtAddressesRoles(identifier).ttl
-    );
+  async getAllFungibleTokenProperties(): Promise<TokenProperties[]> {
+    const isIndexerV5Active = await this.elasticIndexerService.isIndexerV5Active();
+    if (isIndexerV5Active) {
+      return await this.getAllFungibleTokenPropertiesFromElastic();
+    } else {
+      return await this.getAllFungibleTokenPropertiesFromGateway();
+    }
+  }
 
-    if (!addressesRoles) {
-      return undefined;
+  async getAllFungibleTokenPropertiesFromElastic(): Promise<TokenProperties[]> {
+    const elasticProperties = await this.elasticIndexerService.getAllFungibleTokens();
+    return elasticProperties.map(property => this.mapEsdtTokenPropertiesFromElastic(property));
+  }
+
+  async getAllFungibleTokenPropertiesFromGateway(): Promise<TokenProperties[]> {
+    let tokensIdentifiers: string[];
+    try {
+      tokensIdentifiers = await this.gatewayService.getEsdtFungibleTokens();
+    } catch (error) {
+      this.logger.error('Error when getting fungible tokens from gateway');
+      this.logger.error(error);
+      return [];
     }
 
-    return addressesRoles;
+    const tokensProperties = await this.cachingService.batchProcess(
+      tokensIdentifiers,
+      token => CacheInfo.EsdtProperties(token).key,
+      async (identifier: string) => await this.getEsdtTokenPropertiesRawFromGateway(identifier),
+      Constants.oneDay(),
+      true
+    );
+
+    return tokensProperties.filter(x => x !== null) as TokenProperties[];
+  }
+
+  private mapEsdtTokenPropertiesFromElastic(elasticProperties: any): TokenProperties {
+    const tokenProps = new TokenProperties({
+      identifier: elasticProperties.identifier,
+      name: elasticProperties.name,
+      type: elasticProperties.type as EsdtType,
+      owner: elasticProperties.currentOwner,
+      decimals: elasticProperties.numDecimals,
+      canUpgrade: elasticProperties.properties.canUpgrade,
+      canMint: elasticProperties.properties.canMint,
+      canBurn: elasticProperties.properties.canBurn,
+      canChangeOwner: elasticProperties.properties.canChangeOwner,
+      canPause: elasticProperties.properties.canPause,
+      canFreeze: elasticProperties.properties.canFreeze,
+      canWipe: elasticProperties.properties.canWipe,
+      canAddSpecialRoles: elasticProperties.properties.canAddSpecialRoles,
+      canTransferNFTCreateRole: elasticProperties.properties.canTransferNFTCreateRole,
+      NFTCreateStopped: elasticProperties.properties.NFTCreateStopped,
+      isPaused: elasticProperties.properties.isPaused ?? false,
+    });
+
+    if (elasticProperties.type === 'FungibleESDT') {
+      // @ts-ignore
+      delete tokenProps.canTransferNFTCreateRole;
+      // @ts-ignore
+      delete tokenProps.NFTCreateStopped;
+    }
+
+    return tokenProps;
   }
 
   async getEsdtAddressesRolesRaw(identifier: string): Promise<TokenRoles[] | null> {

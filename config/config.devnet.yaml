@@ -24,7 +24,6 @@ flags:
   useVmQueryTracing: false
   processNfts: true
   indexer-v3: true
-  indexer-v5: true
 features:
   eventsNotifier:
     enabled: false

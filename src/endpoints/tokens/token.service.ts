@@ -19,7 +19,7 @@ import { SortOrder } from "src/common/entities/sort.order";
 import { TokenSort } from "./entities/token.sort";
 import { TokenWithRoles } from "./entities/token.with.roles";
 import { TokenWithRolesFilter } from "./entities/token.with.roles.filter";
-import { AddressUtils, ApiUtils, CachingService, Constants, NumberUtils, TokenUtils } from "@multiversx/sdk-nestjs";
+import { AddressUtils, ApiUtils, CachingService, NumberUtils, TokenUtils } from "@multiversx/sdk-nestjs";
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { OriginLogger } from "@multiversx/sdk-nestjs";
 import { TokenLogo } from "./entities/token.logo";
@@ -650,23 +650,7 @@ export class TokenService {
   }
 
   async getAllTokensRaw(): Promise<TokenDetailed[]> {
-    let tokensIdentifiers: string[];
-    try {
-      tokensIdentifiers = await this.gatewayService.getEsdtFungibleTokens();
-    } catch (error) {
-      this.logger.error('Error when getting fungible tokens from gateway');
-      this.logger.error(error);
-      return [];
-    }
-
-    const tokensProperties = await this.cachingService.batchProcess(
-      tokensIdentifiers,
-      token => CacheInfo.EsdtProperties(token).key,
-      async (identifier: string) => await this.esdtService.getEsdtTokenPropertiesRaw(identifier),
-      Constants.oneDay(),
-      true
-    );
-
+    const tokensProperties = await this.esdtService.getAllFungibleTokenProperties();
     let tokens = tokensProperties.map(properties => ApiUtils.mergeObjects(new TokenDetailed(), properties));
 
     for (const token of tokens) {
