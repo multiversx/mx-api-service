@@ -3,7 +3,7 @@ import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 
-import { UserDb as User } from "./entities/user.db";
+import { UserDb as User } from "../entities/user.db";
 
 @Injectable()
 export class UserDbService {
@@ -24,13 +24,13 @@ export class UserDbService {
         return await this.userDbRepository.findOneBy({ address: address });
     }
 
-    async updateUserAvailability(
+    async updateUserexpiryDate(
         address: string,
-        availability: number,
+        expiryDate: number,
     ) {
         const user: User = new User();
         user.address = address;
-        user.availability = availability;
+        user.expiryDate = expiryDate;
         await this.userDbRepository
             .save(user);
     }

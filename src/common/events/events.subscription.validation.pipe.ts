@@ -10,7 +10,7 @@ import { SubscriptionEntry } from './events.types';
 
 @UseFilters(new BaseWsExceptionFilter())
 @Injectable()
-export class ValidationPipe implements PipeTransform<any> {
+export class EventsSubscriptionValidationPipe implements PipeTransform<any> {
   transform(value: any, metadata: ArgumentMetadata) {
     if (!value) {
       throw new WsException('No value provided');

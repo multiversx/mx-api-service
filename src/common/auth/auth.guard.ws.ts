@@ -18,6 +18,7 @@ export class AuthGuardWs implements CanActivate {
   ): boolean | Promise<boolean> | Observable<boolean> {
     const socket = context.switchToWs().getClient();
     this.logger.log(`Verifying socket ${socket.id}`);
-    return this.authService.validateRequest(socket, null);
+
+    return this.authService.validateRequest(socket.query.auth.token).then((user) => { return !!user; });
   }
 }

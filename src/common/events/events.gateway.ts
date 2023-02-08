@@ -13,16 +13,16 @@ import { Server, Socket } from 'socket.io';
 import { UseFilters, UseGuards, UsePipes } from '@nestjs/common';
 import { OriginLogger } from '@multiversx/sdk-nestjs';
 import { AuthGuardWs } from '../auth/auth.guard.ws';
-import { UserDb } from '../persistence/userdb/entities/user.db';
+import { UserDb } from '../persistence/entities/user.db';
 import { SubscriptionEntry } from './entities/subscription.entry';
 import { Notification } from './events.types';
-import { ValidationPipe } from './validation.pipe';
+import { EventsSubscriptionValidationPipe } from './events.subscription.validation.pipe';
 import { ApiConfigService } from '../api-config/api.config.service';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { EventsMetricsService } from '../events-metrics/events-metrics.service';
 import { AuthService } from '../auth/auth.service';
 import { EventsMetrics } from '../events-metrics/events-metrics.map.type';
-import { addressToken, idToken, idAddressToken, checkRoomType, trimRoomName } from './events.utils';
+import { EventsUtils } from './events.utils';
 
 @UseGuards(AuthGuardWs)
 @UseFilters(new BaseWsExceptionFilter())
@@ -44,12 +44,10 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
    * @param socket Socket
    */
   async handleConnection(socket: Socket) {
-    // eslint-disable-next-line prefer-const
-    const userDetails: UserDb = { address: '', availability: 0 };
     // A client has connected
-    const allowConnection: boolean = await this.authService.validateRequest(socket, userDetails);
+    const user: UserDb | undefined = await this.authService.validateRequest(socket.handshake.auth?.token);
 
-    if (!allowConnection) {
+    if (!user) {
       this.logger.error(
         `Client ${socket.client} disconnected due to unaothorized request.`,
       );
@@ -58,24 +56,24 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
 
     // Join address room to keep track of connectiosn
-    await socket.join(userDetails.address);
+    await socket.join(user.address);
     this.server?.in(socket.id).socketsJoin(
-      userDetails.address,
+      user.address,
     );
 
-    // Join availability room to disconnect all sockets at once
-    await socket.join(userDetails.availability.toString());
+    // Join expiryDate room to disconnect all sockets at once
+    await socket.join(user.expiryDate.toString());
     this.server?.in(socket.id).socketsJoin(
-      userDetails.availability.toString(),
+      user.expiryDate.toString(),
     );
 
     // Validate if user has already more connections than allowed across all nodes
-    const userConnections = await this.server?.in(userDetails.address).fetchSockets();
+    const userConnections = await this.server?.in(user.address).fetchSockets();
     const maxConnections = this.apiConfigService.getLiveWebsocketEventsMaxConnections();
 
     if (userConnections && userConnections?.length >= maxConnections) {
       this.logger.error(
-        `Client ${userDetails.address} has already ${maxConnections} connections.`,
+        `Client ${user.address} has already ${maxConnections} connections.`,
       );
       socket.disconnect(true);
       return;
@@ -125,11 +123,11 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       // Parse each event and populate table as follows
       // Add all clients to the event that has respective TxHash
       if (address && !identifier) {
-        await socket.join(addressToken(address));
+        await socket.join(EventsUtils.addressToken(address));
       } else if (!address && identifier) {
-        await socket.join(idToken(identifier));
+        await socket.join(EventsUtils.idToken(identifier));
       } else if (address && identifier) {
-        await socket.join(idAddressToken(address, identifier));
+        await socket.join(EventsUtils.idAddressToken(address, identifier));
       }
     }
   }
@@ -148,9 +146,9 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       for (const event of data.events) {
         const address = event.address;
         const identifier = event.identifier;
-        this.server?.to(addressToken(address))
-          .to(idToken(identifier))
-          .to(idAddressToken(address, identifier))
+        this.server?.to(EventsUtils.addressToken(address))
+          .to(EventsUtils.idToken(identifier))
+          .to(EventsUtils.idAddressToken(address, identifier))
           .emit('notifications', event);
 
         // For each event, increment metrics
@@ -164,7 +162,7 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
    * @param client
    * @param subscriptionEntries
    */
-  @UsePipes(ValidationPipe)
+  @UsePipes(EventsSubscriptionValidationPipe)
   @SubscribeMessage('subscription_entries')
   async onSubsEntries(
     @ConnectedSocket() client: Socket,
@@ -179,7 +177,7 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     // Get timestamp to fixed Hours
     const currentTimestamp =
       Math.floor(new Date().getTime() / 1000 / 60 / 60) * 60 * 60 * 1000;
-    this.closeSocketsByAvailability(currentTimestamp);
+    this.closeSocketsByexpiryDate(currentTimestamp);
   }
 
   // eslint-disable-next-line require-await
@@ -194,12 +192,12 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
       let roomName = room[0];
       const roomSockets = room[1];
 
-      if (!checkRoomType(roomName)) {
+      if (!EventsUtils.checkRoomType(roomName)) {
         continue;
       }
 
       // Subtract prefix from room name
-      roomName = trimRoomName(roomName);
+      roomName = EventsUtils.trimRoomName(roomName);
       metricsMap.set(roomName, []);
 
       // For each socket from the room, get the address room that it contains
@@ -218,10 +216,10 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
   }
   /**
-   * Close all sockets for a given availability
+   * Close all sockets for a given expiryDate
    */
-  closeSocketsByAvailability(availability: number) {
-    this.server?.in(availability.toString()).disconnectSockets();
+  closeSocketsByexpiryDate(expiryDate: number) {
+    this.server?.in(expiryDate.toString()).disconnectSockets();
   }
 }
 

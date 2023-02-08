@@ -3,7 +3,7 @@ import { CompetingRabbitConsumer } from './rabbitmq.consumers';
 import { RabbitMqNftHandlerService } from './rabbitmq.nft.handler.service';
 import configuration from 'config/configuration';
 import { NotifierEvent as NotifierEvent } from './entities/notifier.event';
-import { NftNotifierEventIdentifier } from './entities/notifier.event.identifier';
+import { NotifierEventIdentifier } from './entities/notifier.event.identifier';
 import { RabbitMqTokenHandlerService } from './rabbitmq.token.handler.service';
 import { OriginLogger } from '@multiversx/sdk-nestjs';
 import { RabbitMqEventsHandlerService } from './rabbitmq.events.handler.service';
@@ -45,13 +45,13 @@ export class RabbitMqConsumer {
 
   private async handleEvent(event: NotifierEvent): Promise<void> {
     switch (event.identifier) {
-      case NftNotifierEventIdentifier.ESDTNFTCreate:
+      case NotifierEventIdentifier.ESDTNFTCreate:
         await this.nftHandlerService.handleNftCreateEvent(event);
         break;
-      case NftNotifierEventIdentifier.ESDTNFTUpdateAttributes:
+      case NotifierEventIdentifier.ESDTNFTUpdateAttributes:
         await this.nftHandlerService.handleNftUpdateAttributesEvent(event);
         break;
-      case NftNotifierEventIdentifier.transferOwnership:
+      case NotifierEventIdentifier.transferOwnership:
         await this.tokenHandlerService.handleTransferOwnershipEvent(event);
         break;
     }

@@ -3,13 +3,13 @@ import { Column, Entity, Index, PrimaryColumn, ObjectIdColumn } from 'typeorm';
 @Entity('user')
 @Index(['address'], { unique: true })
 export class UserDb {
-    // dummy
-    @ObjectIdColumn()
-    identifier?: string;
+  // dummy
+  @ObjectIdColumn()
+  identifier?: string;
 
-    @PrimaryColumn()
-    address: string = '';
+  @PrimaryColumn()
+  address: string = '';
 
-    @Column()
-    availability: number = 0;
+  @Column()
+  expiryDate: number = 0;
 }

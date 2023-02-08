@@ -9,10 +9,10 @@ import { NftMediaDb } from "./entities/nft.media.db";
 import { NftMetadataDb } from "./entities/nft.metadata.db";
 import { NftTraitSummaryDb } from "./entities/nft.trait.summary.db";
 import { PersistenceService } from "./persistence.service";
-import { UserDbService } from "./userdb/user.db.service";
-import { UserDbModule } from "./userdb/user.db.module";
-import { TransactionDbService } from "./transactiondb/transactiondb.service";
-import { TransactionDbModule } from "./transactiondb/transactiondb.module";
+import { UserDbService } from "./services/user.db.service";
+import { TransactionDbService } from "./services/transactiondb.service";
+import { TransactionDb } from "./entities/transaction.db";
+import { UserDb } from "./entities/user.db";
 
 @Global()
 @Module({})
@@ -23,7 +23,6 @@ export class PersistenceModule {
     if (isPassThrough) {
       return {
         module: PersistenceModule,
-        imports: [UserDbModule, TransactionDbModule],
         providers: [
           {
             provide: getRepositoryToken(NftMetadataDb),
@@ -45,9 +44,17 @@ export class PersistenceModule {
             provide: getRepositoryToken(HotSwappableSettingDb),
             useValue: {},
           },
-          PersistenceService,
+          {
+            provide: getRepositoryToken(TransactionDb),
+            useValue: {},
+          },
+          {
+            provide: getRepositoryToken(UserDb),
+            useValue: {},
+          },
+          PersistenceService, TransactionDbService, UserDbService,
         ],
-        exports: [PersistenceService, UserDbModule, TransactionDbModule],
+        exports: [PersistenceService, TransactionDbService, UserDbService],
       };
     }
 
@@ -55,12 +62,12 @@ export class PersistenceModule {
       module: PersistenceModule,
       imports: [
         TypeOrmModule.forRootAsync({
-          imports: [ApiConfigModule, TransactionDbModule, UserDbModule],
+          imports: [ApiConfigModule],
           useFactory: (apiConfigService: ApiConfigService) => {
 
             const options: TypeOrmModuleOptions = {
               type: 'mongodb',
-              entities: [NftMetadataDb, NftMediaDb, NftTraitSummaryDb, KeybaseConfirmationDb, HotSwappableSettingDb],
+              entities: [NftMetadataDb, NftMediaDb, NftTraitSummaryDb, KeybaseConfirmationDb, HotSwappableSettingDb, UserDb, TransactionDb],
               url: apiConfigService.getDatabaseUrl(),
               keepAlive: 120000,
               sslValidate: false,
@@ -73,10 +80,10 @@ export class PersistenceModule {
           },
           inject: [ApiConfigService],
         }),
-        TypeOrmModule.forFeature([NftMetadataDb, NftMediaDb, NftTraitSummaryDb, KeybaseConfirmationDb, HotSwappableSettingDb]),
+        TypeOrmModule.forFeature([NftMetadataDb, NftMediaDb, NftTraitSummaryDb, KeybaseConfirmationDb, HotSwappableSettingDb, UserDb, TransactionDb]),
       ],
-      providers: [PersistenceService],
-      exports: [PersistenceService, TypeOrmModule.forFeature([NftMetadataDb, NftMediaDb, NftTraitSummaryDb, KeybaseConfirmationDb, HotSwappableSettingDb]), UserDbService, TransactionDbService],
+      providers: [PersistenceService, TransactionDbService, UserDbService],
+      exports: [PersistenceService, TypeOrmModule.forFeature([NftMetadataDb, NftMediaDb, NftTraitSummaryDb, KeybaseConfirmationDb, HotSwappableSettingDb, UserDb, TransactionDb]), UserDbService, TransactionDbService],
     };
   }
 }

@@ -5,14 +5,12 @@ import {
     Logger,
     BadRequestException,
 } from '@nestjs/common';
-import { UserDbService } from 'src/common/persistence/userdb/user.db.service';
-import { AuthService } from 'src/common/auth/auth.service';
-import { TransactionDbService } from 'src/common/persistence/transactiondb/transactiondb.service';
 import { ApiResponse, ApiTags } from "@nestjs/swagger";
+import { RegisterService } from './register.service';
 
 interface UserRegistration {
-    access_token: string;
-    transaction_address: string; // Address of transaction proving payment
+    accessToken: string;
+    transactionAddress: string; // Address of transaction proving payment
 }
 
 @Controller('register')
@@ -20,15 +18,13 @@ interface UserRegistration {
 export class RegisterController {
     private logger: Logger = new Logger(RegisterController.name);
     constructor(
-        private authService: AuthService,
-        private userDbService: UserDbService,
-        private transactionDbService: TransactionDbService,
+        private registerService: RegisterService
     ) { }
 
     /**
      * Registration endpoint
      * Allows a user to send an access token and a transaction
-     * in order to be part of the system and receive an availability
+     * in order to be part of the system and receive an expiryDate
      * period for receiving events.
      *
      * @param body UserRegistration
@@ -47,42 +43,18 @@ export class RegisterController {
     async registerUser(
         @Body() body: UserRegistration,
     ) {
-        // TODO: Validate user flow
-        this.logger.log('Starting user registration');
-
         try {
-            const access_token = body?.access_token;
-            const transaction_address = body?.transaction_address;
+            const accessToken = body?.accessToken;
+            const transactionAddress = body?.transactionAddress;
 
-            if (!access_token || !transaction_address) {
+            if (!accessToken || !transactionAddress) {
                 throw new BadRequestException('Missing access token or transaction address');
             }
 
-            // returns user_address, availability date and extra time to
-            // add to use in case of being already registered
-            const { address, availability, extraAvailability } =
-                await this.authService.validateUser(
-                    body.access_token,
-                    body.transaction_address,
-                );
+            this.logger.log(`Registering user with access token ${accessToken} and transaction address ${transactionAddress}`);
 
-            await this.transactionDbService.createTransaction({
-                tx_hash: transaction_address,
-            });
-
-            const user = await this.userDbService.findUser(address);
-
-            if (user) {
-                await this.userDbService.updateUserAvailability(
-                    address,
-                    user.availability + extraAvailability,
-                );
-            } else {
-                await this.userDbService.createUser({
-                    address,
-                    availability: availability,
-                });
-            }
+            // Create user, increase change expiry date or throw an exception
+            await this.registerService.registerUser(accessToken, transactionAddress);
         } catch (error) {
             // TODO: rollback user and transaction if added
             this.logger.error(error);

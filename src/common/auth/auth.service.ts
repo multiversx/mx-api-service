@@ -1,11 +1,10 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { TransactionDbService } from '../persistence/transactiondb/transactiondb.service';
+import { TransactionDbService } from '../persistence/services/transactiondb.service';
 import { ApiService, OriginLogger } from '@multiversx/sdk-nestjs';
 import { ApiConfigService } from '../api-config/api.config.service';
 import { NativeAuthService } from '../nativeauth/nativeauth.service';
-import { UserDbService } from '../persistence/userdb/user.db.service';
-import { Socket } from 'socket.io';
-import { UserDb } from '../persistence/userdb/entities/user.db';
+import { UserDbService } from '../persistence/services/user.db.service';
+import { UserDb } from '../persistence/entities/user.db';
 
 @Injectable()
 export class AuthService {
@@ -18,23 +17,23 @@ export class AuthService {
     private readonly nativeAuthService: NativeAuthService,
   ) { }
 
-  computeUserAvailability(egldValue: number): { availability: number; extraAvailability: number } {
+  computeUserexpiryDate(egldValue: number): { expiryDate: number; extraexpiryDate: number } {
     // Compute number of seconds hours per EGLD
     const timeUnits = Math.floor(
       egldValue / this.apiConfigService.getLiveWebsocketEventsEgldPerTimeUnit(),
     );
 
     // Transform hours period into milliseconds
-    const extraAvailability = timeUnits * 60 * 60 * 1000;
+    const extraexpiryDate = timeUnits * 60 * 60 * 1000;
 
-    // Compute availability period at HOUR granularity
-    const availability =
+    // Compute expiryDate period at HOUR granularity
+    const expiryDate =
       (Math.floor(Date.now() / 1000 / 60 / 60) + timeUnits) *
       60 *
       60 *
       1000;
 
-    return { availability, extraAvailability };
+    return { expiryDate, extraexpiryDate };
   }
 
   /**
@@ -46,9 +45,9 @@ export class AuthService {
   async validateUser(
     accessToken: string,
     transactionAddress: string,
-  ): Promise<{ address: string, availability: number, extraAvailability: number }> {
+  ): Promise<{ address: string, expiryDate: number, extraexpiryDate: number }> {
     // Validate the access token
-    const tokenData = await this.nativeAuthService.validateAndReturnAccessToken(
+    const tokenData = await this.nativeAuthService.validateAccessTokenAndReturnData(
       accessToken,
     );
 
@@ -108,32 +107,29 @@ export class AuthService {
       );
     }
 
-    return { address: tokenData.address, ...this.computeUserAvailability(parseInt(txData.value, 10)) };
+    return { address: tokenData.address, ...this.computeUserexpiryDate(parseInt(txData.value, 10)) };
   }
 
   /**
    * Validate request
    *  - Auth Token has to be valid
    *  - User has to exist
-   *  - User availability must not be expired
+   *  - User expiryDate must not be expired
    *
    * @param socket
    * @returns
    */
   async validateRequest(
-    socket: Socket,
-    userDetails: UserDb | null,
-  ): Promise<boolean> {
-    const accessToken = socket.handshake.auth.token;
-
+    accessToken: string | undefined,
+  ): Promise<UserDb | undefined> {
     // If no authentication token was provided, deny request
     if (!accessToken) {
-      return false;
+      return undefined;
     }
 
     try {
       // Validate access token
-      const details = await this.nativeAuthService.validateAndReturnAccessToken(
+      const details = await this.nativeAuthService.validateAccessTokenAndReturnData(
         accessToken,
       );
 
@@ -141,27 +137,22 @@ export class AuthService {
       const user = await this.userDbService.findUser(details.address);
       if (!user) {
         this.logger.error(`User with address ${details.address} not found`);
-        return false;
+        return undefined;
       }
 
-      const date = new Date(user.availability);
+      const date = new Date(user.expiryDate);
       // Check if date is expired
       if (date.getTime() < Date.now()) {
         this.logger.error(
           `User with address ${details.address} access expired on ${date}`,
         );
-        return false;
+        return undefined;
       }
 
-      if (userDetails) {
-        userDetails.address = user.address;
-        userDetails.availability = user.availability;
-      }
-
-      return true;
+      return user;
     } catch (error) {
       this.logger.error(error);
-      return false;
+      return undefined;
     }
   }
 }
