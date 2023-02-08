@@ -24,7 +24,7 @@ export class UserDbService {
         return await this.userDbRepository.findOneBy({ address: address });
     }
 
-    async updateUserexpiryDate(
+    async updateUserExpiryDate(
         address: string,
         expiryDate: number,
     ) {

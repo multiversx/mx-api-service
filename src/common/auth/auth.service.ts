@@ -17,14 +17,14 @@ export class AuthService {
     private readonly nativeAuthService: NativeAuthService,
   ) { }
 
-  computeUserexpiryDate(egldValue: number): { expiryDate: number; extraexpiryDate: number } {
+  computeUserExpiryDate(egldValue: number): { expiryDate: number; extraTime: number } {
     // Compute number of seconds hours per EGLD
     const timeUnits = Math.floor(
       egldValue / this.apiConfigService.getLiveWebsocketEventsEgldPerTimeUnit(),
     );
 
     // Transform hours period into milliseconds
-    const extraexpiryDate = timeUnits * 60 * 60 * 1000;
+    const extraTime = timeUnits * 60 * 60 * 1000;
 
     // Compute expiryDate period at HOUR granularity
     const expiryDate =
@@ -33,7 +33,7 @@ export class AuthService {
       60 *
       1000;
 
-    return { expiryDate, extraexpiryDate };
+    return { expiryDate, extraTime };
   }
 
   /**
@@ -45,7 +45,7 @@ export class AuthService {
   async validateUser(
     accessToken: string,
     transactionAddress: string,
-  ): Promise<{ address: string, expiryDate: number, extraexpiryDate: number }> {
+  ): Promise<{ address: string, expiryDate: number, extraTime: number }> {
     // Validate the access token
     const tokenData = await this.nativeAuthService.validateAccessTokenAndReturnData(
       accessToken,
@@ -107,7 +107,7 @@ export class AuthService {
       );
     }
 
-    return { address: tokenData.address, ...this.computeUserexpiryDate(parseInt(txData.value, 10)) };
+    return { address: tokenData.address, ...this.computeUserExpiryDate(parseInt(txData.value, 10)) };
   }
 
   /**

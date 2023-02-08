@@ -28,4 +28,8 @@ export class TransactionDbService {
   async findAllTransactions(): Promise<TransactionDb[]> {
     return await this.transactionDbRepository.find();
   }
+
+  async deleteTransaction(txId: string) {
+    await this.transactionDbRepository.remove([{ txHash: txId }]);
+  }
 }

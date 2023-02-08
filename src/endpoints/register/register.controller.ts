@@ -18,7 +18,7 @@ interface UserRegistration {
 export class RegisterController {
     private logger: Logger = new Logger(RegisterController.name);
     constructor(
-        private registerService: RegisterService
+        private readonly registerService: RegisterService
     ) { }
 
     /**
@@ -43,20 +43,19 @@ export class RegisterController {
     async registerUser(
         @Body() body: UserRegistration,
     ) {
+        const accessToken = body?.accessToken;
+        const transactionAddress = body?.transactionAddress;
+
+        if (!accessToken || !transactionAddress) {
+            throw new BadRequestException('Missing access token or transaction address');
+        }
+
+        this.logger.log(`Registering user with access token ${accessToken} and transaction address ${transactionAddress}`);
+
         try {
-            const accessToken = body?.accessToken;
-            const transactionAddress = body?.transactionAddress;
-
-            if (!accessToken || !transactionAddress) {
-                throw new BadRequestException('Missing access token or transaction address');
-            }
-
-            this.logger.log(`Registering user with access token ${accessToken} and transaction address ${transactionAddress}`);
-
             // Create user, increase change expiry date or throw an exception
             await this.registerService.registerUser(accessToken, transactionAddress);
         } catch (error) {
-            // TODO: rollback user and transaction if added
             this.logger.error(error);
             throw new BadRequestException(error);
         }

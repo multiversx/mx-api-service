@@ -6,8 +6,8 @@ import { RegisterService } from './register.service';
 
 @Module({
   imports: [PersistenceModule.forRoot(), AuthModule],
-  providers: [RegisterService],
   controllers: [RegisterController],
+  providers: [RegisterService],
   exports: [RegisterService],
 })
 export class RegisterModule { }
