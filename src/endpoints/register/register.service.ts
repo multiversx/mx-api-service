@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { UserDbService } from 'src/common/persistence/services/user.db.service';
 import { AuthService } from 'src/common/auth/auth.service';
-import { TransactionDbService } from 'src/common/persistence/services/transactiondb.service';
+import { TransactionDbService } from 'src/common/persistence/services/transaction.db.service';
 
 Injectable();
 export class RegisterService {

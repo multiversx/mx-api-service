@@ -8,7 +8,7 @@ import { CacheInfo } from "../../utils/cache.info";
 import { GithubService } from "../github/github.service";
 import { ApiService, ApiUtils, CachingService, Constants, OriginLogger } from "@multiversx/sdk-nestjs";
 import { ApiConfigService } from "../api-config/api.config.service";
-import { PersistenceService } from "../persistence/persistence.service";
+import { KeybaseConfirmationDbService } from "../persistence/services/keybase.confirmation.db.service";
 
 @Injectable()
 export class KeybaseService {
@@ -23,7 +23,7 @@ export class KeybaseService {
     private readonly providerService: ProviderService,
     private readonly githubService: GithubService,
     private readonly apiConfigService: ApiConfigService,
-    private readonly persistenceService: PersistenceService
+    private readonly keybaseConfirmationDbService: KeybaseConfirmationDbService
   ) { }
 
   private async getProvidersKeybasesRaw(): Promise<Keybase[]> {
@@ -130,7 +130,7 @@ export class KeybaseService {
 
   async confirmKeybasesAgainstDatabaseForIdentity(identity: string): Promise<boolean> {
     try {
-      const keys = await this.persistenceService.getKeybaseConfirmationForIdentity(identity);
+      const keys = await this.keybaseConfirmationDbService.getKeybaseConfirmationForIdentity(identity);
       if (!keys) {
         return false;
       }
@@ -177,7 +177,7 @@ export class KeybaseService {
         true
       );
 
-      await this.persistenceService.setKeybaseConfirmationForIdentity(identity, keys);
+      await this.keybaseConfirmationDbService.setKeybaseConfirmationForIdentity(identity, keys);
 
       return true;
     } catch (error) {
@@ -251,7 +251,7 @@ export class KeybaseService {
       true
     );
 
-    await this.persistenceService.setKeybaseConfirmationForIdentity(identity, keys);
+    await this.keybaseConfirmationDbService.setKeybaseConfirmationForIdentity(identity, keys);
   }
 
   async confirmIdentityProfilesAgainstKeybaseIo(): Promise<void> {

@@ -1,5 +1,5 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { TransactionDbService } from '../persistence/services/transactiondb.service';
+import { TransactionDbService } from '../persistence/services/transaction.db.service';
 import { ApiService, OriginLogger } from '@multiversx/sdk-nestjs';
 import { ApiConfigService } from '../api-config/api.config.service';
 import { NativeAuthService } from '../nativeauth/nativeauth.service';

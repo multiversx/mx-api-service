@@ -19,12 +19,12 @@ import { PluginService } from "src/common/plugins/plugin.service";
 import { ApiUtils, BinaryUtils, CachingService, TokenUtils } from "@multiversx/sdk-nestjs";
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { Collection } from "src/common/indexer/entities";
-import { PersistenceService } from "src/common/persistence/persistence.service";
 import { NftRankAlgorithm } from "src/common/assets/entities/nft.rank.algorithm";
 import { NftRank } from "src/common/assets/entities/nft.rank";
 import { TokenDetailed } from "../tokens/entities/token.detailed";
 import { NftCollectionDetailed } from "./entities/nft.collection.detailed";
 import { CollectionLogo } from "./entities/collection.logo";
+import { NftTraitSummaryDbService } from "src/common/persistence/services/nft.trait.summary.db.service";
 
 @Injectable()
 export class CollectionService {
@@ -38,7 +38,7 @@ export class CollectionService {
     @Inject(forwardRef(() => EsdtAddressService))
     private readonly esdtAddressService: EsdtAddressService,
     private readonly pluginService: PluginService,
-    private readonly persistenceService: PersistenceService,
+    private readonly nftTraitSummaryDbService: NftTraitSummaryDbService,
   ) { }
 
   async isCollection(identifier: string): Promise<boolean> {
@@ -201,7 +201,7 @@ export class CollectionService {
 
     this.applyPropertiesToCollectionFromElasticSearch(collectionDetailed, elasticCollection);
 
-    collectionDetailed.traits = await this.persistenceService.getCollectionTraits(identifier) ?? [];
+    collectionDetailed.traits = await this.nftTraitSummaryDbService.getCollectionTraits(identifier) ?? [];
 
     await this.pluginService.processCollections([collectionDetailed]);
     await this.applyCollectionRoles(collectionDetailed, elasticCollection);

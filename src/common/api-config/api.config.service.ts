@@ -403,7 +403,7 @@ export class ApiConfigService {
     if (!egldPerTimeUnit) {
       throw new Error('No live websocket events egld per time unit set');
     }
-
+    console.log(egldPerTimeUnit);
     return egldPerTimeUnit;
   }
 

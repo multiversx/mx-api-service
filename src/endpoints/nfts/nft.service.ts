@@ -17,7 +17,6 @@ import { NftMedia } from "./entities/nft.media";
 import { CacheInfo } from "src/utils/cache.info";
 import { EsdtDataSource } from "../esdt/entities/esdt.data.source";
 import { EsdtAddressService } from "../esdt/esdt.address.service";
-import { PersistenceService } from "src/common/persistence/persistence.service";
 import { MexTokenService } from "../mex/mex.token.service";
 import { ApiUtils, BinaryUtils, NumberUtils, RecordUtils, CachingService, BatchUtils, TokenUtils } from "@multiversx/sdk-nestjs";
 import { IndexerService } from "src/common/indexer/indexer.service";
@@ -29,6 +28,8 @@ import { NftRarity } from "./entities/nft.rarity";
 import { NftRarities } from "./entities/nft.rarities";
 import { SortCollectionNfts } from "../collections/entities/sort.collection.nfts";
 import { TokenAssets } from "src/common/assets/entities/token.assets";
+import { NftMediaDbService } from "src/common/persistence/services/nft.media.db.service";
+import { NftMetadataDbService } from "src/common/persistence/services/nft.metadata.db.service";
 
 @Injectable()
 export class NftService {
@@ -46,7 +47,8 @@ export class NftService {
     private readonly pluginService: PluginService,
     private readonly nftMetadataService: NftMetadataService,
     private readonly nftMediaService: NftMediaService,
-    private readonly persistenceService: PersistenceService,
+    private readonly nftMetadataDbService: NftMetadataDbService,
+    private readonly nftMediaDbService: NftMediaDbService,
     @Inject(forwardRef(() => EsdtAddressService))
     private readonly esdtAddressService: EsdtAddressService,
     private readonly mexTokenService: MexTokenService,
@@ -143,7 +145,7 @@ export class NftService {
       nfts,
       nft => CacheInfo.NftMedia(nft.identifier).key,
       async nfts => {
-        const getMediaResults = await this.persistenceService.batchGetMedia(nfts.map((nft) => nft.identifier));
+        const getMediaResults = await this.nftMediaDbService.batchGetMedia(nfts.map((nft) => nft.identifier));
 
         return RecordUtils.mapKeys(getMediaResults, identifier => CacheInfo.NftMedia(identifier).key);
       },
@@ -167,7 +169,7 @@ export class NftService {
       nfts,
       nft => CacheInfo.NftMetadata(nft.identifier).key,
       async nfts => {
-        const getMetadataResults = await this.persistenceService.batchGetMetadata(nfts.map((nft) => nft.identifier));
+        const getMetadataResults = await this.nftMetadataDbService.batchGetMetadata(nfts.map((nft) => nft.identifier));
 
         return RecordUtils.mapKeys(getMetadataResults, identifier => CacheInfo.NftMetadata(identifier).key);
       },
