@@ -1432,10 +1432,10 @@ describe('API Config', () => {
     it("should return Maiar Exchange Url", () => {
       jest
         .spyOn(ConfigService.prototype, "get")
-        .mockImplementation(jest.fn(() => 'https://graph.maiar.exchange/graphql'));
+        .mockImplementation(jest.fn(() => 'https://graph.xexchange.com/graphql'));
 
       const results = apiConfigService.getExchangeServiceUrlMandatory();
-      expect(results).toEqual('https://graph.maiar.exchange/graphql');
+      expect(results).toEqual('https://graph.xexchange.com/graphql');
     });
 
     it("should throw new error because test simulates that Maiar Exchange Url is not defined", () => {
