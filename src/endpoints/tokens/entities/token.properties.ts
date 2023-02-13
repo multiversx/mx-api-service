@@ -7,7 +7,7 @@ export class TokenProperties {
   }
 
   @ApiProperty()
-  identifier: string = '';
+  token: string = '';
 
   @ApiProperty()
   name: string = '';
