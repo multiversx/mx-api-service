@@ -54,7 +54,7 @@ import { Auction } from '../marketplace/entities/account.auctions';
 import { TokenType } from '../tokens/entities/token.type';
 import { ContractUpgrades } from './entities/contract.upgrades';
 import { AccountVerification } from './entities/account.verification';
-import { AuctionStatus } from '../marketplace/entities/auction.state';
+import { AuctionState } from '../marketplace/entities/auction.state';
 
 @Controller()
 @ApiTags('accounts')
@@ -1073,9 +1073,9 @@ export class AccountController {
     @Param('address') address: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
-    @Query('status', new ParseEnumPipe(AuctionStatus)) status?: AuctionStatus,
+    @Query('state', new ParseEnumPipe(AuctionState)) state?: AuctionState,
   ): Promise<Auction[]> {
-    const account = await this.nftMarketplaceService.getAccountAuctions(new QueryPagination({ from, size }), address, status);
+    const account = await this.nftMarketplaceService.getAccountAuctions(new QueryPagination({ from, size }), address, state);
     if (!account) {
       throw new NotFoundException('Account not found');
     }

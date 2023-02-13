@@ -1,6 +1,7 @@
-export enum AuctionStatus {
+export enum AuctionState {
   running = 'running',
   claimable = 'claimable',
   ended = 'ended',
-  closed = 'closed'
+  closed = 'closed',
+  unknown = 'unknown',
 }

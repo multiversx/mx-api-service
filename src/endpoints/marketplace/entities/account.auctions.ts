@@ -1,4 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
+import { AuctionState } from "./auction.state";
 
 export class Auction {
   constructor(init?: Partial<Auction>) {
@@ -14,8 +15,8 @@ export class Auction {
   @ApiProperty({ type: String })
   collection: string = '';
 
-  @ApiProperty({ type: String })
-  status: string = '';
+  @ApiProperty({ enum: AuctionState })
+  status: AuctionState = AuctionState.unknown;
 
   @ApiProperty({ type: Number })
   createdAt: number = 0;
