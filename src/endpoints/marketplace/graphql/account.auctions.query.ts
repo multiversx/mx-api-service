@@ -1,5 +1,5 @@
 import { gql } from "graphql-request";
-import { AuctionStatus } from "../entities/auction.status";
+import { AuctionStatus } from "../entities/auction.state";
 
 export const accountAuctionsQuery = (address: string, status?: AuctionStatus) => {
   return gql`

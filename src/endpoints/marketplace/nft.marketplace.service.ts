@@ -14,7 +14,7 @@ import { Auctions } from "./entities/auctions";
 import { auctionsQuery } from "./graphql/auctions.query";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { AuctionsFilter } from "./entities/auctions.filter";
-import { AuctionStatus } from "./entities/auction.status";
+import { AuctionStatus } from "./entities/auction.state";
 
 @Injectable()
 export class NftMarketplaceService {

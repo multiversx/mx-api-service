@@ -54,7 +54,7 @@ import { Auction } from '../marketplace/entities/account.auctions';
 import { TokenType } from '../tokens/entities/token.type';
 import { ContractUpgrades } from './entities/contract.upgrades';
 import { AccountVerification } from './entities/account.verification';
-import { AuctionStatus } from '../marketplace/entities/auction.status';
+import { AuctionStatus } from '../marketplace/entities/auction.state';
 
 @Controller()
 @ApiTags('accounts')
