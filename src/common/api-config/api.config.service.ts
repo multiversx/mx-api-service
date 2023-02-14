@@ -772,4 +772,17 @@ export class ApiConfigService {
   isUpdateCollectionExtraDetailsEnabled(): boolean {
     return this.configService.get<boolean>('features.updateCollectionExtraDetails.enabled') ?? false;
   }
+
+  isMarketplaceFeatureEnabled(): boolean {
+    return this.configService.get<boolean>('features.marketplace.enabled') ?? false;
+  }
+
+  getMarketplaceServiceUrl(): string {
+    const serviceUrl = this.configService.get<string>('features.marketplace.serviceUrl');
+    if (!serviceUrl) {
+      throw new Error('No marketplace service url present');
+    }
+
+    return serviceUrl;
+  }
 }

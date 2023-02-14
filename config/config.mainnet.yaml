@@ -35,6 +35,11 @@ features:
     enabled: false
     hitsThreshold: 100
     ttl: 12
+  updateCollectionExtraDetails:
+    enabled: false
+  marketplace:
+    enabled: false
+    serviceUrl: 'https://nfts-graph.multiversx.com/graphql'
 image:
   width: 600
   height: 600
