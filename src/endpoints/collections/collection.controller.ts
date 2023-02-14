@@ -23,8 +23,6 @@ import { SortCollectionNfts } from "./entities/sort.collection.nfts";
 import { NftCollectionDetailed } from "./entities/nft.collection.detailed";
 import { Response } from "express";
 import { SortCollections } from "./entities/sort.collections";
-import { CollectionAuctionStats } from "../marketplace/entities/collection.auction.stats";
-import { NftMarketplaceService } from "../marketplace/nft.marketplace.service";
 
 @Controller()
 @ApiTags('collections')
@@ -33,7 +31,6 @@ export class CollectionController {
     private readonly collectionService: CollectionService,
     private readonly nftService: NftService,
     private readonly transactionService: TransactionService,
-    private readonly nftMarketplaceService: NftMarketplaceService,
   ) { }
 
   @Get("/collections")
@@ -181,20 +178,6 @@ export class CollectionController {
     }
 
     return nftCollection;
-  }
-
-  @Get("/collections/:collection/auction/stats")
-  @ApiOperation({ summary: 'Collection stats', description: 'Returns collection status details from nft marketplace for a given collection identifier' })
-  @ApiOkResponse({ type: CollectionAuctionStats })
-  async getAccountStats(
-    @Param('collection') collection: string,
-  ): Promise<CollectionAuctionStats> {
-    const collectionStats = await this.nftMarketplaceService.getCollectionStats({ identifier: collection });
-    if (!collectionStats) {
-      throw new NotFoundException('Could not fetch collection stats');
-    }
-
-    return collectionStats;
   }
 
   @Get('/collections/:collection/ranks')

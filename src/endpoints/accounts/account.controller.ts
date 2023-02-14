@@ -47,13 +47,9 @@ import { TransactionDetailed } from '../transactions/entities/transaction.detail
 import { OriginLogger } from '@multiversx/sdk-nestjs';
 import { AccountDelegation } from '../stake/entities/account.delegation';
 import { DelegationService } from '../delegation/delegation.service';
-import { AccountAuctionStats } from '../marketplace/entities/account.auction.stats';
-import { NftMarketplaceService } from '../marketplace/nft.marketplace.service';
-import { Auction } from '../marketplace/entities/account.auctions';
 import { TokenType } from '../tokens/entities/token.type';
 import { ContractUpgrades } from './entities/contract.upgrades';
 import { AccountVerification } from './entities/account.verification';
-import { AuctionStatus } from '../marketplace/entities/auction.status';
 
 @Controller()
 @ApiTags('accounts')
@@ -73,7 +69,6 @@ export class AccountController {
     private readonly transferService: TransferService,
     private readonly apiConfigService: ApiConfigService,
     private readonly delegationService: DelegationService,
-    private readonly nftMarketplaceService: NftMarketplaceService,
   ) { }
 
   @Get("/accounts")
@@ -1036,39 +1031,5 @@ export class AccountController {
     }
 
     return await this.accountService.getAccountTokenHistory(address, tokenIdentifier, new QueryPagination({ from, size }));
-  }
-
-  @Get("/accounts/:address/auction/stats")
-  @ApiOperation({ summary: 'Account stats', description: 'Returns account status details from nft marketplace for a given address' })
-  @ApiOkResponse({ type: AccountAuctionStats })
-  async getAccountStats(
-    @Param('address', ParseAddressPipe) address: string,
-  ): Promise<AccountAuctionStats> {
-    const account = await this.nftMarketplaceService.getAccountStats(address);
-    if (!account) {
-      throw new NotFoundException('Account not found');
-    }
-
-    return account;
-  }
-
-  @Get("/accounts/:address/auctions")
-  @ApiOperation({ summary: 'Account auctions', description: 'Returns account auctions for a given address' })
-  @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
-  @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
-  @ApiQuery({ name: 'status', description: 'Returns auctions with specified status', required: false })
-  @ApiOkResponse({ type: Auction })
-  async getAccountAuctions(
-    @Param('address') address: string,
-    @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
-    @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
-    @Query('status', new ParseEnumPipe(AuctionStatus)) status?: AuctionStatus,
-  ): Promise<Auction[]> {
-    const account = await this.nftMarketplaceService.getAccountAuctions(new QueryPagination({ from, size }), address, status);
-    if (!account) {
-      throw new NotFoundException('Account not found');
-    }
-
-    return account;
   }
 }
