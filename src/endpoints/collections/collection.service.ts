@@ -201,7 +201,7 @@ export class CollectionService {
       return undefined;
     }
 
-    if (queryOptions && queryOptions.withAuctions) {
+    if (queryOptions && queryOptions.withAuctionStats) {
       await this.applyAuctionsStats(collection);
     }
 
@@ -210,7 +210,6 @@ export class CollectionService {
     collectionDetailed.timestamp = elasticCollection.timestamp;
 
     this.applyPropertiesToCollectionFromElasticSearch(collectionDetailed, elasticCollection);
-
 
     collectionDetailed.traits = await this.persistenceService.getCollectionTraits(identifier) ?? [];
 
@@ -361,13 +360,10 @@ export class CollectionService {
   }
 
   private async applyAuctionsStats(collection: NftCollection): Promise<void> {
-    const auctionsStats = await this.nftMarketplaceService.getCollectionStats(
-      new CollectionStatsFilters({ identifier: collection.collection }));
+    const filters = new CollectionStatsFilters({ identifier: collection.collection });
+    const auctionsStats = await this.nftMarketplaceService.getCollectionStats(filters);
 
-    collection.auctionsStats = auctionsStats;
-
-    //@ts-ignore
-    delete auctionsStats.identifier;
+    collection.auctionStats = auctionsStats;
   }
 
   private async getCollectionLogo(identifier: string): Promise<CollectionLogo | undefined> {

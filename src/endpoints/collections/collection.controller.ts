@@ -168,13 +168,14 @@ export class CollectionController {
 
   @Get('/collections/:collection')
   @ApiOperation({ summary: 'Collection details', description: 'Returns non-fungible/semi-fungible/meta-esdt collection details' })
+  @ApiQuery({ name: 'withAuctionStats', description: 'Include NFT auction statistics', required: false })
   @ApiOkResponse({ type: NftCollectionDetailed })
   @ApiNotFoundResponse({ description: 'Token collection not found' })
   async getNftCollection(
     @Param('collection', ParseCollectionPipe) collection: string,
-    @Query('withAuctions', ParseBoolPipe) withAuctions?: boolean
+    @Query('withAuctionStats', ParseBoolPipe) withAuctionStats?: boolean
   ): Promise<NftCollectionDetailed> {
-    const nftCollection = await this.collectionService.getNftCollection(collection, new CollectionQueryOptions({ withAuctions }));
+    const nftCollection = await this.collectionService.getNftCollection(collection, new CollectionQueryOptions({ withAuctionStats }));
     if (nftCollection === undefined) {
       throw new HttpException('Collection not found', HttpStatus.NOT_FOUND);
     }

@@ -47,8 +47,7 @@ import { TransactionDetailed } from '../transactions/entities/transaction.detail
 import { OriginLogger } from '@multiversx/sdk-nestjs';
 import { AccountDelegation } from '../stake/entities/account.delegation';
 import { DelegationService } from '../delegation/delegation.service';
-import { AccountStats } from '../marketplace/entities/account.stats';
-import { AccountStatsFilters } from '../marketplace/entities/account.stats.filter';
+import { AccountAuctionStats } from '../marketplace/entities/account.auction.stats';
 import { NftMarketplaceService } from '../marketplace/nft.marketplace.service';
 import { Auction } from '../marketplace/entities/account.auctions';
 import { TokenType } from '../tokens/entities/token.type';
@@ -1041,21 +1040,11 @@ export class AccountController {
 
   @Get("/accounts/:address/auction/stats")
   @ApiOperation({ summary: 'Account stats', description: 'Returns account status details from nft marketplace for a given address' })
-  @ApiQuery({ name: 'isOwner', description: 'Returns account stats details where given address is owner', required: false })
-  @ApiQuery({ name: 'marketplaceKey', description: 'Return marketplace key details', required: false })
-  @ApiOkResponse({ type: AccountStats })
+  @ApiOkResponse({ type: AccountAuctionStats })
   async getAccountStats(
     @Param('address', ParseAddressPipe) address: string,
-    @Query('isOwner') isOwner?: string,
-    @Query('marketplaceKey') marketplaceKey?: string,
-  ): Promise<AccountStats> {
-    const filter = new AccountStatsFilters({
-      address,
-      isOwner: isOwner == "true",
-      marketplaceKey,
-    });
-
-    const account = await this.nftMarketplaceService.getAccountStats(filter);
+  ): Promise<AccountAuctionStats> {
+    const account = await this.nftMarketplaceService.getAccountStats(address);
     if (!account) {
       throw new NotFoundException('Account not found');
     }

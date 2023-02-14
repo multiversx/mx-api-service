@@ -1,7 +1,9 @@
+import { ObjectType } from "@nestjs/graphql";
 import { ApiProperty } from "@nestjs/swagger";
 
-export class AccountStats {
-  constructor(init?: Partial<AccountStats>) {
+@ObjectType("AccountAuctionStats", { description: "Account auction statistics." })
+export class AccountAuctionStats {
+  constructor(init?: Partial<AccountAuctionStats>) {
     Object.assign(this, init);
   }
 

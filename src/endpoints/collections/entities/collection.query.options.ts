@@ -3,5 +3,5 @@ export class CollectionQueryOptions {
     Object.assign(this, init);
   }
 
-  withAuctions?: boolean;
+  withAuctionStats?: boolean;
 }

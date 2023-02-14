@@ -1,9 +1,8 @@
 import { BadRequestException, Injectable } from "@nestjs/common";
 import { GraphQlService } from "src/common/graphql/graphql.service";
-import { AccountStats } from "./entities/account.stats";
-import { AccountStatsFilters } from "./entities/account.stats.filter";
+import { AccountAuctionStats } from "./entities/account.auction.stats";
 import { Auction } from "./entities/account.auctions";
-import { CollectionStats } from "./entities/collection.stats";
+import { CollectionAuctionStats } from "./entities/collection.auction.stats";
 import { CollectionStatsFilters } from "./entities/collection.stats.filter";
 import { ExploreCollectionsStats } from "./entities/explore.collections.stats";
 import { accountAuctionsQuery } from "./graphql/account.auctions.query";
@@ -22,8 +21,8 @@ export class NftMarketplaceService {
     private readonly graphQlService: GraphQlService,
   ) { }
 
-  async getAccountStats(filters: AccountStatsFilters): Promise<AccountStats> {
-    const variables = { filters };
+  async getAccountStats(address: string): Promise<AccountAuctionStats> {
+    const variables = { filters: { address } };
     const result: any = await this.graphQlService.getNftServiceData(accountStatsQuery, variables);
 
     if (!result) {
@@ -41,7 +40,7 @@ export class NftMarketplaceService {
     };
   }
 
-  async getCollectionStats(filters: CollectionStatsFilters): Promise<CollectionStats> {
+  async getCollectionStats(filters: CollectionStatsFilters): Promise<CollectionAuctionStats> {
     const variables = { filters };
     const result: any = await this.graphQlService.getNftServiceData(collectionStatsQuery, variables);
 
@@ -50,7 +49,6 @@ export class NftMarketplaceService {
     }
 
     return {
-      identifier: result.collectionStats.identifier,
       activeAuctions: result.collectionStats.activeAuctions,
       endedAuctions: result.collectionStats.auctionsEnded,
       maxPrice: result.collectionStats.maxPrice,
