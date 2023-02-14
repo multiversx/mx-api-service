@@ -24,10 +24,10 @@ export class NftMarketplaceService {
   async getAccountStats(address: string): Promise<AccountAuctionStats> {
     const variables = { filters: { address } };
     const result: any = await this.graphQlService.getNftServiceData(accountStatsQuery, variables);
-
     if (!result) {
       throw new BadRequestException('Count not fetch accountsStats data from Nft Marketplace');
     }
+
     return {
       auctions: parseInt(result.accountStats.auctions),
       claimable: parseInt(result.accountStats.claimable),
@@ -35,7 +35,6 @@ export class NftMarketplaceService {
       collections: parseInt(result.accountStats.collections),
       creations: parseInt(result.accountStats.creations),
       likes: parseInt(result.accountStats.likes),
-      marketplaceKey: result.accountStats.marketplaceKey,
       orders: parseInt(result.accountStats.orders),
     };
   }

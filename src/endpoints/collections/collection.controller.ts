@@ -20,10 +20,11 @@ import { TransactionService } from "../transactions/transaction.service";
 import { TransactionFilter } from "../transactions/entities/transaction.filter";
 import { NftRank } from "src/common/assets/entities/nft.rank";
 import { SortCollectionNfts } from "./entities/sort.collection.nfts";
-import { CollectionQueryOptions } from "./entities/collection.query.options";
 import { NftCollectionDetailed } from "./entities/nft.collection.detailed";
 import { Response } from "express";
 import { SortCollections } from "./entities/sort.collections";
+import { CollectionAuctionStats } from "../marketplace/entities/collection.auction.stats";
+import { NftMarketplaceService } from "../marketplace/nft.marketplace.service";
 
 @Controller()
 @ApiTags('collections')
@@ -32,6 +33,7 @@ export class CollectionController {
     private readonly collectionService: CollectionService,
     private readonly nftService: NftService,
     private readonly transactionService: TransactionService,
+    private readonly nftMarketplaceService: NftMarketplaceService,
   ) { }
 
   @Get("/collections")
@@ -168,19 +170,31 @@ export class CollectionController {
 
   @Get('/collections/:collection')
   @ApiOperation({ summary: 'Collection details', description: 'Returns non-fungible/semi-fungible/meta-esdt collection details' })
-  @ApiQuery({ name: 'withAuctionStats', description: 'Include NFT auction statistics', required: false })
   @ApiOkResponse({ type: NftCollectionDetailed })
   @ApiNotFoundResponse({ description: 'Token collection not found' })
   async getNftCollection(
     @Param('collection', ParseCollectionPipe) collection: string,
-    @Query('withAuctionStats', ParseBoolPipe) withAuctionStats?: boolean
   ): Promise<NftCollectionDetailed> {
-    const nftCollection = await this.collectionService.getNftCollection(collection, new CollectionQueryOptions({ withAuctionStats }));
+    const nftCollection = await this.collectionService.getNftCollection(collection);
     if (nftCollection === undefined) {
       throw new HttpException('Collection not found', HttpStatus.NOT_FOUND);
     }
 
     return nftCollection;
+  }
+
+  @Get("/collections/:collection/auction/stats")
+  @ApiOperation({ summary: 'Collection stats', description: 'Returns collection status details from nft marketplace for a given collection identifier' })
+  @ApiOkResponse({ type: CollectionAuctionStats })
+  async getAccountStats(
+    @Param('collection') collection: string,
+  ): Promise<CollectionAuctionStats> {
+    const collectionStats = await this.nftMarketplaceService.getCollectionStats({ identifier: collection });
+    if (!collectionStats) {
+      throw new NotFoundException('Could not fetch collection stats');
+    }
+
+    return collectionStats;
   }
 
   @Get('/collections/:collection/ranks')

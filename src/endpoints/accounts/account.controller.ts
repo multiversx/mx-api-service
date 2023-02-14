@@ -73,7 +73,7 @@ export class AccountController {
     private readonly transferService: TransferService,
     private readonly apiConfigService: ApiConfigService,
     private readonly delegationService: DelegationService,
-    private readonly nftMarketplaceService: NftMarketplaceService
+    private readonly nftMarketplaceService: NftMarketplaceService,
   ) { }
 
   @Get("/accounts")

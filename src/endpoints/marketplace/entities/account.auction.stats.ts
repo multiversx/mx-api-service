@@ -26,8 +26,5 @@ export class AccountAuctionStats {
   likes: number = 0;
 
   @ApiProperty({ type: Number })
-  marketplaceKey: string = '';
-
-  @ApiProperty({ type: Number })
   orders: number = 0;
 }
