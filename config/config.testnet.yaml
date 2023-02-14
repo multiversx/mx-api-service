@@ -35,6 +35,14 @@ features:
     enabled: false
     hitsThreshold: 100
     ttl: 12
+  updateCollectionExtraDetails:
+    enabled: false
+  marketplace:
+    enabled: false
+    serviceUrl: 'https://testnet-nfts-graph.multiversx.com/graphql'
+  exchange:
+    enabled: false
+    serviceUrl: 'https://testnet-graph.xexchange.com/graphql'
 image:
   width: 600
   height: 600
@@ -106,6 +114,3 @@ security:
 nftProcess:
   parallelism: 1
   maxRetries: 3
-transaction-action:
-  mex:
-    microServiceUrl: 'https://testnet-graph.xexchange.com/graphql'

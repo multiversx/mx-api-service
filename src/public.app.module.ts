@@ -14,7 +14,7 @@ import { GraphQlModule } from './graphql/graphql.module';
   imports: [
     LoggingModule,
     EndpointsServicesModule,
-    EndpointsControllersModule,
+    EndpointsControllersModule.forRoot(),
     GraphQlModule.register(),
   ],
   controllers: [

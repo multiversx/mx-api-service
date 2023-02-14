@@ -654,14 +654,24 @@ export class ApiConfigService {
     return this.configService.get<number>('nftProcess.maxRetries') ?? 3;
   }
 
-  getMaiarExchangeUrl(): string | undefined {
-    return this.configService.get<string>('transaction-action.mex.microServiceUrl') ?? this.configService.get<string>('plugins.transaction-action.mex.microServiceUrl');
+  getExchangeServiceUrl(): string | undefined {
+    const isExchangeEnabled = this.configService.get<boolean>('features.exchange.enabled') ?? false;
+    if (isExchangeEnabled) {
+      return this.configService.get<string>('features.exchange.serviceUrl');
+    }
+
+    const legacyUrl = this.configService.get<string>('transaction-action.mex.microServiceUrl') ?? this.configService.get<string>('plugins.transaction-action.mex.microServiceUrl');
+    if (legacyUrl) {
+      return legacyUrl;
+    }
+
+    return undefined;
   }
 
-  getMaiarExchangeUrlMandatory(): string {
-    const microServiceUrl = this.getMaiarExchangeUrl();
+  getExchangeServiceUrlMandatory(): string {
+    const microServiceUrl = this.getExchangeServiceUrl();
     if (!microServiceUrl) {
-      throw new Error('No transaction-action.mex.microServiceUrl present');
+      throw new Error('No exchange service url present');
     }
 
     return microServiceUrl;
@@ -754,5 +764,18 @@ export class ApiConfigService {
 
   isUpdateCollectionExtraDetailsEnabled(): boolean {
     return this.configService.get<boolean>('features.updateCollectionExtraDetails.enabled') ?? false;
+  }
+
+  isMarketplaceFeatureEnabled(): boolean {
+    return this.configService.get<boolean>('features.marketplace.enabled') ?? false;
+  }
+
+  getMarketplaceServiceUrl(): string {
+    const serviceUrl = this.configService.get<string>('features.marketplace.serviceUrl');
+    if (!serviceUrl) {
+      throw new Error('No marketplace service url present');
+    }
+
+    return serviceUrl;
   }
 }

@@ -29,7 +29,7 @@ describe('Token Service', () => {
     decimals: 18,
     isPaused: false,
     assets: {
-      website: 'https://maiar.exchange',
+      website: 'https://xexchange.com',
       description: 'wEGLD is an ESDT token that has the same value as EGLD, the native coin of the Elrond blockchain.',
       ledgerSignature: '3044022062a68d4bdd649aebb5e4ed5c6284e211c689c3b8142e59a47b01cc9997b16dfa0220475b064836849b9c4aa9c5ff18daed91a64f847bd96aa0a26768349f2cd0c24f',
       status: 'active',
@@ -184,7 +184,6 @@ describe('Token Service', () => {
 
   describe("getToken", () => {
     it("should return a specific token", async () => {
-
       jest
         .spyOn(ElasticService.prototype, 'get')
         // eslint-disable-next-line require-await
@@ -198,7 +197,7 @@ describe('Token Service', () => {
       expect(result.identifier).toStrictEqual("WEGLD-bd4d79");
     });
 
-    it("should return undefined because test simulates that token is undefined", async () => {
+    it("should returns undefined because test simulates that token is undefined", async () => {
 
       jest
         .spyOn(ElasticService.prototype, 'get')
@@ -208,6 +207,18 @@ describe('Token Service', () => {
       const result = await tokenService.getToken('');
 
       expect(result).toBeUndefined();
+    });
+
+    it.skip("should return minted, burnt, supply, circulatingSupply fields for a specific MetaESDT", async () => {
+      const result = await tokenService.getToken('XMEX-fda355');
+      if (!result) {
+        throw new Error("Token not found");
+      }
+
+      expect(result.supply).toBeDefined();
+      expect(result.circulatingSupply).toBeDefined();
+      expect(result.burnt).toBeDefined();
+      expect(result.minted).toBeDefined();
     });
   });
 

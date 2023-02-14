@@ -14,7 +14,7 @@ import { QueryPagination } from 'src/common/entities/query.pagination';
 import { ParseIntPipe, ParseTokenPipe } from '@multiversx/sdk-nestjs';
 
 @Controller()
-@ApiTags('maiar.exchange')
+@ApiTags('xexchange')
 export class MexController {
   constructor(
     private readonly mexEconomicsService: MexEconomicsService,

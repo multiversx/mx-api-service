@@ -450,6 +450,27 @@ type BlockDetailed {
   validators: [String!]!
 }
 
+"""Collection auction statistics."""
+type CollectionAuctionStats {
+  """Number of active auctions."""
+  activeAuctions: Float
+
+  """Number of ended auctions."""
+  endedAuctions: Float
+
+  """Maximum price in EGLD."""
+  maxPrice: String
+
+  """Minimum (floor) price in EGLD."""
+  minPrice: String
+
+  """Ended auction average price in EGLD."""
+  saleAverage: String
+
+  """Total traded volume in EGLD."""
+  volumeTraded: String
+}
+
 """Collection roles object type."""
 type CollectionRoles {
   """Address for the given collection roles."""
@@ -2300,6 +2321,9 @@ type NftCollection {
   """Assets for the given NFT collection."""
   assets: TokenAssets
 
+  """Collection auction statistics."""
+  auctionStats: CollectionAuctionStats
+
   """If the given NFT collection can add special role."""
   canAddSpecialRoles: Boolean
 
@@ -2366,6 +2390,9 @@ type NftCollection {
 type NftCollectionAccount {
   """Assets for the given NFT collection."""
   assets: TokenAssets
+
+  """Collection auction statistics."""
+  auctionStats: CollectionAuctionStats
 
   """If the given NFT collection can add special role."""
   canAddSpecialRoles: Boolean
@@ -2435,6 +2462,9 @@ type NftCollectionAccount {
 type NftCollectionAccountFlat {
   """Assets for the given NFT collection."""
   assets: TokenAssets
+
+  """Collection auction statistics."""
+  auctionStats: CollectionAuctionStats
 
   """If the given NFT collection can add special role."""
   canAddSpecialRoles: Boolean

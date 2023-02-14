@@ -195,6 +195,34 @@ describe('Tokens', () => {
     });
   });
 
+  describe('GET - MetaESDT token details', () => {
+    it('should return minted, burnt, supply, circulatingSupply fields for a specific MetaESDT', async () => {
+      await request(app.getHttpServer())
+        .post(gql)
+        .send({
+          query: `{
+            tokenSupply(input:{
+              identifier: "XMEX-fda355"
+            }){
+              burnt
+              circulatingSupply
+              initialMinted
+              minted
+              supply
+            }
+          }`,
+        })
+        .expect(200)
+        .then(res => {
+          expect(res.body.data.tokenSupply.burnt).toBeDefined();
+          expect(res.body.data.tokenSupply.circulatingSupply).toBeDefined();
+          expect(res.body.data.tokenSupply.initialMinted).toBeDefined();
+          expect(res.body.data.tokenSupply.minted).toBeDefined();
+          expect(res.body.data.tokenSupply.supply).toBeDefined();
+        });
+    });
+  });
+
   describe('GET - Token Roles', () => {
     it('should return roles details for a specific token', async () => {
       await request(app.getHttpServer())

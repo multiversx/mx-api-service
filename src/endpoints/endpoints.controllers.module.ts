@@ -1,4 +1,5 @@
-import { Module } from "@nestjs/common";
+import { DynamicModule, Module, Type } from "@nestjs/common";
+import configuration from "config/configuration";
 import { PluginModule } from "src/plugins/plugin.module";
 import { DynamicModuleUtils } from "src/utils/dynamic.module.utils";
 import { AccountController } from "./accounts/account.controller";
@@ -11,6 +12,7 @@ import { EndpointsServicesModule } from "./endpoints.services.module";
 import { HealthCheckController } from "./health-check/health.check.controller";
 import { IdentitiesController } from "./identities/identities.controller";
 import { KeysController } from "./keys/keys.controller";
+import { NftMarketplaceController } from "./marketplace/nft.marketplace.controller";
 import { MexController } from "./mex/mex.controller";
 import { MiniBlockController } from "./miniblocks/mini.block.controller";
 import { NetworkController } from "./network/network.controller";
@@ -34,22 +36,34 @@ import { VmQueryController } from "./vm.query/vm.query.controller";
 import { WaitingListController } from "./waiting-list/waiting.list.controller";
 import { WebsocketController } from "./websocket/websocket.controller";
 
-@Module({
-  imports: [
-    EndpointsServicesModule,
-    ProxyModule,
-    PluginModule,
-  ],
-  providers: [
-    DynamicModuleUtils.getNestJsApiConfigService(),
-  ],
-  controllers: [
-    AccountController, BlockController, CollectionController, DelegationController, DelegationLegacyController, IdentitiesController,
-    KeysController, MiniBlockController, NetworkController, NftController, TagController, NodeController,
-    ProviderController, ProxyController, RoundController, SmartContractResultController, ShardController, StakeController, StakeController,
-    TokenController, TransactionController, UsernameController, VmQueryController, WaitingListController,
-    HealthCheckController, DappConfigController, WebsocketController, MexController, TransferController,
-    ProcessNftsPublicController, TransactionsBatchController,
-  ],
-})
-export class EndpointsControllersModule { }
+@Module({})
+export class EndpointsControllersModule {
+  static forRoot(): DynamicModule {
+    const controllers: Type<any>[] = [
+      AccountController, BlockController, CollectionController, DelegationController, DelegationLegacyController, IdentitiesController,
+      KeysController, MiniBlockController, NetworkController, NftController, TagController, NodeController,
+      ProviderController, ProxyController, RoundController, SmartContractResultController, ShardController, StakeController, StakeController,
+      TokenController, TransactionController, UsernameController, VmQueryController, WaitingListController,
+      HealthCheckController, DappConfigController, WebsocketController, MexController, TransferController,
+      ProcessNftsPublicController, TransactionsBatchController,
+    ];
+
+    const isMarketplaceFeatureEnabled = configuration().features?.marketplace?.enabled ?? false;
+    if (isMarketplaceFeatureEnabled) {
+      controllers.push(NftMarketplaceController);
+    }
+
+    return {
+      module: EndpointsControllersModule,
+      imports: [
+        EndpointsServicesModule,
+        ProxyModule,
+        PluginModule,
+      ],
+      providers: [
+        DynamicModuleUtils.getNestJsApiConfigService(),
+      ],
+      controllers,
+    };
+  }
+}
