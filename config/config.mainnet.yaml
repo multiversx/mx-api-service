@@ -40,6 +40,9 @@ features:
   marketplace:
     enabled: false
     serviceUrl: 'https://nfts-graph.multiversx.com/graphql'
+  exchange:
+    enabled: false
+    serviceUrl: 'https://graph.xexchange.com/graphql'
 image:
   width: 600
   height: 600
@@ -72,8 +75,6 @@ urls:
   ipfs: 'https://ipfs.io/ipfs'
   socket: 'socket-fra.elrond.com'
   maiarId: 'https://id-api.multiversx.com'
-  nftService: 'https://nfts-graph.multiversx.com/graphql'
-  exchangeService: 'https://graph.xexchange.com/graphql'
 indexer:
   type: 'elastic'
   maxPagination: 10000

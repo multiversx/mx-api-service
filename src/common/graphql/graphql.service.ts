@@ -33,7 +33,7 @@ export class GraphQlService {
   }
 
   async getNftServiceData(query: string, variables: any): Promise<any> {
-    const NFT_MARKETPLACE_URL = this.apiConfigService.getNftServiceUrlMandatory();
+    const NFT_MARKETPLACE_URL = this.apiConfigService.getMarketplaceServiceUrl();
 
     const graphqlClient = new GraphQLClient(NFT_MARKETPLACE_URL);
 

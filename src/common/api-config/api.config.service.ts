@@ -659,26 +659,23 @@ export class ApiConfigService {
   }
 
   getExchangeServiceUrl(): string | undefined {
-    return this.configService.get<string>('urls.exchangeService') ?? this.configService.get<string>('transaction-action.mex.microServiceUrl') ?? this.configService.get<string>('plugins.transaction-action.mex.microServiceUrl');
+    const isExchangeEnabled = this.configService.get<boolean>('features.exchange.enabled') ?? false;
+    if (isExchangeEnabled) {
+      return this.configService.get<string>('features.exchange.serviceUrl');
+    }
+
+    const legacyUrl = this.configService.get<string>('transaction-action.mex.microServiceUrl') ?? this.configService.get<string>('plugins.transaction-action.mex.microServiceUrl');
+    if (legacyUrl) {
+      return legacyUrl;
+    }
+
+    return undefined;
   }
 
   getExchangeServiceUrlMandatory(): string {
     const microServiceUrl = this.getExchangeServiceUrl();
     if (!microServiceUrl) {
       throw new Error('No exchange service url present');
-    }
-
-    return microServiceUrl;
-  }
-
-  getNftServiceUrl(): string | undefined {
-    return this.configService.get<string>('urls.nftService');
-  }
-
-  getNftServiceUrlMandatory(): string {
-    const microServiceUrl = this.getNftServiceUrl();
-    if (!microServiceUrl) {
-      throw new Error('No urls.nftService present');
     }
 
     return microServiceUrl;

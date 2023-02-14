@@ -40,6 +40,9 @@ features:
   marketplace:
     enabled: false
     serviceUrl: 'https://testnet-nfts-graph.multiversx.com/graphql'
+  exchange:
+    enabled: false
+    serviceUrl: 'https://testnet-graph.xexchange.com/graphql'
 image:
   width: 600
   height: 600
@@ -70,8 +73,6 @@ urls:
   ipfs: 'https://ipfs.io/ipfs'
   socket: 'testnet-socket-fra.elrond.com'
   maiarId: 'https://testnet-id-api.multiversx.com'
-  exchangeService: 'https://testnet-graph.xexchange.com/graphql'
-  nftService: 'https://testnet-nfts-graph.multiversx.com/graphql'
 database:
   enabled: false
   url: 'mongodb://127.0.0.1:27017/api?authSource=admin'
