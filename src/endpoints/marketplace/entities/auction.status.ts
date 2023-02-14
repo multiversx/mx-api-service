@@ -1,4 +1,4 @@
-export enum AuctionState {
+export enum AuctionStatus {
   running = 'running',
   claimable = 'claimable',
   ended = 'ended',

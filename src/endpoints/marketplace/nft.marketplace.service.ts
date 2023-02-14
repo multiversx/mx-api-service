@@ -14,7 +14,7 @@ import { Auctions } from "./entities/auctions";
 import { auctionsQuery } from "./graphql/auctions.query";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { AuctionsFilter } from "./entities/auctions.filter";
-import { AuctionState } from "./entities/auction.state";
+import { AuctionStatus } from "./entities/auction.status";
 
 @Injectable()
 export class NftMarketplaceService {
@@ -93,7 +93,7 @@ export class NftMarketplaceService {
   }
 
 
-  async getAccountAuctions(queryPagination: QueryPagination, address: string, state?: AuctionState): Promise<Auction[]> {
+  async getAccountAuctions(queryPagination: QueryPagination, address: string, state?: AuctionStatus): Promise<Auction[]> {
     const { from, size } = queryPagination;
     const result: any = await this.graphQlService.getNftServiceData(accountAuctionsQuery(address, state), {});
     if (!result) {
