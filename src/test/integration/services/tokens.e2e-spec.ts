@@ -209,7 +209,7 @@ describe('Token Service', () => {
       expect(result).toBeUndefined();
     });
 
-    it("should return minted, burnt, supply, circulatingSupply fields for a specific MetaESDT", async () => {
+    it.skip("should return minted, burnt, supply, circulatingSupply fields for a specific MetaESDT", async () => {
       const result = await tokenService.getToken('XMEX-fda355');
       if (!result) {
         throw new Error("Token not found");

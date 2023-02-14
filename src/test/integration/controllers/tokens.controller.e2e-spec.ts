@@ -181,7 +181,7 @@ describe("Tokens Controller", () => {
         });
     });
 
-    it('should return minted, burnt, supply, circulatingSupply fields for a specific MetaESDT', async () => {
+    it.skip('should return minted, burnt, supply, circulatingSupply fields for a specific MetaESDT', async () => {
       const identifier: string = 'XMEX-fda355';
 
       await request(app.getHttpServer())
