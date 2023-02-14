@@ -184,7 +184,6 @@ describe('Token Service', () => {
 
   describe("getToken", () => {
     it("should return a specific token", async () => {
-
       jest
         .spyOn(ElasticService.prototype, 'get')
         // eslint-disable-next-line require-await
@@ -198,7 +197,7 @@ describe('Token Service', () => {
       expect(result.identifier).toStrictEqual("WEGLD-bd4d79");
     });
 
-    it("should return undefined because test simulates that token is undefined", async () => {
+    it("should returns undefined because test simulates that token is undefined", async () => {
 
       jest
         .spyOn(ElasticService.prototype, 'get')
@@ -208,6 +207,18 @@ describe('Token Service', () => {
       const result = await tokenService.getToken('');
 
       expect(result).toBeUndefined();
+    });
+
+    it.skip("should return minted, burnt, supply, circulatingSupply fields for a specific MetaESDT", async () => {
+      const result = await tokenService.getToken('XMEX-fda355');
+      if (!result) {
+        throw new Error("Token not found");
+      }
+
+      expect(result.supply).toBeDefined();
+      expect(result.circulatingSupply).toBeDefined();
+      expect(result.burnt).toBeDefined();
+      expect(result.minted).toBeDefined();
     });
   });
 

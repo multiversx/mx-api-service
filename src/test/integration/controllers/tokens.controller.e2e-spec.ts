@@ -181,6 +181,22 @@ describe("Tokens Controller", () => {
         });
     });
 
+    it.skip('should return minted, burnt, supply, circulatingSupply fields for a specific MetaESDT', async () => {
+      const identifier: string = 'XMEX-fda355';
+
+      await request(app.getHttpServer())
+        .get(`${path}/${identifier}`)
+        .expect(200)
+        .then(res => {
+          expect(res.body).toBeDefined();
+          expect(res.body.supply).toBeDefined();
+          expect(res.body.circulatingSupply).toBeDefined();
+          expect(res.body.minted).toBeDefined();
+          expect(res.body.burnt).toBeDefined();
+          expect(res.body.initialMinted).toBeDefined();
+        });
+    });
+
     it('should returns general supply information for a specific token', async () => {
       const identifier: string = 'MEX-455c57';
 
