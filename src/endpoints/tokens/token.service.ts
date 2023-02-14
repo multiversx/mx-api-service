@@ -459,7 +459,7 @@ export class TokenService {
   }
 
   async applySupply(token: TokenDetailed): Promise<void> {
-    if (token.type !== TokenType.FungibleESDT) {
+    if (token.type !== TokenType.FungibleESDT && token.type !== TokenType.MetaESDT) {
       return;
     }
 
