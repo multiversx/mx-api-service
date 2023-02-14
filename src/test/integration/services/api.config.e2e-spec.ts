@@ -1432,10 +1432,10 @@ describe('API Config', () => {
     it("should return Maiar Exchange Url", () => {
       jest
         .spyOn(ConfigService.prototype, "get")
-        .mockImplementation(jest.fn(() => 'https://graph.maiar.exchange/graphql'));
+        .mockImplementation(jest.fn(() => 'https://graph.xexchange.com/graphql'));
 
-      const results = apiConfigService.getMaiarExchangeUrlMandatory();
-      expect(results).toEqual('https://graph.maiar.exchange/graphql');
+      const results = apiConfigService.getExchangeServiceUrlMandatory();
+      expect(results).toEqual('https://graph.xexchange.com/graphql');
     });
 
     it("should throw new error because test simulates that Maiar Exchange Url is not defined", () => {
@@ -1443,7 +1443,7 @@ describe('API Config', () => {
         .spyOn(ConfigService.prototype, 'get')
         .mockImplementation(jest.fn(() => undefined));
 
-      expect(() => apiConfigService.getMaiarExchangeUrlMandatory()).toThrowError('No transaction-action.mex.microServiceUrl present');
+      expect(() => apiConfigService.getExchangeServiceUrlMandatory()).toThrowError('No exchange service url present');
     });
   });
 

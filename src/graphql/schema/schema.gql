@@ -450,6 +450,27 @@ type BlockDetailed {
   validators: [String!]!
 }
 
+"""Collection auction statistics."""
+type CollectionAuctionStats {
+  """Number of active auctions."""
+  activeAuctions: Float
+
+  """Number of ended auctions."""
+  endedAuctions: Float
+
+  """Maximum price in EGLD."""
+  maxPrice: String
+
+  """Minimum (floor) price in EGLD."""
+  minPrice: String
+
+  """Ended auction average price in EGLD."""
+  saleAverage: String
+
+  """Total traded volume in EGLD."""
+  volumeTraded: String
+}
+
 """Collection roles object type."""
 type CollectionRoles {
   """Address for the given collection roles."""
@@ -671,7 +692,7 @@ enum EsdtType {
 """Input to retrieve the given detailed account for."""
 input GetAccountDetailedInput {
   """Address to retrieve the corresponding detailed account for."""
-  address: ID! = ""
+  address: ID = ""
 }
 
 """Input to retrieve the given accounts for."""
@@ -686,7 +707,7 @@ input GetAccountsInput {
 """Input to retrieve the given hash block for."""
 input GetBlockHashInput {
   """Specific block hash to retrieve the corresponding blocks for."""
-  hash: ID! = ""
+  hash: ID = ""
 }
 
 """Input to retrieve the given blocks for."""
@@ -749,7 +770,7 @@ input GetHistoryTokenAccountInput {
   from: Float = 0
 
   """Identifier token to retrieve for the given result set."""
-  identifier: ID! = ""
+  identifier: ID = ""
 
   """Number of collections to retrieve for the given result set."""
   size: Float = 25
@@ -773,7 +794,7 @@ input GetMexFarmsInput {
 """Input to retrieve the given mex token for."""
 input GetMexTokenInput {
   """Identifier to retrieve the corresponding mex token for."""
-  id: ID! = ""
+  id: ID = ""
 }
 
 """Input to retrieve the given mex tokens pairs by quote and baseId for."""
@@ -806,7 +827,7 @@ input GetMexTokensInput {
 """Input to retrieve the given  block for."""
 input GetMiniBlockHashInput {
   """Specific mini block hash to retrieve the corresponding block for."""
-  miniBlockHash: ID! = ""
+  miniBlockHash: ID = ""
 }
 
 """Input to retrieve the given NFT collection for."""
@@ -814,7 +835,7 @@ input GetNftCollectionInput {
   """
   Collection identifier to retrieve the corresponding NFT collection for.
   """
-  collection: ID! = ""
+  collection: ID = ""
 }
 
 """Input to retrieve the given NFT collections for."""
@@ -916,7 +937,7 @@ input GetNftCollectionsInput {
 """Input to retrieve the given NFT for."""
 input GetNftInput {
   """Identifier to retrieve the corresponding NFT for."""
-  identifier: ID! = ""
+  identifier: ID = ""
 }
 
 """Input to retrieve the given NFTs for."""
@@ -1260,7 +1281,7 @@ input GetTokenAccountsInput {
   from: Float = 0
 
   """Identifier to retrieve the corresponding token for."""
-  identifier: ID! = ""
+  identifier: ID = ""
 
   """Number of tokens to retrieve for the given result set."""
   size: Float = 25
@@ -1269,16 +1290,16 @@ input GetTokenAccountsInput {
 """Input to retrieve the given token for."""
 input GetTokenInput {
   """Identifier to retrieve the corresponding token for."""
-  identifier: ID! = ""
+  identifier: ID = ""
 }
 
 """Input to retrieve the given token role address for."""
 input GetTokenRolesForIdentifierAndAddressInput {
   """Address to retrieve the corresponding token roles for."""
-  address: ID! = ""
+  address: ID = ""
 
   """Identifier to retrieve the corresponding token for."""
-  identifier: ID! = ""
+  identifier: ID = ""
 }
 
 """Input to retrieve the given tokens for."""
@@ -1349,7 +1370,7 @@ input GetTokensInput {
 """Input to retrieve the given detailed transaction for."""
 input GetTransactionDetailedInput {
   """Hash to retrieve the corresponding detailed transaction for."""
-  hash: String! = ""
+  hash: String = ""
 }
 
 """Input to retrieve the given transactions count for."""
@@ -1715,7 +1736,7 @@ input GetTransfersInput {
 """Input to retrieve the given account details for."""
 input GetUsernameInput {
   """Username"""
-  username: String! = ""
+  username: String = ""
 }
 
 """Input to retrieve the given waiting-list for."""
@@ -2300,6 +2321,9 @@ type NftCollection {
   """Assets for the given NFT collection."""
   assets: TokenAssets
 
+  """Collection auction statistics."""
+  auctionStats: CollectionAuctionStats
+
   """If the given NFT collection can add special role."""
   canAddSpecialRoles: Boolean
 
@@ -2366,6 +2390,9 @@ type NftCollection {
 type NftCollectionAccount {
   """Assets for the given NFT collection."""
   assets: TokenAssets
+
+  """Collection auction statistics."""
+  auctionStats: CollectionAuctionStats
 
   """If the given NFT collection can add special role."""
   canAddSpecialRoles: Boolean
@@ -2435,6 +2462,9 @@ type NftCollectionAccount {
 type NftCollectionAccountFlat {
   """Assets for the given NFT collection."""
   assets: TokenAssets
+
+  """Collection auction statistics."""
+  auctionStats: CollectionAuctionStats
 
   """If the given NFT collection can add special role."""
   canAddSpecialRoles: Boolean

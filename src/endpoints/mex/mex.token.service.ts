@@ -120,7 +120,7 @@ export class MexTokenService {
   }
 
   async getIndexedMexTokens(): Promise<Record<string, MexToken>> {
-    if (!this.apiConfigService.getMaiarExchangeUrl()) {
+    if (!this.apiConfigService.getExchangeServiceUrl()) {
       return {};
     }
 
@@ -150,7 +150,7 @@ export class MexTokenService {
   }
 
   private async getAllMexTokens(): Promise<MexToken[]> {
-    if (!this.apiConfigService.getMaiarExchangeUrl()) {
+    if (!this.apiConfigService.getExchangeServiceUrl()) {
       return [];
     }
 

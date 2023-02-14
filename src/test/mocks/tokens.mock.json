@@ -8,7 +8,7 @@
     "decimals": 18,
     "isPaused": false,
     "assets": {
-      "website": "https://maiar.exchange",
+      "website": "https://xexchange.com",
       "description": "MEX is the utility token of the Maiar Exchange.",
       "status": "active",
       "pngUrl": "https://media.elrond.com/tokens/asset/MEX-455c57/logo.png",
@@ -38,7 +38,7 @@
     "decimals": 18,
     "isPaused": false,
     "assets": {
-      "website": "https://maiar.exchange",
+      "website": "https://xexchange.com",
       "description": "wEGLD is an ESDT token that has the same value as EGLD, the native coin of the Elrond blockchain.",
       "status": "active",
       "pngUrl": "https://media.elrond.com/tokens/asset/WEGLD-bd4d79/logo.png",
@@ -109,7 +109,7 @@
     "decimals": 6,
     "isPaused": false,
     "assets": {
-      "website": "https://maiar.exchange",
+      "website": "https://xexchange.com",
       "description": "USDC stablecoin originating on Ethereum, bridged as an ESDT token on Elrond. 1 USDC = 1 WrappedUSDC",
       "status": "active",
       "pngUrl": "https://media.elrond.com/tokens/asset/USDC-c76f1f/logo.png",
@@ -1276,7 +1276,7 @@
     "decimals": 18,
     "isPaused": false,
     "assets": {
-      "website": "https://maiar.exchange",
+      "website": "https://xexchange.com",
       "description": "Liquidity Provider (LP) Token obtained by adding liquidity in the EGLD/MEX pool on the Maiar DEX.",
       "status": "active",
       "pngUrl": "https://media.elrond.com/tokens/asset/EGLDMEX-0be9e5/logo.png",
@@ -1360,7 +1360,7 @@
     "decimals": 18,
     "isPaused": false,
     "assets": {
-      "website": "https://maiar.exchange",
+      "website": "https://xexchange.com",
       "description": "Liquidity Provider (LP) Token obtained by adding liquidity in the EGLD/USDC pool on the Maiar DEX.",
       "status": "active",
       "pngUrl": "https://media.elrond.com/tokens/asset/EGLDUSDC-594e5e/logo.png",
@@ -1387,7 +1387,7 @@
     "decimals": 18,
     "isPaused": false,
     "assets": {
-      "website": "https://maiar.exchange",
+      "website": "https://xexchange.com",
       "description": "Liquidity Provider (LP) Token obtained by adding liquidity in the EGLD/RIDE pool on the Maiar DEX.",
       "status": "active",
       "pngUrl": "https://media.elrond.com/tokens/asset/EGLDRIDE-7bd51a/logo.png",
@@ -1627,7 +1627,7 @@
     "decimals": 18,
     "isPaused": false,
     "assets": {
-      "website": "https://maiar.exchange",
+      "website": "https://xexchange.com",
       "description": "Liquidity Provider (LP) Token obtained by adding liquidity in the ITH/EGLD pool on the Maiar DEX.",
       "status": "active",
       "pngUrl": "https://media.elrond.com/tokens/asset/ITHWEGLD-1adc53/logo.png",
@@ -1684,7 +1684,7 @@
     "decimals": 18,
     "isPaused": false,
     "assets": {
-      "website": "https://maiar.exchange",
+      "website": "https://xexchange.com",
       "description": "Liquidity Provider (LP) Token obtained by adding liquidity in the UTK/EGLD pool on the Maiar DEX.",
       "status": "active",
       "pngUrl": "https://media.elrond.com/tokens/asset/UTKWEGLD-c960d1/logo.png",
@@ -2299,7 +2299,7 @@
     "decimals": 18,
     "isPaused": false,
     "assets": {
-      "website": "https://maiar.exchange",
+      "website": "https://xexchange.com",
       "description": "Liquidity Provider (LP) Token obtained by adding liquidity in the EGLD/CRT pool on the Maiar DEX.",
       "status": "active",
       "pngUrl": "https://media.elrond.com/tokens/asset/CRTWEGLD-1fac3f/logo.png",
@@ -2515,7 +2515,7 @@
     "decimals": 18,
     "isPaused": false,
     "assets": {
-      "website": "https://maiar.exchange",
+      "website": "https://xexchange.com",
       "description": "Liquidity Provider (LP) Token obtained by adding liquidity in the EGLD/ASH pool on the Maiar DEX.",
       "status": "active",
       "pngUrl": "https://media.elrond.com/tokens/asset/ASHWEGLD-38545c/logo.png",
@@ -2630,7 +2630,7 @@
     "decimals": 18,
     "isPaused": false,
     "assets": {
-      "website": "https://maiar.exchange",
+      "website": "https://xexchange.com",
       "description": "Liquidity Provider (LP) Token obtained by adding liquidity in the ZPAY/EGLD pool on the Maiar DEX.",
       "status": "active",
       "pngUrl": "https://media.elrond.com/tokens/asset/ZPAYWEGLD-34e5c1/logo.png",
@@ -2808,7 +2808,7 @@
     "decimals": 18,
     "isPaused": false,
     "assets": {
-      "website": "https://maiar.exchange",
+      "website": "https://xexchange.com",
       "description": "Liquidity Provider (LP) Token obtained by adding liquidity in the AERO/EGLD pool on the Maiar DEX.",
       "status": "active",
       "pngUrl": "https://media.elrond.com/tokens/asset/AEROWEGLD-81cc37/logo.png",
@@ -2896,7 +2896,7 @@
     "decimals": 18,
     "isPaused": false,
     "assets": {
-      "website": "https://maiar.exchange",
+      "website": "https://xexchange.com",
       "description": "Liquidity Provider (LP) Token obtained by adding liquidity in the ISET/EGLD pool on the Maiar DEX.",
       "status": "active",
       "pngUrl": "https://media.elrond.com/tokens/asset/ISETEGLDLP-86715a/logo.png",
@@ -3165,7 +3165,7 @@
     "decimals": 18,
     "isPaused": false,
     "assets": {
-      "website": "https://maiar.exchange",
+      "website": "https://xexchange.com",
       "description": "Liquidity Provider (LP) Token obtained by adding liquidity in the EGLD/SUPER pool on the Maiar DEX.",
       "status": "active",
       "pngUrl": "https://media.elrond.com/tokens/asset/SUPEREGLD-a793b9/logo.png",
@@ -3223,7 +3223,7 @@
     "decimals": 18,
     "isPaused": false,
     "assets": {
-      "website": "https://maiar.exchange",
+      "website": "https://xexchange.com",
       "description": "Liquidity Provider (LP) Token obtained by adding liquidity in the EGLD/BSK pool on the Maiar DEX.",
       "status": "active",
       "pngUrl": "https://media.elrond.com/tokens/asset/BSKWEGLD-7cd373/logo.png",
@@ -3362,7 +3362,7 @@
     "decimals": 18,
     "isPaused": false,
     "assets": {
-      "website": "https://maiar.exchange",
+      "website": "https://xexchange.com",
       "description": "Liquidity Provider (LP) Token obtained by adding liquidity in the EFFORT/EGLD pool on the Maiar DEX.",
       "status": "active",
       "pngUrl": "https://media.elrond.com/tokens/asset/EFFORTEGLD-94460e/logo.png",
@@ -3532,7 +3532,7 @@
     "decimals": 18,
     "isPaused": false,
     "assets": {
-      "website": "https://maiar.exchange",
+      "website": "https://xexchange.com",
       "description": "Liquidity Provider (LP) Token obtained by adding liquidity in the CRU/EGLD pool on the Maiar DEX.",
       "status": "active",
       "pngUrl": "https://media.elrond.com/tokens/asset/CRUWEGLD-76c269/logo.png",
@@ -3589,7 +3589,7 @@
     "decimals": 18,
     "isPaused": false,
     "assets": {
-      "website": "https://maiar.exchange",
+      "website": "https://xexchange.com",
       "description": "Liquidity Provider (LP) Token obtained by adding liquidity in the EGLD/PLATA pool on the Maiar DEX.",
       "status": "active",
       "pngUrl": "https://media.elrond.com/tokens/asset/PLATAWEGLD-c5cb4e/logo.png",
@@ -3676,7 +3676,7 @@
     "decimals": 18,
     "isPaused": false,
     "assets": {
-      "website": "https://maiar.exchange",
+      "website": "https://xexchange.com",
       "description": "Liquidity Provider (LP) Token obtained by adding liquidity in the KRO/USDC pool on the Maiar DEX.",
       "status": "active",
       "pngUrl": "https://media.elrond.com/tokens/asset/KROUSDC-7787ab/logo.png",
@@ -3703,7 +3703,7 @@
     "decimals": 18,
     "isPaused": false,
     "assets": {
-      "website": "https://maiar.exchange",
+      "website": "https://xexchange.com",
       "description": "Liquidity Provider (LP) Token obtained by adding liquidity in the WAM/EGLD pool on the Maiar DEX.",
       "status": "active",
       "pngUrl": "https://media.elrond.com/tokens/asset/WAMWEGLD-cdfa74/logo.png",
@@ -3730,7 +3730,7 @@
     "decimals": 18,
     "isPaused": false,
     "assets": {
-      "website": "https://maiar.exchange",
+      "website": "https://xexchange.com",
       "description": "Liquidity Provider (LP) Token obtained by adding liquidity in the EGLD/QWT pool on the Maiar DEX.",
       "status": "active",
       "pngUrl": "https://media.elrond.com/tokens/asset/QWTWEGLD-3eff55/logo.png",
@@ -3757,7 +3757,7 @@
     "decimals": 18,
     "isPaused": false,
     "assets": {
-      "website": "https://maiar.exchange",
+      "website": "https://xexchange.com",
       "description": "Liquidity Provider (LP) Token obtained by adding liquidity in the EGLD/OFE pool on the Maiar DEX.",
       "status": "active",
       "pngUrl": "https://media.elrond.com/tokens/asset/OFEWEGLD-73840b/logo.png",
@@ -3815,7 +3815,7 @@
     "decimals": 18,
     "isPaused": false,
     "assets": {
-      "website": "https://maiar.exchange",
+      "website": "https://xexchange.com",
       "description": "Liquidity Provider (LP) Token obtained by adding liquidity in the EGLD/CHECKR pool on the Maiar DEX.",
       "status": "active",
       "pngUrl": "https://media.elrond.com/tokens/asset/CHECKREGLD-73c669/logo.png",
@@ -3932,7 +3932,7 @@
     "decimals": 18,
     "isPaused": false,
     "assets": {
-      "website": "https://maiar.exchange",
+      "website": "https://xexchange.com",
       "description": "Liquidity Provider (LP) Token obtained by adding liquidity in the LPAD/USDC pool on the Maiar DEX.",
       "status": "active",
       "pngUrl": "https://media.elrond.com/tokens/asset/LPADUSDC-33437e/logo.png",
@@ -3959,7 +3959,7 @@
     "decimals": 18,
     "isPaused": false,
     "assets": {
-      "website": "https://maiar.exchange",
+      "website": "https://xexchange.com",
       "description": "Liquidity Provider (LP) Token obtained by adding liquidity in the CPA/USDC pool on the Maiar DEX.",
       "status": "active",
       "pngUrl": "https://media.elrond.com/tokens/asset/CPAUSDC-c4669b/logo.png",
@@ -3984,7 +3984,7 @@
     "decimals": 18,
     "isPaused": false,
     "assets": {
-      "website": "https://maiar.exchange",
+      "website": "https://xexchange.com",
       "description": "Liquidity Provider (LP) Token obtained by adding liquidity in the PROTEO/USDC pool on the Maiar DEX.",
       "status": "active",
       "pngUrl": "https://media.elrond.com/tokens/asset/PROTEOUSDC-9d584e/logo.png",
