@@ -49,7 +49,6 @@ export class EndpointsControllersModule {
     ];
 
     const isMarketplaceFeatureEnabled = configuration().features?.marketplace?.enabled ?? false;
-    console.log({ isMarketplaceFeatureEnabled });
     if (isMarketplaceFeatureEnabled) {
       controllers.push(NftMarketplaceController);
     }
