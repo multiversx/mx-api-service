@@ -14,6 +14,7 @@ import { auctionsQuery } from "./graphql/auctions.query";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { AuctionsFilter } from "./entities/auctions.filter";
 import { AuctionStatus } from "./entities/auction.status";
+import BigNumber from "bignumber.js";
 
 @Injectable()
 export class NftMarketplaceService {
@@ -52,7 +53,7 @@ export class NftMarketplaceService {
       endedAuctions: result.collectionStats.auctionsEnded,
       maxPrice: result.collectionStats.maxPrice,
       minPrice: result.collectionStats.minPrice,
-      saleAverage: result.collectionStats.saleAverage,
+      saleAverage: new BigNumber(result.collectionStats.saleAverage).toFixed(0),
       volumeTraded: result.collectionStats.volumeTraded,
     };
   }
