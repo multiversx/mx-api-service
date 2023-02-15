@@ -23,11 +23,10 @@ export class NftMarketplaceController {
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   getAuctions(
     @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number,
-    @Query("marketplace") marketplace: string,
   ): Promise<Auctions[]> {
-    return this.nftMarketplaceService.getAuctions(
+    return this.nftMarketplaceService.getAuctionsRaw(
       new QueryPagination({ size }),
-      new AuctionsFilter({ marketplace }));
+    );
   }
 
   @Get("/auctions/count")

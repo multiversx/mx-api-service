@@ -31,8 +31,8 @@ export class Auctions {
   maxBid: Bids = new Bids();
 
   @ApiProperty({ type: Number })
-  timestamp: number = 0;
+  createdAt: number = 0;
 
   @ApiProperty({ type: String })
-  ownerAddress: string = '';
+  owner: string = '';
 }

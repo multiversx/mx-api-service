@@ -136,11 +136,19 @@ export class NftMarketplaceService {
   async getAuctionsRaw(pagination: QueryPagination): Promise<Auctions[]> {
     let hasNextPage = true;
     let after = null;
-    let pagesLeft = 3;
+
+    const pageSize = pagination.size;
+    const totalPages = Math.ceil(pagination.size / pageSize);
+
+    let pagesLeft = Math.min(totalPages, 3); // Fetch up to 3 pages by default
+
+    if (pagination.size > 25) {
+      pagesLeft = totalPages;
+    }
+
     const auctions: Auctions[] = [];
 
     while (hasNextPage && pagesLeft > 0) {
-      const pageSize = Math.min(pagination.size, 10);
       const variables = {
         "first": pageSize,
         "after": after,
@@ -169,9 +177,8 @@ export class NftMarketplaceService {
           currentAuction.minBid.token = auction.node.minBid.token;
           currentAuction.maxBid.amount = auction.node.maxBid.amount;
           currentAuction.maxBid.token = auction.node.maxBid.token;
-          currentAuction.timestamp = auction.node.creationDate;
-          currentAuction.ownerAddress = auction.node.ownerAddress;
-
+          currentAuction.createdAt = auction.node.creationDate;
+          currentAuction.owner = auction.node.ownerAddress;
           return currentAuction;
         });
         auctions.push(...currentAuctions);
@@ -184,7 +191,6 @@ export class NftMarketplaceService {
         hasNextPage = false;
       }
     }
-
 
     if (hasNextPage) {
       const remainingAuctions = await this.getAuctionsRaw({
