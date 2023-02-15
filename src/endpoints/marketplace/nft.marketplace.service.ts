@@ -107,12 +107,15 @@ export class NftMarketplaceService {
     const auction = result.auctions.edges[0].node;
 
     const auctionData: Auction = {
+      owner: auction.ownerAddress,
+      creator: auction.asset.creatorAddress,
       identifier: auction.identifier,
       collection: auction.collection,
       status: auction.status,
+      auctionType: auction.type,
       createdAt: auction.creationDate,
       marketplaceAuctionId: auction.marketplaceAuctionId,
-      marketplace: auction.marketplace,
+      marketplace: auction.marketplace.key,
       tags: auction.tags,
     };
 

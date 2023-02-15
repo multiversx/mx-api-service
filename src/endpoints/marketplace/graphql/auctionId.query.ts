@@ -19,9 +19,12 @@ export const auctionId = (id: string) => {
           identifier
           collection
           status
+          type
           creationDate
           endDate
           marketplace{key}
+          asset{creatorAddress}
+          ownerAddress
           tags
           marketplaceAuctionId
           startDate

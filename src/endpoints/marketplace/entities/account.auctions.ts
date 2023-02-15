@@ -7,6 +7,12 @@ export class Auction {
   }
 
   @ApiProperty({ type: String })
+  creator?: string = '';
+
+  @ApiProperty({ type: String })
+  owner?: string = '';
+
+  @ApiProperty({ type: String })
   auctionId?: string = '';
 
   @ApiProperty({ type: String })
@@ -17,6 +23,9 @@ export class Auction {
 
   @ApiProperty({ enum: AuctionStatus })
   status: AuctionStatus = AuctionStatus.unknown;
+
+  @ApiProperty({ type: String })
+  auctionType?: string = '';
 
   @ApiProperty({ type: Number })
   createdAt: number = 0;
