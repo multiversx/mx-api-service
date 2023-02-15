@@ -24,7 +24,6 @@ flags:
   useVmQueryTracing: false
   processNfts: true
   indexer-v3: true
-  indexer-v5: true
 features:
   eventsNotifier:
     enabled: false
@@ -36,6 +35,14 @@ features:
     enabled: false
     hitsThreshold: 100
     ttl: 12
+  updateCollectionExtraDetails:
+    enabled: false
+  marketplace:
+    enabled: false
+    serviceUrl: 'https://devnet-nfts-graph.multiversx.com/graphql'
+  exchange:
+    enabled: false
+    serviceUrl: 'https://devnet-graph.xexchange.com/graphql'
 image:
   width: 600
   height: 600
@@ -108,6 +115,3 @@ security:
 nftProcess:
   parallelism: 1
   maxRetries: 3
-transaction-action:
-  mex:
-    microServiceUrl: ''

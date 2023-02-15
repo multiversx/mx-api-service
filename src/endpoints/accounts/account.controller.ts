@@ -1033,4 +1033,3 @@ export class AccountController {
     return await this.accountService.getAccountTokenHistory(address, tokenIdentifier, new QueryPagination({ from, size }));
   }
 }
-

@@ -170,7 +170,7 @@ export class CollectionController {
   @ApiOkResponse({ type: NftCollectionDetailed })
   @ApiNotFoundResponse({ description: 'Token collection not found' })
   async getNftCollection(
-    @Param('collection', ParseCollectionPipe) collection: string
+    @Param('collection', ParseCollectionPipe) collection: string,
   ): Promise<NftCollectionDetailed> {
     const nftCollection = await this.collectionService.getNftCollection(collection);
     if (nftCollection === undefined) {

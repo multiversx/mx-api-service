@@ -38,11 +38,14 @@ export class ProviderService {
         return undefined;
       }
 
-      provider.automaticActivation = delegationData.automaticActivation;
-      provider.initialOwnerFunds = delegationData.initialOwnerFunds;
-      provider.checkCapOnRedelegate = delegationData.checkCapOnRedelegate;
-      provider.totalUnStaked = delegationData.totalUnStaked;
-      provider.createdNonce = delegationData.createdNonce;
+      const modifiedProvider = { ...provider };
+      modifiedProvider.automaticActivation = delegationData.automaticActivation;
+      modifiedProvider.initialOwnerFunds = delegationData.initialOwnerFunds;
+      modifiedProvider.checkCapOnRedelegate = delegationData.checkCapOnRedelegate;
+      modifiedProvider.totalUnStaked = delegationData.totalUnStaked;
+      modifiedProvider.createdNonce = delegationData.createdNonce;
+
+      return modifiedProvider;
     }
 
     return provider;

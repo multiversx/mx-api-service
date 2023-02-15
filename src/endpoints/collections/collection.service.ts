@@ -198,6 +198,8 @@ export class CollectionService {
     }
 
     const collectionDetailed = ApiUtils.mergeObjects(new NftCollectionDetailed(), collection);
+    collectionDetailed.type = elasticCollection.type as NftType;
+    collectionDetailed.timestamp = elasticCollection.timestamp;
 
     this.applyPropertiesToCollectionFromElasticSearch(collectionDetailed, elasticCollection);
 

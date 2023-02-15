@@ -10,6 +10,7 @@ import { DelegationModule } from "./delegation/delegation.module";
 import { EsdtModule } from "./esdt/esdt.module";
 import { IdentitiesModule } from "./identities/identities.module";
 import { KeysModule } from "./keys/keys.module";
+import { NftMarketplaceModule } from "./marketplace/nft.marketplace.module";
 import { MexModule } from "./mex/mex.module";
 import { MiniBlockModule } from "./miniblocks/miniblock.module";
 import { NetworkModule } from "./network/network.module";
@@ -70,6 +71,7 @@ import { AuthModule } from "src/common/auth/auth.module";
     WebsocketModule,
     MexModule,
     ProcessNftsModule,
+    NftMarketplaceModule,
     TransactionsBatchModule,
   ],
   exports: [
@@ -77,7 +79,7 @@ import { AuthModule } from "src/common/auth/auth.module";
     MiniBlockModule, NetworkModule, NftModule, NftMediaModule, TagModule, NodeModule, ProviderModule,
     RoundModule, SmartContractResultModule, ShardModule, StakeModule, TokenModule, RoundModule, TransactionModule, UsernameModule, VmQueryModule,
     WaitingListModule, EsdtModule, BlsModule, DappConfigModule, TransferModule, TransactionActionModule, WebsocketModule, MexModule,
-    ProcessNftsModule, TransactionsBatchModule, AuthModule, RegisterModule,
+    ProcessNftsModule, NftMarketplaceModule, TransactionsBatchModule, AuthModule, RegisterModule,
   ],
 })
 export class EndpointsServicesModule { }
