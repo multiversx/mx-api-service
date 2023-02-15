@@ -14,6 +14,7 @@ import { auctionsQuery } from "./graphql/auctions.query";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { AuctionStatus } from "./entities/auction.status";
 import BigNumber from "bignumber.js";
+import { auctionId } from "./graphql/auctionId.query";
 
 @Injectable()
 export class NftMarketplaceService {
@@ -25,7 +26,7 @@ export class NftMarketplaceService {
     const variables = { filters: { address } };
     const result: any = await this.graphQlService.getNftServiceData(accountStatsQuery, variables);
     if (!result) {
-      throw new BadRequestException('Count not fetch accountsStats data from Nft Marketplace');
+      throw new BadRequestException('Count not fetch data from nft service');
     }
 
     return {
@@ -44,7 +45,7 @@ export class NftMarketplaceService {
     const result: any = await this.graphQlService.getNftServiceData(collectionStatsQuery, variables);
 
     if (!result) {
-      throw new BadRequestException('Count not fetch collectionStats data from Nft Marketplace');
+      throw new BadRequestException('Count not fetch data from nft service');
     }
 
     return {
@@ -61,7 +62,7 @@ export class NftMarketplaceService {
     const result: any = await this.graphQlService.getNftServiceData(collectionsStatsQuery, {});
 
     if (!result) {
-      throw new BadRequestException('Count not fetch exploreCollectionsStats data from Nft Marketplace');
+      throw new BadRequestException('Count not fetch data from nft service');
     }
 
     return {
@@ -94,6 +95,32 @@ export class NftMarketplaceService {
     });
 
     return auctions.slice(from, from + size);
+  }
+
+  async getAuctionId(id: string): Promise<Auction> {
+    const result = await this.graphQlService.getNftServiceData(auctionId(id), {});
+
+    if (!result) {
+      throw new BadRequestException('Count not fetch data from nft service');
+    }
+
+    const auction = result.auctions.edges[0].node;
+
+    const auctionData: Auction = {
+      identifier: auction.identifier,
+      collection: auction.collection,
+      status: auction.status,
+      createdAt: auction.creationDate,
+      marketplaceAuctionId: auction.marketplaceAuctionId,
+      marketplace: auction.marketplace,
+      tags: auction.tags,
+    };
+
+    if (auction.endDate !== 0) {
+      auctionData.endsAt = auction.endDate;
+    }
+
+    return auctionData;
   }
 
   async getAuctions(pagination: QueryPagination): Promise<Auctions[]> {

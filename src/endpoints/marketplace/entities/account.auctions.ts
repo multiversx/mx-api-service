@@ -7,7 +7,7 @@ export class Auction {
   }
 
   @ApiProperty({ type: String })
-  auctionId: string = '';
+  auctionId?: string = '';
 
   @ApiProperty({ type: String })
   identifier: string = '';
@@ -22,13 +22,13 @@ export class Auction {
   createdAt: number = 0;
 
   @ApiProperty({ type: Number })
-  endsAt: number = 0;
-
-  @ApiProperty({ type: String })
-  marketplace: string = '';
+  endsAt?: number = 0;
 
   @ApiProperty({ type: String })
   marketplaceAuctionId: string = '';
+
+  @ApiProperty({ type: String })
+  marketplace: string = '';
 
   @ApiProperty({ type: [String] })
   tags: string[] = [];

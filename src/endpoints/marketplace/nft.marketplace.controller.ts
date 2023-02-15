@@ -75,4 +75,14 @@ export class NftMarketplaceController {
 
     return collectionStats;
   }
+
+  @Get("/auctions/:id")
+  @ApiOperation({ summary: 'Auction ID', description: 'Returns auction details for a specific auction ID ' })
+  @ApiOkResponse({ type: Auctions })
+  @ApiQuery({ name: 'id', description: 'Auction ID', required: false })
+  getAuctionId(
+    @Param('id') id: string,
+  ): Promise<Auction> {
+    return this.nftMarketplaceService.getAuctionId(id);
+  }
 }
