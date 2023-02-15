@@ -109,7 +109,7 @@ export class GatewayService {
     return new NftData(result.tokenData);
   }
 
-  async getTransaction(txHash: string): Promise<Transaction> {
+  async getTransaction(txHash: string): Promise<Transaction | undefined> {
     // eslint-disable-next-line require-await
     const result = await this.get(`transaction/${txHash}?withResults=true`, GatewayComponentRequest.transactionDetails, async (error) => {
       if (error.response.data.error === 'transaction not found') {
@@ -119,7 +119,7 @@ export class GatewayService {
       return false;
     });
 
-    return result.transaction;
+    return result?.transaction;
   }
 
   @LogPerformanceAsync(MetricsEvents.SetGatewayDuration, { argIndex: 1 })
