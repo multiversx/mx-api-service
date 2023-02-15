@@ -43,6 +43,10 @@ features:
   exchange:
     enabled: false
     serviceUrl: 'https://devnet-graph.xexchange.com/graphql'
+  auth:
+    enabled: false
+    acceptedOrigins:
+      - 'https://devnet-explorer.multiversx.com'
 image:
   width: 600
   height: 600

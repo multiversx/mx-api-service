@@ -411,7 +411,7 @@ export class ApiConfigService {
   }
 
   getIsAuthActive(): boolean {
-    return this.configService.get<boolean>('api.auth') ?? false;
+    return this.configService.get<boolean>('features.auth.enabled') ?? this.configService.get<boolean>('api.auth') ?? false;
   }
 
   getDatabaseType(): string {
@@ -777,5 +777,9 @@ export class ApiConfigService {
     }
 
     return serviceUrl;
+  }
+
+  getNativeAuthAcceptedOrigins(): string[] {
+    return this.configService.get<string[]>('features.auth.acceptedOrigins') ?? [];
   }
 }

@@ -43,6 +43,10 @@ features:
   exchange:
     enabled: false
     serviceUrl: 'https://graph.xexchange.com/graphql'
+auth:
+    enabled: false
+    acceptedOrigins:
+      - 'https://explorer.multiversx.com'
 image:
   width: 600
   height: 600
