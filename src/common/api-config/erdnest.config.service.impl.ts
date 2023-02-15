@@ -1,4 +1,4 @@
-import { Constants, ErdnestConfigService } from "@multiversx/sdk-nestjs";
+import { ErdnestConfigService } from "@multiversx/sdk-nestjs";
 import { Injectable } from "@nestjs/common";
 import { ApiConfigService } from "./api.config.service";
 
@@ -18,13 +18,5 @@ export class ErdnestConfigServiceImpl implements ErdnestConfigService {
 
   getApiUrl(): string {
     return this.apiConfigService.getSelfUrl();
-  }
-
-  getNativeAuthMaxExpirySeconds(): number {
-    return Constants.oneDay();
-  }
-
-  getNativeAuthAcceptedOrigins(): string[] {
-    return this.apiConfigService.getNativeAuthAcceptedOrigins();
   }
 }
