@@ -43,7 +43,7 @@ features:
   exchange:
     enabled: false
     serviceUrl: 'https://testnet-graph.xexchange.com/graphql'
-auth:
+  auth:
     enabled: false
     acceptedOrigins:
       - 'https://testnet-explorer.multiversx.com'
