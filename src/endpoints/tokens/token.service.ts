@@ -459,10 +459,6 @@ export class TokenService {
   }
 
   async applySupply(token: TokenDetailed): Promise<void> {
-    if (token.type !== TokenType.FungibleESDT && token.type !== TokenType.MetaESDT) {
-      return;
-    }
-
     const supply = await this.esdtService.getTokenSupply(token.identifier);
 
     token.supply = NumberUtils.denominate(BigInt(supply.totalSupply), token.decimals).toFixed();
