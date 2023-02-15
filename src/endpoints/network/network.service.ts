@@ -101,11 +101,14 @@ export class NetworkService {
   }
 
   async getEconomics(): Promise<Economics> {
-    return await this.cachingService.getOrSetCache(
+    const economics = await this.cachingService.getOrSetCache(
       CacheInfo.Economics.key,
       async () => await this.getEconomicsRaw(),
       CacheInfo.Economics.ttl,
     );
+
+    // we do a deep copy here because we don't want to modify the cached object
+    return new Economics({ ...economics });
   }
 
   async getMinimumAuctionTopUp(): Promise<string | undefined> {
