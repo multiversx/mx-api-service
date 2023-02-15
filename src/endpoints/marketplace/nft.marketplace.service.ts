@@ -12,7 +12,6 @@ import { collectionsStatsQuery } from "./graphql/explore.query";
 import { Auctions } from "./entities/auctions";
 import { auctionsQuery } from "./graphql/auctions.query";
 import { QueryPagination } from "src/common/entities/query.pagination";
-import { AuctionsFilter } from "./entities/auctions.filter";
 import { AuctionStatus } from "./entities/auction.status";
 import BigNumber from "bignumber.js";
 
@@ -71,26 +70,6 @@ export class NftMarketplaceService {
     };
   }
 
-  async getAuctions(queryPagination: QueryPagination, filter: AuctionsFilter): Promise<Auctions[]> {
-    const { size } = queryPagination;
-
-    let auctions = await this.getFilteredAuctions(filter);
-
-    auctions = auctions.slice(0, 0 + size);
-
-    return auctions;
-  }
-
-  async getFilteredAuctions(filter: AuctionsFilter): Promise<Auctions[]> {
-    let auctions = await this.getAuctionsRaw(new QueryPagination({ size: 10000 }));
-
-    if (filter.marketplace) {
-      auctions = auctions.filter(auction => auction.marketplace.includes(filter.marketplace));
-    }
-    return auctions;
-  }
-
-
   async getAccountAuctions(queryPagination: QueryPagination, address: string, state?: AuctionStatus): Promise<Auction[]> {
     const { from, size } = queryPagination;
     const result: any = await this.graphQlService.getNftServiceData(accountAuctionsQuery(address, state), {});
@@ -117,23 +96,7 @@ export class NftMarketplaceService {
     return auctions.slice(from, from + size);
   }
 
-  async getAuctionById(auctionId: string): Promise<Auctions | undefined> {
-    const auctions = await this.getAuctionsRaw(new QueryPagination({ size: 10000 }));
-    const auction = auctions.find(x => x.id === auctionId);
-    if (!auction) {
-      return undefined;
-    }
-
-    return auction;
-  }
-
-  async getAuctionsCount(filter: AuctionsFilter): Promise<number> {
-    const auctions = await this.getFilteredAuctions(filter);
-
-    return auctions.length;
-  }
-
-  async getAuctionsRaw(pagination: QueryPagination): Promise<Auctions[]> {
+  async getAuctions(pagination: QueryPagination): Promise<Auctions[]> {
     let hasNextPage = true;
     let after = null;
 
@@ -167,18 +130,19 @@ export class NftMarketplaceService {
       if (edges.length > 0) {
         const currentAuctions = edges.map((auction: any) => {
           const currentAuction = new Auctions();
+          currentAuction.owner = auction.node.ownerAddress;
           currentAuction.identifier = auction.node.identifier;
           currentAuction.collection = auction.node.collection;
           currentAuction.nonce = auction.node.nonce;
           currentAuction.id = auction.node.id;
           currentAuction.marketPlaceId = auction.node.marketplaceAuctionId;
           currentAuction.marketplace = auction.node.marketplaceKey;
+          currentAuction.createdAt = auction.node.creationDate;
           currentAuction.minBid.amount = auction.node.minBid.amount;
           currentAuction.minBid.token = auction.node.minBid.token;
           currentAuction.maxBid.amount = auction.node.maxBid.amount;
           currentAuction.maxBid.token = auction.node.maxBid.token;
-          currentAuction.createdAt = auction.node.creationDate;
-          currentAuction.owner = auction.node.ownerAddress;
+
           return currentAuction;
         });
         auctions.push(...currentAuctions);
@@ -193,7 +157,7 @@ export class NftMarketplaceService {
     }
 
     if (hasNextPage) {
-      const remainingAuctions = await this.getAuctionsRaw({
+      const remainingAuctions = await this.getAuctions({
         ...pagination,
         size: pagination.size - auctions.length,
       });
