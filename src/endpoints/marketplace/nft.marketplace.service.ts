@@ -134,33 +134,65 @@ export class NftMarketplaceService {
   }
 
   async getAuctionsRaw(pagination: QueryPagination): Promise<Auctions[]> {
-    const variables = {
-      "first": pagination.size,
-    };
+    let hasNextPage = true;
+    let after = null;
+    let pagesLeft = 3;
+    const auctions: Auctions[] = [];
 
-    const result: any = await this.graphQlService.getNftServiceData(auctionsQuery, variables);
-    if (!result) {
-      return [];
+    while (hasNextPage && pagesLeft > 0) {
+      const pageSize = Math.min(pagination.size, 10);
+      const variables = {
+        "first": pageSize,
+        "after": after,
+      };
+
+      const result: any = await this.graphQlService.getNftServiceData(auctionsQuery, variables);
+
+      if (!result) {
+        return auctions;
+      }
+
+      const edges = result.auctions.edges;
+      const pageInfo = result.auctions.pageInfo;
+      const endCursor = pageInfo.endCursor;
+
+      if (edges.length > 0) {
+        const currentAuctions = edges.map((auction: any) => {
+          const currentAuction = new Auctions();
+          currentAuction.identifier = auction.node.identifier;
+          currentAuction.collection = auction.node.collection;
+          currentAuction.nonce = auction.node.nonce;
+          currentAuction.id = auction.node.id;
+          currentAuction.marketPlaceId = auction.node.marketplaceAuctionId;
+          currentAuction.marketplace = auction.node.marketplaceKey;
+          currentAuction.minBid.amount = auction.node.minBid.amount;
+          currentAuction.minBid.token = auction.node.minBid.token;
+          currentAuction.maxBid.amount = auction.node.maxBid.amount;
+          currentAuction.maxBid.token = auction.node.maxBid.token;
+          currentAuction.timestamp = auction.node.creationDate;
+          currentAuction.ownerAddress = auction.node.ownerAddress;
+
+          return currentAuction;
+        });
+        auctions.push(...currentAuctions);
+      }
+
+      if (pagesLeft > 1 && pageInfo.hasNextPage) {
+        after = endCursor;
+        pagesLeft--;
+      } else {
+        hasNextPage = false;
+      }
     }
 
-    const auctions = result.auctions.edges.map((auction: any) => {
-      const auctions = new Auctions();
 
-      auctions.identifier = auction.node.identifier;
-      auctions.collection = auction.node.collection;
-      auctions.nonce = auction.node.nonce;
-      auctions.id = auction.node.id;
-      auctions.marketPlaceId = auction.node.marketplaceAuctionId;
-      auctions.marketplace = auction.node.marketplaceKey;
-      auctions.minBid.amount = auction.node.minBid.amount;
-      auctions.minBid.token = auction.node.minBid.token;
-      auctions.maxBid.amount = auction.node.maxBid.amount;
-      auctions.maxBid.token = auction.node.maxBid.token;
-      auctions.timestamp = auction.node.creationDate;
-      auctions.ownerAddress = auction.node.ownerAddress;
-
-      return auctions;
-    });
+    if (hasNextPage) {
+      const remainingAuctions = await this.getAuctionsRaw({
+        ...pagination,
+        size: pagination.size - auctions.length,
+      });
+      auctions.push(...remainingAuctions);
+    }
 
     return auctions;
   }

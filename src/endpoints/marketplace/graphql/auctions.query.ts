@@ -1,41 +1,45 @@
 import { gql } from "graphql-request";
 
 export const auctionsQuery = gql`
-query($first: Int){
-  auctions(pagination:{
-    first: $first,
-  },
-  grouping:{
-    groupBy: IDENTIFIER
-  },
-  filters:{
-    operator: AND,
-    filters:[
-      {
-        field: "status",
-        op: EQ
-        values: ["Running"]
-      }
-    ]
-  }
-  sorting: {
-    direction: DESC,
-    field: "creationDate"
-  }
-  ){
-    edges{
-      node{
+query GetAuctions($first: Int, $after: String, $before: String) {
+  auctions(
+    pagination: {
+      first: $first,
+      after: $after,
+      before: $before
+    },
+    grouping:{
+      groupBy: IDENTIFIER
+    },
+    filters:{
+      operator: AND,
+      filters:[
+        {
+          field: "status",
+          op: EQ,
+          values: ["Running"]
+        }
+      ]
+    }
+    sorting: {
+      direction: DESC,
+      field: "creationDate"
+    }
+  ) {
+    edges {
+      cursor
+      node {
         identifier
         collection
         nonce
         id
         marketplaceAuctionId
         marketplaceKey
-        minBid{
+        minBid {
           amount
           token
         }
-        maxBid{
+        maxBid {
           amount
           token
         }
@@ -43,5 +47,12 @@ query($first: Int){
         ownerAddress
       }
     }
+    pageInfo {
+      startCursor
+      endCursor
+      hasNextPage
+      hasPreviousPage
+    }
   }
-}`;
+}
+`;
