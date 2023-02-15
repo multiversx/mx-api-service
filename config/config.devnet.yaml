@@ -3,7 +3,6 @@ metaChainShardId: 4294967295
 api:
   public: true
   private: true
-  auth: false
 cron:
   transactionProcessor: true
   transactionProcessorMaxLookBehind: 100
@@ -46,7 +45,10 @@ features:
   auth:
     enabled: false
     acceptedOrigins:
-      - 'https://devnet-explorer.multiversx.com'
+      - ''
+    admins:
+      - ''
+    jwtSecret: ''
 image:
   width: 600
   height: 600
@@ -113,9 +115,6 @@ inflation:
   - 1130177
   - 924690
   - 719203
-security:
-  admins:
-  jwtSecret:
 nftProcess:
   parallelism: 1
   maxRetries: 3
