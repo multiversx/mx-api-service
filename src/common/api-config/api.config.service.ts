@@ -778,8 +778,4 @@ export class ApiConfigService {
 
     return serviceUrl;
   }
-
-  getNativeAuthAcceptedOrigins(): string[] {
-    return this.configService.get<string[]>('features.auth.acceptedOrigins') ?? [];
-  }
 }
