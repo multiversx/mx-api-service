@@ -1,3 +1,4 @@
+import { Constants } from '@multiversx/sdk-nestjs';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { DatabaseConnectionOptions } from '../persistence/entities/connection.options';
@@ -781,5 +782,9 @@ export class ApiConfigService {
 
   getNativeAuthAcceptedOrigins(): string[] {
     return this.configService.get<string[]>('features.auth.acceptedOrigins') ?? [];
+  }
+
+  getNativeAuthMaxExpirySeconds(): number {
+    return this.configService.get<number>('features.auth.maxExpirySeconds') ?? Constants.oneDay();
   }
 }

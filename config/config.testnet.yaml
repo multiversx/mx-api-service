@@ -44,6 +44,7 @@ features:
     serviceUrl: 'https://testnet-graph.xexchange.com/graphql'
   auth:
     enabled: false
+    maxExpirySeconds: 86400
     acceptedOrigins:
       - ''
     admins:
