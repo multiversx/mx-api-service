@@ -2,6 +2,7 @@ import { BadRequestException } from "@nestjs/common";
 import { Test } from "@nestjs/testing";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { GraphQlService } from "src/common/graphql/graphql.service";
+import { CollectionAuctionStats } from "src/endpoints/marketplace/entities/collection.auction.stats";
 import { accountStatsQuery } from "src/endpoints/marketplace/graphql/account.stats.query";
 import { NftMarketplaceService } from "src/endpoints/marketplace/nft.marketplace.service";
 import { RootTestModule } from "src/test/root-test.module";
@@ -116,13 +117,55 @@ describe('Marketplace Service', () => {
       }));
     });
 
-    it('should throw BadRequestException if result is null', async () => {
+    it('should throw BadRequestException if result cannot be fetched', async () => {
       const address: string = 'erd14wxx9p9kld06w66n6lcxcchv976n7crzma8w7s3tkaqcme8hr7fqdhhfdg';
 
       jest.spyOn(service['graphQlService'], 'getNftServiceData').mockReturnValueOnce(Promise.resolve(null));
 
       await expect(service.getAccountStats(address)).rejects.toThrowError(BadRequestException);
       expect(graphQlService.getNftServiceData).toHaveBeenCalledWith(accountStatsQuery, { filters: { address } });
+    });
+  });
+
+  describe('getCollectionStats', () => {
+    it('should return collection auction stat', async () => {
+      const filters = {
+        identifier: 'Test-2d29f9',
+      };
+
+      const expectedResult: CollectionAuctionStats = {
+        activeAuctions: 10,
+        endedAuctions: 20,
+        maxPrice: '5060000000000000000',
+        minPrice: '10000000000000',
+        saleAverage: '1997758333333333333',
+        volumeTraded: '23973100000000000000',
+      };
+
+      jest.spyOn(graphQlService, 'getNftServiceData').mockResolvedValueOnce({
+        collectionStats: {
+          activeAuctions: expectedResult.activeAuctions,
+          auctionsEnded: expectedResult.endedAuctions,
+          maxPrice: expectedResult.maxPrice,
+          minPrice: expectedResult.minPrice,
+          saleAverage: expectedResult.saleAverage,
+          volumeTraded: expectedResult.volumeTraded,
+        },
+      });
+
+      const result = await service.getCollectionStats(filters);
+
+      expect(result).toStrictEqual(expectedResult);
+    });
+
+    it('should throw a BadRequestException if result cannot be fetched', async () => {
+      const filters = {
+        identifier: 'Test-2d29f9',
+      };
+
+      jest.spyOn(graphQlService, 'getNftServiceData').mockResolvedValueOnce(Promise.resolve(null));
+
+      await expect(service.getCollectionStats(filters)).rejects.toThrowError(BadRequestException);
     });
   });
 });
