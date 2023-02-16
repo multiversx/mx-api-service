@@ -1,6 +1,6 @@
 import { gql } from "graphql-request";
 
-export const auctionsCount = gql`
+export const auctionsCountQuery = gql`
 query selectedAuction($filters: FiltersExpression) {
   auctions(
     filters: $filters

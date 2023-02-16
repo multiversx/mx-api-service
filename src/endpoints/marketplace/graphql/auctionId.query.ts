@@ -1,6 +1,6 @@
 import { gql } from "graphql-request";
 
-export const auctionId = (id: number) => {
+export const auctionIdQuery = (id: number) => {
   return gql`
   query {
     auctions(filters:{

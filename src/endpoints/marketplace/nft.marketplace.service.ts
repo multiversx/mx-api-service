@@ -14,8 +14,8 @@ import { auctionsQuery } from "./graphql/auctions.query";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { AuctionStatus } from "./entities/auction.status";
 import BigNumber from "bignumber.js";
-import { auctionId } from "./graphql/auctionId.query";
-import { auctionsCount } from "./graphql/auctions.count.query";
+import { auctionIdQuery } from "./graphql/auctionId.query";
+import { auctionsCountQuery } from "./graphql/auctions.count.query";
 import { collectionAuctionsQuery } from "./graphql/collection.auctions.query";
 
 @Injectable()
@@ -99,7 +99,7 @@ export class NftMarketplaceService {
   }
 
   async getAuctionId(id: number): Promise<Auction> {
-    const result = await this.graphQlService.getNftServiceData(auctionId(id), {});
+    const result = await this.graphQlService.getNftServiceData(auctionIdQuery(id), {});
 
     if (!result) {
       throw new BadRequestException('Count not fetch data from nft service');
@@ -217,7 +217,7 @@ export class NftMarketplaceService {
       },
     };
 
-    const result: any = await this.graphQlService.getNftServiceData(auctionsCount, variables);
+    const result: any = await this.graphQlService.getNftServiceData(auctionsCountQuery, variables);
 
     if (!result) {
       throw new BadRequestException('Count not fetch data from nft service');
