@@ -1,10 +1,14 @@
+import { BadRequestException } from "@nestjs/common";
 import { Test } from "@nestjs/testing";
 import { QueryPagination } from "src/common/entities/query.pagination";
+import { GraphQlService } from "src/common/graphql/graphql.service";
+import { accountStatsQuery } from "src/endpoints/marketplace/graphql/account.stats.query";
 import { NftMarketplaceService } from "src/endpoints/marketplace/nft.marketplace.service";
 import { RootTestModule } from "src/test/root-test.module";
 
 describe('Marketplace Service', () => {
   let service: NftMarketplaceService;
+  let graphQlService: GraphQlService;
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
@@ -13,6 +17,7 @@ describe('Marketplace Service', () => {
     }).compile();
 
     service = moduleRef.get<NftMarketplaceService>(NftMarketplaceService);
+    graphQlService = moduleRef.get<GraphQlService>(GraphQlService);
   });
 
   it('should be defined', () => {
@@ -68,6 +73,56 @@ describe('Marketplace Service', () => {
           maxBid: { amount: '2', token: 'EGLD' },
         }),
       ]));
+    });
+
+    it('should return an empty array when no auctions are returned from graphQlService', async () => {
+      const pagination = { size: 1 };
+
+      jest.spyOn(service['graphQlService'], 'getNftServiceData').mockReturnValueOnce(Promise.resolve(null));
+
+      const result = await service.getAuctions(new QueryPagination(pagination));
+
+      expect(result).toEqual([]);
+    });
+  });
+
+  describe('getAccountStats', () => {
+    it('should return account auction stats', async () => {
+      const address: string = 'erd14wxx9p9kld06w66n6lcxcchv976n7crzma8w7s3tkaqcme8hr7fqdhhfdg';
+      const graphqlResults = {
+        accountStats: {
+          auctions: '20',
+          claimable: '0',
+          collected: '2',
+          collections: '12',
+          creations: '0',
+          likes: '33',
+          orders: '0',
+        },
+      };
+
+      jest.spyOn(service['graphQlService'], 'getNftServiceData').mockReturnValueOnce(Promise.resolve(graphqlResults));
+
+      const result = await service.getAccountStats(address);
+
+      expect(result).toEqual(expect.objectContaining({
+        auctions: 20,
+        claimable: 0,
+        collected: 2,
+        collections: 12,
+        creations: 0,
+        likes: 33,
+        orders: 0,
+      }));
+    });
+
+    it('should throw BadRequestException if result is null', async () => {
+      const address: string = 'erd14wxx9p9kld06w66n6lcxcchv976n7crzma8w7s3tkaqcme8hr7fqdhhfdg';
+
+      jest.spyOn(service['graphQlService'], 'getNftServiceData').mockReturnValueOnce(Promise.resolve(null));
+
+      await expect(service.getAccountStats(address)).rejects.toThrowError(BadRequestException);
+      expect(graphQlService.getNftServiceData).toHaveBeenCalledWith(accountStatsQuery, { filters: { address } });
     });
   });
 });
