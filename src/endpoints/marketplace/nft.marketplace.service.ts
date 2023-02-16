@@ -4,11 +4,9 @@ import { AccountAuctionStats } from "./entities/account.auction.stats";
 import { Auction } from "./entities/account.auctions";
 import { CollectionAuctionStats } from "./entities/collection.auction.stats";
 import { CollectionStatsFilters } from "./entities/collection.stats.filter";
-import { ExploreCollectionsStats } from "./entities/explore.collections.stats";
 import { accountAuctionsQuery } from "./graphql/account.auctions.query";
 import { accountStatsQuery } from "./graphql/account.stats.query";
 import { collectionStatsQuery } from "./graphql/collection.stats.query";
-import { collectionsStatsQuery } from "./graphql/explore.query";
 import { Auctions } from "./entities/auctions";
 import { auctionsQuery } from "./graphql/auctions.query";
 import { QueryPagination } from "src/common/entities/query.pagination";
@@ -60,19 +58,6 @@ export class NftMarketplaceService {
     };
   }
 
-  async getExploreCollectionsStats(): Promise<ExploreCollectionsStats> {
-    const result: any = await this.graphQlService.getNftServiceData(collectionsStatsQuery, {});
-
-    if (!result) {
-      throw new BadRequestException('Count not fetch data from nft service');
-    }
-
-    return {
-      verifiedCount: result.exploreCollectionsStats.verifiedCount,
-      activeLast30DaysCount: result.exploreCollectionsStats.activeLast30DaysCount,
-    };
-  }
-
   async getAccountAuctions(queryPagination: QueryPagination, address: string, state?: AuctionStatus): Promise<Auction[]> {
     const { from, size } = queryPagination;
     const result: any = await this.graphQlService.getNftServiceData(accountAuctionsQuery(address, state), {});
@@ -91,6 +76,10 @@ export class NftMarketplaceService {
       accountAuction.endsAt = auction.node.endDate !== 0 ? auction.endDate : undefined;
       accountAuction.marketplace = auction.node.marketplace.key;
       accountAuction.marketplaceAuctionId = auction.node.marketplaceAuctionId;
+      accountAuction.minBid.amount = auction.node.minBid.amount;
+      accountAuction.minBid.token = auction.node.minBid.token;
+      accountAuction.maxBid.amount = auction.node.maxBid.amount;
+      accountAuction.maxBid.token = auction.node.maxBid.token;
 
       return accountAuction;
     });

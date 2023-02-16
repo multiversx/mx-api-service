@@ -2,6 +2,8 @@ import { BadRequestException } from "@nestjs/common";
 import { Test } from "@nestjs/testing";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { GraphQlService } from "src/common/graphql/graphql.service";
+import { Auction } from "src/endpoints/marketplace/entities/account.auctions";
+import { AuctionStatus } from "src/endpoints/marketplace/entities/auction.status";
 import { CollectionAuctionStats } from "src/endpoints/marketplace/entities/collection.auction.stats";
 import { accountStatsQuery } from "src/endpoints/marketplace/graphql/account.stats.query";
 import { NftMarketplaceService } from "src/endpoints/marketplace/nft.marketplace.service";
@@ -166,6 +168,98 @@ describe('Marketplace Service', () => {
       jest.spyOn(graphQlService, 'getNftServiceData').mockResolvedValueOnce(Promise.resolve(null));
 
       await expect(service.getCollectionStats(filters)).rejects.toThrowError(BadRequestException);
+    });
+  });
+
+  describe('getAccountAuctions', () => {
+    it('should return an array of auctions for a specific address with status auction = running', async () => {
+      const address: string = 'erd14wxx9p9kld06w66n6lcxcchv976n7crzma8w7s3tkaqcme8hr7fqdhhfdg';
+
+      const result = {
+        auctions: {
+          edges: [
+            {
+              node: {
+                id: '1',
+                identifier: 'Test-2d29f9-1',
+                collection: 'Test-2d29f9',
+                status: 'running',
+                creationDate: '1666878937',
+                endDate: 1666879104,
+                marketplace: {
+                  key: 'xoxno',
+                },
+                marketplaceAuctionId: '373650',
+                minBid: {
+                  amount: '123456',
+                  token: 'EGLD',
+                },
+                maxBid: {
+                  amount: '654321',
+                  token: 'EGLD',
+                },
+              },
+            },
+            {
+              node: {
+                id: '2',
+                identifier: 'Test-2d29f9-2',
+                collection: 'Test-2d29f9',
+                status: 'ended',
+                creationDate: '1666878937',
+                endDate: 1666879104,
+                marketplace: {
+                  key: 'framit',
+                },
+                marketplaceAuctionId: '373650',
+                minBid: {
+                  amount: '123456',
+                  token: 'EGLD',
+                },
+                maxBid: {
+                  amount: '654321',
+                  token: 'EGLD',
+                },
+              },
+            },
+          ],
+        },
+      };
+
+      const state: AuctionStatus = AuctionStatus.running;
+
+      jest.spyOn(graphQlService, 'getNftServiceData').mockResolvedValue(result);
+
+      const actual = await service.getAccountAuctions(new QueryPagination({ size: 2 }), address, state);
+
+      expect(actual).toEqual(expect.arrayContaining([
+        expect.objectContaining({
+          auctionId: '1',
+          identifier: 'Test-2d29f9-1',
+          collection: 'Test-2d29f9',
+          status: 'running',
+          auctionType: '',
+          createdAt: '1666878937',
+          endsAt: undefined,
+          marketplaceAuctionId: '373650',
+          marketplace: 'xoxno',
+          minBid: { amount: '123456', token: 'EGLD' },
+          maxBid: { amount: '654321', token: 'EGLD' },
+        }),
+      ]));
+    });
+
+    it('should return an empty array if getNftServiceData returns no results', async () => {
+      const address: string = 'erd14wxx9p9kld06w66n6lcxcchv976n7crzma8w7s3tkaqcme8hr7fqdhhfdg';
+
+      const state: AuctionStatus = AuctionStatus.running;
+      jest.spyOn(graphQlService, 'getNftServiceData').mockResolvedValue(Promise.resolve(null));
+
+      const expected: Auction[] = [];
+
+      const actual = await service.getAccountAuctions(new QueryPagination(), address, state);
+
+      expect(actual).toEqual(expected);
     });
   });
 });

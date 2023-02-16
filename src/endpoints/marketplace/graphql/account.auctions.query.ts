@@ -33,7 +33,14 @@ export const accountAuctionsQuery = (address: string, status?: AuctionStatus) =>
           marketplace{
             key
           }
-          tags
+          minBid {
+            amount
+            token
+          }
+          maxBid {
+            amount
+            token
+          }
           marketplaceAuctionId
           startDate
           __typename
