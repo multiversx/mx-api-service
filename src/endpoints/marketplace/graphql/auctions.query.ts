@@ -8,9 +8,6 @@ query GetAuctions($first: Int, $after: String, $before: String) {
       after: $after,
       before: $before
     },
-    grouping:{
-      groupBy: IDENTIFIER
-    },
     filters:{
       operator: AND,
       filters:[
