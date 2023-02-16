@@ -16,6 +16,7 @@ import { AuctionStatus } from "./entities/auction.status";
 import BigNumber from "bignumber.js";
 import { auctionId } from "./graphql/auctionId.query";
 import { auctionsCount } from "./graphql/auctions.count.query";
+import { collectionAuctionsQuery } from "./graphql/collection.auctions.query";
 
 @Injectable()
 export class NftMarketplaceService {
@@ -223,5 +224,81 @@ export class NftMarketplaceService {
     }
 
     return result.auctions.pageData.count;
+  }
+
+  async getCollectionAuctions(pagination: QueryPagination, collection: string): Promise<Auctions[]> {
+    let hasNextPage = true;
+    let after = null;
+
+    const pageSize = pagination.size;
+    const totalPages = Math.ceil(pagination.size / pageSize);
+
+    let pagesLeft = Math.min(totalPages, 3);
+
+    if (pagination.size > 25) {
+      pagesLeft = totalPages;
+    }
+
+    const auctions: Auctions[] = [];
+
+    while (hasNextPage && pagesLeft > 0) {
+      const variables = {
+        "first": pageSize,
+        "after": after,
+        "collection": collection,
+      };
+
+      console.log(collection);
+
+      const result: any = await this.graphQlService.getNftServiceData(collectionAuctionsQuery, variables);
+      console.log(result);
+      if (!result) {
+        return auctions;
+      }
+
+      const edges = result.auctions.edges;
+      const pageInfo = result.auctions.pageInfo;
+      const endCursor = pageInfo.endCursor;
+
+      if (edges.length > 0) {
+        const currentAuctions = edges.map((auction: any) => {
+          const currentAuction = new Auctions();
+          currentAuction.owner = auction.node.ownerAddress;
+          currentAuction.identifier = auction.node.identifier;
+          currentAuction.collection = auction.node.collection;
+          currentAuction.status = auction.node.status.toLowerCase();
+          currentAuction.auctionType = auction.node.type;
+          currentAuction.auctionId = parseInt(auction.node.id);
+          currentAuction.marketplaceAuctionId = auction.node.marketplaceAuctionId;
+          currentAuction.marketplace = auction.node.marketplaceKey;
+          currentAuction.createdAt = auction.node.creationDate;
+          currentAuction.endsAt = auction.node.endDate !== 0 ? auction.endDate : undefined;
+          currentAuction.minBid.amount = auction.node.minBid.amount;
+          currentAuction.minBid.token = auction.node.minBid.token;
+          currentAuction.maxBid.amount = auction.node.maxBid.amount;
+          currentAuction.maxBid.token = auction.node.maxBid.token;
+
+          return currentAuction;
+        });
+        auctions.push(...currentAuctions);
+      }
+
+      if (pagesLeft > 1 && pageInfo.hasNextPage) {
+        after = endCursor;
+        pagesLeft--;
+      } else {
+        hasNextPage = false;
+      }
+    }
+
+    if (hasNextPage) {
+      const remainingAuctions = await this.getCollectionAuctions({
+        ...pagination,
+        size: pagination.size - auctions.length,
+      }, collection);
+      auctions.push(...remainingAuctions);
+    }
+
+    return auctions;
   }
 }

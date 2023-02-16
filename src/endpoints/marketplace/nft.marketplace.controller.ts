@@ -106,4 +106,18 @@ export class NftMarketplaceController {
 
     return collectionStats;
   }
+
+  @Get('/collection/:collection/auctions')
+  @ApiOperation({ summary: 'Collection auctions', description: 'Returns all auctions for a specific collection ' })
+  @ApiOkResponse({ type: [Auctions] })
+  @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
+  @ApiQuery({ name: 'collection', description: 'Collection identifier', required: true })
+  getCollectionAuctions(
+    @Param('collection') collection: string,
+    @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number,
+  ): Promise<Auctions[]> {
+    return this.nftMarketplaceService.getCollectionAuctions(
+      new QueryPagination({ size }), collection,
+    );
+  }
 }
