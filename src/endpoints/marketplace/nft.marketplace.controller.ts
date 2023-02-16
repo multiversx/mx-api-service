@@ -29,7 +29,7 @@ export class NftMarketplaceController {
   }
 
   @Get("/auctions/count")
-  @ApiOperation({ summary: 'Auction count', description: 'Returns all auctions count available on marketplaces ' })
+  @ApiOperation({ summary: 'Auctions count', description: 'Returns all auctions count available on marketplaces ' })
   @ApiOkResponse({ type: Number })
   @ApiQuery({ name: 'status', description: 'Returns auctions count with specified status', required: false })
   getAuctionsCount(
@@ -40,7 +40,7 @@ export class NftMarketplaceController {
 
   @Get("/auctions/c")
   @ApiExcludeEndpoint()
-  @ApiOperation({ summary: 'Auction count', description: 'Returns all auctions count available on marketplaces ' })
+  @ApiOperation({ summary: 'Auctions count', description: 'Returns all auctions count available on marketplaces ' })
   @ApiOkResponse({ type: Number })
   @ApiQuery({ name: 'status', description: 'Returns auctions count with specified status', required: false })
   getAuctionsCountAlternative(
