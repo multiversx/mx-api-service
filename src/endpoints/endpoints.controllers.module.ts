@@ -53,7 +53,11 @@ export class EndpointsControllersModule {
       controllers.push(NftMarketplaceController);
     }
 
-    const isExchangeEnabled = configuration().features?.exchange?.enabled ?? false;
+    const isExchangeEnabled =
+      (configuration().features?.exchange?.enabled ?? false) ||
+      (configuration()['transaction-action']?.mex?.microServiceUrl) ||
+      (configuration()['plugins']?.['transaction-action']?.['mex']?.['microServiceUrl']);
+
     if (isExchangeEnabled) {
       controllers.push(MexController);
     }
