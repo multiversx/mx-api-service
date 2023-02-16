@@ -249,7 +249,7 @@ export class NftMarketplaceService {
       };
 
       const result: any = await this.graphQlService.getNftServiceData(collectionAuctionsQuery, variables);
-      console.log(result);
+
       if (!result) {
         return auctions;
       }
