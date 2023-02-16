@@ -262,4 +262,62 @@ describe('Marketplace Service', () => {
       expect(actual).toEqual(expected);
     });
   });
+
+  describe('getAuctionId', () => {
+    it('should return an auction details for a specific auctionId', async () => {
+      const auctionId: number = 847035;
+
+      const auction = {
+        auctions: {
+          edges: [
+            {
+              node: {
+                id: '847035',
+                identifier: 'Test-2d29f9-01',
+                collection: 'Test-2d29f9',
+                status: 'Running',
+                type: 'Nft',
+                creationDate: 1676576533,
+                endDate: 1676585733,
+                marketplace: { key: 'xoxno' },
+                asset: {
+                  creatorAddress: 'erd14wxx9p9kld06w66n6lcxcchv976n7crzma8w7s3tkaqcme8hr7fqdhhfdg',
+                },
+                minBid: { amount: '1900000000000000000', token: 'EGLD' },
+                maxBid: { amount: '1900000000000000000', token: 'EGLD' },
+                ownerAddress: 'erd14wxx9p9kld06w66n6lcxcchv976n7crzma8w7s3tkaqcme8hr7fqdhhfdg',
+                marketplaceAuctionId: 586854,
+                startDate: 1676576532,
+              },
+            },
+          ],
+        },
+      };
+
+      jest.spyOn(graphQlService, 'getNftServiceData').mockResolvedValue(auction);
+
+      const result = await service.getAuctionId(auctionId);
+
+      expect(result).toEqual(expect.objectContaining({
+        owner: 'erd14wxx9p9kld06w66n6lcxcchv976n7crzma8w7s3tkaqcme8hr7fqdhhfdg',
+        identifier: 'Test-2d29f9-01',
+        collection: 'Test-2d29f9',
+        status: 'running',
+        auctionType: 'Nft',
+        createdAt: 1676576533,
+        endsAt: 1676585733,
+        marketplaceAuctionId: 586854,
+        marketplace: 'xoxno',
+        minBid: { amount: '1900000000000000000', token: 'EGLD' },
+        maxBid: { amount: '1900000000000000000', token: 'EGLD' },
+      }));
+    });
+
+    it('should throw a BadRequestException if result cannot be fetched', async () => {
+      const auctionId = 1111;
+      jest.spyOn(graphQlService, 'getNftServiceData').mockResolvedValue(null);
+
+      await expect(service.getAuctionId(auctionId)).rejects.toThrow(BadRequestException);
+    });
+  });
 });

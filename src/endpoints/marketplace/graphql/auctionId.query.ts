@@ -33,7 +33,6 @@ export const auctionIdQuery = (id: number) => {
             token
           }
           ownerAddress
-          tags
           marketplaceAuctionId
           startDate
           __typename
