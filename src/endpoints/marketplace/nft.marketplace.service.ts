@@ -15,6 +15,7 @@ import { QueryPagination } from "src/common/entities/query.pagination";
 import { AuctionStatus } from "./entities/auction.status";
 import BigNumber from "bignumber.js";
 import { auctionId } from "./graphql/auctionId.query";
+import { auctionsCount } from "./graphql/auctions.count.query";
 
 @Injectable()
 export class NftMarketplaceService {
@@ -109,7 +110,7 @@ export class NftMarketplaceService {
       owner: auction.ownerAddress,
       identifier: auction.identifier,
       collection: auction.collection,
-      status: auction.status,
+      status: auction.status.toLowerCase(),
       auctionType: auction.type,
       createdAt: auction.creationDate,
       endsAt: auction.endDate !== 0 ? auction.endDate : undefined,
@@ -165,7 +166,7 @@ export class NftMarketplaceService {
           currentAuction.owner = auction.node.ownerAddress;
           currentAuction.identifier = auction.node.identifier;
           currentAuction.collection = auction.node.collection;
-          currentAuction.status = auction.node.status;
+          currentAuction.status = auction.node.status.toLowerCase();
           currentAuction.auctionType = auction.node.type;
           currentAuction.auctionId = parseInt(auction.node.id);
           currentAuction.marketplaceAuctionId = auction.node.marketplaceAuctionId;
@@ -199,5 +200,28 @@ export class NftMarketplaceService {
     }
 
     return auctions;
+  }
+
+  async getAuctionsCount(status?: AuctionStatus): Promise<number> {
+    const variables = {
+      filters: {
+        filters: [
+          {
+            field: 'status',
+            op: 'IN',
+            values: [status],
+          },
+        ],
+        operator: 'AND',
+      },
+    };
+
+    const result: any = await this.graphQlService.getNftServiceData(auctionsCount, variables);
+
+    if (!result) {
+      throw new BadRequestException('Count not fetch data from nft service');
+    }
+
+    return result.auctions.pageData.count;
   }
 }

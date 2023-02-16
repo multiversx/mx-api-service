@@ -1,6 +1,6 @@
 import { ParseAddressPipe, ParseEnumPipe } from "@multiversx/sdk-nestjs";
 import { Controller, DefaultValuePipe, Get, NotFoundException, Param, ParseIntPipe, Query } from "@nestjs/common";
-import { ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from "@nestjs/swagger";
+import { ApiExcludeEndpoint, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { AccountAuctionStats } from "./entities/account.auction.stats";
 import { Auction } from "./entities/account.auctions";
@@ -26,6 +26,37 @@ export class NftMarketplaceController {
     return this.nftMarketplaceService.getAuctions(
       new QueryPagination({ size }),
     );
+  }
+
+  @Get("/auctions/count")
+  @ApiOperation({ summary: 'Auction count', description: 'Returns all auctions count available on marketplaces ' })
+  @ApiOkResponse({ type: Number })
+  @ApiQuery({ name: 'status', description: 'Returns auctions count with specified status', required: false })
+  getAuctionsCount(
+    @Query('status') status: AuctionStatus,
+  ): Promise<number> {
+    return this.nftMarketplaceService.getAuctionsCount(status);
+  }
+
+  @Get("/auctions/c")
+  @ApiExcludeEndpoint()
+  @ApiOperation({ summary: 'Auction count', description: 'Returns all auctions count available on marketplaces ' })
+  @ApiOkResponse({ type: Number })
+  @ApiQuery({ name: 'status', description: 'Returns auctions count with specified status', required: false })
+  getAuctionsCountAlternative(
+    @Query('status') status: AuctionStatus,
+  ): Promise<number> {
+    return this.nftMarketplaceService.getAuctionsCount(status);
+  }
+
+  @Get("/auctions/:id")
+  @ApiOperation({ summary: 'Auction details', description: 'Returns auction details for a specific auction identifier ' })
+  @ApiOkResponse({ type: Auctions })
+  @ApiQuery({ name: 'auctionId', description: 'Auction identifier', required: true })
+  getAuctionId(
+    @Param('id') id: string,
+  ): Promise<Auction> {
+    return this.nftMarketplaceService.getAuctionId(id);
   }
 
   @Get("/accounts/:address/auction/stats")
@@ -74,15 +105,5 @@ export class NftMarketplaceController {
     }
 
     return collectionStats;
-  }
-
-  @Get("/auctions/:id")
-  @ApiOperation({ summary: 'Auction ID', description: 'Returns auction details for a specific auction ID ' })
-  @ApiOkResponse({ type: Auctions })
-  @ApiQuery({ name: 'id', description: 'Auction ID', required: false })
-  getAuctionId(
-    @Param('id') id: string,
-  ): Promise<Auction> {
-    return this.nftMarketplaceService.getAuctionId(id);
   }
 }
