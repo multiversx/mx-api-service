@@ -54,7 +54,7 @@ export class NftMarketplaceController {
   @ApiOkResponse({ type: Auctions })
   @ApiQuery({ name: 'auctionId', description: 'Auction identifier', required: true })
   getAuctionId(
-    @Param('id') id: string,
+    @Param('id') id: number,
   ): Promise<Auction> {
     return this.nftMarketplaceService.getAuctionId(id);
   }

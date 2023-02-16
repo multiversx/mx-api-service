@@ -97,7 +97,7 @@ export class NftMarketplaceService {
     return auctions.slice(from, from + size);
   }
 
-  async getAuctionId(id: string): Promise<Auction> {
+  async getAuctionId(id: number): Promise<Auction> {
     const result = await this.graphQlService.getNftServiceData(auctionId(id), {});
 
     if (!result) {
