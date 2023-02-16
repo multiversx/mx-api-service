@@ -31,6 +31,8 @@ query GetAuctions($first: Int, $after: String, $before: String) {
       node {
         identifier
         collection
+        status
+        type
         nonce
         id
         marketplaceAuctionId

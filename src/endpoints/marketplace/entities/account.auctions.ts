@@ -1,5 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { AuctionStatus } from "./auction.status";
+import { Bids } from "./bids";
 
 export class Auction {
   constructor(init?: Partial<Auction>) {
@@ -7,13 +8,10 @@ export class Auction {
   }
 
   @ApiProperty({ type: String })
-  creator?: string = '';
-
-  @ApiProperty({ type: String })
   owner?: string = '';
 
-  @ApiProperty({ type: String })
-  auctionId?: string = '';
+  @ApiProperty({ type: Number })
+  auctionId?: number = 0;
 
   @ApiProperty({ type: String })
   identifier: string = '';
@@ -39,6 +37,9 @@ export class Auction {
   @ApiProperty({ type: String })
   marketplace: string = '';
 
-  @ApiProperty({ type: [String] })
-  tags: string[] = [];
+  @ApiProperty({ type: Bids })
+  minBid: Bids = new Bids();
+
+  @ApiProperty({ type: Bids })
+  maxBid: Bids = new Bids();
 }

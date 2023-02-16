@@ -24,6 +24,14 @@ export const auctionId = (id: string) => {
           endDate
           marketplace{key}
           asset{creatorAddress}
+          minBid {
+            amount
+            token
+          }
+          maxBid {
+            amount
+            token
+          }
           ownerAddress
           tags
           marketplaceAuctionId

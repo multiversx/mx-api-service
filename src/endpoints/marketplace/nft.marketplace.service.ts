@@ -86,10 +86,9 @@ export class NftMarketplaceService {
       accountAuction.collection = auction.node.collection;
       accountAuction.status = auction.node.status.toLowerCase();
       accountAuction.createdAt = auction.node.creationDate;
-      accountAuction.endsAt = auction.node.endDate;
+      accountAuction.endsAt = auction.node.endDate !== 0 ? auction.endDate : undefined;
       accountAuction.marketplace = auction.node.marketplace.key;
       accountAuction.marketplaceAuctionId = auction.node.marketplaceAuctionId;
-      accountAuction.tags = auction.node.tags;
 
       return accountAuction;
     });
@@ -108,20 +107,23 @@ export class NftMarketplaceService {
 
     const auctionData: Auction = {
       owner: auction.ownerAddress,
-      creator: auction.asset.creatorAddress,
       identifier: auction.identifier,
       collection: auction.collection,
       status: auction.status,
       auctionType: auction.type,
       createdAt: auction.creationDate,
+      endsAt: auction.endDate !== 0 ? auction.endDate : undefined,
       marketplaceAuctionId: auction.marketplaceAuctionId,
       marketplace: auction.marketplace.key,
-      tags: auction.tags,
+      minBid: {
+        amount: auction.minBid.amount,
+        token: auction.minBid.token,
+      },
+      maxBid: {
+        amount: auction.maxBid.amount,
+        token: auction.maxBid.token,
+      },
     };
-
-    if (auction.endDate !== 0) {
-      auctionData.endsAt = auction.endDate;
-    }
 
     return auctionData;
   }
@@ -163,11 +165,13 @@ export class NftMarketplaceService {
           currentAuction.owner = auction.node.ownerAddress;
           currentAuction.identifier = auction.node.identifier;
           currentAuction.collection = auction.node.collection;
-          currentAuction.nonce = auction.node.nonce;
-          currentAuction.id = auction.node.id;
-          currentAuction.marketPlaceId = auction.node.marketplaceAuctionId;
+          currentAuction.status = auction.node.status;
+          currentAuction.auctionType = auction.node.type;
+          currentAuction.auctionId = parseInt(auction.node.id);
+          currentAuction.marketplaceAuctionId = auction.node.marketplaceAuctionId;
           currentAuction.marketplace = auction.node.marketplaceKey;
           currentAuction.createdAt = auction.node.creationDate;
+          currentAuction.endsAt = auction.node.endDate !== 0 ? auction.endDate : undefined;
           currentAuction.minBid.amount = auction.node.minBid.amount;
           currentAuction.minBid.token = auction.node.minBid.token;
           currentAuction.maxBid.amount = auction.node.maxBid.amount;
