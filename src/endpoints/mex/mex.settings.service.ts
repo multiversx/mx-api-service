@@ -6,6 +6,7 @@ import { GraphQlService } from "src/common/graphql/graphql.service";
 import { TransactionMetadata } from "../transactions/transaction-action/entities/transaction.metadata";
 import { TransactionMetadataTransfer } from "../transactions/transaction-action/entities/transaction.metadata.transfer";
 import { MexSettings } from "./entities/mex.settings";
+import { ApiConfigService } from "src/common/api-config/api.config.service";
 
 @Injectable()
 export class MexSettingsService {
@@ -14,6 +15,7 @@ export class MexSettingsService {
   constructor(
     private readonly cachingService: CachingService,
     private readonly graphQlService: GraphQlService,
+    private readonly apiConfigService: ApiConfigService,
   ) { }
 
   getTransfers(metadata: TransactionMetadata): TransactionMetadataTransfer[] | undefined {
@@ -41,6 +43,10 @@ export class MexSettingsService {
   }
 
   async getSettings(): Promise<MexSettings | null> {
+    if (!this.apiConfigService.isExchangeEnabled()) {
+      return null;
+    }
+
     const settings = await this.cachingService.getOrSetCache(
       CacheInfo.MexSettings.key,
       async () => await this.getSettingsRaw(),
