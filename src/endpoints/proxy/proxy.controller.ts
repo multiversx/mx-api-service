@@ -57,6 +57,12 @@ export class ProxyController {
     return await this.gatewayGet(`address/${address}/transactions`, GatewayComponentRequest.addressTransactions);
   }
 
+  @Get('/address/:address/guardian-data')
+  @ApiExcludeEndpoint()
+  async getAddressGuardianData(@Param('address', ParseAddressPipe) address: string) {
+    return await this.gatewayGet(`address/${address}/guardian-data`, GatewayComponentRequest.guardianData);
+  }
+
   @Get('/address/:address/esdt')
   @ApiExcludeEndpoint()
   async getAddressEsdt(@Param('address', ParseAddressPipe) address: string) {
