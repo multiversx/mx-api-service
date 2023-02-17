@@ -65,7 +65,7 @@ import { WebsocketModule } from "./websocket/websocket.module";
     TransferModule,
     TransactionActionModule,
     WebsocketModule,
-    MexModule,
+    MexModule.forRoot(),
     ProcessNftsModule,
     NftMarketplaceModule,
     TransactionsBatchModule,

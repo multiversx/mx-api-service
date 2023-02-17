@@ -44,13 +44,22 @@ export class EndpointsControllersModule {
       KeysController, MiniBlockController, NetworkController, NftController, TagController, NodeController,
       ProviderController, ProxyController, RoundController, SmartContractResultController, ShardController, StakeController, StakeController,
       TokenController, TransactionController, UsernameController, VmQueryController, WaitingListController,
-      HealthCheckController, DappConfigController, WebsocketController, MexController, TransferController,
+      HealthCheckController, DappConfigController, WebsocketController, TransferController,
       ProcessNftsPublicController, TransactionsBatchController,
     ];
 
     const isMarketplaceFeatureEnabled = configuration().features?.marketplace?.enabled ?? false;
     if (isMarketplaceFeatureEnabled) {
       controllers.push(NftMarketplaceController);
+    }
+
+    const isExchangeEnabled =
+      (configuration().features?.exchange?.enabled ?? false) ||
+      (configuration()['transaction-action']?.mex?.microServiceUrl) ||
+      (configuration()['plugins']?.['transaction-action']?.['mex']?.['microServiceUrl']);
+
+    if (isExchangeEnabled) {
+      controllers.push(MexController);
     }
 
     return {

@@ -139,7 +139,10 @@ async function bootstrap() {
   logger.log(`Cache warmer active: ${apiConfigService.getIsCacheWarmerCronActive()}`);
   logger.log(`Queue worker active: ${apiConfigService.getIsQueueWorkerCronActive()}`);
   logger.log(`Elastic updater active: ${apiConfigService.getIsElasticUpdaterCronActive()}`);
-  logger.log(`Events notifier active: ${apiConfigService.isEventsNotifierFeatureActive()}`);
+  logger.log(`Events notifier feature active: ${apiConfigService.isEventsNotifierFeatureActive()}`);
+  logger.log(`Exchange feature active: ${apiConfigService.isExchangeEnabled()}`);
+  logger.log(`Marketplace feature active: ${apiConfigService.isMarketplaceFeatureEnabled()}`);
+  logger.log(`Auth active: ${apiConfigService.getIsAuthActive()}`);
 
   logger.log(`Use tracing: ${apiConfigService.getUseTracingFlag()}`);
   logger.log(`Process NFTs flag: ${apiConfigService.getIsProcessNftsFlagActive()}`);
