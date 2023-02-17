@@ -803,13 +803,7 @@ export class ApiConfigService {
   }
 
   getNativeAuthAcceptedOrigins(): string[] {
-    return this.configService.get<string[]>('features.auth.acceptedOrigins') ?? [
-      'https://explorer.multiversx.com',
-      'https://assets.multiversx.com',
-      'https://wallet.multiversx.com',
-      'https://xexchange.com',
-      'https://xspotlight.com',
-    ];
+    return this.configService.get<string[]>('features.auth.acceptedOrigins') ?? [];
   }
 
   getNativeAuthMaxExpirySeconds(): number {
