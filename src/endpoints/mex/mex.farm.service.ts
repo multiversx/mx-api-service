@@ -7,6 +7,7 @@ import { GraphQlService } from "src/common/graphql/graphql.service";
 import { MexFarm } from "./entities/mex.farm";
 import { MexTokenService } from "./mex.token.service";
 import { MexStakingProxy } from "./entities/mex.staking.proxy";
+import { ApiConfigService } from "src/common/api-config/api.config.service";
 
 @Injectable()
 export class MexFarmService {
@@ -15,6 +16,7 @@ export class MexFarmService {
     private readonly graphQlService: GraphQlService,
     @Inject(forwardRef(() => MexTokenService))
     private readonly mexTokenService: MexTokenService,
+    private readonly apiConfigService: ApiConfigService,
   ) { }
 
   async refreshMexFarms(): Promise<void> {
@@ -31,6 +33,10 @@ export class MexFarmService {
   }
 
   async getAllMexFarms(): Promise<MexFarm[]> {
+    if (!this.apiConfigService.isExchangeEnabled()) {
+      return [];
+    }
+
     return await this.cachingService.getOrSetCache(
       CacheInfo.MexFarms.key,
       async () => await this.getAllMexFarmsRaw(),
@@ -158,6 +164,10 @@ export class MexFarmService {
   }
 
   async getAllStakingProxies(): Promise<MexStakingProxy[]> {
+    if (!this.apiConfigService.isExchangeEnabled()) {
+      return [];
+    }
+
     return await this.cachingService.getOrSetCache(
       CacheInfo.StakingProxies.key,
       async () => await this.getAllStakingProxiesRaw(),

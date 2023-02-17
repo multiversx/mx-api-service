@@ -15,7 +15,7 @@ import { PluginModule } from 'src/plugins/plugin.module';
     ScheduleModule.forRoot(),
     EndpointsServicesModule,
     KeybaseModule,
-    MexModule,
+    MexModule.forRoot(),
     AssetsModule,
     NftCronModule,
     PluginModule,

@@ -4,7 +4,7 @@ import { MexTokenService } from "src/endpoints/mex/mex.token.service";
 import { MexTokensQuery } from "./mex.token.query";
 
 @Resolver(() => MexToken)
-export class MexTokensResolver extends MexTokensQuery {
+export class MexTokenResolver extends MexTokensQuery {
   constructor(mexTokenService: MexTokenService) {
     super(mexTokenService);
   }

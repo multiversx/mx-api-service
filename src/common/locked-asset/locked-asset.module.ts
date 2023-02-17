@@ -6,7 +6,7 @@ import { MexModule } from 'src/endpoints/mex/mex.module';
 @Module({
   imports: [
     VmQueryModule,
-    MexModule,
+    MexModule.forRoot(),
   ],
   providers: [
     LockedAssetService,

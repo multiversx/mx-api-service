@@ -18,7 +18,7 @@ import { LockedAssetModule } from "../../common/locked-asset/locked-asset.module
     forwardRef(() => CollectionModule),
     forwardRef(() => PluginModule),
     forwardRef(() => NftMetadataModule),
-    forwardRef(() => MexModule),
+    forwardRef(() => MexModule.forRoot()),
     forwardRef(() => AssetsModule),
     forwardRef(() => LockedAssetModule),
     NftMediaModule,
