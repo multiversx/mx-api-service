@@ -361,7 +361,7 @@ describe('Marketplace Service', () => {
       },
     };
 
-    it('should return the count of running auctions for a specific collections', async () => {
+    it('should return the count of running auctions for a specific collection', async () => {
       jest.spyOn(graphQlService, 'getNftServiceData').mockResolvedValue(mockResult);
 
       const result = await service.getCollectionAuctionsCount(collection);
