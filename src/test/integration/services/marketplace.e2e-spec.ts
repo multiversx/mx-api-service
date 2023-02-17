@@ -234,7 +234,7 @@ describe('Marketplace Service', () => {
 
       expect(actual).toEqual(expect.arrayContaining([
         expect.objectContaining({
-          auctionId: '1',
+          auctionId: 1,
           identifier: 'Test-2d29f9-1',
           collection: 'Test-2d29f9',
           status: 'running',
