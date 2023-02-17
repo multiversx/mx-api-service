@@ -45,10 +45,10 @@ export class ProxyController {
     return await this.gatewayGet(`address/${address}/shard`, GatewayComponentRequest.addressShard);
   }
 
-  @Get('/address/:address/storage/:key')
+  @Get('/address/:address/key/:key')
   @ApiExcludeEndpoint()
   async getAddressStorageKey(@Param('address', ParseAddressPipe) address: string, @Param('key') key: string) {
-    return await this.gatewayGet(`address/${address}/storage/${key}`, GatewayComponentRequest.addressStorage);
+    return await this.gatewayGet(`address/${address}/key/${key}`, GatewayComponentRequest.addressStorage);
   }
 
   @Get('/address/:address/transactions')
