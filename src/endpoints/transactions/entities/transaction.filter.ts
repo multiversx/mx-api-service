@@ -19,7 +19,6 @@ export class TransactionFilter {
   miniBlockHash?: string;
   hashes?: string[];
   status?: TransactionStatus;
-  search?: string;
   before?: number;
   after?: number;
   condition?: QueryConditionOptions;
