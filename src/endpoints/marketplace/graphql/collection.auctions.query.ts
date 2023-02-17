@@ -1,7 +1,7 @@
 import { gql } from "graphql-request";
 
-export const auctionsQuery = gql`
-query GetAuctions($first: Int, $after: String, $before: String) {
+export const collectionAuctionsQuery = gql`
+query GetAuctions($first: Int, $after: String, $before: String, $collection: [String]!) {
   auctions(
     pagination: {
       first: $first,
@@ -9,14 +9,19 @@ query GetAuctions($first: Int, $after: String, $before: String) {
       before: $before
     },
     filters:{
-      operator: AND,
       filters:[
         {
           field: "status",
           op: EQ,
           values: ["Running"]
+        },
+        {
+          field: "collection",
+          op: EQ,
+          values: $collection
         }
-      ]
+      ],
+      operator: AND,
     }
     sorting: {
       direction: DESC,
