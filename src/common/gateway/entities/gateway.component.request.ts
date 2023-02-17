@@ -21,6 +21,7 @@ export enum GatewayComponentRequest {
   addressBalance = 'addressBalance',
   addressNonce = 'addressNonce',
   addressShard = 'addressShard',
+  guardianData = 'guardianData',
   addressStorage = 'addressStorage',
   addressTransactions = 'addressTransactions',
   simulateTransaction = 'simulateTransaction',
