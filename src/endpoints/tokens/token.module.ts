@@ -14,7 +14,7 @@ import { CollectionModule } from "../collections/collection.module";
     forwardRef(() => NftModule),
     forwardRef(() => TransactionModule),
     forwardRef(() => AssetsModule),
-    forwardRef(() => MexModule),
+    forwardRef(() => MexModule.forRoot()),
     forwardRef(() => CollectionModule),
   ],
   providers: [

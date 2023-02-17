@@ -14,9 +14,8 @@ import { MexModule } from "src/endpoints/mex/mex.module";
   imports: [
     forwardRef(() => TokenModule),
     forwardRef(() => TransactionActionModule),
-    MexModule,
     ApiConfigModule,
-    MexModule,
+    MexModule.forRoot(),
   ],
   providers: [
     TransactionActionMexRecognizerService,

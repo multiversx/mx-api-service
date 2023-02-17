@@ -17,7 +17,7 @@ import { AssetsModule } from "src/common/assets/assets.module";
     forwardRef(() => TokenModule),
     VmQueryModule,
     forwardRef(() => TransactionModule),
-    forwardRef(() => MexModule),
+    forwardRef(() => MexModule.forRoot()),
     forwardRef(() => AssetsModule),
   ],
   providers: [
