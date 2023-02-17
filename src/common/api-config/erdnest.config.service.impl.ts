@@ -19,4 +19,12 @@ export class ErdnestConfigServiceImpl implements ErdnestConfigService {
   getApiUrl(): string {
     return this.apiConfigService.getSelfUrl();
   }
+
+  getNativeAuthMaxExpirySeconds(): number {
+    return this.apiConfigService.getNativeAuthMaxExpirySeconds();
+  }
+
+  getNativeAuthAcceptedOrigins(): string[] {
+    return this.apiConfigService.getNativeAuthAcceptedOrigins();
+  }
 }

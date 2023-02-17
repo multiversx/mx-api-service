@@ -1,3 +1,4 @@
+import { Constants } from '@multiversx/sdk-nestjs';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { DatabaseConnectionOptions } from '../persistence/entities/connection.options';
@@ -411,7 +412,7 @@ export class ApiConfigService {
   }
 
   getIsAuthActive(): boolean {
-    return this.configService.get<boolean>('api.auth') ?? false;
+    return this.configService.get<boolean>('features.auth.enabled') ?? this.configService.get<boolean>('api.auth') ?? false;
   }
 
   getDatabaseType(): string {
@@ -608,7 +609,7 @@ export class ApiConfigService {
   }
 
   getSecurityAdmins(): string[] {
-    const admins = this.configService.get<string[]>('security.admins');
+    const admins = this.configService.get<string[]>('features.auth.admins') ?? this.configService.get<string[]>('security.admins');
     if (admins === undefined) {
       throw new Error('No security admins value present');
     }
@@ -617,7 +618,7 @@ export class ApiConfigService {
   }
 
   getJwtSecret(): string {
-    const jwtSecret = this.configService.get<string>('security.jwtSecret');
+    const jwtSecret = this.configService.get<string>('features.auth.jwtSecret') ?? this.configService.get<string>('security.jwtSecret');
     if (!jwtSecret) {
       throw new Error('No jwtSecret present');
     }
@@ -799,5 +800,13 @@ export class ApiConfigService {
     }
 
     return serviceUrl;
+  }
+
+  getNativeAuthAcceptedOrigins(): string[] {
+    return this.configService.get<string[]>('features.auth.acceptedOrigins') ?? [];
+  }
+
+  getNativeAuthMaxExpirySeconds(): number {
+    return this.configService.get<number>('features.auth.maxExpirySeconds') ?? Constants.oneDay();
   }
 }
