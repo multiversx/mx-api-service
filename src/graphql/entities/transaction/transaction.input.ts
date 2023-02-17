@@ -59,7 +59,6 @@ export class GetTransactionsCountInput {
       miniBlockHash: input.miniBlockHash,
       hashes: input.hashes,
       status: input.status,
-      search: input.search,
       function: input.function,
       before: input.before,
       after: input.after,

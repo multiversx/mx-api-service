@@ -268,10 +268,6 @@ export class PostgresIndexerHelper {
       query = query.andWhere('status = :status', { status: filter.status });
     }
 
-    if (filter.search) {
-      query = query.andWhere('data like :search', { search: `%${filter.search}%` });
-    }
-
     if (filter.before || filter.after) {
       query = query.andWhere('timestamp BETWEEN :before AND :after', { before: filter.before ?? 0, after: filter.after ?? Date.now() });
     }
@@ -372,9 +368,6 @@ export class PostgresIndexerHelper {
     }
     if (filter.status !== undefined) {
       query = query.andWhere('status = :status', { status: filter.status });
-    }
-    if (filter.search) {
-      query = query.andWhere('data like :search', { search: `%${filter.search}%` });
     }
     if (filter.hashes) {
       query = query.andWhere('hash IN (:...hashes)', { hashes: filter.hashes });
