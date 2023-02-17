@@ -350,4 +350,28 @@ describe('Marketplace Service', () => {
       await expect(service.getAuctionsCount()).rejects.toThrow(BadRequestException);
     });
   });
+
+  describe('getCollectionAuctionsCount', () => {
+    const collection: string = 'Test-2d29f9';
+    const mockResult = {
+      auctions: {
+        pageData: {
+          count: 2109,
+        },
+      },
+    };
+
+    it('should return the count of running auctions for a specific collections', async () => {
+      jest.spyOn(graphQlService, 'getNftServiceData').mockResolvedValue(mockResult);
+
+      const result = await service.getCollectionAuctionsCount(collection);
+      expect(result).toStrictEqual(2109);
+    });
+
+    it('should throw a BadRequestException if the GraphQL query returns no results', async () => {
+      jest.spyOn(graphQlService, 'getNftServiceData').mockResolvedValue(Promise.resolve(null));
+
+      await expect(service.getCollectionAuctionsCount(collection)).rejects.toThrow(BadRequestException);
+    });
+  });
 });

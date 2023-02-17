@@ -113,4 +113,14 @@ export class NftMarketplaceController {
   ): Promise<Auctions[]> {
     return await this.nftMarketplaceService.getCollectionAuctions(new QueryPagination({ size }), collection);
   }
+
+  @Get('/collections/:collection/auctions/count')
+  @ApiOperation({ summary: 'Collection auctions count', description: 'Returns total running auctions count for a specific collection ' })
+  @ApiOkResponse({ type: Number })
+  @ApiQuery({ name: 'collection', description: 'Collection identifier', required: true })
+  async getCollectionAuctionsCount(
+    @Param('collection', ParseCollectionPipe) collection: string,
+  ): Promise<number> {
+    return await this.nftMarketplaceService.getCollectionAuctionsCount(collection);
+  }
 }
