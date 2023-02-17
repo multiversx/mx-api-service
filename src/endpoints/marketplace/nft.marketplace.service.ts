@@ -243,6 +243,34 @@ export class NftMarketplaceService {
     return result.auctions.pageData.count;
   }
 
+  async getAccountAuctionsCount(address: string): Promise<number> {
+    const variables = {
+      filters: {
+        filters: [
+          {
+            field: "status",
+            op: "EQ",
+            values: ["Running"],
+          },
+          {
+            field: 'ownerAddress',
+            op: 'EQ',
+            values: [address],
+          },
+        ],
+        operator: 'AND',
+      },
+    };
+
+    const result: any = await this.graphQlService.getNftServiceData(auctionsCountQuery, variables);
+
+    if (!result) {
+      throw new BadRequestException('Count not fetch data from nft service');
+    }
+
+    return result.auctions.pageData.count;
+  }
+
   async getCollectionAuctions(pagination: QueryPagination, collection: string): Promise<Auctions[]> {
     let hasNextPage = true;
     let after = null;

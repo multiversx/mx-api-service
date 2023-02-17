@@ -93,6 +93,16 @@ export class NftMarketplaceController {
     return account;
   }
 
+  @Get('/accounts/:address/auctions/count')
+  @ApiOperation({ summary: 'Address auctions count', description: 'Returns total running auctions count for a specific address ' })
+  @ApiOkResponse({ type: Number })
+  @ApiQuery({ name: 'address', description: 'Account address', required: true })
+  async getAccountAuctionsCount(
+    @Param('address', ParseAddressPipe) address: string,
+  ): Promise<number> {
+    return await this.nftMarketplaceService.getAccountAuctionsCount(address);
+  }
+
   @Get("/collections/:collection/auction/stats")
   @ApiOperation({ summary: 'Collection stats', description: 'Returns collection status details from nft marketplace for a given collection identifier' })
   @ApiOkResponse({ type: CollectionAuctionStats })
