@@ -898,6 +898,8 @@ export class AccountController {
 
   @Get("/accounts/:address/upgrades")
   @ApiOperation({ summary: 'Account upgrades details', description: 'Returns all upgrades details for a specific contract address' })
+  @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
+  @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   @ApiOkResponse({ type: ContractUpgrades })
   getContractUpgrades(
     @Param('address', ParseAddressPipe) address: string,
