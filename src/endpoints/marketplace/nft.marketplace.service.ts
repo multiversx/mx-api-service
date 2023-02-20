@@ -125,6 +125,7 @@ export class NftMarketplaceService {
 
     const pageSize = pagination.size;
     const totalPages = Math.ceil(pagination.size / pageSize);
+    const currentTimestamp = Math.round(Date.now() / 1000).toString();
 
     let pagesLeft = Math.min(totalPages, 3); // Fetch up to 3 pages by default
 
@@ -138,6 +139,7 @@ export class NftMarketplaceService {
       const variables = {
         "first": pageSize,
         "after": after,
+        "currentTimestamp": currentTimestamp,
       };
 
       const result: any = await this.graphQlService.getNftServiceData(auctionsQuery, variables);
