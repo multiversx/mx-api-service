@@ -1,3 +1,4 @@
+import { AccountFilter } from "src/endpoints/accounts/entities/account.filter";
 import { BlockFilter } from "src/endpoints/blocks/entities/block.filter";
 import { CollectionFilter } from "src/endpoints/collections/entities/collection.filter";
 import { NftFilter } from "src/endpoints/nfts/entities/nft.filter";
@@ -92,7 +93,7 @@ export interface IndexerInterface {
 
   getAccountScResults(address: string, pagination: QueryPagination): Promise<ScResult[]>
 
-  getAccounts(queryPagination: QueryPagination): Promise<Account[]>
+  getAccounts(queryPagination: QueryPagination, filter: AccountFilter): Promise<Account[]>
 
   getAccountContracts(pagination: QueryPagination, address: string): Promise<ScDeploy[]>
 

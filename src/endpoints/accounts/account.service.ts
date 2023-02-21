@@ -27,6 +27,7 @@ import { CacheInfo } from 'src/utils/cache.info';
 import { UsernameService } from '../usernames/username.service';
 import { ContractUpgrades } from './entities/contract.upgrades';
 import { AccountVerification } from './entities/account.verification';
+import { AccountFilter } from './entities/account.filter';
 
 @Injectable()
 export class AccountService {
@@ -226,10 +227,10 @@ export class AccountService {
     return null;
   }
 
-  async getAccounts(queryPagination: QueryPagination): Promise<Account[]> {
+  async getAccounts(queryPagination: QueryPagination, filter: AccountFilter): Promise<Account[]> {
     return await this.cachingService.getOrSetCache(
       CacheInfo.Accounts(queryPagination).key,
-      async () => await this.getAccountsRaw(queryPagination),
+      async () => await this.getAccountsRaw(queryPagination, filter),
       CacheInfo.Accounts(queryPagination).ttl
     );
   }
@@ -248,8 +249,8 @@ export class AccountService {
     return accounts;
   }
 
-  async getAccountsRaw(queryPagination: QueryPagination): Promise<Account[]> {
-    const result = await this.indexerService.getAccounts(queryPagination);
+  async getAccountsRaw(queryPagination: QueryPagination, filter: AccountFilter): Promise<Account[]> {
+    const result = await this.indexerService.getAccounts(queryPagination, filter);
 
     const assets = await this.assetsService.getAllAccountAssets();
 

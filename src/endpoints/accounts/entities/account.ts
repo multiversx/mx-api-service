@@ -25,6 +25,9 @@ export class Account {
   @ApiProperty({ type: Number, description: 'The shard ID allocated to the account', example: 0 })
   shard: number = 0;
 
+  @Field(() => String, { description: 'Current owner address.' })
+  ownerAddress: string = '';
+
   @Field(() => AccountAssets, { description: 'Account assets for the given account.', nullable: true })
   @ApiProperty({ type: AccountAssets, nullable: true, description: 'Account assets' })
   assets: AccountAssets | undefined = undefined;

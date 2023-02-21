@@ -50,6 +50,7 @@ import { DelegationService } from '../delegation/delegation.service';
 import { TokenType } from '../tokens/entities/token.type';
 import { ContractUpgrades } from './entities/contract.upgrades';
 import { AccountVerification } from './entities/account.verification';
+import { AccountFilter } from './entities/account.filter';
 
 @Controller()
 @ApiTags('accounts')
@@ -78,9 +79,11 @@ export class AccountController {
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   getAccounts(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
-    @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number
+    @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number,
+    @Query("ownerAddress") ownerAddress?: string
   ): Promise<Account[]> {
-    return this.accountService.getAccounts({ from, size });
+    console.log(ownerAddress);
+    return this.accountService.getAccounts({ from, size }, new AccountFilter({ ownerAddress }));
   }
 
   @Get("/accounts/count")

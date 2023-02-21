@@ -1,4 +1,4 @@
-import { AbstractQuery, AddressUtils, BinaryUtils, ElasticQuery, QueryConditionOptions, QueryOperator, QueryType, RangeGreaterThanOrEqual, RangeLowerThan, RangeLowerThanOrEqual } from "@multiversx/sdk-nestjs";
+import { AbstractQuery, AddressUtils, BinaryUtils, ElasticQuery, ElasticSortOrder, QueryConditionOptions, QueryOperator, QueryType, RangeGreaterThanOrEqual, RangeLowerThan, RangeLowerThanOrEqual } from "@multiversx/sdk-nestjs";
 import { Injectable } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { QueryPagination } from "src/common/entities/query.pagination";
@@ -12,6 +12,7 @@ import { EsdtType } from "src/endpoints/esdt/entities/esdt.type";
 import { TokenWithRolesFilter } from "src/endpoints/tokens/entities/token.with.roles.filter";
 import { TransactionFilter } from "src/endpoints/transactions/entities/transaction.filter";
 import { TransactionType } from "src/endpoints/transactions/entities/transaction.type";
+import { AccountFilter } from "src/endpoints/accounts/entities/account.filter";
 
 @Injectable()
 export class ElasticIndexerHelper {
@@ -488,5 +489,18 @@ export class ElasticIndexerHelper {
 
     return ElasticQuery.create()
       .withCondition(QueryConditionOptions.must, mustQueries);
+  }
+
+  public buildAccountFilterQuery(queryPagination: QueryPagination, filter: AccountFilter): ElasticQuery {
+    let elasticQuery = ElasticQuery.create()
+      .withPagination(queryPagination)
+      .withSort([{ name: 'balanceNum', order: ElasticSortOrder.descending }]);
+
+    if (filter.ownerAddress) {
+      elasticQuery = elasticQuery.withMustCondition(QueryType.Match('currentOwner', filter.ownerAddress, QueryOperator.AND));
+      console.log(elasticQuery);
+    }
+
+    return elasticQuery;
   }
 }

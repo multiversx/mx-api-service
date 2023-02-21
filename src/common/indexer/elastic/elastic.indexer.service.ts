@@ -19,6 +19,7 @@ import { Tag } from "../entities/tag";
 import { ElasticIndexerHelper } from "./elastic.indexer.helper";
 import { TokenType } from "../entities";
 import { SortCollections } from "src/endpoints/collections/entities/sort.collections";
+import { AccountFilter } from "src/endpoints/accounts/entities/account.filter";
 
 @Injectable()
 export class ElasticIndexerService implements IndexerInterface {
@@ -336,11 +337,8 @@ export class ElasticIndexerService implements IndexerInterface {
     return await this.elasticService.getList('scresults', 'hash', elasticQuery);
   }
 
-  async getAccounts(queryPagination: QueryPagination): Promise<any[]> {
-    const elasticQuery = ElasticQuery.create()
-      .withPagination(queryPagination)
-      .withSort([{ name: 'balanceNum', order: ElasticSortOrder.descending }]);
-
+  async getAccounts(queryPagination: QueryPagination, filter: AccountFilter): Promise<any[]> {
+    const elasticQuery = this.indexerHelper.buildAccountFilterQuery(queryPagination, filter);
     return await this.elasticService.getList('accounts', 'address', elasticQuery);
   }
 
