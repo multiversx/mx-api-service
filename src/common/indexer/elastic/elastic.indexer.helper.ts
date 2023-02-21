@@ -497,10 +497,11 @@ export class ElasticIndexerHelper {
       !filter.order || filter.order === SortOrder.desc ? ElasticSortOrder.descending : ElasticSortOrder.ascending;
 
     const balance: ElasticSortProperty = { name: 'balanceNum', order: sortOrder };
+    const timestamp: ElasticSortProperty = { name: 'timestamp', order: sortOrder };
 
     let elasticQuery = ElasticQuery.create()
       .withPagination(queryPagination)
-      .withSort([balance]);
+      .withSort([balance, timestamp]);
 
     if (filter.ownerAddress) {
       elasticQuery = elasticQuery.withMustCondition(QueryType.Match('currentOwner', filter.ownerAddress, QueryOperator.AND));
