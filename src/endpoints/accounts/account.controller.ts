@@ -77,6 +77,7 @@ export class AccountController {
   @ApiOkResponse({ type: [Account] })
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
+  @ApiQuery({ name: 'ownerAddress', description: 'Search by owner address', required: false })
   getAccounts(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number,
