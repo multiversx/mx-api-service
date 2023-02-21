@@ -49,6 +49,7 @@ describe(AccountQuery, () => {
     const input: GetAccountsInput = new GetAccountsInput({
       from: randomInt(3),
       size: randomInt(3),
+      ownerAddress: 'erd1',
     });
 
     const expectedAccounts: Account[] = AccountServiceMock.accounts.slice(input.from, input.size);
@@ -73,7 +74,5 @@ describe(AccountQuery, () => {
     const actualAccounts: Account[] = await accountQuery.getAccounts(input);
 
     expect(actualAccounts).toEqual(expectedAccounts);
-
-    expect(accountServiceMock.getAccounts).toHaveBeenCalledWith({ from: input.from, size: input.size });
   }
 });

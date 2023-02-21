@@ -13,7 +13,6 @@ export class GetAccountFilteredInput {
     return new AccountFilter({
       ownerAddress: input.ownerAddress,
     });
-
   }
 }
 
