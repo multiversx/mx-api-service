@@ -401,7 +401,7 @@ export class CacheInfo {
 
   static Accounts(queryPagination: QueryPagination, filter: AccountFilter): CacheInfo {
     return {
-      key: `accounts:${queryPagination.from}:${queryPagination.size}:${filter.ownerAddress}`,
+      key: `accounts:${queryPagination.from}:${queryPagination.size}:${filter.ownerAddress}:${filter.order}`,
       ttl: Constants.oneMinute(),
     };
   }
