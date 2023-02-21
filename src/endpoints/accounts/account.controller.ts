@@ -83,7 +83,6 @@ export class AccountController {
     @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number,
     @Query("ownerAddress") ownerAddress?: string
   ): Promise<Account[]> {
-    console.log(ownerAddress);
     return this.accountService.getAccounts({ from, size }, new AccountFilter({ ownerAddress }));
   }
 

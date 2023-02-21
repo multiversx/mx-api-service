@@ -498,7 +498,6 @@ export class ElasticIndexerHelper {
 
     if (filter.ownerAddress) {
       elasticQuery = elasticQuery.withMustCondition(QueryType.Match('currentOwner', filter.ownerAddress, QueryOperator.AND));
-      console.log(elasticQuery);
     }
 
     return elasticQuery;
