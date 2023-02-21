@@ -103,11 +103,6 @@ export class CacheInfo {
     ttl: Constants.oneMinute() * 10,
   };
 
-  static Top25Accounts: CacheInfo = {
-    key: 'accounts:0:25',
-    ttl: Constants.oneMinute() * 2,
-  };
-
   static ShardAndEpochBlses(shard: any, epoch: any): CacheInfo {
     return {
       key: `${shard}_${epoch}`,
