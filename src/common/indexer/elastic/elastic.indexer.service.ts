@@ -342,6 +342,14 @@ export class ElasticIndexerService implements IndexerInterface {
     return await this.elasticService.getList('accounts', 'address', elasticQuery);
   }
 
+  async getAccount(address: string): Promise<any> {
+    return await this.elasticService.getItem(
+      'accounts',
+      'address',
+      address
+    );
+  }
+
   async getAccountContracts(pagination: QueryPagination, address: string): Promise<any[]> {
     const elasticQuery: ElasticQuery = ElasticQuery.create()
       .withPagination(pagination)

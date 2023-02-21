@@ -1,6 +1,7 @@
 export interface Account {
   address: string;
   nonce: number;
+  timestamp: number;
   balance: string;
   balanceNum: number;
   totalBalanceWithStake: string;

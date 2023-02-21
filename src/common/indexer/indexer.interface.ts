@@ -93,6 +93,8 @@ export interface IndexerInterface {
 
   getAccountScResults(address: string, pagination: QueryPagination): Promise<ScResult[]>
 
+  getAccount(address: string): Promise<Account>
+
   getAccounts(queryPagination: QueryPagination, filter: AccountFilter): Promise<Account[]>
 
   getAccountContracts(pagination: QueryPagination, address: string): Promise<ScDeploy[]>

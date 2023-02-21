@@ -23,7 +23,6 @@ export class IndexerService implements IndexerInterface {
     private readonly indexerInterface: IndexerInterface,
   ) { }
 
-
   @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
   async getAccountsCount(): Promise<number> {
     return await this.indexerInterface.getAccountsCount();
@@ -208,6 +207,11 @@ export class IndexerService implements IndexerInterface {
   @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
   async getAccountScResults(address: string, pagination: QueryPagination): Promise<ScResult[]> {
     return await this.indexerInterface.getAccountScResults(address, pagination);
+  }
+
+  @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
+  async getAccount(address: string): Promise<Account> {
+    return await this.indexerInterface.getAccount(address);
   }
 
   @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)

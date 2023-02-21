@@ -78,7 +78,14 @@ export class AccountService {
       scrCount = await this.getAccountScResults(address);
     }
 
-    return this.getAccountRaw(address, txCount, scrCount);
+    const account = await this.getAccountRaw(address, txCount, scrCount);
+
+    const elasticSearchAccount = await this.indexerService.getAccount(address);
+    if (account && elasticSearchAccount) {
+      account.timestamp = elasticSearchAccount.timestamp;
+    }
+
+    return account;
   }
 
   async getAccountVerification(address: string): Promise<AccountVerification | null> {
