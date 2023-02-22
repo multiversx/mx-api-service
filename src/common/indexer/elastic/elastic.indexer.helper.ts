@@ -405,7 +405,6 @@ export class ElasticIndexerHelper {
 
   public buildTransactionFilterQuery(filter: TransactionFilter, address?: string): ElasticQuery {
     let elasticQuery = ElasticQuery.create()
-      .withMustMatchCondition('tokens', filter.token, QueryOperator.AND)
       .withMustMatchCondition('function', this.apiConfigService.getIsIndexerV3FlagActive() ? filter.function : undefined)
       .withMustMatchCondition('senderShard', filter.senderShard)
       .withMustMatchCondition('receiverShard', filter.receiverShard)
@@ -414,6 +413,13 @@ export class ElasticIndexerHelper {
       .withMustMatchCondition('status', filter.status)
       .withMustMultiShouldCondition(filter.tokens, token => QueryType.Match('tokens', token, QueryOperator.AND))
       .withDateRangeFilter('timestamp', filter.before, filter.after);
+
+    if (filter.token !== 'EGLD') {
+      elasticQuery = elasticQuery.withMustMatchCondition('tokens', filter.token, QueryOperator.AND);
+    } else {
+      elasticQuery = elasticQuery.withMustNotCondition(
+        QueryType.Match('value', '0'));
+    }
 
     if (filter.condition === QueryConditionOptions.should) {
       if (filter.sender) {
