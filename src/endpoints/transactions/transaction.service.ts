@@ -175,7 +175,7 @@ export class TransactionService {
     return transactions;
   }
 
-  async getTransactionPool(address: string): Promise<TransactionPool[]> {
+  async getTransactionsPool(address: string): Promise<TransactionPool[]> {
     const resultData = await this.gatewayService.getTransactionPool(address);
 
     if (!resultData || resultData.length === 0) {

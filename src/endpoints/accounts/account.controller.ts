@@ -726,7 +726,7 @@ export class AccountController {
   async getAccountTransactionsPool(
     @Param('address', ParseAddressPipe) address: string,
   ): Promise<TransactionPool[]> {
-    return await this.transactionService.getTransactionPool(address);
+    return await this.transactionService.getTransactionsPool(address);
   }
 
   @Get("/accounts/:address/transfers")
