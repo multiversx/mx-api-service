@@ -28,6 +28,7 @@ import crypto from 'crypto-js';
 import { OriginLogger } from '@multiversx/sdk-nestjs';
 import { ApiConfigService } from 'src/common/api-config/api.config.service';
 import { UsernameService } from '../usernames/username.service';
+import { TransactionPool } from './entities/transaction.pool';
 
 @Injectable()
 export class TransactionService {
@@ -172,6 +173,25 @@ export class TransactionService {
     });
 
     return transactions;
+  }
+
+  async getTransactionPool(address: string): Promise<TransactionPool[]> {
+    const resultData = await this.gatewayService.getTransactionPool(address);
+
+    if (!resultData || resultData.length === 0) {
+      return [];
+    }
+
+    return resultData.map((tx: any) => new TransactionPool({
+      txHash: tx.txFields.hash,
+      sender: tx.txFields.sender,
+      receiver: tx.txFields.receiver,
+      data: tx.txFields.data,
+      nonce: tx.txFields.nonce,
+      value: tx.txFields.value,
+      gasPrice: tx.txFields.gasprice,
+      gasLimit: tx.txFields.gaslimit,
+    }));
   }
 
   private getAssetsFromUsername(username: string | null | undefined): AccountAssets | undefined {

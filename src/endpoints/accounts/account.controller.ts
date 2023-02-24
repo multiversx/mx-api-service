@@ -50,6 +50,7 @@ import { DelegationService } from '../delegation/delegation.service';
 import { TokenType } from '../tokens/entities/token.type';
 import { ContractUpgrades } from './entities/contract.upgrades';
 import { AccountVerification } from './entities/account.verification';
+import { TransactionPool } from '../transactions/entities/transaction.pool';
 
 @Controller()
 @ApiTags('accounts')
@@ -717,6 +718,15 @@ export class AccountController {
       before,
       after,
     }), address);
+  }
+
+  @Get("/accounts/:address/transactions/pool")
+  @ApiOperation({ summary: 'Account transactions pool', description: 'Returns an array of transactions in pool' })
+  @ApiOkResponse({ type: Number })
+  async getAccountTransactionsPool(
+    @Param('address', ParseAddressPipe) address: string,
+  ): Promise<TransactionPool[]> {
+    return await this.transactionService.getTransactionPool(address);
   }
 
   @Get("/accounts/:address/transfers")
