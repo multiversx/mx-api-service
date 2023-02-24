@@ -722,7 +722,7 @@ export class AccountController {
 
   @Get("/accounts/:address/transactions/pool")
   @ApiOperation({ summary: 'Account transactions pool', description: 'Returns an array of transactions in pool' })
-  @ApiOkResponse({ type: Number })
+  @ApiOkResponse({ type: [TransactionPool] })
   async getAccountTransactionsPool(
     @Param('address', ParseAddressPipe) address: string,
   ): Promise<TransactionPool[]> {
