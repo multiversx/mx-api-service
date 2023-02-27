@@ -1,6 +1,5 @@
 import { Constants } from "@multiversx/sdk-nestjs";
 import { QueryPagination } from "src/common/entities/query.pagination";
-import { AccountFilter } from "src/endpoints/accounts/entities/account.filter";
 import { BlockFilter } from "src/endpoints/blocks/entities/block.filter";
 
 export class CacheInfo {
@@ -399,9 +398,9 @@ export class CacheInfo {
     };
   }
 
-  static Accounts(queryPagination: QueryPagination, filter: AccountFilter): CacheInfo {
+  static Accounts(queryPagination: QueryPagination): CacheInfo {
     return {
-      key: `accounts:${queryPagination.from}:${queryPagination.size}:${filter.ownerAddress}:${filter.order}`,
+      key: `accounts:${queryPagination.from}:${queryPagination.size}`,
       ttl: Constants.oneMinute(),
     };
   }

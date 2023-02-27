@@ -205,14 +205,9 @@ export class CacheWarmerService {
   @Cron(CronExpression.EVERY_MINUTE)
   @Lock({ name: 'Accounts invalidations', verbose: true })
   async handleAccountInvalidations() {
-    const accountFilter = new AccountFilter();
-    const accounts = await this.accountService.getAccountsRaw({ from: 0, size: 25 }, accountFilter);
+    const accounts = await this.accountService.getAccountsRaw({ from: 0, size: 25 }, new AccountFilter());
 
-    if (accountFilter.order || accountFilter.ownerAddress) {
-      return;
-    }
-
-    const accountsCacheInfo = CacheInfo.Accounts({ from: 0, size: 25 }, accountFilter);
+    const accountsCacheInfo = CacheInfo.Accounts({ from: 0, size: 25 });
     await this.invalidateKey(accountsCacheInfo.key, accounts, accountsCacheInfo.ttl);
   }
 

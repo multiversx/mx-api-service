@@ -241,9 +241,9 @@ export class AccountService {
   async getAccounts(queryPagination: QueryPagination, filter: AccountFilter): Promise<Account[]> {
     if (!filter.ownerAddress && !filter.sort && !filter.order) {
       return await this.cachingService.getOrSetCache(
-        CacheInfo.Accounts(queryPagination, filter).key,
+        CacheInfo.Accounts(queryPagination).key,
         async () => await this.getAccountsRaw(queryPagination, filter),
-        CacheInfo.Accounts(queryPagination, filter).ttl
+        CacheInfo.Accounts(queryPagination).ttl
       );
     }
 
