@@ -84,7 +84,7 @@ export class AccountController {
   getAccounts(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number,
-    @Query("ownerAddress") ownerAddress?: string,
+    @Query("ownerAddress", ParseAddressPipe) ownerAddress?: string,
     @Query('sort', new ParseEnumPipe(AccountSort)) sort?: AccountSort,
     @Query('order', new ParseEnumPipe(SortOrder)) order?: SortOrder,
   ): Promise<Account[]> {
@@ -96,7 +96,7 @@ export class AccountController {
   @ApiOkResponse({ type: Number })
   @ApiQuery({ name: 'ownerAddress', description: 'Search by owner address', required: false })
   async getAccountsCount(
-    @Query("ownerAddress") ownerAddress?: string,
+    @Query("ownerAddress", ParseAddressPipe) ownerAddress?: string,
   ): Promise<number> {
     return await this.accountService.getAccountsCount(new AccountFilter({ ownerAddress }));
   }
@@ -104,7 +104,7 @@ export class AccountController {
   @Get("/accounts/c")
   @ApiExcludeEndpoint()
   async getAccountsCountAlternative(
-    @Query("ownerAddress") ownerAddress?: string,
+    @Query("ownerAddress", ParseAddressPipe) ownerAddress?: string,
   ): Promise<number> {
     return await this.accountService.getAccountsCount(new AccountFilter({ ownerAddress }));
   }
