@@ -18,6 +18,7 @@ import { About } from './entities/about';
 import { PluginService } from 'src/common/plugins/plugin.service';
 import { SmartContractResultService } from '../sc-results/scresult.service';
 import { TokenService } from '../tokens/token.service';
+import { AccountFilter } from '../accounts/entities/account.filter';
 
 @Injectable()
 export class NetworkService {
@@ -219,7 +220,7 @@ export class NetworkService {
       this.gatewayService.getNetworkConfig(),
       this.gatewayService.getNetworkStatus(metaChainShard),
       this.blockService.getBlocksCount(new BlockFilter()),
-      this.accountService.getAccountsCount(),
+      this.accountService.getAccountsCount(new AccountFilter()),
       this.transactionService.getTransactionCount(new TransactionFilter()),
       this.smartContractResultService.getScResultsCount(),
     ]);

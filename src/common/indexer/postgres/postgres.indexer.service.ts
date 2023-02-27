@@ -325,6 +325,10 @@ export class PostgresIndexerService implements IndexerInterface {
     return await query.getMany();
   }
 
+  async getAccount(address: string): Promise<any> {
+    return await this.accountsRepository.findOneByOrFail({ address });
+  }
+
   async getAccounts({ from, size }: QueryPagination): Promise<any[]> {
     const query = this.accountsRepository
       .createQueryBuilder()

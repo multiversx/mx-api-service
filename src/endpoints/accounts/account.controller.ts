@@ -50,6 +50,8 @@ import { DelegationService } from '../delegation/delegation.service';
 import { TokenType } from '../tokens/entities/token.type';
 import { ContractUpgrades } from './entities/contract.upgrades';
 import { AccountVerification } from './entities/account.verification';
+import { AccountFilter } from './entities/account.filter';
+import { AccountSort } from './entities/account.sort';
 
 @Controller()
 @ApiTags('accounts')
@@ -76,24 +78,35 @@ export class AccountController {
   @ApiOkResponse({ type: [Account] })
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
+  @ApiQuery({ name: 'ownerAddress', description: 'Search by owner address', required: false })
+  @ApiQuery({ name: 'sort', description: 'Sort criteria (balance / timestamp)', required: false, enum: AccountSort })
+  @ApiQuery({ name: 'order', description: 'Sort order (asc/desc)', required: false, enum: SortOrder })
   getAccounts(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
-    @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number
+    @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number,
+    @Query("ownerAddress", ParseAddressPipe) ownerAddress?: string,
+    @Query('sort', new ParseEnumPipe(AccountSort)) sort?: AccountSort,
+    @Query('order', new ParseEnumPipe(SortOrder)) order?: SortOrder,
   ): Promise<Account[]> {
-    return this.accountService.getAccounts({ from, size });
+    return this.accountService.getAccounts({ from, size }, new AccountFilter({ ownerAddress, sort, order }));
   }
 
   @Get("/accounts/count")
   @ApiOperation({ summary: 'Total number of accounts', description: 'Returns total number of accounts available on blockchain' })
   @ApiOkResponse({ type: Number })
-  async getAccountsCount(): Promise<number> {
-    return await this.accountService.getAccountsCount();
+  @ApiQuery({ name: 'ownerAddress', description: 'Search by owner address', required: false })
+  async getAccountsCount(
+    @Query("ownerAddress", ParseAddressPipe) ownerAddress?: string,
+  ): Promise<number> {
+    return await this.accountService.getAccountsCount(new AccountFilter({ ownerAddress }));
   }
 
   @Get("/accounts/c")
   @ApiExcludeEndpoint()
-  async getAccountsCountAlternative(): Promise<number> {
-    return await this.accountService.getAccountsCount();
+  async getAccountsCountAlternative(
+    @Query("ownerAddress", ParseAddressPipe) ownerAddress?: string,
+  ): Promise<number> {
+    return await this.accountService.getAccountsCount(new AccountFilter({ ownerAddress }));
   }
 
   @Get("/accounts/:address")

@@ -1,10 +1,26 @@
 import { Field, InputType, Float } from "@nestjs/graphql";
-
-import { QueryPagination } from "src/common/entities/query.pagination";
+import { AccountFilter } from "src/endpoints/accounts/entities/account.filter";
 
 @InputType({ description: "Input to retrieve the given accounts for." })
-export class GetAccountsInput {
+export class GetAccountFilteredInput {
+  constructor(partial?: Partial<GetAccountFilteredInput>) {
+    Object.assign(this, partial);
+  }
+
+  @Field(() => String, { name: "ownerAddress", description: "Owner address to retrieve for the given result set.", nullable: true })
+  ownerAddress: string | undefined = undefined;
+  public static resolve(input: GetAccountFilteredInput): AccountFilter {
+    return new AccountFilter({
+      ownerAddress: input.ownerAddress,
+    });
+  }
+}
+
+
+@InputType({ description: "Input to retrieve the given accounts for." })
+export class GetAccountsInput extends GetAccountFilteredInput {
   constructor(partial?: Partial<GetAccountsInput>) {
+    super();
     Object.assign(this, partial);
   }
 
@@ -13,8 +29,4 @@ export class GetAccountsInput {
 
   @Field(() => Float, { name: "size", description: "Number of accounts to retrieve for the given result set.", nullable: true, defaultValue: 25 })
   size: number = 25;
-
-  public static resolve(input: GetAccountsInput): QueryPagination {
-    return { from: input.from, size: input.size };
-  }
 }

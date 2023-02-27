@@ -20,6 +20,7 @@ import { AuctionNode } from 'src/common/gateway/entities/auction.node';
 import { CachingService, FileUtils } from '@multiversx/sdk-nestjs';
 import { AccountService } from 'src/endpoints/accounts/account.service';
 import { Provider } from 'src/endpoints/providers/entities/provider';
+import { AccountFilter } from 'src/endpoints/accounts/entities/account.filter';
 
 describe('Node Service', () => {
   let nodeService: NodeService;
@@ -44,7 +45,7 @@ describe('Node Service', () => {
     nodes = await nodeService.getAllNodes();
     providers = await providerService.getAllProviders();
 
-    const accounts = await accountService.getAccounts({ from: 0, size: 1 });
+    const accounts = await accountService.getAccounts({ from: 0, size: 1 }, new AccountFilter());
     expect(accounts).toHaveLength(1);
 
 

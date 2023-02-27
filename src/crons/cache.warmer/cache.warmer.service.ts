@@ -24,6 +24,7 @@ import { SettingsService } from "src/common/settings/settings.service";
 import { TokenService } from "src/endpoints/tokens/token.service";
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { NftService } from "src/endpoints/nfts/nft.service";
+import { AccountFilter } from "src/endpoints/accounts/entities/account.filter";
 
 @Injectable()
 export class CacheWarmerService {
@@ -204,8 +205,10 @@ export class CacheWarmerService {
   @Cron(CronExpression.EVERY_MINUTE)
   @Lock({ name: 'Accounts invalidations', verbose: true })
   async handleAccountInvalidations() {
-    const accounts = await this.accountService.getAccountsRaw({ from: 0, size: 25 });
-    await this.invalidateKey(CacheInfo.Top25Accounts.key, accounts, CacheInfo.Top25Accounts.ttl);
+    const accounts = await this.accountService.getAccountsRaw({ from: 0, size: 25 }, new AccountFilter());
+
+    const accountsCacheInfo = CacheInfo.Accounts({ from: 0, size: 25 });
+    await this.invalidateKey(accountsCacheInfo.key, accounts, accountsCacheInfo.ttl);
   }
 
   @Cron(CronExpression.EVERY_MINUTE)

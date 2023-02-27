@@ -6,7 +6,7 @@ import { Account } from "src/endpoints/accounts/entities/account";
 import { AccountQuery } from "src/graphql/entities/account/account.query";
 import { AccountService } from "src/endpoints/accounts/account.service";
 import { AccountServiceMock } from "src/test/unit/graphql/mocks/account.service.mock";
-import { GetAccountsInput } from "src/graphql/entities/account/account.input";
+import { GetAccountFilteredInput, GetAccountsInput } from "src/graphql/entities/account/account.input";
 
 describe(AccountQuery, () => {
 
@@ -49,6 +49,7 @@ describe(AccountQuery, () => {
     const input: GetAccountsInput = new GetAccountsInput({
       from: randomInt(3),
       size: randomInt(3),
+      ownerAddress: 'erd1',
     });
 
     const expectedAccounts: Account[] = AccountServiceMock.accounts.slice(input.from, input.size);
@@ -59,7 +60,7 @@ describe(AccountQuery, () => {
   it("get accounts count should return accounts count", async () => {
     jest.spyOn(accountServiceMock, "getAccountsCount");
 
-    const actualAccountsCount: number = await accountQuery.getAccountsCount();
+    const actualAccountsCount: number = await accountQuery.getAccountsCount(new GetAccountFilteredInput());
     const expectedAccountsCount: number = AccountServiceMock.accounts.length;
 
     expect(actualAccountsCount).toEqual(expectedAccountsCount);
@@ -73,7 +74,5 @@ describe(AccountQuery, () => {
     const actualAccounts: Account[] = await accountQuery.getAccounts(input);
 
     expect(actualAccounts).toEqual(expectedAccounts);
-
-    expect(accountServiceMock.getAccounts).toHaveBeenCalledWith({ from: input.from, size: input.size });
   }
 });

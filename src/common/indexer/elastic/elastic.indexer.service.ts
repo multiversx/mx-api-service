@@ -19,6 +19,8 @@ import { Tag } from "../entities/tag";
 import { ElasticIndexerHelper } from "./elastic.indexer.helper";
 import { TokenType } from "../entities";
 import { SortCollections } from "src/endpoints/collections/entities/sort.collections";
+import { AccountFilter } from "src/endpoints/accounts/entities/account.filter";
+import { AccountSort } from "src/endpoints/accounts/entities/account.sort";
 
 @Injectable()
 export class ElasticIndexerService implements IndexerInterface {
@@ -29,8 +31,10 @@ export class ElasticIndexerService implements IndexerInterface {
     private readonly apiService: ApiService,
   ) { }
 
-  async getAccountsCount(): Promise<number> {
-    return await this.elasticService.getCount('accounts');
+  async getAccountsCount(filter: AccountFilter): Promise<number> {
+    const query = this.indexerHelper.buildAccountFilterQuery(filter);
+
+    return await this.elasticService.getCount('accounts', query);
   }
 
   async getScResultsCount(): Promise<number> {
@@ -336,12 +340,32 @@ export class ElasticIndexerService implements IndexerInterface {
     return await this.elasticService.getList('scresults', 'hash', elasticQuery);
   }
 
-  async getAccounts(queryPagination: QueryPagination): Promise<any[]> {
-    const elasticQuery = ElasticQuery.create()
-      .withPagination(queryPagination)
-      .withSort([{ name: 'balanceNum', order: ElasticSortOrder.descending }]);
+  async getAccounts(queryPagination: QueryPagination, filter: AccountFilter): Promise<any[]> {
+    let elasticQuery = this.indexerHelper.buildAccountFilterQuery(filter);
+
+    const sortOrder: ElasticSortOrder = !filter.order || filter.order === SortOrder.desc ? ElasticSortOrder.descending : ElasticSortOrder.ascending;
+    const sort: AccountSort = filter.sort ?? AccountSort.balance;
+
+    switch (sort) {
+      case AccountSort.balance:
+        elasticQuery = elasticQuery.withSort([{ name: 'balanceNum', order: sortOrder }]);
+        break;
+      default:
+        elasticQuery = elasticQuery.withSort([{ name: sort.toString(), order: sortOrder }]);
+        break;
+    }
+
+    elasticQuery = elasticQuery.withPagination(queryPagination);
 
     return await this.elasticService.getList('accounts', 'address', elasticQuery);
+  }
+
+  async getAccount(address: string): Promise<any> {
+    return await this.elasticService.getItem(
+      'accounts',
+      'address',
+      address
+    );
   }
 
   async getAccountContracts(pagination: QueryPagination, address: string): Promise<any[]> {

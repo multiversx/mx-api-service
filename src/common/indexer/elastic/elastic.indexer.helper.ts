@@ -12,6 +12,7 @@ import { EsdtType } from "src/endpoints/esdt/entities/esdt.type";
 import { TokenWithRolesFilter } from "src/endpoints/tokens/entities/token.with.roles.filter";
 import { TransactionFilter } from "src/endpoints/transactions/entities/transaction.filter";
 import { TransactionType } from "src/endpoints/transactions/entities/transaction.type";
+import { AccountFilter } from "src/endpoints/accounts/entities/account.filter";
 
 @Injectable()
 export class ElasticIndexerHelper {
@@ -493,5 +494,14 @@ export class ElasticIndexerHelper {
 
     return ElasticQuery.create()
       .withCondition(QueryConditionOptions.must, mustQueries);
+  }
+
+  public buildAccountFilterQuery(filter: AccountFilter): ElasticQuery {
+    let elasticQuery = ElasticQuery.create();
+    if (filter.ownerAddress) {
+      elasticQuery = elasticQuery.withMustCondition(QueryType.Match('currentOwner', filter.ownerAddress, QueryOperator.AND));
+    }
+
+    return elasticQuery;
   }
 }
