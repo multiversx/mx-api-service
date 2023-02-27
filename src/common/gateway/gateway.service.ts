@@ -16,7 +16,6 @@ import { Transaction } from "./entities/transaction";
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { ApiConfigService } from "../api-config/api.config.service";
 import { ApiService, ApiSettings, BinaryUtils } from "@multiversx/sdk-nestjs";
-import { TransactionPool } from "./entities/transaction.pool";
 
 @Injectable()
 export class GatewayService {
@@ -159,19 +158,5 @@ export class GatewayService {
   @LogPerformanceAsync(MetricsEvents.SetGatewayDuration, { argIndex: 1 })
   async createRaw(url: string, component: GatewayComponentRequest, data: any, errorHandler?: (error: any) => Promise<boolean>): Promise<any> {
     return await this.apiService.post(`${this.getUrl(component)}/${url}`, data, new ApiSettings(), errorHandler);
-  }
-
-  async getTransactionPool(address: string): Promise<TransactionPool[] | undefined> {
-    // eslint-disable-next-line require-await
-    const result = await this.get(`transaction/pool?by-sender=${address}&fields=sender,receiver,value,nonce,data,gasprice,gaslimit`, GatewayComponentRequest.transactionPool, async (error) => {
-      const errorMessage = error?.response?.data?.error;
-      if (errorMessage && errorMessage.includes('account was not found')) {
-        return true;
-      }
-
-      return false;
-    });
-
-    return result?.txPool.transactions;
   }
 }
