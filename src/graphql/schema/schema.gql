@@ -705,6 +705,12 @@ input GetAccountDetailedInput {
 }
 
 """Input to retrieve the given accounts for."""
+input GetAccountFilteredInput {
+  """Owner address to retrieve for the given result set."""
+  ownerAddress: String
+}
+
+"""Input to retrieve the given accounts for."""
 input GetAccountsInput {
   """Number of accounts to skip for the given result set."""
   from: Float = 0
@@ -2881,7 +2887,10 @@ type Query {
   ): [Account!]!
 
   """Retrieve all accounts count."""
-  accountsCount: Float!
+  accountsCount(
+    """Input to retrieve the given accounts for."""
+    input: GetAccountFilteredInput!
+  ): Float!
 
   """Retrieve the block for the given input."""
   blockHash(
