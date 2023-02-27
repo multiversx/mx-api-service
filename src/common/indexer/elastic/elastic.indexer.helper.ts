@@ -414,11 +414,10 @@ export class ElasticIndexerHelper {
       .withMustMultiShouldCondition(filter.tokens, token => QueryType.Match('tokens', token, QueryOperator.AND))
       .withDateRangeFilter('timestamp', filter.before, filter.after);
 
-    if (filter.token !== 'EGLD') {
-      elasticQuery = elasticQuery.withMustMatchCondition('tokens', filter.token, QueryOperator.AND);
+    if (filter.token === 'EGLD') {
+      elasticQuery = elasticQuery.withMustNotCondition(QueryType.Match('value', '0'));
     } else {
-      elasticQuery = elasticQuery.withMustNotCondition(
-        QueryType.Match('value', '0'));
+      elasticQuery = elasticQuery.withMustMatchCondition('tokens', filter.token, QueryOperator.AND);
     }
 
     if (filter.condition === QueryConditionOptions.should) {
