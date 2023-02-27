@@ -1,9 +1,9 @@
-import { BadRequestException, Body, Controller, Get, Param, Post, Query, Res } from "@nestjs/common";
+import { BadRequestException, Body, Controller, Get, Param, Post, Query, Req, Res } from "@nestjs/common";
 import { ApiExcludeEndpoint, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { VmQueryRequest } from "../vm.query/entities/vm.query.request";
 import { VmQueryService } from "../vm.query/vm.query.service";
 import { GatewayService } from "src/common/gateway/gateway.service";
-import { Response } from "express";
+import { Response, Request } from "express";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
 import { PluginService } from "src/common/plugins/plugin.service";
 import { Constants, ParseAddressPipe, ParseBlockHashPipe, ParseTransactionHashPipe, CachingService, NoCache } from "@multiversx/sdk-nestjs";
@@ -126,6 +126,14 @@ export class ProxyController {
   @ApiExcludeEndpoint()
   async transactionCost(@Body() body: any) {
     return await this.gatewayPost('transaction/cost', GatewayComponentRequest.transactionCost, body);
+  }
+
+  @Get('/transaction/pool')
+  @ApiExcludeEndpoint()
+  @NoCache()
+  async getTransactionPool(@Req() request: Request) {
+    const url = request.url.replace(/^\//, '');
+    return await this.gatewayGet(url, GatewayComponentRequest.transactionPool);
   }
 
   @Get('/transaction/:hash')
