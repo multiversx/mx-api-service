@@ -21,9 +21,17 @@ export class Account {
   @ApiProperty({ type: Number, description: 'Account current nonce', example: 42 })
   nonce: number = 0;
 
+  @Field(() => Float, { description: 'Timestamp of the block where the account was first indexed.' })
+  @ApiProperty({ type: Number, description: 'Timestamp of the block where the account was first indexed', example: 1676979360 })
+  timestamp: number = 0;
+
   @Field(() => Float, { description: 'Shard for the given account.' })
   @ApiProperty({ type: Number, description: 'The shard ID allocated to the account', example: 0 })
   shard: number = 0;
+
+  @Field(() => String, { description: 'Current owner address.' })
+  @ApiProperty({ type: String, description: 'Current owner address' })
+  ownerAddress: string | undefined = undefined;
 
   @Field(() => AccountAssets, { description: 'Account assets for the given account.', nullable: true })
   @ApiProperty({ type: AccountAssets, nullable: true, description: 'Account assets' })

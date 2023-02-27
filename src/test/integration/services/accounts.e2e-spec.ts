@@ -7,6 +7,7 @@ import { ApiConfigService } from 'src/common/api-config/api.config.service';
 import { AddressUtils, CachingService, ElasticService } from '@multiversx/sdk-nestjs';
 import { AccountKey } from 'src/endpoints/accounts/entities/account.key';
 import { AccountEsdtHistory } from 'src/endpoints/accounts/entities/account.esdt.history';
+import { AccountFilter } from 'src/endpoints/accounts/entities/account.filter';
 
 describe('Account Service', () => {
   let accountService: AccountService;
@@ -50,7 +51,7 @@ describe('Account Service', () => {
         // eslint-disable-next-line require-await
         .mockImplementation(jest.fn(async (_address: string) => 49100));
 
-      const results = await accountService.getAccountsCount();
+      const results = await accountService.getAccountsCount(new AccountFilter());
 
       expect(results).toStrictEqual(49100);
     });
@@ -170,7 +171,7 @@ describe('Account Service', () => {
         // eslint-disable-next-line require-await
         .mockImplementation(jest.fn(async (_key: string, promise: any) => promise()));
 
-      const results = await accountService.getAccounts({ from: 0, size: 10 });
+      const results = await accountService.getAccounts({ from: 0, size: 10 }, new AccountFilter());
 
       expect(results).toHaveLength(10);
     });

@@ -37,8 +37,14 @@ type Account {
   """Nonce for the given account."""
   nonce: Float!
 
+  """Current owner address."""
+  ownerAddress: String!
+
   """Shard for the given account."""
   shard: Float!
+
+  """Timestamp of the block where the account was first indexed."""
+  timestamp: Float!
 }
 
 """Account assets object type."""
@@ -227,6 +233,9 @@ type AccountDetailed {
   Summarizes total staked amount for the given provider, as well as when and how much unbond will be performed.
   """
   stake: ProviderStake!
+
+  """Timestamp of the block where the account was first indexed."""
+  timestamp: Float!
 
   """Tokens for the given detailed account."""
   tokensAccount(
@@ -696,9 +705,18 @@ input GetAccountDetailedInput {
 }
 
 """Input to retrieve the given accounts for."""
+input GetAccountFilteredInput {
+  """Owner address to retrieve for the given result set."""
+  ownerAddress: String
+}
+
+"""Input to retrieve the given accounts for."""
 input GetAccountsInput {
   """Number of accounts to skip for the given result set."""
   from: Float = 0
+
+  """Owner address to retrieve for the given result set."""
+  ownerAddress: String
 
   """Number of accounts to retrieve for the given result set."""
   size: Float = 25
@@ -2869,7 +2887,10 @@ type Query {
   ): [Account!]!
 
   """Retrieve all accounts count."""
-  accountsCount: Float!
+  accountsCount(
+    """Input to retrieve the given accounts for."""
+    input: GetAccountFilteredInput!
+  ): Float!
 
   """Retrieve the block for the given input."""
   blockHash(

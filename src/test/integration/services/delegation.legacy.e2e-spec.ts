@@ -6,6 +6,7 @@ import { DelegationLegacyService } from "src/endpoints/delegation.legacy/delegat
 import { AccountService } from "src/endpoints/accounts/account.service";
 import { DelegationLegacy } from "src/endpoints/delegation.legacy/entities/delegation.legacy";
 import { AccountDelegationLegacy } from "src/endpoints/delegation.legacy/entities/account.delegation.legacy";
+import { AccountFilter } from "src/endpoints/accounts/entities/account.filter";
 
 describe('Delegation Legacy Service', () => {
   let delegationLegacyService: DelegationLegacyService;
@@ -20,7 +21,7 @@ describe('Delegation Legacy Service', () => {
     delegationLegacyService = moduleRef.get<DelegationLegacyService>(DelegationLegacyService);
     accountService = moduleRef.get<AccountService>(AccountService);
 
-    const accounts = await accountService.getAccounts({ from: 0, size: 1 });
+    const accounts = await accountService.getAccounts({ from: 0, size: 1 }, new AccountFilter());
     expect(accounts).toHaveLength(1);
 
     const account = accounts[0];

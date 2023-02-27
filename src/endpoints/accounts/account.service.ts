@@ -27,6 +27,7 @@ import { CacheInfo } from 'src/utils/cache.info';
 import { UsernameService } from '../usernames/username.service';
 import { ContractUpgrades } from './entities/contract.upgrades';
 import { AccountVerification } from './entities/account.verification';
+import { AccountFilter } from './entities/account.filter';
 
 @Injectable()
 export class AccountService {
@@ -53,12 +54,16 @@ export class AccountService {
     private readonly apiService: ApiService
   ) { }
 
-  async getAccountsCount(): Promise<number> {
-    return await this.cachingService.getOrSetCache(
-      CacheInfo.AccountsCount.key,
-      async () => await this.indexerService.getAccountsCount(),
-      CacheInfo.AccountsCount.ttl
-    );
+  async getAccountsCount(filter: AccountFilter): Promise<number> {
+    if (!filter.ownerAddress) {
+      return await this.cachingService.getOrSetCache(
+        CacheInfo.AccountsCount.key,
+        async () => await this.indexerService.getAccountsCount(filter),
+        CacheInfo.AccountsCount.ttl
+      );
+    }
+
+    return await this.indexerService.getAccountsCount(filter);
   }
 
   async getAccount(address: string, fields?: string[]): Promise<AccountDetailed | null> {
@@ -77,7 +82,14 @@ export class AccountService {
       scrCount = await this.getAccountScResults(address);
     }
 
-    return this.getAccountRaw(address, txCount, scrCount);
+    const account = await this.getAccountRaw(address, txCount, scrCount);
+
+    const elasticSearchAccount = await this.indexerService.getAccount(address);
+    if (account && elasticSearchAccount) {
+      account.timestamp = elasticSearchAccount.timestamp;
+    }
+
+    return account;
   }
 
   async getAccountVerification(address: string): Promise<AccountVerification | null> {
@@ -226,12 +238,16 @@ export class AccountService {
     return null;
   }
 
-  async getAccounts(queryPagination: QueryPagination): Promise<Account[]> {
-    return await this.cachingService.getOrSetCache(
-      CacheInfo.Accounts(queryPagination).key,
-      async () => await this.getAccountsRaw(queryPagination),
-      CacheInfo.Accounts(queryPagination).ttl
-    );
+  async getAccounts(queryPagination: QueryPagination, filter: AccountFilter): Promise<Account[]> {
+    if (!filter.ownerAddress && !filter.sort && !filter.order) {
+      return await this.cachingService.getOrSetCache(
+        CacheInfo.Accounts(queryPagination).key,
+        async () => await this.getAccountsRaw(queryPagination, filter),
+        CacheInfo.Accounts(queryPagination).ttl
+      );
+    }
+
+    return await this.getAccountsRaw(queryPagination, filter);
   }
 
   public async getAccountsForAddresses(addresses: Array<string>): Promise<Array<Account>> {
@@ -248,12 +264,18 @@ export class AccountService {
     return accounts;
   }
 
-  async getAccountsRaw(queryPagination: QueryPagination): Promise<Account[]> {
-    const result = await this.indexerService.getAccounts(queryPagination);
+  async getAccountsRaw(queryPagination: QueryPagination, filter: AccountFilter): Promise<Account[]> {
+    const result = await this.indexerService.getAccounts(queryPagination, filter);
 
     const assets = await this.assetsService.getAllAccountAssets();
 
-    const accounts: Account[] = result.map(item => ApiUtils.mergeObjects(new Account(), item));
+    const accounts: Account[] = result.map(item => {
+      const account = ApiUtils.mergeObjects(new Account(), item);
+      account.ownerAddress = item.currentOwner;
+
+      return account;
+    });
+
     for (const account of accounts) {
       account.shard = AddressUtils.computeShard(AddressUtils.bech32Decode(account.address));
       account.assets = assets[account.address];

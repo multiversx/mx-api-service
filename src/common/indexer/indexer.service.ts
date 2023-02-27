@@ -14,6 +14,7 @@ import { QueryPagination } from "../entities/query.pagination";
 import { Account, AccountHistory, AccountTokenHistory, Block, Collection, MiniBlock, Operation, Round, ScDeploy, ScResult, Tag, Token, TokenAccount, Transaction, TransactionLog, TransactionReceipt } from "./entities";
 import { IndexerInterface } from "./indexer.interface";
 import { LogPerformanceAsync } from "src/utils/log.performance.decorator";
+import { AccountFilter } from "src/endpoints/accounts/entities/account.filter";
 
 @Injectable()
 export class IndexerService implements IndexerInterface {
@@ -22,10 +23,9 @@ export class IndexerService implements IndexerInterface {
     private readonly indexerInterface: IndexerInterface,
   ) { }
 
-
   @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
-  async getAccountsCount(): Promise<number> {
-    return await this.indexerInterface.getAccountsCount();
+  async getAccountsCount(filter: AccountFilter): Promise<number> {
+    return await this.indexerInterface.getAccountsCount(filter);
   }
 
   @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
@@ -210,8 +210,13 @@ export class IndexerService implements IndexerInterface {
   }
 
   @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
-  async getAccounts(queryPagination: QueryPagination): Promise<Account[]> {
-    return await this.indexerInterface.getAccounts(queryPagination);
+  async getAccount(address: string): Promise<Account> {
+    return await this.indexerInterface.getAccount(address);
+  }
+
+  @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
+  async getAccounts(queryPagination: QueryPagination, filter: AccountFilter): Promise<Account[]> {
+    return await this.indexerInterface.getAccounts(queryPagination, filter);
   }
 
   @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
