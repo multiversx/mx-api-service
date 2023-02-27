@@ -644,7 +644,7 @@ export class AccountController {
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
     @Query('sender', ParseAddressPipe) sender?: string,
     @Query('receiver', ParseAddressArrayPipe) receiver?: string[],
-    @Query('token', ParseTokenPipe) token?: string,
+    @Query('token') token?: string,
     @Query('senderShard', ParseIntPipe) senderShard?: number,
     @Query('receiverShard', ParseIntPipe) receiverShard?: number,
     @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash?: string,
