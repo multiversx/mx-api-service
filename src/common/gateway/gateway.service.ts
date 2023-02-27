@@ -164,7 +164,8 @@ export class GatewayService {
   async getTransactionPool(address: string): Promise<TransactionPool[] | undefined> {
     // eslint-disable-next-line require-await
     const result = await this.get(`transaction/pool?by-sender=${address}&fields=sender,receiver,value,nonce,data,gasprice,gaslimit`, GatewayComponentRequest.transactionPool, async (error) => {
-      if (error.response.data.error === 'transaction not found') {
+      const errorMessage = error?.response?.data?.error;
+      if (errorMessage && errorMessage.includes('account was not found')) {
         return true;
       }
 
