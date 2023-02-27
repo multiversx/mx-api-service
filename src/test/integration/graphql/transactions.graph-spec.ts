@@ -218,6 +218,50 @@ describe('Transactions', () => {
     });
   });
 
+  describe('Query - Get Transactions', () => {
+    it('should return an array of transactions with value field value <> 0', async () => {
+      await request(app.getHttpServer())
+        .post(gql)
+        .send({
+          query: `{
+            transactions(input:{
+              token: "EGLD"
+            }){
+              txHash
+              gasLimit
+              gasPrice
+              gasUsed
+              miniBlockHash
+              nonce
+              receiverAddress
+              receiverShard
+              round
+              senderAddress
+              senderShard
+              signature
+              status
+              value
+              fee
+              timestamp
+              data
+              function
+              action{
+                category
+                name
+                description
+                arguments
+              }
+            }
+          }`,
+        })
+        .expect(200)
+        .then(res => {
+          expect(res.body.data.transactions).toBeDefined();
+          expect(res.body.data.transactions.value).not.toEqual('0');
+        });
+    });
+  });
+
   afterEach(async () => {
     await app.close();
   });
