@@ -51,7 +51,7 @@ describe('Account Service', () => {
         // eslint-disable-next-line require-await
         .mockImplementation(jest.fn(async (_address: string) => 49100));
 
-      const results = await accountService.getAccountsCount();
+      const results = await accountService.getAccountsCount(new AccountFilter());
 
       expect(results).toStrictEqual(49100);
     });
