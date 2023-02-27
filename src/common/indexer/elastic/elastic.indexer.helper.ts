@@ -1,4 +1,4 @@
-import { AbstractQuery, AddressUtils, BinaryUtils, ElasticQuery, ElasticSortOrder, ElasticSortProperty, QueryConditionOptions, QueryOperator, QueryType, RangeGreaterThanOrEqual, RangeLowerThan, RangeLowerThanOrEqual } from "@multiversx/sdk-nestjs";
+import { AbstractQuery, AddressUtils, BinaryUtils, ElasticQuery, QueryConditionOptions, QueryOperator, QueryType, RangeGreaterThanOrEqual, RangeLowerThan, RangeLowerThanOrEqual } from "@multiversx/sdk-nestjs";
 import { Injectable } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { QueryPagination } from "src/common/entities/query.pagination";
@@ -13,7 +13,6 @@ import { TokenWithRolesFilter } from "src/endpoints/tokens/entities/token.with.r
 import { TransactionFilter } from "src/endpoints/transactions/entities/transaction.filter";
 import { TransactionType } from "src/endpoints/transactions/entities/transaction.type";
 import { AccountFilter } from "src/endpoints/accounts/entities/account.filter";
-import { SortOrder } from "src/common/entities/sort.order";
 
 @Injectable()
 export class ElasticIndexerHelper {
@@ -497,17 +496,8 @@ export class ElasticIndexerHelper {
       .withCondition(QueryConditionOptions.must, mustQueries);
   }
 
-  public buildAccountFilterQuery(queryPagination: QueryPagination, filter: AccountFilter): ElasticQuery {
-    const sortOrder: ElasticSortOrder =
-      !filter.order || filter.order === SortOrder.desc ? ElasticSortOrder.descending : ElasticSortOrder.ascending;
-
-    const balance: ElasticSortProperty = { name: 'balanceNum', order: sortOrder };
-    const timestamp: ElasticSortProperty = { name: 'timestamp', order: sortOrder };
-
-    let elasticQuery = ElasticQuery.create()
-      .withPagination(queryPagination)
-      .withSort([balance, timestamp]);
-
+  public buildAccountFilterQuery(filter: AccountFilter): ElasticQuery {
+    let elasticQuery = ElasticQuery.create();
     if (filter.ownerAddress) {
       elasticQuery = elasticQuery.withMustCondition(QueryType.Match('currentOwner', filter.ownerAddress, QueryOperator.AND));
     }

@@ -30,7 +30,8 @@ export class Account {
   shard: number = 0;
 
   @Field(() => String, { description: 'Current owner address.' })
-  ownerAddress: string = '';
+  @ApiProperty({ type: String, description: 'Current owner address' })
+  ownerAddress: string | undefined = undefined;
 
   @Field(() => AccountAssets, { description: 'Account assets for the given account.', nullable: true })
   @ApiProperty({ type: AccountAssets, nullable: true, description: 'Account assets' })

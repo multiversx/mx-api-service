@@ -13,7 +13,7 @@ import { QueryPagination } from "../entities/query.pagination";
 import { Account, AccountHistory, AccountTokenHistory, Block, Collection, MiniBlock, Operation, Round, ScDeploy, ScResult, Tag, Token, TokenAccount, Transaction, TransactionLog, TransactionReceipt } from "./entities";
 
 export interface IndexerInterface {
-  getAccountsCount(): Promise<number>
+  getAccountsCount(filter: AccountFilter): Promise<number>
 
   getScResultsCount(): Promise<number>
 

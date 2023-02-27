@@ -6,4 +6,5 @@ export interface Account {
   balanceNum: number;
   totalBalanceWithStake: string;
   totalBalanceWithStakeNum: number;
+  currentOwner?: string;
 }

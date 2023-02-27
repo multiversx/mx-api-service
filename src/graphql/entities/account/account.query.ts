@@ -21,6 +21,6 @@ export class AccountQuery {
 
   @Query(() => Float, { name: "accountsCount", description: "Retrieve all accounts count." })
   public async getAccountsCount(): Promise<number> {
-    return await this.accountService.getAccountsCount();
+    return await this.accountService.getAccountsCount(new AccountFilter());
   }
 }

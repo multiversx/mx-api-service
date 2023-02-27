@@ -24,8 +24,8 @@ export class IndexerService implements IndexerInterface {
   ) { }
 
   @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
-  async getAccountsCount(): Promise<number> {
-    return await this.indexerInterface.getAccountsCount();
+  async getAccountsCount(filter: AccountFilter): Promise<number> {
+    return await this.indexerInterface.getAccountsCount(filter);
   }
 
   @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
