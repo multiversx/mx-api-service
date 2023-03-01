@@ -32,6 +32,7 @@ import { SmartContractResult } from "src/endpoints/sc-results/entities/smart.con
 import { SmartContractResultService } from "src/endpoints/sc-results/scresult.service";
 import { AccountHistory } from "src/endpoints/accounts/entities/account.history";
 import { AccountEsdtHistory } from "src/endpoints/accounts/entities/account.esdt.history";
+import { AccountHistoryFilter } from "src/endpoints/accounts/entities/account.history.filter";
 
 @Resolver(() => AccountDetailed)
 export class AccountDetailedResolver extends AccountDetailedQuery {
@@ -102,7 +103,7 @@ export class AccountDetailedResolver extends AccountDetailedQuery {
       new QueryPagination({
         from: input.from,
         size: input.size,
-      }));
+      }), new AccountHistoryFilter({}));
   }
 
   @ResolveField("historyTokenAccount", () => [AccountEsdtHistory], { name: "historyTokenAccount", description: "Return account balance history for a specifc token." })
@@ -113,7 +114,7 @@ export class AccountDetailedResolver extends AccountDetailedQuery {
       new QueryPagination({
         from: input.from,
         size: input.size,
-      }));
+      }), new AccountHistoryFilter({}));
   }
 
   @ResolveField("contractAccount", () => [DeployedContract], { name: "contractAccount", description: "Contracts for the given detailed account.", nullable: true })

@@ -13,6 +13,7 @@ import { TokenWithRolesFilter } from "src/endpoints/tokens/entities/token.with.r
 import { TransactionFilter } from "src/endpoints/transactions/entities/transaction.filter";
 import { TransactionType } from "src/endpoints/transactions/entities/transaction.type";
 import { AccountFilter } from "src/endpoints/accounts/entities/account.filter";
+import { AccountHistoryFilter } from "src/endpoints/accounts/entities/account.history.filter";
 
 @Injectable()
 export class ElasticIndexerHelper {
@@ -481,7 +482,7 @@ export class ElasticIndexerHelper {
     return elasticQuery;
   }
 
-  public buildAccountHistoryFilterQuery(address?: string, token?: string): ElasticQuery {
+  public buildAccountHistoryFilterQuery(address?: string, token?: string, filter?: AccountHistoryFilter): ElasticQuery {
     const mustQueries: AbstractQuery[] = [];
 
     if (address) {
@@ -492,8 +493,13 @@ export class ElasticIndexerHelper {
       mustQueries.push(QueryType.Match('token', token, QueryOperator.AND));
     }
 
-    return ElasticQuery.create()
-      .withCondition(QueryConditionOptions.must, mustQueries);
+    let elasticQuery = ElasticQuery.create().withCondition(QueryConditionOptions.must, mustQueries);
+
+    if (filter && (filter.before || filter.after)) {
+      elasticQuery = elasticQuery.withDateRangeFilter('timestamp', filter.before, filter.after);
+    }
+
+    return elasticQuery;
   }
 
   public buildAccountFilterQuery(filter: AccountFilter): ElasticQuery {
