@@ -374,6 +374,9 @@ type Block {
   """Round for the given Block."""
   round: Float!
 
+  """Scheduled Root Hash for the given Block."""
+  scheduledRootHash: String!
+
   """Shard for the given Block."""
   shard: Float!
 
@@ -436,6 +439,9 @@ type BlockDetailed {
 
   """Round for the given Block."""
   round: Float!
+
+  """Scheduled Root Hash for the given Block."""
+  scheduledRootHash: String!
 
   """Shard for the given Block."""
   shard: Float!

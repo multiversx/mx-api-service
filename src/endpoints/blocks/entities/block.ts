@@ -81,6 +81,10 @@ export class Block {
   @ApiProperty({ type: Number })
   maxGasLimit: number = 0;
 
+  @Field(() => String, { description: "Scheduled Root Hash for the given Block." })
+  @ApiProperty({ type: String })
+  scheduledRootHash: string = '';
+
   static mergeWithElasticResponse<T extends Block>(newBlock: T, blockRaw: any): T {
     blockRaw.shard = blockRaw.shardId;
 

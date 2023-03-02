@@ -38,6 +38,9 @@ export class BlockService {
       const blockRaw = await this.computeProposerAndValidators(item);
 
       const block = Block.mergeWithElasticResponse(new Block(), blockRaw);
+      if (blockRaw.scheduledData && blockRaw.scheduledData.rootHash) {
+        block.scheduledRootHash = blockRaw.scheduledData.rootHash;
+      }
       blocks.push(block);
     }
 
