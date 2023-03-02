@@ -81,7 +81,7 @@ describe('Blocks Service', () => {
     });
   });
 
-  describe.only('getBlocks', () => {
+  describe('getBlocks', () => {
     it('should return an array of blocks and scheduledRootHash field should be defined', async () => {
       const results = await blocksService.getBlocks(new BlockFilter(), { from: 0, size: 25 });
 
