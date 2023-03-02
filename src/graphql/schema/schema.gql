@@ -159,7 +159,7 @@ type AccountDetailed {
   """Return account EGLD balance history."""
   historyAccount(
     """Input to retrieve the given EGLD balance history for."""
-    input: GetFromAndSizeInput!
+    input: GetAccountHistory!
   ): [AccountHistory!]!
 
   """Return account balance history for a specifc token."""
@@ -710,6 +710,21 @@ input GetAccountFilteredInput {
   ownerAddress: String
 }
 
+"""Input to retrieve the given transactions count for."""
+input GetAccountHistory {
+  """After timestamp for the given result set."""
+  after: Float
+
+  """Before timestamp for the given result set."""
+  before: Float
+
+  """Number of collections to skip for the given result set."""
+  from: Float = 0
+
+  """Number of collections to retrieve for the given result set."""
+  size: Float = 25
+}
+
 """Input to retrieve the given accounts for."""
 input GetAccountsInput {
   """Number of accounts to skip for the given result set."""
@@ -784,6 +799,12 @@ input GetFromAndSizeInput {
 
 """Input to retrieve the given history token for."""
 input GetHistoryTokenAccountInput {
+  """After timestamp for the given result set."""
+  after: Float
+
+  """Before timestamp for the given result set."""
+  before: Float
+
   """Number of collections to skip for the given result set."""
   from: Float = 0
 

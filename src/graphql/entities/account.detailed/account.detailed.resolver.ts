@@ -7,7 +7,7 @@ import { AccountDetailedQuery } from "src/graphql/entities/account.detailed/acco
 import { AccountService } from "src/endpoints/accounts/account.service";
 import { CollectionFilter } from "src/endpoints/collections/entities/collection.filter";
 import { CollectionService } from "src/endpoints/collections/collection.service";
-import { GetFromAndSizeInput, GetHistoryTokenAccountInput, GetNftCollectionsAccountInput, GetNftsAccountInput, GetTokensAccountInput, GetTransactionsAccountCountInput, GetTransactionsAccountInput, GetTransfersAccountInput } from "src/graphql/entities/account.detailed/account.detailed.input";
+import { GetAccountHistory, GetFromAndSizeInput, GetHistoryTokenAccountInput, GetNftCollectionsAccountInput, GetNftsAccountInput, GetTokensAccountInput, GetTransactionsAccountCountInput, GetTransactionsAccountInput, GetTransfersAccountInput } from "src/graphql/entities/account.detailed/account.detailed.input";
 import { NftAccountFlat, NftCollectionAccountFlat, TokenWithBalanceAccountFlat } from "src/graphql/entities/account.detailed/account.detailed.object";
 import { NftFilter } from "src/endpoints/nfts/entities/nft.filter";
 import { NftService } from "src/endpoints/nfts/nft.service";
@@ -97,13 +97,16 @@ export class AccountDetailedResolver extends AccountDetailedQuery {
   }
 
   @ResolveField("historyAccount", () => [AccountHistory], { name: "historyAccount", description: "Return account EGLD balance history." })
-  public async getAccountHistory(@Args("input", { description: "Input to retrieve the given EGLD balance history for." }) input: GetFromAndSizeInput, @Parent() account: AccountDetailed) {
+  public async getAccountHistory(@Args("input", { description: "Input to retrieve the given EGLD balance history for." }) input: GetAccountHistory, @Parent() account: AccountDetailed) {
     return await this.accountService.getAccountHistory(
       account.address,
       new QueryPagination({
         from: input.from,
         size: input.size,
-      }), new AccountHistoryFilter({}));
+      }), new AccountHistoryFilter({
+        before: input.before,
+        after: input.after,
+      }));
   }
 
   @ResolveField("historyTokenAccount", () => [AccountEsdtHistory], { name: "historyTokenAccount", description: "Return account balance history for a specifc token." })
@@ -114,7 +117,10 @@ export class AccountDetailedResolver extends AccountDetailedQuery {
       new QueryPagination({
         from: input.from,
         size: input.size,
-      }), new AccountHistoryFilter({}));
+      }), new AccountHistoryFilter({
+        before: input.before,
+        after: input.after,
+      }));
   }
 
   @ResolveField("contractAccount", () => [DeployedContract], { name: "contractAccount", description: "Contracts for the given detailed account.", nullable: true })
