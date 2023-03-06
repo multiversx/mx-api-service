@@ -571,7 +571,7 @@ describe('Token Service', () => {
   describe("getTokensForAddress", () => {
     it("should return a list of tokens for a specific address", async () => {
       const MOCK_PATH = apiConfigService.getMockPath();
-      const address: string = "erd19w6f7jqnf4nqrdmq0m548crrc4v3dmrxtn7u3dngep2r078v30aqzzu6nc";
+      const address: string = "erd1nxw88rdky83txukp87wnlpak8c6ykf2yx3nq7uymjepma975wv2qxhcsnq";
 
       const filter: TokenFilter = new TokenFilter();
       filter.identifier = "RIDE-7d18e9";
@@ -633,7 +633,7 @@ describe('Token Service', () => {
   describe("getTokensForAddressFromElastic", () => {
     it("should return one token for a specific address with source ELASTIC and identifier filter applied", async () => {
       const MOCK_PATH = apiConfigService.getMockPath();
-      const address: string = "erd19w6f7jqnf4nqrdmq0m548crrc4v3dmrxtn7u3dngep2r078v30aqzzu6nc";
+      const address: string = "erd1nxw88rdky83txukp87wnlpak8c6ykf2yx3nq7uymjepma975wv2qxhcsnq";
 
       const filter: TokenFilter = new TokenFilter();
       filter.identifier = "RIDE-7d18e9";
@@ -1025,7 +1025,7 @@ describe('Token Service', () => {
   //TBD: getTokenForAddress return undefined for SC address
   describe("getTokenForAddress", () => {
     it("should return token for a specific address", async () => {
-      const address: string = "erd19w6f7jqnf4nqrdmq0m548crrc4v3dmrxtn7u3dngep2r078v30aqzzu6nc";
+      const address: string = "erd1nxw88rdky83txukp87wnlpak8c6ykf2yx3nq7uymjepma975wv2qxhcsnq";
       const identifier: string = "RIDE-7d18e9";
       const result = await tokenService.getTokenForAddress(address, identifier);
 
@@ -1033,7 +1033,7 @@ describe('Token Service', () => {
     });
 
     it("should return undefined because test simulates that token is not defined for address", async () => {
-      const address: string = "erd19w6f7jqnf4nqrdmq0m548crrc4v3dmrxtn7u3dngep2r078v30aqzzu6nc";
+      const address: string = "erd1nxw88rdky83txukp87wnlpak8c6ykf2yx3nq7uymjepma975wv2qxhcsnq";
       const identifier: string = "RIDE-7d18e9";
 
       jest

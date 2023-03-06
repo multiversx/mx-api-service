@@ -16,6 +16,7 @@ import { IndexerInterface } from "./indexer.interface";
 import { LogPerformanceAsync } from "src/utils/log.performance.decorator";
 import { AccountFilter } from "src/endpoints/accounts/entities/account.filter";
 import { MiniBlockFilter } from "src/endpoints/miniblocks/entities/mini.block.filter";
+import { AccountHistoryFilter } from "src/endpoints/accounts/entities/account.history.filter";
 
 @Injectable()
 export class IndexerService implements IndexerInterface {
@@ -231,13 +232,13 @@ export class IndexerService implements IndexerInterface {
   }
 
   @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
-  async getAccountHistory(address: string, pagination: QueryPagination): Promise<AccountHistory[]> {
-    return await this.indexerInterface.getAccountHistory(address, pagination);
+  async getAccountHistory(address: string, pagination: QueryPagination, filter: AccountHistoryFilter): Promise<AccountHistory[]> {
+    return await this.indexerInterface.getAccountHistory(address, pagination, filter);
   }
 
   @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
-  async getAccountTokenHistory(address: string, tokenIdentifier: string, pagination: QueryPagination): Promise<AccountTokenHistory[]> {
-    return await this.indexerInterface.getAccountTokenHistory(address, tokenIdentifier, pagination);
+  async getAccountTokenHistory(address: string, tokenIdentifier: string, pagination: QueryPagination, filter: AccountHistoryFilter): Promise<AccountTokenHistory[]> {
+    return await this.indexerInterface.getAccountTokenHistory(address, tokenIdentifier, pagination, filter);
   }
 
   @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)

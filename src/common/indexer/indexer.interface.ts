@@ -1,4 +1,5 @@
 import { AccountFilter } from "src/endpoints/accounts/entities/account.filter";
+import { AccountHistoryFilter } from "src/endpoints/accounts/entities/account.history.filter";
 import { BlockFilter } from "src/endpoints/blocks/entities/block.filter";
 import { CollectionFilter } from "src/endpoints/collections/entities/collection.filter";
 import { MiniBlockFilter } from "src/endpoints/miniblocks/entities/mini.block.filter";
@@ -102,9 +103,9 @@ export interface IndexerInterface {
 
   getAccountContracts(pagination: QueryPagination, address: string): Promise<ScDeploy[]>
 
-  getAccountHistory(address: string, pagination: QueryPagination): Promise<AccountHistory[]>
+  getAccountHistory(address: string, pagination: QueryPagination, filter: AccountHistoryFilter): Promise<AccountHistory[]>
 
-  getAccountTokenHistory(address: string, tokenIdentifier: string, pagination: QueryPagination): Promise<AccountTokenHistory[]>
+  getAccountTokenHistory(address: string, tokenIdentifier: string, pagination: QueryPagination, filter: AccountHistoryFilter): Promise<AccountTokenHistory[]>
 
   getTransactions(filter: TransactionFilter, pagination: QueryPagination, address?: string): Promise<Transaction[]>
 

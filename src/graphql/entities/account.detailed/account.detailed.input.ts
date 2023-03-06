@@ -259,8 +259,22 @@ export class GetTransfersAccountInput {
   withUsername: boolean | undefined = undefined;
 }
 
+
+@InputType({ description: "Input to retrieve the given transactions count for." })
+export class GetAccountHistory extends GetFromAndSizeInput {
+  constructor(partial?: Partial<GetAccountHistory>) {
+    super();
+    Object.assign(this, partial);
+  }
+  @Field(() => Float, { name: "before", description: "Before timestamp for the given result set.", nullable: true })
+  before: number | undefined = undefined;
+
+  @Field(() => Float, { name: "after", description: "After timestamp for the given result set.", nullable: true })
+  after: number | undefined = undefined;
+}
+
 @InputType({ description: "Input to retrieve the given history token for." })
-export class GetHistoryTokenAccountInput extends GetFromAndSizeInput {
+export class GetHistoryTokenAccountInput extends GetAccountHistory {
   constructor(partial?: Partial<GetFromAndSizeInput>) {
     super();
     Object.assign(this, partial);

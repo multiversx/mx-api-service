@@ -80,4 +80,14 @@ describe('Blocks Service', () => {
       expect(typeof block).toBe('number');
     });
   });
+
+  describe('getBlocks', () => {
+    it('should return an array of blocks and scheduledRootHash field should be defined', async () => {
+      const results = await blocksService.getBlocks(new BlockFilter(), { from: 0, size: 25 });
+
+      for (const result of results) {
+        expect(result.scheduledRootHash).toBeDefined();
+      }
+    });
+  });
 });

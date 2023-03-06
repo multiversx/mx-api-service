@@ -48,7 +48,14 @@ export class ProxyController {
   @Get('/address/:address/key/:key')
   @ApiExcludeEndpoint()
   async getAddressStorageKey(@Param('address', ParseAddressPipe) address: string, @Param('key') key: string) {
-    return await this.gatewayGet(`address/${address}/key/${key}`, GatewayComponentRequest.addressStorage);
+    // eslint-disable-next-line require-await
+    return await this.gatewayGet(`address/${address}/key/${key}`, GatewayComponentRequest.addressStorage, undefined, async (error) => {
+      if (error?.response?.data?.error?.includes('get value for key error')) {
+        throw error;
+      }
+
+      return false;
+    });
   }
 
   @Get('/address/:address/transactions')
@@ -169,7 +176,15 @@ export class ProxyController {
   @Post('/vm-values/hex')
   @ApiExcludeEndpoint()
   async vmValuesHex(@Body() body: any) {
-    return await this.gatewayPost('vm-values/hex', GatewayComponentRequest.vmQuery, body);
+    // eslint-disable-next-line require-await
+    return await this.gatewayPost('vm-values/hex', GatewayComponentRequest.vmQuery, body, async (error) => {
+      const message = error.response?.data?.error;
+      if (message && message.includes('doGetVMValue: no return data')) {
+        throw error;
+      }
+
+      return false;
+    });
   }
 
   @Post('/vm-values/string')
