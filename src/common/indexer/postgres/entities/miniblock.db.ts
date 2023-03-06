@@ -4,7 +4,7 @@ import { MiniBlock } from "../../entities";
 @Entity('miniblocks')
 export class MiniBlockDb implements MiniBlock {
   @PrimaryColumn()
-  hash: string = '';
+  miniBlockHash: string = '';
 
   @Column({ nullable: true, name: 'sender_shard_id' })
   senderShard: number = 0;
@@ -29,4 +29,10 @@ export class MiniBlockDb implements MiniBlock {
 
   @Column({ nullable: true })
   timestamp: number = 0;
+
+  @Column({ nullable: true, name: 'sender_block_nonce' })
+  senderBlockNonce: string = '';
+
+  @Column({ nullable: true, name: 'receiver_block_nonce' })
+  receiverBlockNonce: string = '';
 }

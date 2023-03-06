@@ -118,6 +118,22 @@ export class Transaction {
   @ApiProperty({ type: Boolean, nullable: true })
   pendingResults: boolean | undefined = undefined;
 
+  @Field(() => String, { description: "Sender Block hash for the given transaction.", nullable: true })
+  @ApiProperty({ type: String, nullable: true })
+  senderBlockHash: string | undefined = undefined;
+
+  @Field(() => String, { description: "Sender Block nonce for the given transaction.", nullable: true })
+  @ApiProperty({ type: String, nullable: true })
+  senderBlockNonce: string | undefined = undefined;
+
+  @Field(() => String, { description: "Receiver Block hash for the given transaction.", nullable: true })
+  @ApiProperty({ type: String, nullable: true })
+  receiverBlockHash: string | undefined = undefined;
+
+  @Field(() => String, { description: "Receiver Block nonce for the given transaction.", nullable: true })
+  @ApiProperty({ type: String, nullable: true })
+  receiverBlockNonce: string | undefined = undefined;
+
   getDate(): Date | undefined {
     if (this.timestamp) {
       return new Date(this.timestamp * 1000);

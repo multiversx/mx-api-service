@@ -52,8 +52,9 @@ export class TransferController {
     @Query('order', new ParseEnumPipe(SortOrder)) order?: SortOrder,
     @Query('withScamInfo', new ParseBoolPipe) withScamInfo?: boolean,
     @Query('withUsername', new ParseBoolPipe) withUsername?: boolean,
+    @Query('withBlockInfo', new ParseBoolPipe) withBlockInfo?: boolean,
   ): Promise<Transaction[]> {
-    const options = TransactionQueryOptions.applyDefaultOptions(size, { withScamInfo, withUsername });
+    const options = TransactionQueryOptions.applyDefaultOptions(size, { withScamInfo, withUsername, withBlockInfo });
 
     return await this.transferService.getTransfers(new TransactionFilter({
       senders: sender,

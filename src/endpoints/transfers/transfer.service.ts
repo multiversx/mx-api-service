@@ -47,20 +47,56 @@ export class TransferService {
 
     const transactions: Transaction[] = [];
 
-    for (const elasticOperation of elasticOperations) {
-      const transaction = ApiUtils.mergeObjects(new Transaction(), elasticOperation);
-      transaction.type = elasticOperation.type === 'normal' ? TransactionType.Transaction : TransactionType.SmartContractResult;
+    if (queryOptions.withBlockInfo) {
+      const miniBlockHashes: string[] = [];
 
-      if (transaction.type === TransactionType.SmartContractResult) {
-        delete transaction.gasLimit;
-        delete transaction.gasPrice;
-        delete transaction.gasUsed;
-        delete transaction.nonce;
-        delete transaction.round;
+      for (const elasticOperation of elasticOperations) {
+        if (elasticOperation.miniBlockHash) {
+          miniBlockHashes.push(elasticOperation.miniBlockHash);
+        }
       }
 
+      if (miniBlockHashes.length > 0) {
+        const miniBlocks = await this.indexerService.getMiniBlocks(pagination, { hashes: miniBlockHashes });
 
-      transactions.push(transaction);
+        for (let i = 0; i < elasticOperations.length; i++) {
+          const elasticOperation = elasticOperations[i];
+          const transaction = ApiUtils.mergeObjects(new Transaction(), elasticOperation);
+          transaction.type = elasticOperation.type === 'normal' ? TransactionType.Transaction : TransactionType.SmartContractResult;
+
+          const miniBlockHash = elasticOperation.miniBlockHash;
+
+          if (miniBlockHash && miniBlocks[i]) {
+            transaction.senderBlockHash = miniBlocks[i].senderBlockHash;
+            transaction.receiverBlockHash = miniBlocks[i].receiverBlockHash;
+            transaction.senderBlockNonce = miniBlocks[i].senderBlockNonce;
+            transaction.receiverBlockNonce = miniBlocks[i].receiverBlockNonce;
+          }
+
+          if (transaction.type === TransactionType.SmartContractResult) {
+            delete transaction.gasLimit;
+            delete transaction.gasPrice;
+            delete transaction.gasUsed;
+            delete transaction.nonce;
+            delete transaction.round;
+          }
+          transactions.push(transaction);
+        }
+      }
+    } else {
+      for (const elasticOperation of elasticOperations) {
+        const transaction = ApiUtils.mergeObjects(new Transaction(), elasticOperation);
+        transaction.type = elasticOperation.type === 'normal' ? TransactionType.Transaction : TransactionType.SmartContractResult;
+
+        if (transaction.type === TransactionType.SmartContractResult) {
+          delete transaction.gasLimit;
+          delete transaction.gasPrice;
+          delete transaction.gasUsed;
+          delete transaction.nonce;
+          delete transaction.round;
+        }
+        transactions.push(transaction);
+      }
     }
 
     await this.transactionService.processTransactions(transactions, {

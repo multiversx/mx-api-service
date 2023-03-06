@@ -1,5 +1,5 @@
 export interface MiniBlock {
-  hash: string;
+  miniBlockHash: string;
   senderShard: number;
   receiverShard: number;
   senderBlockHash: string;
@@ -8,4 +8,6 @@ export interface MiniBlock {
   procTypeD: string;
   timestamp: number;
   procTypeS: string;
+  senderBlockNonce: string;
+  receiverBlockNonce: string;
 }
