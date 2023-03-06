@@ -1,4 +1,4 @@
-import { ParseBlockHashPipe, ParseBlsHashPipe, ParseBoolPipe, ParseIntPipe } from "@multiversx/sdk-nestjs";
+import { ParseArrayPipe, ParseBlockHashPipe, ParseBlsHashPipe, ParseBoolPipe, ParseIntPipe } from "@multiversx/sdk-nestjs";
 import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Param, Query } from "@nestjs/common";
 import { ApiExcludeEndpoint, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { QueryPagination } from "src/common/entities/query.pagination";
@@ -31,9 +31,10 @@ export class BlockController {
     @Query('validator', ParseBlsHashPipe) validator?: string,
     @Query('epoch', ParseIntPipe) epoch?: number,
     @Query('nonce', ParseIntPipe) nonce?: number,
+    @Query('hashes', ParseArrayPipe) hashes?: string[],
     @Query('withProposerIdentity', ParseBoolPipe) withProposerIdentity?: boolean,
   ): Promise<Block[]> {
-    return this.blockService.getBlocks(new BlockFilter({ shard, proposer, validator, epoch, nonce }), new QueryPagination({ from, size }), withProposerIdentity);
+    return this.blockService.getBlocks(new BlockFilter({ shard, proposer, validator, epoch, nonce, hashes }), new QueryPagination({ from, size }), withProposerIdentity);
   }
 
   @Get("/blocks/count")
