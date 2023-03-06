@@ -21,6 +21,7 @@ import { TokenType } from "../entities";
 import { SortCollections } from "src/endpoints/collections/entities/sort.collections";
 import { AccountFilter } from "src/endpoints/accounts/entities/account.filter";
 import { AccountSort } from "src/endpoints/accounts/entities/account.sort";
+import { AccountHistoryFilter } from "src/endpoints/accounts/entities/account.history.filter";
 
 @Injectable()
 export class ElasticIndexerService implements IndexerInterface {
@@ -377,16 +378,16 @@ export class ElasticIndexerService implements IndexerInterface {
     return await this.elasticService.getList('scdeploys', "contract", elasticQuery);
   }
 
-  async getAccountHistory(address: string, pagination: QueryPagination): Promise<any[]> {
-    const elasticQuery: ElasticQuery = this.indexerHelper.buildAccountHistoryFilterQuery(address)
+  async getAccountHistory(address: string, pagination: QueryPagination, filter?: AccountHistoryFilter): Promise<any[]> {
+    const elasticQuery: ElasticQuery = this.indexerHelper.buildAccountHistoryFilterQuery(address, undefined, filter)
       .withPagination(pagination)
       .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }]);
 
     return await this.elasticService.getList('accountshistory', 'address', elasticQuery);
   }
 
-  async getAccountTokenHistory(address: string, tokenIdentifier: string, pagination: QueryPagination): Promise<any[]> {
-    const elasticQuery: ElasticQuery = this.indexerHelper.buildAccountHistoryFilterQuery(address, tokenIdentifier)
+  async getAccountTokenHistory(address: string, tokenIdentifier: string, pagination: QueryPagination, filter: AccountHistoryFilter): Promise<any[]> {
+    const elasticQuery: ElasticQuery = this.indexerHelper.buildAccountHistoryFilterQuery(address, tokenIdentifier, filter)
       .withPagination(pagination)
       .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }]);
 

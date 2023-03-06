@@ -28,6 +28,7 @@ import { UsernameService } from '../usernames/username.service';
 import { ContractUpgrades } from './entities/contract.upgrades';
 import { AccountVerification } from './entities/account.verification';
 import { AccountFilter } from './entities/account.filter';
+import { AccountHistoryFilter } from './entities/account.history.filter';
 
 @Injectable()
 export class AccountService {
@@ -453,13 +454,13 @@ export class AccountService {
     return upgrades.slice(queryPagination.from, queryPagination.from + queryPagination.size);
   }
 
-  async getAccountHistory(address: string, pagination: QueryPagination): Promise<AccountHistory[]> {
-    const elasticResult = await this.indexerService.getAccountHistory(address, pagination);
+  async getAccountHistory(address: string, pagination: QueryPagination, filter: AccountHistoryFilter): Promise<AccountHistory[]> {
+    const elasticResult = await this.indexerService.getAccountHistory(address, pagination, filter);
     return elasticResult.map(item => ApiUtils.mergeObjects(new AccountHistory(), item));
   }
 
-  async getAccountTokenHistory(address: string, tokenIdentifier: string, pagination: QueryPagination): Promise<AccountEsdtHistory[]> {
-    const elasticResult = await this.indexerService.getAccountTokenHistory(address, tokenIdentifier, pagination);
+  async getAccountTokenHistory(address: string, tokenIdentifier: string, pagination: QueryPagination, filter: AccountHistoryFilter): Promise<AccountEsdtHistory[]> {
+    const elasticResult = await this.indexerService.getAccountTokenHistory(address, tokenIdentifier, pagination, filter);
     return elasticResult.map(item => ApiUtils.mergeObjects(new AccountEsdtHistory(), item));
   }
 }
