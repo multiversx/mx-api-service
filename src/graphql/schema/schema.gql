@@ -3765,6 +3765,12 @@ type Transaction {
   """Receiver assets for the given transaction."""
   receiverAssets: AccountAssets
 
+  """Receiver Block hash for the given transaction."""
+  receiverBlockHash: String
+
+  """Receiver Block nonce for the given transaction."""
+  receiverBlockNonce: String
+
   """Receiver account shard for the given transaction."""
   receiverShard: String!
 
@@ -3782,6 +3788,12 @@ type Transaction {
 
   """Sender assets for the given transaction."""
   senderAssets: AccountAssets
+
+  """Sender Block hash for the given transaction."""
+  senderBlockHash: String
+
+  """Sender Block nonce for the given transaction."""
+  senderBlockNonce: String
 
   """Sender account shard for the given transaction."""
   senderShard: Float!
@@ -3876,6 +3888,12 @@ type TransactionDetailed {
   """Receiver assets for the given transaction."""
   receiverAssets: AccountAssets
 
+  """Receiver Block hash for the given transaction."""
+  receiverBlockHash: String
+
+  """Receiver Block nonce for the given transaction."""
+  receiverBlockNonce: String
+
   """Receiver account shard for the given transaction."""
   receiverShard: String!
 
@@ -3896,6 +3914,12 @@ type TransactionDetailed {
 
   """Sender assets for the given transaction."""
   senderAssets: AccountAssets
+
+  """Sender Block hash for the given transaction."""
+  senderBlockHash: String
+
+  """Sender Block nonce for the given transaction."""
+  senderBlockNonce: String
 
   """Sender account shard for the given transaction."""
   senderShard: Float!

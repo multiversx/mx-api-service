@@ -69,8 +69,6 @@ export class TransferService {
           if (miniBlockHash && miniBlocks[i]) {
             transaction.senderBlockHash = miniBlocks[i].senderBlockHash;
             transaction.receiverBlockHash = miniBlocks[i].receiverBlockHash;
-            transaction.senderBlockNonce = miniBlocks[i].senderBlockNonce;
-            transaction.receiverBlockNonce = miniBlocks[i].receiverBlockNonce;
           }
 
           if (transaction.type === TransactionType.SmartContractResult) {

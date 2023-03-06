@@ -122,17 +122,17 @@ export class Transaction {
   @ApiProperty({ type: String, nullable: true })
   senderBlockHash: string | undefined = undefined;
 
-  @Field(() => Number, { description: "Sender Block nonce for the given transaction.", nullable: true })
-  @ApiProperty({ type: Number, nullable: true })
-  senderBlockNonce: number | undefined = undefined;
+  @Field(() => String, { description: "Sender Block nonce for the given transaction.", nullable: true })
+  @ApiProperty({ type: String, nullable: true })
+  senderBlockNonce: string | undefined = undefined;
 
   @Field(() => String, { description: "Receiver Block hash for the given transaction.", nullable: true })
   @ApiProperty({ type: String, nullable: true })
   receiverBlockHash: string | undefined = undefined;
 
-  @Field(() => Number, { description: "Receiver Block nonce for the given transaction.", nullable: true })
-  @ApiProperty({ type: Number, nullable: true })
-  receiverBlockNonce: number | undefined = undefined;
+  @Field(() => String, { description: "Receiver Block nonce for the given transaction.", nullable: true })
+  @ApiProperty({ type: String, nullable: true })
+  receiverBlockNonce: string | undefined = undefined;
 
   getDate(): Date | undefined {
     if (this.timestamp) {
