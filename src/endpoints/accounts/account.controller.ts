@@ -52,6 +52,7 @@ import { ContractUpgrades } from './entities/contract.upgrades';
 import { AccountVerification } from './entities/account.verification';
 import { AccountFilter } from './entities/account.filter';
 import { AccountSort } from './entities/account.sort';
+import { AccountHistoryFilter } from './entities/account.history.filter';
 
 @Controller()
 @ApiTags('accounts')
@@ -1006,31 +1007,45 @@ export class AccountController {
   @ApiOperation({ summary: 'Account history', description: 'Return account EGLD balance history' })
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
+  @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
+  @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
   @ApiOkResponse({ type: [AccountHistory] })
   getAccountHistory(
     @Param('address', ParseAddressPipe) address: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
+    @Query('before', ParseIntPipe) before?: number,
+    @Query('after', ParseIntPipe) after?: number,
   ): Promise<AccountHistory[]> {
-    return this.accountService.getAccountHistory(address, new QueryPagination({ from, size }));
+    return this.accountService.getAccountHistory(
+      address,
+      new QueryPagination({ from, size }),
+      new AccountHistoryFilter({ before, after }));
   }
 
   @Get("/accounts/:address/history/:tokenIdentifier")
   @ApiOperation({ summary: 'Account token history', description: 'Returns account token balance history' })
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
+  @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
+  @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
   @ApiOkResponse({ type: [AccountEsdtHistory] })
   async getAccountTokenHistory(
     @Param('address', ParseAddressPipe) address: string,
     @Param('tokenIdentifier', ParseTokenOrNftPipe) tokenIdentifier: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
+    @Query('before', ParseIntPipe) before?: number,
+    @Query('after', ParseIntPipe) after?: number,
   ): Promise<AccountEsdtHistory[]> {
     const isToken = await this.tokenService.isToken(tokenIdentifier);
     if (!isToken) {
       throw new NotFoundException(`Token '${tokenIdentifier}' not found`);
     }
 
-    return await this.accountService.getAccountTokenHistory(address, tokenIdentifier, new QueryPagination({ from, size }));
+    return await this.accountService.getAccountTokenHistory(
+      address, tokenIdentifier,
+      new QueryPagination({ from, size }),
+      new AccountHistoryFilter({ before, after }));
   }
 }

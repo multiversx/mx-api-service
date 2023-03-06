@@ -8,6 +8,7 @@ import { AddressUtils, CachingService, ElasticService } from '@multiversx/sdk-ne
 import { AccountKey } from 'src/endpoints/accounts/entities/account.key';
 import { AccountEsdtHistory } from 'src/endpoints/accounts/entities/account.esdt.history';
 import { AccountFilter } from 'src/endpoints/accounts/entities/account.filter';
+import { AccountHistoryFilter } from 'src/endpoints/accounts/entities/account.history.filter';
 
 describe('Account Service', () => {
   let accountService: AccountService;
@@ -268,7 +269,7 @@ describe('Account Service', () => {
         .mockImplementation(jest.fn(async () => accountHistory));
 
       const address: string = "erd1ss6u80ruas2phpmr82r42xnkd6rxy40g9jl69frppl4qez9w2jpsqj8x97";
-      const results = await accountService.getAccountHistory(address, { from: 0, size: 2 });
+      const results = await accountService.getAccountHistory(address, { from: 0, size: 2 }, new AccountHistoryFilter({}));
 
       expect(results).toHaveLength(2);
 
@@ -289,7 +290,7 @@ describe('Account Service', () => {
     it("should return account token history", async () => {
       const token: string = "RIDE-7d18e9";
       const address: string = "erd19w6f7jqnf4nqrdmq0m548crrc4v3dmrxtn7u3dngep2r078v30aqzzu6nc";
-      const results = await accountService.getAccountTokenHistory(address, token, { from: 0, size: 1 });
+      const results = await accountService.getAccountTokenHistory(address, token, { from: 0, size: 1 }, new AccountHistoryFilter({}));
 
       if (!results) {
         throw new Error('Properties are not defined');
@@ -313,7 +314,7 @@ describe('Account Service', () => {
 
       const token: string = "";
       const address: string = "erd19w6f7jqnf4nqrdmq0m548crrc4v3dmrxtn7u3dngep2r078v30aqzzu6nc";
-      const results = await accountService.getAccountTokenHistory(address, token, { from: 0, size: 1 });
+      const results = await accountService.getAccountTokenHistory(address, token, { from: 0, size: 1 }, new AccountHistoryFilter({}));
 
       expect(results).toStrictEqual([]);
     });
