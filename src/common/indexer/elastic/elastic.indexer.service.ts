@@ -21,6 +21,7 @@ import { TokenType } from "../entities";
 import { SortCollections } from "src/endpoints/collections/entities/sort.collections";
 import { AccountFilter } from "src/endpoints/accounts/entities/account.filter";
 import { AccountSort } from "src/endpoints/accounts/entities/account.sort";
+import { MiniBlockFilter } from "src/endpoints/miniblocks/entities/mini.block.filter";
 
 @Injectable()
 export class ElasticIndexerService implements IndexerInterface {
@@ -330,6 +331,18 @@ export class ElasticIndexerService implements IndexerInterface {
     }
 
     return await this.elasticService.getList('scresults', 'hash', query);
+  }
+
+  async getMiniBlocks(pagination: QueryPagination, filter: MiniBlockFilter): Promise<any[]> {
+    let query = ElasticQuery.create()
+      .withPagination(pagination)
+      .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }]);
+
+    if (filter.hashes) {
+      query = query.withShouldCondition(filter.hashes.map(hash => QueryType.Match('_id', hash)));
+    }
+
+    return await this.elasticService.getList('miniblocks', 'miniBlockHash', query);
   }
 
   async getAccountScResults(address: string, pagination: QueryPagination): Promise<any[]> {

@@ -15,6 +15,7 @@ import { Account, AccountHistory, AccountTokenHistory, Block, Collection, MiniBl
 import { IndexerInterface } from "./indexer.interface";
 import { LogPerformanceAsync } from "src/utils/log.performance.decorator";
 import { AccountFilter } from "src/endpoints/accounts/entities/account.filter";
+import { MiniBlockFilter } from "src/endpoints/miniblocks/entities/mini.block.filter";
 
 @Injectable()
 export class IndexerService implements IndexerInterface {
@@ -162,6 +163,11 @@ export class IndexerService implements IndexerInterface {
   @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
   async getMiniBlock(miniBlockHash: string): Promise<MiniBlock> {
     return await this.indexerInterface.getMiniBlock(miniBlockHash);
+  }
+
+  @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
+  async getMiniBlocks(pagination: QueryPagination, filter: MiniBlockFilter): Promise<MiniBlock[]> {
+    return await this.indexerInterface.getMiniBlocks(pagination, filter);
   }
 
   @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
