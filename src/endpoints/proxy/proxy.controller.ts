@@ -49,7 +49,7 @@ export class ProxyController {
   @ApiExcludeEndpoint()
   async getAddressStorageKey(@Param('address', ParseAddressPipe) address: string, @Param('key') key: string) {
     // eslint-disable-next-line require-await
-    return await await this.gatewayGet(`address/${address}/key/${key}`, GatewayComponentRequest.addressStorage, undefined, async (error) => {
+    return await this.gatewayGet(`address/${address}/key/${key}`, GatewayComponentRequest.addressStorage, undefined, async (error) => {
       if (error?.response?.data?.error?.includes('get value for key error')) {
         throw error;
       }
