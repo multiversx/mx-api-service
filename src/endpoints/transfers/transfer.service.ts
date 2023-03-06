@@ -59,6 +59,23 @@ export class TransferService {
       if (miniBlockHashes.length > 0) {
         const miniBlocks = await this.indexerService.getMiniBlocks(pagination, { hashes: miniBlockHashes });
 
+        const senderBlockHashes: string[] = [];
+        const receiverBlockHashes: string[] = [];
+
+        for (const elasticOperation of elasticOperations) {
+          if (elasticOperation.miniBlockHash) {
+            const miniBlock = miniBlocks.find((block) => block.miniBlockHash === elasticOperation.miniBlockHash);
+
+            if (miniBlock) {
+              senderBlockHashes.push(miniBlock.senderBlockHash);
+              receiverBlockHashes.push(miniBlock.receiverBlockHash);
+            }
+          }
+        }
+
+        const blockHashes = [...senderBlockHashes, ...receiverBlockHashes].filter((hash, index, hashes) => hashes.indexOf(hash) === index);
+        const blocks = await this.indexerService.getBlocks({ hashes: blockHashes }, pagination);
+
         for (let i = 0; i < elasticOperations.length; i++) {
           const elasticOperation = elasticOperations[i];
           const transaction = ApiUtils.mergeObjects(new Transaction(), elasticOperation);
@@ -70,6 +87,12 @@ export class TransferService {
             transaction.senderBlockHash = miniBlocks[i].senderBlockHash;
             transaction.receiverBlockHash = miniBlocks[i].receiverBlockHash;
           }
+
+          const senderBlockNonce = blocks.find((block) => block.hash === transaction.senderBlockHash)?.nonce;
+          const receiverBlockNonce = blocks.find((block) => block.hash === transaction.receiverBlockHash)?.nonce;
+
+          transaction.senderBlockNonce = senderBlockNonce;
+          transaction.receiverBlockNonce = receiverBlockNonce;
 
           if (transaction.type === TransactionType.SmartContractResult) {
             delete transaction.gasLimit;
