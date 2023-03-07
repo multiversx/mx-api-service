@@ -3769,7 +3769,7 @@ type Transaction {
   receiverBlockHash: String
 
   """Receiver Block nonce for the given transaction."""
-  receiverBlockNonce: String
+  receiverBlockNonce: Float
 
   """Receiver account shard for the given transaction."""
   receiverShard: String!
@@ -3793,7 +3793,7 @@ type Transaction {
   senderBlockHash: String
 
   """Sender Block nonce for the given transaction."""
-  senderBlockNonce: String
+  senderBlockNonce: Float
 
   """Sender account shard for the given transaction."""
   senderShard: Float!
@@ -3892,7 +3892,7 @@ type TransactionDetailed {
   receiverBlockHash: String
 
   """Receiver Block nonce for the given transaction."""
-  receiverBlockNonce: String
+  receiverBlockNonce: Float
 
   """Receiver account shard for the given transaction."""
   receiverShard: String!
@@ -3919,7 +3919,7 @@ type TransactionDetailed {
   senderBlockHash: String
 
   """Sender Block nonce for the given transaction."""
-  senderBlockNonce: String
+  senderBlockNonce: Float
 
   """Sender account shard for the given transaction."""
   senderShard: Float!
