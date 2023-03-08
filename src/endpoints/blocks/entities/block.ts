@@ -83,7 +83,7 @@ export class Block {
 
   @Field(() => String, { description: "Scheduled Root Hash for the given Block.", nullable: true })
   @ApiProperty({ type: String, nullable: true })
-  scheduledRootHash?: string = '';
+  scheduledRootHash: string | undefined = undefined;
 
   static mergeWithElasticResponse<T extends Block>(newBlock: T, blockRaw: any): T {
     blockRaw.shard = blockRaw.shardId;
