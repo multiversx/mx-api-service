@@ -164,12 +164,11 @@ export class TransactionService {
           }
         }
       }
-    }
 
-    if (queryOptions && (queryOptions.withScResults || queryOptions.withOperations || queryOptions.withLogs)) {
-      queryOptions.withScResultLogs = queryOptions.withLogs;
-
-      transactions = await this.getExtraDetailsForTransactions(elasticTransactions, transactions, queryOptions);
+      if (queryOptions && (queryOptions.withScResults || queryOptions.withOperations || queryOptions.withLogs)) {
+        queryOptions.withScResultLogs = queryOptions.withLogs;
+        transactions = await this.getExtraDetailsForTransactions(elasticTransactions, transactions, queryOptions);
+      }
     }
 
     await this.processTransactions(transactions, {
