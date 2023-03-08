@@ -3505,6 +3505,9 @@ type TokenDetailed {
   """Token circulating supply amount details."""
   circulatingSupply: String
 
+  """Token Collection if type is MetaESDT."""
+  collection: String
+
   """Token decimals."""
   decimals: Float!
 
@@ -3677,6 +3680,9 @@ type TokenWithBalanceAccountFlat {
 
   """Token circulating supply amount details."""
   circulatingSupply: String
+
+  """Token Collection if type is MetaESDT."""
+  collection: String
 
   """Token decimals."""
   decimals: Float!
