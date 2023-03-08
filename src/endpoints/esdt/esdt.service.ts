@@ -9,7 +9,7 @@ import { TokenRoles } from "../tokens/entities/token.roles";
 import { AssetsService } from "../../common/assets/assets.service";
 import { EsdtLockedAccount } from "./entities/esdt.locked.account";
 import { EsdtSupply } from "./entities/esdt.supply";
-import { BinaryUtils, Constants, CachingService, AddressUtils, OriginLogger } from "@multiversx/sdk-nestjs";
+import { BinaryUtils, Constants, CachingService, AddressUtils, OriginLogger, BatchUtils } from "@multiversx/sdk-nestjs";
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { EsdtType } from "./entities/esdt.type";
 import { ElasticIndexerService } from "src/common/indexer/elastic/elastic.indexer.service";
@@ -357,9 +357,12 @@ export class EsdtService {
       let total = 0;
       await this.indexerService.getAllAccountsWithToken(identifier, async items => {
         const distinctAccounts: string[] = items.map(x => x.address).distinct();
-        // if (distinctAccounts.length > 0) {
-        //   await this.cachingService.setAdd(key, ...distinctAccounts);
-        // }
+        if (distinctAccounts.length > 0) {
+          const chunks = BatchUtils.splitArrayIntoChunks(distinctAccounts, 100);
+          for (const chunk of chunks) {
+            await this.cachingService.setAdd(key, ...chunk);
+          }
+        }
 
         for (const account of distinctAccounts) {
           set.add(account);
@@ -370,8 +373,8 @@ export class EsdtService {
       this.logger.log(`TempTokenAccountLogging for identifiers ${identifiers.join(', ')}: Finished fetching all accounts from ES for identifier ${identifier}. Total fetched accounts: ${total}`);
     }
 
-    // const count = await this.cachingService.setCount(key);
-    const count = set.size;
+    const count = await this.cachingService.setCount(key);
+    // const count = set.size;
     this.logger.log(`TempTokenAccountLogging for identifiers ${identifiers.join(', ')}: All accounts count is ${count}`);
 
     await this.cachingService.deleteInCache(key);
