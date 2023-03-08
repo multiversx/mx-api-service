@@ -25,6 +25,7 @@ import { TokenService } from "src/endpoints/tokens/token.service";
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { NftService } from "src/endpoints/nfts/nft.service";
 import { AccountFilter } from "src/endpoints/accounts/entities/account.filter";
+import { TokenType } from "src/common/indexer/entities";
 
 @Injectable()
 export class CacheWarmerService {
@@ -286,6 +287,10 @@ export class CacheWarmerService {
     for (const key of Object.keys(allAssets)) {
       const collection = await this.indexerService.getCollection(key);
       if (!collection) {
+        continue;
+      }
+
+      if (![TokenType.NonFungibleESDT, TokenType.SemiFungibleESDT].includes(collection.type as TokenType)) {
         continue;
       }
 

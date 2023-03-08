@@ -645,6 +645,7 @@ export class AccountController {
   @ApiQuery({ name: 'withLogs', description: 'Return logs for transactions. When "withLogs" parameter is applied, complexity estimation is 200', required: false })
   @ApiQuery({ name: 'withScamInfo', description: 'Returns scam information', required: false, type: Boolean })
   @ApiQuery({ name: 'withUsername', description: 'Integrates username in assets for all addresses present in the transactions', required: false, type: Boolean })
+  @ApiQuery({ name: 'withBlockInfo', description: 'Returns sender / receiver block details', required: false, type: Boolean })
   @ApiQuery({ name: 'computeScamInfo', required: false, type: Boolean })
   @ApiQuery({ name: 'senderOrReceiver', description: 'One address that current address interacted with', required: false })
   async getAccountTransactions(
@@ -668,9 +669,10 @@ export class AccountController {
     @Query('withLogs', new ParseBoolPipe) withLogs?: boolean,
     @Query('withScamInfo', new ParseBoolPipe) withScamInfo?: boolean,
     @Query('withUsername', new ParseBoolPipe) withUsername?: boolean,
+    @Query('withBlockInfo', new ParseBoolPipe) withBlockInfo?: boolean,
     @Query('senderOrReceiver', ParseAddressPipe) senderOrReceiver?: string,
   ) {
-    const options = TransactionQueryOptions.applyDefaultOptions(size, { withScResults, withOperations, withLogs, withScamInfo, withUsername });
+    const options = TransactionQueryOptions.applyDefaultOptions(size, { withScResults, withOperations, withLogs, withScamInfo, withUsername, withBlockInfo });
 
     return await this.transactionService.getTransactions(new TransactionFilter({
       sender,
@@ -736,6 +738,7 @@ export class AccountController {
   @Get("/accounts/:address/transfers")
   @ApiOperation({ summary: 'Account value transfers', description: 'Returns both transfers triggerred by a user account (type = Transaction), as well as transfers triggerred by smart contracts (type = SmartContractResult), thus providing a full picture of all in/out value transfers for a given account' })
   @ApiOkResponse({ type: [Transaction] })
+  @ApplyComplexity({ target: TransactionDetailed })
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   @ApiQuery({ name: 'sender', description: 'Address of the transfer sender', required: false })
@@ -752,6 +755,7 @@ export class AccountController {
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
   @ApiQuery({ name: 'withScamInfo', description: 'Returns scam information', required: false, type: Boolean })
   @ApiQuery({ name: 'withUsername', description: 'Integrates username in assets for all addresses present in the transactions', required: false, type: Boolean })
+  @ApiQuery({ name: 'withBlockInfo', description: 'Returns sender / receiver block details', required: false, type: Boolean })
   @ApiQuery({ name: 'senderOrReceiver', description: 'One address that current address interacted with', required: false })
   async getAccountTransfers(
     @Param('address', ParseAddressPipe) address: string,
@@ -771,13 +775,14 @@ export class AccountController {
     @Query('order', new ParseEnumPipe(SortOrder)) order?: SortOrder,
     @Query('withScamInfo', new ParseBoolPipe) withScamInfo?: boolean,
     @Query('withUsername', new ParseBoolPipe) withUsername?: boolean,
+    @Query('withBlockInfo', new ParseBoolPipe) withBlockInfo?: boolean,
     @Query('senderOrReceiver', ParseAddressPipe) senderOrReceiver?: string,
   ): Promise<Transaction[]> {
     if (!this.apiConfigService.getIsIndexerV3FlagActive()) {
       throw new HttpException('Endpoint not live yet', HttpStatus.NOT_IMPLEMENTED);
     }
 
-    const options = TransactionQueryOptions.applyDefaultOptions(size, { withScamInfo, withUsername });
+    const options = TransactionQueryOptions.applyDefaultOptions(size, { withScamInfo, withUsername, withBlockInfo });
 
     return await this.transferService.getTransfers(new TransactionFilter({
       address,

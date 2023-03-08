@@ -5,6 +5,7 @@ import { QueryPagination } from "src/common/entities/query.pagination";
 import { SortOrder } from "src/common/entities/sort.order";
 import { BlockFilter } from "src/endpoints/blocks/entities/block.filter";
 import { CollectionFilter } from "src/endpoints/collections/entities/collection.filter";
+import { MiniBlockFilter } from "src/endpoints/miniblocks/entities/mini.block.filter";
 import { NftFilter } from "src/endpoints/nfts/entities/nft.filter";
 import { RoundFilter } from "src/endpoints/rounds/entities/round.filter";
 import { SmartContractResultFilter } from "src/endpoints/sc-results/entities/smart.contract.result.filter";
@@ -272,6 +273,17 @@ export class PostgresIndexerService implements IndexerInterface {
       .buildCollectionRolesFilter(filter, address)
       .skip(from).take(size)
       .orderBy('timestamp', 'DESC');
+
+    return await query.getMany();
+  }
+
+  async getMiniBlocks(pagination: QueryPagination, filter: MiniBlockFilter): Promise<any[]> {
+    let query = this.miniBlocksRepository.createQueryBuilder()
+      .skip(pagination.from).take(pagination.size);
+
+    if (filter.hashes) {
+      query = query.andWhere('mb_hash = :hash IN (:...hashes)', { hashes: filter.hashes });
+    }
 
     return await query.getMany();
   }

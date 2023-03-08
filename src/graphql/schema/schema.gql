@@ -3505,6 +3505,9 @@ type TokenDetailed {
   """Token circulating supply amount details."""
   circulatingSupply: String
 
+  """Token Collection if type is MetaESDT."""
+  collection: String
+
   """Token decimals."""
   decimals: Float!
 
@@ -3525,6 +3528,9 @@ type TokenDetailed {
 
   """Token name."""
   name: String!
+
+  """Token Nonce if type is MetaESDT."""
+  nonce: Float
 
   """Token owner address."""
   owner: String!
@@ -3678,6 +3684,9 @@ type TokenWithBalanceAccountFlat {
   """Token circulating supply amount details."""
   circulatingSupply: String
 
+  """Token Collection if type is MetaESDT."""
+  collection: String
+
   """Token decimals."""
   decimals: Float!
 
@@ -3698,6 +3707,9 @@ type TokenWithBalanceAccountFlat {
 
   """Token name."""
   name: String!
+
+  """Token Nonce if type is MetaESDT."""
+  nonce: Float
 
   """Current token price."""
   price: Float
@@ -3876,6 +3888,12 @@ type TransactionDetailed {
   """Receiver assets for the given transaction."""
   receiverAssets: AccountAssets
 
+  """Receiver Block hash for the given transaction."""
+  receiverBlockHash: String
+
+  """Receiver Block nonce for the given transaction."""
+  receiverBlockNonce: Float
+
   """Receiver account shard for the given transaction."""
   receiverShard: String!
 
@@ -3896,6 +3914,12 @@ type TransactionDetailed {
 
   """Sender assets for the given transaction."""
   senderAssets: AccountAssets
+
+  """Sender Block hash for the given transaction."""
+  senderBlockHash: String
+
+  """Sender Block nonce for the given transaction."""
+  senderBlockNonce: Float
 
   """Sender account shard for the given transaction."""
   senderShard: Float!

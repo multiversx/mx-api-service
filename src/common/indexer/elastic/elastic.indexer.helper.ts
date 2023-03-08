@@ -52,6 +52,12 @@ export class ElasticIndexerHelper {
       queries.push(validatorsQuery);
     }
 
+    if (filter.hashes !== undefined && filter.hashes.length > 0) {
+      const hashQueries = filter.hashes.map(hash => QueryType.Match('_id', hash));
+      const shouldQuery = QueryType.Should(hashQueries);
+      queries.push(shouldQuery);
+    }
+
     return queries;
   }
 

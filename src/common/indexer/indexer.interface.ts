@@ -2,6 +2,7 @@ import { AccountFilter } from "src/endpoints/accounts/entities/account.filter";
 import { AccountHistoryFilter } from "src/endpoints/accounts/entities/account.history.filter";
 import { BlockFilter } from "src/endpoints/blocks/entities/block.filter";
 import { CollectionFilter } from "src/endpoints/collections/entities/collection.filter";
+import { MiniBlockFilter } from "src/endpoints/miniblocks/entities/mini.block.filter";
 import { NftFilter } from "src/endpoints/nfts/entities/nft.filter";
 import { NftMedia } from "src/endpoints/nfts/entities/nft.media";
 import { RoundFilter } from "src/endpoints/rounds/entities/round.filter";
@@ -69,6 +70,8 @@ export interface IndexerInterface {
   getBlock(hash: string): Promise<Block>
 
   getMiniBlock(miniBlockHash: string): Promise<MiniBlock>
+
+  getMiniBlocks(pagination: QueryPagination, filter: MiniBlockFilter): Promise<MiniBlock[]>
 
   getTag(tag: string): Promise<Tag>
 
