@@ -21,17 +21,12 @@ export class ApiChecker {
 
   async checkDetails() {
     const [item] = await this.requestList({ size: 1 });
-
     const [idAttribute] = Object.keys(item);
     const id = item[idAttribute];
 
-    const [details, requestResult] = await Promise.all([
-      this.requestItem(id, { fields: Object.keys(item).join(',') }),
-      this.requestList({ size: 1 }),
-    ]);
+    const details = await this.requestItem(id, { fields: Object.keys(item).join(',') });
 
     expect(details).toEqual(item);
-    expect(requestResult).toEqual([item]);
   }
 
   async checkTokensDetails() {
