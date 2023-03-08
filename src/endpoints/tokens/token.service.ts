@@ -19,7 +19,7 @@ import { SortOrder } from "src/common/entities/sort.order";
 import { TokenSort } from "./entities/token.sort";
 import { TokenWithRoles } from "./entities/token.with.roles";
 import { TokenWithRolesFilter } from "./entities/token.with.roles.filter";
-import { AddressUtils, ApiUtils, CachingService, NumberUtils, TokenUtils } from "@multiversx/sdk-nestjs";
+import { AddressUtils, ApiUtils, BinaryUtils, CachingService, NumberUtils, TokenUtils } from "@multiversx/sdk-nestjs";
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { OriginLogger } from "@multiversx/sdk-nestjs";
 import { TokenLogo } from "./entities/token.logo";
@@ -216,6 +216,7 @@ export class TokenService {
     for (const token of tokens) {
       if (token.type === TokenType.MetaESDT) {
         token.collection = token.identifier.split('-').slice(0, 2).join('-');
+        token.nonce = BinaryUtils.hexToNumber(token.identifier.split('-').slice(2, 3)[0]);
       }
 
     }
