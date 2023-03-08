@@ -1,9 +1,10 @@
-import { ParseBlockHashPipe, ParseEnumPipe, ParseIntPipe, ParseArrayPipe, ParseAddressArrayPipe, ParseBoolPipe } from "@multiversx/sdk-nestjs";
+import { ParseBlockHashPipe, ParseEnumPipe, ParseIntPipe, ParseArrayPipe, ParseAddressArrayPipe, ParseBoolPipe, ApplyComplexity } from "@multiversx/sdk-nestjs";
 import { Controller, DefaultValuePipe, Get, Query } from "@nestjs/common";
 import { ApiExcludeEndpoint, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { SortOrder } from "src/common/entities/sort.order";
 import { Transaction } from "../transactions/entities/transaction";
+import { TransactionDetailed } from "../transactions/entities/transaction.detailed";
 import { TransactionFilter } from "../transactions/entities/transaction.filter";
 import { TransactionStatus } from "../transactions/entities/transaction.status";
 import { TransactionQueryOptions } from "../transactions/entities/transactions.query.options";
@@ -18,6 +19,7 @@ export class TransferController {
 
   @Get("/transfers")
   @ApiOperation({ summary: 'Value transfers', description: 'Returns both transfers triggerred by a user account (type = Transaction), as well as transfers triggerred by smart contracts (type = SmartContractResult), thus providing a full picture of all in/out value transfers for a given account' })
+  @ApplyComplexity({ target: TransactionDetailed })
   @ApiOkResponse({ type: [Transaction] })
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })

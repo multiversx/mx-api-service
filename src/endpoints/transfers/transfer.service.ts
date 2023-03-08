@@ -7,6 +7,7 @@ import { TransactionService } from "../transactions/transaction.service";
 import { ApiUtils } from "@multiversx/sdk-nestjs";
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { TransactionQueryOptions } from "../transactions/entities/transactions.query.options";
+import { TransactionDetailed } from "../transactions/entities/transaction.detailed";
 
 @Injectable()
 export class TransferService {
@@ -78,7 +79,7 @@ export class TransferService {
 
         for (let i = 0; i < elasticOperations.length; i++) {
           const elasticOperation = elasticOperations[i];
-          const transaction = ApiUtils.mergeObjects(new Transaction(), elasticOperation);
+          const transaction = ApiUtils.mergeObjects(new TransactionDetailed(), elasticOperation);
           transaction.type = elasticOperation.type === 'normal' ? TransactionType.Transaction : TransactionType.SmartContractResult;
 
           const miniBlockHash = elasticOperation.miniBlockHash;

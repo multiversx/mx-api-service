@@ -3,7 +3,6 @@ import { BadRequestException } from "@nestjs/common";
 export class TransactionQueryOptions {
   private static readonly SCAM_INFO_MAX_SIZE: number = 50;
   private static readonly USERNAME_MAX_SIZE: number = 50;
-  private static readonly BLOCK_INFO: number = 50;
 
   constructor(init?: Partial<TransactionQueryOptions>) {
     Object.assign(this, init);
@@ -24,10 +23,6 @@ export class TransactionQueryOptions {
 
     if (options.withUsername === true && size > TransactionQueryOptions.USERNAME_MAX_SIZE) {
       throw new BadRequestException(`'withUsername' flag can only be activated for a maximum size of ${TransactionQueryOptions.USERNAME_MAX_SIZE}`);
-    }
-
-    if (options.withBlockInfo === true && size > TransactionQueryOptions.BLOCK_INFO) {
-      throw new BadRequestException(`'withBlockInfo' flag can only be activated for a maximum size of ${TransactionQueryOptions.BLOCK_INFO}`);
     }
 
     return options;
