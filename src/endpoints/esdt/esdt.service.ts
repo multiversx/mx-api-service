@@ -13,6 +13,7 @@ import { BinaryUtils, Constants, CachingService, AddressUtils, OriginLogger, Bat
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { EsdtType } from "./entities/esdt.type";
 import { ElasticIndexerService } from "src/common/indexer/elastic/elastic.indexer.service";
+import { randomUUID } from "crypto";
 
 @Injectable()
 export class EsdtService {
@@ -346,7 +347,7 @@ export class EsdtService {
   }
 
   async countAllAccounts(identifiers: string[]): Promise<number> {
-    const key = `tokens:${identifiers[0]}:distinctAccounts`;
+    const key = `tokens:${identifiers[0]}:distinctAccounts:${randomUUID()}`;
 
     try {
       for (const identifier of identifiers) {
