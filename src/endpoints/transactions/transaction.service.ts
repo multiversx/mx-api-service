@@ -151,6 +151,19 @@ export class TransactionService {
       transactions = await this.processBlockInfoInTransactions(elasticTransactions, pagination);
     } else {
       transactions = elasticTransactions.map(x => ApiUtils.mergeObjects(new Transaction(), x));
+
+      if (filter.hashes) {
+        const txHashes: string[] = filter.hashes;
+        const elasticHashes = elasticTransactions.map(({ txHash }: any) => txHash);
+        const missingHashes: string[] = txHashes.except(elasticHashes);
+
+        const gatewayTransactions = await Promise.all(missingHashes.map((txHash) => this.transactionGetService.tryGetTransactionFromGatewayForList(txHash)));
+        for (const gatewayTransaction of gatewayTransactions) {
+          if (gatewayTransaction) {
+            transactions.push(gatewayTransaction);
+          }
+        }
+      }
     }
 
     if (queryOptions && (queryOptions.withScResults || queryOptions.withOperations || queryOptions.withLogs)) {
