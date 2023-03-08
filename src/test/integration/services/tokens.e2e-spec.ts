@@ -640,8 +640,10 @@ describe('Token Service', () => {
       for (const result of results) {
         if (result.type === 'MetaESDT') {
           expect(result.collection).toBeDefined();
+          expect(result.nonce).toBeDefined();
         } else {
           expect(result.collection).not.toBeDefined();
+          expect(result.nonce).not.toBeDefined();
         }
       }
     });
