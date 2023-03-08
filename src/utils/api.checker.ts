@@ -12,11 +12,13 @@ export class ApiChecker {
   async checkPagination() {
     const items = await this.requestList({ size: 100 });
 
-    await this.checkPaginationInternal(items, 0, 1);
-    await this.checkPaginationInternal(items, 1, 5);
-    await this.checkPaginationInternal(items, 5, 5);
-    await this.checkPaginationInternal(items, 5, 10);
-    await this.checkPaginationInternal(items, 10, 20);
+    await Promise.all([
+      this.checkPaginationInternal(items, 0, 1),
+      this.checkPaginationInternal(items, 1, 5),
+      this.checkPaginationInternal(items, 5, 5),
+      this.checkPaginationInternal(items, 5, 10),
+      this.checkPaginationInternal(items, 10, 20),
+    ]);
   }
 
   async checkDetails() {
@@ -45,33 +47,38 @@ export class ApiChecker {
   }
 
   async checkAlternativeCount(fields: Record<string, any>) {
-    const count = await this.requestCount(fields);
-    const alternativeCount = await this.requestAlternativeCount(fields);
-
     try {
+      const [count, alternativeCount] = await Promise.all([
+        this.requestCount(fields),
+        this.requestAlternativeCount(fields),
+      ]);
+
       expect(count).toStrictEqual(alternativeCount);
     } catch (error) {
-      throw new Error(`Count value ${count} for '/count' is not equal with count value ${alternativeCount} of '/c' endpoint`);
+      throw new Error(`Count values are not equal`);
     }
   }
 
   async checkFilter(criterias: string[]) {
-    for (const criteria of criterias) {
-      await this.checkFilterInternal(criteria);
-    }
+    const promises = criterias.map((criteria) => {
+      return this.checkFilterInternal(criteria);
+    });
+
+    await Promise.all(promises);
   }
 
   async checkFilterInternal(criteria: string) {
     const items = await this.requestList({ size: 100, fields: criteria });
 
     const distinctCriteria = items.map(x => x[criteria]).distinct();
-
     const shuffled = distinctCriteria.sort(() => 0.5 - Math.random());
     const selected = shuffled.slice(0, 10);
 
-    for (const value of selected) {
-      await this.checkFilterValueInternal(criteria, value);
-    }
+    const promises = selected.map((value) => {
+      return this.checkFilterValueInternal(criteria, value);
+    });
+
+    await Promise.all(promises);
   }
 
   async checkStatus() {
