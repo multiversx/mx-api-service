@@ -22,6 +22,10 @@ export class Token {
   @ApiProperty({ type: String, nullable: true })
   collection: string | undefined = undefined;
 
+  @Field(() => Number, { description: "Token Nonce if type is MetaESDT.", nullable: true })
+  @ApiProperty({ type: Number, nullable: true })
+  nonce: number | undefined = undefined;
+
   @Field(() => String, { description: "Token name." })
   @ApiProperty({ type: String })
   name: string = '';

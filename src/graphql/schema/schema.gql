@@ -3529,6 +3529,9 @@ type TokenDetailed {
   """Token name."""
   name: String!
 
+  """Token Nonce if type is MetaESDT."""
+  nonce: Float
+
   """Token owner address."""
   owner: String!
 
@@ -3704,6 +3707,9 @@ type TokenWithBalanceAccountFlat {
 
   """Token name."""
   name: String!
+
+  """Token Nonce if type is MetaESDT."""
+  nonce: Float
 
   """Current token price."""
   price: Float
