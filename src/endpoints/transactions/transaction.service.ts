@@ -145,68 +145,12 @@ export class TransactionService {
   async getTransactions(filter: TransactionFilter, pagination: QueryPagination, queryOptions?: TransactionQueryOptions, address?: string): Promise<Transaction[]> {
     const elasticTransactions = await this.indexerService.getTransactions(filter, pagination, address);
 
-    let transactions = elasticTransactions.map(x => ApiUtils.mergeObjects(new Transaction(), x));
-
-    if (filter.hashes) {
-      const txHashes: string[] = filter.hashes;
-      const elasticHashes = elasticTransactions.map(({ txHash }: any) => txHash);
-      const missingHashes: string[] = txHashes.except(elasticHashes);
-
-      const gatewayTransactions = await Promise.all(missingHashes.map((txHash) => this.transactionGetService.tryGetTransactionFromGatewayForList(txHash)));
-      for (const gatewayTransaction of gatewayTransactions) {
-        if (gatewayTransaction) {
-          transactions.push(gatewayTransaction);
-        }
-      }
-    }
+    let transactions: Transaction[] | TransactionDetailed[] = [];
 
     if (queryOptions && queryOptions.withBlockInfo) {
-      const miniBlockHashes: string[] = [];
-
-      for (const elasticTransaction of elasticTransactions) {
-        if (elasticTransaction.miniBlockHash) {
-          miniBlockHashes.push(elasticTransaction.miniBlockHash);
-        }
-      }
-
-      if (miniBlockHashes.length > 0) {
-        const miniBlocks = await this.indexerService.getMiniBlocks(pagination, { hashes: miniBlockHashes });
-        const senderBlockHashes: string[] = [];
-        const receiverBlockHashes: string[] = [];
-
-        for (const elasticTransaction of elasticTransactions) {
-          if (elasticTransaction.miniBlockHash) {
-            const miniBlock = miniBlocks.find((block) => block.miniBlockHash === elasticTransaction.miniBlockHash);
-
-            if (miniBlock) {
-              senderBlockHashes.push(miniBlock.senderBlockHash);
-              receiverBlockHashes.push(miniBlock.receiverBlockHash);
-            }
-          }
-        }
-
-        const blockHashes = [...senderBlockHashes, ...receiverBlockHashes].filter((hash, index, hashes) => hashes.indexOf(hash) === index);
-        const blocks = await this.indexerService.getBlocks({ hashes: blockHashes }, pagination);
-
-        for (let i = 0; i < elasticTransactions.length; i++) {
-          const elasticOperation = elasticTransactions[i];
-          const transaction = ApiUtils.mergeObjects(new TransactionDetailed(), elasticOperation);
-          const miniBlockHash = elasticOperation.miniBlockHash;
-
-          if (miniBlockHash && miniBlocks[i]) {
-            transaction.senderBlockHash = miniBlocks[i].senderBlockHash;
-            transaction.receiverBlockHash = miniBlocks[i].receiverBlockHash;
-          }
-
-          const senderBlockNonce = blocks.find((block) => block.hash === transaction.senderBlockHash)?.nonce;
-          const receiverBlockNonce = blocks.find((block) => block.hash === transaction.receiverBlockHash)?.nonce;
-
-          transaction.senderBlockNonce = senderBlockNonce;
-          transaction.receiverBlockNonce = receiverBlockNonce;
-
-          transactions.push(transaction);
-        }
-      }
+      transactions = await this.processBlockInfoInTransactions(elasticTransactions, pagination);
+    } else {
+      transactions = elasticTransactions.map(x => ApiUtils.mergeObjects(new Transaction(), x));
     }
 
     if (queryOptions && (queryOptions.withScResults || queryOptions.withOperations || queryOptions.withLogs)) {
@@ -540,5 +484,58 @@ export class TransactionService {
     }
 
     return logs;
+  }
+
+  private async processBlockInfoInTransactions(elasticTransactions: any[], pagination: QueryPagination): Promise<TransactionDetailed[]> {
+    const miniBlockHashes: string[] = [];
+
+    for (const elasticTransaction of elasticTransactions) {
+      if (elasticTransaction.miniBlockHash) {
+        miniBlockHashes.push(elasticTransaction.miniBlockHash);
+      }
+    }
+
+    const transactions: TransactionDetailed[] = [];
+
+    if (miniBlockHashes.length > 0) {
+      const miniBlocks = await this.indexerService.getMiniBlocks(pagination, { hashes: miniBlockHashes });
+      const senderBlockHashes: string[] = [];
+      const receiverBlockHashes: string[] = [];
+
+      for (const elasticTransaction of elasticTransactions) {
+        if (elasticTransaction.miniBlockHash) {
+          const miniBlock = miniBlocks.find((block) => block.miniBlockHash === elasticTransaction.miniBlockHash);
+
+          if (miniBlock) {
+            senderBlockHashes.push(miniBlock.senderBlockHash);
+            receiverBlockHashes.push(miniBlock.receiverBlockHash);
+          }
+        }
+      }
+
+      const blockHashes = [...senderBlockHashes, ...receiverBlockHashes].filter((hash, index, hashes) => hashes.indexOf(hash) === index);
+      const blocks = await this.indexerService.getBlocks({ hashes: blockHashes }, pagination);
+
+      for (let i = 0; i < elasticTransactions.length; i++) {
+        const elasticOperation = elasticTransactions[i];
+        const transaction = ApiUtils.mergeObjects(new TransactionDetailed(), elasticOperation);
+        const miniBlockHash = elasticOperation.miniBlockHash;
+
+        if (miniBlockHash && miniBlocks[i]) {
+          transaction.senderBlockHash = miniBlocks[i].senderBlockHash;
+          transaction.receiverBlockHash = miniBlocks[i].receiverBlockHash;
+        }
+
+        const senderBlockNonce = blocks.find((block) => block.hash === transaction.senderBlockHash)?.nonce;
+        const receiverBlockNonce = blocks.find((block) => block.hash === transaction.receiverBlockHash)?.nonce;
+
+        transaction.senderBlockNonce = senderBlockNonce;
+        transaction.receiverBlockNonce = receiverBlockNonce;
+
+        transactions.push(transaction);
+      }
+    }
+
+    return transactions;
   }
 }
