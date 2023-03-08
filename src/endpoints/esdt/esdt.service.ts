@@ -358,7 +358,7 @@ export class EsdtService {
       await this.indexerService.getAllAccountsWithToken(identifier, async items => {
         const distinctAccounts: string[] = items.map(x => x.address).distinct();
         if (distinctAccounts.length > 0) {
-          const chunks = BatchUtils.splitArrayIntoChunks(distinctAccounts, 1000);
+          const chunks = BatchUtils.splitArrayIntoChunks(distinctAccounts, 100);
           for (const chunk of chunks) {
             await this.cachingService.setAdd(key, ...chunk);
           }
