@@ -348,38 +348,23 @@ export class EsdtService {
   async countAllAccounts(identifiers: string[]): Promise<number> {
     const key = `tokens:${identifiers[0]}:distinctAccounts`;
 
-    this.logger.log(`TempTokenAccountLogging for identifiers ${identifiers.join(', ')}: Counting all accounts`);
-
-    const set = new Set<string>();
-
-    for (const identifier of identifiers) {
-      this.logger.log(`TempTokenAccountLogging for identifiers ${identifiers.join(', ')}: Started fetching all accounts from ES for identifier ${identifier}`);
-      let total = 0;
-      await this.indexerService.getAllAccountsWithToken(identifier, async items => {
-        const distinctAccounts: string[] = items.map(x => x.address).distinct();
-        if (distinctAccounts.length > 0) {
-          const chunks = BatchUtils.splitArrayIntoChunks(distinctAccounts, 100);
-          for (const chunk of chunks) {
-            await this.cachingService.setAdd(key, ...chunk);
+    try {
+      for (const identifier of identifiers) {
+        await this.indexerService.getAllAccountsWithToken(identifier, async items => {
+          const distinctAccounts: string[] = items.map(x => x.address).distinct();
+          if (distinctAccounts.length > 0) {
+            const chunks = BatchUtils.splitArrayIntoChunks(distinctAccounts, 100);
+            for (const chunk of chunks) {
+              await this.cachingService.setAdd(key, ...chunk);
+            }
           }
-        }
+        });
+      }
 
-        for (const account of distinctAccounts) {
-          set.add(account);
-        }
-
-        total += items.length;
-      });
-      this.logger.log(`TempTokenAccountLogging for identifiers ${identifiers.join(', ')}: Finished fetching all accounts from ES for identifier ${identifier}. Total fetched accounts: ${total}`);
+      return await this.cachingService.setCount(key);
+    } finally {
+      await this.cachingService.deleteInCache(key);
     }
-
-    const count = await this.cachingService.setCount(key);
-    // const count = set.size;
-    this.logger.log(`TempTokenAccountLogging for identifiers ${identifiers.join(', ')}: All accounts count is ${count}`);
-
-    await this.cachingService.deleteInCache(key);
-
-    return count;
   }
 
   async getAccountEsdtByAddressesAndIdentifier(identifier: string, addresses: string[]): Promise<any[]> {
