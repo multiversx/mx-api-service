@@ -25,9 +25,13 @@ export class ApiChecker {
     const [idAttribute] = Object.keys(item);
     const id = item[idAttribute];
 
-    const details = await this.requestItem(id, { fields: Object.keys(item).join(',') });
+    const [details, requestResult] = await Promise.all([
+      this.requestItem(id, { fields: Object.keys(item).join(',') }),
+      this.requestList({ size: 1 }),
+    ]);
 
     expect(details).toEqual(item);
+    expect(requestResult).toEqual([item]);
   }
 
   async checkTokensDetails() {
