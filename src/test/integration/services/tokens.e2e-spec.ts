@@ -628,6 +628,23 @@ describe('Token Service', () => {
 
       expect(results).toEqual([]);
     });
+
+    it("should return an array of tokens for a specific account that includes MetaESDT and verify if collection field is defined only for MetaESDTs", async () => {
+      const address: string = "erd1ut8kxtrkx8llshtcvsr42yu4ajgqrttvlg9ejacjn7xgs5g7werqwj8jxn";
+
+      const filter: TokenFilter = new TokenFilter();
+      filter.includeMetaESDT = true;
+
+      const results = await tokenService.getTokensForAddress(address, new QueryPagination({ size: 50 }), filter);
+
+      for (const result of results) {
+        if (result.type === 'MetaESDT') {
+          expect(result.collection).toBeDefined();
+        } else {
+          expect(result.collection).not.toBeDefined();
+        }
+      }
+    });
   });
 
   describe("getTokensForAddressFromElastic", () => {

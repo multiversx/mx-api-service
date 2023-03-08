@@ -206,11 +206,21 @@ export class TokenService {
   }
 
   async getTokensForAddress(address: string, queryPagination: QueryPagination, filter: TokenFilter): Promise<TokenWithBalance[]> {
+    let tokens: TokenWithBalance[];
     if (AddressUtils.isSmartContractAddress(address)) {
-      return await this.getTokensForAddressFromElastic(address, queryPagination, filter);
+      tokens = await this.getTokensForAddressFromElastic(address, queryPagination, filter);
+    } else {
+      tokens = await this.getTokensForAddressFromGateway(address, queryPagination, filter);
     }
 
-    return await this.getTokensForAddressFromGateway(address, queryPagination, filter);
+    for (const token of tokens) {
+      if (token.type === TokenType.MetaESDT) {
+        token.collection = token.identifier.split('-').slice(0, 2).join('-');
+      }
+
+    }
+
+    return tokens;
   }
 
   async getTokensForAddressFromElastic(address: string, queryPagination: QueryPagination, filter: TokenFilter): Promise<TokenWithBalance[]> {
