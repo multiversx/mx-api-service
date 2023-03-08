@@ -9,10 +9,11 @@ import { TokenRoles } from "../tokens/entities/token.roles";
 import { AssetsService } from "../../common/assets/assets.service";
 import { EsdtLockedAccount } from "./entities/esdt.locked.account";
 import { EsdtSupply } from "./entities/esdt.supply";
-import { BinaryUtils, Constants, CachingService, AddressUtils, OriginLogger } from "@multiversx/sdk-nestjs";
+import { BinaryUtils, Constants, CachingService, AddressUtils, OriginLogger, BatchUtils } from "@multiversx/sdk-nestjs";
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { EsdtType } from "./entities/esdt.type";
 import { ElasticIndexerService } from "src/common/indexer/elastic/elastic.indexer.service";
+import { randomUUID } from "crypto";
 
 @Injectable()
 export class EsdtService {
@@ -346,22 +347,25 @@ export class EsdtService {
   }
 
   async countAllAccounts(identifiers: string[]): Promise<number> {
-    const key = `tokens:${identifiers[0]}:distinctAccounts`;
+    const key = `tokens:${identifiers[0]}:distinctAccounts:${randomUUID()}`;
 
-    for (const identifier of identifiers) {
-      await this.indexerService.getAllAccountsWithToken(identifier, async items => {
-        const distinctAccounts: string[] = items.map(x => x.address).distinct();
-        if (distinctAccounts.length > 0) {
-          await this.cachingService.setAdd(key, ...distinctAccounts);
-        }
-      });
+    try {
+      for (const identifier of identifiers) {
+        await this.indexerService.getAllAccountsWithToken(identifier, async items => {
+          const distinctAccounts: string[] = items.map(x => x.address).distinct();
+          if (distinctAccounts.length > 0) {
+            const chunks = BatchUtils.splitArrayIntoChunks(distinctAccounts, 100);
+            for (const chunk of chunks) {
+              await this.cachingService.setAdd(key, ...chunk);
+            }
+          }
+        });
+      }
+
+      return await this.cachingService.setCount(key);
+    } finally {
+      await this.cachingService.deleteInCache(key);
     }
-
-    const count = await this.cachingService.setCount(key);
-
-    await this.cachingService.deleteInCache(key);
-
-    return count;
   }
 
   async getAccountEsdtByAddressesAndIdentifier(identifier: string, addresses: string[]): Promise<any[]> {
