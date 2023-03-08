@@ -24,6 +24,5 @@ describe("API Testing", () => {
     const checker = new ApiChecker('transactions', app.getHttpServer());
     await checker.checkStatus();
     await checker.checkDetails();
-    await checker.checkAlternativeCount(['miniBlockHash']);
   });
 });

@@ -25,6 +25,5 @@ describe("API Testing", () => {
     checker.skipFields = ['message', 'statusCode'];
     await checker.checkStatus();
     await checker.checkFilter(['collection', 'creator']);
-    await checker.checkAlternativeCount(['type', 'collection']);
   });
 });

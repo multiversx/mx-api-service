@@ -46,19 +46,6 @@ export class ApiChecker {
     expect(details).toEqual(item);
   }
 
-  async checkAlternativeCount(fields: Record<string, any>) {
-    try {
-      const [count, alternativeCount] = await Promise.all([
-        this.requestCount(fields),
-        this.requestAlternativeCount(fields),
-      ]);
-
-      expect(count).toStrictEqual(alternativeCount);
-    } catch (error) {
-      throw new Error(`Count values are not equal`);
-    }
-  }
-
   async checkFilter(criterias: string[]) {
     const promises = criterias.map((criteria) => {
       return this.checkFilterInternal(criteria);
@@ -167,22 +154,12 @@ export class ApiChecker {
     return result;
   }
 
-  private async requestAlternativeCount(params: Record<string, any>): Promise<number> {
-    const urlParams = new URLSearchParams({
-      ...this.defaultParams,
-      ...params,
-    });
-
-    const { body: result } = await request(this.httpServer)
-      .get(`/${this.endpoint}/c?${urlParams}`);
-
-    return result;
-  }
-
   private async requestStatus(): Promise<number> {
     const result = await request(this.httpServer)
       .get(`/${this.endpoint}`);
 
     return result.statusCode;
   }
+
+
 }

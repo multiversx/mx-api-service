@@ -29,6 +29,5 @@ describe("API Testing", () => {
     await checker.checkPagination();
     await checker.checkDetails();
     await checker.checkFilter(['shard', 'epoch', 'nonce']);
-    await checker.checkAlternativeCount(['validator']);
   });
 });

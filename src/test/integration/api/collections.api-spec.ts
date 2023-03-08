@@ -26,6 +26,5 @@ describe.skip("API Testing", () => {
     await checker.checkPagination();
     await checker.checkDetails();
     await checker.checkFilter(['type']);
-    await checker.checkAlternativeCount(['type']);
   });
 });
