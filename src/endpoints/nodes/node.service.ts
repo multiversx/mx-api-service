@@ -94,7 +94,7 @@ export class NodeService {
     }, 0);
 
     Object.keys(data).forEach((key) => {
-      data[key] = parseFloat((data[key] / sum).toFixed(2));
+      data[key] = parseFloat((data[key] / sum).toFixed(4));
     });
 
     const numbers: number[] = Object.values(data);
@@ -103,7 +103,7 @@ export class NodeService {
 
     for (const key of Object.keys(data)) {
       if (data[key] === largestNumber) {
-        data[key] = parseFloat((largestNumber + 1 - totalSum).toFixed(2));
+        data[key] = parseFloat((largestNumber + 1 - totalSum).toFixed(4));
         break;
       }
     }

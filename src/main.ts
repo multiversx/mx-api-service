@@ -25,7 +25,7 @@ import {
   RedisIoAdapter,
 } from './common/websockets/redis-io-adapter';
 import { ApiConfigModule } from './common/api-config/api.config.module';
-import { CachingService, LoggerInitializer, LoggingInterceptor, MetricsService, CachingInterceptor, LogRequestsInterceptor, FieldsInterceptor, ExtractInterceptor, CleanupInterceptor, PaginationInterceptor, QueryCheckInterceptor, ComplexityInterceptor, OriginInterceptor, RequestCpuTimeInterceptor, GuestCachingInterceptor, GuestCachingService } from '@multiversx/sdk-nestjs';
+import { CachingService, LoggerInitializer, LoggingInterceptor, MetricsService, CachingInterceptor, LogRequestsInterceptor, FieldsInterceptor, ExtractInterceptor, CleanupInterceptor, PaginationInterceptor, QueryCheckInterceptor, ComplexityInterceptor, OriginInterceptor, RequestCpuTimeInterceptor, GuestCachingInterceptor, GuestCachingService, JwtOrNativeAuthGuard } from '@multiversx/sdk-nestjs';
 import { ErdnestConfigServiceImpl } from './common/api-config/erdnest.config.service.impl';
 import { RabbitMqModule } from './common/rabbitmq/rabbitmq.module';
 import { TransactionLoggingInterceptor } from './interceptors/transaction.logging.interceptor';
@@ -34,7 +34,6 @@ import { GraphqlComplexityInterceptor } from './graphql/interceptors/graphql.com
 import { GraphQLMetricsInterceptor } from './graphql/interceptors/graphql.metrics.interceptor';
 import { SettingsService } from './common/settings/settings.service';
 import { StatusCheckerModule } from './crons/status.checker/status.checker.module';
-import { JwtOrNativeAuthGuard } from './utils/jwt.or.native.auth.guard';
 
 async function bootstrap() {
   const apiConfigApp = await NestFactory.create(ApiConfigModule);
@@ -150,8 +149,11 @@ async function bootstrap() {
   logger.log(`Cache warmer active: ${apiConfigService.getIsCacheWarmerCronActive()}`);
   logger.log(`Queue worker active: ${apiConfigService.getIsQueueWorkerCronActive()}`);
   logger.log(`Elastic updater active: ${apiConfigService.getIsElasticUpdaterCronActive()}`);
-  logger.log(`Events notifier active: ${apiConfigService.isEventsNotifierFeatureActive()}`);
   logger.log(`Live events websocket service active: ${apiConfigService.isLiveWebsocketEventsFeatureEnabled()}`);
+  logger.log(`Events notifier feature active: ${apiConfigService.isEventsNotifierFeatureActive()}`);
+  logger.log(`Exchange feature active: ${apiConfigService.isExchangeEnabled()}`);
+  logger.log(`Marketplace feature active: ${apiConfigService.isMarketplaceFeatureEnabled()}`);
+  logger.log(`Auth active: ${apiConfigService.getIsAuthActive()}`);
 
   logger.log(`Use tracing: ${apiConfigService.getUseTracingFlag()}`);
   logger.log(`Process NFTs flag: ${apiConfigService.getIsProcessNftsFlagActive()}`);
@@ -228,8 +230,6 @@ async function configurePublicApp(publicApp: NestExpressApplication, apiConfigSe
     globalInterceptors.push(new LogRequestsInterceptor(httpAdapterHostService));
   }
 
-  // @ts-ignore
-  globalInterceptors.push(new FieldsInterceptor());
   // @ts-ignore
   globalInterceptors.push(new ExtractInterceptor());
   // @ts-ignore

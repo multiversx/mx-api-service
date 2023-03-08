@@ -1,4 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
+import { AuctionStatus } from "./auction.status";
 import { Bids } from "./bids";
 
 export class Auctions {
@@ -7,19 +8,31 @@ export class Auctions {
   }
 
   @ApiProperty({ type: String })
+  owner: string = '';
+
+  @ApiProperty({ type: Number })
+  auctionId?: number = 0;
+
+  @ApiProperty({ type: String })
   identifier: string = '';
 
   @ApiProperty({ type: String })
   collection: string = '';
 
-  @ApiProperty({ type: Number })
-  nonce: number = 0;
+  @ApiProperty({ enum: AuctionStatus })
+  status: AuctionStatus = AuctionStatus.unknown;
 
   @ApiProperty({ type: String })
-  id: string = '';
+  auctionType?: string = '';
 
   @ApiProperty({ type: Number })
-  marketPlaceId: number = 0;
+  createdAt: number = 0;
+
+  @ApiProperty({ type: Number })
+  endsAt?: number = 0;
+
+  @ApiProperty({ type: Number })
+  marketplaceAuctionId: number = 0;
 
   @ApiProperty({ type: String })
   marketplace: string = '';
@@ -29,10 +42,4 @@ export class Auctions {
 
   @ApiProperty({ type: Bids })
   maxBid: Bids = new Bids();
-
-  @ApiProperty({ type: Number })
-  timestamp: number = 0;
-
-  @ApiProperty({ type: String })
-  ownerAddress: string = '';
 }

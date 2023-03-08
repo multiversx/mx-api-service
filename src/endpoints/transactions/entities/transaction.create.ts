@@ -37,4 +37,10 @@ export class TransactionCreate {
 
   @ApiProperty()
   options?: number = undefined;
+
+  @ApiProperty()
+  guardian?: string = undefined;
+
+  @ApiProperty()
+  guardianSignature?: string = undefined;
 }

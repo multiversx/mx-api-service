@@ -69,7 +69,7 @@ import { AuthModule } from "src/common/auth/auth.module";
     TransferModule,
     TransactionActionModule,
     WebsocketModule,
-    MexModule,
+    MexModule.forRoot(),
     ProcessNftsModule,
     NftMarketplaceModule,
     TransactionsBatchModule,

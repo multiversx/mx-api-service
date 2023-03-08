@@ -1,3 +1,5 @@
+import { AccountFilter } from "src/endpoints/accounts/entities/account.filter";
+import { AccountHistoryFilter } from "src/endpoints/accounts/entities/account.history.filter";
 import { BlockFilter } from "src/endpoints/blocks/entities/block.filter";
 import { CollectionFilter } from "src/endpoints/collections/entities/collection.filter";
 import { NftFilter } from "src/endpoints/nfts/entities/nft.filter";
@@ -12,7 +14,7 @@ import { QueryPagination } from "../entities/query.pagination";
 import { Account, AccountHistory, AccountTokenHistory, Block, Collection, MiniBlock, Operation, Round, ScDeploy, ScResult, Tag, Token, TokenAccount, Transaction, TransactionLog, TransactionReceipt } from "./entities";
 
 export interface IndexerInterface {
-  getAccountsCount(): Promise<number>
+  getAccountsCount(filter: AccountFilter): Promise<number>
 
   getScResultsCount(): Promise<number>
 
@@ -92,13 +94,15 @@ export interface IndexerInterface {
 
   getAccountScResults(address: string, pagination: QueryPagination): Promise<ScResult[]>
 
-  getAccounts(queryPagination: QueryPagination): Promise<Account[]>
+  getAccount(address: string): Promise<Account>
+
+  getAccounts(queryPagination: QueryPagination, filter: AccountFilter): Promise<Account[]>
 
   getAccountContracts(pagination: QueryPagination, address: string): Promise<ScDeploy[]>
 
-  getAccountHistory(address: string, pagination: QueryPagination): Promise<AccountHistory[]>
+  getAccountHistory(address: string, pagination: QueryPagination, filter: AccountHistoryFilter): Promise<AccountHistory[]>
 
-  getAccountTokenHistory(address: string, tokenIdentifier: string, pagination: QueryPagination): Promise<AccountTokenHistory[]>
+  getAccountTokenHistory(address: string, tokenIdentifier: string, pagination: QueryPagination, filter: AccountHistoryFilter): Promise<AccountTokenHistory[]>
 
   getTransactions(filter: TransactionFilter, pagination: QueryPagination, address?: string): Promise<Transaction[]>
 

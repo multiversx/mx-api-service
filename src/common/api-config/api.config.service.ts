@@ -1,3 +1,4 @@
+import { Constants } from '@multiversx/sdk-nestjs';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { DatabaseConnectionOptions } from '../persistence/entities/connection.options';
@@ -447,7 +448,7 @@ export class ApiConfigService {
   }
 
   getIsAuthActive(): boolean {
-    return this.configService.get<boolean>('api.auth') ?? false;
+    return this.configService.get<boolean>('features.auth.enabled') ?? this.configService.get<boolean>('api.auth') ?? false;
   }
 
   getDatabaseType(): string {
@@ -644,7 +645,7 @@ export class ApiConfigService {
   }
 
   getSecurityAdmins(): string[] {
-    const admins = this.configService.get<string[]>('security.admins');
+    const admins = this.configService.get<string[]>('features.auth.admins') ?? this.configService.get<string[]>('security.admins');
     if (admins === undefined) {
       throw new Error('No security admins value present');
     }
@@ -653,7 +654,7 @@ export class ApiConfigService {
   }
 
   getJwtSecret(): string {
-    const jwtSecret = this.configService.get<string>('security.jwtSecret');
+    const jwtSecret = this.configService.get<string>('features.auth.jwtSecret') ?? this.configService.get<string>('security.jwtSecret');
     if (!jwtSecret) {
       throw new Error('No jwtSecret present');
     }
@@ -690,13 +691,35 @@ export class ApiConfigService {
     return this.configService.get<number>('nftProcess.maxRetries') ?? 3;
   }
 
+  private isExchangeEnabledInternal(): boolean {
+    return this.configService.get<boolean>('features.exchange.enabled') ?? false;
+  }
+
+  private getExchangeServiceUrlLegacy(): string | undefined {
+    return this.configService.get<string>('transaction-action.mex.microServiceUrl') ?? this.configService.get<string>('plugins.transaction-action.mex.microServiceUrl');
+  }
+
+  isExchangeEnabled(): boolean {
+    const isExchangeEnabled = this.isExchangeEnabledInternal();
+    if (isExchangeEnabled) {
+      return true;
+    }
+
+    const legacyUrl = this.getExchangeServiceUrlLegacy();
+    if (legacyUrl) {
+      return true;
+    }
+
+    return false;
+  }
+
   getExchangeServiceUrl(): string | undefined {
-    const isExchangeEnabled = this.configService.get<boolean>('features.exchange.enabled') ?? false;
+    const isExchangeEnabled = this.isExchangeEnabledInternal();
     if (isExchangeEnabled) {
       return this.configService.get<string>('features.exchange.serviceUrl');
     }
 
-    const legacyUrl = this.configService.get<string>('transaction-action.mex.microServiceUrl') ?? this.configService.get<string>('plugins.transaction-action.mex.microServiceUrl');
+    const legacyUrl = this.getExchangeServiceUrlLegacy();
     if (legacyUrl) {
       return legacyUrl;
     }
@@ -813,5 +836,13 @@ export class ApiConfigService {
     }
 
     return serviceUrl;
+  }
+
+  getNativeAuthAcceptedOrigins(): string[] {
+    return this.configService.get<string[]>('features.auth.acceptedOrigins') ?? [];
+  }
+
+  getNativeAuthMaxExpirySeconds(): number {
+    return this.configService.get<number>('features.auth.maxExpirySeconds') ?? Constants.oneDay();
   }
 }

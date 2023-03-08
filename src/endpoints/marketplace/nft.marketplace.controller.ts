@@ -1,4 +1,4 @@
-import { ParseAddressPipe, ParseEnumPipe } from "@multiversx/sdk-nestjs";
+import { ParseAddressPipe, ParseCollectionPipe, ParseEnumPipe } from "@multiversx/sdk-nestjs";
 import { Controller, DefaultValuePipe, Get, NotFoundException, Param, ParseIntPipe, Query } from "@nestjs/common";
 import { ApiExcludeEndpoint, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { QueryPagination } from "src/common/entities/query.pagination";
@@ -6,7 +6,6 @@ import { AccountAuctionStats } from "./entities/account.auction.stats";
 import { Auction } from "./entities/account.auctions";
 import { AuctionStatus } from "./entities/auction.status";
 import { Auctions } from "./entities/auctions";
-import { AuctionsFilter } from "./entities/auctions.filter";
 import { CollectionAuctionStats } from "./entities/collection.auction.stats";
 import { NftMarketplaceService } from "./nft.marketplace.service";
 
@@ -21,44 +20,43 @@ export class NftMarketplaceController {
   @ApiOperation({ summary: 'Explore auctions', description: 'Returns auctions available in marketplaces ' })
   @ApiOkResponse({ type: [Auctions] })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
-  getAuctions(
+  async getAuctions(
     @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number,
-    @Query("marketplace") marketplace: string,
   ): Promise<Auctions[]> {
-    return this.nftMarketplaceService.getAuctions(
+    return await this.nftMarketplaceService.getAuctions(
       new QueryPagination({ size }),
-      new AuctionsFilter({ marketplace }));
+    );
   }
 
   @Get("/auctions/count")
-  @ApiOperation({ summary: 'Auctions count', description: 'Return total number of available auctions' })
+  @ApiOperation({ summary: 'Auctions count', description: 'Returns all auctions count available on marketplaces ' })
   @ApiOkResponse({ type: Number })
-  @ApiQuery({ name: 'marketplace', description: 'Search by marketplace name', required: false })
-  async getTokenCount(
-    @Query('marketplace') marketplace?: string,
+  @ApiQuery({ name: 'status', description: 'Returns auctions count with specified status', required: false })
+  async getAuctionsCount(
+    @Query('status', new ParseEnumPipe(AuctionStatus)) status?: AuctionStatus,
   ): Promise<number> {
-    return await this.nftMarketplaceService.getAuctionsCount(new AuctionsFilter({ marketplace }));
+    return await this.nftMarketplaceService.getAuctionsCount(status);
   }
 
   @Get("/auctions/c")
   @ApiExcludeEndpoint()
-  async getTokenCountAlternative(
-    @Query('marketplace') marketplace?: string,
+  @ApiOperation({ summary: 'Auctions count', description: 'Returns all auctions count available on marketplaces ' })
+  @ApiOkResponse({ type: Number })
+  @ApiQuery({ name: 'status', description: 'Returns auctions count with specified status', required: false })
+  async getAuctionsCountAlternative(
+    @Query('status', new ParseEnumPipe(AuctionStatus)) status?: AuctionStatus,
   ): Promise<number> {
-    return await this.nftMarketplaceService.getAuctionsCount(new AuctionsFilter({ marketplace }));
+    return await this.nftMarketplaceService.getAuctionsCount(status);
   }
 
   @Get("/auctions/:id")
-  @ApiOperation({ summary: 'Explore auction details', description: 'Returns a specific auction ' })
+  @ApiOperation({ summary: 'Auction details', description: 'Returns auction details for a specific auction identifier ' })
   @ApiOkResponse({ type: Auctions })
-  async getAuctionById(
-    @Param("id") id: string,
-  ): Promise<Auctions> {
-    const auction = await this.nftMarketplaceService.getAuctionById(id);
-    if (auction === undefined) {
-      throw new NotFoundException('Auction not found');
-    }
-    return auction;
+  @ApiQuery({ name: 'auctionId', description: 'Auction identifier', required: true })
+  async getAuctionId(
+    @Param('id') id: number,
+  ): Promise<Auction> {
+    return await this.nftMarketplaceService.getAuctionId(id);
   }
 
   @Get("/accounts/:address/auction/stats")
@@ -82,7 +80,7 @@ export class NftMarketplaceController {
   @ApiQuery({ name: 'status', description: 'Returns auctions with specified status', required: false })
   @ApiOkResponse({ type: Auction })
   async getAccountAuctions(
-    @Param('address') address: string,
+    @Param('address', ParseAddressPipe) address: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
     @Query('status', new ParseEnumPipe(AuctionStatus)) status?: AuctionStatus,
@@ -95,17 +93,44 @@ export class NftMarketplaceController {
     return account;
   }
 
+  @Get('/accounts/:address/auctions/count')
+  @ApiOperation({ summary: 'Address auctions count', description: 'Returns total running auctions count for a specific address ' })
+  @ApiOkResponse({ type: Number })
+  @ApiQuery({ name: 'address', description: 'Account address', required: true })
+  async getAccountAuctionsCount(
+    @Param('address', ParseAddressPipe) address: string,
+  ): Promise<number> {
+    return await this.nftMarketplaceService.getAccountAuctionsCount(address);
+  }
+
   @Get("/collections/:collection/auction/stats")
   @ApiOperation({ summary: 'Collection stats', description: 'Returns collection status details from nft marketplace for a given collection identifier' })
   @ApiOkResponse({ type: CollectionAuctionStats })
   async getCollectionStats(
-    @Param('collection') collection: string,
+    @Param('collection', ParseCollectionPipe) collection: string,
   ): Promise<CollectionAuctionStats> {
-    const collectionStats = await this.nftMarketplaceService.getCollectionStats({ identifier: collection });
-    if (!collectionStats) {
-      throw new NotFoundException('Could not fetch collection stats');
-    }
+    return await this.nftMarketplaceService.getCollectionStats({ identifier: collection });
+  }
 
-    return collectionStats;
+  @Get('/collections/:collection/auctions')
+  @ApiOperation({ summary: 'Collection auctions', description: 'Returns all auctions for a specific collection ' })
+  @ApiOkResponse({ type: [Auctions] })
+  @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
+  @ApiQuery({ name: 'collection', description: 'Collection identifier', required: true })
+  async getCollectionAuctions(
+    @Param('collection', ParseCollectionPipe) collection: string,
+    @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number,
+  ): Promise<Auctions[]> {
+    return await this.nftMarketplaceService.getCollectionAuctions(new QueryPagination({ size }), collection);
+  }
+
+  @Get('/collections/:collection/auctions/count')
+  @ApiOperation({ summary: 'Collection auctions count', description: 'Returns total running auctions count for a specific collection ' })
+  @ApiOkResponse({ type: Number })
+  @ApiQuery({ name: 'collection', description: 'Collection identifier', required: true })
+  async getCollectionAuctionsCount(
+    @Param('collection', ParseCollectionPipe) collection: string,
+  ): Promise<number> {
+    return await this.nftMarketplaceService.getCollectionAuctionsCount(collection);
   }
 }

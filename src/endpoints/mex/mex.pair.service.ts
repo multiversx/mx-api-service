@@ -8,6 +8,7 @@ import { MexPairState } from "./entities/mex.pair.state";
 import { MexPairType } from "./entities/mex.pair.type";
 import { MexSettingsService } from "./mex.settings.service";
 import { OriginLogger } from "@multiversx/sdk-nestjs";
+import { ApiConfigService } from "src/common/api-config/api.config.service";
 
 @Injectable()
 export class MexPairService {
@@ -17,6 +18,7 @@ export class MexPairService {
     private readonly cachingService: CachingService,
     private readonly mexSettingService: MexSettingsService,
     private readonly graphQlService: GraphQlService,
+    private readonly apiConfigService: ApiConfigService,
   ) { }
 
   async refreshMexPairs(): Promise<void> {
@@ -37,6 +39,10 @@ export class MexPairService {
   }
 
   async getAllMexPairs(): Promise<MexPair[]> {
+    if (!this.apiConfigService.isExchangeEnabled()) {
+      return [];
+    }
+
     return await this.cachingService.getOrSetCache(
       CacheInfo.MexPairs.key,
       async () => await this.getAllMexPairsRaw(),

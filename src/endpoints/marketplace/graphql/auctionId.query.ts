@@ -1,25 +1,16 @@
 import { gql } from "graphql-request";
-import { AuctionStatus } from "../entities/auction.status";
 
-export const accountAuctionsQuery = (address: string, status?: AuctionStatus) => {
+export const auctionIdQuery = (id: number) => {
   return gql`
-  query{
+  query {
     auctions(filters:{
       operator: AND,
       filters:[
         {
-          field: "ownerAddress",
+          field: "id",
           op: EQ,
-          values: ["${address}"]
+          values: ["${id}"]
         }
-        ${status
-      ? `,{
-          field: "status",
-          op: EQ,
-          values: ["${status}"]
-        }`
-      : ""
-    }
       ]
     }){
       edges{
@@ -28,11 +19,11 @@ export const accountAuctionsQuery = (address: string, status?: AuctionStatus) =>
           identifier
           collection
           status
+          type
           creationDate
           endDate
-          marketplace{
-            key
-          }
+          marketplace{key}
+          asset{creatorAddress}
           minBid {
             amount
             token
@@ -41,11 +32,13 @@ export const accountAuctionsQuery = (address: string, status?: AuctionStatus) =>
             amount
             token
           }
+          ownerAddress
           marketplaceAuctionId
           startDate
           __typename
         }
       }
     }
-  }`;
+  }
+`;
 };

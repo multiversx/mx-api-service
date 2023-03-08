@@ -32,7 +32,6 @@ export class TransferQuery {
         miniBlockHash: input.miniBlockHash,
         hashes: input.hashes,
         status: input.status,
-        search: input.search,
         before: input.before,
         after: input.after,
       }),

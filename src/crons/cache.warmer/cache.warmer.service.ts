@@ -15,17 +15,16 @@ import { CacheInfo } from "src/utils/cache.info";
 import { AssetsService } from "src/common/assets/assets.service";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
 import { MexSettingsService } from "src/endpoints/mex/mex.settings.service";
-import { MexEconomicsService } from "src/endpoints/mex/mex.economics.service";
 import { MexPairService } from "src/endpoints/mex/mex.pair.service";
-import { MexTokenService } from "src/endpoints/mex/mex.token.service";
 import { MexFarmService } from "src/endpoints/mex/mex.farm.service";
-import { CachingService, Constants, Lock, Locker, GuestCachingWarmer, OriginLogger } from "@multiversx/sdk-nestjs";
+import { CachingService, Constants, Lock, GuestCachingWarmer, OriginLogger } from "@multiversx/sdk-nestjs";
 import { DelegationLegacyService } from "src/endpoints/delegation.legacy/delegation.legacy.service";
 import { PluginService } from "src/common/plugins/plugin.service";
 import { SettingsService } from "src/common/settings/settings.service";
 import { TokenService } from "src/endpoints/tokens/token.service";
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { NftService } from "src/endpoints/nfts/nft.service";
+import { AccountFilter } from "src/endpoints/accounts/entities/account.filter";
 
 @Injectable()
 export class CacheWarmerService {
@@ -48,9 +47,7 @@ export class CacheWarmerService {
     private readonly gatewayService: GatewayService,
     private readonly schedulerRegistry: SchedulerRegistry,
     private readonly assetsService: AssetsService,
-    private readonly mexEconomicsService: MexEconomicsService,
     private readonly mexPairsService: MexPairService,
-    private readonly mexTokensService: MexTokenService,
     private readonly mexSettingsService: MexSettingsService,
     private readonly mexFarmsService: MexFarmService,
     private readonly delegationLegacyService: DelegationLegacyService,
@@ -208,8 +205,10 @@ export class CacheWarmerService {
   @Cron(CronExpression.EVERY_MINUTE)
   @Lock({ name: 'Accounts invalidations', verbose: true })
   async handleAccountInvalidations() {
-    const accounts = await this.accountService.getAccountsRaw({ from: 0, size: 25 });
-    await this.invalidateKey(CacheInfo.Top25Accounts.key, accounts, CacheInfo.Top25Accounts.ttl);
+    const accounts = await this.accountService.getAccountsRaw({ from: 0, size: 25 }, new AccountFilter());
+
+    const accountsCacheInfo = CacheInfo.Accounts({ from: 0, size: 25 });
+    await this.invalidateKey(accountsCacheInfo.key, accounts, accountsCacheInfo.ttl);
   }
 
   @Cron(CronExpression.EVERY_MINUTE)
@@ -235,6 +234,7 @@ export class CacheWarmerService {
 
     const providers = await this.providerService.getAllProviders();
     const identities = await this.identitiesService.getAllIdentities();
+
     const pairs = await this.mexPairsService.getAllMexPairs();
     const farms = await this.mexFarmsService.getAllMexFarms();
     const settings = await this.mexSettingsService.getSettings();
@@ -267,38 +267,6 @@ export class CacheWarmerService {
           CacheInfo.TokenAccountsExtra(identifier).ttl
         );
       }
-    }
-  }
-
-  @Cron(CronExpression.EVERY_MINUTE)
-  async handleMexInvalidations() {
-    await Locker.lock('Refreshing mex pairs', async () => {
-      await this.mexPairsService.refreshMexPairs();
-    }, true);
-
-    await Locker.lock('Refreshing mex economics', async () => {
-      await this.mexEconomicsService.refreshMexEconomics();
-    }, true);
-
-    await Locker.lock('Refreshing mex tokens', async () => {
-      await this.mexTokensService.refreshMexTokens();
-    }, true);
-
-    await Locker.lock('Refreshing mex farms', async () => {
-      await this.mexFarmsService.refreshMexFarms();
-    }, true);
-
-    await Locker.lock('Refreshing mex settings', async () => {
-      await this.mexSettingsService.refreshSettings();
-    }, true);
-  }
-
-  @Cron(CronExpression.EVERY_10_MINUTES)
-  @Lock({ name: 'Mex settings invalidations' })
-  async handleMexSettings() {
-    const settings = await this.mexSettingsService.getSettingsRaw();
-    if (settings) {
-      await this.invalidateKey(CacheInfo.MexSettings.key, settings, CacheInfo.MexSettings.ttl);
     }
   }
 

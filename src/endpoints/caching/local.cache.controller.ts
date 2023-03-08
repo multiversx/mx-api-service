@@ -1,4 +1,4 @@
-import { CachingService, JwtAdminGuard, JwtAuthenticateGuard } from "@multiversx/sdk-nestjs";
+import { CachingService, JwtAdminGuard, JwtOrNativeAuthGuard } from "@multiversx/sdk-nestjs";
 import { Body, Controller, Delete, Get, HttpException, HttpStatus, Param, Put, UseGuards } from "@nestjs/common";
 import { ApiExcludeController, ApiResponse } from "@nestjs/swagger";
 import { CacheValue } from "./entities/cache.value";
@@ -10,7 +10,7 @@ export class LocalCacheController {
     private readonly cachingService: CachingService,
   ) { }
 
-  @UseGuards(JwtAuthenticateGuard, JwtAdminGuard)
+  @UseGuards(JwtOrNativeAuthGuard, JwtAdminGuard)
   @Get("/:key")
   @ApiResponse({
     status: 200,
@@ -29,7 +29,7 @@ export class LocalCacheController {
     return JSON.stringify(value);
   }
 
-  @UseGuards(JwtAuthenticateGuard, JwtAdminGuard)
+  @UseGuards(JwtOrNativeAuthGuard, JwtAdminGuard)
   @Put("/:key")
   @ApiResponse({
     status: 200,
@@ -39,7 +39,7 @@ export class LocalCacheController {
     await this.cachingService.setCacheLocal(key, cacheValue.value, cacheValue.ttl);
   }
 
-  @UseGuards(JwtAuthenticateGuard, JwtAdminGuard)
+  @UseGuards(JwtOrNativeAuthGuard, JwtAdminGuard)
   @Delete("/:key")
   @ApiResponse({
     status: 200,

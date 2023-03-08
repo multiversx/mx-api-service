@@ -22,6 +22,7 @@ export enum GatewayComponentRequest {
   addressNonce = 'addressNonce',
   addressShard = 'addressShard',
   addressStorage = 'addressStorage',
+  guardianData = 'guardianData',
   addressTransactions = 'addressTransactions',
   simulateTransaction = 'simulateTransaction',
   sendTransactionMultiple = 'sendTransactionMultiple',
@@ -34,5 +35,6 @@ export enum GatewayComponentRequest {
   addressNftByNonce = 'addressNftByNonce',
   validatorAuction = 'validatorAuction',
   oldStorageToken = 'oldStorageToken',
-  trieStatistics = 'trieStatistics'
+  trieStatistics = 'trieStatistics',
+  transactionPool = 'transactionPool'
 }

@@ -18,6 +18,7 @@ import { About } from './entities/about';
 import { PluginService } from 'src/common/plugins/plugin.service';
 import { SmartContractResultService } from '../sc-results/scresult.service';
 import { TokenService } from '../tokens/token.service';
+import { AccountFilter } from '../accounts/entities/account.filter';
 
 @Injectable()
 export class NetworkService {
@@ -101,11 +102,14 @@ export class NetworkService {
   }
 
   async getEconomics(): Promise<Economics> {
-    return await this.cachingService.getOrSetCache(
+    const economics = await this.cachingService.getOrSetCache(
       CacheInfo.Economics.key,
       async () => await this.getEconomicsRaw(),
       CacheInfo.Economics.ttl,
     );
+
+    // we do a deep copy here because we don't want to modify the cached object
+    return new Economics({ ...economics });
   }
 
   async getMinimumAuctionTopUp(): Promise<string | undefined> {
@@ -216,7 +220,7 @@ export class NetworkService {
       this.gatewayService.getNetworkConfig(),
       this.gatewayService.getNetworkStatus(metaChainShard),
       this.blockService.getBlocksCount(new BlockFilter()),
-      this.accountService.getAccountsCount(),
+      this.accountService.getAccountsCount(new AccountFilter()),
       this.transactionService.getTransactionCount(new TransactionFilter()),
       this.smartContractResultService.getScResultsCount(),
     ]);

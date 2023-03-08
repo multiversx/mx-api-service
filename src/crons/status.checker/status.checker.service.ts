@@ -20,6 +20,7 @@ import { NetworkService } from "src/endpoints/network/network.service";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { TokenFilter } from "src/endpoints/tokens/entities/token.filter";
 import { NodeType } from "src/endpoints/nodes/entities/node.type";
+import { AccountFilter } from "src/endpoints/accounts/entities/account.filter";
 
 @Injectable()
 export class StatusCheckerService {
@@ -45,7 +46,7 @@ export class StatusCheckerService {
   @Cron(CronExpression.EVERY_MINUTE)
   async handleAccountsCount() {
     await Locker.lock('Status Checker Accounts Count', async () => {
-      const count = await this.elasticIndexerService.getAccountsCount();
+      const count = await this.elasticIndexerService.getAccountsCount(new AccountFilter());
       this.apiStatusMetricsService.setTotalAccounts(count);
     }, true);
   }

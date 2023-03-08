@@ -81,7 +81,7 @@ describe('Accounts', () => {
       await request(app.getHttpServer())
         .post(gql)
         .send({
-          query: `{ accountsCount
+          query: `{ accountsCount(input: {})
           }`,
         })
         .expect(200)
