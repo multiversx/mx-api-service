@@ -348,16 +348,24 @@ export class EsdtService {
   async countAllAccounts(identifiers: string[]): Promise<number> {
     const key = `tokens:${identifiers[0]}:distinctAccounts`;
 
+    this.logger.log(`TempTokenAccountLogging for identifiers ${identifiers.join(', ')}: Counting all accounts`);
+
     for (const identifier of identifiers) {
+      this.logger.log(`TempTokenAccountLogging for identifiers ${identifiers.join(', ')}: Started fetching all accounts from ES for identifier ${identifier}`);
+      let total = 0;
       await this.indexerService.getAllAccountsWithToken(identifier, async items => {
         const distinctAccounts: string[] = items.map(x => x.address).distinct();
         if (distinctAccounts.length > 0) {
           await this.cachingService.setAdd(key, ...distinctAccounts);
         }
+
+        total += items.length;
       });
+      this.logger.log(`TempTokenAccountLogging for identifiers ${identifiers.join(', ')}: Finished fetching all accounts from ES for identifier ${identifier}. Total fetched accounts: ${total}`);
     }
 
     const count = await this.cachingService.setCount(key);
+    this.logger.log(`TempTokenAccountLogging for identifiers ${identifiers.join(', ')}: All accounts count is ${count}`);
 
     await this.cachingService.deleteInCache(key);
 
