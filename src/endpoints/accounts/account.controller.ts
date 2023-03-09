@@ -664,6 +664,7 @@ export class AccountController {
     @Query('before', ParseIntPipe) before?: number,
     @Query('after', ParseIntPipe) after?: number,
     @Query('order', new ParseEnumPipe(SortOrder)) order?: SortOrder,
+    @Query('fields', ParseArrayPipe) fields?: string[],
     @Query('withScResults', new ParseBoolPipe) withScResults?: boolean,
     @Query('withOperations', new ParseBoolPipe) withOperations?: boolean,
     @Query('withLogs', new ParseBoolPipe) withLogs?: boolean,
@@ -688,7 +689,7 @@ export class AccountController {
       after,
       order,
       senderOrReceiver,
-    }), new QueryPagination({ from, size }), options, address);
+    }), new QueryPagination({ from, size }), options, address, fields);
   }
 
   @Get("/accounts/:address/transactions/count")

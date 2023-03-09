@@ -146,7 +146,7 @@ export class TransactionService {
     return result;
   }
 
-  async getTransactions(filter: TransactionFilter, pagination: QueryPagination, queryOptions?: TransactionQueryOptions, address?: string): Promise<Transaction[]> {
+  async getTransactions(filter: TransactionFilter, pagination: QueryPagination, queryOptions?: TransactionQueryOptions, address?: string, fields?: string[]): Promise<Transaction[]> {
     const elasticTransactions = await this.indexerService.getTransactions(filter, pagination, address);
 
     let transactions: TransactionDetailed[] = [];
@@ -165,7 +165,7 @@ export class TransactionService {
       }
     }
 
-    if (queryOptions && queryOptions.withBlockInfo) {
+    if ((queryOptions && queryOptions.withBlockInfo) || (fields && fields.includesSome(['senderBlockHash', 'receiverBlockHash', 'senderBlockNonce', 'receiverBlockNonce']))) {
       await this.applyBlockInfo(transactions);
     }
 

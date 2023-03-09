@@ -217,6 +217,7 @@ export class TokenController {
     @Query('before', ParseIntPipe) before?: number,
     @Query('after', ParseIntPipe) after?: number,
     @Query('order', new ParseEnumPipe(SortOrder)) order?: SortOrder,
+    @Query('fields', ParseArrayPipe) fields?: string[],
     @Query('withScResults', new ParseBoolPipe) withScResults?: boolean,
     @Query('withOperations', new ParseBoolPipe) withOperations?: boolean,
     @Query('withLogs', new ParseBoolPipe) withLogs?: boolean,
@@ -244,7 +245,12 @@ export class TokenController {
       before,
       after,
       order,
-    }), new QueryPagination({ from, size }), options);
+    }),
+      new QueryPagination({ from, size }),
+      options,
+      undefined,
+      fields,
+    );
   }
 
   @Get("/tokens/:identifier/transactions/count")
