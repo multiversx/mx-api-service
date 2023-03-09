@@ -93,7 +93,7 @@ export class TransactionGetService {
         }
       }
 
-      if (!fields || fields.length === 0 || fields.includes(TransactionOptionalFieldOption.logs) || fields.includes(TransactionOptionalFieldOption.operations)) {
+      if (!fields || fields.length === 0 || fields.includesSome([TransactionOptionalFieldOption.logs, TransactionOptionalFieldOption.operations])) {
         const logs = await this.getTransactionLogsFromElastic(hashes);
 
         if (!fields || fields.length === 0 || fields.includes(TransactionOptionalFieldOption.operations)) {
