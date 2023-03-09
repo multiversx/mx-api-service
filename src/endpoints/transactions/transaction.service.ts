@@ -30,6 +30,7 @@ import { ApiConfigService } from 'src/common/api-config/api.config.service';
 import { UsernameService } from '../usernames/username.service';
 import { MiniBlock } from 'src/common/indexer/entities/miniblock';
 import { Block } from 'src/common/indexer/entities/block';
+import { ProtocolService } from 'src/common/protocol/protocol.service';
 
 @Injectable()
 export class TransactionService {
@@ -50,6 +51,7 @@ export class TransactionService {
     private readonly assetsService: AssetsService,
     private readonly apiConfigService: ApiConfigService,
     private readonly usernameService: UsernameService,
+    private readonly protocolService: ProtocolService,
   ) { }
 
   async getTransactionCountForAddress(address: string): Promise<number> {
@@ -144,7 +146,7 @@ export class TransactionService {
     return result;
   }
 
-  async getTransactions(filter: TransactionFilter, pagination: QueryPagination, queryOptions?: TransactionQueryOptions, address?: string): Promise<Transaction[]> {
+  async getTransactions(filter: TransactionFilter, pagination: QueryPagination, queryOptions?: TransactionQueryOptions, address?: string, fields?: string[]): Promise<Transaction[]> {
     const elasticTransactions = await this.indexerService.getTransactions(filter, pagination, address);
 
     let transactions: TransactionDetailed[] = [];
@@ -163,7 +165,7 @@ export class TransactionService {
       }
     }
 
-    if (queryOptions && queryOptions.withBlockInfo) {
+    if ((queryOptions && queryOptions.withBlockInfo) || (fields && fields.includesSome(['senderBlockHash', 'receiverBlockHash', 'senderBlockNonce', 'receiverBlockNonce']))) {
       await this.applyBlockInfo(transactions);
     }
 
@@ -276,8 +278,9 @@ export class TransactionService {
   }
 
   async createTransaction(transaction: TransactionCreate): Promise<TransactionSendResult | string> {
-    const receiverShard = AddressUtils.computeShard(AddressUtils.bech32Decode(transaction.receiver));
-    const senderShard = AddressUtils.computeShard(AddressUtils.bech32Decode(transaction.sender));
+    const shardCount = await this.protocolService.getShardCount();
+    const receiverShard = AddressUtils.computeShard(AddressUtils.bech32Decode(transaction.receiver), shardCount);
+    const senderShard = AddressUtils.computeShard(AddressUtils.bech32Decode(transaction.sender), shardCount);
 
     const pluginTransaction = await this.pluginsService.processTransactionSend(transaction);
     if (pluginTransaction) {
