@@ -45,7 +45,7 @@ export class ApiChecker {
     expect(details).toEqual(item);
   }
 
-  async checkAlternativeCount(params: Record<string, any>) {
+  async checkAlternativeCount(params: Record<string, any> = {}) {
     const count = await this.requestCount(params);
     const alternativeCount = await this.requestAlternativeCount(params);
 

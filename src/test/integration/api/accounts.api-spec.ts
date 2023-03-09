@@ -26,5 +26,6 @@ describe("API Testing", () => {
     await checker.checkDetails();
     await checker.checkStatus();
     await checker.checkPagination();
+    await checker.checkAlternativeCount();
   });
 });

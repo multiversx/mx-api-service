@@ -24,5 +24,6 @@ describe("API Testing", () => {
     const checker = new ApiChecker('rounds', app.getHttpServer());
     await checker.checkStatus();
     await checker.checkFilter(['epoch', 'shard']);
+    await checker.checkAlternativeCount();
   });
 });
