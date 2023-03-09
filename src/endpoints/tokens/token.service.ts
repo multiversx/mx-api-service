@@ -19,7 +19,7 @@ import { SortOrder } from "src/common/entities/sort.order";
 import { TokenSort } from "./entities/token.sort";
 import { TokenWithRoles } from "./entities/token.with.roles";
 import { TokenWithRolesFilter } from "./entities/token.with.roles.filter";
-import { AddressUtils, ApiUtils, CachingService, NumberUtils, TokenUtils } from "@multiversx/sdk-nestjs";
+import { AddressUtils, ApiUtils, BinaryUtils, CachingService, NumberUtils, TokenUtils } from "@multiversx/sdk-nestjs";
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { OriginLogger } from "@multiversx/sdk-nestjs";
 import { TokenLogo } from "./entities/token.logo";
@@ -206,11 +206,21 @@ export class TokenService {
   }
 
   async getTokensForAddress(address: string, queryPagination: QueryPagination, filter: TokenFilter): Promise<TokenWithBalance[]> {
+    let tokens: TokenWithBalance[];
     if (AddressUtils.isSmartContractAddress(address)) {
-      return await this.getTokensForAddressFromElastic(address, queryPagination, filter);
+      tokens = await this.getTokensForAddressFromElastic(address, queryPagination, filter);
+    } else {
+      tokens = await this.getTokensForAddressFromGateway(address, queryPagination, filter);
     }
 
-    return await this.getTokensForAddressFromGateway(address, queryPagination, filter);
+    for (const token of tokens) {
+      if (token.type === TokenType.MetaESDT) {
+        token.collection = token.identifier.split('-').slice(0, 2).join('-');
+        token.nonce = BinaryUtils.hexToNumber(token.identifier.split('-').slice(2, 3)[0]);
+      }
+    }
+
+    return tokens;
   }
 
   async getTokensForAddressFromElastic(address: string, queryPagination: QueryPagination, filter: TokenFilter): Promise<TokenWithBalance[]> {

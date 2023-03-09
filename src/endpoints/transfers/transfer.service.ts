@@ -7,6 +7,7 @@ import { TransactionService } from "../transactions/transaction.service";
 import { ApiUtils } from "@multiversx/sdk-nestjs";
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { TransactionQueryOptions } from "../transactions/entities/transactions.query.options";
+import { TransactionDetailed } from "../transactions/entities/transaction.detailed";
 
 @Injectable()
 export class TransferService {
@@ -41,14 +42,14 @@ export class TransferService {
     return elasticTransfers;
   }
 
-  async getTransfers(filter: TransactionFilter, pagination: QueryPagination, queryOptions: TransactionQueryOptions): Promise<Transaction[]> {
+  async getTransfers(filter: TransactionFilter, pagination: QueryPagination, queryOptions: TransactionQueryOptions, fields?: string[]): Promise<Transaction[]> {
     let elasticOperations = await this.indexerService.getTransfers(filter, pagination);
     elasticOperations = this.sortElasticTransfers(elasticOperations);
 
-    const transactions: Transaction[] = [];
+    const transactions: TransactionDetailed[] = [];
 
     for (const elasticOperation of elasticOperations) {
-      const transaction = ApiUtils.mergeObjects(new Transaction(), elasticOperation);
+      const transaction = ApiUtils.mergeObjects(new TransactionDetailed(), elasticOperation);
       transaction.type = elasticOperation.type === 'normal' ? TransactionType.Transaction : TransactionType.SmartContractResult;
 
       if (transaction.type === TransactionType.SmartContractResult) {
@@ -58,9 +59,11 @@ export class TransferService {
         delete transaction.nonce;
         delete transaction.round;
       }
-
-
       transactions.push(transaction);
+    }
+
+    if (queryOptions.withBlockInfo || (fields && fields.includesSome(['senderBlockHash', 'receiverBlockHash', 'senderBlockNonce', 'receiverBlockNonce']))) {
+      await this.transactionService.applyBlockInfo(transactions);
     }
 
     await this.transactionService.processTransactions(transactions, {

@@ -1,7 +1,6 @@
 import { gql } from "graphql-request";
-
 export const auctionsQuery = gql`
-query GetAuctions($first: Int, $after: String, $before: String) {
+query GetAuctions($first: Int, $after: String, $before: String, $currentTimestamp: String) {
   auctions(
     pagination: {
       first: $first,
@@ -16,12 +15,20 @@ query GetAuctions($first: Int, $after: String, $before: String) {
           op: EQ,
           values: ["Running"]
         }
+        {
+          field: "startDate",
+          op: LE,
+          values: [$currentTimestamp]
+        }
       ]
     }
     sorting: {
       direction: DESC,
       field: "creationDate"
     }
+    grouping:{
+      groupBy: IDENTIFIER
+    },
   ) {
     edges {
       cursor

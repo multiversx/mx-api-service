@@ -12,6 +12,8 @@ import { EsdtType } from "src/endpoints/esdt/entities/esdt.type";
 import { TokenWithRolesFilter } from "src/endpoints/tokens/entities/token.with.roles.filter";
 import { TransactionFilter } from "src/endpoints/transactions/entities/transaction.filter";
 import { TransactionType } from "src/endpoints/transactions/entities/transaction.type";
+import { AccountFilter } from "src/endpoints/accounts/entities/account.filter";
+import { AccountHistoryFilter } from "src/endpoints/accounts/entities/account.history.filter";
 
 @Injectable()
 export class ElasticIndexerHelper {
@@ -48,6 +50,12 @@ export class ElasticIndexerHelper {
       const index = await this.blsService.getBlsIndex(validator, shard, epoch);
       const validatorsQuery = QueryType.Match('validators', index);
       queries.push(validatorsQuery);
+    }
+
+    if (filter.hashes !== undefined && filter.hashes.length > 0) {
+      const hashQueries = filter.hashes.map(hash => QueryType.Match('_id', hash));
+      const shouldQuery = QueryType.Should(hashQueries);
+      queries.push(shouldQuery);
     }
 
     return queries;
@@ -405,7 +413,6 @@ export class ElasticIndexerHelper {
 
   public buildTransactionFilterQuery(filter: TransactionFilter, address?: string): ElasticQuery {
     let elasticQuery = ElasticQuery.create()
-      .withMustMatchCondition('tokens', filter.token, QueryOperator.AND)
       .withMustMatchCondition('function', this.apiConfigService.getIsIndexerV3FlagActive() ? filter.function : undefined)
       .withMustMatchCondition('senderShard', filter.senderShard)
       .withMustMatchCondition('receiverShard', filter.receiverShard)
@@ -414,6 +421,12 @@ export class ElasticIndexerHelper {
       .withMustMatchCondition('status', filter.status)
       .withMustMultiShouldCondition(filter.tokens, token => QueryType.Match('tokens', token, QueryOperator.AND))
       .withDateRangeFilter('timestamp', filter.before, filter.after);
+
+    if (filter.token === 'EGLD') {
+      elasticQuery = elasticQuery.withMustNotCondition(QueryType.Match('value', '0'));
+    } else {
+      elasticQuery = elasticQuery.withMustMatchCondition('tokens', filter.token, QueryOperator.AND);
+    }
 
     if (filter.condition === QueryConditionOptions.should) {
       if (filter.sender) {
@@ -475,7 +488,7 @@ export class ElasticIndexerHelper {
     return elasticQuery;
   }
 
-  public buildAccountHistoryFilterQuery(address?: string, token?: string): ElasticQuery {
+  public buildAccountHistoryFilterQuery(address?: string, token?: string, filter?: AccountHistoryFilter): ElasticQuery {
     const mustQueries: AbstractQuery[] = [];
 
     if (address) {
@@ -486,7 +499,21 @@ export class ElasticIndexerHelper {
       mustQueries.push(QueryType.Match('token', token, QueryOperator.AND));
     }
 
-    return ElasticQuery.create()
-      .withCondition(QueryConditionOptions.must, mustQueries);
+    let elasticQuery = ElasticQuery.create().withCondition(QueryConditionOptions.must, mustQueries);
+
+    if (filter && (filter.before || filter.after)) {
+      elasticQuery = elasticQuery.withDateRangeFilter('timestamp', filter.before, filter.after);
+    }
+
+    return elasticQuery;
+  }
+
+  public buildAccountFilterQuery(filter: AccountFilter): ElasticQuery {
+    let elasticQuery = ElasticQuery.create();
+    if (filter.ownerAddress) {
+      elasticQuery = elasticQuery.withMustCondition(QueryType.Match('currentOwner', filter.ownerAddress, QueryOperator.AND));
+    }
+
+    return elasticQuery;
   }
 }

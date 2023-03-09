@@ -36,5 +36,25 @@ export class TransactionDetailed extends Transaction {
   @ApiProperty({ type: TransactionOperation, isArray: true })
   @ComplexityEstimation({ group: "details", value: 200, alternatives: ["withOperations"] })
   operations: TransactionOperation[] = [];
+
+  @Field(() => String, { description: "Sender Block hash for the given transaction.", nullable: true })
+  @ApiProperty({ type: String, nullable: true })
+  @ComplexityEstimation({ group: "blockInfo", value: 200, alternatives: ["withBlockInfo"] })
+  senderBlockHash: string | undefined = undefined;
+
+  @Field(() => Float, { description: "Sender Block nonce for the given transaction.", nullable: true })
+  @ApiProperty({ type: Number, nullable: true })
+  @ComplexityEstimation({ group: "blockInfo", value: 200, alternatives: ["withBlockInfo"] })
+  senderBlockNonce: number | undefined = undefined;
+
+  @Field(() => String, { description: "Receiver Block hash for the given transaction.", nullable: true })
+  @ApiProperty({ type: String, nullable: true })
+  @ComplexityEstimation({ group: "blockInfo", value: 200, alternatives: ["withBlockInfo"] })
+  receiverBlockHash: string | undefined = undefined;
+
+  @Field(() => Float, { description: "Receiver Block nonce for the given transaction.", nullable: true })
+  @ApiProperty({ type: Number, nullable: true })
+  @ComplexityEstimation({ group: "blockInfo", value: 200, alternatives: ["withBlockInfo"] })
+  receiverBlockNonce: number | undefined = undefined;
 }
 

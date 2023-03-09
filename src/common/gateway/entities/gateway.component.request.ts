@@ -35,5 +35,6 @@ export enum GatewayComponentRequest {
   addressNftByNonce = 'addressNftByNonce',
   validatorAuction = 'validatorAuction',
   oldStorageToken = 'oldStorageToken',
-  trieStatistics = 'trieStatistics'
+  trieStatistics = 'trieStatistics',
+  transactionPool = 'transactionPool'
 }

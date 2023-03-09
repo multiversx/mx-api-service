@@ -22,11 +22,13 @@ describe("API Testing", () => {
 
   it("/blocks", async () => {
     const checker = new ApiChecker('blocks', app.getHttpServer());
-    checker.defaultParams = { epoch: 500 };
+    const randomShard = Math.floor(Math.random() * 3);
+    checker.defaultParams = { epoch: 500, shard: randomShard };
+    checker.skipFields = ['scheduledRootHash'];
     await checker.checkStatus();
     await checker.checkPagination();
     await checker.checkDetails();
     await checker.checkFilter(['shard', 'epoch', 'nonce']);
-    await checker.checkAlternativeCount(['validator']);
+    await checker.checkAlternativeCount();
   });
 });

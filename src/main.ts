@@ -222,8 +222,6 @@ async function configurePublicApp(publicApp: NestExpressApplication, apiConfigSe
   }
 
   // @ts-ignore
-  globalInterceptors.push(new FieldsInterceptor());
-  // @ts-ignore
   globalInterceptors.push(new ExtractInterceptor());
   // @ts-ignore
   globalInterceptors.push(new CleanupInterceptor());

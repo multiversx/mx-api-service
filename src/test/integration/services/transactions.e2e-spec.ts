@@ -139,6 +139,19 @@ describe('Transaction Service', () => {
       expect(txResults.includes("29a2bed2543197e69c9bf16b30c4b0196f5e7a59584aba2e1a2127bf06cdfd2d")).toBeTruthy();
       expect(txResults.includes("0cbaeb61cd2d901e7363b83e35750d0cbf2045ed853ef8f7af7cefdef622671e")).toBeTruthy();
     });
+
+    it('should return an array of transactions only with EGLD', async () => {
+      const filter = new TransactionFilter();
+      filter.token = "EGLD";
+
+      const results = await transactionService.getTransactions(filter, new QueryPagination());
+
+      expect(results).toHaveLength(25);
+
+      for (const result of results) {
+        expect(result.value).not.toEqual('0');
+      }
+    });
   });
 
   describe('getTransaction', () => {
@@ -210,5 +223,21 @@ describe('Transaction Service', () => {
       expect([sender, receiver].includes(transfer.sender)).toBe(true);
       expect([sender, receiver].includes(transfer.receiver)).toBe(true);
     }
+  });
+
+  it('should return an array of transactions and if withBlockInfo is set to true, block extra fields should be defined', async () => {
+    const transactions = await transactionService.getTransactions(
+      new TransactionFilter(),
+      new QueryPagination(),
+      new TransactionQueryOptions({ withBlockInfo: true }));
+
+    const extraFields = transactions.every(transaction =>
+      'senderBlockHash' in transaction &&
+      'senderBlockNonce' in transaction &&
+      'receiverBlockHash' in transaction &&
+      'receiverBlockNonce' in transaction
+    );
+
+    expect(extraFields).toBeTruthy();
   });
 });

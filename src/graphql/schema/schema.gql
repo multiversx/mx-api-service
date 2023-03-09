@@ -37,8 +37,14 @@ type Account {
   """Nonce for the given account."""
   nonce: Float!
 
+  """Current owner address."""
+  ownerAddress: String!
+
   """Shard for the given account."""
   shard: Float!
+
+  """Timestamp of the block where the account was first indexed."""
+  timestamp: Float!
 }
 
 """Account assets object type."""
@@ -153,7 +159,7 @@ type AccountDetailed {
   """Return account EGLD balance history."""
   historyAccount(
     """Input to retrieve the given EGLD balance history for."""
-    input: GetFromAndSizeInput!
+    input: GetAccountHistory!
   ): [AccountHistory!]!
 
   """Return account balance history for a specifc token."""
@@ -227,6 +233,9 @@ type AccountDetailed {
   Summarizes total staked amount for the given provider, as well as when and how much unbond will be performed.
   """
   stake: ProviderStake!
+
+  """Timestamp of the block where the account was first indexed."""
+  timestamp: Float!
 
   """Tokens for the given detailed account."""
   tokensAccount(
@@ -365,6 +374,9 @@ type Block {
   """Round for the given Block."""
   round: Float!
 
+  """Scheduled Root Hash for the given Block."""
+  scheduledRootHash: String
+
   """Shard for the given Block."""
   shard: Float!
 
@@ -427,6 +439,9 @@ type BlockDetailed {
 
   """Round for the given Block."""
   round: Float!
+
+  """Scheduled Root Hash for the given Block."""
+  scheduledRootHash: String
 
   """Shard for the given Block."""
   shard: Float!
@@ -696,9 +711,33 @@ input GetAccountDetailedInput {
 }
 
 """Input to retrieve the given accounts for."""
+input GetAccountFilteredInput {
+  """Owner address to retrieve for the given result set."""
+  ownerAddress: String
+}
+
+"""Input to retrieve the given transactions count for."""
+input GetAccountHistory {
+  """After timestamp for the given result set."""
+  after: Float
+
+  """Before timestamp for the given result set."""
+  before: Float
+
+  """Number of collections to skip for the given result set."""
+  from: Float = 0
+
+  """Number of collections to retrieve for the given result set."""
+  size: Float = 25
+}
+
+"""Input to retrieve the given accounts for."""
 input GetAccountsInput {
   """Number of accounts to skip for the given result set."""
   from: Float = 0
+
+  """Owner address to retrieve for the given result set."""
+  ownerAddress: String
 
   """Number of accounts to retrieve for the given result set."""
   size: Float = 25
@@ -766,6 +805,12 @@ input GetFromAndSizeInput {
 
 """Input to retrieve the given history token for."""
 input GetHistoryTokenAccountInput {
+  """After timestamp for the given result set."""
+  after: Float
+
+  """Before timestamp for the given result set."""
+  before: Float
+
   """Number of collections to skip for the given result set."""
   from: Float = 0
 
@@ -2869,7 +2914,10 @@ type Query {
   ): [Account!]!
 
   """Retrieve all accounts count."""
-  accountsCount: Float!
+  accountsCount(
+    """Input to retrieve the given accounts for."""
+    input: GetAccountFilteredInput!
+  ): Float!
 
   """Retrieve the block for the given input."""
   blockHash(
@@ -3457,6 +3505,9 @@ type TokenDetailed {
   """Token circulating supply amount details."""
   circulatingSupply: String
 
+  """Token Collection if type is MetaESDT."""
+  collection: String
+
   """Token decimals."""
   decimals: Float!
 
@@ -3477,6 +3528,9 @@ type TokenDetailed {
 
   """Token name."""
   name: String!
+
+  """Token Nonce if type is MetaESDT."""
+  nonce: Float
 
   """Token owner address."""
   owner: String!
@@ -3630,6 +3684,9 @@ type TokenWithBalanceAccountFlat {
   """Token circulating supply amount details."""
   circulatingSupply: String
 
+  """Token Collection if type is MetaESDT."""
+  collection: String
+
   """Token decimals."""
   decimals: Float!
 
@@ -3650,6 +3707,9 @@ type TokenWithBalanceAccountFlat {
 
   """Token name."""
   name: String!
+
+  """Token Nonce if type is MetaESDT."""
+  nonce: Float
 
   """Current token price."""
   price: Float
@@ -3828,6 +3888,12 @@ type TransactionDetailed {
   """Receiver assets for the given transaction."""
   receiverAssets: AccountAssets
 
+  """Receiver Block hash for the given transaction."""
+  receiverBlockHash: String
+
+  """Receiver Block nonce for the given transaction."""
+  receiverBlockNonce: Float
+
   """Receiver account shard for the given transaction."""
   receiverShard: String!
 
@@ -3848,6 +3914,12 @@ type TransactionDetailed {
 
   """Sender assets for the given transaction."""
   senderAssets: AccountAssets
+
+  """Sender Block hash for the given transaction."""
+  senderBlockHash: String
+
+  """Sender Block nonce for the given transaction."""
+  senderBlockNonce: Float
 
   """Sender account shard for the given transaction."""
   senderShard: Float!

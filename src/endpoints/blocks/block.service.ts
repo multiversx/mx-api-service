@@ -32,12 +32,16 @@ export class BlockService {
 
   async getBlocks(filter: BlockFilter, queryPagination: QueryPagination, withProposerIdentity?: boolean): Promise<Block[]> {
     const result = await this.indexerService.getBlocks(filter, queryPagination);
-
     const blocks = [];
     for (const item of result) {
       const blockRaw = await this.computeProposerAndValidators(item);
 
       const block = Block.mergeWithElasticResponse(new Block(), blockRaw);
+
+      if (blockRaw.scheduledData && blockRaw.scheduledData.rootHash) {
+        block.scheduledRootHash = blockRaw.scheduledData.rootHash;
+      }
+
       blocks.push(block);
     }
 
