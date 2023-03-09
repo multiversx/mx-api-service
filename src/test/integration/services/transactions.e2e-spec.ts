@@ -239,4 +239,18 @@ describe('Transaction Service', () => {
 
     expect(extraFields).toBeTruthy();
   });
+
+  it('should return an array of transactions and if withBlockInfo is set to false, block extra fields should not be defined', async () => {
+    const transactions = await transactionService.getTransactions(
+      new TransactionFilter(),
+      new QueryPagination(),
+      new TransactionQueryOptions({ withBlockInfo: false }));
+
+    expect(transactions).not.toEqual(expect.objectContaining({
+      senderBlockHash: expect.anything(),
+      senderBlockNonce: expect.anything(),
+      receiverBlockHash: expect.anything(),
+      receiverBlockNonce: expect.anything(),
+    }));
+  });
 });
