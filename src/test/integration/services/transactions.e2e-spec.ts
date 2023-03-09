@@ -5,7 +5,6 @@ import { IndexerService } from 'src/common/indexer/indexer.service';
 import { TransactionFilter } from 'src/endpoints/transactions/entities/transaction.filter';
 import { TransactionUtils } from 'src/endpoints/transactions/transaction.utils';
 import { QueryPagination } from 'src/common/entities/query.pagination';
-import { Transaction } from 'src/endpoints/transactions/entities/transaction';
 import '@multiversx/sdk-nestjs/lib/src/utils/extensions/jest.extensions';
 import '@multiversx/sdk-nestjs/lib/src/utils/extensions/array.extensions';
 import { TransactionQueryOptions } from 'src/endpoints/transactions/entities/transactions.query.options';
@@ -90,18 +89,18 @@ describe('Transaction Service', () => {
   });
 
   describe('getTransactions', () => {
-    it('should return 5 transactions', async () => {
+    it('should return an array of 5 transactions and verify if results have structure of TransactionDetailed', async () => {
       const results = await transactionService.getTransactions(
         new TransactionFilter(),
         new QueryPagination({ size: 5 }));
 
       for (const result of results) {
-        expect(result).toHaveStructure(Object.keys(new Transaction()));
+        expect(result).toHaveStructure(Object.keys(new TransactionDetailed()));
       }
       expect(results).toHaveLength(5);
     });
 
-    it('should return 2 transactions with hashes filter applied', async () => {
+    it('should return an array of 2 transactions when hashes filter is applied', async () => {
       const txFilters = new TransactionFilter();
       txFilters.hashes = [
         "29a2bed2543197e69c9bf16b30c4b0196f5e7a59584aba2e1a2127bf06cdfd2d",
@@ -115,7 +114,7 @@ describe('Transaction Service', () => {
         new QueryPagination({ size: 2 }));
 
       for (const result of results) {
-        expect(result).toHaveStructure(Object.keys(new Transaction()));
+        expect(result).toHaveStructure(Object.keys(new TransactionDetailed()));
       }
     });
 
