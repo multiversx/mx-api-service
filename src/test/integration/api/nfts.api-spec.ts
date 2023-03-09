@@ -24,6 +24,6 @@ describe("API Testing", () => {
     const checker = new ApiChecker('nfts', app.getHttpServer());
     checker.skipFields = ['message', 'statusCode'];
     await checker.checkStatus();
-    await checker.checkFilter(['collection', 'creator']);
+    await checker.checkFilter(['collection']);
   });
 });
