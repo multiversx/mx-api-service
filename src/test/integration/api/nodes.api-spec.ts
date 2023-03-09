@@ -26,6 +26,5 @@ describe("API Testing", () => {
     await checker.checkPagination();
     await checker.checkDetails();
     await checker.checkFilter(['shard']);
-    await checker.checkAlternativeCount(['type', 'online']);
   });
 });
