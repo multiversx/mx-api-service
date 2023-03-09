@@ -12,17 +12,16 @@ export class ApiChecker {
   async checkPagination() {
     const items = await this.requestList({ size: 100 });
 
-    await Promise.all([
-      this.checkPaginationInternal(items, 0, 1),
-      this.checkPaginationInternal(items, 1, 5),
-      this.checkPaginationInternal(items, 5, 5),
-      this.checkPaginationInternal(items, 5, 10),
-      this.checkPaginationInternal(items, 10, 20),
-    ]);
+    await this.checkPaginationInternal(items, 0, 1);
+    await this.checkPaginationInternal(items, 1, 5);
+    await this.checkPaginationInternal(items, 5, 5);
+    await this.checkPaginationInternal(items, 5, 10);
+    await this.checkPaginationInternal(items, 10, 20);
   }
 
   async checkDetails() {
     const [item] = await this.requestList({ size: 1 });
+
     const [idAttribute] = Object.keys(item);
     const id = item[idAttribute];
 
@@ -47,25 +46,22 @@ export class ApiChecker {
   }
 
   async checkFilter(criterias: string[]) {
-    const promises = criterias.map((criteria) => {
-      return this.checkFilterInternal(criteria);
-    });
-
-    await Promise.all(promises);
+    for (const criteria of criterias) {
+      await this.checkFilterInternal(criteria);
+    }
   }
 
   async checkFilterInternal(criteria: string) {
     const items = await this.requestList({ size: 100, fields: criteria });
 
     const distinctCriteria = items.map(x => x[criteria]).distinct();
+
     const shuffled = distinctCriteria.sort(() => 0.5 - Math.random());
     const selected = shuffled.slice(0, 10);
 
-    const promises = selected.map((value) => {
-      return this.checkFilterValueInternal(criteria, value);
-    });
-
-    await Promise.all(promises);
+    for (const value of selected) {
+      await this.checkFilterValueInternal(criteria, value);
+    }
   }
 
   async checkStatus() {
