@@ -28,6 +28,8 @@ import crypto from 'crypto-js';
 import { OriginLogger } from '@multiversx/sdk-nestjs';
 import { ApiConfigService } from 'src/common/api-config/api.config.service';
 import { UsernameService } from '../usernames/username.service';
+import { MiniBlock } from 'src/common/indexer/entities/miniblock';
+import { Block } from 'src/common/indexer/entities/block';
 
 @Injectable()
 export class TransactionService {
@@ -145,30 +147,29 @@ export class TransactionService {
   async getTransactions(filter: TransactionFilter, pagination: QueryPagination, queryOptions?: TransactionQueryOptions, address?: string): Promise<Transaction[]> {
     const elasticTransactions = await this.indexerService.getTransactions(filter, pagination, address);
 
-    let transactions: Transaction[] | TransactionDetailed[] = [];
+    let transactions: TransactionDetailed[] = [];
+    transactions = elasticTransactions.map(x => ApiUtils.mergeObjects(new TransactionDetailed(), x));
 
-    if (queryOptions && queryOptions.withBlockInfo) {
-      transactions = await this.processBlockInfoInTransactions(elasticTransactions, pagination);
-    } else {
-      transactions = elasticTransactions.map(x => ApiUtils.mergeObjects(new Transaction(), x));
+    if (filter.hashes) {
+      const txHashes: string[] = filter.hashes;
+      const elasticHashes = elasticTransactions.map(({ txHash }: any) => txHash);
+      const missingHashes: string[] = txHashes.except(elasticHashes);
 
-      if (filter.hashes) {
-        const txHashes: string[] = filter.hashes;
-        const elasticHashes = elasticTransactions.map(({ txHash }: any) => txHash);
-        const missingHashes: string[] = txHashes.except(elasticHashes);
-
-        const gatewayTransactions = await Promise.all(missingHashes.map((txHash) => this.transactionGetService.tryGetTransactionFromGatewayForList(txHash)));
-        for (const gatewayTransaction of gatewayTransactions) {
-          if (gatewayTransaction) {
-            transactions.push(gatewayTransaction);
-          }
+      const gatewayTransactions = await Promise.all(missingHashes.map((txHash) => this.transactionGetService.tryGetTransactionFromGatewayForList(txHash)));
+      for (const gatewayTransaction of gatewayTransactions) {
+        if (gatewayTransaction) {
+          transactions.push(ApiUtils.mergeObjects(new TransactionDetailed(), gatewayTransaction));
         }
       }
+    }
 
-      if (queryOptions && (queryOptions.withScResults || queryOptions.withOperations || queryOptions.withLogs)) {
-        queryOptions.withScResultLogs = queryOptions.withLogs;
-        transactions = await this.getExtraDetailsForTransactions(elasticTransactions, transactions, queryOptions);
-      }
+    if (queryOptions && queryOptions.withBlockInfo) {
+      await this.applyBlockInfo(transactions);
+    }
+
+    if (queryOptions && (queryOptions.withScResults || queryOptions.withOperations || queryOptions.withLogs)) {
+      queryOptions.withScResultLogs = queryOptions.withLogs;
+      transactions = await this.getExtraDetailsForTransactions(elasticTransactions, transactions, queryOptions);
     }
 
     await this.processTransactions(transactions, {
@@ -498,56 +499,40 @@ export class TransactionService {
     return logs;
   }
 
-  private async processBlockInfoInTransactions(elasticTransactions: any[], pagination: QueryPagination): Promise<TransactionDetailed[]> {
-    const miniBlockHashes: string[] = [];
-
-    for (const elasticTransaction of elasticTransactions) {
-      if (elasticTransaction.miniBlockHash) {
-        miniBlockHashes.push(elasticTransaction.miniBlockHash);
-      }
-    }
-
-    const transactions: TransactionDetailed[] = [];
+  async applyBlockInfo(transactions: TransactionDetailed[]): Promise<void> {
+    const miniBlockHashes = transactions
+      .filter(x => x.miniBlockHash)
+      .map(x => x.miniBlockHash ?? '')
+      .distinct();
 
     if (miniBlockHashes.length > 0) {
-      const miniBlocks = await this.indexerService.getMiniBlocks(pagination, { hashes: miniBlockHashes });
-      const senderBlockHashes: string[] = [];
-      const receiverBlockHashes: string[] = [];
+      const miniBlocks = await this.indexerService.getMiniBlocks({ from: 0, size: miniBlockHashes.length }, { hashes: miniBlockHashes });
+      const indexedMiniBlocks = miniBlocks.toRecord<MiniBlock>(x => x.miniBlockHash);
 
-      for (const elasticTransaction of elasticTransactions) {
-        if (elasticTransaction.miniBlockHash) {
-          const miniBlock = miniBlocks.find((block) => block.miniBlockHash === elasticTransaction.miniBlockHash);
+      const senderBlockHashes: string[] = miniBlocks.map(x => x.senderBlockHash);
+      const receiverBlockHashes: string[] = miniBlocks.map(x => x.receiverBlockHash);
+      const blockHashes = [...senderBlockHashes, ...receiverBlockHashes].distinct();
 
-          if (miniBlock) {
-            senderBlockHashes.push(miniBlock.senderBlockHash);
-            receiverBlockHashes.push(miniBlock.receiverBlockHash);
+      const blocks = await this.indexerService.getBlocks({ hashes: blockHashes }, { from: 0, size: blockHashes.length });
+      const indexedBlocks = blocks.toRecord<Block>(x => x.hash);
+
+      for (const transaction of transactions) {
+        const miniBlock = indexedMiniBlocks[transaction.miniBlockHash ?? ''];
+        if (miniBlock) {
+          transaction.senderBlockHash = miniBlock.senderBlockHash;
+          transaction.receiverBlockHash = miniBlock.receiverBlockHash;
+
+          const senderBlock = indexedBlocks[miniBlock.senderBlockHash];
+          if (senderBlock) {
+            transaction.senderBlockNonce = senderBlock.nonce;
+          }
+
+          const receiverBlock = indexedBlocks[miniBlock.receiverBlockHash];
+          if (receiverBlock) {
+            transaction.receiverBlockNonce = receiverBlock.nonce;
           }
         }
       }
-
-      const blockHashes = [...senderBlockHashes, ...receiverBlockHashes].filter((hash, index, hashes) => hashes.indexOf(hash) === index);
-      const blocks = await this.indexerService.getBlocks({ hashes: blockHashes }, pagination);
-
-      for (let i = 0; i < elasticTransactions.length; i++) {
-        const elasticOperation = elasticTransactions[i];
-        const transaction = ApiUtils.mergeObjects(new TransactionDetailed(), elasticOperation);
-        const miniBlockHash = elasticOperation.miniBlockHash;
-
-        if (miniBlockHash && miniBlocks[i]) {
-          transaction.senderBlockHash = miniBlocks[i].senderBlockHash;
-          transaction.receiverBlockHash = miniBlocks[i].receiverBlockHash;
-        }
-
-        const senderBlockNonce = blocks.find((block) => block.hash === transaction.senderBlockHash)?.nonce;
-        const receiverBlockNonce = blocks.find((block) => block.hash === transaction.receiverBlockHash)?.nonce;
-
-        transaction.senderBlockNonce = senderBlockNonce;
-        transaction.receiverBlockNonce = receiverBlockNonce;
-
-        transactions.push(transaction);
-      }
     }
-
-    return transactions;
   }
 }
