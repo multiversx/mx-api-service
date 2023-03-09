@@ -26,8 +26,13 @@ export class CacheInfo {
     ttl: Constants.oneHour(),
   };
 
-  static NumShards: CacheInfo = {
-    key: 'numShards',
+  static ShardIds: CacheInfo = {
+    key: 'shardIds',
+    ttl: Constants.oneWeek(),
+  };
+
+  static ShardCount: CacheInfo = {
+    key: 'shardCount',
     ttl: Constants.oneWeek(),
   };
 

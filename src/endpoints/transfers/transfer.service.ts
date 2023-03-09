@@ -62,9 +62,7 @@ export class TransferService {
       transactions.push(transaction);
     }
 
-    if (queryOptions.withBlockInfo ||
-      (fields && ['senderBlockHash', 'receiverBlockHash', 'senderBlockNonce', 'receiverBlockNonce'].some(prop => fields.includes(prop)))
-    ) {
+    if (queryOptions.withBlockInfo || (fields && fields.includesSome(['senderBlockHash', 'receiverBlockHash', 'senderBlockNonce', 'receiverBlockNonce']))) {
       await this.transactionService.applyBlockInfo(transactions);
     }
 

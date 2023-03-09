@@ -29,6 +29,7 @@ import { ContractUpgrades } from './entities/contract.upgrades';
 import { AccountVerification } from './entities/account.verification';
 import { AccountFilter } from './entities/account.filter';
 import { AccountHistoryFilter } from './entities/account.history.filter';
+import { ProtocolService } from 'src/common/protocol/protocol.service';
 
 @Injectable()
 export class AccountService {
@@ -52,7 +53,8 @@ export class AccountService {
     private readonly smartContractResultService: SmartContractResultService,
     private readonly assetsService: AssetsService,
     private readonly usernameService: UsernameService,
-    private readonly apiService: ApiService
+    private readonly apiService: ApiService,
+    private readonly protocolService: ProtocolService,
   ) { }
 
   async getAccountsCount(filter: AccountFilter): Promise<number> {
@@ -118,7 +120,8 @@ export class AccountService {
         account: { nonce, balance, code, codeHash, rootHash, developerReward, ownerAddress, codeMetadata },
       } = await this.gatewayService.getAddressDetails(address);
 
-      const shard = AddressUtils.computeShard(AddressUtils.bech32Decode(address));
+      const shardCount = await this.protocolService.getShardCount();
+      const shard = AddressUtils.computeShard(AddressUtils.bech32Decode(address), shardCount);
       let account = new AccountDetailed({ address, nonce, balance, code, codeHash, rootHash, txCount, scrCount, shard, developerReward, ownerAddress, scamInfo: undefined, assets: assets[address], nftCollections: undefined, nfts: undefined });
 
       const codeAttributes = AddressUtils.decodeCodeMetadata(codeMetadata);
@@ -256,9 +259,10 @@ export class AccountService {
 
     const accountsRaw = await this.indexerService.getAccountsForAddresses(addresses);
     const accounts: Array<Account> = accountsRaw.map(account => ApiUtils.mergeObjects(new Account(), account));
+    const shardCount = await this.protocolService.getShardCount();
 
     for (const account of accounts) {
-      account.shard = AddressUtils.computeShard(AddressUtils.bech32Decode(account.address));
+      account.shard = AddressUtils.computeShard(AddressUtils.bech32Decode(account.address), shardCount);
       account.assets = assets[account.address];
     }
 
@@ -277,8 +281,10 @@ export class AccountService {
       return account;
     });
 
+    const shardCount = await this.protocolService.getShardCount();
+
     for (const account of accounts) {
-      account.shard = AddressUtils.computeShard(AddressUtils.bech32Decode(account.address));
+      account.shard = AddressUtils.computeShard(AddressUtils.bech32Decode(account.address), shardCount);
       account.assets = assets[account.address];
     }
 

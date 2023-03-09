@@ -20,15 +20,28 @@ export class ProtocolService {
 
   async getShardIds(): Promise<number[]> {
     return await this.cachingService.getOrSetCache(
-      CacheInfo.NumShards.key,
+      CacheInfo.ShardIds.key,
       async () => await this.getShardIdsRaw(),
-      CacheInfo.NumShards.ttl,
+      CacheInfo.ShardIds.ttl,
     );
   }
 
-  private async getShardIdsRaw(): Promise<number[]> {
+  async getShardCount(): Promise<number> {
+    return await this.cachingService.getOrSetCache(
+      CacheInfo.ShardCount.key,
+      async () => await this.getShardCountRaw(),
+      CacheInfo.ShardCount.ttl,
+    );
+  }
+
+  private async getShardCountRaw(): Promise<number> {
     const networkConfig = await this.gatewayService.getNetworkConfig();
     const shardCount = networkConfig.erd_num_shards_without_meta;
+    return shardCount;
+  }
+
+  private async getShardIdsRaw(): Promise<number[]> {
+    const shardCount = await this.getShardCountRaw();
 
     const result = [];
     for (let i = 0; i < shardCount; i++) {

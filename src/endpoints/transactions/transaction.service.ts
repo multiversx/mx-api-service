@@ -30,6 +30,7 @@ import { ApiConfigService } from 'src/common/api-config/api.config.service';
 import { UsernameService } from '../usernames/username.service';
 import { MiniBlock } from 'src/common/indexer/entities/miniblock';
 import { Block } from 'src/common/indexer/entities/block';
+import { ProtocolService } from 'src/common/protocol/protocol.service';
 
 @Injectable()
 export class TransactionService {
@@ -50,6 +51,7 @@ export class TransactionService {
     private readonly assetsService: AssetsService,
     private readonly apiConfigService: ApiConfigService,
     private readonly usernameService: UsernameService,
+    private readonly protocolService: ProtocolService,
   ) { }
 
   async getTransactionCountForAddress(address: string): Promise<number> {
@@ -276,8 +278,9 @@ export class TransactionService {
   }
 
   async createTransaction(transaction: TransactionCreate): Promise<TransactionSendResult | string> {
-    const receiverShard = AddressUtils.computeShard(AddressUtils.bech32Decode(transaction.receiver));
-    const senderShard = AddressUtils.computeShard(AddressUtils.bech32Decode(transaction.sender));
+    const shardCount = await this.protocolService.getShardCount();
+    const receiverShard = AddressUtils.computeShard(AddressUtils.bech32Decode(transaction.receiver), shardCount);
+    const senderShard = AddressUtils.computeShard(AddressUtils.bech32Decode(transaction.sender), shardCount);
 
     const pluginTransaction = await this.pluginsService.processTransactionSend(transaction);
     if (pluginTransaction) {
