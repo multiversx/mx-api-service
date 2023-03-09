@@ -224,4 +224,20 @@ describe('Transaction Service', () => {
       expect([sender, receiver].includes(transfer.receiver)).toBe(true);
     }
   });
+
+  it('should return an array of transactions and if withBlockInfo is set to true, block extra fields should be defined', async () => {
+    const transactions = await transactionService.getTransactions(
+      new TransactionFilter(),
+      new QueryPagination(),
+      new TransactionQueryOptions({ withBlockInfo: true }));
+
+    const extraFields = transactions.every(transaction =>
+      'senderBlockHash' in transaction &&
+      'senderBlockNonce' in transaction &&
+      'receiverBlockHash' in transaction &&
+      'receiverBlockNonce' in transaction
+    );
+
+    expect(extraFields).toBeTruthy();
+  });
 });

@@ -28,6 +28,8 @@ import crypto from 'crypto-js';
 import { OriginLogger } from '@multiversx/sdk-nestjs';
 import { ApiConfigService } from 'src/common/api-config/api.config.service';
 import { UsernameService } from '../usernames/username.service';
+import { MiniBlock } from 'src/common/indexer/entities/miniblock';
+import { Block } from 'src/common/indexer/entities/block';
 
 @Injectable()
 export class TransactionService {
@@ -145,7 +147,8 @@ export class TransactionService {
   async getTransactions(filter: TransactionFilter, pagination: QueryPagination, queryOptions?: TransactionQueryOptions, address?: string): Promise<Transaction[]> {
     const elasticTransactions = await this.indexerService.getTransactions(filter, pagination, address);
 
-    let transactions = elasticTransactions.map(x => ApiUtils.mergeObjects(new Transaction(), x));
+    let transactions: TransactionDetailed[] = [];
+    transactions = elasticTransactions.map(x => ApiUtils.mergeObjects(new TransactionDetailed(), x));
 
     if (filter.hashes) {
       const txHashes: string[] = filter.hashes;
@@ -155,14 +158,17 @@ export class TransactionService {
       const gatewayTransactions = await Promise.all(missingHashes.map((txHash) => this.transactionGetService.tryGetTransactionFromGatewayForList(txHash)));
       for (const gatewayTransaction of gatewayTransactions) {
         if (gatewayTransaction) {
-          transactions.push(gatewayTransaction);
+          transactions.push(ApiUtils.mergeObjects(new TransactionDetailed(), gatewayTransaction));
         }
       }
     }
 
+    if (queryOptions && queryOptions.withBlockInfo) {
+      await this.applyBlockInfo(transactions);
+    }
+
     if (queryOptions && (queryOptions.withScResults || queryOptions.withOperations || queryOptions.withLogs)) {
       queryOptions.withScResultLogs = queryOptions.withLogs;
-
       transactions = await this.getExtraDetailsForTransactions(elasticTransactions, transactions, queryOptions);
     }
 
@@ -405,7 +411,6 @@ export class TransactionService {
           }
         }
       }
-
       detailedTransactions.push(transactionDetailed);
     }
 
@@ -492,5 +497,42 @@ export class TransactionService {
     }
 
     return logs;
+  }
+
+  async applyBlockInfo(transactions: TransactionDetailed[]): Promise<void> {
+    const miniBlockHashes = transactions
+      .filter(x => x.miniBlockHash)
+      .map(x => x.miniBlockHash ?? '')
+      .distinct();
+
+    if (miniBlockHashes.length > 0) {
+      const miniBlocks = await this.indexerService.getMiniBlocks({ from: 0, size: miniBlockHashes.length }, { hashes: miniBlockHashes });
+      const indexedMiniBlocks = miniBlocks.toRecord<MiniBlock>(x => x.miniBlockHash);
+
+      const senderBlockHashes: string[] = miniBlocks.map(x => x.senderBlockHash);
+      const receiverBlockHashes: string[] = miniBlocks.map(x => x.receiverBlockHash);
+      const blockHashes = [...senderBlockHashes, ...receiverBlockHashes].distinct();
+
+      const blocks = await this.indexerService.getBlocks({ hashes: blockHashes }, { from: 0, size: blockHashes.length });
+      const indexedBlocks = blocks.toRecord<Block>(x => x.hash);
+
+      for (const transaction of transactions) {
+        const miniBlock = indexedMiniBlocks[transaction.miniBlockHash ?? ''];
+        if (miniBlock) {
+          transaction.senderBlockHash = miniBlock.senderBlockHash;
+          transaction.receiverBlockHash = miniBlock.receiverBlockHash;
+
+          const senderBlock = indexedBlocks[miniBlock.senderBlockHash];
+          if (senderBlock) {
+            transaction.senderBlockNonce = senderBlock.nonce;
+          }
+
+          const receiverBlock = indexedBlocks[miniBlock.receiverBlockHash];
+          if (receiverBlock) {
+            transaction.receiverBlockNonce = receiverBlock.nonce;
+          }
+        }
+      }
+    }
   }
 }

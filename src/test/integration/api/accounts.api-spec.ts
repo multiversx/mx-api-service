@@ -23,8 +23,9 @@ describe("API Testing", () => {
   it("/accounts", async () => {
     const checker = new ApiChecker('accounts', app.getHttpServer());
     checker.skipFields = ['balance', 'nonce'];
+    await checker.checkDetails();
     await checker.checkStatus();
     await checker.checkPagination();
-    await checker.checkDetails();
+    await checker.checkAlternativeCount();
   });
 });
