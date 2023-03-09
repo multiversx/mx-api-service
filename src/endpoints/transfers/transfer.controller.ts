@@ -35,6 +35,7 @@ export class TransferController {
   @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
   @ApiQuery({ name: 'function', description: 'Filter transfers by function name', required: false })
+  @ApiQuery({ name: 'fields', description: 'List of fields to filter by', required: false })
   @ApiQuery({ name: 'withScamInfo', description: 'Returns scam information', required: false, type: Boolean })
   @ApiQuery({ name: 'withUsername', description: 'Integrates username in assets for all addresses present in the transactions', required: false, type: Boolean })
   @ApiQuery({ name: 'withBlockInfo', description: 'Returns sender / receiver block details', required: false, type: Boolean })
@@ -53,6 +54,7 @@ export class TransferController {
     @Query('before', ParseIntPipe) before?: number,
     @Query('after', ParseIntPipe) after?: number,
     @Query('order', new ParseEnumPipe(SortOrder)) order?: SortOrder,
+    @Query('fields', ParseArrayPipe) fields?: string[],
     @Query('withScamInfo', new ParseBoolPipe) withScamInfo?: boolean,
     @Query('withUsername', new ParseBoolPipe) withUsername?: boolean,
     @Query('withBlockInfo', new ParseBoolPipe) withBlockInfo?: boolean,
@@ -75,6 +77,7 @@ export class TransferController {
     }),
       new QueryPagination({ from, size }),
       options,
+      fields
     );
   }
 

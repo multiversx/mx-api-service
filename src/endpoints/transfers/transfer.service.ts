@@ -42,13 +42,16 @@ export class TransferService {
     return elasticTransfers;
   }
 
-  async getTransfers(filter: TransactionFilter, pagination: QueryPagination, queryOptions: TransactionQueryOptions): Promise<Transaction[]> {
+  async getTransfers(filter: TransactionFilter, pagination: QueryPagination, queryOptions: TransactionQueryOptions, fields?: string[]): Promise<Transaction[]> {
     let elasticOperations = await this.indexerService.getTransfers(filter, pagination);
     elasticOperations = this.sortElasticTransfers(elasticOperations);
 
     const transactions: Transaction[] = [];
 
-    if (queryOptions.withBlockInfo) {
+    if (queryOptions.withBlockInfo ||
+      (fields && ['senderBlockHash', 'receiverBlockHash', 'senderBlockNonce', 'receiverBlockNonce']
+        .some(prop => fields.includes(prop)))) {
+
       const miniBlockHashes: string[] = [];
 
       for (const elasticOperation of elasticOperations) {
