@@ -1,101 +1,139 @@
 import { CachingService } from "@multiversx/sdk-nestjs";
 import { Test } from "@nestjs/testing";
 import { QueryPagination } from "src/common/entities/query.pagination";
-import { Tag } from "src/common/indexer/entities/tag";
 import { IndexerService } from "src/common/indexer/indexer.service";
+import { Tag } from "src/endpoints/nfttags/entities/tag";
 import { TagService } from "src/endpoints/nfttags/tag.service";
-import { RootTestModule } from "src/test/root-test.module";
+import { CacheInfo } from "src/utils/cache.info";
 
-describe('Tag Service', () => {
-  let service: TagService;
+describe('TagService', () => {
+  let tagService: TagService;
   let indexerService: IndexerService;
   let cachingService: CachingService;
 
-  beforeAll(async () => {
+  beforeEach(async () => {
     const moduleRef = await Test.createTestingModule({
-      imports: [RootTestModule],
-      providers: [TagService],
+      providers: [
+        TagService,
+        {
+          provide: IndexerService, useValue: {
+            getNftTagCount: jest.fn(),
+            getNftTags: jest.fn(),
+            getTag: jest.fn(),
+          },
+        },
+        { provide: CachingService, useValue: { getOrSetCache: jest.fn() } },
+      ],
     }).compile();
 
-    service = moduleRef.get<TagService>(TagService);
+    tagService = moduleRef.get<TagService>(TagService);
     indexerService = moduleRef.get<IndexerService>(IndexerService);
     cachingService = moduleRef.get<CachingService>(CachingService);
   });
 
-  it('should be defined', () => {
-    expect(service).toBeDefined();
-  });
-
-  describe('getNFtTags', () => {
-    it('should call getNftTagsRaw method if search is provided', async () => {
-      const search: string = 'test';
-      jest.spyOn(service['indexerService'], 'getNftTags').mockResolvedValueOnce([]);
-
-      await service.getNftTags(new QueryPagination({}), search);
-
-      expect(indexerService.getNftTags).toHaveBeenCalledWith(new QueryPagination(), search);
-    });
-
-    it('should call getOrSetCache method if search is not provided', async () => {
-      // eslint-disable-next-line require-await
-      jest.spyOn(service['cachingService'], 'getOrSetCache').mockImplementationOnce(async () => [{
-        tag: 'multiversx',
-        count: 100,
-      }]);
-
-      const result = await service.getNftTags(new QueryPagination());
-      expect(cachingService.getOrSetCache).toHaveBeenCalled();
-      expect(result).toEqual(expect.arrayContaining([
-        expect.objectContaining({
-          tag: 'multiversx',
-          count: 100,
-        }),
-      ]));
-    });
-  });
-
   describe('getNftTagCount', () => {
-    it('returns the correct NFT tag count when called without search query', async () => {
-      const expectedTagCount = 1234;
-      jest.spyOn(service['indexerService'], 'getNftTagCount').mockResolvedValue(expectedTagCount);
+    it('should call getNftTagCount with search parameter', async () => {
+      const search = 'test';
 
-      const actualTagCount = await service.getNftTagCount();
-      expect(actualTagCount).toStrictEqual(expectedTagCount);
+      await tagService.getNftTagCount(search);
+
+      expect(indexerService.getNftTagCount).toHaveBeenCalledWith(search);
     });
 
-    it('returns the correct NFT tag count when called with search query', async () => {
-      const searchQuery = 'mySearchQuery';
-      const expectedTagCount = 5678;
-      jest.spyOn(service['indexerService'], 'getNftTagCount').mockResolvedValue(expectedTagCount);
+    it('should return cached NftTagCount when search parameter is not provided', async () => {
+      const cachedValue = 100;
+      // eslint-disable-next-line require-await
+      jest.spyOn(cachingService, 'getOrSetCache').mockImplementationOnce(async () => cachedValue);
 
-      const actualTagCount = await service.getNftTagCount(searchQuery);
-      expect(actualTagCount).toStrictEqual(expectedTagCount);
+      const result = await tagService.getNftTagCount();
+
+      expect(cachingService.getOrSetCache).toHaveBeenCalledWith(CacheInfo.NftTagCount.key, expect.any(Function), CacheInfo.NftTagCount.ttl);
+      expect(indexerService.getNftTagCount).not.toHaveBeenCalled();
+      expect(result).toBe(cachedValue);
     });
 
-    it('caches the NFT tag count when called without search query', async () => {
-      const expectedTagCount = 1234;
-      jest.spyOn(service['indexerService'], 'getNftTagCount').mockResolvedValue(expectedTagCount);
-      const cachingServiceSpy = jest.spyOn(cachingService, 'getOrSetCache');
+    it('should call getNftTagCountRaw and cache the result when search parameter is not provided', async () => {
+      const expectedResult = 50;
+      jest.spyOn(cachingService, 'getOrSetCache').mockImplementationOnce(async (_key: string, promise: any) => {
+        const result = await promise();
+        expect(result).toBe(expectedResult);
+        return result;
+      });
 
-      const actualTagCount = await service.getNftTagCount();
-      expect(actualTagCount).toEqual(expectedTagCount);
-      expect(cachingServiceSpy).toHaveBeenCalled();
+      jest.spyOn(indexerService, 'getNftTagCount').mockResolvedValueOnce(expectedResult);
+
+      const result = await tagService.getNftTagCount();
+
+      expect(cachingService.getOrSetCache).toHaveBeenCalledWith(CacheInfo.NftTagCount.key, expect.any(Function), CacheInfo.NftTagCount.ttl);
+      expect(indexerService.getNftTagCount).toHaveBeenCalled();
+      expect(result).toBe(expectedResult);
     });
   });
 
-  describe('getNftTag', () => {
-    it('should return a Tag object with the specified tag name and count', async () => {
-      const tag: Tag = {
-        tag: 'multiversx',
-        count: 100,
-      };
+  describe('getNftTags', () => {
+    describe('when search parameter is not provided', () => {
+      it('should call getNftTagsRaw and cache the result', async () => {
+        const expectedResult: Tag[] = [{ tag: 'multiversx', count: 100 }];
+        const pagination: QueryPagination = { size: 0, from: 2 };
 
-      jest.spyOn(service['indexerService'], 'getTag').mockReturnValueOnce(Promise.resolve(tag));
-      const result = await service.getNftTag('multiversx');
-      expect(result).toEqual(expect.objectContaining({
-        tag: 'multiversx',
-        count: 100,
-      }));
+        jest.spyOn(cachingService, 'getOrSetCache').mockImplementationOnce(async (_key: string, promise: any) => {
+          const result = await promise();
+          expect(result).toEqual(expectedResult);
+          return result;
+        });
+
+        jest.spyOn(indexerService, 'getNftTags').mockResolvedValueOnce([{ tag: 'multiversx', count: 100 }]);
+
+        const result = await tagService.getNftTags(pagination);
+        expect(indexerService.getNftTags).toHaveBeenCalledWith(pagination, undefined);
+        expect(result).toEqual(expectedResult);
+      });
+
+      it('should return cached NftTags when cache is available', async () => {
+        const cachedValue: Tag[] = [new Tag(), new Tag()];
+        const pagination: QueryPagination = { size: 0, from: 2 };
+
+        // eslint-disable-next-line require-await
+        jest.spyOn(cachingService, 'getOrSetCache').mockImplementationOnce(async () => cachedValue);
+
+        const result = await tagService.getNftTags(pagination);
+
+        expect(indexerService.getNftTags).not.toHaveBeenCalled();
+        expect(result).toEqual(cachedValue);
+      });
+    });
+
+    describe('when search parameter is provided', () => {
+      it('should call getNftTagsRaw', async () => {
+        const expectedResult: Tag[] = [new Tag(), new Tag()];
+        const pagination: QueryPagination = { size: 0, from: 2 };
+        const search = 'sunny';
+
+        jest.spyOn(tagService, 'getNftTagsRaw').mockResolvedValueOnce(expectedResult);
+
+        const result = await tagService.getNftTags(pagination, search);
+        expect(tagService.getNftTagsRaw).toHaveBeenCalledWith(pagination, search);
+        expect(result).toEqual(expectedResult);
+      });
+    });
+  });
+
+  describe('getNftTag()', () => {
+    it('should return nft details and verify if getTag from indexer was called', async () => {
+      const tag = 'sunny';
+      const indexerResult = {
+        tag: 'sunny',
+        count: 1234,
+      };
+      const expectedResult = new Tag();
+      expectedResult.tag = indexerResult.tag;
+      expectedResult.count = indexerResult.count;
+
+      jest.spyOn(indexerService, 'getTag').mockResolvedValueOnce(indexerResult);
+
+      const result = await tagService.getNftTag(tag);
+      expect(indexerService.getTag).toHaveBeenCalledWith(tag);
+      expect(result).toEqual(expectedResult);
     });
   });
 });
