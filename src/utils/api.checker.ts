@@ -160,6 +160,4 @@ export class ApiChecker {
 
     return result.statusCode;
   }
-
-
 }
