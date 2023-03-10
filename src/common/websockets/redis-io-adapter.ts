@@ -9,7 +9,7 @@ export class RedisIoAdapter extends IoAdapter {
 
     // eslint-disable-next-line require-await
     async connectToRedis(): Promise<void> {
-        const pubClient: any = createClient({ url: configuration().urls.redis });
+        const pubClient: any = createClient({ host: configuration().urls.redis });
         const subClient: any = pubClient.duplicate();
 
         this.adapterConstructor = createAdapter(pubClient, subClient);
