@@ -191,7 +191,7 @@ export class NftService {
   }
 
   async applyAssetsAndTicker(token: Nft, fields?: string[]) {
-    if (fields && !fields.includes('assets') && !fields.includes('ticker')) {
+    if (fields && fields.includesNone(['ticker', 'assets'])) {
       return;
     }
 
@@ -240,7 +240,7 @@ export class NftService {
   }
 
   private async applyUnlockFields(nft: Nft, fields?: string[]): Promise<void> {
-    if (fields && (!fields.includes('unlockSchedule') && !fields.includes('unlockEpoch'))) {
+    if (fields && fields.includesNone(['unlockSchedule', 'unlockEpoch'])) {
       return;
     }
 
@@ -456,7 +456,7 @@ export class NftService {
 
     await this.batchProcessNfts(nfts, fields);
 
-    if (this.apiConfigService.isNftExtendedAttributesEnabled() && (!fields || fields.includes('score') || fields.includes('rank') || fields.includes('isNsfw'))) {
+    if (this.apiConfigService.isNftExtendedAttributesEnabled() && (!fields || fields.includesSome(['score', 'rank', 'isNsfw']))) {
       const internalNfts = await this.getNftsInternalByIdentifiers(nfts.map(x => x.identifier));
 
       const indexedInternalNfts = internalNfts.toRecord<Nft>(x => x.identifier);
@@ -494,7 +494,7 @@ export class NftService {
   }
 
   private async applyPriceUsd(nft: NftAccount, fields?: string[]) {
-    if (fields && !fields.includes('price') && !fields.includes('valueUsd')) {
+    if (fields && fields.includesNone(['price', 'valueUsd'])) {
       return;
     }
 
