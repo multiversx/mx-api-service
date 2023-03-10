@@ -39,26 +39,21 @@ export class AuthService {
   /**
    *
    * @param accessToken
-   * @param transactionAddress
+   * @param txHash
    * @returns
    */
   async validateUser(
-    accessToken: string,
-    transactionAddress: string,
-  ): Promise<{ address: string, expiryDate: number, extraTime: number }> {
-    // Validate the access token
-    const tokenData = await this.nativeAuthService.validateAccessTokenAndReturnData(
-      accessToken,
-    );
-
+    address: string,
+    txHash: string,
+  ): Promise<{ expiryDate: number, extraTime: number }> {
     // Verify that transaction is not already processed
     const transaction = await this.transactionDbService.findTransaction(
-      transactionAddress,
+      txHash,
     );
 
     if (transaction) {
       throw new HttpException(
-        `Transaction ${transactionAddress} already processed.`,
+        `Transaction ${txHash} already processed.`,
         HttpStatus.BAD_REQUEST,
       );
     }
@@ -66,7 +61,7 @@ export class AuthService {
     // Get transaction details
     const txData = (
       await this.apiService
-        .get(`${this.apiConfigService.getApiUrls()[0]}/transaction/${transactionAddress}`, {
+        .get(`${this.apiConfigService.getApiUrls()[0]}/transaction/${txHash}`, {
           headers: {
             Accept: 'application/json',
           },
@@ -83,13 +78,13 @@ export class AuthService {
     // Verify transaction was successful
     if (txData.status != 'success') {
       throw new HttpException(
-        `Transaction ${transactionAddress} not successful.`,
+        `Transaction ${txHash} not successful.`,
         HttpStatus.BAD_REQUEST,
       );
     }
 
     // Verify that wallet key  from token coincides with transaction address sender
-    if (tokenData.address !== txData.sender) {
+    if (address !== txData.sender) {
       throw new HttpException(
         'Wallet address from token does not match transaction sender address',
         HttpStatus.BAD_REQUEST,
@@ -107,7 +102,7 @@ export class AuthService {
       );
     }
 
-    return { address: tokenData.address, ...this.computeUserExpiryDate(parseInt(txData.value, 10)) };
+    return { ...this.computeUserExpiryDate(parseInt(txData.value, 10)) };
   }
 
   /**

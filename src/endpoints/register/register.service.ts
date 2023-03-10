@@ -26,10 +26,10 @@ export class RegisterService {
    * @param accessToken 
    * @param transactionAddress 
    */
-  async registerUser(accessToken: string, transactionAddress: string) {
-    const { address, expiryDate, extraTime } =
+  async registerUser(address: string, transactionAddress: string) {
+    const { expiryDate, extraTime } =
       await this.authService.validateUser(
-        accessToken,
+        address,
         transactionAddress,
       );
 

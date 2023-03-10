@@ -1,16 +1,17 @@
+import { NativeAuth, NativeAuthGuard } from '@multiversx/sdk-nestjs';
 import {
     Controller,
     Post,
     Body,
     Logger,
     BadRequestException,
+    UseGuards,
 } from '@nestjs/common';
 import { ApiResponse, ApiTags } from "@nestjs/swagger";
 import { RegisterService } from './register.service';
 
 interface UserRegistration {
-    accessToken: string;
-    transactionAddress: string; // Address of transaction proving payment
+    txHash: string;
 }
 
 @Controller('register')
@@ -32,6 +33,7 @@ export class RegisterController {
      * @returns HttpResponse
      */
     @Post()
+    @UseGuards(NativeAuthGuard)
     @ApiResponse({
         status: 201,
         description: 'User registered successfully!',
@@ -42,19 +44,19 @@ export class RegisterController {
     })
     async registerUser(
         @Body() body: UserRegistration,
+        @NativeAuth('address') address: string,
     ) {
-        const accessToken = body?.accessToken;
-        const transactionAddress = body?.transactionAddress;
+        const txHash = body?.txHash;
 
-        if (!accessToken || !transactionAddress) {
+        if (!txHash) {
             throw new BadRequestException('Missing access token or transaction address');
         }
 
-        this.logger.log(`Registering user with access token ${accessToken} and transaction address ${transactionAddress}`);
+        this.logger.log(`Registering user with address ${address} and transaction address ${txHash}`);
 
         try {
             // Create user, increase change expiry date or throw an exception
-            await this.registerService.registerUser(accessToken, transactionAddress);
+            await this.registerService.registerUser(address, txHash);
         } catch (error) {
             this.logger.error(error);
             throw new BadRequestException(error);
