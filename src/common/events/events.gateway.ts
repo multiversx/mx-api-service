@@ -49,7 +49,7 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     if (!user) {
       this.logger.error(
-        `Client ${socket.client} disconnected due to unaothorized request.`,
+        `Client ${socket.client} disconnected due to unauthorized request.`,
       );
       socket.disconnect(true);
       return;
