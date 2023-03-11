@@ -60,7 +60,7 @@ aws:
   s3Bucket: 'devnet-media.elrond.com'
   s3Region: ''
 urls:
-  self: 'https://devnet-api.elrond.com'
+  self: 'https://devnet-api.multiversx.com'
   api:
     - 'https://devnet-api.multiversx.com'
     - 'https://testnet-api.multiversx.com'

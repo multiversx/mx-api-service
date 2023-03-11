@@ -20,7 +20,7 @@ urls:
     - 'https://devnet-api.multiversx.com'
     - 'https://testnet-api.multiversx.com'
   elastic:
-    - 'https://index.elrond.com'
+    - 'https://index.multiversx.com'
   mex:
     - 'https://mex-indexer.elrond.com'
   gateway:
