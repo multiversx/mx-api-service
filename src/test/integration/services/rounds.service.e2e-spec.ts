@@ -49,6 +49,7 @@ describe('RoundService', () => {
       expect(result).toEqual(expectedCount);
     });
   });
+
   describe('getRounds', () => {
     it('should call indexerService.getRounds with the provided filter', async () => {
       const filter = new RoundFilter();
