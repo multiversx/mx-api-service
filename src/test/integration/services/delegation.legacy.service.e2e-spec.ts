@@ -89,7 +89,6 @@ describe('DelegationLegacyService', () => {
       ];
       const numUsersEncoded = ['ia8='];
 
-
       jest.spyOn(delegationLegacyService['vmQueryService'], 'vmQuery').mockResolvedValueOnce(totalStakeByTypeEncoded);
       jest.spyOn(delegationLegacyService['vmQueryService'], 'vmQuery').mockResolvedValueOnce(numUsersEncoded);
 
