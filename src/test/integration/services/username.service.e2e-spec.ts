@@ -41,6 +41,10 @@ describe('UsernameService', () => {
     service = module.get<UsernameService>(UsernameService);
   });
 
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
   describe('getUsernameForAddressRaw', () => {
     it('should return username for valid address', async () => {
       const address = 'erd1qga7ze0l03chfgru0a32wxqf2226nzrxnyhzer9lmudqhjgy7ycqjjyknz';
