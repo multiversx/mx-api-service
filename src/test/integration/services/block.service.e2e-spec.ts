@@ -74,7 +74,6 @@ describe('Block Service', () => {
       jest.spyOn(indexerService, 'getBlocksCount').mockResolvedValueOnce(expectedCount);
 
       const result = await blockService.getBlocksCount({});
-      console.log(result);
       expect(indexerService.getBlocksCount).toHaveBeenCalledWith({});
       expect(result).toEqual(expectedCount);
     });
