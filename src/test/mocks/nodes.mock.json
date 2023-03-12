@@ -2544,31 +2544,5 @@
       "versionMismatch"
     ],
     "position": 0
-  },
-  {
-    "bls": "0aa72c7d9380c57b01019489178c82ef80cee860d8fa4935eae6bef6f8095716171fb4804f172beb2a4772542bb6570b70fd7fb052e0e564d38dcb02294292bbca24f0c9be8f59471d7c797e5d7e4d5f2a1962d3c3ef479af6910bc026663891",
-    "name": "Stakeborg-21",
-    "version": "v1.2.38.0",
-    "identity": "stakeborg",
-    "rating": 100,
-    "tempRating": 100,
-    "ratingModifier": 1.2,
-    "shard": 1,
-    "type": "validator",
-    "status": "eligible",
-    "online": true,
-    "nonce": 8160577,
-    "instances": 1,
-    "owner": "erd1vk4q5pq566mel3tfxwp0hg8saj7y63p3sch9p8rz455v0lpeyt8spj5zs2",
-    "provider": "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqfhllllscrt56r",
-    "stake": "2500000000000000000000",
-    "topUp": "1704438393576624507401",
-    "locked": "4204438393576624507401",
-    "leaderFailure": 0,
-    "leaderSuccess": 30,
-    "validatorFailure": 0,
-    "validatorIgnoredSignatures": 0,
-    "validatorSuccess": 1873,
-    "position": 0
   }
 ]
