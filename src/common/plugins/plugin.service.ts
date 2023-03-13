@@ -4,7 +4,6 @@ import { AccountDetailed } from "src/endpoints/accounts/entities/account.detaile
 import { NftCollection } from "src/endpoints/collections/entities/nft.collection";
 import { About } from "src/endpoints/network/entities/about";
 import { Nft } from "src/endpoints/nfts/entities/nft";
-import { TokenDetailed } from "src/endpoints/tokens/entities/token.detailed";
 import { Transaction } from "src/endpoints/transactions/entities/transaction";
 
 @Injectable()
