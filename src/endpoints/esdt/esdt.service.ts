@@ -346,7 +346,7 @@ export class EsdtService {
     };
   }
 
-  async countAllAccounts(identifiers: string[]): Promise<number> {
+  async countAllDistinctAccounts(identifiers: string[]): Promise<number> {
     const key = `tokens:${identifiers[0]}:distinctAccounts:${randomUUID()}`;
 
     try {

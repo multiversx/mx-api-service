@@ -26,6 +26,7 @@ import { IndexerService } from "src/common/indexer/indexer.service";
 import { NftService } from "src/endpoints/nfts/nft.service";
 import { AccountFilter } from "src/endpoints/accounts/entities/account.filter";
 import { TokenType } from "src/common/indexer/entities";
+import { TokenDetailed } from "src/endpoints/tokens/entities/token.detailed";
 
 @Injectable()
 export class CacheWarmerService {
@@ -252,7 +253,15 @@ export class CacheWarmerService {
   @Lock({ name: 'Token assets extra info invalidations', verbose: true })
   async handleTokenAssetsExtraInfoInvalidations() {
     const assets = await this.assetsService.getAllTokenAssets();
+    const allTokens = await this.tokenService.getAllTokens();
+    const allTokensIndexed = allTokens.toRecord<TokenDetailed>(token => token.identifier);
+
     for (const identifier of Object.keys(assets)) {
+      const token = allTokensIndexed[identifier];
+      if (!token) {
+        continue;
+      }
+
       const asset = assets[identifier];
 
       if (asset.lockedAccounts) {
@@ -260,8 +269,8 @@ export class CacheWarmerService {
         await this.invalidateKey(CacheInfo.TokenLockedAccounts(identifier).key, lockedAccounts, CacheInfo.TokenLockedAccounts(identifier).ttl);
       }
 
-      if (asset.extraTokens) {
-        const accounts = await this.esdtService.countAllAccounts([identifier, ...asset.extraTokens]);
+      if (asset.extraTokens || token.type === TokenType.MetaESDT) {
+        const accounts = await this.esdtService.countAllDistinctAccounts([identifier, ...(asset.extraTokens ?? [])]);
         await this.cachingService.setCacheRemote(
           CacheInfo.TokenAccountsExtra(identifier).key,
           accounts,
@@ -295,7 +304,7 @@ export class CacheWarmerService {
       }
 
       const nftCount = await this.nftService.getNftCount({ collection: collection._id });
-      const holderCount = await this.esdtService.countAllAccounts([collection._id]);
+      const holderCount = await this.esdtService.countAllDistinctAccounts([collection._id]);
 
       this.logger.log(`Setting isVerified to true, holderCount to ${holderCount}, nftCount to ${nftCount} for collection with identifier '${key}'`);
       await this.indexerService.setExtraCollectionFields(key, true, holderCount, nftCount);
