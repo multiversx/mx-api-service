@@ -1,4 +1,4 @@
-import { Locker, OriginLogger } from "@multiversx/sdk-nestjs";
+import { Locker, OriginLogger, MetricsService } from "@multiversx/sdk-nestjs";
 import { Injectable } from "@nestjs/common";
 import { Cron, CronExpression } from "@nestjs/schedule";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
@@ -48,6 +48,7 @@ export class StatusCheckerService {
     await Locker.lock('Status Checker Accounts Count', async () => {
       const count = await this.elasticIndexerService.getAccountsCount(new AccountFilter());
       this.apiStatusMetricsService.setTotalAccounts(count);
+      MetricsService.setClusterComparisonValue('accountsCount', count);
     }, true);
   }
 
@@ -56,6 +57,7 @@ export class StatusCheckerService {
     await Locker.lock('Status Checker Blocks Count', async () => {
       const count = await this.elasticIndexerService.getBlocksCount({});
       this.apiStatusMetricsService.setTotalBlocks(count);
+      MetricsService.setClusterComparisonValue('totalBlocksCount', count);
     }, true);
   }
 
@@ -64,6 +66,7 @@ export class StatusCheckerService {
     await Locker.lock('Status Checker Collections Count', async () => {
       const count = await this.elasticIndexerService.getNftCollectionCount({});
       this.apiStatusMetricsService.setTotalCollections(count);
+      MetricsService.setClusterComparisonValue('nftCollectionsCount', count);
     }, true);
   }
 
@@ -72,6 +75,7 @@ export class StatusCheckerService {
     await Locker.lock('Status Checker Nfts Count', async () => {
       const count = await this.elasticIndexerService.getNftCount({});
       this.apiStatusMetricsService.setTotalNfts(count);
+      MetricsService.setClusterComparisonValue('totalNftsCount', count);
     }, true);
   }
 
@@ -80,6 +84,7 @@ export class StatusCheckerService {
     await Locker.lock('Status Checker Tags Count', async () => {
       const count = await this.elasticIndexerService.getNftTagCount();
       this.apiStatusMetricsService.setTotalTags(count);
+      MetricsService.setClusterComparisonValue('totalTagsCount', count);
     }, true);
   }
 
@@ -88,6 +93,7 @@ export class StatusCheckerService {
     await Locker.lock('Status Checker Rounds Count', async () => {
       const count = await this.elasticIndexerService.getRoundCount(new RoundFilter());
       this.apiStatusMetricsService.setTotalRounds(count);
+      MetricsService.setClusterComparisonValue('totalRoundsCount', count);
     }, true);
   }
 
@@ -96,6 +102,7 @@ export class StatusCheckerService {
     await Locker.lock('Status Checker Results Count', async () => {
       const count = await this.elasticIndexerService.getScResultsCount();
       this.apiStatusMetricsService.setTotalResults(count);
+      MetricsService.setClusterComparisonValue('totalScCount', count);
     }, true);
   }
 
@@ -104,6 +111,7 @@ export class StatusCheckerService {
     await Locker.lock('Status Checker Tokens Count', async () => {
       const count = await this.tokenService.getTokenCount({});
       this.apiStatusMetricsService.setTotalTokens(count);
+      MetricsService.setClusterComparisonValue('totalTokensCount', count);
     }, true);
   }
 
@@ -112,6 +120,7 @@ export class StatusCheckerService {
     await Locker.lock('Status Checker Transactions Count', async () => {
       const count = await this.elasticIndexerService.getTransactionCount({});
       this.apiStatusMetricsService.setTotalTransactions(count);
+      MetricsService.setClusterComparisonValue('totalTransactionsCount', count);
     }, true);
   }
 
@@ -120,6 +129,7 @@ export class StatusCheckerService {
     await Locker.lock('Status Checker Transfers Count', async () => {
       const count = await this.elasticIndexerService.getTransfersCount({});
       this.apiStatusMetricsService.setTotalTransfers(count);
+      MetricsService.setClusterComparisonValue('totalTransactionsCount', count);
     }, true);
   }
 
@@ -128,6 +138,7 @@ export class StatusCheckerService {
     await Locker.lock('Status Checker Identities Count', async () => {
       const identities = await this.identitiesService.getAllIdentities();
       this.apiStatusMetricsService.setTotalIdentities(identities.length);
+      MetricsService.setClusterComparisonValue('totalIdentitiesCount', identities.length);
     }, true);
   }
 
@@ -136,6 +147,7 @@ export class StatusCheckerService {
     await Locker.lock('Status Checker Nodes Count', async () => {
       const nodes = await this.nodeService.getAllNodes();
       this.apiStatusMetricsService.setTotalNodes(nodes.length);
+      MetricsService.setClusterComparisonValue('totalNodesCount', nodes.length);
     }, true);
   }
 
@@ -144,6 +156,7 @@ export class StatusCheckerService {
     await Locker.lock('Status Checker Providers Count', async () => {
       const providers = await this.providerService.getAllProviders();
       this.apiStatusMetricsService.setTotalProviders(providers.length);
+      MetricsService.setClusterComparisonValue('totalProvidersCount', providers.length);
     }, true);
   }
 
@@ -152,6 +165,7 @@ export class StatusCheckerService {
     await Locker.lock('Status Checker Shards Count', async () => {
       const shards = await this.shardService.getAllShards();
       this.apiStatusMetricsService.setTotalShards(shards.length);
+      MetricsService.setClusterComparisonValue('totalShardsCount', shards.length);
     }, true);
   }
 
@@ -160,6 +174,7 @@ export class StatusCheckerService {
     await Locker.lock('Status Checker Mex Pairs Count', async () => {
       const count = await this.mexPairService.getMexPairsCount();
       this.apiStatusMetricsService.setTotalMexPairs(count);
+      MetricsService.setClusterComparisonValue('totalMexPairsCount', count);
     }, true);
   }
 
@@ -168,6 +183,7 @@ export class StatusCheckerService {
     await Locker.lock('Status Checker Mex Farms Count', async () => {
       const count = await this.mexFarmService.getMexFarmsCount();
       this.apiStatusMetricsService.setTotalMexFarms(count);
+      MetricsService.setClusterComparisonValue('totalMexFarmsCount', count);
     }, true);
   }
 
@@ -176,6 +192,7 @@ export class StatusCheckerService {
     await Locker.lock('Status Checker Mex Tokens Count', async () => {
       const count = await this.mexTokenService.getMexTokensCount();
       this.apiStatusMetricsService.setTotalMexTokens(count);
+      MetricsService.setClusterComparisonValue('totalMexTokensCount', count);
     }, true);
   }
 
