@@ -19,8 +19,6 @@ export class PluginService {
 
   async processAccount(_account: AccountDetailed): Promise<void> { }
 
-  async processToken(_token: TokenDetailed): Promise<void> { }
-
   async bootstrapPublicApp(_application: NestExpressApplication): Promise<void> { }
 
   async batchProcessNfts(_nfts: Nft[], _withScamInfo?: boolean): Promise<void> { }

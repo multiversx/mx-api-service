@@ -33,6 +33,7 @@ import { CollectionService } from "../collections/collection.service";
 import { NftType } from "../nfts/entities/nft.type";
 import { TokenType } from "src/common/indexer/entities";
 import { PluginService } from "src/common/plugins/plugin.service";
+import { TokenAssetsPriceSourceType } from "src/common/assets/entities/token.assets.price.source.type";
 
 @Injectable()
 export class TokenService {
@@ -698,7 +699,9 @@ export class TokenService {
     );
 
     for (const token of tokens) {
-      await this.pluginService.processToken(token);
+      if (token.assets?.priceSource?.type === TokenAssetsPriceSourceType.dataApi) {
+        token.price = await this.pluginService.getEsdtTokenPrice(token.identifier);
+      }
     }
 
     tokens = tokens.sortedDescending(token => token.assets ? 1 : 0, token => token.marketCap ?? 0, token => token.transactions ?? 0);
