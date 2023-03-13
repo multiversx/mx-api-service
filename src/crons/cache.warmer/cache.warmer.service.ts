@@ -257,7 +257,8 @@ export class CacheWarmerService {
     const allTokensIndexed = allTokens.toRecord<TokenDetailed>(token => token.identifier);
 
     for (const identifier of Object.keys(assets)) {
-      if (!allTokensIndexed[identifier]) {
+      const token = allTokensIndexed[identifier];
+      if (!token) {
         continue;
       }
 
@@ -268,8 +269,8 @@ export class CacheWarmerService {
         await this.invalidateKey(CacheInfo.TokenLockedAccounts(identifier).key, lockedAccounts, CacheInfo.TokenLockedAccounts(identifier).ttl);
       }
 
-      if (asset.extraTokens) {
-        const accounts = await this.esdtService.countAllAccounts([identifier, ...asset.extraTokens]);
+      if (asset.extraTokens || token.type === TokenType.MetaESDT) {
+        const accounts = await this.esdtService.countAllDistinctAccounts([identifier, ...(asset.extraTokens ?? [])]);
         await this.cachingService.setCacheRemote(
           CacheInfo.TokenAccountsExtra(identifier).key,
           accounts,
@@ -298,12 +299,12 @@ export class CacheWarmerService {
         continue;
       }
 
-      if (![TokenType.NonFungibleESDT, TokenType.SemiFungibleESDT, TokenType.MetaESDT].includes(collection.type as TokenType)) {
+      if (![TokenType.NonFungibleESDT, TokenType.SemiFungibleESDT].includes(collection.type as TokenType)) {
         continue;
       }
 
       const nftCount = await this.nftService.getNftCount({ collection: collection._id });
-      const holderCount = await this.esdtService.countAllAccounts([collection._id]);
+      const holderCount = await this.esdtService.countAllDistinctAccounts([collection._id]);
 
       this.logger.log(`Setting isVerified to true, holderCount to ${holderCount}, nftCount to ${nftCount} for collection with identifier '${key}'`);
       await this.indexerService.setExtraCollectionFields(key, true, holderCount, nftCount);
