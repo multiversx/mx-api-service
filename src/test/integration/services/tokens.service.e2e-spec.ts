@@ -319,6 +319,38 @@ describe('Token Service', () => {
       ]));
     });
 
+    it('should return an array of token details for a specific search keyword', async () => {
+      const mockTokens = JSON.parse(fs.readFileSync(path.join(__dirname, '../../mocks/tokens.mock.json'), 'utf-8'));
+
+      jest.spyOn(tokenService, 'getAllTokens').mockReturnValue(mockTokens);
+      jest.spyOn(tokenService, 'applyTickerFromAssets').mockImplementation();
+
+      const queryPagination: QueryPagination = new QueryPagination();
+      const filter: TokenFilter = new TokenFilter({ search: 'WEGLD' });
+
+      const result = await tokenService.getTokens(queryPagination, filter);
+      expect(result).toHaveLength(1);
+      expect(result).toEqual(expect.arrayContaining([
+        expect.objectContaining({ identifier: 'WEGLD-bd4d79' }),
+      ]));
+    });
+
+    it('should return an array of token details for a specific name', async () => {
+      const mockTokens = JSON.parse(fs.readFileSync(path.join(__dirname, '../../mocks/tokens.mock.json'), 'utf-8'));
+
+      jest.spyOn(tokenService, 'getAllTokens').mockReturnValue(mockTokens);
+      jest.spyOn(tokenService, 'applyTickerFromAssets').mockImplementation();
+
+      const queryPagination: QueryPagination = new QueryPagination();
+      const filter: TokenFilter = new TokenFilter({ search: 'WrappedEGLD' });
+
+      const result = await tokenService.getTokens(queryPagination, filter);
+      expect(result).toHaveLength(1);
+      expect(result).toEqual(expect.arrayContaining([
+        expect.objectContaining({ identifier: 'WEGLD-bd4d79' }),
+      ]));
+    });
+
     it('should return an array of tokens with ESDT type equal with Fungible', async () => {
       const mockTokens = JSON.parse(fs.readFileSync(path.join(__dirname, '../../mocks/tokens.mock.json'), 'utf-8'));
 
