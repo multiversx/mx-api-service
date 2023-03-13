@@ -267,25 +267,6 @@ describe('API Config', () => {
     });
   });
 
-  describe("getDelegationContractShardId", () => {
-    it("should return delegation contract shardId address", () => {
-      jest
-        .spyOn(ConfigService.prototype, "get")
-        .mockImplementation(jest.fn(() => '2'));
-
-      const results = apiConfigService.getDelegationContractShardId();
-      expect(results).toEqual('2');
-    });
-
-    it("should throw error because test simulates that delegation contract shardId is not defined", () => {
-      jest
-        .spyOn(ConfigService.prototype, 'get')
-        .mockImplementation(jest.fn(() => undefined));
-
-      expect(() => apiConfigService.getDelegationContractShardId()).toThrowError('No delegation contract shard ID present');
-    });
-  });
-
   describe("getDelegationManagerContractAddress", () => {
     it("should return delegation manager contract address", () => {
       jest

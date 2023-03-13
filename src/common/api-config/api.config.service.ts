@@ -143,17 +143,6 @@ export class ApiConfigService {
     return this.configService.get<string>('contracts.metabonding');
   }
 
-  getDelegationContractShardId(): number {
-    const shardId = this.configService.get<number>(
-      'contracts.delegationShardId',
-    );
-    if (!shardId) {
-      throw new Error('No delegation contract shard ID present');
-    }
-
-    return shardId;
-  }
-
   getDelegationManagerContractAddress(): string {
     const address = this.configService.get<string>(
       'contracts.delegationManager',
