@@ -26,6 +26,7 @@ import { IndexerService } from "src/common/indexer/indexer.service";
 import { NftService } from "src/endpoints/nfts/nft.service";
 import { AccountFilter } from "src/endpoints/accounts/entities/account.filter";
 import { TokenType } from "src/common/indexer/entities";
+import { TokenDetailed } from "src/endpoints/tokens/entities/token.detailed";
 
 @Injectable()
 export class CacheWarmerService {
@@ -252,7 +253,14 @@ export class CacheWarmerService {
   @Lock({ name: 'Token assets extra info invalidations', verbose: true })
   async handleTokenAssetsExtraInfoInvalidations() {
     const assets = await this.assetsService.getAllTokenAssets();
+    const allTokens = await this.tokenService.getAllTokens();
+    const allTokensIndexed = allTokens.toRecord<TokenDetailed>(token => token.identifier);
+
     for (const identifier of Object.keys(assets)) {
+      if (!allTokensIndexed[identifier]) {
+        continue;
+      }
+
       const asset = assets[identifier];
 
       if (asset.lockedAccounts) {
@@ -290,7 +298,7 @@ export class CacheWarmerService {
         continue;
       }
 
-      if (![TokenType.NonFungibleESDT, TokenType.SemiFungibleESDT].includes(collection.type as TokenType)) {
+      if (![TokenType.NonFungibleESDT, TokenType.SemiFungibleESDT, TokenType.MetaESDT].includes(collection.type as TokenType)) {
         continue;
       }
 
