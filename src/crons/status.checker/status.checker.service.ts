@@ -4,7 +4,6 @@ import { Cron, CronExpression } from "@nestjs/schedule";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
 import { GatewayService } from "src/common/gateway/gateway.service";
 import { ElasticIndexerService } from "src/common/indexer/elastic/elastic.indexer.service";
-import { StatusMetricsService } from "src/common/metrics/status.metrics.service";
 import { ProtocolService } from "src/common/protocol/protocol.service";
 import { IdentitiesService } from "src/endpoints/identities/identities.service";
 import { MexFarmService } from "src/endpoints/mex/mex.farm.service";
@@ -27,7 +26,6 @@ export class StatusCheckerService {
   private readonly logger = new OriginLogger(StatusCheckerService.name);
 
   constructor(
-    private readonly apiStatusMetricsService: StatusMetricsService,
     private readonly elasticIndexerService: ElasticIndexerService,
     private readonly tokenService: TokenService,
     private readonly protocolService: ProtocolService,
@@ -47,8 +45,7 @@ export class StatusCheckerService {
   async handleAccountsCount() {
     await Locker.lock('Status Checker Accounts Count', async () => {
       const count = await this.elasticIndexerService.getAccountsCount(new AccountFilter());
-      this.apiStatusMetricsService.setTotalAccounts(count);
-      MetricsService.setClusterComparisonValue('accountsCount', count);
+      MetricsService.setClusterComparisonValue('total_accounts', count);
     }, true);
   }
 
@@ -56,8 +53,7 @@ export class StatusCheckerService {
   async handleBlocksCount() {
     await Locker.lock('Status Checker Blocks Count', async () => {
       const count = await this.elasticIndexerService.getBlocksCount({});
-      this.apiStatusMetricsService.setTotalBlocks(count);
-      MetricsService.setClusterComparisonValue('totalBlocksCount', count);
+      MetricsService.setClusterComparisonValue('total_blocks', count);
     }, true);
   }
 
@@ -65,8 +61,7 @@ export class StatusCheckerService {
   async handleCollectionsCount() {
     await Locker.lock('Status Checker Collections Count', async () => {
       const count = await this.elasticIndexerService.getNftCollectionCount({});
-      this.apiStatusMetricsService.setTotalCollections(count);
-      MetricsService.setClusterComparisonValue('nftCollectionsCount', count);
+      MetricsService.setClusterComparisonValue('total_collections', count);
     }, true);
   }
 
@@ -74,8 +69,7 @@ export class StatusCheckerService {
   async handleNftsCount() {
     await Locker.lock('Status Checker Nfts Count', async () => {
       const count = await this.elasticIndexerService.getNftCount({});
-      this.apiStatusMetricsService.setTotalNfts(count);
-      MetricsService.setClusterComparisonValue('totalNftsCount', count);
+      MetricsService.setClusterComparisonValue('total_nfts', count);
     }, true);
   }
 
@@ -83,8 +77,7 @@ export class StatusCheckerService {
   async handleTagsCount() {
     await Locker.lock('Status Checker Tags Count', async () => {
       const count = await this.elasticIndexerService.getNftTagCount();
-      this.apiStatusMetricsService.setTotalTags(count);
-      MetricsService.setClusterComparisonValue('totalTagsCount', count);
+      MetricsService.setClusterComparisonValue('total_tags', count);
     }, true);
   }
 
@@ -92,8 +85,7 @@ export class StatusCheckerService {
   async handleRoundsCount() {
     await Locker.lock('Status Checker Rounds Count', async () => {
       const count = await this.elasticIndexerService.getRoundCount(new RoundFilter());
-      this.apiStatusMetricsService.setTotalRounds(count);
-      MetricsService.setClusterComparisonValue('totalRoundsCount', count);
+      MetricsService.setClusterComparisonValue('total_rounds', count);
     }, true);
   }
 
@@ -101,8 +93,7 @@ export class StatusCheckerService {
   async handleResultsCount() {
     await Locker.lock('Status Checker Results Count', async () => {
       const count = await this.elasticIndexerService.getScResultsCount();
-      this.apiStatusMetricsService.setTotalResults(count);
-      MetricsService.setClusterComparisonValue('totalScCount', count);
+      MetricsService.setClusterComparisonValue('total_results', count);
     }, true);
   }
 
@@ -110,8 +101,7 @@ export class StatusCheckerService {
   async handleTokensCount() {
     await Locker.lock('Status Checker Tokens Count', async () => {
       const count = await this.tokenService.getTokenCount({});
-      this.apiStatusMetricsService.setTotalTokens(count);
-      MetricsService.setClusterComparisonValue('totalTokensCount', count);
+      MetricsService.setClusterComparisonValue('total_tokens', count);
     }, true);
   }
 
@@ -119,8 +109,7 @@ export class StatusCheckerService {
   async handleTransactionsCount() {
     await Locker.lock('Status Checker Transactions Count', async () => {
       const count = await this.elasticIndexerService.getTransactionCount({});
-      this.apiStatusMetricsService.setTotalTransactions(count);
-      MetricsService.setClusterComparisonValue('totalTransactionsCount', count);
+      MetricsService.setClusterComparisonValue('total_transactions', count);
     }, true);
   }
 
@@ -128,8 +117,7 @@ export class StatusCheckerService {
   async handleTransfersCount() {
     await Locker.lock('Status Checker Transfers Count', async () => {
       const count = await this.elasticIndexerService.getTransfersCount({});
-      this.apiStatusMetricsService.setTotalTransfers(count);
-      MetricsService.setClusterComparisonValue('totalTransactionsCount', count);
+      MetricsService.setClusterComparisonValue('total_transfers', count);
     }, true);
   }
 
@@ -137,8 +125,7 @@ export class StatusCheckerService {
   async handleIdentitiesCount() {
     await Locker.lock('Status Checker Identities Count', async () => {
       const identities = await this.identitiesService.getAllIdentities();
-      this.apiStatusMetricsService.setTotalIdentities(identities.length);
-      MetricsService.setClusterComparisonValue('totalIdentitiesCount', identities.length);
+      MetricsService.setClusterComparisonValue('total_identities', identities.length);
     }, true);
   }
 
@@ -146,8 +133,7 @@ export class StatusCheckerService {
   async handleNodesCount() {
     await Locker.lock('Status Checker Nodes Count', async () => {
       const nodes = await this.nodeService.getAllNodes();
-      this.apiStatusMetricsService.setTotalNodes(nodes.length);
-      MetricsService.setClusterComparisonValue('totalNodesCount', nodes.length);
+      MetricsService.setClusterComparisonValue('total_nodes', nodes.length);
     }, true);
   }
 
@@ -155,8 +141,7 @@ export class StatusCheckerService {
   async handleProvidersCount() {
     await Locker.lock('Status Checker Providers Count', async () => {
       const providers = await this.providerService.getAllProviders();
-      this.apiStatusMetricsService.setTotalProviders(providers.length);
-      MetricsService.setClusterComparisonValue('totalProvidersCount', providers.length);
+      MetricsService.setClusterComparisonValue('total_providers', providers.length);
     }, true);
   }
 
@@ -164,8 +149,7 @@ export class StatusCheckerService {
   async handleShardsCount() {
     await Locker.lock('Status Checker Shards Count', async () => {
       const shards = await this.shardService.getAllShards();
-      this.apiStatusMetricsService.setTotalShards(shards.length);
-      MetricsService.setClusterComparisonValue('totalShardsCount', shards.length);
+      MetricsService.setClusterComparisonValue('total_shards', shards.length);
     }, true);
   }
 
@@ -173,8 +157,7 @@ export class StatusCheckerService {
   async handleMexPairsCount() {
     await Locker.lock('Status Checker Mex Pairs Count', async () => {
       const count = await this.mexPairService.getMexPairsCount();
-      this.apiStatusMetricsService.setTotalMexPairs(count);
-      MetricsService.setClusterComparisonValue('totalMexPairsCount', count);
+      MetricsService.setClusterComparisonValue('total_mex_pairs', count);
     }, true);
   }
 
@@ -182,8 +165,7 @@ export class StatusCheckerService {
   async handleMexFarmsCount() {
     await Locker.lock('Status Checker Mex Farms Count', async () => {
       const count = await this.mexFarmService.getMexFarmsCount();
-      this.apiStatusMetricsService.setTotalMexFarms(count);
-      MetricsService.setClusterComparisonValue('totalMexFarmsCount', count);
+      MetricsService.setClusterComparisonValue('total_mex_farms', count);
     }, true);
   }
 
@@ -191,8 +173,7 @@ export class StatusCheckerService {
   async handleMexTokensCount() {
     await Locker.lock('Status Checker Mex Tokens Count', async () => {
       const count = await this.mexTokenService.getMexTokensCount();
-      this.apiStatusMetricsService.setTotalMexTokens(count);
-      MetricsService.setClusterComparisonValue('totalMexTokensCount', count);
+      MetricsService.setClusterComparisonValue('total_mex_tokens', count);
     }, true);
   }
 
@@ -202,8 +183,8 @@ export class StatusCheckerService {
       const shardIds = await this.protocolService.getShardIds();
       const roundsAndNonces = await Promise.all(shardIds.map(shardId => this.getCurrentRoundAndNonce(shardId)));
       for (const [shardId, round, nonce] of shardIds.zip(roundsAndNonces, (shardId, roundAndNonce) => [shardId, roundAndNonce.round, roundAndNonce.nonce])) {
-        this.apiStatusMetricsService.setTotalShardRounds(shardId, round);
-        this.apiStatusMetricsService.setTotalShardNonces(shardId, nonce);
+        MetricsService.setClusterComparisonValue(`total_shard_rounds_${shardId}`, round);
+        MetricsService.setClusterComparisonValue(`total_shard_nonces_${shardId}`, nonce);
       }
     }, true);
   }
@@ -213,7 +194,7 @@ export class StatusCheckerService {
     await Locker.lock('Status Checker Store Mex economics metrics', async () => {
       const economics = await this.mexEconomicService.getMexEconomics();
       for (const [key, value] of Object.entries(economics)) {
-        this.apiStatusMetricsService.setMexEconomicsValue(key, value);
+        MetricsService.setClusterComparisonValue(`mex_economics_${key}`, value);
       }
     }, true);
   }
@@ -223,7 +204,7 @@ export class StatusCheckerService {
     await Locker.lock('Status Checker Store Economics metrics', async () => {
       const economics = await this.economicService.getEconomics();
       for (const [key, value] of Object.entries(economics)) {
-        this.apiStatusMetricsService.setEconomicsValue(key, value);
+        MetricsService.setClusterComparisonValue(`economics_${key}`, value);
       }
     }, true);
   }
@@ -233,10 +214,10 @@ export class StatusCheckerService {
     await Locker.lock('Status Checker Check token count', async () => {
       const tokenCount = await this.tokenService.getTokenCount({});
       if (tokenCount > 1500) {
-        this.apiStatusMetricsService.setCheckTokenCountResult('success');
+        MetricsService.setClusterComparisonValue(`check_token_count:success`, 1);
       } else {
         this.logger.error(`Invalid token count '${tokenCount}'`);
-        this.apiStatusMetricsService.setCheckTokenCountResult('error');
+        MetricsService.setClusterComparisonValue(`check_token_count:error`, 1);
       }
     }, true);
   }
@@ -246,10 +227,10 @@ export class StatusCheckerService {
     await Locker.lock('Status Checker Check node count', async () => {
       const allNodes = await this.nodeService.getAllNodes();
       if (allNodes.length > 5000) {
-        this.apiStatusMetricsService.setCheckNodeCountResult('success');
+        MetricsService.setClusterComparisonValue(`check_node_count:success`, 1);
       } else {
         this.logger.error(`Invalid node count '${allNodes.length}'`);
-        this.apiStatusMetricsService.setCheckNodeCountResult('error');
+        MetricsService.setClusterComparisonValue(`check_node_count:error`, 1);
       }
     }, true);
   }
@@ -259,10 +240,10 @@ export class StatusCheckerService {
     await Locker.lock('Status Checker Check provider count', async () => {
       const providers = await this.providerService.getAllProviders();
       if (providers.length > 130) {
-        this.apiStatusMetricsService.setCheckProviderCountResult('success');
+        MetricsService.setClusterComparisonValue(`check_provider_count:success`, 1);
       } else {
+        MetricsService.setClusterComparisonValue(`check_provider_count:error`, 1);
         this.logger.error(`Invalid provider count '${providers.length}'`);
-        this.apiStatusMetricsService.setCheckProviderCountResult('error');
       }
     }, true);
   }
@@ -274,10 +255,10 @@ export class StatusCheckerService {
 
       const tokensWithSupply = tokens.filter(token => token.supply);
       if (tokensWithSupply.length > 50) {
-        this.apiStatusMetricsService.setCheckTokenSupplyResult('success');
+        MetricsService.setClusterComparisonValue(`check_token_supply:success`, 1);
       } else {
+        MetricsService.setClusterComparisonValue(`check_token_supply:error`, 1);
         this.logger.error(`Invalid token with supply count '${tokensWithSupply.length}'`);
-        this.apiStatusMetricsService.setCheckTokenSupplyResult('error');
       }
     }, true);
   }
@@ -289,10 +270,11 @@ export class StatusCheckerService {
 
       const tokensWithAssets = tokens.filter(token => token.assets);
       if (tokensWithAssets.length > 100) {
-        this.apiStatusMetricsService.setCheckTokenAssetsResult('success');
+        MetricsService.setClusterComparisonValue(`check_token_assets:success`, 1);
       } else {
+        MetricsService.setClusterComparisonValue(`check_token_assets:error`, 1);
+
         this.logger.error(`Invalid token with assets count '${tokensWithAssets.length}'`);
-        this.apiStatusMetricsService.setCheckTokenAssetsResult('error');
       }
     }, true);
   }
@@ -304,10 +286,11 @@ export class StatusCheckerService {
 
       const tokensWithAccounts = tokens.filter(token => token.accounts);
       if (tokensWithAccounts.length > 990) {
-        this.apiStatusMetricsService.setCheckTokenAccountsResult('success');
+        MetricsService.setClusterComparisonValue(`check_token_accounts:success`, 1);
       } else {
+        MetricsService.setClusterComparisonValue(`check_token_accounts:error`, 1);
+
         this.logger.error(`Invalid token with accounts count '${tokensWithAccounts.length}'`);
-        this.apiStatusMetricsService.setCheckTokenAccountsResult('error');
       }
     }, true);
   }
@@ -319,10 +302,11 @@ export class StatusCheckerService {
 
       const tokensWithTransactions = tokens.filter(token => token.transactions);
       if (tokensWithTransactions.length >= 900) {
-        this.apiStatusMetricsService.setCheckTokenTransactionsResult('success');
+        MetricsService.setClusterComparisonValue(`check_token_transactions:success`, 1);
       } else {
+        MetricsService.setClusterComparisonValue(`check_token_transactions:error`, 1);
+
         this.logger.error(`Invalid token with transactions count '${tokensWithTransactions.length}'`);
-        this.apiStatusMetricsService.setCheckTokenTransactionsResult('error');
       }
     }, true);
   }
@@ -334,10 +318,11 @@ export class StatusCheckerService {
 
       const validators = nodes.filter(node => node.type === NodeType.validator);
       if (validators.length >= 3280) {
-        this.apiStatusMetricsService.setCheckValidatorNodeCountResult('success');
+        MetricsService.setClusterComparisonValue(`check_validator_node_count:success`, 1);
       } else {
+        MetricsService.setClusterComparisonValue(`check_validator_node_count:error`, 1);
+
         this.logger.error(`Invalid validator count '${validators.length}'`);
-        this.apiStatusMetricsService.setCheckValidatorNodeCountResult('error');
       }
     }, true);
   }
@@ -349,9 +334,9 @@ export class StatusCheckerService {
 
       const success = identities.slice(0, 50).every(x => x.name);
       if (success) {
-        this.apiStatusMetricsService.setCheckIdentityNamesResult('success');
+        MetricsService.setClusterComparisonValue(`check_identity_names:success`, 1);
       } else {
-        this.apiStatusMetricsService.setCheckIdentityNamesResult('error');
+        MetricsService.setClusterComparisonValue(`check_identity_names:error`, 1);
       }
     }, true);
   }
@@ -363,9 +348,9 @@ export class StatusCheckerService {
 
       const success = identities.slice(0, 50).every(identity => identity.identity);
       if (success) {
-        this.apiStatusMetricsService.setCheckIdentitiesResult('success');
+        MetricsService.setClusterComparisonValue(`check_identities:success`, 1);
       } else {
-        this.apiStatusMetricsService.setCheckIdentitiesResult('error');
+        MetricsService.setClusterComparisonValue(`check_identities:error`, 1);
       }
     }, true);
   }
