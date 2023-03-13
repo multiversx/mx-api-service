@@ -32,6 +32,7 @@ import { MexTokenService } from "../mex/mex.token.service";
 import { CollectionService } from "../collections/collection.service";
 import { NftType } from "../nfts/entities/nft.type";
 import { TokenType } from "src/common/indexer/entities";
+import { PluginService } from "src/common/plugins/plugin.service";
 
 @Injectable()
 export class TokenService {
@@ -49,6 +50,7 @@ export class TokenService {
     @Inject(forwardRef(() => MexTokenService))
     private readonly mexTokenService: MexTokenService,
     private readonly collectionService: CollectionService,
+    private readonly pluginService: PluginService,
   ) { }
 
   async isToken(identifier: string): Promise<boolean> {
@@ -694,6 +696,10 @@ export class TokenService {
       (token, assets) => token.assets = assets,
       CacheInfo.EsdtAssets('').ttl,
     );
+
+    for (const token of tokens) {
+      await this.pluginService.processToken(token);
+    }
 
     tokens = tokens.sortedDescending(token => token.assets ? 1 : 0, token => token.marketCap ?? 0, token => token.transactions ?? 0);
 
