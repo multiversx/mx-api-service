@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common";
-import { ElasticService, ElasticQuery, QueryOperator, QueryType, QueryConditionOptions, ElasticSortOrder, ElasticSortProperty, TermsQuery, BinaryUtils, RangeGreaterThanOrEqual, ApiService } from "@multiversx/sdk-nestjs";
+import { ElasticService, ElasticQuery, QueryOperator, QueryType, QueryConditionOptions, ElasticSortOrder, ElasticSortProperty, TermsQuery, BinaryUtils, RangeGreaterThanOrEqual } from "@multiversx/sdk-nestjs";
 import { IndexerInterface } from "../indexer.interface";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { NftType } from "src/endpoints/nfts/entities/nft.type";
@@ -31,7 +31,6 @@ export class ElasticIndexerService implements IndexerInterface {
     private readonly apiConfigService: ApiConfigService,
     private readonly elasticService: ElasticService,
     private readonly indexerHelper: ElasticIndexerHelper,
-    private readonly apiService: ApiService,
   ) { }
 
   async getAccountsCount(filter: AccountFilter): Promise<number> {
@@ -643,18 +642,22 @@ export class ElasticIndexerService implements IndexerInterface {
 
   private indexerV5Active: boolean | undefined = undefined;
 
+  // eslint-disable-next-line require-await
   async isIndexerV5Active(): Promise<boolean> {
     if (this.indexerV5Active !== undefined) {
       return this.indexerV5Active;
     }
 
-    const mappingsResult = await this.apiService.get(`${this.apiConfigService.getElasticUrl()}/tokens/_mappings`);
-    const mappings = mappingsResult.data?.tokens?.mappings?.properties ?? mappingsResult.data['tokens-000001']?.mappings?.properties;
-
-    const currentOwnerType = mappings?.currentOwner?.type;
-
-    this.indexerV5Active = currentOwnerType === 'keyword';
+    this.indexerV5Active = false;
     return this.indexerV5Active;
+
+    // const mappingsResult = await this.apiService.get(`${this.apiConfigService.getElasticUrl()}/tokens/_mappings`);
+    // const mappings = mappingsResult.data?.tokens?.mappings?.properties ?? mappingsResult.data['tokens-000001']?.mappings?.properties;
+
+    // const currentOwnerType = mappings?.currentOwner?.type;
+
+    // this.indexerV5Active = currentOwnerType === 'keyword';
+    // return this.indexerV5Active;
   }
 
   async getCollectionsForAddress(
