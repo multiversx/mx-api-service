@@ -87,10 +87,10 @@ describe('API Config', () => {
     it("should return elastic url", () => {
       jest
         .spyOn(ConfigService.prototype, "get")
-        .mockImplementation(jest.fn(() => ['https://index.elrond.com']));
+        .mockImplementation(jest.fn(() => ['https://index.multiversx.com']));
 
       const results = apiConfigService.getElasticUrl();
-      expect(results).toEqual('https://index.elrond.com');
+      expect(results).toEqual('https://index.multiversx.com');
     });
 
     it("should throw error because test simulates that elastic url is not defined", () => {
