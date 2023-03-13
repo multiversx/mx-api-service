@@ -17,6 +17,7 @@ export class ApiMetricsService {
   private static graphqlDurationHistogram: Histogram<string>;
   private static currentNonceGauge: Gauge<string>;
   private static lastProcessedNonceGauge: Gauge<string>;
+  private static subscriptionEventTriggerredCounter: Gauge<string>;
 
   constructor(
     private readonly apiConfigService: ApiConfigService,
@@ -87,6 +88,14 @@ export class ApiMetricsService {
         labelNames: ['shardId'],
       });
     }
+
+    if (!ApiMetricsService.subscriptionEventTriggerredCounter) {
+      ApiMetricsService.subscriptionEventTriggerredCounter = new Gauge({
+        name: 'subscription_event_triggerred',
+        help: 'subscription event triggerred',
+        labelNames: ['address'],
+      });
+    }
   }
 
   @OnEvent(MetricsEvents.SetVmQuery)
@@ -126,6 +135,11 @@ export class ApiMetricsService {
   setLastProcessedNonce(payload: LogMetricsEvent) {
     const [shardId, nonce] = payload.args;
     ApiMetricsService.lastProcessedNonceGauge.set({ shardId }, nonce);
+  }
+
+  @OnEvent(MetricsEvents.SetSubscriptionEventTriggerred)
+  setSubscriptionEventTriggerred(address: string) {
+    ApiMetricsService.subscriptionEventTriggerredCounter.inc({ address });
   }
 
   async getMetrics(): Promise<string> {

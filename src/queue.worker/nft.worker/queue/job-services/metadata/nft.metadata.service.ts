@@ -1,13 +1,13 @@
 import { CachingService } from "@multiversx/sdk-nestjs";
 import { Inject, Injectable } from "@nestjs/common";
 import { CacheInfo } from "src/utils/cache.info";
-import { PersistenceService } from "src/common/persistence/persistence.service";
 import { Nft } from "src/endpoints/nfts/entities/nft";
 import { NftType } from "src/endpoints/nfts/entities/nft.type";
 import { NftExtendedAttributesService } from "src/endpoints/nfts/nft.extendedattributes.service";
 import { ClientProxy } from "@nestjs/microservices";
 import { OriginLogger } from "@multiversx/sdk-nestjs";
 import { CachingUtils } from "src/utils/caching.utils";
+import { NftMetadataDbService } from "src/common/persistence/services/nft.metadata.db.service";
 
 
 @Injectable()
@@ -16,7 +16,7 @@ export class NftMetadataService {
 
   constructor(
     private readonly nftExtendedAttributesService: NftExtendedAttributesService,
-    private readonly persistenceService: PersistenceService,
+    private readonly nftMetadataDbService: NftMetadataDbService,
     private readonly cachingService: CachingService,
     @Inject('PUBSUB_SERVICE') private clientProxy: ClientProxy,
   ) { }
@@ -37,7 +37,7 @@ export class NftMetadataService {
   async getMetadata(nft: Nft): Promise<any> {
     return await this.cachingService.getOrSetCache(
       CacheInfo.NftMetadata(nft.identifier).key,
-      async () => await this.persistenceService.getMetadata(nft.identifier),
+      async () => await this.nftMetadataDbService.getMetadata(nft.identifier),
       CacheInfo.NftMetadata(nft.identifier).ttl
     );
   }
@@ -48,7 +48,7 @@ export class NftMetadataService {
       metadataRaw = {};
     }
 
-    await this.persistenceService.setMetadata(nft.identifier, metadataRaw);
+    await this.nftMetadataDbService.setMetadata(nft.identifier, metadataRaw);
 
     await this.cachingService.setCache(
       CacheInfo.NftMetadata(nft.identifier).key,

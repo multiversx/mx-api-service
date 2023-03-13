@@ -35,6 +35,7 @@ import { UsernameController } from "./usernames/username.controller";
 import { VmQueryController } from "./vm.query/vm.query.controller";
 import { WaitingListController } from "./waiting-list/waiting.list.controller";
 import { WebsocketController } from "./websocket/websocket.controller";
+import { RegisterController } from "./register/register.controller";
 
 @Module({})
 export class EndpointsControllersModule {
@@ -44,8 +45,8 @@ export class EndpointsControllersModule {
       KeysController, MiniBlockController, NetworkController, NftController, TagController, NodeController,
       ProviderController, ProxyController, RoundController, SmartContractResultController, ShardController, StakeController, StakeController,
       TokenController, TransactionController, UsernameController, VmQueryController, WaitingListController,
-      HealthCheckController, DappConfigController, WebsocketController, TransferController,
-      ProcessNftsPublicController, TransactionsBatchController,
+      HealthCheckController, DappConfigController, WebsocketController, MexController, TransferController,
+      ProcessNftsPublicController, TransactionsBatchController, RegisterController,
     ];
 
     const isMarketplaceFeatureEnabled = configuration().features?.marketplace?.enabled ?? false;

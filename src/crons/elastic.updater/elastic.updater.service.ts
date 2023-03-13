@@ -4,11 +4,12 @@ import * as JsonDiff from "json-diff";
 import { AssetsService } from "src/common/assets/assets.service";
 import { NftService } from "src/endpoints/nfts/nft.service";
 import asyncPool from "tiny-async-pool";
-import { PersistenceInterface } from "src/common/persistence/persistence.interface";
 import { BatchUtils, Lock } from "@multiversx/sdk-nestjs";
 import { NftMedia } from "src/endpoints/nfts/entities/nft.media";
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { OriginLogger } from "@multiversx/sdk-nestjs";
+import { NftMetadataDbService } from "src/common/persistence/services/nft.metadata.db.service";
+import { NftMediaDbService } from "src/common/persistence/services/nft.media.db.service";
 
 @Injectable()
 export class ElasticUpdaterService {
@@ -18,8 +19,10 @@ export class ElasticUpdaterService {
     private readonly assetsService: AssetsService,
     private readonly indexerService: IndexerService,
     private readonly nftService: NftService,
-    @Inject(forwardRef(() => 'PersistenceService'))
-    private readonly persistenceService: PersistenceInterface,
+    @Inject(forwardRef(() => 'NftMetadataDbService'))
+    private readonly nftMetadataDbService: NftMetadataDbService,
+    @Inject(forwardRef(() => 'NftMediaDbService'))
+    private readonly nftMediaDbService: NftMediaDbService,
   ) { }
 
   @Cron(CronExpression.EVERY_DAY_AT_1AM)
@@ -77,7 +80,7 @@ export class ElasticUpdaterService {
     const metadataResult = await BatchUtils.batchGet(
       items,
       item => item.identifier,
-      async elements => await this.persistenceService.batchGetMetadata(elements.map(x => x.identifier)),
+      async elements => await this.nftMetadataDbService.batchGetMetadata(elements.map(x => x.identifier)),
       100,
     );
 
@@ -113,7 +116,7 @@ export class ElasticUpdaterService {
     const mediaResult = await BatchUtils.batchGet(
       items,
       item => item.identifier,
-      async elements => await this.persistenceService.batchGetMedia(elements.map(x => x.identifier)),
+      async elements => await this.nftMediaDbService.batchGetMedia(elements.map(x => x.identifier)),
       100
     );
 

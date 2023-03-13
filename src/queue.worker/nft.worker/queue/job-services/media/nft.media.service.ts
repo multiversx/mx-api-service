@@ -3,7 +3,6 @@ import { BinaryUtils, Constants } from "@multiversx/sdk-nestjs";
 import { HttpStatus, Inject, Injectable } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { CacheInfo } from "src/utils/cache.info";
-import { PersistenceService } from "src/common/persistence/persistence.service";
 import { MediaMimeTypeEnum } from "src/endpoints/nfts/entities/media.mime.type";
 import { Nft } from "src/endpoints/nfts/entities/nft";
 import { NftMedia } from "src/endpoints/nfts/entities/nft.media";
@@ -12,6 +11,7 @@ import { TokenHelpers } from "src/utils/token.helpers";
 import { ClientProxy } from "@nestjs/microservices";
 import { OriginLogger } from "@multiversx/sdk-nestjs";
 import { CachingUtils } from "src/utils/caching.utils";
+import { NftMediaDbService } from "src/common/persistence/services/nft.media.db.service";
 
 @Injectable()
 export class NftMediaService {
@@ -24,7 +24,7 @@ export class NftMediaService {
     private readonly cachingService: CachingService,
     private readonly apiService: ApiService,
     private readonly apiConfigService: ApiConfigService,
-    private readonly persistenceService: PersistenceService,
+    private readonly nftMediaDbService: NftMediaDbService,
     @Inject('PUBSUB_SERVICE') private clientProxy: ClientProxy,
   ) {
     this.NFT_THUMBNAIL_PREFIX = this.apiConfigService.getExternalMediaUrl() + '/nfts/asset';
@@ -33,7 +33,7 @@ export class NftMediaService {
   async getMedia(identifier: string): Promise<NftMedia[] | null> {
     return await this.cachingService.getOrSetCache(
       CacheInfo.NftMedia(identifier).key,
-      async () => await this.persistenceService.getMedia(identifier),
+      async () => await this.nftMediaDbService.getMedia(identifier),
       CacheInfo.NftMedia(identifier).ttl,
     );
   }
@@ -44,7 +44,7 @@ export class NftMediaService {
       return undefined;
     }
 
-    await this.persistenceService.setMedia(nft.identifier, mediaRaw);
+    await this.nftMediaDbService.setMedia(nft.identifier, mediaRaw);
 
     await this.cachingService.setCache(
       CacheInfo.NftMedia(nft.identifier).key,

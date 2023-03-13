@@ -4,5 +4,6 @@ export enum MetricsEvents {
   SetPersistenceDuration = "setPersistenceDuration",
   SetIndexerDuration = "setIndexerDuration",
   SetGraphqlDuration = "setGraphqlDuration",
-  SetLastProcessedNonce = "setLastProcessedNonce"
+  SetLastProcessedNonce = "setLastProcessedNonce",
+  SetSubscriptionEventTriggerred = "setSubscriptionEventTriggerred",
 }

@@ -2,15 +2,15 @@ import { CachingService } from '@multiversx/sdk-nestjs';
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { CacheInfo } from 'src/utils/cache.info';
 import { ApiConfigService } from '../api-config/api.config.service';
-import { PersistenceService } from '../persistence/persistence.service';
+import { HotSwappableSettingDbService } from '../persistence/services/hot.swappable.setting.service';
 
 @Injectable()
 export class SettingsService {
   constructor(
     private readonly apiConfigService: ApiConfigService,
     private readonly cachingService: CachingService,
-    @Inject(forwardRef(() => PersistenceService))
-    private readonly persistenceService: PersistenceService
+    @Inject(forwardRef(() => HotSwappableSettingDbService))
+    private readonly settingsService: HotSwappableSettingDbService
   ) { }
 
   async getUseRequestCachingFlag(): Promise<boolean> {
@@ -29,9 +29,9 @@ export class SettingsService {
     return await this.cachingService.getOrSetCache(
       CacheInfo.Setting(name).key,
       async () => {
-        const value = await this.persistenceService.getSetting<T>(name);
+        const value = await this.settingsService.getSetting<T>(name);
         if (!value) {
-          await this.persistenceService.setSetting(name, fallbackValue);
+          await this.settingsService.setSetting(name, fallbackValue);
         }
         return value ?? fallbackValue;
       },
@@ -40,6 +40,6 @@ export class SettingsService {
   }
 
   public async getAllSettings(): Promise<{ name: string, value: any }[]> {
-    return await this.persistenceService.getAllSettings();
+    return await this.settingsService.getAllSettings();
   }
 }

@@ -8,7 +8,15 @@ import { KeybaseConfirmationDb } from "./entities/keybase.confirmation.db";
 import { NftMediaDb } from "./entities/nft.media.db";
 import { NftMetadataDb } from "./entities/nft.metadata.db";
 import { NftTraitSummaryDb } from "./entities/nft.trait.summary.db";
-import { PersistenceService } from "./persistence.service";
+import { UserDbService } from "./services/user.db.service";
+import { TransactionDbService } from "./services/transaction.db.service";
+import { TransactionDb } from "./entities/transaction.db";
+import { UserDb } from "./entities/user.db";
+import { HotSwappableSettingDbService } from "./services/hot.swappable.setting.service";
+import { KeybaseConfirmationDbService } from "./services/keybase.confirmation.db.service";
+import { NftMediaDbService } from "./services/nft.media.db.service";
+import { NftMetadataDbService } from "./services/nft.metadata.db.service";
+import { NftTraitSummaryDbService } from "./services/nft.trait.summary.db.service";
 
 @Global()
 @Module({})
@@ -19,7 +27,6 @@ export class PersistenceModule {
     if (isPassThrough) {
       return {
         module: PersistenceModule,
-        imports: [],
         providers: [
           {
             provide: getRepositoryToken(NftMetadataDb),
@@ -41,9 +48,17 @@ export class PersistenceModule {
             provide: getRepositoryToken(HotSwappableSettingDb),
             useValue: {},
           },
-          PersistenceService,
+          {
+            provide: getRepositoryToken(TransactionDb),
+            useValue: {},
+          },
+          {
+            provide: getRepositoryToken(UserDb),
+            useValue: {},
+          },
+          TransactionDbService, UserDbService, HotSwappableSettingDbService, KeybaseConfirmationDbService, NftMediaDbService, NftMetadataDbService, NftTraitSummaryDbService,
         ],
-        exports: [PersistenceService],
+        exports: [TransactionDbService, UserDbService, HotSwappableSettingDbService, KeybaseConfirmationDbService, NftMediaDbService, NftMetadataDbService, NftTraitSummaryDbService],
       };
     }
 
@@ -56,7 +71,7 @@ export class PersistenceModule {
 
             const options: TypeOrmModuleOptions = {
               type: 'mongodb',
-              entities: [NftMetadataDb, NftMediaDb, NftTraitSummaryDb, KeybaseConfirmationDb, HotSwappableSettingDb],
+              entities: [NftMetadataDb, NftMediaDb, NftTraitSummaryDb, KeybaseConfirmationDb, HotSwappableSettingDb, UserDb, TransactionDb],
               url: apiConfigService.getDatabaseUrl(),
               keepAlive: 120000,
               sslValidate: false,
@@ -69,10 +84,10 @@ export class PersistenceModule {
           },
           inject: [ApiConfigService],
         }),
-        TypeOrmModule.forFeature([NftMetadataDb, NftMediaDb, NftTraitSummaryDb, KeybaseConfirmationDb, HotSwappableSettingDb]),
+        TypeOrmModule.forFeature([NftMetadataDb, NftMediaDb, NftTraitSummaryDb, KeybaseConfirmationDb, HotSwappableSettingDb, UserDb, TransactionDb]),
       ],
-      providers: [PersistenceService],
-      exports: [PersistenceService, TypeOrmModule.forFeature([NftMetadataDb, NftMediaDb, NftTraitSummaryDb, KeybaseConfirmationDb, HotSwappableSettingDb])],
+      providers: [TransactionDbService, UserDbService, HotSwappableSettingDbService, KeybaseConfirmationDbService, NftMediaDbService, NftMetadataDbService, NftTraitSummaryDbService],
+      exports: [TypeOrmModule.forFeature([NftMetadataDb, NftMediaDb, NftTraitSummaryDb, KeybaseConfirmationDb, HotSwappableSettingDb, UserDb, TransactionDb]), UserDbService, TransactionDbService, HotSwappableSettingDbService, KeybaseConfirmationDbService, NftMediaDbService, NftMetadataDbService, NftTraitSummaryDbService],
     };
   }
 }

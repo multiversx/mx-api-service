@@ -32,6 +32,8 @@ import { UsernameModule } from "./usernames/username.module";
 import { VmQueryModule } from "./vm.query/vm.query.module";
 import { WaitingListModule } from "./waiting-list/waiting.list.module";
 import { WebsocketModule } from "./websocket/websocket.module";
+import { RegisterModule } from "./register/register.module";
+import { AuthModule } from "src/common/auth/auth.module";
 
 @Module({
   imports: [
@@ -55,6 +57,8 @@ import { WebsocketModule } from "./websocket/websocket.module";
     StakeModule,
     TokenModule,
     RoundModule,
+    AuthModule,
+    RegisterModule,
     TransactionModule,
     UsernameModule,
     VmQueryModule,
@@ -75,7 +79,7 @@ import { WebsocketModule } from "./websocket/websocket.module";
     MiniBlockModule, NetworkModule, NftModule, NftMediaModule, TagModule, NodeModule, ProviderModule,
     RoundModule, SmartContractResultModule, ShardModule, StakeModule, TokenModule, RoundModule, TransactionModule, UsernameModule, VmQueryModule,
     WaitingListModule, EsdtModule, BlsModule, DappConfigModule, TransferModule, TransactionActionModule, WebsocketModule, MexModule,
-    ProcessNftsModule, NftMarketplaceModule, TransactionsBatchModule,
+    ProcessNftsModule, NftMarketplaceModule, TransactionsBatchModule, AuthModule, RegisterModule,
   ],
 })
 export class EndpointsServicesModule { }

@@ -8,7 +8,7 @@ import { ClientProxy } from "@nestjs/microservices";
 import { NftMessage } from "./queue/entities/nft.message";
 import { NftType } from "src/endpoints/nfts/entities/nft.type";
 import { NftAssetService } from "./queue/job-services/assets/nft.asset.service";
-import { PersistenceService } from "src/common/persistence/persistence.service";
+import { NftMediaDbService } from "src/common/persistence/services/nft.media.db.service";
 
 @Injectable()
 export class NftWorkerService {
@@ -18,7 +18,7 @@ export class NftWorkerService {
     private readonly nftMediaService: NftMediaService,
     private readonly nftAssetService: NftAssetService,
     @Inject('QUEUE_SERVICE') private readonly client: ClientProxy,
-    private readonly persistenceService: PersistenceService,
+    private readonly nftMediaDbService: NftMediaDbService,
   ) { }
 
   async addProcessNftQueueJob(nft: Nft, settings: ProcessNftSettings): Promise<boolean> {
@@ -48,7 +48,7 @@ export class NftWorkerService {
       return true;
     }
 
-    const media = await this.persistenceService.getMedia(nft.identifier);
+    const media = await this.nftMediaDbService.getMedia(nft.identifier);
     if (media === null) {
       return true;
     }
