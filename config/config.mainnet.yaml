@@ -66,7 +66,7 @@ urls:
     - 'https://devnet-api.multiversx.com'
     - 'https://testnet-api.multiversx.com'
   elastic:
-    - 'https://index.elrond.com'
+    - 'https://index.multiversx.com'
   mex:
     - 'https://mex-indexer.elrond.com'
   gateway:
@@ -108,7 +108,6 @@ contracts:
   delegationManager: 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqylllslmq6y6'
   delegation: 'erd1qqqqqqqqqqqqqpgqxwakt2g7u9atsnr03gqcgmhcv38pt7mkd94q6shuwt'
   metabonding: 'erd1qqqqqqqqqqqqqpgq50dge6rrpcra4tp9hl57jl0893a4r2r72jpsk39rjj'
-  delegationShardId: 2
 inflation:
   - 1952123
   - 1746637

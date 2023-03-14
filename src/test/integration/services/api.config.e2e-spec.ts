@@ -87,10 +87,10 @@ describe('API Config', () => {
     it("should return elastic url", () => {
       jest
         .spyOn(ConfigService.prototype, "get")
-        .mockImplementation(jest.fn(() => ['https://index.elrond.com']));
+        .mockImplementation(jest.fn(() => ['https://index.multiversx.com']));
 
       const results = apiConfigService.getElasticUrl();
-      expect(results).toEqual('https://index.elrond.com');
+      expect(results).toEqual('https://index.multiversx.com');
     });
 
     it("should throw error because test simulates that elastic url is not defined", () => {
@@ -264,25 +264,6 @@ describe('API Config', () => {
         .mockImplementation(jest.fn(() => undefined));
 
       expect(apiConfigService.getMetabondingContractAddress()).toBeUndefined();
-    });
-  });
-
-  describe("getDelegationContractShardId", () => {
-    it("should return delegation contract shardId address", () => {
-      jest
-        .spyOn(ConfigService.prototype, "get")
-        .mockImplementation(jest.fn(() => '2'));
-
-      const results = apiConfigService.getDelegationContractShardId();
-      expect(results).toEqual('2');
-    });
-
-    it("should throw error because test simulates that delegation contract shardId is not defined", () => {
-      jest
-        .spyOn(ConfigService.prototype, 'get')
-        .mockImplementation(jest.fn(() => undefined));
-
-      expect(() => apiConfigService.getDelegationContractShardId()).toThrowError('No delegation contract shard ID present');
     });
   });
 
