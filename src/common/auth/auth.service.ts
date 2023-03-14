@@ -20,7 +20,7 @@ export class AuthService {
   computeUserExpiryDate(egldValue: number): { expiryDate: number; extraTime: number } {
     // Compute number of seconds hours per EGLD
     const timeUnits = Math.floor(
-      egldValue / this.apiConfigService.getLiveWebsocketEventsEgldPerTimeUnit(),
+      egldValue / this.apiConfigService.getWebsocketEventNotifierEgldPerTimeUnit(),
     );
 
     // Transform hours period into milliseconds
@@ -93,7 +93,7 @@ export class AuthService {
 
     // Validate receiver address is one of the config addresses
     if (
-      !this.apiConfigService.getLiveWebsocketEventsAllowedReceivers()
+      !this.apiConfigService.getWebsocketEventNotifierAllowedReceivers()
         .includes(txData.receiver)
     ) {
       throw new HttpException(

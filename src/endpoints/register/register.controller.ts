@@ -14,8 +14,8 @@ interface UserRegistration {
     txHash: string;
 }
 
-@Controller('register')
-@ApiTags('register')
+@Controller('websocket')
+@ApiTags('websocket')
 export class RegisterController {
     private logger: Logger = new Logger(RegisterController.name);
     constructor(
@@ -32,7 +32,7 @@ export class RegisterController {
      * @param res Response
      * @returns HttpResponse
      */
-    @Post()
+    @Post('register')
     @UseGuards(NativeAuthGuard)
     @ApiResponse({
         status: 201,

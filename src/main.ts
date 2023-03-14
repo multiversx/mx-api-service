@@ -109,7 +109,7 @@ async function bootstrap() {
   if (apiConfigService.isEventsNotifierFeatureActive()) {
     const eventsNotifierApp = await NestFactory.create(RabbitMqModule.register());
 
-    if (apiConfigService.isLiveWebsocketEventsFeatureEnabled()) {
+    if (apiConfigService.isWebsocketEventNotifierFeatureEnabled()) {
       const redisIoAdapter = new RedisIoAdapter(eventsNotifierApp);
       await redisIoAdapter.connectToRedis();
       eventsNotifierApp.useWebSocketAdapter(redisIoAdapter);
@@ -149,7 +149,7 @@ async function bootstrap() {
   logger.log(`Cache warmer active: ${apiConfigService.getIsCacheWarmerCronActive()}`);
   logger.log(`Queue worker active: ${apiConfigService.getIsQueueWorkerCronActive()}`);
   logger.log(`Elastic updater active: ${apiConfigService.getIsElasticUpdaterCronActive()}`);
-  logger.log(`Live events websocket service active: ${apiConfigService.isLiveWebsocketEventsFeatureEnabled()}`);
+  logger.log(`Live events websocket service active: ${apiConfigService.isWebsocketEventNotifierFeatureEnabled()}`);
   logger.log(`Events notifier feature active: ${apiConfigService.isEventsNotifierFeatureActive()}`);
   logger.log(`Exchange feature active: ${apiConfigService.isExchangeEnabled()}`);
   logger.log(`Marketplace feature active: ${apiConfigService.isMarketplaceFeatureEnabled()}`);

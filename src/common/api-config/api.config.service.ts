@@ -370,8 +370,8 @@ export class ApiConfigService {
     return exchange;
   }
 
-  isLiveWebsocketEventsFeatureEnabled(): boolean {
-    const isEnabled = this.configService.get<boolean>('features.liveWebsocketEvents.enabled');
+  isWebsocketEventNotifierFeatureEnabled(): boolean {
+    const isEnabled = this.configService.get<boolean>('features.websocketEventNotifier.enabled');
     if (!isEnabled) {
       return false;
     }
@@ -379,8 +379,8 @@ export class ApiConfigService {
     return isEnabled;
   }
 
-  getLiveWebsocketEventsMaxConnections(): number {
-    const maxConnections = this.configService.get<number>('features.liveWebsocketEvents.maxConnections');
+  getWebsocketEventNotifierMaxConnections(): number {
+    const maxConnections = this.configService.get<number>('features.websocketEventNotifier.maxConnections');
     if (!maxConnections) {
       return 2;
     }
@@ -388,19 +388,19 @@ export class ApiConfigService {
     return maxConnections;
   }
 
-  getLiveWebsocketEventsEgldPerTimeUnit(): number {
-    const egldPerTimeUnit = this.configService.get<number>('features.liveWebsocketEvents.egldPerTimeUnit');
+  getWebsocketEventNotifierEgldPerTimeUnit(): number {
+    const egldPerTimeUnit = this.configService.get<number>('features.websocketEventNotifier.egldPerTimeUnit');
     if (!egldPerTimeUnit) {
-      throw new Error('No live websocket events egld per time unit set');
+      throw new Error('No websocket event notifier egld per time unit set');
     }
     console.log(egldPerTimeUnit);
     return egldPerTimeUnit;
   }
 
-  getLiveWebsocketEventsAllowedReceivers(): string[] {
-    const receivers = this.configService.get<string[]>('features.liveWebsocketEvents.allowedReceivers');
+  getWebsocketEventNotifierAllowedReceivers(): string[] {
+    const receivers = this.configService.get<string[]>('features.websocketEventNotifier.allowedReceivers');
     if (!receivers) {
-      throw new Error('No live websocket events allowed receivers present');
+      throw new Error('No websocket event notifier allowed receivers present');
     }
 
     return receivers;
