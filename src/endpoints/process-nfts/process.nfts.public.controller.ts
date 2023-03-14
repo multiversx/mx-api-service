@@ -1,10 +1,11 @@
 import { Jwt, JwtAuthenticateGuard } from "@multiversx/sdk-nestjs";
 import { BadRequestException, Body, Controller, Post, UseGuards } from "@nestjs/common";
-import { ApiOperation, ApiResponse } from "@nestjs/swagger";
+import { ApiOperation, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { ProcessNftRequest } from "./entities/process.nft.request";
 import { ProcessNftsService } from "./process.nfts.service";
 
 @Controller()
+@ApiTags('nfts')
 export class ProcessNftsPublicController {
   constructor(
     private readonly processNftService: ProcessNftsService,
