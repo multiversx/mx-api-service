@@ -168,25 +168,6 @@ export class MexTokenService {
 
     const mexTokens: MexToken[] = [];
     for (const pair of filteredPairs) {
-      if (pair.baseSymbol === 'WEGLD' && pair.quoteSymbol === "USDC") {
-        const wegldToken = new MexToken();
-        wegldToken.id = pair.baseId;
-        wegldToken.symbol = pair.baseSymbol;
-        wegldToken.name = pair.baseName;
-        wegldToken.price = pair.basePrice;
-
-        const usdcToken = new MexToken();
-        usdcToken.id = pair.quoteId;
-        usdcToken.symbol = pair.quoteSymbol;
-        usdcToken.name = pair.quoteName;
-        usdcToken.price = 1;
-
-        mexTokens.push(wegldToken);
-        mexTokens.push(usdcToken);
-
-        continue;
-      }
-
       const mexToken = this.getMexToken(pair);
       if (!mexToken) {
         continue;

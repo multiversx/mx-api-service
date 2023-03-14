@@ -5,6 +5,7 @@ import GraphQLJSON from "graphql-type-json";
 
 import { TokenAssetStatus } from "../../../endpoints/tokens/entities/token.asset.status";
 import { NftRankAlgorithm } from "./nft.rank.algorithm";
+import { TokenAssetsPriceSource } from "./token.assets.price.source";
 
 @ObjectType("TokenAssets", { description: "Token assets object type." })
 export class TokenAssets {
@@ -45,6 +46,10 @@ export class TokenAssets {
   extraTokens: string[] | undefined = undefined;
 
   @Field(() => String, { description: 'Preferred ranking algorithm for NFT collections. Supported values are "trait", "statistical", "jaccardDistances", "openRarity" and "custom".', nullable: true })
-  @ApiProperty({ type: String, nullable: true })
+  @ApiProperty({ enum: NftRankAlgorithm, nullable: true })
   preferredRankAlgorithm: NftRankAlgorithm | undefined = undefined;
+
+  @Field(() => TokenAssetsPriceSource, { description: 'Custom price source for the given token', nullable: true })
+  @ApiProperty({ enum: TokenAssetsPriceSource, nullable: true })
+  priceSource: TokenAssetsPriceSource | undefined = undefined;
 }

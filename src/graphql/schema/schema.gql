@@ -3449,6 +3449,9 @@ type TokenAssets {
   """
   preferredRankAlgorithm: String
 
+  """Custom price source for the given token"""
+  priceSource: TokenAssetsPriceSource
+
   """Status for the given token assets."""
   status: String!
 
@@ -3457,6 +3460,12 @@ type TokenAssets {
 
   """Website for the given token assets."""
   website: String!
+}
+
+"""Token assets price source object type."""
+type TokenAssetsPriceSource {
+  """Type of price source"""
+  type: String
 }
 
 """TokenDetailed object type."""

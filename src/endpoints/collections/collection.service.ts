@@ -83,9 +83,12 @@ export class CollectionService {
   applyPropertiesToCollectionFromElasticSearch(nftCollection: NftCollection, indexedCollection: Collection) {
     nftCollection.type = indexedCollection.type as NftType;
     nftCollection.timestamp = indexedCollection.timestamp;
-    nftCollection.isVerified = indexedCollection.api_isVerified;
-    nftCollection.nftCount = indexedCollection.api_nftCount;
-    nftCollection.holderCount = indexedCollection.api_holderCount;
+
+    if (nftCollection.type.in(NftType.NonFungibleESDT, NftType.SemiFungibleESDT)) {
+      nftCollection.isVerified = indexedCollection.api_isVerified;
+      nftCollection.nftCount = indexedCollection.api_nftCount;
+      nftCollection.holderCount = indexedCollection.api_holderCount;
+    }
   }
 
   async applyPropertiesToCollections(collectionsIdentifiers: string[]): Promise<NftCollection[]> {
