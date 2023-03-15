@@ -496,7 +496,8 @@ export class ElasticIndexerHelper {
     }
 
     if (token) {
-      mustQueries.push(QueryType.Match('identifier', token, QueryOperator.AND));
+      const field = token.split('-').length === 2 ? 'token' : 'identifier';
+      mustQueries.push(QueryType.Match(field, token, QueryOperator.AND));
     }
 
     let elasticQuery = ElasticQuery.create().withCondition(QueryConditionOptions.must, mustQueries);
