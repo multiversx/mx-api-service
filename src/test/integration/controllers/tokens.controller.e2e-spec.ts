@@ -110,7 +110,7 @@ describe("Tokens Controller", () => {
       {
         filter: 'search',
         value: 'RIDE',
-        count: 2,
+        count: 1,
       },
       {
         filter: 'name',
