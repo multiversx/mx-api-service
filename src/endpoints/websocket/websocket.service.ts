@@ -11,6 +11,7 @@ export class WebsocketService {
   getConfiguration(): WebsocketConfig {
     return {
       url: this.apiConfigService.getSocketUrl(),
+      eventNotifierUrl: this.apiConfigService.getWebsocketEventNotifierSocketUrl(),
     };
   }
 }

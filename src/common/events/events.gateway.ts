@@ -69,7 +69,7 @@ export class EventsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     // Validate if user has already more connections than allowed across all nodes
     const userConnections = await this.server?.in(user.address).fetchSockets();
-    const maxConnections = this.apiConfigService.getLiveWebsocketEventsMaxConnections();
+    const maxConnections = this.apiConfigService.getWebsocketEventNotifierMaxConnections();
 
     if (userConnections && userConnections?.length >= maxConnections) {
       this.logger.error(
