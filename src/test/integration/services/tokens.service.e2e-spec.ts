@@ -15,6 +15,7 @@ import { TransactionService } from "src/endpoints/transactions/transaction.servi
 import * as fs from 'fs';
 import * as path from 'path';
 import { TokenType } from "src/common/indexer/entities";
+import { PluginService } from "src/common/plugins/plugin.service";
 
 describe('Token Service', () => {
   let tokenService: TokenService;
@@ -98,6 +99,12 @@ describe('Token Service', () => {
           useValue: {
             applyCollectionRoles: jest.fn(),
             getNftCollections: jest.fn(),
+          },
+        },
+        {
+          provide: PluginService,
+          useValue: {
+            getEsdtTokenPrice: jest.fn(),
           },
         },
       ],
@@ -365,6 +372,126 @@ describe('Token Service', () => {
       expect(result).toHaveLength(25);
       expect(result).toEqual(expect.arrayContaining([
         expect.objectContaining({ type: 'FungibleESDT' }),
+      ]));
+    });
+  });
+
+  describe('getTokenCount', () => {
+    it('should return total tokens count', async () => {
+      const mockTokens = JSON.parse(fs.readFileSync(path.join(__dirname, '../../mocks/tokens.filtered.mock.json'), 'utf-8'));
+
+      const getFilteredTokensMock = jest.spyOn(tokenService, 'getAllTokens').mockReturnValue(mockTokens);
+
+      const result = await tokenService.getTokenCount(new TokenFilter());
+
+      expect(result).toStrictEqual(25);
+      expect(getFilteredTokensMock).toHaveBeenCalled();
+    });
+
+    it('should return total tokens count and add MetaESDT', async () => {
+      const mockTokens = JSON.parse(fs.readFileSync(path.join(__dirname, '../../mocks/tokens.filtered.mock.json'), 'utf-8'));
+
+      const getFilteredTokensMock = jest.spyOn(tokenService, 'getAllTokens').mockReturnValue(mockTokens);
+
+      const filter = new TokenFilter();
+      filter.includeMetaESDT = true;
+
+      const result = await tokenService.getTokenCount(filter);
+
+      expect(result).toStrictEqual(26);
+      expect(getFilteredTokensMock).toHaveBeenCalled();
+    });
+
+    it('should return tokens count when identifier filter is applied', async () => {
+      const mockTokens = JSON.parse(fs.readFileSync(path.join(__dirname, '../../mocks/tokens.filtered.mock.json'), 'utf-8'));
+
+      const getFilteredTokensMock = jest.spyOn(tokenService, 'getAllTokens').mockReturnValue(mockTokens);
+
+      const filter = new TokenFilter();
+      filter.identifier = "WEGLD-bd4d79";
+
+      const result = await tokenService.getTokenCount(filter);
+
+      expect(result).toStrictEqual(1);
+      expect(getFilteredTokensMock).toHaveBeenCalled();
+    });
+
+    it('should return tokens count when identifiers filter is applied', async () => {
+      const mockTokens = JSON.parse(fs.readFileSync(path.join(__dirname, '../../mocks/tokens.filtered.mock.json'), 'utf-8'));
+
+      const getFilteredTokensMock = jest.spyOn(tokenService, 'getAllTokens').mockReturnValue(mockTokens);
+
+      const filter = new TokenFilter();
+      filter.identifiers = ['MEX-455c57', 'WEGLD-bd4d79'];
+
+      const result = await tokenService.getTokenCount(filter);
+
+      expect(result).toStrictEqual(2);
+      expect(getFilteredTokensMock).toHaveBeenCalled();
+    });
+  });
+
+  describe('getTokenCountForAddress', () => {
+    it('should return the correct token count for a valid address and filter', async () => {
+      const address = 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqplllst77y4l';
+      const filter = new TokenFilter({ type: TokenType.FungibleESDT });
+      const expectedCount = 10;
+      const getTokenCountForAddressMock = jest.spyOn(tokenService['indexerService'], 'getTokenCountForAddress')
+        .mockResolvedValue(expectedCount);
+
+      const result = await tokenService.getTokenCountForAddress(address, filter);
+      expect(result).toEqual(expectedCount);
+      expect(getTokenCountForAddressMock).toHaveBeenCalledWith(address, filter);
+    });
+  });
+
+  describe('getTokenCountForAddressFromElastic', () => {
+    it('should return the correct token count from elastic for a valid address and filter', async () => {
+      const address = 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqplllst77y4l';
+      const filter = new TokenFilter({ type: TokenType.FungibleESDT });
+      const expectedCount = 10;
+      const getTokenCountForAddressMock = jest.spyOn(tokenService['indexerService'], 'getTokenCountForAddress')
+        .mockResolvedValue(expectedCount);
+
+      const result = await tokenService.getTokenCountForAddressFromElastic(address, filter);
+      expect(result).toEqual(expectedCount);
+      expect(getTokenCountForAddressMock).toHaveBeenCalledWith(address, filter);
+    });
+  });
+
+  describe('getTokenCountForAddressFromGateway', () => {
+    it('should return the correct token count for a valid address and filter', async () => {
+      const mockTokens = JSON.parse(fs.readFileSync(path.join(__dirname, '../../mocks/tokens.filtered.mock.json'), 'utf-8'));
+
+      const address = 'erd1qga7ze0l03chfgru0a32wxqf2226nzrxnyhzer9lmudqhjgy7ycqjjyknz';
+      const filter = new TokenFilter({ type: TokenType.FungibleESDT });
+
+      const expectedCount = 26;
+      const getAllTokensForAddressMock = jest.spyOn(tokenService, 'getAllTokensForAddress').mockResolvedValue(mockTokens);
+
+      const count = await tokenService.getTokenCountForAddressFromGateway(address, filter);
+
+      expect(count).toEqual(expectedCount);
+      expect(getAllTokensForAddressMock).toHaveBeenCalledWith(address, filter);
+    });
+  });
+
+  describe('getTokensForAddress', () => {
+    it('should return the correct tokens with balances for a valid address and filter', async () => {
+      const mockTokens = JSON.parse(fs.readFileSync(path.join(__dirname, '../../mocks/tokens.filtered.mock.json'), 'utf-8'));
+
+      const address = 'erd1qga7ze0l03chfgru0a32wxqf2226nzrxnyhzer9lmudqhjgy7ycqjjyknz';
+      const queryPagination = { from: 0, size: 1 };
+      const filter = new TokenFilter({ type: TokenType.FungibleESDT });
+
+      jest.spyOn(tokenService, 'getAllTokensForAddress').mockResolvedValue(mockTokens);
+
+      const result = await tokenService.getTokensForAddress(address, queryPagination, filter);
+
+      expect(result).toEqual(expect.arrayContaining([
+        expect.objectContaining({
+          identifier: 'WEGLD-bd4d79',
+        }),
       ]));
     });
   });
