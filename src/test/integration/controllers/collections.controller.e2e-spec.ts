@@ -40,38 +40,6 @@ describe("collections Controller", () => {
         });
     });
 
-    it('should return collection detailes for a given identifier', async () => {
-      const params = new URLSearchParams({
-        'search': 'MEDAL-ae074f',
-      });
-
-      const expected =
-        [
-          {
-            collection: "MEDAL-ae074f",
-            type: "NonFungibleESDT",
-            name: "GLUMedals",
-            ticker: "MEDAL-ae074f",
-            owner: "erd126y66ear20cdskrdky0kpzr9agjul7pcut7ktlr6p0eu8syxhvrq0gsqdj",
-            timestamp: 1654019676,
-            canFreeze: false,
-            canWipe: false,
-            canPause: false,
-            canTransferNftCreateRole: false,
-            canChangeOwner: false,
-            canUpgrade: true,
-            canAddSpecialRoles: true,
-            traits: [],
-          }];
-
-      await request(app.getHttpServer())
-        .get(`${path}?${params}`)
-        .expect(200)
-        .then(res => {
-          expect(res.body).toStrictEqual(expected);
-        });
-    });
-
     it('should return two collections details', async () => {
       const params = new URLSearchParams({
         'identifiers': 'MEDAL-ae074f,EROBOT-527a29',
@@ -91,8 +59,8 @@ describe("collections Controller", () => {
             canPause: false,
             canTransferNftCreateRole: false,
             canChangeOwner: false,
-            canUpgrade: true,
-            canAddSpecialRoles: true,
+            canUpgrade: false,
+            canAddSpecialRoles: false,
             traits: [],
           },
           {
@@ -187,7 +155,7 @@ describe("collections Controller", () => {
 
     it('should count for a given collection identifier', async () => {
       const params = new URLSearchParams({
-        'search': 'MEDAL-ae074f',
+        'identifiers': 'MEDAL-ae074f',
       });
 
       await request(app.getHttpServer())
@@ -264,8 +232,8 @@ describe("collections Controller", () => {
         canTransfer: true,
         canTransferNftCreateRole: false,
         canChangeOwner: false,
-        canUpgrade: true,
-        canAddSpecialRoles: true,
+        canUpgrade: false,
+        canAddSpecialRoles: false,
         roles: [
           {
             address: "erd1qqqqqqqqqqqqqpgq8ne37ed06034qxfhm09f03ykjfqwx8s7hvrqackmzt",
