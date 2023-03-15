@@ -1047,7 +1047,7 @@ export class AccountController {
     @Query('before', ParseIntPipe) before?: number,
     @Query('after', ParseIntPipe) after?: number,
   ): Promise<AccountEsdtHistory[]> {
-    const isToken = await this.tokenService.isToken(tokenIdentifier);
+    const isToken = await this.tokenService.isToken(tokenIdentifier) || await this.collectionService.isCollection(tokenIdentifier) || await this.nftService.isNft(tokenIdentifier);
     if (!isToken) {
       throw new NotFoundException(`Token '${tokenIdentifier}' not found`);
     }
