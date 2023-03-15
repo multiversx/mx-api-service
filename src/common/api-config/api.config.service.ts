@@ -393,7 +393,6 @@ export class ApiConfigService {
     if (!egldPerTimeUnit) {
       throw new Error('No websocket event notifier egld per time unit set');
     }
-    console.log(egldPerTimeUnit);
     return egldPerTimeUnit;
   }
 
@@ -404,6 +403,10 @@ export class ApiConfigService {
     }
 
     return receivers;
+  }
+
+  getWebsocketEventNotifierSocketUrl(): string | undefined {
+    return this.configService.get<string>('features.websocketEventNotifier.socketUrl');
   }
 
   getIsProcessNftsFlagActive(): boolean {
