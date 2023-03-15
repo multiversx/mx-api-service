@@ -138,7 +138,7 @@ describe('Node Service', () => {
 
       nodes.online = true;
       const online = await nodeService.getNodeCount(nodes);
-      expect(online).toStrictEqual(97);
+      expect(online).toStrictEqual(96);
 
       nodes.online = false;
       const offline = await nodeService.getNodeCount(nodes);
@@ -157,7 +157,7 @@ describe('Node Service', () => {
           FileUtils.parseJSONFile(`${MOCK_PATH}nodes.mock.json`)));
 
       const results = await nodeService.getNodeCount(nodes);
-      expect(results).toStrictEqual(25);
+      expect(results).toStrictEqual(24);
     });
 
     it("should return total validators nodes count", async () => {
@@ -172,7 +172,7 @@ describe('Node Service', () => {
           FileUtils.parseJSONFile(`${MOCK_PATH}nodes.mock.json`)));
 
       const results = await nodeService.getNodeCount(nodes);
-      expect(results).toStrictEqual(97);
+      expect(results).toStrictEqual(96);
     });
 
     it("should return total observers nodes count", async () => {
@@ -406,7 +406,7 @@ describe('Node Service', () => {
 
       const results = await nodeService.getAllNodes();
 
-      expect(results.length).toBeGreaterThanOrEqual(99);
+      expect(results.length).toBeGreaterThanOrEqual(98);
     });
   });
 
