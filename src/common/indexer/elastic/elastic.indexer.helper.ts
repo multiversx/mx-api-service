@@ -496,7 +496,7 @@ export class ElasticIndexerHelper {
     }
 
     if (token) {
-      mustQueries.push(QueryType.Match('token', token, QueryOperator.AND));
+      mustQueries.push(QueryType.Match('identifier', token, QueryOperator.AND));
     }
 
     let elasticQuery = ElasticQuery.create().withCondition(QueryConditionOptions.must, mustQueries);

@@ -12,4 +12,8 @@ export class AccountEsdtHistory extends AccountHistory {
   @Field(() => String, { description: 'Token for the given history account details.' })
   @ApiProperty({ type: String, example: 'WEGLD-bd4d79' })
   token: string = '';
+
+  @Field(() => String, { description: 'Identifier for the given history account details.' })
+  @ApiProperty({ type: String, example: 'XPACHIEVE-5a0519-01' })
+  identifier: string | undefined = undefined;
 }
