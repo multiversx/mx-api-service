@@ -168,6 +168,16 @@ export class MexTokenService {
 
     const mexTokens: MexToken[] = [];
     for (const pair of filteredPairs) {
+      if (pair.baseSymbol === 'WEGLD' && pair.quoteSymbol === "USDC") {
+        const wegldToken = new MexToken();
+        wegldToken.id = pair.baseId;
+        wegldToken.symbol = pair.baseSymbol;
+        wegldToken.name = pair.baseName;
+        wegldToken.price = pair.basePrice;
+
+        mexTokens.push(wegldToken);
+      }
+
       const mexToken = this.getMexToken(pair);
       if (!mexToken) {
         continue;
