@@ -9,7 +9,7 @@ import { TokenRoles } from "../tokens/entities/token.roles";
 import { AssetsService } from "../../common/assets/assets.service";
 import { EsdtLockedAccount } from "./entities/esdt.locked.account";
 import { EsdtSupply } from "./entities/esdt.supply";
-import { BinaryUtils, Constants, CachingService, AddressUtils, OriginLogger, BatchUtils } from "@multiversx/sdk-nestjs";
+import { BinaryUtils, Constants, AddressUtils, OriginLogger, BatchUtils, ElrondCachingService } from "@multiversx/sdk-nestjs";
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { EsdtType } from "./entities/esdt.type";
 import { ElasticIndexerService } from "src/common/indexer/elastic/elastic.indexer.service";
@@ -22,7 +22,7 @@ export class EsdtService {
   constructor(
     private readonly gatewayService: GatewayService,
     private readonly apiConfigService: ApiConfigService,
-    private readonly cachingService: CachingService,
+    private readonly cachingService: ElrondCachingService,
     private readonly vmQueryService: VmQueryService,
     private readonly indexerService: IndexerService,
     @Inject(forwardRef(() => AssetsService))
@@ -31,7 +31,7 @@ export class EsdtService {
   ) { }
 
   async getEsdtTokenProperties(identifier: string): Promise<TokenProperties | undefined> {
-    const properties = await this.cachingService.getOrSetCache(
+    const properties = await this.cachingService.getOrSet(
       CacheInfo.EsdtProperties(identifier).key,
       async () => await this.getEsdtTokenPropertiesRaw(identifier),
       Constants.oneWeek(),
@@ -46,7 +46,7 @@ export class EsdtService {
   }
 
   async getEsdtAddressesRoles(identifier: string): Promise<TokenRoles[] | undefined> {
-    const addressesRoles = await this.cachingService.getOrSetCache(
+    const addressesRoles = await this.cachingService.getOrSet(
       CacheInfo.EsdtAddressesRoles(identifier).key,
       async () => await this.getEsdtAddressesRolesRaw(identifier),
       Constants.oneWeek(),
@@ -257,7 +257,7 @@ export class EsdtService {
   }
 
   private async getLockedAccounts(identifier: string): Promise<EsdtLockedAccount[]> {
-    return await this.cachingService.getOrSetCache(
+    return await this.cachingService.getOrSet(
       CacheInfo.TokenLockedAccounts(identifier).key,
       async () => await this.getLockedAccountsRaw(identifier),
       CacheInfo.TokenLockedAccounts(identifier).ttl,
@@ -356,13 +356,13 @@ export class EsdtService {
           if (distinctAccounts.length > 0) {
             const chunks = BatchUtils.splitArrayIntoChunks(distinctAccounts, 100);
             for (const chunk of chunks) {
-              await this.cachingService.setAdd(key, ...chunk);
+              await this.cachingService.setAddRemote(key, ...chunk);
             }
           }
         });
       }
 
-      return await this.cachingService.setCount(key);
+      return await this.cachingService.setCountRemote(key);
     } finally {
       await this.cachingService.deleteInCache(key);
     }

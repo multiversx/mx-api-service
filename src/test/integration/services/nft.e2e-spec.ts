@@ -11,7 +11,7 @@ import { EsdtAddressService } from 'src/endpoints/esdt/esdt.address.service';
 import { NftAccount } from 'src/endpoints/nfts/entities/nft.account';
 import { ApiConfigService } from 'src/common/api-config/api.config.service';
 import { QueryPagination } from 'src/common/entities/query.pagination';
-import { CachingService } from '@multiversx/sdk-nestjs';
+import { ElrondCachingService } from '@multiversx/sdk-nestjs';
 import { PluginService } from 'src/common/plugins/plugin.service';
 import { Nft } from 'src/endpoints/nfts/entities/nft';
 import { ScamType } from 'src/common/entities/scam-type.enum';
@@ -675,7 +675,7 @@ describe('Nft Service', () => {
   describe('getNftOwnersCount', () => {
     it('should return total number of esdts token', async () => {
       jest
-        .spyOn(CachingService.prototype, 'getOrSetCache')
+        .spyOn(ElrondCachingService.prototype, 'getOrSet')
         // eslint-disable-next-line require-await
         .mockImplementation(jest.fn(async (_key: string, promise: any) => promise()));
 
@@ -691,7 +691,7 @@ describe('Nft Service', () => {
 
     it('should return undefined because test simulates that esdt owners are null', async () => {
       jest
-        .spyOn(CachingService.prototype, 'getOrSetCache')
+        .spyOn(ElrondCachingService.prototype, 'getOrSet')
         // eslint-disable-next-line require-await
         .mockImplementation(jest.fn(async (_key: string, promise: any) => promise()));
 

@@ -7,7 +7,7 @@ import { MexPair } from "./entities/mex.pair";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { MexFarmService } from "./mex.farm.service";
 import { MexSettingsService } from "./mex.settings.service";
-import { Constants, CachingService } from "@multiversx/sdk-nestjs";
+import { Constants, ElrondCachingService } from "@multiversx/sdk-nestjs";
 import { MexPairType } from "./entities/mex.pair.type";
 import { OriginLogger } from "@multiversx/sdk-nestjs";
 import { QueryPagination } from "src/common/entities/query.pagination";
@@ -17,7 +17,7 @@ export class MexTokenService {
   private readonly logger = new OriginLogger(MexTokenService.name);
 
   constructor(
-    private readonly cachingService: CachingService,
+    private readonly cachingService: ElrondCachingService,
     private readonly apiConfigService: ApiConfigService,
     private readonly mexPairService: MexPairService,
     @Inject(forwardRef(() => MexFarmService))
@@ -27,16 +27,16 @@ export class MexTokenService {
 
   async refreshMexTokens(): Promise<void> {
     const tokens = await this.getAllMexTokensRaw();
-    await this.cachingService.setCacheRemote(CacheInfo.MexTokens.key, tokens, CacheInfo.MexTokens.ttl);
-    await this.cachingService.setCacheLocal(CacheInfo.MexTokens.key, tokens, Constants.oneSecond() * 30);
+    await this.cachingService.setRemote(CacheInfo.MexTokens.key, tokens, CacheInfo.MexTokens.ttl);
+    await this.cachingService.setLocal(CacheInfo.MexTokens.key, tokens, Constants.oneSecond() * 30);
 
     const indexedTokens = await this.getIndexedMexTokensRaw();
-    await this.cachingService.setCacheRemote(CacheInfo.MexTokensIndexed.key, indexedTokens, CacheInfo.MexTokensIndexed.ttl);
-    await this.cachingService.setCacheLocal(CacheInfo.MexTokensIndexed.key, indexedTokens, Constants.oneSecond() * 30);
+    await this.cachingService.setRemote(CacheInfo.MexTokensIndexed.key, indexedTokens, CacheInfo.MexTokensIndexed.ttl);
+    await this.cachingService.setLocal(CacheInfo.MexTokensIndexed.key, indexedTokens, Constants.oneSecond() * 30);
 
     const indexedPrices = await this.getMexPricesRaw();
-    await this.cachingService.setCacheRemote(CacheInfo.MexPrices.key, indexedPrices, CacheInfo.MexPrices.ttl);
-    await this.cachingService.setCacheLocal(CacheInfo.MexPrices.key, indexedPrices, Constants.oneSecond() * 30);
+    await this.cachingService.setRemote(CacheInfo.MexPrices.key, indexedPrices, CacheInfo.MexPrices.ttl);
+    await this.cachingService.setLocal(CacheInfo.MexPrices.key, indexedPrices, Constants.oneSecond() * 30);
   }
 
   async getMexTokens(queryPagination: QueryPagination): Promise<MexToken[]> {
@@ -53,7 +53,7 @@ export class MexTokenService {
   }
 
   async getMexPrices(): Promise<Record<string, { price: number, isToken: boolean }>> {
-    return await this.cachingService.getOrSetCache(
+    return await this.cachingService.getOrSet(
       CacheInfo.MexPrices.key,
       async () => await this.getMexPricesRaw(),
       CacheInfo.MexPrices.ttl,
@@ -124,7 +124,7 @@ export class MexTokenService {
       return {};
     }
 
-    return await this.cachingService.getOrSetCache(
+    return await this.cachingService.getOrSet(
       CacheInfo.MexTokensIndexed.key,
       async () => await this.getIndexedMexTokensRaw(),
       CacheInfo.MexTokensIndexed.ttl,
@@ -154,7 +154,7 @@ export class MexTokenService {
       return [];
     }
 
-    return await this.cachingService.getOrSetCache(
+    return await this.cachingService.getOrSet(
       CacheInfo.MexTokens.key,
       async () => await this.getAllMexTokensRaw(),
       CacheInfo.MexTokens.ttl,

@@ -16,7 +16,7 @@ import { NftCollectionWithRoles } from "../collections/entities/nft.collection.w
 import { CollectionService } from "../collections/collection.service";
 import { CollectionFilter } from "../collections/entities/collection.filter";
 import { CollectionRoles } from "../tokens/entities/collection.roles";
-import { AddressUtils, ApiUtils, BinaryUtils, CachingService, MetricsService } from "@multiversx/sdk-nestjs";
+import { AddressUtils, ApiUtils, BinaryUtils, ElrondCachingService, MetricsService } from "@multiversx/sdk-nestjs";
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { OriginLogger } from "@multiversx/sdk-nestjs";
 
@@ -30,7 +30,7 @@ export class EsdtAddressService {
     private readonly esdtService: EsdtService,
     private readonly indexerService: IndexerService,
     private readonly gatewayService: GatewayService,
-    private readonly cachingService: CachingService,
+    private readonly cachingService: ElrondCachingService,
     private readonly metricsService: MetricsService,
     private readonly protocolService: ProtocolService,
     private readonly nftExtendedAttributesService: NftExtendedAttributesService,
@@ -320,7 +320,7 @@ export class EsdtAddressService {
       return result;
     }
 
-    const cachedValue = await this.cachingService.getCacheLocal<{ [key: string]: any }>(`address:${address}:esdts`);
+    const cachedValue = await this.cachingService.getLocal<{ [key: string]: any }>(`address:${address}:esdts`);
 
     if (cachedValue) {
       this.metricsService.incrementCachedApiHit('Gateway.AccountEsdts');
@@ -339,7 +339,7 @@ export class EsdtAddressService {
 
     const ttl = await this.protocolService.getSecondsRemainingUntilNextRound();
 
-    await this.cachingService.setCacheLocal(`address:${address}:esdts`, esdts, ttl);
+    await this.cachingService.setLocal(`address:${address}:esdts`, esdts, ttl);
 
     return esdts;
   }

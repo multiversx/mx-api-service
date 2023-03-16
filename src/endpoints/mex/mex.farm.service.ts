@@ -1,4 +1,4 @@
-import { Constants, CachingService } from "@multiversx/sdk-nestjs";
+import { Constants, ElrondCachingService } from "@multiversx/sdk-nestjs";
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { gql } from "graphql-request";
 import { QueryPagination } from "src/common/entities/query.pagination";
@@ -12,7 +12,7 @@ import { ApiConfigService } from "src/common/api-config/api.config.service";
 @Injectable()
 export class MexFarmService {
   constructor(
-    private readonly cachingService: CachingService,
+    private readonly cachingService: ElrondCachingService,
     private readonly graphQlService: GraphQlService,
     @Inject(forwardRef(() => MexTokenService))
     private readonly mexTokenService: MexTokenService,
@@ -21,8 +21,8 @@ export class MexFarmService {
 
   async refreshMexFarms(): Promise<void> {
     const farms = await this.getAllMexFarmsRaw();
-    await this.cachingService.setCacheRemote(CacheInfo.MexFarms.key, farms, CacheInfo.MexFarms.ttl);
-    await this.cachingService.setCacheLocal(CacheInfo.MexFarms.key, farms, Constants.oneSecond() * 30);
+    await this.cachingService.setRemote(CacheInfo.MexFarms.key, farms, CacheInfo.MexFarms.ttl);
+    await this.cachingService.setLocal(CacheInfo.MexFarms.key, farms, Constants.oneSecond() * 30);
   }
 
   async getMexFarms(pagination: QueryPagination): Promise<MexFarm[]> {
@@ -37,7 +37,7 @@ export class MexFarmService {
       return [];
     }
 
-    return await this.cachingService.getOrSetCache(
+    return await this.cachingService.getOrSet(
       CacheInfo.MexFarms.key,
       async () => await this.getAllMexFarmsRaw(),
       CacheInfo.MexFarms.ttl,
@@ -168,7 +168,7 @@ export class MexFarmService {
       return [];
     }
 
-    return await this.cachingService.getOrSetCache(
+    return await this.cachingService.getOrSet(
       CacheInfo.StakingProxies.key,
       async () => await this.getAllStakingProxiesRaw(),
       CacheInfo.StakingProxies.ttl,

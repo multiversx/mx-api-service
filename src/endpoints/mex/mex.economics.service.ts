@@ -1,4 +1,4 @@
-import { CachingService } from "@multiversx/sdk-nestjs";
+import { ElrondCachingService } from "@multiversx/sdk-nestjs";
 import { BadRequestException, Injectable } from "@nestjs/common";
 import { gql } from "graphql-request";
 import { CacheInfo } from "src/utils/cache.info";
@@ -10,17 +10,17 @@ import { MexEconomics } from "./entities/mex.economics";
 export class MexEconomicsService {
   constructor(
     private readonly mexSettingService: MexSettingsService,
-    private readonly cachingService: CachingService,
+    private readonly cachingService: ElrondCachingService,
     private readonly graphQlService: GraphQlService
   ) { }
 
   async refreshMexEconomics() {
     const economics = await this.getMexEconomicsRaw();
-    await this.cachingService.setCacheRemote(CacheInfo.MexEconomics.key, economics, CacheInfo.MexEconomics.ttl);
+    await this.cachingService.setRemote(CacheInfo.MexEconomics.key, economics, CacheInfo.MexEconomics.ttl);
   }
 
   async getMexEconomics(): Promise<MexEconomics> {
-    return await this.cachingService.getOrSetCache(
+    return await this.cachingService.getOrSet(
       CacheInfo.MexEconomics.key,
       async () => await this.getMexEconomicsRaw(),
       CacheInfo.MexEconomics.ttl,

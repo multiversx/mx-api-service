@@ -10,7 +10,7 @@ import { Stats } from 'src/endpoints/network/entities/stats';
 import { GatewayService } from 'src/common/gateway/gateway.service';
 import { Auction } from 'src/common/gateway/entities/auction';
 import { AuctionNode } from 'src/common/gateway/entities/auction.node';
-import { CachingService } from "@multiversx/sdk-nestjs";
+import { ElrondCachingService } from "@multiversx/sdk-nestjs";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { About } from "src/endpoints/network/entities/about";
 import { NetworkService } from "src/endpoints/network/network.service";
@@ -31,7 +31,7 @@ describe('Network Service', () => {
   describe('Get Constants', () => {
     it('should return network constants', async () => {
       jest
-        .spyOn(CachingService.prototype, 'getOrSetCache')
+        .spyOn(ElrondCachingService.prototype, 'getOrSet')
         // eslint-disable-next-line require-await
         .mockImplementation(jest.fn(async (_key: string, promise: any) => promise()));
 
@@ -215,7 +215,7 @@ describe('Network Service', () => {
   describe('getAbout', () => {
     it('should return API general information', async () => {
       jest
-        .spyOn(CachingService.prototype, 'getOrSetCache')
+        .spyOn(ElrondCachingService.prototype, 'getOrSet')
         // eslint-disable-next-line require-await
         .mockImplementation(jest.fn(async (_key: string, promise: any) => promise()));
 

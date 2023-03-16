@@ -6,7 +6,7 @@ import { GatewayService } from "src/common/gateway/gateway.service";
 import { Response, Request } from "express";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
 import { PluginService } from "src/common/plugins/plugin.service";
-import { Constants, ParseAddressPipe, ParseBlockHashPipe, ParseTransactionHashPipe, CachingService, NoCache } from "@multiversx/sdk-nestjs";
+import { Constants, ParseAddressPipe, ParseBlockHashPipe, ParseTransactionHashPipe, ElrondCachingService, NoCache } from "@multiversx/sdk-nestjs";
 import { OriginLogger } from "@multiversx/sdk-nestjs";
 
 @Controller()
@@ -17,7 +17,7 @@ export class ProxyController {
   constructor(
     private readonly gatewayService: GatewayService,
     private readonly vmQueryService: VmQueryService,
-    private readonly cachingService: CachingService,
+    private readonly cachingService: ElrondCachingService,
     private readonly pluginService: PluginService,
   ) { }
 
@@ -242,7 +242,7 @@ export class ProxyController {
   @NoCache()
   async getNodeHeartbeatStatus(@Res() res: Response) {
     try {
-      const heartbeatStatus = await this.cachingService.getOrSetCache(
+      const heartbeatStatus = await this.cachingService.getOrSet(
         'heartbeatstatus',
         async () => {
           const result = await this.gatewayService.getRaw('node/heartbeatstatus', GatewayComponentRequest.nodeHeartbeat);
@@ -262,7 +262,7 @@ export class ProxyController {
   @NoCache()
   async getValidatorStatistics(@Res() res: Response) {
     try {
-      const validatorStatistics = await this.cachingService.getOrSetCache(
+      const validatorStatistics = await this.cachingService.getOrSet(
         'validatorstatistics',
         async () => {
           const result = await this.gatewayService.getRaw('validator/statistics', GatewayComponentRequest.validatorStatistics);
@@ -312,7 +312,7 @@ export class ProxyController {
   @ApiExcludeEndpoint()
   async getHyperblockByNonce(@Param('nonce') nonce: number) {
     try {
-      return await this.cachingService.getOrSetCache(
+      return await this.cachingService.getOrSet(
         `hyperblock/by-nonce/${nonce}`,
         // eslint-disable-next-line require-await
         async () => await this.gatewayGet(`hyperblock/by-nonce/${nonce}`, GatewayComponentRequest.hyperblockByNonce, undefined, async error => {

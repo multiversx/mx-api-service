@@ -18,7 +18,7 @@ import { GatewayComponentRequest } from 'src/common/gateway/entities/gateway.com
 import { TransactionActionService } from './transaction-action/transaction.action.service';
 import { TransactionDecodeDto } from './entities/dtos/transaction.decode.dto';
 import { TransactionStatus } from './entities/transaction.status';
-import { AddressUtils, ApiUtils, Constants, CachingService, PendingExecuter } from '@multiversx/sdk-nestjs';
+import { AddressUtils, ApiUtils, Constants, ElrondCachingService, PendingExecuter } from '@multiversx/sdk-nestjs';
 import { TransactionUtils } from './transaction.utils';
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { TransactionOperation } from './entities/transaction.operation';
@@ -45,7 +45,7 @@ export class TransactionService {
     @Inject(forwardRef(() => TokenTransferService))
     private readonly tokenTransferService: TokenTransferService,
     private readonly pluginsService: PluginService,
-    private readonly cachingService: CachingService,
+    private readonly cachingService: ElrondCachingService,
     @Inject(forwardRef(() => TransactionActionService))
     private readonly transactionActionService: TransactionActionService,
     private readonly assetsService: AssetsService,
@@ -55,7 +55,7 @@ export class TransactionService {
   ) { }
 
   async getTransactionCountForAddress(address: string): Promise<number> {
-    return await this.cachingService.getOrSetCache(
+    return await this.cachingService.getOrSet(
       CacheInfo.TxCount(address).key,
       async () => await this.getTransactionCountForAddressRaw(address),
       CacheInfo.TxCount(address).ttl,
@@ -355,7 +355,7 @@ export class TransactionService {
       return undefined;
     }
 
-    const pendingResult = await this.cachingService.getCache(CacheInfo.TransactionPendingResults(transaction.txHash).key);
+    const pendingResult = await this.cachingService.get(CacheInfo.TransactionPendingResults(transaction.txHash).key);
     if (!pendingResult) {
       return undefined;
     }

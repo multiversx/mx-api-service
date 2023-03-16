@@ -13,7 +13,7 @@ import { NetworkConfig } from './entities/network.config';
 import { StakeService } from '../stake/stake.service';
 import { GatewayService } from 'src/common/gateway/gateway.service';
 import { CacheInfo } from 'src/utils/cache.info';
-import { NumberUtils, CachingService, ApiService } from '@multiversx/sdk-nestjs';
+import { NumberUtils, ElrondCachingService, ApiService } from '@multiversx/sdk-nestjs';
 import { About } from './entities/about';
 import { PluginService } from 'src/common/plugins/plugin.service';
 import { SmartContractResultService } from '../sc-results/scresult.service';
@@ -26,7 +26,7 @@ export class NetworkService {
     @Inject(forwardRef(() => TokenService))
     private readonly tokenService: TokenService,
     private readonly apiConfigService: ApiConfigService,
-    private readonly cachingService: CachingService,
+    private readonly cachingService: ElrondCachingService,
     private readonly gatewayService: GatewayService,
     private readonly vmQueryService: VmQueryService,
     @Inject(forwardRef(() => BlockService))
@@ -45,7 +45,7 @@ export class NetworkService {
   ) { }
 
   async getConstants(): Promise<NetworkConstants> {
-    return await this.cachingService.getOrSetCache(
+    return await this.cachingService.getOrSet(
       CacheInfo.Constants.key,
       async () => await this.getConstantsRaw(),
       CacheInfo.Constants.ttl
@@ -102,7 +102,7 @@ export class NetworkService {
   }
 
   async getEconomics(): Promise<Economics> {
-    const economics = await this.cachingService.getOrSetCache(
+    const economics = await this.cachingService.getOrSet(
       CacheInfo.Economics.key,
       async () => await this.getEconomicsRaw(),
       CacheInfo.Economics.ttl,
@@ -291,7 +291,7 @@ export class NetworkService {
   }
 
   async getAbout(): Promise<About> {
-    return await this.cachingService.getOrSetCache(
+    return await this.cachingService.getOrSet(
       CacheInfo.About.key,
       async () => await this.getAboutRaw(),
       CacheInfo.About.ttl,

@@ -17,7 +17,7 @@ import { SmartContractResultService } from '../sc-results/scresult.service';
 import { TransactionType } from '../transactions/entities/transaction.type';
 import { AssetsService } from 'src/common/assets/assets.service';
 import { TransactionFilter } from '../transactions/entities/transaction.filter';
-import { AddressUtils, ApiService, ApiUtils, BinaryUtils, CachingService } from '@multiversx/sdk-nestjs';
+import { AddressUtils, ApiService, ApiUtils, BinaryUtils, ElrondCachingService } from '@multiversx/sdk-nestjs';
 import { GatewayService } from 'src/common/gateway/gateway.service';
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { AccountOptionalFieldOption } from './entities/account.optional.field.options';
@@ -39,7 +39,7 @@ export class AccountService {
   constructor(
     private readonly indexerService: IndexerService,
     private readonly gatewayService: GatewayService,
-    private readonly cachingService: CachingService,
+    private readonly cachingService: ElrondCachingService,
     private readonly vmQueryService: VmQueryService,
     private readonly apiConfigService: ApiConfigService,
     @Inject(forwardRef(() => TransactionService))
@@ -60,7 +60,7 @@ export class AccountService {
 
   async getAccountsCount(filter: AccountFilter): Promise<number> {
     if (!filter.ownerAddress) {
-      return await this.cachingService.getOrSetCache(
+      return await this.cachingService.getOrSet(
         CacheInfo.AccountsCount.key,
         async () => await this.indexerService.getAccountsCount(filter),
         CacheInfo.AccountsCount.ttl
@@ -177,7 +177,7 @@ export class AccountService {
   }
 
   async getAccountDeployedAt(address: string): Promise<number | null> {
-    return await this.cachingService.getOrSetCache(
+    return await this.cachingService.getOrSet(
       CacheInfo.AccountDeployedAt(address).key,
       async () => await this.getAccountDeployedAtRaw(address),
       CacheInfo.AccountDeployedAt(address).ttl
@@ -204,7 +204,7 @@ export class AccountService {
   }
 
   async getAccountDeployedTxHash(address: string): Promise<string | null> {
-    return await this.cachingService.getOrSetCache(
+    return await this.cachingService.getOrSet(
       CacheInfo.AccountDeployTxHash(address).key,
       async () => await this.getAccountDeployedTxHashRaw(address),
       CacheInfo.AccountDeployTxHash(address).ttl,
@@ -221,7 +221,7 @@ export class AccountService {
   }
 
   async getAccountIsVerified(address: string, codeHash: string): Promise<boolean | null> {
-    return await this.cachingService.getOrSetCache(
+    return await this.cachingService.getOrSet(
       CacheInfo.AccountIsVerified(address).key,
       async () => await this.getAccountIsVerifiedRaw(address, codeHash),
       CacheInfo.AccountIsVerified(address).ttl
@@ -245,7 +245,7 @@ export class AccountService {
 
   async getAccounts(queryPagination: QueryPagination, filter: AccountFilter): Promise<Account[]> {
     if (!filter.ownerAddress && !filter.sort && !filter.order) {
-      return await this.cachingService.getOrSetCache(
+      return await this.cachingService.getOrSet(
         CacheInfo.Accounts(queryPagination).key,
         async () => await this.getAccountsRaw(queryPagination, filter),
         CacheInfo.Accounts(queryPagination).ttl
