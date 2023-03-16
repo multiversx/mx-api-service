@@ -1052,12 +1052,16 @@ export class AccountController {
   @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
   @ApiOkResponse({ type: Number })
-  getAccountTokenHistoryCount(
+  async getAccountTokenHistoryCount(
     @Param('address', ParseAddressPipe) address: string,
     @Param('tokenIdentifier', ParseTokenOrNftPipe) tokenIdentifier: string,
     @Query('before', ParseIntPipe) before?: number,
     @Query('after', ParseIntPipe) after?: number,
   ): Promise<number> {
+    const isToken = await this.tokenService.isToken(tokenIdentifier) || await this.collectionService.isCollection(tokenIdentifier) || await this.nftService.isNft(tokenIdentifier);
+    if (!isToken) {
+      throw new NotFoundException(`Token '${tokenIdentifier}' not found`);
+    }
     return this.accountService.getAccountTokenHistoryCount(
       address,
       tokenIdentifier,
