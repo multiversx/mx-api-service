@@ -30,7 +30,7 @@ import { AccountVerification } from './entities/account.verification';
 import { AccountFilter } from './entities/account.filter';
 import { AccountHistoryFilter } from './entities/account.history.filter';
 import { ProtocolService } from 'src/common/protocol/protocol.service';
-import {Address} from "@elrondnetwork/erdjs/out";
+import { Address } from "@elrondnetwork/erdjs/out";
 
 @Injectable()
 export class AccountService {
@@ -466,6 +466,14 @@ export class AccountService {
   async getAccountHistory(address: string, pagination: QueryPagination, filter: AccountHistoryFilter): Promise<AccountHistory[]> {
     const elasticResult = await this.indexerService.getAccountHistory(address, pagination, filter);
     return elasticResult.map(item => ApiUtils.mergeObjects(new AccountHistory(), item));
+  }
+
+  async getAccountHistoryCount(address: string, filter: AccountHistoryFilter): Promise<number> {
+    return await this.indexerService.getAccountHistoryCount(address, filter);
+  }
+
+  async getAccountTokenHistoryCount(address: string, tokenIdentifier: string, filter: AccountHistoryFilter): Promise<number> {
+    return await this.indexerService.getAccountTokenHistoryCount(address, tokenIdentifier, filter);
   }
 
   async getAccountTokenHistory(address: string, tokenIdentifier: string, pagination: QueryPagination, filter: AccountHistoryFilter): Promise<AccountEsdtHistory[]> {
