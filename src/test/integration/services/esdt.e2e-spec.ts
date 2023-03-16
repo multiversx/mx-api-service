@@ -6,7 +6,7 @@ import { NftFilter } from "src/endpoints/nfts/entities/nft.filter";
 import { NftType } from "src/endpoints/nfts/entities/nft.type";
 import { EsdtDataSource } from 'src/endpoints/esdt/entities/esdt.data.source';
 import '@multiversx/sdk-nestjs/lib/src/utils/extensions/jest.extensions';
-import { CachingService } from '@multiversx/sdk-nestjs';
+import { ElrondCachingService } from '@multiversx/sdk-nestjs';
 import { EsdtService } from 'src/endpoints/esdt/esdt.service';
 
 describe('ESDT Service', () => {
@@ -94,7 +94,7 @@ describe('ESDT Service', () => {
   describe("Get ESDT Token Properties", () => {
     it("should return the properties of the token ( ticker property should not be present )", async () => {
       jest
-        .spyOn(CachingService.prototype, 'getOrSetCache')
+        .spyOn(ElrondCachingService.prototype, 'getOrSet')
         // eslint-disable-next-line require-await
         .mockImplementation(jest.fn(async (_key: string, promise: any) => promise()));
 

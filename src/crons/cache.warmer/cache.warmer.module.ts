@@ -16,6 +16,7 @@ import { PluginModule } from 'src/plugins/plugin.module';
     EndpointsServicesModule,
     KeybaseModule,
     MexModule.forRoot(),
+    DynamicModuleUtils.getRedisCacheModule(),
     AssetsModule,
     NftCronModule,
     PluginModule,

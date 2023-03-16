@@ -11,7 +11,7 @@ import { TransactionLogEvent } from "../transactions/entities/transaction.log.ev
 import { TransactionOperationType } from "../transactions/entities/transaction.operation.type";
 import { SmartContractResult } from "../sc-results/entities/smart.contract.result";
 import { TransactionDetailed } from "../transactions/entities/transaction.detailed";
-import { BinaryUtils, CachingService } from "@multiversx/sdk-nestjs";
+import { BinaryUtils, ElrondCachingService } from "@multiversx/sdk-nestjs";
 import { OriginLogger } from "@multiversx/sdk-nestjs";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { NftFilter } from "../nfts/entities/nft.filter";
@@ -23,7 +23,7 @@ export class TokenTransferService {
   private readonly logger = new OriginLogger(TokenTransferService.name);
 
   constructor(
-    private readonly cachingService: CachingService,
+    private readonly cachingService: ElrondCachingService,
     @Inject(forwardRef(() => EsdtService))
     private readonly esdtService: EsdtService,
     private readonly assetsService: AssetsService,
@@ -268,7 +268,7 @@ export class TokenTransferService {
   }
 
   async getTokenTransferProperties(identifier: string, nonce?: string): Promise<TokenTransferProperties | null> {
-    let properties = await this.cachingService.getOrSetCache(
+    let properties = await this.cachingService.getOrSet(
       CacheInfo.TokenTransferProperties(identifier).key,
       async () => await this.getTokenTransferPropertiesRaw(identifier),
       CacheInfo.TokenTransferProperties(identifier).ttl,

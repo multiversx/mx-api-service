@@ -4,7 +4,7 @@ import { CacheInfo } from "src/utils/cache.info";
 import { TokenAssets } from "src/common/assets/entities/token.assets";
 import { ApiConfigService } from "../api-config/api.config.service";
 import { AccountAssets } from "./entities/account.assets";
-import { ApiUtils, CachingService, FileUtils, OriginLogger } from "@multiversx/sdk-nestjs";
+import { ApiUtils, ElrondCachingService, FileUtils, OriginLogger } from "@multiversx/sdk-nestjs";
 import { MexPair } from "src/endpoints/mex/entities/mex.pair";
 import { Identity } from "src/endpoints/identities/entities/identity";
 import { MexFarm } from "src/endpoints/mex/entities/mex.farm";
@@ -23,7 +23,7 @@ export class AssetsService {
   private readonly logger = new OriginLogger(AssetsService.name);
 
   constructor(
-    private readonly cachingService: CachingService,
+    private readonly cachingService: ElrondCachingService,
     private readonly apiConfigService: ApiConfigService
   ) { }
 
@@ -112,7 +112,7 @@ export class AssetsService {
   }
 
   async getAllTokenAssets(): Promise<{ [key: string]: TokenAssets }> {
-    return await this.cachingService.getOrSetCache(
+    return await this.cachingService.getOrSet(
       CacheInfo.TokenAssets.key,
       async () => await this.getAllTokenAssetsRaw(),
       CacheInfo.TokenAssets.ttl
@@ -149,7 +149,7 @@ export class AssetsService {
   }
 
   async getAllCollectionRanks(): Promise<{ [key: string]: NftRank[] }> {
-    return await this.cachingService.getOrSetCache(
+    return await this.cachingService.getOrSet(
       CacheInfo.CollectionRanks.key,
       async () => await this.getAllCollectionRanksRaw(),
       CacheInfo.CollectionRanks.ttl
@@ -177,7 +177,7 @@ export class AssetsService {
   }
 
   async getAllAccountAssets(): Promise<{ [key: string]: AccountAssets }> {
-    return await this.cachingService.getOrSetCache(
+    return await this.cachingService.getOrSet(
       CacheInfo.AccountAssets.key,
       async () => await this.getAllAccountAssetsRaw(),
       CacheInfo.AccountAssets.ttl

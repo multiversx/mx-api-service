@@ -1,4 +1,4 @@
-import { CachingService } from '@multiversx/sdk-nestjs';
+import { ElrondCachingService } from '@multiversx/sdk-nestjs';
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { CacheInfo } from 'src/utils/cache.info';
 import { ApiConfigService } from '../api-config/api.config.service';
@@ -8,7 +8,7 @@ import { HotSwappableSettingDbService } from '../persistence/services/hot.swappa
 export class SettingsService {
   constructor(
     private readonly apiConfigService: ApiConfigService,
-    private readonly cachingService: CachingService,
+    private readonly cachingService: ElrondCachingService,
     @Inject(forwardRef(() => HotSwappableSettingDbService))
     private readonly settingsService: HotSwappableSettingDbService
   ) { }
@@ -26,7 +26,7 @@ export class SettingsService {
   }
 
   private async getSetting<T>(name: string, fallbackValue: T): Promise<T> {
-    return await this.cachingService.getOrSetCache(
+    return await this.cachingService.getOrSet(
       CacheInfo.Setting(name).key,
       async () => {
         const value = await this.settingsService.getSetting<T>(name);

@@ -9,7 +9,7 @@ import { StakeTopup } from "./entities/stake.topup";
 import { NetworkService } from "../network/network.service";
 import { GatewayService } from "src/common/gateway/gateway.service";
 import { CacheInfo } from "src/utils/cache.info";
-import { AddressUtils, ApiUtils, RoundUtils, CachingService } from "@multiversx/sdk-nestjs";
+import { AddressUtils, ApiUtils, RoundUtils, ElrondCachingService } from "@multiversx/sdk-nestjs";
 import { OriginLogger } from "@multiversx/sdk-nestjs";
 
 @Injectable()
@@ -17,7 +17,7 @@ export class StakeService {
   private logger = new OriginLogger(StakeService.name);
 
   constructor(
-    private readonly cachingService: CachingService,
+    private readonly cachingService: ElrondCachingService,
     private readonly vmQueryService: VmQueryService,
     private readonly apiConfigService: ApiConfigService,
     @Inject(forwardRef(() => NodeService))
@@ -28,7 +28,7 @@ export class StakeService {
   ) { }
 
   async getGlobalStake() {
-    return await this.cachingService.getOrSetCache(
+    return await this.cachingService.getOrSet(
       CacheInfo.GlobalStake.key,
       async () => await this.getGlobalStakeRaw(),
       CacheInfo.GlobalStake.ttl
@@ -92,7 +92,7 @@ export class StakeService {
   }
 
   async getAllStakesForNode(address: string) {
-    return await this.cachingService.getOrSetCache(
+    return await this.cachingService.getOrSet(
       CacheInfo.StakeTopup(address).key,
       async () => await this.getAllStakesForAddressNodesRaw(address),
       CacheInfo.StakeTopup(address).ttl

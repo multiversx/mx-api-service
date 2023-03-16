@@ -1,4 +1,4 @@
-import { CachingService } from "@multiversx/sdk-nestjs";
+import { ElrondCachingService } from "@multiversx/sdk-nestjs";
 import { ShardTransaction, TransactionProcessor } from "@elrondnetwork/transaction-processor";
 import { Inject, Injectable, Logger } from "@nestjs/common";
 import { ClientProxy } from "@nestjs/microservices";
@@ -19,7 +19,7 @@ export class BatchTransactionProcessorService {
 
   constructor(
     private readonly apiConfigService: ApiConfigService,
-    private readonly cachingService: CachingService,
+    private readonly cachingService: ElrondCachingService,
     private readonly transactionsBatchService: TransactionsBatchService,
     @Inject('PUBSUB_SERVICE') private clientProxy: ClientProxy,
     private readonly transactionService: TransactionService
@@ -31,7 +31,7 @@ export class BatchTransactionProcessorService {
   async handleDroppedTransactions() {
     const keys: string[] = await this.cachingService.getKeys(CacheInfo.PendingTransaction('*').key);
 
-    const pendingTransactionsCached: string[] = await this.cachingService.batchGetCacheRemote(keys);
+    const pendingTransactionsCached: string[] = await this.cachingService.batchGetManyRemote(keys) as string[];
 
     const pendingTransactions: { [key: string]: { batchId: string, address: string, date: Date } } = {};
     for (const [index, key] of keys.entries()) {
@@ -73,7 +73,7 @@ export class BatchTransactionProcessorService {
           const address = pendingTransactions[hash].address;
           this.logger.log(`DroppedTransactions: transaction with hash '${hash}' and batchId '${batchId}', address '${address}' could not be found. Dropping`);
 
-          const batch: TransactionBatch | undefined = await this.cachingService.getCacheRemote(
+          const batch: TransactionBatch | undefined = await this.cachingService.getRemote(
             CacheInfo.TransactionBatch(address, batchId).key
           );
           if (batch) {
@@ -83,7 +83,7 @@ export class BatchTransactionProcessorService {
                 if (item.transaction.hash === hash && item.status === BatchTransactionStatus.pending) {
                   item.status = BatchTransactionStatus.dropped;
                   batch.status = TransactionBatchStatus.dropped;
-                  await this.cachingService.setCacheRemote(
+                  await this.cachingService.setRemote(
                     CacheInfo.TransactionBatch(address, batchId).key,
                     batch,
                     CacheInfo.TransactionBatch(address, batchId).ttl
@@ -137,10 +137,10 @@ export class BatchTransactionProcessorService {
           this.handleTransactionBatches(transactions);
         },
         getLastProcessedNonce: async (shardId) => {
-          return await this.cachingService.getCacheRemote(CacheInfo.TransactionBatchShardNonce(shardId).key);
+          return await this.cachingService.getRemote(CacheInfo.TransactionBatchShardNonce(shardId).key);
         },
         setLastProcessedNonce: async (shardId, nonce) => {
-          await this.cachingService.setCacheRemote(CacheInfo.TransactionBatchShardNonce(shardId).key, nonce, CacheInfo.TransactionBatchShardNonce(shardId).ttl);
+          await this.cachingService.setRemote(CacheInfo.TransactionBatchShardNonce(shardId).key, nonce, CacheInfo.TransactionBatchShardNonce(shardId).ttl);
         },
       });
     } catch (error) {
@@ -161,7 +161,7 @@ export class BatchTransactionProcessorService {
 
     const keys = transactions.map(transaction => CacheInfo.PendingTransaction(transaction.hash).key);
 
-    const pendingTransactionsCached: string[] = await this.cachingService.batchGetCacheRemote<string>(keys);
+    const pendingTransactionsCached: string[] = await this.cachingService.batchGetManyRemote<string>(keys) as string[];
 
     const pendingTransactions: { [key: string]: { batchId: string, address: string, date: Date } } = {};
     for (const [index, key] of keys.entries()) {
@@ -209,7 +209,7 @@ export class BatchTransactionProcessorService {
     this.logger.log(`Processing transaction with hash '${txHash}', batch '${batchId}', address '${address}', status '${status}'`);
 
     try {
-      const batch: TransactionBatch | undefined = await this.cachingService.getCacheRemote(CacheInfo.TransactionBatch(address, batchId).key);
+      const batch: TransactionBatch | undefined = await this.cachingService.getRemote(CacheInfo.TransactionBatch(address, batchId).key);
       if (!batch) {
         this.logger.error(`Could not find batch with id '${batchId}' when processing transaction with hash '${txHash}'`);
         return;
@@ -252,7 +252,7 @@ export class BatchTransactionProcessorService {
               }
             }
 
-            await this.cachingService.setCacheRemote(
+            await this.cachingService.setRemote(
               CacheInfo.TransactionBatch(address, batchId).key,
               batch,
               CacheInfo.TransactionBatch(address, batchId).ttl

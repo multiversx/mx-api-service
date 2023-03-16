@@ -1,4 +1,4 @@
-import { CachingService } from "@multiversx/sdk-nestjs";
+import { ElrondCachingService } from "@multiversx/sdk-nestjs";
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import BigNumber from "bignumber.js";
 import { CacheInfo } from "src/utils/cache.info";
@@ -21,7 +21,7 @@ export class IdentitiesService {
     private readonly nodeService: NodeService,
     @Inject(forwardRef(() => KeybaseService))
     private readonly keybaseService: KeybaseService,
-    private readonly cachingService: CachingService,
+    private readonly cachingService: ElrondCachingService,
     @Inject(forwardRef(() => NetworkService))
     private readonly networkService: NetworkService
   ) { }
@@ -41,7 +41,7 @@ export class IdentitiesService {
   }
 
   async getAllIdentities(): Promise<Identity[]> {
-    return await this.cachingService.getOrSetCache(
+    return await this.cachingService.getOrSet(
       CacheInfo.Identities.key,
       async () => await this.getAllIdentitiesRaw(),
       CacheInfo.Identities.ttl

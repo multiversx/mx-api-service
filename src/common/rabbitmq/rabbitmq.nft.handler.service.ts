@@ -5,7 +5,7 @@ import { ProcessNftSettings } from 'src/endpoints/process-nfts/entities/process.
 import { NftWorkerService } from 'src/queue.worker/nft.worker/nft.worker.service';
 import { CacheInfo } from '../../utils/cache.info';
 import { NotifierEvent } from './entities/notifier.event';
-import { BinaryUtils, CachingService } from '@multiversx/sdk-nestjs';
+import { BinaryUtils, ElrondCachingService } from '@multiversx/sdk-nestjs';
 import { IndexerService } from '../indexer/indexer.service';
 import { OriginLogger } from '@multiversx/sdk-nestjs';
 
@@ -17,18 +17,18 @@ export class RabbitMqNftHandlerService {
     private readonly nftWorkerService: NftWorkerService,
     private readonly nftService: NftService,
     private readonly indexerService: IndexerService,
-    private readonly cachingService: CachingService,
+    private readonly cachingService: ElrondCachingService,
   ) { }
 
   private async getCollectionType(collectionIdentifier: string): Promise<NftType | null> {
-    const type = await this.cachingService.getCacheLocal<NftType>(CacheInfo.CollectionType(collectionIdentifier).key) ??
+    const type = await this.cachingService.getLocal<NftType>(CacheInfo.CollectionType(collectionIdentifier).key) ??
       await this.getCollectionTypeRaw(collectionIdentifier);
 
     if (!type) {
       return null;
     }
 
-    await this.cachingService.setCacheLocal(
+    await this.cachingService.setLocal(
       CacheInfo.CollectionType(collectionIdentifier).key,
       type,
       CacheInfo.CollectionType(collectionIdentifier).ttl

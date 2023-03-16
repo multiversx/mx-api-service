@@ -18,7 +18,7 @@ import { CacheInfo } from "src/utils/cache.info";
 import { Stake } from "../stake/entities/stake";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
 import { Auction } from "src/common/gateway/entities/auction";
-import { AddressUtils, Constants, CachingService } from "@multiversx/sdk-nestjs";
+import { AddressUtils, Constants, ElrondCachingService } from "@multiversx/sdk-nestjs";
 import { NodeSort } from "./entities/node.sort";
 import { ProtocolService } from "src/common/protocol/protocol.service";
 
@@ -28,7 +28,7 @@ export class NodeService {
     private readonly gatewayService: GatewayService,
     private readonly vmQueryService: VmQueryService,
     private readonly apiConfigService: ApiConfigService,
-    private readonly cachingService: CachingService,
+    private readonly cachingService: ElrondCachingService,
     @Inject(forwardRef(() => KeybaseService))
     private readonly keybaseService: KeybaseService,
     @Inject(forwardRef(() => StakeService))
@@ -65,7 +65,7 @@ export class NodeService {
   }
 
   async getNodeVersions(): Promise<NodeVersions> {
-    return await this.cachingService.getOrSetCache(
+    return await this.cachingService.getOrSet(
       CacheInfo.NodeVersions.key,
       async () => await this.getNodeVersionsRaw(),
       CacheInfo.NodeVersions.ttl
@@ -217,7 +217,7 @@ export class NodeService {
   }
 
   async getAllNodes(): Promise<Node[]> {
-    return await this.cachingService.getOrSetCache(
+    return await this.cachingService.getOrSet(
       CacheInfo.Nodes.key,
       async () => await this.getAllNodesRaw(),
       CacheInfo.Nodes.ttl
@@ -353,7 +353,7 @@ export class NodeService {
   async getOwners(blses: string[], epoch: number) {
     const keys = blses.map((bls) => CacheInfo.OwnerByEpochAndBls(bls, epoch).key);
 
-    const cached = await this.cachingService.batchGetCacheRemote(keys);
+    const cached = await this.cachingService.batchGetManyRemote(keys);
 
     const missing = cached
       .map((element, index) => (element === null ? index : false))
@@ -385,7 +385,7 @@ export class NodeService {
         ttls: new Array(Object.keys(owners).length).fill(fastWarm ? 60 : Constants.oneDay()), // 1 minute or 24h
       };
 
-      await this.cachingService.batchSetCache(params.keys, params.values, params.ttls);
+      await this.cachingService.batchSet(params.keys, params.values, params.ttls);
     }
 
     return blses.map((bls, index) => (missing.includes(index) ? owners[bls] : cached[index]));

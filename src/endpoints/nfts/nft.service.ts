@@ -18,7 +18,7 @@ import { CacheInfo } from "src/utils/cache.info";
 import { EsdtDataSource } from "../esdt/entities/esdt.data.source";
 import { EsdtAddressService } from "../esdt/esdt.address.service";
 import { MexTokenService } from "../mex/mex.token.service";
-import { ApiUtils, BinaryUtils, NumberUtils, RecordUtils, CachingService, BatchUtils, TokenUtils } from "@multiversx/sdk-nestjs";
+import { ApiUtils, BinaryUtils, NumberUtils, RecordUtils, ElrondCachingService, BatchUtils, TokenUtils } from "@multiversx/sdk-nestjs";
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { LockedAssetService } from "../../common/locked-asset/locked-asset.service";
 import { CollectionAccount } from "../collections/entities/collection.account";
@@ -42,7 +42,7 @@ export class NftService {
     private readonly indexerService: IndexerService,
     private readonly esdtService: EsdtService,
     private readonly assetsService: AssetsService,
-    private readonly cachingService: CachingService,
+    private readonly cachingService: ElrondCachingService,
     @Inject(forwardRef(() => PluginService))
     private readonly pluginService: PluginService,
     private readonly nftMetadataService: NftMetadataService,
@@ -415,7 +415,7 @@ export class NftService {
   }
 
   async getNftOwnersCount(identifier: string): Promise<number | undefined> {
-    const owners = await this.cachingService.getOrSetCache(
+    const owners = await this.cachingService.getOrSet(
       CacheInfo.NftOwnersCount(identifier).key,
       async () => await this.getNftOwnersCountRaw(identifier),
       CacheInfo.NftOwnersCount(identifier).ttl

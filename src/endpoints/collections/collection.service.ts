@@ -16,7 +16,7 @@ import { CollectionRoles } from "../tokens/entities/collection.roles";
 import { TokenHelpers } from "src/utils/token.helpers";
 import { NftCollectionAccount } from "./entities/nft.collection.account";
 import { PluginService } from "src/common/plugins/plugin.service";
-import { ApiUtils, BinaryUtils, CachingService, TokenUtils } from "@multiversx/sdk-nestjs";
+import { ApiUtils, BinaryUtils, ElrondCachingService, TokenUtils } from "@multiversx/sdk-nestjs";
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { Collection } from "src/common/indexer/entities";
 import { NftRankAlgorithm } from "src/common/assets/entities/nft.rank.algorithm";
@@ -34,7 +34,7 @@ export class CollectionService {
     private readonly esdtService: EsdtService,
     private readonly assetsService: AssetsService,
     private readonly vmQueryService: VmQueryService,
-    private readonly cachingService: CachingService,
+    private readonly cachingService: ElrondCachingService,
     @Inject(forwardRef(() => EsdtAddressService))
     private readonly esdtAddressService: EsdtAddressService,
     private readonly pluginService: PluginService,

@@ -7,7 +7,7 @@ import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { GenerateThumbnailResult } from "./entities/generate.thumbnail.result";
 import { ThumbnailType } from "./entities/thumbnail.type";
 import { AWSService } from "./aws.service";
-import { ApiService, CachingService, Constants, FileUtils } from "@multiversx/sdk-nestjs";
+import { ApiService, ElrondCachingService, Constants, FileUtils } from "@multiversx/sdk-nestjs";
 import { TokenHelpers } from "src/utils/token.helpers";
 import { OriginLogger } from "@multiversx/sdk-nestjs";
 import { CacheInfo } from "src/utils/cache.info";
@@ -23,7 +23,7 @@ export class NftThumbnailService {
     private readonly apiConfigService: ApiConfigService,
     private readonly awsService: AWSService,
     private readonly apiService: ApiService,
-    private readonly cachingService: CachingService,
+    private readonly cachingService: ElrondCachingService,
   ) { }
 
   private async extractThumbnailFromImage(buffer: Buffer): Promise<Buffer | undefined> {

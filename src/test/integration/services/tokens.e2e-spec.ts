@@ -10,7 +10,7 @@ import { TokenSort } from 'src/endpoints/tokens/entities/token.sort';
 import { SortOrder } from 'src/common/entities/sort.order';
 import { TokenWithRolesFilter } from 'src/endpoints/tokens/entities/token.with.roles.filter';
 import { QueryPagination } from 'src/common/entities/query.pagination';
-import { CachingService, ElasticQuery, ElasticService, FileUtils } from '@multiversx/sdk-nestjs';
+import { ElrondCachingService, ElasticQuery, ElasticService, FileUtils } from '@multiversx/sdk-nestjs';
 import { GatewayModule } from 'src/common/gateway/gateway.module';
 import { TokenFilter } from 'src/endpoints/tokens/entities/token.filter';
 import { EsdtLockedAccount } from 'src/endpoints/esdt/entities/esdt.locked.account';
@@ -67,7 +67,7 @@ describe('Token Service', () => {
       const MOCK_PATH = apiConfigService.getMockPath();
 
       jest
-        .spyOn(CachingService.prototype, 'getOrSetCache')
+        .spyOn(ElrondCachingService.prototype, 'getOrSet')
         // eslint-disable-next-line require-await
         .mockImplementation(jest.fn(async () =>
           FileUtils.parseJSONFile(`${MOCK_PATH}tokens.mock.json`)));
@@ -90,7 +90,7 @@ describe('Token Service', () => {
       filter.identifier = "WEGLD-bd4d79";
 
       jest
-        .spyOn(CachingService.prototype, 'getOrSetCache')
+        .spyOn(ElrondCachingService.prototype, 'getOrSet')
         // eslint-disable-next-line require-await
         .mockImplementation(jest.fn(async () =>
           FileUtils.parseJSONFile(`${MOCK_PATH}tokens.mock.json`)));
@@ -110,7 +110,7 @@ describe('Token Service', () => {
       filter.identifiers = ["WEGLD-bd4d79", "RIDE-7d18e9"];
 
       jest
-        .spyOn(CachingService.prototype, 'getOrSetCache')
+        .spyOn(ElrondCachingService.prototype, 'getOrSet')
         // eslint-disable-next-line require-await
         .mockImplementation(jest.fn(async () =>
           FileUtils.parseJSONFile(`${MOCK_PATH}tokens.mock.json`)));
@@ -131,7 +131,7 @@ describe('Token Service', () => {
       filter.name = "WrappedEGLD";
 
       jest
-        .spyOn(CachingService.prototype, 'getOrSetCache')
+        .spyOn(ElrondCachingService.prototype, 'getOrSet')
         // eslint-disable-next-line require-await
         .mockImplementation(jest.fn(async () =>
           FileUtils.parseJSONFile(`${MOCK_PATH}tokens.mock.json`)));
@@ -151,7 +151,7 @@ describe('Token Service', () => {
       filter.search = "MEX-455c57";
 
       jest
-        .spyOn(CachingService.prototype, 'getOrSetCache')
+        .spyOn(ElrondCachingService.prototype, 'getOrSet')
         // eslint-disable-next-line require-await
         .mockImplementation(jest.fn(async () =>
           FileUtils.parseJSONFile(`${MOCK_PATH}tokens.mock.json`)));
@@ -169,7 +169,7 @@ describe('Token Service', () => {
       const MOCK_PATH = apiConfigService.getMockPath();
 
       jest
-        .spyOn(CachingService.prototype, 'getOrSetCache')
+        .spyOn(ElrondCachingService.prototype, 'getOrSet')
         // eslint-disable-next-line require-await
         .mockImplementation(jest.fn(async () =>
           FileUtils.parseJSONFile(`${MOCK_PATH}tokens.mock.json`)));
@@ -229,7 +229,7 @@ describe('Token Service', () => {
       filter.search = "WEGLD-bd4d79";
 
       jest
-        .spyOn(CachingService.prototype, 'getOrSetCache')
+        .spyOn(ElrondCachingService.prototype, 'getOrSet')
         // eslint-disable-next-line require-await
         .mockImplementation(jest.fn(async () =>
           FileUtils.parseJSONFile(`${MOCK_PATH}tokens.mock.json`)));
@@ -249,7 +249,7 @@ describe('Token Service', () => {
       filter.name = "WrappedEGLD";
 
       jest
-        .spyOn(CachingService.prototype, 'getOrSetCache')
+        .spyOn(ElrondCachingService.prototype, 'getOrSet')
         // eslint-disable-next-line require-await
         .mockImplementation(jest.fn(async () =>
           FileUtils.parseJSONFile(`${MOCK_PATH}tokens.mock.json`)));
@@ -269,7 +269,7 @@ describe('Token Service', () => {
       filter.identifier = "WEGLD-bd4d79";
 
       jest
-        .spyOn(CachingService.prototype, 'getOrSetCache')
+        .spyOn(ElrondCachingService.prototype, 'getOrSet')
         // eslint-disable-next-line require-await
         .mockImplementation(jest.fn(async () =>
           FileUtils.parseJSONFile(`${MOCK_PATH}tokens.mock.json`)));
@@ -289,7 +289,7 @@ describe('Token Service', () => {
       filter.identifiers = ["WEGLD-bd4d79", "RIDE-7d18e9"];
 
       jest
-        .spyOn(CachingService.prototype, 'getOrSetCache')
+        .spyOn(ElrondCachingService.prototype, 'getOrSet')
         // eslint-disable-next-line require-await
         .mockImplementation(jest.fn(async () =>
           FileUtils.parseJSONFile(`${MOCK_PATH}tokens.mock.json`)));
@@ -306,7 +306,7 @@ describe('Token Service', () => {
 
     it("should return an empty token list if tokens are undefined", async () => {
       jest
-        .spyOn(CachingService.prototype, 'getOrSetCache')
+        .spyOn(ElrondCachingService.prototype, 'getOrSet')
         // eslint-disable-next-line require-await
         .mockImplementation(jest.fn(async () => []));
 
@@ -322,7 +322,7 @@ describe('Token Service', () => {
       filter.order = SortOrder.asc;
 
       jest
-        .spyOn(CachingService.prototype, 'getOrSetCache')
+        .spyOn(ElrondCachingService.prototype, 'getOrSet')
         // eslint-disable-next-line require-await
         .mockImplementation(jest.fn(async () =>
           FileUtils.parseJSONFile(`${MOCK_PATH}tokens.mock.json`)));
@@ -343,7 +343,7 @@ describe('Token Service', () => {
       filter.order = SortOrder.asc;
 
       jest
-        .spyOn(CachingService.prototype, 'getOrSetCache')
+        .spyOn(ElrondCachingService.prototype, 'getOrSet')
         // eslint-disable-next-line require-await
         .mockImplementation(jest.fn(async () =>
           FileUtils.parseJSONFile(`${MOCK_PATH}tokens.mock.json`)));
@@ -364,7 +364,7 @@ describe('Token Service', () => {
       filter.order = SortOrder.asc;
 
       jest
-        .spyOn(CachingService.prototype, 'getOrSetCache')
+        .spyOn(ElrondCachingService.prototype, 'getOrSet')
         // eslint-disable-next-line require-await
         .mockImplementation(jest.fn(async () =>
           FileUtils.parseJSONFile(`${MOCK_PATH}tokens.mock.json`)));
@@ -386,7 +386,7 @@ describe('Token Service', () => {
     filter.order = SortOrder.desc;
 
     jest
-      .spyOn(CachingService.prototype, 'getOrSetCache')
+      .spyOn(ElrondCachingService.prototype, 'getOrSet')
       // eslint-disable-next-line require-await
       .mockImplementation(jest.fn(async () =>
         FileUtils.parseJSONFile(`${MOCK_PATH}tokens.mock.json`)));
@@ -408,7 +408,7 @@ describe('Token Service', () => {
     filter.order = SortOrder.asc;
 
     jest
-      .spyOn(CachingService.prototype, 'getOrSetCache')
+      .spyOn(ElrondCachingService.prototype, 'getOrSet')
       // eslint-disable-next-line require-await
       .mockImplementation(jest.fn(async () =>
         FileUtils.parseJSONFile(`${MOCK_PATH}tokens.mock.json`)));
@@ -509,7 +509,7 @@ describe('Token Service', () => {
       const identifier: string = "WEGLD-bd4d79";
 
       jest
-        .spyOn(CachingService.prototype, 'getOrSetCache')
+        .spyOn(ElrondCachingService.prototype, 'getOrSet')
         // eslint-disable-next-line require-await
         .mockImplementation(jest.fn(async () => undefined));
 
@@ -521,7 +521,7 @@ describe('Token Service', () => {
       const identifier: string = "WEGLDbd4d79";
 
       jest
-        .spyOn(CachingService.prototype, 'getOrSetCache')
+        .spyOn(ElrondCachingService.prototype, 'getOrSet')
         // eslint-disable-next-line require-await
         .mockImplementation(jest.fn(async () => undefined));
 
@@ -533,7 +533,7 @@ describe('Token Service', () => {
       const identifier: string = "EROBOT-527a29";
 
       jest
-        .spyOn(CachingService.prototype, 'getOrSetCache')
+        .spyOn(ElrondCachingService.prototype, 'getOrSet')
         // eslint-disable-next-line require-await
         .mockImplementation(jest.fn(async () => undefined));
 
