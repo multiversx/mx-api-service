@@ -278,6 +278,9 @@ type AccountEsdtHistory {
   """Balance for the given account."""
   balance: String!
 
+  """Identifier for the given history account details."""
+  identifier: String!
+
   """IsSender for the given account."""
   isSender: Boolean
 

@@ -284,7 +284,7 @@ export class NftService {
     nft.metadata = await this.nftMetadataService.getMetadata(nft) ?? undefined;
   }
 
-  private async isNft(identifier: string): Promise<boolean> {
+  async isNft(identifier: string): Promise<boolean> {
     if (identifier.split('-').length !== 3) {
       return false;
     }

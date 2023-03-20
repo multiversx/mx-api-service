@@ -50,6 +50,12 @@ features:
     admins:
       - ''
     jwtSecret: ''
+  websocketEventNotifier:
+    enabled: false
+    egldPerTimeUnit: 1369863013698630
+    maxConnections: 2
+    allowedReceivers: 
+     - ''
 image:
   width: 600
   height: 600

@@ -20,7 +20,7 @@ export class RabbitMqConsumer {
     private readonly eventsHandlerService: RabbitMqEventsHandlerService,
     private readonly apiConfigService: ApiConfigService,
   ) {
-    this.isLiveWsEnabled = this.apiConfigService.isLiveWebsocketEventsFeatureEnabled();
+    this.isLiveWsEnabled = this.apiConfigService.isWebsocketEventNotifierFeatureEnabled();
   }
 
   @CompetingRabbitConsumer({
