@@ -663,9 +663,7 @@ export class ElasticIndexerService implements IndexerInterface {
     const mappingsResult = await this.apiService.get(`${this.apiConfigService.getElasticUrl()}/tokens/_mappings`);
     const mappings = mappingsResult.data?.tokens?.mappings?.properties ?? mappingsResult.data['tokens-000001']?.mappings?.properties;
 
-    const currentOwnerType = mappings?.currentOwner?.type;
-
-    this.indexerV5Active = currentOwnerType === 'keyword';
+    this.indexerV5Active = mappings?.currentOwner?.type === 'keyword' || mappings?.currentOwner?.fields?.keyword?.type === 'keyword';
     return this.indexerV5Active;
   }
 
