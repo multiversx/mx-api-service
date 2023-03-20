@@ -47,7 +47,6 @@ export class KeybaseService {
 
   private async getNodesKeybasesRaw(): Promise<Keybase[]> {
     const nodes = await this.nodeService.getHeartbeat();
-    console.log({ nodes });
     const keybasesNodesArr: Keybase[] = nodes
       .filter((node) => !!node.identity)
       .map((node) => {
@@ -95,7 +94,6 @@ export class KeybaseService {
   private async getDistinctIdentities(): Promise<string[]> {
     const providerKeybases: Keybase[] = await this.getProvidersKeybasesRaw();
     const nodeKeybases: Keybase[] = await this.getNodesKeybasesRaw();
-    console.log({ providerKeybases, nodeKeybases });
     const allKeybases: Keybase[] = [...providerKeybases, ...nodeKeybases];
 
     const distinctIdentities = allKeybases.map(x => x.identity ?? '').filter(x => x !== '').distinct().shuffle();
