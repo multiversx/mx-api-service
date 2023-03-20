@@ -22,7 +22,7 @@ export class DynamicModuleUtils {
       imports: [ApiConfigModule],
       useFactory: (apiConfigService: ApiConfigService) => new RedisCacheModuleOptions({
         host: apiConfigService.getRedisUrl(),
-        connectTimeout: apiConfigService.getProcessTtl(),
+        connectTimeout: 10000,
       }),
       inject: [ApiConfigService],
     });
@@ -33,7 +33,7 @@ export class DynamicModuleUtils {
       imports: [ApiConfigModule],
       useFactory: (apiConfigService: ApiConfigService) => new RedisCacheModuleOptions({
         host: apiConfigService.getRedisUrl(),
-        connectTimeout: apiConfigService.getProcessTtl(),
+        connectTimeout: 10000,
       }),
       inject: [ApiConfigService],
     });
