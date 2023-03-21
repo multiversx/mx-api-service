@@ -25,7 +25,11 @@ export class DynamicModuleUtils {
         connectTimeout: 10000,
       }),
       inject: [ApiConfigService],
-    });
+    },
+      {
+        skipItemsSerialization: true,
+      }
+    );
   }
 
   static getRedisCacheModule(): DynamicModule {
