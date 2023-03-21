@@ -1032,6 +1032,42 @@ export class AccountController {
       new AccountHistoryFilter({ before, after }));
   }
 
+  @Get("/accounts/:address/history/count")
+  @ApiOperation({ summary: 'Account history count', description: 'Return account EGLD balance history count' })
+  @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
+  @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
+  @ApiOkResponse({ type: Number })
+  getAccountHistoryCount(
+    @Param('address', ParseAddressPipe) address: string,
+    @Query('before', ParseIntPipe) before?: number,
+    @Query('after', ParseIntPipe) after?: number,
+  ): Promise<number> {
+    return this.accountService.getAccountHistoryCount(
+      address,
+      new AccountHistoryFilter({ before, after }));
+  }
+
+  @Get("/accounts/:address/history/:tokenIdentifier/count")
+  @ApiOperation({ summary: 'Account token history count', description: 'Return account token balance history count' })
+  @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
+  @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
+  @ApiOkResponse({ type: Number })
+  async getAccountTokenHistoryCount(
+    @Param('address', ParseAddressPipe) address: string,
+    @Param('tokenIdentifier', ParseTokenOrNftPipe) tokenIdentifier: string,
+    @Query('before', ParseIntPipe) before?: number,
+    @Query('after', ParseIntPipe) after?: number,
+  ): Promise<number> {
+    const isToken = await this.tokenService.isToken(tokenIdentifier) || await this.collectionService.isCollection(tokenIdentifier) || await this.nftService.isNft(tokenIdentifier);
+    if (!isToken) {
+      throw new NotFoundException(`Token '${tokenIdentifier}' not found`);
+    }
+    return this.accountService.getAccountTokenHistoryCount(
+      address,
+      tokenIdentifier,
+      new AccountHistoryFilter({ before, after }));
+  }
+
   @Get("/accounts/:address/history/:tokenIdentifier")
   @ApiOperation({ summary: 'Account token history', description: 'Returns account token balance history' })
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })

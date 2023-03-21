@@ -175,6 +175,8 @@ export class StakeService {
   }
 
   async getStakeForAddress(address: string) {
+    const hexAddress = AddressUtils.bech32Decode(address);
+
     const [totalStakedEncoded, unStakedTokensListEncoded] = await Promise.all([
       this.vmQueryService.vmQuery(
         this.apiConfigService.getAuctionContractAddress(),
@@ -185,7 +187,7 @@ export class StakeService {
         this.apiConfigService.getAuctionContractAddress(),
         'getUnStakedTokensList',
         address,
-        [AddressUtils.bech32Decode(address)],
+        [hexAddress],
       ),
     ]);
 

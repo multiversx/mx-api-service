@@ -237,6 +237,16 @@ export class IndexerService implements IndexerInterface {
   }
 
   @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
+  async getAccountHistoryCount(address: string, filter?: AccountHistoryFilter): Promise<number> {
+    return await this.indexerInterface.getAccountHistoryCount(address, filter);
+  }
+
+  @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
+  async getAccountTokenHistoryCount(address: string, tokenIdentifier: string, filter?: AccountHistoryFilter): Promise<number> {
+    return await this.indexerInterface.getAccountTokenHistoryCount(address, tokenIdentifier, filter);
+  }
+
+  @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
   async getAccountTokenHistory(address: string, tokenIdentifier: string, pagination: QueryPagination, filter: AccountHistoryFilter): Promise<AccountTokenHistory[]> {
     return await this.indexerInterface.getAccountTokenHistory(address, tokenIdentifier, pagination, filter);
   }
