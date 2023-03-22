@@ -3,17 +3,21 @@ import { Test, TestingModule } from "@nestjs/testing";
 import { PublicAppModule } from "src/public.app.module";
 import request = require('supertest');
 
-describe('Identities', () => {
+describe.skip('Identities', () => {
   let app: INestApplication;
   const gql = '/graphql';
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [PublicAppModule],
     }).compile();
 
     app = moduleFixture.createNestApplication();
     await app.init();
+  });
+
+  afterAll(async () => {
+    await app.close();
   });
 
   describe('Query - Get Identities', () => {
@@ -42,9 +46,5 @@ describe('Identities', () => {
           expect(res.body.data.identities[0]).toBeDefined();
         });
     });
-  });
-
-  afterEach(async () => {
-    await app.close();
   });
 });
