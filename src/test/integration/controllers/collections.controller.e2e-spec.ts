@@ -42,7 +42,7 @@ describe("collections Controller", () => {
 
     it('should return collection detailes for a given identifier', async () => {
       const params = new URLSearchParams({
-        'search': 'MEDAL-ae074f',
+        'identifiers': 'MEDAL-ae074f',
       });
 
       const expected =
@@ -59,8 +59,8 @@ describe("collections Controller", () => {
             canPause: false,
             canTransferNftCreateRole: false,
             canChangeOwner: false,
-            canUpgrade: true,
-            canAddSpecialRoles: true,
+            canUpgrade: false,
+            canAddSpecialRoles: false,
             traits: [],
           }];
 
@@ -91,8 +91,8 @@ describe("collections Controller", () => {
             canPause: false,
             canTransferNftCreateRole: false,
             canChangeOwner: false,
-            canUpgrade: true,
-            canAddSpecialRoles: true,
+            canUpgrade: false,
+            canAddSpecialRoles: false,
             traits: [],
           },
           {
@@ -187,7 +187,7 @@ describe("collections Controller", () => {
 
     it('should count for a given collection identifier', async () => {
       const params = new URLSearchParams({
-        'search': 'MEDAL-ae074f',
+        'identifiers': 'MEDAL-ae074f',
       });
 
       await request(app.getHttpServer())
@@ -248,7 +248,7 @@ describe("collections Controller", () => {
   });
 
   describe('collections/{collection}', () => {
-    it('should return collection details for a given identifier', async () => {
+    it('should return collection details for a given collection identifier', async () => {
       const identifier: string = 'MEDAL-ae074f';
       const expected =
       {
@@ -264,8 +264,8 @@ describe("collections Controller", () => {
         canTransfer: true,
         canTransferNftCreateRole: false,
         canChangeOwner: false,
-        canUpgrade: true,
-        canAddSpecialRoles: true,
+        canUpgrade: false,
+        canAddSpecialRoles: false,
         roles: [
           {
             address: "erd1qqqqqqqqqqqqqpgq8ne37ed06034qxfhm09f03ykjfqwx8s7hvrqackmzt",
