@@ -2,13 +2,12 @@ import { Test } from '@nestjs/testing';
 import { TransactionStatus } from 'src/endpoints/transactions/entities/transaction.status';
 import { TransactionFilter } from 'src/endpoints/transactions/entities/transaction.filter';
 import transactionDetails from "src/test/data/transactions/transaction.details";
-import { TransferModule } from 'src/endpoints/transfers/transfer.module';
 import { TransferService } from 'src/endpoints/transfers/transfer.service';
 import { ApiConfigService } from 'src/common/api-config/api.config.service';
-import { ApiConfigModule } from 'src/common/api-config/api.config.module';
 import { BinaryUtils, Constants, ElasticQuery, ElasticService } from '@multiversx/sdk-nestjs';
 import { TransactionQueryOptions } from 'src/endpoints/transactions/entities/transactions.query.options';
 import { QueryPagination } from 'src/common/entities/query.pagination';
+import { PublicAppModule } from 'src/public.app.module';
 import '@multiversx/sdk-nestjs/lib/src/utils/extensions/jest.extensions';
 import '@multiversx/sdk-nestjs/lib/src/utils/extensions/number.extensions';
 
@@ -20,7 +19,7 @@ describe('Transfer Service', () => {
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
-      imports: [TransferModule, ApiConfigModule],
+      imports: [PublicAppModule],
     }).compile();
 
     transferService = moduleRef.get<TransferService>(TransferService);
