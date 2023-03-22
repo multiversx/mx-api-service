@@ -3,6 +3,7 @@ import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { SortOrder } from "src/common/entities/sort.order";
+import { AccountHistoryFilter } from "src/endpoints/accounts/entities/account.history.filter";
 import { BlockFilter } from "src/endpoints/blocks/entities/block.filter";
 import { CollectionFilter } from "src/endpoints/collections/entities/collection.filter";
 import { MiniBlockFilter } from "src/endpoints/miniblocks/entities/mini.block.filter";
@@ -49,6 +50,14 @@ export class PostgresIndexerService implements IndexerInterface {
     private readonly validatorPublicKeysRepository: Repository<ValidatorPublicKeysDb>,
     private readonly indexerHelper: PostgresIndexerHelper,
   ) { }
+
+  getAccountHistoryCount(_address: string, _filter?: AccountHistoryFilter | undefined): Promise<number> {
+    throw new Error("Method not implemented.");
+  }
+
+  getAccountTokenHistoryCount(_address: string, _tokenIdentifier: string, _filter?: AccountHistoryFilter | undefined): Promise<number> {
+    throw new Error("Method not implemented.");
+  }
 
   getNftCollectionsByIds(_identifiers: string[]): Promise<Collection[]> {
     throw new Error("Method not implemented.");
