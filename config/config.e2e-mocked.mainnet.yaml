@@ -4,7 +4,12 @@ api:
   public: true
   private: true
   graphql: true
-
+features:
+  auth:
+    enabled: false
+    maxExpirySeconds: 86400
+    acceptedOrigins:
+      - ''
 cron:
   transactionProcessor: false
   transactionProcessorMaxLookBehind: 1000
@@ -15,6 +20,7 @@ flags:
   useTracing: false
   indexer-v3: true
 urls:
+  self: 'https://api.elrond.com'
   api:
     - 'https://api.multiversx.com'
     - 'https://devnet-api.multiversx.com'
