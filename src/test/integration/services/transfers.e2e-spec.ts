@@ -220,7 +220,7 @@ describe('Transfer Service', () => {
         const transactionFilter = new TransactionFilter();
         transactionFilter.functions = ["claim_rewards", "stake"];
 
-        const transfers = await transferService.getTransfers(transactionFilter, new QueryPagination(), new TransactionQueryOptions());
+        const transfers = await transferService.getTransfers(transactionFilter, new QueryPagination({ size: 50 }), new TransactionQueryOptions());
         expect(transfers).toHaveLength(50);
 
         const hasClaimRewards = transfers.some(transfer => transfer.function === "claim_rewards");
