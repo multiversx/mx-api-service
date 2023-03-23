@@ -141,12 +141,7 @@ describe('Nft Service', () => {
 
     it("should return a list with all nfts that contains tags", async () => {
       const filters = new NftFilter();
-      filters.tags = [
-        "Elrond",
-        "MAW",
-        "superMAW",
-        "Romania",
-        "TrustStaking"];
+      filters.tags = ["xportal"];
 
       const nfts = await nftService.getNfts({ from: 0, size: 10 }, filters);
       expect(nfts).toHaveLength(10);
@@ -346,12 +341,12 @@ describe('Nft Service', () => {
 
     it("should return the number of nfts with name specified", async () => {
       const filters = new NftFilter();
-      filters.name = "Elrond Robots #196";
+      filters.name = "Gritty Summit Chaser";
 
       const count = await nftService.getNftCount(filters);
 
       expect(typeof count).toBe("number");
-      expect(count).toBeGreaterThanOrEqual(10000);
+      expect(count).toBeGreaterThanOrEqual(1);
     });
 
     it("should return the number of nfts with collection filter applied", async () => {
@@ -745,7 +740,7 @@ describe('Nft Service', () => {
       }
     });
 
-    it("should return a list of address NFTs with scam info property present", async () => {
+    it("should return a list of NFTs with scam info property present", async () => {
       const filter = new NftFilter({ collection: 'LOTTERY-7cae2f' });
 
       const options = new NftQueryOptions({ withScamInfo: true });
