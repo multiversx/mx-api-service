@@ -195,13 +195,12 @@ export class CacheInfo {
     };
   }
 
-  static HistoricalPrice(identifier: string, timestamp?: number): CacheInfo {
-    const priceDate = timestamp ? new Date(timestamp * 1000) : new Date();
-    const isCurrentDate = priceDate.toISODateString() === new Date().toISODateString();
+  static HistoricalPrice(identifier: string, date: Date): CacheInfo {
+    const isCurrentDate = date.toISODateString() === new Date().toISODateString();
     const ttl = isCurrentDate ? Constants.oneMinute() * 5 : Constants.oneWeek();
 
     return {
-      key: `historical-price:${identifier}:${priceDate.toISODateString()}`,
+      key: `historical-price:${identifier}:${date.toISODateString()}`,
       ttl,
     };
   }
@@ -527,4 +526,15 @@ export class CacheInfo {
     key: 'data-api:tokens',
     ttl: Constants.oneMinute() * 10,
   };
+
+  static DataApiTokenPrice(identifier: string, timestamp?: number): CacheInfo {
+    const priceDate = timestamp ? new Date(timestamp * 1000) : new Date();
+    const isCurrentDate = priceDate.toISODateString() === new Date().toISODateString();
+    const ttl = isCurrentDate ? Constants.oneMinute() * 5 : Constants.oneWeek();
+
+    return {
+      key: `data-api:price:${identifier}:${priceDate.toISODateString()}`,
+      ttl,
+    };
+  }
 }

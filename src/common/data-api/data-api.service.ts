@@ -20,9 +20,9 @@ export class DataApiService {
 
   public async getEsdtTokenPrice(identifier: string, timestamp?: number): Promise<number | undefined> {
     return await this.cachingService.getOrSetCache(
-      CacheInfo.HistoricalPrice(identifier, timestamp).key,
+      CacheInfo.DataApiTokenPrice(identifier, timestamp).key,
       async () => await this.getEsdtTokenPriceRaw(identifier, timestamp),
-      CacheInfo.HistoricalPrice(identifier, timestamp).ttl
+      CacheInfo.DataApiTokenPrice(identifier, timestamp).ttl
     );
   }
 
