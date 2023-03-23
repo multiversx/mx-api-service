@@ -80,6 +80,13 @@ describe('Data API Service', () => {
       expect(result).toBeUndefined();
     });
 
+    it('should return undefined when data API feature is disabled', async () => {
+      jest.spyOn(service['apiConfigService'], 'isDataApiFeatureEnabled').mockReturnValue(false);
+
+      const result = await service.getEsdtTokenPrice('EGLD', 123456789);
+      expect(result).toBeUndefined();
+    });
+
     it('should fetch the current token price from the data API', async () => {
       jest.spyOn(ApiConfigService.prototype, 'isDataApiFeatureEnabled').mockReturnValueOnce(true);
       jest.spyOn(DataApiService.prototype, 'getDataApiTokens').mockReturnValueOnce(Promise.resolve(mockTokens));
