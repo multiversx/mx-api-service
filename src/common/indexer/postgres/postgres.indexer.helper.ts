@@ -244,8 +244,10 @@ export class PostgresIndexerHelper {
       query = query.andWhere('tokens like :token', { token: `%${filter.token}%` });
     }
 
-    if (filter.function) {
-      query = query.andWhere('function = :function', { function: filter.function });
+    if (filter.functions !== undefined && filter.functions.length > 0) {
+      for (const func of filter.functions) {
+        query = query.andWhere('function = :function', { function: func });
+      }
     }
 
     if (filter.senderShard !== undefined) {
@@ -354,8 +356,10 @@ export class PostgresIndexerHelper {
     if (filter.token !== undefined) {
       query = query.andWhere('tokens like :token', { token: `%${filter.token}%` });
     }
-    if (filter.function !== undefined) {
-      query = query.andWhere('function = :function', { function: filter.function });
+    if (filter.functions !== undefined && filter.functions.length > 0) {
+      for (const func of filter.functions) {
+        query = query.andWhere('function = :function', { function: func });
+      }
     }
     if (filter.senderShard !== undefined) {
       query = query.andWhere('sender_shard = :shard', { shard: filter.senderShard });
