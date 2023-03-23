@@ -15,6 +15,7 @@ flags:
   useTracing: false
   indexer-v3: true
 urls:
+  self: 'https://api.elrond.com'
   api:
     - 'https://api.multiversx.com'
     - 'https://devnet-api.multiversx.com'
