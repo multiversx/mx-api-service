@@ -53,14 +53,13 @@ jobs:
           sudo /etc/init.d/mysql start
           mysql -e 'CREATE DATABASE IF NOT EXISTS api;' -uroot -proot
       - uses: actions/checkout@v3
-      - name: Get IP info
-        run: |
-          curl ipinfo.io
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
+      - name: Get IP info
+        run: curl ipinfo.io
       - run: npm ci
       - name: Initialize
         run: npm run init
