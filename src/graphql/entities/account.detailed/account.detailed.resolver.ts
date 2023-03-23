@@ -214,7 +214,7 @@ export class AccountDetailedResolver extends AccountDetailedQuery {
       new TransactionFilter({
         sender: input.sender,
         token: input.token,
-        function: input.function,
+        functions: input.function,
         senderShard: input.senderShard,
         receiverShard: input.receiverShard,
         miniBlockHash: input.miniBlockHash,
@@ -238,7 +238,7 @@ export class AccountDetailedResolver extends AccountDetailedQuery {
       new TransactionFilter({
         sender: input.sender,
         token: input.token,
-        function: input.function,
+        functions: input.function,
         senderShard: input.senderShard,
         receiverShard: input.receiverShard,
         miniBlockHash: input.miniBlockHash,
@@ -260,7 +260,7 @@ export class AccountDetailedResolver extends AccountDetailedQuery {
       new TransactionFilter({
         sender: input.sender,
         token: input.token,
-        function: input.function,
+        functions: input.function,
         senderShard: input.senderShard,
         receiverShard: input.receiverShard,
         miniBlockHash: input.miniBlockHash,
