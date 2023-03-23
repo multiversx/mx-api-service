@@ -486,7 +486,8 @@ describe('Token Service', () => {
   });
 
   describe("getTokenProperties", () => {
-    it("should return all properties for token", async () => {
+    //Skip until ES issues are solved
+    it.skip("should return all properties for token", async () => {
       const MOCK_PATH = apiConfigService.getMockPath();
       const identifier: string = "WEGLD-bd4d79";
 
