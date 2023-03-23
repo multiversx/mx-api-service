@@ -44,7 +44,7 @@ features:
     serviceUrl: 'https://graph.xexchange.com/graphql'
   dataApi:
     enabled: false
-    serviceUrl: 'https://data-api.multiversx.com/v1'
+    serviceUrl: 'https://data-api.multiversx.com'
   auth:
     enabled: false
     maxExpirySeconds: 86400

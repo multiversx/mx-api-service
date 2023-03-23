@@ -44,7 +44,7 @@ features:
     serviceUrl: 'https://devnet-graph.xexchange.com/graphql'
   dataApi:
     enabled: false
-    serviceUrl: 'https://devnet-data-api.multiversx.com/v1'
+    serviceUrl: 'https://devnet-data-api.multiversx.com'
   auth:
     enabled: false
     maxExpirySeconds: 86400

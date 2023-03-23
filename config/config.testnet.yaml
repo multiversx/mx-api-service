@@ -44,7 +44,7 @@ features:
     serviceUrl: 'https://testnet-graph.xexchange.com/graphql'
   dataApi:
     enabled: false
-    serviceUrl: 'https://testnet-data-api.multiversx.com/v1'
+    serviceUrl: 'https://testnet-data-api.multiversx.com'
   auth:
     enabled: false
     maxExpirySeconds: 86400

@@ -38,7 +38,7 @@ export class DataApiService {
 
     try {
       const priceDate = timestamp ? new Date(timestamp * 1000).toISODateString() : undefined;
-      const priceUrl = `${this.apiConfigService.getDataApiServiceUrl()}/quotes/${token.market}/${token.identifier}${priceDate ? `?date=${priceDate}` : ''}`;
+      const priceUrl = `${this.apiConfigService.getDataApiServiceUrl()}/v1/quotes/${token.market}/${token.identifier}${priceDate ? `?date=${priceDate}` : ''}`;
 
       const response = await this.apiService.get(priceUrl);
       return response?.data?.price;
@@ -71,8 +71,8 @@ export class DataApiService {
 
     try {
       const [cexTokensRaw, xExchangeTokensRaw] = await Promise.all([
-        this.apiService.get(`${this.apiConfigService.getDataApiServiceUrl()}/tokens/cex`),
-        this.apiService.get(`${this.apiConfigService.getDataApiServiceUrl()}/tokens/xexchange`),
+        this.apiService.get(`${this.apiConfigService.getDataApiServiceUrl()}/v1/tokens/cex`),
+        this.apiService.get(`${this.apiConfigService.getDataApiServiceUrl()}/v1/tokens/xexchange`),
       ]);
 
       const cexTokens = cexTokensRaw.data.map((token: any) => new DataApiToken({ identifier: token.identifier, market: 'cex' }));
