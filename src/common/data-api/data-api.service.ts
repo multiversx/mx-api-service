@@ -50,13 +50,13 @@ export class DataApiService {
     return undefined;
   }
 
-  private async getDataApiToken(identifier: string): Promise<DataApiToken | undefined> {
+  public async getDataApiToken(identifier: string): Promise<DataApiToken | undefined> {
     const tokens = await this.getDataApiTokens();
     const token = tokens.find(x => x.identifier === identifier);
     return token;
   }
 
-  private async getDataApiTokens(): Promise<DataApiToken[]> {
+  public async getDataApiTokens(): Promise<DataApiToken[]> {
     return await this.cachingService.getOrSetCache(
       CacheInfo.DataApiTokens.key,
       async () => await this.getDataApiTokensRaw(),
@@ -64,7 +64,7 @@ export class DataApiService {
     );
   }
 
-  private async getDataApiTokensRaw(): Promise<DataApiToken[]> {
+  public async getDataApiTokensRaw(): Promise<DataApiToken[]> {
     if (!this.apiConfigService.isDataApiFeatureEnabled()) {
       return [];
     }

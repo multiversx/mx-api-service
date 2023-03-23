@@ -8,6 +8,7 @@ import { DataApiService } from "./data-api.service";
   imports: [
     ApiConfigModule,
     DynamicModuleUtils.getApiModule(),
+    DynamicModuleUtils.getCachingModule(),
   ],
   providers: [
     DataApiService,
