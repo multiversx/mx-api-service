@@ -115,10 +115,12 @@ describe('Data API Service', () => {
       // eslint-disable-next-line require-await
       jest.spyOn(apiService, 'get').mockImplementationOnce(async () => { throw new Error('An error occurred'); });
       jest.spyOn(DataApiService.prototype, 'getDataApiTokens').mockReturnValueOnce(Promise.resolve(mockTokens));
+      jest.spyOn(service['logger'], 'error').mockImplementation(() => { });
 
       const price = await service.getEsdtTokenPrice('EGLD');
 
       expect(apiService.get).toHaveBeenCalled();
+      expect(service['logger'].error).toHaveBeenCalled();
       expect(price).toBeUndefined();
     });
   });
@@ -147,10 +149,12 @@ describe('Data API Service', () => {
       jest.spyOn(ApiConfigService.prototype, 'isDataApiFeatureEnabled').mockReturnValueOnce(true);
       // eslint-disable-next-line require-await
       jest.spyOn(apiService, 'get').mockImplementationOnce(async () => { throw new Error('An error occurred'); });
+      jest.spyOn(service['logger'], 'error').mockImplementation(() => { });
 
       const result = await service.getDataApiTokensRaw();
 
       expect(apiService.get).toHaveBeenCalledTimes(2);
+      expect(service['logger'].error).toHaveBeenCalled();
       expect(result).toEqual([]);
     });
   });
