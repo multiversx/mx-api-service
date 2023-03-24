@@ -1,0 +1,36 @@
+name: Warm-up
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  warm-up:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16.x'
+      - run: npm ci
+      - name: Warm-up script
+        run: |
+          if ${{ github.ref == 'refs/heads/main' }}; then
+            npm run test:e2e:warm
+            echo "Writing warm-up data"
+            echo "$(cat warm-up-data.txt)"
+            echo "::set-output name=warm-up-data::$(cat warm-up-data.txt)"
+          else
+            npm run test:e2e:warm:mocked
+          fi
+        shell: bash
+        id: warm-up
+      - name: Upload warm-up data
+        uses: actions/upload-artifact@v2
+        with:
+          name: warm-up-data
+          path: warm-up-data.txt
+      - name: Set warm-up data URL
+        run: echo "warm-up-data-url=${{ steps.warm-up.outputs.artifacts_url }}/warm-up-data" >> $GITHUB_ENV
