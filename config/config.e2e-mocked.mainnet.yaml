@@ -4,7 +4,12 @@ api:
   public: true
   private: true
   graphql: true
-
+features:
+  auth:
+    enabled: false
+    maxExpirySeconds: 86400
+    acceptedOrigins:
+      - ''
 cron:
   transactionProcessor: false
   transactionProcessorMaxLookBehind: 1000
