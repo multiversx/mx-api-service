@@ -113,7 +113,7 @@ describe('Data API Service', () => {
     test('should return undefined when API call fails', async () => {
       jest.spyOn(ApiConfigService.prototype, 'isDataApiFeatureEnabled').mockReturnValueOnce(true);
       // eslint-disable-next-line require-await
-      jest.spyOn(apiService, 'get').mockImplementationOnce(async () => new Error('An error occurred'));
+      jest.spyOn(apiService, 'get').mockImplementationOnce(async () => { throw new Error('An error occurred'); });
       jest.spyOn(DataApiService.prototype, 'getDataApiTokens').mockReturnValueOnce(Promise.resolve(mockTokens));
 
       const price = await service.getEsdtTokenPrice('EGLD');
@@ -146,7 +146,7 @@ describe('Data API Service', () => {
     it('should return an empty array if there is an error fetching tokens from the data API', async () => {
       jest.spyOn(ApiConfigService.prototype, 'isDataApiFeatureEnabled').mockReturnValueOnce(true);
       // eslint-disable-next-line require-await
-      jest.spyOn(apiService, 'get').mockImplementationOnce(async () => new Error('An error occurred'));
+      jest.spyOn(apiService, 'get').mockImplementationOnce(async () => { throw new Error('An error occurred'); });
 
       const result = await service.getDataApiTokensRaw();
 
