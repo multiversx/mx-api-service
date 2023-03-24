@@ -7,6 +7,10 @@ on:
     branches: [main, development]
 
 jobs:
+  warm-up:
+    runs-on: ubuntu-latest
+    steps:
+
   build:
     needs: warm-up
     runs-on: ubuntu-latest
