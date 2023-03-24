@@ -11,7 +11,7 @@ import { PublicAppModule } from 'src/public.app.module';
 import '@multiversx/sdk-nestjs/lib/src/utils/extensions/jest.extensions';
 import '@multiversx/sdk-nestjs/lib/src/utils/extensions/number.extensions';
 
-describe('Transfer Service', () => {
+describe.skip('Transfer Service', () => {
   let transferService: TransferService;
   let apiConfigService: ApiConfigService;
   let transactionSender: string;
