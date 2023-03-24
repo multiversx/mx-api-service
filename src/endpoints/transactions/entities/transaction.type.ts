@@ -15,6 +15,5 @@ registerEnumType(TransactionType, {
     SmartContractResult: {
       description: 'SmartContractResult type.',
     },
-
   },
 });
