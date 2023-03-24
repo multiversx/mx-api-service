@@ -8,6 +8,7 @@ on:
 
 jobs:
   build:
+    needs: warm-up
     runs-on: ubuntu-latest
 
     strategy:
