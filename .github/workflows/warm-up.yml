@@ -2,8 +2,9 @@ name: Warm-up
 
 on:
   push:
-    branches:
-      - main
+    branches: [main, development]
+  pull_request:
+    branches: [main, development]
 
 jobs:
   warm-up:
