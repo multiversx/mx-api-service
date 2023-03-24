@@ -178,7 +178,7 @@ describe('Transfer Service', () => {
       it.skip('should return a list with transfers that call ESDTNFTTransfer function', async () => {
         if (apiConfigService.getIsIndexerV3FlagActive()) {
           const transactionFilter = new TransactionFilter();
-          transactionFilter.function = 'ESDTNFTTransfer';
+          transactionFilter.functions = ['ESDTNFTTransfer'];
 
           const transfers = await transferService.getTransfers(transactionFilter, { from: 0, size: 25 }, new TransactionQueryOptions());
           for (const transfer of transfers) {
@@ -206,7 +206,7 @@ describe('Transfer Service', () => {
 
       it(`should return transfers with function "claim_rewards"`, async () => {
         const transactionFilter = new TransactionFilter();
-        transactionFilter.function = "claim_rewards";
+        transactionFilter.functions = ["claim_rewards"];
 
         const transfers = await transferService.getTransfers(transactionFilter, new QueryPagination(), new TransactionQueryOptions());
         expect(transfers).toHaveLength(25);
@@ -214,6 +214,19 @@ describe('Transfer Service', () => {
         for (const tranfer of transfers) {
           expect(tranfer.function).toStrictEqual('claim_rewards');
         }
+      });
+
+      it(`should return transfers with function "claim_rewards" and "stake"`, async () => {
+        const transactionFilter = new TransactionFilter();
+        transactionFilter.functions = ["claim_rewards", "stake"];
+
+        const transfers = await transferService.getTransfers(transactionFilter, new QueryPagination({ size: 50 }), new TransactionQueryOptions());
+        expect(transfers).toHaveLength(50);
+
+        const hasClaimRewards = transfers.some(transfer => transfer.function === "claim_rewards");
+        const hasStake = transfers.some(transfer => transfer.function === "stake");
+
+        expect([hasClaimRewards, hasStake]).toEqual(expect.arrayContaining([true]));
       });
     });
   });

@@ -29,7 +29,7 @@ export class TransactionDetailedQuery {
         miniBlockHash: input.miniBlockHash,
         hashes: input.hashes,
         status: input.status,
-        function: input.function,
+        functions: input.function,
         before: input.before,
         after: input.after,
         condition: input.condition,
