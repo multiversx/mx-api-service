@@ -7,9 +7,9 @@ import { ApiConfigService } from 'src/common/api-config/api.config.service';
 import { BinaryUtils, Constants, ElasticQuery, ElasticService } from '@multiversx/sdk-nestjs';
 import { TransactionQueryOptions } from 'src/endpoints/transactions/entities/transactions.query.options';
 import { QueryPagination } from 'src/common/entities/query.pagination';
+import { PublicAppModule } from 'src/public.app.module';
 import '@multiversx/sdk-nestjs/lib/src/utils/extensions/jest.extensions';
 import '@multiversx/sdk-nestjs/lib/src/utils/extensions/number.extensions';
-import { PublicAppModule } from 'src/public.app.module';
 
 describe('Transfer Service', () => {
   let transferService: TransferService;
