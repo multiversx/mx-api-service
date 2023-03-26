@@ -20,10 +20,16 @@ export class DynamicModuleUtils {
   static getCachingModule(): DynamicModule {
     return ElrondCachingModule.forRootAsync({
       imports: [ApiConfigModule],
-      useFactory: (apiConfigService: ApiConfigService) => new RedisCacheModuleOptions({
-        host: apiConfigService.getRedisUrl(),
-        connectTimeout: 10000,
-      }),
+      useFactory: (apiConfigService: ApiConfigService) =>
+        new RedisCacheModuleOptions(
+          {
+            host: apiConfigService.getRedisUrl(),
+          },
+          {
+            poolLimit: apiConfigService.getPoolLimit(),
+            processTtl: apiConfigService.getProcessTtl(),
+          }
+        ),
       inject: [ApiConfigService],
     },
       {
