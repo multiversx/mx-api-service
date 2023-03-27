@@ -18,11 +18,21 @@ jobs:
         node-version: [16.x]
 
     services:
-      mysql: ${{ needs.warm.outputs.mysql }}
-      rabbitmq: ${{ needs.warm.outputs.rabbitmq }}
-      redis: ${{ needs.warm.outputs.redis }}
+      mysql: ${{ needs.common.outputs.mysql }}
+      rabbitmq: ${{ needs.common.outputs.rabbitmq }}
+      redis: ${{ needs.common.outputs.redis }}
+
+    needs: common
 
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+      - run: npm ci
       - name: Run integration tests
         run: npm run test:e2e:cov
       - uses: codecov/codecov-action@v3
@@ -33,5 +43,3 @@ jobs:
           name: codecov-umbrella
           fail_ci_if_error: true
           verbose: true
-    needs:
-      - warm

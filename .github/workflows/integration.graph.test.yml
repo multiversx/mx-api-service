@@ -24,3 +24,7 @@ jobs:
     steps:
       - name: Run integration tests
         run: npm run test:graph
+    outputs:
+      mysql: ${{ job.services.mysql }}
+      rabbitmq: ${{ job.services.rabbitmq }}
+      redis: ${{ job.services.redis }}
