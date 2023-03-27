@@ -17,12 +17,12 @@ jobs:
       matrix:
         node-version: [16.x]
 
+    needs: [common]
+
     services:
       mysql: ${{ needs.common.outputs.mysql }}
       rabbitmq: ${{ needs.common.outputs.rabbitmq }}
       redis: ${{ needs.common.outputs.redis }}
-
-    needs: common
 
     steps:
       - name: Run integration tests
