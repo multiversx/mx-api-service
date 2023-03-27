@@ -1,4 +1,4 @@
-import { Jwt, JwtAuthenticateGuard } from "@multiversx/sdk-nestjs";
+import { Jwt, NativeAuthGuard } from "@multiversx/sdk-nestjs";
 import { Body, Controller, Get, HttpException, HttpStatus, Logger, Param, Post, UseGuards, Headers } from "@nestjs/common";
 import { ApiTags } from "@nestjs/swagger";
 import { TransactionBatchSimplified } from "./entities/transaction.batch.simplified";
@@ -17,7 +17,7 @@ export class TransactionsBatchController {
   }
 
   @Post('/batch')
-  @UseGuards(JwtAuthenticateGuard)
+  @UseGuards(NativeAuthGuard)
   async startTransactionBatch(
     @Body() batch: TransactionBatchSimplified,
     @Headers() headers: any,
@@ -46,7 +46,7 @@ export class TransactionsBatchController {
   }
 
   @Get('/batch/:id')
-  @UseGuards(JwtAuthenticateGuard)
+  @UseGuards(NativeAuthGuard)
   async getTransactionBatch(
     @Jwt('address') address: string,
     @Param('id') batchId: string,
@@ -60,7 +60,7 @@ export class TransactionsBatchController {
   }
 
   @Get('/batch')
-  @UseGuards(JwtAuthenticateGuard)
+  @UseGuards(NativeAuthGuard)
   async getTransactionBatches(
     @Jwt('address') address: string,
   ): Promise<TransactionBatchSimplifiedResult[]> {

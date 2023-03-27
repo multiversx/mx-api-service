@@ -272,8 +272,8 @@ export class ElasticIndexerHelper {
       elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Match('tokens', filter.token, QueryOperator.AND));
     }
 
-    if (filter.function && this.apiConfigService.getIsIndexerV3FlagActive()) {
-      elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Match('function', filter.function));
+    if (filter.functions && filter.functions.length > 0 && this.apiConfigService.getIsIndexerV3FlagActive()) {
+      elasticQuery = elasticQuery.withMustMultiShouldCondition(filter.functions, func => QueryType.Match('function', func));
     }
 
     if (filter.senderShard !== undefined) {
@@ -413,7 +413,6 @@ export class ElasticIndexerHelper {
 
   public buildTransactionFilterQuery(filter: TransactionFilter, address?: string): ElasticQuery {
     let elasticQuery = ElasticQuery.create()
-      .withMustMatchCondition('function', this.apiConfigService.getIsIndexerV3FlagActive() ? filter.function : undefined)
       .withMustMatchCondition('senderShard', filter.senderShard)
       .withMustMatchCondition('receiverShard', filter.receiverShard)
       .withMustMatchCondition('miniBlockHash', filter.miniBlockHash)
@@ -421,6 +420,10 @@ export class ElasticIndexerHelper {
       .withMustMatchCondition('status', filter.status)
       .withMustMultiShouldCondition(filter.tokens, token => QueryType.Match('tokens', token, QueryOperator.AND))
       .withDateRangeFilter('timestamp', filter.before, filter.after);
+
+    if (filter.functions && filter.functions.length > 0 && this.apiConfigService.getIsIndexerV3FlagActive()) {
+      elasticQuery = elasticQuery.withMustMultiShouldCondition(filter.functions, func => QueryType.Match('function', func));
+    }
 
     if (filter.token === 'EGLD') {
       elasticQuery = elasticQuery.withMustNotCondition(QueryType.Match('value', '0'));
