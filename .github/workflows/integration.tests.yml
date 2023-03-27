@@ -10,7 +10,7 @@ on:
     branches: [main, development]
 
 extends:
-  - common.yml
+  - workflows/common.yml
 
 jobs:
   build:
