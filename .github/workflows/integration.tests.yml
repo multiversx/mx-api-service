@@ -17,12 +17,10 @@ jobs:
       matrix:
         node-version: [16.x]
 
-    needs: [common]
-
     services:
-      mysql: ${{ needs.common.outputs.mysql }}
-      rabbitmq: ${{ needs.common.outputs.rabbitmq }}
-      redis: ${{ needs.common.outputs.redis }}
+      mysql: ${{ needs.warm.outputs.mysql }}
+      rabbitmq: ${{ needs.warm.outputs.rabbitmq }}
+      redis: ${{ needs.warm.outputs.redis }}
 
     steps:
       - name: Run integration tests
@@ -35,3 +33,5 @@ jobs:
           name: codecov-umbrella
           fail_ci_if_error: true
           verbose: true
+    needs:
+      - warm
