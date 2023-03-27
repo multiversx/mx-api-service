@@ -1,4 +1,4 @@
-name: Common Actions
+name: Common Workflow
 
 on:
   push:
@@ -7,8 +7,13 @@ on:
     branches: [main, development]
 
 jobs:
-  warm:
+  build:
     runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [16.x]
+
     services:
       redis:
         image: redis
@@ -33,6 +38,7 @@ jobs:
         image: rabbitmq:3-alpine
         ports:
           - 5672:5672
+
     steps:
       - name: Set up MySQL
         run: |
@@ -55,7 +61,8 @@ jobs:
             npm run test:e2e:warm:mocked
           fi
         shell: bash
-    outputs:
-      redis: ${{ job.services.redis }}
-      mysql: ${{ job.services.mysql }}
-      rabbitmq: ${{ job.services.rabbitmq }}
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: e2e-details
+          path: coverage/e2e/clover.xml
