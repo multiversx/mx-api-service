@@ -8,7 +8,7 @@ describe("NFT Controller", () => {
   let app: INestApplication;
   const path: string = "/nfts";
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
       imports: [PublicAppModule],
     }).compile();
@@ -376,7 +376,7 @@ describe("NFT Controller", () => {
     });
   });
 
-  afterEach(async () => {
+  afterAll(async () => {
     await app.close();
   });
 });
