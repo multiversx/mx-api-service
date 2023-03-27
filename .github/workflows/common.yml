@@ -5,6 +5,7 @@ on:
     branches: [main, development]
   pull_request:
     branches: [main, development]
+  workflow_dispatch:
 
 jobs:
   build:
@@ -66,3 +67,9 @@ jobs:
         with:
           name: e2e-details
           path: coverage/e2e/clover.xml
+      - name: Trigger Integration Test Workflow
+        uses: peter-evans/repository-dispatch@v1
+        with:
+          repository: ${{ github.repository }}
+          event-type: 'integration.tests'
+          client-payload: '{"ref":"${{ github.ref }}"}'
