@@ -38,10 +38,11 @@ export class DataApiService {
 
     try {
       const priceDate = timestamp ? new Date(timestamp * 1000).toISODateString() : undefined;
-      const priceUrl = `${this.apiConfigService.getDataApiServiceUrl()}/v1/quotes/${token.market}/${token.identifier}${priceDate ? `?date=${priceDate}` : ''}`;
+      const dateQuery = priceDate ? `&date=${priceDate}` : '';
+      const priceUrl = `${this.apiConfigService.getDataApiServiceUrl()}/v1/quotes/${token.market}/${token.identifier}?extract=price${dateQuery}`;
 
       const response = await this.apiService.get(priceUrl);
-      return response?.data?.price;
+      return response?.data;
     } catch (error) {
       this.logger.error(`An unexpected error occurred while fetching price for token ${identifier} from Data API.`);
       this.logger.error(error);
@@ -71,8 +72,8 @@ export class DataApiService {
 
     try {
       const [cexTokensRaw, xExchangeTokensRaw] = await Promise.all([
-        this.apiService.get(`${this.apiConfigService.getDataApiServiceUrl()}/v1/tokens/cex`),
-        this.apiService.get(`${this.apiConfigService.getDataApiServiceUrl()}/v1/tokens/xexchange`),
+        this.apiService.get(`${this.apiConfigService.getDataApiServiceUrl()}/v1/tokens/cex?fields=identifier`),
+        this.apiService.get(`${this.apiConfigService.getDataApiServiceUrl()}/v1/tokens/xexchange?fields=identifier`),
       ]);
 
       const cexTokens = cexTokensRaw.data.map((token: any) => new DataApiToken({ identifier: token.identifier, market: 'cex' }));

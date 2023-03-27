@@ -91,7 +91,7 @@ describe('Data API Service', () => {
       jest.spyOn(ApiConfigService.prototype, 'isDataApiFeatureEnabled').mockReturnValueOnce(true);
       jest.spyOn(DataApiService.prototype, 'getDataApiTokens').mockReturnValueOnce(Promise.resolve(mockTokens));
       // eslint-disable-next-line require-await
-      jest.spyOn(apiService, 'get').mockImplementation(async () => ({ data: { price: 3.14 } }));
+      jest.spyOn(apiService, 'get').mockImplementation(async () => ({ data: 3.14 }));
 
       const result = await service.getEsdtTokenPrice('EGLD');
 
@@ -102,11 +102,11 @@ describe('Data API Service', () => {
       jest.spyOn(ApiConfigService.prototype, 'isDataApiFeatureEnabled').mockReturnValueOnce(true);
       jest.spyOn(DataApiService.prototype, 'getDataApiTokens').mockReturnValueOnce(Promise.resolve(mockTokens));
       // eslint-disable-next-line require-await
-      jest.spyOn(apiService, 'get').mockImplementation(async () => ({ data: { price: 3.14 } }));
+      jest.spyOn(apiService, 'get').mockImplementation(async () => ({ data: 3.14 }));
 
       const result = await service.getEsdtTokenPrice('EGLD', 1672567200);
 
-      expect(apiService.get).toHaveBeenCalledWith(expect.stringContaining("?date=2023-01-01"));
+      expect(apiService.get).toHaveBeenCalledWith(expect.stringContaining("&date=2023-01-01"));
       expect(result).toEqual(3.14);
     });
 
@@ -137,7 +137,7 @@ describe('Data API Service', () => {
     it('should fetch tokens from the Data API', async () => {
       jest.spyOn(ApiConfigService.prototype, 'isDataApiFeatureEnabled').mockReturnValueOnce(true);
       // eslint-disable-next-line require-await
-      jest.spyOn(apiService, 'get').mockImplementation(async (url) => ({ data: url.endsWith('cex') ? mockCexTokens : mockXExchangeTokens }));
+      jest.spyOn(apiService, 'get').mockImplementation(async (url) => ({ data: url.includes('/cex') ? mockCexTokens : mockXExchangeTokens }));
 
       const result = await service.getDataApiTokensRaw();
 
