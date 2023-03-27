@@ -111,6 +111,7 @@ export default class Initializer {
 
     await this.execute(description, async () => {
       const value = await promise();
+      console.log('Cache warmer set key ', key, value);
       await Initializer.cachingService.set(key, value, Constants.oneHour());
     });
   }
