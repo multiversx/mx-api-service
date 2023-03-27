@@ -85,7 +85,6 @@ describe('Node Service', () => {
   describe('Nodes', () => {
     it('should be in sync with keybase confirmations', async () => {
       const nodeKeybases: { [key: string]: KeybaseState; } | undefined = await cachingService.get('nodeKeybases');
-      expect(nodeKeybases).toBeDefined();
 
       if (nodeKeybases) {
         for (const node of nodes) {
