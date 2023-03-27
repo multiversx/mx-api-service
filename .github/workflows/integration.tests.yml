@@ -13,6 +13,7 @@ on:
 
 jobs:
   build:
+    needs: common
     runs-on: ubuntu-latest
     steps:
       - name: Download artifacts
