@@ -125,4 +125,47 @@ export class BlockService {
 
     return blocks[0].epoch;
   }
+
+    async getLatestBlock(ttl: number, shard: number): Promise<BlockDetailed | undefined > {
+      const nonce = await this.computeLatestNonce(ttl, shard);
+
+      const filter = new BlockFilter({ shard, nonce });
+      const blocks = await this.indexerService.getBlocks(filter, new QueryPagination({ from: 0, size: 1 }));
+      if (blocks.length === 0) {
+        return undefined;
+      }
+
+      return BlockDetailed.mergeWithElasticResponse(new BlockDetailed(), blocks[0]);
+    }
+
+    private async computeLatestNonce(ttl: number, shard: number): Promise<number> {
+      const latestNonce = await this.getLatestNonceByShard(shard);
+      const roundValue = this.getTtlRoundingValue(ttl);
+      return latestNonce / roundValue * roundValue;
+    }
+
+    private async getLatestNonceByShard(shard: number): Promise<number> {
+      const blocks = await this.getBlocks(new BlockFilter({ shard }), new QueryPagination({ from: 0, size: 1 }));
+      if (blocks.length === 0) {
+        return -1;
+      }
+
+      return blocks[0].nonce;
+    }
+
+    private getTtlRoundingValue(ttl: number): number {
+      if (ttl <= 300) { // 5 minutes
+        return 0;
+      }
+      if (ttl <= 3600) { // 1 hour
+        return 50;
+      }
+      if (ttl <= 21600) { // 6 hours
+        return 150;
+      }
+      if (ttl <= 86400) { // 1 day
+        return 300;
+      }
+      return 600; // more than 1 day
+    }
 }
