@@ -60,8 +60,7 @@ export class LockedAssetService {
     return await this.cachingService.getOrSet(
       CacheInfo.ExtendedAttributesActivationNonce.key,
       async () => await this.getExtendedAttributesActivationNonceRaw(),
-      Constants.oneWeek(),
-      CacheInfo.ExtendedAttributesActivationNonce.ttl
+      CacheInfo.ExtendedAttributesActivationNonce.ttl,
     );
   }
 

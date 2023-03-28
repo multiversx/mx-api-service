@@ -2,14 +2,14 @@ import { Constants, ElrondCachingService } from "@multiversx/sdk-nestjs";
 import { Injectable } from "@nestjs/common";
 import { CacheInfo } from "src/utils/cache.info";
 import { TransactionDetailed } from "./entities/transaction.detailed";
-import { PluginService } from "src/common/plugins/plugin.service";
+import { DataApiService } from "src/common/data-api/data-api.service";
 
 @Injectable()
 export class TransactionPriceService {
 
   constructor(
     private readonly cachingService: ElrondCachingService,
-    private readonly pluginsService: PluginService,
+    private readonly dataApiService: DataApiService,
   ) { }
 
   async getTransactionPrice(transaction: TransactionDetailed): Promise<number | undefined> {
@@ -40,7 +40,7 @@ export class TransactionPriceService {
       return cachedPrice;
     }
 
-    const price = await this.pluginsService.getEgldPrice();
+    const price = await this.dataApiService.getEgldPrice();
     if (price) {
       await this.cachingService.set(CacheInfo.CurrentPrice.key, price, CacheInfo.CurrentPrice.ttl);
     }
@@ -56,7 +56,7 @@ export class TransactionPriceService {
       return cachedPrice;
     }
 
-    const price = await this.pluginsService.getEgldPrice(date.getTime() / 1000);
+    const price = await this.dataApiService.getEgldPrice(date.getTime() / 1000);
     if (price) {
       await this.cachingService.set(cacheKey, price, Constants.oneDay() * 7);
     }

@@ -159,7 +159,7 @@ export class GetTransactionsAccountCountInput {
   search: string | undefined = undefined;
 
   @Field(() => String, { name: "function", description: "Filter transactions by function name for the given result set.", nullable: true })
-  function: string | undefined = undefined;
+  function: Array<string> | undefined = undefined;
 
   @Field(() => Float, { name: "before", description: "Before timestamp for the given result set.", nullable: true })
   before: number | undefined = undefined;
@@ -241,7 +241,7 @@ export class GetTransfersAccountInput {
   search: string | undefined = undefined;
 
   @Field(() => String, { name: "function", description: "Filter transactions by function name for the given result set.", nullable: true })
-  function: string | undefined = undefined;
+  function: Array<string> | undefined = undefined;
 
   @Field(() => Float, { name: "before", description: "Before timestamp for the given result set.", nullable: true })
   before: number | undefined = undefined;
