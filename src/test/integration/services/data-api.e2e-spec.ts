@@ -7,22 +7,23 @@ import { DataApiToken } from "src/common/data-api/entities/data-api.token";
 import '@multiversx/sdk-nestjs/lib/src/utils/extensions/date.extensions';
 
 describe('Data API Service', () => {
-  const mockTokens: DataApiToken[] = [
-    { identifier: 'EGLD', market: 'cex' },
-    { identifier: 'USDC', market: 'cex' },
-    { identifier: 'MEX-455c57', market: 'xexchange' },
-    { identifier: 'RIDE-7d18e9', market: 'xexchange' },
-    { identifier: 'ITHEUM-df6f26', market: 'xexchange' },
-  ];
-  const mockCexTokens = [
-    { identifier: 'EGLD' },
-    { identifier: 'USDC' },
-  ];
-  const mockXExchangeTokens = [
-    { identifier: 'MEX-455c57' },
-    { identifier: 'RIDE-7d18e9' },
-    { identifier: 'ITHEUM-df6f26' },
-  ];
+  const mockTokens: Record<string, DataApiToken> = {
+    'EGLD': { identifier: 'EGLD', market: 'cex' },
+    'USDC': { identifier: 'USDC', market: 'cex' },
+    'MEX-455c57': { identifier: 'MEX-455c57', market: 'xexchange' },
+    'RIDE-7d18e9': { identifier: 'RIDE-7d18e9', market: 'xexchange' },
+    'ITHEUM-df6f26': { identifier: 'ITHEUM-df6f26', market: 'xexchange' },
+  };
+  const mockCexTokens = {
+    'EGLD': { identifier: 'EGLD' },
+    'USDC': { identifier: 'USDC' },
+  };
+
+  const mockXExchangeTokens = {
+    'MEX-455c57': { identifier: 'MEX-455c57' },
+    'RIDE-7d18e9': { identifier: 'RIDE-7d18e9' },
+    'ITHEUM-df6f26': { identifier: 'ITHEUM-df6f26' },
+  };
 
   let service: DataApiService;
   let apiService: ApiService;
@@ -170,7 +171,7 @@ describe('Data API Service', () => {
 
     it('should return undefined if tokens are empty', async () => {
       jest.spyOn(ApiConfigService.prototype, 'isDataApiFeatureEnabled').mockReturnValueOnce(true);
-      jest.spyOn(DataApiService.prototype, 'getDataApiTokens').mockReturnValueOnce(Promise.resolve([]));
+      jest.spyOn(DataApiService.prototype, 'getDataApiTokens').mockReturnValueOnce(Promise.resolve({}));
 
       const result = await service.getDataApiToken('EGLD');
 

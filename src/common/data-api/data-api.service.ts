@@ -53,11 +53,10 @@ export class DataApiService {
 
   public async getDataApiToken(identifier: string): Promise<DataApiToken | undefined> {
     const tokens = await this.getDataApiTokens();
-    const token = tokens.find(x => x.identifier === identifier);
-    return token;
+    return tokens[identifier];
   }
 
-  public async getDataApiTokens(): Promise<DataApiToken[]> {
+  public async getDataApiTokens(): Promise<Record<string, DataApiToken>> {
     return await this.cachingService.getOrSetCache(
       CacheInfo.DataApiTokens.key,
       async () => await this.getDataApiTokensRaw(),
@@ -65,9 +64,9 @@ export class DataApiService {
     );
   }
 
-  public async getDataApiTokensRaw(): Promise<DataApiToken[]> {
+  public async getDataApiTokensRaw(): Promise<Record<string, DataApiToken>> {
     if (!this.apiConfigService.isDataApiFeatureEnabled()) {
-      return [];
+      return {};
     }
 
     try {
@@ -76,16 +75,15 @@ export class DataApiService {
         this.apiService.get(`${this.apiConfigService.getDataApiServiceUrl()}/v1/tokens/xexchange?fields=identifier`),
       ]);
 
-      const cexTokens = cexTokensRaw.data.map((token: any) => new DataApiToken({ identifier: token.identifier, market: 'cex' }));
-      const xExchangeTokens = xExchangeTokensRaw.data.map((token: any) => new DataApiToken({ identifier: token.identifier, market: 'xexchange' }));
+      const cexTokens: DataApiToken[] = cexTokensRaw.data.map((token: any) => new DataApiToken({ identifier: token.identifier, market: 'cex' }));
+      const xExchangeTokens: DataApiToken[] = xExchangeTokensRaw.data.map((token: any) => new DataApiToken({ identifier: token.identifier, market: 'xexchange' }));
 
-      const tokens = [...cexTokens, ...xExchangeTokens];
+      const tokens = [...cexTokens, ...xExchangeTokens].toRecord<DataApiToken>(x => x.identifier);
       return tokens;
     } catch (error) {
       this.logger.error(`An unexpected error occurred while fetching tokens from Data API.`);
       this.logger.error(error);
+      return {};
     }
-
-    return [];
   }
 }
