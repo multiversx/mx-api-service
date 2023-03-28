@@ -71,11 +71,11 @@ export class BlockController {
   @ApiOperation({ summary: 'Block details', description: 'Returns latest block information details for a given resolution' })
   @ApiOkResponse({ type: BlockDetailed })
   @ApiNotFoundResponse({ description: 'Block not found' })
-  @ApiQuery({ name: 'shard', description: 'Id of the shard the block belongs to' })
-  @ApiQuery({ name: 'ttl', description: 'Compute the nonce frequency based on ttl value'})
+  @ApiQuery({ name: 'ttl', description: 'Compute the nonce frequency based on ttl value. If not specified the latest block may be 1h old', required: false})
+  @ApiQuery({ name: 'shard', description: 'Id of the shard the block belongs to', required: false })
   async getLatestBlock(
-      @Query('shard', ParseIntPipe) shard: number,
-      @Query('ttl', ParseIntPipe) ttl: number,
+      @Query('ttl', ParseIntPipe) ttl?: number,
+      @Query('shard', ParseIntPipe) shard?: number,
   ): Promise<BlockDetailed> {
     const block = await this.blockService.getLatestBlock(ttl, shard);
     if (!block) {

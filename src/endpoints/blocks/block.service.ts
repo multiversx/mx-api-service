@@ -126,10 +126,13 @@ export class BlockService {
     return blocks[0].epoch;
   }
 
-    async getLatestBlock(ttl: number, shard: number): Promise<BlockDetailed | undefined > {
-      const nonce = await this.computeLatestNonce(ttl, shard);
+    async getLatestBlock(ttl?: number, shard?: number): Promise<BlockDetailed | undefined > {
+      const { nonce, blockShard } = await this.computeLatestNonce(ttl, shard);
+      if (nonce === -1 || blockShard === -1) {
+        return undefined;
+      }
 
-      const filter = new BlockFilter({ shard, nonce });
+      const filter = new BlockFilter({ shard: blockShard, nonce });
       const blocks = await this.indexerService.getBlocks(filter, new QueryPagination({ from: 0, size: 1 }));
       if (blocks.length === 0) {
         return undefined;
@@ -138,22 +141,25 @@ export class BlockService {
       return BlockDetailed.mergeWithElasticResponse(new BlockDetailed(), blocks[0]);
     }
 
-    private async computeLatestNonce(ttl: number, shard: number): Promise<number> {
-      const latestNonce = await this.getLatestNonceByShard(shard);
+    private async computeLatestNonce(ttl?: number, shard?: number): Promise<{ nonce: number, blockShard: number }> {
+      const { nonce, blockShard } = await this.getLatestNonceByShard(shard);
       const roundValue = this.getTtlRoundingValue(ttl);
-      return latestNonce / roundValue * roundValue;
+      return { nonce: nonce / roundValue * roundValue, blockShard};
     }
 
-    private async getLatestNonceByShard(shard: number): Promise<number> {
+    private async getLatestNonceByShard(shard?: number): Promise<{ nonce: number, blockShard: number }> {
       const blocks = await this.getBlocks(new BlockFilter({ shard }), new QueryPagination({ from: 0, size: 1 }));
       if (blocks.length === 0) {
-        return -1;
+        return { nonce: -1, blockShard: -1 };
       }
 
-      return blocks[0].nonce;
+      return { nonce: blocks[0].nonce, blockShard: blocks[0].shard };
     }
 
-    private getTtlRoundingValue(ttl: number): number {
+    private getTtlRoundingValue(ttl?: number): number {
+      if (ttl === undefined) {
+        return 600;
+      }
       if (ttl <= 300) { // 5 minutes
         return 0;
       }
