@@ -77,15 +77,6 @@ export class ApiConfigService {
     return elasticUrls[Math.floor(Math.random() * elasticUrls.length)];
   }
 
-  getMexUrl(): string {
-    const mexUrls = this.configService.get<string>('urls.mex');
-    if (mexUrls) {
-      return mexUrls[Math.floor(Math.random() * mexUrls.length)];
-    }
-
-    return '';
-  }
-
   getIpfsUrl(): string {
     return this.configService.get<string>('urls.ipfs') ?? 'https://ipfs.io/ipfs';
   }
@@ -836,5 +827,18 @@ export class ApiConfigService {
 
   getNativeAuthMaxExpirySeconds(): number {
     return this.configService.get<number>('features.auth.maxExpirySeconds') ?? Constants.oneDay();
+  }
+
+  isDataApiFeatureEnabled(): boolean {
+    return this.configService.get<boolean>('features.dataApi.enabled') ?? false;
+  }
+
+  getDataApiServiceUrl(): string {
+    const serviceUrl = this.configService.get<string>('features.dataApi.serviceUrl');
+    if (!serviceUrl) {
+      throw new Error('No data-api service url present');
+    }
+
+    return serviceUrl;
   }
 }

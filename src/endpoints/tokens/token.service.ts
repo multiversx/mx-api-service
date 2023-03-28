@@ -32,8 +32,8 @@ import { MexTokenService } from "../mex/mex.token.service";
 import { CollectionService } from "../collections/collection.service";
 import { NftType } from "../nfts/entities/nft.type";
 import { TokenType } from "src/common/indexer/entities";
-import { PluginService } from "src/common/plugins/plugin.service";
 import { TokenAssetsPriceSourceType } from "src/common/assets/entities/token.assets.price.source.type";
+import { DataApiService } from "src/common/data-api/data-api.service";
 
 @Injectable()
 export class TokenService {
@@ -51,7 +51,7 @@ export class TokenService {
     @Inject(forwardRef(() => MexTokenService))
     private readonly mexTokenService: MexTokenService,
     private readonly collectionService: CollectionService,
-    private readonly pluginService: PluginService,
+    private readonly dataApiService: DataApiService,
   ) { }
 
   async isToken(identifier: string): Promise<boolean> {
@@ -700,7 +700,7 @@ export class TokenService {
 
     for (const token of tokens) {
       if (token.assets?.priceSource?.type === TokenAssetsPriceSourceType.dataApi) {
-        token.price = await this.pluginService.getEsdtTokenPrice(token.identifier);
+        token.price = await this.dataApiService.getEsdtTokenPrice(token.identifier);
       }
     }
 

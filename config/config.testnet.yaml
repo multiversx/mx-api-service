@@ -42,6 +42,9 @@ features:
   exchange:
     enabled: false
     serviceUrl: 'https://testnet-graph.xexchange.com/graphql'
+  dataApi:
+    enabled: false
+    serviceUrl: 'https://testnet-data-api.multiversx.com'
   auth:
     enabled: false
     maxExpirySeconds: 86400
@@ -66,13 +69,13 @@ aws:
   s3Bucket: 'testnet-media.elrond.com'
   s3Region: ''
 urls:
-  self: 'https://testnet-api.elrond.com'
+  self: 'https://testnet-api.multiversx.com'
   api:
     - 'https://testnet-api.multiversx.com'
     - 'https://devnet-api.multiversx.com'
     - 'https://api.multiversx.com'
   elastic:
-    - 'https://testnet-index.elrond.com'
+    - 'https://testnet-index.multiversx.com'
   gateway:
     - 'https://testnet-gateway.multiversx.com'
   verifier: 'https://play-api.multiversx.com'

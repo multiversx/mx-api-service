@@ -42,6 +42,9 @@ features:
   exchange:
     enabled: false
     serviceUrl: 'https://devnet-graph.xexchange.com/graphql'
+  dataApi:
+    enabled: false
+    serviceUrl: 'https://devnet-data-api.multiversx.com'
   auth:
     enabled: false
     maxExpirySeconds: 86400
@@ -66,7 +69,7 @@ aws:
   s3Bucket: 'devnet-media.elrond.com'
   s3Region: ''
 urls:
-  self: 'https://devnet-api.elrond.com'
+  self: 'https://devnet-api.multiversx.com'
   api:
     - 'https://devnet-api.multiversx.com'
     - 'https://testnet-api.multiversx.com'

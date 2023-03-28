@@ -8,7 +8,7 @@ describe("NFT Controller", () => {
   let app: INestApplication;
   const path: string = "/nfts";
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
       imports: [PublicAppModule],
     }).compile();
@@ -27,8 +27,6 @@ describe("NFT Controller", () => {
           expect(res.body).toHaveLength(25);
         });
     });
-
-
 
     it("/nfts?withSupply - should return 200 status code and one list of nfts with filter withSupply", async () => {
       const params = new URLSearchParams({
@@ -54,7 +52,7 @@ describe("NFT Controller", () => {
 
     it('should return a list of NFTs for a given collection identifier', async () => {
       const params = new URLSearchParams({
-        'search': 'MEDAL-ae074f',
+        'collection': 'MEDAL-ae074f',
       });
 
       await request(app.getHttpServer())
@@ -242,8 +240,8 @@ describe("NFT Controller", () => {
       },
       {
         filter: 'name',
-        value: 'Elrond Robots #200',
-        count: 49893,
+        value: 'Gritty Summit Chaser',
+        count: 1,
       },
       {
         filter: 'tags',
@@ -378,7 +376,7 @@ describe("NFT Controller", () => {
     });
   });
 
-  afterEach(async () => {
+  afterAll(async () => {
     await app.close();
   });
 });

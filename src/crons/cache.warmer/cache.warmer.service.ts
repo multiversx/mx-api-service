@@ -19,7 +19,6 @@ import { MexPairService } from "src/endpoints/mex/mex.pair.service";
 import { MexFarmService } from "src/endpoints/mex/mex.farm.service";
 import { CachingService, Constants, Lock, GuestCachingWarmer, OriginLogger } from "@multiversx/sdk-nestjs";
 import { DelegationLegacyService } from "src/endpoints/delegation.legacy/delegation.legacy.service";
-import { PluginService } from "src/common/plugins/plugin.service";
 import { SettingsService } from "src/common/settings/settings.service";
 import { TokenService } from "src/endpoints/tokens/token.service";
 import { IndexerService } from "src/common/indexer/indexer.service";
@@ -27,6 +26,7 @@ import { NftService } from "src/endpoints/nfts/nft.service";
 import { AccountFilter } from "src/endpoints/accounts/entities/account.filter";
 import { TokenType } from "src/common/indexer/entities";
 import { TokenDetailed } from "src/endpoints/tokens/entities/token.detailed";
+import { DataApiService } from "src/common/data-api/data-api.service";
 
 @Injectable()
 export class CacheWarmerService {
@@ -38,7 +38,6 @@ export class CacheWarmerService {
     private readonly identitiesService: IdentitiesService,
     private readonly providerService: ProviderService,
     private readonly keybaseService: KeybaseService,
-    private readonly pluginsService: PluginService,
     private readonly cachingService: CachingService,
     @Inject('PUBSUB_SERVICE') private clientProxy: ClientProxy,
     private readonly apiConfigService: ApiConfigService,
@@ -57,6 +56,7 @@ export class CacheWarmerService {
     private readonly indexerService: IndexerService,
     private readonly nftService: NftService,
     private readonly guestCachingWarmer: GuestCachingWarmer,
+    private readonly dataApiService: DataApiService,
   ) {
     this.configCronJob(
       'handleKeybaseAgainstKeybasePubInvalidations',
@@ -179,7 +179,7 @@ export class CacheWarmerService {
   @Cron(CronExpression.EVERY_MINUTE)
   @Lock({ name: 'Current price invalidations', verbose: true })
   async handleCurrentPriceInvalidations() {
-    const currentPrice = await this.pluginsService.getEgldPrice();
+    const currentPrice = await this.dataApiService.getEgldPrice();
     if (currentPrice) {
       await this.invalidateKey(CacheInfo.CurrentPrice.key, currentPrice, CacheInfo.CurrentPrice.ttl);
     }
