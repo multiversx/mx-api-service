@@ -77,15 +77,6 @@ export class ApiConfigService {
     return elasticUrls[Math.floor(Math.random() * elasticUrls.length)];
   }
 
-  getMexUrl(): string {
-    const mexUrls = this.configService.get<string>('urls.mex');
-    if (mexUrls) {
-      return mexUrls[Math.floor(Math.random() * mexUrls.length)];
-    }
-
-    return '';
-  }
-
   getIpfsUrl(): string {
     return this.configService.get<string>('urls.ipfs') ?? 'https://ipfs.io/ipfs';
   }

@@ -63,13 +63,13 @@ aws:
   s3Bucket: 'testnet-media.elrond.com'
   s3Region: ''
 urls:
-  self: 'https://testnet-api.elrond.com'
+  self: 'https://testnet-api.multiversx.com'
   api:
     - 'https://testnet-api.multiversx.com'
     - 'https://devnet-api.multiversx.com'
     - 'https://api.multiversx.com'
   elastic:
-    - 'https://testnet-index.elrond.com'
+    - 'https://testnet-index.multiversx.com'
   gateway:
     - 'https://testnet-gateway.multiversx.com'
   verifier: 'https://play-api.multiversx.com'

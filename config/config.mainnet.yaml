@@ -63,15 +63,13 @@ aws:
   s3Bucket: 'media.elrond.com'
   s3Region: ''
 urls:
-  self: 'https://api.elrond.com'
+  self: 'https://api.multiversx.com'
   api:
     - 'https://api.multiversx.com'
     - 'https://devnet-api.multiversx.com'
     - 'https://testnet-api.multiversx.com'
   elastic:
     - 'https://index.multiversx.com'
-  mex:
-    - 'https://mex-indexer.elrond.com'
   gateway:
     - 'https://gateway.multiversx.com'
   verifier: 'https://play-api.multiversx.com'
