@@ -337,8 +337,8 @@ export class CacheInfo {
   };
 
   static ExtendedAttributesActivationNonce: CacheInfo = {
-    key: "extendedAttributesActivationNonce",
-    ttl: Constants.oneDay(),
+    key: "extendedAttributesActivationNonce2",
+    ttl: Constants.oneHour(),
   };
 
   static InitEpoch: CacheInfo = {
