@@ -68,7 +68,7 @@ export class BlockController {
   }
 
   @Get("/blocks/latest")
-  @ApiOperation({ summary: 'Block details', description: 'Returns latest block information details for a given resolution' })
+  @ApiOperation({ summary: 'Block details', description: 'Returns latest block information details' })
   @ApiOkResponse({ type: BlockDetailed })
   @ApiNotFoundResponse({ description: 'Block not found' })
   @ApiQuery({ name: 'ttl', description: 'Compute the nonce frequency based on ttl value. If not specified the latest block may be 1h old', required: false})
