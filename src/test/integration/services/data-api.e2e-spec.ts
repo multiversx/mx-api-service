@@ -14,16 +14,6 @@ describe('Data API Service', () => {
     'RIDE-7d18e9': { identifier: 'RIDE-7d18e9', market: 'xexchange' },
     'ITHEUM-df6f26': { identifier: 'ITHEUM-df6f26', market: 'xexchange' },
   };
-  const mockCexTokens = {
-    'EGLD': { identifier: 'EGLD' },
-    'USDC': { identifier: 'USDC' },
-  };
-
-  const mockXExchangeTokens = {
-    'MEX-455c57': { identifier: 'MEX-455c57' },
-    'RIDE-7d18e9': { identifier: 'RIDE-7d18e9' },
-    'ITHEUM-df6f26': { identifier: 'ITHEUM-df6f26' },
-  };
 
   let service: DataApiService;
   let apiService: ApiService;
@@ -127,36 +117,45 @@ describe('Data API Service', () => {
   });
 
   describe('getDataApiTokens', () => {
-    it('should return an empty array if the Data API feature is disabled', async () => {
+    it('returns an empty object if data API feature is disabled', async () => {
       jest.spyOn(ApiConfigService.prototype, 'isDataApiFeatureEnabled').mockReturnValueOnce(false);
 
       const result = await service.getDataApiTokensRaw();
 
-      expect(result).toEqual([]);
+      expect(result).toEqual({});
     });
 
     it('should fetch tokens from the Data API', async () => {
       jest.spyOn(ApiConfigService.prototype, 'isDataApiFeatureEnabled').mockReturnValueOnce(true);
-      // eslint-disable-next-line require-await
-      jest.spyOn(apiService, 'get').mockImplementation(async (url) => ({ data: url.includes('/cex') ? mockCexTokens : mockXExchangeTokens }));
+      jest.spyOn(ApiConfigService.prototype, 'getDataApiServiceUrl').mockReturnValueOnce('https://data-api.multiversx.com');
+      const mockCexTokens = { data: [{ identifier: 'EGLD' }, { identifier: 'USDC' }] };
+      const mockXExchangeTokens = { data: [{ identifier: 'MEX-455c57' }, { identifier: 'RIDE-7d18e9' }, { identifier: 'ITHEUM-df6f26' }] };
+      jest.spyOn(apiService, 'get')
+        .mockReturnValueOnce(Promise.resolve(mockCexTokens))
+        .mockReturnValueOnce(Promise.resolve(mockXExchangeTokens));
 
       const result = await service.getDataApiTokensRaw();
 
       expect(apiService.get).toHaveBeenCalledTimes(2);
-      expect(result).toEqual(mockTokens);
+      expect(result).toEqual({
+        'EGLD': { identifier: 'EGLD', market: 'cex' },
+        'USDC': { identifier: 'USDC', market: 'cex' },
+        'MEX-455c57': { identifier: 'MEX-455c57', market: 'xexchange' },
+        'RIDE-7d18e9': { identifier: 'RIDE-7d18e9', market: 'xexchange' },
+        'ITHEUM-df6f26': { identifier: 'ITHEUM-df6f26', market: 'xexchange' },
+      });
     });
 
     it('should return an empty array if there is an error fetching tokens from the data API', async () => {
       jest.spyOn(ApiConfigService.prototype, 'isDataApiFeatureEnabled').mockReturnValueOnce(true);
-      // eslint-disable-next-line require-await
-      jest.spyOn(apiService, 'get').mockImplementationOnce(async () => { throw new Error('An error occurred'); });
+      jest.spyOn(apiService, 'get').mockRejectedValueOnce(new Error('An error occurred'));
       jest.spyOn(service['logger'], 'error').mockImplementation(() => { });
 
       const result = await service.getDataApiTokensRaw();
 
       expect(apiService.get).toHaveBeenCalledTimes(2);
       expect(service['logger'].error).toHaveBeenCalled();
-      expect(result).toEqual([]);
+      expect(result).toEqual({});
     });
   });
 
