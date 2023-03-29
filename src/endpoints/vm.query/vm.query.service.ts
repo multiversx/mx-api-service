@@ -35,23 +35,7 @@ export class VmQueryService {
   }
 
   async vmQueryFullResult(contract: string, func: string, caller: string | undefined = undefined, args: string[] = [], value: string | undefined = undefined): Promise<any> {
-    let key = `vm-query:${contract}:${func}`;
-    if (caller) {
-      key += `:${caller}`;
-    }
-
-    if (args.length > 0) {
-      key += `@${args.join('@')}`;
-    }
-
-    const { localTtl, remoteTtl } = await this.computeTtls();
-
-    return await this.cachingService.getOrSet(
-      key,
-      async () => await this.vmQueryRaw(contract, func, caller, args, value),
-      remoteTtl,
-      localTtl
-    );
+    return await this.vmQueryRaw(contract, func, caller, args, value);
   }
 
   async vmQuery(contract: string, func: string, caller: string | undefined = undefined, args: string[] = [], value: string | undefined = undefined, skipCache: boolean = false): Promise<string[]> {
