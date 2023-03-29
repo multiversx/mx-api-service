@@ -6,7 +6,7 @@ import { KeybaseIdentity } from "./entities/keybase.identity";
 import { KeybaseState } from "./entities/keybase.state";
 import { CacheInfo } from "../../utils/cache.info";
 import { GithubService } from "../github/github.service";
-import { ApiService, ApiUtils, CachingService, Constants, OriginLogger } from "@multiversx/sdk-nestjs";
+import { ApiService, ApiUtils, ElrondCachingService, Constants, OriginLogger } from "@multiversx/sdk-nestjs";
 import { ApiConfigService } from "../api-config/api.config.service";
 import { KeybaseConfirmationDbService } from "../persistence/services/keybase.confirmation.db.service";
 
@@ -15,7 +15,7 @@ export class KeybaseService {
   private readonly logger = new OriginLogger(KeybaseService.name);
 
   constructor(
-    private readonly cachingService: CachingService,
+    private readonly cachingService: ElrondCachingService,
     private readonly apiService: ApiService,
     @Inject(forwardRef(() => NodeService))
     private readonly nodeService: NodeService,
@@ -47,7 +47,6 @@ export class KeybaseService {
 
   private async getNodesKeybasesRaw(): Promise<Keybase[]> {
     const nodes = await this.nodeService.getHeartbeat();
-
     const keybasesNodesArr: Keybase[] = nodes
       .filter((node) => !!node.identity)
       .map((node) => {
@@ -63,7 +62,7 @@ export class KeybaseService {
 
     const keybasesArr: Keybase[] = [...keybaseProvidersArr, ...keybasesNodesArr];
 
-    const keybaseGetPromises = keybasesArr.map(keybase => this.cachingService.getCache<boolean>(CacheInfo.KeybaseConfirmation(keybase.key).key));
+    const keybaseGetPromises = keybasesArr.map(keybase => this.cachingService.get<boolean>(CacheInfo.KeybaseConfirmation(keybase.key).key));
     const keybaseGetResults = await Promise.all(keybaseGetPromises);
 
     const confirmedKeybases = keybasesArr.zip<(boolean | undefined), KeybaseState>(keybaseGetResults, (first, second) => ({ identity: first.identity, confirmed: second ?? false }));
@@ -85,7 +84,7 @@ export class KeybaseService {
 
     const keys = nodes.map((node) => node.identity).distinct().map((x) => x ?? '');
 
-    const keybaseGetPromises = keys.map(key => this.cachingService.getCache<KeybaseIdentity>(CacheInfo.IdentityProfile(key).key));
+    const keybaseGetPromises = keys.map(key => this.cachingService.get<KeybaseIdentity>(CacheInfo.IdentityProfile(key).key));
     const keybaseGetResults = await Promise.all(keybaseGetPromises);
 
     // @ts-ignore
@@ -95,7 +94,6 @@ export class KeybaseService {
   private async getDistinctIdentities(): Promise<string[]> {
     const providerKeybases: Keybase[] = await this.getProvidersKeybasesRaw();
     const nodeKeybases: Keybase[] = await this.getNodesKeybasesRaw();
-
     const allKeybases: Keybase[] = [...providerKeybases, ...nodeKeybases];
 
     const distinctIdentities = allKeybases.map(x => x.identity ?? '').filter(x => x !== '').distinct().shuffle();
@@ -269,7 +267,7 @@ export class KeybaseService {
   }
 
   async getCachedIdentityProfilesKeybases(): Promise<KeybaseIdentity[]> {
-    return await this.cachingService.getOrSetCache(
+    return await this.cachingService.getOrSet(
       CacheInfo.IdentityProfilesKeybases.key,
       async () => await this.getIdentitiesProfilesAgainstCache(),
       CacheInfo.IdentityProfilesKeybases.ttl
@@ -277,7 +275,7 @@ export class KeybaseService {
   }
 
   async getCachedNodesAndProvidersKeybases(): Promise<{ [key: string]: KeybaseState } | undefined> {
-    return await this.cachingService.getOrSetCache(
+    return await this.cachingService.getOrSet(
       CacheInfo.Keybases.key,
       async () => await this.confirmKeybasesAgainstCache(),
       CacheInfo.Keybases.ttl
@@ -346,7 +344,7 @@ export class KeybaseService {
 
       return null;
     } catch (error: any) {
-      const cachedIdentityProfile = await this.cachingService.getCache<KeybaseIdentity>(CacheInfo.IdentityProfile(identity).key);
+      const cachedIdentityProfile = await this.cachingService.get<KeybaseIdentity>(CacheInfo.IdentityProfile(identity).key);
       return cachedIdentityProfile ? cachedIdentityProfile : null;
     }
   }

@@ -1,6 +1,6 @@
 import { Address, Transaction as ErdJsTransaction, TransactionHash, TransactionOptions, TransactionPayload, TransactionVersion } from "@elrondnetwork/erdjs/out";
 import { Signature } from "@elrondnetwork/erdjs/out/signature";
-import { BinaryUtils, CachingService } from "@multiversx/sdk-nestjs";
+import { BinaryUtils, ElrondCachingService } from "@multiversx/sdk-nestjs";
 import { Injectable, Logger } from "@nestjs/common";
 import { TransactionBatch } from "./entities/transaction.batch";
 import { TransactionBatchStatus } from "./entities/transaction.batch.status";
@@ -20,7 +20,7 @@ export class TransactionsBatchService {
   private readonly logger: Logger;
 
   constructor(
-    private readonly cachingService: CachingService,
+    private readonly cachingService: ElrondCachingService,
     private readonly transactionService: TransactionService,
   ) {
     this.logger = new Logger(TransactionsBatchService.name);
@@ -73,7 +73,7 @@ export class TransactionsBatchService {
       return batch;
     }
 
-    await this.cachingService.setCacheRemote(
+    await this.cachingService.setRemote(
       CacheInfo.TransactionBatch(TransactionBatch.getAddress(batch), batch.id).key,
       batch,
       CacheInfo.TransactionBatch(TransactionBatch.getAddress(batch), batch.id).ttl
@@ -85,13 +85,13 @@ export class TransactionsBatchService {
   async getTransactionBatches(address: string): Promise<TransactionBatch[]> {
     const keys = await this.cachingService.getKeys(CacheInfo.TransactionBatch(address, '*').key);
 
-    const transactionBatches: TransactionBatch[] = await this.cachingService.batchGetCacheRemote(keys);
+    const transactionBatches: TransactionBatch[] = await this.cachingService.batchGetManyRemote(keys) as TransactionBatch[];
 
     return transactionBatches;
   }
 
   async getTransactionBatch(address: string, batchId: string): Promise<TransactionBatch | undefined> {
-    return await this.cachingService.getCacheRemote(
+    return await this.cachingService.getRemote(
       CacheInfo.TransactionBatch(address, batchId).key
     );
   }
@@ -112,7 +112,7 @@ export class TransactionsBatchService {
     this.logger.log(`For batch with id '${batch.id}', starting transactions with hashes ${txHashes}`);
 
     const value = batch.id + ';' + TransactionBatch.getAddress(batch) + ';' + new Date().toISOString();
-    return await Promise.all(txHashes.map(hash => this.cachingService.setCacheRemote(CacheInfo.PendingTransaction(hash).key, value, CacheInfo.PendingTransaction(hash).ttl)));
+    return await Promise.all(txHashes.map(hash => this.cachingService.setRemote(CacheInfo.PendingTransaction(hash).key, value, CacheInfo.PendingTransaction(hash).ttl)));
   }
 
   private async executeTransaction(batchId: string, transactionBatchItem: TransactionBatchItem, sourceIp: string): Promise<TransactionBatchItem> {

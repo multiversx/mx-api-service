@@ -1,17 +1,17 @@
-import { CachingService, OriginLogger } from "@multiversx/sdk-nestjs";
+import { ElrondCachingService, OriginLogger } from "@multiversx/sdk-nestjs";
 
 export class CachingUtils {
-  static async executeOptimistic<T>(param: { cachingService: CachingService, description: string, key: string, ttl: number, action: () => Promise<T> }): Promise<T | undefined> {
+  static async executeOptimistic<T>(param: { cachingService: ElrondCachingService, description: string, key: string, ttl: number, action: () => Promise<T> }): Promise<T | undefined> {
     const logger = new OriginLogger(CachingUtils.name);
 
-    const cacheValue = await param.cachingService.getCacheRemote(param.key);
+    const cacheValue = await param.cachingService.getRemote(param.key);
     if (cacheValue) {
       logger.log(`Skipped ${param.description}`);
       return undefined;
     }
 
     logger.log(`Started ${param.description}`);
-    await param.cachingService.setCacheRemote(param.key, true, param.ttl);
+    await param.cachingService.setRemote(param.key, true, param.ttl);
 
     const result = await param.action();
 

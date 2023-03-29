@@ -7,13 +7,17 @@ describe('Shard', () => {
   let app: INestApplication;
   const gql = '/graphql';
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [PublicAppModule],
     }).compile();
 
     app = moduleFixture.createNestApplication();
     await app.init();
+  });
+
+  afterAll(async () => {
+    await app.close();
   });
 
   describe('Query - Get Shards', () => {
@@ -39,9 +43,5 @@ describe('Shard', () => {
           );
         });
     });
-  });
-
-  afterEach(async () => {
-    await app.close();
   });
 });

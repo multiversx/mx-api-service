@@ -182,7 +182,7 @@ export class TransactionActionService {
       return undefined;
     }
 
-    if (!AddressUtils.isAddressValid(args[0])) {
+    if (!AddressUtils.isValidHexAddress(args[0])) {
       return undefined;
     }
 
@@ -259,7 +259,7 @@ export class TransactionActionService {
       return undefined;
     }
 
-    if (!AddressUtils.isAddressValid(args[3])) {
+    if (!AddressUtils.isValidHexAddress(args[3])) {
       return undefined;
     }
 

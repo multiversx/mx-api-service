@@ -1,4 +1,4 @@
-import { Constants, CachingService } from "@multiversx/sdk-nestjs";
+import { Constants, ElrondCachingService } from "@multiversx/sdk-nestjs";
 import { Injectable } from "@nestjs/common";
 import { gql } from "graphql-request";
 import { CacheInfo } from "src/utils/cache.info";
@@ -13,7 +13,7 @@ export class MexSettingsService {
   private wegldId: string | undefined;
 
   constructor(
-    private readonly cachingService: CachingService,
+    private readonly cachingService: ElrondCachingService,
     private readonly graphQlService: GraphQlService,
     private readonly apiConfigService: ApiConfigService,
   ) { }
@@ -34,12 +34,12 @@ export class MexSettingsService {
 
   async refreshSettings(): Promise<void> {
     const settings = await this.getSettingsRaw();
-    await this.cachingService.setCacheRemote(CacheInfo.MexSettings.key, settings, CacheInfo.MexSettings.ttl);
-    await this.cachingService.setCacheLocal(CacheInfo.MexSettings.key, settings, Constants.oneMinute() * 10);
+    await this.cachingService.setRemote(CacheInfo.MexSettings.key, settings, CacheInfo.MexSettings.ttl);
+    await this.cachingService.setLocal(CacheInfo.MexSettings.key, settings, Constants.oneMinute() * 10);
 
     const contracts = await this.getMexContractsRaw();
-    await this.cachingService.setCacheRemote(CacheInfo.MexContracts.key, contracts, CacheInfo.MexContracts.ttl);
-    await this.cachingService.setCacheLocal(CacheInfo.MexContracts.key, contracts, Constants.oneMinute() * 10);
+    await this.cachingService.setRemote(CacheInfo.MexContracts.key, contracts, CacheInfo.MexContracts.ttl);
+    await this.cachingService.setLocal(CacheInfo.MexContracts.key, contracts, Constants.oneMinute() * 10);
   }
 
   async getSettings(): Promise<MexSettings | null> {
@@ -47,7 +47,7 @@ export class MexSettingsService {
       return null;
     }
 
-    const settings = await this.cachingService.getOrSetCache(
+    const settings = await this.cachingService.getOrSet(
       CacheInfo.MexSettings.key,
       async () => await this.getSettingsRaw(),
       CacheInfo.MexSettings.ttl,
@@ -60,10 +60,10 @@ export class MexSettingsService {
   }
 
   async getMexContracts(): Promise<Set<string>> {
-    let contracts = await this.cachingService.getCacheLocal<Set<string>>(CacheInfo.MexContracts.key);
+    let contracts = await this.cachingService.getLocal<Set<string>>(CacheInfo.MexContracts.key);
     if (!contracts) {
       contracts = await this.getMexContractsRaw();
-      await this.cachingService.setCacheLocal(CacheInfo.MexContracts.key, contracts, Constants.oneMinute() * 10);
+      await this.cachingService.setLocal(CacheInfo.MexContracts.key, contracts, Constants.oneMinute() * 10);
     }
 
     return contracts;

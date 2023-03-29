@@ -1,5 +1,5 @@
 import { OriginLogger } from "@multiversx/sdk-nestjs";
-import { CachingService } from "@multiversx/sdk-nestjs";
+import { ElrondCachingService } from "@multiversx/sdk-nestjs";
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { CacheInfo } from "../../utils/cache.info";
 import { GatewayService } from "../gateway/gateway.service";
@@ -12,14 +12,14 @@ export class ProtocolService {
   constructor(
     @Inject(forwardRef(() => GatewayService))
     private readonly gatewayService: GatewayService,
-    @Inject(forwardRef(() => CachingService))
-    private readonly cachingService: CachingService,
+    @Inject(forwardRef(() => ElrondCachingService))
+    private readonly cachingService: ElrondCachingService,
     @Inject(forwardRef(() => IndexerService))
     private readonly indexerService: IndexerService
   ) { }
 
   async getShardIds(): Promise<number[]> {
-    return await this.cachingService.getOrSetCache(
+    return await this.cachingService.getOrSet(
       CacheInfo.ShardIds.key,
       async () => await this.getShardIdsRaw(),
       CacheInfo.ShardIds.ttl,
@@ -27,7 +27,7 @@ export class ProtocolService {
   }
 
   async getShardCount(): Promise<number> {
-    return await this.cachingService.getOrSetCache(
+    return await this.cachingService.getOrSet(
       CacheInfo.ShardCount.key,
       async () => await this.getShardCountRaw(),
       CacheInfo.ShardCount.ttl,
@@ -65,7 +65,7 @@ export class ProtocolService {
   }
 
   private async getGenesisTimestamp(): Promise<number> {
-    return await this.cachingService.getOrSetCache(
+    return await this.cachingService.getOrSet(
       CacheInfo.GenesisTimestamp.key,
       async () => await this.getGenesisTimestampRaw(),
       CacheInfo.GenesisTimestamp.ttl,

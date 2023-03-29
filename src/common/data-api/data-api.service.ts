@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { ApiConfigService } from "../api-config/api.config.service";
-import { ApiService, CachingService, OriginLogger } from "@multiversx/sdk-nestjs";
+import { ApiService, ElrondCachingService, OriginLogger } from "@multiversx/sdk-nestjs";
 import { DataApiToken } from "./entities/data-api.token";
 import { CacheInfo } from "src/utils/cache.info";
 
@@ -11,7 +11,7 @@ export class DataApiService {
   constructor(
     private readonly apiConfigService: ApiConfigService,
     private readonly apiService: ApiService,
-    private readonly cachingService: CachingService,
+    private readonly cachingService: ElrondCachingService,
   ) { }
 
   public async getEgldPrice(timestamp?: number): Promise<number | undefined> {
@@ -19,7 +19,7 @@ export class DataApiService {
   }
 
   public async getEsdtTokenPrice(identifier: string, timestamp?: number): Promise<number | undefined> {
-    return await this.cachingService.getOrSetCache(
+    return await this.cachingService.getOrSet(
       CacheInfo.DataApiTokenPrice(identifier, timestamp).key,
       async () => await this.getEsdtTokenPriceRaw(identifier, timestamp),
       CacheInfo.DataApiTokenPrice(identifier, timestamp).ttl
@@ -57,7 +57,7 @@ export class DataApiService {
   }
 
   public async getDataApiTokens(): Promise<Record<string, DataApiToken>> {
-    return await this.cachingService.getOrSetCache(
+    return await this.cachingService.getOrSet(
       CacheInfo.DataApiTokens.key,
       async () => await this.getDataApiTokensRaw(),
       CacheInfo.DataApiTokens.ttl

@@ -1,5 +1,5 @@
 import { OriginLogger } from "@multiversx/sdk-nestjs";
-import { PerformanceProfiler, CachingService } from "@multiversx/sdk-nestjs";
+import { PerformanceProfiler, ElrondCachingService } from "@multiversx/sdk-nestjs";
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { LogMetricsEvent } from "src/common/entities/log.metrics.event";
@@ -14,8 +14,8 @@ export class VmQueryService {
   private readonly logger = new OriginLogger(VmQueryService.name);
 
   constructor(
-    @Inject(forwardRef(() => CachingService))
-    private readonly cachingService: CachingService,
+    @Inject(forwardRef(() => ElrondCachingService))
+    private readonly cachingService: ElrondCachingService,
     private readonly gatewayService: GatewayService,
     private readonly protocolService: ProtocolService,
     private readonly eventEmitter: EventEmitter2,
@@ -46,7 +46,7 @@ export class VmQueryService {
 
     const { localTtl, remoteTtl } = await this.computeTtls();
 
-    return await this.cachingService.getOrSetCache(
+    return await this.cachingService.getOrSet(
       key,
       async () => await this.vmQueryRaw(contract, func, caller, args, value),
       remoteTtl,
@@ -72,7 +72,7 @@ export class VmQueryService {
 
         const { localTtl, remoteTtl } = await this.computeTtls();
 
-        result = await this.cachingService.getOrSetCache(
+        result = await this.cachingService.getOrSet(
           key,
           async () => await this.vmQueryRaw(contract, func, caller, args, value),
           remoteTtl,

@@ -1,4 +1,4 @@
-import { AddressUtils, NumberUtils, CachingService } from "@multiversx/sdk-nestjs";
+import { AddressUtils, NumberUtils, ElrondCachingService } from "@multiversx/sdk-nestjs";
 import { Injectable } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { QueryPagination } from "src/common/entities/query.pagination";
@@ -11,7 +11,7 @@ export class WaitingListService {
   constructor(
     private readonly vmQueryService: VmQueryService,
     private readonly apiConfigService: ApiConfigService,
-    private readonly cachingService: CachingService,
+    private readonly cachingService: ElrondCachingService,
   ) { }
 
   async getWaitingList(queryPagination: QueryPagination): Promise<WaitingList[]> {
@@ -37,7 +37,7 @@ export class WaitingListService {
   }
 
   private async getFullWaitingList(): Promise<WaitingList[]> {
-    return await this.cachingService.getOrSetCache(
+    return await this.cachingService.getOrSet(
       CacheInfo.FullWaitingList.key,
       async () => await this.getFullWaitingListRaw(),
       CacheInfo.FullWaitingList.ttl

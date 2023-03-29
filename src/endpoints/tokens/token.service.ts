@@ -19,7 +19,7 @@ import { SortOrder } from "src/common/entities/sort.order";
 import { TokenSort } from "./entities/token.sort";
 import { TokenWithRoles } from "./entities/token.with.roles";
 import { TokenWithRolesFilter } from "./entities/token.with.roles.filter";
-import { AddressUtils, ApiUtils, BinaryUtils, CachingService, NumberUtils, TokenUtils } from "@multiversx/sdk-nestjs";
+import { AddressUtils, ApiUtils, BinaryUtils, ElrondCachingService, NumberUtils, TokenUtils } from "@multiversx/sdk-nestjs";
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { OriginLogger } from "@multiversx/sdk-nestjs";
 import { TokenLogo } from "./entities/token.logo";
@@ -45,7 +45,7 @@ export class TokenService {
     private readonly gatewayService: GatewayService,
     private readonly apiConfigService: ApiConfigService,
     private readonly assetsService: AssetsService,
-    private readonly cachingService: CachingService,
+    private readonly cachingService: ElrondCachingService,
     @Inject(forwardRef(() => TransactionService))
     private readonly transactionService: TransactionService,
     @Inject(forwardRef(() => MexTokenService))
@@ -630,7 +630,7 @@ export class TokenService {
   }
 
   async getTokenMarketCap(): Promise<number> {
-    return await this.cachingService.getOrSetCache(
+    return await this.cachingService.getOrSet(
       CacheInfo.TokenMarketCap.key,
       async () => await this.getTokenMarketCapRaw(),
       CacheInfo.TokenMarketCap.ttl,
@@ -651,7 +651,7 @@ export class TokenService {
   }
 
   async getAllTokens(): Promise<TokenDetailed[]> {
-    return await this.cachingService.getOrSetCache(
+    return await this.cachingService.getOrSet(
       CacheInfo.AllEsdtTokens.key,
       async () => await this.getAllTokensRaw(),
       CacheInfo.AllEsdtTokens.ttl
@@ -736,7 +736,7 @@ export class TokenService {
   }
 
   private async getAccountsCount(token: TokenDetailed): Promise<number> {
-    let accounts = await this.cachingService.getCacheRemote<number>(CacheInfo.TokenAccountsExtra(token.identifier).key);
+    let accounts = await this.cachingService.getRemote<number>(CacheInfo.TokenAccountsExtra(token.identifier).key);
     if (!accounts) {
       accounts = await this.getEsdtAccountsCount(token.identifier);
     }

@@ -35,7 +35,7 @@ export class TransactionActionEsdtNftRecognizerService implements TransactionAct
       return undefined;
     }
 
-    if (!AddressUtils.isAddressValid(metadata.functionArgs[1])) {
+    if (!AddressUtils.isValidHexAddress(metadata.functionArgs[1])) {
       return undefined;
     }
 

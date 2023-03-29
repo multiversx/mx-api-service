@@ -1,4 +1,4 @@
-import { CachingService } from "@multiversx/sdk-nestjs";
+import { ElrondCachingService } from "@multiversx/sdk-nestjs";
 import { Inject, Injectable } from "@nestjs/common";
 import { CacheInfo } from "src/utils/cache.info";
 import { Nft } from "src/endpoints/nfts/entities/nft";
@@ -17,7 +17,7 @@ export class NftMetadataService {
   constructor(
     private readonly nftExtendedAttributesService: NftExtendedAttributesService,
     private readonly nftMetadataDbService: NftMetadataDbService,
-    private readonly cachingService: CachingService,
+    private readonly cachingService: ElrondCachingService,
     @Inject('PUBSUB_SERVICE') private clientProxy: ClientProxy,
   ) { }
 
@@ -35,7 +35,7 @@ export class NftMetadataService {
   }
 
   async getMetadata(nft: Nft): Promise<any> {
-    return await this.cachingService.getOrSetCache(
+    return await this.cachingService.getOrSet(
       CacheInfo.NftMetadata(nft.identifier).key,
       async () => await this.nftMetadataDbService.getMetadata(nft.identifier),
       CacheInfo.NftMetadata(nft.identifier).ttl
@@ -50,7 +50,7 @@ export class NftMetadataService {
 
     await this.nftMetadataDbService.setMetadata(nft.identifier, metadataRaw);
 
-    await this.cachingService.setCache(
+    await this.cachingService.set(
       CacheInfo.NftMetadata(nft.identifier).key,
       metadataRaw,
       CacheInfo.NftMetadata(nft.identifier).ttl

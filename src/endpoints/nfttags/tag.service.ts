@@ -1,7 +1,7 @@
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { Tag } from "./entities/tag";
-import { ApiUtils, CachingService } from "@multiversx/sdk-nestjs";
+import { ApiUtils, ElrondCachingService } from "@multiversx/sdk-nestjs";
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { CacheInfo } from "src/utils/cache.info";
 
@@ -10,8 +10,8 @@ export class TagService {
 
   constructor(
     private readonly indexerService: IndexerService,
-    @Inject(forwardRef(() => CachingService))
-    private readonly cachingService: CachingService,
+    @Inject(forwardRef(() => ElrondCachingService))
+    private readonly cachingService: ElrondCachingService,
   ) { }
 
   async getNftTags(pagination: QueryPagination, search?: string): Promise<Tag[]> {
@@ -19,7 +19,7 @@ export class TagService {
       return await this.getNftTagsRaw(pagination, search);
     }
 
-    return await this.cachingService.getOrSetCache(
+    return await this.cachingService.getOrSet(
       CacheInfo.NftTags(pagination).key,
       async () => await this.getNftTagsRaw(pagination),
       CacheInfo.NftTags(pagination).ttl
@@ -31,7 +31,7 @@ export class TagService {
       return this.getNftTagCountRaw(search);
     }
 
-    return await this.cachingService.getOrSetCache(
+    return await this.cachingService.getOrSet(
       CacheInfo.NftTagCount.key,
       async () => await this.getNftTagCountRaw(),
       CacheInfo.NftTagCount.ttl

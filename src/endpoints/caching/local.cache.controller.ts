@@ -1,4 +1,4 @@
-import { CachingService, JwtAdminGuard, NativeAuthGuard } from "@multiversx/sdk-nestjs";
+import { ElrondCachingService, JwtAdminGuard, NativeAuthGuard } from "@multiversx/sdk-nestjs";
 import { Body, Controller, Delete, Get, HttpException, HttpStatus, Param, Put, UseGuards } from "@nestjs/common";
 import { ApiExcludeController, ApiResponse } from "@nestjs/swagger";
 import { CacheValue } from "./entities/cache.value";
@@ -7,7 +7,7 @@ import { CacheValue } from "./entities/cache.value";
 @ApiExcludeController()
 export class LocalCacheController {
   constructor(
-    private readonly cachingService: CachingService,
+    private readonly cachingService: ElrondCachingService,
   ) { }
 
   @UseGuards(NativeAuthGuard, JwtAdminGuard)
@@ -22,7 +22,7 @@ export class LocalCacheController {
     description: 'Key not found',
   })
   async getCache(@Param('key') key: string): Promise<unknown> {
-    const value = await this.cachingService.getCacheLocal(key);
+    const value = await this.cachingService.getLocal(key);
     if (!value) {
       throw new HttpException('Key not found', HttpStatus.NOT_FOUND);
     }
@@ -36,7 +36,7 @@ export class LocalCacheController {
     description: 'Key has been updated',
   })
   async setCache(@Param('key') key: string, @Body() cacheValue: CacheValue) {
-    await this.cachingService.setCacheLocal(key, cacheValue.value, cacheValue.ttl);
+    await this.cachingService.setLocal(key, cacheValue.value, cacheValue.ttl);
   }
 
   @UseGuards(NativeAuthGuard, JwtAdminGuard)
@@ -50,6 +50,6 @@ export class LocalCacheController {
     description: 'Key not found',
   })
   async delCache(@Param('key') key: string) {
-    await this.cachingService.deleteInCacheLocal(key);
+    await this.cachingService.deleteLocal(key);
   }
 }
