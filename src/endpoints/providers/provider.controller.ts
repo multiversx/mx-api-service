@@ -1,9 +1,10 @@
-import { Controller, Get, HttpException, HttpStatus, Param, Query } from "@nestjs/common";
+import { Controller, Get, HttpException, HttpStatus, Param, Query, Res } from "@nestjs/common";
 import { ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { ProviderService } from "./provider.service";
 import { Provider } from "./entities/provider";
 import { ParseAddressArrayPipe, ParseAddressPipe } from "@multiversx/sdk-nestjs";
 import { ProviderFilter } from "./entities/provider.filter";
+import { Response } from "express";
 
 @Controller()
 @ApiTags('providers')
@@ -33,5 +34,20 @@ export class ProviderController {
     }
 
     return provider;
+  }
+
+  @Get('/providers/:address/avatar')
+  @ApiOperation({ summary: 'Provider avatar', description: 'Returns the avatar for a specific provider address' })
+  @ApiNotFoundResponse({ description: 'Provider avatar not found' })
+  async getIdentityAvatar(
+    @Param('address') address: string,
+    @Res() response: Response
+  ): Promise<void> {
+    const url = await this.providerService.getProviderAvatar(address);
+
+    if (url === undefined) {
+      throw new HttpException('Provider avatar not found', HttpStatus.NOT_FOUND);
+    }
+    response.redirect(url);
   }
 }
