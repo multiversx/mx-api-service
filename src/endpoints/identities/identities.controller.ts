@@ -41,7 +41,7 @@ export class IdentitiesController {
   ): Promise<void> {
     const url = await this.identitiesService.getIdentityAvatar(identifier);
 
-    if (url === undefined) {
+    if (!url) {
       throw new HttpException('Identity avatar not found', HttpStatus.NOT_FOUND);
     }
     response.redirect(url);

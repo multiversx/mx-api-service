@@ -45,7 +45,7 @@ export class ProviderController {
   ): Promise<void> {
     const url = await this.providerService.getProviderAvatar(address);
 
-    if (url === undefined) {
+    if (!url) {
       throw new HttpException('Provider avatar not found', HttpStatus.NOT_FOUND);
     }
     response.redirect(url);
