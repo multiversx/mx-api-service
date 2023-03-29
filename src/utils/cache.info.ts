@@ -417,6 +417,13 @@ export class CacheInfo {
     };
   }
 
+  static BlocksLatest(ttl: number): CacheInfo {
+    return {
+      key: `blocks:latest:${ttl}`,
+      ttl: 0,
+    };
+  }
+
   static Delegation: CacheInfo = {
     key: "delegation",
     ttl: Constants.oneMinute() * 10,

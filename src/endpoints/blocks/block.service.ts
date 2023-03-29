@@ -5,7 +5,7 @@ import { BlockFilter } from "./entities/block.filter";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { BlsService } from "src/endpoints/bls/bls.service";
 import { CacheInfo } from "src/utils/cache.info";
-import { CachingService } from "@multiversx/sdk-nestjs";
+import { CachingService, Constants } from "@multiversx/sdk-nestjs";
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { NodeService } from "../nodes/node.service";
 import { IdentitiesService } from "../identities/identities.service";
@@ -126,52 +126,37 @@ export class BlockService {
     return blocks[0].epoch;
   }
 
-  async getLatestBlock(ttl?: number, shard?: number): Promise<BlockDetailed | undefined> {
-    const { nonce, blockShard } = await this.computeLatestNonce(ttl, shard);
-    if (nonce === -1 || blockShard === -1) {
-      return undefined;
-    }
-
-    const filter = new BlockFilter({ shard: blockShard, nonce });
-    const blocks = await this.indexerService.getBlocks(filter, new QueryPagination({ from: 0, size: 1 }));
-    if (blocks.length === 0) {
-      return undefined;
-    }
-
-    return BlockDetailed.mergeWithElasticResponse(new BlockDetailed(), blocks[0]);
+  async getLatestBlock(ttl?: number): Promise<Block | undefined> {
+    const cachingTtl = this.computeCachingTtl(ttl);
+    return await this.cachingService.getOrSetCache(
+        CacheInfo.BlocksLatest(cachingTtl).key,
+        async () => {
+          const blocks = await this.getBlocks(new BlockFilter(), new QueryPagination({ from: 0, size: 1 }));
+            if (blocks.length === 0) {
+                return undefined;
+            }
+            return blocks[0];
+        },
+        cachingTtl
+    );
   }
 
-  private async computeLatestNonce(ttl?: number, shard?: number): Promise<{ nonce: number, blockShard: number }> {
-    const { nonce, blockShard } = await this.getLatestNonceByShard(shard);
-    const roundValue = this.getTtlRoundingValue(ttl);
-    return { nonce: nonce / roundValue * roundValue, blockShard };
-  }
-
-  private async getLatestNonceByShard(shard?: number): Promise<{ nonce: number, blockShard: number }> {
-    const blocks = await this.getBlocks(new BlockFilter({ shard }), new QueryPagination({ from: 0, size: 1 }));
-    if (blocks.length === 0) {
-      return { nonce: -1, blockShard: -1 };
-    }
-
-    return { nonce: blocks[0].nonce, blockShard: blocks[0].shard };
-  }
-
-  private getTtlRoundingValue(ttl?: number): number {
+  private computeCachingTtl(ttl?: number): number {
     if (ttl === undefined) {
       return 600;
     }
-    if (ttl <= 300) { // 5 minutes
+    if (ttl <= Constants.oneMinute() * 5) {
       return 0;
     }
-    if (ttl <= 3600) { // 1 hour
-      return 50;
+    if (ttl <= Constants.oneHour()) {
+      return Constants.oneMinute() * 5;
     }
-    if (ttl <= 21600) { // 6 hours
-      return 150;
+    if (ttl <= Constants.oneHour() * 6) {
+      return Constants.oneMinute() * 15;
     }
-    if (ttl <= 86400) { // 1 day
-      return 300;
+    if (ttl <= Constants.oneDay()) {
+      return Constants.oneMinute() * 30;
     }
-    return 600; // more than 1 day
+    return Constants.oneHour(); // more than 1 day
   }
 }
