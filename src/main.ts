@@ -33,6 +33,11 @@ import { SettingsService } from './common/settings/settings.service';
 import { StatusCheckerModule } from './crons/status.checker/status.checker.module';
 
 async function bootstrap() {
+  const logger = new Logger('Bootstrapper');
+
+  // @ts-ignore
+  LoggerInitializer.initialize(logger);
+
   const apiConfigApp = await NestFactory.create(ApiConfigModule);
   const apiConfigService = apiConfigApp.get<ApiConfigService>(ApiConfigService);
 
@@ -107,11 +112,6 @@ async function bootstrap() {
     const eventsNotifierApp = await NestFactory.create(RabbitMqModule.register());
     await eventsNotifierApp.listen(apiConfigService.getEventsNotifierFeaturePort());
   }
-
-  const logger = new Logger('Bootstrapper');
-
-  // @ts-ignore
-  LoggerInitializer.initialize(logger);
 
   const pubSubApp = await NestFactory.createMicroservice<MicroserviceOptions>(
     PubSubListenerModule,
