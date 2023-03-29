@@ -58,8 +58,6 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
-      - name: Get IP info
-        run: curl ipinfo.io
       - run: npm ci
       - name: Initialize
         run: npm run init
