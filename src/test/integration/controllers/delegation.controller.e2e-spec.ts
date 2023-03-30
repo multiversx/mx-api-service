@@ -8,7 +8,7 @@ describe("Delegations Controller", () => {
   const delegationPath: string = "/delegation";
   const delegationLegacyPath: string = "/delegation-legacy";
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
       imports: [PublicAppModule],
     }).compile();

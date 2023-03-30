@@ -7,7 +7,7 @@ describe("Waiting-List Controller", () => {
   let app: INestApplication;
   const path: string = "/waiting-list";
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
       imports: [PublicAppModule],
     }).compile();

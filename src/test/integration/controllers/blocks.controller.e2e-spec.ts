@@ -7,7 +7,7 @@ describe("Block Controller", () => {
   let app: INestApplication;
   const path: string = "/blocks";
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
       imports: [PublicAppModule],
     }).compile();

@@ -7,7 +7,7 @@ describe("Stake Controller", () => {
   let app: INestApplication;
   const path: string = "/stake";
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
       imports: [PublicAppModule],
     }).compile();

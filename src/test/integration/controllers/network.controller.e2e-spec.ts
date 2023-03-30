@@ -10,7 +10,7 @@ describe.skip("Network Controller", () => {
   const statsPath: string = "/stats";
   const aboutPath: string = "/about";
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
       imports: [PublicAppModule],
     }).compile();

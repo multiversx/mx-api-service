@@ -7,7 +7,7 @@ describe("Tokens Controller", () => {
   let app: INestApplication;
   const path: string = "/tokens";
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
       imports: [PublicAppModule],
     }).compile();

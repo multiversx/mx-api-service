@@ -17,7 +17,7 @@ describe(TransactionDetailedQuery, () => {
 
   let transactionServiceMock: TransactionService;
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     const module = await Test.createTestingModule({
       providers: [
         TransactionDetailedQuery,
@@ -50,7 +50,7 @@ describe(TransactionDetailedQuery, () => {
 
   async function assertGetTransactionDetailed(hash: string, expectedTransaction: Transaction | null) {
     jest.spyOn(transactionServiceMock, "getTransaction");
-    
+
     const input: GetTransactionDetailedInput = new GetTransactionDetailedInput({
       hash: hash,
     });

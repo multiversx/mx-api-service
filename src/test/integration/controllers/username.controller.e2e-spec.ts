@@ -7,7 +7,7 @@ describe("Username Controller", () => {
   let app: INestApplication;
   const path: string = "/usernames";
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
       imports: [PublicAppModule],
     }).compile();
