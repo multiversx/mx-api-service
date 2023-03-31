@@ -200,10 +200,10 @@ export class CacheWarmerService {
   }
 
   @Cron("*/6 * * * * *")
-  @Lock({ name: 'Latest block recompute', verbose: true })
+  @Lock({ name: 'Latest block recompute' })
   async handleLatestBlock() {
     const block = await this.blockService.getLatestBlockRaw();
-    await this.invalidateKey(CacheInfo.BlocksLatest().key, block, CacheInfo.BlocksLatest().ttl);
+    await this.cachingService.setCacheRemote(CacheInfo.BlocksLatest().key, block, CacheInfo.BlocksLatest().ttl);
   }
 
   @Cron(CronExpression.EVERY_MINUTE)
