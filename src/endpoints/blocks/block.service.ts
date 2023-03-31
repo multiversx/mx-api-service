@@ -5,7 +5,7 @@ import { BlockFilter } from "./entities/block.filter";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { BlsService } from "src/endpoints/bls/bls.service";
 import { CacheInfo } from "src/utils/cache.info";
-import { CachingService, Constants } from "@multiversx/sdk-nestjs";
+import { CachingService } from "@multiversx/sdk-nestjs";
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { NodeService } from "../nodes/node.service";
 import { IdentitiesService } from "../identities/identities.service";
@@ -127,11 +127,11 @@ export class BlockService {
   }
 
   async getLatestBlock(ttl?: number): Promise<Block | undefined> {
-    const cachingTtl = this.computeCachingTtl(ttl);
     return await this.cachingService.getOrSetCache(
-      CacheInfo.BlocksLatest(cachingTtl).key,
+      CacheInfo.BlocksLatest(ttl).key,
       async () => await this.getLatestBlockRaw(),
-      cachingTtl
+      CacheInfo.BlocksLatest(ttl).ttl,
+      Math.round(CacheInfo.BlocksLatest(ttl).ttl / 10)
     );
   }
 
@@ -141,24 +141,5 @@ export class BlockService {
       return undefined;
     }
     return blocks[0];
-  }
-
-  private computeCachingTtl(ttl?: number): number {
-    if (ttl === undefined) {
-      return Constants.oneHour();
-    }
-    if (ttl <= Constants.oneMinute() * 5) {
-      return 0;
-    }
-    if (ttl <= Constants.oneHour()) {
-      return Constants.oneMinute() * 5;
-    }
-    if (ttl <= Constants.oneHour() * 6) {
-      return Constants.oneMinute() * 15;
-    }
-    if (ttl <= Constants.oneDay()) {
-      return Constants.oneMinute() * 30;
-    }
-    return Constants.oneHour(); // more than 1 day
   }
 }

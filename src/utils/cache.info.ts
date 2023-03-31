@@ -417,11 +417,33 @@ export class CacheInfo {
     };
   }
 
-  static BlocksLatest(ttl: number): CacheInfo {
+  static BlocksLatest(ttl?: number): CacheInfo {
+    const cachingTtl = CacheInfo.computeBlocksLatestTtl(ttl);
+
     return {
-      key: `blocks:latest:${ttl}`,
-      ttl: 0,
+      key: `blocks:latest:${cachingTtl}`,
+      ttl: cachingTtl,
     };
+  }
+
+  private static computeBlocksLatestTtl(ttl?: number): number {
+    if (ttl === undefined || ttl <= Constants.oneMinute() * 5) {
+      return Constants.oneSecond() * 12;
+    }
+
+    if (ttl <= Constants.oneHour()) {
+      return Constants.oneMinute() * 5;
+    }
+
+    if (ttl <= Constants.oneHour() * 6) {
+      return Constants.oneMinute() * 15;
+    }
+
+    if (ttl <= Constants.oneDay()) {
+      return Constants.oneMinute() * 30;
+    }
+
+    return Constants.oneHour(); // more than 1 day
   }
 
   static Delegation: CacheInfo = {
