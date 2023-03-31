@@ -19,6 +19,7 @@ import { PluginService } from 'src/common/plugins/plugin.service';
 import { SmartContractResultService } from '../sc-results/scresult.service';
 import { TokenService } from '../tokens/token.service';
 import { AccountFilter } from '../accounts/entities/account.filter';
+import { DataApiService } from 'src/common/data-api/data-api.service';
 
 @Injectable()
 export class NetworkService {
@@ -35,8 +36,7 @@ export class NetworkService {
     private readonly accountService: AccountService,
     @Inject(forwardRef(() => TransactionService))
     private readonly transactionService: TransactionService,
-    @Inject(forwardRef(() => PluginService))
-    private readonly pluginsService: PluginService,
+    private readonly dataApiService: DataApiService,
     private readonly apiService: ApiService,
     @Inject(forwardRef(() => StakeService))
     private readonly stakeService: StakeService,
@@ -150,7 +150,7 @@ export class NetworkService {
         this.apiConfigService.getDelegationContractAddress(),
         'getTotalStakeByType',
       ),
-      this.pluginsService.getEgldPrice(),
+      this.dataApiService.getEgldPrice(),
       this.tokenService.getTokenMarketCapRaw(),
     ]);
 

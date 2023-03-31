@@ -337,8 +337,8 @@ export class CacheInfo {
   };
 
   static ExtendedAttributesActivationNonce: CacheInfo = {
-    key: "extendedAttributesActivationNonce",
-    ttl: Constants.oneDay(),
+    key: "extendedAttributesActivationNonce2",
+    ttl: Constants.oneHour(),
   };
 
   static InitEpoch: CacheInfo = {
@@ -526,6 +526,22 @@ export class CacheInfo {
     return {
       key: `api:settings:${name}`,
       ttl: Constants.oneHour(),
+    };
+  }
+
+  static DataApiTokens: CacheInfo = {
+    key: 'data-api:tokens',
+    ttl: Constants.oneMinute() * 10,
+  };
+
+  static DataApiTokenPrice(identifier: string, timestamp?: number): CacheInfo {
+    const priceDate = timestamp ? new Date(timestamp * 1000) : new Date();
+    const isCurrentDate = priceDate.toISODateString() === new Date().toISODateString();
+    const ttl = isCurrentDate ? Constants.oneMinute() * 5 : Constants.oneWeek();
+
+    return {
+      key: `data-api:price:${identifier}:${priceDate.toISODateString()}`,
+      ttl,
     };
   }
 }
