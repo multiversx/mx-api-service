@@ -145,7 +145,7 @@ export class BlockService {
 
   private computeCachingTtl(ttl?: number): number {
     if (ttl === undefined) {
-      return 600;
+      return Constants.oneHour();
     }
     if (ttl <= Constants.oneMinute() * 5) {
       return 0;
