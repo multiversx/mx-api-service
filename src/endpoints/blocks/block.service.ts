@@ -129,16 +129,18 @@ export class BlockService {
   async getLatestBlock(ttl?: number): Promise<Block | undefined> {
     const cachingTtl = this.computeCachingTtl(ttl);
     return await this.cachingService.getOrSetCache(
-        CacheInfo.BlocksLatest(cachingTtl).key,
-        async () => {
-          const blocks = await this.getBlocks(new BlockFilter(), new QueryPagination({ from: 0, size: 1 }));
-            if (blocks.length === 0) {
-                return undefined;
-            }
-            return blocks[0];
-        },
-        cachingTtl
+      CacheInfo.BlocksLatest(cachingTtl).key,
+      async () => await this.getLatestBlockRaw(),
+      cachingTtl
     );
+  }
+
+  async getLatestBlockRaw(): Promise<Block | undefined> {
+    const blocks = await this.getBlocks(new BlockFilter(), new QueryPagination({ from: 0, size: 1 }));
+    if (blocks.length === 0) {
+      return undefined;
+    }
+    return blocks[0];
   }
 
   private computeCachingTtl(ttl?: number): number {
