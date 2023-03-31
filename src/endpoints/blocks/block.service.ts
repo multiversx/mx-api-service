@@ -125,4 +125,21 @@ export class BlockService {
 
     return blocks[0].epoch;
   }
+
+  async getLatestBlock(ttl?: number): Promise<Block | undefined> {
+    return await this.cachingService.getOrSetCache(
+      CacheInfo.BlocksLatest(ttl).key,
+      async () => await this.getLatestBlockRaw(),
+      CacheInfo.BlocksLatest(ttl).ttl,
+      Math.round(CacheInfo.BlocksLatest(ttl).ttl / 10)
+    );
+  }
+
+  async getLatestBlockRaw(): Promise<Block | undefined> {
+    const blocks = await this.getBlocks(new BlockFilter(), new QueryPagination({ from: 0, size: 1 }));
+    if (blocks.length === 0) {
+      return undefined;
+    }
+    return blocks[0];
+  }
 }
