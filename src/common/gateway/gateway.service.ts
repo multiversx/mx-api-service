@@ -16,6 +16,7 @@ import { Transaction } from "./entities/transaction";
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { ApiConfigService } from "../api-config/api.config.service";
 import { ApiService, ApiSettings, BinaryUtils } from "@multiversx/sdk-nestjs";
+import { GuardianData } from "./entities/guardian-data";
 
 @Injectable()
 export class GatewayService {
@@ -74,6 +75,11 @@ export class GatewayService {
 
   async getAddressEsdtRoles(address: string): Promise<EsdtAddressRoles> {
     const result = await this.get(`address/${address}/esdts/roles`, GatewayComponentRequest.addressEsdtAllRoles);
+    return result;
+  }
+
+  async getGuardianData(address: string): Promise<GuardianData> {
+    const result = await this.get(`address/${address}/guardian-data`, GatewayComponentRequest.guardianData);
     return result;
   }
 

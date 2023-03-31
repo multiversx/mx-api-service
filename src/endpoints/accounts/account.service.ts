@@ -115,7 +115,6 @@ export class AccountService {
 
   async getAccountRaw(address: string, txCount: number = 0, scrCount: number = 0): Promise<AccountDetailed | null> {
     const assets = await this.assetsService.getAllAccountAssets();
-
     try {
       const {
         account: { nonce, balance, code, codeHash, rootHash, developerReward, ownerAddress, codeMetadata },
@@ -149,6 +148,35 @@ export class AccountService {
 
       if (!AddressUtils.isSmartContractAddress(address)) {
         account.username = await this.usernameService.getUsernameForAddress(address) ?? undefined;
+      }
+
+      try {
+        const apiGuardianData = await this.gatewayService.getGuardianData(address);
+        if (apiGuardianData) {
+          const {
+            guarded: isGuarded,
+            activeGuardian: {
+              activationEpoch: activeGuardianActivationEpoch,
+              address: activeGuardianAddress,
+              serviceUID: activeGuardianServiceUid,
+            } = {},
+            pendingGuardian: {
+              activationEpoch: pendingGuardianActivationEpoch,
+              address: pendingGuardianAddress,
+              serviceUID: pendingGuardianServiceUid,
+            } = {},
+          } = apiGuardianData;
+
+          account.activeGuardianActivationEpoch = activeGuardianActivationEpoch;
+          account.activeGuardianAddress = activeGuardianAddress;
+          account.activeGuardianServiceUid = activeGuardianServiceUid;
+          account.pendingGuardianActivationEpoch = pendingGuardianActivationEpoch;
+          account.pendingGuardianAddress = pendingGuardianAddress;
+          account.pendingGuardianServiceUid = pendingGuardianServiceUid;
+          account.isGuarded = isGuarded;
+        }
+      } catch (error) {
+        this.logger.error(`Error when getting guardian data for address '${address}'`);
       }
 
       await this.pluginService.processAccount(account);

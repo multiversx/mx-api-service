@@ -9,6 +9,7 @@ import { AccountKey } from 'src/endpoints/accounts/entities/account.key';
 import { AccountEsdtHistory } from 'src/endpoints/accounts/entities/account.esdt.history';
 import { AccountFilter } from 'src/endpoints/accounts/entities/account.filter';
 import { AccountHistoryFilter } from 'src/endpoints/accounts/entities/account.history.filter';
+import { GuardianData } from 'src/common/gateway/entities/guardian-data';
 
 describe('Account Service', () => {
   let accountService: AccountService;
@@ -317,6 +318,37 @@ describe('Account Service', () => {
       const results = await accountService.getAccountTokenHistory(address, token, { from: 0, size: 1 }, new AccountHistoryFilter({}));
 
       expect(results).toStrictEqual([]);
+    });
+  });
+
+  describe('getAccountRaw', () => {
+    it('getAccountRaw should return guardianData', async () => {
+      const address = 'erd1spyavw0956vq68xj8y4tenjpq2wd5a9p2c6j8gsz7ztyrnpxrruqzu66jx';
+
+      const mockGuardianData: GuardianData = {
+        activeGuardian: {
+          activationEpoch: 9,
+          address: 'erd1spyavw0956vq68xj8y4tenjpq2wd5a9p2c6j8gsz7ztyrnpxrruqzu66jx',
+          serviceUID: 'ServiceID',
+        },
+        pendingGuardian: {
+          activationEpoch: 13,
+          address: 'erd1k2s324ww2g0yj38qn2ch2jwctdy8mnfxep94q9arncc6xecg3xaq6mjse8',
+          serviceUID: 'serviceUID',
+        },
+        guarded: true,
+      };
+
+      jest.spyOn(accountService['gatewayService'], 'getGuardianData').mockResolvedValue(mockGuardianData);
+      const result = await accountService.getAccountRaw(address);
+
+      expect(result?.isGuarded).toStrictEqual(true);
+      expect(result?.activeGuardianActivationEpoch).toStrictEqual(9);
+      expect(result?.activeGuardianAddress).toStrictEqual('erd1spyavw0956vq68xj8y4tenjpq2wd5a9p2c6j8gsz7ztyrnpxrruqzu66jx');
+      expect(result?.activeGuardianServiceUid).toStrictEqual('ServiceID');
+      expect(result?.pendingGuardianActivationEpoch).toStrictEqual(13);
+      expect(result?.pendingGuardianAddress).toStrictEqual('erd1k2s324ww2g0yj38qn2ch2jwctdy8mnfxep94q9arncc6xecg3xaq6mjse8');
+      expect(result?.pendingGuardianServiceUid).toStrictEqual('serviceUID');
     });
   });
 });
