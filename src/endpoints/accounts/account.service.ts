@@ -150,33 +150,37 @@ export class AccountService {
         account.username = await this.usernameService.getUsernameForAddress(address) ?? undefined;
       }
 
-      try {
-        const apiGuardianData = await this.gatewayService.getGuardianData(address);
-        if (apiGuardianData) {
-          const {
-            guarded: isGuarded,
-            activeGuardian: {
-              activationEpoch: activeGuardianActivationEpoch,
-              address: activeGuardianAddress,
-              serviceUID: activeGuardianServiceUid,
-            } = {},
-            pendingGuardian: {
-              activationEpoch: pendingGuardianActivationEpoch,
-              address: pendingGuardianAddress,
-              serviceUID: pendingGuardianServiceUid,
-            } = {},
-          } = apiGuardianData;
+      if (account.isGuarded) {
+        try {
+          const apiGuardianData = await this.gatewayService.getGuardianData(address);
+          if (apiGuardianData) {
+            const {
+              guarded: isGuarded,
+              activeGuardian: {
+                activationEpoch: activeGuardianActivationEpoch,
+                address: activeGuardianAddress,
+                serviceUID: activeGuardianServiceUid,
+              } = {},
+              pendingGuardian: {
+                activationEpoch: pendingGuardianActivationEpoch,
+                address: pendingGuardianAddress,
+                serviceUID: pendingGuardianServiceUid,
+              } = {},
+            } = apiGuardianData;
 
-          account.activeGuardianActivationEpoch = activeGuardianActivationEpoch;
-          account.activeGuardianAddress = activeGuardianAddress;
-          account.activeGuardianServiceUid = activeGuardianServiceUid;
-          account.pendingGuardianActivationEpoch = pendingGuardianActivationEpoch;
-          account.pendingGuardianAddress = pendingGuardianAddress;
-          account.pendingGuardianServiceUid = pendingGuardianServiceUid;
-          account.isGuarded = isGuarded;
+            account.activeGuardianActivationEpoch = activeGuardianActivationEpoch;
+            account.activeGuardianAddress = activeGuardianAddress;
+            account.activeGuardianServiceUid = activeGuardianServiceUid;
+            account.pendingGuardianActivationEpoch = pendingGuardianActivationEpoch;
+            account.pendingGuardianAddress = pendingGuardianAddress;
+            account.pendingGuardianServiceUid = pendingGuardianServiceUid;
+            account.isGuarded = isGuarded;
+          }
+        } catch (error) {
+          this.logger.error(`Error when getting guardian data for address '${address}'`);
         }
-      } catch (error) {
-        this.logger.error(`Error when getting guardian data for address '${address}'`);
+      } else {
+        account.isGuarded = false;
       }
 
       await this.pluginService.processAccount(account);
