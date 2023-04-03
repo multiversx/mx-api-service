@@ -337,8 +337,8 @@ export class CacheInfo {
   };
 
   static ExtendedAttributesActivationNonce: CacheInfo = {
-    key: "extendedAttributesActivationNonce",
-    ttl: Constants.oneDay(),
+    key: "extendedAttributesActivationNonce2",
+    ttl: Constants.oneHour(),
   };
 
   static InitEpoch: CacheInfo = {
@@ -415,6 +415,35 @@ export class CacheInfo {
       key: `blocks:count:${JSON.stringify(filter)}`,
       ttl: Constants.oneMinute(),
     };
+  }
+
+  static BlocksLatest(ttl?: number): CacheInfo {
+    const cachingTtl = CacheInfo.computeBlocksLatestTtl(ttl);
+
+    return {
+      key: `blocks:latest:${cachingTtl}`,
+      ttl: cachingTtl,
+    };
+  }
+
+  private static computeBlocksLatestTtl(ttl?: number): number {
+    if (ttl === undefined || ttl <= Constants.oneMinute() * 5) {
+      return Constants.oneSecond() * 12;
+    }
+
+    if (ttl <= Constants.oneHour()) {
+      return Constants.oneMinute() * 5;
+    }
+
+    if (ttl <= Constants.oneHour() * 6) {
+      return Constants.oneMinute() * 15;
+    }
+
+    if (ttl <= Constants.oneDay()) {
+      return Constants.oneMinute() * 30;
+    }
+
+    return Constants.oneHour(); // more than 1 day
   }
 
   static Delegation: CacheInfo = {
@@ -519,6 +548,22 @@ export class CacheInfo {
     return {
       key: `api:settings:${name}`,
       ttl: Constants.oneHour(),
+    };
+  }
+
+  static DataApiTokens: CacheInfo = {
+    key: 'data-api:tokens',
+    ttl: Constants.oneMinute() * 10,
+  };
+
+  static DataApiTokenPrice(identifier: string, timestamp?: number): CacheInfo {
+    const priceDate = timestamp ? new Date(timestamp * 1000) : new Date();
+    const isCurrentDate = priceDate.toISODateString() === new Date().toISODateString();
+    const ttl = isCurrentDate ? Constants.oneMinute() * 5 : Constants.oneWeek();
+
+    return {
+      key: `data-api:price:${identifier}:${priceDate.toISODateString()}`,
+      ttl,
     };
   }
 }

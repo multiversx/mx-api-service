@@ -113,8 +113,12 @@ export class AccountController {
   @Get("/accounts/:address")
   @ApiOperation({ summary: 'Account details', description: 'Returns account details for a given address' })
   @ApiOkResponse({ type: AccountDetailed })
-  async getAccountDetails(@Param('address', ParseAddressPipe) address: string): Promise<AccountDetailed> {
-    const account = await this.accountService.getAccount(address);
+  async getAccountDetails(
+    @Param('address', ParseAddressPipe) address: string,
+    @Query('withGuardianInfo', new ParseBoolPipe) withGuardianInfo?: boolean,
+    @Query('fields', ParseArrayPipe) fields?: string[],
+  ): Promise<AccountDetailed> {
+    const account = await this.accountService.getAccount(address, fields, withGuardianInfo);
     if (!account) {
       throw new NotFoundException('Account not found');
     }
@@ -660,7 +664,7 @@ export class AccountController {
     @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash?: string,
     @Query('hashes', ParseArrayPipe) hashes?: string[],
     @Query('status', new ParseEnumPipe(TransactionStatus)) status?: TransactionStatus,
-    @Query('function') scFunction?: string,
+    @Query('function', ParseArrayPipe) functions?: string[],
     @Query('before', ParseIntPipe) before?: number,
     @Query('after', ParseIntPipe) after?: number,
     @Query('order', new ParseEnumPipe(SortOrder)) order?: SortOrder,
@@ -679,7 +683,7 @@ export class AccountController {
       sender,
       receivers: receiver,
       token,
-      function: scFunction,
+      functions,
       senderShard,
       receiverShard,
       miniBlockHash,
@@ -716,7 +720,7 @@ export class AccountController {
     @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash?: string,
     @Query('hashes', ParseArrayPipe) hashes?: string[],
     @Query('status', new ParseEnumPipe(TransactionStatus)) status?: TransactionStatus,
-    @Query('function') scFunction?: string,
+    @Query('function', ParseArrayPipe) functions?: string[],
     @Query('before', ParseIntPipe) before?: number,
     @Query('after', ParseIntPipe) after?: number,
   ): Promise<number> {
@@ -725,7 +729,7 @@ export class AccountController {
       sender,
       receivers: receiver,
       token,
-      function: scFunction,
+      functions,
       senderShard,
       receiverShard,
       miniBlockHash,
@@ -771,7 +775,7 @@ export class AccountController {
     @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash?: string,
     @Query('hashes', ParseArrayPipe) hashes?: string[],
     @Query('status', new ParseEnumPipe(TransactionStatus)) status?: TransactionStatus,
-    @Query('function') scFunction?: string,
+    @Query('function', ParseArrayPipe) functions?: string[],
     @Query('before', ParseIntPipe) before?: number,
     @Query('after', ParseIntPipe) after?: number,
     @Query('fields', ParseArrayPipe) fields?: string[],
@@ -792,7 +796,7 @@ export class AccountController {
       senders: sender,
       receivers: receiver,
       token,
-      function: scFunction,
+      functions,
       senderShard,
       receiverShard,
       miniBlockHash,
@@ -833,7 +837,7 @@ export class AccountController {
     @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash?: string,
     @Query('hashes', ParseArrayPipe) hashes?: string[],
     @Query('status', new ParseEnumPipe(TransactionStatus)) status?: TransactionStatus,
-    @Query('function') scFunction?: string,
+    @Query('function', ParseArrayPipe) functions?: string[],
     @Query('before', ParseIntPipe) before?: number,
     @Query('after', ParseIntPipe) after?: number,
   ): Promise<number> {
@@ -846,7 +850,7 @@ export class AccountController {
       sender,
       receivers: receiver,
       token,
-      function: scFunction,
+      functions,
       senderShard,
       receiverShard,
       miniBlockHash,
@@ -869,7 +873,7 @@ export class AccountController {
     @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash?: string,
     @Query('hashes', ParseArrayPipe) hashes?: string[],
     @Query('status', new ParseEnumPipe(TransactionStatus)) status?: TransactionStatus,
-    @Query('function') scFunction?: string,
+    @Query('function', ParseArrayPipe) functions?: string[],
     @Query('before', ParseIntPipe) before?: number,
     @Query('after', ParseIntPipe) after?: number,
   ): Promise<number> {
@@ -882,7 +886,7 @@ export class AccountController {
       sender,
       receivers: receiver,
       token,
-      function: scFunction,
+      functions,
       senderShard,
       receiverShard,
       miniBlockHash,

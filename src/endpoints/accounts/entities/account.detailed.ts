@@ -83,4 +83,25 @@ export class AccountDetailed extends Account {
   @Field(() => [NftAccount], { description: 'NFTs for the given detailed account. Complexity: 1000', nullable: true })
   @ComplexityEstimation({ group: 'nfts', value: 1000 })
   nfts: NftAccount[] | undefined = undefined;
+
+  @ApiProperty({ type: Number, nullable: true })
+  activeGuardianActivationEpoch?: number;
+
+  @ApiProperty({ type: String, nullable: true })
+  activeGuardianAddress?: string;
+
+  @ApiProperty({ type: String, nullable: true })
+  activeGuardianServiceUid?: string;
+
+  @ApiProperty({ type: Number, nullable: true })
+  pendingGuardianActivationEpoch?: number;
+
+  @ApiProperty({ type: String, nullable: true })
+  pendingGuardianAddress?: string;
+
+  @ApiProperty({ type: String, nullable: true })
+  pendingGuardianServiceUid?: string;
+
+  @ApiProperty({ type: Boolean, nullable: true })
+  isGuarded?: boolean;
 }

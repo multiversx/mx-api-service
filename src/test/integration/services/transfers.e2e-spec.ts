@@ -2,13 +2,12 @@ import { Test } from '@nestjs/testing';
 import { TransactionStatus } from 'src/endpoints/transactions/entities/transaction.status';
 import { TransactionFilter } from 'src/endpoints/transactions/entities/transaction.filter';
 import transactionDetails from "src/test/data/transactions/transaction.details";
-import { TransferModule } from 'src/endpoints/transfers/transfer.module';
 import { TransferService } from 'src/endpoints/transfers/transfer.service';
 import { ApiConfigService } from 'src/common/api-config/api.config.service';
-import { ApiConfigModule } from 'src/common/api-config/api.config.module';
 import { BinaryUtils, Constants, ElasticQuery, ElasticService } from '@multiversx/sdk-nestjs';
 import { TransactionQueryOptions } from 'src/endpoints/transactions/entities/transactions.query.options';
 import { QueryPagination } from 'src/common/entities/query.pagination';
+import { PublicAppModule } from 'src/public.app.module';
 import '@multiversx/sdk-nestjs/lib/src/utils/extensions/jest.extensions';
 import '@multiversx/sdk-nestjs/lib/src/utils/extensions/number.extensions';
 
@@ -20,7 +19,7 @@ describe('Transfer Service', () => {
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
-      imports: [TransferModule, ApiConfigModule],
+      imports: [PublicAppModule],
     }).compile();
 
     transferService = moduleRef.get<TransferService>(TransferService);
@@ -176,10 +175,11 @@ describe('Transfer Service', () => {
         }
       });
 
-      it('should return a list with transfers that call ESDTNFTTransfer function', async () => {
+      //Skip until ES issues are solved
+      it.skip('should return a list with transfers that call ESDTNFTTransfer function', async () => {
         if (apiConfigService.getIsIndexerV3FlagActive()) {
           const transactionFilter = new TransactionFilter();
-          transactionFilter.function = 'ESDTNFTTransfer';
+          transactionFilter.functions = ['ESDTNFTTransfer'];
 
           const transfers = await transferService.getTransfers(transactionFilter, { from: 0, size: 25 }, new TransactionQueryOptions());
           for (const transfer of transfers) {
@@ -207,7 +207,7 @@ describe('Transfer Service', () => {
 
       it(`should return transfers with function "claim_rewards"`, async () => {
         const transactionFilter = new TransactionFilter();
-        transactionFilter.function = "claim_rewards";
+        transactionFilter.functions = ["claim_rewards"];
 
         const transfers = await transferService.getTransfers(transactionFilter, new QueryPagination(), new TransactionQueryOptions());
         expect(transfers).toHaveLength(25);
@@ -215,6 +215,19 @@ describe('Transfer Service', () => {
         for (const tranfer of transfers) {
           expect(tranfer.function).toStrictEqual('claim_rewards');
         }
+      });
+
+      it(`should return transfers with function "claim_rewards" and "stake"`, async () => {
+        const transactionFilter = new TransactionFilter();
+        transactionFilter.functions = ["claim_rewards", "stake"];
+
+        const transfers = await transferService.getTransfers(transactionFilter, new QueryPagination({ size: 50 }), new TransactionQueryOptions());
+        expect(transfers).toHaveLength(50);
+
+        const hasClaimRewards = transfers.some(transfer => transfer.function === "claim_rewards");
+        const hasStake = transfers.some(transfer => transfer.function === "stake");
+
+        expect([hasClaimRewards, hasStake]).toEqual(expect.arrayContaining([true]));
       });
     });
   });

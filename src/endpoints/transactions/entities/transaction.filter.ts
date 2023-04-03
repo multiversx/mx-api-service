@@ -13,7 +13,7 @@ export class TransactionFilter {
   senders?: string[] = [];
   receivers?: string[] = [];
   token?: string;
-  function?: string;
+  functions?: string[] = [];
   senderShard?: number;
   receiverShard?: number;
   miniBlockHash?: string;

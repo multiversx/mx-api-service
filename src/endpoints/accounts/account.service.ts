@@ -70,7 +70,7 @@ export class AccountService {
     return await this.indexerService.getAccountsCount(filter);
   }
 
-  async getAccount(address: string, fields?: string[]): Promise<AccountDetailed | null> {
+  async getAccount(address: string, fields?: string[], withGuardianInfo?: boolean): Promise<AccountDetailed | null> {
     if (!AddressUtils.isAddressValid(address)) {
       return null;
     }
@@ -88,12 +88,43 @@ export class AccountService {
 
     const account = await this.getAccountRaw(address, txCount, scrCount);
 
+    if (account && withGuardianInfo === true) {
+      await this.applyGuardianInfo(account);
+    }
+
     const elasticSearchAccount = await this.indexerService.getAccount(address);
     if (account && elasticSearchAccount) {
       account.timestamp = elasticSearchAccount.timestamp;
     }
 
     return account;
+  }
+
+  async applyGuardianInfo(account: AccountDetailed): Promise<void> {
+    try {
+      const guardianResult = await this.gatewayService.getGuardianData(account.address);
+      const guardianData = guardianResult?.guardianData;
+      if (guardianData) {
+        const activeGuardian = guardianData.activeGuardian;
+        if (activeGuardian) {
+          account.activeGuardianActivationEpoch = activeGuardian.activationEpoch;
+          account.activeGuardianAddress = activeGuardian.address;
+          account.activeGuardianServiceUid = activeGuardian.serviceUID;
+        }
+
+        const pendingGuardian = guardianData.pendingGuardian;
+        if (pendingGuardian) {
+          account.pendingGuardianActivationEpoch = pendingGuardian.activationEpoch;
+          account.pendingGuardianAddress = pendingGuardian.address;
+          account.pendingGuardianServiceUid = pendingGuardian.serviceUID;
+        }
+
+        account.isGuarded = guardianData.guarded;
+      }
+    } catch (error) {
+      this.logger.error(`Error when getting guardian data for address '${account.address}'`);
+      this.logger.error(error);
+    }
   }
 
   async getAccountVerification(address: string): Promise<AccountVerification | null> {
@@ -115,7 +146,6 @@ export class AccountService {
 
   async getAccountRaw(address: string, txCount: number = 0, scrCount: number = 0): Promise<AccountDetailed | null> {
     const assets = await this.assetsService.getAllAccountAssets();
-
     try {
       const {
         account: { nonce, balance, code, codeHash, rootHash, developerReward, ownerAddress, codeMetadata },
@@ -149,6 +179,10 @@ export class AccountService {
 
       if (!AddressUtils.isSmartContractAddress(address)) {
         account.username = await this.usernameService.getUsernameForAddress(address) ?? undefined;
+        account.isPayableBySmartContract = undefined;
+        account.isUpgradeable = undefined;
+        account.isReadable = undefined;
+        account.isPayable = undefined;
       }
 
       await this.pluginService.processAccount(account);

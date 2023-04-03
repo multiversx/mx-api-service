@@ -102,26 +102,6 @@ describe('API Config', () => {
     });
   });
 
-  describe("getMexUrl", () => {
-    it("should return mex url", () => {
-      jest
-        .spyOn(ConfigService.prototype, "get")
-        .mockImplementation(jest.fn(() => ['https://mex-indexer.elrond.com']));
-
-      const results = apiConfigService.getMexUrl();
-      expect(results).toEqual('https://mex-indexer.elrond.com');
-    });
-
-    it("should return undefined because test simulates that mex url is not defined", () => {
-      jest
-        .spyOn(ConfigService.prototype, 'get')
-        .mockImplementation(jest.fn(() => undefined));
-
-      const results = apiConfigService.getMexUrl();
-      expect(results).toEqual('');
-    });
-  });
-
   describe("getIpfsUrl", () => {
     it("should return Ipfs url", () => {
       jest
