@@ -113,8 +113,12 @@ export class AccountController {
   @Get("/accounts/:address")
   @ApiOperation({ summary: 'Account details', description: 'Returns account details for a given address' })
   @ApiOkResponse({ type: AccountDetailed })
-  async getAccountDetails(@Param('address', ParseAddressPipe) address: string): Promise<AccountDetailed> {
-    const account = await this.accountService.getAccount(address);
+  async getAccountDetails(
+    @Param('address', ParseAddressPipe) address: string,
+    @Query('withGuardianInfo', new ParseBoolPipe) withGuardianInfo?: boolean,
+    @Query('fields', ParseArrayPipe) fields?: string[],
+  ): Promise<AccountDetailed> {
+    const account = await this.accountService.getAccount(address, fields, withGuardianInfo);
     if (!account) {
       throw new NotFoundException('Account not found');
     }

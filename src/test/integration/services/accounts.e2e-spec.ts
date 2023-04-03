@@ -9,6 +9,7 @@ import { AccountKey } from 'src/endpoints/accounts/entities/account.key';
 import { AccountEsdtHistory } from 'src/endpoints/accounts/entities/account.esdt.history';
 import { AccountFilter } from 'src/endpoints/accounts/entities/account.filter';
 import { AccountHistoryFilter } from 'src/endpoints/accounts/entities/account.history.filter';
+import { GuardianData } from 'src/common/gateway/entities/guardian.data';
 
 describe('Account Service', () => {
   let accountService: AccountService;
@@ -81,6 +82,77 @@ describe('Account Service', () => {
           'codeHash', 'rootHash', 'txCount', 'scrCount',
           'username', 'shard', 'developerReward', 'ownerAddress', 'scamInfo',
         ]);
+    });
+
+    it('should return account details with isGuarded = true and guardian data extra fields when isGuarded is true in codeAttributes', async () => {
+      const address = 'erd1spyavw0956vq68xj8y4tenjpq2wd5a9p2c6j8gsz7ztyrnpxrruqzu66jx';
+
+      const mockGuardianData: GuardianData = {
+        activeGuardian: {
+          activationEpoch: 9,
+          address: 'erd1spyavw0956vq68xj8y4tenjpq2wd5a9p2c6j8gsz7ztyrnpxrruqzu66jx',
+          serviceUID: 'ServiceID',
+        },
+        pendingGuardian: {
+          activationEpoch: 13,
+          address: 'erd1k2s324ww2g0yj38qn2ch2jwctdy8mnfxep94q9arncc6xecg3xaq6mjse8',
+          serviceUID: 'serviceUID',
+        },
+        guarded: true,
+      };
+
+      const mock_decodeCodeMetadata = jest.spyOn(AddressUtils, 'decodeCodeMetadata');
+      mock_decodeCodeMetadata.mockImplementation((_codeMetadata: string) => {
+        return {
+          isUpgradeable: false,
+          isReadable: true,
+          isGuarded: true,
+          isPayable: false,
+          isPayableBySmartContract: false,
+        };
+      });
+
+      jest.spyOn(accountService['gatewayService'], 'getGuardianData').mockResolvedValue(mockGuardianData);
+      const result = await accountService.getAccount(address);
+
+      expect(result?.isGuarded).toStrictEqual(true);
+      expect(result?.activeGuardianActivationEpoch).toStrictEqual(9);
+      expect(result?.activeGuardianAddress).toStrictEqual('erd1spyavw0956vq68xj8y4tenjpq2wd5a9p2c6j8gsz7ztyrnpxrruqzu66jx');
+      expect(result?.activeGuardianServiceUid).toStrictEqual('ServiceID');
+      expect(result?.pendingGuardianActivationEpoch).toStrictEqual(13);
+      expect(result?.pendingGuardianAddress).toStrictEqual('erd1k2s324ww2g0yj38qn2ch2jwctdy8mnfxep94q9arncc6xecg3xaq6mjse8');
+      expect(result?.pendingGuardianServiceUid).toStrictEqual('serviceUID');
+    });
+
+    it('should return account details with isGuarded = false when isGuarded is false in codeAttributes', async () => {
+      const address = 'erd1spyavw0956vq68xj8y4tenjpq2wd5a9p2c6j8gsz7ztyrnpxrruqzu66jx';
+      const mockGuardianData: GuardianData = {
+        activeGuardian: undefined,
+        pendingGuardian: undefined,
+        guarded: false,
+      };
+
+      const mock_decodeCodeMetadata = jest.spyOn(AddressUtils, 'decodeCodeMetadata');
+      mock_decodeCodeMetadata.mockImplementation((_codeMetadata: string) => {
+        return {
+          isUpgradeable: false,
+          isReadable: true,
+          isGuarded: false,
+          isPayable: false,
+          isPayableBySmartContract: false,
+        };
+      });
+
+      jest.spyOn(accountService['gatewayService'], 'getGuardianData').mockResolvedValue(mockGuardianData);
+      const result = await accountService.getAccount(address);
+
+      expect(result?.isGuarded).toStrictEqual(false);
+      expect(result?.activeGuardianActivationEpoch).toBeUndefined();
+      expect(result?.activeGuardianAddress).toBeUndefined();
+      expect(result?.activeGuardianServiceUid).toBeUndefined();
+      expect(result?.pendingGuardianActivationEpoch).toBeUndefined();
+      expect(result?.pendingGuardianAddress).toBeUndefined();
+      expect(result?.pendingGuardianServiceUid).toBeUndefined();
     });
 
     it.skip("should return account details if IndexerV3Flag is active", async () => {
@@ -317,6 +389,79 @@ describe('Account Service', () => {
       const results = await accountService.getAccountTokenHistory(address, token, { from: 0, size: 1 }, new AccountHistoryFilter({}));
 
       expect(results).toStrictEqual([]);
+    });
+  });
+
+  describe('getAccountRaw', () => {
+    it('should return accountRaw details with isGuarded = true and guardian data extra fields when isGuarded is true in codeAttributes', async () => {
+      const address = 'erd1spyavw0956vq68xj8y4tenjpq2wd5a9p2c6j8gsz7ztyrnpxrruqzu66jx';
+
+      const mockGuardianData: GuardianData = {
+        activeGuardian: {
+          activationEpoch: 9,
+          address: 'erd1spyavw0956vq68xj8y4tenjpq2wd5a9p2c6j8gsz7ztyrnpxrruqzu66jx',
+          serviceUID: 'ServiceID',
+        },
+        pendingGuardian: {
+          activationEpoch: 13,
+          address: 'erd1k2s324ww2g0yj38qn2ch2jwctdy8mnfxep94q9arncc6xecg3xaq6mjse8',
+          serviceUID: 'serviceUID',
+        },
+        guarded: true,
+      };
+
+      const mock_decodeCodeMetadata = jest.spyOn(AddressUtils, 'decodeCodeMetadata');
+      mock_decodeCodeMetadata.mockImplementation((_codeMetadata: string) => {
+        return {
+          isUpgradeable: false,
+          isReadable: true,
+          isGuarded: true,
+          isPayable: false,
+          isPayableBySmartContract: false,
+        };
+      });
+
+      jest.spyOn(accountService['gatewayService'], 'getGuardianData').mockResolvedValue(mockGuardianData);
+      const result = await accountService.getAccountRaw(address);
+
+      expect(result?.isGuarded).toStrictEqual(true);
+      expect(result?.activeGuardianActivationEpoch).toStrictEqual(9);
+      expect(result?.activeGuardianAddress).toStrictEqual('erd1spyavw0956vq68xj8y4tenjpq2wd5a9p2c6j8gsz7ztyrnpxrruqzu66jx');
+      expect(result?.activeGuardianServiceUid).toStrictEqual('ServiceID');
+      expect(result?.pendingGuardianActivationEpoch).toStrictEqual(13);
+      expect(result?.pendingGuardianAddress).toStrictEqual('erd1k2s324ww2g0yj38qn2ch2jwctdy8mnfxep94q9arncc6xecg3xaq6mjse8');
+      expect(result?.pendingGuardianServiceUid).toStrictEqual('serviceUID');
+    });
+
+    it('should return accountRaw details with isGuarded = false when isGuarded is false in codeAttributes', async () => {
+      const address = 'erd1spyavw0956vq68xj8y4tenjpq2wd5a9p2c6j8gsz7ztyrnpxrruqzu66jx';
+      const mockGuardianData: GuardianData = {
+        activeGuardian: undefined,
+        pendingGuardian: undefined,
+        guarded: false,
+      };
+
+      const mock_decodeCodeMetadata = jest.spyOn(AddressUtils, 'decodeCodeMetadata');
+      mock_decodeCodeMetadata.mockImplementation((_codeMetadata: string) => {
+        return {
+          isUpgradeable: false,
+          isReadable: true,
+          isGuarded: false,
+          isPayable: false,
+          isPayableBySmartContract: false,
+        };
+      });
+
+      jest.spyOn(accountService['gatewayService'], 'getGuardianData').mockResolvedValue(mockGuardianData);
+      const result = await accountService.getAccountRaw(address);
+
+      expect(result?.isGuarded).toStrictEqual(false);
+      expect(result?.activeGuardianActivationEpoch).toBeUndefined();
+      expect(result?.activeGuardianAddress).toBeUndefined();
+      expect(result?.activeGuardianServiceUid).toBeUndefined();
+      expect(result?.pendingGuardianActivationEpoch).toBeUndefined();
+      expect(result?.pendingGuardianAddress).toBeUndefined();
+      expect(result?.pendingGuardianServiceUid).toBeUndefined();
     });
   });
 });
