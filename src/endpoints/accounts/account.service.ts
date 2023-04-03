@@ -70,7 +70,7 @@ export class AccountService {
     return await this.indexerService.getAccountsCount(filter);
   }
 
-  async getAccount(address: string, fields?: string[]): Promise<AccountDetailed | null> {
+  async getAccount(address: string, fields?: string[], withGuardianInfo?: boolean): Promise<AccountDetailed | null> {
     if (!AddressUtils.isAddressValid(address)) {
       return null;
     }
@@ -86,7 +86,13 @@ export class AccountService {
       scrCount = await this.getAccountScResults(address);
     }
 
+
+
     const account = await this.getAccountRaw(address, txCount, scrCount);
+
+    if (account && withGuardianInfo === true) {
+      await this.applyGuardianInfo(account);
+    }
 
     const elasticSearchAccount = await this.indexerService.getAccount(address);
     if (account && elasticSearchAccount) {
@@ -94,6 +100,33 @@ export class AccountService {
     }
 
     return account;
+  }
+
+  async applyGuardianInfo(account: AccountDetailed): Promise<void> {
+    try {
+      const guardianResult = await this.gatewayService.getGuardianData(account.address);
+      const guardianData = guardianResult?.guardianData;
+      if (guardianData) {
+        const activeGuardian = guardianData.activeGuardian;
+        if (activeGuardian) {
+          account.activeGuardianActivationEpoch = activeGuardian.activationEpoch;
+          account.activeGuardianAddress = activeGuardian.address;
+          account.activeGuardianServiceUid = activeGuardian.serviceUID;
+        }
+
+        const pendingGuardian = guardianData.pendingGuardian;
+        if (pendingGuardian) {
+          account.pendingGuardianActivationEpoch = pendingGuardian.activationEpoch;
+          account.pendingGuardianAddress = pendingGuardian.address;
+          account.pendingGuardianServiceUid = pendingGuardian.serviceUID;
+        }
+
+        account.isGuarded = guardianData.guarded;
+      }
+    } catch (error) {
+      this.logger.error(`Error when getting guardian data for address '${account.address}'`);
+      this.logger.error(error);
+    }
   }
 
   async getAccountVerification(address: string): Promise<AccountVerification | null> {
@@ -149,34 +182,6 @@ export class AccountService {
       if (!AddressUtils.isSmartContractAddress(address)) {
         account.username = await this.usernameService.getUsernameForAddress(address) ?? undefined;
       }
-
-      // if (account.isGuarded) {
-      try {
-        const guardianResult = await this.gatewayService.getGuardianData(address);
-        const guardianData = guardianResult?.guardianData;
-        if (guardianData) {
-          const activeGuardian = guardianData.activeGuardian;
-          if (activeGuardian) {
-            account.activeGuardianActivationEpoch = activeGuardian.activationEpoch;
-            account.activeGuardianAddress = activeGuardian.address;
-            account.activeGuardianServiceUid = activeGuardian.serviceUID;
-          }
-
-          const pendingGuardian = guardianData.pendingGuardian;
-          if (pendingGuardian) {
-            account.pendingGuardianActivationEpoch = pendingGuardian.activationEpoch;
-            account.pendingGuardianAddress = pendingGuardian.address;
-            account.pendingGuardianServiceUid = pendingGuardian.serviceUID;
-          }
-
-          account.isGuarded = guardianData.guarded;
-        }
-      } catch (error) {
-        this.logger.error(`Error when getting guardian data for address '${address}'`);
-      }
-      // } else {
-      //   account.isGuarded = false;
-      // }
 
       await this.pluginService.processAccount(account);
       return account;
