@@ -27,6 +27,7 @@ import { AccountFilter } from "src/endpoints/accounts/entities/account.filter";
 import { TokenType } from "src/common/indexer/entities";
 import { TokenDetailed } from "src/endpoints/tokens/entities/token.detailed";
 import { DataApiService } from "src/common/data-api/data-api.service";
+import { BlockService } from "src/endpoints/blocks/block.service";
 
 @Injectable()
 export class CacheWarmerService {
@@ -57,6 +58,7 @@ export class CacheWarmerService {
     private readonly nftService: NftService,
     private readonly guestCachingWarmer: GuestCachingWarmer,
     private readonly dataApiService: DataApiService,
+    private readonly blockService: BlockService,
   ) {
     this.configCronJob(
       'handleKeybaseAgainstKeybasePubInvalidations',
@@ -195,6 +197,13 @@ export class CacheWarmerService {
         cacheTtl: this.apiConfigService.getGuestCachingTtl(),
       });
     }
+  }
+
+  @Cron("*/6 * * * * *")
+  @Lock({ name: 'Latest block recompute' })
+  async handleLatestBlock() {
+    const block = await this.blockService.getLatestBlockRaw();
+    await this.cachingService.setCacheRemote(CacheInfo.BlocksLatest().key, block, CacheInfo.BlocksLatest().ttl);
   }
 
   @Cron(CronExpression.EVERY_MINUTE)

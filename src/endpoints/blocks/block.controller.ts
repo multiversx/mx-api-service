@@ -1,5 +1,5 @@
 import { ParseArrayPipe, ParseBlockHashPipe, ParseBlsHashPipe, ParseBoolPipe, ParseIntPipe } from "@multiversx/sdk-nestjs";
-import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Param, Query } from "@nestjs/common";
+import { Controller, DefaultValuePipe, Get, HttpException, NotFoundException, HttpStatus, Param, Query } from "@nestjs/common";
 import { ApiExcludeEndpoint, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { BlockService } from "./block.service";
@@ -65,6 +65,22 @@ export class BlockController {
     @Query('nonce', ParseIntPipe) nonce?: number,
   ): Promise<number> {
     return this.blockService.getBlocksCount(new BlockFilter({ shard, proposer, validator, epoch, nonce }));
+  }
+
+  @Get("/blocks/latest")
+  @ApiOperation({ summary: 'Block details', description: 'Returns latest block information details' })
+  @ApiOkResponse({ type: BlockDetailed })
+  @ApiNotFoundResponse({ description: 'Block not found' })
+  @ApiQuery({ name: 'ttl', description: 'Compute the nonce frequency based on ttl value. If not specified the latest block may be 1h old', required: false})
+  async getLatestBlock(
+      @Query('ttl', ParseIntPipe) ttl?: number,
+  ): Promise<Block> {
+    const block = await this.blockService.getLatestBlock(ttl);
+    if (!block) {
+      throw new NotFoundException("Block not found");
+    }
+
+    return block;
   }
 
   @Get("/blocks/:hash")
