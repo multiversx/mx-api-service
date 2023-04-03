@@ -9,7 +9,7 @@ import { AccountKey } from 'src/endpoints/accounts/entities/account.key';
 import { AccountEsdtHistory } from 'src/endpoints/accounts/entities/account.esdt.history';
 import { AccountFilter } from 'src/endpoints/accounts/entities/account.filter';
 import { AccountHistoryFilter } from 'src/endpoints/accounts/entities/account.history.filter';
-import { GuardianData } from 'src/common/gateway/entities/guardian-data';
+import { GuardianData } from 'src/common/gateway/entities/guardian.data';
 
 describe('Account Service', () => {
   let accountService: AccountService;

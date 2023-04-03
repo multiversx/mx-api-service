@@ -150,38 +150,33 @@ export class AccountService {
         account.username = await this.usernameService.getUsernameForAddress(address) ?? undefined;
       }
 
-      if (account.isGuarded) {
-        try {
-          const apiGuardianData = await this.gatewayService.getGuardianData(address);
-          if (apiGuardianData) {
-            const {
-              guarded: isGuarded,
-              activeGuardian: {
-                activationEpoch: activeGuardianActivationEpoch,
-                address: activeGuardianAddress,
-                serviceUID: activeGuardianServiceUid,
-              } = {},
-              pendingGuardian: {
-                activationEpoch: pendingGuardianActivationEpoch,
-                address: pendingGuardianAddress,
-                serviceUID: pendingGuardianServiceUid,
-              } = {},
-            } = apiGuardianData;
-
-            account.activeGuardianActivationEpoch = activeGuardianActivationEpoch;
-            account.activeGuardianAddress = activeGuardianAddress;
-            account.activeGuardianServiceUid = activeGuardianServiceUid;
-            account.pendingGuardianActivationEpoch = pendingGuardianActivationEpoch;
-            account.pendingGuardianAddress = pendingGuardianAddress;
-            account.pendingGuardianServiceUid = pendingGuardianServiceUid;
-            account.isGuarded = isGuarded;
+      // if (account.isGuarded) {
+      try {
+        const guardianResult = await this.gatewayService.getGuardianData(address);
+        const guardianData = guardianResult?.guardianData;
+        if (guardianData) {
+          const activeGuardian = guardianData.activeGuardian;
+          if (activeGuardian) {
+            account.activeGuardianActivationEpoch = activeGuardian.activationEpoch;
+            account.activeGuardianAddress = activeGuardian.address;
+            account.activeGuardianServiceUid = activeGuardian.serviceUID;
           }
-        } catch (error) {
-          this.logger.error(`Error when getting guardian data for address '${address}'`);
+
+          const pendingGuardian = guardianData.pendingGuardian;
+          if (pendingGuardian) {
+            account.pendingGuardianActivationEpoch = pendingGuardian.activationEpoch;
+            account.pendingGuardianAddress = pendingGuardian.address;
+            account.pendingGuardianServiceUid = pendingGuardian.serviceUID;
+          }
+
+          account.isGuarded = guardianData.guarded;
         }
-      } else {
-        account.isGuarded = false;
+      } catch (error) {
+        this.logger.error(`Error when getting guardian data for address '${address}'`);
       }
+      // } else {
+      //   account.isGuarded = false;
+      // }
 
       await this.pluginService.processAccount(account);
       return account;
