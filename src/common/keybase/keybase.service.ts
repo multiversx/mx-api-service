@@ -7,7 +7,6 @@ import { KeybaseState } from "./entities/keybase.state";
 import { CacheInfo } from "../../utils/cache.info";
 import { GithubService } from "../github/github.service";
 import { ApiService, ApiUtils, CachingService, Constants, OriginLogger } from "@multiversx/sdk-nestjs";
-import { ApiConfigService } from "../api-config/api.config.service";
 import { PersistenceService } from "../persistence/persistence.service";
 
 @Injectable()
@@ -22,7 +21,6 @@ export class KeybaseService {
     @Inject(forwardRef(() => ProviderService))
     private readonly providerService: ProviderService,
     private readonly githubService: GithubService,
-    private readonly apiConfigService: ApiConfigService,
     private readonly persistenceService: PersistenceService
   ) { }
 
@@ -111,21 +109,39 @@ export class KeybaseService {
     }
   }
 
-  async confirmKeybasesAgainstGithubOrKeybasePub(): Promise<void> {
+  async confirmKeybasesAgainstGithub(): Promise<void> {
     const distinctIdentities = await this.getDistinctIdentities();
 
     for (const identity of distinctIdentities) {
-      await this.confirmKeybasesAgainstGithubOrKeybasePubForIdentity(identity);
+      await this.confirmKeybasesAgainstGithubForIdentity(identity);
     }
   }
 
-  async confirmKeybasesAgainstGithubOrKeybasePubForIdentity(identity: string): Promise<void> {
-    const githubSuccess = await this.confirmKeybasesAgainstGithubForIdentity(identity);
-    if (githubSuccess) {
-      return;
-    }
+  async confirmKeybasesAgainstGithubForIdentity(identity: string): Promise<void> {
+    try {
+      const multiversxResults = await this.githubService.getRepoFileContents(identity, 'multiversx', 'keys.json');
 
-    await this.confirmKeybasesAgainstKeybasePubForIdentityResilient(identity);
+      if (!multiversxResults) {
+        return;
+      }
+
+      const keys = JSON.parse(multiversxResults);
+
+      this.logger.log(`github.com validation: for identity '${identity}', found ${keys.length} keys`);
+
+      await this.cachingService.batchProcess(
+        keys,
+        (key: string) => CacheInfo.KeybaseConfirmation(key).key,
+        async () => await true,
+        CacheInfo.KeybaseConfirmation('*').ttl,
+        true
+      );
+
+      await this.persistenceService.setKeybaseConfirmationForIdentity(identity, keys);
+    } catch (error) {
+      this.logger.log(`Error when confirming keybase against github for identity '${identity}'`);
+      this.logger.error(error);
+    }
   }
 
   async confirmKeybasesAgainstDatabaseForIdentity(identity: string): Promise<boolean> {
@@ -151,107 +167,6 @@ export class KeybaseService {
       this.logger.error(error);
       return false;
     }
-  }
-
-  async confirmKeybasesAgainstGithubForIdentity(identity: string): Promise<boolean> {
-    try {
-      const [elrondResults, multiversxResults] = await Promise.all([
-        this.githubService.getRepoFileContents(identity, 'elrond', 'keys.json'),
-        this.githubService.getRepoFileContents(identity, 'multiversx', 'keys.json'),
-      ]);
-
-      if (!elrondResults && !multiversxResults) {
-        return false;
-      }
-
-      //@ts-ignore
-      const keys = multiversxResults ? JSON.parse(multiversxResults) : JSON.parse(elrondResults);
-
-      this.logger.log(`github.com validation: for identity '${identity}', found ${keys.length} keys`);
-
-      await this.cachingService.batchProcess(
-        keys,
-        (key: string) => CacheInfo.KeybaseConfirmation(key).key,
-        async () => await true,
-        CacheInfo.KeybaseConfirmation('*').ttl,
-        true
-      );
-
-      await this.persistenceService.setKeybaseConfirmationForIdentity(identity, keys);
-
-      return true;
-    } catch (error) {
-      this.logger.log(`Error when confirming keybase against github for identity '${identity}'`);
-      this.logger.error(error);
-      return false;
-    }
-  }
-
-  async confirmKeybasesAgainstKeybasePubForIdentityResilient(identity: string): Promise<void> {
-    let retries = 0;
-
-    while (retries < 3) {
-      try {
-        await this.confirmKeybasesAgainstKeybasePubForIdentity(identity);
-        return;
-      } catch (error) {
-        retries++;
-
-        // wait with backoff
-        await new Promise(resolve => setTimeout(resolve, 5000 * retries));
-
-        this.logger.log(`Retry #${retries} for confirming keybases against keybase.pub for identity '${identity}'`);
-      }
-    }
-  }
-
-  async confirmKeybasesAgainstKeybasePubForIdentity(identity: string): Promise<void> {
-    const network = this.apiConfigService.getNetwork();
-    const networkSuffix = network !== "mainnet" ? `/${network}` : '';
-
-    const [elrondResults, multiversxResults] = await Promise.all([
-      // eslint-disable-next-line require-await
-      this.apiService.get(`https://keybase.pub/${identity}/elrond${networkSuffix}`, { timeout: 100000 }, async (error) => error.response?.status === HttpStatus.NOT_FOUND),
-      // eslint-disable-next-line require-await
-      this.apiService.get(`https://keybase.pub/${identity}/multiversx${networkSuffix}`, { timeout: 100000 }, async (error) => error.response?.status === HttpStatus.NOT_FOUND),
-    ]);
-
-
-    if (!elrondResults && !multiversxResults) {
-      this.logger.log(`For identity '${identity}', no keybase.pub entry was found`);
-      return;
-    }
-
-    const html = multiversxResults?.data || elrondResults?.data;
-
-    const networkRegex = network !== "mainnet" ? `${network}\/` : '';
-
-    const nodesRegex = new RegExp(`https:\/\/keybase.pub\/${identity}\/(elrond|multiversx)\/${networkRegex}[0-9a-f]{192}`, 'g');
-    const blses: string[] = [];
-    for (const keybaseUrl of html.match(nodesRegex) || []) {
-      const bls = keybaseUrl.match(/[0-9a-f]{192}/)[0];
-      blses.push(bls);
-    }
-
-    const providersRegex = new RegExp("https:\/\/keybase.pub\/" + identity + "\/(elrond|multiversx)\/" + networkRegex + "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqq[0-9a-z]{14}", 'g');
-    const addresses: string[] = [];
-    for (const keybaseUrl of html.match(providersRegex) || []) {
-      const bls = keybaseUrl.match(/erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqq[0-9a-z]{14}/)[0];
-      addresses.push(bls);
-    }
-
-    this.logger.log(`keybase.pub validation: for identity '${identity}', found ${blses.length} blses and addresses ${addresses}`);
-
-    const keys = [...blses, ...addresses];
-    await this.cachingService.batchProcess(
-      keys,
-      (key: string) => CacheInfo.KeybaseConfirmation(key).key,
-      async () => await true,
-      CacheInfo.KeybaseConfirmation('*').ttl,
-      true
-    );
-
-    await this.persistenceService.setKeybaseConfirmationForIdentity(identity, keys);
   }
 
   async confirmIdentityProfilesAgainstKeybaseIo(): Promise<void> {
