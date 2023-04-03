@@ -127,7 +127,7 @@ export class BlockService {
   }
 
   async getLatestBlock(ttl?: number): Promise<Block | undefined> {
-    return await this.cachingService.getOrSetCache(
+    return await this.cachingService.getOrSet(
       CacheInfo.BlocksLatest(ttl).key,
       async () => await this.getLatestBlockRaw(),
       CacheInfo.BlocksLatest(ttl).ttl,
