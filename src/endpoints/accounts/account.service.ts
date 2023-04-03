@@ -86,8 +86,6 @@ export class AccountService {
       scrCount = await this.getAccountScResults(address);
     }
 
-
-
     const account = await this.getAccountRaw(address, txCount, scrCount);
 
     if (account && withGuardianInfo === true) {
@@ -181,6 +179,10 @@ export class AccountService {
 
       if (!AddressUtils.isSmartContractAddress(address)) {
         account.username = await this.usernameService.getUsernameForAddress(address) ?? undefined;
+        account.isPayableBySmartContract = undefined;
+        account.isUpgradeable = undefined;
+        account.isReadable = undefined;
+        account.isPayable = undefined;
       }
 
       await this.pluginService.processAccount(account);
