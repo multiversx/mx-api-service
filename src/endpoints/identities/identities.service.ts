@@ -31,6 +31,11 @@ export class IdentitiesService {
     return identities.find(x => x.identity === identifier);
   }
 
+  async getIdentityAvatar(identifier: string): Promise<string | undefined> {
+    const identity = await this.getIdentity(identifier);
+    return identity ? identity.avatar : undefined;
+  }
+
   async getIdentities(ids: string[]): Promise<Identity[]> {
     let identities = await this.getAllIdentities();
     if (ids.length > 0) {

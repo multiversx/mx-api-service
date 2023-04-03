@@ -11,6 +11,7 @@ import { ProviderFilter } from "./entities/provider.filter";
 import { Provider } from "./entities/provider";
 import { AddressUtils, Constants, ElrondCachingService, ApiService } from "@multiversx/sdk-nestjs";
 import { OriginLogger } from "@multiversx/sdk-nestjs";
+import { IdentitiesService } from "../identities/identities.service";
 
 @Injectable()
 export class ProviderService {
@@ -25,6 +26,8 @@ export class ProviderService {
     private readonly apiService: ApiService,
     @Inject(forwardRef(() => KeybaseService))
     private readonly keybaseService: KeybaseService,
+    @Inject(forwardRef(() => IdentitiesService))
+    private readonly identitiesService: IdentitiesService
   ) { }
 
   async getProvider(address: string): Promise<Provider | undefined> {
@@ -49,6 +52,11 @@ export class ProviderService {
     }
 
     return provider;
+  }
+
+  async getProviderAvatar(address: string): Promise<string | undefined> {
+    const providerIdentity = await this.getProviderIdentity(address);
+    return providerIdentity ? this.identitiesService.getIdentityAvatar(providerIdentity) : undefined;
   }
 
   private getNodesInfosForProvider(providerNodes: any[]): NodesInfos {
@@ -393,5 +401,10 @@ export class ProviderService {
     }
 
     return providers;
+  }
+
+  private async getProviderIdentity(address: string): Promise<string | undefined> {
+    const providerDetails = await this.getProvider(address);
+    return providerDetails && providerDetails.identity ? providerDetails.identity : undefined;
   }
 }
