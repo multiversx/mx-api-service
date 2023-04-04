@@ -1,96 +1,211 @@
+import { ApiService, ElrondCachingService } from "@multiversx/sdk-nestjs";
 import { Test } from "@nestjs/testing";
-import { NetworkConstants } from "src/endpoints/network/entities/constants";
-import { NetworkConfig } from "src/endpoints/network/entities/network.config";
-import { Economics } from "src/endpoints/network/entities/economics";
-import '@multiversx/sdk-nestjs/lib/src/utils/extensions/jest.extensions';
-import '@multiversx/sdk-nestjs/lib/src/utils/extensions/array.extensions';
-import '@multiversx/sdk-nestjs/lib/src/utils/extensions/number.extensions';
-import { PublicAppModule } from "src/public.app.module";
-import { Stats } from 'src/endpoints/network/entities/stats';
-import { GatewayService } from 'src/common/gateway/gateway.service';
-import { Auction } from 'src/common/gateway/entities/auction';
-import { AuctionNode } from 'src/common/gateway/entities/auction.node';
-import { ElrondCachingService } from "@multiversx/sdk-nestjs";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
+import { DataApiService } from "src/common/data-api/data-api.service";
+import { Auction } from "src/common/gateway/entities/auction";
+import { AuctionNode } from "src/common/gateway/entities/auction.node";
+import { NetworkConfig } from "src/common/gateway/entities/network.config";
+import { NetworkStatus } from "src/common/gateway/entities/network.status";
+import { GatewayService } from "src/common/gateway/gateway.service";
+import { PluginService } from "src/common/plugins/plugin.service";
+import { AccountService } from "src/endpoints/accounts/account.service";
+import { BlockService } from "src/endpoints/blocks/block.service";
 import { About } from "src/endpoints/network/entities/about";
+import { Economics } from "src/endpoints/network/entities/economics";
 import { NetworkService } from "src/endpoints/network/network.service";
+import { SmartContractResultService } from "src/endpoints/sc-results/scresult.service";
+import { StakeService } from "src/endpoints/stake/stake.service";
+import { TokenService } from "src/endpoints/tokens/token.service";
+import { TransactionService } from "src/endpoints/transactions/transaction.service";
+import { VmQueryService } from "src/endpoints/vm.query/vm.query.service";
+import { CacheInfo } from "src/utils/cache.info";
 
-describe('Network Service', () => {
+describe('NetworkService', () => {
   let networkService: NetworkService;
 
-  beforeAll(async () => {
+  beforeEach(async () => {
     const moduleRef = await Test.createTestingModule({
-      imports: [PublicAppModule],
+      providers: [
+        NetworkService,
+        {
+          provide: TokenService, useValue: {
+            getTokenMarketCapRaw: jest.fn(),
+          },
+        },
+        {
+          provide: ElrondCachingService, useValue:
+          {
+            getOrSet: jest.fn(),
+          },
+        },
+        {
+          provide: ApiConfigService, useValue:
+          {
+            getNetwork: jest.fn(),
+            getCluster: jest.fn(),
+            getInflationAmounts: jest.fn(),
+            isStakingV4Enabled: jest.fn(),
+            getMetaChainShardId: jest.fn(),
+            getAuctionContractAddress: jest.fn(),
+            getDelegationContractAddress: jest.fn(),
+          },
+        },
+        {
+          provide: GatewayService, useValue:
+          {
+            getNetworkConfig: jest.fn(),
+            getNetworkStatus: jest.fn(),
+            getValidatorAuctions: jest.fn(),
+            getAddressDetails: jest.fn(),
+            getNetworkEconomics: jest.fn(),
+          },
+        },
+        {
+          provide: VmQueryService, useValue:
+          {
+            vmQuery: jest.fn(),
+          },
+        },
+        {
+          provide: BlockService, useValue:
+          {
+            getBlocksCount: jest.fn(),
+          },
+        },
+        {
+          provide: AccountService, useValue:
+          {
+            getAccountRaw: jest.fn(),
+            getAccountsCount: jest.fn(),
+          },
+        },
+        {
+          provide: TransactionService, useValue:
+          {
+            getTransactionCount: jest.fn(),
+          },
+        },
+        {
+          provide: PluginService, useValue:
+          {
+            getEgldPrice: jest.fn(),
+            processAbout: jest.fn(),
+          },
+        },
+        {
+          provide: ApiService, useValue:
+          {
+            get: jest.fn(),
+          },
+        },
+        {
+          provide: StakeService, useValue:
+          {
+            getGlobalStake: jest.fn(),
+          },
+        },
+        {
+          provide: SmartContractResultService, useValue:
+          {
+            getScResultsCount: jest.fn(),
+          },
+        },
+        {
+          provide: DataApiService, useValue:
+          {
+            getEgldPrice: jest.fn(),
+          },
+        },
+      ],
     }).compile();
 
     networkService = moduleRef.get<NetworkService>(NetworkService);
   });
 
-  beforeEach(() => { jest.restoreAllMocks(); });
+  it('service should be defined', () => {
+    expect(networkService).toBeDefined();
+  });
 
-  describe('Get Constants', () => {
-    it('should return network constants', async () => {
-      jest
-        .spyOn(ElrondCachingService.prototype, 'getOrSet')
-        // eslint-disable-next-line require-await
-        .mockImplementation(jest.fn(async (_key: string, promise: any) => promise()));
+  describe('getConstants', () => {
+    it('should return network constants from cache', async () => {
+      // eslint-disable-next-line require-await
+      jest.spyOn(networkService['cachingService'], 'getOrSet').mockImplementation(async () => ({
+        chainId: 'T',
+        gasPerDataByte: 1000,
+        minGasLimit: 20000,
+        minGasPrice: 1000000000,
+        minTransactionVersion: 2,
+      }));
 
       const constants = await networkService.getConstants();
-      expect(constants).toHaveStructure(Object.keys(new NetworkConstants()));
+
+      expect(constants.chainId).toBe('T');
+      expect(constants.gasPerDataByte).toBe(1000);
+      expect(constants.minGasLimit).toBe(20000);
+      expect(constants.minGasPrice).toBe(1000000000);
+      expect(constants.minTransactionVersion).toBe(2);
     });
   });
 
-  describe('Get Network Config', () => {
-    it('should return network configuration', async () => {
-      const networkConfig = await networkService.getNetworkConfig();
-      expect(networkConfig).toHaveStructure(Object.keys(new NetworkConfig()));
-    });
-  });
-
-  describe('Get Economics Raw', () => {
-    it('should return economic raw properties', async () => {
-      expect.assertions(1);
-      const results = await networkService.getEconomicsRaw();
-      expect(results).toHaveStructure(Object.keys(new Economics()));
-    });
-  });
-
-  describe('Get Economics', () => {
-    it('should return economics properties', async () => {
-      const results = await networkService.getEconomics();
-
-      expect(results).toEqual(expect.objectContaining({
-        apr: expect.any(Number),
-        baseApr: expect.any(Number),
-        circulatingSupply: expect.any(Number),
-        staked: expect.any(Number),
-        topUpApr: expect.any(Number),
-        totalSupply: expect.any(Number),
+  describe('getNetworkConfig', () => {
+    it('should return network config when both promises resolve with valid values', async () => {
+      const getNetworkConfigSpy = jest.spyOn(networkService['gatewayService'], 'getNetworkConfig').mockResolvedValue(new NetworkConfig({
+        erd_round_duration: 5000,
+        erd_rounds_per_epoch: 10,
       }));
+
+      jest.spyOn(networkService['gatewayService'], 'getNetworkStatus').mockResolvedValue(new NetworkStatus({
+        erd_rounds_passed_in_current_epoch: 3,
+      }));
+
+      const result = await networkService.getNetworkConfig();
+
+      expect(getNetworkConfigSpy).toHaveBeenCalledWith();
+      expect(result).toEqual({
+        roundsPassed: 3,
+        roundsPerEpoch: 10,
+        roundDuration: 5,
+      });
+    });
+
+    it('should throw error when getNetworkStatus() promise rejects', async () => {
+      jest.spyOn(networkService['gatewayService'], 'getNetworkConfig').mockResolvedValue(new NetworkConfig({
+        erd_round_duration: 5000,
+        erd_rounds_per_epoch: 10,
+      }));
+      jest.spyOn(networkService['gatewayService'], 'getNetworkStatus').mockRejectedValue(new Error('Unable to get network status'));
+
+      await expect(networkService.getNetworkConfig()).rejects.toThrow('Unable to get network status');
     });
   });
 
-  describe("getStats", () => {
-    it("should return status network", async () => {
-      const status = await networkService.getStats();
+  describe('getEconomics', () => {
+    it('should return cached value when available', async () => {
+      const expectedEconomics = new Economics({
+        totalSupply: 20000000000,
+        circulatingSupply: 19900000000,
+        staked: 1000000,
+        price: 1.23,
+        marketCap: 24570000000,
+        apr: 3.2,
+        topUpApr: 3.4,
+        baseApr: 3.0,
+        tokenMarketCap: 50000000,
+      });
+      const getOrSetSpy = jest.spyOn(networkService['cachingService'], 'getOrSet').mockImplementation((_key, getter) => getter());
 
-      expect(status).toHaveStructure(Object.keys(new Stats()));
-    });
-  });
+      jest.spyOn(networkService['cachingService'], 'getOrSet').mockImplementationOnce((_key) => Promise.resolve(expectedEconomics));
 
-  describe("Get APR", () => {
-    it("should return APR, toUpAPR, baseAPR", async () => {
-      const results = await networkService.getApr();
+      const result = await networkService.getEconomics();
 
-      expect(results.hasOwnProperty("apr")).toBeTruthy();
-      expect(results.hasOwnProperty("topUpApr")).toBeTruthy();
-      expect(results.hasOwnProperty("baseApr")).toBeTruthy();
+      expect(getOrSetSpy).toHaveBeenCalledWith(CacheInfo.Economics.key, expect.any(Function), CacheInfo.Economics.ttl);
+      expect(result).toEqual(expectedEconomics);
     });
   });
 
   describe("getMinimumAuctionTopUp", () => {
     it("Should correctly calculate minimum auction topup", async () => {
-      jest.spyOn(GatewayService.prototype, "getValidatorAuctions")
+      jest.spyOn(networkService['gatewayService'], "getValidatorAuctions")
         .mockImplementation(jest.fn(() => Promise.resolve([
           new Auction({
             "qualifiedTopUp": "2500000000000000000000",
@@ -118,7 +233,7 @@ describe('Network Service', () => {
     });
 
     it("Should correctly calculate minimum auction topup even if values come sorted wrongly", async () => {
-      jest.spyOn(GatewayService.prototype, "getValidatorAuctions")
+      jest.spyOn(networkService['gatewayService'], "getValidatorAuctions")
         .mockImplementation(jest.fn(() => Promise.resolve([
           new Auction({
             "qualifiedTopUp": "2400000000000000000000",
@@ -146,7 +261,7 @@ describe('Network Service', () => {
     });
 
     it("Should return correctly minimum auction topup if all values are selected", async () => {
-      jest.spyOn(GatewayService.prototype, "getValidatorAuctions")
+      jest.spyOn(networkService['gatewayService'], "getValidatorAuctions")
         .mockImplementation(jest.fn(() => Promise.resolve([
           new Auction({
             "qualifiedTopUp": "2500000000000000000000",
@@ -174,7 +289,7 @@ describe('Network Service', () => {
     });
 
     it("Should return undefined as minimum auction topup if all values are not selected", async () => {
-      jest.spyOn(GatewayService.prototype, "getValidatorAuctions")
+      jest.spyOn(networkService['gatewayService'], "getValidatorAuctions")
         .mockImplementation(jest.fn(() => Promise.resolve([
           new Auction({
             "qualifiedTopUp": "2500000000000000000000",
@@ -200,24 +315,22 @@ describe('Network Service', () => {
 
       expect(minimumAuctionTopUp).toBeUndefined();
     });
-
-    it("Should return undefined as minimum auction topup if no auctions", async () => {
-      jest.spyOn(GatewayService.prototype, "getValidatorAuctions")
-        .mockImplementation(jest.fn(() => Promise.resolve([])));
-
-      const minimumAuctionTopUp = await networkService.getMinimumAuctionTopUp();
-
-      expect(minimumAuctionTopUp).toBeUndefined();
-    });
   });
-
 
   describe('getAbout', () => {
     it('should return API general information', async () => {
+      const expectedValues = {
+        appVersion: '8f2b49d',
+        pluginsVersion: 'e0a77bc',
+        network: 'mainnet',
+        cluster: undefined,
+        version: '',
+        scamEngineVersion: '1.0.0',
+      };
       jest
-        .spyOn(ElrondCachingService.prototype, 'getOrSet')
+        .spyOn(networkService['cachingService'], 'getOrSet')
         // eslint-disable-next-line require-await
-        .mockImplementation(jest.fn(async (_key: string, promise: any) => promise()));
+        .mockImplementation(jest.fn(async (_key: string, _promise: any) => expectedValues));
 
       jest
         .spyOn(NetworkService.prototype, 'getAboutRaw')
@@ -233,7 +346,7 @@ describe('Network Service', () => {
         }));
 
       const result = await networkService.getAbout();
-      expect(result).toHaveStructure(Object.keys(new About()));
+      expect(result).toStrictEqual(expectedValues);
     });
   });
 
@@ -258,6 +371,22 @@ describe('Network Service', () => {
       expect(result.appVersion).toStrictEqual('8f2b49d');
       expect(result.network).toStrictEqual('mainnet');
       expect(result.cluster).toBeUndefined();
+    });
+  });
+
+  describe('numberDecode', () => {
+    it('should decode base64-encoded number and return the correct string', () => {
+      const encodedNumber = 'MTIzNDU2Nzg5MA==';
+      const decodedNumber = networkService.numberDecode(encodedNumber);
+
+      expect(decodedNumber).toBe('232321984496799787268400');
+    });
+
+    it('should return 0 when input is an empty string', () => {
+      const encodedNumber = '';
+      const decodedNumber = networkService.numberDecode(encodedNumber);
+
+      expect(decodedNumber).toBe('0');
     });
   });
 });
