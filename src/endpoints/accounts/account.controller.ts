@@ -112,7 +112,7 @@ export class AccountController {
 
   @Get("/accounts/:address")
   @ApiOperation({ summary: 'Account details', description: 'Returns account details for a given address' })
-  @ApiQuery({ name: 'withGuardianInfo', description: 'Return guardian data for a given address', required: false })
+  @ApiQuery({ name: 'withGuardianInfo', description: 'Returns guardian data for a given address', required: false })
   @ApiQuery({ name: 'fields', description: 'List of fields to filter by', required: false })
   @ApiOkResponse({ type: AccountDetailed })
   async getAccountDetails(
