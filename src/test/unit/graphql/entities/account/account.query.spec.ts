@@ -19,7 +19,7 @@ describe(AccountQuery, () => {
 
   let accountServiceMock: AccountService;
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     const module = await Test.createTestingModule({
       providers: [
         AccountQuery,

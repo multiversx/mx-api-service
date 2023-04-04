@@ -7,7 +7,7 @@ import { ApiChecker } from 'src/utils/api.checker';
 describe.skip("API Testing", () => {
   let app: INestApplication;
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
       imports: [PublicAppModule],
     }).compile();

@@ -15,6 +15,7 @@ import { GraphQlModule } from './graphql/graphql.module';
     LoggingModule,
     EndpointsServicesModule,
     EndpointsControllersModule.forRoot(),
+    DynamicModuleUtils.getRedisCacheModule(),
     GraphQlModule.register(),
   ],
   controllers: [

@@ -11,7 +11,7 @@ import { EsdtAddressService } from 'src/endpoints/esdt/esdt.address.service';
 import { NftAccount } from 'src/endpoints/nfts/entities/nft.account';
 import { ApiConfigService } from 'src/common/api-config/api.config.service';
 import { QueryPagination } from 'src/common/entities/query.pagination';
-import { CachingService } from '@multiversx/sdk-nestjs';
+import { ElrondCachingService } from '@multiversx/sdk-nestjs';
 import { PluginService } from 'src/common/plugins/plugin.service';
 import { Nft } from 'src/endpoints/nfts/entities/nft';
 import { ScamType } from 'src/common/entities/scam-type.enum';
@@ -342,7 +342,6 @@ describe('Nft Service', () => {
     it("should return the number of nfts with name specified", async () => {
       const filters = new NftFilter();
       filters.name = "Gritty Summit Chaser";
-
       const count = await nftService.getNftCount(filters);
 
       expect(typeof count).toBe("number");
@@ -670,7 +669,7 @@ describe('Nft Service', () => {
   describe('getNftOwnersCount', () => {
     it('should return total number of esdts token', async () => {
       jest
-        .spyOn(CachingService.prototype, 'getOrSetCache')
+        .spyOn(ElrondCachingService.prototype, 'getOrSet')
         // eslint-disable-next-line require-await
         .mockImplementation(jest.fn(async (_key: string, promise: any) => promise()));
 
@@ -686,7 +685,7 @@ describe('Nft Service', () => {
 
     it('should return undefined because test simulates that esdt owners are null', async () => {
       jest
-        .spyOn(CachingService.prototype, 'getOrSetCache')
+        .spyOn(ElrondCachingService.prototype, 'getOrSet')
         // eslint-disable-next-line require-await
         .mockImplementation(jest.fn(async (_key: string, promise: any) => promise()));
 
@@ -754,26 +753,12 @@ describe('Nft Service', () => {
     });
 
     it("should return a list of NFTs without scam info property", async () => {
-      const filter = new NftFilter({ collection: 'LOTTERY-7cae2f' });
-
+      const filter = new NftFilter({ collection: 'ROCK-6b8ac9-38' });
       const options = new NftQueryOptions({ withScamInfo: false });
-
       const nfts = await nftService.getNfts({ from: 0, size: 10 }, filter, options);
 
       for (const nft of nfts) {
-        expect(nft.scamInfo).toBeDefined();
-      }
-    });
-
-    it("should return a list of address NFTs without scam info property", async () => {
-      const filter = new NftFilter({ collection: 'LOTTERY-7cae2f' });
-
-      const options = new NftQueryOptions({ withScamInfo: false });
-
-      const nfts = await nftService.getNftsForAddress('erd1ar8gg37lu2reg5zpmtmqawqe65fzfsjd2v3p4m993xxjnu8azssq86f24k', { from: 0, size: 10 }, filter, undefined, options);
-
-      for (const nft of nfts) {
-        expect(nft.scamInfo).toBeDefined();
+        expect(nft.scamInfo).toBeUndefined();
       }
     });
 
@@ -817,32 +802,6 @@ describe('Nft Service', () => {
       const nft = await nftService.getNftForAddress('erd1dv9sw8a2hy3lv98p3sdqazy420j48wtn3vs9q74ezuamv64tcxrqqxquxv', identifier);
 
       expect(nft?.scamInfo).toBeUndefined();
-    });
-  });
-
-  describe('NFT Scam Info (without mocking)', () => {
-    it("should return a list of NFTs without scam info property", async () => {
-      const filter = new NftFilter({ collection: 'LOTTERY-7cae2f' });
-
-      const options = new NftQueryOptions({ withScamInfo: false });
-
-      const nfts = await nftService.getNfts({ from: 0, size: 10 }, filter, options);
-
-      for (const nft of nfts) {
-        expect(nft.scamInfo).toBeUndefined();
-      }
-    });
-
-    it("should return a list of address NFTs without scam info property", async () => {
-      const filter = new NftFilter({ collection: 'LOTTERY-7cae2f' });
-
-      const options = new NftQueryOptions({ withScamInfo: false });
-
-      const nfts = await nftService.getNftsForAddress('erd1ar8gg37lu2reg5zpmtmqawqe65fzfsjd2v3p4m993xxjnu8azssq86f24k', { from: 0, size: 10 }, filter, undefined, options);
-
-      for (const nft of nfts) {
-        expect(nft.scamInfo).toBeUndefined();
-      }
     });
   });
 

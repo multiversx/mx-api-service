@@ -9,7 +9,7 @@ import { KeybaseService } from "src/common/keybase/keybase.service";
 import { CacheInfo } from "src/utils/cache.info";
 import { ProviderFilter } from "./entities/provider.filter";
 import { Provider } from "./entities/provider";
-import { AddressUtils, Constants, CachingService, ApiService } from "@multiversx/sdk-nestjs";
+import { AddressUtils, Constants, ElrondCachingService, ApiService } from "@multiversx/sdk-nestjs";
 import { OriginLogger } from "@multiversx/sdk-nestjs";
 import { IdentitiesService } from "../identities/identities.service";
 
@@ -18,7 +18,7 @@ export class ProviderService {
   private readonly logger = new OriginLogger(ProviderService.name);
 
   constructor(
-    private readonly cachingService: CachingService,
+    private readonly cachingService: ElrondCachingService,
     private readonly apiConfigService: ApiConfigService,
     private readonly vmQueryService: VmQueryService,
     @Inject(forwardRef(() => NodeService))
@@ -89,7 +89,7 @@ export class ProviderService {
   }
 
   async getProvidersWithStakeInformation(): Promise<Provider[]> {
-    return await this.cachingService.getOrSetCache(
+    return await this.cachingService.getOrSet(
       CacheInfo.ProvidersWithStakeInformation.key,
       async () => await this.getProvidersWithStakeInformationRaw(),
       CacheInfo.ProvidersWithStakeInformation.ttl
@@ -153,7 +153,7 @@ export class ProviderService {
   }
 
   async getDelegationProviders(): Promise<DelegationData[]> {
-    return await this.cachingService.getOrSetCache(
+    return await this.cachingService.getOrSet(
       CacheInfo.DelegationProviders.key,
       async () => await this.getDelegationProvidersRaw(),
       CacheInfo.DelegationProviders.ttl
@@ -161,7 +161,7 @@ export class ProviderService {
   }
 
   async getDelegationProviderByAddress(address: string): Promise<DelegationData | undefined> {
-    return await this.cachingService.getOrSetCache(
+    return await this.cachingService.getOrSet(
       CacheInfo.DelegationProvider(address).key,
       async () => await this.getDelegationProviderByAddressRaw(address),
       CacheInfo.DelegationProvider(address).ttl
@@ -191,7 +191,7 @@ export class ProviderService {
   }
 
   async getAllProviders(): Promise<Provider[]> {
-    return await this.cachingService.getOrSetCache(
+    return await this.cachingService.getOrSet(
       CacheInfo.Providers.key,
       async () => await this.getAllProvidersRaw(),
       CacheInfo.Providers.ttl

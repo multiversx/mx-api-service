@@ -7,7 +7,7 @@ describe("Shards Controller", () => {
   let app: INestApplication;
   const path: string = "/shards";
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
       imports: [PublicAppModule],
     }).compile();

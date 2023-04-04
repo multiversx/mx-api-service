@@ -3,14 +3,14 @@ import { CacheInfo } from '../../utils/cache.info';
 import { NotifierEvent } from './entities/notifier.event';
 import { EsdtService } from 'src/endpoints/esdt/esdt.service';
 import { ClientProxy } from '@nestjs/microservices';
-import { BinaryUtils, CachingService, OriginLogger } from '@multiversx/sdk-nestjs';
+import { BinaryUtils, ElrondCachingService, OriginLogger } from '@multiversx/sdk-nestjs';
 
 @Injectable()
 export class RabbitMqTokenHandlerService {
   private readonly logger = new OriginLogger(RabbitMqTokenHandlerService.name);
 
   constructor(
-    private readonly cachingService: CachingService,
+    private readonly cachingService: ElrondCachingService,
     private readonly esdtService: EsdtService,
     @Inject('PUBSUB_SERVICE') private clientProxy: ClientProxy,
   ) { }
@@ -40,7 +40,7 @@ export class RabbitMqTokenHandlerService {
   }
 
   private async invalidateKey(key: string, data: any, ttl: number) {
-    await this.cachingService.setCache(key, data, ttl);
+    await this.cachingService.set(key, data, ttl);
     this.refreshCacheKey(key, ttl);
   }
 

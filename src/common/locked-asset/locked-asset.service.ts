@@ -3,7 +3,7 @@ import { LockedAssetAttributes, UnlockMilestone, LockedTokenAttributes } from '@
 import { ApiConfigService } from '../api-config/api.config.service';
 import { VmQueryService } from '../../endpoints/vm.query/vm.query.service';
 import { CacheInfo } from '../../utils/cache.info';
-import { CachingService, Constants } from '@multiversx/sdk-nestjs';
+import { ElrondCachingService, Constants } from '@multiversx/sdk-nestjs';
 import { TokenHelpers } from '../../utils/token.helpers';
 import { GatewayService } from '../gateway/gateway.service';
 import { MexSettingsService } from 'src/endpoints/mex/mex.settings.service';
@@ -15,7 +15,7 @@ export class LockedAssetService {
   constructor(
     private readonly apiConfigService: ApiConfigService,
     private readonly vmQueryService: VmQueryService,
-    private readonly cachingService: CachingService,
+    private readonly cachingService: ElrondCachingService,
     private readonly gatewayService: GatewayService,
     private readonly mexSettingsService: MexSettingsService,
   ) { }
@@ -57,7 +57,7 @@ export class LockedAssetService {
   }
 
   private async getExtendedAttributesActivationNonce(): Promise<number> {
-    return await this.cachingService.getOrSetCache(
+    return await this.cachingService.getOrSet(
       CacheInfo.ExtendedAttributesActivationNonce.key,
       async () => await this.getExtendedAttributesActivationNonceRaw(),
       CacheInfo.ExtendedAttributesActivationNonce.ttl,
@@ -86,7 +86,7 @@ export class LockedAssetService {
   }
 
   private async getInitEpoch(): Promise<number> {
-    return await this.cachingService.getOrSetCache(
+    return await this.cachingService.getOrSet(
       CacheInfo.InitEpoch.key,
       async () => await this.getInitEpochRaw(),
       Constants.oneWeek(),
@@ -116,7 +116,7 @@ export class LockedAssetService {
   }
 
   private async getLockedTokens(): Promise<LockedTokensInterface | undefined> {
-    return await this.cachingService.getOrSetCache(
+    return await this.cachingService.getOrSet(
       CacheInfo.LockedTokenIDs.key,
       async () => await this.getLockedTokensRaw(),
       CacheInfo.LockedTokenIDs.ttl,
@@ -187,7 +187,7 @@ export class LockedAssetService {
   }
 
   private async getCurrentEpochCached(): Promise<number> {
-    return await this.cachingService.getOrSetCache(
+    return await this.cachingService.getOrSet(
       CacheInfo.CurrentEpoch.key,
       async () => await this.getCurrentEpoch(),
       Constants.oneMinute(),

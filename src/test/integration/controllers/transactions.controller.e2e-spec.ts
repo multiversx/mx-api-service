@@ -7,7 +7,7 @@ describe("Transactions Controller", () => {
   let app: INestApplication;
   const path: string = "/transactions";
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
       imports: [PublicAppModule],
     }).compile();

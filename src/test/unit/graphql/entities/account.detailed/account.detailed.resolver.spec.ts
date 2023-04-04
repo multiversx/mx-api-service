@@ -42,7 +42,7 @@ describe.skip(AccountDetailedResolver, () => {
   // @ts-ignore
   const parent: AccountDetailed = AccountServiceMock.accounts.at(0);
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     const module = await Test.createTestingModule({
       providers: [
         AccountDetailedResolver,

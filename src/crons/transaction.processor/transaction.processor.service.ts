@@ -11,7 +11,7 @@ import { TransactionExtractorInterface } from "./extractor/transaction.extractor
 import { TransferOwnershipExtractor } from "./extractor/transfer.ownership.extractor";
 import { MetricsEvents } from "src/utils/metrics-events.constants";
 import { LogMetricsEvent } from "src/common/entities/log.metrics.event";
-import { PerformanceProfiler, CachingService, BinaryUtils, OriginLogger } from "@multiversx/sdk-nestjs";
+import { PerformanceProfiler, ElrondCachingService, BinaryUtils, OriginLogger } from "@multiversx/sdk-nestjs";
 
 
 @Injectable()
@@ -20,7 +20,7 @@ export class TransactionProcessorService {
   private transactionProcessor: TransactionProcessor = new TransactionProcessor();
 
   constructor(
-    private readonly cachingService: CachingService,
+    private readonly cachingService: ElrondCachingService,
     private readonly apiConfigService: ApiConfigService,
     @Inject('PUBSUB_SERVICE') private clientProxy: ClientProxy,
     private readonly nodeService: NodeService,
@@ -63,7 +63,7 @@ export class TransactionProcessorService {
         profiler.stop();
       },
       getLastProcessedNonce: async (shardId) => {
-        return await this.cachingService.getCache<number>(CacheInfo.TransactionProcessorShardNonce(shardId).key);
+        return await this.cachingService.get<number>(CacheInfo.TransactionProcessorShardNonce(shardId).key);
       },
       setLastProcessedNonce: async (shardId, nonce) => {
         const event = new LogMetricsEvent();
@@ -73,7 +73,7 @@ export class TransactionProcessorService {
           event
         );
 
-        await this.cachingService.setCache<number>(CacheInfo.TransactionProcessorShardNonce(shardId).key, nonce, CacheInfo.TransactionProcessorShardNonce(shardId).ttl);
+        await this.cachingService.set<number>(CacheInfo.TransactionProcessorShardNonce(shardId).key, nonce, CacheInfo.TransactionProcessorShardNonce(shardId).ttl);
       },
     });
   }

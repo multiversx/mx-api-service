@@ -1,4 +1,4 @@
-import { AddressUtils, CachingService } from "@multiversx/sdk-nestjs";
+import { AddressUtils, ElrondCachingService } from "@multiversx/sdk-nestjs";
 import { Injectable } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { CacheInfo } from "src/utils/cache.info";
@@ -25,7 +25,7 @@ export class ProcessNftsService {
     private readonly nftService: NftService,
     private readonly collectionService: CollectionService,
     private readonly accountService: AccountService,
-    private readonly cachingService: CachingService,
+    private readonly cachingService: ElrondCachingService,
   ) { }
 
   public async process(processNftRequest: ProcessNftRequest) {
@@ -102,7 +102,7 @@ export class ProcessNftsService {
   }
 
   private async getCollectionNonScOwner(collection: string): Promise<string> {
-    return await this.cachingService.getOrSetCache(
+    return await this.cachingService.getOrSet(
       CacheInfo.CollectionNonScOwner(collection).key,
       async () => await this.getCollectionNonScOwnerRaw(collection),
       CacheInfo.CollectionNonScOwner(collection).ttl,

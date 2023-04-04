@@ -1,4 +1,4 @@
-import { Constants, CachingService } from "@multiversx/sdk-nestjs";
+import { Constants, ElrondCachingService } from "@multiversx/sdk-nestjs";
 import { BadRequestException, Injectable } from "@nestjs/common";
 import { gql } from "graphql-request";
 import { CacheInfo } from "src/utils/cache.info";
@@ -15,7 +15,7 @@ export class MexPairService {
   private readonly logger = new OriginLogger(MexPairService.name);
 
   constructor(
-    private readonly cachingService: CachingService,
+    private readonly cachingService: ElrondCachingService,
     private readonly mexSettingService: MexSettingsService,
     private readonly graphQlService: GraphQlService,
     private readonly apiConfigService: ApiConfigService,
@@ -23,8 +23,8 @@ export class MexPairService {
 
   async refreshMexPairs(): Promise<void> {
     const pairs = await this.getAllMexPairsRaw();
-    await this.cachingService.setCacheRemote(CacheInfo.MexPairs.key, pairs, CacheInfo.MexPairs.ttl);
-    await this.cachingService.setCacheLocal(CacheInfo.MexPairs.key, pairs, Constants.oneSecond() * 30);
+    await this.cachingService.setRemote(CacheInfo.MexPairs.key, pairs, CacheInfo.MexPairs.ttl);
+    await this.cachingService.setLocal(CacheInfo.MexPairs.key, pairs, Constants.oneSecond() * 30);
   }
 
   async getMexPairs(from: number, size: number): Promise<any> {
@@ -43,7 +43,7 @@ export class MexPairService {
       return [];
     }
 
-    return await this.cachingService.getOrSetCache(
+    return await this.cachingService.getOrSet(
       CacheInfo.MexPairs.key,
       async () => await this.getAllMexPairsRaw(),
       CacheInfo.MexPairs.ttl,

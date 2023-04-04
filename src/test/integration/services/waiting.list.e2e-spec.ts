@@ -1,6 +1,6 @@
 import { Test } from "@nestjs/testing";
 import '@multiversx/sdk-nestjs/lib/src/utils/extensions/jest.extensions';
-import { CachingService } from "@multiversx/sdk-nestjs";
+import { ElrondCachingService } from "@multiversx/sdk-nestjs";
 import { WaitingListService } from "src/endpoints/waiting-list/waiting.list.service";
 import { WaitingList } from "src/endpoints/waiting-list/entities/waiting.list";
 import { QueryPagination } from "src/common/entities/query.pagination";
@@ -31,7 +31,7 @@ describe('Waiting List Service', () => {
   describe("getWaitingList", () => {
     it("should return waiting list", async () => {
       jest
-        .spyOn(CachingService.prototype, 'getOrSetCache')
+        .spyOn(ElrondCachingService.prototype, 'getOrSet')
         // eslint-disable-next-line require-await
         .mockImplementation(jest.fn(async (_key: string, promise: any) => promise()));
 
@@ -46,7 +46,7 @@ describe('Waiting List Service', () => {
 
   describe('getWaitingListForAddress', () => {
     it('should return a list of waitings for a specified address ', async () => {
-      jest.spyOn(CachingService.prototype, 'getOrSetCache')
+      jest.spyOn(ElrondCachingService.prototype, 'getOrSet')
         // eslint-disable-next-line require-await
         .mockImplementation(async () => waitingList);
 
@@ -67,7 +67,7 @@ describe('Waiting List Service', () => {
   describe('getWaitingListCount', () => {
     it('should return total count of waiting list ', async () => {
       jest
-        .spyOn(CachingService.prototype, 'getOrSetCache')
+        .spyOn(ElrondCachingService.prototype, 'getOrSet')
         // eslint-disable-next-line require-await
         .mockImplementation(jest.fn(async (_key: string, _promise: any) => waitingList));
 

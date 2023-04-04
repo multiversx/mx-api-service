@@ -7,7 +7,7 @@ describe("Hello Controller", () => {
   let app: INestApplication;
   const path: string = "/hello";
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
       imports: [PublicAppModule],
     }).compile();

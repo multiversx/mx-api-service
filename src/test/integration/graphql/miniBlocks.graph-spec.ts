@@ -7,13 +7,17 @@ describe('MiniBlocks', () => {
   let app: INestApplication;
   const gql = '/graphql';
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [PublicAppModule],
     }).compile();
 
     app = moduleFixture.createNestApplication();
     await app.init();
+  });
+
+  afterAll(async () => {
+    await app.close();
   });
 
   describe('Query - Get MiniBlock', () => {
@@ -68,9 +72,5 @@ describe('MiniBlocks', () => {
           expect(res.body.errors[0].extensions.code).toStrictEqual("404");
         });
     });
-  });
-
-  afterEach(async () => {
-    await app.close();
   });
 });

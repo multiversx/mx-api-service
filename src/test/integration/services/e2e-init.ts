@@ -1,4 +1,4 @@
-import { CachingService } from "@multiversx/sdk-nestjs";
+import { ElrondCachingService } from "@multiversx/sdk-nestjs";
 import { Constants, FileUtils } from "@multiversx/sdk-nestjs";
 import { Test } from "@nestjs/testing";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
@@ -12,7 +12,7 @@ import '@multiversx/sdk-nestjs/lib/src/utils/extensions/jest.extensions';
 import { TokenService } from "src/endpoints/tokens/token.service";
 
 export default class Initializer {
-  private static cachingService: CachingService;
+  private static cachingService: ElrondCachingService;
   private static apiConfigService: ApiConfigService;
 
   static async initialize() {
@@ -21,7 +21,7 @@ export default class Initializer {
     }).compile();
 
     Initializer.cachingService =
-      moduleRef.get<CachingService>(CachingService);
+      moduleRef.get<ElrondCachingService>(ElrondCachingService);
     Initializer.apiConfigService =
       moduleRef.get<ApiConfigService>(ApiConfigService);
     const keybaseService = moduleRef.get<KeybaseService>(KeybaseService);
@@ -73,23 +73,23 @@ export default class Initializer {
         .mockImplementation(jest.fn(async () => {
           const providers = await providerService.getProviderAddresses();
           for (const provider of providers) {
-            await this.cachingService.setCache(`keybase:${provider}`, true, Constants.oneHour());
+            await this.cachingService.set(`keybase:${provider}`, true, Constants.oneHour());
           }
 
           for (const node of nodes) {
-            await this.cachingService.setCache(`keybase:${node.bls}`, true, Constants.oneHour());
+            await this.cachingService.set(`keybase:${node.bls}`, true, Constants.oneHour());
           }
         }));
     }
 
-    const isInitialized = await Initializer.cachingService.getCacheRemote<boolean>('isInitialized');
+    const isInitialized = await Initializer.cachingService.getRemote<boolean>('isInitialized');
     if (isInitialized === true) {
       return;
     }
 
     await this.execute(
       'Flushing db',
-      async () => await Initializer.cachingService.flushDb(),
+      async () => await Initializer.cachingService.flushDbRemote(),
     );
 
     await this.execute('Confirm keybases against keybase.pub', async () => await keybaseService.confirmKeybasesAgainstGithub());
@@ -99,7 +99,7 @@ export default class Initializer {
     await this.fetch(CacheInfo.Providers.key, async () => await providerService.getAllProvidersRaw());
     await this.fetch(CacheInfo.AllEsdtTokens.key, async () => await tokenService.getAllTokensRaw());
 
-    await Initializer.cachingService.setCacheRemote<boolean>(
+    await Initializer.cachingService.setRemote<boolean>(
       'isInitialized',
       true,
       Constants.oneHour(),
@@ -111,7 +111,7 @@ export default class Initializer {
 
     await this.execute(description, async () => {
       const value = await promise();
-      await Initializer.cachingService.setCache(key, value, Constants.oneHour());
+      await Initializer.cachingService.set(key, value, Constants.oneHour());
     });
   }
 

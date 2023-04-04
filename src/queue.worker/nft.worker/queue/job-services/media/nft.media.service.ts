@@ -1,4 +1,4 @@
-import { ApiService, CachingService } from "@multiversx/sdk-nestjs";
+import { ApiService, ElrondCachingService } from "@multiversx/sdk-nestjs";
 import { BinaryUtils, Constants } from "@multiversx/sdk-nestjs";
 import { HttpStatus, Inject, Injectable } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
@@ -21,7 +21,7 @@ export class NftMediaService {
   public static readonly NFT_THUMBNAIL_DEFAULT = 'https://media.elrond.com/nfts/thumbnail/default.png';
 
   constructor(
-    private readonly cachingService: CachingService,
+    private readonly cachingService: ElrondCachingService,
     private readonly apiService: ApiService,
     private readonly apiConfigService: ApiConfigService,
     private readonly persistenceService: PersistenceService,
@@ -31,7 +31,7 @@ export class NftMediaService {
   }
 
   async getMedia(identifier: string): Promise<NftMedia[] | null> {
-    return await this.cachingService.getOrSetCache(
+    return await this.cachingService.getOrSet(
       CacheInfo.NftMedia(identifier).key,
       async () => await this.persistenceService.getMedia(identifier),
       CacheInfo.NftMedia(identifier).ttl,
@@ -46,7 +46,7 @@ export class NftMediaService {
 
     await this.persistenceService.setMedia(nft.identifier, mediaRaw);
 
-    await this.cachingService.setCache(
+    await this.cachingService.set(
       CacheInfo.NftMedia(nft.identifier).key,
       mediaRaw,
       CacheInfo.NftMedia(nft.identifier).ttl
@@ -129,7 +129,7 @@ export class NftMediaService {
   }
 
   private async getFileProperties(uri: string): Promise<{ contentType: string, contentLength: number } | null> {
-    return await this.cachingService.getOrSetCache(
+    return await this.cachingService.getOrSet(
       CacheInfo.NftMediaProperties(uri).key,
       async () => await this.getFilePropertiesRaw(uri),
       CacheInfo.NftMediaProperties(uri).ttl

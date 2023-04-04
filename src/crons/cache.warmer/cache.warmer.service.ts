@@ -17,7 +17,7 @@ import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.com
 import { MexSettingsService } from "src/endpoints/mex/mex.settings.service";
 import { MexPairService } from "src/endpoints/mex/mex.pair.service";
 import { MexFarmService } from "src/endpoints/mex/mex.farm.service";
-import { CachingService, Constants, Lock, GuestCachingWarmer, OriginLogger } from "@multiversx/sdk-nestjs";
+import { ElrondCachingService, Constants, Lock, GuestCachingWarmer, OriginLogger } from "@multiversx/sdk-nestjs";
 import { DelegationLegacyService } from "src/endpoints/delegation.legacy/delegation.legacy.service";
 import { SettingsService } from "src/common/settings/settings.service";
 import { TokenService } from "src/endpoints/tokens/token.service";
@@ -39,7 +39,7 @@ export class CacheWarmerService {
     private readonly identitiesService: IdentitiesService,
     private readonly providerService: ProviderService,
     private readonly keybaseService: KeybaseService,
-    private readonly cachingService: CachingService,
+    private readonly cachingService: ElrondCachingService,
     @Inject('PUBSUB_SERVICE') private clientProxy: ClientProxy,
     private readonly apiConfigService: ApiConfigService,
     private readonly settingsService: SettingsService,
@@ -203,7 +203,7 @@ export class CacheWarmerService {
   @Lock({ name: 'Latest block recompute' })
   async handleLatestBlock() {
     const block = await this.blockService.getLatestBlockRaw();
-    await this.cachingService.setCacheRemote(CacheInfo.BlocksLatest().key, block, CacheInfo.BlocksLatest().ttl);
+    await this.cachingService.setRemote(CacheInfo.BlocksLatest().key, block, CacheInfo.BlocksLatest().ttl);
   }
 
   @Cron(CronExpression.EVERY_MINUTE)
@@ -280,7 +280,7 @@ export class CacheWarmerService {
 
       if (asset.extraTokens || token.type === TokenType.MetaESDT) {
         const accounts = await this.esdtService.countAllDistinctAccounts([identifier, ...(asset.extraTokens ?? [])]);
-        await this.cachingService.setCacheRemote(
+        await this.cachingService.setRemote(
           CacheInfo.TokenAccountsExtra(identifier).key,
           accounts,
           CacheInfo.TokenAccountsExtra(identifier).ttl
@@ -321,7 +321,7 @@ export class CacheWarmerService {
   }
 
   private async invalidateKey(key: string, data: any, ttl: number) {
-    await this.cachingService.setCache(key, data, ttl);
+    await this.cachingService.set(key, data, ttl);
     await this.refreshCacheKey(key, ttl);
   }
 

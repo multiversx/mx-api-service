@@ -1,4 +1,4 @@
-import { Constants, CachingService, ApiService, OriginLogger, BinaryUtils, AddressUtils } from "@multiversx/sdk-nestjs";
+import { Constants, ElrondCachingService, ApiService, OriginLogger, BinaryUtils, AddressUtils } from "@multiversx/sdk-nestjs";
 import { HttpStatus, Injectable } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { CacheInfo } from "src/utils/cache.info";
@@ -10,7 +10,7 @@ export class UsernameService {
   private readonly logger = new OriginLogger(UsernameService.name);
 
   constructor(
-    private readonly cachingService: CachingService,
+    private readonly cachingService: ElrondCachingService,
     private readonly apiService: ApiService,
     private readonly apiConfigService: ApiConfigService,
     private readonly vmQueryService: VmQueryService
@@ -32,7 +32,7 @@ export class UsernameService {
   }
 
   async getUsernameForAddress(address: string): Promise<string | null> {
-    return await this.cachingService.getOrSetCache(
+    return await this.cachingService.getOrSet(
       CacheInfo.Username(address).key,
       async () => await this.getUsernameForAddressRaw(address),
       CacheInfo.Username(address).ttl,
@@ -58,7 +58,7 @@ export class UsernameService {
   }
 
   async getAddressForUsername(username: string): Promise<string | null> {
-    const address = await this.cachingService.getOrSetCache(
+    const address = await this.cachingService.getOrSet(
       UsernameUtils.normalizeUsername(username),
       async () => await this.getAddressForUsernameRaw(username),
       Constants.oneWeek()
