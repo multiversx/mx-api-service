@@ -12,13 +12,22 @@ import { MexTokenService } from "src/endpoints/mex/mex.token.service";
 import { TokenFilter } from "src/endpoints/tokens/entities/token.filter";
 import { TokenService } from "src/endpoints/tokens/token.service";
 import { TransactionService } from "src/endpoints/transactions/transaction.service";
-import * as fs from 'fs';
-import * as path from 'path';
 import { TokenType } from "src/common/indexer/entities";
 import { DataApiService } from "src/common/data-api/data-api.service";
+import { CacheInfo } from "src/utils/cache.info";
+import { TokenAssetStatus } from "src/endpoints/tokens/entities/token.asset.status";
+import { TokenAssets } from "src/common/assets/entities/token.assets";
+import { NftRankAlgorithm } from "src/common/assets/entities/nft.rank.algorithm";
+import { TokenProperties } from "src/endpoints/tokens/entities/token.properties";
+import { EsdtType } from "src/endpoints/esdt/entities/esdt.type";
+import * as fs from 'fs';
+import * as path from 'path';
 
 describe('Token Service', () => {
   let tokenService: TokenService;
+  let esdtService: EsdtService;
+  let collectionService: CollectionService;
+  let indexerService: IndexerService;
 
   beforeEach(async () => {
     const moduleRef = await Test.createTestingModule({
@@ -107,6 +116,9 @@ describe('Token Service', () => {
     }).compile();
 
     tokenService = moduleRef.get<TokenService>(TokenService);
+    esdtService = moduleRef.get<EsdtService>(EsdtService);
+    collectionService = moduleRef.get<CollectionService>(CollectionService);
+    indexerService = moduleRef.get<IndexerService>(IndexerService);
   });
 
   afterEach(() => {
@@ -487,6 +499,288 @@ describe('Token Service', () => {
           identifier: 'WEGLD-bd4d79',
         }),
       ]));
+    });
+  });
+
+  describe('getTokenMarketCap', () => {
+    it('should return market cap from cache when available', async () => {
+      const rawValueMock = tokenService.getTokenMarketCapRaw = jest.fn();
+      jest.spyOn(tokenService['cachingService'], 'getOrSet').mockResolvedValue(1000000);
+
+      const result = await tokenService.getTokenMarketCap();
+
+      expect(rawValueMock).toBeCalledTimes(0);
+      expect(result).toStrictEqual(1000000);
+    });
+  });
+
+  describe('getTokenMarketCap', () => {
+    it('should return market cap raw from cache when available', async () => {
+      const mockTokens = JSON.parse(fs.readFileSync(path.join(__dirname, '../../mocks/tokens.mock.json'), 'utf-8'));
+      const getAllTokensMock = jest.spyOn(tokenService, 'getAllTokens').mockResolvedValue(mockTokens);
+
+      const result = await tokenService.getTokenMarketCapRaw();
+      expect(result).toBeGreaterThanOrEqual(261151384.6163954);
+      expect(getAllTokensMock).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('getAllTokens', () => {
+    const mockTokens = [
+      {
+        type: "FungibleESDT",
+        identifier: "WEGLD-bd4d79",
+        name: "WrappedEGLD",
+        ticker: "WEGLD",
+        owner: "erd1ss6u80ruas2phpmr82r42xnkd6rxy40g9jl69frppl4qez9w2jpsqj8x97",
+        decimals: 18,
+        isPaused: false,
+        assets: {
+          website: "https://xexchange.com",
+          description: "wEGLD is an ESDT token that has the same value as EGLD, the native coin of the MultiversX blockchain.",
+          status: TokenAssetStatus.active,
+          pngUrl: "https://media.elrond.com/tokens/asset/WEGLD-bd4d79/logo.png",
+          svgUrl: "https://media.elrond.com/tokens/asset/WEGLD-bd4d79/logo.svg",
+          ledgerSignature: "3044022062a68d4bdd649aebb5e4ed5c6284e211c689c3b8142e59a47b01cc9997b16dfa0220475b064836849b9c4aa9c5ff18daed91a64f847bd96aa0a26768349f2cd0c24f",
+          extraTokens: [],
+
+        },
+        transactions: 5998186,
+        accounts: 126027,
+        canUpgrade: true,
+        canMint: true,
+        canBurn: true,
+        canChangeOwner: true,
+        canAddSpecialRoles: false,
+        canPause: true,
+        canFreeze: true,
+        canWipe: true,
+      },
+      {
+        type: "FungibleESDT",
+        identifier: "MEX-455c57",
+        name: "MEX",
+        ticker: "MEX",
+        owner: "erd1ss6u80ruas2phpmr82r42xnkd6rxy40g9jl69frppl4qez9w2jpsqj8x97",
+        decimals: 18,
+        isPaused: false,
+        assets: {
+          website: "https://xexchange.com",
+          description: "wEGLD is an ESDT token that has the same value as EGLD, the native coin of the MultiversX blockchain.",
+          status: "active",
+          pngUrl: "https://media.elrond.com/tokens/asset/WEGLD-bd4d79/logo.png",
+          svgUrl: "https://media.elrond.com/tokens/asset/WEGLD-bd4d79/logo.svg",
+          ledgerSignature: "3044022062a68d4bdd649aebb5e4ed5c6284e211c689c3b8142e59a47b01cc9997b16dfa0220475b064836849b9c4aa9c5ff18daed91a64f847bd96aa0a26768349f2cd0c24f",
+        },
+        transactions: 5998186,
+        accounts: 126027,
+        canUpgrade: true,
+        canMint: true,
+        canBurn: true,
+        canChangeOwner: true,
+        canAddSpecialRoles: false,
+        canPause: true,
+        canFreeze: true,
+        canWipe: true,
+      },
+    ];
+
+    it('should return values from cache', async () => {
+      const cachedValueMock = jest.spyOn(tokenService['cachingService'], 'getOrSet').mockResolvedValue(mockTokens);
+
+      const result = await tokenService.getAllTokens();
+      expect(result).toEqual(mockTokens);
+      expect(cachedValueMock).toHaveBeenCalledTimes(1);
+      expect(cachedValueMock).toHaveBeenCalledWith(
+        CacheInfo.AllEsdtTokens.key,
+        expect.any(Function),
+        CacheInfo.AllEsdtTokens.ttl,
+      );
+      expect(esdtService.getAllFungibleTokenProperties).not.toHaveBeenCalled();
+      expect(collectionService.getNftCollections).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('getLogoPng, getLogoSvg', () => {
+    const assetsMock: TokenAssets = {
+      website: 'https://example.com',
+      description: 'Example token',
+      status: TokenAssetStatus.active,
+      pngUrl: 'https://example.com/token.png',
+      svgUrl: 'https://example.com/token.svg',
+      ledgerSignature: 'erd1ss6u80ruas2phpmr82r42xnkd6rxy40g9jl69frppl4qez9w2jpsqj8x97',
+      lockedAccounts: {
+        'erd1ss6u80ruas2phpmr82r42xnkd6rxy40g9jl69frppl4qez9w2jpsqj8x97': '1000000000000000000',
+        'erd1ss6u80ruas2phpmr82r42xnkd6rxy40g9jl69frppl4qez9w2jpsqj8x91': '500000000000000000',
+      },
+      extraTokens: ['MEX-455c57', 'USDC-c76f1f'],
+      preferredRankAlgorithm: NftRankAlgorithm.trait,
+      priceSource: undefined,
+    };
+
+    it('should return undefined if there are no assets for the identifier', async () => {
+      const identifier = 'WEGLD-bd4d79';
+      const tokenAssetesMock = jest.spyOn(tokenService['assetsService'], 'getTokenAssets').mockReturnValueOnce(Promise.resolve(undefined));
+
+      const result = await tokenService.getLogoPng(identifier);
+
+      expect(result).toBeUndefined();
+      expect(tokenAssetesMock).toHaveBeenCalledTimes(1);
+      expect(tokenAssetesMock).toHaveBeenCalledWith(identifier);
+    });
+
+    it('should return the PNG URL if assets exist for the identifier', async () => {
+      const identifier = 'WEGLD-bd4d79';
+
+      const pngUrl = 'https://example.com/token.png';
+      const tokenAssetesMock = jest.spyOn(tokenService['assetsService'], 'getTokenAssets').mockReturnValueOnce(Promise.resolve(assetsMock));
+
+      const result = await tokenService.getLogoPng(identifier);
+
+      expect(result).toEqual(pngUrl);
+      expect(tokenAssetesMock).toHaveBeenCalledTimes(1);
+      expect(tokenAssetesMock).toHaveBeenCalledWith(identifier);
+    });
+
+    it('should return undefined if there are no assets for the identifier', async () => {
+      const identifier = 'WEGLD-bd4d79';
+      const tokenAssetesMock = jest.spyOn(tokenService['assetsService'], 'getTokenAssets').mockReturnValueOnce(Promise.resolve(undefined));
+
+      const result = await tokenService.getLogoSvg(identifier);
+
+      expect(result).toBeUndefined();
+      expect(tokenAssetesMock).toHaveBeenCalledTimes(1);
+      expect(tokenAssetesMock).toHaveBeenCalledWith(identifier);
+    });
+
+    it('should return the SVG URL if assets exist for the identifier', async () => {
+      const identifier = 'WEGLD-bd4d79';
+
+      const pngUrl = 'https://example.com/token.svg';
+      const tokenAssetesMock = jest.spyOn(tokenService['assetsService'], 'getTokenAssets').mockReturnValueOnce(Promise.resolve(assetsMock));
+
+      const result = await tokenService.getLogoSvg(identifier);
+
+      expect(result).toEqual(pngUrl);
+      expect(tokenAssetesMock).toHaveBeenCalledTimes(1);
+      expect(tokenAssetesMock).toHaveBeenCalledWith(identifier);
+    });
+  });
+
+  describe('getTokenAccountsCount', () => {
+    const identifier = 'WEGLD-bd4d79';
+    const propertiesMock: TokenProperties = {
+      identifier: 'WEGLD-bd4d79',
+      name: 'WrappedEGLD',
+      type: EsdtType.FungibleESDT,
+      owner: 'erd1ss6u80ruas2phpmr82r42xnkd6rxy40g9jl69frppl4qez9w2jpsqj8x97',
+      wiped: '',
+      decimals: 18,
+      isPaused: false,
+      tags: [],
+      royalties: 0,
+      uris: [],
+      url: '',
+      canUpgrade: true,
+      canMint: true,
+      canBurn: true,
+      canChangeOwner: true,
+      canPause: true,
+      canFreeze: true,
+      canWipe: true,
+      canAddSpecialRoles: false,
+      canTransferNFTCreateRole: false,
+      NFTCreateStopped: false,
+    };
+
+    it('should returns undefined if getTokenProperties returns undefined', async () => {
+      const tokensPropertiesMock = jest.spyOn(tokenService, 'getTokenProperties').mockResolvedValueOnce(Promise.resolve(undefined));
+      const result = await tokenService.getTokenAccountsCount(identifier);
+
+      expect(result).toStrictEqual(undefined);
+      expect(tokensPropertiesMock).toHaveBeenCalledTimes(1);
+    });
+
+    it('should returns total number of accounts for a given identifier', async () => {
+      const tokensPropertiesMock = jest.spyOn(tokenService, 'getTokenProperties').mockResolvedValueOnce(propertiesMock);
+      const indexerAccountsCountMock = jest.spyOn(tokenService['indexerService'], 'getTokenAccountsCount').mockResolvedValueOnce(Promise.resolve(10));
+      const result = await tokenService.getTokenAccountsCount(identifier);
+
+      expect(result).toStrictEqual(10);
+      expect(indexerAccountsCountMock).toHaveBeenCalledTimes(1);
+      expect(tokensPropertiesMock).toHaveBeenCalledTimes(1);
+      expect(indexerAccountsCountMock).toHaveBeenCalledWith(identifier);
+      expect(tokensPropertiesMock).toHaveBeenCalledWith(identifier);
+    });
+  });
+
+  describe('getTokenAccounts', () => {
+    const identifier = 'WEGLD-bd4d79';
+    const propertiesMock: TokenProperties = {
+      identifier: 'WEGLD-bd4d79',
+      name: 'WrappedEGLD',
+      type: EsdtType.FungibleESDT,
+      owner: 'erd1ss6u80ruas2phpmr82r42xnkd6rxy40g9jl69frppl4qez9w2jpsqj8x97',
+      wiped: '',
+      decimals: 18,
+      isPaused: false,
+      tags: [],
+      royalties: 0,
+      uris: [],
+      url: '',
+      canUpgrade: true,
+      canMint: true,
+      canBurn: true,
+      canChangeOwner: true,
+      canPause: true,
+      canFreeze: true,
+      canWipe: true,
+      canAddSpecialRoles: false,
+      canTransferNFTCreateRole: false,
+      NFTCreateStopped: false,
+    };
+
+    it('should returns undefined if getTokenProperties returns undefined', async () => {
+      const tokensPropertiesMock = jest.spyOn(tokenService, 'getTokenProperties').mockResolvedValueOnce(Promise.resolve(undefined));
+      const result = await tokenService.getTokenAccounts(new QueryPagination(), identifier);
+
+      expect(result).toStrictEqual(undefined);
+      expect(tokensPropertiesMock).toHaveBeenCalledTimes(1);
+    });
+
+    it('should return an array of accounts for given identifier', async () => {
+      const mockTokens = JSON.parse(fs.readFileSync(path.join(__dirname, '../../mocks/token.accounts.mock.json'), 'utf-8'));
+      const tokensPropertiesMock = jest.spyOn(tokenService, 'getTokenProperties').mockResolvedValueOnce(Promise.resolve(propertiesMock));
+      const tokenAccountsMock = jest.spyOn(indexerService, 'getTokenAccounts').mockResolvedValueOnce(mockTokens);
+
+      const results = await tokenService.getTokenAccounts(new QueryPagination(), identifier);
+      if (results) {
+        expect(results.length).toEqual(mockTokens.length);
+
+        for (const result of results) {
+          expect(result.hasOwnProperty('address')).toBe(true);
+          expect(result.hasOwnProperty('balance')).toBe(true);
+        }
+      }
+      expect(tokensPropertiesMock).toHaveBeenCalledTimes(1);
+      expect(tokenAccountsMock).toHaveBeenCalledTimes(1);
+    });
+
+    it('should return single account for given identifier', async () => {
+      const mockTokens = JSON.parse(fs.readFileSync(path.join(__dirname, '../../mocks/token.accounts.mock.json'), 'utf-8'));
+      const tokensPropertiesMock = jest.spyOn(tokenService, 'getTokenProperties').mockResolvedValueOnce(Promise.resolve(propertiesMock));
+      const tokenAccountsMock = jest.spyOn(indexerService, 'getTokenAccounts').mockResolvedValueOnce([mockTokens[2]]);
+
+      const results = await tokenService.getTokenAccounts(new QueryPagination({ size: 1 }), identifier);
+      if (results) {
+        for (const result of results) {
+          expect(result.address).toStrictEqual("erd1qqqqqqqqqqqqqpgq0lzzvt2faev4upyf586tg38s84d7zsaj2jpsglugga");
+          expect(result.hasOwnProperty('address')).toBe(true);
+          expect(result.hasOwnProperty('balance')).toBe(true);
+        }
+      }
+      expect(tokensPropertiesMock).toHaveBeenCalledTimes(1);
+      expect(tokenAccountsMock).toHaveBeenCalledTimes(1);
     });
   });
 });
