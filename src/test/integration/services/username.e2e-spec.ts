@@ -1,60 +1,169 @@
-import { Test } from "@nestjs/testing";
-import { ApiService } from '@multiversx/sdk-nestjs';
+import { ApiService, Constants, ElrondCachingService } from "@multiversx/sdk-nestjs";
+import { Test, TestingModule } from "@nestjs/testing";
+import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { UsernameService } from "src/endpoints/usernames/username.service";
-import { PublicAppModule } from "src/public.app.module";
+import { UsernameUtils } from "src/endpoints/usernames/username.utils";
+import { VmQueryService } from "src/endpoints/vm.query/vm.query.service";
+import { CacheInfo } from "src/utils/cache.info";
 
-describe('Username Service', () => {
-  let usernameService: UsernameService;
+describe('UsernameService', () => {
+  let service: UsernameService;
 
-  beforeAll(async () => {
-    const moduleRef = await Test.createTestingModule({
-      imports: [PublicAppModule],
+  beforeEach(async () => {
+    const module: TestingModule = await Test.createTestingModule({
+      providers: [
+        UsernameService,
+        {
+          provide: ElrondCachingService,
+          useValue: {
+            getOrSet: jest.fn(),
+          },
+        },
+        {
+          provide: ApiService,
+          useValue: {
+            get: jest.fn(),
+          },
+        },
+        {
+          provide: ApiConfigService,
+          useValue: {
+            getMaiarIdUrl: jest.fn(),
+          },
+        },
+        {
+          provide: VmQueryService,
+          useValue: {},
+        },
+      ],
     }).compile();
 
-    usernameService = moduleRef.get<UsernameService>(UsernameService);
+    service = module.get<UsernameService>(UsernameService);
   });
 
-  beforeEach(() => { jest.restoreAllMocks(); });
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
 
   describe('getUsernameForAddressRaw', () => {
-    it('should return address username', async () => {
-      const address: string = "erd1qga7ze0l03chfgru0a32wxqf2226nzrxnyhzer9lmudqhjgy7ycqjjyknz";
-      const results = await usernameService.getUsernameForAddressRaw(address);
+    it('should return username for valid address', async () => {
+      const address = 'erd1qga7ze0l03chfgru0a32wxqf2226nzrxnyhzer9lmudqhjgy7ycqjjyknz';
+      const expectedUsername = 'testuser';
 
-      expect(results).toStrictEqual('alice.elrond');
+      jest.spyOn(service['apiService'], 'get').mockResolvedValue({
+        data: {
+          herotag: expectedUsername,
+        },
+      });
+
+      const result = await service.getUsernameForAddressRaw(address);
+      expect(result).toEqual(expectedUsername);
     });
 
-    it('should return null because test simulates that address does not contains an usernmae', async () => {
-      jest.spyOn(ApiService.prototype, 'get')
-        // eslint-disable-next-line require-await
-        .mockImplementation(async () => null);
+    it('should return null for invalid address', async () => {
+      const address = 'erd1qga7ze0l03chfgru0a32wxqf2226nzrxnyhzer9lmudqhjgy7ycqjjyknz';
 
-      const address: string = "erd1qga7ze0l03chfgru0a32wxqf2226nzrxnyhzer9lmudqhjgy7ycqjjyknz";
-      const results = await usernameService.getUsernameForAddressRaw(address);
+      jest.spyOn(service['apiService'], 'get').mockRejectedValue(new Error('Invalid address'));
 
-      expect(results).toStrictEqual(null);
+      const result = await service.getUsernameForAddressRaw(address);
+
+      expect(result).toBeNull();
+    });
+
+    it('should return null when an error occurs', async () => {
+      const address = 'erd1qga7ze0l03chfgru0a32wxqf2226nzrxnyhzer9lmudqhjgy7ycqjjyknz1';
+      const expectedError = new Error('Test error');
+
+      const apiServiceSpy = jest.spyOn(service['apiService'], 'get').mockRejectedValue(expectedError);
+      const loggerErrorSpy = jest.spyOn(service['logger'], 'error').mockImplementation(() => { });
+
+      const result = await service.getUsernameForAddressRaw(address);
+
+      expect(apiServiceSpy).toHaveBeenCalledWith(`${service['apiConfigService'].getMaiarIdUrl()}/users/api/v1/users/${address}`, undefined, expect.any(Function));
+      expect(loggerErrorSpy).toHaveBeenCalledTimes(2);
+      expect(result).toBeNull();
     });
   });
 
+  describe('getUsernameForAddress', () => {
+    it('should return cached username if available', async () => {
+      const address = 'erd1qga7ze0l03chfgru0a32wxqf2226nzrxnyhzer9lmudqhjgy7ycqjjyknz';
+      const cachedUsername = 'alice';
 
-  describe('getAddressForUsername', () => {
-    it('should return bech32 address based on a username', async () => {
-      const username: string = 'alice';
-      const address: string = "erd1qga7ze0l03chfgru0a32wxqf2226nzrxnyhzer9lmudqhjgy7ycqjjyknz";
-      const results = await usernameService.getAddressForUsername(username);
+      const cachingServiceSpy = jest.spyOn(service['cachingService'], 'getOrSet').mockResolvedValue(cachedUsername);
 
-      expect(results).toStrictEqual(address);
+      const result = await service.getUsernameForAddress(address);
+      expect(cachingServiceSpy).toHaveBeenCalledWith(expect.any(String), expect.any(Function), expect.any(Number));
+      expect(result).toEqual(cachedUsername);
     });
 
-    it('should return null because test simulates that returned username is not valid', async () => {
-      jest.spyOn(ApiService.prototype, 'get')
-        // eslint-disable-next-line require-await
-        .mockImplementation(async () => null);
+    it('should return null if getUsernameForAddressRaw fails', async () => {
+      const address = 'erd1Invalid';
 
-      const username: string = 'alice.elrond';
-      const results = await usernameService.getAddressForUsername(username);
+      const cachingServiceSpy = jest.spyOn(service['cachingService'], 'getOrSet').mockResolvedValue(null);
+      jest.spyOn(service, 'getUsernameForAddressRaw').mockRejectedValue(new Error('Failed to get username'));
 
-      expect(results).toStrictEqual(null);
+      const result = await service.getUsernameForAddress(address);
+      expect(cachingServiceSpy).toHaveBeenCalledWith(expect.any(String), expect.any(Function), expect.any(Number));
+      expect(result).toBeNull();
+    });
+
+    it('should return null when getUsernameForAddressRaw returns null', async () => {
+      const address = 'erd1qga7ze0l03chfgru0a32wxqf2226nzrxnyhzer9lmudqhjgy7ycqjjyknz';
+
+      const getUsernameForAddressRawMock = jest.spyOn(service as any, 'getUsernameForAddressRaw').mockResolvedValue(null);
+      const cachingServiceSpy = jest.spyOn(service['cachingService'], 'getOrSet').mockImplementation((_key, func) => func());
+
+      const result = await service.getUsernameForAddress(address);
+
+      expect(getUsernameForAddressRawMock).toHaveBeenCalledWith(address);
+      expect(cachingServiceSpy).toHaveBeenCalledWith(expect.any(String), expect.any(Function), CacheInfo.Username(address).ttl);
+      expect(result).toBeNull();
+    });
+  });
+
+  describe('getAddressForUsername', () => {
+    it('should cross-check username when getting address', async () => {
+      const username = 'alice';
+      const expectedAddress = 'erd1qga7ze0l03chfgru0a32wxqf2226nzrxnyhzer9lmudqhjgy7ycqjjyknz';
+
+      const cachingServiceSpy = jest.spyOn(service['cachingService'], 'getOrSet').mockResolvedValue(expectedAddress);
+      jest.spyOn(service as any, 'getAddressForUsernameRaw').mockResolvedValue(expectedAddress);
+      jest.spyOn(service, 'getUsernameForAddressRaw').mockResolvedValue(username);
+
+      const result = await service.getAddressForUsername(username);
+
+      expect(cachingServiceSpy).toHaveBeenCalledWith(expect.any(String), expect.any(Function), expect.any(Number));
+      expect(result).toEqual(expectedAddress);
+    });
+
+    it('should return null if cross-check fails', async () => {
+      const username = 'bob';
+      const expectedAddress = 'erd1qga7ze0l03chfgru0a32wxqf2226nzrxnyhzer9lmudqhjgy7ycqjjyknz1';
+
+      const cachingServiceSpy = jest.spyOn(service['cachingService'], 'getOrSet').mockResolvedValue(null);
+      jest.spyOn(service as any, 'getAddressForUsernameRaw').mockResolvedValue(expectedAddress);
+      jest.spyOn(service, 'getUsernameForAddressRaw').mockResolvedValue(null);
+
+      const result = await service.getAddressForUsername(username);
+
+      expect(cachingServiceSpy).toHaveBeenCalledWith(expect.any(String), expect.any(Function), expect.any(Number));
+      expect(result).toBeNull();
+    });
+
+    it('should return null when getAddressForUsernameRaw returns null', async () => {
+      const username = 'randomUser';
+
+      const getAddressForUsernameRawMock = jest.spyOn(service as any, 'getAddressForUsernameRaw').mockResolvedValue(null);
+      const getUsernameForAddressRawMock = jest.spyOn(service, 'getUsernameForAddressRaw').mockImplementation(() => { throw new Error('Test error'); });
+      const cachingServiceSpy = jest.spyOn(service['cachingService'], 'getOrSet').mockImplementation((_key, func) => func());
+
+      const result = await service.getAddressForUsername(username);
+
+      expect(getAddressForUsernameRawMock).toHaveBeenCalledWith(username);
+      expect(getUsernameForAddressRawMock).not.toHaveBeenCalled();
+      expect(cachingServiceSpy).toHaveBeenCalledWith(UsernameUtils.normalizeUsername(username), expect.any(Function), Constants.oneWeek());
+      expect(result).toBeNull();
     });
   });
 });
