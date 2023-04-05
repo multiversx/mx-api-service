@@ -92,7 +92,7 @@ export class CacheInfo {
 
   static IdentityProfile(key: string): CacheInfo {
     return {
-      key: `identityProfile_v2:${key}`,
+      key: `identityProfile:${key}`,
       ttl: Constants.oneMonth() * 6,
     };
   }
