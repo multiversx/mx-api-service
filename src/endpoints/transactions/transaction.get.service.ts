@@ -190,6 +190,8 @@ export class TransactionGetService {
         scResults: transaction.smartContractResults ? transaction.smartContractResults.map((scResult: any) => ApiUtils.mergeObjects(new SmartContractResult(), scResult)) : [],
         receipt: transaction.receipt ? ApiUtils.mergeObjects(new TransactionReceipt(), transaction.receipt) : undefined,
         logs: transaction.logs,
+        guardianAddress: transaction.guardian,
+        guardianSignature: transaction.guardianSignature,
       };
 
       return ApiUtils.mergeObjects(new TransactionDetailed(), result);
