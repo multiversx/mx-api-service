@@ -96,4 +96,12 @@ export class NftCollection {
   @Field(() => Number, { description: 'Number of NFTs for this collection. Will be returned only if the collection is verified.', nullable: true })
   @ApiProperty({ type: Number, nullable: true })
   nftCount: number | undefined = undefined;
+
+  @Field(() => String, { description: 'Scam information type for the given collection.', nullable: true })
+  @ApiProperty({ type: String, nullable: true })
+  scamInfoType: string | undefined = undefined;
+
+  @Field(() => String, { description: 'Scam information description for the given collection.', nullable: true })
+  @ApiProperty({ type: String, nullable: true })
+  scamInfoDescription: string | undefined = undefined;
 }

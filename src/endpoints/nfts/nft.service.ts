@@ -335,6 +335,8 @@ export class NftService {
       nft.collection = elasticNft.token;
       nft.nonce = parseInt('0x' + nft.identifier.split('-')[2]);
       nft.timestamp = elasticNft.timestamp;
+      nft.scamInfoType = elasticNft.nft_scamInfoType;
+      nft.scamInfoDescription = elasticNft.nft_scamInfoDescription;
 
       await this.applyExtendedAttributes(nft, elasticNft);
 

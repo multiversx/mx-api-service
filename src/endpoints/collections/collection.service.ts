@@ -88,6 +88,8 @@ export class CollectionService {
       nftCollection.isVerified = indexedCollection.api_isVerified;
       nftCollection.nftCount = indexedCollection.api_nftCount;
       nftCollection.holderCount = indexedCollection.api_holderCount;
+      nftCollection.scamInfoType = indexedCollection.nft_scamInfoType;
+      nftCollection.scamInfoDescription = indexedCollection.nft_scamInfoDescription;
     }
   }
 

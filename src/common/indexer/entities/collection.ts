@@ -11,4 +11,6 @@ export interface Collection {
   api_isVerified?: boolean;
   api_nftCount?: number;
   api_holderCount?: number;
+  nft_scamInfoType?: string;
+  nft_scamInfoDescription?: string;
 }

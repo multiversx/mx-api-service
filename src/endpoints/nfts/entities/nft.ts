@@ -135,4 +135,12 @@ export class Nft {
   @Field(() => Float, { description: "Unlock epoch for the given NFT.", nullable: true })
   @ApiProperty({ type: Number, nullable: true })
   unlockEpoch?: number | undefined = undefined;
+
+  @Field(() => String, { description: "Scam information type for the given NFT." })
+  @ApiProperty({ type: String })
+  scamInfoType: string | undefined = undefined;
+
+  @Field(() => String, { description: "Scam information description for the given NFT." })
+  @ApiProperty({ type: String })
+  scamInfoDescription: string | undefined = undefined;
 }
