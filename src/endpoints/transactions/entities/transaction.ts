@@ -118,6 +118,14 @@ export class Transaction {
   @ApiProperty({ type: Boolean, nullable: true })
   pendingResults: boolean | undefined = undefined;
 
+  @Field(() => String, { description: "Guardian address for the given transaction.", nullable: true })
+  @ApiProperty({ type: String, nullable: true })
+  guardianAddress: string | undefined = undefined;
+
+  @Field(() => String, { description: "Guardian signature for the given transaction.", nullable: true })
+  @ApiProperty({ type: String, nullable: true })
+  guardianSignature: string | undefined = undefined;
+
   getDate(): Date | undefined {
     if (this.timestamp) {
       return new Date(this.timestamp * 1000);

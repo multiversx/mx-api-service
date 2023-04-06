@@ -36,6 +36,8 @@ export class Transaction {
   miniblockHash: string = '';
   hyperblockNonce: number = 0;
   timestamp: number = 0;
+  guardian: string = '';
+  guardianSignature: string = '';
   logs: TransactionLog | undefined = undefined;
   receipt: TransactionReceipt | undefined = undefined;
   smartContractResults: GatewaySmartContractResults[] | undefined = undefined;
