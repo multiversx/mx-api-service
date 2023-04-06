@@ -40,6 +40,8 @@ const nftCollection = [{
   isNsfw: undefined,
   rank: undefined,
   rarities: undefined,
+  scamInfoDescription: '',
+  scamInfoType: '',
 },
 ];
 export default nftCollection;

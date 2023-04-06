@@ -56,6 +56,8 @@ describe('Process Nft Service', () => {
     isNsfw: undefined,
     rank: undefined,
     rarities: undefined,
+    scamInfoDescription: '',
+    scamInfoType: '',
   };
 
   beforeAll(async () => {
