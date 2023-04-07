@@ -19,14 +19,7 @@ import { QueryPagination } from "src/common/entities/query.pagination";
 
 describe('NodeService', () => {
   let nodeService: NodeService;
-  // let vmQueryService: VmQueryService;
-  // let apiConfigService: ApiConfigService;
-  // let cachingService: ElrondCachingService;
-  // let keybaseService: KeybaseService;
-  // let stakeService: StakeService;
-  // let providerService: ProviderService;
-  // let blockService: BlockService;
-  // let protocolService: ProtocolService;
+  let cachingService: ElrondCachingService;
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
@@ -63,6 +56,7 @@ describe('NodeService', () => {
           useValue: {
             getOrSet: jest.fn(),
             batchSet: jest.fn(),
+            getLocal: jest.fn(),
             deleteInCache: jest.fn(),
             batchGetManyRemote: jest.fn(),
           },
@@ -101,6 +95,7 @@ describe('NodeService', () => {
     }).compile();
 
     nodeService = moduleRef.get<NodeService>(NodeService);
+    cachingService = moduleRef.get<ElrondCachingService>(ElrondCachingService);
   });
 
   beforeEach(() => { jest.restoreAllMocks(); });
@@ -336,6 +331,94 @@ describe('NodeService', () => {
         expect(allNodesSpy).toHaveBeenCalled();
       });
     });
+
+    describe('deleteOwnersForAddressInCache', () => {
+      it('should return an empty array if no cache entries are found for an address', async () => {
+        const address = 'erd1qqqqqqqqqqqqqpgqp699jngundfqw07d8jzkepucvpzush6k3wvqyc44rx';
+        const allNodesSpy = jest.spyOn(nodeService, 'getAllNodes').mockResolvedValueOnce(Promise.resolve(mockNodes));
+        const currentEpochSpy = jest.spyOn(nodeService['blockService'], 'getCurrentEpoch').mockResolvedValue(1);
+
+        jest.spyOn(nodeService['cachingService'], 'deleteInCache').mockResolvedValue([]);
+
+        const result = await nodeService.deleteOwnersForAddressInCache(address);
+
+        expect(result).toEqual([]);
+        expect(currentEpochSpy).toHaveBeenCalledTimes(1);
+        expect(allNodesSpy).toHaveBeenCalledTimes(1);
+      });
+    });
+
+    describe('getOwners', () => {
+      it('should return cached values if all are present', async () => {
+        const blses = [
+          '00198be6aae517a382944cd5a97845857f3b122bb1edf1588d60ed421d32d16ea2767f359a0d714fae3a35c1b0cf4e1141d701d5d1d24160e49eeaebeab21e2f89a2b7c44f3a313383d542e69800cfb6e115406d3d8114b4044ef5a04acf0408',
+          '003ba6237f0f7c269eebfecb6a0a0796076c02593846e1ce89aee9b832b94dd54e93d35b03dc3d5944b1aae916722506faf959a47cabf2d00f567ad50b10f8f1a40ab0316fdf302454f7aea58b23109ccfdce082bd16fb262342a1382b802c10'];
+        const epoch = 10;
+        const keys = blses.map((bls) => CacheInfo.OwnerByEpochAndBls(bls, epoch).key);
+        const values = ['erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqy8lllls62y8s5', 'erd1qzwd98g6xjs6h33ezxc9ey766ee082z9q4yvj46r8p7xqnl0eenqvxtaz3'];
+        const barchGetManyRemoteSpy = jest.spyOn(nodeService['cachingService'], 'batchGetManyRemote').mockResolvedValue(values);
+
+        const result = await nodeService.getOwners(blses, epoch);
+
+        expect(result).toEqual(values);
+        expect(barchGetManyRemoteSpy).toHaveBeenCalledWith(keys);
+        expect(cachingService.batchSet).not.toHaveBeenCalled();
+      });
+
+      it('should query missing values and cache them', async () => {
+        const epoch = 123;
+        const cached = ['erd1kz2kumr0clug4ht2ek0l4l9drvq3rne9lmkwrjf3qv2luyuuaj2szjwv0f', null, 'erd1qzwd98g6xjs6h33ezxc9ey766ee082z9q4yvj46r8p7xqnl0eenqvxtaz3', null];
+        const existingBlses: string[] =
+          ['00198be6aae517a382944cd5a97845857f3b122bb1edf1588d60ed421d32d16ea2767f359a0d714fae3a35c1b0cf4e1141d701d5d1d24160e49eeaebeab21e2f89a2b7c44f3a313383d542e69800cfb6e115406d3d8114b4044ef5a04acf0408',
+            '003ba6237f0f7c269eebfecb6a0a0796076c02593846e1ce89aee9b832b94dd54e93d35b03dc3d5944b1aae916722506faf959a47cabf2d00f567ad50b10f8f1a40ab0316fdf302454f7aea58b23109ccfdce082bd16fb262342a1382b802c10',
+            '0076f4031a3ac22bc8bd83e12708d4f360a3f5d2734b05496ab0d5cf31fd867522e156ad30b8bfd245a445f0cca69712562b12139399bb9214c7efe4baf31cc311fe16c88bf2373d82527a8795c17df58ef938d0e324d050f1243ecfaea10914',
+            '00980fb53ef5a585695931781d34034533638ad1d814aa4c4926d0ced17f2935d328dd4415f44fb868e920da12ece704a2185d254c5275abfac8620da97ebebaed0c2040364b0c6f60d44891e77c20346f7ebebf08181cedc82a0b517a4e5d99'];
+
+        const currentEpochSpy = jest.spyOn(nodeService['blockService'], 'getCurrentEpoch').mockResolvedValue(epoch);
+
+        jest.spyOn(nodeService['cachingService'], 'batchGetManyRemote').mockResolvedValue(cached);
+        jest.spyOn(nodeService, 'getOwnerBlses').mockResolvedValue(existingBlses);
+        jest.spyOn(nodeService['apiConfigService'], 'getIsFastWarmerCronActive').mockReturnValue(false);
+
+        const result = await nodeService.getOwners(existingBlses, epoch);
+        expect(result).toStrictEqual(
+          [
+            'erd1kz2kumr0clug4ht2ek0l4l9drvq3rne9lmkwrjf3qv2luyuuaj2szjwv0f',
+            undefined,
+            'erd1qzwd98g6xjs6h33ezxc9ey766ee082z9q4yvj46r8p7xqnl0eenqvxtaz3',
+            undefined,
+          ]
+        );
+        expect(currentEpochSpy).toHaveBeenCalledTimes(1);
+      });
+    });
+
+    describe('getOwnerBlses', () => {
+      it('should return empty array if getBlsKeysStatusListEncoded is returning []', async () => {
+        const address = 'erd1kz2kumr0clug4ht2ek0l4l9drvq3rne9lmkwrjf3qv2luyuuaj2szjwv0f';
+        const vmQuerySpy = jest.spyOn(nodeService['vmQueryService'], 'vmQuery').mockResolvedValueOnce([]);
+
+        const result = await nodeService.getOwnerBlses(address);
+
+        expect(result).toEqual([]);
+        expect(vmQuerySpy).toHaveBeenCalled();
+      });
+
+      it('should return an array of BLS keys', async () => {
+        const address = 'erd1kz2kumr0clug4ht2ek0l4l9drvq3rne9lmkwrjf3qv2luyuuaj2szjwv0f';
+        const expectedBls = ["00198be6aae517a382944cd5a97845857f3b122bb1edf1588d60ed421d32d16ea2767f359a0d714fae3a35c1b0cf4e1141d701d5d1d24160e49eeaebeab21e2f89a2b7c44f3a313383d542e69800cfb6e115406d3d8114b4044ef5a04acf0408"];
+
+        const getBlsKeysStatusListEncoded = [
+          'ABmL5qrlF6OClEzVqXhFhX87Eiux7fFYjWDtQh0y0W6idn81mg1xT646NcGwz04RQdcB1dHSQWDknurr6rIeL4mit8RPOjEzg9VC5pgAz7bhFUBtPYEUtARO9aBKzwQI',
+          'ADumI38PfCae6/7LagoHlgdsAlk4RuHOia7puDK5TdVOk9NbA9w9WUSxqukWciUG+vlZpHyr8tAPVnrVCxD48aQKsDFv3zAkVPeupYsjEJzP3OCCvRb7JiNCoTgrgCwQ',
+        ];
+        const vmQuerySpy = jest.spyOn(nodeService['vmQueryService'], 'vmQuery').mockResolvedValueOnce(getBlsKeysStatusListEncoded);
+
+        const result = await nodeService.getOwnerBlses(address);
+
+        expect(vmQuerySpy).toHaveBeenCalled();
+        expect(result).toStrictEqual(expectedBls);
+      });
+    });
   });
 });
-
