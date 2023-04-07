@@ -1,8 +1,9 @@
-import { ParseArrayPipe } from "@elrondnetwork/erdnest";
-import { Controller, Get, HttpException, HttpStatus, Param, Query } from "@nestjs/common";
+import { ParseArrayPipe } from "@multiversx/sdk-nestjs";
+import { Controller, Get, HttpException, HttpStatus, Param, Query, Res } from "@nestjs/common";
 import { ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { Identity } from "./entities/identity";
 import { IdentitiesService } from "./identities.service";
+import { Response } from "express";
 
 @Controller()
 @ApiTags('identities')
@@ -28,7 +29,21 @@ export class IdentitiesController {
     if (identity === undefined) {
       throw new HttpException('Identity not found', HttpStatus.NOT_FOUND);
     }
-
     return identity;
+  }
+
+  @Get('/identities/:identifier/avatar')
+  @ApiOperation({ summary: 'Identity avatar', description: 'Returns the avatar of a specific identity' })
+  @ApiNotFoundResponse({ description: 'Identity not found' })
+  async getIdentityAvatar(
+    @Param('identifier') identifier: string,
+    @Res() response: Response
+  ): Promise<void> {
+    const url = await this.identitiesService.getIdentityAvatar(identifier);
+
+    if (!url) {
+      throw new HttpException('Identity avatar not found', HttpStatus.NOT_FOUND);
+    }
+    response.redirect(url);
   }
 }

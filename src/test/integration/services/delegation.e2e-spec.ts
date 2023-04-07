@@ -1,44 +1,198 @@
+import { ApiService, ElrondCachingService } from "@multiversx/sdk-nestjs";
 import { Test } from "@nestjs/testing";
-import '@elrondnetwork/erdnest/lib/src/utils/extensions/jest.extensions';
-import '@elrondnetwork/erdnest/lib/src/utils/extensions/array.extensions';
-import { PublicAppModule } from "src/public.app.module";
+import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { DelegationService } from "src/endpoints/delegation/delegation.service";
 import { Delegation } from "src/endpoints/delegation/entities/delegation";
+import { Node } from "src/endpoints/nodes/entities/node";
+import { NodeStatus } from "src/endpoints/nodes/entities/node.status";
+import { NodeType } from "src/endpoints/nodes/entities/node.type";
+import { NodeService } from "src/endpoints/nodes/node.service";
 import { AccountDelegation } from "src/endpoints/stake/entities/account.delegation";
+import { VmQueryService } from "src/endpoints/vm.query/vm.query.service";
 
 describe('Delegation Service', () => {
   let delegationService: DelegationService;
+  let cachingService: ElrondCachingService;
+  let vmQueryService: VmQueryService;
+  let apiConfigService: ApiConfigService;
+  let nodeService: NodeService;
+  let apiService: ApiService;
+  let mockDelegationRaw: Delegation;
+  let mockNodes: Node[];
 
-  beforeAll(async () => {
+  beforeEach(async () => {
     const moduleRef = await Test.createTestingModule({
-      imports: [PublicAppModule],
+      providers: [
+        DelegationService,
+        {
+          provide: VmQueryService,
+          useValue: {
+            vmQuery: jest.fn(),
+          },
+        },
+        {
+          provide: ApiConfigService,
+          useValue: {
+            getDelegationManagerContractAddress: jest.fn(),
+            getNetwork: jest.fn(),
+            getDelegationUrl: jest.fn(),
+          },
+        },
+        {
+          provide: ElrondCachingService,
+          useValue: {
+            getOrSet: jest.fn(),
+          },
+        },
+        {
+          provide: NodeService,
+          useValue: {
+            getAllNodes: jest.fn(),
+          },
+        },
+        {
+          provide: ApiService,
+          useValue: {
+            get: jest.fn(),
+          },
+        },
+      ],
     }).compile();
 
     delegationService = moduleRef.get<DelegationService>(DelegationService);
+    vmQueryService = moduleRef.get<VmQueryService>(VmQueryService);
+    apiConfigService = moduleRef.get<ApiConfigService>(ApiConfigService);
+    cachingService = moduleRef.get<ElrondCachingService>(ElrondCachingService);
+    nodeService = moduleRef.get<NodeService>(NodeService);
+    apiService = moduleRef.get<ApiService>(ApiService);
+
+    mockDelegationRaw = {
+      stake: '123',
+      topUp: '456',
+      locked: '789',
+      minDelegation: '100',
+    };
+
+    mockNodes = [
+      {
+        bls: "00198be6aae517a382944cd5a97845857f3b122bb1edf1588d60ed421d32d16ea2767f359a0d714fae3a35c1b0cf4e1141d701d5d1d24160e49eeaebeab21e2f89a2b7c44f3a313383d542e69800cfb6e115406d3d8114b4044ef5a04acf0408",
+        name: "ThePalmTreeNW122",
+        version: "v1.4.8.1",
+        rating: 100,
+        tempRating: 100,
+        ratingModifier: 1.2,
+        shard: 2,
+        type: NodeType.validator,
+        status: NodeStatus.eligible,
+        online: true,
+        nonce: 13736658,
+        instances: 1,
+        owner: "erd1kz2kumr0clug4ht2ek0l4l9drvq3rne9lmkwrjf3qv2luyuuaj2szjwv0f",
+        identity: "thepalmtreenw",
+        provider: "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqy8lllls62y8s5",
+        stake: "1000",
+        topUp: "1000",
+        locked: "1000",
+        leaderFailure: 0,
+        leaderSuccess: 6,
+        validatorFailure: 0,
+        validatorIgnoredSignatures: 1,
+        validatorSuccess: 286,
+        position: 0,
+        auctioned: undefined,
+        auctionPosition: undefined,
+        auctionSelected: undefined,
+        auctionTopUp: undefined,
+        fullHistory: undefined,
+        issues: [],
+        syncProgress: undefined,
+      },
+    ];
   });
 
-  describe('Get Delegation', () => {
-    it('should return delegation objects', async () => {
-      const delegation = await delegationService.getDelegation();
-      expect(delegation).toHaveStructure(Object.keys(new Delegation()));
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
+  describe('getDelegation', () => {
+    it('should return delegation from cache if available', async () => {
+      // eslint-disable-next-line require-await
+      jest.spyOn(cachingService, 'getOrSet').mockImplementation(async () => mockDelegationRaw);
+
+      const result = await delegationService.getDelegation();
+
+      expect(cachingService.getOrSet).toHaveBeenCalledTimes(1);
+      expect(vmQueryService.vmQuery).not.toHaveBeenCalled();
+      expect(nodeService.getAllNodes).not.toHaveBeenCalled();
+      expect(apiService.get).not.toHaveBeenCalled();
+      expect(result).toEqual(mockDelegationRaw);
     });
   });
 
-  describe('Get Delegation Raw', () => {
-    it('should return delegation raw objects', async () => {
-      const delegationRaw = await delegationService.getDelegationRaw();
-      expect(delegationRaw).toHaveStructure(Object.keys(new Delegation()));
+  describe('getDelegationRaw', () => {
+    it('should return the correct delegation', async () => {
+      const expectedDelegation = {
+        stake: '1000',
+        topUp: '1000',
+        locked: '2000',
+        minDelegation: '55254700823955191970041559200',
+      };
+
+      jest.spyOn(delegationService['vmQueryService'], 'vmQuery').mockResolvedValueOnce(['someBase64Config']);
+      jest.spyOn(delegationService['nodeService'], 'getAllNodes').mockResolvedValueOnce(mockNodes);
+
+      const result = await delegationService.getDelegationRaw();
+
+      expect(result).toEqual(expectedDelegation);
+    });
+
+    it('should return the correct delegation when there are no nodes', async () => {
+      const expectedDelegation = {
+        stake: '0',
+        topUp: '0',
+        locked: '0',
+        minDelegation: '55254700823955191970041559200',
+      };
+
+      jest.spyOn(delegationService['vmQueryService'], 'vmQuery').mockResolvedValueOnce(['someBase64Config']);
+      jest.spyOn(delegationService['nodeService'], 'getAllNodes').mockResolvedValueOnce([]);
+
+      const result = await delegationService.getDelegationRaw();
+
+      expect(result).toEqual(expectedDelegation);
     });
   });
 
-  describe('Get Delegation details for a specific account', () => {
-    it('should returns all delegation positions with staking providers, together with unDelegation positions', async () => {
-      const address: string = "erd1nzveqhkn2d9l5r6x8y0x2whu8wvayfacdmkg3klvpnqt3j7ltrwqs0h2g8";
-      const results = await delegationService.getDelegationForAddress(address);
+  describe('getDelegationForAddress', () => {
+    const mockAddress = 'erd1qga7ze0l03chfgru0a32wxqf2226nzrxnyhzer9lmudqhjgy7ycqjjyknz';
 
-      for (const result of results) {
-        expect(result).toHaveStructure(Object.keys(new AccountDelegation));
-      }
+    it('should return account delegation details for the given address', async () => {
+      const mockResponse: AccountDelegation[] = [
+        {
+          address: 'erd1qga7ze0l03chfgru0a32wxqf2226nzrxnyhzer9lmudqhjgy7ycqjjyknz',
+          contract: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqq6nzrxnyhzer9lmudqhjgy7ycqjjyknz',
+          userUnBondable: '1000000000000000000',
+          userActiveStake: '0',
+          claimableRewards: '0',
+          userUndelegatedList: [],
+        },
+      ];
+      const mockGetFn = jest.fn().mockResolvedValue({ data: mockResponse });
+      jest.spyOn(apiService, 'get').mockImplementation(mockGetFn);
+
+      const result = await delegationService.getDelegationForAddress(mockAddress);
+
+      expect(result).toEqual(mockResponse);
+      expect(mockGetFn).toHaveBeenCalledWith(`${apiConfigService.getDelegationUrl()}/accounts/${mockAddress}/delegations`);
+    });
+
+    it('should throw an error if the API call fails', async () => {
+      const mockError = new Error('API error');
+      const mockGetFn = jest.fn().mockRejectedValue(mockError);
+      jest.spyOn(apiService, 'get').mockImplementation(mockGetFn);
+
+      await expect(delegationService.getDelegationForAddress(mockAddress)).rejects.toThrow(mockError);
+      expect(mockGetFn).toHaveBeenCalledWith(`${apiConfigService.getDelegationUrl()}/accounts/${mockAddress}/delegations`);
     });
   });
 });

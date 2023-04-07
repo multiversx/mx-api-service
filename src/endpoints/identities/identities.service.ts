@@ -1,4 +1,4 @@
-import { CachingService } from "@elrondnetwork/erdnest";
+import { ElrondCachingService } from "@multiversx/sdk-nestjs";
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import BigNumber from "bignumber.js";
 import { CacheInfo } from "src/utils/cache.info";
@@ -11,6 +11,8 @@ import { NodesInfos } from "../providers/entities/nodes.infos";
 import { Identity } from "./entities/identity";
 import { IdentityDetailed } from "./entities/identity.detailed";
 import { StakeInfo } from "./entities/stake.info";
+import { NodeType } from "../nodes/entities/node.type";
+import { NodeStatus } from "../nodes/entities/node.status";
 
 @Injectable()
 export class IdentitiesService {
@@ -19,7 +21,7 @@ export class IdentitiesService {
     private readonly nodeService: NodeService,
     @Inject(forwardRef(() => KeybaseService))
     private readonly keybaseService: KeybaseService,
-    private readonly cachingService: CachingService,
+    private readonly cachingService: ElrondCachingService,
     @Inject(forwardRef(() => NetworkService))
     private readonly networkService: NetworkService
   ) { }
@@ -27,6 +29,11 @@ export class IdentitiesService {
   async getIdentity(identifier: string): Promise<Identity | undefined> {
     const identities = await this.getAllIdentities();
     return identities.find(x => x.identity === identifier);
+  }
+
+  async getIdentityAvatar(identifier: string): Promise<string | undefined> {
+    const identity = await this.getIdentity(identifier);
+    return identity ? identity.avatar : undefined;
   }
 
   async getIdentities(ids: string[]): Promise<Identity[]> {
@@ -39,7 +46,7 @@ export class IdentitiesService {
   }
 
   async getAllIdentities(): Promise<Identity[]> {
-    return await this.cachingService.getOrSetCache(
+    return await this.cachingService.getOrSet(
       CacheInfo.Identities.key,
       async () => await this.getAllIdentitiesRaw(),
       CacheInfo.Identities.ttl
@@ -120,40 +127,26 @@ export class IdentitiesService {
     return distribution;
   }
 
-  private getStakeInfoForIdentity(identity: any, totalLocked: bigint): StakeInfo {
-    const stakeInfo = new StakeInfo();
+  private getStakeInfoForIdentity(identity: IdentityDetailed, totalLocked: bigint): StakeInfo {
+    const nodes = identity.nodes ?? [];
 
-    const score: number = identity.nodes
-      .map((x: Node) => x.ratingModifier)
-      .reduce((acumulator: number, current: number) => acumulator + current);
-    stakeInfo.score = Math.floor(score * 100);
-
-    const stake: bigint = identity.nodes
-      .map((x: Node) => (x.stake ? x.stake : '0'))
-      .reduce((acumulator: bigint, current: string) => acumulator + BigInt(current), BigInt(0));
-    stakeInfo.stake = stake.toString();
-
-    const topUp: bigint = identity.nodes
-      .map((x: Node) => (x.topUp ? x.topUp : '0'))
-      .reduce((acumulator: bigint, current: string) => acumulator + BigInt(current), BigInt(0));
-    stakeInfo.topUp = topUp.toString();
-
+    const stake = nodes.sumBigInt(x => BigInt(x.stake ? x.stake : '0'));
+    const topUp = nodes.sumBigInt(x => BigInt(x.topUp ? x.topUp : '0'));
     const locked = stake + topUp;
-    stakeInfo.locked = locked.toString();
-
     const stakePercent = totalLocked > 0 ? (locked * BigInt(10000)) / totalLocked : 0;
-    stakeInfo.stakePercent = parseFloat(stakePercent.toString()) / 100;
 
-    const providers = identity.nodes
-      .map((x: Node) => x.provider)
-      .filter((provider: string | null) => !!provider);
-    stakeInfo.providers = providers.distinct();
+    const stakeInfo = new StakeInfo({
+      score: nodes.sum(x => x.ratingModifier),
+      stake: stake.toString(),
+      topUp: topUp.toString(),
+      locked: locked.toString(),
+      stakePercent: parseFloat(stakePercent.toString()) / 100,
+      providers: nodes.map(x => x.provider).filter(provider => !!provider).distinct(),
+      distribution: this.getStakeDistributionForIdentity(locked, identity),
+      validators: nodes.filter(x => x.type === NodeType.validator && x.status !== NodeStatus.inactive).length,
+      queued: nodes.filter(x => x.type === NodeType.validator && x.status === NodeStatus.queued).length,
+    });
 
-    stakeInfo.distribution = this.getStakeDistributionForIdentity(locked, identity);
-
-    stakeInfo.validators = identity.nodes.filter(
-      (x: any) => x.type === 'validator' && x.status !== 'inactive'
-    ).length;
     stakeInfo.sort = stakeInfo.locked && stakeInfo.locked !== '0' ? parseInt(stakeInfo.locked.slice(0, -18)) : 0;
 
     return stakeInfo;
@@ -227,7 +220,7 @@ export class IdentitiesService {
         if (identity.stake && identity.topUp) {
           const stakeReturn = new BigNumber(identity.stake.slice(0, -18)).multipliedBy(new BigNumber(baseApr));
           const topUpReturn = new BigNumber(identity.topUp.slice(0, -18)).multipliedBy(new BigNumber(topUpApr));
-          const annualReturn = stakeReturn.plus(topUpReturn);
+          const annualReturn = stakeReturn.plus(topUpReturn).multipliedBy((identity.validators ?? 0) - (stakeInfo.queued ?? 0)).dividedBy(identity.validators ?? 0);
           const aprStr = new BigNumber(annualReturn).multipliedBy(100).div(identity.locked.slice(0, -18)).toString();
           identity.apr = Number(aprStr).toRounded(2);
         }

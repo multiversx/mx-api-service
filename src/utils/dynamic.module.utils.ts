@@ -1,4 +1,4 @@
-import { ApiModule, CachingModule, ElasticModule, ApiModuleOptions, ElasticModuleOptions, CachingModuleOptions, ERDNEST_CONFIG_SERVICE } from "@elrondnetwork/erdnest";
+import { ApiModule, ElasticModule, ApiModuleOptions, ElasticModuleOptions, ERDNEST_CONFIG_SERVICE, ElrondCachingModule, RedisCacheModuleOptions, RedisCacheModule } from "@multiversx/sdk-nestjs";
 import { DynamicModule, Provider } from "@nestjs/common";
 import { ClientOptions, ClientProxyFactory, Transport } from "@nestjs/microservices";
 import { ApiConfigModule } from "src/common/api-config/api.config.module";
@@ -18,12 +18,32 @@ export class DynamicModuleUtils {
   }
 
   static getCachingModule(): DynamicModule {
-    return CachingModule.forRootAsync({
+    return ElrondCachingModule.forRootAsync({
       imports: [ApiConfigModule],
-      useFactory: (apiConfigService: ApiConfigService) => new CachingModuleOptions({
-        url: apiConfigService.getRedisUrl(),
-        poolLimit: apiConfigService.getPoolLimit(),
-        processTtl: apiConfigService.getProcessTtl(),
+      useFactory: (apiConfigService: ApiConfigService) =>
+        new RedisCacheModuleOptions(
+          {
+            host: apiConfigService.getRedisUrl(),
+          },
+          {
+            poolLimit: apiConfigService.getPoolLimit(),
+            processTtl: apiConfigService.getProcessTtl(),
+          }
+        ),
+      inject: [ApiConfigService],
+    },
+      {
+        skipItemsSerialization: true,
+      }
+    );
+  }
+
+  static getRedisCacheModule(): DynamicModule {
+    return RedisCacheModule.forRootAsync({
+      imports: [ApiConfigModule],
+      useFactory: (apiConfigService: ApiConfigService) => new RedisCacheModuleOptions({
+        host: apiConfigService.getRedisUrl(),
+        connectTimeout: 10000,
       }),
       inject: [ApiConfigService],
     });
@@ -56,12 +76,11 @@ export class DynamicModuleUtils {
         const clientOptions: ClientOptions = {
           transport: Transport.REDIS,
           options: {
-            url: `redis://${apiConfigService.getRedisUrl()}:6379`,
+            host: apiConfigService.getRedisUrl(),
+            port: 6379,
             retryDelay: 1000,
             retryAttempts: 10,
-            retry_strategy: function (_: any) {
-              return 1000;
-            },
+            retryStrategy: () => 1000,
           },
         };
 

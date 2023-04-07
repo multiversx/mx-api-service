@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common';
-import '@elrondnetwork/erdnest/lib/src/utils/extensions/array.extensions';
-import '@elrondnetwork/erdnest/lib/src/utils/extensions/date.extensions';
-import '@elrondnetwork/erdnest/lib/src/utils/extensions/number.extensions';
-import '@elrondnetwork/erdnest/lib/src/utils/extensions/string.extensions';
+import '@multiversx/sdk-nestjs/lib/src/utils/extensions/array.extensions';
+import '@multiversx/sdk-nestjs/lib/src/utils/extensions/date.extensions';
+import '@multiversx/sdk-nestjs/lib/src/utils/extensions/number.extensions';
+import '@multiversx/sdk-nestjs/lib/src/utils/extensions/string.extensions';
 import { EndpointsServicesModule } from './endpoints/endpoints.services.module';
 import { EndpointsControllersModule } from './endpoints/endpoints.controllers.module';
-import { LoggingModule } from '@elrondnetwork/erdnest';
+import { GuestCachingService, LoggingModule } from '@multiversx/sdk-nestjs';
 import { DynamicModuleUtils } from './utils/dynamic.module.utils';
 import { LocalCacheController } from './endpoints/caching/local.cache.controller';
 import { GraphQlModule } from './graphql/graphql.module';
@@ -14,7 +14,8 @@ import { GraphQlModule } from './graphql/graphql.module';
   imports: [
     LoggingModule,
     EndpointsServicesModule,
-    EndpointsControllersModule,
+    EndpointsControllersModule.forRoot(),
+    DynamicModuleUtils.getRedisCacheModule(),
     GraphQlModule.register(),
   ],
   controllers: [
@@ -22,6 +23,7 @@ import { GraphQlModule } from './graphql/graphql.module';
   ],
   providers: [
     DynamicModuleUtils.getNestJsApiConfigService(),
+    GuestCachingService,
   ],
   exports: [
     EndpointsServicesModule,

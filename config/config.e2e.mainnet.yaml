@@ -4,7 +4,15 @@ api:
   public: true
   private: true
   graphql: true
-
+features:
+  dataApi:
+    enabled: false
+    serviceUrl: 'https://data-api.multiversx.com'
+  auth:
+    enabled: false
+    maxExpirySeconds: 86400
+    acceptedOrigins:
+      - ''
 cron:
   transactionProcessor: false
   transactionProcessorMaxLookBehind: 1000
@@ -15,22 +23,23 @@ flags:
   useTracing: false
   indexer-v3: true
 urls:
+  self: 'https://api.multiversx.com'
   api:
-    - 'https://api.elrond.com'
-    - 'https://devnet-api.elrond.com'
-    - 'https://testnet-api.elrond.com'
+    - 'https://api.multiversx.com'
+    - 'https://devnet-api.multiversx.com'
+    - 'https://testnet-api.multiversx.com'
   elastic:
-    - 'https://index.elrond.com'
-  mex:
-    - 'https://mex-indexer.elrond.com'
+    - 'https://index.multiversx.com'
   gateway:
-    - 'https://gateway.elrond.com'
+    - 'https://gateway.multiversx.com'
+  verifier: 'https://play-api.multiversx.com'
   redis: '127.0.0.1'
   rabbitmq: 'amqp://127.0.0.1:5672'
-  providers: 'https://internal-delegation-api.elrond.com/providers'
-  delegation: 'https://delegation-api.elrond.com'
+  providers: 'https://internal-delegation-api.multiversx.com/providers'
+  delegation: 'https://delegation-api.multiversx.com'
   media: 'https://media.elrond.com'
   nftThumbnails: 'https://media.elrond.com/nfts/thumbnail'
+  maiarId: 'https://id-api.multiversx.com'
 database:
   enabled: false
   url: 'mongodb://127.0.0.1:27017/api?authSource=admin'
@@ -53,7 +62,6 @@ contracts:
   delegationManager: 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqylllslmq6y6'
   delegation: 'erd1qqqqqqqqqqqqqpgqxwakt2g7u9atsnr03gqcgmhcv38pt7mkd94q6shuwt'
   metabonding: 'erd1qqqqqqqqqqqqqpgq50dge6rrpcra4tp9hl57jl0893a4r2r72jpsk39rjj'
-  delegationShardId: 2
 inflation:
   - 1952123
   - 1746637
@@ -72,4 +80,4 @@ test:
   mockPath: './src/test/mocks/'
 transaction-action:
   mex:
-    microServiceUrl: 'https://graph.maiar.exchange/graphql'
+    microServiceUrl: 'https://graph.xexchange.com/graphql'

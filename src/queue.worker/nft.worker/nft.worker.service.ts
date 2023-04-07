@@ -9,12 +9,9 @@ import { NftMessage } from "./queue/entities/nft.message";
 import { NftType } from "src/endpoints/nfts/entities/nft.type";
 import { NftAssetService } from "./queue/job-services/assets/nft.asset.service";
 import { PersistenceService } from "src/common/persistence/persistence.service";
-import { OriginLogger } from "@elrondnetwork/erdnest";
 
 @Injectable()
 export class NftWorkerService {
-  private readonly logger = new OriginLogger(NftWorkerService.name);
-
   constructor(
     private readonly nftThumbnailService: NftThumbnailService,
     private readonly nftMetadataService: NftMetadataService,
@@ -30,7 +27,6 @@ export class NftWorkerService {
 
     const needsProcessing = await this.needsProcessing(nft, settings);
     if (!needsProcessing) {
-      this.logger.log(`No processing is needed for nft with identifier '${nft.identifier}'`);
       return false;
     }
 

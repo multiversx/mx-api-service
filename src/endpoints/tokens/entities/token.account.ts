@@ -1,4 +1,4 @@
-import { SwaggerUtils } from "@elrondnetwork/erdnest";
+import { SwaggerUtils } from "@multiversx/sdk-nestjs";
 import { Field, ObjectType } from "@nestjs/graphql";
 import { ApiProperty } from "@nestjs/swagger";
 
@@ -15,4 +15,12 @@ export class TokenAccount {
   @Field(() => String, { description: "Token balance account amount." })
   @ApiProperty(SwaggerUtils.amountPropertyOptions())
   balance: string = "";
+
+  @Field(() => String, { description: "Token identifier if MetaESDT.", nullable: true })
+  @ApiProperty({ type: String, nullable: true })
+  identifier: string | undefined = undefined;
+
+  @Field(() => String, { description: "Token attributes if MetaESDT.", nullable: true })
+  @ApiProperty({ type: String, nullable: true })
+  attributes: string | undefined = undefined;
 }

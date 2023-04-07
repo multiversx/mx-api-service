@@ -1,66 +1,120 @@
+import { ElrondCachingService } from "@multiversx/sdk-nestjs";
 import { Test } from "@nestjs/testing";
-import { PublicAppModule } from "src/public.app.module";
-import { ElasticService, FileUtils } from "@elrondnetwork/erdnest";
+import { IndexerService } from "src/common/indexer/indexer.service";
 import { BlsService } from "src/endpoints/bls/bls.service";
-import { ApiConfigService } from "src/common/api-config/api.config.service";
 
-describe('Bls Service', () => {
+describe('BlsService', () => {
   let blsService: BlsService;
-  let apiConfigService: ApiConfigService;
+  let indexerService: IndexerService;
+  let elrondCachingService: ElrondCachingService;
 
-  beforeAll(async () => {
+  beforeEach(async () => {
     const moduleRef = await Test.createTestingModule({
-      imports: [PublicAppModule],
+      providers: [
+        BlsService,
+        {
+          provide: IndexerService,
+          useValue: {
+            getPublicKeys: jest.fn(),
+          },
+        },
+        {
+          provide: ElrondCachingService,
+          useValue: {
+            getOrSet: jest.fn(),
+          },
+        },
+      ],
     }).compile();
 
     blsService = moduleRef.get<BlsService>(BlsService);
-    apiConfigService = moduleRef.get<ApiConfigService>(ApiConfigService);
+    indexerService = moduleRef.get<IndexerService>(IndexerService);
+    elrondCachingService = moduleRef.get<ElrondCachingService>(ElrondCachingService);
   });
 
-  beforeEach(() => { jest.restoreAllMocks(); });
-
-  describe('getBlsIndex', () => {
-    it('should return bls index', async () => {
-      const MOCK_PATH = apiConfigService.getMockPath();
-      const blsValue = '00f9b676245ecf7bc74e3b644c106cfbbb366ce01a0149c1e50303d22c09bef7600f21f1925753ab994174b9926e9b078c2d1edaf03c221149ea0239722278aa864a1b26f298c29fe546fdb0ee1385243dfe407074e0dfa134c7e6d4197ce110';
-
-      jest
-        .spyOn(ElasticService.prototype, 'get')
-        // eslint-disable-next-line require-await
-        .mockImplementation(jest.fn(async () =>
-          FileUtils.parseJSONFile(`${MOCK_PATH}bls.mock.json`)));
-
-      const indexValue = await blsService.getBlsIndex(blsValue, 2, 608);
-      expect(indexValue).toStrictEqual(26);
-    });
+  afterEach(() => {
+    jest.clearAllMocks();
   });
 
   describe('getPublicKeys', () => {
-    it('should return public keys from shard 2 and epoch 608', async () => {
-      const MOCK_PATH = apiConfigService.getMockPath();
+    it('should return an array of public keys', async () => {
+      const shard = 0;
+      const epoch = 10;
+      const expectedPublicKeys = ['public-key-1', 'public-key-2', 'public-key-3'];
+      jest.spyOn(elrondCachingService, 'getOrSet').mockResolvedValue(expectedPublicKeys);
 
-      jest
-        .spyOn(ElasticService.prototype, 'get')
-        // eslint-disable-next-line require-await
-        .mockImplementation(jest.fn(async () =>
-          FileUtils.parseJSONFile(`${MOCK_PATH}bls.mock.json`)));
+      const result = await blsService.getPublicKeys(shard, epoch);
 
-      const results = await blsService.getPublicKeys(2, 608);
-      expect(results).toBeDefined();
-
-      for (const result of results) {
-        expect(typeof result).toStrictEqual('string');
-      }
+      expect(result).toEqual(expectedPublicKeys);
     });
 
-    it('should return empty array because test simulate that no public keys are defined', async () => {
-      jest
-        .spyOn(ElasticService.prototype, 'get')
-        // eslint-disable-next-line require-await
-        .mockImplementation(jest.fn(async () => []));
+    it('should return public keys for a given shard and epoch', async () => {
+      const shard = 0;
+      const epoch = 10;
+      const publicKeys = ['public-key-1', 'public-key-2', 'public-key-3'];
+      jest.spyOn(elrondCachingService, 'getOrSet').mockImplementation(async (_key, promise) => await promise());
+      jest.spyOn(indexerService, 'getPublicKeys').mockResolvedValue(publicKeys);
 
-      const emptyKey = await blsService.getPublicKeys(1, 100);
-      expect(emptyKey).toEqual([]);
+      const result = await blsService.getPublicKeys(shard, epoch);
+
+      expect(result).toEqual(publicKeys);
+    });
+  });
+
+  describe('getBlsIndex', () => {
+    it('should return the index of the given BLS key in the list of public keys', async () => {
+      const shard = 0;
+      const epoch = 10;
+      const blsKey = 'public-key-2';
+      const publicKeys = ['public-key-1', 'public-key-2', 'public-key-3'];
+      jest.spyOn(blsService, 'getPublicKeys').mockResolvedValue(publicKeys);
+
+      const result = await blsService.getBlsIndex(blsKey, shard, epoch);
+
+      expect(result).toBe(1);
+    });
+
+    it('should return -1 if BLS key not found', async () => {
+      const shard = 0;
+      const epoch = 10;
+      const blsKey = 'unknown-bls-key';
+      const publicKeys = ['public-key-1', 'public-key-2', 'public-key-3'];
+      jest.spyOn(blsService, 'getPublicKeys').mockResolvedValue(publicKeys);
+
+      const result = await blsService.getBlsIndex(blsKey, shard, epoch);
+
+      expect(result).toBe(-1);
+    });
+
+    it('should return -1 if public keys are not found', async () => {
+      const shard = 0;
+      const epoch = 10;
+      const blsKey = 'public-key-2';
+      const publicKeys: string[] = [];
+      jest.spyOn(blsService, 'getPublicKeys').mockResolvedValue(publicKeys);
+
+      const result = await blsService.getBlsIndex(blsKey, shard, epoch);
+
+      expect(result).toBe(-1);
+    });
+  });
+
+  describe('getPublicKeysRaw', () => {
+    it('should return empty array if getPublicKeys returns undefined', async () => {
+      jest.spyOn(indexerService, 'getPublicKeys').mockResolvedValue(undefined);
+
+      const result = await blsService['getPublicKeysRaw'](0, 1);
+
+      expect(result).toEqual([]);
+    });
+
+    it('should return public keys if getPublicKeys returns an array', async () => {
+      const publicKeys = ['publicKey1', 'publicKey2'];
+      jest.spyOn(indexerService, 'getPublicKeys').mockResolvedValue(publicKeys);
+
+      const result = await blsService['getPublicKeysRaw'](0, 1);
+
+      expect(result).toEqual(publicKeys);
     });
   });
 });

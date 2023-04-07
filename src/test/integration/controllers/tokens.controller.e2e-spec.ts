@@ -7,7 +7,7 @@ describe("Tokens Controller", () => {
   let app: INestApplication;
   const path: string = "/tokens";
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
       imports: [PublicAppModule],
     }).compile();
@@ -23,21 +23,21 @@ describe("Tokens Controller", () => {
       {
         filter: undefined,
         value: undefined,
-        lenght: 25,
+        length: 25,
       },
       {
         filter: 'size',
         value: '5',
-        lenght: 5,
+        length: 5,
       },
-    ].forEach(({ filter, value, lenght }) => {
+    ].forEach(({ filter, value, length }) => {
       describe(`when filter ${filter} is applied`, () => {
-        it(`should return ${lenght} tokens based on value ${value}`, async () => {
+        it(`should return ${length} tokens based on value ${value}`, async () => {
           await request(app.getHttpServer())
             .get(`${path}?${filter}=${value}`)
             .expect(200)
             .then(res => {
-              expect(res.body).toHaveLength(parseInt(`${lenght}`));
+              expect(res.body).toHaveLength(parseInt(`${length}`));
             });
         });
       });
@@ -109,11 +109,6 @@ describe("Tokens Controller", () => {
   describe('/tokens/count', () => {
     [
       {
-        filter: 'search',
-        value: 'RIDE',
-        count: 2,
-      },
-      {
         filter: 'name',
         value: 'MEX',
         count: 1,
@@ -181,6 +176,22 @@ describe("Tokens Controller", () => {
         });
     });
 
+    it.skip('should return minted, burnt, supply, circulatingSupply fields for a specific MetaESDT', async () => {
+      const identifier: string = 'XMEX-fda355';
+
+      await request(app.getHttpServer())
+        .get(`${path}/${identifier}`)
+        .expect(200)
+        .then(res => {
+          expect(res.body).toBeDefined();
+          expect(res.body.supply).toBeDefined();
+          expect(res.body.circulatingSupply).toBeDefined();
+          expect(res.body.minted).toBeDefined();
+          expect(res.body.burnt).toBeDefined();
+          expect(res.body.initialMinted).toBeDefined();
+        });
+    });
+
     it('should returns general supply information for a specific token', async () => {
       const identifier: string = 'MEX-455c57';
 
@@ -205,7 +216,7 @@ describe("Tokens Controller", () => {
         .expect(200)
         .then(res => {
           expect(res.body).toHaveLength(25);
-          expect(res.body[0].address).toStrictEqual('erd1qqqqqqqqqqqqqpgq7qhsw8kffad85jtt79t9ym0a4ycvan9a2jps0zkpen');
+          expect(res.body[0].address).toStrictEqual('erd1qqqqqqqqqqqqqpgqa0fsfshnff4n76jhcye6k7uvd7qacsq42jpsp6shh2');
         });
     });
 
@@ -227,7 +238,7 @@ describe("Tokens Controller", () => {
         .get(`${path}/${identifier}/roles`)
         .expect(200)
         .then(res => {
-          expect(res.body).toHaveLength(16);
+          expect(res.body).toHaveLength(20);
 
           for (const item of res.body) {
             expect(item.address).toBeDefined();

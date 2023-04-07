@@ -7,7 +7,7 @@ describe("Miniblocks Controller", () => {
   let app: INestApplication;
   const path: string = "/miniblocks";
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
       imports: [PublicAppModule],
     }).compile();

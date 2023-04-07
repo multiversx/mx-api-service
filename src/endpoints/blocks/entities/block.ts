@@ -1,4 +1,4 @@
-import { ApiUtils } from "@elrondnetwork/erdnest";
+import { ApiUtils } from "@multiversx/sdk-nestjs";
 import { Field, Float, ObjectType } from "@nestjs/graphql";
 import { ApiProperty } from "@nestjs/swagger";
 import { Identity } from "src/endpoints/identities/entities/identity";
@@ -80,6 +80,10 @@ export class Block {
   @Field(() => Float, { description: "Max Gas Limit for the given NFT." })
   @ApiProperty({ type: Number })
   maxGasLimit: number = 0;
+
+  @Field(() => String, { description: "Scheduled Root Hash for the given Block.", nullable: true })
+  @ApiProperty({ type: String, nullable: true })
+  scheduledRootHash: string | undefined = undefined;
 
   static mergeWithElasticResponse<T extends Block>(newBlock: T, blockRaw: any): T {
     blockRaw.shard = blockRaw.shardId;

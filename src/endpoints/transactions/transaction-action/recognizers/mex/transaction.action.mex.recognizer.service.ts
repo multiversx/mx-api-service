@@ -23,7 +23,7 @@ export class TransactionActionMexRecognizerService implements TransactionActionR
   ) { }
 
   async isActive(): Promise<boolean> {
-    const microServiceUrl = this.apiConfigService.getMaiarExchangeUrl();
+    const microServiceUrl = this.apiConfigService.getExchangeServiceUrl();
     if (!microServiceUrl) {
       return false;
     }

@@ -6,7 +6,7 @@ export class GetUsernameInput {
     Object.assign(this, partial);
   }
 
-  @Field(() => String, { name: "username", description: "Herotag" })
+  @Field(() => String, { name: "username", description: "Username" })
   username: string = "";
 
   public static resolve(input: GetUsernameInput): string {

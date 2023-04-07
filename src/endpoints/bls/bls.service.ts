@@ -1,4 +1,4 @@
-import { CachingService } from "@elrondnetwork/erdnest";
+import { ElrondCachingService } from "@multiversx/sdk-nestjs";
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { CacheInfo } from "src/utils/cache.info";
@@ -8,11 +8,11 @@ export class BlsService {
   constructor(
     @Inject(forwardRef(() => IndexerService))
     private readonly indexerService: IndexerService,
-    private readonly cachingService: CachingService,
+    private readonly cachingService: ElrondCachingService,
   ) { }
 
   public async getPublicKeys(shard: number, epoch: number): Promise<string[]> {
-    return await this.cachingService.getOrSetCache(
+    return await this.cachingService.getOrSet(
       CacheInfo.ShardAndEpochBlses(shard, epoch).key,
       async () => await this.getPublicKeysRaw(shard, epoch),
       CacheInfo.ShardAndEpochBlses(shard, epoch).ttl

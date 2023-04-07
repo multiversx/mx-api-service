@@ -5,6 +5,7 @@ export class StakeInfo {
 
   score?: number;
   validators?: number;
+  queued?: number;
   stake?: string;
   topUp?: string;
   locked: string = '0';

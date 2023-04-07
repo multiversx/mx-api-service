@@ -5,7 +5,7 @@ import { Transaction } from './transaction';
 import { TransactionReceipt } from './transaction.receipt';
 import { TransactionLog } from './transaction.log';
 import { TransactionOperation } from './transaction.operation';
-import { ComplexityEstimation } from '@elrondnetwork/erdnest';
+import { ComplexityEstimation } from '@multiversx/sdk-nestjs';
 
 @ObjectType(TransactionDetailed.name, { description: 'Detailed Transaction object type that extends Transaction.' })
 export class TransactionDetailed extends Transaction {
@@ -36,5 +36,25 @@ export class TransactionDetailed extends Transaction {
   @ApiProperty({ type: TransactionOperation, isArray: true })
   @ComplexityEstimation({ group: "details", value: 200, alternatives: ["withOperations"] })
   operations: TransactionOperation[] = [];
+
+  @Field(() => String, { description: "Sender Block hash for the given transaction.", nullable: true })
+  @ApiProperty({ type: String, nullable: true })
+  @ComplexityEstimation({ group: "blockInfo", value: 200, alternatives: ["withBlockInfo"] })
+  senderBlockHash: string | undefined = undefined;
+
+  @Field(() => Float, { description: "Sender Block nonce for the given transaction.", nullable: true })
+  @ApiProperty({ type: Number, nullable: true })
+  @ComplexityEstimation({ group: "blockInfo", value: 200, alternatives: ["withBlockInfo"] })
+  senderBlockNonce: number | undefined = undefined;
+
+  @Field(() => String, { description: "Receiver Block hash for the given transaction.", nullable: true })
+  @ApiProperty({ type: String, nullable: true })
+  @ComplexityEstimation({ group: "blockInfo", value: 200, alternatives: ["withBlockInfo"] })
+  receiverBlockHash: string | undefined = undefined;
+
+  @Field(() => Float, { description: "Receiver Block nonce for the given transaction.", nullable: true })
+  @ApiProperty({ type: Number, nullable: true })
+  @ComplexityEstimation({ group: "blockInfo", value: 200, alternatives: ["withBlockInfo"] })
+  receiverBlockNonce: number | undefined = undefined;
 }
 

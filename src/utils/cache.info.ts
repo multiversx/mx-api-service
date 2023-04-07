@@ -1,4 +1,4 @@
-import { Constants } from "@elrondnetwork/erdnest";
+import { Constants } from "@multiversx/sdk-nestjs";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { BlockFilter } from "src/endpoints/blocks/entities/block.filter";
 
@@ -26,8 +26,13 @@ export class CacheInfo {
     ttl: Constants.oneHour(),
   };
 
-  static NumShards: CacheInfo = {
-    key: 'numShards',
+  static ShardIds: CacheInfo = {
+    key: 'shardIds',
+    ttl: Constants.oneWeek(),
+  };
+
+  static ShardCount: CacheInfo = {
+    key: 'shardCount',
     ttl: Constants.oneWeek(),
   };
 
@@ -102,11 +107,6 @@ export class CacheInfo {
     ttl: Constants.oneMinute() * 10,
   };
 
-  static Top25Accounts: CacheInfo = {
-    key: 'accounts:0:25',
-    ttl: Constants.oneMinute() * 2,
-  };
-
   static ShardAndEpochBlses(shard: any, epoch: any): CacheInfo {
     return {
       key: `${shard}_${epoch}`,
@@ -135,8 +135,20 @@ export class CacheInfo {
     };
   }
 
+  static TransactionBatchShardNonce(shard: number): CacheInfo {
+    return {
+      key: `batchShardNonce:${shard}`,
+      ttl: Number.MAX_SAFE_INTEGER,
+    };
+  }
+
   static TokenAssets: CacheInfo = {
     key: 'tokenAssets',
+    ttl: Constants.oneDay(),
+  };
+
+  static CollectionRanks: CacheInfo = {
+    key: 'collectionRanks',
     ttl: Constants.oneDay(),
   };
 
@@ -179,7 +191,17 @@ export class CacheInfo {
   static EsdtAssets(identifier: string): CacheInfo {
     return {
       key: `esdt:assets:${identifier}`,
-      ttl: Constants.oneDay(),
+      ttl: Constants.oneHour(),
+    };
+  }
+
+  static HistoricalPrice(identifier: string, date: Date): CacheInfo {
+    const isCurrentDate = date.toISODateString() === new Date().toISODateString();
+    const ttl = isCurrentDate ? Constants.oneMinute() * 5 : Constants.oneWeek();
+
+    return {
+      key: `historical-price:${identifier}:${date.toISODateString()}`,
+      ttl,
     };
   }
 
@@ -280,6 +302,11 @@ export class CacheInfo {
     ttl: Constants.oneMinute() * 10,
   };
 
+  static StakingProxies: CacheInfo = {
+    key: "mexStakingProxies",
+    ttl: Constants.oneMinute() * 10,
+  };
+
   static MexTokensIndexed: CacheInfo = {
     key: "mexTokensIndexed",
     ttl: Constants.oneMinute() * 10,
@@ -310,8 +337,8 @@ export class CacheInfo {
   };
 
   static ExtendedAttributesActivationNonce: CacheInfo = {
-    key: "extendedAttributesActivationNonce",
-    ttl: Constants.oneDay(),
+    key: "extendedAttributesActivationNonce2",
+    ttl: Constants.oneHour(),
   };
 
   static InitEpoch: CacheInfo = {
@@ -319,8 +346,8 @@ export class CacheInfo {
     ttl: Constants.oneDay(),
   };
 
-  static LockedTokenID: CacheInfo = {
-    key: "lockedTokenID",
+  static LockedTokenIDs: CacheInfo = {
+    key: "lockedTokenIDs",
     ttl: Constants.oneHour(),
   };
 
@@ -328,6 +355,20 @@ export class CacheInfo {
     key: "currentEpoch",
     ttl: Constants.oneMinute(),
   };
+
+  static TransactionBatch(sender: string, batchId: string): CacheInfo {
+    return {
+      key: `transactionbatch:${sender}:${batchId}`,
+      ttl: Constants.oneMinute() * 20,
+    };
+  }
+
+  static PendingTransaction(hash: string): CacheInfo {
+    return {
+      key: `pendingtransaction:${hash}`,
+      ttl: Constants.oneMinute() * 15,
+    };
+  }
 
   static AccountsCount: CacheInfo = {
     key: "account:count",
@@ -344,7 +385,21 @@ export class CacheInfo {
   static AccountDeployedAt(address: string): CacheInfo {
     return {
       key: `accountDeployedAt:${address}`,
-      ttl: Constants.oneWeek(),
+      ttl: Constants.oneDay(),
+    };
+  }
+
+  static AccountDeployTxHash(address: string): CacheInfo {
+    return {
+      key: `accountDeployTxHash:${address}`,
+      ttl: Constants.oneDay(),
+    };
+  }
+
+  static AccountIsVerified(address: string): CacheInfo {
+    return {
+      key: `accountIsVerified:${address}`,
+      ttl: Constants.oneMinute() * 10,
     };
   }
 
@@ -360,6 +415,35 @@ export class CacheInfo {
       key: `blocks:count:${JSON.stringify(filter)}`,
       ttl: Constants.oneMinute(),
     };
+  }
+
+  static BlocksLatest(ttl?: number): CacheInfo {
+    const cachingTtl = CacheInfo.computeBlocksLatestTtl(ttl);
+
+    return {
+      key: `blocks:latest:${cachingTtl}`,
+      ttl: cachingTtl,
+    };
+  }
+
+  private static computeBlocksLatestTtl(ttl?: number): number {
+    if (ttl === undefined || ttl <= Constants.oneMinute() * 5) {
+      return Constants.oneSecond() * 12;
+    }
+
+    if (ttl <= Constants.oneHour()) {
+      return Constants.oneMinute() * 5;
+    }
+
+    if (ttl <= Constants.oneHour() * 6) {
+      return Constants.oneMinute() * 15;
+    }
+
+    if (ttl <= Constants.oneDay()) {
+      return Constants.oneMinute() * 30;
+    }
+
+    return Constants.oneHour(); // more than 1 day
   }
 
   static Delegation: CacheInfo = {
@@ -401,6 +485,13 @@ export class CacheInfo {
     ttl: Constants.oneMinute(),
   };
 
+  static DelegationProvider(address: string): CacheInfo {
+    return {
+      key: `delegationProvider:${address}`,
+      ttl: Constants.oneMinute(),
+    };
+  }
+
   static GlobalStake: CacheInfo = {
     key: 'stake',
     ttl: Constants.oneMinute() * 10,
@@ -410,4 +501,69 @@ export class CacheInfo {
     key: 'waiting-list',
     ttl: Constants.oneMinute() * 5,
   };
+
+  static PendingUploadAsset(identifier: string): CacheInfo {
+    return {
+      key: `pendingUploadAsset:${identifier}`,
+      ttl: Constants.oneHour() * 12,
+    };
+  }
+
+  static PendingMediaGet(identifier: string): CacheInfo {
+    return {
+      key: `pendingMediaGet:${identifier}`,
+      ttl: Constants.oneHour() * 12,
+    };
+  }
+
+  static PendingMetadataGet(identifier: string): CacheInfo {
+    return {
+      key: `pendingMetadataGet:${identifier}`,
+      ttl: Constants.oneHour() * 12,
+    };
+  }
+
+  static PendingGenerateThumbnail(identifier: string): CacheInfo {
+    return {
+      key: `pendingGenerateThumbnail:${identifier}`,
+      ttl: Constants.oneHour() * 12,
+    };
+  }
+
+  static Username(address: string): CacheInfo {
+    return {
+      key: `username:${address}`,
+      ttl: Constants.oneHour(),
+    };
+  }
+
+  static ContractUpgrades(address: string): CacheInfo {
+    return {
+      key: `contractUpgrades:${address}`,
+      ttl: Constants.oneHour(),
+    };
+  }
+
+  static Setting(name: string): CacheInfo {
+    return {
+      key: `api:settings:${name}`,
+      ttl: Constants.oneHour(),
+    };
+  }
+
+  static DataApiTokens: CacheInfo = {
+    key: 'data-api:tokens',
+    ttl: Constants.oneMinute() * 10,
+  };
+
+  static DataApiTokenPrice(identifier: string, timestamp?: number): CacheInfo {
+    const priceDate = timestamp ? new Date(timestamp * 1000) : new Date();
+    const isCurrentDate = priceDate.toISODateString() === new Date().toISODateString();
+    const ttl = isCurrentDate ? Constants.oneMinute() * 5 : Constants.oneWeek();
+
+    return {
+      key: `data-api:price:${identifier}:${priceDate.toISODateString()}`,
+      ttl,
+    };
+  }
 }

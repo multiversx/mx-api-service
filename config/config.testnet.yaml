@@ -3,16 +3,18 @@ metaChainShardId: 4294967295
 api:
   public: true
   private: true
-  auth: false
 cron:
   transactionProcessor: true
   transactionProcessorMaxLookBehind: 100
   transactionCompleted: false
   transactionCompletedMaxLookBehind: 100
+  transactionBatch: false
+  transactionBatchMaxLookBehind: 100
   cacheWarmer: true
   fastWarm: true
   queueWorker: true
   elasticUpdater: false
+  statusChecker: false
 flags:
   useRequestCaching: true
   useKeepAliveAgent: true
@@ -28,6 +30,29 @@ features:
     url: 'amqp://guest:guest@127.0.0.1:5672'
     exchange: 'all_events'
     queue: 'api-process-logs-and-events'
+  guestCaching:
+    enabled: false
+    hitsThreshold: 100
+    ttl: 12
+  updateCollectionExtraDetails:
+    enabled: false
+  marketplace:
+    enabled: false
+    serviceUrl: 'https://testnet-nfts-graph.multiversx.com/graphql'
+  exchange:
+    enabled: false
+    serviceUrl: 'https://testnet-graph.xexchange.com/graphql'
+  dataApi:
+    enabled: false
+    serviceUrl: 'https://testnet-data-api.multiversx.com'
+  auth:
+    enabled: false
+    maxExpirySeconds: 86400
+    acceptedOrigins:
+      - ''
+    admins:
+      - ''
+    jwtSecret: ''
 image:
   width: 600
   height: 600
@@ -38,23 +63,26 @@ aws:
   s3Bucket: 'testnet-media.elrond.com'
   s3Region: ''
 urls:
+  self: 'https://testnet-api.multiversx.com'
   api:
-    - 'https://testnet-api.elrond.com'
-    - 'https://devnet-api.elrond.com'
-    - 'https://api.elrond.com'
+    - 'https://testnet-api.multiversx.com'
+    - 'https://devnet-api.multiversx.com'
+    - 'https://api.multiversx.com'
   elastic:
-    - 'https://testnet-index.elrond.com'
+    - 'https://testnet-index.multiversx.com'
   gateway:
-    - 'https://testnet-gateway.elrond.com'
+    - 'https://testnet-gateway.multiversx.com'
+  verifier: 'https://play-api.multiversx.com'
   redis: '127.0.0.1'
   rabbitmq: 'amqp://127.0.0.1:5672'
-  providers: 'https://testnet-delegation-api.elrond.com/providers'
-  delegation: 'https://testnet-delegation-api.elrond.com'
+  providers: 'https://testnet-delegation-api.multiversx.com/providers'
+  delegation: 'https://testnet-delegation-api.multiversx.com'
   media: 'https://testnet-media.elrond.com'
   nftThumbnails: 'https://testnet-media.elrond.com/nfts/thumbnail'
   tmp: '/tmp'
   ipfs: 'https://ipfs.io/ipfs'
   socket: 'testnet-socket-fra.elrond.com'
+  maiarId: 'https://testnet-id-api.multiversx.com'
 database:
   enabled: false
   url: 'mongodb://127.0.0.1:27017/api?authSource=admin'
@@ -81,7 +109,6 @@ contracts:
   delegationManager: 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqylllslmq6y6'
   delegation: 'erd1qqqqqqqqqqqqqpgqp699jngundfqw07d8jzkepucvpzush6k3wvqyc44rx'
   metabonding: 'erd1qqqqqqqqqqqqqpgq2l9w0qv98htrhdwuz6ppsw47tn3hhff3d8ssqqjpvu'
-  delegationShardId: 2
 inflation:
   - 1952123
   - 1746637
@@ -90,12 +117,6 @@ inflation:
   - 1130177
   - 924690
   - 719203
-security:
-  admins:
-  jwtSecret:
 nftProcess:
   parallelism: 1
   maxRetries: 3
-transaction-action:
-  mex:
-    microServiceUrl: 'https://testnet-exchange-graph.elrond.com/graphql'

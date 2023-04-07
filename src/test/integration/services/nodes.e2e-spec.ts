@@ -6,7 +6,6 @@ import { Test } from "@nestjs/testing";
 import { KeybaseState } from "src/common/keybase/entities/keybase.state";
 import { Node } from "src/endpoints/nodes/entities/node";
 import { NodeService } from "src/endpoints/nodes/node.service";
-import { Provider } from "src/endpoints/providers/entities/provider";
 import { ProviderService } from "src/endpoints/providers/provider.service";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { PublicAppModule } from "src/public.app.module";
@@ -14,16 +13,18 @@ import { NodeType } from 'src/endpoints/nodes/entities/node.type';
 import { NodeStatus } from 'src/endpoints/nodes/entities/node.status';
 import { NodeSort } from 'src/endpoints/nodes/entities/node.sort';
 import { Auction } from 'src/common/gateway/entities/auction';
-import '@elrondnetwork/erdnest/lib/src/utils/extensions/array.extensions';
-import '@elrondnetwork/erdnest/lib/src/utils/extensions/jest.extensions';
-import '@elrondnetwork/erdnest/lib/src/utils/extensions/number.extensions';
+import '@multiversx/sdk-nestjs/lib/src/utils/extensions/array.extensions';
+import '@multiversx/sdk-nestjs/lib/src/utils/extensions/jest.extensions';
+import '@multiversx/sdk-nestjs/lib/src/utils/extensions/number.extensions';
 import { AuctionNode } from 'src/common/gateway/entities/auction.node';
-import { CachingService, FileUtils } from '@elrondnetwork/erdnest';
+import { ElrondCachingService, FileUtils } from '@multiversx/sdk-nestjs';
 import { AccountService } from 'src/endpoints/accounts/account.service';
+import { Provider } from 'src/endpoints/providers/entities/provider';
+import { AccountFilter } from 'src/endpoints/accounts/entities/account.filter';
 
 describe('Node Service', () => {
   let nodeService: NodeService;
-  let cachingService: CachingService;
+  let cachingService: ElrondCachingService;
   let providerService: ProviderService;
   let nodes: Node[];
   let providers: Provider[];
@@ -36,7 +37,7 @@ describe('Node Service', () => {
     }).compile();
 
     nodeService = moduleRef.get<NodeService>(NodeService);
-    cachingService = moduleRef.get<CachingService>(CachingService);
+    cachingService = moduleRef.get<ElrondCachingService>(ElrondCachingService);
     providerService = moduleRef.get<ProviderService>(ProviderService);
     accountService = moduleRef.get<AccountService>(AccountService);
     apiConfigService = moduleRef.get<ApiConfigService>(ApiConfigService);
@@ -44,7 +45,7 @@ describe('Node Service', () => {
     nodes = await nodeService.getAllNodes();
     providers = await providerService.getAllProviders();
 
-    const accounts = await accountService.getAccounts({ from: 0, size: 1 });
+    const accounts = await accountService.getAccounts({ from: 0, size: 1 }, new AccountFilter());
     expect(accounts).toHaveLength(1);
 
 
@@ -73,7 +74,7 @@ describe('Node Service', () => {
         .mockImplementation(jest.fn(async () => queue));
 
       jest
-        .spyOn(CachingService.prototype, 'getOrSetCache')
+        .spyOn(ElrondCachingService.prototype, 'getOrSet')
         // eslint-disable-next-line require-await
         .mockImplementation(jest.fn(async (_key: string, promise: any) => promise()));
     }
@@ -83,8 +84,7 @@ describe('Node Service', () => {
 
   describe('Nodes', () => {
     it('should be in sync with keybase confirmations', async () => {
-      const nodeKeybases: { [key: string]: KeybaseState } | undefined = await cachingService.getCache('nodeKeybases');
-      expect(nodeKeybases).toBeDefined();
+      const nodeKeybases: { [key: string]: KeybaseState; } | undefined = await cachingService.get('nodeKeybases');
 
       if (nodeKeybases) {
         for (const node of nodes) {
@@ -109,7 +109,7 @@ describe('Node Service', () => {
       const bls: string = "003ba6237f0f7c269eebfecb6a0a0796076c02593846e1ce89aee9b832b94dd54e93d35b03dc3d5944b1aae916722506faf959a47cabf2d00f567ad50b10f8f1a40ab0316fdf302454f7aea58b23109ccfdce082bd16fb262342a1382b802c10";
 
       jest
-        .spyOn(CachingService.prototype, 'getOrSetCache')
+        .spyOn(ElrondCachingService.prototype, 'getOrSet')
         // eslint-disable-next-line require-await
         .mockImplementation(jest.fn(async () =>
           FileUtils.parseJSONFile(`${MOCK_PATH}nodes.mock.json`)));
@@ -130,7 +130,7 @@ describe('Node Service', () => {
       const nodes: NodeFilter = new NodeFilter();
 
       jest
-        .spyOn(CachingService.prototype, 'getOrSetCache')
+        .spyOn(ElrondCachingService.prototype, 'getOrSet')
         // eslint-disable-next-line require-await
         .mockImplementation(jest.fn(async () =>
           FileUtils.parseJSONFile(`${MOCK_PATH}nodes.mock.json`)));
@@ -150,7 +150,7 @@ describe('Node Service', () => {
       nodes.shard = 1;
 
       jest
-        .spyOn(CachingService.prototype, 'getOrSetCache')
+        .spyOn(ElrondCachingService.prototype, 'getOrSet')
         // eslint-disable-next-line require-await
         .mockImplementation(jest.fn(async () =>
           FileUtils.parseJSONFile(`${MOCK_PATH}nodes.mock.json`)));
@@ -165,7 +165,7 @@ describe('Node Service', () => {
       nodes.type = NodeType.validator;
 
       jest
-        .spyOn(CachingService.prototype, 'getOrSetCache')
+        .spyOn(ElrondCachingService.prototype, 'getOrSet')
         // eslint-disable-next-line require-await
         .mockImplementation(jest.fn(async () =>
           FileUtils.parseJSONFile(`${MOCK_PATH}nodes.mock.json`)));
@@ -180,7 +180,7 @@ describe('Node Service', () => {
       nodes.type = NodeType.observer;
 
       jest
-        .spyOn(CachingService.prototype, 'getOrSetCache')
+        .spyOn(ElrondCachingService.prototype, 'getOrSet')
         // eslint-disable-next-line require-await
         .mockImplementation(jest.fn(async () =>
           FileUtils.parseJSONFile(`${MOCK_PATH}nodes.mock.json`)));
@@ -195,7 +195,7 @@ describe('Node Service', () => {
       nodes.issues = true;
 
       jest
-        .spyOn(CachingService.prototype, 'getOrSetCache')
+        .spyOn(ElrondCachingService.prototype, 'getOrSet')
         // eslint-disable-next-line require-await
         .mockImplementation(jest.fn(async () =>
           FileUtils.parseJSONFile(`${MOCK_PATH}nodes.mock.json`)));
@@ -226,7 +226,7 @@ describe('Node Service', () => {
       const MOCK_PATH = apiConfigService.getMockPath();
 
       jest
-        .spyOn(CachingService.prototype, 'getOrSetCache')
+        .spyOn(ElrondCachingService.prototype, 'getOrSet')
         // eslint-disable-next-line require-await
         .mockImplementation(jest.fn(async () =>
           FileUtils.parseJSONFile(`${MOCK_PATH}nodes.mock.json`)));
@@ -248,7 +248,7 @@ describe('Node Service', () => {
       nodes.type = NodeType.validator;
 
       jest
-        .spyOn(CachingService.prototype, 'getOrSetCache')
+        .spyOn(ElrondCachingService.prototype, 'getOrSet')
         // eslint-disable-next-line require-await
         .mockImplementation(jest.fn(async () =>
           FileUtils.parseJSONFile(`${MOCK_PATH}nodes.mock.json`)));
@@ -270,7 +270,7 @@ describe('Node Service', () => {
       nodes.status = NodeStatus.eligible;
 
       jest
-        .spyOn(CachingService.prototype, 'getOrSetCache')
+        .spyOn(ElrondCachingService.prototype, 'getOrSet')
         // eslint-disable-next-line require-await
         .mockImplementation(jest.fn(async () =>
           FileUtils.parseJSONFile(`${MOCK_PATH}nodes.mock.json`)));
@@ -292,7 +292,7 @@ describe('Node Service', () => {
       nodes.shard = 1;
 
       jest
-        .spyOn(CachingService.prototype, 'getOrSetCache')
+        .spyOn(ElrondCachingService.prototype, 'getOrSet')
         // eslint-disable-next-line require-await
         .mockImplementation(jest.fn(async () =>
           FileUtils.parseJSONFile(`${MOCK_PATH}nodes.mock.json`)));
@@ -314,7 +314,7 @@ describe('Node Service', () => {
       nodes.issues = true;
 
       jest
-        .spyOn(CachingService.prototype, 'getOrSetCache')
+        .spyOn(ElrondCachingService.prototype, 'getOrSet')
         // eslint-disable-next-line require-await
         .mockImplementation(jest.fn(async () =>
           FileUtils.parseJSONFile(`${MOCK_PATH}nodes.mock.json`)));
@@ -334,7 +334,7 @@ describe('Node Service', () => {
       nodes.owner = "erd1qzwd98g6xjs6h33ezxc9ey766ee082z9q4yvj46r8p7xqnl0eenqvxtaz3";
 
       jest
-        .spyOn(CachingService.prototype, 'getOrSetCache')
+        .spyOn(ElrondCachingService.prototype, 'getOrSet')
         // eslint-disable-next-line require-await
         .mockImplementation(jest.fn(async () =>
           FileUtils.parseJSONFile(`${MOCK_PATH}nodes.mock.json`)));
@@ -354,7 +354,7 @@ describe('Node Service', () => {
       nodes.sort = NodeSort.name;
 
       jest
-        .spyOn(CachingService.prototype, 'getOrSetCache')
+        .spyOn(ElrondCachingService.prototype, 'getOrSet')
         // eslint-disable-next-line require-await
         .mockImplementation(jest.fn(async () =>
           FileUtils.parseJSONFile(`${MOCK_PATH}nodes.mock.json`)));
@@ -377,7 +377,7 @@ describe('Node Service', () => {
       nodes.provider = "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqy8lllls62y8s5";
 
       jest
-        .spyOn(CachingService.prototype, 'getOrSetCache')
+        .spyOn(ElrondCachingService.prototype, 'getOrSet')
         // eslint-disable-next-line require-await
         .mockImplementation(jest.fn(async () =>
           FileUtils.parseJSONFile(`${MOCK_PATH}nodes.mock.json`)));
@@ -398,7 +398,7 @@ describe('Node Service', () => {
       const MOCK_PATH = apiConfigService.getMockPath();
 
       jest
-        .spyOn(CachingService.prototype, 'getOrSetCache')
+        .spyOn(ElrondCachingService.prototype, 'getOrSet')
         // eslint-disable-next-line require-await
         .mockImplementation(jest.fn(async () =>
           FileUtils.parseJSONFile(`${MOCK_PATH}nodes.mock.json`)));
@@ -414,7 +414,7 @@ describe('Node Service', () => {
       const MOCK_PATH = apiConfigService.getMockPath();
 
       jest
-        .spyOn(CachingService.prototype, 'getOrSetCache')
+        .spyOn(ElrondCachingService.prototype, 'getOrSet')
         // eslint-disable-next-line require-await
         .mockImplementation(jest.fn(async () =>
           FileUtils.parseJSONFile(`${MOCK_PATH}nodes.mock.json`)));

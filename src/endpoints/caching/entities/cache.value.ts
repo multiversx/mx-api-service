@@ -1,4 +1,4 @@
-import { Constants } from "@elrondnetwork/erdnest";
+import { Constants } from "@multiversx/sdk-nestjs";
 
 export class CacheValue {
   value?: string;

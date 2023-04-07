@@ -5,6 +5,9 @@ import { TransactionModule } from "../transactions/transaction.module";
 import { TokenService } from "./token.service";
 import { TokenTransferService } from "./token.transfer.service";
 import { AssetsModule } from "src/common/assets/assets.module";
+import { MexModule } from "../mex/mex.module";
+import { CollectionModule } from "../collections/collection.module";
+import { PluginModule } from "src/plugins/plugin.module";
 
 @Module({
   imports: [
@@ -12,6 +15,9 @@ import { AssetsModule } from "src/common/assets/assets.module";
     forwardRef(() => NftModule),
     forwardRef(() => TransactionModule),
     forwardRef(() => AssetsModule),
+    forwardRef(() => MexModule.forRoot()),
+    forwardRef(() => CollectionModule),
+    forwardRef(() => PluginModule),
   ],
   providers: [
     TokenService, TokenTransferService,

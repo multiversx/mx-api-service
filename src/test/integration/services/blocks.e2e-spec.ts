@@ -1,83 +1,97 @@
+import { ElrondCachingService } from "@multiversx/sdk-nestjs";
 import { Test } from "@nestjs/testing";
+import { IndexerService } from "src/common/indexer/indexer.service";
 import { BlockService } from "src/endpoints/blocks/block.service";
-import { Block } from "src/endpoints/blocks/entities/block";
 import { BlockFilter } from "src/endpoints/blocks/entities/block.filter";
-import { PublicAppModule } from "src/public.app.module";
-import '@elrondnetwork/erdnest/lib/src/utils/extensions/jest.extensions';
+import { BlsService } from "src/endpoints/bls/bls.service";
+import { IdentitiesService } from "src/endpoints/identities/identities.service";
+import { NodeService } from "src/endpoints/nodes/node.service";
 
-describe('Blocks Service', () => {
-  let blocksService: BlockService;
-  let blocks: Block[];
-  let blockSentinel: Block;
+describe('Block Service', () => {
+  let blockService: BlockService;
+  let indexerService: IndexerService;
+  let elrondCachingService: ElrondCachingService;
 
-  beforeAll(async () => {
+  beforeEach(async () => {
     const moduleRef = await Test.createTestingModule({
-      imports: [PublicAppModule],
-
+      providers: [
+        BlockService,
+        {
+          provide: IndexerService, useValue: {
+            getBlocksCount: jest.fn(),
+            getBlocks: jest.fn(),
+            getBlock: jest.fn(),
+          },
+        },
+        {
+          provide: ElrondCachingService, useValue: {
+            getOrSet: jest.fn(),
+            getCacheLocal: jest.fn(),
+            setCacheLocal: jest.fn(),
+          },
+        },
+        {
+          provide: BlsService, useValue: {
+            getPublicKeys: jest.fn(),
+          },
+        },
+        {
+          provide: NodeService, useValue: {
+            getAllNodes: jest.fn(),
+          },
+        },
+        {
+          provide: IdentitiesService, useValue: {
+            getIdentity: jest.fn(),
+          },
+        },
+      ],
     }).compile();
 
-    blocksService = moduleRef.get<BlockService>(BlockService);
-    blocks = await blocksService.getBlocks(new BlockFilter(), { from: 0, size: 25 });
-    blockSentinel = blocks[0];
+    blockService = moduleRef.get<BlockService>(BlockService);
+    indexerService = moduleRef.get<IndexerService>(IndexerService);
+    elrondCachingService = moduleRef.get<ElrondCachingService>(ElrondCachingService);
   });
 
-  describe('Blocks', () => {
-    it('blocks should have hash, epoch and shard', () => {
+  describe('getBlocksCount', () => {
+    it('should return the cached value when filter is undefined', async () => {
+      const expectedCount = 100;
+      jest.spyOn(elrondCachingService, 'getOrSet').mockImplementationOnce(async (_key: string, promise: any) => {
+        const result = await promise();
+        expect(result).toEqual(expectedCount);
+        return result;
+      });
 
-      for (const block of blocks) {
-        expect(block).toHaveProperty('hash');
-        expect(block).toHaveProperty('epoch');
-        expect(block).toHaveProperty('shard');
-      }
+      jest.spyOn(indexerService, 'getBlocksCount').mockResolvedValueOnce(expectedCount);
+
+      const result = await blockService.getBlocksCount({});
+      expect(indexerService.getBlocksCount).toHaveBeenCalledWith({});
+      expect(result).toEqual(expectedCount);
     });
 
-    it('all entities should have block structure', () => {
-      for (const block of blocks) {
-        expect(block).toHaveStructure(Object.keys(new Block()));
-      }
+    it('should call indexerService.getBlocksCount when filter is defined', async () => {
+      const expectedCount = 100;
+      const filter: BlockFilter = { epoch: 123, shard: 0 };
+      jest.spyOn(elrondCachingService, 'getOrSet').mockImplementationOnce(async (_key: string, promise: any) => {
+        const result = await promise();
+        expect(result).toEqual(expectedCount);
+        return result;
+      });
+
+      jest.spyOn(indexerService, 'getBlocksCount').mockResolvedValueOnce(expectedCount);
+
+      const result = await blockService.getBlocksCount(filter);
+
+      expect(indexerService.getBlocksCount).toHaveBeenCalledWith(filter);
+      expect(result).toEqual(expectedCount);
     });
+  });
 
-    it('should be sorted by timestamp in descending order', () => {
-      let index = 1;
-
-      while (index < blocks.length) {
-        expect(blocks[index - 1]).toHaveProperty('timestamp');
-        expect(blocks[index]).toHaveProperty('timestamp');
-        expect(BigInt(blocks[index - 1].timestamp)).toBeGreaterThanOrEqual(BigInt(blocks[index].timestamp));
-        index++;
-      }
-    });
-
-    it('should be filtered by shard and epoch', async () => {
-      const blocksFilter = new BlockFilter();
-      blocksFilter.shard = 2;
-      blocksFilter.epoch = 396;
-      const filteredBlocks = await blocksService.getBlocks(blocksFilter, { from: 0, size: 25 });
-
-      for (const block of filteredBlocks) {
-        expect(block.shard).toStrictEqual(2);
-        expect(block.epoch).toStrictEqual(396);
-      }
-    });
-
-    it('should be filtered by block hash', async () => {
-      const blockDetailed = await blocksService.getBlock(blockSentinel.hash);
-      expect(blockDetailed?.hash).toStrictEqual(blockSentinel.hash);
-      expect(blockDetailed).toHaveProperty('validators');
-    });
-
-    it('should return current epoch', async () => {
-      const epoch = await blocksService.getCurrentEpoch();
-      expect(typeof epoch).toBe('number');
-    });
-
-    it('should return block count', async () => {
-      const blocksFilter = new BlockFilter();
-      blocksFilter.shard = 2;
-      blocksFilter.epoch = 396;
-      const block = await blocksService.getBlocksCount(blocksFilter);
-
-      expect(typeof block).toBe('number');
+  describe('getBlocks', () => {
+    it('should return an empty array when the indexer returns an empty array', async () => {
+      jest.spyOn(indexerService, 'getBlocks').mockResolvedValueOnce([]);
+      const result = await blockService.getBlocks({ shard: 0, epoch: 123 }, { from: 0, size: 10 });
+      expect(result).toEqual([]);
     });
   });
 });

@@ -1,4 +1,4 @@
-import { Jwt, JwtAuthenticateGuard } from "@elrondnetwork/erdnest";
+import { Jwt, NativeAuthGuard } from "@multiversx/sdk-nestjs";
 import { BadRequestException, Body, Controller, Post, UseGuards } from "@nestjs/common";
 import { ApiOperation, ApiResponse } from "@nestjs/swagger";
 import { ProcessNftRequest } from "./entities/process.nft.request";
@@ -10,7 +10,7 @@ export class ProcessNftsPublicController {
     private readonly processNftService: ProcessNftsService,
   ) { }
 
-  @UseGuards(JwtAuthenticateGuard)
+  @UseGuards(NativeAuthGuard)
   @Post("/nfts/process")
   @ApiOperation({ summary: 'Trigger NFT media/metadata reprocessing', description: 'Triggers NFT media/metadata reprocessing for collection owners' })
   @ApiResponse({ status: 201, description: 'NFT media/metadata reprocessing has been triggered' })

@@ -1,14 +1,14 @@
-import { Inject, Injectable } from "@nestjs/common";
+import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { Cron, CronExpression } from "@nestjs/schedule";
 import * as JsonDiff from "json-diff";
 import { AssetsService } from "src/common/assets/assets.service";
 import { NftService } from "src/endpoints/nfts/nft.service";
 import asyncPool from "tiny-async-pool";
 import { PersistenceInterface } from "src/common/persistence/persistence.interface";
-import { BatchUtils, Locker } from "@elrondnetwork/erdnest";
+import { BatchUtils, Lock } from "@multiversx/sdk-nestjs";
 import { NftMedia } from "src/endpoints/nfts/entities/nft.media";
 import { IndexerService } from "src/common/indexer/indexer.service";
-import { OriginLogger } from "@elrondnetwork/erdnest";
+import { OriginLogger } from "@multiversx/sdk-nestjs";
 
 @Injectable()
 export class ElasticUpdaterService {
@@ -18,59 +18,57 @@ export class ElasticUpdaterService {
     private readonly assetsService: AssetsService,
     private readonly indexerService: IndexerService,
     private readonly nftService: NftService,
-    @Inject('PersistenceService')
+    @Inject(forwardRef(() => 'PersistenceService'))
     private readonly persistenceService: PersistenceInterface,
   ) { }
 
   @Cron(CronExpression.EVERY_DAY_AT_1AM)
+  @Lock({ name: 'Elastic updater: Update assets', verbose: true })
   async handleUpdateAssets() {
-    await Locker.lock('Elastic updater: Update assets', async () => {
-      const allAssets = await this.assetsService.getAllTokenAssets();
+    const allAssets = await this.assetsService.getAllTokenAssets();
 
-      for (const key of Object.keys(allAssets)) {
-        const elasticAssets = await this.indexerService.getAssetsForToken(key);
-        if (elasticAssets === null) {
-          this.logger.log(`Could not find token with identifier '${key}' when updating assets in elastic`);
-          continue;
-        }
-
-        const githubAssets = allAssets[key];
-
-        if (!elasticAssets || JsonDiff.diff(githubAssets, elasticAssets)) {
-          this.logger.log(`Updating assets for token with identifier '${key}'`);
-          await this.indexerService.setAssetsForToken(key, githubAssets);
-        }
+    for (const key of Object.keys(allAssets)) {
+      const elasticAssets = await this.indexerService.getAssetsForToken(key);
+      if (elasticAssets === null) {
+        this.logger.log(`Could not find token with identifier '${key}' when updating assets in elastic`);
+        continue;
       }
-    }, true);
+
+      const githubAssets = allAssets[key];
+
+      if (!elasticAssets || JsonDiff.diff(githubAssets, elasticAssets)) {
+        this.logger.log(`Updating assets for token with identifier '${key}'`);
+        await this.indexerService.setAssetsForToken(key, githubAssets);
+      }
+    }
   }
 
   @Cron(CronExpression.EVERY_HOUR)
+  @Lock({ name: 'Elastic updater: Update tokens isWhitelisted, media, metadata', verbose: true })
   async handleUpdateTokenExtraDetails() {
-    await Locker.lock('Elastic updater: Update tokens isWhitelisted, media, metadata', async () => {
-      await this.indexerService.getAllTokensMetadata(async items => {
-        const whitelistStorageItems = items.map((item: any) => ({
-          identifier: item.identifier,
-          uris: item.data?.uris,
-          isWhitelistedStorage: item.api_isWhitelistedStorage,
-        }));
+    await this.indexerService.getAllTokensMetadata(async items => {
+      const whitelistStorageItems = items.map((item: any) => ({
+        identifier: item.identifier,
+        uris: item.data?.uris,
+        isWhitelistedStorage: item.api_isWhitelistedStorage,
+      }));
 
-        await this.updateIsWhitelistedStorageForTokens(whitelistStorageItems);
+      await this.updateIsWhitelistedStorageForTokens(whitelistStorageItems);
 
-        const mediaItems = items.map((item: any) => ({
-          identifier: item.identifier,
-          media: item.api_media,
-        }));
+      const mediaItems = items.map((item: any) => ({
+        identifier: item.identifier,
+        media: item.api_media,
+      }));
 
-        await this.updateMediaForTokens(mediaItems);
+      await this.updateMediaForTokens(mediaItems);
 
-        const metadataItems = items.map((item: any) => ({
-          identifier: item.identifier,
-          metadata: item.api_metadata,
-        }));
+      const metadataItems = items.map((item: any) => ({
+        identifier: item.identifier,
+        metadata: item.api_metadata,
+      }));
 
-        await this.updateMetadataForTokens(metadataItems);
-      });
-    }, true);
+      await this.updateMetadataForTokens(metadataItems);
+    });
   }
 
   private async updateMetadataForTokens(items: { identifier: string, metadata: any }[]): Promise<void> {

@@ -1,4 +1,4 @@
-import { CachingService } from "@elrondnetwork/erdnest";
+import { ElrondCachingService } from "@multiversx/sdk-nestjs";
 import { TransactionProcessor } from "@elrondnetwork/transaction-processor";
 import { Inject, Injectable } from "@nestjs/common";
 import { ClientProxy } from "@nestjs/microservices";
@@ -13,7 +13,7 @@ export class TransactionCompletedService {
 
   constructor(
     private readonly apiConfigService: ApiConfigService,
-    private readonly cachingService: CachingService,
+    private readonly cachingService: ElrondCachingService,
     @Inject('PUBSUB_SERVICE') private clientProxy: ClientProxy,
   ) { }
 
@@ -32,7 +32,7 @@ export class TransactionCompletedService {
           const transactionsExcludingSmartContractResults = transactions.filter(transaction => !transaction.originalTransactionHash);
 
           const cacheKeys = transactionsExcludingSmartContractResults.map(transaction => CacheInfo.TransactionPendingResults(transaction.hash).key);
-          const hashes: string[] = await this.cachingService.batchGetCacheRemote(cacheKeys);
+          const hashes: string[] = await this.cachingService.batchGetManyRemote(cacheKeys) as string[];
           const validHashes = hashes.filter(x => x !== null);
           if (validHashes.length > 0) {
             const keys = validHashes.map(hash => CacheInfo.TransactionPendingResults(hash).key);
@@ -43,7 +43,7 @@ export class TransactionCompletedService {
           this.clientProxy.emit('transactionsCompleted', transactionsExcludingSmartContractResults);
         },
         onTransactionsPending: async (_, __, transactions) => {
-          await this.cachingService.batchSetCache(
+          await this.cachingService.batchSet(
             transactions.map(transaction => CacheInfo.TransactionPendingResults(transaction.hash).key),
             transactions.map(transaction => transaction.hash),
             transactions.map(transaction => CacheInfo.TransactionPendingResults(transaction.hash).ttl),
@@ -54,10 +54,10 @@ export class TransactionCompletedService {
           this.clientProxy.emit('transactionsPendingResults', transactions);
         },
         getLastProcessedNonce: async (shardId) => {
-          return await this.cachingService.getCache<number>(CacheInfo.TransactionCompletedShardNonce(shardId).key);
+          return await this.cachingService.get<number>(CacheInfo.TransactionCompletedShardNonce(shardId).key);
         },
         setLastProcessedNonce: async (shardId, nonce) => {
-          await this.cachingService.setCache<number>(CacheInfo.TransactionCompletedShardNonce(shardId).key, nonce, CacheInfo.TransactionCompletedShardNonce(shardId).ttl);
+          await this.cachingService.set<number>(CacheInfo.TransactionCompletedShardNonce(shardId).key, nonce, CacheInfo.TransactionCompletedShardNonce(shardId).ttl);
         },
       });
     } finally {

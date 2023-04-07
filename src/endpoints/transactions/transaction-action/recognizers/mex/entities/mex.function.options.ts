@@ -2,6 +2,7 @@ export enum MexFunction {
   claimLockedAssets = 'claimLockedAssets',
   swapTokensFixedInput = 'swapTokensFixedInput',
   swapTokensFixedOutput = 'swapTokensFixedOutput',
+  multiPairSwap = 'multiPairSwap',
   addLiquidity = 'addLiquidity',
   addLiquidityProxy = 'addLiquidityProxy',
   removeLiquidity = 'removeLiquidity',

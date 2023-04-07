@@ -1,4 +1,4 @@
-import { ErdnestConfigService } from "@elrondnetwork/erdnest";
+import { ErdnestConfigService } from "@multiversx/sdk-nestjs";
 import { Injectable } from "@nestjs/common";
 import { ApiConfigService } from "./api.config.service";
 
@@ -14,5 +14,17 @@ export class ErdnestConfigServiceImpl implements ErdnestConfigService {
 
   getJwtSecret(): string {
     return this.apiConfigService.getJwtSecret();
+  }
+
+  getApiUrl(): string {
+    return this.apiConfigService.getSelfUrl();
+  }
+
+  getNativeAuthMaxExpirySeconds(): number {
+    return this.apiConfigService.getNativeAuthMaxExpirySeconds();
+  }
+
+  getNativeAuthAcceptedOrigins(): string[] {
+    return this.apiConfigService.getNativeAuthAcceptedOrigins();
   }
 }

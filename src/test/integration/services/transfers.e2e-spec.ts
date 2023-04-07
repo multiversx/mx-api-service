@@ -1,228 +1,264 @@
-import { Test } from '@nestjs/testing';
-import { TransactionStatus } from 'src/endpoints/transactions/entities/transaction.status';
-import { TransactionFilter } from 'src/endpoints/transactions/entities/transaction.filter';
-import transactionDetails from "src/test/data/transactions/transaction.details";
-import { TransferModule } from 'src/endpoints/transfers/transfer.module';
-import { TransferService } from 'src/endpoints/transfers/transfer.service';
-import { ApiConfigService } from 'src/common/api-config/api.config.service';
-import { ApiConfigModule } from 'src/common/api-config/api.config.module';
-import { Transaction } from 'src/endpoints/transactions/entities/transaction';
-import { BinaryUtils, Constants, ElasticQuery, ElasticService } from '@elrondnetwork/erdnest';
+import { Test } from "@nestjs/testing";
+import { IndexerService } from "src/common/indexer/indexer.service";
+import { AccountFilter } from "src/endpoints/accounts/entities/account.filter";
+import { TransactionFilter } from "src/endpoints/transactions/entities/transaction.filter";
+import { TransactionStatus } from "src/endpoints/transactions/entities/transaction.status";
+import { TransactionType } from "src/endpoints/transactions/entities/transaction.type";
+import { TransactionService } from "src/endpoints/transactions/transaction.service";
+import { TransferService } from "src/endpoints/transfers/transfer.service";
 
-describe.skip('Transfer Service', () => {
-  let transferService: TransferService;
-  let apiConfigService: ApiConfigService;
-  let transactionSender: string;
-  let transactionReceiver: string;
+describe('Transfers Service', () => {
+  let service: TransferService;
 
-  beforeAll(async () => {
+  beforeEach(async () => {
     const moduleRef = await Test.createTestingModule({
-      imports: [TransferModule, ApiConfigModule],
+      providers: [
+        TransferService,
+        {
+          provide: IndexerService, useValue: {
+            getTransfers: jest.fn(),
+            getTransfersCount: jest.fn(),
+          },
+        },
+        {
+          provide: TransactionService, useValue: {
+            applyBlockInfo: jest.fn(),
+            processTransactions: jest.fn(),
+          },
+        },
+      ],
     }).compile();
 
-    transferService = moduleRef.get<TransferService>(TransferService);
-    apiConfigService = moduleRef.get<ApiConfigService>(ApiConfigService);
-
-    const transactionFilter = new TransactionFilter();
-
-    const transfers = await transferService.getTransfers(transactionFilter, { from: 0, size: 1 });
-    expect(transfers).toHaveLength(1);
-
-    const transfer = transfers[0];
-    transactionSender = transfer.sender;
-    transactionReceiver = transfer.receiver;
-
-  }, Constants.oneHour() * 1000);
-
-  describe('Transfers list', () => {
-    describe('Transfers pagination', () => {
-      it(`should return a list with 25 transfers`, async () => {
-        const transfers = await transferService.getTransfers(new TransactionFilter(), { from: 0, size: 25 });
-
-        expect(transfers).toHaveLength(25);
-
-        for (const transfer of transfers) {
-          expect(transfer).toHaveStructure(Object.keys(new Transaction()));
-        }
-      });
-
-      it(`should return a list with 100 transfers`, async () => {
-        const transfers = await transferService.getTransfers(new TransactionFilter(), { from: 0, size: 100 });
-
-        expect(transfers).toHaveLength(100);
-
-        for (const transfer of transfers) {
-          expect(transfer).toHaveStructure(Object.keys(new Transaction()));
-        }
-      });
-    });
-
-    describe('Transfers filters', () => {
-      it(`should return a list of transfers between two accounts`, async () => {
-        const transactionFilter = new TransactionFilter();
-        transactionFilter.sender = transactionSender;
-        transactionFilter.receivers = [transactionReceiver];
-
-        const transfers = await transferService.getTransfers(transactionFilter, { from: 0, size: 25 });
-        expect(transfers.length).toBeGreaterThan(0);
-
-        for (const transfer of transfers) {
-          expect(transfer).toHaveStructure(Object.keys(new Transaction()));
-          expect(transfer.sender).toBe(transactionSender);
-          expect(transfer.receiver).toBe(transactionReceiver);
-        }
-      });
-
-      it(`should return a list with pending transfers`, async () => {
-        const transactionFilter = new TransactionFilter();
-        transactionFilter.status = TransactionStatus.pending;
-
-        const transfers = await transferService.getTransfers(transactionFilter, { from: 0, size: 25 });
-        expect(transfers.length).toBeGreaterThan(0);
-
-        for (const transfer of transfers) {
-          expect(transfer.status).toBe(TransactionStatus.pending);
-          expect(transfer).toHaveStructure(Object.keys(new Transaction()));
-        }
-      });
-
-      it(`should return a list with transfers in one date range`, async () => {
-        const transactionFilter = new TransactionFilter();
-        transactionFilter.before = 1625559162;
-        transactionFilter.after = 1625559108;
-
-        const transfers = await transferService.getTransfers(transactionFilter, { from: 0, size: 25 });
-        expect(transfers.length).toBeGreaterThan(0);
-
-        for (const transfer of transfers) {
-          expect(transfer).toHaveStructure(Object.keys(new Transaction()));
-          expect(transfer.timestamp).toBeGreaterThanOrEqual(transactionFilter.after);
-          expect(transfer.timestamp).toBeLessThanOrEqual(transactionFilter.before);
-        }
-      });
-
-      it(`should return a list with transfers after one date`, async () => {
-        const transactionFilter = new TransactionFilter();
-        transactionFilter.after = 1625559108;
-
-        const transfers = await transferService.getTransfers(transactionFilter, { from: 0, size: 25 });
-        expect(transfers.length).toBeGreaterThan(0);
-
-        for (const transfer of transfers) {
-          expect(transfer).toHaveStructure(Object.keys(new Transaction()));
-          expect(transfer.timestamp).toBeGreaterThanOrEqual(transactionFilter.after);
-        }
-      });
-
-      it(`should return a list with transfers before one date`, async () => {
-        const transactionFilter = new TransactionFilter();
-        transactionFilter.before = 1625559108;
-
-        const transfers = await transferService.getTransfers(transactionFilter, { from: 0, size: 25 });
-        expect(transfers.length).toBeGreaterThan(0);
-
-        for (const transfer of transfers) {
-          expect(transfer).toHaveStructure(Object.keys(new Transaction()));
-          expect(transfer.timestamp).toBeLessThanOrEqual(transactionFilter.before);
-        }
-      });
-
-      it(`should return transfers for an address`, async () => {
-        const address = transactionSender;
-        const transactionFilter = new TransactionFilter();
-
-        const transfers = await transferService.getTransfers(transactionFilter, { from: 0, size: 25 });
-        expect(transfers).toBeInstanceOf(Array);
-        expect(transfers.length).toBeGreaterThan(0);
-
-        for (const transfer of transfers) {
-          expect(transfer).toHaveStructure(Object.keys(new Transaction()));
-          expect(transfer.sender === address && transfer.receiver === address).toStrictEqual(true);
-        }
-
-        const accountTransactionsList = await transferService.getTransfers(new TransactionFilter(), { from: 0, size: 25 });
-        expect(transfers).toEqual(accountTransactionsList);
-      });
-
-      it(`should return transfers for an address with self transactions`, async () => {
-        const address = transactionSender;
-        const transactionFilter = new TransactionFilter();
-        transactionFilter.sender = address;
-        transactionFilter.receivers = [address];
-
-        const transfers = await transferService.getTransfers(transactionFilter, { from: 0, size: 25 });
-        expect(transfers).toBeInstanceOf(Array);
-
-        for (const transfer of transfers) {
-          expect(transfer).toHaveStructure(Object.keys(new Transaction()));
-          expect(transfer.sender === address && transfer.receiver === address).toStrictEqual(true);
-        }
-      });
-
-      it(`should return a list with transfers where an address is sender, in one date range, with success status`, async () => {
-        const address = transactionSender;
-        const transactionFilter = new TransactionFilter();
-        transactionFilter.after = 1625559108;
-        transactionFilter.sender = address;
-        transactionFilter.status = TransactionStatus.success;
-
-        const transfers = await transferService.getTransfers(transactionFilter, { from: 0, size: 25 });
-        expect(transfers).toBeInstanceOf(Array);
-        expect(transfers.length).toBeGreaterThan(0);
-
-        for (const transfer of transfers) {
-          expect(transfer).toHaveStructure(Object.keys(new Transaction()));
-          expect(transfer.sender).toBe(address);
-          expect(transfer.timestamp).toBeGreaterThanOrEqual(transactionFilter.after);
-          expect(transfer.status).toBe(TransactionStatus.success);
-        }
-      });
-
-      it('should return a list with transfers that call ESDTNFTTransfer function', async () => {
-        if (apiConfigService.getIsIndexerV3FlagActive()) {
-          const transactionFilter = new TransactionFilter();
-          transactionFilter.function = 'ESDTNFTTransfer';
-
-          const transfers = await transferService.getTransfers(transactionFilter, { from: 0, size: 25 });
-
-          for (const transfer of transfers) {
-            expect(transfer).toHaveStructure(Object.keys(new Transaction()));
-            expect(BinaryUtils.base64Decode(transfer.data ?? '').startsWith('ESDTNFTTransfer')).toStrictEqual(true);
-          }
-        }
-      });
-
-      it(`should return transfers with specific hashes`, async () => {
-        const hashes = [
-          '8149581fe858edf8971a73491ff4b26ce2532aa7951ffefafb7b7823ffacc182',
-          '56bdbc1a2e9e4dd60bb77c82a72c5b2b77ef51b8decf97f4024fa223b9b64777',
-          'INVALIDTXHASH',
-        ];
-        const transactionFilter = new TransactionFilter();
-        transactionFilter.hashes = hashes;
-
-        const transfers = await transferService.getTransfers(transactionFilter, { from: 0, size: 25 });
-        expect(transfers).toHaveLength(2);
-        const transactionsHashes = transfers.map(({ txHash }) => txHash);
-        expect(transactionsHashes.includes('8149581fe858edf8971a73491ff4b26ce2532aa7951ffefafb7b7823ffacc182'));
-        expect(transactionsHashes.includes('56bdbc1a2e9e4dd60bb77c82a72c5b2b77ef51b8decf97f4024fa223b9b64777'));
-        expect(!transactionsHashes.includes('INVALIDTXHASH'));
-      });
-
-    });
+    service = moduleRef.get<TransferService>(TransferService);
   });
 
-  describe('Transfers count', () => {
-    it(`should return transfers count based on token indentifier`, async () => {
-      jest.spyOn(ElasticService.prototype, 'getCount')
-        // eslint-disable-next-line require-await
-        .mockImplementation(jest.fn(async (_collection: string, _elasticQuery: ElasticQuery | undefined) => 10100));
+  it('service should be defined', () => {
+    expect(service).toBeDefined();
+  });
 
-      const transactionFilter = new TransactionFilter();
-      transactionFilter.token = transactionDetails.tokenIdentifier;
+  describe('getTransfersCount', () => {
+    it('should return transfers count when no filter is applied', async () => {
+      const indexerServiceMock = jest.spyOn(service['indexerService'], 'getTransfersCount')
+        .mockResolvedValue(250000);
 
-      const count = await transferService.getTransfersCount(transactionFilter);
-      expect(count).toStrictEqual(10100);
+      const result = await service.getTransfersCount(new TransactionFilter());
+
+      expect(indexerServiceMock).toHaveBeenCalled();
+      expect(result).toStrictEqual(250000);
+    });
+
+    it('should return the count of transfers filtered by address', async () => {
+      const filter: TransactionFilter = new AccountFilter();
+      filter.address = 'erd1qga7ze0l03chfgru0a32wxqf2226nzrxnyhzer9lmudqhjgy7ycqjjyknz';
+
+      const indexerServiceMock = jest.spyOn(service['indexerService'], 'getTransfersCount')
+        .mockResolvedValue(100);
+
+      const result = await service.getTransfersCount(filter);
+
+      expect(indexerServiceMock).toHaveBeenCalledWith(filter);
+      expect(result).toStrictEqual(100);
+    });
+
+    it('should return the count of transfers filtered by sender', async () => {
+      const filter: TransactionFilter = new AccountFilter();
+      filter.sender = 'erd1qga7ze0l03chfgru0a32wxqf2226nzrxnyhzer9lmudqhjgy7ycqjjyknz';
+
+      const indexerServiceMock = jest.spyOn(service['indexerService'], 'getTransfersCount')
+        .mockResolvedValue(200);
+
+      const result = await service.getTransfersCount(filter);
+
+      expect(indexerServiceMock).toHaveBeenCalledWith(filter);
+      expect(result).toStrictEqual(200);
+    });
+
+    it('should return the count of transfers filtered by senders', async () => {
+      const filter: TransactionFilter = new AccountFilter();
+      filter.senders = [
+        'erd1qga7ze0l03chfgru0a32wxqf2226nzrxnyhzer9lmudqhjgy7ycqjjyknz',
+        'erd15hmuycqw4mkaksfp0yu0auy548urd0wp6wyd4vtjkg3t6h9he5ystm2sv6'];
+
+      const indexerServiceMock = jest.spyOn(service['indexerService'], 'getTransfersCount')
+        .mockResolvedValue(300);
+
+      const result = await service.getTransfersCount(filter);
+
+      expect(indexerServiceMock).toHaveBeenCalledWith(filter);
+      expect(result).toStrictEqual(300);
+    });
+
+    it('should return the count of transfers filtered by receivers', async () => {
+      const filter: TransactionFilter = new AccountFilter();
+      filter.receivers = [
+        'erd1qga7ze0l03chfgru0a32wxqf2226nzrxnyhzer9lmudqhjgy7ycqjjyknz',
+        'erd15hmuycqw4mkaksfp0yu0auy548urd0wp6wyd4vtjkg3t6h9he5ystm2sv6'];
+
+      const indexerServiceMock = jest.spyOn(service['indexerService'], 'getTransfersCount')
+        .mockResolvedValue(400);
+
+      const result = await service.getTransfersCount(filter);
+
+      expect(indexerServiceMock).toHaveBeenCalledWith(filter);
+      expect(result).toStrictEqual(400);
+    });
+
+    it('should return the count of transfers filtered by token', async () => {
+      const filter: TransactionFilter = new AccountFilter();
+      filter.token = 'WEGLD-bd4d79';
+
+      const indexerServiceMock = jest.spyOn(service['indexerService'], 'getTransfersCount')
+        .mockResolvedValue(50);
+
+      const result = await service.getTransfersCount(filter);
+
+      expect(indexerServiceMock).toHaveBeenCalledWith(filter);
+      expect(result).toStrictEqual(50);
+    });
+
+    it('should return the count of transfers filtered by functions', async () => {
+      const filter: TransactionFilter = new AccountFilter();
+      filter.functions = ['claim_rewards', 'stake'];
+
+      const indexerServiceMock = jest.spyOn(service['indexerService'], 'getTransfersCount')
+        .mockResolvedValue(10);
+
+      const result = await service.getTransfersCount(filter);
+
+      expect(indexerServiceMock).toHaveBeenCalledWith(filter);
+      expect(result).toStrictEqual(10);
+    });
+
+    it('should return the count of transfers filtered by senderShard', async () => {
+      const filter: TransactionFilter = new AccountFilter();
+      filter.senderShard = 2;
+
+      const indexerServiceMock = jest.spyOn(service['indexerService'], 'getTransfersCount')
+        .mockResolvedValue(10000);
+
+      const result = await service.getTransfersCount(filter);
+
+      expect(indexerServiceMock).toHaveBeenCalledWith(filter);
+      expect(result).toStrictEqual(10000);
+    });
+
+    it('should return the count of transfers filtered by miniBlockHash', async () => {
+      const filter: TransactionFilter = new AccountFilter();
+      filter.miniBlockHash = '9b0dafc6445b9195cb8a4266aa21517597e0ed3444f40f7a76b3a46903a7a7d5';
+
+      const indexerServiceMock = jest.spyOn(service['indexerService'], 'getTransfersCount')
+        .mockResolvedValue(50000);
+
+      const result = await service.getTransfersCount(filter);
+
+      expect(indexerServiceMock).toHaveBeenCalledWith(filter);
+      expect(result).toStrictEqual(50000);
+    });
+
+    it('should return the count of transfers filtered by hashes', async () => {
+      const filter: TransactionFilter = new AccountFilter();
+      filter.hashes = [
+        '9b0dafc6445b9195cb8a4266aa21517597e0ed3444f40f7a76b3a46903a7a7d5',
+        'fab9173ab8835b0d34eb5fe27da2bcfde8ee3e2db4a0d5d6441f1afbee65f420'];
+
+      const indexerServiceMock = jest.spyOn(service['indexerService'], 'getTransfersCount')
+        .mockResolvedValue(200);
+
+      const result = await service.getTransfersCount(filter);
+
+      expect(indexerServiceMock).toHaveBeenCalledWith(filter);
+      expect(result).toStrictEqual(200);
+    });
+
+    it('should return the count of transfers filtered by status', async () => {
+      const filter: TransactionFilter = new AccountFilter();
+      filter.status = TransactionStatus.success;
+
+      const indexerServiceMock = jest.spyOn(service['indexerService'], 'getTransfersCount')
+        .mockResolvedValue(200);
+
+      const result = await service.getTransfersCount(filter);
+
+      expect(indexerServiceMock).toHaveBeenCalledWith(filter);
+      expect(result).toStrictEqual(200);
+    });
+
+    it('should return the count of transfers filtered by before', async () => {
+      const filter: TransactionFilter = new AccountFilter();
+      filter.before = 1679690544;
+
+      const indexerServiceMock = jest.spyOn(service['indexerService'], 'getTransfersCount')
+        .mockResolvedValue(200);
+
+      const result = await service.getTransfersCount(filter);
+
+      expect(indexerServiceMock).toHaveBeenCalledWith(filter);
+      expect(result).toStrictEqual(200);
+    });
+
+    it('should return the count of transfers filtered by after', async () => {
+      const filter: TransactionFilter = new AccountFilter();
+      filter.before = 1579690544;
+
+      const indexerServiceMock = jest.spyOn(service['indexerService'], 'getTransfersCount')
+        .mockResolvedValue(200);
+
+      const result = await service.getTransfersCount(filter);
+
+      expect(indexerServiceMock).toHaveBeenCalledWith(filter);
+      expect(result).toStrictEqual(200);
+    });
+
+    it('should return the count of transfers filtered by transaction type', async () => {
+      const filter: TransactionFilter = new AccountFilter();
+      filter.type = TransactionType.Transaction;
+
+      const indexerServiceMock = jest.spyOn(service['indexerService'], 'getTransfersCount')
+        .mockResolvedValue(150);
+
+      const result = await service.getTransfersCount(filter);
+
+      expect(indexerServiceMock).toHaveBeenCalledWith(filter);
+      expect(result).toStrictEqual(150);
+    });
+
+    it('should return the count of transfers filtered by SmartContractResult type', async () => {
+      const filter: TransactionFilter = new AccountFilter();
+      filter.type = TransactionType.Transaction;
+
+      const indexerServiceMock = jest.spyOn(service['indexerService'], 'getTransfersCount')
+        .mockResolvedValue(150);
+
+      const result = await service.getTransfersCount(filter);
+
+      expect(indexerServiceMock).toHaveBeenCalledWith(filter);
+      expect(result).toStrictEqual(150);
+    });
+
+    it('should return the count of transfers filtered by tokens', async () => {
+      const filter: TransactionFilter = new AccountFilter();
+      filter.tokens = ['UTK-2f80e9', 'WEGLD-bd4d79'];
+
+      const indexerServiceMock = jest.spyOn(service['indexerService'], 'getTransfersCount')
+        .mockResolvedValue(10000);
+
+      const result = await service.getTransfersCount(filter);
+
+      expect(indexerServiceMock).toHaveBeenCalledWith(filter);
+      expect(result).toStrictEqual(10000);
+    });
+
+    it('should return the count of transfers filtered by senderOrReceiver', async () => {
+      const filter: TransactionFilter = new AccountFilter();
+      filter.senderOrReceiver = 'erd1qga7ze0l03chfgru0a32wxqf2226nzrxnyhzer9lmudqhjgy7ycqjjyknz';
+
+      const indexerServiceMock = jest.spyOn(service['indexerService'], 'getTransfersCount')
+        .mockResolvedValue(2);
+
+      const result = await service.getTransfersCount(filter);
+
+      expect(indexerServiceMock).toHaveBeenCalledWith(filter);
+      expect(result).toStrictEqual(2);
     });
   });
 });

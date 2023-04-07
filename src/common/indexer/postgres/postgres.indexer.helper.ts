@@ -1,4 +1,4 @@
-import { AddressUtils, QueryConditionOptions } from "@elrondnetwork/erdnest";
+import { AddressUtils, QueryConditionOptions } from "@multiversx/sdk-nestjs";
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { QueryPagination } from "src/common/entities/query.pagination";
@@ -244,8 +244,10 @@ export class PostgresIndexerHelper {
       query = query.andWhere('tokens like :token', { token: `%${filter.token}%` });
     }
 
-    if (filter.function) {
-      query = query.andWhere('function = :function', { function: filter.function });
+    if (filter.functions !== undefined && filter.functions.length > 0) {
+      for (const func of filter.functions) {
+        query = query.andWhere('function = :function', { function: func });
+      }
     }
 
     if (filter.senderShard !== undefined) {
@@ -266,10 +268,6 @@ export class PostgresIndexerHelper {
 
     if (filter.status) {
       query = query.andWhere('status = :status', { status: filter.status });
-    }
-
-    if (filter.search) {
-      query = query.andWhere('data like :search', { search: `%${filter.search}%` });
     }
 
     if (filter.before || filter.after) {
@@ -358,8 +356,10 @@ export class PostgresIndexerHelper {
     if (filter.token !== undefined) {
       query = query.andWhere('tokens like :token', { token: `%${filter.token}%` });
     }
-    if (filter.function !== undefined) {
-      query = query.andWhere('function = :function', { function: filter.function });
+    if (filter.functions !== undefined && filter.functions.length > 0) {
+      for (const func of filter.functions) {
+        query = query.andWhere('function = :function', { function: func });
+      }
     }
     if (filter.senderShard !== undefined) {
       query = query.andWhere('sender_shard = :shard', { shard: filter.senderShard });
@@ -372,9 +372,6 @@ export class PostgresIndexerHelper {
     }
     if (filter.status !== undefined) {
       query = query.andWhere('status = :status', { status: filter.status });
-    }
-    if (filter.search) {
-      query = query.andWhere('data like :search', { search: `%${filter.search}%` });
     }
     if (filter.hashes) {
       query = query.andWhere('hash IN (:...hashes)', { hashes: filter.hashes });

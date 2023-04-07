@@ -4,11 +4,12 @@ import { TokenAssets } from "src/common/assets/entities/token.assets";
 import { NftMedia } from "./nft.media";
 import { NftMetadata } from "./nft.metadata";
 import { NftType } from "./nft.type";
-import { ComplexityEstimation, SwaggerUtils } from "@elrondnetwork/erdnest";
+import { ComplexityEstimation, SwaggerUtils } from "@multiversx/sdk-nestjs";
 import { Field, Float, ID, ObjectType } from "@nestjs/graphql";
 import { NftCollection } from "src/endpoints/collections/entities/nft.collection";
-import { UnlockMileStoneModel } from "../../../common/entities/unlock-schedule";
 import { Account } from "src/endpoints/accounts/entities/account";
+import { NftRarities } from "./nft.rarities";
+import { UnlockMileStoneModel } from "src/common/locked-asset/entities/unlock.milestone.model";
 
 @ObjectType("Nft", { description: "NFT object type." })
 export class Nft {
@@ -119,6 +120,10 @@ export class Nft {
   @ApiProperty({ type: Number, nullable: true })
   rank: number | undefined = undefined;
 
+  @Field(() => Float, { description: "Rarities according to all possible algorithms for the given NFT.", nullable: true })
+  @ApiProperty({ type: NftRarities, nullable: true })
+  rarities: NftRarities | undefined = undefined;
+
   @Field(() => Boolean, { description: "Is NSFW for the given NFT.", nullable: true })
   @ApiProperty({ type: Boolean, nullable: true })
   isNsfw: boolean | undefined = undefined;
@@ -127,7 +132,7 @@ export class Nft {
   @ApiProperty({ type: [UnlockMileStoneModel], nullable: true })
   unlockSchedule?: UnlockMileStoneModel[] | undefined = undefined;
 
-  @Field(() => Boolean, { description: "Returns true if the transfer is affected.", nullable: true })
-  @ApiProperty({ type: Boolean, nullable: true })
-  isTransferAffected: boolean | undefined = undefined;
+  @Field(() => Float, { description: "Unlock epoch for the given NFT.", nullable: true })
+  @ApiProperty({ type: Number, nullable: true })
+  unlockEpoch?: number | undefined = undefined;
 }

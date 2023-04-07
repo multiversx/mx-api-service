@@ -1,4 +1,4 @@
-import { ComplexityInterceptor } from '@elrondnetwork/erdnest';
+import { ComplexityInterceptor } from '@multiversx/sdk-nestjs';
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { PublicAppModule } from 'src/public.app.module';
@@ -8,7 +8,7 @@ describe("NFT Controller", () => {
   let app: INestApplication;
   const path: string = "/nfts";
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
       imports: [PublicAppModule],
     }).compile();
@@ -27,8 +27,6 @@ describe("NFT Controller", () => {
           expect(res.body).toHaveLength(25);
         });
     });
-
-
 
     it("/nfts?withSupply - should return 200 status code and one list of nfts with filter withSupply", async () => {
       const params = new URLSearchParams({
@@ -54,7 +52,7 @@ describe("NFT Controller", () => {
 
     it('should return a list of NFTs for a given collection identifier', async () => {
       const params = new URLSearchParams({
-        'search': 'MEDAL-ae074f',
+        'collection': 'MEDAL-ae074f',
       });
 
       await request(app.getHttpServer())
@@ -139,7 +137,26 @@ describe("NFT Controller", () => {
         });
     });
 
-    it('should return a list of 25 NFTs that have supply = 1', async () => {
+    it('should return a list of 25 SFTs that have supply when withSupply is true', async () => {
+      const params = new URLSearchParams({
+        'withSupply': 'true',
+        'type': 'SemiFungibleESDT',
+      });
+
+      await request(app.getHttpServer())
+        .get(`${path}?${params}`)
+        .expect(200)
+        .then(res => {
+          expect(res.body).toHaveLength(25);
+
+          for (const response of res.body) {
+            expect(response.type).toStrictEqual('SemiFungibleESDT');
+            expect(response.supply).toBeDefined();
+          }
+        });
+    });
+
+    it('should return a list of 25 NFTs and supply attribute should not be defined even with withSupply true', async () => {
       const params = new URLSearchParams({
         'withSupply': 'true',
         'type': 'NonFungibleESDT',
@@ -153,7 +170,24 @@ describe("NFT Controller", () => {
 
           for (const response of res.body) {
             expect(response.type).toStrictEqual('NonFungibleESDT');
-            expect(response.supply).toStrictEqual('1');
+            expect(response.supply).not.toBeDefined();
+          }
+        });
+    });
+
+    it('should return a list of 25 tokens without supply even if withSupply option is false', async () => {
+      const params = new URLSearchParams({
+        'withSupply': 'false',
+      });
+
+      await request(app.getHttpServer())
+        .get(`${path}?${params}`)
+        .expect(200)
+        .then(res => {
+          expect(res.body).toHaveLength(25);
+
+          for (const response of res.body) {
+            expect(response.supply).not.toBeDefined();
           }
         });
     });
@@ -206,8 +240,8 @@ describe("NFT Controller", () => {
       },
       {
         filter: 'name',
-        value: 'Elrond Robots #200',
-        count: 49893,
+        value: 'Gritty Summit Chaser',
+        count: 1,
       },
       {
         filter: 'tags',
@@ -342,7 +376,7 @@ describe("NFT Controller", () => {
     });
   });
 
-  afterEach(async () => {
+  afterAll(async () => {
     await app.close();
   });
 });

@@ -1,14 +1,16 @@
 import { Test } from "@nestjs/testing";
 import { ProtocolModule } from "src/common/protocol/protocol.module";
-import { CachingService } from "@elrondnetwork/erdnest";
+import { ElrondCachingService } from "@multiversx/sdk-nestjs";
 import { ProtocolService } from "src/common/protocol/protocol.service";
+import { EventEmitterModule } from "@nestjs/event-emitter";
 
 describe('Protocol Service', () => {
   let protocolService: ProtocolService;
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
-      imports: [ProtocolModule],
+      imports: [EventEmitterModule.forRoot(), ProtocolModule],
+      providers: [],
     }).compile();
 
     protocolService = moduleRef.get<ProtocolService>(ProtocolService);
@@ -19,7 +21,7 @@ describe('Protocol Service', () => {
   describe('Get Shards Ids', () => {
     it('should return shards ids', async () => {
       jest
-        .spyOn(CachingService.prototype, 'getOrSetCache')
+        .spyOn(ElrondCachingService.prototype, 'getOrSet')
         .mockImplementation(jest.fn((_key: string, promise: any) => promise()));
 
       const shardsId = await protocolService.getShardIds();

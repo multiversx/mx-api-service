@@ -8,7 +8,7 @@ describe("Tags Controller", () => {
   let app: INestApplication;
   const path: string = "/tags";
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
       imports: [PublicAppModule],
     }).compile();

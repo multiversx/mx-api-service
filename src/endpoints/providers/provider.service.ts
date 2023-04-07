@@ -1,23 +1,24 @@
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { VmQueryService } from "src/endpoints/vm.query/vm.query.service";
-import { Provider } from "src/endpoints/providers/entities/provider";
 import { ProviderConfig } from "./entities/provider.config";
 import { NodeService } from "../nodes/node.service";
-import { ProviderFilter } from "src/endpoints/providers/entities/provider.filter";
 import { NodesInfos } from "./entities/nodes.infos";
 import { DelegationData } from "./entities/delegation.data";
 import { KeybaseService } from "src/common/keybase/keybase.service";
 import { CacheInfo } from "src/utils/cache.info";
-import { AddressUtils, Constants, CachingService, ApiService } from "@elrondnetwork/erdnest";
-import { OriginLogger } from "@elrondnetwork/erdnest";
+import { ProviderFilter } from "./entities/provider.filter";
+import { Provider } from "./entities/provider";
+import { AddressUtils, Constants, ElrondCachingService, ApiService } from "@multiversx/sdk-nestjs";
+import { OriginLogger } from "@multiversx/sdk-nestjs";
+import { IdentitiesService } from "../identities/identities.service";
 
 @Injectable()
 export class ProviderService {
   private readonly logger = new OriginLogger(ProviderService.name);
 
   constructor(
-    private readonly cachingService: CachingService,
+    private readonly cachingService: ElrondCachingService,
     private readonly apiConfigService: ApiConfigService,
     private readonly vmQueryService: VmQueryService,
     @Inject(forwardRef(() => NodeService))
@@ -25,13 +26,37 @@ export class ProviderService {
     private readonly apiService: ApiService,
     @Inject(forwardRef(() => KeybaseService))
     private readonly keybaseService: KeybaseService,
+    @Inject(forwardRef(() => IdentitiesService))
+    private readonly identitiesService: IdentitiesService
   ) { }
 
   async getProvider(address: string): Promise<Provider | undefined> {
     const query = new ProviderFilter();
     const providers = await this.getProviders(query);
+    const provider: Provider | undefined = providers.find(x => x.provider === address);
 
-    return providers.find(x => x.provider === address);
+    if (provider) {
+      const delegationData: DelegationData | undefined = await this.getDelegationProviderByAddress(provider.provider);
+      if (!delegationData) {
+        return undefined;
+      }
+
+      const modifiedProvider = { ...provider };
+      modifiedProvider.automaticActivation = delegationData.automaticActivation;
+      modifiedProvider.initialOwnerFunds = delegationData.initialOwnerFunds;
+      modifiedProvider.checkCapOnRedelegate = delegationData.checkCapOnRedelegate;
+      modifiedProvider.totalUnStaked = delegationData.totalUnStaked;
+      modifiedProvider.createdNonce = delegationData.createdNonce;
+
+      return modifiedProvider;
+    }
+
+    return provider;
+  }
+
+  async getProviderAvatar(address: string): Promise<string | undefined> {
+    const providerIdentity = await this.getProviderIdentity(address);
+    return providerIdentity ? this.identitiesService.getIdentityAvatar(providerIdentity) : undefined;
   }
 
   private getNodesInfosForProvider(providerNodes: any[]): NodesInfos {
@@ -64,7 +89,7 @@ export class ProviderService {
   }
 
   async getProvidersWithStakeInformation(): Promise<Provider[]> {
-    return await this.cachingService.getOrSetCache(
+    return await this.cachingService.getOrSet(
       CacheInfo.ProvidersWithStakeInformation.key,
       async () => await this.getProvidersWithStakeInformationRaw(),
       CacheInfo.ProvidersWithStakeInformation.ttl
@@ -92,6 +117,10 @@ export class ProviderService {
         if (delegationData.featured) {
           element.featured = delegationData.featured;
         }
+
+        if (delegationData.owner) {
+          element.owner = delegationData.owner;
+        }
       }
 
       // Add Nodes details for provider
@@ -101,9 +130,6 @@ export class ProviderService {
       element.stake = nodesInfos.stake;
       element.topUp = nodesInfos.topUp;
       element.locked = nodesInfos.locked;
-
-      // @ts-ignore
-      delete element.owner;
     });
 
     providers.sort((a, b) => {
@@ -127,10 +153,18 @@ export class ProviderService {
   }
 
   async getDelegationProviders(): Promise<DelegationData[]> {
-    return await this.cachingService.getOrSetCache(
+    return await this.cachingService.getOrSet(
       CacheInfo.DelegationProviders.key,
       async () => await this.getDelegationProvidersRaw(),
       CacheInfo.DelegationProviders.ttl
+    );
+  }
+
+  async getDelegationProviderByAddress(address: string): Promise<DelegationData | undefined> {
+    return await this.cachingService.getOrSet(
+      CacheInfo.DelegationProvider(address).key,
+      async () => await this.getDelegationProviderByAddressRaw(address),
+      CacheInfo.DelegationProvider(address).ttl
     );
   }
 
@@ -145,8 +179,19 @@ export class ProviderService {
     }
   }
 
+  async getDelegationProviderByAddressRaw(address: string): Promise<DelegationData | undefined> {
+    try {
+      const { data } = await this.apiService.get(`${this.apiConfigService.getProvidersUrl()}/${address}`);
+      return data;
+    } catch (error) {
+      this.logger.error('Error when getting delegation provider');
+      this.logger.error(error);
+      return undefined;
+    }
+  }
+
   async getAllProviders(): Promise<Provider[]> {
-    return await this.cachingService.getOrSetCache(
+    return await this.cachingService.getOrSet(
       CacheInfo.Providers.key,
       async () => await this.getAllProvidersRaw(),
       CacheInfo.Providers.ttl
@@ -356,5 +401,10 @@ export class ProviderService {
     }
 
     return providers;
+  }
+
+  private async getProviderIdentity(address: string): Promise<string | undefined> {
+    const providerDetails = await this.getProvider(address);
+    return providerDetails && providerDetails.identity ? providerDetails.identity : undefined;
   }
 }

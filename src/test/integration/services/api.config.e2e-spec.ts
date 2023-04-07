@@ -1,7 +1,7 @@
 import { Test } from "@nestjs/testing";
 import { ConfigService } from "@nestjs/config";
 import { ApiConfigModule } from "src/common/api-config/api.config.module";
-import { DatabaseConnectionOptions } from "src/common/persistence/database/entities/connection.options";
+import { DatabaseConnectionOptions } from "src/common/persistence/entities/connection.options";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 
 describe('API Config', () => {
@@ -23,16 +23,16 @@ describe('API Config', () => {
       jest
         .spyOn(ConfigService.prototype, "get")
         .mockImplementation(jest.fn(() => [
-          'https://api.elrond.com',
-          'https://devnet-api.elrond.com',
-          'https://testnet-api.elrond.com',
+          'https://api.multiversx.com',
+          'https://devnet-api.multiversx.com',
+          'https://testnet-api.multiversx.com',
         ]));
 
       const results = apiConfigService.getApiUrls();
       expect(results).toEqual(expect.arrayContaining([
-        'https://api.elrond.com',
-        'https://devnet-api.elrond.com',
-        'https://testnet-api.elrond.com',
+        'https://api.multiversx.com',
+        'https://devnet-api.multiversx.com',
+        'https://testnet-api.multiversx.com',
       ]));
     });
 
@@ -49,10 +49,10 @@ describe('API Config', () => {
     it("should return gateway url", () => {
       jest
         .spyOn(ConfigService.prototype, "get")
-        .mockImplementation(jest.fn(() => ['https://gateway.elrond.com']));
+        .mockImplementation(jest.fn(() => ['https://gateway.multiversx.com']));
 
       const results = apiConfigService.getGatewayUrl();
-      expect(results).toEqual('https://gateway.elrond.com');
+      expect(results).toEqual('https://gateway.multiversx.com');
     });
 
     it("should throw error because test simulates that gateway url is not defined", () => {
@@ -64,14 +64,33 @@ describe('API Config', () => {
     });
   });
 
+  describe("getVerifierUrl", () => {
+    it("should return verifier (play-api.multiversx.com) url", () => {
+      jest
+        .spyOn(ConfigService.prototype, "get")
+        .mockImplementation(jest.fn(() => 'https://play-api.multiversx.com'));
+
+      const results = apiConfigService.getVerifierUrl();
+      expect(results).toEqual('https://play-api.multiversx.com');
+    });
+
+    it("should throw error because test simulates that verifier url is not defined", () => {
+      jest
+        .spyOn(ConfigService.prototype, 'get')
+        .mockImplementation(jest.fn(() => undefined));
+
+      expect(() => apiConfigService.getVerifierUrl()).toThrowError('No verifier url present');
+    });
+  });
+
   describe("getElasticUrl", () => {
     it("should return elastic url", () => {
       jest
         .spyOn(ConfigService.prototype, "get")
-        .mockImplementation(jest.fn(() => ['https://index.elrond.com']));
+        .mockImplementation(jest.fn(() => ['https://index.multiversx.com']));
 
       const results = apiConfigService.getElasticUrl();
-      expect(results).toEqual('https://index.elrond.com');
+      expect(results).toEqual('https://index.multiversx.com');
     });
 
     it("should throw error because test simulates that elastic url is not defined", () => {
@@ -80,26 +99,6 @@ describe('API Config', () => {
         .mockImplementation(jest.fn(() => undefined));
 
       expect(() => apiConfigService.getElasticUrl()).toThrowError('No elastic urls present');
-    });
-  });
-
-  describe("getMexUrl", () => {
-    it("should return mex url", () => {
-      jest
-        .spyOn(ConfigService.prototype, "get")
-        .mockImplementation(jest.fn(() => ['https://mex-indexer.elrond.com']));
-
-      const results = apiConfigService.getMexUrl();
-      expect(results).toEqual('https://mex-indexer.elrond.com');
-    });
-
-    it("should return undefined because test simulates that mex url is not defined", () => {
-      jest
-        .spyOn(ConfigService.prototype, 'get')
-        .mockImplementation(jest.fn(() => undefined));
-
-      const results = apiConfigService.getMexUrl();
-      expect(results).toEqual('');
     });
   });
 
@@ -139,6 +138,17 @@ describe('API Config', () => {
         .mockImplementation(jest.fn(() => undefined));
 
       expect(() => apiConfigService.getSocketUrl()).toThrowError('No socket url present');
+    });
+  });
+
+  describe("getMaiarIdUrl", () => {
+    it("should return maiarId url", () => {
+      jest
+        .spyOn(ConfigService.prototype, "get")
+        .mockImplementation(jest.fn(() => 'https://testnet-id.maiar.com'));
+
+      const results = apiConfigService.getSocketUrl();
+      expect(results).toEqual('https://testnet-id.maiar.com');
     });
   });
 
@@ -237,25 +247,6 @@ describe('API Config', () => {
     });
   });
 
-  describe("getDelegationContractShardId", () => {
-    it("should return delegation contract shardId address", () => {
-      jest
-        .spyOn(ConfigService.prototype, "get")
-        .mockImplementation(jest.fn(() => '2'));
-
-      const results = apiConfigService.getDelegationContractShardId();
-      expect(results).toEqual('2');
-    });
-
-    it("should throw error because test simulates that delegation contract shardId is not defined", () => {
-      jest
-        .spyOn(ConfigService.prototype, 'get')
-        .mockImplementation(jest.fn(() => undefined));
-
-      expect(() => apiConfigService.getDelegationContractShardId()).toThrowError('No delegation contract shard ID present');
-    });
-  });
-
   describe("getDelegationManagerContractAddress", () => {
     it("should return delegation manager contract address", () => {
       jest
@@ -279,10 +270,10 @@ describe('API Config', () => {
     it("should return vm query url", () => {
       jest
         .spyOn(ConfigService.prototype, "get")
-        .mockImplementation(jest.fn(() => ['https://gateway.elrond.com']));
+        .mockImplementation(jest.fn(() => ['https://gateway.multiversx.com']));
 
       const results = apiConfigService.getVmQueryUrl();
-      expect(results).toEqual('https://gateway.elrond.com');
+      expect(results).toEqual('https://gateway.multiversx.com');
     });
 
     it("should throw error because test simulates that vm query url is not defined", () => {
@@ -584,10 +575,10 @@ describe('API Config', () => {
     it("should return providers url", () => {
       jest
         .spyOn(ConfigService.prototype, "get")
-        .mockImplementation(jest.fn(() => 'https://internal-delegation-api.elrond.com/providers'));
+        .mockImplementation(jest.fn(() => 'https://internal-delegation-api.multiversx.com/providers'));
 
       const results = apiConfigService.getProvidersUrl();
-      expect(results).toEqual('https://internal-delegation-api.elrond.com/providers');
+      expect(results).toEqual('https://internal-delegation-api.multiversx.com/providers');
     });
 
     it("should throw error because test simulates that providers url is not defined", () => {
@@ -596,17 +587,6 @@ describe('API Config', () => {
         .mockImplementation(jest.fn(() => undefined));
 
       expect(() => apiConfigService.getProvidersUrl()).toThrowError('No providers url present');
-    });
-  });
-
-  describe("getDataUrl", () => {
-    it("should return data url", () => {
-      jest
-        .spyOn(ConfigService.prototype, "get")
-        .mockImplementation(jest.fn(() => undefined));
-
-      const results = apiConfigService.getDataUrl();
-      expect(results).toEqual(undefined);
     });
   });
 
@@ -1413,10 +1393,10 @@ describe('API Config', () => {
     it("should return Maiar Exchange Url", () => {
       jest
         .spyOn(ConfigService.prototype, "get")
-        .mockImplementation(jest.fn(() => 'https://graph.maiar.exchange/graphql'));
+        .mockImplementation(jest.fn(() => 'https://graph.xexchange.com/graphql'));
 
-      const results = apiConfigService.getMaiarExchangeUrlMandatory();
-      expect(results).toEqual('https://graph.maiar.exchange/graphql');
+      const results = apiConfigService.getExchangeServiceUrlMandatory();
+      expect(results).toEqual('https://graph.xexchange.com/graphql');
     });
 
     it("should throw new error because test simulates that Maiar Exchange Url is not defined", () => {
@@ -1424,7 +1404,7 @@ describe('API Config', () => {
         .spyOn(ConfigService.prototype, 'get')
         .mockImplementation(jest.fn(() => undefined));
 
-      expect(() => apiConfigService.getMaiarExchangeUrlMandatory()).toThrowError('No transaction-action.mex.microServiceUrl present');
+      expect(() => apiConfigService.getExchangeServiceUrlMandatory()).toThrowError('No exchange service url present');
     });
   });
 
@@ -1549,17 +1529,17 @@ describe('API Config', () => {
       jest
         .spyOn(ConfigService.prototype, "get")
         .mockImplementation(jest.fn(() => [
-          'https://api.elrond.com',
-          'https://devnet-api.elrond.com',
-          'https://testnet-api.elrond.com',
+          'https://api.multiversx.com',
+          'https://devnet-api.multiversx.com',
+          'https://testnet-api.multiversx.com',
         ]));
 
       const results = apiConfigService.getConfig('urls.api');
 
       expect(results).toEqual(expect.arrayContaining([
-        'https://api.elrond.com',
-        'https://devnet-api.elrond.com',
-        'https://testnet-api.elrond.com',
+        'https://api.multiversx.com',
+        'https://devnet-api.multiversx.com',
+        'https://testnet-api.multiversx.com',
       ]));
     });
   });

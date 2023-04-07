@@ -7,7 +7,7 @@ import { NftCollection } from "./entities/nft.collection";
 import { NftType } from "../nfts/entities/nft.type";
 import { AssetsService } from "../../common/assets/assets.service";
 import { VmQueryService } from "../vm.query/vm.query.service";
-import { NftCollectionRole } from "./entities/nft.collection.role";
+import { NftCollectionWithRoles } from "./entities/nft.collection.with.roles";
 import { TokenProperties } from "../tokens/entities/token.properties";
 import { CacheInfo } from "src/utils/cache.info";
 import { TokenAssets } from "../../common/assets/entities/token.assets";
@@ -15,10 +15,16 @@ import { EsdtAddressService } from "../esdt/esdt.address.service";
 import { CollectionRoles } from "../tokens/entities/collection.roles";
 import { TokenHelpers } from "src/utils/token.helpers";
 import { NftCollectionAccount } from "./entities/nft.collection.account";
-import { ApiUtils, BinaryUtils, CachingService, TokenUtils } from "@elrondnetwork/erdnest";
+import { PluginService } from "src/common/plugins/plugin.service";
+import { ApiUtils, BinaryUtils, ElrondCachingService, TokenUtils } from "@multiversx/sdk-nestjs";
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { Collection } from "src/common/indexer/entities";
 import { PersistenceService } from "src/common/persistence/persistence.service";
+import { NftRankAlgorithm } from "src/common/assets/entities/nft.rank.algorithm";
+import { NftRank } from "src/common/assets/entities/nft.rank";
+import { TokenDetailed } from "../tokens/entities/token.detailed";
+import { NftCollectionDetailed } from "./entities/nft.collection.detailed";
+import { CollectionLogo } from "./entities/collection.logo";
 
 @Injectable()
 export class CollectionService {
@@ -28,9 +34,10 @@ export class CollectionService {
     private readonly esdtService: EsdtService,
     private readonly assetsService: AssetsService,
     private readonly vmQueryService: VmQueryService,
-    private readonly cachingService: CachingService,
+    private readonly cachingService: ElrondCachingService,
     @Inject(forwardRef(() => EsdtAddressService))
     private readonly esdtAddressService: EsdtAddressService,
+    private readonly pluginService: PluginService,
     private readonly persistenceService: PersistenceService,
   ) { }
 
@@ -57,19 +64,31 @@ export class CollectionService {
       indexedCollections[collection.token] = collection;
     }
 
-    const nftColections: NftCollection[] = await this.applyPropertiesToCollections(collectionsIdentifiers);
+    const nftCollections: NftCollection[] = await this.applyPropertiesToCollections(collectionsIdentifiers);
 
-    for (const nftCollection of nftColections) {
+    for (const nftCollection of nftCollections) {
       const indexedCollection = indexedCollections[nftCollection.collection];
       if (!indexedCollection) {
         continue;
       }
 
-      nftCollection.type = indexedCollection.type;
-      nftCollection.timestamp = indexedCollection.timestamp;
+      this.applyPropertiesToCollectionFromElasticSearch(nftCollection, indexedCollection);
     }
 
-    return nftColections;
+    await this.pluginService.processCollections(nftCollections);
+
+    return nftCollections;
+  }
+
+  applyPropertiesToCollectionFromElasticSearch(nftCollection: NftCollection, indexedCollection: Collection) {
+    nftCollection.type = indexedCollection.type as NftType;
+    nftCollection.timestamp = indexedCollection.timestamp;
+
+    if (nftCollection.type.in(NftType.NonFungibleESDT, NftType.SemiFungibleESDT)) {
+      nftCollection.isVerified = indexedCollection.api_isVerified;
+      nftCollection.nftCount = indexedCollection.api_nftCount;
+      nftCollection.holderCount = indexedCollection.api_holderCount;
+    }
   }
 
   async applyPropertiesToCollections(collectionsIdentifiers: string[]): Promise<NftCollection[]> {
@@ -94,6 +113,9 @@ export class CollectionService {
       nftCollection.canWipe = collectionProperties.canWipe;
       nftCollection.canPause = collectionProperties.canPause;
       nftCollection.canTransferNftCreateRole = collectionProperties.canTransferNFTCreateRole;
+      nftCollection.canChangeOwner = collectionProperties.canChangeOwner;
+      nftCollection.canUpgrade = collectionProperties.canUpgrade;
+      nftCollection.canAddSpecialRoles = collectionProperties.canAddSpecialRoles;
       nftCollection.owner = collectionProperties.owner;
 
       if (nftCollection.type === NftType.MetaESDT) {
@@ -140,7 +162,25 @@ export class CollectionService {
     return await this.indexerService.getNftCollectionCount(filter);
   }
 
-  async getNftCollection(identifier: string): Promise<NftCollection | undefined> {
+  async getNftCollectionRanks(identifier: string): Promise<NftRank[] | undefined> {
+    const elasticCollection = await this.indexerService.getCollection(identifier);
+    if (!elasticCollection) {
+      return undefined;
+    }
+
+    const assets = await this.assetsService.getTokenAssets(identifier);
+    if (!assets) {
+      return undefined;
+    }
+
+    if (assets.preferredRankAlgorithm !== NftRankAlgorithm.custom) {
+      return undefined;
+    }
+
+    return await this.assetsService.getCollectionRanks(identifier);
+  }
+
+  async getNftCollection(identifier: string): Promise<NftCollectionDetailed | undefined> {
     const elasticCollection = await this.indexerService.getCollection(identifier);
     if (!elasticCollection) {
       return undefined;
@@ -160,12 +200,29 @@ export class CollectionService {
       return undefined;
     }
 
-    collection.type = elasticCollection.type as NftType;
-    collection.timestamp = elasticCollection.timestamp;
-    collection.roles = await this.getNftCollectionRoles(elasticCollection);
-    collection.traits = await this.persistenceService.getCollectionTraits(identifier) ?? [];
+    const collectionDetailed = ApiUtils.mergeObjects(new NftCollectionDetailed(), collection);
+    collectionDetailed.type = elasticCollection.type as NftType;
+    collectionDetailed.timestamp = elasticCollection.timestamp;
 
-    return collection;
+    this.applyPropertiesToCollectionFromElasticSearch(collectionDetailed, elasticCollection);
+
+    collectionDetailed.traits = await this.persistenceService.getCollectionTraits(identifier) ?? [];
+
+    await this.pluginService.processCollections([collectionDetailed]);
+    await this.applyCollectionRoles(collectionDetailed, elasticCollection);
+
+    return collectionDetailed;
+  }
+
+  async applyCollectionRoles(collection: NftCollectionDetailed | TokenDetailed, elasticCollection: any) {
+    collection.roles = await this.getNftCollectionRoles(elasticCollection);
+    const isTransferProhibitedByDefault = collection.roles?.some(x => x.canTransfer === true) === true;
+    collection.canTransfer = !isTransferProhibitedByDefault;
+    if (collection.canTransfer) {
+      for (const role of collection.roles) {
+        role.canTransfer = undefined;
+      }
+    }
   }
 
   async getNftCollectionRoles(elasticCollection: any): Promise<CollectionRoles[]> {
@@ -234,7 +291,7 @@ export class CollectionService {
     return allRoles;
   }
 
-  async getCollectionForAddressWithRole(address: string, collection: string): Promise<NftCollectionRole | undefined> {
+  async getCollectionForAddressWithRole(address: string, collection: string): Promise<NftCollectionWithRoles | undefined> {
     const filter: CollectionFilter = { collection };
 
     const collections = await this.esdtAddressService.getCollectionsForAddress(address, filter, new QueryPagination({ from: 0, size: 1 }));
@@ -245,7 +302,7 @@ export class CollectionService {
     return collections[0];
   }
 
-  async getCollectionsWithRolesForAddress(address: string, filter: CollectionFilter, pagination: QueryPagination): Promise<NftCollectionRole[]> {
+  async getCollectionsWithRolesForAddress(address: string, filter: CollectionFilter, pagination: QueryPagination): Promise<NftCollectionWithRoles[]> {
     return await this.esdtAddressService.getCollectionsForAddress(address, filter, pagination);
   }
 
@@ -256,13 +313,20 @@ export class CollectionService {
   }
 
   async getCollectionForAddress(address: string, identifier: string): Promise<NftCollectionAccount | undefined> {
-    const collections = await this.getCollectionsForAddress(address, new CollectionFilter({ collection: identifier }), new QueryPagination({ from: 0, size: 1 }));
-
     if (!TokenUtils.isCollection(identifier)) {
       return undefined;
     }
 
-    return collections.find(x => x.collection === identifier);
+    const collections = await this.getCollectionsForAddress(address, new CollectionFilter({ collection: identifier }), new QueryPagination({ from: 0, size: 1 }));
+
+    const collection = collections.find(x => x.collection === identifier);
+    if (!collection) {
+      return undefined;
+    }
+
+    await this.pluginService.processCollections([collection]);
+
+    return collection;
   }
 
   async getCollectionsForAddress(address: string, filter: CollectionFilter, pagination: QueryPagination): Promise<NftCollectionAccount[]> {
@@ -281,10 +345,39 @@ export class CollectionService {
       }
     }
 
+    await this.pluginService.processCollections(accountCollections);
+
     return accountCollections;
   }
 
   async getCollectionCountForAddressWithRoles(address: string, filter: CollectionFilter): Promise<number> {
     return await this.esdtAddressService.getCollectionCountForAddressFromElastic(address, filter);
+  }
+
+  private async getCollectionLogo(identifier: string): Promise<CollectionLogo | undefined> {
+    const assets = await this.assetsService.getTokenAssets(identifier);
+    if (!assets) {
+      return;
+    }
+
+    return new CollectionLogo({ pngUrl: assets.pngUrl, svgUrl: assets.svgUrl });
+  }
+
+  async getLogoPng(identifier: string): Promise<string | undefined> {
+    const collectionLogo = await this.getCollectionLogo(identifier);
+    if (!collectionLogo) {
+      return;
+    }
+
+    return collectionLogo.pngUrl;
+  }
+
+  async getLogoSvg(identifier: string): Promise<string | undefined> {
+    const collectionLogo = await this.getCollectionLogo(identifier);
+    if (!collectionLogo) {
+      return;
+    }
+
+    return collectionLogo.svgUrl;
   }
 }

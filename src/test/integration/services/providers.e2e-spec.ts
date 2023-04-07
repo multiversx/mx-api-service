@@ -1,13 +1,12 @@
 import { ApiConfigService } from 'src/common/api-config/api.config.service';
-import { ProviderFilter } from 'src/endpoints/providers/entities/provider.filter';
 import { Test } from '@nestjs/testing';
 import { ProviderService } from 'src/endpoints/providers/provider.service';
 import { PublicAppModule } from 'src/public.app.module';
-import { Provider } from 'src/endpoints/providers/entities/provider';
-import '@elrondnetwork/erdnest/lib/src/utils/extensions/array.extensions';
-import '@elrondnetwork/erdnest/lib/src/utils/extensions/jest.extensions';
-import { CachingService } from '@elrondnetwork/erdnest';
+import { ProviderFilter } from 'src/endpoints/providers/entities/provider.filter';
+import { ElrondCachingService } from '@multiversx/sdk-nestjs';
 import { ProviderConfig } from 'src/endpoints/providers/entities/provider.config';
+import '@multiversx/sdk-nestjs/lib/src/utils/extensions/array.extensions';
+import '@multiversx/sdk-nestjs/lib/src/utils/extensions/jest.extensions';
 
 describe('Provider Service', () => {
   let providerService: ProviderService;
@@ -19,7 +18,7 @@ describe('Provider Service', () => {
     }).compile();
 
     jest
-      .spyOn(CachingService.prototype, 'getOrSetCache')
+      .spyOn(ElrondCachingService.prototype, 'getOrSet')
       // eslint-disable-next-line require-await
       .mockImplementation(jest.fn(async (_key: string, promise: any) => promise()));
 
@@ -41,6 +40,7 @@ describe('Provider Service', () => {
       }
 
       expect(result.hasOwnProperty("provider")).toBeTruthy();
+      expect(result.hasOwnProperty("owner")).toBeTruthy();
       expect(result.hasOwnProperty("serviceFee")).toBeTruthy();
       expect(result.hasOwnProperty("delegationCap")).toBeTruthy();
       expect(result.hasOwnProperty("apr")).toBeTruthy();
@@ -52,6 +52,10 @@ describe('Provider Service', () => {
       expect(result.hasOwnProperty("topUp")).toBeTruthy();
       expect(result.hasOwnProperty("locked")).toBeTruthy();
       expect(result.hasOwnProperty("featured")).toBeTruthy();
+      expect(result.hasOwnProperty("automaticActivation")).toBeTruthy();
+      expect(result.hasOwnProperty("initialOwnerFunds")).toBeTruthy();
+      expect(result.hasOwnProperty("checkCapOnRedelegate")).toBeTruthy();
+      expect(result.hasOwnProperty("totalUnStaked")).toBeTruthy();
     });
 
     it("should verify if identity of provider is defined", async () => {
@@ -63,8 +67,12 @@ describe('Provider Service', () => {
       }
 
       expect(result.identity).toBeDefined();
-      expect(result.identity).toStrictEqual("justminingfr");
+      expect(result.identity).toStrictEqual("meria");
       expect(result.provider).toStrictEqual("erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq8hlllls7a6h85");
+      expect(result.owner).toStrictEqual("erd1fx5t2nwq4fh9jws5xqfl85hr0l8tuqks9sr7ut9wrpkp7dugzxnqyksfyg");
+      expect(result.automaticActivation).toStrictEqual(false);
+      expect(result.initialOwnerFunds).toStrictEqual("1250000000000000000000");
+      expect(result.checkCapOnRedelegate).toStrictEqual(false);
     });
 
     it("should return provider addresses", async () => {
@@ -111,6 +119,7 @@ describe('Provider Service', () => {
 
       for (const result of results) {
         expect(result.hasOwnProperty("provider")).toBeTruthy();
+        expect(result.hasOwnProperty("owner")).toBeTruthy();
         expect(result.hasOwnProperty("serviceFee")).toBeTruthy();
         expect(result.hasOwnProperty("delegationCap")).toBeTruthy();
         expect(result.hasOwnProperty("apr")).toBeTruthy();
@@ -128,7 +137,16 @@ describe('Provider Service', () => {
       const results = await providerService.getAllProvidersRaw();
 
       for (const result of results) {
-        expect(result).toHaveStructure(Object.keys(new Provider()));
+        expect(result.provider).toBeDefined();
+        expect(result.serviceFee).toBeDefined();
+        expect(result.delegationCap).toBeDefined();
+        expect(result.apr).toBeDefined();
+        expect(result.numUsers).toBeDefined();
+        expect(result.cumulatedRewards).toBeDefined();
+        expect(result.stake).toBeDefined();
+        expect(result.topUp).toBeDefined();
+        expect(result.locked).toBeDefined();
+        expect(result.featured).toBeDefined();
       }
     });
 
@@ -138,6 +156,7 @@ describe('Provider Service', () => {
 
       for (const result of results) {
         expect(result.hasOwnProperty("provider")).toBeTruthy();
+        expect(result.hasOwnProperty("owner")).toBeTruthy();
         expect(result.hasOwnProperty("serviceFee")).toBeTruthy();
         expect(result.hasOwnProperty("delegationCap")).toBeTruthy();
         expect(result.hasOwnProperty("apr")).toBeTruthy();
@@ -183,23 +202,23 @@ describe('Provider Service', () => {
       }
     });
 
-    it("should verify if provider contain idenity property", async () => {
+    it("should verify if provider contain identity property", async () => {
       const filter = new ProviderFilter();
-      filter.identity = "justminingfr";
+      filter.identity = "meria";
 
       const results = await providerService.getProviders(filter);
 
       for (const result of results) {
         if (result.numNodes > 30) {
           expect(result.identity).toBeDefined();
-          expect(result.identity).toStrictEqual("justminingfr");
+          expect(result.identity).toStrictEqual("meria");
         }
       }
     });
 
     it('some providers should be included', async () => {
       if (!apiConfigService.getMockNodes()) {
-        const vipProviders: { [key: string]: string } = {
+        const vipProviders: { [key: string]: string; } = {
           staking_agency:
             'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqhllllsajxzat',
           istari_vision:
@@ -208,7 +227,7 @@ describe('Provider Service', () => {
             'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzhllllsp9wvyl',
           partnerstaking:
             'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq9hllllsz2je7q',
-          justminingfr:
+          meria:
             'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq8hlllls7a6h85',
           thepalmtreenw:
             'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqy8lllls62y8s5',
@@ -218,8 +237,6 @@ describe('Provider Service', () => {
             'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqx8llllsxavffq',
           everstake:
             'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq28llllsu54ydr',
-          heliosstaking:
-            'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqx0llllsdx93z0',
           mgstaking:
             'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq9lllllsf3mp40',
           unitedgroup:
@@ -242,6 +259,7 @@ describe('Provider Service', () => {
 
         for (const identityVIP of Object.keys(vipProviders)) {
           const providerVIP = providers.find(({ identity }) => identity === identityVIP);
+
           if (!providerVIP) {
             throw new Error('ProviderVIP must be defined');
           }

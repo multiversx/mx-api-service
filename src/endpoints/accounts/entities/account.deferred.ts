@@ -1,4 +1,4 @@
-import { SwaggerUtils } from '@elrondnetwork/erdnest';
+import { SwaggerUtils } from '@multiversx/sdk-nestjs';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class AccountDeferred {

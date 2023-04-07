@@ -1,4 +1,5 @@
-import { SwaggerUtils } from "@elrondnetwork/erdnest";
+
+import { SwaggerUtils } from "@multiversx/sdk-nestjs";
 import { Field, Float, ObjectType } from "@nestjs/graphql";
 import { ApiProperty } from "@nestjs/swagger";
 import { NodesInfos } from "./nodes.infos";
@@ -45,4 +46,19 @@ export class Provider extends NodesInfos {
   @Field(() => String, { description: "Provider identity.", nullable: true })
   @ApiProperty({ type: String, nullable: true })
   identity: string | undefined = undefined;
+
+  @ApiProperty({ type: String })
+  initialOwnerFunds?: string = "";
+
+  @ApiProperty({ type: Boolean, default: false })
+  automaticActivation?: boolean = false;
+
+  @ApiProperty({ type: Boolean, default: false })
+  checkCapOnRedelegate?: boolean = false;
+
+  @ApiProperty({ type: String })
+  totalUnStaked?: string = "";
+
+  @ApiProperty({ type: Number })
+  createdNonce?: number = 0;
 }

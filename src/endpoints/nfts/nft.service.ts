@@ -19,13 +19,16 @@ import { EsdtDataSource } from "../esdt/entities/esdt.data.source";
 import { EsdtAddressService } from "../esdt/esdt.address.service";
 import { PersistenceService } from "src/common/persistence/persistence.service";
 import { MexTokenService } from "../mex/mex.token.service";
-import { ApiUtils, BinaryUtils, NumberUtils, RecordUtils, CachingService, BatchUtils, TokenUtils } from "@elrondnetwork/erdnest";
+import { ApiUtils, BinaryUtils, NumberUtils, RecordUtils, ElrondCachingService, BatchUtils, TokenUtils } from "@multiversx/sdk-nestjs";
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { LockedAssetService } from "../../common/locked-asset/locked-asset.service";
 import { CollectionAccount } from "../collections/entities/collection.account";
-import { OriginLogger } from "@elrondnetwork/erdnest";
-import { GatewayService } from "src/common/gateway/gateway.service";
-import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
+import { OriginLogger } from "@multiversx/sdk-nestjs";
+import { NftRankAlgorithm } from "src/common/assets/entities/nft.rank.algorithm";
+import { NftRarity } from "./entities/nft.rarity";
+import { NftRarities } from "./entities/nft.rarities";
+import { SortCollectionNfts } from "../collections/entities/sort.collection.nfts";
+import { TokenAssets } from "src/common/assets/entities/token.assets";
 
 @Injectable()
 export class NftService {
@@ -38,7 +41,7 @@ export class NftService {
     private readonly indexerService: IndexerService,
     private readonly esdtService: EsdtService,
     private readonly assetsService: AssetsService,
-    private readonly cachingService: CachingService,
+    private readonly cachingService: ElrondCachingService,
     @Inject(forwardRef(() => PluginService))
     private readonly pluginService: PluginService,
     private readonly nftMetadataService: NftMetadataService,
@@ -48,7 +51,6 @@ export class NftService {
     private readonly esdtAddressService: EsdtAddressService,
     private readonly mexTokenService: MexTokenService,
     private readonly lockedAssetService: LockedAssetService,
-    private readonly gatewayService: GatewayService,
   ) {
     this.NFT_THUMBNAIL_PREFIX = this.apiConfigService.getExternalMediaUrl() + '/nfts/asset';
     this.DEFAULT_MEDIA = [
@@ -87,13 +89,14 @@ export class NftService {
     }
 
     if (queryOptions && queryOptions.withSupply) {
-      await this.batchApplySupply(nfts);
+      const supplyNfts = nfts.filter(nft => nft.type.in(NftType.SemiFungibleESDT, NftType.MetaESDT));
+      await this.batchApplySupply(supplyNfts);
     }
 
     await this.batchProcessNfts(nfts);
 
     for (const nft of nfts) {
-      await this.applyUnlockSchedule(nft);
+      await this.applyUnlockFields(nft);
     }
 
     await this.pluginService.processNfts(nfts, queryOptions?.withScamInfo || queryOptions?.computeScamInfo);
@@ -101,10 +104,10 @@ export class NftService {
     return nfts;
   }
 
-  private async batchProcessNfts(nfts: Nft[]) {
+  private async batchProcessNfts(nfts: Nft[], fields?: string[]) {
     await Promise.all([
-      this.batchApplyMedia(nfts),
-      this.batchApplyMetadata(nfts),
+      this.batchApplyMedia(nfts, fields),
+      this.batchApplyMetadata(nfts, fields),
     ]);
   }
 
@@ -117,7 +120,11 @@ export class NftService {
     }
   }
 
-  private async batchApplySupply(nfts: Nft[]) {
+  private async batchApplySupply(nfts: Nft[], fields?: string[]) {
+    if (fields && !fields.includes('supply')) {
+      return;
+    }
+
     await this.cachingService.batchApplyAll(
       nfts,
       nft => CacheInfo.TokenSupply(nft.identifier).key,
@@ -127,7 +134,11 @@ export class NftService {
     );
   }
 
-  private async batchApplyMedia(nfts: Nft[]) {
+  private async batchApplyMedia(nfts: Nft[], fields?: string[]) {
+    if (fields && !fields.includes('media')) {
+      return;
+    }
+
     await this.cachingService.batchApply(
       nfts,
       nft => CacheInfo.NftMedia(nft.identifier).key,
@@ -147,7 +158,11 @@ export class NftService {
     }
   }
 
-  private async batchApplyMetadata(nfts: Nft[]) {
+  private async batchApplyMetadata(nfts: Nft[], fields?: string[]) {
+    if (fields && !fields.includes('metadata')) {
+      return;
+    }
+
     await this.cachingService.batchApply(
       nfts,
       nft => CacheInfo.NftMetadata(nft.identifier).key,
@@ -173,7 +188,11 @@ export class NftService {
     }
   }
 
-  async applyAssetsAndTicker(token: Nft) {
+  async applyAssetsAndTicker(token: Nft, fields?: string[]) {
+    if (fields && fields.includesNone(['ticker', 'assets'])) {
+      return;
+    }
+
     token.assets = await this.assetsService.getTokenAssets(token.identifier) ??
       await this.assetsService.getTokenAssets(token.collection);
 
@@ -201,7 +220,9 @@ export class NftService {
       return undefined;
     }
 
-    await this.applySupply(nft);
+    if (nft.type.in(NftType.SemiFungibleESDT, NftType.MetaESDT)) {
+      await this.applySupply(nft);
+    }
 
     await this.applyNftOwner(nft);
 
@@ -209,35 +230,33 @@ export class NftService {
 
     await this.applyAssetsAndTicker(nft);
 
-    await this.applyUnlockSchedule(nft);
-
-    await this.applyTransferAffected(nft);
+    await this.applyUnlockFields(nft);
 
     await this.processNft(nft);
 
     return nft;
   }
 
-  private async applyTransferAffected(nft: Nft): Promise<void> {
-    try {
-      const result = await this.gatewayService.get(`node/old-storage-token/${nft.collection}/nonce/${nft.nonce}`, GatewayComponentRequest.oldStorageToken);
-      if (result?.isOldStorage) {
-        nft.isTransferAffected = true;
-      }
-    } catch (error) {
-      // probably old version of the gateway
+  private async applyUnlockFields(nft: Nft, fields?: string[]): Promise<void> {
+    if (fields && fields.includesNone(['unlockSchedule', 'unlockEpoch'])) {
+      return;
     }
-  }
 
-  private async applyUnlockSchedule(nft: Nft): Promise<void> {
     if (!nft.attributes) {
       return;
     }
 
     try {
-      nft.unlockSchedule = await this.lockedAssetService.getUnlockSchedule(nft.identifier, nft.attributes);
+      nft.unlockSchedule = await this.lockedAssetService.getLkmexUnlockSchedule(nft.identifier, nft.attributes);
     } catch (error) {
       this.logger.error(`An error occurred while applying unlock schedule for NFT with identifier '${nft.identifier}' and attributes '${nft.attributes}'`);
+      this.logger.error(error);
+    }
+
+    try {
+      nft.unlockEpoch = await this.lockedAssetService.getXmexUnlockEpoch(nft.identifier, nft.attributes);
+    } catch (error) {
+      this.logger.error(`An error occurred while applying unlock epoch for NFT with identifier '${nft.identifier}' and attributes '${nft.attributes}'`);
       this.logger.error(error);
     }
   }
@@ -263,7 +282,7 @@ export class NftService {
     nft.metadata = await this.nftMetadataService.getMetadata(nft) ?? undefined;
   }
 
-  private async isNft(identifier: string): Promise<boolean> {
+  async isNft(identifier: string): Promise<boolean> {
     if (identifier.split('-').length !== 3) {
       return false;
     }
@@ -300,6 +319,12 @@ export class NftService {
   }
 
   async getNftsInternal(pagination: QueryPagination, filter: NftFilter, identifier?: string): Promise<Nft[]> {
+    if (filter.sort && filter.sort === SortCollectionNfts.rank && filter.collection) {
+      const assets = await this.assetsService.getTokenAssets(filter.collection);
+
+      filter.sort = this.getNftRankElasticKey(this.getNftRankAlgorithmFromAssets(assets));
+    }
+
     const elasticNfts = await this.indexerService.getNfts(pagination, filter, identifier);
 
     const nfts: Nft[] = [];
@@ -311,7 +336,7 @@ export class NftService {
       nft.nonce = parseInt('0x' + nft.identifier.split('-')[2]);
       nft.timestamp = elasticNft.timestamp;
 
-      this.applyExtendedAttributes(nft, elasticNft);
+      await this.applyExtendedAttributes(nft, elasticNft);
 
       const elasticNftData = elasticNft.data;
       if (elasticNftData) {
@@ -388,7 +413,7 @@ export class NftService {
   }
 
   async getNftOwnersCount(identifier: string): Promise<number | undefined> {
-    const owners = await this.cachingService.getOrSetCache(
+    const owners = await this.cachingService.getOrSet(
       CacheInfo.NftOwnersCount(identifier).key,
       async () => await this.getNftOwnersCountRaw(identifier),
       CacheInfo.NftOwnersCount(identifier).ttl
@@ -414,21 +439,22 @@ export class NftService {
     return await this.indexerService.getNftCount(filter);
   }
 
-  async getNftsForAddress(address: string, queryPagination: QueryPagination, filter: NftFilter, queryOptions?: NftQueryOptions, source?: EsdtDataSource): Promise<NftAccount[]> {
+  async getNftsForAddress(address: string, queryPagination: QueryPagination, filter: NftFilter, fields?: string[], queryOptions?: NftQueryOptions, source?: EsdtDataSource): Promise<NftAccount[]> {
     const nfts = await this.esdtAddressService.getNftsForAddress(address, filter, queryPagination, source);
 
     for (const nft of nfts) {
-      await this.applyAssetsAndTicker(nft);
-      await this.applyPriceUsd(nft);
+      await this.applyAssetsAndTicker(nft, fields);
+      await this.applyPriceUsd(nft, fields);
     }
 
     if (queryOptions && queryOptions.withSupply) {
-      await this.batchApplySupply(nfts);
+      const supplyNfts = nfts.filter(nft => nft.type.in(NftType.SemiFungibleESDT, NftType.MetaESDT));
+      await this.batchApplySupply(supplyNfts, fields);
     }
 
-    await this.batchProcessNfts(nfts);
+    await this.batchProcessNfts(nfts, fields);
 
-    if (this.apiConfigService.isNftExtendedAttributesEnabled()) {
+    if (this.apiConfigService.isNftExtendedAttributesEnabled() && (!fields || fields.includesSome(['score', 'rank', 'isNsfw']))) {
       const internalNfts = await this.getNftsInternalByIdentifiers(nfts.map(x => x.identifier));
 
       const indexedInternalNfts = internalNfts.toRecord<Nft>(x => x.identifier);
@@ -443,10 +469,12 @@ export class NftService {
     }
 
     for (const nft of nfts) {
-      await this.applyUnlockSchedule(nft);
+      await this.applyUnlockFields(nft, fields);
     }
 
-    await this.pluginService.processNfts(nfts, queryOptions?.withScamInfo || queryOptions?.computeScamInfo);
+    const withScamInfo = (queryOptions?.withScamInfo || queryOptions?.computeScamInfo) && (!fields || fields.includes('scamInfo'));
+
+    await this.pluginService.processNfts(nfts, withScamInfo);
 
     return nfts;
   }
@@ -463,7 +491,11 @@ export class NftService {
     return result;
   }
 
-  private async applyPriceUsd(nft: NftAccount) {
+  private async applyPriceUsd(nft: NftAccount, fields?: string[]) {
+    if (fields && fields.includesNone(['price', 'valueUsd'])) {
+      return;
+    }
+
     if (nft.type !== NftType.MetaESDT) {
       return;
     }
@@ -486,7 +518,7 @@ export class NftService {
     return await this.esdtAddressService.getNftCountForAddressFromElastic(address, filter);
   }
 
-  async getNftForAddress(address: string, identifier: string): Promise<NftAccount | undefined> {
+  async getNftForAddress(address: string, identifier: string, fields?: string[]): Promise<NftAccount | undefined> {
     const filter = new NftFilter();
     filter.identifiers = [identifier];
 
@@ -494,18 +526,12 @@ export class NftService {
       return undefined;
     }
 
-    const nfts = await this.getNftsForAddress(address, new QueryPagination({ from: 0, size: 1 }), filter, new NftQueryOptions({ withScamInfo: true, computeScamInfo: true }));
+    const nfts = await this.getNftsForAddress(address, new QueryPagination({ from: 0, size: 1 }), filter, fields, new NftQueryOptions({ withScamInfo: true, computeScamInfo: true }));
     if (nfts.length === 0) {
       return undefined;
     }
 
-    const nft = nfts[0];
-
-    await this.applyUnlockSchedule(nft);
-
-    await this.applyTransferAffected(nft);
-
-    return nft;
+    return nfts[0];
   }
 
   async applySupply(nft: Nft): Promise<void> {
@@ -541,12 +567,46 @@ export class NftService {
     return await this.indexerService.getAccountsEsdtByCollection([identifier], pagination);
   }
 
-  applyExtendedAttributes(nft: Nft, elasticNft: any) {
-    nft.score = elasticNft.nft_rarity_score;
-    nft.rank = elasticNft.nft_rarity_rank;
+  private getNftRarity(elasticNft: any, algorithm: NftRankAlgorithm): NftRarity | undefined {
+    const score = elasticNft[this.getNftScoreElasticKey(algorithm)];
+    const rank = elasticNft[this.getNftRankElasticKey(algorithm)];
+
+    if (!score && !rank) {
+      return undefined;
+    }
+
+    return new NftRarity({ score, rank });
+  }
+
+  private async applyExtendedAttributes(nft: Nft, elasticNft: any) {
+    const collectionAssets = await this.assetsService.getTokenAssets(nft.collection);
+    const algorithm = this.getNftRankAlgorithmFromAssets(collectionAssets);
+
+    nft.score = elasticNft[this.getNftScoreElasticKey(algorithm)];
+    nft.rank = elasticNft[this.getNftRankElasticKey(algorithm)];
+
+    nft.rarities = new NftRarities({
+      trait: this.getNftRarity(elasticNft, NftRankAlgorithm.trait),
+      statistical: this.getNftRarity(elasticNft, NftRankAlgorithm.statistical),
+      jaccardDistances: this.getNftRarity(elasticNft, NftRankAlgorithm.jaccardDistances),
+      openRarity: this.getNftRarity(elasticNft, NftRankAlgorithm.openRarity),
+      custom: this.getNftRarity(elasticNft, NftRankAlgorithm.custom),
+    });
 
     if (elasticNft.nft_nsfw_mark !== undefined) {
       nft.isNsfw = elasticNft.nft_nsfw_mark >= this.apiConfigService.getNftExtendedAttributesNsfwThreshold();
     }
+  }
+
+  private getNftRankAlgorithmFromAssets(assets?: TokenAssets): NftRankAlgorithm {
+    return assets?.preferredRankAlgorithm ?? NftRankAlgorithm.openRarity;
+  }
+
+  private getNftRankElasticKey(algorithm: NftRankAlgorithm) {
+    return `nft_rank_${algorithm}`;
+  }
+
+  private getNftScoreElasticKey(algorithm: NftRankAlgorithm) {
+    return `nft_score_${algorithm}`;
   }
 }

@@ -3,7 +3,7 @@ import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { VmQueryService } from "src/endpoints/vm.query/vm.query.service";
 import { Delegation } from "./entities/delegation";
 import { NodeService } from "../nodes/node.service";
-import { ApiService, CachingService, OriginLogger } from "@elrondnetwork/erdnest";
+import { ApiService, ElrondCachingService, OriginLogger } from "@multiversx/sdk-nestjs";
 import { CacheInfo } from "src/utils/cache.info";
 import { AccountDelegation } from "../stake/entities/account.delegation";
 
@@ -14,13 +14,13 @@ export class DelegationService {
   constructor(
     private readonly vmQueryService: VmQueryService,
     private readonly apiConfigService: ApiConfigService,
-    private readonly cachingService: CachingService,
+    private readonly cachingService: ElrondCachingService,
     private readonly nodeService: NodeService,
     private readonly apiService: ApiService,
   ) { }
 
   async getDelegation(): Promise<Delegation> {
-    return await this.cachingService.getOrSetCache(
+    return await this.cachingService.getOrSet(
       CacheInfo.Delegation.key,
       async () => await this.getDelegationRaw(),
       CacheInfo.Delegation.ttl

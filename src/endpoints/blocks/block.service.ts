@@ -5,7 +5,7 @@ import { BlockFilter } from "./entities/block.filter";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { BlsService } from "src/endpoints/bls/bls.service";
 import { CacheInfo } from "src/utils/cache.info";
-import { CachingService } from "@elrondnetwork/erdnest";
+import { ElrondCachingService } from "@multiversx/sdk-nestjs";
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { NodeService } from "../nodes/node.service";
 import { IdentitiesService } from "../identities/identities.service";
@@ -14,7 +14,7 @@ import { IdentitiesService } from "../identities/identities.service";
 export class BlockService {
   constructor(
     private readonly indexerService: IndexerService,
-    private readonly cachingService: CachingService,
+    private readonly cachingService: ElrondCachingService,
     private readonly blsService: BlsService,
     @Inject(forwardRef(() => NodeService))
     private readonly nodeService: NodeService,
@@ -23,7 +23,7 @@ export class BlockService {
   ) { }
 
   async getBlocksCount(filter: BlockFilter): Promise<number> {
-    return await this.cachingService.getOrSetCache(
+    return await this.cachingService.getOrSet(
       CacheInfo.BlocksCount(filter).key,
       async () => await this.indexerService.getBlocksCount(filter),
       CacheInfo.BlocksCount(filter).ttl
@@ -32,12 +32,16 @@ export class BlockService {
 
   async getBlocks(filter: BlockFilter, queryPagination: QueryPagination, withProposerIdentity?: boolean): Promise<Block[]> {
     const result = await this.indexerService.getBlocks(filter, queryPagination);
-
     const blocks = [];
     for (const item of result) {
       const blockRaw = await this.computeProposerAndValidators(item);
 
       const block = Block.mergeWithElasticResponse(new Block(), blockRaw);
+
+      if (blockRaw.scheduledData && blockRaw.scheduledData.rootHash) {
+        block.scheduledRootHash = blockRaw.scheduledData.rootHash;
+      }
+
       blocks.push(block);
     }
 
@@ -79,11 +83,11 @@ export class BlockService {
     const { shardId, epoch, searchOrder, ...rest } = item;
     let { proposer, validators } = item;
 
-    let blses: any = await this.cachingService.getCacheLocal(CacheInfo.ShardAndEpochBlses(shardId, epoch).key);
+    let blses: any = await this.cachingService.getLocal(CacheInfo.ShardAndEpochBlses(shardId, epoch).key);
     if (!blses) {
       blses = await this.blsService.getPublicKeys(shardId, epoch);
 
-      await this.cachingService.setCacheLocal(CacheInfo.ShardAndEpochBlses(shardId, epoch).key, blses, CacheInfo.ShardAndEpochBlses(shardId, epoch).ttl);
+      await this.cachingService.setLocal(CacheInfo.ShardAndEpochBlses(shardId, epoch).key, blses, CacheInfo.ShardAndEpochBlses(shardId, epoch).ttl);
     }
 
     proposer = blses[proposer];
@@ -120,5 +124,22 @@ export class BlockService {
     }
 
     return blocks[0].epoch;
+  }
+
+  async getLatestBlock(ttl?: number): Promise<Block | undefined> {
+    return await this.cachingService.getOrSet(
+      CacheInfo.BlocksLatest(ttl).key,
+      async () => await this.getLatestBlockRaw(),
+      CacheInfo.BlocksLatest(ttl).ttl,
+      Math.round(CacheInfo.BlocksLatest(ttl).ttl / 10)
+    );
+  }
+
+  async getLatestBlockRaw(): Promise<Block | undefined> {
+    const blocks = await this.getBlocks(new BlockFilter(), new QueryPagination({ from: 0, size: 1 }));
+    if (blocks.length === 0) {
+      return undefined;
+    }
+    return blocks[0];
   }
 }

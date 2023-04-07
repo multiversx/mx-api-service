@@ -7,13 +7,17 @@ describe('Collection', () => {
   let app: INestApplication;
   const gql = '/graphql';
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [PublicAppModule],
     }).compile();
 
     app = moduleFixture.createNestApplication();
     await app.init();
+  });
+
+  afterAll(async () => {
+    await app.close();
   });
 
   describe('Query - Get Collection Details', () => {
@@ -37,16 +41,9 @@ describe('Collection', () => {
               canWipe
               canPause
               canTransferNftCreateRole
-              roles{
-                address
-                canCreate
-                canBurn
-                canAddQuantity
-                canUpdateAttributes
-                canAddUri
-                canTransferRole
-                roles
-              }
+              canChangeOwner
+              canUpgrade
+              canAddSpecialRoles
             }
           }`,
         })
@@ -79,6 +76,9 @@ describe('Collection', () => {
             canWipe
             canPause
             canTransferNftCreateRole
+            canChangeOwner
+            canUpgrade
+            canAddSpecialRoles
           }
         }`,
         })
@@ -115,6 +115,9 @@ describe('Collection', () => {
               canWipe
               canPause
               canTransferNftCreateRole
+              canChangeOwner
+              canUpgrade
+              canAddSpecialRoles
             }
           }`,
             })
@@ -148,6 +151,9 @@ describe('Collection', () => {
                 canWipe
                 canPause
                 canTransferNftCreateRole
+                canChangeOwner
+                canUpgrade
+                canAddSpecialRoles
             }
           }`,
         })
@@ -193,7 +199,32 @@ describe('Collection', () => {
     });
   });
 
-  afterEach(async () => {
-    await app.close();
+  [
+    {
+      boolean: true,
+      value: '7376',
+    },
+    {
+      boolean: false,
+      value: '7440',
+    },
+  ].forEach(({ value, boolean }) => {
+    describe(`Query - Get Collections Count (with/without excludeMetaESDT filter applied)`, () => {
+      it(`should return collection count`, async () => {
+        await request(app.getHttpServer())
+          .post(gql)
+          .send({
+            query: `{
+              collectionsCount(input:{
+                excludeMetaESDT: ${boolean}
+              })
+            }`,
+          })
+          .expect(200)
+          .then(res => {
+            expect(res.body.data.collectionsCount).toBeGreaterThanOrEqual(parseInt(value));
+          });
+      });
+    });
   });
 });

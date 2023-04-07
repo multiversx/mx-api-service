@@ -7,13 +7,17 @@ describe('Nfts', () => {
   let app: INestApplication;
   const gql = '/graphql';
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [PublicAppModule],
     }).compile();
 
     app = moduleFixture.createNestApplication();
     await app.init();
+  });
+
+  afterAll(async () => {
+    await app.close();
   });
 
   describe('Query - Get NFT details', () => {
@@ -49,7 +53,6 @@ describe('Nfts', () => {
               }
               supply
               ticker
-              isTransferAffected
           }
           }`,
         })
@@ -58,6 +61,52 @@ describe('Nfts', () => {
           expect(res.body.data.nft).toBeDefined();
           expect(res.body.data.nft.identifier).toStrictEqual('CATSFAM-46c28f-0211');
         });
+    });
+
+    describe('Query - Get NFT details', () => {
+      it('should return MetaESDT token details for a given MetaESDT identifier', async () => {
+        await request(app.getHttpServer())
+          .post(gql)
+          .send({
+            query: `{
+              nft(input:{
+                identifier:"XMEX-fda355-15"
+              }){
+               identifier
+                attributes
+                nonce
+                type
+                name
+                creator{
+                  address
+                }
+                royalties
+                uris
+                url
+                media{
+                  url
+                  originalUrl
+                  thumbnailUrl
+                  fileType
+                  fileSize
+                }
+                isWhitelistedStorage
+                owner{
+                  address
+                }
+                supply
+                ticker
+                unlockEpoch
+            }
+            }`,
+          })
+          .expect(200)
+          .then(res => {
+            expect(res.body.data.nft).toBeDefined();
+            expect(res.body.data.nft.identifier).toStrictEqual('XMEX-fda355-15');
+            expect(res.body.data.nft.unlockEpoch).toStrictEqual(1410);
+          });
+      });
     });
 
     test.each`
@@ -209,9 +258,5 @@ describe('Nfts', () => {
         });
       });
     });
-  });
-
-  afterEach(async () => {
-    await app.close();
   });
 });

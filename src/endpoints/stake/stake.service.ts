@@ -8,17 +8,16 @@ import { Stake } from "./entities/stake";
 import { StakeTopup } from "./entities/stake.topup";
 import { NetworkService } from "../network/network.service";
 import { GatewayService } from "src/common/gateway/gateway.service";
-import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
 import { CacheInfo } from "src/utils/cache.info";
-import { AddressUtils, ApiUtils, RoundUtils, CachingService } from "@elrondnetwork/erdnest";
-import { OriginLogger } from "@elrondnetwork/erdnest";
+import { AddressUtils, ApiUtils, RoundUtils, ElrondCachingService } from "@multiversx/sdk-nestjs";
+import { OriginLogger } from "@multiversx/sdk-nestjs";
 
 @Injectable()
 export class StakeService {
   private logger = new OriginLogger(StakeService.name);
 
   constructor(
-    private readonly cachingService: CachingService,
+    private readonly cachingService: ElrondCachingService,
     private readonly vmQueryService: VmQueryService,
     private readonly apiConfigService: ApiConfigService,
     @Inject(forwardRef(() => NodeService))
@@ -29,7 +28,7 @@ export class StakeService {
   ) { }
 
   async getGlobalStake() {
-    return await this.cachingService.getOrSetCache(
+    return await this.cachingService.getOrSet(
       CacheInfo.GlobalStake.key,
       async () => await this.getGlobalStakeRaw(),
       CacheInfo.GlobalStake.ttl
@@ -40,13 +39,10 @@ export class StakeService {
     const [
       validators,
       {
-        metrics:
-        {
-          erd_total_base_staked_value: totalBaseStaked,
-          erd_total_top_up_value: totalTopUp,
-        },
+        erd_total_base_staked_value: totalBaseStaked,
+        erd_total_top_up_value: totalTopUp,
       },
-    ] = await Promise.all([this.getValidators(), this.gatewayService.get('network/economics', GatewayComponentRequest.networkEconomics)]);
+    ] = await Promise.all([this.getValidators(), this.gatewayService.getNetworkEconomics()]);
 
     const totalStaked = BigInt(BigInt(totalBaseStaked) + BigInt(totalTopUp)).toString();
 
@@ -96,7 +92,7 @@ export class StakeService {
   }
 
   async getAllStakesForNode(address: string) {
-    return await this.cachingService.getOrSetCache(
+    return await this.cachingService.getOrSet(
       CacheInfo.StakeTopup(address).key,
       async () => await this.getAllStakesForAddressNodesRaw(address),
       CacheInfo.StakeTopup(address).ttl
@@ -179,6 +175,8 @@ export class StakeService {
   }
 
   async getStakeForAddress(address: string) {
+    const hexAddress = AddressUtils.bech32Decode(address);
+
     const [totalStakedEncoded, unStakedTokensListEncoded] = await Promise.all([
       this.vmQueryService.vmQuery(
         this.apiConfigService.getAuctionContractAddress(),
@@ -189,7 +187,7 @@ export class StakeService {
         this.apiConfigService.getAuctionContractAddress(),
         'getUnStakedTokensList',
         address,
-        [AddressUtils.bech32Decode(address)],
+        [hexAddress],
       ),
     ]);
 

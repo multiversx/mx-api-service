@@ -1,4 +1,4 @@
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { forwardRef, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { AccountDetailed } from './entities/account.detailed';
 import { Account } from './entities/account';
 import { VmQueryService } from 'src/endpoints/vm.query/vm.query.service';
@@ -8,7 +8,6 @@ import { QueryPagination } from 'src/common/entities/query.pagination';
 import { AccountKey } from './entities/account.key';
 import { DeployedContract } from './entities/deployed.contract';
 import { TransactionService } from '../transactions/transaction.service';
-import { GatewayComponentRequest } from 'src/common/gateway/entities/gateway.component.request';
 import { PluginService } from 'src/common/plugins/plugin.service';
 import { AccountEsdtHistory } from "./entities/account.esdt.history";
 import { AccountHistory } from "./entities/account.history";
@@ -18,13 +17,20 @@ import { SmartContractResultService } from '../sc-results/scresult.service';
 import { TransactionType } from '../transactions/entities/transaction.type';
 import { AssetsService } from 'src/common/assets/assets.service';
 import { TransactionFilter } from '../transactions/entities/transaction.filter';
-import { AddressUtils, ApiUtils, BinaryUtils, CachingService } from '@elrondnetwork/erdnest';
+import { AddressUtils, ApiService, ApiUtils, BinaryUtils, ElrondCachingService } from '@multiversx/sdk-nestjs';
 import { GatewayService } from 'src/common/gateway/gateway.service';
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { AccountOptionalFieldOption } from './entities/account.optional.field.options';
 import { AccountAssets } from 'src/common/assets/entities/account.assets';
-import { OriginLogger } from '@elrondnetwork/erdnest';
+import { OriginLogger } from '@multiversx/sdk-nestjs';
 import { CacheInfo } from 'src/utils/cache.info';
+import { UsernameService } from '../usernames/username.service';
+import { ContractUpgrades } from './entities/contract.upgrades';
+import { AccountVerification } from './entities/account.verification';
+import { AccountFilter } from './entities/account.filter';
+import { AccountHistoryFilter } from './entities/account.history.filter';
+import { ProtocolService } from 'src/common/protocol/protocol.service';
+import { Address } from "@elrondnetwork/erdjs/out";
 
 @Injectable()
 export class AccountService {
@@ -33,7 +39,7 @@ export class AccountService {
   constructor(
     private readonly indexerService: IndexerService,
     private readonly gatewayService: GatewayService,
-    private readonly cachingService: CachingService,
+    private readonly cachingService: ElrondCachingService,
     private readonly vmQueryService: VmQueryService,
     private readonly apiConfigService: ApiConfigService,
     @Inject(forwardRef(() => TransactionService))
@@ -47,34 +53,24 @@ export class AccountService {
     @Inject(forwardRef(() => SmartContractResultService))
     private readonly smartContractResultService: SmartContractResultService,
     private readonly assetsService: AssetsService,
+    private readonly usernameService: UsernameService,
+    private readonly apiService: ApiService,
+    private readonly protocolService: ProtocolService,
   ) { }
 
-  async getAccountsCount(): Promise<number> {
-    return await this.cachingService.getOrSetCache(
-      CacheInfo.AccountsCount.key,
-      async () => await this.indexerService.getAccountsCount(),
-      CacheInfo.AccountsCount.ttl
-    );
-  }
-
-  async getAccountUsername(address: string): Promise<string | null> {
-    return await this.cachingService.getOrSetCache(
-      CacheInfo.AccountUsername(address).key,
-      async () => await this.getAccountUsernameRaw(address),
-      CacheInfo.AccountUsername(address).ttl,
-    );
-  }
-
-  async getAccountUsernameRaw(address: string): Promise<string | null> {
-    const account = await this.getAccount(address);
-    if (!account) {
-      return null;
+  async getAccountsCount(filter: AccountFilter): Promise<number> {
+    if (!filter.ownerAddress) {
+      return await this.cachingService.getOrSet(
+        CacheInfo.AccountsCount.key,
+        async () => await this.indexerService.getAccountsCount(filter),
+        CacheInfo.AccountsCount.ttl
+      );
     }
 
-    return account.username;
+    return await this.indexerService.getAccountsCount(filter);
   }
 
-  async getAccount(address: string, fields?: string[]): Promise<AccountDetailed | null> {
+  async getAccount(address: string, fields?: string[], withGuardianInfo?: boolean): Promise<AccountDetailed | null> {
     if (!AddressUtils.isAddressValid(address)) {
       return null;
     }
@@ -90,7 +86,54 @@ export class AccountService {
       scrCount = await this.getAccountScResults(address);
     }
 
-    return this.getAccountRaw(address, txCount, scrCount);
+    const account = await this.getAccountRaw(address, txCount, scrCount);
+
+    if (account && withGuardianInfo === true) {
+      await this.applyGuardianInfo(account);
+    }
+
+    const elasticSearchAccount = await this.indexerService.getAccount(address);
+    if (account && elasticSearchAccount) {
+      account.timestamp = elasticSearchAccount.timestamp;
+    }
+
+    return account;
+  }
+
+  async applyGuardianInfo(account: AccountDetailed): Promise<void> {
+    try {
+      const guardianResult = await this.gatewayService.getGuardianData(account.address);
+      const guardianData = guardianResult?.guardianData;
+      if (guardianData) {
+        const activeGuardian = guardianData.activeGuardian;
+        if (activeGuardian) {
+          account.activeGuardianActivationEpoch = activeGuardian.activationEpoch;
+          account.activeGuardianAddress = activeGuardian.address;
+          account.activeGuardianServiceUid = activeGuardian.serviceUID;
+        }
+
+        const pendingGuardian = guardianData.pendingGuardian;
+        if (pendingGuardian) {
+          account.pendingGuardianActivationEpoch = pendingGuardian.activationEpoch;
+          account.pendingGuardianAddress = pendingGuardian.address;
+          account.pendingGuardianServiceUid = pendingGuardian.serviceUID;
+        }
+
+        account.isGuarded = guardianData.guarded;
+      }
+    } catch (error) {
+      this.logger.error(`Error when getting guardian data for address '${account.address}'`);
+      this.logger.error(error);
+    }
+  }
+
+  async getAccountVerification(address: string): Promise<AccountVerification | null> {
+    if (!AddressUtils.isAddressValid(address)) {
+      return null;
+    }
+
+    const verificationResponse = await this.apiService.get(`${this.apiConfigService.getVerifierUrl()}/verifier/${address}`);
+    return verificationResponse.data;
   }
 
   async getAccountSimple(address: string): Promise<AccountDetailed | null> {
@@ -103,25 +146,43 @@ export class AccountService {
 
   async getAccountRaw(address: string, txCount: number = 0, scrCount: number = 0): Promise<AccountDetailed | null> {
     const assets = await this.assetsService.getAllAccountAssets();
-
     try {
       const {
-        account: { nonce, balance, code, codeHash, rootHash, username, developerReward, ownerAddress, codeMetadata },
-      } = await this.gatewayService.get(`address/${address}`, GatewayComponentRequest.addressDetails);
+        account: { nonce, balance, code, codeHash, rootHash, developerReward, ownerAddress, codeMetadata },
+      } = await this.gatewayService.getAddressDetails(address);
 
-      const shard = AddressUtils.computeShard(AddressUtils.bech32Decode(address));
-      let account = new AccountDetailed({ address, nonce, balance, code, codeHash, rootHash, txCount, scrCount, username, shard, developerReward, ownerAddress, scamInfo: undefined, assets: assets[address], nftCollections: undefined, nfts: undefined });
+      const shardCount = await this.protocolService.getShardCount();
+      const shard = AddressUtils.computeShard(AddressUtils.bech32Decode(address), shardCount);
+      let account = new AccountDetailed({ address, nonce, balance, code, codeHash, rootHash, txCount, scrCount, shard, developerReward, ownerAddress, scamInfo: undefined, assets: assets[address], nftCollections: undefined, nfts: undefined });
 
       const codeAttributes = AddressUtils.decodeCodeMetadata(codeMetadata);
       if (codeAttributes) {
         account = { ...account, ...codeAttributes };
       }
 
-      if (account.code) {
+      if (AddressUtils.isSmartContractAddress(address) && account.code) {
+        const deployTxHash = await this.getAccountDeployedTxHash(address);
+        if (deployTxHash) {
+          account.deployTxHash = deployTxHash;
+        }
+
         const deployedAt = await this.getAccountDeployedAt(address);
         if (deployedAt) {
           account.deployedAt = deployedAt;
         }
+
+        const isVerified = await this.getAccountIsVerified(address, account.codeHash);
+        if (isVerified) {
+          account.isVerified = isVerified;
+        }
+      }
+
+      if (!AddressUtils.isSmartContractAddress(address)) {
+        account.username = await this.usernameService.getUsernameForAddress(address) ?? undefined;
+        account.isPayableBySmartContract = undefined;
+        account.isUpgradeable = undefined;
+        account.isReadable = undefined;
+        account.isPayable = undefined;
       }
 
       await this.pluginService.processAccount(account);
@@ -150,7 +211,7 @@ export class AccountService {
   }
 
   async getAccountDeployedAt(address: string): Promise<number | null> {
-    return await this.cachingService.getOrSetCache(
+    return await this.cachingService.getOrSet(
       CacheInfo.AccountDeployedAt(address).key,
       async () => await this.getAccountDeployedAtRaw(address),
       CacheInfo.AccountDeployedAt(address).ttl
@@ -176,36 +237,89 @@ export class AccountService {
     return transaction.timestamp;
   }
 
-  async getAccounts(queryPagination: QueryPagination): Promise<Account[]> {
-    return await this.cachingService.getOrSetCache(
-      CacheInfo.Accounts(queryPagination).key,
-      async () => await this.getAccountsRaw(queryPagination),
-      CacheInfo.Accounts(queryPagination).ttl
+  async getAccountDeployedTxHash(address: string): Promise<string | null> {
+    return await this.cachingService.getOrSet(
+      CacheInfo.AccountDeployTxHash(address).key,
+      async () => await this.getAccountDeployedTxHashRaw(address),
+      CacheInfo.AccountDeployTxHash(address).ttl,
     );
   }
 
+  async getAccountDeployedTxHashRaw(address: string): Promise<string | null> {
+    const scDeploy = await this.indexerService.getScDeploy(address);
+    if (!scDeploy) {
+      return null;
+    }
+
+    return scDeploy.deployTxHash;
+  }
+
+  async getAccountIsVerified(address: string, codeHash: string): Promise<boolean | null> {
+    return await this.cachingService.getOrSet(
+      CacheInfo.AccountIsVerified(address).key,
+      async () => await this.getAccountIsVerifiedRaw(address, codeHash),
+      CacheInfo.AccountIsVerified(address).ttl
+    );
+  }
+
+  async getAccountIsVerifiedRaw(address: string, codeHash: string): Promise<boolean | null> {
+    try {
+      // eslint-disable-next-line require-await
+      const { data } = await this.apiService.get(`${this.apiConfigService.getVerifierUrl()}/verifier/${address}/codehash`, undefined, async (error) => error.response?.status === HttpStatus.NOT_FOUND);
+
+      if (data.codeHash === Buffer.from(codeHash, 'base64').toString('hex')) {
+        return true;
+      }
+    } catch {
+      // ignore
+    }
+
+    return null;
+  }
+
+  async getAccounts(queryPagination: QueryPagination, filter: AccountFilter): Promise<Account[]> {
+    if (!filter.ownerAddress && !filter.sort && !filter.order) {
+      return await this.cachingService.getOrSet(
+        CacheInfo.Accounts(queryPagination).key,
+        async () => await this.getAccountsRaw(queryPagination, filter),
+        CacheInfo.Accounts(queryPagination).ttl
+      );
+    }
+
+    return await this.getAccountsRaw(queryPagination, filter);
+  }
+
   public async getAccountsForAddresses(addresses: Array<string>): Promise<Array<Account>> {
-    const assets: { [key: string]: AccountAssets } = await this.assetsService.getAllAccountAssets();
+    const assets: { [key: string]: AccountAssets; } = await this.assetsService.getAllAccountAssets();
 
     const accountsRaw = await this.indexerService.getAccountsForAddresses(addresses);
     const accounts: Array<Account> = accountsRaw.map(account => ApiUtils.mergeObjects(new Account(), account));
+    const shardCount = await this.protocolService.getShardCount();
 
     for (const account of accounts) {
-      account.shard = AddressUtils.computeShard(AddressUtils.bech32Decode(account.address));
+      account.shard = AddressUtils.computeShard(AddressUtils.bech32Decode(account.address), shardCount);
       account.assets = assets[account.address];
     }
 
     return accounts;
   }
 
-  async getAccountsRaw(queryPagination: QueryPagination): Promise<Account[]> {
-    const result = await this.indexerService.getAccounts(queryPagination);
+  async getAccountsRaw(queryPagination: QueryPagination, filter: AccountFilter): Promise<Account[]> {
+    const result = await this.indexerService.getAccounts(queryPagination, filter);
 
     const assets = await this.assetsService.getAllAccountAssets();
 
-    const accounts: Account[] = result.map(item => ApiUtils.mergeObjects(new Account(), item));
+    const accounts: Account[] = result.map(item => {
+      const account = ApiUtils.mergeObjects(new Account(), item);
+      account.ownerAddress = item.currentOwner;
+
+      return account;
+    });
+
+    const shardCount = await this.protocolService.getShardCount();
+
     for (const account of accounts) {
-      account.shard = AddressUtils.computeShard(AddressUtils.bech32Decode(account.address));
+      account.shard = AddressUtils.computeShard(AddressUtils.bech32Decode(account.address), shardCount);
       account.assets = assets[account.address];
     }
 
@@ -214,29 +328,31 @@ export class AccountService {
 
   async getDeferredAccount(address: string): Promise<AccountDeferred[]> {
     const publicKey = AddressUtils.bech32Decode(address);
+    const delegationContractAddress = this.apiConfigService.getDelegationContractAddress();
+    const delegationContractShardId = AddressUtils.computeShard(Address.fromString(delegationContractAddress).hex(), await this.protocolService.getShardCount());
 
     const [
       encodedUserDeferredPaymentList,
       [encodedNumBlocksBeforeUnBond],
       {
-        status: { erd_nonce: erdNonceString },
+        erd_nonce,
       },
     ] = await Promise.all([
       this.vmQueryService.vmQuery(
-        this.apiConfigService.getDelegationContractAddress(),
+        delegationContractAddress,
         'getUserDeferredPaymentList',
         undefined,
         [publicKey]
       ),
       this.vmQueryService.vmQuery(
-        this.apiConfigService.getDelegationContractAddress(),
+        delegationContractAddress,
         'getNumBlocksBeforeUnBond',
       ),
-      this.gatewayService.get(`network/status/${this.apiConfigService.getDelegationContractShardId()}`, GatewayComponentRequest.networkStatus),
+      this.gatewayService.getNetworkStatus(`${delegationContractShardId}`),
     ]);
 
     const numBlocksBeforeUnBond = parseInt(BinaryUtils.base64ToBigInt(encodedNumBlocksBeforeUnBond).toString());
-    const erdNonce = parseInt(erdNonceString);
+    const erdNonce = erd_nonce;
 
     const data: AccountDeferred[] = encodedUserDeferredPaymentList.reduce((result: AccountDeferred[], _, index, array) => {
       if (index % 2 === 0) {
@@ -350,11 +466,13 @@ export class AccountService {
 
   async getAccountContracts(pagination: QueryPagination, address: string): Promise<DeployedContract[]> {
     const accountDeployedContracts = await this.indexerService.getAccountContracts(pagination, address);
+    const assets = await this.assetsService.getAllAccountAssets();
 
     const accounts: DeployedContract[] = accountDeployedContracts.map(contract => ({
       address: contract.contract,
       deployTxHash: contract.deployTxHash,
       timestamp: contract.timestamp,
+      assets: assets[contract.contract],
     }));
 
     return accounts;
@@ -364,13 +482,36 @@ export class AccountService {
     return await this.indexerService.getAccountContractsCount(address);
   }
 
-  async getAccountHistory(address: string, pagination: QueryPagination): Promise<AccountHistory[]> {
-    const elasticResult = await this.indexerService.getAccountHistory(address, pagination);
+  async getContractUpgrades(queryPagination: QueryPagination, address: string): Promise<ContractUpgrades[] | null> {
+    const details = await this.indexerService.getScDeploy(address);
+    if (!details) {
+      return null;
+    }
+
+    const upgrades = details.upgrades.map(item => ApiUtils.mergeObjects(new ContractUpgrades(), {
+      address: item.upgrader,
+      txHash: item.upgradeTxHash,
+      timestamp: item.timestamp,
+    }));
+
+    return upgrades.slice(queryPagination.from, queryPagination.from + queryPagination.size);
+  }
+
+  async getAccountHistory(address: string, pagination: QueryPagination, filter: AccountHistoryFilter): Promise<AccountHistory[]> {
+    const elasticResult = await this.indexerService.getAccountHistory(address, pagination, filter);
     return elasticResult.map(item => ApiUtils.mergeObjects(new AccountHistory(), item));
   }
 
-  async getAccountTokenHistory(address: string, tokenIdentifier: string, pagination: QueryPagination): Promise<AccountEsdtHistory[]> {
-    const elasticResult = await this.indexerService.getAccountTokenHistory(address, tokenIdentifier, pagination);
+  async getAccountHistoryCount(address: string, filter: AccountHistoryFilter): Promise<number> {
+    return await this.indexerService.getAccountHistoryCount(address, filter);
+  }
+
+  async getAccountTokenHistoryCount(address: string, tokenIdentifier: string, filter: AccountHistoryFilter): Promise<number> {
+    return await this.indexerService.getAccountTokenHistoryCount(address, tokenIdentifier, filter);
+  }
+
+  async getAccountTokenHistory(address: string, tokenIdentifier: string, pagination: QueryPagination, filter: AccountHistoryFilter): Promise<AccountEsdtHistory[]> {
+    const elasticResult = await this.indexerService.getAccountTokenHistory(address, tokenIdentifier, pagination, filter);
     return elasticResult.map(item => ApiUtils.mergeObjects(new AccountEsdtHistory(), item));
   }
 }

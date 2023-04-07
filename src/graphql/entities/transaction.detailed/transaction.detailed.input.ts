@@ -19,6 +19,12 @@ export class GetTransactionsInput extends GetTransactionsCountInput {
 
   @Field(() => SortOrder, { name: "condition", description: "Sort order for the given result set.", nullable: true })
   order: SortOrder | undefined = undefined;
+
+  @Field(() => Boolean, { name: "withScamInfo", description: "Request scam info for the given result set.", nullable: true })
+  withScamInfo: boolean | undefined = undefined;
+
+  @Field(() => Boolean, { name: "withUsername", description: "Integrates username in assets for all addresses present in the result set.", nullable: true })
+  withUsername: boolean | undefined = undefined;
 }
 
 @InputType({ description: "Input to retrieve the given detailed transaction for." })

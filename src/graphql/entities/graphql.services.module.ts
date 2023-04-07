@@ -21,9 +21,10 @@ import { NodeModule } from "src/graphql/entities/nodes/nodes.module";
 import { RoundModule } from "src/graphql/entities/rounds/rounds.module";
 import { ProviderModule } from "src/graphql/entities/providers/providers.module";
 import { StakeModule } from "src/graphql/entities/stake/stake.module";
-import { MexModule } from "src/graphql/entities/maiar.exchange/mex.token.module";
+import { MexTokenModule } from "src/graphql/entities/xexchange/mex.token.module";
 import { TokenModule } from "src/graphql/entities/tokens/tokens.module";
 import { WebsocketModule } from "src/graphql/entities/web.socket/web.socket.module";
+import { TransferModule } from "src/graphql/entities/transfers/transfers.module";
 
 
 @Module({
@@ -50,15 +51,16 @@ import { WebsocketModule } from "src/graphql/entities/web.socket/web.socket.modu
     RoundModule,
     ProviderModule,
     StakeModule,
-    MexModule,
+    MexTokenModule,
     TokenModule,
     WebsocketModule,
+    TransferModule,
   ],
   exports: [
     AccountDetailedModule, AccountModule, NftModule, NftCollectionModule, SmartContractResultModule, TransactionDetailedModule,
     TransactionModule, TagModule, DelegationModule, DappConfigModule, WaitingListModule, UsernameModule, BlockModule,
     MiniBlockModule, NetworkModule, ShardModule, DelegationLegacyModule, IdentitiesModule, NodeModule, RoundModule, ProviderModule,
-    StakeModule, MexModule, TokenModule, WebsocketModule,
+    StakeModule, MexTokenModule, TokenModule, WebsocketModule, TransferModule,
   ],
 })
 export class GraphQLServicesModule { }

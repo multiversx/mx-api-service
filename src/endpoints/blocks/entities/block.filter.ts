@@ -8,4 +8,5 @@ export class BlockFilter {
   validator?: string;
   epoch?: number;
   nonce?: number;
+  hashes?: string[];
 }

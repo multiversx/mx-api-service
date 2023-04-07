@@ -10,6 +10,9 @@ export class AccountDb implements Account {
   nonce: number = 0;
 
   @Column({ nullable: true })
+  timestamp: number = 0;
+
+  @Column({ nullable: true })
   balance: string = '0';
 
   @Column({ nullable: true, name: 'balance_num' })

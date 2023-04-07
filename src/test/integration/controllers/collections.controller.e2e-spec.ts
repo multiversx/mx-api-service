@@ -7,7 +7,7 @@ describe("collections Controller", () => {
   let app: INestApplication;
   const path: string = "/collections";
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
       imports: [PublicAppModule],
     }).compile();
@@ -42,7 +42,7 @@ describe("collections Controller", () => {
 
     it('should return collection detailes for a given identifier', async () => {
       const params = new URLSearchParams({
-        'search': 'MEDAL-ae074f',
+        'identifiers': 'MEDAL-ae074f',
       });
 
       const expected =
@@ -58,7 +58,9 @@ describe("collections Controller", () => {
             canWipe: false,
             canPause: false,
             canTransferNftCreateRole: false,
-            roles: [],
+            canChangeOwner: false,
+            canUpgrade: false,
+            canAddSpecialRoles: false,
             traits: [],
           }];
 
@@ -88,7 +90,9 @@ describe("collections Controller", () => {
             canWipe: false,
             canPause: false,
             canTransferNftCreateRole: false,
-            roles: [],
+            canChangeOwner: false,
+            canUpgrade: false,
+            canAddSpecialRoles: false,
             traits: [],
           },
           {
@@ -102,7 +106,9 @@ describe("collections Controller", () => {
             canWipe: false,
             canPause: false,
             canTransferNftCreateRole: false,
-            roles: [],
+            canChangeOwner: true,
+            canUpgrade: true,
+            canAddSpecialRoles: true,
             traits: [],
           },
         ];
@@ -181,7 +187,7 @@ describe("collections Controller", () => {
 
     it('should count for a given collection identifier', async () => {
       const params = new URLSearchParams({
-        'search': 'MEDAL-ae074f',
+        'identifiers': 'MEDAL-ae074f',
       });
 
       await request(app.getHttpServer())
@@ -242,7 +248,7 @@ describe("collections Controller", () => {
   });
 
   describe('collections/{collection}', () => {
-    it('should return collection details for a given identifier', async () => {
+    it('should return collection details for a given collection identifier', async () => {
       const identifier: string = 'MEDAL-ae074f';
       const expected =
       {
@@ -255,7 +261,11 @@ describe("collections Controller", () => {
         canFreeze: false,
         canWipe: false,
         canPause: false,
+        canTransfer: true,
         canTransferNftCreateRole: false,
+        canChangeOwner: false,
+        canUpgrade: false,
+        canAddSpecialRoles: false,
         roles: [
           {
             address: "erd1qqqqqqqqqqqqqpgq8ne37ed06034qxfhm09f03ykjfqwx8s7hvrqackmzt",
@@ -264,7 +274,6 @@ describe("collections Controller", () => {
             canAddQuantity: false,
             canUpdateAttributes: false,
             canAddUri: false,
-            canTransferRole: false,
             roles: [
               "ESDTRoleNFTCreate",
             ],

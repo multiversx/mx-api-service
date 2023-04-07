@@ -1,0 +1,252 @@
+[
+  {
+    "WEGLD-bd4d79": "erd1qqqqqqqqqqqqqpgqa0fsfshnff4n76jhcye6k7uvd7qacsq42jpsp6shh2-WEGLD-bd4d79-00",
+    "address": "erd1qqqqqqqqqqqqqpgqa0fsfshnff4n76jhcye6k7uvd7qacsq42jpsp6shh2",
+    "balance": "365491704710720301152893",
+    "balanceNum": 365491.7047107203,
+    "shardID": 1,
+    "type": "FungibleESDT",
+    "token": "WEGLD-bd4d79",
+    "timestamp": 1680701940
+  },
+  {
+    "WEGLD-bd4d79": "erd1qqqqqqqqqqqqqpgqeel2kumf0r8ffyhth7pqdujjat9nx0862jpsg2pqaq-WEGLD-bd4d79-00",
+    "address": "erd1qqqqqqqqqqqqqpgqeel2kumf0r8ffyhth7pqdujjat9nx0862jpsg2pqaq",
+    "balance": "144843129877872462992530",
+    "balanceNum": 144843.12987787247,
+    "shardID": 1,
+    "type": "FungibleESDT",
+    "token": "WEGLD-bd4d79",
+    "timestamp": 1680701640
+  },
+  {
+    "WEGLD-bd4d79": "erd1qqqqqqqqqqqqqpgq0lzzvt2faev4upyf586tg38s84d7zsaj2jpsglugga-WEGLD-bd4d79-00",
+    "address": "erd1qqqqqqqqqqqqqpgq0lzzvt2faev4upyf586tg38s84d7zsaj2jpsglugga",
+    "balance": "61058669468244769523181",
+    "balanceNum": 61058.66946824476,
+    "shardID": 1,
+    "type": "FungibleESDT",
+    "token": "WEGLD-bd4d79",
+    "timestamp": 1680701736
+  },
+  {
+    "WEGLD-bd4d79": "erd1qqqqqqqqqqqqqpgqav09xenkuqsdyeyy5evqyhuusvu4gl3t2jpss57g8x-WEGLD-bd4d79-00",
+    "address": "erd1qqqqqqqqqqqqqpgqav09xenkuqsdyeyy5evqyhuusvu4gl3t2jpss57g8x",
+    "balance": "52877122717395296652676",
+    "balanceNum": 52877.122717395294,
+    "shardID": 1,
+    "type": "FungibleESDT",
+    "token": "WEGLD-bd4d79",
+    "timestamp": 1680701574
+  },
+  {
+    "WEGLD-bd4d79": "erd1qqqqqqqqqqqqqpgqpmud7t8uprrxzgu8eq2mtkl08kesflj62jps9j8dyh-WEGLD-bd4d79-00",
+    "address": "erd1qqqqqqqqqqqqqpgqpmud7t8uprrxzgu8eq2mtkl08kesflj62jps9j8dyh",
+    "balance": "52485028473953054722684",
+    "balanceNum": 52485.028473953054,
+    "shardID": 1,
+    "type": "FungibleESDT",
+    "token": "WEGLD-bd4d79",
+    "timestamp": 1680701454
+  },
+  {
+    "WEGLD-bd4d79": "erd1qqqqqqqqqqqqqpgqp5d4x3d263x4alnapwafwujch5xqmvyq2jpsk2xhsy-WEGLD-bd4d79-00",
+    "address": "erd1qqqqqqqqqqqqqpgqp5d4x3d263x4alnapwafwujch5xqmvyq2jpsk2xhsy",
+    "balance": "35207252454995402792680",
+    "balanceNum": 35207.2524549954,
+    "shardID": 1,
+    "type": "FungibleESDT",
+    "token": "WEGLD-bd4d79",
+    "timestamp": 1680701784
+  },
+  {
+    "WEGLD-bd4d79": "erd1qqqqqqqqqqqqqpgqf57y8m9krsvrceqxujngzm77p82zqc502jpsnnezqs-WEGLD-bd4d79-00",
+    "address": "erd1qqqqqqqqqqqqqpgqf57y8m9krsvrceqxujngzm77p82zqc502jpsnnezqs",
+    "balance": "34830832388229548719971",
+    "balanceNum": 34830.83238822955,
+    "shardID": 1,
+    "type": "FungibleESDT",
+    "token": "WEGLD-bd4d79",
+    "timestamp": 1680701856
+  },
+  {
+    "WEGLD-bd4d79": "erd1qqqqqqqqqqqqqpgqrmmtjjpafk4j3nsgeu8frn8n5mls5e802jps380mx5-WEGLD-bd4d79-00",
+    "address": "erd1qqqqqqqqqqqqqpgqrmmtjjpafk4j3nsgeu8frn8n5mls5e802jps380mx5",
+    "balance": "25673303211539574851369",
+    "balanceNum": 25673.303211539576,
+    "shardID": 1,
+    "type": "FungibleESDT",
+    "token": "WEGLD-bd4d79",
+    "timestamp": 1680700902
+  },
+  {
+    "WEGLD-bd4d79": "erd1qqqqqqqqqqqqqpgqtjhhs49h0q2ncld64l3thtk7s7yuw47v2jps8emt0v-WEGLD-bd4d79-00",
+    "address": "erd1qqqqqqqqqqqqqpgqtjhhs49h0q2ncld64l3thtk7s7yuw47v2jps8emt0v",
+    "balance": "22668784952474949109078",
+    "balanceNum": 22668.784952474947,
+    "shardID": 1,
+    "type": "FungibleESDT",
+    "token": "WEGLD-bd4d79",
+    "timestamp": 1680701358
+  },
+  {
+    "WEGLD-bd4d79": "erd1qqqqqqqqqqqqqpgq5g7xxmpuf6nmux3r3spjxv0wleyypz8q2jpsyc3nh8-WEGLD-bd4d79-00",
+    "address": "erd1qqqqqqqqqqqqqpgq5g7xxmpuf6nmux3r3spjxv0wleyypz8q2jpsyc3nh8",
+    "balance": "7094270357347394333218",
+    "balanceNum": 7094.270357347395,
+    "shardID": 1,
+    "type": "FungibleESDT",
+    "token": "WEGLD-bd4d79",
+    "timestamp": 1680701874
+  },
+  {
+    "WEGLD-bd4d79": "erd1qqqqqqqqqqqqqpgq5l05l0ts4lphdktx33apl0ss9rzf4r244fvsva6j53-WEGLD-bd4d79-00",
+    "address": "erd1qqqqqqqqqqqqqpgq5l05l0ts4lphdktx33apl0ss9rzf4r244fvsva6j53",
+    "balance": "5977940776125233743004",
+    "balanceNum": 5977.940776125234,
+    "shardID": 1,
+    "type": "FungibleESDT",
+    "token": "WEGLD-bd4d79",
+    "timestamp": 1680701640
+  },
+  {
+    "WEGLD-bd4d79": "erd1qqqqqqqqqqqqqpgq5fj4ttp8vylx8napuuruye5rewflqr542jpsv8tauj-WEGLD-bd4d79-00",
+    "address": "erd1qqqqqqqqqqqqqpgq5fj4ttp8vylx8napuuruye5rewflqr542jpsv8tauj",
+    "balance": "5859574238446899025706",
+    "balanceNum": 5859.574238446899,
+    "shardID": 1,
+    "type": "FungibleESDT",
+    "token": "WEGLD-bd4d79",
+    "timestamp": 1680701634
+  },
+  {
+    "WEGLD-bd4d79": "erd1qqqqqqqqqqqqqpgqp32ecg03fyxgt2pf2fsxyg4knvhfvtgz2jps6rx6gf-WEGLD-bd4d79-00",
+    "address": "erd1qqqqqqqqqqqqqpgqp32ecg03fyxgt2pf2fsxyg4knvhfvtgz2jps6rx6gf",
+    "balance": "4484776578849251184174",
+    "balanceNum": 4484.776578849251,
+    "shardID": 1,
+    "type": "FungibleESDT",
+    "token": "WEGLD-bd4d79",
+    "timestamp": 1680701940
+  },
+  {
+    "WEGLD-bd4d79": "erd1cwvwju3w3w5jgz3nlu0txy5mv37czk0504ezgjnmp7fxcrtz52kqsk8lwu-WEGLD-bd4d79-00",
+    "address": "erd1cwvwju3w3w5jgz3nlu0txy5mv37czk0504ezgjnmp7fxcrtz52kqsk8lwu",
+    "balance": "3238161971039679098545",
+    "balanceNum": 3238.161971039679,
+    "shardID": 0,
+    "type": "FungibleESDT",
+    "token": "WEGLD-bd4d79",
+    "timestamp": 1671035058
+  },
+  {
+    "WEGLD-bd4d79": "erd1qqqqqqqqqqqqqpgqw382rcxku8adtwahlq2pdstdvfwf4wa72jpssz8c8s-WEGLD-bd4d79-00",
+    "address": "erd1qqqqqqqqqqqqqpgqw382rcxku8adtwahlq2pdstdvfwf4wa72jpssz8c8s",
+    "balance": "2866860402338541102678",
+    "balanceNum": 2866.860402338541,
+    "shardID": 1,
+    "type": "FungibleESDT",
+    "token": "WEGLD-bd4d79",
+    "timestamp": 1680701202
+  },
+  {
+    "WEGLD-bd4d79": "erd1qqqqqqqqqqqqqpgqs0jjyjmx0cvek4p8yj923q5yreshtpa62jpsz6vt84-WEGLD-bd4d79-00",
+    "address": "erd1qqqqqqqqqqqqqpgqs0jjyjmx0cvek4p8yj923q5yreshtpa62jpsz6vt84",
+    "balance": "2819992544454237487715",
+    "balanceNum": 2819.9925444542373,
+    "shardID": 1,
+    "type": "FungibleESDT",
+    "token": "WEGLD-bd4d79",
+    "timestamp": 1680701718
+  },
+  {
+    "WEGLD-bd4d79": "erd1qqqqqqqqqqqqqpgqqz6vp9y50ep867vnr296mqf3dduh6guvmvlsu3sujc-WEGLD-bd4d79-00",
+    "address": "erd1qqqqqqqqqqqqqpgqqz6vp9y50ep867vnr296mqf3dduh6guvmvlsu3sujc",
+    "balance": "2606776913946624082298",
+    "balanceNum": 2606.776913946624,
+    "shardID": 1,
+    "type": "FungibleESDT",
+    "token": "WEGLD-bd4d79",
+    "timestamp": 1680700014
+  },
+  {
+    "WEGLD-bd4d79": "erd1qqqqqqqqqqqqqpgqj6daemefdk5kjgy9rs4zsng03kezgxdm2jps3h5n07-WEGLD-bd4d79-00",
+    "address": "erd1qqqqqqqqqqqqqpgqj6daemefdk5kjgy9rs4zsng03kezgxdm2jps3h5n07",
+    "balance": "1628274167197204343847",
+    "balanceNum": 1628.2741671972042,
+    "shardID": 1,
+    "type": "FungibleESDT",
+    "token": "WEGLD-bd4d79",
+    "timestamp": 1680700686
+  },
+  {
+    "WEGLD-bd4d79": "erd1qqqqqqqqqqqqqpgqdx6z3sauy49c5k6c6lwhjqclrfwlxlud2jpsvwj5dp-WEGLD-bd4d79-00",
+    "address": "erd1qqqqqqqqqqqqqpgqdx6z3sauy49c5k6c6lwhjqclrfwlxlud2jpsvwj5dp",
+    "balance": "1557847490559679922530",
+    "balanceNum": 1557.84749055968,
+    "shardID": 1,
+    "type": "FungibleESDT",
+    "token": "WEGLD-bd4d79",
+    "timestamp": 1680700074
+  },
+  {
+    "WEGLD-bd4d79": "erd1dhq5z8wuj09xm0wzn56rqhnhhsp64zkxhd9x48yuv00gyehqltjsgv8x7y-WEGLD-bd4d79-00",
+    "address": "erd1dhq5z8wuj09xm0wzn56rqhnhhsp64zkxhd9x48yuv00gyehqltjsgv8x7y",
+    "balance": "1286138096886890646182",
+    "balanceNum": 1286.1380968868907,
+    "shardID": 1,
+    "type": "FungibleESDT",
+    "token": "WEGLD-bd4d79",
+    "timestamp": 1680364896
+  },
+  {
+    "WEGLD-bd4d79": "erd1qqqqqqqqqqqqqpgq4ym2z7j0cj6efnm892w09dx7khutaj0h2jpsyxawn5-WEGLD-bd4d79-00",
+    "address": "erd1qqqqqqqqqqqqqpgq4ym2z7j0cj6efnm892w09dx7khutaj0h2jpsyxawn5",
+    "balance": "1186108952244814345815",
+    "balanceNum": 1186.1089522448144,
+    "shardID": 1,
+    "type": "FungibleESDT",
+    "token": "WEGLD-bd4d79",
+    "timestamp": 1680698400
+  },
+  {
+    "WEGLD-bd4d79": "erd19m8cz8w2jh0z3hk6pkgkjvz9yqvrcn6els8eac02m70xceepm88slwh90e-WEGLD-bd4d79-00",
+    "address": "erd19m8cz8w2jh0z3hk6pkgkjvz9yqvrcn6els8eac02m70xceepm88slwh90e",
+    "balance": "1127386506132959804504",
+    "balanceNum": 1127.3865061329598,
+    "shardID": 1,
+    "type": "FungibleESDT",
+    "token": "WEGLD-bd4d79",
+    "timestamp": 1680365352
+  },
+  {
+    "WEGLD-bd4d79": "erd1cedqmdgnhgpq6rvrmzer2q44fh45a6wkwktut09yvm4qkth59egqs74l4a-WEGLD-bd4d79-00",
+    "address": "erd1cedqmdgnhgpq6rvrmzer2q44fh45a6wkwktut09yvm4qkth59egqs74l4a",
+    "balance": "1107949209232842706970",
+    "balanceNum": 1107.9492092328426,
+    "shardID": 0,
+    "type": "FungibleESDT",
+    "token": "WEGLD-bd4d79",
+    "timestamp": 1670891808
+  },
+  {
+    "WEGLD-bd4d79": "erd109k2t63qpwjz0z6rz6vlhsjfq4d5jckdlay52wqz2rqzln5w9heqdyslth-WEGLD-bd4d79-00",
+    "address": "erd109k2t63qpwjz0z6rz6vlhsjfq4d5jckdlay52wqz2rqzln5w9heqdyslth",
+    "balance": "1013149646045888732513",
+    "balanceNum": 1013.1496460458887,
+    "shardID": 2,
+    "type": "FungibleESDT",
+    "token": "WEGLD-bd4d79",
+    "timestamp": 1680542424
+  },
+  {
+    "WEGLD-bd4d79": "erd1qqqqqqqqqqqqqpgqzjctu8xrgn8jmfp503tajjvzz2zq60v92jpsslkh5a-WEGLD-bd4d79-00",
+    "address": "erd1qqqqqqqqqqqqqpgqzjctu8xrgn8jmfp503tajjvzz2zq60v92jpsslkh5a",
+    "balance": "100317275962937834387",
+    "balanceNum": 1003.1727596293783,
+    "shardID": 1,
+    "type": "FungibleESDT",
+    "token": "WEGLD-bd4d79",
+    "timestamp": 1680701022
+  }
+]

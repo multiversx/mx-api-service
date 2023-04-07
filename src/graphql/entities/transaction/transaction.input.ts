@@ -1,4 +1,4 @@
-import { QueryConditionOptions } from "@elrondnetwork/erdnest";
+import { QueryConditionOptions } from "@multiversx/sdk-nestjs";
 import { Field, Float, InputType } from "@nestjs/graphql";
 
 import { TransactionFilter } from "src/endpoints/transactions/entities/transaction.filter";
@@ -38,7 +38,7 @@ export class GetTransactionsCountInput {
   search: string | undefined = undefined;
 
   @Field(() => String, { name: "function", description: "Filter transactions by function name for the given result set.", nullable: true })
-  function: string | undefined = undefined;
+  function: Array<string> | undefined = undefined;
 
   @Field(() => Float, { name: "before", description: "Before timestamp for the given result set.", nullable: true })
   before: number | undefined = undefined;
@@ -59,8 +59,7 @@ export class GetTransactionsCountInput {
       miniBlockHash: input.miniBlockHash,
       hashes: input.hashes,
       status: input.status,
-      search: input.search,
-      function: input.function,
+      functions: input.function,
       before: input.before,
       after: input.after,
       condition: input.condition,

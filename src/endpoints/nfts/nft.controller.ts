@@ -9,7 +9,7 @@ import { NftType } from "./entities/nft.type";
 import { NftService } from "./nft.service";
 import { QueryPagination } from 'src/common/entities/query.pagination';
 import { NftQueryOptions } from './entities/nft.query.options';
-import { ParseAddressPipe, ParseBoolPipe, ParseArrayPipe, ParseIntPipe, ParseNftPipe, ParseCollectionPipe, ApplyComplexity, ParseAddressArrayPipe, ParseBlockHashPipe, ParseEnumPipe, ParseRecordPipe } from '@elrondnetwork/erdnest';
+import { ParseAddressPipe, ParseBoolPipe, ParseArrayPipe, ParseIntPipe, ParseNftPipe, ParseCollectionPipe, ApplyComplexity, ParseAddressArrayPipe, ParseBlockHashPipe, ParseEnumPipe, ParseRecordPipe } from '@multiversx/sdk-nestjs';
 import { TransactionDetailed } from '../transactions/entities/transaction.detailed';
 import { TransactionStatus } from '../transactions/entities/transaction.status';
 import { SortOrder } from 'src/common/entities/sort.order';
@@ -178,7 +178,7 @@ export class NftController {
   @ApiNotFoundResponse({ description: 'Token not found' })
   async getNftSupply(
     @Param('identifier', ParseNftPipe) identifier: string
-  ): Promise<{ supply: string }> {
+  ): Promise<{ supply: string; }> {
     const totalSupply = await this.nftService.getNftSupply(identifier);
     if (!totalSupply) {
       throw new NotFoundException();
@@ -264,7 +264,6 @@ export class NftController {
   @ApiQuery({ name: 'miniBlockHash', description: 'Filter by miniblock hash', required: false })
   @ApiQuery({ name: 'hashes', description: 'Filter by a comma-separated list of transaction hashes', required: false })
   @ApiQuery({ name: 'status', description: 'Status of the transaction (success / pending / invalid / fail)', required: false, enum: TransactionStatus })
-  @ApiQuery({ name: 'search', description: 'Search in data object', required: false })
   @ApiQuery({ name: 'function', description: 'Filter transactions by function name', required: false })
   @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
@@ -274,7 +273,8 @@ export class NftController {
   @ApiQuery({ name: 'withScResults', description: 'Return scResults for transactions', required: false, type: Boolean })
   @ApiQuery({ name: 'withOperations', description: 'Return operations for transactions', required: false, type: Boolean })
   @ApiQuery({ name: 'withLogs', description: 'Return logs for transactions', required: false, type: Boolean })
-  @ApiQuery({ name: 'withScamInfo', required: false, type: Boolean })
+  @ApiQuery({ name: 'withScamInfo', description: 'Returns scam information', required: false, type: Boolean })
+  @ApiQuery({ name: 'withUsername', description: 'Integrates username in assets for all addresses present in the transactions', required: false, type: Boolean })
   async getNftTransactions(
     @Param('identifier', ParseNftPipe) identifier: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
@@ -286,8 +286,7 @@ export class NftController {
     @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash?: string,
     @Query('hashes', ParseArrayPipe) hashes?: string[],
     @Query('status', new ParseEnumPipe(TransactionStatus)) status?: TransactionStatus,
-    @Query('search') search?: string,
-    @Query('function') scFunction?: string,
+    @Query('function', ParseArrayPipe) functions?: string[],
     @Query('before', ParseIntPipe) before?: number,
     @Query('after', ParseIntPipe) after?: number,
     @Query('order', new ParseEnumPipe(SortOrder)) order?: SortOrder,
@@ -295,20 +294,20 @@ export class NftController {
     @Query('withOperations', new ParseBoolPipe) withOperations?: boolean,
     @Query('withLogs', new ParseBoolPipe) withLogs?: boolean,
     @Query('withScamInfo', new ParseBoolPipe) withScamInfo?: boolean,
+    @Query('withUsername', new ParseBoolPipe) withUsername?: boolean,
   ) {
-    const options = TransactionQueryOptions.enforceScamInfoFlag(size, { withScResults, withOperations, withLogs, withScamInfo });
+    const options = TransactionQueryOptions.applyDefaultOptions(size, { withScResults, withOperations, withLogs, withScamInfo, withUsername });
 
     return await this.transactionService.getTransactions(new TransactionFilter({
       sender,
       receivers: receiver,
       token: identifier,
-      function: scFunction,
+      functions,
       senderShard,
       receiverShard,
       miniBlockHash,
       hashes,
       status,
-      search,
       before,
       after,
       order,
@@ -326,7 +325,6 @@ export class NftController {
   @ApiQuery({ name: 'miniBlockHash', description: 'Filter by miniblock hash', required: false })
   @ApiQuery({ name: 'hashes', description: 'Filter by a comma-separated list of transaction hashes', required: false })
   @ApiQuery({ name: 'status', description: 'Status of the transaction (success / pending / invalid / fail)', required: false, enum: TransactionStatus })
-  @ApiQuery({ name: 'search', description: 'Search in data object', required: false })
   @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
   async getNftTransactionsCount(
@@ -338,7 +336,6 @@ export class NftController {
     @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash?: string,
     @Query('hashes', ParseArrayPipe) hashes?: string[],
     @Query('status', new ParseEnumPipe(TransactionStatus)) status?: TransactionStatus,
-    @Query('search') search?: string,
     @Query('before', ParseIntPipe) before?: number,
     @Query('after', ParseIntPipe) after?: number,
   ) {
@@ -352,7 +349,6 @@ export class NftController {
       miniBlockHash,
       hashes,
       status,
-      search,
       before,
       after,
     }));

@@ -1,4 +1,4 @@
-import { AddressUtils } from "@elrondnetwork/erdnest";
+import { AddressUtils } from "@multiversx/sdk-nestjs";
 import { ShardTransaction } from "@elrondnetwork/transaction-processor";
 import { Injectable } from "@nestjs/common";
 import { WebSocketGateway, WebSocketServer } from "@nestjs/websockets";
@@ -46,6 +46,10 @@ export class WebSocketPublisherService {
 
   async onTransactionPendingResults(transaction: ShardTransaction) {
     await this.emitTransactionEvent(transaction, 'transactionPendingResults');
+  }
+
+  onBatchUpdated(address: string, batchId: string, txHashes: string[]) {
+    this.server?.to(address).emit('batchUpdated', { batchId, txHashes });
   }
 
   private async emitTransactionEvent(transaction: ShardTransaction, eventName: string) {

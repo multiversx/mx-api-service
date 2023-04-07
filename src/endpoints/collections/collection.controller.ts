@@ -1,4 +1,4 @@
-import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Param, Query } from "@nestjs/common";
+import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, NotFoundException, Param, Query, Res } from "@nestjs/common";
 import { ApiExcludeEndpoint, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { NftCollection } from "./entities/nft.collection";
 import { NftType } from "../nfts/entities/nft.type";
@@ -7,7 +7,7 @@ import { Nft } from "../nfts/entities/nft";
 import { NftService } from "../nfts/nft.service";
 import { NftFilter } from "../nfts/entities/nft.filter";
 import { NftQueryOptions } from "../nfts/entities/nft.query.options";
-import { ParseAddressPipe, ParseArrayPipe, ParseCollectionPipe, ParseBoolPipe, ParseEnumArrayPipe, ParseIntPipe, ApplyComplexity, ParseAddressArrayPipe, ParseBlockHashPipe, ParseEnumPipe, ParseRecordPipe } from '@elrondnetwork/erdnest';
+import { ParseAddressPipe, ParseArrayPipe, ParseCollectionPipe, ParseBoolPipe, ParseEnumArrayPipe, ParseIntPipe, ApplyComplexity, ParseAddressArrayPipe, ParseBlockHashPipe, ParseEnumPipe, ParseRecordPipe } from '@multiversx/sdk-nestjs';
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { CollectionFilter } from "./entities/collection.filter";
 import { CollectionAccount } from "./entities/collection.account";
@@ -18,6 +18,11 @@ import { SortOrder } from "src/common/entities/sort.order";
 import { TransactionQueryOptions } from "../transactions/entities/transactions.query.options";
 import { TransactionService } from "../transactions/transaction.service";
 import { TransactionFilter } from "../transactions/entities/transaction.filter";
+import { NftRank } from "src/common/assets/entities/nft.rank";
+import { SortCollectionNfts } from "./entities/sort.collection.nfts";
+import { NftCollectionDetailed } from "./entities/nft.collection.detailed";
+import { Response } from "express";
+import { SortCollections } from "./entities/sort.collections";
 
 @Controller()
 @ApiTags('collections')
@@ -45,6 +50,9 @@ export class CollectionController {
   @ApiQuery({ name: 'canUpdateAttributes', description: 'Filter by address with canUpdateAttributes role', required: false })
   @ApiQuery({ name: 'canAddUri', description: 'Filter by address with canAddUri role', required: false })
   @ApiQuery({ name: 'canTransferRole', description: 'Filter by address with canTransferRole role', required: false })
+  @ApiQuery({ name: 'excludeMetaESDT', description: 'Do not include collections of type "MetaESDT" in the response', required: false })
+  @ApiQuery({ name: 'sort', description: 'Sorting criteria', required: false, enum: SortCollections })
+  @ApiQuery({ name: 'order', description: 'Sorting order (asc / desc)', required: false, enum: SortOrder })
   async getNftCollections(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
@@ -60,6 +68,9 @@ export class CollectionController {
     @Query('canUpdateAttributes', new ParseAddressPipe) canUpdateAttributes?: string,
     @Query('canAddUri', new ParseAddressPipe) canAddUri?: string,
     @Query('canTransferRole', new ParseAddressPipe) canTransferRole?: string,
+    @Query('excludeMetaESDT', new ParseBoolPipe) excludeMetaESDT?: boolean,
+    @Query('sort', new ParseEnumPipe(SortCollections)) sort?: SortCollections,
+    @Query('order', new ParseEnumPipe(SortOrder)) order?: SortOrder,
   ): Promise<NftCollection[]> {
     return await this.collectionService.getNftCollections(new QueryPagination({ from, size }), new CollectionFilter({
       search,
@@ -73,6 +84,9 @@ export class CollectionController {
       canUpdateAttributes,
       canAddUri,
       canTransferRole,
+      excludeMetaESDT,
+      sort,
+      order,
     }));
   }
 
@@ -89,6 +103,7 @@ export class CollectionController {
   @ApiQuery({ name: 'canUpdateAttributes', description: 'Filter by address with canUpdateAttributes role', required: false })
   @ApiQuery({ name: 'canAddUri', description: 'Filter by address with canAddUri role', required: false })
   @ApiQuery({ name: 'canTransferRole', description: 'Filter by address with canTransferRole role', required: false })
+  @ApiQuery({ name: 'excludeMetaESDT', description: 'Do not include collections of type "MetaESDT" in the response', required: false })
   @ApiOkResponse({ type: Number })
   async getCollectionCount(
     @Query('search') search?: string,
@@ -102,6 +117,7 @@ export class CollectionController {
     @Query('canUpdateAttributes', new ParseAddressPipe) canUpdateAttributes?: string,
     @Query('canAddUri', new ParseAddressPipe) canAddUri?: string,
     @Query('canTransferRole', new ParseAddressPipe) canTransferRole?: string,
+    @Query('excludeMetaESDT', new ParseBoolPipe) excludeMetaESDT?: boolean,
   ): Promise<number> {
     return await this.collectionService.getNftCollectionCount(new CollectionFilter({
       search,
@@ -114,6 +130,7 @@ export class CollectionController {
       canUpdateAttributes,
       canAddUri,
       canTransferRole,
+      excludeMetaESDT,
     }));
   }
 
@@ -131,6 +148,7 @@ export class CollectionController {
     @Query('canUpdateAttributes', new ParseAddressPipe) canUpdateAttributes?: string,
     @Query('canAddUri', new ParseAddressPipe) canAddUri?: string,
     @Query('canTransferRole', new ParseAddressPipe) canTransferRole?: string,
+    @Query('excludeMetaESDT', new ParseBoolPipe) excludeMetaESDT?: boolean,
   ): Promise<number> {
     return await this.collectionService.getNftCollectionCount(new CollectionFilter({
       search,
@@ -143,22 +161,38 @@ export class CollectionController {
       canUpdateAttributes,
       canAddUri,
       canTransferRole,
+      excludeMetaESDT,
     }));
   }
 
   @Get('/collections/:collection')
   @ApiOperation({ summary: 'Collection details', description: 'Returns non-fungible/semi-fungible/meta-esdt collection details' })
-  @ApiOkResponse({ type: NftCollection })
+  @ApiOkResponse({ type: NftCollectionDetailed })
   @ApiNotFoundResponse({ description: 'Token collection not found' })
   async getNftCollection(
-    @Param('collection', ParseCollectionPipe) collection: string
-  ): Promise<NftCollection> {
-    const token = await this.collectionService.getNftCollection(collection);
-    if (token === undefined) {
+    @Param('collection', ParseCollectionPipe) collection: string,
+  ): Promise<NftCollectionDetailed> {
+    const nftCollection = await this.collectionService.getNftCollection(collection);
+    if (nftCollection === undefined) {
       throw new HttpException('Collection not found', HttpStatus.NOT_FOUND);
     }
 
-    return token;
+    return nftCollection;
+  }
+
+  @Get('/collections/:collection/ranks')
+  @ApiOperation({ summary: 'Collection ranks', description: 'Returns NFT ranks in case the custom ranking preferred algorithm was set' })
+  @ApiOkResponse({ type: NftRank, isArray: true })
+  @ApiNotFoundResponse({ description: 'Token collection not found' })
+  async getNftCollectionRanks(
+    @Param('collection', ParseCollectionPipe) collection: string
+  ): Promise<NftRank[]> {
+    const ranks = await this.collectionService.getNftCollectionRanks(collection);
+    if (ranks === undefined) {
+      throw new HttpException('Ranks for collection not found', HttpStatus.NOT_FOUND);
+    }
+
+    return ranks;
   }
 
   @Get("/collections/:collection/nfts")
@@ -183,6 +217,8 @@ export class CollectionController {
   @ApiQuery({ name: 'withSupply', description: 'Return supply where type = SemiFungibleESDT', required: false, type: Boolean })
   @ApiQuery({ name: 'withScamInfo', required: false, type: Boolean })
   @ApiQuery({ name: 'computeScamInfo', required: false, type: Boolean })
+  @ApiQuery({ name: 'sort', description: 'Sorting criteria', required: false, enum: SortCollectionNfts })
+  @ApiQuery({ name: 'order', description: 'Sorting order (asc / desc)', required: false, enum: SortOrder })
   async getNfts(
     @Param('collection', ParseCollectionPipe) collection: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
@@ -202,6 +238,8 @@ export class CollectionController {
     @Query('withSupply', new ParseBoolPipe) withSupply?: boolean,
     @Query('withScamInfo', new ParseBoolPipe) withScamInfo?: boolean,
     @Query('computeScamInfo', new ParseBoolPipe) computeScamInfo?: boolean,
+    @Query('sort', new ParseEnumPipe(SortCollectionNfts)) sort?: SortCollectionNfts,
+    @Query('order', new ParseEnumPipe(SortOrder)) order?: SortOrder,
   ): Promise<Nft[]> {
     const isCollection = await this.collectionService.isCollection(collection);
     if (!isCollection) {
@@ -212,8 +250,9 @@ export class CollectionController {
 
     return await this.nftService.getNfts(
       new QueryPagination({ from, size }),
-      new NftFilter({ search, identifiers, collection, name, tags, creator, hasUris, isWhitelistedStorage, isNsfw, traits, nonceBefore, nonceAfter }),
-      options);
+      new NftFilter({ search, identifiers, collection, name, tags, creator, hasUris, isWhitelistedStorage, isNsfw, traits, nonceBefore, nonceAfter, sort, order }),
+      options
+    );
   }
 
   @Get("/collections/:collection/nfts/count")
@@ -282,7 +321,6 @@ export class CollectionController {
   @ApiQuery({ name: 'miniBlockHash', description: 'Filter by miniblock hash', required: false })
   @ApiQuery({ name: 'hashes', description: 'Filter by a comma-separated list of transaction hashes', required: false })
   @ApiQuery({ name: 'status', description: 'Status of the transaction (success / pending / invalid / fail)', required: false, enum: TransactionStatus })
-  @ApiQuery({ name: 'search', description: 'Search in data object', required: false })
   @ApiQuery({ name: 'function', description: 'Filter transactions by function name', required: false })
   @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
@@ -292,7 +330,8 @@ export class CollectionController {
   @ApiQuery({ name: 'withScResults', description: 'Return scResults for transactions', required: false, type: Boolean })
   @ApiQuery({ name: 'withOperations', description: 'Return operations for transactions', required: false, type: Boolean })
   @ApiQuery({ name: 'withLogs', description: 'Return logs for transactions', required: false, type: Boolean })
-  @ApiQuery({ name: 'withScamInfo', required: false, type: Boolean })
+  @ApiQuery({ name: 'withScamInfo', description: 'Returns scam information', required: false, type: Boolean })
+  @ApiQuery({ name: 'withUsername', description: 'Integrates username in assets for all addresses present in the transactions', required: false, type: Boolean })
   async getCollectionTransactions(
     @Param('collection', ParseCollectionPipe) identifier: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
@@ -304,8 +343,7 @@ export class CollectionController {
     @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash?: string,
     @Query('hashes', ParseArrayPipe) hashes?: string[],
     @Query('status', new ParseEnumPipe(TransactionStatus)) status?: TransactionStatus,
-    @Query('search') search?: string,
-    @Query('function') scFunction?: string,
+    @Query('function', ParseArrayPipe) functions?: string[],
     @Query('before', ParseIntPipe) before?: number,
     @Query('after', ParseIntPipe) after?: number,
     @Query('order', new ParseEnumPipe(SortOrder)) order?: SortOrder,
@@ -313,8 +351,10 @@ export class CollectionController {
     @Query('withOperations', new ParseBoolPipe) withOperations?: boolean,
     @Query('withLogs', new ParseBoolPipe) withLogs?: boolean,
     @Query('withScamInfo', new ParseBoolPipe) withScamInfo?: boolean,
+    @Query('withUsername', new ParseBoolPipe) withUsername?: boolean,
   ) {
-    const options = TransactionQueryOptions.enforceScamInfoFlag(size, { withScResults, withOperations, withLogs, withScamInfo });
+    const options = TransactionQueryOptions.applyDefaultOptions(size, { withScResults, withOperations, withLogs, withScamInfo, withUsername });
+
     const isCollection = await this.collectionService.isCollection(identifier);
     if (!isCollection) {
       throw new HttpException('Collection not found', HttpStatus.NOT_FOUND);
@@ -324,13 +364,12 @@ export class CollectionController {
       sender,
       receivers: receiver,
       token: identifier,
-      function: scFunction,
+      functions,
       senderShard,
       receiverShard,
       miniBlockHash,
       hashes,
       status,
-      search,
       before,
       after,
       order,
@@ -348,7 +387,6 @@ export class CollectionController {
   @ApiQuery({ name: 'miniBlockHash', description: 'Filter by miniblock hash', required: false })
   @ApiQuery({ name: 'hashes', description: 'Filter by a comma-separated list of transaction hashes', required: false })
   @ApiQuery({ name: 'status', description: 'Status of the transaction (success / pending / invalid / fail)', required: false, enum: TransactionStatus })
-  @ApiQuery({ name: 'search', description: 'Search in data object', required: false })
   @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
   async getCollectionTransactionsCount(
@@ -360,7 +398,6 @@ export class CollectionController {
     @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash?: string,
     @Query('hashes', ParseArrayPipe) hashes?: string[],
     @Query('status', new ParseEnumPipe(TransactionStatus)) status?: TransactionStatus,
-    @Query('search') search?: string,
     @Query('before', ParseIntPipe) before?: number,
     @Query('after', ParseIntPipe) after?: number,
   ) {
@@ -378,9 +415,46 @@ export class CollectionController {
       miniBlockHash,
       hashes,
       status,
-      search,
       before,
       after,
     }));
+  }
+
+  @Get('/collections/:identifier/logo/png')
+  @ApiOperation({ summary: 'Collection png logo', description: 'Returns collection PNG logo ', deprecated: true })
+  async getCollectionLogoPng(
+    @Param('identifier', ParseCollectionPipe) identifier: string,
+    @Res() response: Response
+  ): Promise<void> {
+    const isCollection = await this.collectionService.isCollection(identifier);
+    if (!isCollection) {
+      throw new NotFoundException('Collection not found');
+    }
+
+    const url = await this.collectionService.getLogoPng(identifier);
+    if (url === undefined) {
+      throw new NotFoundException('Assets not found');
+    }
+
+    response.redirect(url);
+  }
+
+  @Get('/collections/:identifier/logo/svg')
+  @ApiOperation({ summary: 'Collection png logo', description: 'Returns collection SVG logo ', deprecated: true })
+  async getTokenLogoSvg(
+    @Param('identifier', ParseCollectionPipe) identifier: string,
+    @Res() response: Response
+  ): Promise<void> {
+    const isCollection = await this.collectionService.isCollection(identifier);
+    if (!isCollection) {
+      throw new NotFoundException('Collection not found');
+    }
+
+    const url = await this.collectionService.getLogoSvg(identifier);
+    if (url === undefined) {
+      throw new NotFoundException('Assets not found');
+    }
+
+    response.redirect(url);
   }
 }

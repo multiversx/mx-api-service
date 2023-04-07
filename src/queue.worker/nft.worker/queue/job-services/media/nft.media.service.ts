@@ -1,5 +1,5 @@
-import { ApiService, CachingService } from "@elrondnetwork/erdnest";
-import { BinaryUtils, Constants } from "@elrondnetwork/erdnest";
+import { ApiService, ElrondCachingService } from "@multiversx/sdk-nestjs";
+import { BinaryUtils, Constants } from "@multiversx/sdk-nestjs";
 import { HttpStatus, Inject, Injectable } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { CacheInfo } from "src/utils/cache.info";
@@ -10,7 +10,8 @@ import { NftMedia } from "src/endpoints/nfts/entities/nft.media";
 import { NftType } from "src/endpoints/nfts/entities/nft.type";
 import { TokenHelpers } from "src/utils/token.helpers";
 import { ClientProxy } from "@nestjs/microservices";
-import { OriginLogger } from "@elrondnetwork/erdnest";
+import { OriginLogger } from "@multiversx/sdk-nestjs";
+import { CachingUtils } from "src/utils/caching.utils";
 
 @Injectable()
 export class NftMediaService {
@@ -20,7 +21,7 @@ export class NftMediaService {
   public static readonly NFT_THUMBNAIL_DEFAULT = 'https://media.elrond.com/nfts/thumbnail/default.png';
 
   constructor(
-    private readonly cachingService: CachingService,
+    private readonly cachingService: ElrondCachingService,
     private readonly apiService: ApiService,
     private readonly apiConfigService: ApiConfigService,
     private readonly persistenceService: PersistenceService,
@@ -30,7 +31,7 @@ export class NftMediaService {
   }
 
   async getMedia(identifier: string): Promise<NftMedia[] | null> {
-    return await this.cachingService.getOrSetCache(
+    return await this.cachingService.getOrSet(
       CacheInfo.NftMedia(identifier).key,
       async () => await this.persistenceService.getMedia(identifier),
       CacheInfo.NftMedia(identifier).ttl,
@@ -45,7 +46,7 @@ export class NftMediaService {
 
     await this.persistenceService.setMedia(nft.identifier, mediaRaw);
 
-    await this.cachingService.setCache(
+    await this.cachingService.set(
       CacheInfo.NftMedia(nft.identifier).key,
       mediaRaw,
       CacheInfo.NftMedia(nft.identifier).ttl
@@ -74,12 +75,18 @@ export class NftMediaService {
         continue;
       }
 
-      let fileProperties: { contentType: string, contentLength: number } | null = null;
+      let fileProperties: { contentType: string, contentLength: number } | null | undefined = null;
 
       try {
-        this.logger.log(`Started fetching media for nft with identifier '${nft.identifier}' and uri '${uri}'`);
-        fileProperties = await this.getFileProperties(uri);
-        this.logger.log(`Completed fetching media for nft with identifier '${nft.identifier}' and uri '${uri}'`);
+        const cacheIdentifier = `${nft.identifier}-${TokenHelpers.getUrlHash(uri)}`;
+
+        fileProperties = await CachingUtils.executeOptimistic({
+          cachingService: this.cachingService,
+          description: `Fetching media for nft with identifier '${nft.identifier}' and uri '${uri}'`,
+          key: CacheInfo.PendingMediaGet(cacheIdentifier).key,
+          ttl: CacheInfo.PendingMediaGet(cacheIdentifier).ttl,
+          action: async () => await this.getFileProperties(uri),
+        });
       } catch (error) {
         this.logger.error(`Unexpected error when fetching media for nft with identifier '${nft.identifier}' and uri '${uri}'`);
         this.logger.error(error);
@@ -122,7 +129,7 @@ export class NftMediaService {
   }
 
   private async getFileProperties(uri: string): Promise<{ contentType: string, contentLength: number } | null> {
-    return await this.cachingService.getOrSetCache(
+    return await this.cachingService.getOrSet(
       CacheInfo.NftMediaProperties(uri).key,
       async () => await this.getFilePropertiesRaw(uri),
       CacheInfo.NftMediaProperties(uri).ttl

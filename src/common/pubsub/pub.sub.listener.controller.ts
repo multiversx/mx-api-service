@@ -1,5 +1,5 @@
-import { OriginLogger } from "@elrondnetwork/erdnest";
-import { CachingService } from "@elrondnetwork/erdnest";
+import { OriginLogger } from "@multiversx/sdk-nestjs";
+import { ElrondCachingService } from "@multiversx/sdk-nestjs";
 import { ShardTransaction } from "@elrondnetwork/transaction-processor";
 import { Controller } from "@nestjs/common";
 import { EventPattern } from "@nestjs/microservices";
@@ -10,7 +10,7 @@ export class PubSubListenerController {
   private logger = new OriginLogger(PubSubListenerController.name);
 
   constructor(
-    private readonly cachingService: CachingService,
+    private readonly cachingService: ElrondCachingService,
     private readonly webSocketPublisherService: WebSocketPublisherService,
   ) { }
 
@@ -18,14 +18,14 @@ export class PubSubListenerController {
   async deleteCacheKey(keys: string[]) {
     for (const key of keys) {
       this.logger.log(`Deleting local cache key ${key}`);
-      await this.cachingService.deleteInCacheLocal(key);
+      await this.cachingService.deleteLocal(key);
     }
   }
 
   @EventPattern('refreshCacheKey')
   async refreshCacheKey(info: { key: string, ttl: number }) {
     this.logger.log(`Refreshing local cache key ${info.key} with ttl ${info.ttl}`);
-    await this.cachingService.refreshCacheLocal(info.key, info.ttl);
+    await this.cachingService.refreshLocal(info.key, info.ttl);
   }
 
   @EventPattern('transactionsCompleted')
@@ -40,5 +40,11 @@ export class PubSubListenerController {
     for (const transaction of transactions) {
       await this.webSocketPublisherService.onTransactionPendingResults(transaction);
     }
+  }
+
+  @EventPattern('onBatchUpdated')
+  async onBatchUpdated(payload: { address: string, batchId: string, txHashes: string[] }) {
+    this.logger.log(`Notifying batch updated for address ${payload.address}, batch id '${payload.batchId}', hashes ${payload.txHashes}`);
+    await this.webSocketPublisherService.onBatchUpdated(payload.address, payload.batchId, payload.txHashes);
   }
 }

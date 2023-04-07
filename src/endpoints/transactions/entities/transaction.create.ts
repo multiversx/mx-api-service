@@ -1,4 +1,4 @@
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty } from '@nestjs/swagger';
 
 export class TransactionCreate {
   constructor(init?: Partial<TransactionCreate>) {
@@ -34,4 +34,13 @@ export class TransactionCreate {
 
   @ApiProperty()
   version: number = 0;
+
+  @ApiProperty()
+  options?: number = undefined;
+
+  @ApiProperty()
+  guardian?: string = undefined;
+
+  @ApiProperty()
+  guardianSignature?: string = undefined;
 }

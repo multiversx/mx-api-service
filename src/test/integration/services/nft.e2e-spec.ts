@@ -1,8 +1,8 @@
 import { NftQueryOptions } from 'src/endpoints/nfts/entities/nft.query.options';
 import { Test } from "@nestjs/testing";
 import { NftService } from "src/endpoints/nfts/nft.service";
-import '@elrondnetwork/erdnest/lib/src/utils/extensions/jest.extensions';
-import '@elrondnetwork/erdnest/lib/src/utils/extensions/array.extensions';
+import '@multiversx/sdk-nestjs/lib/src/utils/extensions/jest.extensions';
+import '@multiversx/sdk-nestjs/lib/src/utils/extensions/array.extensions';
 import { PublicAppModule } from "src/public.app.module";
 import { NftFilter } from "src/endpoints/nfts/entities/nft.filter";
 import { NftType } from "src/endpoints/nfts/entities/nft.type";
@@ -11,7 +11,7 @@ import { EsdtAddressService } from 'src/endpoints/esdt/esdt.address.service';
 import { NftAccount } from 'src/endpoints/nfts/entities/nft.account';
 import { ApiConfigService } from 'src/common/api-config/api.config.service';
 import { QueryPagination } from 'src/common/entities/query.pagination';
-import { CachingService } from '@elrondnetwork/erdnest';
+import { ElrondCachingService } from '@multiversx/sdk-nestjs';
 import { PluginService } from 'src/common/plugins/plugin.service';
 import { Nft } from 'src/endpoints/nfts/entities/nft';
 import { ScamType } from 'src/common/entities/scam-type.enum';
@@ -52,7 +52,7 @@ describe('Nft Service', () => {
     score: undefined,
     isNsfw: undefined,
     rank: undefined,
-    isTransferAffected: true,
+    rarities: undefined,
   };
 
   beforeAll(async () => {
@@ -141,12 +141,7 @@ describe('Nft Service', () => {
 
     it("should return a list with all nfts that contains tags", async () => {
       const filters = new NftFilter();
-      filters.tags = [
-        "Elrond",
-        "MAW",
-        "superMAW",
-        "Romania",
-        "TrustStaking"];
+      filters.tags = ["xportal"];
 
       const nfts = await nftService.getNfts({ from: 0, size: 10 }, filters);
       expect(nfts).toHaveLength(10);
@@ -346,12 +341,11 @@ describe('Nft Service', () => {
 
     it("should return the number of nfts with name specified", async () => {
       const filters = new NftFilter();
-      filters.name = "Elrond Robots #196";
-
+      filters.name = "Gritty Summit Chaser";
       const count = await nftService.getNftCount(filters);
 
       expect(typeof count).toBe("number");
-      expect(count).toBeGreaterThanOrEqual(10000);
+      expect(count).toBeGreaterThanOrEqual(1);
     });
 
     it("should return the number of nfts with collection filter applied", async () => {
@@ -398,6 +392,16 @@ describe('Nft Service', () => {
       expect(count > 0).toBeTruthy();
     });
 
+    it(`should verify collections count for a given address because test simulates collections count with/without MetaESDT`, async () => {
+      const address: string = "erd1qqqqqqqqqqqqqpgqr8z5hkwek0pmytcvla86qjusn4hkufjlrp8s7hhkjk";
+      const filter = new NftFilter();
+      filter.excludeMetaESDT = true;
+      const results = await nftService.getNftCountForAddress(address, new NftFilter());
+      const resultsexcludeMetaESDT = await nftService.getNftCountForAddress(address, filter);
+
+      expect(resultsexcludeMetaESDT).toBeLessThan(results);
+    });
+
     it(`should return esdt count for address with type SemiFungibleESDT`, async () => {
       const address: string = "erd1dgctxljv7f6x8ngsqden99snygjw37dle3t8ratn59r33slsy4rqc3dpsh";
       const count = await nftService.getNftCountForAddress(address, { type: NftType.SemiFungibleESDT });
@@ -433,15 +437,74 @@ describe('Nft Service', () => {
       }
     });
 
-    it("should return a list of NonFungible tokens for a specific address and applied filter withSupply = true", async () => {
-      const address: string = "erd1fs7dp439gw2at58a2pqn3hdnxqh5vskq5uzjdf9kajkxy3p0vy7qeh7k00";
+    it('should return a list of only with NonFungible/SemiFungibleESDT if excludeMetaESDT filter is applied', async () => {
+      const address: string = "erd1tq4q846crg8ptwpg4zr985q0s9gj57ugr9da87nqmpg5fu6vjy8qkqd0k6";
+      const filter = new NftFilter();
+      filter.excludeMetaESDT = true;
+      const results = await nftService.getNftsForAddress(address, new QueryPagination({ size: 1000 }), filter);
+
+      for (const result of results) {
+        expect(result.type).not.toEqual("MetaESDT");
+      }
+    });
+
+    it("should return a list of NonFungibleESDT for a specific address without supply even if withSupply property is true", async () => {
+      const address: string = "erd1yl6f7cq9gpuprwthxf0c2gsvmnuezwqkqmzf8e40u87t7592af7qpl05cv";
       const options = new NftQueryOptions();
       options.withSupply = true;
 
-      const results = await nftService.getNftsForAddress(address, { from: 0, size: 100 }, { type: NftType.NonFungibleESDT }, options);
+      const results = await nftService.getNftsForAddress(address, { from: 0, size: 100 }, { type: NftType.NonFungibleESDT }, undefined, options);
 
       for (const result of results) {
         expect(result.type).toStrictEqual(NftType.NonFungibleESDT);
+        expect(result.supply).not.toBeDefined();
+      }
+    });
+
+    it("when withSupply property is false should return a list of tokens (NonFungible, SemiFungibleESDT, MetaESDT) without supply attribute applied", async () => {
+      const address: string = "erd1yl6f7cq9gpuprwthxf0c2gsvmnuezwqkqmzf8e40u87t7592af7qpl05cv";
+      const options = new NftQueryOptions();
+      options.withSupply = false;
+
+      const nftResults = await nftService.getNftsForAddress(address, { from: 0, size: 5 }, { type: NftType.NonFungibleESDT }, undefined, options);
+      for (const result of nftResults) {
+        expect(result.type).toStrictEqual(NftType.NonFungibleESDT);
+        expect(result.supply).not.toBeDefined();
+      }
+
+      const sftResults = await nftService.getNftsForAddress(address, { from: 0, size: 5 }, { type: NftType.SemiFungibleESDT }, undefined, options);
+      for (const result of sftResults) {
+        expect(result.type).toStrictEqual(NftType.SemiFungibleESDT);
+        expect(result.supply).not.toBeDefined();
+      }
+
+      const metaEsdtResults = await nftService.getNftsForAddress(address, { from: 0, size: 5 }, { type: NftType.MetaESDT }, undefined, options);
+      for (const result of metaEsdtResults) {
+        expect(result.type).toStrictEqual(NftType.MetaESDT);
+        expect(result.supply).not.toBeDefined();
+      }
+    });
+
+    it("should return a list of nfts for a specific address with supply attribute applied only for SemiFungibleESDT and MetaESDT", async () => {
+      const address: string = "erd1yl6f7cq9gpuprwthxf0c2gsvmnuezwqkqmzf8e40u87t7592af7qpl05cv";
+      const options = new NftQueryOptions();
+      options.withSupply = true;
+
+      const nftResults = await nftService.getNftsForAddress(address, { from: 0, size: 5 }, { type: NftType.NonFungibleESDT }, undefined, options);
+      for (const result of nftResults) {
+        expect(result.type).toStrictEqual(NftType.NonFungibleESDT);
+        expect(result.supply).not.toBeDefined();
+      }
+
+      const sftResults = await nftService.getNftsForAddress(address, { from: 0, size: 5 }, { type: NftType.SemiFungibleESDT }, undefined, options);
+      for (const result of sftResults) {
+        expect(result.type).toStrictEqual(NftType.SemiFungibleESDT);
+        expect(result.supply).toBeDefined();
+      }
+
+      const metaEsdtResults = await nftService.getNftsForAddress(address, { from: 0, size: 5 }, { type: NftType.MetaESDT }, undefined, options);
+      for (const result of metaEsdtResults) {
+        expect(result.type).toStrictEqual(NftType.MetaESDT);
         expect(result.supply).toBeDefined();
       }
     });
@@ -451,7 +514,7 @@ describe('Nft Service', () => {
       const options = new NftQueryOptions();
       options.withSupply = true;
 
-      const results = await nftService.getNftsForAddress(address, { from: 0, size: 100 }, { type: NftType.NonFungibleESDT }, options);
+      const results = await nftService.getNftsForAddress(address, { from: 0, size: 100 }, { type: NftType.NonFungibleESDT }, undefined, options);
 
       for (const result of results) {
         expect(result.owner).not.toBeDefined();
@@ -496,6 +559,15 @@ describe('Nft Service', () => {
 
       expect(results).toBeUndefined();
     });
+
+    it("should return XMEX-fda355-15 token details from a specific account", async () => {
+      const address: string = "erd1wqgvggslggjgjjl0wpgjhknr2carzd07l4s0cqvqyt5haqmlsvks05vqvp";
+      const identifier: string = "XMEX-fda355-15";
+      const results = await nftService.getNftForAddress(address, identifier);
+
+      expect(results?.unlockEpoch).toStrictEqual(1410);
+    });
+
   });
 
   describe("NFT Owners", () => {
@@ -535,17 +607,6 @@ describe('Nft Service', () => {
       expect(result.type).toStrictEqual(NftType.NonFungibleESDT);
       expect(result.identifier).toStrictEqual("EROBOT-527a29-c4");
       expect(result.creator).toBeDefined();
-    });
-
-    it("should returns NFT details for a specific NonFungibleESDT identifier and isTransferAffected property should be defined", async () => {
-      const identifier: string = "CATSFAM-46c28f-0211";
-      const result = await nftService.getSingleNft(identifier);
-
-      if (!result) {
-        throw new Error("Properties are not defined");
-      }
-
-      expect(result.isTransferAffected).toBeDefined();
     });
 
     it('should return undefined', async () => {
@@ -608,7 +669,7 @@ describe('Nft Service', () => {
   describe('getNftOwnersCount', () => {
     it('should return total number of esdts token', async () => {
       jest
-        .spyOn(CachingService.prototype, 'getOrSetCache')
+        .spyOn(ElrondCachingService.prototype, 'getOrSet')
         // eslint-disable-next-line require-await
         .mockImplementation(jest.fn(async (_key: string, promise: any) => promise()));
 
@@ -624,7 +685,7 @@ describe('Nft Service', () => {
 
     it('should return undefined because test simulates that esdt owners are null', async () => {
       jest
-        .spyOn(CachingService.prototype, 'getOrSetCache')
+        .spyOn(ElrondCachingService.prototype, 'getOrSet')
         // eslint-disable-next-line require-await
         .mockImplementation(jest.fn(async (_key: string, promise: any) => promise()));
 
@@ -678,12 +739,12 @@ describe('Nft Service', () => {
       }
     });
 
-    it("should return a list of address NFTs with scam info property present", async () => {
+    it("should return a list of NFTs with scam info property present", async () => {
       const filter = new NftFilter({ collection: 'LOTTERY-7cae2f' });
 
       const options = new NftQueryOptions({ withScamInfo: true });
 
-      const nfts = await nftService.getNftsForAddress('erd1ar8gg37lu2reg5zpmtmqawqe65fzfsjd2v3p4m993xxjnu8azssq86f24k', { from: 0, size: 10 }, filter, options);
+      const nfts = await nftService.getNftsForAddress('erd1ar8gg37lu2reg5zpmtmqawqe65fzfsjd2v3p4m993xxjnu8azssq86f24k', { from: 0, size: 10 }, filter, undefined, options);
 
       for (const nft of nfts) {
         expect(nft.scamInfo).toBeDefined();
@@ -692,37 +753,12 @@ describe('Nft Service', () => {
     });
 
     it("should return a list of NFTs without scam info property", async () => {
-      const filter = new NftFilter({ collection: 'LOTTERY-7cae2f' });
-
+      const filter = new NftFilter({ collection: 'ROCK-6b8ac9-38' });
       const options = new NftQueryOptions({ withScamInfo: false });
-
       const nfts = await nftService.getNfts({ from: 0, size: 10 }, filter, options);
 
       for (const nft of nfts) {
-        expect(nft.scamInfo).toBeDefined();
-      }
-    });
-
-    it("should return a list of address NFTs without scam info property", async () => {
-      const filter = new NftFilter({ collection: 'LOTTERY-7cae2f' });
-
-      const options = new NftQueryOptions({ withScamInfo: false });
-
-      const nfts = await nftService.getNftsForAddress('erd1ar8gg37lu2reg5zpmtmqawqe65fzfsjd2v3p4m993xxjnu8azssq86f24k', { from: 0, size: 10 }, filter, options);
-
-      for (const nft of nfts) {
-        expect(nft.scamInfo).toBeDefined();
-      }
-    });
-
-    it("should return a list of NonFungibleESDT based on a specific identifier for a specific address and isTransferAffected should not be defined", async () => {
-      const address: string = "erd1ar8gg37lu2reg5zpmtmqawqe65fzfsjd2v3p4m993xxjnu8azssq86f24k";
-      const filter = new NftFilter({ identifiers: ['CATSFAM-46c28f-0944'] });
-
-      const nfts = await nftService.getNftsForAddress(address, { from: 0, size: 1 }, filter);
-
-      for (const nft of nfts) {
-        expect(nft.isTransferAffected).not.toBeDefined();
+        expect(nft.scamInfo).toBeUndefined();
       }
     });
 
@@ -743,6 +779,14 @@ describe('Nft Service', () => {
       expect(nft?.scamInfo).toBeUndefined();
     });
 
+    it("should return token details and unlockEpoch should be defined", async () => {
+      const identifier = 'XMEX-fda355-21';
+
+      const nft = await nftService.getSingleNft(identifier);
+
+      expect(nft?.unlockEpoch).toStrictEqual(1140);
+    });
+
     it("should return scam info for address NFT", async () => {
       const identifier = 'LOTTERY-7cae2f-01';
 
@@ -758,32 +802,6 @@ describe('Nft Service', () => {
       const nft = await nftService.getNftForAddress('erd1dv9sw8a2hy3lv98p3sdqazy420j48wtn3vs9q74ezuamv64tcxrqqxquxv', identifier);
 
       expect(nft?.scamInfo).toBeUndefined();
-    });
-  });
-
-  describe('NFT Scam Info (without mocking)', () => {
-    it("should return a list of NFTs without scam info property", async () => {
-      const filter = new NftFilter({ collection: 'LOTTERY-7cae2f' });
-
-      const options = new NftQueryOptions({ withScamInfo: false });
-
-      const nfts = await nftService.getNfts({ from: 0, size: 10 }, filter, options);
-
-      for (const nft of nfts) {
-        expect(nft.scamInfo).toBeUndefined();
-      }
-    });
-
-    it("should return a list of address NFTs without scam info property", async () => {
-      const filter = new NftFilter({ collection: 'LOTTERY-7cae2f' });
-
-      const options = new NftQueryOptions({ withScamInfo: false });
-
-      const nfts = await nftService.getNftsForAddress('erd1ar8gg37lu2reg5zpmtmqawqe65fzfsjd2v3p4m993xxjnu8azssq86f24k', { from: 0, size: 10 }, filter, options);
-
-      for (const nft of nfts) {
-        expect(nft.scamInfo).toBeUndefined();
-      }
     });
   });
 

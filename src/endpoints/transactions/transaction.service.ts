@@ -18,14 +18,19 @@ import { GatewayComponentRequest } from 'src/common/gateway/entities/gateway.com
 import { TransactionActionService } from './transaction-action/transaction.action.service';
 import { TransactionDecodeDto } from './entities/dtos/transaction.decode.dto';
 import { TransactionStatus } from './entities/transaction.status';
-import { AddressUtils, ApiUtils, Constants, CachingService, PendingExecuter } from '@elrondnetwork/erdnest';
+import { AddressUtils, ApiUtils, Constants, ElrondCachingService, PendingExecuter } from '@multiversx/sdk-nestjs';
 import { TransactionUtils } from './transaction.utils';
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { TransactionOperation } from './entities/transaction.operation';
 import { AssetsService } from 'src/common/assets/assets.service';
 import { AccountAssets } from 'src/common/assets/entities/account.assets';
 import crypto from 'crypto-js';
-import { OriginLogger } from '@elrondnetwork/erdnest';
+import { OriginLogger } from '@multiversx/sdk-nestjs';
+import { ApiConfigService } from 'src/common/api-config/api.config.service';
+import { UsernameService } from '../usernames/username.service';
+import { MiniBlock } from 'src/common/indexer/entities/miniblock';
+import { Block } from 'src/common/indexer/entities/block';
+import { ProtocolService } from 'src/common/protocol/protocol.service';
 
 @Injectable()
 export class TransactionService {
@@ -40,14 +45,17 @@ export class TransactionService {
     @Inject(forwardRef(() => TokenTransferService))
     private readonly tokenTransferService: TokenTransferService,
     private readonly pluginsService: PluginService,
-    private readonly cachingService: CachingService,
+    private readonly cachingService: ElrondCachingService,
     @Inject(forwardRef(() => TransactionActionService))
     private readonly transactionActionService: TransactionActionService,
     private readonly assetsService: AssetsService,
+    private readonly apiConfigService: ApiConfigService,
+    private readonly usernameService: UsernameService,
+    private readonly protocolService: ProtocolService,
   ) { }
 
   async getTransactionCountForAddress(address: string): Promise<number> {
-    return await this.cachingService.getOrSetCache(
+    return await this.cachingService.getOrSet(
       CacheInfo.TxCount(address).key,
       async () => await this.getTransactionCountForAddressRaw(address),
       CacheInfo.TxCount(address).ttl,
@@ -71,16 +79,78 @@ export class TransactionService {
     return await this.indexerService.getTransactionCount(filter, address);
   }
 
-  async getTransactions(filter: TransactionFilter, pagination: QueryPagination, queryOptions?: TransactionQueryOptions, address?: string): Promise<Transaction[]> {
+  private getDistinctUserAddressesFromTransactions(transactions: Transaction[]): string[] {
+    const allAddresses = [];
+    for (const transaction of transactions) {
+      allAddresses.push(transaction.sender);
+      allAddresses.push(transaction.receiver);
+
+      const actionReceiver = transaction.action?.arguments?.receiver;
+      if (actionReceiver) {
+        allAddresses.push(actionReceiver);
+      }
+
+      if (transaction instanceof TransactionDetailed) {
+        if (transaction.results) {
+          for (const result of transaction.results) {
+            allAddresses.push(result.sender);
+            allAddresses.push(result.receiver);
+          }
+        }
+
+        if (transaction.operations) {
+          for (const operation of transaction.operations) {
+            if (operation.sender) {
+              allAddresses.push(operation.sender);
+            }
+
+            if (operation.receiver) {
+              allAddresses.push(operation.receiver);
+            }
+          }
+        }
+
+        if (transaction.logs) {
+          allAddresses.push(transaction.logs.address);
+
+          for (const event of transaction.logs.events) {
+            allAddresses.push(event.address);
+          }
+        }
+      }
+    }
+
+    return allAddresses.distinct().filter(x => !AddressUtils.isSmartContractAddress(x));
+  }
+
+  private async getUsernameAssetsForAddresses(addresses: string[]): Promise<Record<string, AccountAssets>> {
+    const resultDict = await this.cachingService.batchGetAll(
+      addresses,
+      address => CacheInfo.Username(address).key,
+      async address => await this.usernameService.getUsernameForAddressRaw(address),
+      CacheInfo.Username('').ttl
+    );
+
+    const result: Record<string, AccountAssets> = {};
+
+    for (const address of addresses) {
+      const username = resultDict[CacheInfo.Username(address).key];
+      if (username) {
+        const assets = this.getAssetsFromUsername(username);
+        if (assets) {
+          result[address] = assets;
+        }
+      }
+    }
+
+    return result;
+  }
+
+  async getTransactions(filter: TransactionFilter, pagination: QueryPagination, queryOptions?: TransactionQueryOptions, address?: string, fields?: string[]): Promise<Transaction[]> {
     const elasticTransactions = await this.indexerService.getTransactions(filter, pagination, address);
 
-    let transactions: Transaction[] = [];
-
-    for (const elasticTransaction of elasticTransactions) {
-      const transaction = ApiUtils.mergeObjects(new Transaction(), elasticTransaction);
-
-      transactions.push(transaction);
-    }
+    let transactions: TransactionDetailed[] = [];
+    transactions = elasticTransactions.map(x => ApiUtils.mergeObjects(new TransactionDetailed(), x));
 
     if (filter.hashes) {
       const txHashes: string[] = filter.hashes;
@@ -90,21 +160,37 @@ export class TransactionService {
       const gatewayTransactions = await Promise.all(missingHashes.map((txHash) => this.transactionGetService.tryGetTransactionFromGatewayForList(txHash)));
       for (const gatewayTransaction of gatewayTransactions) {
         if (gatewayTransaction) {
-          transactions.push(gatewayTransaction);
+          transactions.push(ApiUtils.mergeObjects(new TransactionDetailed(), gatewayTransaction));
         }
       }
     }
 
-    if (queryOptions && (queryOptions.withScResults || queryOptions.withOperations || queryOptions.withLogs) && elasticTransactions.some(x => x.hasScResults === true)) {
-      queryOptions.withScResultLogs = queryOptions.withLogs;
+    if ((queryOptions && queryOptions.withBlockInfo) || (fields && fields.includesSome(['senderBlockHash', 'receiverBlockHash', 'senderBlockNonce', 'receiverBlockNonce']))) {
+      await this.applyBlockInfo(transactions);
+    }
 
+    if (queryOptions && (queryOptions.withScResults || queryOptions.withOperations || queryOptions.withLogs)) {
+      queryOptions.withScResultLogs = queryOptions.withLogs;
       transactions = await this.getExtraDetailsForTransactions(elasticTransactions, transactions, queryOptions);
     }
 
-    const assets = await this.assetsService.getAllAccountAssets();
-    await this.processTransactions(transactions, queryOptions?.withScamInfo ?? false, assets);
+    await this.processTransactions(transactions, {
+      withScamInfo: queryOptions?.withScamInfo ?? false,
+      withUsername: queryOptions?.withUsername ?? false,
+    });
 
     return transactions;
+  }
+
+  private getAssetsFromUsername(username: string | null | undefined): AccountAssets | undefined {
+    if (!username) {
+      return undefined;
+    }
+
+    return new AccountAssets({
+      name: username,
+      tags: ['dns', 'username'],
+    });
   }
 
   async getTransaction(txHash: string, fields?: string[]): Promise<TransactionDetailed | null> {
@@ -117,7 +203,7 @@ export class TransactionService {
     if (transaction !== null) {
       transaction.price = await this.getTransactionPrice(transaction);
 
-      await this.processTransactions([transaction], true);
+      await this.processTransactions([transaction], { withScamInfo: true, withUsername: true });
 
       if (transaction.pendingResults === true && transaction.results) {
         for (const result of transaction.results) {
@@ -132,59 +218,69 @@ export class TransactionService {
           }
         }
       }
-
-      await this.applyAssets(transaction);
-      await this.applyAssetsDetailed(transaction);
     }
 
     return transaction;
   }
 
-  async applyAssets(transaction: Transaction, assets?: Record<string, AccountAssets>): Promise<void> {
-    const accountAssets = assets ?? await this.assetsService.getAllAccountAssets();
-
-    transaction.senderAssets = accountAssets[transaction.sender];
-    transaction.receiverAssets = accountAssets[transaction.receiver];
-
-    if (transaction.action?.arguments?.receiver) {
-      transaction.action.arguments.receiverAssets = accountAssets[transaction.action.arguments.receiver];
+  async applyAssets(transactions: Transaction[], options: { withUsernameAssets: boolean }): Promise<void> {
+    function getAssets(address: string) {
+      return accountAssets[address] ?? usernameAssets[address];
     }
-  }
 
-  async applyAssetsDetailed(transaction: TransactionDetailed): Promise<void> {
     const accountAssets = await this.assetsService.getAllAccountAssets();
 
-    if (transaction.results) {
-      for (const result of transaction.results) {
-        result.senderAssets = accountAssets[result.sender];
-        result.receiverAssets = accountAssets[result.receiver];
-      }
+    let usernameAssets: Record<string, AccountAssets> = {};
+    if (options.withUsernameAssets && this.apiConfigService.getMaiarIdUrl()) {
+      const addresses = this.getDistinctUserAddressesFromTransactions(transactions);
+
+      usernameAssets = await this.getUsernameAssetsForAddresses(addresses);
     }
 
-    if (transaction.operations) {
-      for (const operation of transaction.operations) {
-        if (operation.sender) {
-          operation.senderAssets = accountAssets[operation.sender];
-        }
+    for (const transaction of transactions) {
 
-        if (operation.receiver) {
-          operation.receiverAssets = accountAssets[operation.receiver];
-        }
+      transaction.senderAssets = getAssets(transaction.sender);
+      transaction.receiverAssets = getAssets(transaction.receiver);
+
+      if (transaction.action?.arguments?.receiver) {
+        transaction.action.arguments.receiverAssets = getAssets(transaction.action.arguments.receiver);
       }
-    }
 
-    if (transaction.logs) {
-      transaction.logs.addressAssets = accountAssets[transaction.logs.address];
+      if (transaction instanceof TransactionDetailed) {
+        if (transaction.results) {
+          for (const result of transaction.results) {
+            result.senderAssets = getAssets(result.sender);
+            result.receiverAssets = getAssets(result.receiver);
+          }
+        }
 
-      for (const event of transaction.logs.events) {
-        event.addressAssets = accountAssets[event.address];
+        if (transaction.operations) {
+          for (const operation of transaction.operations) {
+            if (operation.sender) {
+              operation.senderAssets = getAssets(operation.sender);
+            }
+
+            if (operation.receiver) {
+              operation.receiverAssets = getAssets(operation.receiver);
+            }
+          }
+        }
+
+        if (transaction.logs) {
+          transaction.logs.addressAssets = getAssets(transaction.logs.address);
+
+          for (const event of transaction.logs.events) {
+            event.addressAssets = getAssets(event.address);
+          }
+        }
       }
     }
   }
 
   async createTransaction(transaction: TransactionCreate): Promise<TransactionSendResult | string> {
-    const receiverShard = AddressUtils.computeShard(AddressUtils.bech32Decode(transaction.receiver));
-    const senderShard = AddressUtils.computeShard(AddressUtils.bech32Decode(transaction.sender));
+    const shardCount = await this.protocolService.getShardCount();
+    const receiverShard = AddressUtils.computeShard(AddressUtils.bech32Decode(transaction.receiver), shardCount);
+    const senderShard = AddressUtils.computeShard(AddressUtils.bech32Decode(transaction.sender), shardCount);
 
     const pluginTransaction = await this.pluginsService.processTransactionSend(transaction);
     if (pluginTransaction) {
@@ -227,9 +323,9 @@ export class TransactionService {
     }
   }
 
-  async processTransactions(transactions: Transaction[], withScamInfo: boolean, assets?: Record<string, AccountAssets>): Promise<void> {
+  async processTransactions(transactions: Transaction[], options: { withScamInfo: boolean, withUsername: boolean }): Promise<void> {
     try {
-      await this.pluginsService.processTransactions(transactions, withScamInfo);
+      await this.pluginsService.processTransactions(transactions, options.withScamInfo);
     } catch (error) {
       this.logger.error(`Unhandled error when processing plugin transaction for transactions with hashes '${transactions.map(x => x.txHash).join(',')}'`);
       this.logger.error(error);
@@ -243,13 +339,13 @@ export class TransactionService {
         if (transaction.pendingResults === true) {
           transaction.status = TransactionStatus.pending;
         }
-
-        await this.applyAssets(transaction, assets);
       } catch (error) {
         this.logger.error(`Unhandled error when processing transaction for transaction with hash '${transaction.txHash}'`);
         this.logger.error(error);
       }
     }
+
+    await this.applyAssets(transactions, { withUsernameAssets: options.withUsername });
   }
 
   private async getPendingResults(transaction: Transaction): Promise<boolean | undefined> {
@@ -259,7 +355,7 @@ export class TransactionService {
       return undefined;
     }
 
-    const pendingResult = await this.cachingService.getCache(CacheInfo.TransactionPendingResults(transaction.txHash).key);
+    const pendingResult = await this.cachingService.get(CacheInfo.TransactionPendingResults(transaction.txHash).key);
     if (!pendingResult) {
       return undefined;
     }
@@ -296,7 +392,6 @@ export class TransactionService {
         }
 
         const transactionLogs: TransactionLog[] = logs.filter((log) => transactionHashes.includes(log.id ?? ''));
-
         transactionDetailed.operations = await this.tokenTransferService.getOperationsForTransaction(transactionDetailed, transactionLogs);
         transactionDetailed.operations = TransactionUtils.trimOperations(transactionDetailed.sender, transactionDetailed.operations, previousHashes);
       }
@@ -319,7 +414,6 @@ export class TransactionService {
           }
         }
       }
-
       detailedTransactions.push(transactionDetailed);
     }
 
@@ -406,5 +500,42 @@ export class TransactionService {
     }
 
     return logs;
+  }
+
+  async applyBlockInfo(transactions: TransactionDetailed[]): Promise<void> {
+    const miniBlockHashes = transactions
+      .filter(x => x.miniBlockHash)
+      .map(x => x.miniBlockHash ?? '')
+      .distinct();
+
+    if (miniBlockHashes.length > 0) {
+      const miniBlocks = await this.indexerService.getMiniBlocks({ from: 0, size: miniBlockHashes.length }, { hashes: miniBlockHashes });
+      const indexedMiniBlocks = miniBlocks.toRecord<MiniBlock>(x => x.miniBlockHash);
+
+      const senderBlockHashes: string[] = miniBlocks.map(x => x.senderBlockHash);
+      const receiverBlockHashes: string[] = miniBlocks.map(x => x.receiverBlockHash);
+      const blockHashes = [...senderBlockHashes, ...receiverBlockHashes].distinct();
+
+      const blocks = await this.indexerService.getBlocks({ hashes: blockHashes }, { from: 0, size: blockHashes.length });
+      const indexedBlocks = blocks.toRecord<Block>(x => x.hash);
+
+      for (const transaction of transactions) {
+        const miniBlock = indexedMiniBlocks[transaction.miniBlockHash ?? ''];
+        if (miniBlock) {
+          transaction.senderBlockHash = miniBlock.senderBlockHash;
+          transaction.receiverBlockHash = miniBlock.receiverBlockHash;
+
+          const senderBlock = indexedBlocks[miniBlock.senderBlockHash];
+          if (senderBlock) {
+            transaction.senderBlockNonce = senderBlock.nonce;
+          }
+
+          const receiverBlock = indexedBlocks[miniBlock.receiverBlockHash];
+          if (receiverBlock) {
+            transaction.receiverBlockNonce = receiverBlock.nonce;
+          }
+        }
+      }
+    }
   }
 }

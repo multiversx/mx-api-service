@@ -10,8 +10,8 @@ import { TransactionActionEsdtNftRecognizerService } from "./recognizers/esdt/tr
 import { TokenTransferService } from "src/endpoints/tokens/token.transfer.service";
 import { TransactionType } from "src/endpoints/transactions/entities/transaction.type";
 import { MetabondingActionRecognizerService } from "./recognizers/mex/mex.metabonding.action.recognizer.service";
-import { AddressUtils, BinaryUtils, StringUtils } from "@elrondnetwork/erdnest";
-import { OriginLogger } from "@elrondnetwork/erdnest";
+import { AddressUtils, BinaryUtils, StringUtils } from "@multiversx/sdk-nestjs";
+import { OriginLogger } from "@multiversx/sdk-nestjs";
 
 @Injectable()
 export class TransactionActionService {
@@ -182,7 +182,7 @@ export class TransactionActionService {
       return undefined;
     }
 
-    if (!AddressUtils.isAddressValid(args[0])) {
+    if (!AddressUtils.isValidHexAddress(args[0])) {
       return undefined;
     }
 
@@ -259,7 +259,7 @@ export class TransactionActionService {
       return undefined;
     }
 
-    if (!AddressUtils.isAddressValid(args[3])) {
+    if (!AddressUtils.isValidHexAddress(args[3])) {
       return undefined;
     }
 

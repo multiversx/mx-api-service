@@ -1,4 +1,4 @@
-import { AbstractQuery, AddressUtils, BinaryUtils, ElasticQuery, QueryConditionOptions, QueryOperator, QueryType, RangeGreaterThanOrEqual, RangeLowerThan, RangeLowerThanOrEqual } from "@elrondnetwork/erdnest";
+import { AbstractQuery, AddressUtils, BinaryUtils, ElasticQuery, QueryConditionOptions, QueryOperator, QueryType, RangeGreaterThanOrEqual, RangeLowerThan, RangeLowerThanOrEqual } from "@multiversx/sdk-nestjs";
 import { Injectable } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { QueryPagination } from "src/common/entities/query.pagination";
@@ -8,10 +8,12 @@ import { CollectionFilter } from "src/endpoints/collections/entities/collection.
 import { NftFilter } from "src/endpoints/nfts/entities/nft.filter";
 import { NftType } from "src/endpoints/nfts/entities/nft.type";
 import { RoundFilter } from "src/endpoints/rounds/entities/round.filter";
-import { TokenType } from "src/endpoints/tokens/entities/token.type";
+import { EsdtType } from "src/endpoints/esdt/entities/esdt.type";
 import { TokenWithRolesFilter } from "src/endpoints/tokens/entities/token.with.roles.filter";
 import { TransactionFilter } from "src/endpoints/transactions/entities/transaction.filter";
 import { TransactionType } from "src/endpoints/transactions/entities/transaction.type";
+import { AccountFilter } from "src/endpoints/accounts/entities/account.filter";
+import { AccountHistoryFilter } from "src/endpoints/accounts/entities/account.history.filter";
 
 @Injectable()
 export class ElasticIndexerHelper {
@@ -48,6 +50,12 @@ export class ElasticIndexerHelper {
       const index = await this.blsService.getBlsIndex(validator, shard, epoch);
       const validatorsQuery = QueryType.Match('validators', index);
       queries.push(validatorsQuery);
+    }
+
+    if (filter.hashes !== undefined && filter.hashes.length > 0) {
+      const hashQueries = filter.hashes.map(hash => QueryType.Match('_id', hash));
+      const shouldQuery = QueryType.Should(hashQueries);
+      queries.push(shouldQuery);
     }
 
     return queries;
@@ -106,6 +114,10 @@ export class ElasticIndexerHelper {
       }
     }
 
+    if (filter.excludeMetaESDT === true) {
+      elasticQuery = elasticQuery.withMustMultiShouldCondition([NftType.NonFungibleESDT, NftType.SemiFungibleESDT], type => QueryType.Match('type', type));
+    }
+
     return elasticQuery.withMustMatchCondition('token', filter.collection, QueryOperator.AND)
       .withMustMultiShouldCondition(filter.identifiers, identifier => QueryType.Match('token', identifier, QueryOperator.AND))
       .withSearchWildcardCondition(filter.search, ['token', 'name'])
@@ -133,7 +145,9 @@ export class ElasticIndexerHelper {
     }
 
     if (filter.type !== undefined) {
-      elasticQuery = elasticQuery.withMustCondition(QueryType.Match('type', filter.type));
+      const types = (filter.type ?? '').split(',');
+
+      elasticQuery = elasticQuery.withMustMultiShouldCondition(types, type => QueryType.Match('type', type));
     }
 
     if (identifier !== undefined) {
@@ -200,6 +214,10 @@ export class ElasticIndexerHelper {
       elasticQuery = elasticQuery.withRangeFilter('nonce', new RangeGreaterThanOrEqual(filter.nonceAfter));
     }
 
+    if (filter.excludeMetaESDT === true) {
+      elasticQuery = elasticQuery.withMustMultiShouldCondition([NftType.SemiFungibleESDT, NftType.NonFungibleESDT], type => QueryType.Match('type', type));
+    }
+
     return elasticQuery;
   }
 
@@ -236,8 +254,8 @@ export class ElasticIndexerHelper {
       elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Match('type', filter.type === TransactionType.Transaction ? 'normal' : 'unsigned'));
     }
 
-    if (filter.sender) {
-      elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Match('sender', filter.sender));
+    if (filter.senders) {
+      elasticQuery = elasticQuery.withMustMultiShouldCondition(filter.senders, sender => QueryType.Match('sender', sender));
     }
 
     if (filter.receivers) {
@@ -254,8 +272,8 @@ export class ElasticIndexerHelper {
       elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Match('tokens', filter.token, QueryOperator.AND));
     }
 
-    if (filter.function && this.apiConfigService.getIsIndexerV3FlagActive()) {
-      elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Match('function', filter.function));
+    if (filter.functions && filter.functions.length > 0 && this.apiConfigService.getIsIndexerV3FlagActive()) {
+      elasticQuery = elasticQuery.withMustMultiShouldCondition(filter.functions, func => QueryType.Match('function', func));
     }
 
     if (filter.senderShard !== undefined) {
@@ -278,30 +296,52 @@ export class ElasticIndexerHelper {
       elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Match('status', filter.status));
     }
 
-    if (filter.search) {
-      elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Wildcard('data', `*${filter.search}*`));
-    }
-
     if (filter.before || filter.after) {
       elasticQuery = elasticQuery.withDateRangeFilter('timestamp', filter.before, filter.after);
+    }
+
+    if (filter.senderOrReceiver) {
+      elasticQuery = elasticQuery
+        .withMustCondition(QueryType.Should([
+          QueryType.Match('sender', filter.senderOrReceiver),
+          QueryType.Match('receiver', filter.senderOrReceiver),
+        ]));
     }
 
     return elasticQuery;
   }
 
   public buildTokensWithRolesForAddressQuery(address: string, filter: TokenWithRolesFilter, pagination?: QueryPagination): ElasticQuery {
+    const rolesConditions = [
+      QueryType.Nested('roles', { 'roles.ESDTRoleLocalMint': address }),
+      QueryType.Nested('roles', { 'roles.ESDTRoleLocalBurn': address }),
+      QueryType.Nested('roles', { 'roles.ESDTTransferRole': address }),
+    ];
+
+    if (filter.includeMetaESDT === true) {
+      rolesConditions.push(QueryType.Nested('roles', { 'roles.ESDTRoleNFTAddQuantity': address }));
+      rolesConditions.push(QueryType.Nested('roles', { 'roles.ESDTRoleNFTAddURI': address }));
+      rolesConditions.push(QueryType.Nested('roles', { 'roles.ESDTRoleNFTCreate': address }));
+      rolesConditions.push(QueryType.Nested('roles', { 'roles.ESDTRoleNFTBurn': address }));
+      rolesConditions.push(QueryType.Nested('roles', { 'roles.ESDTRoleNFTUpdateAttributes': address }));
+    }
+
     let elasticQuery = ElasticQuery.create()
       .withMustNotExistCondition('identifier')
       .withMustCondition(QueryType.Should(
         [
           QueryType.Match('currentOwner', address),
-          QueryType.Nested('roles', { 'roles.ESDTRoleLocalMint': address }),
-          QueryType.Nested('roles', { 'roles.ESDTRoleLocalBurn': address }),
+          ...rolesConditions,
         ]
       ))
-      .withMustMatchCondition('type', TokenType.FungibleESDT)
       .withMustMatchCondition('token', filter.identifier)
       .withMustMatchCondition('currentOwner', filter.owner);
+
+    if (filter.includeMetaESDT === true) {
+      elasticQuery = elasticQuery.withMustMultiShouldCondition([EsdtType.FungibleESDT, EsdtType.MetaESDT], type => QueryType.Match('type', type));
+    } else {
+      elasticQuery = elasticQuery.withMustMatchCondition('type', EsdtType.FungibleESDT);
+    }
 
     if (filter.search) {
       elasticQuery = elasticQuery
@@ -373,16 +413,23 @@ export class ElasticIndexerHelper {
 
   public buildTransactionFilterQuery(filter: TransactionFilter, address?: string): ElasticQuery {
     let elasticQuery = ElasticQuery.create()
-      .withMustMatchCondition('tokens', filter.token, QueryOperator.AND)
-      .withMustMatchCondition('function', this.apiConfigService.getIsIndexerV3FlagActive() ? filter.function : undefined)
       .withMustMatchCondition('senderShard', filter.senderShard)
       .withMustMatchCondition('receiverShard', filter.receiverShard)
       .withMustMatchCondition('miniBlockHash', filter.miniBlockHash)
       .withMustMultiShouldCondition(filter.hashes, hash => QueryType.Match('_id', hash))
       .withMustMatchCondition('status', filter.status)
-      .withMustWildcardCondition('data', filter.search)
       .withMustMultiShouldCondition(filter.tokens, token => QueryType.Match('tokens', token, QueryOperator.AND))
       .withDateRangeFilter('timestamp', filter.before, filter.after);
+
+    if (filter.functions && filter.functions.length > 0 && this.apiConfigService.getIsIndexerV3FlagActive()) {
+      elasticQuery = elasticQuery.withMustMultiShouldCondition(filter.functions, func => QueryType.Match('function', func));
+    }
+
+    if (filter.token === 'EGLD') {
+      elasticQuery = elasticQuery.withMustNotCondition(QueryType.Match('value', '0'));
+    } else {
+      elasticQuery = elasticQuery.withMustMatchCondition('tokens', filter.token, QueryOperator.AND);
+    }
 
     if (filter.condition === QueryConditionOptions.should) {
       if (filter.sender) {
@@ -433,10 +480,18 @@ export class ElasticIndexerHelper {
       elasticQuery = elasticQuery.withMustMultiShouldCondition(keys, key => QueryType.Match(key, address));
     }
 
+    if (filter.senderOrReceiver) {
+      elasticQuery = elasticQuery
+        .withMustCondition(QueryType.Should([
+          QueryType.Match('sender', filter.senderOrReceiver),
+          QueryType.Match('receiver', filter.senderOrReceiver),
+        ]));
+    }
+
     return elasticQuery;
   }
 
-  public buildAccountHistoryFilterQuery(address?: string, token?: string): ElasticQuery {
+  public buildAccountHistoryFilterQuery(address?: string, token?: string, filter?: AccountHistoryFilter): ElasticQuery {
     const mustQueries: AbstractQuery[] = [];
 
     if (address) {
@@ -444,10 +499,25 @@ export class ElasticIndexerHelper {
     }
 
     if (token) {
-      mustQueries.push(QueryType.Match('token', token, QueryOperator.AND));
+      const field = token.split('-').length === 2 ? 'token' : 'identifier';
+      mustQueries.push(QueryType.Match(field, token, QueryOperator.AND));
     }
 
-    return ElasticQuery.create()
-      .withCondition(QueryConditionOptions.must, mustQueries);
+    let elasticQuery = ElasticQuery.create().withCondition(QueryConditionOptions.must, mustQueries);
+
+    if (filter && (filter.before || filter.after)) {
+      elasticQuery = elasticQuery.withDateRangeFilter('timestamp', filter.before, filter.after);
+    }
+
+    return elasticQuery;
+  }
+
+  public buildAccountFilterQuery(filter: AccountFilter): ElasticQuery {
+    let elasticQuery = ElasticQuery.create();
+    if (filter.ownerAddress) {
+      elasticQuery = elasticQuery.withMustCondition(QueryType.Match('currentOwner', filter.ownerAddress, QueryOperator.AND));
+    }
+
+    return elasticQuery;
   }
 }

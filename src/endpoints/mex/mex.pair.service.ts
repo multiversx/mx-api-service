@@ -1,4 +1,4 @@
-import { Constants, CachingService } from "@elrondnetwork/erdnest";
+import { Constants, ElrondCachingService } from "@multiversx/sdk-nestjs";
 import { BadRequestException, Injectable } from "@nestjs/common";
 import { gql } from "graphql-request";
 import { CacheInfo } from "src/utils/cache.info";
@@ -7,22 +7,24 @@ import { MexPair } from "./entities/mex.pair";
 import { MexPairState } from "./entities/mex.pair.state";
 import { MexPairType } from "./entities/mex.pair.type";
 import { MexSettingsService } from "./mex.settings.service";
-import { OriginLogger } from "@elrondnetwork/erdnest";
+import { OriginLogger } from "@multiversx/sdk-nestjs";
+import { ApiConfigService } from "src/common/api-config/api.config.service";
 
 @Injectable()
 export class MexPairService {
   private readonly logger = new OriginLogger(MexPairService.name);
 
   constructor(
-    private readonly cachingService: CachingService,
+    private readonly cachingService: ElrondCachingService,
     private readonly mexSettingService: MexSettingsService,
     private readonly graphQlService: GraphQlService,
+    private readonly apiConfigService: ApiConfigService,
   ) { }
 
   async refreshMexPairs(): Promise<void> {
     const pairs = await this.getAllMexPairsRaw();
-    await this.cachingService.setCacheRemote(CacheInfo.MexPairs.key, pairs, CacheInfo.MexPairs.ttl);
-    await this.cachingService.setCacheLocal(CacheInfo.MexPairs.key, pairs, Constants.oneSecond() * 30);
+    await this.cachingService.setRemote(CacheInfo.MexPairs.key, pairs, CacheInfo.MexPairs.ttl);
+    await this.cachingService.setLocal(CacheInfo.MexPairs.key, pairs, Constants.oneSecond() * 30);
   }
 
   async getMexPairs(from: number, size: number): Promise<any> {
@@ -37,12 +39,22 @@ export class MexPairService {
   }
 
   async getAllMexPairs(): Promise<MexPair[]> {
-    return await this.cachingService.getOrSetCache(
+    if (!this.apiConfigService.isExchangeEnabled()) {
+      return [];
+    }
+
+    return await this.cachingService.getOrSet(
       CacheInfo.MexPairs.key,
       async () => await this.getAllMexPairsRaw(),
       CacheInfo.MexPairs.ttl,
       Constants.oneSecond() * 30
     );
+  }
+
+  async getMexPairsCount(): Promise<number> {
+    const mexPairs = await this.getAllMexPairs();
+
+    return mexPairs.length;
   }
 
   async getAllMexPairsRaw(): Promise<MexPair[]> {
@@ -188,6 +200,7 @@ export class MexPairService {
         return MexPairType.experimental;
       case 'Jungle':
       case 'Jungle-Experimental':
+      case 'Jungle-Community':
         return MexPairType.jungle;
       case 'Unlisted':
         return MexPairType.unlisted;

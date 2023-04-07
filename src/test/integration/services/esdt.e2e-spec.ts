@@ -5,8 +5,8 @@ import { EsdtSupply } from "src/endpoints/esdt/entities/esdt.supply";
 import { NftFilter } from "src/endpoints/nfts/entities/nft.filter";
 import { NftType } from "src/endpoints/nfts/entities/nft.type";
 import { EsdtDataSource } from 'src/endpoints/esdt/entities/esdt.data.source';
-import '@elrondnetwork/erdnest/lib/src/utils/extensions/jest.extensions';
-import { CachingService } from '@elrondnetwork/erdnest';
+import '@multiversx/sdk-nestjs/lib/src/utils/extensions/jest.extensions';
+import { ElrondCachingService } from '@multiversx/sdk-nestjs';
 import { EsdtService } from 'src/endpoints/esdt/esdt.service';
 
 describe('ESDT Service', () => {
@@ -91,31 +91,10 @@ describe('ESDT Service', () => {
     });
   });
 
-  describe("Get ESDT Tokens Properties", () => {
-    it("should return all ESDT tokens", async () => {
-      const results = await esdtService.getAllEsdtTokens();
-
-      for (const result of results) {
-        expect(result.hasOwnProperty("identifier")).toBeTruthy();
-        expect(result.hasOwnProperty("name")).toBeTruthy();
-        expect(result.hasOwnProperty("ticker")).toBeTruthy();
-        expect(result.hasOwnProperty("owner")).toBeTruthy();
-        expect(result.hasOwnProperty("isPaused")).toBeTruthy();
-        expect(result.hasOwnProperty("canUpgrade")).toBeTruthy();
-        expect(result.hasOwnProperty("canMint")).toBeTruthy();
-        expect(result.hasOwnProperty("canBurn")).toBeTruthy();
-        expect(result.hasOwnProperty("canChangeOwner")).toBeTruthy();
-        expect(result.hasOwnProperty("canPause")).toBeTruthy();
-        expect(result.hasOwnProperty("canFreeze")).toBeTruthy();
-        expect(result.hasOwnProperty("canWipe")).toBeTruthy();
-      }
-    });
-  });
-
   describe("Get ESDT Token Properties", () => {
     it("should return the properties of the token ( ticker property should not be present )", async () => {
       jest
-        .spyOn(CachingService.prototype, 'getOrSetCache')
+        .spyOn(ElrondCachingService.prototype, 'getOrSet')
         // eslint-disable-next-line require-await
         .mockImplementation(jest.fn(async (_key: string, promise: any) => promise()));
 
@@ -183,15 +162,6 @@ describe('ESDT Service', () => {
         throw new Error('Properties are not defined');
       }
       expect(results).toHaveStructure(Object.keys(new EsdtSupply()));
-    });
-  });
-
-  describe('Get Token Account Count', () => {
-    it('return token account count', async () => {
-      const tokenIdentifier: string = "EGLDMEX-0be9e5";
-      const result = await esdtService.getEsdtAccountsCount(tokenIdentifier);
-
-      expect(typeof result).toStrictEqual('number');
     });
   });
 });

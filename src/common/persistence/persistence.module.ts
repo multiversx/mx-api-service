@@ -1,49 +1,79 @@
-import { DynamicModule, Global, Module, Type } from "@nestjs/common";
+import { DynamicModule, Global, Module } from "@nestjs/common";
+import { getRepositoryToken, TypeOrmModule, TypeOrmModuleOptions } from "@nestjs/typeorm";
 import configuration from "config/configuration";
-import { DatabaseModule } from "./database/database.module";
-import { DatabaseService } from "./database/database.service";
-import { MongoDbModule } from "./mongodb/mongo.db.module";
-import { MongoDbService } from "./mongodb/mongo.db.service";
-import { PassThroughModule } from "./passthrough/pass.through.module";
-import { PassThroughService } from "./passthrough/pass.through.service";
-import { PersistenceInterface } from "./persistence.interface";
+import { ApiConfigModule } from "../api-config/api.config.module";
+import { ApiConfigService } from "../api-config/api.config.service";
+import { HotSwappableSettingDb } from "./entities/hot.swappable.setting";
+import { KeybaseConfirmationDb } from "./entities/keybase.confirmation.db";
+import { NftMediaDb } from "./entities/nft.media.db";
+import { NftMetadataDb } from "./entities/nft.metadata.db";
+import { NftTraitSummaryDb } from "./entities/nft.trait.summary.db";
 import { PersistenceService } from "./persistence.service";
 
 @Global()
 @Module({})
 export class PersistenceModule {
-  static register(): DynamicModule {
-    let persistenceModule: Type<any> = PassThroughModule;
-    let persistenceInterface: Type<PersistenceInterface> = PassThroughService;
+  static forRoot(): DynamicModule {
 
     const isPassThrough = process.env.PERSISTENCE === 'passthrough' || configuration().database?.enabled === false;
-    if (!isPassThrough) {
-      const isMysql = !configuration().database?.type || configuration().database?.type === 'mysql';
-      if (isMysql) {
-        persistenceModule = DatabaseModule;
-        persistenceInterface = DatabaseService;
-      }
-
-      const isMongoDb = configuration().database?.type === 'mongodb';
-      if (isMongoDb) {
-        persistenceModule = MongoDbModule;
-        persistenceInterface = MongoDbService;
-      }
+    if (isPassThrough) {
+      return {
+        module: PersistenceModule,
+        imports: [],
+        providers: [
+          {
+            provide: getRepositoryToken(NftMetadataDb),
+            useValue: {},
+          },
+          {
+            provide: getRepositoryToken(NftMediaDb),
+            useValue: {},
+          },
+          {
+            provide: getRepositoryToken(NftTraitSummaryDb),
+            useValue: {},
+          },
+          {
+            provide: getRepositoryToken(KeybaseConfirmationDb),
+            useValue: {},
+          },
+          {
+            provide: getRepositoryToken(HotSwappableSettingDb),
+            useValue: {},
+          },
+          PersistenceService,
+        ],
+        exports: [PersistenceService],
+      };
     }
 
     return {
       module: PersistenceModule,
       imports: [
-        persistenceModule,
+        TypeOrmModule.forRootAsync({
+          imports: [ApiConfigModule],
+          useFactory: (apiConfigService: ApiConfigService) => {
+
+            const options: TypeOrmModuleOptions = {
+              type: 'mongodb',
+              entities: [NftMetadataDb, NftMediaDb, NftTraitSummaryDb, KeybaseConfirmationDb, HotSwappableSettingDb],
+              url: apiConfigService.getDatabaseUrl(),
+              keepAlive: 120000,
+              sslValidate: false,
+              retryAttempts: 300,
+              useUnifiedTopology: true,
+              synchronize: true,
+            };
+
+            return options;
+          },
+          inject: [ApiConfigService],
+        }),
+        TypeOrmModule.forFeature([NftMetadataDb, NftMediaDb, NftTraitSummaryDb, KeybaseConfirmationDb, HotSwappableSettingDb]),
       ],
-      providers: [
-        {
-          provide: 'PersistenceInterface',
-          useClass: persistenceInterface,
-        },
-        PersistenceService,
-      ],
-      exports: ['PersistenceInterface', PersistenceService],
+      providers: [PersistenceService],
+      exports: [PersistenceService, TypeOrmModule.forFeature([NftMetadataDb, NftMediaDb, NftTraitSummaryDb, KeybaseConfirmationDb, HotSwappableSettingDb])],
     };
   }
 }
+

@@ -1,5 +1,5 @@
-import { ApiMetricsService } from 'src/common/metrics/api.metrics.service';
 import { Test } from '@nestjs/testing';
+import { ApiMetricsService } from 'src/common/metrics/api.metrics.service';
 import { PublicAppModule } from 'src/public.app.module';
 
 describe('Metrics Service', () => {
@@ -8,6 +8,7 @@ describe('Metrics Service', () => {
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
       imports: [PublicAppModule],
+      providers: [ApiMetricsService],
     }).compile();
 
     metricsService = moduleRef.get<ApiMetricsService>(ApiMetricsService);

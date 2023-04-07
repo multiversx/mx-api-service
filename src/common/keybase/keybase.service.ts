@@ -5,24 +5,23 @@ import { Keybase } from "./entities/keybase";
 import { KeybaseIdentity } from "./entities/keybase.identity";
 import { KeybaseState } from "./entities/keybase.state";
 import { CacheInfo } from "../../utils/cache.info";
-import asyncPool from "tiny-async-pool";
 import { GithubService } from "../github/github.service";
-import { ApiService, ApiUtils, CachingService, Constants, OriginLogger } from "@elrondnetwork/erdnest";
-import { ApiConfigService } from "../api-config/api.config.service";
+import { ApiService, ApiUtils, ElrondCachingService, Constants, OriginLogger } from "@multiversx/sdk-nestjs";
+import { PersistenceService } from "../persistence/persistence.service";
 
 @Injectable()
 export class KeybaseService {
   private readonly logger = new OriginLogger(KeybaseService.name);
 
   constructor(
-    private readonly cachingService: CachingService,
+    private readonly cachingService: ElrondCachingService,
     private readonly apiService: ApiService,
     @Inject(forwardRef(() => NodeService))
     private readonly nodeService: NodeService,
     @Inject(forwardRef(() => ProviderService))
     private readonly providerService: ProviderService,
     private readonly githubService: GithubService,
-    private readonly apiConfigService: ApiConfigService
+    private readonly persistenceService: PersistenceService
   ) { }
 
   private async getProvidersKeybasesRaw(): Promise<Keybase[]> {
@@ -46,7 +45,6 @@ export class KeybaseService {
 
   private async getNodesKeybasesRaw(): Promise<Keybase[]> {
     const nodes = await this.nodeService.getHeartbeat();
-
     const keybasesNodesArr: Keybase[] = nodes
       .filter((node) => !!node.identity)
       .map((node) => {
@@ -62,7 +60,7 @@ export class KeybaseService {
 
     const keybasesArr: Keybase[] = [...keybaseProvidersArr, ...keybasesNodesArr];
 
-    const keybaseGetPromises = keybasesArr.map(keybase => this.cachingService.getCache<boolean>(CacheInfo.KeybaseConfirmation(keybase.key).key));
+    const keybaseGetPromises = keybasesArr.map(keybase => this.cachingService.get<boolean>(CacheInfo.KeybaseConfirmation(keybase.key).key));
     const keybaseGetResults = await Promise.all(keybaseGetPromises);
 
     const confirmedKeybases = keybasesArr.zip<(boolean | undefined), KeybaseState>(keybaseGetResults, (first, second) => ({ identity: first.identity, confirmed: second ?? false }));
@@ -84,121 +82,90 @@ export class KeybaseService {
 
     const keys = nodes.map((node) => node.identity).distinct().map((x) => x ?? '');
 
-    const keybaseGetPromises = keys.map(key => this.cachingService.getCache<KeybaseIdentity>(CacheInfo.IdentityProfile(key).key));
+    const keybaseGetPromises = keys.map(key => this.cachingService.get<KeybaseIdentity>(CacheInfo.IdentityProfile(key).key));
     const keybaseGetResults = await Promise.all(keybaseGetPromises);
 
     // @ts-ignore
     return keybaseGetResults.filter(x => x !== undefined && x !== null);
   }
 
-  async confirmKeybasesAgainstKeybasePub(): Promise<void> {
+  private async getDistinctIdentities(): Promise<string[]> {
     const providerKeybases: Keybase[] = await this.getProvidersKeybasesRaw();
     const nodeKeybases: Keybase[] = await this.getNodesKeybasesRaw();
-
     const allKeybases: Keybase[] = [...providerKeybases, ...nodeKeybases];
 
     const distinctIdentities = allKeybases.map(x => x.identity ?? '').filter(x => x !== '').distinct().shuffle();
 
-    await asyncPool(
-      1,
-      distinctIdentities,
-      identity => this.confirmKeybasesForIdentity(identity)
-    );
+    return distinctIdentities;
   }
 
-  async confirmKeybasesForIdentity(identity: string): Promise<void> {
-    const githubSuccess = await this.confirmKeybasesAgainstGithubForIdentity(identity);
-    if (!githubSuccess) {
-      await this.confirmKeybasesAgainstKeybasePubForIdentityResilient(identity);
+  async confirmKeybasesAgainstDatabase(): Promise<void> {
+    const distinctIdentities = await this.getDistinctIdentities();
+
+    for (const identity of distinctIdentities) {
+      await this.confirmKeybasesAgainstDatabaseForIdentity(identity);
     }
   }
 
-  async confirmKeybasesAgainstGithubForIdentity(identity: string): Promise<boolean> {
+  async confirmKeybasesAgainstGithub(): Promise<void> {
+    const distinctIdentities = await this.getDistinctIdentities();
+
+    for (const identity of distinctIdentities) {
+      await this.confirmKeybasesAgainstGithubForIdentity(identity);
+    }
+  }
+
+  async confirmKeybasesAgainstGithubForIdentity(identity: string): Promise<void> {
     try {
-      const result = await this.githubService.getRepoFileContents(identity, 'elrond', 'keys.json');
-      if (!result) {
-        return false;
+      const multiversxResults = await this.githubService.getRepoFileContents(identity, 'multiversx', 'keys.json');
+
+      if (!multiversxResults) {
+        return;
       }
 
-      const keys = JSON.parse(result);
+      const keys = JSON.parse(multiversxResults);
 
       this.logger.log(`github.com validation: for identity '${identity}', found ${keys.length} keys`);
 
       await this.cachingService.batchProcess(
         keys,
-        key => `keybase:${key}`,
+        (key: string) => CacheInfo.KeybaseConfirmation(key).key,
         async () => await true,
-        Constants.oneMonth() * 6,
+        CacheInfo.KeybaseConfirmation('*').ttl,
+        true
+      );
+
+      await this.persistenceService.setKeybaseConfirmationForIdentity(identity, keys);
+    } catch (error) {
+      this.logger.log(`Error when confirming keybase against github for identity '${identity}'`);
+      this.logger.error(error);
+    }
+  }
+
+  async confirmKeybasesAgainstDatabaseForIdentity(identity: string): Promise<boolean> {
+    try {
+      const keys = await this.persistenceService.getKeybaseConfirmationForIdentity(identity);
+      if (!keys) {
+        return false;
+      }
+
+      this.logger.log(`database validation: for identity '${identity}', found ${keys.length} keys`);
+
+      await this.cachingService.batchProcess(
+        keys,
+        (key: string) => CacheInfo.KeybaseConfirmation(key).key,
+        async () => await true,
+        CacheInfo.KeybaseConfirmation('*').ttl,
         true
       );
 
       return true;
     } catch (error) {
-      this.logger.log(`Error when confirming keybase against github for identity '${identity}'`);
+      this.logger.log(`Error when confirming keybase against database for identity '${identity}'`);
       this.logger.error(error);
       return false;
     }
   }
-
-  async confirmKeybasesAgainstKeybasePubForIdentityResilient(identity: string): Promise<void> {
-    let retries = 0;
-
-    while (retries < 3) {
-      try {
-        await this.confirmKeybasesAgainstKeybasePubForIdentity(identity);
-        return;
-      } catch (error) {
-        retries++;
-
-        // wait with backoff
-        await new Promise(resolve => setTimeout(resolve, 5000 * retries));
-
-        this.logger.log(`Retry #${retries} for confirming keybases against keybase.pub for identity '${identity}'`);
-      }
-    }
-  }
-
-  async confirmKeybasesAgainstKeybasePubForIdentity(identity: string): Promise<void> {
-    const network = this.apiConfigService.getNetwork();
-    const networkSuffix = network !== "mainnet" ? `/${network}` : '';
-
-    // eslint-disable-next-line require-await
-    const result = await this.apiService.get(`https://keybase.pub/${identity}/elrond${networkSuffix}`, { timeout: 100000 }, async (error) => error.response?.status === HttpStatus.NOT_FOUND);
-
-    if (!result) {
-      this.logger.log(`For identity '${identity}', no keybase.pub entry was found`);
-      return;
-    }
-
-    const html = result.data;
-
-    const networkRegex = network !== "mainnet" ? `${network}\/` : '';
-
-    const nodesRegex = new RegExp(`https:\/\/keybase.pub\/${identity}\/elrond\/${networkRegex}[0-9a-f]{192}`, 'g');
-    const blses: string[] = [];
-    for (const keybaseUrl of html.match(nodesRegex) || []) {
-      const bls = keybaseUrl.match(/[0-9a-f]{192}/)[0];
-      blses.push(bls);
-    }
-
-    const providersRegex = new RegExp("https:\/\/keybase.pub\/" + identity + "\/elrond\/" + networkRegex + "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqq[0-9a-z]{14}", 'g');
-    const addresses: string[] = [];
-    for (const keybaseUrl of html.match(providersRegex) || []) {
-      const bls = keybaseUrl.match(/erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqq[0-9a-z]{14}/)[0];
-      addresses.push(bls);
-    }
-
-    this.logger.log(`keybase.pub validation: for identity '${identity}', found ${blses.length} blses and addresses ${addresses}`);
-
-    await this.cachingService.batchProcess(
-      [...blses, ...addresses],
-      key => `keybase:${key}`,
-      async () => await true,
-      Constants.oneMonth() * 6,
-      true
-    );
-  }
-
 
   async confirmIdentityProfilesAgainstKeybaseIo(): Promise<void> {
     const nodes = await this.nodeService.getAllNodes();
@@ -215,7 +182,7 @@ export class KeybaseService {
   }
 
   async getCachedIdentityProfilesKeybases(): Promise<KeybaseIdentity[]> {
-    return await this.cachingService.getOrSetCache(
+    return await this.cachingService.getOrSet(
       CacheInfo.IdentityProfilesKeybases.key,
       async () => await this.getIdentitiesProfilesAgainstCache(),
       CacheInfo.IdentityProfilesKeybases.ttl
@@ -223,7 +190,7 @@ export class KeybaseService {
   }
 
   async getCachedNodesAndProvidersKeybases(): Promise<{ [key: string]: KeybaseState } | undefined> {
-    return await this.cachingService.getOrSetCache(
+    return await this.cachingService.getOrSet(
       CacheInfo.Keybases.key,
       async () => await this.confirmKeybasesAgainstCache(),
       CacheInfo.Keybases.ttl
@@ -292,7 +259,7 @@ export class KeybaseService {
 
       return null;
     } catch (error: any) {
-      const cachedIdentityProfile = await this.cachingService.getCache<KeybaseIdentity>(CacheInfo.IdentityProfile(identity).key);
+      const cachedIdentityProfile = await this.cachingService.get<KeybaseIdentity>(CacheInfo.IdentityProfile(identity).key);
       return cachedIdentityProfile ? cachedIdentityProfile : null;
     }
   }

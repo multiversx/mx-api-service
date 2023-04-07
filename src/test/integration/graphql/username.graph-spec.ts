@@ -7,7 +7,7 @@ describe('Username', () => {
   let app: INestApplication;
   const gql = '/graphql';
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [PublicAppModule],
     }).compile();
@@ -16,8 +16,12 @@ describe('Username', () => {
     await app.init();
   });
 
+  afterAll(async () => {
+    await app.close();
+  });
+
   describe('Query - Get Account details', () => {
-    it('should herotag account details', async () => {
+    it('should username account details', async () => {
       await request(app.getHttpServer())
         .post(gql)
         .send({

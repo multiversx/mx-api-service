@@ -18,8 +18,9 @@ import { CacheInfo } from "src/utils/cache.info";
 import { Stake } from "../stake/entities/stake";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
 import { Auction } from "src/common/gateway/entities/auction";
-import { AddressUtils, Constants, CachingService } from "@elrondnetwork/erdnest";
+import { AddressUtils, Constants, ElrondCachingService } from "@multiversx/sdk-nestjs";
 import { NodeSort } from "./entities/node.sort";
+import { ProtocolService } from "src/common/protocol/protocol.service";
 
 @Injectable()
 export class NodeService {
@@ -27,7 +28,7 @@ export class NodeService {
     private readonly gatewayService: GatewayService,
     private readonly vmQueryService: VmQueryService,
     private readonly apiConfigService: ApiConfigService,
-    private readonly cachingService: CachingService,
+    private readonly cachingService: ElrondCachingService,
     @Inject(forwardRef(() => KeybaseService))
     private readonly keybaseService: KeybaseService,
     @Inject(forwardRef(() => StakeService))
@@ -36,6 +37,7 @@ export class NodeService {
     private readonly providerService: ProviderService,
     @Inject(forwardRef(() => BlockService))
     private readonly blockService: BlockService,
+    private readonly protocolService: ProtocolService,
   ) { }
 
   private getIssues(node: Node, version: string | undefined): string[] {
@@ -63,7 +65,7 @@ export class NodeService {
   }
 
   async getNodeVersions(): Promise<NodeVersions> {
-    return await this.cachingService.getOrSetCache(
+    return await this.cachingService.getOrSet(
       CacheInfo.NodeVersions.key,
       async () => await this.getNodeVersionsRaw(),
       CacheInfo.NodeVersions.ttl
@@ -92,7 +94,7 @@ export class NodeService {
     }, 0);
 
     Object.keys(data).forEach((key) => {
-      data[key] = parseFloat((data[key] / sum).toFixed(2));
+      data[key] = parseFloat((data[key] / sum).toFixed(4));
     });
 
     const numbers: number[] = Object.values(data);
@@ -101,7 +103,7 @@ export class NodeService {
 
     for (const key of Object.keys(data)) {
       if (data[key] === largestNumber) {
-        data[key] = parseFloat((largestNumber + 1 - totalSum).toFixed(2));
+        data[key] = parseFloat((largestNumber + 1 - totalSum).toFixed(4));
         break;
       }
     }
@@ -215,7 +217,7 @@ export class NodeService {
   }
 
   async getAllNodes(): Promise<Node[]> {
-    return await this.cachingService.getOrSetCache(
+    return await this.cachingService.getOrSet(
       CacheInfo.Nodes.key,
       async () => await this.getAllNodesRaw(),
       CacheInfo.Nodes.ttl
@@ -257,7 +259,7 @@ export class NodeService {
   }
 
   private async getNodesOwnerAndProvider(nodes: Node[]) {
-    const blses = nodes.filter(node => node.type === NodeType.validator).map(node => node.bls);
+    const blses = nodes.map(node => node.bls);
     const epoch = await this.blockService.getCurrentEpoch();
     const owners = await this.getOwners(blses, epoch);
 
@@ -323,7 +325,7 @@ export class NodeService {
     await this.getNodesStakeDetails(nodes);
 
     if (this.apiConfigService.isStakingV4Enabled()) {
-      const auctions = await this.gatewayService.getAuctions();
+      const auctions = await this.gatewayService.getValidatorAuctions();
       this.processAuctions(nodes, auctions);
     }
 
@@ -351,7 +353,7 @@ export class NodeService {
   async getOwners(blses: string[], epoch: number) {
     const keys = blses.map((bls) => CacheInfo.OwnerByEpochAndBls(bls, epoch).key);
 
-    const cached = await this.cachingService.batchGetCacheRemote(keys);
+    const cached = await this.cachingService.batchGetManyRemote(keys);
 
     const missing = cached
       .map((element, index) => (element === null ? index : false))
@@ -383,7 +385,7 @@ export class NodeService {
         ttls: new Array(Object.keys(owners).length).fill(fastWarm ? 60 : Constants.oneDay()), // 1 minute or 24h
       };
 
-      await this.cachingService.batchSetCache(params.keys, params.values, params.ttls);
+      await this.cachingService.batchSet(params.keys, params.values, params.ttls);
     }
 
     return blses.map((bls, index) => (missing.includes(index) ? owners[bls] : cached[index]));
@@ -463,20 +465,29 @@ export class NodeService {
 
   async getHeartbeat(): Promise<Node[]> {
     const [
-      { heartbeats },
+      heartbeats,
       { statistics },
-      { config },
+      config,
     ] = await Promise.all([
-      this.gatewayService.get('node/heartbeatstatus', GatewayComponentRequest.nodeHeartbeat),
+      this.gatewayService.getNodeHeartbeatStatus(),
       this.gatewayService.get('validator/statistics', GatewayComponentRequest.validatorStatistics),
-      this.gatewayService.get('network/config', GatewayComponentRequest.networkConfig),
+      this.gatewayService.getNetworkConfig(),
     ]);
 
     const nodes: Node[] = [];
 
-    const blses =
-      [...Object.keys(statistics), ...heartbeats.map((item: any) => item.publicKey)].distinct();
+    const blses = [...Object.keys(statistics), ...heartbeats.map((item: any) => item.publicKey)].distinct();
 
+    const nodesPerShardDict: Record<string, number> = {};
+    if (this.apiConfigService.isNodeSyncProgressEnabled()) {
+      const shardIds = await this.protocolService.getShardIds();
+
+      for (const shardId of shardIds) {
+        const shardTrieStatistics = await this.gatewayService.getTrieStatistics(shardId);
+
+        nodesPerShardDict[shardId] = shardTrieStatistics.accounts_snapshot_num_nodes;
+      }
+    }
 
     for (const bls of blses) {
       const heartbeat = heartbeats.find((beat: any) => beat.publicKey === bls) || {};
@@ -503,6 +514,7 @@ export class NodeService {
         validatorStatus,
         nonce,
         numInstances: instances,
+        numTrieNodesReceived,
       } = item;
 
       let {
@@ -529,6 +541,9 @@ export class NodeService {
       } else if (validatorStatus && validatorStatus.includes('leaving')) {
         nodeType = NodeType.validator;
         nodeStatus = NodeStatus.leaving;
+      } else if (validatorStatus === 'inactive') {
+        nodeType = NodeType.validator;
+        nodeStatus = NodeStatus.inactive;
       } else if (peerType === 'observer') {
         nodeType = NodeType.observer;
         nodeStatus = undefined;
@@ -576,6 +591,14 @@ export class NodeService {
 
       if (node.online === undefined) {
         node.online = false;
+      }
+
+      if (this.apiConfigService.isNodeSyncProgressEnabled() && numTrieNodesReceived > 0) {
+        node.syncProgress = numTrieNodesReceived / nodesPerShardDict[shard];
+
+        if (node.syncProgress > 1) {
+          node.syncProgress = 1;
+        }
       }
 
       node.issues = this.getIssues(node, config.erd_latest_tag_software_version);

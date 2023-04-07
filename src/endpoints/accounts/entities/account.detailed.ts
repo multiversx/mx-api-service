@@ -1,4 +1,4 @@
-import { ComplexityEstimation } from "@elrondnetwork/erdnest";
+import { ComplexityEstimation } from "@multiversx/sdk-nestjs";
 import { Field, Float, ObjectType } from "@nestjs/graphql";
 import { ApiProperty } from "@nestjs/swagger";
 import { ScamInfo } from "src/common/entities/scam-info.dto";
@@ -33,9 +33,9 @@ export class AccountDetailed extends Account {
   @ApiProperty({ description: 'The number of smart contract results of this account' })
   scrCount: number = 0;
 
-  @Field(() => String, { description: 'Username for the given detailed account.' })
-  @ApiProperty({ description: 'The username specific for this account' })
-  username: string = '';
+  @Field(() => String, { description: 'Username for the given detailed account.', nullable: true })
+  @ApiProperty({ description: 'The username specific for this account', nullable: true })
+  username: string | undefined = undefined;
 
   @Field(() => String, { description: 'Developer reward for the given detailed account.' })
   @ApiProperty({ description: 'The developer reward' })
@@ -49,6 +49,10 @@ export class AccountDetailed extends Account {
   @ApiProperty({ description: 'Specific property flag for smart contract', type: Number })
   deployedAt?: number;
 
+  @Field(() => String, { description: 'DeployTxHash for the given detailed account.', nullable: true })
+  @ApiProperty({ description: 'The contract deploy transaction hash' })
+  deployTxHash?: string;
+
   @Field(() => Boolean, { description: 'If the given detailed account is upgradeable.', nullable: true })
   @ApiProperty({ description: 'Specific property flag for smart contract', type: Boolean })
   isUpgradeable?: boolean;
@@ -56,6 +60,10 @@ export class AccountDetailed extends Account {
   @Field(() => Boolean, { description: 'If the given detailed account is readable.', nullable: true })
   @ApiProperty({ description: 'Specific property flag for smart contract', type: Boolean })
   isReadable?: boolean;
+
+  @Field(() => Boolean, { description: 'If the given detailed account is verified.', nullable: true })
+  @ApiProperty({ description: 'Specific property flag for smart contract', type: Boolean })
+  isVerified?: boolean;
 
   @Field(() => Boolean, { description: 'If the given detailed account is payable.', nullable: true })
   @ApiProperty({ description: 'Specific property flag for smart contract', type: Boolean })
@@ -75,4 +83,25 @@ export class AccountDetailed extends Account {
   @Field(() => [NftAccount], { description: 'NFTs for the given detailed account. Complexity: 1000', nullable: true })
   @ComplexityEstimation({ group: 'nfts', value: 1000 })
   nfts: NftAccount[] | undefined = undefined;
+
+  @ApiProperty({ type: Number, nullable: true })
+  activeGuardianActivationEpoch?: number;
+
+  @ApiProperty({ type: String, nullable: true })
+  activeGuardianAddress?: string;
+
+  @ApiProperty({ type: String, nullable: true })
+  activeGuardianServiceUid?: string;
+
+  @ApiProperty({ type: Number, nullable: true })
+  pendingGuardianActivationEpoch?: number;
+
+  @ApiProperty({ type: String, nullable: true })
+  pendingGuardianAddress?: string;
+
+  @ApiProperty({ type: String, nullable: true })
+  pendingGuardianServiceUid?: string;
+
+  @ApiProperty({ type: Boolean, nullable: true })
+  isGuarded?: boolean;
 }

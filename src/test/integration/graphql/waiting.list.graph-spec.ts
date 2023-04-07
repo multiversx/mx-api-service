@@ -7,7 +7,7 @@ describe('WaitingList', () => {
   let app: INestApplication;
   const gql = '/graphql';
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [PublicAppModule],
     }).compile();
@@ -16,6 +16,9 @@ describe('WaitingList', () => {
     await app.init();
   });
 
+  afterAll(async () => {
+    await app.close();
+  });
   describe('Query - Get Waiting List', () => {
     it('should returns node waiting list', async () => {
       await request(app.getHttpServer())
@@ -41,9 +44,5 @@ describe('WaitingList', () => {
           }
         });
     });
-  });
-
-  afterEach(async () => {
-    await app.close();
   });
 });

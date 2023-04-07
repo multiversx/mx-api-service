@@ -1,4 +1,4 @@
-import { ApiModule } from "@elrondnetwork/erdnest";
+import { ApiModule } from "@multiversx/sdk-nestjs";
 import { Module } from "@nestjs/common";
 import { AWSService } from "../thumbnails/aws.service";
 import { NftAssetService } from "./nft.asset.service";

@@ -7,13 +7,17 @@ describe('Transactions', () => {
   let app: INestApplication;
   const gql = '/graphql';
 
-  beforeEach(async () => {
+  beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [PublicAppModule],
     }).compile();
 
     app = moduleFixture.createNestApplication();
     await app.init();
+  });
+
+  afterAll(async () => {
+    await app.close();
   });
 
   describe('Query - Get Transaction', () => {
@@ -218,7 +222,47 @@ describe('Transactions', () => {
     });
   });
 
-  afterEach(async () => {
-    await app.close();
+  describe('Query - Get Transactions', () => {
+    it('should return an array of transactions with value field value <> 0', async () => {
+      await request(app.getHttpServer())
+        .post(gql)
+        .send({
+          query: `{
+            transactions(input:{
+              token: "EGLD"
+            }){
+              txHash
+              gasLimit
+              gasPrice
+              gasUsed
+              miniBlockHash
+              nonce
+              receiverAddress
+              receiverShard
+              round
+              senderAddress
+              senderShard
+              signature
+              status
+              value
+              fee
+              timestamp
+              data
+              function
+              action{
+                category
+                name
+                description
+                arguments
+              }
+            }
+          }`,
+        })
+        .expect(200)
+        .then(res => {
+          expect(res.body.data.transactions).toBeDefined();
+          expect(res.body.data.transactions.value).not.toEqual('0');
+        });
+    });
   });
 });

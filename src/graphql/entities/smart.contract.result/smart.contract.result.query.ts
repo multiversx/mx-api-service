@@ -10,7 +10,7 @@ import { NotFoundException } from "@nestjs/common";
 export class SmartContractResultQuery {
   constructor(protected readonly smartContractResultService: SmartContractResultService) { }
 
-  @Query(() => [SmartContractResult], { name: "scResults", description: "Retrieve all smart contract results for the given input." })
+  @Query(() => [SmartContractResult], { name: "results", description: "Retrieve all smart contract results for the given input." })
   public async getScResults(@Args("input", { description: "Input to retrieve the given smart contract results for." }) input: GetSmartContractResultInput): Promise<SmartContractResult[]> {
     return await this.smartContractResultService.getScResults(
       new QueryPagination({
@@ -24,12 +24,12 @@ export class SmartContractResultQuery {
     );
   }
 
-  @Query(() => Float, { name: "scResultsCount", description: "Returns total number of smart contracts." })
+  @Query(() => Float, { name: "resultsCount", description: "Returns total number of smart contracts." })
   public async getScResultsCount(): Promise<number> {
     return await this.smartContractResultService.getScResultsCount();
   }
 
-  @Query(() => SmartContractResult, { name: "scResult", description: "Retrieve the smart contract details for the given input.", nullable: true })
+  @Query(() => SmartContractResult, { name: "result", description: "Retrieve the smart contract details for the given input.", nullable: true })
   public async getScResult(@Args("input", { description: "Input to retrieve the given smart contract for." }) input: GetSmartContractHashInput): Promise<SmartContractResult | undefined> {
     try {
       return await this.smartContractResultService.getScResult(input.scHash);

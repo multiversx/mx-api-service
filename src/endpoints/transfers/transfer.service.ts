@@ -4,9 +4,10 @@ import { TransactionFilter } from "../transactions/entities/transaction.filter";
 import { TransactionType } from "../transactions/entities/transaction.type";
 import { Transaction } from "../transactions/entities/transaction";
 import { TransactionService } from "../transactions/transaction.service";
-import { ApiUtils } from "@elrondnetwork/erdnest";
+import { ApiUtils } from "@multiversx/sdk-nestjs";
 import { IndexerService } from "src/common/indexer/indexer.service";
-import { AssetsService } from "src/common/assets/assets.service";
+import { TransactionQueryOptions } from "../transactions/entities/transactions.query.options";
+import { TransactionDetailed } from "../transactions/entities/transaction.detailed";
 
 @Injectable()
 export class TransferService {
@@ -14,7 +15,6 @@ export class TransferService {
     private readonly indexerService: IndexerService,
     @Inject(forwardRef(() => TransactionService))
     private readonly transactionService: TransactionService,
-    private readonly assetsService: AssetsService,
   ) { }
 
   private sortElasticTransfers(elasticTransfers: any[]): any[] {
@@ -42,15 +42,14 @@ export class TransferService {
     return elasticTransfers;
   }
 
-  async getTransfers(filter: TransactionFilter, pagination: QueryPagination): Promise<Transaction[]> {
+  async getTransfers(filter: TransactionFilter, pagination: QueryPagination, queryOptions: TransactionQueryOptions, fields?: string[]): Promise<Transaction[]> {
     let elasticOperations = await this.indexerService.getTransfers(filter, pagination);
     elasticOperations = this.sortElasticTransfers(elasticOperations);
 
-    const transactions: Transaction[] = [];
+    const transactions: TransactionDetailed[] = [];
 
-    const assets = await this.assetsService.getAllAccountAssets();
     for (const elasticOperation of elasticOperations) {
-      const transaction = ApiUtils.mergeObjects(new Transaction(), elasticOperation);
+      const transaction = ApiUtils.mergeObjects(new TransactionDetailed(), elasticOperation);
       transaction.type = elasticOperation.type === 'normal' ? TransactionType.Transaction : TransactionType.SmartContractResult;
 
       if (transaction.type === TransactionType.SmartContractResult) {
@@ -60,12 +59,17 @@ export class TransferService {
         delete transaction.nonce;
         delete transaction.round;
       }
-
-
       transactions.push(transaction);
     }
 
-    await this.transactionService.processTransactions(transactions, pagination.size <= 100, assets);
+    if (queryOptions.withBlockInfo || (fields && fields.includesSome(['senderBlockHash', 'receiverBlockHash', 'senderBlockNonce', 'receiverBlockNonce']))) {
+      await this.transactionService.applyBlockInfo(transactions);
+    }
+
+    await this.transactionService.processTransactions(transactions, {
+      withScamInfo: queryOptions.withScamInfo ?? false,
+      withUsername: queryOptions.withUsername ?? false,
+    });
 
     return transactions;
   }

@@ -7,7 +7,7 @@ import { ProcessNftsModule } from 'src/endpoints/process-nfts/process.nfts.modul
 import { QueryPagination } from 'src/common/entities/query.pagination';
 import { NftFilter } from 'src/endpoints/nfts/entities/nft.filter';
 import { ApiConfigService } from 'src/common/api-config/api.config.service';
-import { Constants } from '@elrondnetwork/erdnest';
+import { Constants } from '@multiversx/sdk-nestjs';
 import { NftQueryOptions } from 'src/endpoints/nfts/entities/nft.query.options';
 import { ProcessNftsService } from 'src/endpoints/process-nfts/process.nfts.service';
 import { ProcessNftSettings } from 'src/endpoints/process-nfts/entities/process.nft.settings';
@@ -55,7 +55,7 @@ describe('Process Nft Service', () => {
     score: undefined,
     isNsfw: undefined,
     rank: undefined,
-    isTransferAffected: true,
+    rarities: undefined,
   };
 
   beforeAll(async () => {

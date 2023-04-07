@@ -1,5 +1,5 @@
-import { ParseAddressAndMetachainPipe, ApplyComplexity, ParseAddressArrayPipe, ParseArrayPipe, QueryConditionOptions } from '@elrondnetwork/erdnest';
-import { ParseBlockHashPipe, ParseBoolPipe, ParseEnumPipe, ParseIntPipe, ParseTransactionHashPipe } from '@elrondnetwork/erdnest';
+import { ParseAddressAndMetachainPipe, ApplyComplexity, ParseAddressArrayPipe, ParseArrayPipe, QueryConditionOptions } from '@multiversx/sdk-nestjs';
+import { ParseBlockHashPipe, ParseBoolPipe, ParseEnumPipe, ParseIntPipe, ParseTransactionHashPipe } from '@multiversx/sdk-nestjs';
 import { BadRequestException, Body, Controller, DefaultValuePipe, Get, NotFoundException, Param, Post, Query } from '@nestjs/common';
 import { ApiCreatedResponse, ApiExcludeEndpoint, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { QueryPagination } from 'src/common/entities/query.pagination';
@@ -31,7 +31,6 @@ export class TransactionController {
   @ApiQuery({ name: 'miniBlockHash', description: 'Filter by miniblock hash', required: false })
   @ApiQuery({ name: 'hashes', description: 'Filter by a comma-separated list of transaction hashes', required: false })
   @ApiQuery({ name: 'status', description: 'Status of the transaction (success / pending / invalid / fail)', required: false, enum: TransactionStatus })
-  @ApiQuery({ name: 'search', description: 'Search in data object', required: false })
   @ApiQuery({ name: 'function', description: 'Filter transactions by function name', required: false })
   @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
@@ -42,7 +41,9 @@ export class TransactionController {
   @ApiQuery({ name: 'withScResults', description: 'Return results for transactions. When "withScResults" parameter is applied, complexity estimation is 200', required: false, type: Boolean })
   @ApiQuery({ name: 'withOperations', description: 'Return operations for transactions. When "withOperations" parameter is applied, complexity estimation is 200', required: false, type: Boolean })
   @ApiQuery({ name: 'withLogs', description: 'Return logs for transactions. When "withLogs" parameter is applied, complexity estimation is 200', required: false, type: Boolean })
-  @ApiQuery({ name: 'withScamInfo', required: false, type: Boolean })
+  @ApiQuery({ name: 'withScamInfo', description: 'Returns scam information', required: false, type: Boolean })
+  @ApiQuery({ name: 'withUsername', description: 'Integrates username in assets for all addresses present in the transactions', required: false, type: Boolean })
+  @ApiQuery({ name: 'withBlockInfo', description: 'Returns sender / receiver block details', required: false, type: Boolean })
   getTransactions(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
@@ -54,30 +55,31 @@ export class TransactionController {
     @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash?: string,
     @Query('hashes', ParseArrayPipe) hashes?: string[],
     @Query('status', new ParseEnumPipe(TransactionStatus)) status?: TransactionStatus,
-    @Query('search') search?: string,
-    @Query('function') scFunction?: string,
+    @Query('function', ParseArrayPipe) functions?: string[],
     @Query('condition') condition?: QueryConditionOptions,
     @Query('before', ParseIntPipe) before?: number,
     @Query('after', ParseIntPipe) after?: number,
     @Query('order', new ParseEnumPipe(SortOrder)) order?: SortOrder,
+    @Query('fields', ParseArrayPipe) fields?: string[],
     @Query('withScResults', new ParseBoolPipe) withScResults?: boolean,
     @Query('withOperations', new ParseBoolPipe) withOperations?: boolean,
     @Query('withLogs', new ParseBoolPipe) withLogs?: boolean,
     @Query('withScamInfo', new ParseBoolPipe) withScamInfo?: boolean,
+    @Query('withUsername', new ParseBoolPipe) withUsername?: boolean,
+    @Query('withBlockInfo', new ParseBoolPipe) withBlockInfo?: boolean,
   ) {
-    const options = TransactionQueryOptions.enforceScamInfoFlag(size, { withScResults, withOperations, withLogs, withScamInfo });
+    const options = TransactionQueryOptions.applyDefaultOptions(size, { withScResults, withOperations, withLogs, withScamInfo, withUsername, withBlockInfo });
 
     return this.transactionService.getTransactions(new TransactionFilter({
       sender,
       receivers: receiver,
       token,
-      function: scFunction,
+      functions,
       senderShard,
       receiverShard,
       miniBlockHash,
       hashes,
       status,
-      search,
       before,
       after,
       condition,
@@ -85,6 +87,8 @@ export class TransactionController {
     }),
       new QueryPagination({ from, size }),
       options,
+      undefined,
+      fields,
     );
   }
 
@@ -100,7 +104,6 @@ export class TransactionController {
   @ApiQuery({ name: 'hashes', description: 'Filter by a comma-separated list of transaction hashes', required: false })
   @ApiQuery({ name: 'status', description: 'Status of the transaction (success / pending / invalid / fail)', required: false, enum: TransactionStatus })
   @ApiQuery({ name: 'condition', description: 'Condition for elastic search queries', required: false, deprecated: true })
-  @ApiQuery({ name: 'search', description: 'Search in data object', required: false })
   @ApiQuery({ name: 'function', description: 'Filter transactions by function name', required: false })
   @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
@@ -113,8 +116,7 @@ export class TransactionController {
     @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash?: string,
     @Query('hashes', ParseArrayPipe) hashes?: string[],
     @Query('status', new ParseEnumPipe(TransactionStatus)) status?: TransactionStatus,
-    @Query('search') search?: string,
-    @Query('function') scFunction?: string,
+    @Query('function', ParseArrayPipe) functions?: string[],
     @Query('condition') condition?: QueryConditionOptions,
     @Query('before', ParseIntPipe) before?: number,
     @Query('after', ParseIntPipe) after?: number,
@@ -128,8 +130,7 @@ export class TransactionController {
       miniBlockHash,
       hashes,
       status,
-      search,
-      function: scFunction,
+      functions,
       before,
       after,
       condition,
@@ -147,8 +148,7 @@ export class TransactionController {
     @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash?: string,
     @Query('hashes', ParseArrayPipe) hashes?: string[],
     @Query('status', new ParseEnumPipe(TransactionStatus)) status?: TransactionStatus,
-    @Query('search') search?: string,
-    @Query('function') scFunction?: string,
+    @Query('function', ParseArrayPipe) functions?: string[],
     @Query('condition') condition?: QueryConditionOptions,
     @Query('before', ParseIntPipe) before?: number,
     @Query('after', ParseIntPipe) after?: number,
@@ -162,8 +162,7 @@ export class TransactionController {
       miniBlockHash,
       hashes,
       status,
-      search,
-      function: scFunction,
+      functions,
       before,
       after,
       condition,

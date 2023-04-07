@@ -1,8 +1,8 @@
-import { AddressUtils, BinaryUtils, NumberUtils, StringUtils } from "@elrondnetwork/erdnest";
+import { AddressUtils, BinaryUtils, NumberUtils, StringUtils } from "@multiversx/sdk-nestjs";
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { TokenTransferProperties } from "src/endpoints/tokens/entities/token.transfer.properties";
-import { TokenType } from "src/endpoints/tokens/entities/token.type";
+import { EsdtType } from "src/endpoints/esdt/entities/esdt.type";
 import { TokenTransferService } from "src/endpoints/tokens/token.transfer.service";
 import { TransactionAction } from "../../entities/transaction.action";
 import { TransactionActionCategory } from "../../entities/transaction.action.category";
@@ -35,7 +35,7 @@ export class TransactionActionEsdtNftRecognizerService implements TransactionAct
       return undefined;
     }
 
-    if (!AddressUtils.isAddressValid(metadata.functionArgs[1])) {
+    if (!AddressUtils.isValidHexAddress(metadata.functionArgs[1])) {
       return undefined;
     }
 
@@ -133,12 +133,12 @@ export class TransactionActionEsdtNftRecognizerService implements TransactionAct
 
   private getNftTransferDescription(properties: TokenTransferProperties, value: BigInt): string {
     switch (properties.type) {
-      case TokenType.MetaESDT:
+      case EsdtType.MetaESDT:
         const denominatedValue = NumberUtils.toDenominatedString(value, properties.decimals);
         return `${denominatedValue} ${properties.name} (${properties.identifier})`;
-      case TokenType.NonFungibleESDT:
+      case EsdtType.NonFungibleESDT:
         return `NFT of collection ${properties.name} (${properties.identifier})`;
-      case TokenType.SemiFungibleESDT:
+      case EsdtType.SemiFungibleESDT:
         return `quantity ${value.toString()} for NFT of collection ${properties.name} (${properties.identifier})`;
       default:
         return 'Unknown';

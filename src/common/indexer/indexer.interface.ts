@@ -1,5 +1,8 @@
+import { AccountFilter } from "src/endpoints/accounts/entities/account.filter";
+import { AccountHistoryFilter } from "src/endpoints/accounts/entities/account.history.filter";
 import { BlockFilter } from "src/endpoints/blocks/entities/block.filter";
 import { CollectionFilter } from "src/endpoints/collections/entities/collection.filter";
+import { MiniBlockFilter } from "src/endpoints/miniblocks/entities/mini.block.filter";
 import { NftFilter } from "src/endpoints/nfts/entities/nft.filter";
 import { NftMedia } from "src/endpoints/nfts/entities/nft.media";
 import { RoundFilter } from "src/endpoints/rounds/entities/round.filter";
@@ -12,7 +15,7 @@ import { QueryPagination } from "../entities/query.pagination";
 import { Account, AccountHistory, AccountTokenHistory, Block, Collection, MiniBlock, Operation, Round, ScDeploy, ScResult, Tag, Token, TokenAccount, Transaction, TransactionLog, TransactionReceipt } from "./entities";
 
 export interface IndexerInterface {
-  getAccountsCount(): Promise<number>
+  getAccountsCount(filter: AccountFilter): Promise<number>
 
   getScResultsCount(): Promise<number>
 
@@ -34,7 +37,7 @@ export interface IndexerInterface {
 
   getTransfersCount(filter: TransactionFilter): Promise<number>
 
-  getTokenCountForAddress(address: string): Promise<number>
+  getTokenCountForAddress(address: string, filter: TokenFilter): Promise<number>
 
   getTokenAccountsCount(identifier: string): Promise<number | undefined>
 
@@ -60,13 +63,15 @@ export interface IndexerInterface {
 
   getTransaction(txHash: string): Promise<Transaction | null>
 
-  getScDeploy(address: string): Promise<ScDeploy>
+  getScDeploy(address: string): Promise<ScDeploy | undefined>
 
   getScResult(scHash: string): Promise<ScResult>
 
   getBlock(hash: string): Promise<Block>
 
   getMiniBlock(miniBlockHash: string): Promise<MiniBlock>
+
+  getMiniBlocks(pagination: QueryPagination, filter: MiniBlockFilter): Promise<MiniBlock[]>
 
   getTag(tag: string): Promise<Tag>
 
@@ -92,13 +97,19 @@ export interface IndexerInterface {
 
   getAccountScResults(address: string, pagination: QueryPagination): Promise<ScResult[]>
 
-  getAccounts(queryPagination: QueryPagination): Promise<Account[]>
+  getAccount(address: string): Promise<Account>
+
+  getAccounts(queryPagination: QueryPagination, filter: AccountFilter): Promise<Account[]>
 
   getAccountContracts(pagination: QueryPagination, address: string): Promise<ScDeploy[]>
 
-  getAccountHistory(address: string, pagination: QueryPagination): Promise<AccountHistory[]>
+  getAccountHistory(address: string, pagination: QueryPagination, filter: AccountHistoryFilter): Promise<AccountHistory[]>
 
-  getAccountTokenHistory(address: string, tokenIdentifier: string, pagination: QueryPagination): Promise<AccountTokenHistory[]>
+  getAccountHistoryCount(address: string, filter?: AccountHistoryFilter): Promise<number>
+
+  getAccountTokenHistoryCount(address: string, tokenIdentifier: string, filter?: AccountHistoryFilter): Promise<number>
+
+  getAccountTokenHistory(address: string, tokenIdentifier: string, pagination: QueryPagination, filter: AccountHistoryFilter): Promise<AccountTokenHistory[]>
 
   getTransactions(filter: TransactionFilter, pagination: QueryPagination, address?: string): Promise<Transaction[]>
 
@@ -141,4 +152,6 @@ export interface IndexerInterface {
   setMediaForToken(identifier: string, value: NftMedia[]): Promise<void>
 
   setMetadataForToken(identifier: string, value: any): Promise<void>
+
+  setExtraCollectionFields(identifier: string, isVerified: boolean, holderCount: number, nftCount: number): Promise<void>
 }
