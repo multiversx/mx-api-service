@@ -783,9 +783,7 @@ export class ApiConfigService {
   }
 
   getNativeAuthAcceptedOrigins(): string[] {
-    return this.configService.get<string[]>('features.auth.acceptedOrigins') ?? [
-      'https://testnet-wallet.multiversx.com',
-    ];
+    return this.configService.get<string[]>('features.auth.acceptedOrigins') ?? [''];
   }
 
   getNativeAuthMaxExpirySeconds(): number {
