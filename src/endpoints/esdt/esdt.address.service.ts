@@ -19,6 +19,8 @@ import { CollectionRoles } from "../tokens/entities/collection.roles";
 import { AddressUtils, ApiUtils, BinaryUtils, ElrondCachingService, MetricsService } from "@multiversx/sdk-nestjs";
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { OriginLogger } from "@multiversx/sdk-nestjs";
+import { TrieOperationsTimeoutError } from "./exceptions/trie.operations.timeout.error";
+import { CacheInfo } from "src/utils/cache.info";
 
 @Injectable()
 export class EsdtAddressService {
@@ -42,14 +44,14 @@ export class EsdtAddressService {
 
   async getNftsForAddress(address: string, filter: NftFilter, pagination: QueryPagination, source?: EsdtDataSource): Promise<NftAccount[]> {
     if (filter.identifiers && filter.identifiers.length === 1) {
-      return await this.getNftsForAddressFromGateway(address, filter, pagination);
+      return await this.getNftsForAddressFromGatewayWithElasticFallback(address, filter, pagination);
     }
 
     if (source === EsdtDataSource.elastic || AddressUtils.isSmartContractAddress(address)) {
       return await this.getNftsForAddressFromElastic(address, filter, pagination);
     }
 
-    return await this.getNftsForAddressFromGateway(address, filter, pagination);
+    return await this.getNftsForAddressFromGatewayWithElasticFallback(address, filter, pagination);
   }
 
   async getNftCountForAddressFromElastic(address: string, filter: NftFilter): Promise<number> {
@@ -193,6 +195,24 @@ export class EsdtAddressService {
     }
   }
 
+  private async getNftsForAddressFromGatewayWithElasticFallback(address: string, filter: NftFilter, pagination: QueryPagination): Promise<NftAccount[]> {
+    const isTrieTimeout = await this.cachingService.get<boolean>(CacheInfo.AddressEsdtTrieTimeout(address).key);
+    if (isTrieTimeout) {
+      return await this.getNftsForAddressFromElastic(address, filter, pagination);
+    }
+
+    try {
+      return await this.getNftsForAddressFromGateway(address, filter, pagination);
+    } catch (error) {
+      if (error instanceof TrieOperationsTimeoutError) {
+        await this.cachingService.set(CacheInfo.AddressEsdtTrieTimeout(address).key, true, CacheInfo.AddressEsdtTrieTimeout(address).ttl);
+        return await this.getNftsForAddressFromElastic(address, filter, pagination);
+      }
+
+      throw error;
+    }
+  }
+
   private async getNftsForAddressFromGateway(address: string, filter: NftFilter, pagination: QueryPagination): Promise<NftAccount[]> {
     let esdts: Record<string, any> = {};
 
@@ -296,9 +316,17 @@ export class EsdtAddressService {
     // eslint-disable-next-line require-await
     const esdtResult = await this.gatewayService.get(`address/${address}/esdt`, GatewayComponentRequest.addressEsdt, async (error) => {
       const errorMessage = error?.response?.data?.error;
-      if (errorMessage && errorMessage.includes('account was not found')) {
-        return true;
+      if (errorMessage) {
+        if (errorMessage.includes('account was not found')) {
+          return true;
+        }
+
+        if (errorMessage.includes('trie operations timeout')) {
+          throw new TrieOperationsTimeoutError();
+        }
       }
+
+
 
       return false;
     });
