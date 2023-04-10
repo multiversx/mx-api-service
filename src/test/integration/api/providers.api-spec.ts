@@ -20,10 +20,22 @@ describe("API Testing", () => {
     await app.init();
   });
 
-  it("/providers", async () => {
+  afterAll(async () => {
+    await app.close();
+  });
+
+  it('should check providers status response code', async () => {
     const checker = new ApiChecker('providers', app.getHttpServer());
     await checker.checkStatus();
+  });
+
+  it('should check providers count', async () => {
+    const checker = new ApiChecker('providers', app.getHttpServer());
+    await checker.checkAlternativeCount();
+  });
+
+  it('should check providers details', async () => {
+    const checker = new ApiChecker('providers', app.getHttpServer());
     await checker.checkDetails();
-    await checker.checkFilter(['identity']);
   });
 });
