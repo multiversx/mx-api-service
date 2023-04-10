@@ -51,6 +51,7 @@ describe('Token Service', () => {
           useValue:
           {
             getOrSet: jest.fn(),
+            get: jest.fn(),
           },
         },
         {
