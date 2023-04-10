@@ -9,13 +9,14 @@ import { NodeService } from "src/endpoints/nodes/node.service";
 import { ProviderService } from "src/endpoints/providers/provider.service";
 import { StakeService } from "src/endpoints/stake/stake.service";
 import { VmQueryService } from "src/endpoints/vm.query/vm.query.service";
-import * as fs from 'fs';
-import * as path from 'path';
 import { CacheInfo } from "src/utils/cache.info";
 import { NodeFilter } from "src/endpoints/nodes/entities/node.filter";
 import { NodeStatus } from "src/endpoints/nodes/entities/node.status";
 import { NodeType } from "src/endpoints/nodes/entities/node.type";
 import { QueryPagination } from "src/common/entities/query.pagination";
+import { NodeSort } from "src/endpoints/nodes/entities/node.sort";
+import * as fs from 'fs';
+import * as path from 'path';
 
 describe('NodeService', () => {
   let nodeService: NodeService;
@@ -317,17 +318,36 @@ describe('NodeService', () => {
     describe('getNodes', () => {
       it('should return an array of nodes and not filtered', async () => {
         const allNodesSpy = jest.spyOn(nodeService, 'getAllNodes').mockResolvedValueOnce(Promise.resolve(mockNodes));
-        const result = await nodeService.getNodes(new QueryPagination(), new NodeFilter());
+        const results = await nodeService.getNodes(new QueryPagination(), new NodeFilter());
 
-        expect(result.length).toStrictEqual(25);
+        expect(results.length).toStrictEqual(25);
         expect(allNodesSpy).toHaveBeenCalled();
       });
 
       it('should return an array of with one node and not filtered', async () => {
         const allNodesSpy = jest.spyOn(nodeService, 'getAllNodes').mockResolvedValueOnce(Promise.resolve(mockNodes));
-        const result = await nodeService.getNodes(new QueryPagination({ size: 1 }), new NodeFilter());
+        const results = await nodeService.getNodes(new QueryPagination({ size: 1 }), new NodeFilter());
 
-        expect(result.length).toStrictEqual(1);
+        expect(results.length).toStrictEqual(1);
+        expect(allNodesSpy).toHaveBeenCalled();
+      });
+
+      it('should return an array of nodes sorted by name ', async () => {
+        const allNodesSpy = jest.spyOn(nodeService, 'getAllNodes').mockResolvedValueOnce(Promise.resolve(mockNodes));
+        const results = await nodeService.getNodes(new QueryPagination({ size: 5 }), new NodeFilter({ sort: NodeSort.name }));
+        const sortedMockNodes = results.sort((a: any, b: any) => a.name.localeCompare(b.name));
+
+        expect(results).toEqual(sortedMockNodes);
+        expect(allNodesSpy).toHaveBeenCalled();
+      });
+
+      it('should return an array of nodes sorted by locked value ', async () => {
+        const allNodesSpy = jest.spyOn(nodeService, 'getAllNodes').mockResolvedValueOnce(Promise.resolve(mockNodes));
+        const results = await nodeService.getNodes(new QueryPagination({ size: 5 }), new NodeFilter({ sort: NodeSort.locked }));
+
+        for (const result of results) {
+          expect(result.locked).toStrictEqual('2500000000000000000000');
+        }
         expect(allNodesSpy).toHaveBeenCalled();
       });
     });
