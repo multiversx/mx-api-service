@@ -2,6 +2,7 @@ import { Body, Controller, Get, HttpException, HttpStatus, Logger, Param, Post, 
 import { TransactionBatchSimplified } from "./entities/transaction.batch.simplified";
 import { TransactionBatchSimplifiedResult } from "./entities/transaction.batch.simplified.result";
 import { TransactionsBatchService } from "./transactions.batch.service";
+import { ParseAddressPipe } from "@multiversx/sdk-nestjs";
 
 @Controller()
 export class TransactionsBatchController {
@@ -43,7 +44,7 @@ export class TransactionsBatchController {
 
   @Get('/batch/:address/:id')
   async getTransactionBatch(
-    @Param('address') address: string,
+    @Param('address', ParseAddressPipe) address: string,
     @Param('id') batchId: string,
   ): Promise<TransactionBatchSimplifiedResult> {
     const batch = await this.transactionsBatchService.getTransactionBatch(address, batchId);
@@ -56,7 +57,7 @@ export class TransactionsBatchController {
 
   @Get('/batch/:address')
   async getTransactionBatches(
-    @Param('address') address: string,
+    @Param('address', ParseAddressPipe) address: string,
   ): Promise<TransactionBatchSimplifiedResult[]> {
     const batches = await this.transactionsBatchService.getTransactionBatches(address);
 
