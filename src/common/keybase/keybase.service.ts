@@ -118,8 +118,8 @@ export class KeybaseService {
   async confirmKeybasesAgainstGithubForIdentity(identity: string): Promise<void> {
     try {
       const multiversxResults = await this.githubService.getRepoFileContents(identity, 'multiversx', 'keys.json');
-
       if (!multiversxResults) {
+        this.logger.log(`github.com validation not found for identity '${identity}'`);
         return;
       }
 
@@ -137,7 +137,7 @@ export class KeybaseService {
 
       await this.persistenceService.setKeybaseConfirmationForIdentity(identity, keys);
     } catch (error) {
-      this.logger.log(`Error when confirming keybase against github for identity '${identity}'`);
+      this.logger.log(`github.com validation failure for identity '${identity}'`);
       this.logger.error(error);
     }
   }
