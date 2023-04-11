@@ -21,7 +21,12 @@ export class ApiConfigService {
   }
 
   getSelfUrl(): string {
-    return 'https://testnet-api.multiversx.com';
+    const selfUrl = this.configService.get<string>('urls.self');
+    if (!selfUrl) {
+      throw new Error('No self url present');
+    }
+
+    return selfUrl;
   }
 
   isGuestCachingFeatureActive(): boolean {
