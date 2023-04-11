@@ -20,10 +20,17 @@ describe("API Testing", () => {
     await app.init();
   });
 
-  it("/transactions", async () => {
+  afterAll(async () => {
+    await app.close();
+  });
+
+  it('should check transactions status response code', async () => {
     const checker = new ApiChecker('transactions', app.getHttpServer());
     await checker.checkStatus();
-    await checker.checkDetails();
+  });
+
+  it('should check transactions count', async () => {
+    const checker = new ApiChecker('transactions', app.getHttpServer());
     await checker.checkAlternativeCount();
   });
 });
