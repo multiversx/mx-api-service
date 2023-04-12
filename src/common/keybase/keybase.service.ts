@@ -135,6 +135,8 @@ export class KeybaseService {
         true
       );
 
+      await this.cachingService.setRemote(CacheInfo.GithubKeysValidated(identity).key, true, CacheInfo.GithubKeysValidated(identity).ttl);
+
       await this.persistenceService.setKeybaseConfirmationForIdentity(identity, keys);
     } catch (error) {
       this.logger.log(`github.com validation failure for identity '${identity}'`);
@@ -201,16 +203,15 @@ export class KeybaseService {
     const keybaseProfile = await this.getProfileFromKeybase(identity);
     if (keybaseProfile) {
       this.logger.log(`Got profile details from keybase.io for identity '${identity}'`);
-      return keybaseProfile;
     }
 
     const githubProfile = await this.getProfileFromGithub(identity);
     if (githubProfile) {
       this.logger.log(`Got profile details from github.com for identity '${identity}'`);
-      return githubProfile;
+      await this.cachingService.setRemote(CacheInfo.GithubProfileValidated(identity).key, true, CacheInfo.GithubProfileValidated(identity).ttl);
     }
 
-    return null;
+    return keybaseProfile ?? githubProfile;
   }
 
   async getProfileFromGithub(identity: string): Promise<KeybaseIdentity | null> {

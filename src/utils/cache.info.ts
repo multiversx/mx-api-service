@@ -563,6 +563,20 @@ export class CacheInfo {
     };
   }
 
+  static GithubKeysValidated(identity: string): CacheInfo {
+    return {
+      key: `githubKeysValidated:${identity}`,
+      ttl: Constants.oneDay(),
+    };
+  }
+
+  static GithubProfileValidated(identity: string): CacheInfo {
+    return {
+      key: `githubProfileValidated:${identity}`,
+      ttl: Constants.oneDay(),
+    };
+  }
+
   static DataApiTokenPrice(identifier: string, timestamp?: number): CacheInfo {
     const priceDate = timestamp ? new Date(timestamp * 1000) : new Date();
     const isCurrentDate = priceDate.toISODateString() === new Date().toISODateString();

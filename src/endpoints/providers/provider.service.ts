@@ -141,6 +141,15 @@ export class ProviderService {
 
     providers = providers.filter(provider => provider.numNodes > 0 && this.isIdentityFormattedCorrectly(provider.identity ?? ''));
 
+    for (const provider of providers) {
+      if (!provider.identity) {
+        continue;
+      }
+
+      provider.githubProfileValidated = (await this.cachingService.getRemote<boolean>(CacheInfo.GithubProfileValidated(provider.identity).key)) ?? false;
+      provider.githubKeysValidated = (await this.cachingService.getRemote<boolean>(CacheInfo.GithubKeysValidated(provider.identity).key)) ?? false;
+    }
+
     return providers;
   }
 
@@ -229,7 +238,7 @@ export class ProviderService {
     ]);
 
     const providersRaw: Provider[] = providerAddresses.map((provider, index) => {
-      return {
+      return new Provider({
         provider,
         ...configs[index],
         numUsers: numUsers[index] ?? 0,
@@ -240,7 +249,7 @@ export class ProviderService {
         topUp: '0',
         locked: '0',
         featured: false,
-      };
+      });
     });
 
     const providerKeybases = await this.keybaseService.getCachedNodesAndProvidersKeybases();
