@@ -556,6 +556,13 @@ export class CacheInfo {
     ttl: Constants.oneMinute() * 10,
   };
 
+  static AddressEsdtTrieTimeout(address: string): CacheInfo {
+    return {
+      key: `addressEsdtTrieTimeout:${address}`,
+      ttl: Constants.oneHour(),
+    };
+  }
+
   static DataApiTokenPrice(identifier: string, timestamp?: number): CacheInfo {
     const priceDate = timestamp ? new Date(timestamp * 1000) : new Date();
     const isCurrentDate = priceDate.toISODateString() === new Date().toISODateString();

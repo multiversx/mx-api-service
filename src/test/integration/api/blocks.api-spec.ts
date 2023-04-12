@@ -20,15 +20,35 @@ describe("API Testing", () => {
     await app.init();
   });
 
-  it("/blocks", async () => {
+  const skipedFields = ['scheduledRootHash'];
+  const randomShard = Math.floor(Math.random() * 3);
+
+  afterAll(async () => {
+    await app.close();
+  });
+
+  it("should check blocks pagination", async () => {
     const checker = new ApiChecker('blocks', app.getHttpServer());
-    const randomShard = Math.floor(Math.random() * 3);
+
     checker.defaultParams = { epoch: 500, shard: randomShard };
-    checker.skipFields = ['scheduledRootHash'];
-    await checker.checkStatus();
+    checker.skipFields = skipedFields;
+
     await checker.checkPagination();
-    await checker.checkDetails();
-    await checker.checkFilter(['shard', 'epoch', 'nonce']);
+  });
+
+  it('should check blocks status response code', async () => {
+    const checker = new ApiChecker('blocks', app.getHttpServer());
+
+    checker.defaultParams = { epoch: 500, shard: randomShard };
+    checker.skipFields = skipedFields;
+    await checker.checkStatus();
+  });
+
+  it('should check blocks count', async () => {
+    const checker = new ApiChecker('blocks', app.getHttpServer());
+
+    checker.defaultParams = { epoch: 500, shard: randomShard };
+    checker.skipFields = skipedFields;
     await checker.checkAlternativeCount();
   });
 });

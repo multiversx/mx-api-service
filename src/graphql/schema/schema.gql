@@ -3768,6 +3768,12 @@ type Transaction {
   """Gas used for the given transaction."""
   gasUsed: Float
 
+  """Guardian address for the given transaction."""
+  guardianAddress: String
+
+  """Guardian signature for the given transaction."""
+  guardianSignature: String
+
   """Mini block hash for the given transaction."""
   miniBlockHash: String
 
@@ -3866,6 +3872,12 @@ type TransactionDetailed {
 
   """Gas used for the given transaction."""
   gasUsed: Float
+
+  """Guardian address for the given transaction."""
+  guardianAddress: String
+
+  """Guardian signature for the given transaction."""
+  guardianSignature: String
 
   """Transaction log for the given detailed transaction."""
   logs: TransactionLog
