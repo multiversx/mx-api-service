@@ -1,18 +1,24 @@
-on: [pull_request]
+name: Code Review
 
-name: Test ChatGPT
+permissions:
+  contents: read
+  pull-requests: write
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
 
 jobs:
-  chatgpt_comment:
+  test:
+    if: ${{ contains(github.event.*.labels.*.name, 'gpt review') }} # Optional; to run only when a label is attached
     runs-on: ubuntu-latest
-    name: Let chatgpt comment on your PR.
     steps:
-      - name: ChatGPT comment
-        uses: tanghel/chatgpt-action@HEAD
-        id: hello
-        with:
-          number: ${{ github.event.pull_request.number }}
-          sessionToken: ${{ secrets.CHATGPT_SESSION_TOKEN }}
-          split: true
+      - uses: anc95/ChatGPT-CodeReview@main
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          # Optional
+          LANGUAGE: English
+          MODEL:
+          top_p: 1
+          temperature: 1
