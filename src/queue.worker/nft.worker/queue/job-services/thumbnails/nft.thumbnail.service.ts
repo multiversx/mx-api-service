@@ -103,6 +103,7 @@ export class NftThumbnailService {
       });
 
       const result = await FileUtils.readFile(outputPath);
+      console.log({ result });
       return result;
     } finally {
       const fileExists = await FileUtils.exists(outputPath);
