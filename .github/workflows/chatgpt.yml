@@ -4,9 +4,7 @@ permissions:
   contents: read
   pull-requests: write
 
-on:
-  pull_request:
-    types: [opened, reopened, synchronize]
+on: [pull_request]
 
 jobs:
   test:
@@ -18,7 +16,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           # Optional
-          LANGUAGE: English
+          LANGUAGE: Chinese
           MODEL:
           top_p: 1
           temperature: 1
