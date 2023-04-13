@@ -65,12 +65,12 @@ export class Provider extends NodesInfos {
   @ApiProperty({ type: Boolean, nullable: true })
   githubProfileValidated: boolean | undefined = undefined;
 
-  @ApiProperty({ type: Number, nullable: true })
-  githubProfileValidatedAt: number | undefined = undefined;
+  @ApiProperty({ type: String, nullable: true })
+  githubProfileValidatedAt: string | undefined = undefined;
 
   @ApiProperty({ type: Boolean, nullable: true })
   githubKeysValidated: boolean | undefined = undefined;
 
-  @ApiProperty({ type: Number, nullable: true })
-  githubKeysValidatedAt: number | undefined = undefined;
+  @ApiProperty({ type: String, nullable: true })
+  githubKeysValidatedAt: string | undefined = undefined;
 }
