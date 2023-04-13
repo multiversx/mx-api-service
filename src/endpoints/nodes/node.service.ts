@@ -244,7 +244,7 @@ export class NodeService {
     }
   }
 
-  private async getNodesIdentities(nodes: Node[]) {
+  private async applyNodeIdentities(nodes: Node[]) {
     const keybases: { [key: string]: KeybaseState } | undefined = await this.keybaseService.getCachedNodesAndProvidersKeybases();
 
     if (keybases) {
@@ -258,7 +258,7 @@ export class NodeService {
     }
   }
 
-  private async getNodesOwnerAndProvider(nodes: Node[]) {
+  private async applyNodeOwners(nodes: Node[]) {
     const blses = nodes.map(node => node.bls);
     const epoch = await this.blockService.getCurrentEpoch();
     const owners = await this.getOwners(blses, epoch);
@@ -269,7 +269,9 @@ export class NodeService {
         node.owner = owners[index];
       }
     }
+  }
 
+  private async applyNodeProviders(nodes: Node[]) {
     const providers = await this.providerService.getAllProviders();
 
     for (const node of nodes) {
@@ -288,7 +290,7 @@ export class NodeService {
     }
   }
 
-  private async getNodesStakeDetails(nodes: Node[]) {
+  private async applyNodeStakeInfo(nodes: Node[]) {
     let addresses = nodes
       .filter(({ type }) => type === NodeType.validator)
       .map(({ owner, provider }) => (provider ? provider : owner));
@@ -318,11 +320,13 @@ export class NodeService {
 
     this.processQueuedNodes(nodes, queue);
 
-    await this.getNodesIdentities(nodes);
+    await this.applyNodeIdentities(nodes);
 
-    await this.getNodesOwnerAndProvider(nodes);
+    await this.applyNodeOwners(nodes);
 
-    await this.getNodesStakeDetails(nodes);
+    await this.applyNodeProviders(nodes);
+
+    await this.applyNodeStakeInfo(nodes);
 
     if (this.apiConfigService.isStakingV4Enabled()) {
       const auctions = await this.gatewayService.getValidatorAuctions();
