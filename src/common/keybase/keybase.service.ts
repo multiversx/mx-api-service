@@ -170,14 +170,12 @@ export class KeybaseService {
   }
 
   async confirmIdentityProfilesAgainstKeybaseIo(): Promise<void> {
-    const nodes = await this.nodeService.getAllNodes();
-
-    const keys = nodes.map((node) => node.identity).distinct().map(x => x ?? '');
+    const identities = await this.getDistinctIdentities();
 
     await this.cachingService.batchProcess(
-      keys,
-      key => CacheInfo.IdentityProfile(key).key,
-      async key => await this.getProfile(key),
+      identities,
+      identity => CacheInfo.IdentityProfile(identity).key,
+      async identity => await this.getProfile(identity),
       Constants.oneMonth() * 6,
       true
     );
@@ -211,7 +209,7 @@ export class KeybaseService {
       await this.cachingService.setRemote(CacheInfo.GithubProfileValidated(identity).key, true, CacheInfo.GithubProfileValidated(identity).ttl);
     }
 
-    return keybaseProfile ?? githubProfile;
+    return githubProfile ?? keybaseProfile;
   }
 
   async getProfileFromGithub(identity: string): Promise<KeybaseIdentity | null> {
