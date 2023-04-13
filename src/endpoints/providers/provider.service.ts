@@ -149,10 +149,10 @@ export class ProviderService {
       const githubProfileValidatedAt = await this.cachingService.getRemote<number>(CacheInfo.GithubProfileValidated(provider.identity).key);
       const githubKeysValidatedAt = await this.cachingService.getRemote<number>(CacheInfo.GithubKeysValidated(provider.identity).key);
 
-      provider.githubProfileValidatedAt = githubProfileValidatedAt ? new Date(githubProfileValidatedAt * 1000).toISOString() : undefined;
-      provider.githubKeysValidatedAt = githubKeysValidatedAt ? new Date(githubKeysValidatedAt * 1000).toISOString() : undefined;
-      provider.githubProfileValidated = githubProfileValidatedAt ? true : false;
-      provider.githubKeysValidated = githubKeysValidatedAt ? true : false;
+      provider.githubProfileValidatedAt = githubProfileValidatedAt !== undefined && Number.isInteger(githubProfileValidatedAt) ? new Date(githubProfileValidatedAt * 1000).toISOString() : undefined;
+      provider.githubKeysValidatedAt = githubKeysValidatedAt !== undefined && Number.isInteger(githubKeysValidatedAt) ? new Date(githubKeysValidatedAt * 1000).toISOString() : undefined;
+      provider.githubProfileValidated = githubProfileValidatedAt !== undefined && Number.isInteger(githubProfileValidatedAt) ? true : false;
+      provider.githubKeysValidated = githubKeysValidatedAt !== undefined && Number.isInteger(githubKeysValidatedAt) ? true : false;
     }
 
     return providers;
