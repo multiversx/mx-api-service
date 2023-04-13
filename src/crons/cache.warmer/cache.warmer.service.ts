@@ -169,7 +169,7 @@ export class CacheWarmerService {
     await this.handleIdentityInvalidations();
   }
 
-  @Lock({ name: 'Keys against database / github invalidations', verbose: true })
+  @Lock({ name: 'Keybases against database / github invalidations', verbose: true })
   async handleKeybaseAgainstKeybasePubInvalidations() {
     await this.keybaseService.confirmKeybasesAgainstDatabase();
     await this.keybaseService.confirmKeybasesAgainstGithub();
