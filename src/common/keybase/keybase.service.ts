@@ -135,7 +135,7 @@ export class KeybaseService {
         true
       );
 
-      await this.cachingService.setRemote(CacheInfo.GithubKeysValidated(identity).key, true, CacheInfo.GithubKeysValidated(identity).ttl);
+      await this.cachingService.setRemote(CacheInfo.GithubKeysValidated(identity).key, Math.round(Date.now() / 1000), CacheInfo.GithubKeysValidated(identity).ttl);
 
       await this.persistenceService.setKeybaseConfirmationForIdentity(identity, keys);
     } catch (error) {
@@ -206,7 +206,7 @@ export class KeybaseService {
     const githubProfile = await this.getProfileFromGithub(identity);
     if (githubProfile) {
       this.logger.log(`Got profile details from github.com for identity '${identity}'`);
-      await this.cachingService.setRemote(CacheInfo.GithubProfileValidated(identity).key, true, CacheInfo.GithubProfileValidated(identity).ttl);
+      await this.cachingService.setRemote(CacheInfo.GithubProfileValidated(identity).key, Math.round(Date.now() / 1000), CacheInfo.GithubProfileValidated(identity).ttl);
     }
 
     return githubProfile ?? keybaseProfile;

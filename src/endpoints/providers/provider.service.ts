@@ -146,8 +146,13 @@ export class ProviderService {
         continue;
       }
 
-      provider.githubProfileValidated = (await this.cachingService.getRemote<boolean>(CacheInfo.GithubProfileValidated(provider.identity).key)) ?? false;
-      provider.githubKeysValidated = (await this.cachingService.getRemote<boolean>(CacheInfo.GithubKeysValidated(provider.identity).key)) ?? false;
+      const githubProfileValidatedAt = await this.cachingService.getRemote<number>(CacheInfo.GithubProfileValidated(provider.identity).key);
+      const githubKeysValidatedAt = await this.cachingService.getRemote<number>(CacheInfo.GithubKeysValidated(provider.identity).key);
+
+      provider.githubProfileValidatedAt = githubProfileValidatedAt;
+      provider.githubKeysValidatedAt = githubKeysValidatedAt;
+      provider.githubProfileValidated = githubProfileValidatedAt ? true : false;
+      provider.githubKeysValidated = githubKeysValidatedAt ? true : false;
     }
 
     return providers;

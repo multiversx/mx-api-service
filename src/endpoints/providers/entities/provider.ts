@@ -62,9 +62,15 @@ export class Provider extends NodesInfos {
   @ApiProperty({ type: Number })
   createdNonce?: number = 0;
 
-  @ApiProperty({ type: Boolean, default: false })
-  githubProfileValidated: boolean = false;
+  @ApiProperty({ type: Boolean, nullable: true })
+  githubProfileValidated: boolean | undefined = undefined;
 
-  @ApiProperty({ type: Boolean, default: false })
-  githubKeysValidated: boolean = false;
+  @ApiProperty({ type: Number, nullable: true })
+  githubProfileValidatedAt: number | undefined = undefined;
+
+  @ApiProperty({ type: Boolean, nullable: true })
+  githubKeysValidated: boolean | undefined = undefined;
+
+  @ApiProperty({ type: Number, nullable: true })
+  githubKeysValidatedAt: number | undefined = undefined;
 }
