@@ -96,11 +96,6 @@ export class KeybaseService {
           await this.cachingService.set(CacheInfo.ConfirmedProvider(key).key, identity, CacheInfo.ConfirmedProvider(key).ttl);
         }
 
-        const providerConfig = await this.providerService.getProviderConfig(key);
-        if (providerConfig) {
-          await this.cachingService.set(CacheInfo.ProviderOwner(key).key, providerConfig.owner, CacheInfo.ProviderOwner(key).ttl);
-        }
-
         const blses = await this.nodeService.getOwnerBlses(key);
         for (const bls of blses) {
           allKeys.add(bls);

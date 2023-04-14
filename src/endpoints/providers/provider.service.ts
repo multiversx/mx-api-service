@@ -267,6 +267,10 @@ export class ProviderService {
       }
     }
 
+    for (const provider of providersRaw) {
+      await this.cachingService.set(CacheInfo.ProviderOwner(provider.provider).key, provider.owner, CacheInfo.ProviderOwner(provider.provider).ttl);
+    }
+
     return providersRaw;
   }
 
