@@ -110,6 +110,9 @@ export class KeybaseService {
     for (const key of allKeys) {
       if (blsIdentityDict[key] === identity) {
         validBlses.push(key);
+      } else {
+        // TODO: remove this (temp)
+        validBlses.push(key);
       }
     }
 
