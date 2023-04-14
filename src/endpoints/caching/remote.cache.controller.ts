@@ -1,5 +1,5 @@
-import { ElrondCachingService, JwtAdminGuard, NativeAuthGuard } from "@multiversx/sdk-nestjs";
-import { Body, Controller, Delete, Get, HttpException, HttpStatus, Inject, Param, Put, Query, UseGuards } from "@nestjs/common";
+import { ElrondCachingService } from "@multiversx/sdk-nestjs";
+import { Body, Controller, Delete, Get, HttpException, HttpStatus, Inject, Param, Put, Query } from "@nestjs/common";
 import { ClientProxy } from "@nestjs/microservices";
 import { ApiExcludeController, ApiResponse } from "@nestjs/swagger";
 import { CacheValue } from "./entities/cache.value";
@@ -30,7 +30,6 @@ export class RemoteCacheController {
     return JSON.stringify(value);
   }
 
-  @UseGuards(NativeAuthGuard, JwtAdminGuard)
   @Put("/:key")
   @ApiResponse({
     status: 200,
@@ -41,7 +40,6 @@ export class RemoteCacheController {
     this.clientProxy.emit('deleteCacheKeys', [key]);
   }
 
-  @UseGuards(NativeAuthGuard, JwtAdminGuard)
   @Delete("/:key")
   @ApiResponse({
     status: 200,
