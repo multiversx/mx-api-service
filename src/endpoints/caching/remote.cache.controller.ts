@@ -12,7 +12,6 @@ export class RemoteCacheController {
     @Inject('PUBSUB_SERVICE') private clientProxy: ClientProxy,
   ) { }
 
-  @UseGuards(NativeAuthGuard, JwtAdminGuard)
   @Get("/:key")
   @ApiResponse({
     status: 200,
@@ -57,7 +56,6 @@ export class RemoteCacheController {
     this.clientProxy.emit('deleteCacheKeys', keys);
   }
 
-  @UseGuards(NativeAuthGuard, JwtAdminGuard)
   @Get("/")
   async getKeys(
     @Query('keys') keys: string | undefined,
