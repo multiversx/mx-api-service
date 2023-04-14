@@ -6,19 +6,16 @@ import { Queue } from "./entities/queue";
 import { VmQueryService } from "src/endpoints/vm.query/vm.query.service";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { NodeFilter } from "./entities/node.filter";
-import { ProviderService } from "../providers/provider.service";
 import { StakeService } from "../stake/stake.service";
 import { SortOrder } from "src/common/entities/sort.order";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { BlockService } from "../blocks/block.service";
-import { KeybaseService } from "src/common/keybase/keybase.service";
 import { GatewayService } from "src/common/gateway/gateway.service";
-import { KeybaseState } from "src/common/keybase/entities/keybase.state";
 import { CacheInfo } from "src/utils/cache.info";
 import { Stake } from "../stake/entities/stake";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
 import { Auction } from "src/common/gateway/entities/auction";
-import { AddressUtils, Constants, ElrondCachingService } from "@multiversx/sdk-nestjs";
+import { AddressUtils, Constants, ElrondCachingService, PerformanceProfiler } from "@multiversx/sdk-nestjs";
 import { NodeSort } from "./entities/node.sort";
 import { ProtocolService } from "src/common/protocol/protocol.service";
 
@@ -29,12 +26,8 @@ export class NodeService {
     private readonly vmQueryService: VmQueryService,
     private readonly apiConfigService: ApiConfigService,
     private readonly cachingService: ElrondCachingService,
-    @Inject(forwardRef(() => KeybaseService))
-    private readonly keybaseService: KeybaseService,
     @Inject(forwardRef(() => StakeService))
     private readonly stakeService: StakeService,
-    @Inject(forwardRef(() => ProviderService))
-    private readonly providerService: ProviderService,
     @Inject(forwardRef(() => BlockService))
     private readonly blockService: BlockService,
     private readonly protocolService: ProtocolService,
@@ -245,23 +238,23 @@ export class NodeService {
   }
 
   private async applyNodeIdentities(nodes: Node[]) {
-    const keybases: { [key: string]: KeybaseState } | undefined = await this.keybaseService.getCachedNodesAndProvidersKeybases();
-
-    if (keybases) {
-      for (const node of nodes) {
-        node.identity = undefined;
-
-        if (keybases[node.bls] && keybases[node.bls].confirmed) {
-          node.identity = keybases[node.bls].identity;
-        }
-      }
+    for (const node of nodes) {
+      node.identity = await this.cachingService.get<string>(CacheInfo.ConfirmedIdentity(node.bls).key);
     }
   }
 
-  private async applyNodeOwners(nodes: Node[]) {
-    const blses = nodes.map(node => node.bls);
+  async refreshOwners(): Promise<void> {
+    const heartbeat = await this.gatewayService.getNodeHeartbeatStatus();
+    const blses = heartbeat.filter(x => x.peerType !== 'observer').map(x => x.publicKey);
     const epoch = await this.blockService.getCurrentEpoch();
-    const owners = await this.getOwners(blses, epoch);
+
+    await this.getOwners(blses, epoch);
+  }
+
+  private async applyNodeOwners(nodes: Node[]) {
+    const blses = nodes.filter(x => x.type === NodeType.validator).map(node => node.bls);
+    const epoch = await this.blockService.getCurrentEpoch();
+    const owners = await this.getOwners(blses, epoch, true);
 
     for (const [index, bls] of blses.entries()) {
       const node = nodes.find(node => node.bls === bls);
@@ -272,19 +265,12 @@ export class NodeService {
   }
 
   private async applyNodeProviders(nodes: Node[]) {
-    const providers = await this.providerService.getAllProviders();
-
     for (const node of nodes) {
       if (node.type === NodeType.validator) {
-        const provider = providers.find(({ provider }) => provider === node.owner);
-
-        if (provider) {
-          node.provider = provider.provider;
-          node.owner = provider.owner ?? '';
-
-          if (provider.identity) {
-            node.identity = provider.identity;
-          }
+        const providerOwner = await this.cachingService.get<string>(CacheInfo.ProviderOwner(node.owner).key);
+        if (providerOwner) {
+          node.provider = node.owner;
+          node.owner = providerOwner;
         }
       }
     }
@@ -293,7 +279,8 @@ export class NodeService {
   private async applyNodeStakeInfo(nodes: Node[]) {
     let addresses = nodes
       .filter(({ type }) => type === NodeType.validator)
-      .map(({ owner, provider }) => (provider ? provider : owner));
+      .map(({ owner, provider }) => (provider ? provider : owner))
+      .filter(x => x);
 
     addresses = addresses.distinct();
 
@@ -315,18 +302,33 @@ export class NodeService {
   }
 
   async getAllNodesRaw(): Promise<Node[]> {
+    let profiler = new PerformanceProfiler();
     const nodes = await this.getHeartbeat();
+    profiler.stop('getting heartbeat', true);
+
+    profiler = new PerformanceProfiler();
     const queue = await this.getQueue();
+    profiler.stop('getting queue', true);
 
+    profiler = new PerformanceProfiler();
     this.processQueuedNodes(nodes, queue);
+    profiler.stop('processing queued nodes', true);
 
+    profiler = new PerformanceProfiler();
     await this.applyNodeIdentities(nodes);
+    profiler.stop('applying node identities', true);
 
+    profiler = new PerformanceProfiler();
     await this.applyNodeOwners(nodes);
+    profiler.stop('applying node owners', true);
 
+    profiler = new PerformanceProfiler();
     await this.applyNodeProviders(nodes);
+    profiler.stop('applying node providers', true);
 
+    profiler = new PerformanceProfiler();
     await this.applyNodeStakeInfo(nodes);
+    profiler.stop('applying node stake info', true);
 
     if (this.apiConfigService.isStakingV4Enabled()) {
       const auctions = await this.gatewayService.getValidatorAuctions();
@@ -354,42 +356,43 @@ export class NodeService {
     }
   }
 
-  async getOwners(blses: string[], epoch: number) {
+  async getOwners(blses: string[], epoch: number, fromCacheOnly: boolean = false) {
     const keys = blses.map((bls) => CacheInfo.OwnerByEpochAndBls(bls, epoch).key);
 
     const cached = await this.cachingService.batchGetManyRemote(keys);
-
+    const owners: any = {};
     const missing = cached
       .map((element, index) => (element === null ? index : false))
       .filter((element) => element !== false)
       .map(element => element as number);
 
-    const owners: any = {};
 
-    if (missing.length) {
-      for (const index of missing) {
-        const bls = blses[index];
+    if (!fromCacheOnly) {
+      if (missing.length) {
+        for (const index of missing) {
+          const bls = blses[index];
 
-        if (!owners[bls]) {
-          const owner = await this.getBlsOwner(bls);
-          if (owner) {
-            const blses = await this.getOwnerBlses(owner);
+          if (!owners[bls]) {
+            const owner = await this.getBlsOwner(bls);
+            if (owner) {
+              const blses = await this.getOwnerBlses(owner);
 
-            blses.forEach(bls => {
-              owners[bls] = owner;
-            });
+              blses.forEach(bls => {
+                owners[bls] = owner;
+              });
+            }
           }
         }
+
+        const fastWarm = this.apiConfigService.getIsFastWarmerCronActive();
+        const params = {
+          keys: Object.keys(owners).map((bls) => CacheInfo.OwnerByEpochAndBls(bls, epoch).key),
+          values: Object.values(owners),
+          ttls: new Array(Object.keys(owners).length).fill(fastWarm ? 60 : Constants.oneDay()), // 1 minute or 24h
+        };
+
+        await this.cachingService.batchSet(params.keys, params.values, params.ttls);
       }
-
-      const fastWarm = this.apiConfigService.getIsFastWarmerCronActive();
-      const params = {
-        keys: Object.keys(owners).map((bls) => CacheInfo.OwnerByEpochAndBls(bls, epoch).key),
-        values: Object.values(owners),
-        ttls: new Array(Object.keys(owners).length).fill(fastWarm ? 60 : Constants.oneDay()), // 1 minute or 24h
-      };
-
-      await this.cachingService.batchSet(params.keys, params.values, params.ttls);
     }
 
     return blses.map((bls, index) => (missing.includes(index) ? owners[bls] : cached[index]));

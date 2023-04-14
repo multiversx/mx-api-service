@@ -68,13 +68,6 @@ export class CacheWarmerService {
     );
 
     this.configCronJob(
-      'handleKeybaseAgainstCacheInvalidations',
-      CronExpression.EVERY_MINUTE,
-      CronExpression.EVERY_10_MINUTES,
-      async () => await this.handleKeybaseAgainstCacheInvalidations()
-    );
-
-    this.configCronJob(
       'handleIdentityInvalidations',
       CronExpression.EVERY_MINUTE,
       CronExpression.EVERY_5_MINUTES,
@@ -113,6 +106,12 @@ export class CacheWarmerService {
   async handleNodeInvalidations() {
     const nodes = await this.nodeService.getAllNodesRaw();
     await this.invalidateKey(CacheInfo.Nodes.key, nodes, CacheInfo.Nodes.ttl);
+  }
+
+  @Cron(CronExpression.EVERY_MINUTE)
+  @Lock({ name: 'Node owner invalidations', verbose: true })
+  async handleNodeOwnerInvalidations() {
+    await this.nodeService.refreshOwners();
   }
 
   @Cron(CronExpression.EVERY_MINUTE)
@@ -155,27 +154,15 @@ export class CacheWarmerService {
     await this.invalidateKey(CacheInfo.ProvidersWithStakeInformation.key, providersWithStakeInformation, CacheInfo.ProvidersWithStakeInformation.ttl);
   }
 
-  @Lock({ name: 'Keybase against cache invalidations', verbose: true })
-  async handleKeybaseAgainstCacheInvalidations() {
-    const nodesAndProvidersKeybases = await this.keybaseService.confirmKeybasesAgainstCache();
-    const identityProfilesKeybases = await this.keybaseService.getIdentitiesProfilesAgainstCache();
-    await Promise.all([
-      this.invalidateKey(CacheInfo.Keybases.key, nodesAndProvidersKeybases, CacheInfo.Keybases.ttl),
-      this.invalidateKey(CacheInfo.IdentityProfilesKeybases.key, identityProfilesKeybases, CacheInfo.IdentityProfilesKeybases.ttl),
-    ]);
+  @Lock({ name: 'Keybase against database / github invalidations', verbose: true })
+  async handleKeybaseAgainstKeybasePubInvalidations() {
+    // await this.keybaseService.confirmKeybasesAgainstGithub();
+    await this.keybaseService.confirmIdentities();
+    await this.keybaseService.confirmIdentityProfilesAgainstKeybaseIo();
 
     await this.handleNodeInvalidations();
     await this.handleProviderInvalidations();
     await this.handleIdentityInvalidations();
-  }
-
-  @Lock({ name: 'Keybase against database / github invalidations', verbose: true })
-  async handleKeybaseAgainstKeybasePubInvalidations() {
-    await this.keybaseService.confirmKeybasesAgainstDatabase();
-    await this.keybaseService.confirmKeybasesAgainstGithub();
-    await this.keybaseService.confirmIdentityProfilesAgainstKeybaseIo();
-
-    await this.handleKeybaseAgainstCacheInvalidations();
   }
 
   @Cron(CronExpression.EVERY_MINUTE)

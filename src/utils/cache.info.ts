@@ -78,6 +78,27 @@ export class CacheInfo {
     };
   }
 
+  static ConfirmedIdentity(bls: string): CacheInfo {
+    return {
+      key: `confirmedIdentity:${bls}`,
+      ttl: Constants.oneHour() * 6,
+    };
+  }
+
+  static ConfirmedProvider(address: string): CacheInfo {
+    return {
+      key: `confirmedProvider:${address}`,
+      ttl: Constants.oneHour() * 6,
+    };
+  }
+
+  static ProviderOwner(address: string): CacheInfo {
+    return {
+      key: `providerOwner:${address}`,
+      ttl: Constants.oneHour() * 6,
+    };
+  }
+
   static TxCount(address: string): CacheInfo {
     return {
       key: `txCount:${address}`,

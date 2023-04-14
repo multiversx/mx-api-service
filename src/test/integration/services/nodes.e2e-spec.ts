@@ -2,7 +2,6 @@ import { ElrondCachingService } from "@multiversx/sdk-nestjs";
 import { Test } from "@nestjs/testing";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { GatewayService } from "src/common/gateway/gateway.service";
-import { KeybaseService } from "src/common/keybase/keybase.service";
 import { ProtocolService } from "src/common/protocol/protocol.service";
 import { BlockService } from "src/endpoints/blocks/block.service";
 import { NodeService } from "src/endpoints/nodes/node.service";
@@ -60,12 +59,6 @@ describe('NodeService', () => {
             getLocal: jest.fn(),
             deleteInCache: jest.fn(),
             batchGetManyRemote: jest.fn(),
-          },
-        },
-        {
-          provide: KeybaseService,
-          useValue: {
-            getCachedNodesAndProvidersKeybases: jest.fn(),
           },
         },
         {
