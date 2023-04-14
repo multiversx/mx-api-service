@@ -63,7 +63,7 @@ export class CacheWarmerService {
     this.configCronJob(
       'handleKeybaseAgainstKeybasePubInvalidations',
       CronExpression.EVERY_MINUTE,
-      CronExpression.EVERY_30_MINUTES,
+      CronExpression.EVERY_10_MINUTES,
       async () => await this.handleKeybaseAgainstKeybasePubInvalidations()
     );
 
@@ -156,7 +156,7 @@ export class CacheWarmerService {
 
   @Lock({ name: 'Keybase against database / github invalidations', verbose: true })
   async handleKeybaseAgainstKeybasePubInvalidations() {
-    // await this.keybaseService.confirmKeybasesAgainstGithub();
+    await this.keybaseService.confirmKeybasesAgainstGithub();
     await this.keybaseService.confirmIdentities();
     await this.keybaseService.confirmIdentityProfilesAgainstKeybaseIo();
 
