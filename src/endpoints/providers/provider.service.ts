@@ -268,6 +268,7 @@ export class ProviderService {
     }
 
     for (const provider of providersRaw) {
+      console.log(`Setting owner for provider '${provider.provider}' to '${provider.owner}'`);
       await this.cachingService.set(CacheInfo.ProviderOwner(provider.provider).key, provider.owner, CacheInfo.ProviderOwner(provider.provider).ttl);
     }
 
