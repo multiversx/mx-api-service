@@ -24,10 +24,9 @@ import { SocketAdapter } from './common/websockets/socket-adapter';
 import { ApiConfigModule } from './common/api-config/api.config.module';
 import { ElrondCachingService, CachingInterceptor, GuestCachingInterceptor, GuestCachingService } from '@multiversx/sdk-nestjs-cache';
 import { LoggerInitializer } from '@multiversx/sdk-nestjs-common';
-import { MetricsService } from '@multiversx/sdk-nestjs-monitoring';
+import { MetricsService, RequestCpuTimeInterceptor, LoggingInterceptor } from '@multiversx/sdk-nestjs-monitoring';
 import { LogRequestsInterceptor, FieldsInterceptor, ExtractInterceptor, CleanupInterceptor, PaginationInterceptor, QueryCheckInterceptor, ComplexityInterceptor, OriginInterceptor } from '@multiversx/sdk-nestjs-http';
-// CHANGE HERE
-//import { ErdnestConfigServiceImpl } from './common/api-config/erdnest.config.service.impl';
+import { ErdnestConfigServiceImpl } from './common/api-config/erdnest.config.service.impl';
 import { RabbitMqModule } from './common/rabbitmq/rabbitmq.module';
 import { TransactionLoggingInterceptor } from './interceptors/transaction.logging.interceptor';
 import { BatchTransactionProcessorModule } from './crons/transaction.processor/batch.transaction.processor.module';
@@ -35,6 +34,7 @@ import { GraphqlComplexityInterceptor } from './graphql/interceptors/graphql.com
 import { GraphQLMetricsInterceptor } from './graphql/interceptors/graphql.metrics.interceptor';
 import { SettingsService } from './common/settings/settings.service';
 import { StatusCheckerModule } from './crons/status.checker/status.checker.module';
+import { JwtOrNativeAuthGuard } from '@multiversx/sdk-nestjs-auth';
 
 async function bootstrap() {
   const logger = new Logger('Bootstrapper');
@@ -130,7 +130,7 @@ async function bootstrap() {
       },
     },
   );
-  //pubSubApp.useLogger(pubSubApp.get(WINSTON_MODULE_NEST_PROVIDER));
+  pubSubApp.useLogger(pubSubApp.get(WINSTON_MODULE_NEST_PROVIDER));
   pubSubApp.useWebSocketAdapter(new SocketAdapter(pubSubApp));
   // eslint-disable-next-line @typescript-eslint/no-floating-promises
   pubSubApp.listen();
@@ -173,10 +173,9 @@ async function configurePublicApp(publicApp: NestExpressApplication, apiConfigSe
   const settingsService = publicApp.get<SettingsService>(SettingsService);
 
 
-  // CHANGE HERE
-  // if (apiConfigService.getIsAuthActive()) {
-  //   publicApp.useGlobalGuards(new JwtOrNativeAuthGuard(new ErdnestConfigServiceImpl(apiConfigService), undefined, cachingService));
-  // }
+  if (apiConfigService.getIsAuthActive()) {
+    publicApp.useGlobalGuards(new JwtOrNativeAuthGuard(new ErdnestConfigServiceImpl(apiConfigService), cachingService));
+  }
 
   const httpServer = httpAdapterHostService.httpAdapter.getHttpServer();
   httpServer.keepAliveTimeout = apiConfigService.getServerTimeout();
@@ -200,11 +199,10 @@ async function configurePublicApp(publicApp: NestExpressApplication, apiConfigSe
   globalInterceptors.push(new ComplexityInterceptor());
   globalInterceptors.push(new GraphqlComplexityInterceptor());
   globalInterceptors.push(new GraphQLMetricsInterceptor(eventEmitterService));
-  // CHANGE HERE
   // @ts-ignore
-  //globalInterceptors.push(new RequestCpuTimeInterceptor(metricsService));
+  globalInterceptors.push(new RequestCpuTimeInterceptor(metricsService));
   // @ts-ignore
-  //globalInterceptors.push(new LoggingInterceptor(metricsService));
+  globalInterceptors.push(new LoggingInterceptor(metricsService));
 
   const getUseRequestCachingFlag = await settingsService.getUseRequestCachingFlag();
   if (getUseRequestCachingFlag) {
