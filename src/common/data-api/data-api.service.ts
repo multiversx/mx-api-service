@@ -1,6 +1,8 @@
 import { Injectable } from "@nestjs/common";
 import { ApiConfigService } from "../api-config/api.config.service";
-import { ApiService, ElrondCachingService, OriginLogger } from "@multiversx/sdk-nestjs";
+import { ElrondCachingService } from "@multiversx/sdk-nestjs-cache";
+import { OriginLogger } from "@multiversx/sdk-nestjs-common";
+import { ApiService } from "@multiversx/sdk-nestjs-http";
 import { DataApiToken } from "./entities/data-api.token";
 import { CacheInfo } from "src/utils/cache.info";
 

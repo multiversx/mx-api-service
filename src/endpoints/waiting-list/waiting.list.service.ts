@@ -1,4 +1,5 @@
-import { AddressUtils, NumberUtils, ElrondCachingService } from "@multiversx/sdk-nestjs";
+import { AddressUtils, NumberUtils } from "@multiversx/sdk-nestjs-common";
+import { ElrondCachingService } from "@multiversx/sdk-nestjs-cache";
 import { Injectable } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { QueryPagination } from "src/common/entities/query.pagination";

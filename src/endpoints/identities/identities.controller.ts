@@ -1,4 +1,4 @@
-import { ParseArrayPipe } from "@multiversx/sdk-nestjs";
+import { ParseArrayPipe } from "@multiversx/sdk-nestjs-common";
 import { Controller, Get, HttpException, HttpStatus, Param, Query, Res } from "@nestjs/common";
 import { ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { Identity } from "./entities/identity";

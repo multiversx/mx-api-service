@@ -1,4 +1,4 @@
-import { FileUtils } from "@multiversx/sdk-nestjs";
+import { FileUtils } from "@multiversx/sdk-nestjs-common";
 import { Injectable } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { DappConfig } from "./entities/dapp-config";

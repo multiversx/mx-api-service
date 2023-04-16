@@ -1,5 +1,5 @@
 import { Field, Float, ID, ObjectType } from "@nestjs/graphql";
-import { SwaggerUtils } from "@multiversx/sdk-nestjs";
+import { SwaggerUtils } from "@multiversx/sdk-nestjs-common";
 import { ApiProperty } from "@nestjs/swagger";
 import { AccountAssets } from "src/common/assets/entities/account.assets";
 

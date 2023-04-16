@@ -11,7 +11,9 @@ import { TransactionExtractorInterface } from "./extractor/transaction.extractor
 import { TransferOwnershipExtractor } from "./extractor/transfer.ownership.extractor";
 import { MetricsEvents } from "src/utils/metrics-events.constants";
 import { LogMetricsEvent } from "src/common/entities/log.metrics.event";
-import { PerformanceProfiler, ElrondCachingService, BinaryUtils, OriginLogger } from "@multiversx/sdk-nestjs";
+import { ElrondCachingService } from "@multiversx/sdk-nestjs-cache";
+import { BinaryUtils, OriginLogger } from "@multiversx/sdk-nestjs-common";
+import { PerformanceProfiler } from "@multiversx/sdk-nestjs-monitoring";
 
 
 @Injectable()

@@ -1,6 +1,6 @@
 import { Test } from "@nestjs/testing";
 import { ProtocolModule } from "src/common/protocol/protocol.module";
-import { ElrondCachingService } from "@multiversx/sdk-nestjs";
+import { ElrondCachingService } from "@multiversx/sdk-nestjs-cache";
 import { ProtocolService } from "src/common/protocol/protocol.service";
 import { EventEmitterModule } from "@nestjs/event-emitter";
 

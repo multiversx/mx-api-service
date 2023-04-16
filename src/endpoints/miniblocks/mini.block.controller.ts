@@ -1,4 +1,4 @@
-import { ParseArrayPipe, ParseBlockHashPipe } from "@multiversx/sdk-nestjs";
+import { ParseArrayPipe, ParseBlockHashPipe } from "@multiversx/sdk-nestjs-common";
 import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Param, ParseIntPipe, Query } from "@nestjs/common";
 import { ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { QueryPagination } from "src/common/entities/query.pagination";

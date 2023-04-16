@@ -7,7 +7,8 @@ import { MexEconomicsService } from "src/endpoints/mex/mex.economics.service";
 import { MexPairService } from "src/endpoints/mex/mex.pair.service";
 import { MexTokenService } from "src/endpoints/mex/mex.token.service";
 import { MexFarmService } from "src/endpoints/mex/mex.farm.service";
-import { ElrondCachingService, Lock, Locker } from "@multiversx/sdk-nestjs";
+import { Lock, Locker } from "@multiversx/sdk-nestjs-common";
+import { ElrondCachingService } from "@multiversx/sdk-nestjs-cache";
 
 @Injectable()
 export class MexWarmerService {

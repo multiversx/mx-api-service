@@ -1,4 +1,5 @@
-import { Jwt, NativeAuthGuard } from "@multiversx/sdk-nestjs";
+import { Jwt } from "@multiversx/sdk-nestjs-common";
+import { NativeAuthGuard } from "@multiversx/sdk-nestjs-auth";
 import { Body, Controller, Get, HttpException, HttpStatus, Logger, Param, Post, UseGuards, Headers } from "@nestjs/common";
 import { TransactionBatchSimplified } from "./entities/transaction.batch.simplified";
 import { TransactionBatchSimplifiedResult } from "./entities/transaction.batch.simplified.result";

@@ -1,5 +1,6 @@
-import { OriginLogger } from "@multiversx/sdk-nestjs";
-import { PerformanceProfiler, ElrondCachingService } from "@multiversx/sdk-nestjs";
+import { OriginLogger } from "@multiversx/sdk-nestjs-common";
+import { PerformanceProfiler } from "@multiversx/sdk-nestjs-monitoring";
+import { ElrondCachingService } from "@multiversx/sdk-nestjs-cache";
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { LogMetricsEvent } from "src/common/entities/log.metrics.event";

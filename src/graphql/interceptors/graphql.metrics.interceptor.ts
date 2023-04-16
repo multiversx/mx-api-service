@@ -1,4 +1,4 @@
-import { PerformanceProfiler } from '@multiversx/sdk-nestjs';
+import { PerformanceProfiler } from '@multiversx/sdk-nestjs-monitoring';
 import {
   Injectable,
   NestInterceptor,

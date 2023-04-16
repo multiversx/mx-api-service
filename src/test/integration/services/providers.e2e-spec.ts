@@ -3,10 +3,10 @@ import { Test } from '@nestjs/testing';
 import { ProviderService } from 'src/endpoints/providers/provider.service';
 import { PublicAppModule } from 'src/public.app.module';
 import { ProviderFilter } from 'src/endpoints/providers/entities/provider.filter';
-import { ElrondCachingService } from '@multiversx/sdk-nestjs';
+import { ElrondCachingService } from "@multiversx/sdk-nestjs-cache";
 import { ProviderConfig } from 'src/endpoints/providers/entities/provider.config';
-import '@multiversx/sdk-nestjs/lib/src/utils/extensions/array.extensions';
-import '@multiversx/sdk-nestjs/lib/src/utils/extensions/jest.extensions';
+import '@multiversx/sdk-nestjs-common/lib/src/utils/extensions/array.extensions';
+import '@multiversx/sdk-nestjs-common/lib/src/utils/extensions/jest.extensions';
 
 describe('Provider Service', () => {
   let providerService: ProviderService;

@@ -7,9 +7,11 @@ import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { GenerateThumbnailResult } from "./entities/generate.thumbnail.result";
 import { ThumbnailType } from "./entities/thumbnail.type";
 import { AWSService } from "./aws.service";
-import { ApiService, ElrondCachingService, Constants, FileUtils } from "@multiversx/sdk-nestjs";
+import { Constants, FileUtils } from "@multiversx/sdk-nestjs-common";
+import { ApiService } from "@multiversx/sdk-nestjs-http";
+import { ElrondCachingService } from "@multiversx/sdk-nestjs-cache";
 import { TokenHelpers } from "src/utils/token.helpers";
-import { OriginLogger } from "@multiversx/sdk-nestjs";
+import { OriginLogger } from "@multiversx/sdk-nestjs-common";
 import { CacheInfo } from "src/utils/cache.info";
 import { CachingUtils } from "src/utils/caching.utils";
 

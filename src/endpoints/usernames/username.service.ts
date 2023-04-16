@@ -1,4 +1,6 @@
-import { Constants, ElrondCachingService, ApiService, OriginLogger, BinaryUtils, AddressUtils } from "@multiversx/sdk-nestjs";
+import { Constants, OriginLogger, BinaryUtils, AddressUtils } from "@multiversx/sdk-nestjs-common";
+import { ApiService } from "@multiversx/sdk-nestjs-http";
+import { ElrondCachingService } from "@multiversx/sdk-nestjs-cache";
 import { HttpStatus, Injectable } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { CacheInfo } from "src/utils/cache.info";

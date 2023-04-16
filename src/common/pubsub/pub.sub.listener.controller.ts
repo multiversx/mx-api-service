@@ -1,5 +1,5 @@
-import { OriginLogger } from "@multiversx/sdk-nestjs";
-import { ElrondCachingService } from "@multiversx/sdk-nestjs";
+import { OriginLogger } from "@multiversx/sdk-nestjs-common";
+import { ElrondCachingService } from "@multiversx/sdk-nestjs-cache";
 import { ShardTransaction } from "@elrondnetwork/transaction-processor";
 import { Controller } from "@nestjs/common";
 import { EventPattern } from "@nestjs/microservices";

@@ -1,5 +1,4 @@
-import { ParseArrayPipe, ParseIntPipe } from "@multiversx/sdk-nestjs";
-import { ParseBlockHashPipe, ParseTransactionHashPipe } from "@multiversx/sdk-nestjs";
+import { ParseArrayPipe, ParseIntPipe, ParseBlockHashPipe, ParseTransactionHashPipe } from "@multiversx/sdk-nestjs-common";
 import { Controller, DefaultValuePipe, Get, NotFoundException, Param, Query } from "@nestjs/common";
 import { ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { SmartContractResult } from "./entities/smart.contract.result";

@@ -1,4 +1,5 @@
-import { ApiService, ElrondCachingService } from "@multiversx/sdk-nestjs";
+import { ApiService } from "@multiversx/sdk-nestjs-http";
+import { ElrondCachingService } from "@multiversx/sdk-nestjs-cache";
 import { Test } from "@nestjs/testing";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { DelegationService } from "src/endpoints/delegation/delegation.service";

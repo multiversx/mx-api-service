@@ -3,7 +3,8 @@ import { LockedAssetAttributes, UnlockMilestone, LockedTokenAttributes } from '@
 import { ApiConfigService } from '../api-config/api.config.service';
 import { VmQueryService } from '../../endpoints/vm.query/vm.query.service';
 import { CacheInfo } from '../../utils/cache.info';
-import { ElrondCachingService, Constants } from '@multiversx/sdk-nestjs';
+import { ElrondCachingService } from "@multiversx/sdk-nestjs-cache";
+import { Constants } from '@multiversx/sdk-nestjs-common';
 import { TokenHelpers } from '../../utils/token.helpers';
 import { GatewayService } from '../gateway/gateway.service';
 import { MexSettingsService } from 'src/endpoints/mex/mex.settings.service';

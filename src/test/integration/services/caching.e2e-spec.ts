@@ -1,4 +1,5 @@
-import { ElrondCachingService, Constants } from '@multiversx/sdk-nestjs';
+import { Constants } from '@multiversx/sdk-nestjs-common';
+import { ElrondCachingService } from "@multiversx/sdk-nestjs-cache";
 import { Test } from '@nestjs/testing';
 import { ApiConfigModule } from 'src/common/api-config/api.config.module';
 import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';

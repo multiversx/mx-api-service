@@ -1,4 +1,4 @@
-import { ElrondCachingService } from '@multiversx/sdk-nestjs';
+import { ElrondCachingService } from "@multiversx/sdk-nestjs-cache";
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { CacheInfo } from 'src/utils/cache.info';
 import { ApiConfigService } from '../api-config/api.config.service';

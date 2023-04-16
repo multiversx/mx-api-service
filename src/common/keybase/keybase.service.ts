@@ -6,7 +6,9 @@ import { KeybaseIdentity } from "./entities/keybase.identity";
 import { KeybaseState } from "./entities/keybase.state";
 import { CacheInfo } from "../../utils/cache.info";
 import { GithubService } from "../github/github.service";
-import { ApiService, ApiUtils, ElrondCachingService, Constants, OriginLogger } from "@multiversx/sdk-nestjs";
+import { ElrondCachingService } from "@multiversx/sdk-nestjs-cache";
+import { Constants, OriginLogger } from "@multiversx/sdk-nestjs-common";
+import { ApiService, ApiUtils } from "@multiversx/sdk-nestjs-http";
 import { PersistenceService } from "../persistence/persistence.service";
 
 @Injectable()

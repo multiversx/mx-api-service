@@ -11,7 +11,7 @@ import { MexTokenService } from "./mex.token.service";
 import { MexFarmService } from './mex.farm.service';
 import { MexFarm } from './entities/mex.farm';
 import { QueryPagination } from 'src/common/entities/query.pagination';
-import { ParseIntPipe, ParseTokenPipe } from '@multiversx/sdk-nestjs';
+import { ParseIntPipe, ParseTokenPipe } from '@multiversx/sdk-nestjs-common';
 
 @Controller()
 @ApiTags('xexchange')

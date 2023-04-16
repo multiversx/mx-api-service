@@ -11,7 +11,7 @@ import { NftMetadataService } from "./job-services/metadata/nft.metadata.service
 import { GenerateThumbnailResult } from "./job-services/thumbnails/entities/generate.thumbnail.result";
 import { NftThumbnailService } from "./job-services/thumbnails/nft.thumbnail.service";
 import { NftAssetService } from "./job-services/assets/nft.asset.service";
-import { ContextTracker, OriginLogger } from "@multiversx/sdk-nestjs";
+import { ContextTracker, OriginLogger } from "@multiversx/sdk-nestjs-common";
 import { ProcessNftSettings } from "src/endpoints/process-nfts/entities/process.nft.settings";
 
 @Controller()

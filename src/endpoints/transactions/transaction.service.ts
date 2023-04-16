@@ -18,14 +18,16 @@ import { GatewayComponentRequest } from 'src/common/gateway/entities/gateway.com
 import { TransactionActionService } from './transaction-action/transaction.action.service';
 import { TransactionDecodeDto } from './entities/dtos/transaction.decode.dto';
 import { TransactionStatus } from './entities/transaction.status';
-import { AddressUtils, ApiUtils, Constants, ElrondCachingService, PendingExecuter } from '@multiversx/sdk-nestjs';
+import { AddressUtils, Constants, PendingExecuter } from '@multiversx/sdk-nestjs-common';
+import { ApiUtils } from "@multiversx/sdk-nestjs-http";
+import { ElrondCachingService } from "@multiversx/sdk-nestjs-cache";
 import { TransactionUtils } from './transaction.utils';
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { TransactionOperation } from './entities/transaction.operation';
 import { AssetsService } from 'src/common/assets/assets.service';
 import { AccountAssets } from 'src/common/assets/entities/account.assets';
 import crypto from 'crypto-js';
-import { OriginLogger } from '@multiversx/sdk-nestjs';
+import { OriginLogger } from '@multiversx/sdk-nestjs-common';
 import { ApiConfigService } from 'src/common/api-config/api.config.service';
 import { UsernameService } from '../usernames/username.service';
 import { MiniBlock } from 'src/common/indexer/entities/miniblock';

@@ -3,8 +3,8 @@ import { Nft } from "src/endpoints/nfts/entities/nft";
 import { NftType } from "src/endpoints/nfts/entities/nft.type";
 import { CollectionRoles } from "src/endpoints/tokens/entities/collection.roles";
 import { TokenRoles } from "src/endpoints/tokens/entities/token.roles";
-import { ApiUtils } from '@multiversx/sdk-nestjs';
-import '@multiversx/sdk-nestjs/lib/src/utils/extensions/string.extensions';
+import { ApiUtils } from '@multiversx/sdk-nestjs-http';
+import '@multiversx/sdk-nestjs-common/lib/src/utils/extensions/string.extensions';
 
 export class TokenHelpers {
   static canBool(string: string) {

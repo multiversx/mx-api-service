@@ -5,10 +5,10 @@ import { AssetsService } from "src/common/assets/assets.service";
 import { NftService } from "src/endpoints/nfts/nft.service";
 import asyncPool from "tiny-async-pool";
 import { PersistenceInterface } from "src/common/persistence/persistence.interface";
-import { BatchUtils, Lock } from "@multiversx/sdk-nestjs";
+import { BatchUtils, Lock, OriginLogger } from "@multiversx/sdk-nestjs-common";
 import { NftMedia } from "src/endpoints/nfts/entities/nft.media";
 import { IndexerService } from "src/common/indexer/indexer.service";
-import { OriginLogger } from "@multiversx/sdk-nestjs";
+
 
 @Injectable()
 export class ElasticUpdaterService {

@@ -1,6 +1,6 @@
 import { Test } from "@nestjs/testing";
-import '@multiversx/sdk-nestjs/lib/src/utils/extensions/jest.extensions';
-import { ElrondCachingService } from "@multiversx/sdk-nestjs";
+import '@multiversx/sdk-nestjs-common/lib/src/utils/extensions/jest.extensions';
+import { ElrondCachingService } from "@multiversx/sdk-nestjs-cache";
 import { WaitingListService } from "src/endpoints/waiting-list/waiting.list.service";
 import { WaitingList } from "src/endpoints/waiting-list/entities/waiting.list";
 import { QueryPagination } from "src/common/entities/query.pagination";
