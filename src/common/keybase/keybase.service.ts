@@ -87,7 +87,7 @@ export class KeybaseService {
       return undefined;
     }
 
-    const allKeys = new Set<string>();
+    const validBlses = new Set<string>();
 
     for (const key of keys) {
       if (AddressUtils.isAddressValid(key)) {
@@ -98,25 +98,14 @@ export class KeybaseService {
 
         const blses = await this.nodeService.getOwnerBlses(key);
         for (const bls of blses) {
-          allKeys.add(bls);
+          validBlses.add(bls);
         }
-      } else {
-        allKeys.add(key);
+      } else if (blsIdentityDict[key] === identity) {
+        validBlses.add(key);
       }
     }
 
-    const validBlses: string[] = [];
-
-    for (const key of allKeys) {
-      if (blsIdentityDict[key] === identity) {
-        validBlses.push(key);
-      } else {
-        // TODO: remove this (temp)
-        validBlses.push(key);
-      }
-    }
-
-    return validBlses;
+    return Array.from(validBlses);
   }
 
   async confirmKeybasesAgainstGithub(): Promise<void> {
