@@ -204,12 +204,6 @@ export class NodeService {
   async getNodes(queryPagination: QueryPagination, query: NodeFilter): Promise<Node[]> {
     const { from, size } = queryPagination;
 
-    const keys = await this.cachingService.getKeys('*vm-query*');
-    for (const key of keys) {
-      console.log(`Deleted key '${key}'`);
-      await this.cachingService.delete(key);
-    }
-
     const filteredNodes = await this.getFilteredNodes(query);
 
     return filteredNodes.slice(from, from + size);
