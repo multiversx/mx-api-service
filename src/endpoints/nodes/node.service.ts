@@ -346,12 +346,12 @@ export class NodeService {
     const keys = blses.map((bls) => CacheInfo.OwnerByEpochAndBls(bls, epoch).key);
 
     const cached = await this.cachingService.batchGetManyRemote(keys);
+
     const owners: any = {};
     const missing = cached
       .map((element, index) => (element === null ? index : false))
       .filter((element) => element !== false)
       .map(element => element as number);
-
 
     if (!fromCacheOnly) {
       if (missing.length) {
@@ -360,12 +360,14 @@ export class NodeService {
 
           if (!owners[bls]) {
             const owner = await this.getBlsOwner(bls);
+            console.log(`owner for bls '${bls}' is '${owner}'`);
             if (owner) {
               const blses = await this.getOwnerBlses(owner);
 
-              blses.forEach(bls => {
+              for (const bls of blses) {
+                console.log(`owner for bls '${bls}' is '${owner}'`);
                 owners[bls] = owner;
-              });
+              }
             }
           }
         }
