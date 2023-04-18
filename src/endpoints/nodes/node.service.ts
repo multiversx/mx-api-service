@@ -347,7 +347,7 @@ export class NodeService {
   }
 
   async getOwners(blses: string[], fromCacheOnly: boolean = false) {
-    const keys = blses.map((bls) => CacheInfo.OwnerByEpochAndBls(bls).key);
+    const keys = blses.map((bls) => CacheInfo.OwnerByBls(bls).key);
 
     const cached = await this.cachingService.batchGetManyRemote(keys);
 
@@ -381,7 +381,7 @@ export class NodeService {
 
         const fastWarm = this.apiConfigService.getIsFastWarmerCronActive();
         const params = {
-          keys: Object.keys(owners).map((bls) => CacheInfo.OwnerByEpochAndBls(bls).key),
+          keys: Object.keys(owners).map((bls) => CacheInfo.OwnerByBls(bls).key),
           values: Object.values(owners),
           ttls: new Array(Object.keys(owners).length).fill(fastWarm ? Constants.oneMinute() * 10 : Constants.oneDay()), // 1 minute or 24h
         };
