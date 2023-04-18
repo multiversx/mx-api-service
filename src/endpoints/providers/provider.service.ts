@@ -257,13 +257,10 @@ export class ProviderService {
       });
     });
 
-    for (const providerAddress of providerAddresses) {
-      const identity = await this.cachingService.get<string>(CacheInfo.ConfirmedProvider(providerAddress).key);
+    for (const provider of providersRaw) {
+      const identity = await this.cachingService.get<string>(CacheInfo.ConfirmedProvider(provider.provider).key);
       if (identity) {
-        const found = providersRaw.find(x => x.provider === providerAddress);
-        if (found) {
-          found.identity = undefined;
-        }
+        provider.identity = identity;
       }
     }
 
