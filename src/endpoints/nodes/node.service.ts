@@ -244,7 +244,7 @@ export class NodeService {
   }
 
   async refreshOwners(): Promise<void> {
-    const heartbeat = await this.getAllNodes();
+    const heartbeat = await this.getHeartbeatValidatorsAndQueue();
     const blses = heartbeat.filter(x => x.type === NodeType.validator).map(x => x.bls);
 
     await this.getOwners(blses);
@@ -299,12 +299,18 @@ export class NodeService {
     }
   }
 
-  async getAllNodesRaw(): Promise<Node[]> {
-    const nodes = await this.getHeartbeat();
+  async getHeartbeatValidatorsAndQueue(): Promise<Node[]> {
+    const nodes = await this.getHeartbeatAndValidators();
 
     const queue = await this.getQueue();
 
     this.processQueuedNodes(nodes, queue);
+
+    return nodes;
+  }
+
+  async getAllNodesRaw(): Promise<Node[]> {
+    const nodes = await this.getHeartbeatValidatorsAndQueue();
 
     await this.applyNodeIdentities(nodes);
 
@@ -459,7 +465,7 @@ export class NodeService {
     }, []);
   }
 
-  async getHeartbeat(): Promise<Node[]> {
+  async getHeartbeatAndValidators(): Promise<Node[]> {
     const [
       heartbeats,
       { statistics },
