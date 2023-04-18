@@ -43,7 +43,7 @@ export class KeybaseService {
   }
 
   private async getNodesKeybasesRaw(): Promise<Keybase[]> {
-    const nodes = await this.nodeService.getHeartbeatValidatorsAndQueue();
+    const nodes = await this.nodeService.getHeartbeatAndValidators();
     const keybasesNodesArr: Keybase[] = nodes
       .filter((node) => !!node.identity)
       .map((node) => {
