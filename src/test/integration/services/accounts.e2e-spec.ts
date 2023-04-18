@@ -5,7 +5,8 @@ import { DeployedContract } from 'src/endpoints/accounts/entities/deployed.contr
 import '@multiversx/sdk-nestjs-common/lib/src/utils/extensions/jest.extensions';
 import { ApiConfigService } from 'src/common/api-config/api.config.service';
 import { ElrondCachingService } from "@multiversx/sdk-nestjs-cache";
-import { AddressUtils, ElasticService } from '@multiversx/sdk-nestjs-common';
+import { AddressUtils } from '@multiversx/sdk-nestjs-common';
+import { ElasticService } from '@multiversx/sdk-nestjs-elastic';
 import { AccountKey } from 'src/endpoints/accounts/entities/account.key';
 import { AccountEsdtHistory } from 'src/endpoints/accounts/entities/account.esdt.history';
 import { AccountFilter } from 'src/endpoints/accounts/entities/account.filter';

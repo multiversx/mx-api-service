@@ -1,4 +1,4 @@
-import { CleanupInterceptor, FieldsInterceptor } from '@multiversx/sdk-nestjs-common';
+import { CleanupInterceptor, FieldsInterceptor } from '@multiversx/sdk-nestjs-http';
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { PublicAppModule } from 'src/public.app.module';

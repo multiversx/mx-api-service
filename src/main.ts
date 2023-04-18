@@ -24,8 +24,8 @@ import { SocketAdapter } from './common/websockets/socket-adapter';
 import { ApiConfigModule } from './common/api-config/api.config.module';
 import { ElrondCachingService, CachingInterceptor, GuestCachingInterceptor, GuestCachingService } from '@multiversx/sdk-nestjs-cache';
 import { LoggerInitializer } from '@multiversx/sdk-nestjs-common';
-import { MetricsService, RequestCpuTimeInterceptor, LoggingInterceptor } from '@multiversx/sdk-nestjs-monitoring';
-import { LogRequestsInterceptor, FieldsInterceptor, ExtractInterceptor, CleanupInterceptor, PaginationInterceptor, QueryCheckInterceptor, ComplexityInterceptor, OriginInterceptor } from '@multiversx/sdk-nestjs-http';
+import { MetricsService, RequestCpuTimeInterceptor, LoggingInterceptor, LogRequestsInterceptor } from '@multiversx/sdk-nestjs-monitoring';
+import { FieldsInterceptor, ExtractInterceptor, CleanupInterceptor, PaginationInterceptor, QueryCheckInterceptor, ComplexityInterceptor, OriginInterceptor } from '@multiversx/sdk-nestjs-http';
 import { ErdnestConfigServiceImpl } from './common/api-config/erdnest.config.service.impl';
 import { RabbitMqModule } from './common/rabbitmq/rabbitmq.module';
 import { TransactionLoggingInterceptor } from './interceptors/transaction.logging.interceptor';
@@ -130,7 +130,7 @@ async function bootstrap() {
       },
     },
   );
-  pubSubApp.useLogger(pubSubApp.get(WINSTON_MODULE_NEST_PROVIDER));
+  // pubSubApp.useLogger(pubSubApp.get(WINSTON_MODULE_NEST_PROVIDER));
   pubSubApp.useWebSocketAdapter(new SocketAdapter(pubSubApp));
   // eslint-disable-next-line @typescript-eslint/no-floating-promises
   pubSubApp.listen();
