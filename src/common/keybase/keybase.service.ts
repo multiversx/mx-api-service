@@ -94,11 +94,12 @@ export class KeybaseService {
         const providerMetadata = await this.providerService.getProviderMetadata(key);
         if (providerMetadata && providerMetadata.identity && providerMetadata.identity === identity) {
           await this.cachingService.set(CacheInfo.ConfirmedProvider(key).key, identity, CacheInfo.ConfirmedProvider(key).ttl);
-        }
 
-        const blses = await this.nodeService.getOwnerBlses(key);
-        for (const bls of blses) {
-          validBlses.add(bls);
+          // if the identity is confirmed from the smart contract, we consider all BLS keys within valid
+          const blses = await this.nodeService.getOwnerBlses(key);
+          for (const bls of blses) {
+            validBlses.add(bls);
+          }
         }
       } else if (blsIdentityDict[key] === identity) {
         validBlses.add(key);
