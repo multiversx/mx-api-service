@@ -59,7 +59,7 @@ export default class Initializer {
         `${MOCK_PATH}heartbeat.mock.json`,
       );
       jest
-        .spyOn(NodeService.prototype, 'getHeartbeat')
+        .spyOn(NodeService.prototype, 'getHeartbeatAndValidators')
         // eslint-disable-next-line require-await
         .mockImplementation(jest.fn(async () => heartbeat));
 
