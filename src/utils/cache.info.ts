@@ -125,7 +125,7 @@ export class CacheInfo {
 
   static OwnerByEpochAndBls(bls: string, epoch: number): CacheInfo {
     return {
-      key: `owner:${epoch}:${bls}`,
+      key: `bls:owner:${epoch}:${bls}`,
       ttl: Constants.oneDay(),
     };
   }
