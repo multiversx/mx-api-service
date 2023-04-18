@@ -376,7 +376,7 @@ export class NodeService {
         const params = {
           keys: Object.keys(owners).map((bls) => CacheInfo.OwnerByEpochAndBls(bls, epoch).key),
           values: Object.values(owners),
-          ttls: new Array(Object.keys(owners).length).fill(fastWarm ? 60 : Constants.oneDay()), // 1 minute or 24h
+          ttls: new Array(Object.keys(owners).length).fill(fastWarm ? Constants.oneMinute() * 10 : Constants.oneDay()), // 1 minute or 24h
         };
 
         await this.cachingService.batchSet(params.keys, params.values, params.ttls);
