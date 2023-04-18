@@ -239,7 +239,7 @@ export class NodeService {
 
   private async applyNodeIdentities(nodes: Node[]) {
     for (const node of nodes) {
-      node.identity = await this.cachingService.get<string>(CacheInfo.ConfirmedIdentity(node.bls).key);
+      node.identity = await this.cachingService.getRemote<string>(CacheInfo.ConfirmedIdentity(node.bls).key);
     }
   }
 
@@ -267,7 +267,7 @@ export class NodeService {
   private async applyNodeProviders(nodes: Node[]) {
     for (const node of nodes) {
       if (node.type === NodeType.validator) {
-        const providerOwner = await this.cachingService.get<string>(CacheInfo.ProviderOwner(node.owner).key);
+        const providerOwner = await this.cachingService.getRemote<string>(CacheInfo.ProviderOwner(node.owner).key);
         if (providerOwner) {
           node.provider = node.owner;
           node.owner = providerOwner;

@@ -66,18 +66,6 @@ export class CacheInfo {
     ttl: Constants.oneHour(),
   };
 
-  static Keybases: CacheInfo = {
-    key: 'keybases',
-    ttl: Constants.oneHour(),
-  };
-
-  static KeybaseConfirmation(keybase: string): CacheInfo {
-    return {
-      key: `keybase:${keybase}`,
-      ttl: Constants.oneMonth() * 6,
-    };
-  }
-
   static ConfirmedIdentity(bls: string): CacheInfo {
     return {
       key: `confirmedIdentity:${bls}`,

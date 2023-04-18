@@ -258,7 +258,7 @@ export class ProviderService {
     });
 
     for (const provider of providersRaw) {
-      const identity = await this.cachingService.get<string>(CacheInfo.ConfirmedProvider(provider.provider).key);
+      const identity = await this.cachingService.getRemote<string>(CacheInfo.ConfirmedProvider(provider.provider).key);
       if (identity) {
         provider.identity = identity;
       }
