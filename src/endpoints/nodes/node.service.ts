@@ -244,8 +244,8 @@ export class NodeService {
   }
 
   async refreshOwners(): Promise<void> {
-    const heartbeat = await this.gatewayService.getNodeHeartbeatStatus();
-    const blses = heartbeat.filter(x => x.peerType !== 'observer').map(x => x.publicKey);
+    const heartbeat = await this.getHeartbeat();
+    const blses = heartbeat.filter(x => x.type === NodeType.validator).map(x => x.bls);
 
     await this.getOwners(blses);
   }

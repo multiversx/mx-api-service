@@ -7,7 +7,6 @@ import { CacheInfo } from "../../utils/cache.info";
 import { GithubService } from "../github/github.service";
 import { ApiService, ElrondCachingService, Constants, OriginLogger, AddressUtils } from "@multiversx/sdk-nestjs";
 import { PersistenceService } from "../persistence/persistence.service";
-import { GatewayService } from "../gateway/gateway.service";
 
 @Injectable()
 export class KeybaseService {
@@ -22,7 +21,6 @@ export class KeybaseService {
     private readonly providerService: ProviderService,
     private readonly githubService: GithubService,
     private readonly persistenceService: PersistenceService,
-    private readonly gatewayService: GatewayService,
   ) { }
 
   private async getProvidersKeybasesRaw(): Promise<Keybase[]> {
@@ -66,10 +64,10 @@ export class KeybaseService {
   }
 
   async confirmIdentities(): Promise<void> {
-    const heartbeatEntries = await this.gatewayService.getNodeHeartbeatStatus();
+    const heartbeatEntries = await this.nodeService.getHeartbeat();
 
-    const distinctIdentities = heartbeatEntries.filter(x => x.identity).map(x => x.identity).distinct();
-    const blsIdentityDict = heartbeatEntries.filter(x => x.identity).toRecord(x => x.publicKey, x => x.identity);
+    const distinctIdentities = heartbeatEntries.filter(x => x.identity).map(x => x.identity ?? '').distinct();
+    const blsIdentityDict = heartbeatEntries.filter(x => x.identity).toRecord(x => x.bls, x => x.identity ?? '');
 
     for (const identity of distinctIdentities) {
       const blses = await this.confirmIdentity(identity, blsIdentityDict);
