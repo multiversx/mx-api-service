@@ -246,15 +246,13 @@ export class NodeService {
   async refreshOwners(): Promise<void> {
     const heartbeat = await this.gatewayService.getNodeHeartbeatStatus();
     const blses = heartbeat.filter(x => x.peerType !== 'observer').map(x => x.publicKey);
-    const epoch = await this.blockService.getCurrentEpoch();
 
-    await this.getOwners(blses, epoch);
+    await this.getOwners(blses);
   }
 
   private async applyNodeOwners(nodes: Node[]) {
     const blses = nodes.filter(x => x.type === NodeType.validator).map(node => node.bls);
-    const epoch = await this.blockService.getCurrentEpoch();
-    const owners = await this.getOwners(blses, epoch, true);
+    const owners = await this.getOwners(blses, true);
 
     for (const [index, bls] of blses.entries()) {
       const node = nodes.find(node => node.bls === bls);
@@ -342,8 +340,8 @@ export class NodeService {
     }
   }
 
-  async getOwners(blses: string[], epoch: number, fromCacheOnly: boolean = false) {
-    const keys = blses.map((bls) => CacheInfo.OwnerByEpochAndBls(bls, epoch).key);
+  async getOwners(blses: string[], fromCacheOnly: boolean = false) {
+    const keys = blses.map((bls) => CacheInfo.OwnerByEpochAndBls(bls).key);
 
     const cached = await this.cachingService.batchGetManyRemote(keys);
 
@@ -377,7 +375,7 @@ export class NodeService {
 
         const fastWarm = this.apiConfigService.getIsFastWarmerCronActive();
         const params = {
-          keys: Object.keys(owners).map((bls) => CacheInfo.OwnerByEpochAndBls(bls, epoch).key),
+          keys: Object.keys(owners).map((bls) => CacheInfo.OwnerByEpochAndBls(bls).key),
           values: Object.values(owners),
           ttls: new Array(Object.keys(owners).length).fill(fastWarm ? Constants.oneMinute() * 10 : Constants.oneDay()), // 1 minute or 24h
         };
