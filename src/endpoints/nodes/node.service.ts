@@ -367,12 +367,10 @@ export class NodeService {
 
           if (!owners[bls]) {
             const owner = await this.getBlsOwner(bls);
-            console.log(`owner for bls '${bls}' is '${owner}'`);
             if (owner) {
               const blses = await this.getOwnerBlses(owner);
 
               for (const bls of blses) {
-                console.log(`owner for bls '${bls}' is '${owner}'`);
                 owners[bls] = owner;
               }
             }
