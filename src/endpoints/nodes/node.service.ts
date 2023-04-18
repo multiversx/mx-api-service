@@ -244,7 +244,7 @@ export class NodeService {
   }
 
   async refreshOwners(): Promise<void> {
-    const heartbeat = await this.getHeartbeat();
+    const heartbeat = await this.getAllNodes();
     const blses = heartbeat.filter(x => x.type === NodeType.validator).map(x => x.bls);
 
     await this.getOwners(blses);
