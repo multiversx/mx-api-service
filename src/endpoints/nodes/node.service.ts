@@ -348,12 +348,15 @@ export class NodeService {
     const cached = await this.cachingService.batchGetManyRemote(keys);
 
     const owners: any = {};
-    const missing = cached
+    let missing = cached
       .map((element, index) => (element === null ? index : false))
       .filter((element) => element !== false)
       .map(element => element as number);
 
     if (!fromCacheOnly) {
+      // we consider all as missing so we can refresh them
+      missing = cached.map((_, index) => index);
+
       if (missing.length) {
         for (const index of missing) {
           const bls = blses[index];
