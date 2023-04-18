@@ -156,7 +156,7 @@ export class CacheWarmerService {
 
   @Lock({ name: 'Keys against database / github invalidations', verbose: true })
   async handleKeysAgainstDatabaseAndGithubInvalidations() {
-    await this.keybaseService.confirmKeybasesAgainstGithub();
+    // await this.keybaseService.confirmKeybasesAgainstGithub();
     await this.keybaseService.confirmIdentities();
     await this.keybaseService.confirmIdentityProfilesAgainstKeybaseIo();
 

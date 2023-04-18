@@ -15,7 +15,7 @@ import { CacheInfo } from "src/utils/cache.info";
 import { Stake } from "../stake/entities/stake";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
 import { Auction } from "src/common/gateway/entities/auction";
-import { AddressUtils, Constants, ElrondCachingService, PerformanceProfiler } from "@multiversx/sdk-nestjs";
+import { AddressUtils, Constants, ElrondCachingService } from "@multiversx/sdk-nestjs";
 import { NodeSort } from "./entities/node.sort";
 import { ProtocolService } from "src/common/protocol/protocol.service";
 
@@ -302,33 +302,19 @@ export class NodeService {
   }
 
   async getAllNodesRaw(): Promise<Node[]> {
-    let profiler = new PerformanceProfiler();
     const nodes = await this.getHeartbeat();
-    profiler.stop('getting heartbeat', true);
 
-    profiler = new PerformanceProfiler();
     const queue = await this.getQueue();
-    profiler.stop('getting queue', true);
 
-    profiler = new PerformanceProfiler();
     this.processQueuedNodes(nodes, queue);
-    profiler.stop('processing queued nodes', true);
 
-    profiler = new PerformanceProfiler();
     await this.applyNodeIdentities(nodes);
-    profiler.stop('applying node identities', true);
 
-    profiler = new PerformanceProfiler();
     await this.applyNodeOwners(nodes);
-    profiler.stop('applying node owners', true);
 
-    profiler = new PerformanceProfiler();
     await this.applyNodeProviders(nodes);
-    profiler.stop('applying node providers', true);
 
-    profiler = new PerformanceProfiler();
     await this.applyNodeStakeInfo(nodes);
-    profiler.stop('applying node stake info', true);
 
     if (this.apiConfigService.isStakingV4Enabled()) {
       const auctions = await this.gatewayService.getValidatorAuctions();
