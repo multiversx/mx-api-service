@@ -61,7 +61,7 @@ export class CacheWarmerService {
     private readonly blockService: BlockService,
   ) {
     this.configCronJob(
-      'handleKeybaseAgainstKeybasePubInvalidations',
+      'handleKeysAgainstDatabaseAndGithubInvalidations',
       CronExpression.EVERY_MINUTE,
       CronExpression.EVERY_10_MINUTES,
       async () => await this.handleKeysAgainstDatabaseAndGithubInvalidations()
