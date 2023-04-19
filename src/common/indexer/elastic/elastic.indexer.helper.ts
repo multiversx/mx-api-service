@@ -268,8 +268,10 @@ export class ElasticIndexerHelper {
       elasticQuery = elasticQuery.withMustCondition(QueryType.Should(queries));
     }
 
-    if (filter.token) {
-      elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Match('tokens', filter.token, QueryOperator.AND));
+    if (filter.token === 'EGLD') {
+      elasticQuery = elasticQuery.withMustNotCondition(QueryType.Match('value', '0'));
+    } else {
+      elasticQuery = elasticQuery.withMustMatchCondition('tokens', filter.token, QueryOperator.AND);
     }
 
     if (filter.functions && filter.functions.length > 0 && this.apiConfigService.getIsIndexerV3FlagActive()) {
