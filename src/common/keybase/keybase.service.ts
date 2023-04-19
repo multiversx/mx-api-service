@@ -1,7 +1,6 @@
 import { forwardRef, HttpStatus, Inject, Injectable } from "@nestjs/common";
 import { NodeService } from "src/endpoints/nodes/node.service";
 import { ProviderService } from "src/endpoints/providers/provider.service";
-import { Keybase } from "./entities/keybase";
 import { KeybaseIdentity } from "./entities/keybase.identity";
 import { CacheInfo } from "../../utils/cache.info";
 import { GithubService } from "../github/github.service";
@@ -23,7 +22,7 @@ export class KeybaseService {
     private readonly persistenceService: PersistenceService,
   ) { }
 
-  private async getProvidersKeybasesRaw(): Promise<Keybase[]> {
+  private async getProviderIdentities(): Promise<string[]> {
     const providers = await this.providerService.getProviderAddresses();
     const metadatas = await
       this.cachingService.batchProcess(
@@ -33,32 +32,21 @@ export class KeybaseService {
         Constants.oneMinute() * 15,
       );
 
-    const keybaseProvidersArr: Keybase[] = metadatas
-      .map(({ identity }, index) => {
-        return { identity: identity ?? '', key: providers[index] };
-      })
-      .filter(({ identity }) => !!identity);
-
-    return keybaseProvidersArr;
+    return metadatas.filter(x => x.identity).map(x => x.identity ?? '');
   }
 
-  private async getNodesKeybasesRaw(): Promise<Keybase[]> {
+  private async getHeartbeatAndValidatorIdentities(): Promise<string[]> {
     const nodes = await this.nodeService.getHeartbeatAndValidators();
-    const keybasesNodesArr: Keybase[] = nodes
-      .filter((node) => !!node.identity)
-      .map((node) => {
-        return { identity: node.identity, key: node.bls };
-      });
 
-    return keybasesNodesArr;
+    return nodes.filter(x => x.identity).map(x => x.identity ?? '');
   }
 
   private async getDistinctIdentities(): Promise<string[]> {
-    const providerKeybases: Keybase[] = await this.getProvidersKeybasesRaw();
-    const nodeKeybases: Keybase[] = await this.getNodesKeybasesRaw();
-    const allKeybases: Keybase[] = [...providerKeybases, ...nodeKeybases];
+    const providerIdentities = await this.getProviderIdentities();
+    const heartbeatAndValidatorIdentities = await this.getHeartbeatAndValidatorIdentities();
+    const allIdentities = [...providerIdentities, ...heartbeatAndValidatorIdentities];
 
-    const distinctIdentities = allKeybases.map(x => x.identity ?? '').filter(x => x !== '').distinct().shuffle();
+    const distinctIdentities = allIdentities.distinct().shuffle();
 
     return distinctIdentities;
   }
