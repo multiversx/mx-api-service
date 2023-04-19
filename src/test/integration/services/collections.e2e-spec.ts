@@ -1,4 +1,4 @@
-import '@multiversx/sdk-nestjs-common/lib/src/utils/extensions/jest.extensions';
+import '@multiversx/sdk-nestjs-common/lib/utils/extensions/jest.extensions';
 import { Test } from "@nestjs/testing";
 import { QueryPagination } from 'src/common/entities/query.pagination';
 import { CollectionService } from "src/endpoints/collections/collection.service";

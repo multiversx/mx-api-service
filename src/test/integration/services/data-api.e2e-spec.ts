@@ -5,7 +5,7 @@ import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { DataApiModule } from "src/common/data-api/data-api.module";
 import { DataApiService } from "src/common/data-api/data-api.service";
 import { DataApiToken } from "src/common/data-api/entities/data-api.token";
-import '@multiversx/sdk-nestjs-common/lib/src/utils/extensions/date.extensions';
+import '@multiversx/sdk-nestjs-common/lib/utils/extensions/date.extensions';
 
 describe('Data API Service', () => {
   const mockTokens: Record<string, DataApiToken> = {

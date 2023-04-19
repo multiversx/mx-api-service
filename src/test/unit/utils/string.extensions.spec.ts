@@ -1,4 +1,4 @@
-import '@multiversx/sdk-nestjs-common/lib/src/utils/extensions/string.extensions';
+import '@multiversx/sdk-nestjs-common/lib/utils/extensions/string.extensions';
 
 describe('String Extensions', () => {
   it('removePrefix', () => {

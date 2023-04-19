@@ -12,7 +12,7 @@ import { TransactionOperationAction } from "src/endpoints/transactions/entities/
 import { TransactionOperationType } from "src/endpoints/transactions/entities/transaction.operation.type";
 import { EsdtType } from "src/endpoints/esdt/entities/esdt.type";
 import { TransactionUtils } from "src/endpoints/transactions/transaction.utils";
-import '@multiversx/sdk-nestjs-common/lib/src/utils/extensions/array.extensions';
+import '@multiversx/sdk-nestjs-common/lib/utils/extensions/array.extensions';
 
 describe('Transaction Utils', () => {
   it('tryExtractCollectionIdentifierFromChangeSftToMetaEsdTransaction', () => {

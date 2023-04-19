@@ -8,7 +8,7 @@ import { KeybaseService } from "src/common/keybase/keybase.service";
 import { NodeService } from "src/endpoints/nodes/node.service";
 import { ProviderService } from "src/endpoints/providers/provider.service";
 import { PublicAppModule } from "src/public.app.module";
-import '@multiversx/sdk-nestjs-common/lib/src/utils/extensions/jest.extensions';
+import '@multiversx/sdk-nestjs-common/lib/utils/extensions/jest.extensions';
 import { TokenService } from "src/endpoints/tokens/token.service";
 
 export default class Initializer {

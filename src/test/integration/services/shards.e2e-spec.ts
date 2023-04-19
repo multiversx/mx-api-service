@@ -3,8 +3,8 @@ import { Test } from "@nestjs/testing";
 import { ShardService } from "src/endpoints/shards/shard.service";
 import { PublicAppModule } from "src/public.app.module";
 import { Shard } from "src/endpoints/shards/entities/shard";
-import '@multiversx/sdk-nestjs-common/lib/src/utils/extensions/jest.extensions';
-import '@multiversx/sdk-nestjs-common/lib/src/utils/extensions/array.extensions';
+import '@multiversx/sdk-nestjs-common/lib/utils/extensions/jest.extensions';
+import '@multiversx/sdk-nestjs-common/lib/utils/extensions/array.extensions';
 import { FileUtils } from '@multiversx/sdk-nestjs-common';
 import { ElasticService } from '@multiversx/sdk-nestjs-elastic';
 

@@ -2,7 +2,7 @@ import { Test } from '@nestjs/testing';
 import { AccountService } from 'src/endpoints/accounts/account.service';
 import { PublicAppModule } from 'src/public.app.module';
 import { DeployedContract } from 'src/endpoints/accounts/entities/deployed.contract';
-import '@multiversx/sdk-nestjs-common/lib/src/utils/extensions/jest.extensions';
+import '@multiversx/sdk-nestjs-common/lib/utils/extensions/jest.extensions';
 import { ApiConfigService } from 'src/common/api-config/api.config.service';
 import { ElrondCachingService } from "@multiversx/sdk-nestjs-cache";
 import { AddressUtils } from '@multiversx/sdk-nestjs-common';

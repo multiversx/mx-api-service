@@ -1,8 +1,8 @@
 import { NftQueryOptions } from 'src/endpoints/nfts/entities/nft.query.options';
 import { Test } from "@nestjs/testing";
 import { NftService } from "src/endpoints/nfts/nft.service";
-import '@multiversx/sdk-nestjs-common/lib/src/utils/extensions/jest.extensions';
-import '@multiversx/sdk-nestjs-common/lib/src/utils/extensions/array.extensions';
+import '@multiversx/sdk-nestjs-common/lib/utils/extensions/jest.extensions';
+import '@multiversx/sdk-nestjs-common/lib/utils/extensions/array.extensions';
 import { PublicAppModule } from "src/public.app.module";
 import { NftFilter } from "src/endpoints/nfts/entities/nft.filter";
 import { NftType } from "src/endpoints/nfts/entities/nft.type";

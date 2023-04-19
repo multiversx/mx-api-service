@@ -1,7 +1,7 @@
 import { TransactionFilter } from "src/endpoints/transactions/entities/transaction.filter";
 import { TransactionOperation } from "src/endpoints/transactions/entities/transaction.operation";
 import { TransactionOperationAction } from "src/endpoints/transactions/entities/transaction.operation.action";
-import '@multiversx/sdk-nestjs-common/lib/src/utils/extensions/array.extensions';
+import '@multiversx/sdk-nestjs-common/lib/utils/extensions/array.extensions';
 import { QueryConditionOptions } from "@multiversx/sdk-nestjs-elastic";
 
 export class TransactionUtils {
