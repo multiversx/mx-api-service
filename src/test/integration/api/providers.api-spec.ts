@@ -36,6 +36,6 @@ describe("API Testing", () => {
 
   it('should check providers details', async () => {
     const checker = new ApiChecker('providers', app.getHttpServer());
-    await checker.checkDetails();
+    await checker.checkDetails('provider');
   });
 });
