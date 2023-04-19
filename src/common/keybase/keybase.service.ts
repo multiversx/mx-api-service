@@ -68,28 +68,26 @@ export class KeybaseService {
 
     const heartbeatEntries = await this.nodeService.getHeartbeatValidatorsAndQueue();
     const blsIdentityDict = heartbeatEntries.filter(x => x.identity).toRecord(x => x.bls, x => x.identity ?? '');
+    const confirmations: Record<string, string> = {};
 
     for (const identity of distinctIdentities) {
-      const blses = await this.confirmIdentity(identity, blsIdentityDict);
-      if (blses) {
-        for (const bls of blses) {
-          await this.cachingService.set(CacheInfo.ConfirmedIdentity(bls).key, identity, CacheInfo.ConfirmedIdentity(bls).ttl);
-        }
-      }
+      await this.confirmIdentity(identity, blsIdentityDict, confirmations);
+    }
+
+    for (const key of Object.keys(confirmations)) {
+      await this.cachingService.set(CacheInfo.ConfirmedIdentity(key).key, confirmations[key], CacheInfo.ConfirmedIdentity(key).ttl);
     }
   }
 
-  async confirmIdentity(identity: string, blsIdentityDict: Record<string, string>): Promise<string[] | undefined> {
+  async confirmIdentity(identity: string, blsIdentityDict: Record<string, string>, confirmations: Record<string, string>): Promise<void> {
     console.log(`Confirming identity '${identity}'`);
 
     const keys = await this.persistenceService.getKeybaseConfirmationForIdentity(identity);
     if (!keys) {
-      return undefined;
+      return;
     }
 
     console.log(`Found ${keys.length} keys for identity '${identity}'`);
-
-    const validBlses = new Set<string>();
 
     for (const key of keys) {
       if (AddressUtils.isAddressValid(key)) {
@@ -103,16 +101,14 @@ export class KeybaseService {
           const blses = await this.nodeService.getOwnerBlses(key);
           for (const bls of blses) {
             console.log(`For identity '${identity}' marking BLS '${bls}' as valid within staking contract '${key}'`);
-            validBlses.add(bls);
+            confirmations[bls] = identity;
           }
         }
-      } else if (blsIdentityDict[key] === identity) {
+      } else if (blsIdentityDict[key] === identity && confirmations[key] === undefined) {
         console.log(`For identity '${identity}' marking BLS '${key}' as valid`);
-        validBlses.add(key);
+        confirmations[key] = identity;
       }
     }
-
-    return Array.from(validBlses);
   }
 
   async confirmKeybasesAgainstGithub(): Promise<void> {
