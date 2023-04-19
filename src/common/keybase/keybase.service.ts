@@ -66,7 +66,7 @@ export class KeybaseService {
   async confirmIdentities(): Promise<void> {
     const heartbeatEntries = await this.nodeService.getHeartbeatValidatorsAndQueue();
 
-    const distinctIdentities = heartbeatEntries.filter(x => x.identity).map(x => x.identity ?? '').distinct();
+    const distinctIdentities = await this.getDistinctIdentities();
     const blsIdentityDict = heartbeatEntries.filter(x => x.identity).toRecord(x => x.bls, x => x.identity ?? '');
 
     for (const identity of distinctIdentities) {
