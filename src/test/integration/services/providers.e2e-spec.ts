@@ -31,7 +31,7 @@ describe('Provider Service', () => {
 
   describe("Get Provider", () => {
     it("should return provider based on address", async () => {
-      const address: string = "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq8hlllls7a6h85";
+      const address: string = "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqc0llllsayxegu";
 
       const result = await providerService.getProvider(address);
 
