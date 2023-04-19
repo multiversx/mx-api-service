@@ -87,7 +87,7 @@ export class KeybaseService {
       return undefined;
     }
 
-    console.log(`Found ${keys.length} keys identity '${identity}'`);
+    console.log(`Found ${keys.length} keys for identity '${identity}'`);
 
     const validBlses = new Set<string>();
 
@@ -102,11 +102,12 @@ export class KeybaseService {
           // if the identity is confirmed from the smart contract, we consider all BLS keys within valid
           const blses = await this.nodeService.getOwnerBlses(key);
           for (const bls of blses) {
-            console.log(`For identity '${identity}' marking BLS '${bls}' as valid`);
+            console.log(`For identity '${identity}' marking BLS '${bls}' as valid within staking contract '${key}'`);
             validBlses.add(bls);
           }
         }
       } else if (blsIdentityDict[key] === identity) {
+        console.log(`For identity '${identity}' marking BLS '${key}' as valid`);
         validBlses.add(key);
       }
     }
