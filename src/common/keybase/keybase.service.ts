@@ -6,6 +6,7 @@ import { CacheInfo } from "../../utils/cache.info";
 import { GithubService } from "../github/github.service";
 import { ApiService, ElrondCachingService, Constants, OriginLogger, AddressUtils } from "@multiversx/sdk-nestjs";
 import { PersistenceService } from "../persistence/persistence.service";
+import { ApiConfigService } from "../api-config/api.config.service";
 
 @Injectable()
 export class KeybaseService {
@@ -20,6 +21,7 @@ export class KeybaseService {
     private readonly providerService: ProviderService,
     private readonly githubService: GithubService,
     private readonly persistenceService: PersistenceService,
+    private readonly apiConfigService: ApiConfigService,
   ) { }
 
   private async getProviderIdentities(): Promise<string[]> {
@@ -101,7 +103,11 @@ export class KeybaseService {
 
   async confirmKeybasesAgainstGithubForIdentity(identity: string): Promise<void> {
     try {
-      const multiversxResults = await this.githubService.getRepoFileContents(identity, 'multiversx', 'keys.json');
+      const network = this.apiConfigService.getNetwork();
+      const networkPath = network === 'mainnet' ? '' : `${network}/`;
+      const filePath = networkPath + 'keys.json';
+
+      const multiversxResults = await this.githubService.getRepoFileContents(identity, 'multiversx', filePath);
       if (!multiversxResults) {
         this.logger.log(`github.com validation not found for identity '${identity}'`);
         return;
