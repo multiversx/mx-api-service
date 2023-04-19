@@ -215,17 +215,11 @@ export class ProviderService {
   async getAllProvidersRaw(): Promise<Provider[]> {
     const providerAddresses = await this.getProviderAddresses();
 
-    const [configs, metadatas, numUsers, cumulatedRewards] = await Promise.all([
+    const [configs, numUsers, cumulatedRewards] = await Promise.all([
       this.cachingService.batchProcess(
         providerAddresses,
         address => `providerConfig:${address}`,
         async address => await this.getProviderConfig(address),
-        Constants.oneMinute() * 15,
-      ),
-      this.cachingService.batchProcess(
-        providerAddresses,
-        address => `providerMetadata:${address}`,
-        async address => await this.getProviderMetadata(address),
         Constants.oneMinute() * 15,
       ),
       this.cachingService.batchProcess(
@@ -248,7 +242,6 @@ export class ProviderService {
         ...configs[index] ?? new ProviderConfig(),
         numUsers: numUsers[index] ?? 0,
         cumulatedRewards: cumulatedRewards[index] ?? '0',
-        identity: metadatas[index]?.identity ?? undefined,
         numNodes: 0,
         stake: '0',
         topUp: '0',
