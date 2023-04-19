@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
-import '@multiversx/sdk-nestjs-common/lib/src/utils/extensions/array.extensions';
-import '@multiversx/sdk-nestjs-common/lib/src/utils/extensions/date.extensions';
-import '@multiversx/sdk-nestjs-common/lib/src/utils/extensions/number.extensions';
-import '@multiversx/sdk-nestjs-common/lib/src/utils/extensions/string.extensions';
+import '@multiversx/sdk-nestjs-common/lib/utils/extensions/array.extensions';
+import '@multiversx/sdk-nestjs-common/lib/utils/extensions/date.extensions';
+import '@multiversx/sdk-nestjs-common/lib/utils/extensions/number.extensions';
+import '@multiversx/sdk-nestjs-common/lib/utils/extensions/string.extensions';
 import { EndpointsServicesModule } from './endpoints/endpoints.services.module';
 import { EndpointsControllersModule } from './endpoints/endpoints.controllers.module';
 import { GuestCachingService } from '@multiversx/sdk-nestjs-cache';
