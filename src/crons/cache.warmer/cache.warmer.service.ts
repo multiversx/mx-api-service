@@ -109,12 +109,6 @@ export class CacheWarmerService {
   }
 
   @Cron(CronExpression.EVERY_MINUTE)
-  @Lock({ name: 'Node owner invalidations', verbose: true })
-  async handleNodeOwnerInvalidations() {
-    await this.nodeService.refreshOwners();
-  }
-
-  @Cron(CronExpression.EVERY_MINUTE)
   @Lock({ name: 'Delegation legacy invalidations', verbose: true })
   async handleDelegationLegacyInvalidations() {
     const delegation = await this.delegationLegacyService.getDelegationRaw();

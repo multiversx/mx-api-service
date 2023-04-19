@@ -15,7 +15,7 @@ import { CacheInfo } from "src/utils/cache.info";
 import { Stake } from "../stake/entities/stake";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
 import { Auction } from "src/common/gateway/entities/auction";
-import { AddressUtils, Constants, ElrondCachingService } from "@multiversx/sdk-nestjs";
+import { AddressUtils, ElrondCachingService } from "@multiversx/sdk-nestjs";
 import { NodeSort } from "./entities/node.sort";
 import { ProtocolService } from "src/common/protocol/protocol.service";
 
@@ -243,16 +243,10 @@ export class NodeService {
     }
   }
 
-  async refreshOwners(): Promise<void> {
-    const heartbeat = await this.getHeartbeatValidatorsAndQueue();
-    const blses = heartbeat.filter(x => x.type === NodeType.validator).map(x => x.bls);
-
-    await this.getOwners(blses);
-  }
-
   private async applyNodeOwners(nodes: Node[]) {
     const blses = nodes.filter(x => x.type === NodeType.validator).map(node => node.bls);
-    const owners = await this.getOwners(blses, true);
+    const epoch = await this.blockService.getCurrentEpoch();
+    const owners = await this.getOwners(blses, epoch);
 
     for (const [index, bls] of blses.entries()) {
       const node = nodes.find(node => node.bls === bls);
@@ -346,45 +340,36 @@ export class NodeService {
     }
   }
 
-  async getOwners(blses: string[], fromCacheOnly: boolean = false) {
-    const keys = blses.map((bls) => CacheInfo.OwnerByBls(bls).key);
+  async getOwners(blses: string[], epoch: number) {
+    const keys = blses.map((bls) => CacheInfo.OwnerByEpochAndBls(epoch, bls).key);
 
     const cached = await this.cachingService.batchGetManyRemote(keys);
 
     const owners: any = {};
-    let missing = cached
+    const missing = cached
       .map((element, index) => (element === null ? index : false))
       .filter((element) => element !== false)
       .map(element => element as number);
 
-    if (!fromCacheOnly) {
-      // we consider all as missing so we can refresh them
-      missing = cached.map((_, index) => index);
+    if (missing.length) {
+      for (const index of missing) {
+        const bls = blses[index];
 
-      if (missing.length) {
-        for (const index of missing) {
-          const bls = blses[index];
+        if (!owners[bls]) {
+          const owner = await this.getBlsOwner(bls);
+          if (owner) {
+            const blses = await this.getOwnerBlses(owner);
 
-          if (!owners[bls]) {
-            const owner = await this.getBlsOwner(bls);
-            if (owner) {
-              const blses = await this.getOwnerBlses(owner);
-
-              for (const bls of blses) {
-                owners[bls] = owner;
-              }
+            for (const bls of blses) {
+              owners[bls] = owner;
+              await this.cachingService.setRemote(
+                CacheInfo.OwnerByEpochAndBls(epoch, bls).key,
+                owner,
+                CacheInfo.OwnerByEpochAndBls(epoch, bls).ttl
+              );
             }
           }
         }
-
-        const fastWarm = this.apiConfigService.getIsFastWarmerCronActive();
-        const params = {
-          keys: Object.keys(owners).map((bls) => CacheInfo.OwnerByBls(bls).key),
-          values: Object.values(owners),
-          ttls: new Array(Object.keys(owners).length).fill(fastWarm ? Constants.oneMinute() * 10 : Constants.oneDay()), // 1 minute or 24h
-        };
-
-        await this.cachingService.batchSet(params.keys, params.values, params.ttls);
       }
     }
 
@@ -614,7 +599,7 @@ export class NodeService {
     const epoch = await this.blockService.getCurrentEpoch();
     const keys = nodes
       .filter(x => x.owner === address)
-      .map(x => `owner:${epoch}:${x.bls}`);
+      .map(x => CacheInfo.OwnerByEpochAndBls(epoch, x.bls).key);
 
     for (const key of keys) {
       await this.cachingService.deleteInCache(key);
