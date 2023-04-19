@@ -80,32 +80,24 @@ export class KeybaseService {
   }
 
   async confirmIdentity(identity: string, blsIdentityDict: Record<string, string>, confirmations: Record<string, string>): Promise<void> {
-    console.log(`Confirming identity '${identity}'`);
-
     const keys = await this.persistenceService.getKeybaseConfirmationForIdentity(identity);
     if (!keys) {
       return;
     }
 
-    console.log(`Found ${keys.length} keys for identity '${identity}'`);
-
     for (const key of keys) {
       if (AddressUtils.isAddressValid(key)) {
-        console.log(`For identity '${identity}' found staking contract '${key}'`);
         const providerMetadata = await this.providerService.getProviderMetadata(key);
         if (providerMetadata && providerMetadata.identity && providerMetadata.identity === identity) {
-          console.log(`For identity '${identity}' confirmed identity of staking contract '${key}'`);
           await this.cachingService.set(CacheInfo.ConfirmedProvider(key).key, identity, CacheInfo.ConfirmedProvider(key).ttl);
 
           // if the identity is confirmed from the smart contract, we consider all BLS keys within valid
           const blses = await this.nodeService.getOwnerBlses(key);
           for (const bls of blses) {
-            console.log(`For identity '${identity}' marking BLS '${bls}' as valid within staking contract '${key}'`);
             confirmations[bls] = identity;
           }
         }
       } else if (blsIdentityDict[key] === identity && confirmations[key] === undefined) {
-        console.log(`For identity '${identity}' marking BLS '${key}' as valid`);
         confirmations[key] = identity;
       }
     }
