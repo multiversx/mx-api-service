@@ -99,7 +99,7 @@ export class TransactionProcessorService {
 
   async tryInvalidateOwner(transaction: ShardTransaction): Promise<string[]> {
     const transactionFuncName = transaction.getDataFunctionName();
-    if (transactionFuncName !== 'mergeValidatorToDelegationWithWhitelist') {
+    if (transactionFuncName !== 'mergeValidatorToDelegationWithWhitelist' && transactionFuncName !== 'makeNewContractFromValidatorData') {
       return [];
     }
 
