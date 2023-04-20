@@ -63,7 +63,7 @@ export class CacheWarmerService {
     this.configCronJob(
       'handleKeysAgainstDatabaseAndGithubInvalidations',
       CronExpression.EVERY_MINUTE,
-      CronExpression.EVERY_5_MINUTES,
+      CronExpression.EVERY_30_MINUTES,
       async () => await this.handleKeysAgainstDatabaseAndGithubInvalidations()
     );
 
