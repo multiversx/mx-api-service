@@ -1,4 +1,4 @@
-import { ElrondCachingService } from "@multiversx/sdk-nestjs-cache";
+import { CachingService } from "@multiversx/sdk-nestjs-cache";
 import { Constants, FileUtils } from "@multiversx/sdk-nestjs-common";
 import { Test } from "@nestjs/testing";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
@@ -12,7 +12,7 @@ import '@multiversx/sdk-nestjs-common/lib/utils/extensions/jest.extensions';
 import { TokenService } from "src/endpoints/tokens/token.service";
 
 export default class Initializer {
-  private static cachingService: ElrondCachingService;
+  private static cachingService: CachingService;
   private static apiConfigService: ApiConfigService;
 
   static async initialize() {
@@ -21,7 +21,7 @@ export default class Initializer {
     }).compile();
 
     Initializer.cachingService =
-      moduleRef.get<ElrondCachingService>(ElrondCachingService);
+      moduleRef.get<CachingService>(CachingService);
     Initializer.apiConfigService =
       moduleRef.get<ApiConfigService>(ApiConfigService);
     const keybaseService = moduleRef.get<KeybaseService>(KeybaseService);

@@ -1,5 +1,5 @@
 import { BinaryUtils, Constants, NumberUtils } from "@multiversx/sdk-nestjs-common";
-import { ElrondCachingService } from "@multiversx/sdk-nestjs-cache";
+import { CachingService } from "@multiversx/sdk-nestjs-cache";
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { IdentitiesService } from "src/endpoints/identities/identities.service";
 import { ProviderService } from "src/endpoints/providers/provider.service";
@@ -16,7 +16,7 @@ export class StakeActionRecognizerService implements TransactionActionRecognizer
     private readonly providerService: ProviderService,
     @Inject(forwardRef(() => IdentitiesService))
     private readonly identitiesService: IdentitiesService,
-    private readonly cachingService: ElrondCachingService,
+    private readonly cachingService: CachingService,
   ) { }
 
   private async getProviders(): Promise<{ [key: string]: { providerName: string, providerAvatar: string } }> {

@@ -4,7 +4,7 @@ import { CacheInfo } from "src/utils/cache.info";
 import { TokenAssets } from "src/common/assets/entities/token.assets";
 import { ApiConfigService } from "../api-config/api.config.service";
 import { AccountAssets } from "./entities/account.assets";
-import { ElrondCachingService } from "@multiversx/sdk-nestjs-cache";
+import { CachingService } from "@multiversx/sdk-nestjs-cache";
 import { FileUtils, OriginLogger } from "@multiversx/sdk-nestjs-common";
 import { ApiUtils } from "@multiversx/sdk-nestjs-http";
 import { MexPair } from "src/endpoints/mex/entities/mex.pair";
@@ -25,7 +25,7 @@ export class AssetsService {
   private readonly logger = new OriginLogger(AssetsService.name);
 
   constructor(
-    private readonly cachingService: ElrondCachingService,
+    private readonly cachingService: CachingService,
     private readonly apiConfigService: ApiConfigService
   ) { }
 

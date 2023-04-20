@@ -21,7 +21,7 @@ import { PersistenceService } from "src/common/persistence/persistence.service";
 import { MexTokenService } from "../mex/mex.token.service";
 import { BinaryUtils, NumberUtils, RecordUtils, BatchUtils, TokenUtils } from "@multiversx/sdk-nestjs-common";
 import { ApiUtils } from "@multiversx/sdk-nestjs-http";
-import { ElrondCachingService } from "@multiversx/sdk-nestjs-cache";
+import { CachingService } from "@multiversx/sdk-nestjs-cache";
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { LockedAssetService } from "../../common/locked-asset/locked-asset.service";
 import { CollectionAccount } from "../collections/entities/collection.account";
@@ -43,7 +43,7 @@ export class NftService {
     private readonly indexerService: IndexerService,
     private readonly esdtService: EsdtService,
     private readonly assetsService: AssetsService,
-    private readonly cachingService: ElrondCachingService,
+    private readonly cachingService: CachingService,
     @Inject(forwardRef(() => PluginService))
     private readonly pluginService: PluginService,
     private readonly nftMetadataService: NftMetadataService,

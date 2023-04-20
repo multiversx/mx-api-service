@@ -4,14 +4,14 @@ import { NotifierEvent } from './entities/notifier.event';
 import { EsdtService } from 'src/endpoints/esdt/esdt.service';
 import { ClientProxy } from '@nestjs/microservices';
 import { BinaryUtils, OriginLogger } from '@multiversx/sdk-nestjs-common';
-import { ElrondCachingService } from "@multiversx/sdk-nestjs-cache";
+import { CachingService } from "@multiversx/sdk-nestjs-cache";
 
 @Injectable()
 export class RabbitMqTokenHandlerService {
   private readonly logger = new OriginLogger(RabbitMqTokenHandlerService.name);
 
   constructor(
-    private readonly cachingService: ElrondCachingService,
+    private readonly cachingService: CachingService,
     private readonly esdtService: EsdtService,
     @Inject('PUBSUB_SERVICE') private clientProxy: ClientProxy,
   ) { }

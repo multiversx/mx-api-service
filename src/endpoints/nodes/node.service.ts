@@ -19,7 +19,7 @@ import { Stake } from "../stake/entities/stake";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
 import { Auction } from "src/common/gateway/entities/auction";
 import { AddressUtils, Constants } from "@multiversx/sdk-nestjs-common";
-import { ElrondCachingService } from "@multiversx/sdk-nestjs-cache";
+import { CachingService } from "@multiversx/sdk-nestjs-cache";
 import { NodeSort } from "./entities/node.sort";
 import { ProtocolService } from "src/common/protocol/protocol.service";
 
@@ -29,7 +29,7 @@ export class NodeService {
     private readonly gatewayService: GatewayService,
     private readonly vmQueryService: VmQueryService,
     private readonly apiConfigService: ApiConfigService,
-    private readonly cachingService: ElrondCachingService,
+    private readonly cachingService: CachingService,
     @Inject(forwardRef(() => KeybaseService))
     private readonly keybaseService: KeybaseService,
     @Inject(forwardRef(() => StakeService))

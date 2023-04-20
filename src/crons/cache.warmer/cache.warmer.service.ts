@@ -17,7 +17,7 @@ import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.com
 import { MexSettingsService } from "src/endpoints/mex/mex.settings.service";
 import { MexPairService } from "src/endpoints/mex/mex.pair.service";
 import { MexFarmService } from "src/endpoints/mex/mex.farm.service";
-import { ElrondCachingService, GuestCachingWarmer } from "@multiversx/sdk-nestjs-cache";
+import { CachingService, GuestCachingWarmer } from "@multiversx/sdk-nestjs-cache";
 import { Constants, Lock, OriginLogger } from "@multiversx/sdk-nestjs-common";
 import { DelegationLegacyService } from "src/endpoints/delegation.legacy/delegation.legacy.service";
 import { SettingsService } from "src/common/settings/settings.service";
@@ -40,7 +40,7 @@ export class CacheWarmerService {
     private readonly identitiesService: IdentitiesService,
     private readonly providerService: ProviderService,
     private readonly keybaseService: KeybaseService,
-    private readonly cachingService: ElrondCachingService,
+    private readonly cachingService: CachingService,
     @Inject('PUBSUB_SERVICE') private clientProxy: ClientProxy,
     private readonly apiConfigService: ApiConfigService,
     private readonly settingsService: SettingsService,

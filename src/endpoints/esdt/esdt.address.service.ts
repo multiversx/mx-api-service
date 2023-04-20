@@ -19,7 +19,7 @@ import { CollectionRoles } from "../tokens/entities/collection.roles";
 import { AddressUtils, BinaryUtils, OriginLogger } from '@multiversx/sdk-nestjs-common';
 import { ApiUtils } from "@multiversx/sdk-nestjs-http";
 import { MetricsService } from "@multiversx/sdk-nestjs-monitoring";
-import { ElrondCachingService } from "@multiversx/sdk-nestjs-cache";
+import { CachingService } from "@multiversx/sdk-nestjs-cache";
 import { IndexerService } from "src/common/indexer/indexer.service";
 
 @Injectable()
@@ -32,7 +32,7 @@ export class EsdtAddressService {
     private readonly esdtService: EsdtService,
     private readonly indexerService: IndexerService,
     private readonly gatewayService: GatewayService,
-    private readonly cachingService: ElrondCachingService,
+    private readonly cachingService: CachingService,
     private readonly metricsService: MetricsService,
     private readonly protocolService: ProtocolService,
     private readonly nftExtendedAttributesService: NftExtendedAttributesService,

@@ -11,7 +11,7 @@ import { TransactionExtractorInterface } from "./extractor/transaction.extractor
 import { TransferOwnershipExtractor } from "./extractor/transfer.ownership.extractor";
 import { MetricsEvents } from "src/utils/metrics-events.constants";
 import { LogMetricsEvent } from "src/common/entities/log.metrics.event";
-import { ElrondCachingService } from "@multiversx/sdk-nestjs-cache";
+import { CachingService } from "@multiversx/sdk-nestjs-cache";
 import { BinaryUtils, OriginLogger } from "@multiversx/sdk-nestjs-common";
 import { PerformanceProfiler } from "@multiversx/sdk-nestjs-monitoring";
 
@@ -22,7 +22,7 @@ export class TransactionProcessorService {
   private transactionProcessor: TransactionProcessor = new TransactionProcessor();
 
   constructor(
-    private readonly cachingService: ElrondCachingService,
+    private readonly cachingService: CachingService,
     private readonly apiConfigService: ApiConfigService,
     @Inject('PUBSUB_SERVICE') private clientProxy: ClientProxy,
     private readonly nodeService: NodeService,

@@ -11,7 +11,7 @@ import { ProviderFilter } from "./entities/provider.filter";
 import { Provider } from "./entities/provider";
 import { AddressUtils, Constants } from "@multiversx/sdk-nestjs-common";
 import { ApiService } from "@multiversx/sdk-nestjs-http";
-import { ElrondCachingService } from "@multiversx/sdk-nestjs-cache";
+import { CachingService } from "@multiversx/sdk-nestjs-cache";
 import { OriginLogger } from "@multiversx/sdk-nestjs-common";
 import { IdentitiesService } from "../identities/identities.service";
 
@@ -20,7 +20,7 @@ export class ProviderService {
   private readonly logger = new OriginLogger(ProviderService.name);
 
   constructor(
-    private readonly cachingService: ElrondCachingService,
+    private readonly cachingService: CachingService,
     private readonly apiConfigService: ApiConfigService,
     private readonly vmQueryService: VmQueryService,
     @Inject(forwardRef(() => NodeService))

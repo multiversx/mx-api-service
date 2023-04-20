@@ -6,7 +6,7 @@ import { KeybaseIdentity } from "./entities/keybase.identity";
 import { KeybaseState } from "./entities/keybase.state";
 import { CacheInfo } from "../../utils/cache.info";
 import { GithubService } from "../github/github.service";
-import { ElrondCachingService } from "@multiversx/sdk-nestjs-cache";
+import { CachingService } from "@multiversx/sdk-nestjs-cache";
 import { Constants, OriginLogger } from "@multiversx/sdk-nestjs-common";
 import { ApiService, ApiUtils } from "@multiversx/sdk-nestjs-http";
 import { PersistenceService } from "../persistence/persistence.service";
@@ -16,7 +16,7 @@ export class KeybaseService {
   private readonly logger = new OriginLogger(KeybaseService.name);
 
   constructor(
-    private readonly cachingService: ElrondCachingService,
+    private readonly cachingService: CachingService,
     private readonly apiService: ApiService,
     @Inject(forwardRef(() => NodeService))
     private readonly nodeService: NodeService,

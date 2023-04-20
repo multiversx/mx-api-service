@@ -1,4 +1,4 @@
-import { ElrondCachingService } from "@multiversx/sdk-nestjs-cache";
+import { CachingService } from "@multiversx/sdk-nestjs-cache";
 import { Test } from "@nestjs/testing";
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { BlockService } from "src/endpoints/blocks/block.service";
@@ -10,7 +10,7 @@ import { NodeService } from "src/endpoints/nodes/node.service";
 describe('Block Service', () => {
   let blockService: BlockService;
   let indexerService: IndexerService;
-  let elrondCachingService: ElrondCachingService;
+  let cachingService: CachingService;
 
   beforeEach(async () => {
     const moduleRef = await Test.createTestingModule({
@@ -24,7 +24,7 @@ describe('Block Service', () => {
           },
         },
         {
-          provide: ElrondCachingService, useValue: {
+          provide: CachingService, useValue: {
             getOrSet: jest.fn(),
             getCacheLocal: jest.fn(),
             setCacheLocal: jest.fn(),
@@ -50,13 +50,13 @@ describe('Block Service', () => {
 
     blockService = moduleRef.get<BlockService>(BlockService);
     indexerService = moduleRef.get<IndexerService>(IndexerService);
-    elrondCachingService = moduleRef.get<ElrondCachingService>(ElrondCachingService);
+    cachingService = moduleRef.get<CachingService>(CachingService);
   });
 
   describe('getBlocksCount', () => {
     it('should return the cached value when filter is undefined', async () => {
       const expectedCount = 100;
-      jest.spyOn(elrondCachingService, 'getOrSet').mockImplementationOnce(async (_key: string, promise: any) => {
+      jest.spyOn(cachingService, 'getOrSet').mockImplementationOnce(async (_key: string, promise: any) => {
         const result = await promise();
         expect(result).toEqual(expectedCount);
         return result;
@@ -72,7 +72,7 @@ describe('Block Service', () => {
     it('should call indexerService.getBlocksCount when filter is defined', async () => {
       const expectedCount = 100;
       const filter: BlockFilter = { epoch: 123, shard: 0 };
-      jest.spyOn(elrondCachingService, 'getOrSet').mockImplementationOnce(async (_key: string, promise: any) => {
+      jest.spyOn(cachingService, 'getOrSet').mockImplementationOnce(async (_key: string, promise: any) => {
         const result = await promise();
         expect(result).toEqual(expectedCount);
         return result;

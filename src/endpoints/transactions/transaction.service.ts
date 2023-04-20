@@ -20,7 +20,7 @@ import { TransactionDecodeDto } from './entities/dtos/transaction.decode.dto';
 import { TransactionStatus } from './entities/transaction.status';
 import { AddressUtils, Constants, PendingExecuter } from '@multiversx/sdk-nestjs-common';
 import { ApiUtils } from "@multiversx/sdk-nestjs-http";
-import { ElrondCachingService } from "@multiversx/sdk-nestjs-cache";
+import { CachingService } from "@multiversx/sdk-nestjs-cache";
 import { TransactionUtils } from './transaction.utils';
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { TransactionOperation } from './entities/transaction.operation';
@@ -47,7 +47,7 @@ export class TransactionService {
     @Inject(forwardRef(() => TokenTransferService))
     private readonly tokenTransferService: TokenTransferService,
     private readonly pluginsService: PluginService,
-    private readonly cachingService: ElrondCachingService,
+    private readonly cachingService: CachingService,
     @Inject(forwardRef(() => TransactionActionService))
     private readonly transactionActionService: TransactionActionService,
     private readonly assetsService: AssetsService,

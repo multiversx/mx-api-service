@@ -1,5 +1,5 @@
 import { AddressUtils } from "@multiversx/sdk-nestjs-common";
-import { ElrondCachingService } from "@multiversx/sdk-nestjs-cache";
+import { CachingService } from "@multiversx/sdk-nestjs-cache";
 import { Injectable } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { CacheInfo } from "src/utils/cache.info";
@@ -26,7 +26,7 @@ export class ProcessNftsService {
     private readonly nftService: NftService,
     private readonly collectionService: CollectionService,
     private readonly accountService: AccountService,
-    private readonly cachingService: ElrondCachingService,
+    private readonly cachingService: CachingService,
   ) { }
 
   public async process(processNftRequest: ProcessNftRequest) {

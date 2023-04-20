@@ -4,7 +4,7 @@ import { PublicAppModule } from 'src/public.app.module';
 import { DeployedContract } from 'src/endpoints/accounts/entities/deployed.contract';
 import '@multiversx/sdk-nestjs-common/lib/utils/extensions/jest.extensions';
 import { ApiConfigService } from 'src/common/api-config/api.config.service';
-import { ElrondCachingService } from "@multiversx/sdk-nestjs-cache";
+import { CachingService } from "@multiversx/sdk-nestjs-cache";
 import { AddressUtils } from '@multiversx/sdk-nestjs-common';
 import { ElasticService } from '@multiversx/sdk-nestjs-elastic';
 import { AccountKey } from 'src/endpoints/accounts/entities/account.key';
@@ -47,7 +47,7 @@ describe('Account Service', () => {
     it("should return total accounts count", async () => {
 
       jest
-        .spyOn(ElrondCachingService.prototype, 'getOrSet')
+        .spyOn(CachingService.prototype, 'getOrSet')
         // eslint-disable-next-line require-await
         .mockImplementation(jest.fn(async (_key: string, promise: any) => promise()));
 
@@ -185,7 +185,7 @@ describe('Account Service', () => {
     it("should return the deployed timestamp for a given address", async () => {
 
       jest
-        .spyOn(ElrondCachingService.prototype, 'getOrSet')
+        .spyOn(CachingService.prototype, 'getOrSet')
         // eslint-disable-next-line require-await
         .mockImplementation(jest.fn(async (_key: string, promise: any) => promise()));
 
@@ -202,7 +202,7 @@ describe('Account Service', () => {
 
     it("should return null because test simulates that scDeployed is undefined", async () => {
       jest
-        .spyOn(ElrondCachingService.prototype, 'getOrSet')
+        .spyOn(CachingService.prototype, 'getOrSet')
         // eslint-disable-next-line require-await
         .mockImplementation(jest.fn(async (_key: string, promise: any) => promise()));
 
@@ -247,7 +247,7 @@ describe('Account Service', () => {
   describe("getAccounts", () => {
     it("should return 10 accounts", async () => {
       jest
-        .spyOn(ElrondCachingService.prototype, 'getOrSet')
+        .spyOn(CachingService.prototype, 'getOrSet')
         // eslint-disable-next-line require-await
         .mockImplementation(jest.fn(async (_key: string, promise: any) => promise()));
 
@@ -260,7 +260,7 @@ describe('Account Service', () => {
   describe("getDeferredAccount", () => {
     it("should return empty list because test simulates that address is not deferred", async () => {
       jest
-        .spyOn(ElrondCachingService.prototype, 'getOrSet')
+        .spyOn(CachingService.prototype, 'getOrSet')
         // eslint-disable-next-line require-await
         .mockImplementation(jest.fn(async (_key: string, promise: any) => promise()));
 
@@ -298,7 +298,7 @@ describe('Account Service', () => {
   describe("getAccountContracts", () => {
     it("should return account contracts details", async () => {
       jest
-        .spyOn(ElrondCachingService.prototype, 'getOrSet')
+        .spyOn(CachingService.prototype, 'getOrSet')
         // eslint-disable-next-line require-await
         .mockImplementation(jest.fn(async (_key: string, promise: any) => promise()));
 
@@ -318,7 +318,7 @@ describe('Account Service', () => {
     it("should return total contracts count for a specific account address", async () => {
 
       jest
-        .spyOn(ElrondCachingService.prototype, 'getOrSet')
+        .spyOn(CachingService.prototype, 'getOrSet')
         // eslint-disable-next-line require-await
         .mockImplementation(jest.fn(async (_key: string, promise: any) => promise()));
 
@@ -338,7 +338,7 @@ describe('Account Service', () => {
     it("should return total contracts count for a specific account address", async () => {
 
       jest
-        .spyOn(ElrondCachingService.prototype, 'getOrSet')
+        .spyOn(CachingService.prototype, 'getOrSet')
         // eslint-disable-next-line require-await
         .mockImplementation(jest.fn(async (_key: string, promise: any) => promise()));
 
@@ -382,7 +382,7 @@ describe('Account Service', () => {
 
     it("should return empty list because test simulates that token is not defined/found", async () => {
       jest
-        .spyOn(ElrondCachingService.prototype, 'getOrSet')
+        .spyOn(CachingService.prototype, 'getOrSet')
         // eslint-disable-next-line require-await
         .mockImplementation(jest.fn(async (_key: string, promise: any) => promise()));
 

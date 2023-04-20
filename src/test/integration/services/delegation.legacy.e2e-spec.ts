@@ -1,4 +1,4 @@
-import { ElrondCachingService } from "@multiversx/sdk-nestjs-cache";
+import { CachingService } from "@multiversx/sdk-nestjs-cache";
 import { Test } from "@nestjs/testing";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { DelegationLegacyService } from "src/endpoints/delegation.legacy/delegation.legacy.service";
@@ -9,7 +9,7 @@ import { CacheInfo } from "src/utils/cache.info";
 describe('DelegationLegacyService', () => {
   let delegationLegacyService: DelegationLegacyService;
   let apiConfigService: ApiConfigService;
-  let cachingService: ElrondCachingService;
+  let cachingService: CachingService;
   let delegationLegacyMock: DelegationLegacy;
 
   beforeEach(async () => {
@@ -26,7 +26,7 @@ describe('DelegationLegacyService', () => {
           },
         },
         {
-          provide: ElrondCachingService,
+          provide: CachingService,
           useValue: {
             getOrSet: jest.fn(),
           },
@@ -42,7 +42,7 @@ describe('DelegationLegacyService', () => {
 
     delegationLegacyService = moduleRef.get<DelegationLegacyService>(DelegationLegacyService);
     apiConfigService = moduleRef.get<ApiConfigService>(ApiConfigService);
-    cachingService = moduleRef.get<ElrondCachingService>(ElrondCachingService);
+    cachingService = moduleRef.get<CachingService>(CachingService);
 
     delegationLegacyMock = {
       totalWithdrawOnlyStake: '100',

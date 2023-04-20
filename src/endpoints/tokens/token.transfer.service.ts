@@ -12,7 +12,7 @@ import { TransactionOperationType } from "../transactions/entities/transaction.o
 import { SmartContractResult } from "../sc-results/entities/smart.contract.result";
 import { TransactionDetailed } from "../transactions/entities/transaction.detailed";
 import { BinaryUtils } from "@multiversx/sdk-nestjs-common";
-import { ElrondCachingService } from "@multiversx/sdk-nestjs-cache";
+import { CachingService } from "@multiversx/sdk-nestjs-cache";
 import { OriginLogger } from "@multiversx/sdk-nestjs-common";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { NftFilter } from "../nfts/entities/nft.filter";
@@ -24,7 +24,7 @@ export class TokenTransferService {
   private readonly logger = new OriginLogger(TokenTransferService.name);
 
   constructor(
-    private readonly cachingService: ElrondCachingService,
+    private readonly cachingService: CachingService,
     @Inject(forwardRef(() => EsdtService))
     private readonly esdtService: EsdtService,
     private readonly assetsService: AssetsService,

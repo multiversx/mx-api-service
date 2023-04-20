@@ -1,4 +1,4 @@
-import { ElrondCachingService } from "@multiversx/sdk-nestjs-cache";
+import { CachingService } from "@multiversx/sdk-nestjs-cache";
 import { BadRequestException, Injectable } from "@nestjs/common";
 import { gql } from "graphql-request";
 import { CacheInfo } from "src/utils/cache.info";
@@ -10,7 +10,7 @@ import { MexEconomics } from "./entities/mex.economics";
 export class MexEconomicsService {
   constructor(
     private readonly mexSettingService: MexSettingsService,
-    private readonly cachingService: ElrondCachingService,
+    private readonly cachingService: CachingService,
     private readonly graphQlService: GraphQlService
   ) { }
 

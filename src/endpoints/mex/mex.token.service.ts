@@ -8,7 +8,7 @@ import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { MexFarmService } from "./mex.farm.service";
 import { MexSettingsService } from "./mex.settings.service";
 import { Constants } from "@multiversx/sdk-nestjs-common";
-import { ElrondCachingService } from "@multiversx/sdk-nestjs-cache";
+import { CachingService } from "@multiversx/sdk-nestjs-cache";
 import { MexPairType } from "./entities/mex.pair.type";
 import { OriginLogger } from "@multiversx/sdk-nestjs-common";
 import { QueryPagination } from "src/common/entities/query.pagination";
@@ -18,7 +18,7 @@ export class MexTokenService {
   private readonly logger = new OriginLogger(MexTokenService.name);
 
   constructor(
-    private readonly cachingService: ElrondCachingService,
+    private readonly cachingService: CachingService,
     private readonly apiConfigService: ApiConfigService,
     private readonly mexPairService: MexPairService,
     @Inject(forwardRef(() => MexFarmService))

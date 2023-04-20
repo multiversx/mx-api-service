@@ -3,7 +3,7 @@ import { LockedAssetAttributes, UnlockMilestone, LockedTokenAttributes } from '@
 import { ApiConfigService } from '../api-config/api.config.service';
 import { VmQueryService } from '../../endpoints/vm.query/vm.query.service';
 import { CacheInfo } from '../../utils/cache.info';
-import { ElrondCachingService } from "@multiversx/sdk-nestjs-cache";
+import { CachingService } from "@multiversx/sdk-nestjs-cache";
 import { Constants } from '@multiversx/sdk-nestjs-common';
 import { TokenHelpers } from '../../utils/token.helpers';
 import { GatewayService } from '../gateway/gateway.service';
@@ -16,7 +16,7 @@ export class LockedAssetService {
   constructor(
     private readonly apiConfigService: ApiConfigService,
     private readonly vmQueryService: VmQueryService,
-    private readonly cachingService: ElrondCachingService,
+    private readonly cachingService: CachingService,
     private readonly gatewayService: GatewayService,
     private readonly mexSettingsService: MexSettingsService,
   ) { }

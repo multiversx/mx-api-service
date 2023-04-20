@@ -7,7 +7,7 @@ import { Response, Request } from "express";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
 import { PluginService } from "src/common/plugins/plugin.service";
 import { Constants, ParseAddressPipe, ParseBlockHashPipe, ParseTransactionHashPipe, NoCache } from "@multiversx/sdk-nestjs-common";
-import { ElrondCachingService } from "@multiversx/sdk-nestjs-cache";
+import { CachingService } from "@multiversx/sdk-nestjs-cache";
 import { OriginLogger } from "@multiversx/sdk-nestjs-common";
 
 @Controller()
@@ -18,7 +18,7 @@ export class ProxyController {
   constructor(
     private readonly gatewayService: GatewayService,
     private readonly vmQueryService: VmQueryService,
-    private readonly cachingService: ElrondCachingService,
+    private readonly cachingService: CachingService,
     private readonly pluginService: PluginService,
   ) { }
 

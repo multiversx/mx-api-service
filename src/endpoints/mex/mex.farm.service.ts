@@ -1,5 +1,5 @@
 import { Constants } from "@multiversx/sdk-nestjs-common";
-import { ElrondCachingService } from "@multiversx/sdk-nestjs-cache";
+import { CachingService } from "@multiversx/sdk-nestjs-cache";
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { gql } from "graphql-request";
 import { QueryPagination } from "src/common/entities/query.pagination";
@@ -13,7 +13,7 @@ import { ApiConfigService } from "src/common/api-config/api.config.service";
 @Injectable()
 export class MexFarmService {
   constructor(
-    private readonly cachingService: ElrondCachingService,
+    private readonly cachingService: CachingService,
     private readonly graphQlService: GraphQlService,
     @Inject(forwardRef(() => MexTokenService))
     private readonly mexTokenService: MexTokenService,

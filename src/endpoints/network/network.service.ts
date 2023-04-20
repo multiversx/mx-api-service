@@ -15,7 +15,7 @@ import { GatewayService } from 'src/common/gateway/gateway.service';
 import { CacheInfo } from 'src/utils/cache.info';
 import { NumberUtils } from '@multiversx/sdk-nestjs-common';
 import { ApiService } from "@multiversx/sdk-nestjs-http";
-import { ElrondCachingService } from "@multiversx/sdk-nestjs-cache";
+import { CachingService } from "@multiversx/sdk-nestjs-cache";
 import { About } from './entities/about';
 import { PluginService } from 'src/common/plugins/plugin.service';
 import { SmartContractResultService } from '../sc-results/scresult.service';
@@ -29,7 +29,7 @@ export class NetworkService {
     @Inject(forwardRef(() => TokenService))
     private readonly tokenService: TokenService,
     private readonly apiConfigService: ApiConfigService,
-    private readonly cachingService: ElrondCachingService,
+    private readonly cachingService: CachingService,
     private readonly gatewayService: GatewayService,
     private readonly vmQueryService: VmQueryService,
     @Inject(forwardRef(() => BlockService))

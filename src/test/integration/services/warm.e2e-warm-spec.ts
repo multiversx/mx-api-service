@@ -1,13 +1,13 @@
 
 import { Constants } from "@multiversx/sdk-nestjs-common";
-import { ElrondCachingService } from "@multiversx/sdk-nestjs-cache";
+import { CachingService } from "@multiversx/sdk-nestjs-cache";
 import { Test } from "@nestjs/testing";
 import { ApiConfigModule } from "src/common/api-config/api.config.module";
 import { DynamicModuleUtils } from "src/utils/dynamic.module.utils";
 import Initializer from "./e2e-init";
 
 describe('Warm for tests', () => {
-  let cachingService: ElrondCachingService;
+  let cachingService: CachingService;
 
   beforeAll(async () => {
     await Initializer.initialize();
@@ -19,7 +19,7 @@ describe('Warm for tests', () => {
       ],
     }).compile();
 
-    cachingService = module.get<ElrondCachingService>(ElrondCachingService);
+    cachingService = module.get<CachingService>(CachingService);
 
   }, Constants.oneHour() * 1000);
 

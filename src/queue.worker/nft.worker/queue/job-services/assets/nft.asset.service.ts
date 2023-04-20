@@ -1,5 +1,5 @@
 import { OriginLogger } from "@multiversx/sdk-nestjs-common";
-import { ElrondCachingService } from "@multiversx/sdk-nestjs-cache";
+import { CachingService } from "@multiversx/sdk-nestjs-cache";
 import { Constants } from "@multiversx/sdk-nestjs-common";
 import { ApiService } from "@multiversx/sdk-nestjs-http";
 import { HttpStatus, Injectable } from "@nestjs/common";
@@ -20,7 +20,7 @@ export class NftAssetService {
     private readonly apiService: ApiService,
     private readonly awsService: AWSService,
     private readonly apiConfigService: ApiConfigService,
-    private readonly cachingService: ElrondCachingService,
+    private readonly cachingService: CachingService,
   ) { }
 
   async uploadAsset(identifier: string, fileUrl: string, fileType: string) {

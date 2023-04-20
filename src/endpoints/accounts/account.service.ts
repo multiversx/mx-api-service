@@ -17,7 +17,7 @@ import { SmartContractResultService } from '../sc-results/scresult.service';
 import { TransactionType } from '../transactions/entities/transaction.type';
 import { AssetsService } from 'src/common/assets/assets.service';
 import { TransactionFilter } from '../transactions/entities/transaction.filter';
-import { ElrondCachingService } from "@multiversx/sdk-nestjs-cache";
+import { CachingService } from "@multiversx/sdk-nestjs-cache";
 import { AddressUtils, BinaryUtils, OriginLogger } from '@multiversx/sdk-nestjs-common';
 import { ApiService, ApiUtils } from "@multiversx/sdk-nestjs-http";
 import { GatewayService } from 'src/common/gateway/gateway.service';
@@ -40,7 +40,7 @@ export class AccountService {
   constructor(
     private readonly indexerService: IndexerService,
     private readonly gatewayService: GatewayService,
-    private readonly cachingService: ElrondCachingService,
+    private readonly cachingService: CachingService,
     private readonly vmQueryService: VmQueryService,
     private readonly apiConfigService: ApiConfigService,
     @Inject(forwardRef(() => TransactionService))

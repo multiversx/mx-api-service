@@ -22,7 +22,7 @@ import { PluginService } from './common/plugins/plugin.service';
 import { TransactionCompletedModule } from './crons/transaction.processor/transaction.completed.module';
 import { SocketAdapter } from './common/websockets/socket-adapter';
 import { ApiConfigModule } from './common/api-config/api.config.module';
-import { ElrondCachingService, CachingInterceptor, GuestCachingInterceptor, GuestCachingService } from '@multiversx/sdk-nestjs-cache';
+import { CachingService, CachingInterceptor, GuestCachingInterceptor, GuestCachingService } from '@multiversx/sdk-nestjs-cache';
 import { LoggerInitializer } from '@multiversx/sdk-nestjs-common';
 import { MetricsService, RequestCpuTimeInterceptor, LoggingInterceptor, LogRequestsInterceptor } from '@multiversx/sdk-nestjs-monitoring';
 import { FieldsInterceptor, ExtractInterceptor, CleanupInterceptor, PaginationInterceptor, QueryCheckInterceptor, ComplexityInterceptor, OriginInterceptor } from '@multiversx/sdk-nestjs-http';
@@ -169,7 +169,7 @@ async function configurePublicApp(publicApp: NestExpressApplication, apiConfigSe
   const eventEmitterService = publicApp.get<EventEmitter2>(EventEmitter2);
   const pluginService = publicApp.get<PluginService>(PluginService);
   const httpAdapterHostService = publicApp.get<HttpAdapterHost>(HttpAdapterHost);
-  const cachingService = publicApp.get<ElrondCachingService>(ElrondCachingService);
+  const cachingService = publicApp.get<CachingService>(CachingService);
   const settingsService = publicApp.get<SettingsService>(SettingsService);
 
 
