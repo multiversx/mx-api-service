@@ -1,5 +1,5 @@
 import { Constants } from "@multiversx/sdk-nestjs-common";
-import { CachingService } from "@multiversx/sdk-nestjs-cache";
+import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { BadRequestException, Injectable } from "@nestjs/common";
 import { gql } from "graphql-request";
 import { CacheInfo } from "src/utils/cache.info";
@@ -16,7 +16,7 @@ export class MexPairService {
   private readonly logger = new OriginLogger(MexPairService.name);
 
   constructor(
-    private readonly cachingService: CachingService,
+    private readonly cachingService: CacheService,
     private readonly mexSettingService: MexSettingsService,
     private readonly graphQlService: GraphQlService,
     private readonly apiConfigService: ApiConfigService,

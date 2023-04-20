@@ -1,6 +1,6 @@
 import { OriginLogger } from "@multiversx/sdk-nestjs-common";
 import { PerformanceProfiler } from "@multiversx/sdk-nestjs-monitoring";
-import { CachingService } from "@multiversx/sdk-nestjs-cache";
+import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { LogMetricsEvent } from "src/common/entities/log.metrics.event";
@@ -15,8 +15,8 @@ export class VmQueryService {
   private readonly logger = new OriginLogger(VmQueryService.name);
 
   constructor(
-    @Inject(forwardRef(() => CachingService))
-    private readonly cachingService: CachingService,
+    @Inject(forwardRef(() => CacheService))
+    private readonly cachingService: CacheService,
     private readonly gatewayService: GatewayService,
     private readonly protocolService: ProtocolService,
     private readonly eventEmitter: EventEmitter2,

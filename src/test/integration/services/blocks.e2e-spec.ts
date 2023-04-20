@@ -1,4 +1,4 @@
-import { CachingService } from "@multiversx/sdk-nestjs-cache";
+import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { Test } from "@nestjs/testing";
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { BlockService } from "src/endpoints/blocks/block.service";
@@ -10,7 +10,7 @@ import { NodeService } from "src/endpoints/nodes/node.service";
 describe('Block Service', () => {
   let blockService: BlockService;
   let indexerService: IndexerService;
-  let cachingService: CachingService;
+  let cachingService: CacheService;
 
   beforeEach(async () => {
     const moduleRef = await Test.createTestingModule({
@@ -24,7 +24,7 @@ describe('Block Service', () => {
           },
         },
         {
-          provide: CachingService, useValue: {
+          provide: CacheService, useValue: {
             getOrSet: jest.fn(),
             getCacheLocal: jest.fn(),
             setCacheLocal: jest.fn(),
@@ -50,7 +50,7 @@ describe('Block Service', () => {
 
     blockService = moduleRef.get<BlockService>(BlockService);
     indexerService = moduleRef.get<IndexerService>(IndexerService);
-    cachingService = moduleRef.get<CachingService>(CachingService);
+    cachingService = moduleRef.get<CacheService>(CacheService);
   });
 
   describe('getBlocksCount', () => {

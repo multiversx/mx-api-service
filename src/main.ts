@@ -22,7 +22,7 @@ import { PluginService } from './common/plugins/plugin.service';
 import { TransactionCompletedModule } from './crons/transaction.processor/transaction.completed.module';
 import { SocketAdapter } from './common/websockets/socket-adapter';
 import { ApiConfigModule } from './common/api-config/api.config.module';
-import { CachingService, CachingInterceptor, GuestCachingInterceptor, GuestCachingService } from '@multiversx/sdk-nestjs-cache';
+import { CacheService, CachingInterceptor, GuestCacheInterceptor, GuestCacheService } from '@multiversx/sdk-nestjs-cache';
 import { LoggerInitializer } from '@multiversx/sdk-nestjs-common';
 import { MetricsService, RequestCpuTimeInterceptor, LoggingInterceptor, LogRequestsInterceptor } from '@multiversx/sdk-nestjs-monitoring';
 import { FieldsInterceptor, ExtractInterceptor, CleanupInterceptor, PaginationInterceptor, QueryCheckInterceptor, ComplexityInterceptor, OriginInterceptor } from '@multiversx/sdk-nestjs-http';
@@ -153,7 +153,7 @@ async function bootstrap() {
   logger.log(`Indexer v3 flag: ${apiConfigService.getIsIndexerV3FlagActive()}`);
   logger.log(`Staking v4 enabled: ${apiConfigService.isStakingV4Enabled()}`);
   logger.log(`Events notifier enabled: ${apiConfigService.isEventsNotifierFeatureActive()}`);
-  logger.log(`Guest caching enabled: ${apiConfigService.isGuestCachingFeatureActive()}`);
+  logger.log(`Guest caching enabled: ${apiConfigService.isGuestCacheFeatureActive()}`);
 }
 
 async function configurePublicApp(publicApp: NestExpressApplication, apiConfigService: ApiConfigService) {
@@ -169,7 +169,7 @@ async function configurePublicApp(publicApp: NestExpressApplication, apiConfigSe
   const eventEmitterService = publicApp.get<EventEmitter2>(EventEmitter2);
   const pluginService = publicApp.get<PluginService>(PluginService);
   const httpAdapterHostService = publicApp.get<HttpAdapterHost>(HttpAdapterHost);
-  const cachingService = publicApp.get<CachingService>(CachingService);
+  const cachingService = publicApp.get<CacheService>(CacheService);
   const settingsService = publicApp.get<SettingsService>(SettingsService);
 
 
@@ -185,10 +185,10 @@ async function configurePublicApp(publicApp: NestExpressApplication, apiConfigSe
   // @ts-ignore
   globalInterceptors.push(new QueryCheckInterceptor(httpAdapterHostService));
 
-  if (apiConfigService.isGuestCachingFeatureActive()) {
-    const guestCachingService = publicApp.get<GuestCachingService>(GuestCachingService);
+  if (apiConfigService.isGuestCacheFeatureActive()) {
+    const guestCacheService = publicApp.get<GuestCacheService>(GuestCacheService);
     // @ts-ignore
-    globalInterceptors.push(new GuestCachingInterceptor(guestCachingService, {
+    globalInterceptors.push(new GuestCacheInterceptor(guestCacheService, {
       ignoreAuthorizationHeader: true,
     }));
   }

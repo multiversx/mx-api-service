@@ -1,4 +1,4 @@
-import { CachingService } from "@multiversx/sdk-nestjs-cache";
+import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { Test } from "@nestjs/testing";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { NetworkEconomics } from "src/common/gateway/entities/network.economics";
@@ -11,7 +11,7 @@ import { CacheInfo } from "src/utils/cache.info";
 
 describe('Stake Service', () => {
   let stakeService: StakeService;
-  let cachingService: CachingService;
+  let cachingService: CacheService;
   let vmQueryService: VmQueryService;
 
   beforeEach(async () => {
@@ -19,7 +19,7 @@ describe('Stake Service', () => {
       providers: [
         StakeService,
         {
-          provide: CachingService,
+          provide: CacheService,
           useValue:
           {
             getOrSet: jest.fn(),
@@ -60,7 +60,7 @@ describe('Stake Service', () => {
     }).compile();
 
     stakeService = moduleRef.get<StakeService>(StakeService);
-    cachingService = moduleRef.get<CachingService>(CachingService);
+    cachingService = moduleRef.get<CacheService>(CacheService);
     vmQueryService = moduleRef.get<VmQueryService>(VmQueryService);
   });
 

@@ -4,13 +4,13 @@ import { NodeStatus } from "../nodes/entities/node.status";
 import { Shard } from "./entities/shard";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { CacheInfo } from "src/utils/cache.info";
-import { CachingService } from "@multiversx/sdk-nestjs-cache";
+import { CacheService } from "@multiversx/sdk-nestjs-cache";
 
 @Injectable()
 export class ShardService {
   constructor(
     private readonly nodeService: NodeService,
-    private readonly cachingService: CachingService,
+    private readonly cachingService: CacheService,
   ) { }
 
   async getShards(queryPagination: QueryPagination): Promise<Shard[]> {

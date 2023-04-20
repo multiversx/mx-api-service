@@ -5,7 +5,7 @@ import { PubSubListenerController } from './pub.sub.listener.controller';
 
 @Module({
   imports: [
-    DynamicModuleUtils.getCachingModule(),
+    DynamicModuleUtils.getCacheModule(),
     WebSocketPublisherModule,
   ],
   controllers: [

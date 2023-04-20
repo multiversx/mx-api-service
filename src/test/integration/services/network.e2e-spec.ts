@@ -1,5 +1,5 @@
 import { ApiService } from "@multiversx/sdk-nestjs-http";
-import { CachingService } from "@multiversx/sdk-nestjs-cache";
+import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { Test } from "@nestjs/testing";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { DataApiService } from "src/common/data-api/data-api.service";
@@ -34,7 +34,7 @@ describe('NetworkService', () => {
           },
         },
         {
-          provide: CachingService, useValue:
+          provide: CacheService, useValue:
           {
             getOrSet: jest.fn(),
           },

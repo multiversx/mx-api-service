@@ -5,7 +5,7 @@ import { Delegation } from "./entities/delegation";
 import { NodeService } from "../nodes/node.service";
 import { OriginLogger } from "@multiversx/sdk-nestjs-common";
 import { ApiService } from "@multiversx/sdk-nestjs-http";
-import { CachingService } from "@multiversx/sdk-nestjs-cache";
+import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { CacheInfo } from "src/utils/cache.info";
 import { AccountDelegation } from "../stake/entities/account.delegation";
 
@@ -16,7 +16,7 @@ export class DelegationService {
   constructor(
     private readonly vmQueryService: VmQueryService,
     private readonly apiConfigService: ApiConfigService,
-    private readonly cachingService: CachingService,
+    private readonly cachingService: CacheService,
     private readonly nodeService: NodeService,
     private readonly apiService: ApiService,
   ) { }

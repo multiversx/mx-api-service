@@ -1,6 +1,6 @@
 import { Constants } from "@multiversx/sdk-nestjs-common";
 import { ApiService } from "@multiversx/sdk-nestjs-http";
-import { CachingService } from "@multiversx/sdk-nestjs-cache";
+import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { Test, TestingModule } from "@nestjs/testing";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { UsernameService } from "src/endpoints/usernames/username.service";
@@ -16,7 +16,7 @@ describe('UsernameService', () => {
       providers: [
         UsernameService,
         {
-          provide: CachingService,
+          provide: CacheService,
           useValue: {
             getOrSet: jest.fn(),
           },

@@ -1,4 +1,4 @@
-import { CachingService } from "@multiversx/sdk-nestjs-cache";
+import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { Test } from "@nestjs/testing";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { AssetsService } from "src/common/assets/assets.service";
@@ -47,7 +47,7 @@ describe('Token Service', () => {
           },
         },
         {
-          provide: CachingService,
+          provide: CacheService,
           useValue:
           {
             getOrSet: jest.fn(),

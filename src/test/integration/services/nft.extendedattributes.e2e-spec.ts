@@ -1,7 +1,7 @@
 import { NftExtendedAttributesService } from 'src/endpoints/nfts/nft.extendedattributes.service';
 import { PublicAppModule } from "src/public.app.module";
 import { Test } from '@nestjs/testing';
-import { CachingService } from "@multiversx/sdk-nestjs-cache";
+import { CacheService } from "@multiversx/sdk-nestjs-cache";
 
 describe('Nft Extended Attributes Service', () => {
   let nftExtendedAttributesService: NftExtendedAttributesService;
@@ -40,7 +40,7 @@ describe('Nft Extended Attributes Service', () => {
   describe("tryGetExtendedAttributesFromBase64EncodedAttributes", () => {
     it("should return attributes from base64 encoded", async () => {
       jest
-        .spyOn(CachingService.prototype, 'getOrSet')
+        .spyOn(CacheService.prototype, 'getOrSet')
         // eslint-disable-next-line require-await
         .mockImplementation(jest.fn(async (_attributes: string) => {
           return Object.assign({}, attributes);
@@ -59,7 +59,7 @@ describe('Nft Extended Attributes Service', () => {
 
     it("should return undefined because test simulates that attributes are not defined", async () => {
       jest
-        .spyOn(CachingService.prototype, 'getOrSet')
+        .spyOn(CacheService.prototype, 'getOrSet')
         // eslint-disable-next-line require-await
         .mockImplementation(jest.fn(async (_attributes: string) => {
           const response = Object.assign({}, attributes);

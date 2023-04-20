@@ -1,8 +1,8 @@
 import { OriginLogger } from "@multiversx/sdk-nestjs-common";
-import { CachingService } from "@multiversx/sdk-nestjs-cache";
+import { CacheService } from "@multiversx/sdk-nestjs-cache";
 
 export class CachingUtils {
-  static async executeOptimistic<T>(param: { cachingService: CachingService, description: string, key: string, ttl: number, action: () => Promise<T> }): Promise<T | undefined> {
+  static async executeOptimistic<T>(param: { cachingService: CacheService, description: string, key: string, ttl: number, action: () => Promise<T> }): Promise<T | undefined> {
     const logger = new OriginLogger(CachingUtils.name);
 
     const cacheValue = await param.cachingService.getRemote(param.key);

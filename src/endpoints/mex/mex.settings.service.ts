@@ -1,5 +1,5 @@
 import { Constants } from "@multiversx/sdk-nestjs-common";
-import { CachingService } from "@multiversx/sdk-nestjs-cache";
+import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { Injectable } from "@nestjs/common";
 import { gql } from "graphql-request";
 import { CacheInfo } from "src/utils/cache.info";
@@ -14,7 +14,7 @@ export class MexSettingsService {
   private wegldId: string | undefined;
 
   constructor(
-    private readonly cachingService: CachingService,
+    private readonly cachingService: CacheService,
     private readonly graphQlService: GraphQlService,
     private readonly apiConfigService: ApiConfigService,
   ) { }

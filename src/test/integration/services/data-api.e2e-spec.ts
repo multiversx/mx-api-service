@@ -1,5 +1,5 @@
 import { ApiService } from "@multiversx/sdk-nestjs-http";
-import { CachingService } from "@multiversx/sdk-nestjs-cache";
+import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { Test } from "@nestjs/testing";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { DataApiModule } from "src/common/data-api/data-api.module";
@@ -28,7 +28,7 @@ describe('Data API Service', () => {
     apiService = moduleRef.get<ApiService>(ApiService);
 
     jest
-      .spyOn(CachingService.prototype, 'getOrSet')
+      .spyOn(CacheService.prototype, 'getOrSet')
       // eslint-disable-next-line require-await
       .mockImplementation(jest.fn(async (_key: string, promise: any) => promise()));
   });

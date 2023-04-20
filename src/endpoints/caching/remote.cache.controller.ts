@@ -1,5 +1,5 @@
 import { JwtAdminGuard, NativeAuthGuard } from "@multiversx/sdk-nestjs-auth";
-import { CachingService } from "@multiversx/sdk-nestjs-cache";
+import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { Body, Controller, Delete, Get, HttpException, HttpStatus, Inject, Param, Put, Query, UseGuards } from "@nestjs/common";
 import { ClientProxy } from "@nestjs/microservices";
 import { ApiExcludeController, ApiResponse } from "@nestjs/swagger";
@@ -9,7 +9,7 @@ import { CacheValue } from "./entities/cache.value";
 @ApiExcludeController()
 export class RemoteCacheController {
   constructor(
-    private readonly cachingService: CachingService,
+    private readonly cachingService: CacheService,
     @Inject('PUBSUB_SERVICE') private clientProxy: ClientProxy,
   ) { }
 

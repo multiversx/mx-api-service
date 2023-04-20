@@ -5,7 +5,7 @@ import '@multiversx/sdk-nestjs-common/lib/utils/extensions/number.extensions';
 import '@multiversx/sdk-nestjs-common/lib/utils/extensions/string.extensions';
 import { EndpointsServicesModule } from './endpoints/endpoints.services.module';
 import { EndpointsControllersModule } from './endpoints/endpoints.controllers.module';
-import { GuestCachingService } from '@multiversx/sdk-nestjs-cache';
+import { GuestCacheService } from '@multiversx/sdk-nestjs-cache';
 import { LoggingModule } from '@multiversx/sdk-nestjs-common';
 import { DynamicModuleUtils } from './utils/dynamic.module.utils';
 import { LocalCacheController } from './endpoints/caching/local.cache.controller';
@@ -24,7 +24,7 @@ import { GraphQlModule } from './graphql/graphql.module';
   ],
   providers: [
     DynamicModuleUtils.getNestJsApiConfigService(),
-    GuestCachingService,
+    GuestCacheService,
   ],
   exports: [
     EndpointsServicesModule,

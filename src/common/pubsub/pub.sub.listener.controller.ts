@@ -1,5 +1,5 @@
 import { OriginLogger } from "@multiversx/sdk-nestjs-common";
-import { CachingService } from "@multiversx/sdk-nestjs-cache";
+import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { ShardTransaction } from "@elrondnetwork/transaction-processor";
 import { Controller } from "@nestjs/common";
 import { EventPattern } from "@nestjs/microservices";
@@ -10,7 +10,7 @@ export class PubSubListenerController {
   private logger = new OriginLogger(PubSubListenerController.name);
 
   constructor(
-    private readonly cachingService: CachingService,
+    private readonly cachingService: CacheService,
     private readonly webSocketPublisherService: WebSocketPublisherService,
   ) { }
 

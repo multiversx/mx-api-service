@@ -1,4 +1,4 @@
-import { CachingService } from "@multiversx/sdk-nestjs-cache";
+import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { Test } from "@nestjs/testing";
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { BlsService } from "src/endpoints/bls/bls.service";
@@ -6,7 +6,7 @@ import { BlsService } from "src/endpoints/bls/bls.service";
 describe('BlsService', () => {
   let blsService: BlsService;
   let indexerService: IndexerService;
-  let cachingService: CachingService;
+  let cachingService: CacheService;
 
   beforeEach(async () => {
     const moduleRef = await Test.createTestingModule({
@@ -19,7 +19,7 @@ describe('BlsService', () => {
           },
         },
         {
-          provide: CachingService,
+          provide: CacheService,
           useValue: {
             getOrSet: jest.fn(),
           },
@@ -29,7 +29,7 @@ describe('BlsService', () => {
 
     blsService = moduleRef.get<BlsService>(BlsService);
     indexerService = moduleRef.get<IndexerService>(IndexerService);
-    cachingService = moduleRef.get<CachingService>(CachingService);
+    cachingService = moduleRef.get<CacheService>(CacheService);
   });
 
   afterEach(() => {

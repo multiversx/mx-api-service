@@ -1,4 +1,4 @@
-import { CachingService } from "@multiversx/sdk-nestjs-cache";
+import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { Inject, Injectable } from "@nestjs/common";
 import { CacheInfo } from "src/utils/cache.info";
 import { PersistenceService } from "src/common/persistence/persistence.service";
@@ -17,7 +17,7 @@ export class NftMetadataService {
   constructor(
     private readonly nftExtendedAttributesService: NftExtendedAttributesService,
     private readonly persistenceService: PersistenceService,
-    private readonly cachingService: CachingService,
+    private readonly cachingService: CacheService,
     @Inject('PUBSUB_SERVICE') private clientProxy: ClientProxy,
   ) { }
 

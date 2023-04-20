@@ -2,7 +2,7 @@ import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { Tag } from "./entities/tag";
 import { ApiUtils } from "@multiversx/sdk-nestjs-http";
-import { CachingService } from "@multiversx/sdk-nestjs-cache";
+import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { CacheInfo } from "src/utils/cache.info";
 
@@ -11,8 +11,8 @@ export class TagService {
 
   constructor(
     private readonly indexerService: IndexerService,
-    @Inject(forwardRef(() => CachingService))
-    private readonly cachingService: CachingService,
+    @Inject(forwardRef(() => CacheService))
+    private readonly cachingService: CacheService,
   ) { }
 
   async getNftTags(pagination: QueryPagination, search?: string): Promise<Tag[]> {

@@ -29,15 +29,15 @@ export class ApiConfigService {
     return selfUrl;
   }
 
-  isGuestCachingFeatureActive(): boolean {
+  isGuestCacheFeatureActive(): boolean {
     return this.configService.get<boolean>('features.guestCaching.enabled') ?? false;
   }
 
-  getGuestCachingHitsThreshold(): number {
+  getGuestCacheHitsThreshold(): number {
     return this.configService.get<number>('features.guestCaching.hitsThreshold') ?? 100;
   }
 
-  getGuestCachingTtl(): number {
+  getGuestCacheTtl(): number {
     return this.configService.get<number>('features.guestCaching.ttl') ?? 12;
   }
 
