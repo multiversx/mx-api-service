@@ -20,9 +20,17 @@ describe("API Testing", () => {
     await app.init();
   });
 
-  it("/results", async () => {
+  afterAll(async () => {
+    await app.close();
+  });
+
+  it("should check results pagination", async () => {
+    const checker = new ApiChecker('results', app.getHttpServer());
+    await checker.checkPagination();
+  });
+
+  it('should check results status response code', async () => {
     const checker = new ApiChecker('results', app.getHttpServer());
     await checker.checkStatus();
-    await checker.checkPagination();
   });
 });

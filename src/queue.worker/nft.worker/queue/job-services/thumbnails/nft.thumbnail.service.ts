@@ -85,13 +85,20 @@ export class NftThumbnailService {
     const outputPath = path.join(this.apiConfigService.getTempUrl(), `${nftIdentifier}.screenshot.jpg`);
 
     try {
-      await new Promise(resolve => {
+      await new Promise((resolve, reject) => {
         ffmpeg(audioPath)
           .complexFilter([
             { filter: 'showwavespic', options: { s: '600x600', colors: '#1f43f4' } },
           ])
           .frames(1)
           .saveToFile(outputPath)
+          .on('error', (error, stdout, stderr) => {
+            this.logger.error(`An unhandled exception occurred when extracting waveform from audio path '${audioPath}'`);
+            this.logger.error(error);
+            this.logger.error(stdout);
+            this.logger.error(stderr);
+            reject(error);
+          })
           .on('end', () => {
             resolve(true);
           });

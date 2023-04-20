@@ -36,6 +36,7 @@ import { NftType } from "../nfts/entities/nft.type";
 import { TokenType } from "src/common/indexer/entities";
 import { TokenAssetsPriceSourceType } from "src/common/assets/entities/token.assets.price.source.type";
 import { DataApiService } from "src/common/data-api/data-api.service";
+import { TrieOperationsTimeoutError } from "../esdt/exceptions/trie.operations.timeout.error";
 
 @Injectable()
 export class TokenService {
@@ -215,7 +216,7 @@ export class TokenService {
     if (AddressUtils.isSmartContractAddress(address)) {
       tokens = await this.getTokensForAddressFromElastic(address, queryPagination, filter);
     } else {
-      tokens = await this.getTokensForAddressFromGateway(address, queryPagination, filter);
+      tokens = await this.getTokensForAddressFromGatewayWithElasticFallback(address, queryPagination, filter);
     }
 
     for (const token of tokens) {
@@ -259,6 +260,24 @@ export class TokenService {
   applyValueUsd(tokenWithBalance: TokenWithBalance) {
     if (tokenWithBalance.price) {
       tokenWithBalance.valueUsd = tokenWithBalance.price * NumberUtils.denominateString(tokenWithBalance.balance, tokenWithBalance.decimals);
+    }
+  }
+
+  async getTokensForAddressFromGatewayWithElasticFallback(address: string, queryPagination: QueryPagination, filter: TokenFilter): Promise<TokenWithBalance[]> {
+    const isTrieTimeout = await this.cachingService.get<boolean>(CacheInfo.AddressEsdtTrieTimeout(address).key);
+    if (isTrieTimeout) {
+      return await this.getTokensForAddressFromElastic(address, queryPagination, filter);
+    }
+
+    try {
+      return await this.getTokensForAddressFromGateway(address, queryPagination, filter);
+    } catch (error) {
+      if (error instanceof TrieOperationsTimeoutError) {
+        await this.cachingService.set(CacheInfo.AddressEsdtTrieTimeout(address).key, true, CacheInfo.AddressEsdtTrieTimeout(address).ttl);
+        return await this.getTokensForAddressFromElastic(address, queryPagination, filter);
+      }
+
+      throw error;
     }
   }
 

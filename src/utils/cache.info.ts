@@ -66,15 +66,24 @@ export class CacheInfo {
     ttl: Constants.oneHour(),
   };
 
-  static Keybases: CacheInfo = {
-    key: 'keybases',
-    ttl: Constants.oneHour(),
-  };
-
-  static KeybaseConfirmation(keybase: string): CacheInfo {
+  static ConfirmedIdentity(bls: string): CacheInfo {
     return {
-      key: `keybase:${keybase}`,
-      ttl: Constants.oneMonth() * 6,
+      key: `confirmedIdentity:${bls}`,
+      ttl: Constants.oneHour() * 6,
+    };
+  }
+
+  static ConfirmedProvider(address: string): CacheInfo {
+    return {
+      key: `confirmedProvider:${address}`,
+      ttl: Constants.oneHour() * 6,
+    };
+  }
+
+  static ProviderOwner(address: string): CacheInfo {
+    return {
+      key: `providerOwner:${address}`,
+      ttl: Constants.oneHour() * 6,
     };
   }
 
@@ -114,7 +123,7 @@ export class CacheInfo {
     };
   }
 
-  static OwnerByEpochAndBls(bls: string, epoch: number): CacheInfo {
+  static OwnerByEpochAndBls(epoch: number, bls: string): CacheInfo {
     return {
       key: `owner:${epoch}:${bls}`,
       ttl: Constants.oneDay(),
@@ -555,6 +564,27 @@ export class CacheInfo {
     key: 'data-api:tokens',
     ttl: Constants.oneMinute() * 10,
   };
+
+  static AddressEsdtTrieTimeout(address: string): CacheInfo {
+    return {
+      key: `addressEsdtTrieTimeout:${address}`,
+      ttl: Constants.oneHour(),
+    };
+  }
+
+  static GithubKeysValidated(identity: string): CacheInfo {
+    return {
+      key: `githubKeysValidated:${identity}`,
+      ttl: Constants.oneDay(),
+    };
+  }
+
+  static GithubProfileValidated(identity: string): CacheInfo {
+    return {
+      key: `githubProfileValidated:${identity}`,
+      ttl: Constants.oneDay(),
+    };
+  }
 
   static DataApiTokenPrice(identifier: string, timestamp?: number): CacheInfo {
     const priceDate = timestamp ? new Date(timestamp * 1000) : new Date();

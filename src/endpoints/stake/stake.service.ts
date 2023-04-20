@@ -111,6 +111,10 @@ export class StakeService {
   }
 
   async getAllStakesForAddressNodesRaw(address: string): Promise<StakeTopup> {
+    if (!address) {
+      return new StakeTopup();
+    }
+
     let response: string[] | undefined;
     try {
       response = await this.vmQueryService.vmQuery(

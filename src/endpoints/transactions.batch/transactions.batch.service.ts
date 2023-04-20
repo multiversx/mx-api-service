@@ -174,9 +174,10 @@ export class TransactionsBatchService {
     const transactionBatch = new TransactionBatchSimplifiedResult();
     transactionBatch.id = batch.id;
     transactionBatch.status = batch.status;
+    transactionBatch.transactions = [];
 
-    const transactionBatchItems: TransactionDetailsWithResult[] = [];
     for (const transactionBatchGroup of batch.groups) {
+      const transactionBatchItems: TransactionDetailsWithResult[] = [];
       for (const transactionItem of transactionBatchGroup.items) {
         const transaction = transactionItem.transaction.tx;
 
@@ -194,9 +195,9 @@ export class TransactionsBatchService {
 
         transactionBatchItems.push(transactionBatchItem);
       }
-    }
 
-    transactionBatch.transactions = transactionBatchItems;
+      transactionBatch.transactions.push(transactionBatchItems);
+    }
 
     return transactionBatch;
   }

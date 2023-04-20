@@ -1,4 +1,4 @@
-import { BinaryUtils } from "@multiversx/sdk-nestjs-common";
+import { BinaryUtils, OriginLogger } from "@multiversx/sdk-nestjs-common";
 import { ApiService } from "@multiversx/sdk-nestjs-http";
 import { HttpStatus, Injectable } from "@nestjs/common";
 import { ApiConfigService } from "../api-config/api.config.service";
@@ -6,26 +6,34 @@ import { GithubUserInfo } from "./entities/github.user.info";
 
 @Injectable()
 export class GithubService {
+  private readonly logger = new OriginLogger(GithubService.name);
+
   constructor(
     private readonly apiConfigService: ApiConfigService,
     protected readonly apiService: ApiService,
   ) { }
 
   async getUserInfo(username: string): Promise<GithubUserInfo | undefined> {
-    const profile = await this.get(`users/${username}`);
-    if (!profile) {
+    try {
+      const profile = await this.get(`users/${username}`);
+      if (!profile) {
+        return undefined;
+      }
+
+      return {
+        username,
+        name: profile.name,
+        avatar_url: profile.avatar_url,
+        bio: profile.bio,
+        location: profile.location,
+        twitter_username: profile.twitter_username,
+        blog: profile.blog,
+      };
+    } catch (error) {
+      this.logger.error(`An unhandled error occurred when getting Github user info for username '${username}'`);
+      this.logger.error(error);
       return undefined;
     }
-
-    return {
-      username,
-      name: profile.name,
-      avatar_url: profile.avatar_url,
-      bio: profile.bio,
-      location: profile.location,
-      twitter_username: profile.twitter_username,
-      blog: profile.blog,
-    };
   }
 
   async getRepoFileContents(username: string, repository: string, path: string): Promise<string | undefined> {

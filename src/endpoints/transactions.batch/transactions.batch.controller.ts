@@ -1,9 +1,8 @@
-import { Jwt } from "@multiversx/sdk-nestjs-common";
-import { NativeAuthGuard } from "@multiversx/sdk-nestjs-auth";
-import { Body, Controller, Get, HttpException, HttpStatus, Logger, Param, Post, UseGuards, Headers } from "@nestjs/common";
+import { Body, Controller, Get, HttpException, HttpStatus, Logger, Param, Post, Headers } from "@nestjs/common";
 import { TransactionBatchSimplified } from "./entities/transaction.batch.simplified";
 import { TransactionBatchSimplifiedResult } from "./entities/transaction.batch.simplified.result";
 import { TransactionsBatchService } from "./transactions.batch.service";
+import { ParseAddressPipe } from "@multiversx/sdk-nestjs-common";
 
 @Controller()
 export class TransactionsBatchController {
@@ -16,13 +15,12 @@ export class TransactionsBatchController {
   }
 
   @Post('/batch')
-  @UseGuards(NativeAuthGuard)
   async startTransactionBatch(
     @Body() batch: TransactionBatchSimplified,
     @Headers() headers: any,
-    @Jwt('address') address: string,
   ): Promise<TransactionBatchSimplifiedResult> {
     const transactionBatch = this.transactionsBatchService.convertToTransactionBatch(batch);
+    const address = transactionBatch.groups[0].items[0].transaction.tx.sender;
 
     const existingBatch = await this.transactionsBatchService.getTransactionBatch(address, transactionBatch.id);
     if (existingBatch) {
@@ -44,10 +42,9 @@ export class TransactionsBatchController {
     return this.transactionsBatchService.convertFromTransactionBatch(startedBatch);
   }
 
-  @Get('/batch/:id')
-  @UseGuards(NativeAuthGuard)
+  @Get('/batch/:address/:id')
   async getTransactionBatch(
-    @Jwt('address') address: string,
+    @Param('address', ParseAddressPipe) address: string,
     @Param('id') batchId: string,
   ): Promise<TransactionBatchSimplifiedResult> {
     const batch = await this.transactionsBatchService.getTransactionBatch(address, batchId);
@@ -58,10 +55,9 @@ export class TransactionsBatchController {
     return this.transactionsBatchService.convertFromTransactionBatch(batch);
   }
 
-  @Get('/batch')
-  @UseGuards(NativeAuthGuard)
+  @Get('/batch/:address')
   async getTransactionBatches(
-    @Jwt('address') address: string,
+    @Param('address', ParseAddressPipe) address: string,
   ): Promise<TransactionBatchSimplifiedResult[]> {
     const batches = await this.transactionsBatchService.getTransactionBatches(address);
 

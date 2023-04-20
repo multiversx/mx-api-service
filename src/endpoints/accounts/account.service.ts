@@ -87,13 +87,15 @@ export class AccountService {
       scrCount = await this.getAccountScResults(address);
     }
 
-    const account = await this.getAccountRaw(address, txCount, scrCount);
+    const [account, elasticSearchAccount] = await Promise.all([
+      this.getAccountRaw(address, txCount, scrCount),
+      this.indexerService.getAccount(address),
+    ]);
 
     if (account && withGuardianInfo === true) {
       await this.applyGuardianInfo(account);
     }
 
-    const elasticSearchAccount = await this.indexerService.getAccount(address);
     if (account && elasticSearchAccount) {
       account.timestamp = elasticSearchAccount.timestamp;
     }
