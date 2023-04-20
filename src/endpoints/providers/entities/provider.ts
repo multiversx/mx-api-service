@@ -48,19 +48,19 @@ export class Provider extends NodesInfos {
   identity: string | undefined = undefined;
 
   @ApiProperty({ type: String })
-  initialOwnerFunds?: string = "";
+  initialOwnerFunds: string | undefined = undefined;
 
   @ApiProperty({ type: Boolean, default: false })
-  automaticActivation?: boolean = false;
+  automaticActivation: boolean | undefined = undefined;
 
   @ApiProperty({ type: Boolean, default: false })
-  checkCapOnRedelegate?: boolean = false;
+  checkCapOnRedelegate: boolean | undefined = undefined;
 
   @ApiProperty({ type: String })
-  totalUnStaked?: string = "";
+  totalUnStaked: string | undefined = undefined;
 
   @ApiProperty({ type: Number })
-  createdNonce?: number = 0;
+  createdNonce: number | undefined = undefined;
 
   @ApiProperty({ type: Boolean, nullable: true })
   githubProfileValidated: boolean | undefined = undefined;
