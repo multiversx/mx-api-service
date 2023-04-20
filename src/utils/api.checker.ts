@@ -24,10 +24,10 @@ export class ApiChecker {
     }
   }
 
-  async checkDetails() {
+  async checkDetails(field?: string) {
     const [item] = await this.requestList({ size: 1 });
+    const idAttribute = field ? field : Object.keys(item)[0];
 
-    const [idAttribute] = Object.keys(item);
     const id = item[idAttribute];
 
     const details = await this.requestItemParallel(id, Object.keys(item));
@@ -159,7 +159,6 @@ export class ApiChecker {
         delete item[skipField];
       }
     }
-
     return result;
   }
 

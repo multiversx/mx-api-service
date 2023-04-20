@@ -59,7 +59,7 @@ export default class Initializer {
         `${MOCK_PATH}heartbeat.mock.json`,
       );
       jest
-        .spyOn(NodeService.prototype, 'getHeartbeat')
+        .spyOn(NodeService.prototype, 'getHeartbeatAndValidators')
         // eslint-disable-next-line require-await
         .mockImplementation(jest.fn(async () => heartbeat));
 
@@ -94,7 +94,6 @@ export default class Initializer {
 
     await this.execute('Confirm keybases against keybase.pub', async () => await keybaseService.confirmKeybasesAgainstGithub());
     await this.execute('Confirm keybase against keybase.io', async () => await keybaseService.confirmIdentityProfilesAgainstKeybaseIo());
-    await this.fetch(CacheInfo.Keybases.key, async () => await keybaseService.confirmKeybasesAgainstCache());
     await this.fetch(CacheInfo.Nodes.key, async () => await nodeService.getAllNodesRaw());
     await this.fetch(CacheInfo.Providers.key, async () => await providerService.getAllProvidersRaw());
     await this.fetch(CacheInfo.AllEsdtTokens.key, async () => await tokenService.getAllTokensRaw());

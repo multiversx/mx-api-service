@@ -31,7 +31,7 @@ describe('Provider Service', () => {
 
   describe("Get Provider", () => {
     it("should return provider based on address", async () => {
-      const address: string = "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq8hlllls7a6h85";
+      const address: string = "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqz8llllsh6u4jp";
 
       const result = await providerService.getProvider(address);
 
@@ -58,8 +58,8 @@ describe('Provider Service', () => {
       expect(result.hasOwnProperty("totalUnStaked")).toBeTruthy();
     });
 
-    it("should verify if identity of provider is defined", async () => {
-      const address: string = "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq8hlllls7a6h85";
+    it("should verify if provider identity is defined", async () => {
+      const address: string = "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqz8llllsh6u4jp";
       const result = await providerService.getProvider(address);
 
       if (!result) {
@@ -67,9 +67,9 @@ describe('Provider Service', () => {
       }
 
       expect(result.identity).toBeDefined();
-      expect(result.identity).toStrictEqual("meria");
-      expect(result.provider).toStrictEqual("erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq8hlllls7a6h85");
-      expect(result.owner).toStrictEqual("erd1fx5t2nwq4fh9jws5xqfl85hr0l8tuqks9sr7ut9wrpkp7dugzxnqyksfyg");
+      expect(result.identity).toStrictEqual("arcstake");
+      expect(result.provider).toStrictEqual("erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqz8llllsh6u4jp");
+      expect(result.owner).toStrictEqual("erd1g9gu7525zvaft6vtcwaj678flafmcgn9adws4ducls2zwvl0dmksr9u4nc");
       expect(result.automaticActivation).toStrictEqual(false);
       expect(result.initialOwnerFunds).toStrictEqual("1250000000000000000000");
       expect(result.checkCapOnRedelegate).toStrictEqual(false);

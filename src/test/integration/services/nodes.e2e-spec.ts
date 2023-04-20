@@ -2,7 +2,6 @@ import { ElrondCachingService } from "@multiversx/sdk-nestjs";
 import { Test } from "@nestjs/testing";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { GatewayService } from "src/common/gateway/gateway.service";
-import { KeybaseService } from "src/common/keybase/keybase.service";
 import { ProtocolService } from "src/common/protocol/protocol.service";
 import { BlockService } from "src/endpoints/blocks/block.service";
 import { NodeService } from "src/endpoints/nodes/node.service";
@@ -60,12 +59,6 @@ describe('NodeService', () => {
             getLocal: jest.fn(),
             deleteInCache: jest.fn(),
             batchGetManyRemote: jest.fn(),
-          },
-        },
-        {
-          provide: KeybaseService,
-          useValue: {
-            getCachedNodesAndProvidersKeybases: jest.fn(),
           },
         },
         {
@@ -374,7 +367,7 @@ describe('NodeService', () => {
           '00198be6aae517a382944cd5a97845857f3b122bb1edf1588d60ed421d32d16ea2767f359a0d714fae3a35c1b0cf4e1141d701d5d1d24160e49eeaebeab21e2f89a2b7c44f3a313383d542e69800cfb6e115406d3d8114b4044ef5a04acf0408',
           '003ba6237f0f7c269eebfecb6a0a0796076c02593846e1ce89aee9b832b94dd54e93d35b03dc3d5944b1aae916722506faf959a47cabf2d00f567ad50b10f8f1a40ab0316fdf302454f7aea58b23109ccfdce082bd16fb262342a1382b802c10'];
         const epoch = 10;
-        const keys = blses.map((bls) => CacheInfo.OwnerByEpochAndBls(bls, epoch).key);
+        const keys = blses.map((bls) => CacheInfo.OwnerByEpochAndBls(epoch, bls).key);
         const values = ['erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqy8lllls62y8s5', 'erd1qzwd98g6xjs6h33ezxc9ey766ee082z9q4yvj46r8p7xqnl0eenqvxtaz3'];
         const barchGetManyRemoteSpy = jest.spyOn(nodeService['cachingService'], 'batchGetManyRemote').mockResolvedValue(values);
 
