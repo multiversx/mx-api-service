@@ -20,8 +20,8 @@ describe('Keybase Service', () => {
   beforeEach(() => { jest.restoreAllMocks(); });
 
   describe('Get Profile', () => {
-    it('should return identity profile', async () => {
-      const profile = await keybaseService.getProfile(identity);
+    it('should return identity profile', () => {
+      const profile = keybaseService.getProfile(identity);
 
       expect(profile).toHaveStructure(Object.keys(new KeybaseIdentity()));
     });

@@ -212,9 +212,8 @@ export class CacheWarmerService {
     const assets = this.assetsService.getAllTokenAssetsRaw();
     await this.invalidateKey(CacheInfo.TokenAssets.key, assets, CacheInfo.TokenAssets.ttl);
 
-    await this.keybaseService.confirmKeybasesAgainstGithub();
     await this.keybaseService.confirmIdentities();
-    await this.keybaseService.confirmIdentityProfilesAgainstKeybaseIo();
+    await this.keybaseService.confirmIdentityProfiles();
 
     await this.handleNodeInvalidations();
     await this.handleProviderInvalidations();
