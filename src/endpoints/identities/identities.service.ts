@@ -1,4 +1,4 @@
-import { ElrondCachingService } from "@multiversx/sdk-nestjs";
+import { ElrondCachingService, OriginLogger } from "@multiversx/sdk-nestjs";
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import BigNumber from "bignumber.js";
 import { CacheInfo } from "src/utils/cache.info";
@@ -15,6 +15,8 @@ import { NodeStatus } from "../nodes/entities/node.status";
 
 @Injectable()
 export class IdentitiesService {
+  private readonly logger = new OriginLogger(IdentitiesService.name);
+
   constructor(
     @Inject(forwardRef(() => NodeService))
     private readonly nodeService: NodeService,
@@ -197,7 +199,14 @@ export class IdentitiesService {
     }
 
     const { locked: totalLocked } = this.computeTotalStakeAndTopUp(nodes);
-    const { baseApr, topUpApr } = await this.networkService.getApr();
+
+    let aprInfo = { baseApr: 0, topUpApr: 0 };
+    try {
+      aprInfo = await this.networkService.getApr();
+    } catch (error) {
+      this.logger.error('An error occurred while fetching APR for identities');
+      this.logger.error(error);
+    }
 
     let identities: Identity[] = identitiesDetailed.map((identityDetailed: IdentityDetailed) => {
       if (identityDetailed.nodes && identityDetailed.nodes.length) {
@@ -220,8 +229,8 @@ export class IdentitiesService {
         identity.providers = stakeInfo.providers;
         identity.stakePercent = stakeInfo.stakePercent;
         if (identity.stake && identity.topUp) {
-          const stakeReturn = new BigNumber(identity.stake.slice(0, -18)).multipliedBy(new BigNumber(baseApr));
-          const topUpReturn = new BigNumber(identity.topUp.slice(0, -18)).multipliedBy(new BigNumber(topUpApr));
+          const stakeReturn = new BigNumber(identity.stake.slice(0, -18)).multipliedBy(new BigNumber(aprInfo.baseApr));
+          const topUpReturn = new BigNumber(identity.topUp.slice(0, -18)).multipliedBy(new BigNumber(aprInfo.topUpApr));
           const annualReturn = stakeReturn.plus(topUpReturn).multipliedBy((identity.validators ?? 0) - (stakeInfo.queued ?? 0)).dividedBy(identity.validators ?? 0);
           const aprStr = new BigNumber(annualReturn).multipliedBy(100).div(identity.locked.slice(0, -18)).toString();
           identity.apr = Number(aprStr).toRounded(2);
