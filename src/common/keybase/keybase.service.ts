@@ -5,7 +5,8 @@ import { KeybaseIdentity } from "./entities/keybase.identity";
 import { CacheInfo } from "../../utils/cache.info";
 import { ElrondCachingService, Constants, OriginLogger, AddressUtils } from "@multiversx/sdk-nestjs";
 import fs from 'fs';
-import path from 'path';
+import { readdir } from 'fs/promises';
+import { AssetsService } from "../assets/assets.service";
 @Injectable()
 export class KeybaseService {
   private readonly logger = new OriginLogger(KeybaseService.name);
@@ -16,35 +17,17 @@ export class KeybaseService {
     private readonly nodeService: NodeService,
     @Inject(forwardRef(() => ProviderService))
     private readonly providerService: ProviderService,
+    private readonly assetsService: AssetsService,
   ) { }
 
-  private async getProviderIdentities(): Promise<string[]> {
-    const providers = await this.providerService.getProviderAddresses();
-    const metadatas = await
-      this.cachingService.batchProcess(
-        providers,
-        address => `providerMetadata:${address}`,
-        async address => await this.providerService.getProviderMetadata(address),
-        Constants.oneMinute() * 15,
-      );
-
-    return metadatas.filter(x => x.identity).map(x => x.identity ?? '');
-  }
-
-  private async getHeartbeatAndValidatorIdentities(): Promise<string[]> {
-    const nodes = await this.nodeService.getHeartbeatAndValidators();
-
-    return nodes.filter(x => x.identity).map(x => x.identity ?? '');
-  }
-
   private async getDistinctIdentities(): Promise<string[]> {
-    const providerIdentities = await this.getProviderIdentities();
-    const heartbeatAndValidatorIdentities = await this.getHeartbeatAndValidatorIdentities();
-    const allIdentities = [...providerIdentities, ...heartbeatAndValidatorIdentities];
+    const dirContents = await readdir(this.assetsService.getIdentityAssetsPath(), { withFileTypes: true });
 
-    const distinctIdentities = allIdentities.distinct().shuffle();
+    const identities = dirContents
+      .filter(dirent => dirent.isDirectory())
+      .map(dirent => dirent.name);
 
-    return distinctIdentities;
+    return identities;
   }
 
   async confirmIdentities(): Promise<void> {
@@ -83,15 +66,12 @@ export class KeybaseService {
     for (const key of keys) {
       // key is a staking provider address
       if (AddressUtils.isAddressValid(key) && providerAddresses.includes(key)) {
-        const providerMetadata = await this.providerService.getProviderMetadata(key);
-        if (providerMetadata && providerMetadata.identity && providerMetadata.identity === identity) {
-          await this.cachingService.set(CacheInfo.ConfirmedProvider(key).key, identity, CacheInfo.ConfirmedProvider(key).ttl);
+        await this.cachingService.set(CacheInfo.ConfirmedProvider(key).key, identity, CacheInfo.ConfirmedProvider(key).ttl);
 
-          // if the identity is confirmed from the smart contract, we consider all BLS keys within valid
-          const blses = await this.nodeService.getOwnerBlses(key);
-          for (const bls of blses) {
-            confirmations[bls] = identity;
-          }
+        // if the identity is confirmed from the smart contract, we consider all BLS keys within valid
+        const blses = await this.nodeService.getOwnerBlses(key);
+        for (const bls of blses) {
+          confirmations[bls] = identity;
         }
       }
 
@@ -134,7 +114,7 @@ export class KeybaseService {
   }
 
   private readIdentityInfoFile(identity: string): any {
-    const filePath = path.join(process.cwd(), 'dist/repos/assets/identities', identity, 'info.json');
+    const filePath = this.assetsService.getIdentityInfoJsonPath(identity);
     if (!fs.existsSync(filePath)) {
       return null;
     }
