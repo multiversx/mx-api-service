@@ -344,6 +344,10 @@ export class ElasticIndexerService implements IndexerInterface {
       query = query.withShouldCondition(filter.hashes.map(hash => QueryType.Match('_id', hash)));
     }
 
+    if (filter.type) {
+      query = query.withCondition(QueryConditionOptions.must, [QueryType.Match("type", filter.type)]);
+    }
+
     return await this.elasticService.getList('miniblocks', 'miniBlockHash', query);
   }
 
