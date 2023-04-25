@@ -67,13 +67,6 @@ export class CacheWarmerService {
       async () => await this.handleTokenAssetsInvalidations()
     );
 
-    this.configCronJob(
-      'handleIdentityInvalidations',
-      CronExpression.EVERY_MINUTE,
-      CronExpression.EVERY_5_MINUTES,
-      async () => await this.handleIdentityInvalidations()
-    );
-
     if (this.apiConfigService.isStakingV4Enabled()) {
       const handleNodeAuctionInvalidationsCronJob = new CronJob(this.apiConfigService.getStakingV4CronExpression(), async () => await this.handleNodeAuctionInvalidations());
       this.schedulerRegistry.addCronJob(this.handleNodeAuctionInvalidations.name, handleNodeAuctionInvalidationsCronJob);

@@ -15,12 +15,14 @@ import { CacheInfo } from "src/utils/cache.info";
 import { Stake } from "../stake/entities/stake";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
 import { Auction } from "src/common/gateway/entities/auction";
-import { AddressUtils, ElrondCachingService } from "@multiversx/sdk-nestjs";
+import { AddressUtils, ElrondCachingService, OriginLogger } from "@multiversx/sdk-nestjs";
 import { NodeSort } from "./entities/node.sort";
 import { ProtocolService } from "src/common/protocol/protocol.service";
 
 @Injectable()
 export class NodeService {
+  private readonly logger = new OriginLogger(NodeService.name);
+
   constructor(
     private readonly gatewayService: GatewayService,
     private readonly vmQueryService: VmQueryService,
@@ -394,12 +396,20 @@ export class NodeService {
   }
 
   async getOwnerBlses(owner: string): Promise<string[]> {
-    const getBlsKeysStatusListEncoded = await this.vmQueryService.vmQuery(
-      this.apiConfigService.getAuctionContractAddress(),
-      'getBlsKeysStatus',
-      this.apiConfigService.getAuctionContractAddress(),
-      [AddressUtils.bech32Decode(owner)],
-    );
+    let getBlsKeysStatusListEncoded: string[] | undefined = undefined;
+
+    try {
+      getBlsKeysStatusListEncoded = await this.vmQueryService.vmQuery(
+        this.apiConfigService.getAuctionContractAddress(),
+        'getBlsKeysStatus',
+        this.apiConfigService.getAuctionContractAddress(),
+        [AddressUtils.bech32Decode(owner)],
+      );
+    } catch (error) {
+      this.logger.error(`An unhandled error occurred when getting BLSes for owner '${owner}'`);
+      this.logger.error(error);
+      return [];
+    }
 
     if (!getBlsKeysStatusListEncoded) {
       return [];
