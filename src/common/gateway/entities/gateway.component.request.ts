@@ -36,5 +36,6 @@ export enum GatewayComponentRequest {
   validatorAuction = 'validatorAuction',
   oldStorageToken = 'oldStorageToken',
   trieStatistics = 'trieStatistics',
-  transactionPool = 'transactionPool'
+  transactionPool = 'transactionPool',
+  gasConfigs = 'gasConfigs',
 }
