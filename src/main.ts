@@ -31,6 +31,7 @@ import { GraphqlComplexityInterceptor } from './graphql/interceptors/graphql.com
 import { GraphQLMetricsInterceptor } from './graphql/interceptors/graphql.metrics.interceptor';
 import { SettingsService } from './common/settings/settings.service';
 import { StatusCheckerModule } from './crons/status.checker/status.checker.module';
+import { WebSocketPublisherModule } from './common/websockets/web-socket-publisher-module';
 
 async function bootstrap() {
   const logger = new Logger('Bootstrapper');
@@ -51,6 +52,23 @@ async function bootstrap() {
     await configurePublicApp(publicApp, apiConfigService);
 
     await publicApp.listen(3001);
+
+    const websocketPublisherApp = await NestFactory.createMicroservice<MicroserviceOptions>(
+      WebSocketPublisherModule,
+      {
+        transport: Transport.REDIS,
+        options: {
+          host: apiConfigService.getRedisUrl(),
+          port: 6379,
+          retryAttempts: 100,
+          retryDelay: 1000,
+          retryStrategy: () => 1000,
+        },
+      },
+    );
+    websocketPublisherApp.useWebSocketAdapter(new SocketAdapter(websocketPublisherApp));
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    websocketPublisherApp.listen();
   }
 
   if (apiConfigService.getIsPrivateApiActive()) {
@@ -126,8 +144,6 @@ async function bootstrap() {
       },
     },
   );
-  //pubSubApp.useLogger(pubSubApp.get(WINSTON_MODULE_NEST_PROVIDER));
-  pubSubApp.useWebSocketAdapter(new SocketAdapter(pubSubApp));
   // eslint-disable-next-line @typescript-eslint/no-floating-promises
   pubSubApp.listen();
 
