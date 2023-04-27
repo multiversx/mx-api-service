@@ -33,30 +33,55 @@ export class NodeService {
     private readonly protocolService: ProtocolService,
   ) { }
 
-  private getIssues(node: Node, version: string | undefined): string[] {
-    const issues: string[] = [];
+  /**
+ * Returns a paginated list of filtered nodes based on the given query parameters.
+ * @param queryPagination - The pagination object containing "from" and "size" values.
+ * @param query - The filter object containing the filtering criteria.
+ * @returns A Promise that resolves to an array of filtered nodes.
+ */
+  async getNodes(queryPagination: QueryPagination, query: NodeFilter): Promise<Node[]> {
+    const { from, size } = queryPagination;
+    const filteredNodes = await this.getFilteredNodes(query);
 
-    if (version && version !== node.version) {
-      issues.push('versionMismatch'); // Outdated client version
-    }
-
-    // if (node.receivedShardID !== node.computedShardID && node.peerType === 'eligible') {
-    //   issues.push('shuffledOut'); // Shuffled out restart failed
-    // }
-
-    return issues;
+    return filteredNodes.slice(from, from + size);
   }
 
+  /**
+ * Retrieves all nodes from the caching service or the raw data source if not cached.
+ * @returns A Promise that resolves to an array of all nodes.
+ */
+  async getAllNodes(): Promise<Node[]> {
+    return await this.cachingService.getOrSet(
+      CacheInfo.Nodes.key,
+      async () => await this.getAllNodesRaw(),
+      CacheInfo.Nodes.ttl
+    );
+  }
+
+  /**
+ * Retrieves a specific node by its BLS key from the list of all nodes.
+ * @param bls - The BLS key of the node to retrieve.
+ * @returns A Promise that resolves to the found node or undefined if not found.
+ */
   async getNode(bls: string): Promise<Node | undefined> {
     const allNodes = await this.getAllNodes();
     return allNodes.find(x => x.bls === bls);
   }
 
+  /**
+ * Gets the number of nodes matching the provided filter.
+ * @param query - The filter to apply to the nodes.
+ * @returns A Promise that resolves to the number of nodes that match the filter.
+ */
   async getNodeCount(query: NodeFilter): Promise<number> {
     const allNodes = await this.getFilteredNodes(query);
     return allNodes.length;
   }
 
+  /**
+ * Retrieves a summary of node versions with their relative distribution.
+ * @returns A Promise that resolves to an object containing the node versions and their relative distribution.
+ */
   async getNodeVersions(): Promise<NodeVersions> {
     return await this.cachingService.getOrSet(
       CacheInfo.NodeVersions.key,
@@ -65,6 +90,10 @@ export class NodeService {
     );
   }
 
+  /**
+ * Retrieves a summary of node versions with their relative distribution from raw data.
+ * @returns A Promise that resolves to an object containing the node versions and their relative distribution.
+ */
   async getNodeVersionsRaw(): Promise<NodeVersions> {
     const allNodes = await this.getAllNodes();
 
@@ -86,9 +115,9 @@ export class NodeService {
       return accumulator + data[item];
     }, 0);
 
-    Object.keys(data).forEach((key) => {
+    for (const key of Object.keys(data)) {
       data[key] = parseFloat((data[key] / sum).toFixed(4));
-    });
+    }
 
     const numbers: number[] = Object.values(data);
     const totalSum = numbers.reduce((previous: number, current: number) => previous + current, 0);
@@ -104,195 +133,10 @@ export class NodeService {
     return data;
   }
 
-  private async getFilteredNodes(query: NodeFilter): Promise<Node[]> {
-    const allNodes = await this.getAllNodes();
-
-    const filteredNodes = allNodes.filter(node => {
-      if (query.search !== undefined) {
-        const nodeMatches = node.bls && node.bls.toLowerCase().includes(query.search.toLowerCase());
-        const nameMatches = node.name && node.name.toLowerCase().includes(query.search.toLowerCase());
-        const versionMatches = node.version && node.version.toLowerCase().includes(query.search.toLowerCase());
-
-        if (!nodeMatches && !nameMatches && !versionMatches) {
-          return false;
-        }
-      }
-
-      if (query.online !== undefined && node.online !== query.online) {
-        return false;
-      }
-
-      if (query.type !== undefined && node.type !== query.type) {
-        return false;
-      }
-
-      if (query.status !== undefined && node.status !== query.status) {
-        return false;
-      }
-
-      if (query.shard !== undefined && node.shard !== query.shard) {
-        return false;
-      }
-
-      if (query.issues !== undefined) {
-        if (query.issues === true && (node.issues === undefined || node.issues.length === 0)) {
-          return false;
-        } else if (query.issues === false && node.issues !== undefined && node.issues.length > 0) {
-          return false;
-        }
-      }
-
-      if (query.identity && node.identity !== query.identity) {
-        return false;
-      }
-
-      if (query.provider && node.provider !== query.provider) {
-        return false;
-      }
-
-      if (query.owner && node.owner !== query.owner) {
-        return false;
-      }
-
-      if (query.auctioned !== undefined && node.auctioned !== query.auctioned) {
-        return false;
-      }
-
-      if (query.fullHistory !== undefined) {
-        if (query.fullHistory === true && !node.fullHistory) {
-          return false;
-        }
-
-        if (query.fullHistory === false && node.fullHistory === true) {
-          return false;
-        }
-      }
-
-      return true;
-    });
-
-    const sort = query.sort;
-    if (sort) {
-      filteredNodes.sort((a: any, b: any) => {
-        let asort = a[query.sort ?? ''];
-        let bsort = b[query.sort ?? ''];
-
-        if (sort === NodeSort.locked) {
-          asort = Number(asort);
-          bsort = Number(bsort);
-        }
-
-        if (asort && typeof asort === 'string') {
-          asort = asort.toLowerCase();
-        }
-
-        if (bsort && typeof bsort === 'string') {
-          bsort = bsort.toLowerCase();
-        }
-
-        return asort > bsort ? 1 : bsort > asort ? -1 : 0;
-      });
-
-      if (query.order === SortOrder.desc) {
-        filteredNodes.reverse();
-      }
-    }
-
-    return filteredNodes;
-  }
-
-  async getNodes(queryPagination: QueryPagination, query: NodeFilter): Promise<Node[]> {
-    const { from, size } = queryPagination;
-
-    const filteredNodes = await this.getFilteredNodes(query);
-
-    return filteredNodes.slice(from, from + size);
-  }
-
-  async getAllNodes(): Promise<Node[]> {
-    return await this.cachingService.getOrSet(
-      CacheInfo.Nodes.key,
-      async () => await this.getAllNodesRaw(),
-      CacheInfo.Nodes.ttl
-    );
-  }
-
-  private processQueuedNodes(nodes: Node[], queue: Queue[]) {
-    for (const queueItem of queue) {
-      const node = nodes.find(node => node.bls === queueItem.bls);
-
-      if (node) {
-        node.type = NodeType.validator;
-        node.status = NodeStatus.queued;
-        node.position = queueItem.position;
-      } else {
-        const newNode = new Node();
-        newNode.bls = queueItem.bls;
-        newNode.position = queueItem.position;
-        newNode.type = NodeType.validator;
-        newNode.status = NodeStatus.queued;
-
-        nodes.push(newNode);
-      }
-    }
-  }
-
-  private async applyNodeIdentities(nodes: Node[]) {
-    for (const node of nodes) {
-      node.identity = await this.cachingService.getRemote<string>(CacheInfo.ConfirmedIdentity(node.bls).key);
-    }
-  }
-
-  private async applyNodeOwners(nodes: Node[]) {
-    const blses = nodes.filter(x => x.type === NodeType.validator).map(node => node.bls);
-    const epoch = await this.blockService.getCurrentEpoch();
-    const owners = await this.getOwners(blses, epoch);
-
-    for (const [index, bls] of blses.entries()) {
-      const node = nodes.find(node => node.bls === bls);
-      if (node) {
-        node.owner = owners[index];
-      }
-    }
-  }
-
-  private async applyNodeProviders(nodes: Node[]) {
-    for (const node of nodes) {
-      if (node.type === NodeType.validator) {
-        const providerOwner = await this.cachingService.getRemote<string>(CacheInfo.ProviderOwner(node.owner).key);
-        if (providerOwner) {
-          node.provider = node.owner;
-          node.owner = providerOwner;
-        }
-      }
-    }
-  }
-
-  private async applyNodeStakeInfo(nodes: Node[]) {
-    let addresses = nodes
-      .filter(({ type }) => type === NodeType.validator)
-      .map(({ owner, provider }) => (provider ? provider : owner))
-      .filter(x => x);
-
-    addresses = addresses.distinct();
-
-    const stakes = await this.stakeService.getStakes(addresses);
-
-    for (const node of nodes) {
-      if (node.type === 'validator') {
-        let stake = stakes.find(({ bls }) => bls === node.bls) ?? new Stake();
-
-        if (node.status === "jailed") {
-          stake = stakes.find(({ address }) => node.provider ? address === node.provider : address === node.owner) ?? new Stake();
-        }
-
-        node.stake = stake.stake;
-        node.topUp = stake.topUp;
-        node.locked = stake.locked;
-      }
-    }
-  }
-
+  /**
+ * Retrieves heartbeat validators and the nodes waiting in the queue.
+ * @returns A Promise that resolves to an array of nodes including heartbeat validators and queued nodes.
+ */
   async getHeartbeatValidatorsAndQueue(): Promise<Node[]> {
     const nodes = await this.getHeartbeatAndValidators();
 
@@ -303,6 +147,10 @@ export class NodeService {
     return nodes;
   }
 
+  /**
+ * Retrieves all nodes with their detailed information by combining data from multiple sources.
+ * @returns A Promise that resolves to an array of all nodes with their detailed information.
+ */
   async getAllNodesRaw(): Promise<Node[]> {
     const nodes = await this.getHeartbeatValidatorsAndQueue();
 
@@ -322,6 +170,11 @@ export class NodeService {
     return nodes;
   }
 
+  /**
+ * Processes auctions and updates the provided node list with the auction information.
+ * @param nodes - The array of nodes to be updated with auction information.
+ * @param auctions - The array of auctions to be processed.
+ */
   processAuctions(nodes: Node[], auctions: Auction[]) {
     for (const node of nodes) {
       let position = 1;
@@ -340,6 +193,12 @@ export class NodeService {
     }
   }
 
+  /**
+ * Retrieves owners of the nodes specified by their BLS keys for a given epoch.
+ * @param blses - The array of BLS keys representing the nodes.
+ * @param epoch - The epoch for which the owners should be retrieved.
+ * @returns A Promise that resolves to an array of owners for the specified BLS keys and epoch.
+ */
   async getOwners(blses: string[], epoch: number) {
     const keys = blses.map((bls) => CacheInfo.OwnerByEpochAndBls(epoch, bls).key);
 
@@ -376,6 +235,11 @@ export class NodeService {
     return blses.map((bls, index) => (missing.includes(index) ? owners[bls] : cached[index]));
   }
 
+  /**
+ * Retrieves the owner of a node by its BLS key.
+ * @param bls - The BLS key of the node.
+ * @returns A Promise that resolves to the owner's address or undefined if not found.
+ */
   async getBlsOwner(bls: string): Promise<string | undefined> {
     const result = await this.vmQueryService.vmQuery(
       this.apiConfigService.getStakingContractAddress(),
@@ -393,6 +257,11 @@ export class NodeService {
     return AddressUtils.bech32Encode(Buffer.from(encodedOwnerBase64, 'base64').toString('hex'));
   }
 
+  /**
+ * Retrieves the BLS keys for the nodes owned by the specified owner.
+ * @param owner - The address of the owner.
+ * @returns A Promise that resolves to an array of BLS keys for the nodes owned by the specified owner.
+ */
   async getOwnerBlses(owner: string): Promise<string[]> {
     const getBlsKeysStatusListEncoded = await this.vmQueryService.vmQuery(
       this.apiConfigService.getAuctionContractAddress(),
@@ -418,6 +287,10 @@ export class NodeService {
     }, []);
   }
 
+  /**
+ * Retrieves the list of nodes waiting in the queue.
+ * @returns A Promise that resolves to an array of queued nodes.
+ */
   async getQueue(): Promise<Queue[]> {
     const queueEncoded = await this.vmQueryService.vmQuery(
       this.apiConfigService.getStakingContractAddress(),
@@ -448,6 +321,10 @@ export class NodeService {
     }, []);
   }
 
+  /**
+ * Retrieves the heartbeat information and validator data for nodes.
+ * @returns A Promise that resolves to an array of nodes with their heartbeat and validator information.
+ */
   async getHeartbeatAndValidators(): Promise<Node[]> {
     const [
       heartbeats,
@@ -502,9 +379,7 @@ export class NodeService {
         numTrieNodesReceived,
       } = item;
 
-      let {
-        shardId: shard,
-      } = item;
+      let { shardId: shard } = item;
 
       if (shard === undefined) {
         if (peerType === 'observer') {
@@ -594,6 +469,11 @@ export class NodeService {
     return nodes;
   }
 
+  /**
+   * Deletes all cache entries for a given address from the cache and returns the keys of the deleted entries.
+   * @param address - The owner's address as a string.
+   * @returns A Promise that resolves with an array of keys of the deleted entries.
+   */
   async deleteOwnersForAddressInCache(address: string): Promise<string[]> {
     const nodes = await this.getAllNodes();
     const epoch = await this.blockService.getCurrentEpoch();
@@ -606,5 +486,238 @@ export class NodeService {
     }
 
     return keys;
+  }
+
+  /**
+   * Retrieves a list of filtered nodes based on the provided query.
+   * @param query - An instance of NodeFilter containing the filter criteria.
+   * @returns A Promise that resolves with an array of Node instances that match the filter criteria.
+   */
+  private async getFilteredNodes(query: NodeFilter): Promise<Node[]> {
+    const allNodes = await this.getAllNodes();
+    const filteredNodes = this.filterNodes(allNodes, query);
+    const sortedNodes = this.sortNodes(filteredNodes, query);
+
+    return sortedNodes;
+  }
+
+  /**
+   * Filters an array of nodes based on the provided NodeFilter.
+   * @param allNodes - An array of Node instances.
+   * @param query - An instance of NodeFilter containing the filter criteria.
+   * @returns An array of Node instances that match the filter criteria.
+   */
+  private filterNodes(allNodes: Node[], query: NodeFilter): Node[] {
+    return allNodes.filter(node => {
+      if (query.search !== undefined) {
+        const nodeMatches = node.bls && node.bls.toLowerCase().includes(query.search.toLowerCase());
+        const nameMatches = node.name && node.name.toLowerCase().includes(query.search.toLowerCase());
+        const versionMatches = node.version && node.version.toLowerCase().includes(query.search.toLowerCase());
+
+        if (!nodeMatches && !nameMatches && !versionMatches) {
+          return false;
+        }
+      }
+
+      if (query.online !== undefined && node.online !== query.online) {
+        return false;
+      }
+
+      if (query.type !== undefined && node.type !== query.type) {
+        return false;
+      }
+
+      if (query.status !== undefined && node.status !== query.status) {
+        return false;
+      }
+
+      if (query.shard !== undefined && node.shard !== query.shard) {
+        return false;
+      }
+
+      if (query.issues !== undefined) {
+        if (query.issues === true && (node.issues === undefined || node.issues.length === 0)) {
+          return false;
+        } else if (query.issues === false && node.issues !== undefined && node.issues.length > 0) {
+          return false;
+        }
+      }
+
+      if (query.identity && node.identity !== query.identity) {
+        return false;
+      }
+
+      if (query.provider && node.provider !== query.provider) {
+        return false;
+      }
+
+      if (query.owner && node.owner !== query.owner) {
+        return false;
+      }
+
+      if (query.auctioned !== undefined && node.auctioned !== query.auctioned) {
+        return false;
+      }
+
+      if (query.fullHistory !== undefined) {
+        if (query.fullHistory === true && !node.fullHistory) {
+          return false;
+        }
+
+        if (query.fullHistory === false && node.fullHistory === true) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+  }
+
+  /**
+   * Sorts an array of nodes based on the provided NodeFilter.
+   * @param nodes - An array of Node instances.
+   * @param query - An instance of NodeFilter containing the sort criteria.
+   * @returns An array of sorted Node instances.
+   */
+  private sortNodes(nodes: Node[], query: NodeFilter): Node[] {
+    if (query.sort) {
+      nodes.sort((a: any, b: any) => {
+        let asort = a[query.sort ?? ''];
+        let bsort = b[query.sort ?? ''];
+
+        if (query.sort === NodeSort.locked) {
+          asort = Number(asort);
+          bsort = Number(bsort);
+        }
+
+        if (asort && typeof asort === 'string') {
+          asort = asort.toLowerCase();
+        }
+
+        if (bsort && typeof bsort === 'string') {
+          bsort = bsort.toLowerCase();
+        }
+
+        return asort > bsort ? 1 : bsort > asort ? -1 : 0;
+      });
+
+      if (query.order === SortOrder.desc) {
+        nodes.reverse();
+      }
+    }
+    return nodes;
+  }
+
+  /**
+   * Adds issues to a given node based on the version mismatch.
+   * @param node - A Node instance.
+   * @param version - A string representing the version.
+   * @returns An array of strings containing issues.
+   */
+  private getIssues(node: Node, version: string | undefined): string[] {
+    const issues: string[] = [];
+
+    if (version && version !== node.version) {
+      issues.push('versionMismatch'); // Outdated client version
+    }
+
+    return issues;
+  }
+
+  /**
+   * Processes queued nodes by updating their information or creating new nodes.
+   * @param nodes - An array of Node instances.
+   * @param queue - An array of Queue instances.
+   */
+  private processQueuedNodes(nodes: Node[], queue: Queue[]) {
+    for (const queueItem of queue) {
+      const node = nodes.find(node => node.bls === queueItem.bls);
+
+      if (node) {
+        node.type = NodeType.validator;
+        node.status = NodeStatus.queued;
+        node.position = queueItem.position;
+      } else {
+        const newNode = new Node();
+        newNode.bls = queueItem.bls;
+        newNode.position = queueItem.position;
+        newNode.type = NodeType.validator;
+        newNode.status = NodeStatus.queued;
+
+        nodes.push(newNode);
+      }
+    }
+  }
+
+  /**
+   * Applies node identities to an array of nodes.
+   * @param nodes - An array of Node instances.
+   */
+  private async applyNodeIdentities(nodes: Node[]) {
+    for (const node of nodes) {
+      node.identity = await this.cachingService.getRemote<string>(CacheInfo.ConfirmedIdentity(node.bls).key);
+    }
+  }
+
+  /**
+   * Applies node owners to an array of nodes.
+   * @param nodes - An array of Node instances.
+   */
+  private async applyNodeOwners(nodes: Node[]) {
+    const blses = nodes.filter(x => x.type === NodeType.validator).map(node => node.bls);
+    const epoch = await this.blockService.getCurrentEpoch();
+    const owners = await this.getOwners(blses, epoch);
+
+    for (const [index, bls] of blses.entries()) {
+      const node = nodes.find(node => node.bls === bls);
+      if (node) {
+        node.owner = owners[index];
+      }
+    }
+  }
+
+  /**
+   * Applies node providers to an array of nodes.
+   * @param nodes - An array of Node instances.
+   */
+  private async applyNodeProviders(nodes: Node[]) {
+    for (const node of nodes) {
+      if (node.type === NodeType.validator) {
+        const providerOwner = await this.cachingService.getRemote<string>(CacheInfo.ProviderOwner(node.owner).key);
+        if (providerOwner) {
+          node.provider = node.owner;
+          node.owner = providerOwner;
+        }
+      }
+    }
+  }
+
+  /**
+   * Applies stake information to an array of nodes.
+   * @param nodes - An array of Node instances.
+   */
+  private async applyNodeStakeInfo(nodes: Node[]) {
+    let addresses = nodes
+      .filter(({ type }) => type === NodeType.validator)
+      .map(({ owner, provider }) => (provider ? provider : owner))
+      .filter(x => x);
+
+    addresses = addresses.distinct();
+
+    const stakes = await this.stakeService.getStakes(addresses);
+
+    for (const node of nodes) {
+      if (node.type === 'validator') {
+        let stake = stakes.find(({ bls }) => bls === node.bls) ?? new Stake();
+
+        if (node.status === "jailed") {
+          stake = stakes.find(({ address }) => node.provider ? address === node.provider : address === node.owner) ?? new Stake();
+        }
+
+        node.stake = stake.stake;
+        node.topUp = stake.topUp;
+        node.locked = stake.locked;
+      }
+    }
   }
 }
