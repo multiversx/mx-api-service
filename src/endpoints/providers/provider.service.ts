@@ -101,7 +101,7 @@ export class ProviderService {
 
     const providersDelegationData: DelegationData[] = await this.getDelegationProviders();
 
-    providers.forEach((element) => {
+    for (const element of providers) {
       const providerAddress = element.provider;
 
       // Delegation details for provider
@@ -127,7 +127,7 @@ export class ProviderService {
       element.stake = nodesInfos.stake;
       element.topUp = nodesInfos.topUp;
       element.locked = nodesInfos.locked;
-    });
+    }
 
     providers.sort((a, b) => {
       const aSort = a.locked && a.locked !== '0' ? parseInt(a.locked.slice(0, -18)) : 0;
@@ -135,8 +135,6 @@ export class ProviderService {
 
       return bSort - aSort;
     });
-
-
 
     // providers = providers.filter(provider => provider.numNodes > 0);
 
@@ -184,22 +182,22 @@ export class ProviderService {
 
   async getDelegationProvidersRaw(): Promise<DelegationData[]> {
     try {
-      const { data } = await this.apiService.get(this.apiConfigService.getProvidersUrl());
+      const providersUrl = this.apiConfigService.getProvidersUrl();
+      const { data } = await this.apiService.get(providersUrl);
       return data;
     } catch (error) {
-      this.logger.error('Error when getting delegation providers');
-      this.logger.error(error);
+      this.logger.error(`Error when getting delegation providers from ${this.apiConfigService.getProvidersUrl()}`, error);
       return [];
     }
   }
 
   async getDelegationProviderByAddressRaw(address: string): Promise<DelegationData | undefined> {
     try {
-      const { data } = await this.apiService.get(`${this.apiConfigService.getProvidersUrl()}/${address}`);
+      const providerUrl = `${this.apiConfigService.getProvidersUrl()}/${address}`;
+      const { data } = await this.apiService.get(providerUrl);
       return data;
     } catch (error) {
-      this.logger.error('Error when getting delegation provider');
-      this.logger.error(error);
+      this.logger.error(`Error when getting delegation provider with address ${address}`, error);
       return undefined;
     }
   }
@@ -266,9 +264,11 @@ export class ProviderService {
 
   async getProviderAddresses() {
     let providersBase64: string[];
+    const delegationManagerContractAddress = this.apiConfigService.getDelegationManagerContractAddress();
+
     try {
       providersBase64 = await this.vmQueryService.vmQuery(
-        this.apiConfigService.getDelegationManagerContractAddress(),
+        delegationManagerContractAddress,
         'getAllContractAddresses',
       );
     } catch (error) {
@@ -288,7 +288,9 @@ export class ProviderService {
   }
 
   async getProviderConfig(address: string): Promise<ProviderConfig | undefined> {
-    if (address === this.apiConfigService.getDelegationContractAddress()) {
+    const delegationContractAddress = this.apiConfigService.getDelegationContractAddress();
+
+    if (address === delegationContractAddress) {
       return undefined;
     }
 
@@ -321,12 +323,6 @@ export class ProviderService {
         return hex === null ? null : BigInt(hex ? '0x' + hex : hex).toString();
       });
 
-      // const [automaticActivation, changeableServiceFee, checkCapOnredelegate] = [
-      //   automaticActivationBase64,
-      //   changeableServiceFeeBase64,
-      //   checkCapOnredelegateBase64,
-      // ].map((base64) => (Buffer.from(base64, 'base64').toString() === 'true' ? true : false));
-
       const serviceFeeString = String(parseInt(serviceFee ?? '0') / 10000);
 
       return {
@@ -341,8 +337,7 @@ export class ProviderService {
         // createdNonce: parseInt(createdNonce),
       };
     } catch (error) {
-      this.logger.error(`An unhandled error occurred when fetching provider config for address '${address}'`);
-      this.logger.error(error);
+      this.logger.error(`An unhandled error occurred when fetching provider config for address '${address}'`, error);
       return undefined;
     }
   }
@@ -388,10 +383,12 @@ export class ProviderService {
   }
 
   async getCumulatedRewards(address: string): Promise<string | null> {
+    const contractAddress = 'erd1qqqqqqqqqqqqqqqpqqqqqqqqlllllllllllllllllllllllllllsr9gav8';
+
     const [base64] = await this.vmQueryService.vmQuery(
       address,
       'getTotalCumulatedRewards',
-      'erd1qqqqqqqqqqqqqqqpqqqqqqqqlllllllllllllllllllllllllllsr9gav8',
+      contractAddress,
     );
 
     if (base64) {
