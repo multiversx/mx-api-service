@@ -12,6 +12,7 @@ import { ApiUtils } from "@multiversx/sdk-nestjs-http";
 import { TransactionUtils } from "./transaction.utils";
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { OriginLogger } from "@multiversx/sdk-nestjs-common";
+import { MiniBlockType } from "../miniblocks/entities/mini.block.type";
 
 @Injectable()
 export class TransactionGetService {
@@ -144,7 +145,7 @@ export class TransactionGetService {
         return null;
       }
 
-      if (transaction.miniblockType === 'SmartContractResultBlock') {
+      if (transaction.miniblockType === MiniBlockType.SmartContractResultBlock) {
         return null;
       }
 

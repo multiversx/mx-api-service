@@ -337,6 +337,12 @@ export class ProxyController {
     return await this.gatewayGet(`hyperblock/by-hash/${hash}`, GatewayComponentRequest.hyperblockByHash);
   }
 
+  @Get('/network/gas-configs')
+  @ApiExcludeEndpoint()
+  async getGasConfigs() {
+    return await this.gatewayGet('network/gas-configs', GatewayComponentRequest.gasConfigs);
+  }
+
   private async gatewayGet(url: string, component: GatewayComponentRequest, params: any = undefined, errorHandler?: (error: any) => Promise<boolean>) {
     if (params) {
       url += '?' + Object.keys(params).filter(key => params[key] !== undefined).map(key => `${key}=${params[key]}`).join('&');

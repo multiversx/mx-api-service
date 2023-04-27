@@ -23,6 +23,7 @@ import { SortCollectionNfts } from "./entities/sort.collection.nfts";
 import { NftCollectionDetailed } from "./entities/nft.collection.detailed";
 import { Response } from "express";
 import { SortCollections } from "./entities/sort.collections";
+import { ParseArrayPipeOptions } from "@multiversx/sdk-nestjs/lib/src/pipes/entities/parse.array.options";
 
 @Controller()
 @ApiTags('collections')
@@ -343,7 +344,7 @@ export class CollectionController {
     @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash?: string,
     @Query('hashes', ParseArrayPipe) hashes?: string[],
     @Query('status', new ParseEnumPipe(TransactionStatus)) status?: TransactionStatus,
-    @Query('function', ParseArrayPipe) functions?: string[],
+    @Query('function', new ParseArrayPipe(new ParseArrayPipeOptions({ allowEmptyString: true }))) functions?: string[],
     @Query('before', ParseIntPipe) before?: number,
     @Query('after', ParseIntPipe) after?: number,
     @Query('order', new ParseEnumPipe(SortOrder)) order?: SortOrder,
