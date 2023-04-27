@@ -13,7 +13,7 @@ import { TransactionSendResult } from './entities/transaction.send.result';
 import { TransactionStatus } from './entities/transaction.status';
 import { TransactionQueryOptions } from './entities/transactions.query.options';
 import { TransactionService } from './transaction.service';
-import { ParseArrayPipeOptions } from '@multiversx/sdk-nestjs/lib/src/pipes/entities/parse.array.options';
+import { ParseArrayPipeOptions } from '@multiversx/sdk-nestjs-common/lib/pipes/entities/parse.array.options';
 
 @Controller()
 @ApiTags('transactions')

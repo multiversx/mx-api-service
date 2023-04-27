@@ -1,4 +1,4 @@
-import { OriginLogger } from "@multiversx/sdk-nestjs";
+import { OriginLogger } from "@multiversx/sdk-nestjs-common";
 import { ShardTransaction } from "@elrondnetwork/transaction-processor";
 import { Controller } from "@nestjs/common";
 import { EventPattern } from "@nestjs/microservices";

@@ -51,7 +51,7 @@ import { AccountVerification } from './entities/account.verification';
 import { AccountFilter } from './entities/account.filter';
 import { AccountSort } from './entities/account.sort';
 import { AccountHistoryFilter } from './entities/account.history.filter';
-import { ParseArrayPipeOptions } from '@multiversx/sdk-nestjs/lib/src/pipes/entities/parse.array.options';
+import { ParseArrayPipeOptions } from '@multiversx/sdk-nestjs-common/lib/pipes/entities/parse.array.options';
 
 @Controller()
 @ApiTags('accounts')

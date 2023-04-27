@@ -23,7 +23,7 @@ import { SortCollectionNfts } from "./entities/sort.collection.nfts";
 import { NftCollectionDetailed } from "./entities/nft.collection.detailed";
 import { Response } from "express";
 import { SortCollections } from "./entities/sort.collections";
-import { ParseArrayPipeOptions } from "@multiversx/sdk-nestjs/lib/src/pipes/entities/parse.array.options";
+import { ParseArrayPipeOptions } from "@multiversx/sdk-nestjs-common/lib/pipes/entities/parse.array.options";
 
 @Controller()
 @ApiTags('collections')

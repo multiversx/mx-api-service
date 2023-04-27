@@ -22,7 +22,7 @@ import { ParseAddressPipe, ParseBlockHashPipe, ParseBoolPipe, ParseEnumPipe, Par
 import { TransactionDetailed } from "../transactions/entities/transaction.detailed";
 import { Response } from "express";
 import { TokenType } from "src/common/indexer/entities";
-import { ParseArrayPipeOptions } from "@multiversx/sdk-nestjs/lib/src/pipes/entities/parse.array.options";
+import { ParseArrayPipeOptions } from "@multiversx/sdk-nestjs-common/lib/pipes/entities/parse.array.options";
 
 @Controller()
 @ApiTags('tokens')
