@@ -56,35 +56,6 @@ export class ProviderService {
     return providerIdentity ? this.identitiesService.getIdentityAvatar(providerIdentity) : undefined;
   }
 
-  private getNodesInfosForProvider(providerNodes: any[]): NodesInfos {
-    const results = providerNodes.reduce(
-      (accumulator, current) => {
-        if (current && current.stake && current.topUp && current.locked) {
-          accumulator.numNodes += 1;
-          accumulator.stake += BigInt(current.stake);
-          accumulator.topUp += BigInt(current.topUp);
-          accumulator.locked += BigInt(current.locked);
-        }
-
-        return accumulator;
-      },
-      {
-        numNodes: 0,
-        stake: BigInt('0'),
-        topUp: BigInt('0'),
-        locked: BigInt('0'),
-      }
-    );
-
-    const nodesInfos: NodesInfos = new NodesInfos();
-    nodesInfos.numNodes = results.numNodes;
-    nodesInfos.stake = results.stake.toString();
-    nodesInfos.topUp = results.topUp.toString();
-    nodesInfos.locked = results.locked.toString();
-
-    return nodesInfos;
-  }
-
   async getProvidersWithStakeInformation(): Promise<Provider[]> {
     return await this.cachingService.getOrSet(
       CacheInfo.ProvidersWithStakeInformation.key,
@@ -153,11 +124,6 @@ export class ProviderService {
     }
 
     return providers;
-  }
-
-  // @ts-ignore
-  private isIdentityFormattedCorrectly(identity: string): boolean {
-    return /^[\w]*$/g.test(identity ?? '');
   }
 
   async getProviders(filter: ProviderFilter): Promise<Provider[]> {
@@ -413,8 +379,42 @@ export class ProviderService {
     return providers;
   }
 
+  // @ts-ignore
+  private isIdentityFormattedCorrectly(identity: string): boolean {
+    return /^[\w]*$/g.test(identity ?? '');
+  }
+
   private async getProviderIdentity(address: string): Promise<string | undefined> {
     const providerDetails = await this.getProvider(address);
     return providerDetails && providerDetails.identity ? providerDetails.identity : undefined;
+  }
+
+  private getNodesInfosForProvider(providerNodes: any[]): NodesInfos {
+    const results = providerNodes.reduce(
+      (accumulator, current) => {
+        if (current && current.stake && current.topUp && current.locked) {
+          accumulator.numNodes += 1;
+          accumulator.stake += BigInt(current.stake);
+          accumulator.topUp += BigInt(current.topUp);
+          accumulator.locked += BigInt(current.locked);
+        }
+
+        return accumulator;
+      },
+      {
+        numNodes: 0,
+        stake: BigInt('0'),
+        topUp: BigInt('0'),
+        locked: BigInt('0'),
+      }
+    );
+
+    const nodesInfos: NodesInfos = new NodesInfos();
+    nodesInfos.numNodes = results.numNodes;
+    nodesInfos.stake = results.stake.toString();
+    nodesInfos.topUp = results.topUp.toString();
+    nodesInfos.locked = results.locked.toString();
+
+    return nodesInfos;
   }
 }
