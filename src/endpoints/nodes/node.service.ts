@@ -189,10 +189,13 @@ export class NodeService {
   }
 
   async getBlsOwner(bls: string): Promise<string | undefined> {
+    const stakingContractAddress = this.apiConfigService.getStakingContractAddress();
+    const auctionContractAddress = this.apiConfigService.getAuctionContractAddress();
+
     const result = await this.vmQueryService.vmQuery(
-      this.apiConfigService.getStakingContractAddress(),
+      stakingContractAddress,
       'getOwner',
-      this.apiConfigService.getAuctionContractAddress(),
+      auctionContractAddress,
       [bls],
     );
 
@@ -201,16 +204,20 @@ export class NodeService {
     }
 
     const [encodedOwnerBase64] = result;
+    const encodedOwnerHex = Buffer.from(encodedOwnerBase64, 'base64').toString('hex');
 
-    return AddressUtils.bech32Encode(Buffer.from(encodedOwnerBase64, 'base64').toString('hex'));
+    return AddressUtils.bech32Encode(encodedOwnerHex);
   }
 
   async getOwnerBlses(owner: string): Promise<string[]> {
+    const auctionContractAddress = this.apiConfigService.getAuctionContractAddress();
+    const decodedOwner = AddressUtils.bech32Decode(owner);
+
     const getBlsKeysStatusListEncoded = await this.vmQueryService.vmQuery(
-      this.apiConfigService.getAuctionContractAddress(),
+      auctionContractAddress,
       'getBlsKeysStatus',
-      this.apiConfigService.getAuctionContractAddress(),
-      [AddressUtils.bech32Decode(owner)],
+      auctionContractAddress,
+      [decodedOwner],
     );
 
     if (!getBlsKeysStatusListEncoded) {
@@ -231,10 +238,13 @@ export class NodeService {
   }
 
   async getQueue(): Promise<Queue[]> {
+    const stakingContractAddress = this.apiConfigService.getStakingContractAddress();
+    const auctionContractAddress = this.apiConfigService.getAuctionContractAddress();
+
     const queueEncoded = await this.vmQueryService.vmQuery(
-      this.apiConfigService.getStakingContractAddress(),
+      stakingContractAddress,
       'getQueueRegisterNonceAndRewardAddress',
-      this.apiConfigService.getAuctionContractAddress(),
+      auctionContractAddress,
     );
 
     if (!queueEncoded) {
