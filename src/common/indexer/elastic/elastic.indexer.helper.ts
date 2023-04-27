@@ -276,7 +276,11 @@ export class ElasticIndexerHelper {
     }
 
     if (filter.functions && filter.functions.length > 0 && this.apiConfigService.getIsIndexerV3FlagActive()) {
-      elasticQuery = elasticQuery.withMustMultiShouldCondition(filter.functions, func => QueryType.Match('function', func));
+      if (filter.functions[0] === '') {
+        elasticQuery = elasticQuery.withMustNotExistCondition('function');
+      } else {
+        elasticQuery = elasticQuery.withMustMultiShouldCondition(filter.functions, func => QueryType.Match('function', func));
+      }
     }
 
     if (filter.senderShard !== undefined) {
@@ -425,7 +429,11 @@ export class ElasticIndexerHelper {
       .withDateRangeFilter('timestamp', filter.before, filter.after);
 
     if (filter.functions && filter.functions.length > 0 && this.apiConfigService.getIsIndexerV3FlagActive()) {
-      elasticQuery = elasticQuery.withMustMultiShouldCondition(filter.functions, func => QueryType.Match('function', func));
+      if (filter.functions[0] === '') {
+        elasticQuery = elasticQuery.withMustNotExistCondition('function');
+      } else {
+        elasticQuery = elasticQuery.withMustMultiShouldCondition(filter.functions, func => QueryType.Match('function', func));
+      }
     }
 
     if (filter.token === 'EGLD') {

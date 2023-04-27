@@ -13,6 +13,7 @@ import { TransactionSendResult } from './entities/transaction.send.result';
 import { TransactionStatus } from './entities/transaction.status';
 import { TransactionQueryOptions } from './entities/transactions.query.options';
 import { TransactionService } from './transaction.service';
+import { ParseArrayPipeOptions } from '@multiversx/sdk-nestjs/lib/src/pipes/entities/parse.array.options';
 
 @Controller()
 @ApiTags('transactions')
@@ -55,7 +56,7 @@ export class TransactionController {
     @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash?: string,
     @Query('hashes', ParseArrayPipe) hashes?: string[],
     @Query('status', new ParseEnumPipe(TransactionStatus)) status?: TransactionStatus,
-    @Query('function', ParseArrayPipe) functions?: string[],
+    @Query('function', new ParseArrayPipe(new ParseArrayPipeOptions({ allowEmptyString: true }))) functions?: string[],
     @Query('condition') condition?: QueryConditionOptions,
     @Query('before', ParseIntPipe) before?: number,
     @Query('after', ParseIntPipe) after?: number,
@@ -116,7 +117,7 @@ export class TransactionController {
     @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash?: string,
     @Query('hashes', ParseArrayPipe) hashes?: string[],
     @Query('status', new ParseEnumPipe(TransactionStatus)) status?: TransactionStatus,
-    @Query('function', ParseArrayPipe) functions?: string[],
+    @Query('function', new ParseArrayPipe(new ParseArrayPipeOptions({ allowEmptyString: true }))) functions?: string[],
     @Query('condition') condition?: QueryConditionOptions,
     @Query('before', ParseIntPipe) before?: number,
     @Query('after', ParseIntPipe) after?: number,
@@ -148,7 +149,7 @@ export class TransactionController {
     @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash?: string,
     @Query('hashes', ParseArrayPipe) hashes?: string[],
     @Query('status', new ParseEnumPipe(TransactionStatus)) status?: TransactionStatus,
-    @Query('function', ParseArrayPipe) functions?: string[],
+    @Query('function', new ParseArrayPipe(new ParseArrayPipeOptions({ allowEmptyString: true }))) functions?: string[],
     @Query('condition') condition?: QueryConditionOptions,
     @Query('before', ParseIntPipe) before?: number,
     @Query('after', ParseIntPipe) after?: number,
