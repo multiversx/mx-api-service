@@ -54,7 +54,7 @@ export class IdentitiesService {
     let totalStake = BigInt(0);
     let totalTopUp = BigInt(0);
 
-    nodes.forEach((node) => {
+    for (const node of nodes) {
       if (node.type == 'validator') {
         if (node.stake) {
           totalStake += BigInt(node.stake);
@@ -64,7 +64,7 @@ export class IdentitiesService {
           totalTopUp += BigInt(node.topUp);
         }
       }
-    });
+    }
 
     const nodesInfo = new NodesInfos();
     nodesInfo.numNodes = nodes.length;
@@ -152,49 +152,11 @@ export class IdentitiesService {
   async getAllIdentitiesRaw(): Promise<Identity[]> {
     const nodes = await this.nodeService.getAllNodes();
 
-    const distinctIdentities = nodes.filter(x => x.identity).map(x => x.identity).distinct();
+    const distinctIdentities = await this.getDistinctIdentities(nodes);
 
-    const identitiesDetailed: IdentityDetailed[] = [];
+    let identitiesDetailed = await this.getIdentitiesDetailedFromKeybase(distinctIdentities);
 
-    for (const identity of distinctIdentities) {
-      if (!identity) {
-        continue;
-      }
-
-      const keybaseIdentity = await this.cachingService.get<KeybaseIdentity>(CacheInfo.IdentityProfile(identity).key);
-      if (keybaseIdentity && keybaseIdentity.identity) {
-        const identityDetailed = new IdentityDetailed();
-        identityDetailed.avatar = keybaseIdentity.avatar;
-        identityDetailed.description = keybaseIdentity.description;
-        identityDetailed.identity = keybaseIdentity.identity;
-        identityDetailed.location = keybaseIdentity.location;
-        identityDetailed.name = keybaseIdentity.name;
-        identityDetailed.twitter = keybaseIdentity.twitter;
-        identityDetailed.website = keybaseIdentity.website;
-        identitiesDetailed.push(identityDetailed);
-      }
-    }
-
-    for (const node of nodes) {
-      const found = identitiesDetailed.find((identityDetailed) => identityDetailed.identity == node.identity);
-
-      if (found && node.identity && !!node.identity) {
-        if (!found.nodes) {
-          found.nodes = [];
-        }
-        found.nodes.push(node);
-
-        if (!found.name) {
-          found.name = node.bls;
-        }
-      }
-      else {
-        const identityDetailed = new IdentityDetailed();
-        identityDetailed.name = node.bls;
-        identityDetailed.nodes = [node];
-        identitiesDetailed.push(identityDetailed);
-      }
-    }
+    identitiesDetailed = this.addNodeToIdentityDetailed(nodes, identitiesDetailed);
 
     const { locked: totalLocked } = this.computeTotalStakeAndTopUp(nodes);
     const { baseApr, topUpApr } = await this.networkService.getApr();
@@ -247,6 +209,63 @@ export class IdentitiesService {
     }
 
     return identities;
+  }
+
+  async getIdentitiesDetailedFromKeybase(distinctIdentities: string[]): Promise<IdentityDetailed[]> {
+    const identitiesDetailed: IdentityDetailed[] = [];
+
+    for (const identity of distinctIdentities) {
+      if (!identity) {
+        continue;
+      }
+
+      const keybaseIdentity = await this.cachingService.get<KeybaseIdentity>(CacheInfo.IdentityProfile(identity).key);
+      if (keybaseIdentity && keybaseIdentity.identity) {
+        const identityDetailed = new IdentityDetailed();
+        identityDetailed.avatar = keybaseIdentity.avatar;
+        identityDetailed.description = keybaseIdentity.description;
+        identityDetailed.identity = keybaseIdentity.identity;
+        identityDetailed.location = keybaseIdentity.location;
+        identityDetailed.name = keybaseIdentity.name;
+        identityDetailed.twitter = keybaseIdentity.twitter;
+        identityDetailed.website = keybaseIdentity.website;
+        identitiesDetailed.push(identityDetailed);
+      }
+    }
+
+    return identitiesDetailed;
+  }
+
+  private getDistinctIdentities(nodes: Node[]): string[] {
+    return nodes
+      .filter(x => x.identity !== undefined)
+      .map(x => x.identity as string)
+      .distinct();
+  }
+
+  private addNodeToIdentityDetailed(nodes: Node[], identitiesDetailed: IdentityDetailed[]): IdentityDetailed[] {
+    for (const node of nodes) {
+      const found = identitiesDetailed.find((identityDetailed) => identityDetailed.identity == node.identity);
+
+      if (found && node.identity && !!node.identity) {
+        if (!found.nodes) {
+          found.nodes = [];
+        }
+        found.nodes.push(node);
+
+        if (!found.name) {
+          found.name = node.bls;
+        }
+      }
+      else {
+        const identityDetailed = new IdentityDetailed();
+        identityDetailed.name = node.bls;
+        identityDetailed.nodes = [node];
+        identitiesDetailed.push(identityDetailed);
+      }
+    }
+
+    return identitiesDetailed;
   }
 
   private processIdentityAvatar(avatar: string): string {
