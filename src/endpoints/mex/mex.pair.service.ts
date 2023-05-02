@@ -144,10 +144,16 @@ export class MexPairService {
       return undefined;
     }
 
+    const xexchangeTypes = [
+      MexPairType.core,
+      MexPairType.community,
+      MexPairType.experimental,
+      MexPairType.ecosystem,
+    ];
+
     let exchange: MexPairExchange;
 
-    if (type === MexPairType.core || type === MexPairType.community ||
-      type === MexPairType.experimental || type === MexPairType.ecosystem) {
+    if (xexchangeTypes.includes(type)) {
       exchange = MexPairExchange.xexchange;
     } else if (type === MexPairType.jungle) {
       exchange = MexPairExchange.jungledex;
