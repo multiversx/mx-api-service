@@ -10,6 +10,8 @@ import { MexPairType } from "./entities/mex.pair.type";
 import { MexSettingsService } from "./mex.settings.service";
 import { OriginLogger } from "@multiversx/sdk-nestjs-common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
+import { MexPairExchange } from "./entities/mex.pair.exchange";
+import { MexPairsFilter } from "./entities/mex.pairs..filter";
 
 @Injectable()
 export class MexPairService {
@@ -28,11 +30,13 @@ export class MexPairService {
     await this.cachingService.setLocal(CacheInfo.MexPairs.key, pairs, Constants.oneSecond() * 30);
   }
 
-  async getMexPairs(from: number, size: number): Promise<any> {
-    const allMexPairs = await this.getAllMexPairs();
+  async getMexPairs(from: number, size: number, filter?: MexPairsFilter): Promise<any> {
+    let allMexPairs = await this.getAllMexPairs();
+    allMexPairs = this.applyFilters(allMexPairs, filter);
 
     return allMexPairs.slice(from, from + size);
   }
+
 
   async getMexPair(baseId: string, quoteId: string): Promise<MexPair | undefined> {
     const allMexPairs = await this.getAllMexPairs();
@@ -52,10 +56,11 @@ export class MexPairService {
     );
   }
 
-  async getMexPairsCount(): Promise<number> {
+  async getMexPairsCount(filter?: MexPairsFilter): Promise<number> {
     const mexPairs = await this.getAllMexPairs();
+    const filteredPairs = this.applyFilters(mexPairs, filter);
 
-    return mexPairs.length;
+    return filteredPairs.length;
   }
 
   async getAllMexPairsRaw(): Promise<MexPair[]> {
@@ -129,8 +134,26 @@ export class MexPairService {
     const secondTokenSymbol = pair.secondToken.identifier.split('-')[0];
     const state = this.getPairState(pair.state);
     const type = this.getPairType(pair.type);
+
     if (!type || [MexPairType.unlisted].includes(type)) {
       return undefined;
+    }
+
+    const xexchangeTypes = [
+      MexPairType.core,
+      MexPairType.community,
+      MexPairType.experimental,
+      MexPairType.ecosystem,
+    ];
+
+    let exchange: MexPairExchange;
+
+    if (xexchangeTypes.includes(type)) {
+      exchange = MexPairExchange.xexchange;
+    } else if (type === MexPairType.jungle) {
+      exchange = MexPairExchange.jungledex;
+    } else {
+      exchange = MexPairExchange.unknown;
     }
 
     if ((firstTokenSymbol === 'WEGLD' && secondTokenSymbol === 'USDC') || secondTokenSymbol === 'WEGLD') {
@@ -152,6 +175,7 @@ export class MexPairService {
         volume24h: Number(pair.volumeUSD24h),
         state,
         type,
+        exchange,
       };
     }
 
@@ -173,6 +197,7 @@ export class MexPairService {
       volume24h: Number(pair.volumeUSD24h),
       state,
       type,
+      exchange,
     };
   }
 
@@ -209,5 +234,19 @@ export class MexPairService {
         this.logger.error(`Unsupported pair type '${type}'`);
         return undefined;
     }
+  }
+
+  private applyFilters(mexPairs: MexPair[], filter?: MexPairsFilter): MexPair[] {
+    if (!filter) {
+      return mexPairs;
+    }
+
+    let filteredPairs = mexPairs;
+
+    if (filter.exchange) {
+      filteredPairs = filteredPairs.filter(pair => pair.exchange === filter.exchange);
+    }
+
+    return filteredPairs;
   }
 }
