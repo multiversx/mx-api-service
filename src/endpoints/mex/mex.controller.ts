@@ -11,7 +11,9 @@ import { MexTokenService } from "./mex.token.service";
 import { MexFarmService } from './mex.farm.service';
 import { MexFarm } from './entities/mex.farm';
 import { QueryPagination } from 'src/common/entities/query.pagination';
-import { ParseIntPipe, ParseTokenPipe } from '@multiversx/sdk-nestjs';
+import { ParseEnumPipe, ParseIntPipe, ParseTokenPipe } from '@multiversx/sdk-nestjs';
+import { MexPairExchange } from './entities/mex.pair.exchange';
+import { MexPairsFilter } from './entities/mex.pairs..filter';
 
 @Controller()
 @ApiTags('xexchange')
@@ -50,18 +52,24 @@ export class MexController {
   @ApiOkResponse({ type: [MexPair] })
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
+  @ApiQuery({ name: 'exchange', description: 'Filter by exchange', required: false, enum: MexPairExchange })
   async getMexPairs(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
-    @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number
+    @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number,
+    @Query('exchange', new ParseEnumPipe(MexPairExchange)) exchange?: MexPairExchange,
   ): Promise<any> {
-    return await this.mexPairsService.getMexPairs(from, size);
+    const filter = new MexPairsFilter({ exchange });
+    return await this.mexPairsService.getMexPairs(from, size, filter);
   }
 
   @Get("/mex/pairs/count")
   @ApiOperation({ summary: 'Maiar Exchange pairs count', description: 'Returns active liquidity pools count available on Maiar Exchange' })
+  @ApiQuery({ name: 'exchange', description: 'Filter by exchange', required: false, enum: MexPairExchange })
   async getMexPairsCount(
+    @Query('exchange', new ParseEnumPipe(MexPairExchange)) exchange?: MexPairExchange,
   ): Promise<number> {
-    return await this.mexPairsService.getMexPairsCount();
+    const filter = new MexPairsFilter({ exchange });
+    return await this.mexPairsService.getMexPairsCount(filter);
   }
 
   @Get("/mex/tokens")
