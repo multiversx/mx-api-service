@@ -3,7 +3,7 @@ import { registerEnumType } from "@nestjs/graphql";
 export enum MexPairExchange {
   xexchange = 'xexchange',
   jungledex = 'jungledex',
-  none = 'none'
+  unknown = 'unknown'
 }
 
 registerEnumType(MexPairExchange, {
@@ -16,8 +16,8 @@ registerEnumType(MexPairExchange, {
     jungledex: {
       description: 'jungledex',
     },
-    none: {
-      description: 'none',
+    unknown: {
+      description: 'unknown',
     },
   },
 });

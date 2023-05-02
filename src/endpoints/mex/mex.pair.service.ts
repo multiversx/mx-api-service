@@ -10,6 +10,7 @@ import { MexSettingsService } from "./mex.settings.service";
 import { OriginLogger } from "@multiversx/sdk-nestjs";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { MexPairExchange } from "./entities/mex.pair.exchange";
+import { MexPairsFilter } from "./entities/mex.pairs..filter";
 
 @Injectable()
 export class MexPairService {
@@ -28,15 +29,16 @@ export class MexPairService {
     await this.cachingService.setLocal(CacheInfo.MexPairs.key, pairs, Constants.oneSecond() * 30);
   }
 
-  async getMexPairs(from: number, size: number, filter?: MexPairExchange): Promise<any> {
+  async getMexPairs(from: number, size: number, filter?: MexPairsFilter): Promise<any> {
     let allMexPairs = await this.getAllMexPairs();
 
-    if (filter) {
-      allMexPairs = allMexPairs.filter(pair => pair.exchange === filter);
+    if (filter && filter.exchange) {
+      allMexPairs = allMexPairs.filter(pair => pair.exchange === filter.exchange);
     }
 
     return allMexPairs.slice(from, from + size);
   }
+
 
   async getMexPair(baseId: string, quoteId: string): Promise<MexPair | undefined> {
     const allMexPairs = await this.getAllMexPairs();
@@ -56,11 +58,11 @@ export class MexPairService {
     );
   }
 
-  async getMexPairsCount(filter?: MexPairExchange): Promise<number> {
+  async getMexPairsCount(filter?: MexPairsFilter): Promise<number> {
     const mexPairs = await this.getAllMexPairs();
 
-    if (filter) {
-      return mexPairs.filter(pair => pair.exchange === filter).length;
+    if (filter && filter.exchange) {
+      return mexPairs.filter(pair => pair.exchange === filter.exchange).length;
     }
 
     return mexPairs.length;
@@ -150,7 +152,7 @@ export class MexPairService {
     } else if (type === MexPairType.jungle) {
       exchange = MexPairExchange.jungledex;
     } else {
-      exchange = MexPairExchange.none;
+      exchange = MexPairExchange.unknown;
     }
 
     if ((firstTokenSymbol === 'WEGLD' && secondTokenSymbol === 'USDC') || secondTokenSymbol === 'WEGLD') {
