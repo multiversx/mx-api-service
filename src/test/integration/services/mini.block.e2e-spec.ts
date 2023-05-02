@@ -1,44 +1,89 @@
-import { Test } from '@nestjs/testing';
-import { PublicAppModule } from 'src/public.app.module';
-import { MiniBlockService } from 'src/endpoints/miniblocks/mini.block.service';
-import Initializer from './e2e-init';
-import { Constants } from '@multiversx/sdk-nestjs-common';
-import { ElasticService } from '@multiversx/sdk-nestjs-elastic';
-import { MiniBlockDetailed } from 'src/endpoints/miniblocks/entities/mini.block.detailed';
+import { Test } from "@nestjs/testing";
+import { QueryPagination } from "src/common/entities/query.pagination";
+import { MiniBlock } from "src/common/indexer/entities";
+import { IndexerService } from "src/common/indexer/indexer.service";
+import { MiniBlockDetailed } from "src/endpoints/miniblocks/entities/mini.block.detailed";
+import { MiniBlockFilter } from "src/endpoints/miniblocks/entities/mini.block.filter";
+import { MiniBlockType } from "src/endpoints/miniblocks/entities/mini.block.type";
+import { MiniBlockService } from "src/endpoints/miniblocks/mini.block.service";
 
-describe('MiniBlock Service', () => {
-  let miniBlockService: MiniBlockService;
-  const miniBlock = {
-    miniBlockHash: 'e336ba1b720bb153b4e0d2049d722b0e39bf275f9d35e79b0f757271a963ad4c',
-    receiverBlockHash: 'ee60ef38ab592d4a32a3ba5783996ae72afda9d2bf40295fcf7c43915120227f',
-    receiverShard: 2,
-    senderBlockHash: 'ee60ef38ab592d4a32a3ba5783996ae72afda9d2bf40295fcf7c43915120227f',
+describe('MiniBlockService', () => {
+  let service: MiniBlockService;
+  let indexerService: IndexerService;
+
+  const mockResult: MiniBlock[] = [{
+    miniBlockHash: '1fa4d7d45a3aebd9b53eea6646da9eb62eb3bb1b07fa0635de5e61f6c73053d8',
+    senderShard: 0,
+    receiverShard: 1,
+    senderBlockHash: '22628f647a0c03ee54d9a30938ef3d9e7c5ea8e8f260263941fe5c5a21c815bd',
+    receiverBlockHash: '22628f647a0c03ee54d9a30938ef3d9e7c5ea8e8f260263941fe5c5a21c815bd',
+    type: 'SmartContractResultBlock',
+    procTypeS: 'Normal',
+    procTypeD: 'Normal',
+    timestamp: 1682675478,
+    receiverBlockNonce: '100',
+    senderBlockNonce: '100',
+  },
+  {
+    miniBlockHash: 'fdb0fb6b720e4908e633f6c4eae2e32b3248d8d545197d4fea3503dd4f79a12b',
     senderShard: 2,
-    timestamp: 1644529902,
+    receiverShard: 1,
+    senderBlockHash: '77f45e78191796af9ba80bbce5989f5404de3ae36c6785cb610495a04e2818e6',
+    receiverBlockHash: '6daec94f6b3b4d416fc6c0321b6a1d141ff724559484a23267480e26516b9fb0',
     type: 'TxBlock',
-  };
+    procTypeS: 'Normal',
+    procTypeD: 'Normal',
+    timestamp: 1683027636,
+    receiverBlockNonce: '100',
+    senderBlockNonce: '100',
+  },
+  ];
 
-  beforeAll(async () => {
-    await Initializer.initialize();
-    const publicAppModule = await Test.createTestingModule({
-      imports: [PublicAppModule],
-
+  beforeEach(async () => {
+    const moduleRef = await Test.createTestingModule({
+      providers: [
+        MiniBlockService,
+        {
+          provide: IndexerService,
+          useValue: {
+            getMiniBlock: jest.fn().mockResolvedValueOnce(mockResult[0]),
+            getMiniBlocks: jest.fn().mockResolvedValueOnce(mockResult),
+          },
+        },
+      ],
     }).compile();
 
-    miniBlockService = publicAppModule.get<MiniBlockService>(MiniBlockService);
-  }, Constants.oneHour() * 1000);
+    service = moduleRef.get<MiniBlockService>(MiniBlockService);
+    indexerService = moduleRef.get<IndexerService>(IndexerService);
+  });
+
+  it('service should be defined', () => {
+    expect(service).toBeDefined();
+  });
 
   describe('getMiniBlock', () => {
-    it('should return miniblock details', async () => {
-      const hash: string = "e336ba1b720bb153b4e0d2049d722b0e39bf275f9d35e79b0f757271a963ad4c";
-      jest
-        .spyOn(ElasticService.prototype, 'getItem')
-        // eslint-disable-next-line require-await
-        .mockImplementation(jest.fn(async () => miniBlock));
+    it('should return a MiniBlockDetailed object', async () => {
+      const miniBlockHash = '1fa4d7d45a3aebd9b53eea6646da9eb62eb3bb1b07fa0635de5e61f6c73053d8';
 
-      const results = await miniBlockService.getMiniBlock(hash);
-      expect(results).toHaveStructure(Object.keys(new MiniBlockDetailed()));
-      expect(results.miniBlockHash).toStrictEqual('e336ba1b720bb153b4e0d2049d722b0e39bf275f9d35e79b0f757271a963ad4c');
+      const result = await service.getMiniBlock(miniBlockHash);
+
+      expect(indexerService.getMiniBlock).toHaveBeenCalledWith(miniBlockHash);
+      expect(result).toBeInstanceOf(MiniBlockDetailed);
+    });
+  });
+
+  describe('getMiniBlocks', () => {
+    it('should return an array of MiniBlockDetailed objects', async () => {
+      const results = await service.getMiniBlocks(
+        new QueryPagination({ size: 2 }),
+        new MiniBlockFilter({ type: MiniBlockType.SmartContractResultBlock }));
+
+      expect(indexerService.getMiniBlocks).toHaveBeenCalledWith(
+        new QueryPagination({ size: 2 }),
+        new MiniBlockFilter({ type: MiniBlockType.SmartContractResultBlock }));
+
+      expect(results).toBeInstanceOf(Array);
+      expect(results[0]).toBeInstanceOf(MiniBlockDetailed);
     });
   });
 });
