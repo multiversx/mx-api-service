@@ -31,10 +31,7 @@ export class MexPairService {
 
   async getMexPairs(from: number, size: number, filter?: MexPairsFilter): Promise<any> {
     let allMexPairs = await this.getAllMexPairs();
-
-    if (filter && filter.exchange) {
-      allMexPairs = allMexPairs.filter(pair => pair.exchange === filter.exchange);
-    }
+    allMexPairs = this.applyFilters(allMexPairs, filter);
 
     return allMexPairs.slice(from, from + size);
   }
@@ -60,12 +57,9 @@ export class MexPairService {
 
   async getMexPairsCount(filter?: MexPairsFilter): Promise<number> {
     const mexPairs = await this.getAllMexPairs();
+    const filteredPairs = this.applyFilters(mexPairs, filter);
 
-    if (filter && filter.exchange) {
-      return mexPairs.filter(pair => pair.exchange === filter.exchange).length;
-    }
-
-    return mexPairs.length;
+    return filteredPairs.length;
   }
 
   async getAllMexPairsRaw(): Promise<MexPair[]> {
@@ -239,5 +233,19 @@ export class MexPairService {
         this.logger.error(`Unsupported pair type '${type}'`);
         return undefined;
     }
+  }
+
+  private applyFilters(mexPairs: MexPair[], filter?: MexPairsFilter): MexPair[] {
+    if (!filter) {
+      return mexPairs;
+    }
+
+    let filteredPairs = mexPairs;
+
+    if (filter.exchange) {
+      filteredPairs = filteredPairs.filter(pair => pair.exchange === filter.exchange);
+    }
+
+    return filteredPairs;
   }
 }
