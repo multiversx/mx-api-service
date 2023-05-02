@@ -9,6 +9,7 @@ import { MexPairType } from "./entities/mex.pair.type";
 import { MexSettingsService } from "./mex.settings.service";
 import { OriginLogger } from "@multiversx/sdk-nestjs";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
+import { MexPairExchangeType } from "./entities/mex.pair.exchange.type";
 
 @Injectable()
 export class MexPairService {
@@ -27,8 +28,12 @@ export class MexPairService {
     await this.cachingService.setLocal(CacheInfo.MexPairs.key, pairs, Constants.oneSecond() * 30);
   }
 
-  async getMexPairs(from: number, size: number): Promise<any> {
-    const allMexPairs = await this.getAllMexPairs();
+  async getMexPairs(from: number, size: number, filter?: MexPairExchangeType): Promise<any> {
+    let allMexPairs = await this.getAllMexPairs();
+
+    if (filter) {
+      allMexPairs = allMexPairs.filter(pair => pair.exchange === filter);
+    }
 
     return allMexPairs.slice(from, from + size);
   }
@@ -51,8 +56,12 @@ export class MexPairService {
     );
   }
 
-  async getMexPairsCount(): Promise<number> {
+  async getMexPairsCount(filter?: MexPairExchangeType): Promise<number> {
     const mexPairs = await this.getAllMexPairs();
+
+    if (filter) {
+      return mexPairs.filter(pair => pair.exchange === filter).length;
+    }
 
     return mexPairs.length;
   }
@@ -128,8 +137,19 @@ export class MexPairService {
     const secondTokenSymbol = pair.secondToken.identifier.split('-')[0];
     const state = this.getPairState(pair.state);
     const type = this.getPairType(pair.type);
+
     if (!type || [MexPairType.unlisted].includes(type)) {
       return undefined;
+    }
+
+    let exchange: MexPairExchangeType;
+
+    if (type === MexPairType.core || type === MexPairType.community || type === MexPairType.experimental) {
+      exchange = MexPairExchangeType.xexchange;
+    } else if (type === MexPairType.jungle) {
+      exchange = MexPairExchangeType.jungledex;
+    } else {
+      exchange = MexPairExchangeType.none;
     }
 
     if ((firstTokenSymbol === 'WEGLD' && secondTokenSymbol === 'USDC') || secondTokenSymbol === 'WEGLD') {
@@ -151,6 +171,7 @@ export class MexPairService {
         volume24h: Number(pair.volumeUSD24h),
         state,
         type,
+        exchange,
       };
     }
 
@@ -172,6 +193,7 @@ export class MexPairService {
       volume24h: Number(pair.volumeUSD24h),
       state,
       type,
+      exchange,
     };
   }
 
