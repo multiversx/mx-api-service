@@ -11,7 +11,7 @@ import { MexTokenService } from "./mex.token.service";
 import { MexFarmService } from './mex.farm.service';
 import { MexFarm } from './entities/mex.farm';
 import { QueryPagination } from 'src/common/entities/query.pagination';
-import { ParseEnumPipe, ParseIntPipe, ParseTokenPipe } from '@multiversx/sdk-nestjs';
+import { ParseIntPipe, ParseTokenPipe, ParseEnumPipe } from '@multiversx/sdk-nestjs-common';
 import { MexPairExchange } from './entities/mex.pair.exchange';
 import { MexPairsFilter } from './entities/mex.pairs..filter';
 

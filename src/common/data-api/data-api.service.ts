@@ -1,6 +1,8 @@
 import { Injectable } from "@nestjs/common";
 import { ApiConfigService } from "../api-config/api.config.service";
-import { ApiService, ElrondCachingService, OriginLogger } from "@multiversx/sdk-nestjs";
+import { CacheService } from "@multiversx/sdk-nestjs-cache";
+import { OriginLogger } from "@multiversx/sdk-nestjs-common";
+import { ApiService } from "@multiversx/sdk-nestjs-http";
 import { DataApiToken } from "./entities/data-api.token";
 import { CacheInfo } from "src/utils/cache.info";
 
@@ -11,7 +13,7 @@ export class DataApiService {
   constructor(
     private readonly apiConfigService: ApiConfigService,
     private readonly apiService: ApiService,
-    private readonly cachingService: ElrondCachingService,
+    private readonly cachingService: CacheService,
   ) { }
 
   public async getEgldPrice(timestamp?: number): Promise<number | undefined> {

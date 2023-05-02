@@ -1,4 +1,4 @@
-import { ParseBlsHashPipe } from "@multiversx/sdk-nestjs";
+import { ParseBlsHashPipe } from "@multiversx/sdk-nestjs-common";
 import { Controller, Get, HttpException, HttpStatus, Param } from "@nestjs/common";
 import { ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { KeyUnbondPeriod } from "./entities/key.unbond.period";

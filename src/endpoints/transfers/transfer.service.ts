@@ -4,7 +4,7 @@ import { TransactionFilter } from "../transactions/entities/transaction.filter";
 import { TransactionType } from "../transactions/entities/transaction.type";
 import { Transaction } from "../transactions/entities/transaction";
 import { TransactionService } from "../transactions/transaction.service";
-import { ApiUtils } from "@multiversx/sdk-nestjs";
+import { ApiUtils } from "@multiversx/sdk-nestjs-http";
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { TransactionQueryOptions } from "../transactions/entities/transactions.query.options";
 import { TransactionDetailed } from "../transactions/entities/transaction.detailed";

@@ -1,4 +1,4 @@
-import { ElrondCachingService } from "@multiversx/sdk-nestjs";
+import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { Test } from "@nestjs/testing";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { GatewayService } from "src/common/gateway/gateway.service";
@@ -19,7 +19,7 @@ import * as path from 'path';
 
 describe('NodeService', () => {
   let nodeService: NodeService;
-  let cachingService: ElrondCachingService;
+  let cacheService: CacheService;
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
@@ -52,7 +52,7 @@ describe('NodeService', () => {
           },
         },
         {
-          provide: ElrondCachingService,
+          provide: CacheService,
           useValue: {
             getOrSet: jest.fn(),
             batchSet: jest.fn(),
@@ -89,7 +89,7 @@ describe('NodeService', () => {
     }).compile();
 
     nodeService = moduleRef.get<NodeService>(NodeService);
-    cachingService = moduleRef.get<ElrondCachingService>(ElrondCachingService);
+    cacheService = moduleRef.get<CacheService>(CacheService);
   });
 
   beforeEach(() => { jest.restoreAllMocks(); });
@@ -133,7 +133,7 @@ describe('NodeService', () => {
         const bls = "00198be6aae517a382944cd5a97845857f3b122bb1edf1588d60ed421d32d16ea2767f359a0d714fae3a35c1b0cf4e1141d701d5d1d24160e49eeaebeab21e2f89a2b7c44f3a313383d542e69800cfb6e115406d3d8114b4044ef5a04acf0408";
 
         // eslint-disable-next-line require-await
-        const cacheSpy = jest.spyOn(nodeService['cachingService'], 'getOrSet').mockImplementation(async (key, getter) => {
+        const cacheSpy = jest.spyOn(nodeService['cacheService'], 'getOrSet').mockImplementation(async (key, getter) => {
           if (key === CacheInfo.Nodes.key) {
             return mockNodes;
           }
@@ -151,7 +151,7 @@ describe('NodeService', () => {
         const bls = "nonexistent_bls";
 
         // eslint-disable-next-line require-await
-        const cacheSpy = jest.spyOn(nodeService['cachingService'], 'getOrSet').mockImplementation(async (key, getter) => {
+        const cacheSpy = jest.spyOn(nodeService['cacheService'], 'getOrSet').mockImplementation(async (key, getter) => {
           if (key === CacheInfo.Nodes.key) {
             return mockNodes;
           }
@@ -168,7 +168,7 @@ describe('NodeService', () => {
       it('should return the correct node when found and when is available from cache', async () => {
         const bls = "00198be6aae517a382944cd5a97845857f3b122bb1edf1588d60ed421d32d16ea2767f359a0d714fae3a35c1b0cf4e1141d701d5d1d24160e49eeaebeab21e2f89a2b7c44f3a313383d542e69800cfb6e115406d3d8114b4044ef5a04acf0408";
         // eslint-disable-next-line require-await
-        jest.spyOn(nodeService['cachingService'], 'getOrSet').mockImplementation(async (key, getter) => {
+        jest.spyOn(nodeService['cacheService'], 'getOrSet').mockImplementation(async (key, getter) => {
           if (key === CacheInfo.Nodes.key) {
             return mockNodes;
           }
@@ -266,7 +266,7 @@ describe('NodeService', () => {
         };
 
         // eslint-disable-next-line require-await
-        const cacheSpy = jest.spyOn(nodeService['cachingService'], 'getOrSet').mockImplementation(async (key, getter) => {
+        const cacheSpy = jest.spyOn(nodeService['cacheService'], 'getOrSet').mockImplementation(async (key, getter) => {
           if (key === CacheInfo.NodeVersions.key) {
             return cachedData;
           }
@@ -351,7 +351,7 @@ describe('NodeService', () => {
         const allNodesSpy = jest.spyOn(nodeService, 'getAllNodes').mockResolvedValueOnce(Promise.resolve(mockNodes));
         const currentEpochSpy = jest.spyOn(nodeService['blockService'], 'getCurrentEpoch').mockResolvedValue(1);
 
-        jest.spyOn(nodeService['cachingService'], 'deleteInCache').mockResolvedValue([]);
+        jest.spyOn(nodeService['cacheService'], 'deleteInCache').mockResolvedValue([]);
 
         const result = await nodeService.deleteOwnersForAddressInCache(address);
 
@@ -369,13 +369,13 @@ describe('NodeService', () => {
         const epoch = 10;
         const keys = blses.map((bls) => CacheInfo.OwnerByEpochAndBls(epoch, bls).key);
         const values = ['erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqy8lllls62y8s5', 'erd1qzwd98g6xjs6h33ezxc9ey766ee082z9q4yvj46r8p7xqnl0eenqvxtaz3'];
-        const barchGetManyRemoteSpy = jest.spyOn(nodeService['cachingService'], 'batchGetManyRemote').mockResolvedValue(values);
+        const barchGetManyRemoteSpy = jest.spyOn(nodeService['cacheService'], 'batchGetManyRemote').mockResolvedValue(values);
 
         const result = await nodeService.getOwners(blses, epoch);
 
         expect(result).toEqual(values);
         expect(barchGetManyRemoteSpy).toHaveBeenCalledWith(keys);
-        expect(cachingService.batchSet).not.toHaveBeenCalled();
+        expect(cacheService.batchSet).not.toHaveBeenCalled();
       });
 
       it('should query missing values and cache them', async () => {
@@ -389,7 +389,7 @@ describe('NodeService', () => {
 
         const currentEpochSpy = jest.spyOn(nodeService['blockService'], 'getCurrentEpoch').mockResolvedValue(epoch);
 
-        jest.spyOn(nodeService['cachingService'], 'batchGetManyRemote').mockResolvedValue(cached);
+        jest.spyOn(nodeService['cacheService'], 'batchGetManyRemote').mockResolvedValue(cached);
         jest.spyOn(nodeService, 'getOwnerBlses').mockResolvedValue(existingBlses);
         jest.spyOn(nodeService['apiConfigService'], 'getIsFastWarmerCronActive').mockReturnValue(false);
 

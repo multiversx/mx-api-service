@@ -1,4 +1,4 @@
-import { Constants } from "@multiversx/sdk-nestjs";
+import { Constants } from "@multiversx/sdk-nestjs-common";
 
 export class CacheValue {
   value?: string;

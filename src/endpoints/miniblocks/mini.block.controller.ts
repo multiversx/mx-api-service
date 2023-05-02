@@ -1,11 +1,11 @@
-import { ParseArrayPipe, ParseBlockHashPipe } from "@multiversx/sdk-nestjs";
+import { ParseArrayPipe, ParseBlockHashPipe } from "@multiversx/sdk-nestjs-common";
 import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Param, ParseIntPipe, Query } from "@nestjs/common";
 import { ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { MiniBlockDetailed } from "./entities/mini.block.detailed";
 import { MiniBlockFilter } from "./entities/mini.block.filter";
 import { MiniBlockService } from "./mini.block.service";
-import { ParseEnumPipe } from "@multiversx/sdk-nestjs/lib/src/pipes/parse.enum.pipe";
+import { ParseEnumPipe } from "@multiversx/sdk-nestjs-common/lib/pipes/parse.enum.pipe";
 import { MiniBlockType } from "./entities/mini.block.type";
 
 @Controller()

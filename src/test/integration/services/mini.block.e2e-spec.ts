@@ -2,7 +2,8 @@ import { Test } from '@nestjs/testing';
 import { PublicAppModule } from 'src/public.app.module';
 import { MiniBlockService } from 'src/endpoints/miniblocks/mini.block.service';
 import Initializer from './e2e-init';
-import { Constants, ElasticService } from '@multiversx/sdk-nestjs';
+import { Constants } from '@multiversx/sdk-nestjs-common';
+import { ElasticService } from '@multiversx/sdk-nestjs-elastic';
 import { MiniBlockDetailed } from 'src/endpoints/miniblocks/entities/mini.block.detailed';
 
 describe('MiniBlock Service', () => {

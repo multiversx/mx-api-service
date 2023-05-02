@@ -5,7 +5,7 @@ import configuration from 'config/configuration';
 import { NotifierEvent as NotifierEvent } from './entities/notifier.event';
 import { NotifierEventIdentifier } from './entities/notifier.event.identifier';
 import { RabbitMqTokenHandlerService } from './rabbitmq.token.handler.service';
-import { OriginLogger } from '@multiversx/sdk-nestjs';
+import { OriginLogger } from '@multiversx/sdk-nestjs-common';
 
 @Injectable()
 export class RabbitMqConsumer {

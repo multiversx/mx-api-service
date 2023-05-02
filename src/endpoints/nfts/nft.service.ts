@@ -19,11 +19,13 @@ import { EsdtDataSource } from "../esdt/entities/esdt.data.source";
 import { EsdtAddressService } from "../esdt/esdt.address.service";
 import { PersistenceService } from "src/common/persistence/persistence.service";
 import { MexTokenService } from "../mex/mex.token.service";
-import { ApiUtils, BinaryUtils, NumberUtils, RecordUtils, ElrondCachingService, BatchUtils, TokenUtils } from "@multiversx/sdk-nestjs";
+import { BinaryUtils, NumberUtils, RecordUtils, BatchUtils, TokenUtils } from "@multiversx/sdk-nestjs-common";
+import { ApiUtils } from "@multiversx/sdk-nestjs-http";
+import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { LockedAssetService } from "../../common/locked-asset/locked-asset.service";
 import { CollectionAccount } from "../collections/entities/collection.account";
-import { OriginLogger } from "@multiversx/sdk-nestjs";
+import { OriginLogger } from "@multiversx/sdk-nestjs-common";
 import { NftRankAlgorithm } from "src/common/assets/entities/nft.rank.algorithm";
 import { NftRarity } from "./entities/nft.rarity";
 import { NftRarities } from "./entities/nft.rarities";
@@ -41,7 +43,7 @@ export class NftService {
     private readonly indexerService: IndexerService,
     private readonly esdtService: EsdtService,
     private readonly assetsService: AssetsService,
-    private readonly cachingService: ElrondCachingService,
+    private readonly cachingService: CacheService,
     @Inject(forwardRef(() => PluginService))
     private readonly pluginService: PluginService,
     private readonly nftMetadataService: NftMetadataService,

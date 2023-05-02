@@ -1,4 +1,5 @@
-import { ApiService, BinaryUtils, OriginLogger } from "@multiversx/sdk-nestjs";
+import { BinaryUtils, OriginLogger } from "@multiversx/sdk-nestjs-common";
+import { ApiService } from "@multiversx/sdk-nestjs-http";
 import { HttpStatus, Injectable } from "@nestjs/common";
 import { ApiConfigService } from "../api-config/api.config.service";
 import { GithubUserInfo } from "./entities/github.user.info";

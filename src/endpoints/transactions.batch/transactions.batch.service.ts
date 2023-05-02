@@ -1,6 +1,7 @@
 import { Address, Transaction as ErdJsTransaction, TransactionHash, TransactionOptions, TransactionPayload, TransactionVersion } from "@elrondnetwork/erdjs/out";
 import { Signature } from "@elrondnetwork/erdjs/out/signature";
-import { BinaryUtils, ElrondCachingService } from "@multiversx/sdk-nestjs";
+import { BinaryUtils } from "@multiversx/sdk-nestjs-common";
+import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { Injectable, Logger } from "@nestjs/common";
 import { TransactionBatch } from "./entities/transaction.batch";
 import { TransactionBatchStatus } from "./entities/transaction.batch.status";
@@ -20,7 +21,7 @@ export class TransactionsBatchService {
   private readonly logger: Logger;
 
   constructor(
-    private readonly cachingService: ElrondCachingService,
+    private readonly cachingService: CacheService,
     private readonly transactionService: TransactionService,
   ) {
     this.logger = new Logger(TransactionsBatchService.name);

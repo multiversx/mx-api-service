@@ -14,7 +14,7 @@ import { NftAssetModule } from 'src/queue.worker/nft.worker/queue/job-services/a
     NftModule,
     CollectionModule,
     NftAssetModule,
-    DynamicModuleUtils.getCachingModule(),
+    DynamicModuleUtils.getCacheModule(),
   ],
   providers: [
     NftCronService,

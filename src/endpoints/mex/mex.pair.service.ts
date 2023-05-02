@@ -1,4 +1,5 @@
-import { Constants, ElrondCachingService } from "@multiversx/sdk-nestjs";
+import { Constants } from "@multiversx/sdk-nestjs-common";
+import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { BadRequestException, Injectable } from "@nestjs/common";
 import { gql } from "graphql-request";
 import { CacheInfo } from "src/utils/cache.info";
@@ -7,7 +8,7 @@ import { MexPair } from "./entities/mex.pair";
 import { MexPairState } from "./entities/mex.pair.state";
 import { MexPairType } from "./entities/mex.pair.type";
 import { MexSettingsService } from "./mex.settings.service";
-import { OriginLogger } from "@multiversx/sdk-nestjs";
+import { OriginLogger } from "@multiversx/sdk-nestjs-common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { MexPairExchange } from "./entities/mex.pair.exchange";
 import { MexPairsFilter } from "./entities/mex.pairs..filter";
@@ -17,7 +18,7 @@ export class MexPairService {
   private readonly logger = new OriginLogger(MexPairService.name);
 
   constructor(
-    private readonly cachingService: ElrondCachingService,
+    private readonly cachingService: CacheService,
     private readonly mexSettingService: MexSettingsService,
     private readonly graphQlService: GraphQlService,
     private readonly apiConfigService: ApiConfigService,

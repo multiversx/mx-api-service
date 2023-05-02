@@ -1,6 +1,6 @@
 import { Resolver, ResolveField, Parent, Float, Args } from "@nestjs/graphql";
 
-import { ApplyComplexity } from "@multiversx/sdk-nestjs";
+import { ApplyComplexity } from "@multiversx/sdk-nestjs-common";
 
 import { AccountDetailed } from "src/endpoints/accounts/entities/account.detailed";
 import { AccountDetailedQuery } from "src/graphql/entities/account.detailed/account.detailed.query";

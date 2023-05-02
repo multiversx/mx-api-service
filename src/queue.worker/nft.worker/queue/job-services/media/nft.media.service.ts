@@ -1,5 +1,6 @@
-import { ApiService, ElrondCachingService } from "@multiversx/sdk-nestjs";
-import { BinaryUtils, Constants } from "@multiversx/sdk-nestjs";
+import { ApiService } from "@multiversx/sdk-nestjs-http";
+import { CacheService } from "@multiversx/sdk-nestjs-cache";
+import { BinaryUtils, Constants } from "@multiversx/sdk-nestjs-common";
 import { HttpStatus, Inject, Injectable } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { CacheInfo } from "src/utils/cache.info";
@@ -10,7 +11,7 @@ import { NftMedia } from "src/endpoints/nfts/entities/nft.media";
 import { NftType } from "src/endpoints/nfts/entities/nft.type";
 import { TokenHelpers } from "src/utils/token.helpers";
 import { ClientProxy } from "@nestjs/microservices";
-import { OriginLogger } from "@multiversx/sdk-nestjs";
+import { OriginLogger } from "@multiversx/sdk-nestjs-common";
 import { CachingUtils } from "src/utils/caching.utils";
 
 @Injectable()
@@ -21,7 +22,7 @@ export class NftMediaService {
   public static readonly NFT_THUMBNAIL_DEFAULT = 'https://media.elrond.com/nfts/thumbnail/default.png';
 
   constructor(
-    private readonly cachingService: ElrondCachingService,
+    private readonly cachingService: CacheService,
     private readonly apiService: ApiService,
     private readonly apiConfigService: ApiConfigService,
     private readonly persistenceService: PersistenceService,

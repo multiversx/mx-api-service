@@ -1,4 +1,4 @@
-import { ParseBlockHashPipe, ParseEnumPipe, ParseIntPipe, ParseArrayPipe, ParseAddressArrayPipe, ParseBoolPipe, ApplyComplexity } from "@multiversx/sdk-nestjs";
+import { ParseBlockHashPipe, ParseEnumPipe, ParseIntPipe, ParseArrayPipe, ParseAddressArrayPipe, ParseBoolPipe, ApplyComplexity } from "@multiversx/sdk-nestjs-common";
 import { Controller, DefaultValuePipe, Get, Query } from "@nestjs/common";
 import { ApiExcludeEndpoint, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { QueryPagination } from "src/common/entities/query.pagination";
@@ -9,7 +9,7 @@ import { TransactionFilter } from "../transactions/entities/transaction.filter";
 import { TransactionStatus } from "../transactions/entities/transaction.status";
 import { TransactionQueryOptions } from "../transactions/entities/transactions.query.options";
 import { TransferService } from "./transfer.service";
-import { ParseArrayPipeOptions } from "@multiversx/sdk-nestjs/lib/src/pipes/entities/parse.array.options";
+import { ParseArrayPipeOptions } from "@multiversx/sdk-nestjs-common/lib/pipes/entities/parse.array.options";
 
 @Controller()
 @ApiTags('transfers')

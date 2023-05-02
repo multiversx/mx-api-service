@@ -1,4 +1,4 @@
-import { AddressUtils } from "@multiversx/sdk-nestjs";
+import { AddressUtils } from "@multiversx/sdk-nestjs-common";
 import { Injectable } from "@nestjs/common";
 import { TransactionAction } from "../../entities/transaction.action";
 import { TransactionActionCategory } from "../../entities/transaction.action.category";

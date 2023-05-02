@@ -17,12 +17,13 @@ import { SmartContractResultService } from '../sc-results/scresult.service';
 import { TransactionType } from '../transactions/entities/transaction.type';
 import { AssetsService } from 'src/common/assets/assets.service';
 import { TransactionFilter } from '../transactions/entities/transaction.filter';
-import { AddressUtils, ApiService, ApiUtils, BinaryUtils, ElrondCachingService } from '@multiversx/sdk-nestjs';
+import { CacheService } from "@multiversx/sdk-nestjs-cache";
+import { AddressUtils, BinaryUtils, OriginLogger } from '@multiversx/sdk-nestjs-common';
+import { ApiService, ApiUtils } from "@multiversx/sdk-nestjs-http";
 import { GatewayService } from 'src/common/gateway/gateway.service';
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { AccountOptionalFieldOption } from './entities/account.optional.field.options';
 import { AccountAssets } from 'src/common/assets/entities/account.assets';
-import { OriginLogger } from '@multiversx/sdk-nestjs';
 import { CacheInfo } from 'src/utils/cache.info';
 import { UsernameService } from '../usernames/username.service';
 import { ContractUpgrades } from './entities/contract.upgrades';
@@ -39,7 +40,7 @@ export class AccountService {
   constructor(
     private readonly indexerService: IndexerService,
     private readonly gatewayService: GatewayService,
-    private readonly cachingService: ElrondCachingService,
+    private readonly cachingService: CacheService,
     private readonly vmQueryService: VmQueryService,
     private readonly apiConfigService: ApiConfigService,
     @Inject(forwardRef(() => TransactionService))

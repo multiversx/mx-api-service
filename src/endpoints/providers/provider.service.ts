@@ -8,8 +8,10 @@ import { DelegationData } from "./entities/delegation.data";
 import { CacheInfo } from "src/utils/cache.info";
 import { ProviderFilter } from "./entities/provider.filter";
 import { Provider } from "./entities/provider";
-import { AddressUtils, Constants, ElrondCachingService, ApiService } from "@multiversx/sdk-nestjs";
-import { OriginLogger } from "@multiversx/sdk-nestjs";
+import { AddressUtils, Constants } from "@multiversx/sdk-nestjs-common";
+import { ApiService } from "@multiversx/sdk-nestjs-http";
+import { CacheService } from "@multiversx/sdk-nestjs-cache";
+import { OriginLogger } from "@multiversx/sdk-nestjs-common";
 import { IdentitiesService } from "../identities/identities.service";
 
 @Injectable()
@@ -17,7 +19,7 @@ export class ProviderService {
   private readonly logger = new OriginLogger(ProviderService.name);
 
   constructor(
-    private readonly cachingService: ElrondCachingService,
+    private readonly cachingService: CacheService,
     private readonly apiConfigService: ApiConfigService,
     private readonly vmQueryService: VmQueryService,
     @Inject(forwardRef(() => NodeService))

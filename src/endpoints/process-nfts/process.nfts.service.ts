@@ -1,4 +1,5 @@
-import { AddressUtils, ElrondCachingService } from "@multiversx/sdk-nestjs";
+import { AddressUtils } from "@multiversx/sdk-nestjs-common";
+import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { Injectable } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { CacheInfo } from "src/utils/cache.info";
@@ -10,7 +11,7 @@ import { Nft } from "../nfts/entities/nft";
 import { NftService } from "../nfts/nft.service";
 import { ProcessNftRequest } from "./entities/process.nft.request";
 import { ProcessNftSettings } from "./entities/process.nft.settings";
-import { OriginLogger } from "@multiversx/sdk-nestjs";
+import { OriginLogger } from "@multiversx/sdk-nestjs-common";
 
 @Injectable()
 export class ProcessNftsService {
@@ -25,7 +26,7 @@ export class ProcessNftsService {
     private readonly nftService: NftService,
     private readonly collectionService: CollectionService,
     private readonly accountService: AccountService,
-    private readonly cachingService: ElrondCachingService,
+    private readonly cachingService: CacheService,
   ) { }
 
   public async process(processNftRequest: ProcessNftRequest) {

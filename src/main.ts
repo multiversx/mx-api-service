@@ -22,7 +22,10 @@ import { PluginService } from './common/plugins/plugin.service';
 import { TransactionCompletedModule } from './crons/transaction.processor/transaction.completed.module';
 import { SocketAdapter } from './common/websockets/socket-adapter';
 import { ApiConfigModule } from './common/api-config/api.config.module';
-import { ElrondCachingService, LoggerInitializer, LoggingInterceptor, MetricsService, CachingInterceptor, LogRequestsInterceptor, FieldsInterceptor, ExtractInterceptor, CleanupInterceptor, PaginationInterceptor, QueryCheckInterceptor, ComplexityInterceptor, OriginInterceptor, RequestCpuTimeInterceptor, GuestCachingInterceptor, GuestCachingService, JwtOrNativeAuthGuard } from '@multiversx/sdk-nestjs';
+import { CacheService, CachingInterceptor, GuestCacheInterceptor, GuestCacheService } from '@multiversx/sdk-nestjs-cache';
+import { LoggerInitializer } from '@multiversx/sdk-nestjs-common';
+import { MetricsService, RequestCpuTimeInterceptor, LoggingInterceptor, LogRequestsInterceptor } from '@multiversx/sdk-nestjs-monitoring';
+import { FieldsInterceptor, ExtractInterceptor, CleanupInterceptor, PaginationInterceptor, QueryCheckInterceptor, ComplexityInterceptor, OriginInterceptor } from '@multiversx/sdk-nestjs-http';
 import { ErdnestConfigServiceImpl } from './common/api-config/erdnest.config.service.impl';
 import { RabbitMqModule } from './common/rabbitmq/rabbitmq.module';
 import { TransactionLoggingInterceptor } from './interceptors/transaction.logging.interceptor';
@@ -31,6 +34,7 @@ import { GraphqlComplexityInterceptor } from './graphql/interceptors/graphql.com
 import { GraphQLMetricsInterceptor } from './graphql/interceptors/graphql.metrics.interceptor';
 import { SettingsService } from './common/settings/settings.service';
 import { StatusCheckerModule } from './crons/status.checker/status.checker.module';
+import { JwtOrNativeAuthGuard } from '@multiversx/sdk-nestjs-auth';
 import { WebSocketPublisherModule } from './common/websockets/web-socket-publisher-module';
 
 async function bootstrap() {
@@ -144,6 +148,8 @@ async function bootstrap() {
       },
     },
   );
+  // pubSubApp.useLogger(pubSubApp.get(WINSTON_MODULE_NEST_PROVIDER));
+  pubSubApp.useWebSocketAdapter(new SocketAdapter(pubSubApp));
   // eslint-disable-next-line @typescript-eslint/no-floating-promises
   pubSubApp.listen();
 
@@ -165,7 +171,7 @@ async function bootstrap() {
   logger.log(`Indexer v3 flag: ${apiConfigService.getIsIndexerV3FlagActive()}`);
   logger.log(`Staking v4 enabled: ${apiConfigService.isStakingV4Enabled()}`);
   logger.log(`Events notifier enabled: ${apiConfigService.isEventsNotifierFeatureActive()}`);
-  logger.log(`Guest caching enabled: ${apiConfigService.isGuestCachingFeatureActive()}`);
+  logger.log(`Guest caching enabled: ${apiConfigService.isGuestCacheFeatureActive()}`);
 }
 
 async function configurePublicApp(publicApp: NestExpressApplication, apiConfigService: ApiConfigService) {
@@ -181,11 +187,12 @@ async function configurePublicApp(publicApp: NestExpressApplication, apiConfigSe
   const eventEmitterService = publicApp.get<EventEmitter2>(EventEmitter2);
   const pluginService = publicApp.get<PluginService>(PluginService);
   const httpAdapterHostService = publicApp.get<HttpAdapterHost>(HttpAdapterHost);
-  const cachingService = publicApp.get<ElrondCachingService>(ElrondCachingService);
+  const cachingService = publicApp.get<CacheService>(CacheService);
   const settingsService = publicApp.get<SettingsService>(SettingsService);
 
+
   if (apiConfigService.getIsAuthActive()) {
-    publicApp.useGlobalGuards(new JwtOrNativeAuthGuard(new ErdnestConfigServiceImpl(apiConfigService), undefined, cachingService));
+    publicApp.useGlobalGuards(new JwtOrNativeAuthGuard(new ErdnestConfigServiceImpl(apiConfigService), cachingService));
   }
 
   const httpServer = httpAdapterHostService.httpAdapter.getHttpServer();
@@ -196,10 +203,10 @@ async function configurePublicApp(publicApp: NestExpressApplication, apiConfigSe
   // @ts-ignore
   globalInterceptors.push(new QueryCheckInterceptor(httpAdapterHostService));
 
-  if (apiConfigService.isGuestCachingFeatureActive()) {
-    const guestCachingService = publicApp.get<GuestCachingService>(GuestCachingService);
+  if (apiConfigService.isGuestCacheFeatureActive()) {
+    const guestCacheService = publicApp.get<GuestCacheService>(GuestCacheService);
     // @ts-ignore
-    globalInterceptors.push(new GuestCachingInterceptor(guestCachingService, {
+    globalInterceptors.push(new GuestCacheInterceptor(guestCacheService, {
       ignoreAuthorizationHeader: true,
     }));
   }

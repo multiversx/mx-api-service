@@ -1,4 +1,5 @@
-import { Constants, ElrondCachingService } from "@multiversx/sdk-nestjs";
+import { Constants } from "@multiversx/sdk-nestjs-common";
+import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { Injectable } from "@nestjs/common";
 import { CacheInfo } from "src/utils/cache.info";
 import { TransactionDetailed } from "./entities/transaction.detailed";
@@ -8,7 +9,7 @@ import { DataApiService } from "src/common/data-api/data-api.service";
 export class TransactionPriceService {
 
   constructor(
-    private readonly cachingService: ElrondCachingService,
+    private readonly cachingService: CacheService,
     private readonly dataApiService: DataApiService,
   ) { }
 

@@ -16,9 +16,11 @@ import { NftCollectionWithRoles } from "../collections/entities/nft.collection.w
 import { CollectionService } from "../collections/collection.service";
 import { CollectionFilter } from "../collections/entities/collection.filter";
 import { CollectionRoles } from "../tokens/entities/collection.roles";
-import { AddressUtils, ApiUtils, BinaryUtils, ElrondCachingService, MetricsService } from "@multiversx/sdk-nestjs";
+import { AddressUtils, BinaryUtils, OriginLogger } from '@multiversx/sdk-nestjs-common';
+import { ApiUtils } from "@multiversx/sdk-nestjs-http";
+import { MetricsService } from "@multiversx/sdk-nestjs-monitoring";
+import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { IndexerService } from "src/common/indexer/indexer.service";
-import { OriginLogger } from "@multiversx/sdk-nestjs";
 import { TrieOperationsTimeoutError } from "./exceptions/trie.operations.timeout.error";
 import { CacheInfo } from "src/utils/cache.info";
 
@@ -32,7 +34,7 @@ export class EsdtAddressService {
     private readonly esdtService: EsdtService,
     private readonly indexerService: IndexerService,
     private readonly gatewayService: GatewayService,
-    private readonly cachingService: ElrondCachingService,
+    private readonly cachingService: CacheService,
     private readonly metricsService: MetricsService,
     private readonly protocolService: ProtocolService,
     private readonly nftExtendedAttributesService: NftExtendedAttributesService,

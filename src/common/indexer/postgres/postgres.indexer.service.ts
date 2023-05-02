@@ -1,4 +1,4 @@
-import { BinaryUtils } from "@multiversx/sdk-nestjs";
+import { BinaryUtils } from "@multiversx/sdk-nestjs-common";
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { QueryPagination } from "src/common/entities/query.pagination";
