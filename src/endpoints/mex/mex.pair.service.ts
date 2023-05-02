@@ -9,7 +9,7 @@ import { MexPairType } from "./entities/mex.pair.type";
 import { MexSettingsService } from "./mex.settings.service";
 import { OriginLogger } from "@multiversx/sdk-nestjs";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
-import { MexPairExchangeType } from "./entities/mex.pair.exchange.type";
+import { MexPairExchange } from "./entities/mex.pair.exchange";
 
 @Injectable()
 export class MexPairService {
@@ -28,7 +28,7 @@ export class MexPairService {
     await this.cachingService.setLocal(CacheInfo.MexPairs.key, pairs, Constants.oneSecond() * 30);
   }
 
-  async getMexPairs(from: number, size: number, filter?: MexPairExchangeType): Promise<any> {
+  async getMexPairs(from: number, size: number, filter?: MexPairExchange): Promise<any> {
     let allMexPairs = await this.getAllMexPairs();
 
     if (filter) {
@@ -56,7 +56,7 @@ export class MexPairService {
     );
   }
 
-  async getMexPairsCount(filter?: MexPairExchangeType): Promise<number> {
+  async getMexPairsCount(filter?: MexPairExchange): Promise<number> {
     const mexPairs = await this.getAllMexPairs();
 
     if (filter) {
@@ -142,14 +142,14 @@ export class MexPairService {
       return undefined;
     }
 
-    let exchange: MexPairExchangeType;
+    let exchange: MexPairExchange;
 
     if (type === MexPairType.core || type === MexPairType.community || type === MexPairType.experimental) {
-      exchange = MexPairExchangeType.xexchange;
+      exchange = MexPairExchange.xexchange;
     } else if (type === MexPairType.jungle) {
-      exchange = MexPairExchangeType.jungledex;
+      exchange = MexPairExchange.jungledex;
     } else {
-      exchange = MexPairExchangeType.none;
+      exchange = MexPairExchange.none;
     }
 
     if ((firstTokenSymbol === 'WEGLD' && secondTokenSymbol === 'USDC') || secondTokenSymbol === 'WEGLD') {
