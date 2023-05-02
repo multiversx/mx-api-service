@@ -15,7 +15,8 @@ import { CacheInfo } from "src/utils/cache.info";
 import { Stake } from "../stake/entities/stake";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
 import { Auction } from "src/common/gateway/entities/auction";
-import { AddressUtils, ElrondCachingService } from "@multiversx/sdk-nestjs";
+import { AddressUtils } from "@multiversx/sdk-nestjs-common";
+import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { NodeSort } from "./entities/node.sort";
 import { ProtocolService } from "src/common/protocol/protocol.service";
 
@@ -25,7 +26,7 @@ export class NodeService {
     private readonly gatewayService: GatewayService,
     private readonly vmQueryService: VmQueryService,
     private readonly apiConfigService: ApiConfigService,
-    private readonly cachingService: ElrondCachingService,
+    private readonly cacheService: CacheService,
     @Inject(forwardRef(() => StakeService))
     private readonly stakeService: StakeService,
     @Inject(forwardRef(() => BlockService))
@@ -58,7 +59,7 @@ export class NodeService {
   }
 
   async getNodeVersions(): Promise<NodeVersions> {
-    return await this.cachingService.getOrSet(
+    return await this.cacheService.getOrSet(
       CacheInfo.NodeVersions.key,
       async () => await this.getNodeVersionsRaw(),
       CacheInfo.NodeVersions.ttl
@@ -210,7 +211,7 @@ export class NodeService {
   }
 
   async getAllNodes(): Promise<Node[]> {
-    return await this.cachingService.getOrSet(
+    return await this.cacheService.getOrSet(
       CacheInfo.Nodes.key,
       async () => await this.getAllNodesRaw(),
       CacheInfo.Nodes.ttl
@@ -239,7 +240,7 @@ export class NodeService {
 
   private async applyNodeIdentities(nodes: Node[]) {
     for (const node of nodes) {
-      node.identity = await this.cachingService.getRemote<string>(CacheInfo.ConfirmedIdentity(node.bls).key);
+      node.identity = await this.cacheService.getRemote<string>(CacheInfo.ConfirmedIdentity(node.bls).key);
     }
   }
 
@@ -259,7 +260,7 @@ export class NodeService {
   private async applyNodeProviders(nodes: Node[]) {
     for (const node of nodes) {
       if (node.type === NodeType.validator) {
-        const providerOwner = await this.cachingService.getRemote<string>(CacheInfo.ProviderOwner(node.owner).key);
+        const providerOwner = await this.cacheService.getRemote<string>(CacheInfo.ProviderOwner(node.owner).key);
         if (providerOwner) {
           node.provider = node.owner;
           node.owner = providerOwner;
@@ -343,7 +344,7 @@ export class NodeService {
   async getOwners(blses: string[], epoch: number) {
     const keys = blses.map((bls) => CacheInfo.OwnerByEpochAndBls(epoch, bls).key);
 
-    const cached = await this.cachingService.batchGetManyRemote(keys);
+    const cached = await this.cacheService.batchGetManyRemote(keys);
 
     const owners: any = {};
     const missing = cached
@@ -362,7 +363,7 @@ export class NodeService {
 
             for (const bls of blses) {
               owners[bls] = owner;
-              await this.cachingService.setRemote(
+              await this.cacheService.setRemote(
                 CacheInfo.OwnerByEpochAndBls(epoch, bls).key,
                 owner,
                 CacheInfo.OwnerByEpochAndBls(epoch, bls).ttl
@@ -602,7 +603,7 @@ export class NodeService {
       .map(x => CacheInfo.OwnerByEpochAndBls(epoch, x.bls).key);
 
     for (const key of keys) {
-      await this.cachingService.deleteInCache(key);
+      await this.cacheService.deleteInCache(key);
     }
 
     return keys;

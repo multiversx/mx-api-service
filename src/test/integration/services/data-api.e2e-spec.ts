@@ -1,10 +1,11 @@
-import { ApiService, ElrondCachingService } from "@multiversx/sdk-nestjs";
+import { ApiService } from "@multiversx/sdk-nestjs-http";
+import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { Test } from "@nestjs/testing";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { DataApiModule } from "src/common/data-api/data-api.module";
 import { DataApiService } from "src/common/data-api/data-api.service";
 import { DataApiToken } from "src/common/data-api/entities/data-api.token";
-import '@multiversx/sdk-nestjs/lib/src/utils/extensions/date.extensions';
+import '@multiversx/sdk-nestjs-common/lib/utils/extensions/date.extensions';
 
 describe('Data API Service', () => {
   const mockTokens: Record<string, DataApiToken> = {
@@ -27,7 +28,7 @@ describe('Data API Service', () => {
     apiService = moduleRef.get<ApiService>(ApiService);
 
     jest
-      .spyOn(ElrondCachingService.prototype, 'getOrSet')
+      .spyOn(CacheService.prototype, 'getOrSet')
       // eslint-disable-next-line require-await
       .mockImplementation(jest.fn(async (_key: string, promise: any) => promise()));
   });

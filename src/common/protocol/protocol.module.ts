@@ -8,7 +8,7 @@ import { ProtocolService } from "./protocol.service";
 @Module({
   imports: [
     forwardRef(() => GatewayModule),
-    DynamicModuleUtils.getCachingModule(),
+    DynamicModuleUtils.getCacheModule(),
     IndexerModule.register(),
   ],
   providers: [

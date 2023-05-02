@@ -1,4 +1,4 @@
-import { ApiUtils } from "@multiversx/sdk-nestjs";
+import { ApiUtils } from "@multiversx/sdk-nestjs-http";
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { AssetsService } from "src/common/assets/assets.service";
 import { QueryPagination } from "src/common/entities/query.pagination";

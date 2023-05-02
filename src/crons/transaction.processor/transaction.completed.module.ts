@@ -8,7 +8,7 @@ import { TransactionCompletedService } from './transaction.completed.service';
   imports: [
     ScheduleModule.forRoot(),
     ApiConfigModule,
-    DynamicModuleUtils.getCachingModule(),
+    DynamicModuleUtils.getCacheModule(),
   ],
   providers: [
     DynamicModuleUtils.getPubSubService(),

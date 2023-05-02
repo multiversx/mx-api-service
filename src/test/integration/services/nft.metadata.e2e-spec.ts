@@ -1,5 +1,5 @@
 import { Test } from "@nestjs/testing";
-import '@multiversx/sdk-nestjs/lib/src/utils/extensions/array.extensions';
+import '@multiversx/sdk-nestjs-common/lib/utils/extensions/array.extensions';
 import { PublicAppModule } from "src/public.app.module";
 import { NftMetadataService } from "src/queue.worker/nft.worker/queue/job-services/metadata/nft.metadata.service";
 import { NftService } from "src/endpoints/nfts/nft.service";

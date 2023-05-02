@@ -1,4 +1,4 @@
-import { AddressUtils } from "@multiversx/sdk-nestjs";
+import { AddressUtils } from "@multiversx/sdk-nestjs-common";
 import { ShardTransaction } from "@elrondnetwork/transaction-processor";
 import { Injectable } from "@nestjs/common";
 import { WebSocketGateway, WebSocketServer } from "@nestjs/websockets";

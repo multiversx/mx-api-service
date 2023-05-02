@@ -1,4 +1,4 @@
-import { ApiUtils } from "@multiversx/sdk-nestjs";
+import { ApiUtils } from "@multiversx/sdk-nestjs-http";
 
 describe('API helpers', () => {
   describe('Cleanup API response helper', () => {

@@ -5,7 +5,7 @@ import { TransactionsBatchService } from "./transactions.batch.service";
 
 @Module({
   imports: [
-    DynamicModuleUtils.getCachingModule(),
+    DynamicModuleUtils.getCacheModule(),
     TransactionModule,
   ],
   providers: [

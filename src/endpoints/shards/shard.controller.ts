@@ -3,7 +3,7 @@ import { ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from "@nestjs/swagger"
 import { ShardService } from "./shard.service";
 import { Shard } from "./entities/shard";
 import { QueryPagination } from "src/common/entities/query.pagination";
-import { ParseIntPipe } from "@multiversx/sdk-nestjs";
+import { ParseIntPipe } from "@multiversx/sdk-nestjs-common";
 
 @Controller()
 @ApiTags('shards')

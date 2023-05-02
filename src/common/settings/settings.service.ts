@@ -1,4 +1,4 @@
-import { ElrondCachingService } from '@multiversx/sdk-nestjs';
+import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { CacheInfo } from 'src/utils/cache.info';
 import { ApiConfigService } from '../api-config/api.config.service';
@@ -10,7 +10,7 @@ export class SettingsService {
     private readonly apiConfigService: ApiConfigService,
     @Inject(forwardRef(() => PersistenceService))
     private readonly persistenceService: PersistenceService,
-    private readonly cachingService: ElrondCachingService,
+    private readonly cachingService: CacheService,
   ) { }
 
   async getUseRequestCachingFlag(): Promise<boolean> {

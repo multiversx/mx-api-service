@@ -1,4 +1,5 @@
-import { Jwt, NativeAuthGuard } from "@multiversx/sdk-nestjs";
+import { Jwt } from "@multiversx/sdk-nestjs-common";
+import { NativeAuthGuard } from "@multiversx/sdk-nestjs-auth";
 import { BadRequestException, Body, Controller, Post, UseGuards } from "@nestjs/common";
 import { ApiOperation, ApiResponse } from "@nestjs/swagger";
 import { ProcessNftRequest } from "./entities/process.nft.request";

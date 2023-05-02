@@ -15,7 +15,8 @@ import { TokenData } from "./entities/token.data";
 import { Transaction } from "./entities/transaction";
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { ApiConfigService } from "../api-config/api.config.service";
-import { ApiService, ApiSettings, BinaryUtils } from "@multiversx/sdk-nestjs";
+import { BinaryUtils } from "@multiversx/sdk-nestjs-common";
+import { ApiService, ApiSettings } from "@multiversx/sdk-nestjs-http";
 import { GuardianResult } from "./entities/guardian.result";
 
 @Injectable()

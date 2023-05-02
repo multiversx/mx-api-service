@@ -1,5 +1,5 @@
 
-import { SwaggerUtils } from "@multiversx/sdk-nestjs";
+import { SwaggerUtils } from "@multiversx/sdk-nestjs-common";
 import { Field, ObjectType } from "@nestjs/graphql";
 import { ApiProperty } from "@nestjs/swagger";
 
