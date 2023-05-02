@@ -144,7 +144,8 @@ export class MexPairService {
 
     let exchange: MexPairExchange;
 
-    if (type === MexPairType.core || type === MexPairType.community || type === MexPairType.experimental) {
+    if (type === MexPairType.core || type === MexPairType.community ||
+      type === MexPairType.experimental || type === MexPairType.ecosystem) {
       exchange = MexPairExchange.xexchange;
     } else if (type === MexPairType.jungle) {
       exchange = MexPairExchange.jungledex;
