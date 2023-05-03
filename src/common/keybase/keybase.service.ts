@@ -3,16 +3,18 @@ import { NodeService } from "src/endpoints/nodes/node.service";
 import { ProviderService } from "src/endpoints/providers/provider.service";
 import { KeybaseIdentity } from "./entities/keybase.identity";
 import { CacheInfo } from "../../utils/cache.info";
-import { ElrondCachingService, Constants, OriginLogger, AddressUtils } from "@multiversx/sdk-nestjs";
 import fs from 'fs';
 import { readdir } from 'fs/promises';
 import { AssetsService } from "../assets/assets.service";
+import { CacheService } from "@multiversx/sdk-nestjs-cache";
+import { Constants, OriginLogger, AddressUtils } from "@multiversx/sdk-nestjs-common";
+
 @Injectable()
 export class KeybaseService {
   private readonly logger = new OriginLogger(KeybaseService.name);
 
   constructor(
-    private readonly cachingService: ElrondCachingService,
+    private readonly cachingService: CacheService,
     @Inject(forwardRef(() => NodeService))
     private readonly nodeService: NodeService,
     @Inject(forwardRef(() => ProviderService))

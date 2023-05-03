@@ -1,5 +1,5 @@
-import { OriginLogger } from "@multiversx/sdk-nestjs";
-import { ElrondCachingService } from "@multiversx/sdk-nestjs";
+import { OriginLogger } from "@multiversx/sdk-nestjs-common";
+import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { CacheInfo } from "../../utils/cache.info";
 import { GatewayService } from "../gateway/gateway.service";
@@ -12,8 +12,8 @@ export class ProtocolService {
   constructor(
     @Inject(forwardRef(() => GatewayService))
     private readonly gatewayService: GatewayService,
-    @Inject(forwardRef(() => ElrondCachingService))
-    private readonly cachingService: ElrondCachingService,
+    @Inject(forwardRef(() => CacheService))
+    private readonly cachingService: CacheService,
     @Inject(forwardRef(() => IndexerService))
     private readonly indexerService: IndexerService
   ) { }

@@ -1,20 +1,21 @@
-import { ElrondCachingService, Constants } from '@multiversx/sdk-nestjs';
+import { Constants } from '@multiversx/sdk-nestjs-common';
+import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { Test } from '@nestjs/testing';
 import { ApiConfigModule } from 'src/common/api-config/api.config.module';
 import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 
 describe('Caching Service', () => {
-  let cachingService: ElrondCachingService;
+  let cachingService: CacheService;
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
       imports: [
         ApiConfigModule,
-        DynamicModuleUtils.getCachingModule(),
+        DynamicModuleUtils.getCacheModule(),
       ],
     }).compile();
 
-    cachingService = moduleRef.get<ElrondCachingService>(ElrondCachingService);
+    cachingService = moduleRef.get<CacheService>(CacheService);
   });
 
   describe('Cache Local', () => {

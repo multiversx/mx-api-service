@@ -1,11 +1,12 @@
-import '@multiversx/sdk-nestjs/lib/src/utils/extensions/jest.extensions';
+import '@multiversx/sdk-nestjs-common/lib/utils/extensions/jest.extensions';
 import { Test } from "@nestjs/testing";
 import { QueryPagination } from 'src/common/entities/query.pagination';
 import { CollectionService } from "src/endpoints/collections/collection.service";
 import { CollectionFilter } from 'src/endpoints/collections/entities/collection.filter';
 import { PublicAppModule } from "src/public.app.module";
 import { IndexerService } from "src/common/indexer/indexer.service";
-import { ElasticService, TokenUtils } from '@multiversx/sdk-nestjs';
+import { TokenUtils } from '@multiversx/sdk-nestjs-common';
+import { ElasticService } from '@multiversx/sdk-nestjs-elastic';
 import { EsdtAddressService } from 'src/endpoints/esdt/esdt.address.service';
 import { NftType } from 'src/endpoints/nfts/entities/nft.type';
 import { NftCollectionDetailed } from 'src/endpoints/collections/entities/nft.collection.detailed';

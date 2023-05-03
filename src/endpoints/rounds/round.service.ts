@@ -3,7 +3,8 @@ import { Round } from "./entities/round";
 import { RoundDetailed } from "./entities/round.detailed";
 import { RoundFilter } from "./entities/round.filter";
 import { BlsService } from "src/endpoints/bls/bls.service";
-import { ApiUtils, RoundUtils } from "@multiversx/sdk-nestjs";
+import { RoundUtils } from "@multiversx/sdk-nestjs-common";
+import { ApiUtils } from "@multiversx/sdk-nestjs-http";
 import { IndexerService } from "src/common/indexer/indexer.service";
 
 @Injectable()

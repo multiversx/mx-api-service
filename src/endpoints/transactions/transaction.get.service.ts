@@ -7,10 +7,11 @@ import { TransactionLog } from "./entities/transaction.log";
 import { TransactionOptionalFieldOption } from "./entities/transaction.optional.field.options";
 import { TransactionReceipt } from "./entities/transaction.receipt";
 import { TokenTransferService } from "../tokens/token.transfer.service";
-import { ApiUtils, BinaryUtils } from "@multiversx/sdk-nestjs";
+import { BinaryUtils } from "@multiversx/sdk-nestjs-common";
+import { ApiUtils } from "@multiversx/sdk-nestjs-http";
 import { TransactionUtils } from "./transaction.utils";
 import { IndexerService } from "src/common/indexer/indexer.service";
-import { OriginLogger } from "@multiversx/sdk-nestjs";
+import { OriginLogger } from "@multiversx/sdk-nestjs-common";
 import { MiniBlockType } from "../miniblocks/entities/mini.block.type";
 
 @Injectable()

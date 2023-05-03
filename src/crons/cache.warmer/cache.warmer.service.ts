@@ -17,7 +17,8 @@ import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.com
 import { MexSettingsService } from "src/endpoints/mex/mex.settings.service";
 import { MexPairService } from "src/endpoints/mex/mex.pair.service";
 import { MexFarmService } from "src/endpoints/mex/mex.farm.service";
-import { ElrondCachingService, Constants, Lock, GuestCachingWarmer, OriginLogger } from "@multiversx/sdk-nestjs";
+import { CacheService, GuestCacheWarmer } from "@multiversx/sdk-nestjs-cache";
+import { Constants, Lock, OriginLogger } from "@multiversx/sdk-nestjs-common";
 import { DelegationLegacyService } from "src/endpoints/delegation.legacy/delegation.legacy.service";
 import { SettingsService } from "src/common/settings/settings.service";
 import { TokenService } from "src/endpoints/tokens/token.service";
@@ -39,7 +40,7 @@ export class CacheWarmerService {
     private readonly identitiesService: IdentitiesService,
     private readonly providerService: ProviderService,
     private readonly keybaseService: KeybaseService,
-    private readonly cachingService: ElrondCachingService,
+    private readonly cachingService: CacheService,
     @Inject('PUBSUB_SERVICE') private clientProxy: ClientProxy,
     private readonly apiConfigService: ApiConfigService,
     private readonly settingsService: SettingsService,
@@ -56,7 +57,7 @@ export class CacheWarmerService {
     private readonly tokenService: TokenService,
     private readonly indexerService: IndexerService,
     private readonly nftService: NftService,
-    private readonly guestCachingWarmer: GuestCachingWarmer,
+    private readonly guestCachingWarmer: GuestCacheWarmer,
     private readonly dataApiService: DataApiService,
     private readonly blockService: BlockService,
   ) {
@@ -152,12 +153,12 @@ export class CacheWarmerService {
 
   @Cron("*/6 * * * * *")
   @Lock({ name: 'Guest caching recompute', verbose: true })
-  async handleGuestCaching() {
-    if (this.apiConfigService.isGuestCachingFeatureActive()) {
+  async handleGuestCache() {
+    if (this.apiConfigService.isGuestCacheFeatureActive()) {
       await this.guestCachingWarmer.recompute({
         targetUrl: this.apiConfigService.getSelfUrl(),
-        cacheTriggerHitsThreshold: this.apiConfigService.getGuestCachingHitsThreshold(),
-        cacheTtl: this.apiConfigService.getGuestCachingTtl(),
+        cacheTriggerHitsThreshold: this.apiConfigService.getGuestCacheHitsThreshold(),
+        cacheTtl: this.apiConfigService.getGuestCacheTtl(),
       });
     }
   }

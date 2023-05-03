@@ -1,4 +1,4 @@
-import { ApiUtils } from "@multiversx/sdk-nestjs";
+import { ApiUtils } from "@multiversx/sdk-nestjs-http";
 import { Field, Float, ObjectType } from "@nestjs/graphql";
 import { ApiProperty } from "@nestjs/swagger";
 import { Identity } from "src/endpoints/identities/entities/identity";

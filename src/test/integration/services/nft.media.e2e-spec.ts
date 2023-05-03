@@ -1,4 +1,4 @@
-import '@multiversx/sdk-nestjs/lib/src/utils/extensions/array.extensions';
+import '@multiversx/sdk-nestjs-common/lib/utils/extensions/array.extensions';
 import { Test } from '@nestjs/testing';
 import { MediaMimeTypeEnum } from 'src/endpoints/nfts/entities/media.mime.type';
 import { Nft } from 'src/endpoints/nfts/entities/nft';

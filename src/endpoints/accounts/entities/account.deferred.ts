@@ -1,4 +1,4 @@
-import { SwaggerUtils } from '@multiversx/sdk-nestjs';
+import { SwaggerUtils } from '@multiversx/sdk-nestjs-common';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class AccountDeferred {

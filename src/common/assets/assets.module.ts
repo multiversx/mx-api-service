@@ -5,7 +5,7 @@ import { ApiConfigModule } from "../api-config/api.config.module";
 
 @Module({
   imports: [
-    DynamicModuleUtils.getCachingModule(),
+    DynamicModuleUtils.getCacheModule(),
     ApiConfigModule,
   ],
   providers: [

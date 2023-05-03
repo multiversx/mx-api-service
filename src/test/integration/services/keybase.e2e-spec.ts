@@ -1,6 +1,6 @@
 import { Test } from "@nestjs/testing";
 import { KeybaseIdentity } from "src/common/keybase/entities/keybase.identity";
-import '@multiversx/sdk-nestjs/lib/src/utils/extensions/jest.extensions';
+import '@multiversx/sdk-nestjs-common/lib/utils/extensions/jest.extensions';
 import { PublicAppModule } from "src/public.app.module";
 import { KeybaseService } from "src/common/keybase/keybase.service";
 

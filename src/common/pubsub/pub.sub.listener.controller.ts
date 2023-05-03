@@ -1,5 +1,5 @@
-import { OriginLogger } from "@multiversx/sdk-nestjs";
-import { ElrondCachingService } from "@multiversx/sdk-nestjs";
+import { OriginLogger } from "@multiversx/sdk-nestjs-common";
+import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { Controller } from "@nestjs/common";
 import { EventPattern } from "@nestjs/microservices";
 
@@ -8,7 +8,7 @@ export class PubSubListenerController {
   private logger = new OriginLogger(PubSubListenerController.name);
 
   constructor(
-    private readonly cachingService: ElrondCachingService,
+    private readonly cachingService: CacheService
   ) { }
 
   @EventPattern('deleteCacheKeys')
