@@ -242,7 +242,9 @@ export class NodeService {
 
   private async applyNodeIdentities(nodes: Node[]) {
     for (const node of nodes) {
-      node.identity = await this.cacheService.getRemote<string>(CacheInfo.ConfirmedIdentity(node.bls).key);
+      if (node.status !== NodeStatus.inactive) {
+        node.identity = await this.cacheService.getRemote<string>(CacheInfo.ConfirmedIdentity(node.bls).key);
+      }
     }
   }
 
