@@ -13,6 +13,7 @@ import { TransactionUtils } from "./transaction.utils";
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { OriginLogger } from "@multiversx/sdk-nestjs-common";
 import { MiniBlockType } from "../miniblocks/entities/mini.block.type";
+import { TransactionStatus } from "./entities/transaction.status";
 
 @Injectable()
 export class TransactionGetService {
@@ -194,6 +195,7 @@ export class TransactionGetService {
         logs: transaction.logs,
         guardianAddress: transaction.guardian,
         guardianSignature: transaction.guardianSignature,
+        inTransit: transaction.miniblockHash !== undefined && transaction.status === TransactionStatus.pending,
       };
 
       return ApiUtils.mergeObjects(new TransactionDetailed(), result);
