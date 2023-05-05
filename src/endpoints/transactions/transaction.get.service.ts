@@ -194,6 +194,7 @@ export class TransactionGetService {
         logs: transaction.logs,
         guardianAddress: transaction.guardian,
         guardianSignature: transaction.guardianSignature,
+        inTransit: transaction.miniblockHash !== undefined && transaction.status === 'pending',
       };
 
       return ApiUtils.mergeObjects(new TransactionDetailed(), result);
