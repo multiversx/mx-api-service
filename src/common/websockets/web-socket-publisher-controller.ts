@@ -26,6 +26,13 @@ export class WebSocketPublisherController {
     }
   }
 
+  @EventPattern('transactionsInTransit')
+  async transactionsInTransit(transactions: ShardTransaction[]) {
+    for (const transaction of transactions) {
+      await this.webSocketPublisherService.onTransactionInTransit(transaction);
+    }
+  }
+
   @EventPattern('onBatchUpdated')
   onBatchUpdated(payload: { address: string, batchId: string, txHashes: string[] }) {
     this.logger.log(`Notifying batch updated for address ${payload.address}, batch id '${payload.batchId}', hashes ${payload.txHashes} `);
