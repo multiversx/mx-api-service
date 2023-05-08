@@ -1,6 +1,6 @@
 import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { AddressUtils } from "@multiversx/sdk-nestjs-common";
-import { ApiService } from "@multiversx/sdk-nestjs-http";
+import { ApiService, ApiUtils } from "@multiversx/sdk-nestjs-http";
 import { Test } from "@nestjs/testing";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { AssetsService } from "src/common/assets/assets.service";
@@ -10,7 +10,9 @@ import { PluginService } from "src/common/plugins/plugin.service";
 import { ProtocolService } from "src/common/protocol/protocol.service";
 import { AccountService } from "src/endpoints/accounts/account.service";
 import { AccountDetailed } from "src/endpoints/accounts/entities/account.detailed";
+import { AccountEsdtHistory } from "src/endpoints/accounts/entities/account.esdt.history";
 import { AccountFilter } from "src/endpoints/accounts/entities/account.filter";
+import { AccountHistory } from "src/endpoints/accounts/entities/account.history";
 import { AccountHistoryFilter } from "src/endpoints/accounts/entities/account.history.filter";
 import { SmartContractResultService } from "src/endpoints/sc-results/scresult.service";
 import { StakeService } from "src/endpoints/stake/stake.service";
@@ -563,6 +565,79 @@ describe('Account Service', () => {
 
       expect(indexerService.getAccountTokenHistoryCount).toHaveBeenCalledWith(address, tokenIdentifier, filter);
       expect(result).toEqual(tokenHistoryCount);
+    });
+  });
+
+  describe('getAccountHistory', () => {
+    const address = 'erd1qga7ze0l03chfgru0a32wxqf2226nzrxnyhzer9lmudqhjgy7ycqjjyknz';
+    const pagination = { from: 0, size: 10 };
+    const filter = new AccountHistoryFilter({});
+
+    const elasticResult = [
+      {
+        address: 'erd1qga7ze0l03chfgru0a32wxqf2226nzrxnyhzer9lmudqhjgy7ycqjjyknz',
+        timestamp: 1671354534,
+        balance: '162486906126924046',
+      },
+      {
+        address: 'erd1qga7ze0l03chfgru0a32wxqf2226nzrxnyhzer9lmudqhjgy7ycqjjyknz',
+        timestamp: 1671354486,
+        balance: '162363149176924046',
+      },
+    ];
+
+    it('should return the account history', async () => {
+      jest.spyOn(indexerService, 'getAccountHistory').mockResolvedValue(elasticResult);
+
+      const result = await service.getAccountHistory(address, pagination, filter);
+
+      expect(indexerService.getAccountHistory).toHaveBeenCalledWith(address, pagination, filter);
+
+      const expectedResult = elasticResult.map(item => ApiUtils.mergeObjects(new AccountHistory(), item));
+      expect(result).toEqual(expectedResult);
+    });
+  });
+
+  describe('getAccountTokenHistory', () => {
+    const address = 'erd1qga7ze0l03chfgru0a32wxqf2226nzrxnyhzer9lmudqhjgy7ycqjjyknz';
+    const token = 'WEGLD-bd4d79';
+    const pagination = { from: 0, size: 10 };
+    const filter = new AccountHistoryFilter({});
+
+    const elasticResult = [
+      {
+        address: 'erd1qga7ze0l03chfgru0a32wxqf2226nzrxnyhzer9lmudqhjgy7ycqjjyknz',
+        timestamp: 1640603532,
+        balance: '0',
+        token: 'WEGLD-bd4d79',
+        identifier: 'WEGLD-bd4d79',
+        tokenNonce: 10,
+        isSender: true,
+        shardID: 0,
+        isSmartContract: false,
+      },
+      {
+        address: 'erd1qga7ze0l03chfgru0a32wxqf2226nzrxnyhzer9lmudqhjgy7ycqjjyknz',
+        timestamp: 1640603532,
+        balance: '0',
+        token: 'WEGLD-bd4d79',
+        identifier: 'WEGLD-bd4d79',
+        tokenNonce: 10,
+        isSender: true,
+        shardID: 0,
+        isSmartContract: false,
+      },
+    ];
+
+    it('should return the account history for a specific token', async () => {
+      jest.spyOn(indexerService, 'getAccountTokenHistory').mockResolvedValue(elasticResult);
+
+      const result = await service.getAccountTokenHistory(address, token, pagination, filter);
+
+      expect(indexerService.getAccountTokenHistory).toHaveBeenCalledWith(address, token, pagination, filter);
+
+      const expectedResult = elasticResult.map(item => ApiUtils.mergeObjects(new AccountEsdtHistory(), item));
+      expect(result).toEqual(expectedResult);
     });
   });
 });
