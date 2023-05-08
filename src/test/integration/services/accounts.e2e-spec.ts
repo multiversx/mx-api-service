@@ -4,6 +4,8 @@ import { ApiService, ApiUtils } from "@multiversx/sdk-nestjs-http";
 import { Test } from "@nestjs/testing";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { AssetsService } from "src/common/assets/assets.service";
+import { AccountAssets } from "src/common/assets/entities/account.assets";
+import { QueryPagination } from "src/common/entities/query.pagination";
 import { GatewayService } from "src/common/gateway/gateway.service";
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { PluginService } from "src/common/plugins/plugin.service";
@@ -14,6 +16,7 @@ import { AccountEsdtHistory } from "src/endpoints/accounts/entities/account.esdt
 import { AccountFilter } from "src/endpoints/accounts/entities/account.filter";
 import { AccountHistory } from "src/endpoints/accounts/entities/account.history";
 import { AccountHistoryFilter } from "src/endpoints/accounts/entities/account.history.filter";
+import { ContractUpgrades } from "src/endpoints/accounts/entities/contract.upgrades";
 import { SmartContractResultService } from "src/endpoints/sc-results/scresult.service";
 import { StakeService } from "src/endpoints/stake/stake.service";
 import { TransactionFilter } from "src/endpoints/transactions/entities/transaction.filter";
@@ -32,6 +35,7 @@ describe('Account Service', () => {
   let transactionService: TransactionService;
   let transferService: TransferService;
   let smartContractResultService: SmartContractResultService;
+  let assetsService: AssetsService;
 
   beforeEach((async () => {
     const moduleRef = await Test.createTestingModule({
@@ -149,6 +153,7 @@ describe('Account Service', () => {
     transactionService = moduleRef.get<TransactionService>(TransactionService);
     transferService = moduleRef.get<TransferService>(TransferService);
     smartContractResultService = moduleRef.get<SmartContractResultService>(SmartContractResultService);
+    assetsService = moduleRef.get<AssetsService>(AssetsService);
   }));
 
   afterEach(() => {
@@ -638,6 +643,135 @@ describe('Account Service', () => {
 
       const expectedResult = elasticResult.map(item => ApiUtils.mergeObjects(new AccountEsdtHistory(), item));
       expect(result).toEqual(expectedResult);
+    });
+  });
+
+  describe('getContractUpgrades', () => {
+    const queryPagination = new QueryPagination({ from: 0, size: 2 });
+    const address = 'erd1qqqqqqqqqqqqqpgqeel2kumf0r8ffyhth7pqdujjat9nx0862jpsg2pqaq';
+
+    const details = {
+      address: 'erd1qqqqqqqqqqqqqpgqeel2kumf0r8ffyhth7pqdujjat9nx0862jpsg2pqaq',
+      deployTxHash: '32be840b215a7343ca7c0cbd35c517fd2c04aba22e4465ee1146d59dc7359cd3',
+      deployer: 'erd1qqqqqqqqqqqqqpgqq66xk9gfr4esuhem3jru86wg5hvp33a62jps2fy57p',
+      timestamp: 1636895604,
+      contract: 'erd1qqqqqqqqqqqqqpgqeel2kumf0r8ffyhth7pqdujjat9nx0862jpsg2pqaq',
+      upgrades: [
+        {
+          upgrader: 'erd1qqqqqqqqqqqqqpgqq66xk9gfr4esuhem3jru86wg5hvp33a62jps2fy57p',
+          upgradeTxHash: '1c8c6b2148f25621fa2c798a2c9a184df61fdd1991aa0af7ea01eb7b89025d2a',
+          timestamp: 1638577452,
+        },
+        {
+          upgrader: 'erd1qqqqqqqqqqqqqpgqq66xk9gfr4esuhem3jru86wg5hvp33a62jps2fy57p',
+          upgradeTxHash: 'fb586bdbdeadab8e7a5d0cf6b4aa815e459614eea357b912de6a9087a7c00ab3',
+          timestamp: 1638577752,
+        },
+        {
+          upgrader: 'erd1qqqqqqqqqqqqqpgqq66xk9gfr4esuhem3jru86wg5hvp33a62jps2fy57p',
+          upgradeTxHash: 'a0a94ee0e8f9c4de12fe35d849d81f7b0885eb203eca33275faf115536290af8',
+          timestamp: 1654616658,
+        },
+        {
+          upgradeTxHash: '7af97da5a00e9f927df7f19a095800f381c185a6a0a6d6bca46b3db6235ff1d2',
+          upgrader: 'erd1qqqqqqqqqqqqqpgqq66xk9gfr4esuhem3jru86wg5hvp33a62jps2fy57p',
+          timestamp: 1670612868,
+        },
+      ],
+    };
+
+    it('should return the contract upgrades', async () => {
+      jest.spyOn(indexerService, 'getScDeploy').mockResolvedValue(details);
+
+      const result = await service.getContractUpgrades(queryPagination, address);
+
+      expect(indexerService.getScDeploy).toHaveBeenCalledWith(address);
+
+      const upgrades = details.upgrades.map(item =>
+        ApiUtils.mergeObjects(new ContractUpgrades(), {
+          address: item.upgrader,
+          txHash: item.upgradeTxHash,
+          timestamp: item.timestamp,
+        }),
+      );
+
+      const expectedResult = upgrades.slice(queryPagination.from, queryPagination.from + queryPagination.size);
+      expect(result).toEqual(expectedResult);
+    });
+
+    it('should return null if no details are found', async () => {
+      jest.spyOn(indexerService, 'getScDeploy').mockResolvedValue(undefined);
+
+      const result = await service.getContractUpgrades(queryPagination, address);
+
+      expect(indexerService.getScDeploy).toHaveBeenCalledWith(address);
+      expect(result).toBeNull();
+    });
+  });
+
+  describe('getAccountContracts', () => {
+    const pagination = { from: 0, size: 2 };
+    const address = 'erd1qqqqqqqqqqqqqpgqeel2kumf0r8ffyhth7pqdujjat9nx0862jpsg2pqaq';
+
+    const details = [{
+      address: 'erd1qqqqqqqqqqqqqpgqeel2kumf0r8ffyhth7pqdujjat9nx0862jpsg2pqaq',
+      deployTxHash: '32be840b215a7343ca7c0cbd35c517fd2c04aba22e4465ee1146d59dc7359cd3',
+      deployer: 'erd1qqqqqqqqqqqqqpgqq66xk9gfr4esuhem3jru86wg5hvp33a62jps2fy57p',
+      timestamp: 1636895604,
+      contract: 'erd1qqqqqqqqqqqqqpgqeel2kumf0r8ffyhth7pqdujjat9nx0862jpsg2pqaq',
+      upgrades: [
+        {
+          upgrader: 'erd1qqqqqqqqqqqqqpgqq66xk9gfr4esuhem3jru86wg5hvp33a62jps2fy57p',
+          upgradeTxHash: '1c8c6b2148f25621fa2c798a2c9a184df61fdd1991aa0af7ea01eb7b89025d2a',
+          timestamp: 1638577452,
+        },
+        {
+          upgrader: 'erd1qqqqqqqqqqqqqpgqq66xk9gfr4esuhem3jru86wg5hvp33a62jps2fy57p',
+          upgradeTxHash: 'fb586bdbdeadab8e7a5d0cf6b4aa815e459614eea357b912de6a9087a7c00ab3',
+          timestamp: 1638577752,
+        },
+        {
+          upgrader: 'erd1qqqqqqqqqqqqqpgqq66xk9gfr4esuhem3jru86wg5hvp33a62jps2fy57p',
+          upgradeTxHash: 'a0a94ee0e8f9c4de12fe35d849d81f7b0885eb203eca33275faf115536290af8',
+          timestamp: 1654616658,
+        },
+        {
+          upgradeTxHash: '7af97da5a00e9f927df7f19a095800f381c185a6a0a6d6bca46b3db6235ff1d2',
+          upgrader: 'erd1qqqqqqqqqqqqqpgqq66xk9gfr4esuhem3jru86wg5hvp33a62jps2fy57p',
+          timestamp: 1670612868,
+        },
+      ],
+    }];
+
+    const assets: { [key: string]: AccountAssets } = {
+      erd1qqqqqqqqqqqqqpgqc0htpys8vhtf5m3tg7t6ts2wvkgx3favqrhsdsz9w0: {
+        name: 'Multiversx DNS: Contract 239',
+        description: '',
+        tags: ['dns'],
+        icon: 'multiversx',
+        iconPng: '',
+        iconSvg: '',
+        proof: '',
+      },
+    };
+
+    it('should return the account contracts', async () => {
+      jest.spyOn(indexerService, 'getAccountContracts').mockResolvedValue(details);
+      jest.spyOn(assetsService, 'getAllAccountAssets').mockResolvedValue(assets);
+
+      const result = await service.getAccountContracts(pagination, address);
+
+      expect(indexerService.getAccountContracts).toHaveBeenCalledWith(pagination, address);
+      expect(assetsService.getAllAccountAssets).toHaveBeenCalled();
+
+      const expectedAccounts = details.map(contract => ({
+        address: contract.contract,
+        deployTxHash: contract.deployTxHash,
+        timestamp: contract.timestamp,
+        assets: assets[contract.contract],
+      }));
+
+      expect(result).toEqual(expectedAccounts);
     });
   });
 });
