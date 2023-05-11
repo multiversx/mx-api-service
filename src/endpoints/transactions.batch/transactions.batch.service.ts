@@ -1,5 +1,5 @@
-import { Address, Transaction as ErdJsTransaction, TransactionHash, TransactionOptions, TransactionPayload, TransactionVersion } from "@elrondnetwork/erdjs/out";
-import { Signature } from "@elrondnetwork/erdjs/out/signature";
+import { Address, Transaction as ErdJsTransaction, TransactionHash, TransactionOptions, TransactionPayload, TransactionVersion } from "@multiversx/sdk-core/out";
+import { Signature } from "@multiversx/sdk-core/out/signature";
 import { BinaryUtils } from "@multiversx/sdk-nestjs-common";
 import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { Injectable, Logger } from "@nestjs/common";
@@ -46,10 +46,15 @@ export class TransactionsBatchService {
           chainID: tx.chainID,
           version: new TransactionVersion(tx.version),
           options: tx.options ? new TransactionOptions(tx.options) : undefined,
+          guardian: tx.guardian ? new Address(tx.guardian) : undefined,
           sender: new Address(tx.sender),
         });
 
-        trans.applySignature(new Signature(tx.signature), new Address(tx.sender));
+        if (tx.guardianSignature) {
+          trans.applyGuardianSignature(new Signature(tx.guardianSignature));
+        }
+
+        trans.applySignature(new Signature(tx.signature));
 
         item.transaction.hash = TransactionHash.compute(trans).toString();
       }
