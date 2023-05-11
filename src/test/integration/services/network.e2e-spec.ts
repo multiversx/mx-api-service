@@ -29,17 +29,6 @@ describe('NetworkService', () => {
       providers: [
         NetworkService,
         {
-          provide: TokenService, useValue: {
-            getTokenMarketCapRaw: jest.fn(),
-          },
-        },
-        {
-          provide: CacheService, useValue:
-          {
-            getOrSet: jest.fn(),
-          },
-        },
-        {
           provide: ApiConfigService, useValue:
           {
             getNetwork: jest.fn(),
@@ -62,28 +51,10 @@ describe('NetworkService', () => {
           },
         },
         {
-          provide: VmQueryService, useValue:
-          {
-            vmQuery: jest.fn(),
-          },
-        },
-        {
-          provide: BlockService, useValue:
-          {
-            getBlocksCount: jest.fn(),
-          },
-        },
-        {
           provide: AccountService, useValue:
           {
             getAccountRaw: jest.fn(),
             getAccountsCount: jest.fn(),
-          },
-        },
-        {
-          provide: TransactionService, useValue:
-          {
-            getTransactionCount: jest.fn(),
           },
         },
         {
@@ -94,28 +65,31 @@ describe('NetworkService', () => {
           },
         },
         {
-          provide: ApiService, useValue:
-          {
-            get: jest.fn(),
-          },
+          provide: CacheService, useValue: { getOrSet: jest.fn() },
         },
         {
-          provide: StakeService, useValue:
-          {
-            getGlobalStake: jest.fn(),
-          },
+          provide: VmQueryService, useValue: { vmQuery: jest.fn() },
         },
         {
-          provide: SmartContractResultService, useValue:
-          {
-            getScResultsCount: jest.fn(),
-          },
+          provide: BlockService, useValue: { getBlocksCount: jest.fn() },
         },
         {
-          provide: DataApiService, useValue:
-          {
-            getEgldPrice: jest.fn(),
-          },
+          provide: TransactionService, useValue: { getTransactionCount: jest.fn() },
+        },
+        {
+          provide: ApiService, useValue: { get: jest.fn() },
+        },
+        {
+          provide: StakeService, useValue: { getGlobalStake: jest.fn() },
+        },
+        {
+          provide: SmartContractResultService, useValue: { getScResultsCount: jest.fn() },
+        },
+        {
+          provide: DataApiService, useValue: { getEgldPrice: jest.fn() },
+        },
+        {
+          provide: TokenService, useValue: { getTokenMarketCapRaw: jest.fn() },
         },
       ],
     }).compile();
