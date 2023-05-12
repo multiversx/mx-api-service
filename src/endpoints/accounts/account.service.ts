@@ -31,7 +31,6 @@ import { AccountVerification } from './entities/account.verification';
 import { AccountFilter } from './entities/account.filter';
 import { AccountHistoryFilter } from './entities/account.history.filter';
 import { ProtocolService } from 'src/common/protocol/protocol.service';
-import { Address } from "@elrondnetwork/erdjs/out";
 
 @Injectable()
 export class AccountService {
@@ -332,7 +331,7 @@ export class AccountService {
   async getDeferredAccount(address: string): Promise<AccountDeferred[]> {
     const publicKey = AddressUtils.bech32Decode(address);
     const delegationContractAddress = this.apiConfigService.getDelegationContractAddress();
-    const delegationContractShardId = AddressUtils.computeShard(Address.fromString(delegationContractAddress).hex(), await this.protocolService.getShardCount());
+    const delegationContractShardId = AddressUtils.computeShard(AddressUtils.bech32Decode(delegationContractAddress), await this.protocolService.getShardCount());
 
     const [
       encodedUserDeferredPaymentList,

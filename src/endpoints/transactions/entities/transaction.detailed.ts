@@ -56,5 +56,9 @@ export class TransactionDetailed extends Transaction {
   @ApiProperty({ type: Number, nullable: true })
   @ComplexityEstimation({ group: "blockInfo", value: 200, alternatives: ["withBlockInfo"] })
   receiverBlockNonce: number | undefined = undefined;
+
+  @Field(() => Boolean, { description: "InTransit transaction details.", nullable: true })
+  @ApiProperty({ type: Boolean, nullable: true })
+  inTransit: boolean | undefined = undefined;
 }
 

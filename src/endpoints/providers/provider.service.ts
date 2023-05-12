@@ -350,13 +350,13 @@ export class ProviderService {
   }
 
   async getProviderMetadata(address: string): Promise<{ name: string | null, website: string | null, identity: string | null }> {
-    const response = await this.vmQueryService.vmQuery(
-      address,
-      'getMetaData',
-    );
+    try {
+      const response = await this.vmQueryService.vmQuery(
+        address,
+        'getMetaData',
+      );
 
-    if (response) {
-      try {
+      if (response) {
         const [name, website, identity] = response.map((base64) => {
           if (base64) {
             return Buffer.from(base64, 'base64').toString().trim().toLowerCase();
@@ -365,11 +365,10 @@ export class ProviderService {
         });
 
         return { name, website, identity };
-      } catch (error) {
-        this.logger.error(`Could not get provider metadata for address '${address}'`);
-        this.logger.error(error);
-        return { name: null, website: null, identity: null };
       }
+    } catch (error) {
+      this.logger.error(`Could not get provider metadata for address '${address}'`);
+      this.logger.error(error);
     }
 
     return { name: null, website: null, identity: null };
