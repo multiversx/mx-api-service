@@ -148,7 +148,7 @@ async function bootstrap() {
       },
     },
   );
-  // pubSubApp.useLogger(pubSubApp.get(WINSTON_MODULE_NEST_PROVIDER));
+  pubSubApp.useLogger(pubSubApp.get(WINSTON_MODULE_NEST_PROVIDER));
   pubSubApp.useWebSocketAdapter(new SocketAdapter(pubSubApp));
   // eslint-disable-next-line @typescript-eslint/no-floating-promises
   pubSubApp.listen();
