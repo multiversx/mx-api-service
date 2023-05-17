@@ -17,6 +17,7 @@ import { AccountFilter } from "src/endpoints/accounts/entities/account.filter";
 import { AccountHistory } from "src/endpoints/accounts/entities/account.history";
 import { AccountHistoryFilter } from "src/endpoints/accounts/entities/account.history.filter";
 import { ContractUpgrades } from "src/endpoints/accounts/entities/contract.upgrades";
+import { ProviderService } from "src/endpoints/providers/provider.service";
 import { SmartContractResultService } from "src/endpoints/sc-results/scresult.service";
 import { StakeService } from "src/endpoints/stake/stake.service";
 import { TransactionFilter } from "src/endpoints/transactions/entities/transaction.filter";
@@ -140,6 +141,12 @@ describe('Account Service', () => {
           provide: ProtocolService,
           useValue: {
             getShardCount: jest.fn(),
+          },
+        },
+        {
+          provide: ProviderService,
+          useValue: {
+            getProvider: jest.fn(),
           },
         },
       ],
