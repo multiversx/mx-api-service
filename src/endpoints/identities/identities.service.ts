@@ -221,7 +221,7 @@ export class IdentitiesService {
         identity.stakePercent = stakeInfo.stakePercent;
         if (identity.stake && identity.topUp) {
           const stakeReturn = new BigNumber(identity.stake.slice(0, -18)).multipliedBy(new BigNumber(baseApr));
-          const topUpReturn = new BigNumber(identity.topUp.slice(0, -18)).multipliedBy(new BigNumber(topUpApr));
+          const topUpReturn = identity.topUp !== '0' ? new BigNumber(identity.topUp.slice(0, -18)).multipliedBy(new BigNumber(topUpApr)) : new BigNumber(0);
           const annualReturn = stakeReturn.plus(topUpReturn).multipliedBy((identity.validators ?? 0) - (stakeInfo.queued ?? 0)).dividedBy(identity.validators ?? 0);
           const aprStr = new BigNumber(annualReturn).multipliedBy(100).div(identity.locked.slice(0, -18)).toString();
           identity.apr = Number(aprStr).toRounded(2);
