@@ -58,6 +58,7 @@ export class AccountService {
     private readonly usernameService: UsernameService,
     private readonly apiService: ApiService,
     private readonly protocolService: ProtocolService,
+    @Inject(forwardRef(() => ProviderService))
     private readonly providerService: ProviderService,
   ) { }
 
