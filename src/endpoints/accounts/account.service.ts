@@ -31,6 +31,8 @@ import { AccountVerification } from './entities/account.verification';
 import { AccountFilter } from './entities/account.filter';
 import { AccountHistoryFilter } from './entities/account.history.filter';
 import { ProtocolService } from 'src/common/protocol/protocol.service';
+import { ProviderService } from '../providers/provider.service';
+import { Provider } from '../providers/entities/provider';
 
 @Injectable()
 export class AccountService {
@@ -56,6 +58,8 @@ export class AccountService {
     private readonly usernameService: UsernameService,
     private readonly apiService: ApiService,
     private readonly protocolService: ProtocolService,
+    @Inject(forwardRef(() => ProviderService))
+    private readonly providerService: ProviderService,
   ) { }
 
   async getAccountsCount(filter: AccountFilter): Promise<number> {
@@ -74,6 +78,8 @@ export class AccountService {
     if (!AddressUtils.isAddressValid(address)) {
       return null;
     }
+
+    const provider: Provider | undefined = await this.providerService.getProvider(address);
 
     let txCount: number = 0;
     let scrCount: number = 0;
@@ -97,6 +103,10 @@ export class AccountService {
 
     if (account && elasticSearchAccount) {
       account.timestamp = elasticSearchAccount.timestamp;
+    }
+
+    if (account && provider && provider.owner) {
+      account.ownerAddress = provider.owner;
     }
 
     return account;
