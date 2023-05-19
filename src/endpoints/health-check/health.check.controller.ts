@@ -1,4 +1,4 @@
-import { NoAuth } from "@multiversx/sdk-nestjs-common";
+import { NoAuth } from "@multiversx/sdk-nestjs-auth";
 import { Controller, Get } from "@nestjs/common";
 import { ApiOperation } from "@nestjs/swagger";
 

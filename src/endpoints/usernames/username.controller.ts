@@ -2,7 +2,7 @@ import { AccountUsername } from './entities/account.username';
 import { Controller, Get, HttpException, HttpStatus, Param, Res } from "@nestjs/common";
 import { ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiTags } from "@nestjs/swagger";
 import { UsernameService } from "./username.service";
-import { NoCache } from '@multiversx/sdk-nestjs-common';
+import { NoCache } from '@multiversx/sdk-nestjs-cache';
 
 @Controller()
 @ApiTags('usernames')
