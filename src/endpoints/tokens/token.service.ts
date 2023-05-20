@@ -243,6 +243,7 @@ export class TokenService {
 
         const tokenWithBalance: TokenWithBalance = {
           ...token,
+          identifier: elasticToken.identifier,
           balance: elasticToken.balance,
           attributes: elasticToken.data?.attributes,
           valueUsd: undefined,
