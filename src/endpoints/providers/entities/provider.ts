@@ -3,6 +3,7 @@ import { SwaggerUtils } from "@multiversx/sdk-nestjs-common";
 import { Field, Float, ObjectType } from "@nestjs/graphql";
 import { ApiProperty } from "@nestjs/swagger";
 import { NodesInfos } from "./nodes.infos";
+import { Identity } from "src/endpoints/identities/entities/identity";
 
 @ObjectType("Provider", { description: "Provider object type." })
 export class Provider extends NodesInfos {
@@ -73,4 +74,7 @@ export class Provider extends NodesInfos {
 
   @ApiProperty({ type: String, nullable: true })
   githubKeysValidatedAt: string | undefined = undefined;
+
+  @ApiProperty({ type: Identity, nullable: true })
+  identityInfo?: Identity | undefined = undefined;
 }
