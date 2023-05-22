@@ -834,7 +834,7 @@ export class AccountController {
   @ApiQuery({ name: 'senderOrReceiver', description: 'One address that current address interacted with', required: false })
   async getAccountTransfersCount(
     @Param('address', ParseAddressPipe) address: string,
-    @Query('sender', ParseAddressPipe) sender?: string,
+    @Query('sender', ParseAddressArrayPipe) sender?: string[],
     @Query('receiver', ParseAddressArrayPipe) receiver?: string[],
     @Query('token') token?: string,
     @Query('senderShard', ParseIntPipe) senderShard?: number,
@@ -853,7 +853,7 @@ export class AccountController {
 
     return await this.transferService.getTransfersCount(new TransactionFilter({
       address,
-      sender,
+      senders: sender,
       receivers: receiver,
       token,
       functions,
@@ -872,7 +872,7 @@ export class AccountController {
   @ApiExcludeEndpoint()
   async getAccountTransfersCountAlternative(
     @Param('address', ParseAddressPipe) address: string,
-    @Query('sender', ParseAddressPipe) sender?: string,
+    @Query('sender', ParseAddressArrayPipe) sender?: string[],
     @Query('receiver', ParseAddressArrayPipe) receiver?: string[],
     @Query('token') token?: string,
     @Query('senderShard', ParseIntPipe) senderShard?: number,
@@ -891,7 +891,7 @@ export class AccountController {
 
     return await this.transferService.getTransfersCount(new TransactionFilter({
       address,
-      sender,
+      senders: sender,
       receivers: receiver,
       token,
       functions,
