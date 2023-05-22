@@ -899,7 +899,7 @@ export class AccountController {
       status,
       before,
       after,
-      senderOrReceiver
+      senderOrReceiver,
     }));
   }
 
