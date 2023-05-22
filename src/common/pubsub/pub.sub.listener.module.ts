@@ -1,12 +1,12 @@
 import { Module } from '@nestjs/common';
 import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
-import { WebSocketPublisherModule } from 'src/common/websockets/web-socket-publisher-module';
 import { PubSubListenerController } from './pub.sub.listener.controller';
+import { LoggingModule } from '@multiversx/sdk-nestjs-common';
 
 @Module({
   imports: [
-    DynamicModuleUtils.getCachingModule(),
-    WebSocketPublisherModule,
+    DynamicModuleUtils.getCacheModule(),
+    LoggingModule,
   ],
   controllers: [
     PubSubListenerController,

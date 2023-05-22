@@ -1602,4 +1602,126 @@ describe('API Config', () => {
       expect(results).toStrictEqual(false);
     });
   });
+
+  describe("getDataApiServiceUrl", () => {
+    it("should return data api service url", () => {
+      jest
+        .spyOn(ConfigService.prototype, "get")
+        .mockImplementation(jest.fn(() => 'https://data-api.multiversx.com'));
+
+      const results = apiConfigService.getDataApiServiceUrl();
+      expect(results).toEqual('https://data-api.multiversx.com');
+    });
+
+    it("should throw error because test simulates that data api service url is not defined", () => {
+      jest
+        .spyOn(ConfigService.prototype, 'get')
+        .mockImplementation(jest.fn(() => undefined));
+
+      expect(() => apiConfigService.getDataApiServiceUrl()).toThrowError('No data-api service url present');
+    });
+  });
+
+  describe("getMarketplaceServiceUrl", () => {
+    it("should return marketplace service url", () => {
+      jest
+        .spyOn(ConfigService.prototype, "get")
+        .mockImplementation(jest.fn(() => 'https://nfts-graph.multiversx.com/graphql'));
+
+      const results = apiConfigService.getMarketplaceServiceUrl();
+      expect(results).toEqual('https://nfts-graph.multiversx.com/graphql');
+    });
+
+    it("should throw error because test simulates that marketplace service url is not defined", () => {
+      jest
+        .spyOn(ConfigService.prototype, 'get')
+        .mockImplementation(jest.fn(() => undefined));
+
+      expect(() => apiConfigService.getMarketplaceServiceUrl()).toThrowError('No marketplace service url present');
+    });
+  });
+
+  describe("getIndexerSlaveConnections", () => {
+    it("should return indexer slave connections", () => {
+      const mockResult = [{
+        host: '',
+        port: 3000,
+        database: 'test',
+        username: '',
+        password: '',
+      }];
+      jest
+        .spyOn(ConfigService.prototype, "get")
+        .mockImplementation(jest.fn(() => mockResult));
+
+      const results = apiConfigService.getIndexerSlaveConnections();
+      expect(results).toEqual(mockResult);
+    });
+
+    it("should throw error because test simulates that indexer slave connections are not defined", () => {
+      jest
+        .spyOn(ConfigService.prototype, 'get')
+        .mockImplementation(jest.fn(() => []));
+
+      const results = apiConfigService.getIndexerSlaveConnections();
+      expect(results).toEqual([]);
+    });
+  });
+
+  describe("getStakingV4CronExpression", () => {
+    it("should return staking V4 cron expresion", () => {
+      jest
+        .spyOn(ConfigService.prototype, "get")
+        .mockImplementation(jest.fn(() => 'test-expresion'));
+
+      const results = apiConfigService.getStakingV4CronExpression();
+      expect(results).toEqual('test-expresion');
+    });
+
+    it("should throw error because test simulates that staking V4 cron expresions are defined", () => {
+      jest
+        .spyOn(ConfigService.prototype, 'get')
+        .mockImplementation(jest.fn(() => undefined));
+
+      expect(() => apiConfigService.getStakingV4CronExpression()).toThrowError('No staking V4 cron expression present');
+    });
+  });
+
+  describe("getDelegationUrl", () => {
+    it("should return delegation url", () => {
+      jest
+        .spyOn(ConfigService.prototype, "get")
+        .mockImplementation(jest.fn(() => 'https://delegation-api.multiversx.com'));
+
+      const results = apiConfigService.getDelegationUrl();
+      expect(results).toEqual('https://delegation-api.multiversx.com');
+    });
+
+    it("should throw error because test simulates that the delegation url is not defined", () => {
+      jest
+        .spyOn(ConfigService.prototype, 'get')
+        .mockImplementation(jest.fn(() => undefined));
+
+      expect(() => apiConfigService.getDelegationUrl()).toThrowError('No delegation url present');
+    });
+  });
+
+  describe("getSelfUrl", () => {
+    it("should return self url", () => {
+      jest
+        .spyOn(ConfigService.prototype, "get")
+        .mockImplementation(jest.fn(() => 'https://api.multiversx.com'));
+
+      const results = apiConfigService.getSelfUrl();
+      expect(results).toEqual('https://api.multiversx.com');
+    });
+
+    it("should throw error because test simulates that the self url is not defined", () => {
+      jest
+        .spyOn(ConfigService.prototype, 'get')
+        .mockImplementation(jest.fn(() => undefined));
+
+      expect(() => apiConfigService.getSelfUrl()).toThrowError('No self url present');
+    });
+  });
 });

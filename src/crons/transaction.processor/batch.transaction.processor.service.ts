@@ -1,4 +1,4 @@
-import { ElrondCachingService } from "@multiversx/sdk-nestjs";
+import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { ShardTransaction, TransactionProcessor } from "@elrondnetwork/transaction-processor";
 import { Inject, Injectable, Logger } from "@nestjs/common";
 import { ClientProxy } from "@nestjs/microservices";
@@ -19,7 +19,7 @@ export class BatchTransactionProcessorService {
 
   constructor(
     private readonly apiConfigService: ApiConfigService,
-    private readonly cachingService: ElrondCachingService,
+    private readonly cachingService: CacheService,
     private readonly transactionsBatchService: TransactionsBatchService,
     @Inject('PUBSUB_SERVICE') private clientProxy: ClientProxy,
     private readonly transactionService: TransactionService

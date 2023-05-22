@@ -1,4 +1,5 @@
-import { AbstractQuery, AddressUtils, BinaryUtils, ElasticQuery, QueryConditionOptions, QueryOperator, QueryType, RangeGreaterThanOrEqual, RangeLowerThan, RangeLowerThanOrEqual } from "@multiversx/sdk-nestjs";
+import { AddressUtils, BinaryUtils } from "@multiversx/sdk-nestjs-common";
+import { AbstractQuery, ElasticQuery, QueryConditionOptions, QueryOperator, QueryType, RangeGreaterThanOrEqual, RangeLowerThan, RangeLowerThanOrEqual } from "@multiversx/sdk-nestjs-elastic";
 import { Injectable } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { QueryPagination } from "src/common/entities/query.pagination";
@@ -268,12 +269,18 @@ export class ElasticIndexerHelper {
       elasticQuery = elasticQuery.withMustCondition(QueryType.Should(queries));
     }
 
-    if (filter.token) {
-      elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Match('tokens', filter.token, QueryOperator.AND));
+    if (filter.token === 'EGLD') {
+      elasticQuery = elasticQuery.withMustNotCondition(QueryType.Match('value', '0'));
+    } else {
+      elasticQuery = elasticQuery.withMustMatchCondition('tokens', filter.token, QueryOperator.AND);
     }
 
     if (filter.functions && filter.functions.length > 0 && this.apiConfigService.getIsIndexerV3FlagActive()) {
-      elasticQuery = elasticQuery.withMustMultiShouldCondition(filter.functions, func => QueryType.Match('function', func));
+      if (filter.functions[0] === '') {
+        elasticQuery = elasticQuery.withMustNotExistCondition('function');
+      } else {
+        elasticQuery = elasticQuery.withMustMultiShouldCondition(filter.functions, func => QueryType.Match('function', func));
+      }
     }
 
     if (filter.senderShard !== undefined) {
@@ -422,7 +429,11 @@ export class ElasticIndexerHelper {
       .withDateRangeFilter('timestamp', filter.before, filter.after);
 
     if (filter.functions && filter.functions.length > 0 && this.apiConfigService.getIsIndexerV3FlagActive()) {
-      elasticQuery = elasticQuery.withMustMultiShouldCondition(filter.functions, func => QueryType.Match('function', func));
+      if (filter.functions[0] === '') {
+        elasticQuery = elasticQuery.withMustNotExistCondition('function');
+      } else {
+        elasticQuery = elasticQuery.withMustMultiShouldCondition(filter.functions, func => QueryType.Match('function', func));
+      }
     }
 
     if (filter.token === 'EGLD') {

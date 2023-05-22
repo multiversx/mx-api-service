@@ -19,9 +19,11 @@ import { SortOrder } from "src/common/entities/sort.order";
 import { TokenSort } from "./entities/token.sort";
 import { TokenWithRoles } from "./entities/token.with.roles";
 import { TokenWithRolesFilter } from "./entities/token.with.roles.filter";
-import { AddressUtils, ApiUtils, BinaryUtils, ElrondCachingService, NumberUtils, TokenUtils } from "@multiversx/sdk-nestjs";
+import { AddressUtils, BinaryUtils, NumberUtils, TokenUtils } from "@multiversx/sdk-nestjs-common";
+import { ApiUtils } from "@multiversx/sdk-nestjs-http";
+import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { IndexerService } from "src/common/indexer/indexer.service";
-import { OriginLogger } from "@multiversx/sdk-nestjs";
+import { OriginLogger } from "@multiversx/sdk-nestjs-common";
 import { TokenLogo } from "./entities/token.logo";
 import { AssetsService } from "src/common/assets/assets.service";
 import { CacheInfo } from "src/utils/cache.info";
@@ -34,6 +36,7 @@ import { NftType } from "../nfts/entities/nft.type";
 import { TokenType } from "src/common/indexer/entities";
 import { TokenAssetsPriceSourceType } from "src/common/assets/entities/token.assets.price.source.type";
 import { DataApiService } from "src/common/data-api/data-api.service";
+import { TrieOperationsTimeoutError } from "../esdt/exceptions/trie.operations.timeout.error";
 
 @Injectable()
 export class TokenService {
@@ -45,7 +48,7 @@ export class TokenService {
     private readonly gatewayService: GatewayService,
     private readonly apiConfigService: ApiConfigService,
     private readonly assetsService: AssetsService,
-    private readonly cachingService: ElrondCachingService,
+    private readonly cachingService: CacheService,
     @Inject(forwardRef(() => TransactionService))
     private readonly transactionService: TransactionService,
     @Inject(forwardRef(() => MexTokenService))
@@ -213,7 +216,7 @@ export class TokenService {
     if (AddressUtils.isSmartContractAddress(address)) {
       tokens = await this.getTokensForAddressFromElastic(address, queryPagination, filter);
     } else {
-      tokens = await this.getTokensForAddressFromGateway(address, queryPagination, filter);
+      tokens = await this.getTokensForAddressFromGatewayWithElasticFallback(address, queryPagination, filter);
     }
 
     for (const token of tokens) {
@@ -257,6 +260,24 @@ export class TokenService {
   applyValueUsd(tokenWithBalance: TokenWithBalance) {
     if (tokenWithBalance.price) {
       tokenWithBalance.valueUsd = tokenWithBalance.price * NumberUtils.denominateString(tokenWithBalance.balance, tokenWithBalance.decimals);
+    }
+  }
+
+  async getTokensForAddressFromGatewayWithElasticFallback(address: string, queryPagination: QueryPagination, filter: TokenFilter): Promise<TokenWithBalance[]> {
+    const isTrieTimeout = await this.cachingService.get<boolean>(CacheInfo.AddressEsdtTrieTimeout(address).key);
+    if (isTrieTimeout) {
+      return await this.getTokensForAddressFromElastic(address, queryPagination, filter);
+    }
+
+    try {
+      return await this.getTokensForAddressFromGateway(address, queryPagination, filter);
+    } catch (error) {
+      if (error instanceof TrieOperationsTimeoutError) {
+        await this.cachingService.set(CacheInfo.AddressEsdtTrieTimeout(address).key, true, CacheInfo.AddressEsdtTrieTimeout(address).ttl);
+        return await this.getTokensForAddressFromElastic(address, queryPagination, filter);
+      }
+
+      throw error;
     }
   }
 

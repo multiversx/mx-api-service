@@ -1,4 +1,5 @@
-import { ParseBlsHashPipe, ParseEnumPipe, ParseIntPipe, QueryConditionOptions } from "@multiversx/sdk-nestjs";
+import { ParseBlsHashPipe, ParseEnumPipe, ParseIntPipe } from "@multiversx/sdk-nestjs-common";
+import { QueryConditionOptions } from "@multiversx/sdk-nestjs-elastic";
 import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Param, Query } from "@nestjs/common";
 import { ApiExcludeEndpoint, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { Round } from "./entities/round";

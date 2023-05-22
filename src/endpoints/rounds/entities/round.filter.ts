@@ -1,4 +1,4 @@
-import { QueryConditionOptions } from "@multiversx/sdk-nestjs";
+import { QueryConditionOptions } from "@multiversx/sdk-nestjs-elastic";
 import { QueryPagination } from "src/common/entities/query.pagination";
 
 export class RoundFilter extends QueryPagination {

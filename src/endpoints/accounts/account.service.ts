@@ -17,12 +17,13 @@ import { SmartContractResultService } from '../sc-results/scresult.service';
 import { TransactionType } from '../transactions/entities/transaction.type';
 import { AssetsService } from 'src/common/assets/assets.service';
 import { TransactionFilter } from '../transactions/entities/transaction.filter';
-import { AddressUtils, ApiService, ApiUtils, BinaryUtils, ElrondCachingService } from '@multiversx/sdk-nestjs';
+import { CacheService } from "@multiversx/sdk-nestjs-cache";
+import { AddressUtils, BinaryUtils, OriginLogger } from '@multiversx/sdk-nestjs-common';
+import { ApiService, ApiUtils } from "@multiversx/sdk-nestjs-http";
 import { GatewayService } from 'src/common/gateway/gateway.service';
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { AccountOptionalFieldOption } from './entities/account.optional.field.options';
 import { AccountAssets } from 'src/common/assets/entities/account.assets';
-import { OriginLogger } from '@multiversx/sdk-nestjs';
 import { CacheInfo } from 'src/utils/cache.info';
 import { UsernameService } from '../usernames/username.service';
 import { ContractUpgrades } from './entities/contract.upgrades';
@@ -30,7 +31,8 @@ import { AccountVerification } from './entities/account.verification';
 import { AccountFilter } from './entities/account.filter';
 import { AccountHistoryFilter } from './entities/account.history.filter';
 import { ProtocolService } from 'src/common/protocol/protocol.service';
-import { Address } from "@elrondnetwork/erdjs/out";
+import { ProviderService } from '../providers/provider.service';
+import { Provider } from '../providers/entities/provider';
 
 @Injectable()
 export class AccountService {
@@ -39,7 +41,7 @@ export class AccountService {
   constructor(
     private readonly indexerService: IndexerService,
     private readonly gatewayService: GatewayService,
-    private readonly cachingService: ElrondCachingService,
+    private readonly cachingService: CacheService,
     private readonly vmQueryService: VmQueryService,
     private readonly apiConfigService: ApiConfigService,
     @Inject(forwardRef(() => TransactionService))
@@ -56,6 +58,8 @@ export class AccountService {
     private readonly usernameService: UsernameService,
     private readonly apiService: ApiService,
     private readonly protocolService: ProtocolService,
+    @Inject(forwardRef(() => ProviderService))
+    private readonly providerService: ProviderService,
   ) { }
 
   async getAccountsCount(filter: AccountFilter): Promise<number> {
@@ -75,6 +79,8 @@ export class AccountService {
       return null;
     }
 
+    const provider: Provider | undefined = await this.providerService.getProvider(address);
+
     let txCount: number = 0;
     let scrCount: number = 0;
 
@@ -86,15 +92,21 @@ export class AccountService {
       scrCount = await this.getAccountScResults(address);
     }
 
-    const account = await this.getAccountRaw(address, txCount, scrCount);
+    const [account, elasticSearchAccount] = await Promise.all([
+      this.getAccountRaw(address, txCount, scrCount),
+      this.indexerService.getAccount(address),
+    ]);
 
     if (account && withGuardianInfo === true) {
       await this.applyGuardianInfo(account);
     }
 
-    const elasticSearchAccount = await this.indexerService.getAccount(address);
     if (account && elasticSearchAccount) {
       account.timestamp = elasticSearchAccount.timestamp;
+    }
+
+    if (account && provider && provider.owner) {
+      account.ownerAddress = provider.owner;
     }
 
     return account;
@@ -329,7 +341,7 @@ export class AccountService {
   async getDeferredAccount(address: string): Promise<AccountDeferred[]> {
     const publicKey = AddressUtils.bech32Decode(address);
     const delegationContractAddress = this.apiConfigService.getDelegationContractAddress();
-    const delegationContractShardId = AddressUtils.computeShard(Address.fromString(delegationContractAddress).hex(), await this.protocolService.getShardCount());
+    const delegationContractShardId = AddressUtils.computeShard(AddressUtils.bech32Decode(delegationContractAddress), await this.protocolService.getShardCount());
 
     const [
       encodedUserDeferredPaymentList,

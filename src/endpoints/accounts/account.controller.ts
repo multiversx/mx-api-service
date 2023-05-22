@@ -33,7 +33,7 @@ import { ProviderStake } from '../stake/entities/provider.stake';
 import { TokenDetailedWithBalance } from '../tokens/entities/token.detailed.with.balance';
 import { NftCollectionAccount } from '../collections/entities/nft.collection.account';
 import { TokenWithRoles } from '../tokens/entities/token.with.roles';
-import { ParseAddressPipe, ParseArrayPipe, ParseBlockHashPipe, ParseCollectionPipe, ParseNftPipe, ParseBoolPipe, ParseEnumArrayPipe, ParseEnumPipe, ParseIntPipe, ParseTokenOrNftPipe, ParseTransactionHashPipe, ParseAddressArrayPipe, ApplyComplexity } from '@multiversx/sdk-nestjs';
+import { ParseAddressPipe, ParseTokenPipe, OriginLogger, ParseArrayPipe, ParseBlockHashPipe, ParseCollectionPipe, ParseNftPipe, ParseBoolPipe, ParseEnumArrayPipe, ParseEnumPipe, ParseIntPipe, ParseTokenOrNftPipe, ParseTransactionHashPipe, ParseAddressArrayPipe, ApplyComplexity } from '@multiversx/sdk-nestjs-common';
 import { QueryPagination } from 'src/common/entities/query.pagination';
 import { TransactionQueryOptions } from '../transactions/entities/transactions.query.options';
 import { TokenWithRolesFilter } from '../tokens/entities/token.with.roles.filter';
@@ -42,9 +42,7 @@ import { TokenFilter } from '../tokens/entities/token.filter';
 import { NftFilter } from '../nfts/entities/nft.filter';
 import { NftQueryOptions } from '../nfts/entities/nft.query.options';
 import { TransactionFilter } from '../transactions/entities/transaction.filter';
-import { ParseTokenPipe } from '@multiversx/sdk-nestjs';
 import { TransactionDetailed } from '../transactions/entities/transaction.detailed';
-import { OriginLogger } from '@multiversx/sdk-nestjs';
 import { AccountDelegation } from '../stake/entities/account.delegation';
 import { DelegationService } from '../delegation/delegation.service';
 import { TokenType } from '../tokens/entities/token.type';
@@ -53,6 +51,7 @@ import { AccountVerification } from './entities/account.verification';
 import { AccountFilter } from './entities/account.filter';
 import { AccountSort } from './entities/account.sort';
 import { AccountHistoryFilter } from './entities/account.history.filter';
+import { ParseArrayPipeOptions } from '@multiversx/sdk-nestjs-common/lib/pipes/entities/parse.array.options';
 
 @Controller()
 @ApiTags('accounts')
@@ -666,7 +665,7 @@ export class AccountController {
     @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash?: string,
     @Query('hashes', ParseArrayPipe) hashes?: string[],
     @Query('status', new ParseEnumPipe(TransactionStatus)) status?: TransactionStatus,
-    @Query('function', ParseArrayPipe) functions?: string[],
+    @Query('function', new ParseArrayPipe(new ParseArrayPipeOptions({ allowEmptyString: true }))) functions?: string[],
     @Query('before', ParseIntPipe) before?: number,
     @Query('after', ParseIntPipe) after?: number,
     @Query('order', new ParseEnumPipe(SortOrder)) order?: SortOrder,
@@ -722,7 +721,7 @@ export class AccountController {
     @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash?: string,
     @Query('hashes', ParseArrayPipe) hashes?: string[],
     @Query('status', new ParseEnumPipe(TransactionStatus)) status?: TransactionStatus,
-    @Query('function', ParseArrayPipe) functions?: string[],
+    @Query('function', new ParseArrayPipe(new ParseArrayPipeOptions({ allowEmptyString: true }))) functions?: string[],
     @Query('before', ParseIntPipe) before?: number,
     @Query('after', ParseIntPipe) after?: number,
   ): Promise<number> {
@@ -777,7 +776,7 @@ export class AccountController {
     @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash?: string,
     @Query('hashes', ParseArrayPipe) hashes?: string[],
     @Query('status', new ParseEnumPipe(TransactionStatus)) status?: TransactionStatus,
-    @Query('function', ParseArrayPipe) functions?: string[],
+    @Query('function', new ParseArrayPipe(new ParseArrayPipeOptions({ allowEmptyString: true }))) functions?: string[],
     @Query('before', ParseIntPipe) before?: number,
     @Query('after', ParseIntPipe) after?: number,
     @Query('fields', ParseArrayPipe) fields?: string[],
@@ -839,7 +838,7 @@ export class AccountController {
     @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash?: string,
     @Query('hashes', ParseArrayPipe) hashes?: string[],
     @Query('status', new ParseEnumPipe(TransactionStatus)) status?: TransactionStatus,
-    @Query('function', ParseArrayPipe) functions?: string[],
+    @Query('function', new ParseArrayPipe(new ParseArrayPipeOptions({ allowEmptyString: true }))) functions?: string[],
     @Query('before', ParseIntPipe) before?: number,
     @Query('after', ParseIntPipe) after?: number,
   ): Promise<number> {
@@ -875,7 +874,7 @@ export class AccountController {
     @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash?: string,
     @Query('hashes', ParseArrayPipe) hashes?: string[],
     @Query('status', new ParseEnumPipe(TransactionStatus)) status?: TransactionStatus,
-    @Query('function', ParseArrayPipe) functions?: string[],
+    @Query('function', new ParseArrayPipe(new ParseArrayPipeOptions({ allowEmptyString: true }))) functions?: string[],
     @Query('before', ParseIntPipe) before?: number,
     @Query('after', ParseIntPipe) after?: number,
   ): Promise<number> {

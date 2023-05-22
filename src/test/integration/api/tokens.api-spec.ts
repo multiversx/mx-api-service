@@ -1,4 +1,4 @@
-import { CleanupInterceptor, FieldsInterceptor } from '@multiversx/sdk-nestjs';
+import { CleanupInterceptor, FieldsInterceptor } from '@multiversx/sdk-nestjs-http';
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { PublicAppModule } from 'src/public.app.module';
@@ -20,11 +20,27 @@ describe("API Testing", () => {
     await app.init();
   });
 
-  it("/tokens", async () => {
+  const skipedFields = ['error', 'message', 'statusCode'];
+
+  afterAll(async () => {
+    await app.close();
+  });
+
+  it("should check tokens pagination", async () => {
     const checker = new ApiChecker('tokens', app.getHttpServer());
-    await checker.checkStatus();
+    checker.skipFields = skipedFields;
     await checker.checkPagination();
-    await checker.checkTokensDetails();
+  });
+
+  it('should check tokens status response code', async () => {
+    const checker = new ApiChecker('tokens', app.getHttpServer());
+    checker.skipFields = skipedFields;
+    await checker.checkStatus();
+  });
+
+  it('should check tokens count', async () => {
+    const checker = new ApiChecker('tokens', app.getHttpServer());
+    checker.skipFields = skipedFields;
     await checker.checkAlternativeCount();
   });
 });

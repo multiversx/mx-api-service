@@ -5,7 +5,7 @@ import { Transaction } from './transaction';
 import { TransactionReceipt } from './transaction.receipt';
 import { TransactionLog } from './transaction.log';
 import { TransactionOperation } from './transaction.operation';
-import { ComplexityEstimation } from '@multiversx/sdk-nestjs';
+import { ComplexityEstimation } from '@multiversx/sdk-nestjs-common';
 
 @ObjectType(TransactionDetailed.name, { description: 'Detailed Transaction object type that extends Transaction.' })
 export class TransactionDetailed extends Transaction {
@@ -56,5 +56,9 @@ export class TransactionDetailed extends Transaction {
   @ApiProperty({ type: Number, nullable: true })
   @ComplexityEstimation({ group: "blockInfo", value: 200, alternatives: ["withBlockInfo"] })
   receiverBlockNonce: number | undefined = undefined;
+
+  @Field(() => Boolean, { description: "InTransit transaction details.", nullable: true })
+  @ApiProperty({ type: Boolean, nullable: true })
+  inTransit: boolean | undefined = undefined;
 }
 

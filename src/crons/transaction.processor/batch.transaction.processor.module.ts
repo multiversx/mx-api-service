@@ -10,7 +10,7 @@ import { BatchTransactionProcessorService } from "./batch.transaction.processor.
   imports: [
     ScheduleModule.forRoot(),
     ApiConfigModule,
-    DynamicModuleUtils.getCachingModule(),
+    DynamicModuleUtils.getCacheModule(),
     TransactionsBatchModule,
     TransactionModule,
   ],

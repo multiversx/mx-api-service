@@ -9,7 +9,8 @@ import { TokenRoles } from "../tokens/entities/token.roles";
 import { AssetsService } from "../../common/assets/assets.service";
 import { EsdtLockedAccount } from "./entities/esdt.locked.account";
 import { EsdtSupply } from "./entities/esdt.supply";
-import { BinaryUtils, Constants, AddressUtils, OriginLogger, BatchUtils, ElrondCachingService } from "@multiversx/sdk-nestjs";
+import { BinaryUtils, Constants, AddressUtils, OriginLogger, BatchUtils } from "@multiversx/sdk-nestjs-common";
+import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { EsdtType } from "./entities/esdt.type";
 import { ElasticIndexerService } from "src/common/indexer/elastic/elastic.indexer.service";
@@ -22,7 +23,7 @@ export class EsdtService {
   constructor(
     private readonly gatewayService: GatewayService,
     private readonly apiConfigService: ApiConfigService,
-    private readonly cachingService: ElrondCachingService,
+    private readonly cachingService: CacheService,
     private readonly vmQueryService: VmQueryService,
     private readonly indexerService: IndexerService,
     @Inject(forwardRef(() => AssetsService))

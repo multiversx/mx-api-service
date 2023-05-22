@@ -1,9 +1,8 @@
-import { ElrondCachingService } from "@multiversx/sdk-nestjs";
+import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import BigNumber from "bignumber.js";
 import { CacheInfo } from "src/utils/cache.info";
 import { KeybaseIdentity } from "src/common/keybase/entities/keybase.identity";
-import { KeybaseService } from "src/common/keybase/keybase.service";
 import { NetworkService } from "../network/network.service";
 import { Node } from "../nodes/entities/node";
 import { NodeService } from "../nodes/node.service";
@@ -19,9 +18,7 @@ export class IdentitiesService {
   constructor(
     @Inject(forwardRef(() => NodeService))
     private readonly nodeService: NodeService,
-    @Inject(forwardRef(() => KeybaseService))
-    private readonly keybaseService: KeybaseService,
-    private readonly cachingService: ElrondCachingService,
+    private readonly cacheService: CacheService,
     @Inject(forwardRef(() => NetworkService))
     private readonly networkService: NetworkService
   ) { }
@@ -46,7 +43,7 @@ export class IdentitiesService {
   }
 
   async getAllIdentities(): Promise<Identity[]> {
-    return await this.cachingService.getOrSet(
+    return await this.cacheService.getOrSet(
       CacheInfo.Identities.key,
       async () => await this.getAllIdentitiesRaw(),
       CacheInfo.Identities.ttl
@@ -154,13 +151,17 @@ export class IdentitiesService {
 
   async getAllIdentitiesRaw(): Promise<Identity[]> {
     const nodes = await this.nodeService.getAllNodes();
-    const { baseApr, topUpApr } = await this.networkService.getApr();
 
-    const keybaseIdentities: (KeybaseIdentity | undefined)[] = await this.keybaseService.getCachedIdentityProfilesKeybases();
+    const distinctIdentities = nodes.filter(x => x.identity).map(x => x.identity).distinct();
 
     const identitiesDetailed: IdentityDetailed[] = [];
 
-    for (const keybaseIdentity of keybaseIdentities) {
+    for (const identity of distinctIdentities) {
+      if (!identity) {
+        continue;
+      }
+
+      const keybaseIdentity = await this.cacheService.get<KeybaseIdentity>(CacheInfo.IdentityProfile(identity).key);
       if (keybaseIdentity && keybaseIdentity.identity) {
         const identityDetailed = new IdentityDetailed();
         identityDetailed.avatar = keybaseIdentity.avatar;
@@ -196,6 +197,7 @@ export class IdentitiesService {
     }
 
     const { locked: totalLocked } = this.computeTotalStakeAndTopUp(nodes);
+    const { baseApr, topUpApr } = await this.networkService.getApr();
 
     let identities: Identity[] = identitiesDetailed.map((identityDetailed: IdentityDetailed) => {
       if (identityDetailed.nodes && identityDetailed.nodes.length) {
@@ -219,7 +221,7 @@ export class IdentitiesService {
         identity.stakePercent = stakeInfo.stakePercent;
         if (identity.stake && identity.topUp) {
           const stakeReturn = new BigNumber(identity.stake.slice(0, -18)).multipliedBy(new BigNumber(baseApr));
-          const topUpReturn = new BigNumber(identity.topUp.slice(0, -18)).multipliedBy(new BigNumber(topUpApr));
+          const topUpReturn = identity.topUp !== '0' ? new BigNumber(identity.topUp.slice(0, -18)).multipliedBy(new BigNumber(topUpApr)) : new BigNumber(0);
           const annualReturn = stakeReturn.plus(topUpReturn).multipliedBy((identity.validators ?? 0) - (stakeInfo.queued ?? 0)).dividedBy(identity.validators ?? 0);
           const aprStr = new BigNumber(annualReturn).multipliedBy(100).div(identity.locked.slice(0, -18)).toString();
           identity.apr = Number(aprStr).toRounded(2);

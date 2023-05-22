@@ -6,5 +6,5 @@ export class TransactionBatchSimplifiedResult {
 
   status?: TransactionBatchStatus;
 
-  transactions: TransactionDetails[] = [];
+  transactions: TransactionDetails[][] = [];
 }

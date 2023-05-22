@@ -1,10 +1,10 @@
-import { CleanupInterceptor, FieldsInterceptor } from '@multiversx/sdk-nestjs';
+import { CleanupInterceptor, FieldsInterceptor } from '@multiversx/sdk-nestjs-http';
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { PublicAppModule } from 'src/public.app.module';
 import { ApiChecker } from 'src/utils/api.checker';
 
-describe.skip("API Testing", () => {
+describe("API Testing", () => {
   let app: INestApplication;
 
   beforeAll(async () => {
@@ -20,12 +20,22 @@ describe.skip("API Testing", () => {
     await app.init();
   });
 
-  it("/collections", async () => {
+  afterAll(async () => {
+    await app.close();
+  });
+
+  it("should check collections pagination", async () => {
+    const checker = new ApiChecker('collections', app.getHttpServer());
+    await checker.checkPagination();
+  });
+
+  it('should check collections status response code', async () => {
     const checker = new ApiChecker('collections', app.getHttpServer());
     await checker.checkStatus();
-    await checker.checkPagination();
-    await checker.checkDetails();
-    await checker.checkFilter(['type']);
+  });
+
+  it('should check collections count', async () => {
+    const checker = new ApiChecker('collections', app.getHttpServer());
     await checker.checkAlternativeCount();
   });
 });

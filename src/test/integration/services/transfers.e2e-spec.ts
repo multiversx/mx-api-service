@@ -47,7 +47,7 @@ describe('Transfers Service', () => {
       expect(result).toStrictEqual(250000);
     });
 
-    it('should return the count of transfers filtered by address', async () => {
+    it('should return the count of transfers filtered by address ', async () => {
       const filter: TransactionFilter = new AccountFilter();
       filter.address = 'erd1qga7ze0l03chfgru0a32wxqf2226nzrxnyhzer9lmudqhjgy7ycqjjyknz';
 

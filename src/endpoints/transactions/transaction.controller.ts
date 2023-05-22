@@ -1,5 +1,5 @@
-import { ParseAddressAndMetachainPipe, ApplyComplexity, ParseAddressArrayPipe, ParseArrayPipe, QueryConditionOptions } from '@multiversx/sdk-nestjs';
-import { ParseBlockHashPipe, ParseBoolPipe, ParseEnumPipe, ParseIntPipe, ParseTransactionHashPipe } from '@multiversx/sdk-nestjs';
+import { QueryConditionOptions } from '@multiversx/sdk-nestjs-elastic';
+import { ParseBlockHashPipe, ParseBoolPipe, ParseEnumPipe, ParseIntPipe, ParseTransactionHashPipe, ParseAddressAndMetachainPipe, ApplyComplexity, ParseAddressArrayPipe, ParseArrayPipe } from '@multiversx/sdk-nestjs-common';
 import { BadRequestException, Body, Controller, DefaultValuePipe, Get, NotFoundException, Param, Post, Query } from '@nestjs/common';
 import { ApiCreatedResponse, ApiExcludeEndpoint, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { QueryPagination } from 'src/common/entities/query.pagination';
@@ -13,6 +13,7 @@ import { TransactionSendResult } from './entities/transaction.send.result';
 import { TransactionStatus } from './entities/transaction.status';
 import { TransactionQueryOptions } from './entities/transactions.query.options';
 import { TransactionService } from './transaction.service';
+import { ParseArrayPipeOptions } from '@multiversx/sdk-nestjs-common/lib/pipes/entities/parse.array.options';
 
 @Controller()
 @ApiTags('transactions')
@@ -55,7 +56,7 @@ export class TransactionController {
     @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash?: string,
     @Query('hashes', ParseArrayPipe) hashes?: string[],
     @Query('status', new ParseEnumPipe(TransactionStatus)) status?: TransactionStatus,
-    @Query('function', ParseArrayPipe) functions?: string[],
+    @Query('function', new ParseArrayPipe(new ParseArrayPipeOptions({ allowEmptyString: true }))) functions?: string[],
     @Query('condition') condition?: QueryConditionOptions,
     @Query('before', ParseIntPipe) before?: number,
     @Query('after', ParseIntPipe) after?: number,
@@ -116,7 +117,7 @@ export class TransactionController {
     @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash?: string,
     @Query('hashes', ParseArrayPipe) hashes?: string[],
     @Query('status', new ParseEnumPipe(TransactionStatus)) status?: TransactionStatus,
-    @Query('function', ParseArrayPipe) functions?: string[],
+    @Query('function', new ParseArrayPipe(new ParseArrayPipeOptions({ allowEmptyString: true }))) functions?: string[],
     @Query('condition') condition?: QueryConditionOptions,
     @Query('before', ParseIntPipe) before?: number,
     @Query('after', ParseIntPipe) after?: number,
@@ -148,7 +149,7 @@ export class TransactionController {
     @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash?: string,
     @Query('hashes', ParseArrayPipe) hashes?: string[],
     @Query('status', new ParseEnumPipe(TransactionStatus)) status?: TransactionStatus,
-    @Query('function', ParseArrayPipe) functions?: string[],
+    @Query('function', new ParseArrayPipe(new ParseArrayPipeOptions({ allowEmptyString: true }))) functions?: string[],
     @Query('condition') condition?: QueryConditionOptions,
     @Query('before', ParseIntPipe) before?: number,
     @Query('after', ParseIntPipe) after?: number,

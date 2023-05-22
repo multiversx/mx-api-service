@@ -1,5 +1,5 @@
 import { Test } from "@nestjs/testing";
-import '@multiversx/sdk-nestjs/lib/src/utils/extensions/jest.extensions';
+import '@multiversx/sdk-nestjs-common/lib/utils/extensions/jest.extensions';
 import { PublicAppModule } from "src/public.app.module";
 import { SmartContractResultFilter } from "src/endpoints/sc-results/entities/smart.contract.result.filter";
 import { SmartContractResultService } from "src/endpoints/sc-results/scresult.service";

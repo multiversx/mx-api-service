@@ -1,4 +1,4 @@
-import { CleanupInterceptor, FieldsInterceptor } from '@multiversx/sdk-nestjs';
+import { CleanupInterceptor, FieldsInterceptor } from '@multiversx/sdk-nestjs-http';
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { PublicAppModule } from 'src/public.app.module';
@@ -20,10 +20,22 @@ describe("API Testing", () => {
     await app.init();
   });
 
-  it("/providers", async () => {
+  afterAll(async () => {
+    await app.close();
+  });
+
+  it('should check providers status response code', async () => {
     const checker = new ApiChecker('providers', app.getHttpServer());
     await checker.checkStatus();
-    await checker.checkDetails();
-    await checker.checkFilter(['identity']);
+  });
+
+  it('should check providers count', async () => {
+    const checker = new ApiChecker('providers', app.getHttpServer());
+    await checker.checkAlternativeCount();
+  });
+
+  it('should check providers details', async () => {
+    const checker = new ApiChecker('providers', app.getHttpServer());
+    await checker.checkDetails('provider');
   });
 });

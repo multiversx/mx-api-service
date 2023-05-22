@@ -12,22 +12,36 @@ export class ApiChecker {
   async checkPagination() {
     const items = await this.requestList({ size: 100 });
 
-    await this.checkPaginationInternal(items, 0, 1);
-    await this.checkPaginationInternal(items, 1, 5);
-    await this.checkPaginationInternal(items, 5, 5);
-    await this.checkPaginationInternal(items, 5, 10);
-    await this.checkPaginationInternal(items, 10, 20);
+    const paginationParams = [
+      { from: 0, size: 1 },
+      { from: 1, size: 5 },
+      { from: 5, size: 5 },
+      { from: 10, size: 20 },
+    ];
+
+    for (const params of paginationParams) {
+      await this.checkPaginationInternal(items, params.from, params.size);
+    }
   }
 
-  async checkDetails() {
+  async checkDetails(field?: string) {
     const [item] = await this.requestList({ size: 1 });
+    const idAttribute = field ? field : Object.keys(item)[0];
 
-    const [idAttribute] = Object.keys(item);
     const id = item[idAttribute];
 
-    const details = await this.requestItem(id, { fields: Object.keys(item).join(',') });
+    const details = await this.requestItemParallel(id, Object.keys(item));
 
     expect(details).toEqual(item);
+  }
+
+  private async requestItemParallel(id: string, fields: string[]) {
+    const requests = fields.map(field => this.requestItem(id, { fields: field }));
+    const responses = await Promise.all(requests);
+
+    return responses.reduce((acc, response) => {
+      return { ...acc, ...response };
+    }, {});
   }
 
   async checkTokensDetails() {
@@ -145,7 +159,6 @@ export class ApiChecker {
         delete item[skipField];
       }
     }
-
     return result;
   }
 

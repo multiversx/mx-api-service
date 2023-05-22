@@ -7,9 +7,11 @@ import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { GenerateThumbnailResult } from "./entities/generate.thumbnail.result";
 import { ThumbnailType } from "./entities/thumbnail.type";
 import { AWSService } from "./aws.service";
-import { ApiService, ElrondCachingService, Constants, FileUtils } from "@multiversx/sdk-nestjs";
+import { Constants, FileUtils } from "@multiversx/sdk-nestjs-common";
+import { ApiService } from "@multiversx/sdk-nestjs-http";
+import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { TokenHelpers } from "src/utils/token.helpers";
-import { OriginLogger } from "@multiversx/sdk-nestjs";
+import { OriginLogger } from "@multiversx/sdk-nestjs-common";
 import { CacheInfo } from "src/utils/cache.info";
 import { CachingUtils } from "src/utils/caching.utils";
 
@@ -23,7 +25,7 @@ export class NftThumbnailService {
     private readonly apiConfigService: ApiConfigService,
     private readonly awsService: AWSService,
     private readonly apiService: ApiService,
-    private readonly cachingService: ElrondCachingService,
+    private readonly cachingService: CacheService,
   ) { }
 
   private async extractThumbnailFromImage(buffer: Buffer): Promise<Buffer | undefined> {
@@ -83,13 +85,20 @@ export class NftThumbnailService {
     const outputPath = path.join(this.apiConfigService.getTempUrl(), `${nftIdentifier}.screenshot.jpg`);
 
     try {
-      await new Promise(resolve => {
+      await new Promise((resolve, reject) => {
         ffmpeg(audioPath)
           .complexFilter([
             { filter: 'showwavespic', options: { s: '600x600', colors: '#1f43f4' } },
           ])
           .frames(1)
           .saveToFile(outputPath)
+          .on('error', (error, stdout, stderr) => {
+            this.logger.error(`An unhandled exception occurred when extracting waveform from audio path '${audioPath}'`);
+            this.logger.error(error);
+            this.logger.error(stdout);
+            this.logger.error(stderr);
+            reject(error);
+          })
           .on('end', () => {
             resolve(true);
           });

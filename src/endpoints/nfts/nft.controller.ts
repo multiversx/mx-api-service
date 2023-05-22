@@ -9,7 +9,7 @@ import { NftType } from "./entities/nft.type";
 import { NftService } from "./nft.service";
 import { QueryPagination } from 'src/common/entities/query.pagination';
 import { NftQueryOptions } from './entities/nft.query.options';
-import { ParseAddressPipe, ParseBoolPipe, ParseArrayPipe, ParseIntPipe, ParseNftPipe, ParseCollectionPipe, ApplyComplexity, ParseAddressArrayPipe, ParseBlockHashPipe, ParseEnumPipe, ParseRecordPipe } from '@multiversx/sdk-nestjs';
+import { ParseAddressPipe, ParseBoolPipe, ParseArrayPipe, ParseIntPipe, ParseNftPipe, ParseCollectionPipe, ApplyComplexity, ParseAddressArrayPipe, ParseBlockHashPipe, ParseEnumPipe, ParseRecordPipe } from '@multiversx/sdk-nestjs-common';
 import { TransactionDetailed } from '../transactions/entities/transaction.detailed';
 import { TransactionStatus } from '../transactions/entities/transaction.status';
 import { SortOrder } from 'src/common/entities/sort.order';

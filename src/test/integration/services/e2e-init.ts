@@ -1,5 +1,5 @@
-import { ElrondCachingService } from "@multiversx/sdk-nestjs";
-import { Constants, FileUtils } from "@multiversx/sdk-nestjs";
+import { CacheService } from "@multiversx/sdk-nestjs-cache";
+import { Constants, FileUtils } from "@multiversx/sdk-nestjs-common";
 import { Test } from "@nestjs/testing";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { CacheInfo } from "src/utils/cache.info";
@@ -8,11 +8,11 @@ import { KeybaseService } from "src/common/keybase/keybase.service";
 import { NodeService } from "src/endpoints/nodes/node.service";
 import { ProviderService } from "src/endpoints/providers/provider.service";
 import { PublicAppModule } from "src/public.app.module";
-import '@multiversx/sdk-nestjs/lib/src/utils/extensions/jest.extensions';
+import '@multiversx/sdk-nestjs-common/lib/utils/extensions/jest.extensions';
 import { TokenService } from "src/endpoints/tokens/token.service";
 
 export default class Initializer {
-  private static cachingService: ElrondCachingService;
+  private static cachingService: CacheService;
   private static apiConfigService: ApiConfigService;
 
   static async initialize() {
@@ -21,7 +21,7 @@ export default class Initializer {
     }).compile();
 
     Initializer.cachingService =
-      moduleRef.get<ElrondCachingService>(ElrondCachingService);
+      moduleRef.get<CacheService>(CacheService);
     Initializer.apiConfigService =
       moduleRef.get<ApiConfigService>(ApiConfigService);
     const keybaseService = moduleRef.get<KeybaseService>(KeybaseService);
@@ -59,7 +59,7 @@ export default class Initializer {
         `${MOCK_PATH}heartbeat.mock.json`,
       );
       jest
-        .spyOn(NodeService.prototype, 'getHeartbeat')
+        .spyOn(NodeService.prototype, 'getHeartbeatAndValidators')
         // eslint-disable-next-line require-await
         .mockImplementation(jest.fn(async () => heartbeat));
 
@@ -94,7 +94,6 @@ export default class Initializer {
 
     await this.execute('Confirm keybases against keybase.pub', async () => await keybaseService.confirmKeybasesAgainstGithub());
     await this.execute('Confirm keybase against keybase.io', async () => await keybaseService.confirmIdentityProfilesAgainstKeybaseIo());
-    await this.fetch(CacheInfo.Keybases.key, async () => await keybaseService.confirmKeybasesAgainstCache());
     await this.fetch(CacheInfo.Nodes.key, async () => await nodeService.getAllNodesRaw());
     await this.fetch(CacheInfo.Providers.key, async () => await providerService.getAllProvidersRaw());
     await this.fetch(CacheInfo.AllEsdtTokens.key, async () => await tokenService.getAllTokensRaw());

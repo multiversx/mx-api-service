@@ -6,8 +6,9 @@ import { GatewayService } from "src/common/gateway/gateway.service";
 import { Response, Request } from "express";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
 import { PluginService } from "src/common/plugins/plugin.service";
-import { Constants, ParseAddressPipe, ParseBlockHashPipe, ParseTransactionHashPipe, ElrondCachingService, NoCache } from "@multiversx/sdk-nestjs";
-import { OriginLogger } from "@multiversx/sdk-nestjs";
+import { Constants, ParseAddressPipe, ParseBlockHashPipe, ParseTransactionHashPipe } from "@multiversx/sdk-nestjs-common";
+import { CacheService, NoCache } from "@multiversx/sdk-nestjs-cache";
+import { OriginLogger } from "@multiversx/sdk-nestjs-common";
 
 @Controller()
 @ApiTags('proxy')
@@ -17,7 +18,7 @@ export class ProxyController {
   constructor(
     private readonly gatewayService: GatewayService,
     private readonly vmQueryService: VmQueryService,
-    private readonly cachingService: ElrondCachingService,
+    private readonly cachingService: CacheService,
     private readonly pluginService: PluginService,
   ) { }
 
@@ -334,6 +335,12 @@ export class ProxyController {
   @ApiExcludeEndpoint()
   async getHyperblockByHash(@Param('hash', ParseBlockHashPipe) hash: number) {
     return await this.gatewayGet(`hyperblock/by-hash/${hash}`, GatewayComponentRequest.hyperblockByHash);
+  }
+
+  @Get('/network/gas-configs')
+  @ApiExcludeEndpoint()
+  async getGasConfigs() {
+    return await this.gatewayGet('network/gas-configs', GatewayComponentRequest.gasConfigs);
   }
 
   private async gatewayGet(url: string, component: GatewayComponentRequest, params: any = undefined, errorHandler?: (error: any) => Promise<boolean>) {

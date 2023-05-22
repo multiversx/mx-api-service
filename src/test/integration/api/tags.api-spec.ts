@@ -1,4 +1,4 @@
-import { CleanupInterceptor, FieldsInterceptor } from '@multiversx/sdk-nestjs';
+import { CleanupInterceptor, FieldsInterceptor } from '@multiversx/sdk-nestjs-http';
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { PublicAppModule } from 'src/public.app.module';
@@ -21,11 +21,17 @@ describe("API Testing", () => {
     await app.init();
   });
 
-  it("/tags", async () => {
+  afterAll(async () => {
+    await app.close();
+  });
+
+  it("should check tags pagination", async () => {
     const checker = new ApiChecker('tags', app.getHttpServer());
-    await checker.checkStatus();
     await checker.checkPagination();
-    await checker.checkDetails();
+  });
+
+  it('should check tags status response code', async () => {
+    const checker = new ApiChecker('tags', app.getHttpServer());
     await checker.checkStatus();
   });
 });

@@ -1,4 +1,5 @@
-import { ElrondCachingService, JwtAdminGuard, NativeAuthGuard } from "@multiversx/sdk-nestjs";
+import { JwtAdminGuard, NativeAuthGuard } from "@multiversx/sdk-nestjs-auth";
+import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { Body, Controller, Delete, Get, HttpException, HttpStatus, Param, Put, UseGuards } from "@nestjs/common";
 import { ApiExcludeController, ApiResponse } from "@nestjs/swagger";
 import { CacheValue } from "./entities/cache.value";
@@ -7,7 +8,7 @@ import { CacheValue } from "./entities/cache.value";
 @ApiExcludeController()
 export class LocalCacheController {
   constructor(
-    private readonly cachingService: ElrondCachingService,
+    private readonly cachingService: CacheService,
   ) { }
 
   @UseGuards(NativeAuthGuard, JwtAdminGuard)

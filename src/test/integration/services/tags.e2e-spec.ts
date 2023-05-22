@@ -1,4 +1,4 @@
-import { ElrondCachingService } from "@multiversx/sdk-nestjs";
+import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { Test } from "@nestjs/testing";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { IndexerService } from "src/common/indexer/indexer.service";
@@ -9,7 +9,7 @@ import { CacheInfo } from "src/utils/cache.info";
 describe('TagService', () => {
   let tagService: TagService;
   let indexerService: IndexerService;
-  let cachingService: ElrondCachingService;
+  let cachingService: CacheService;
 
   beforeEach(async () => {
     const moduleRef = await Test.createTestingModule({
@@ -22,13 +22,13 @@ describe('TagService', () => {
             getTag: jest.fn(),
           },
         },
-        { provide: ElrondCachingService, useValue: { getOrSet: jest.fn() } },
+        { provide: CacheService, useValue: { getOrSet: jest.fn() } },
       ],
     }).compile();
 
     tagService = moduleRef.get<TagService>(TagService);
     indexerService = moduleRef.get<IndexerService>(IndexerService);
-    cachingService = moduleRef.get<ElrondCachingService>(ElrondCachingService);
+    cachingService = moduleRef.get<CacheService>(CacheService);
   });
 
   describe('getNftTagCount', () => {

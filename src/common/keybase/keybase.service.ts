@@ -1,30 +1,32 @@
 import { forwardRef, HttpStatus, Inject, Injectable } from "@nestjs/common";
 import { NodeService } from "src/endpoints/nodes/node.service";
 import { ProviderService } from "src/endpoints/providers/provider.service";
-import { Keybase } from "./entities/keybase";
 import { KeybaseIdentity } from "./entities/keybase.identity";
-import { KeybaseState } from "./entities/keybase.state";
 import { CacheInfo } from "../../utils/cache.info";
 import { GithubService } from "../github/github.service";
-import { ApiService, ApiUtils, ElrondCachingService, Constants, OriginLogger } from "@multiversx/sdk-nestjs";
+import { CacheService } from "@multiversx/sdk-nestjs-cache";
+import { Constants, OriginLogger, AddressUtils } from "@multiversx/sdk-nestjs-common";
+import { ApiService } from "@multiversx/sdk-nestjs-http";
 import { PersistenceService } from "../persistence/persistence.service";
+import { ApiConfigService } from "../api-config/api.config.service";
 
 @Injectable()
 export class KeybaseService {
   private readonly logger = new OriginLogger(KeybaseService.name);
 
   constructor(
-    private readonly cachingService: ElrondCachingService,
+    private readonly cachingService: CacheService,
     private readonly apiService: ApiService,
     @Inject(forwardRef(() => NodeService))
     private readonly nodeService: NodeService,
     @Inject(forwardRef(() => ProviderService))
     private readonly providerService: ProviderService,
     private readonly githubService: GithubService,
-    private readonly persistenceService: PersistenceService
+    private readonly persistenceService: PersistenceService,
+    private readonly apiConfigService: ApiConfigService,
   ) { }
 
-  private async getProvidersKeybasesRaw(): Promise<Keybase[]> {
+  private async getProviderIdentities(): Promise<string[]> {
     const providers = await this.providerService.getProviderAddresses();
     const metadatas = await
       this.cachingService.batchProcess(
@@ -34,76 +36,62 @@ export class KeybaseService {
         Constants.oneMinute() * 15,
       );
 
-    const keybaseProvidersArr: Keybase[] = metadatas
-      .map(({ identity }, index) => {
-        return { identity: identity ?? '', key: providers[index] };
-      })
-      .filter(({ identity }) => !!identity);
-
-    return keybaseProvidersArr;
+    return metadatas.filter(x => x.identity).map(x => x.identity ?? '');
   }
 
-  private async getNodesKeybasesRaw(): Promise<Keybase[]> {
-    const nodes = await this.nodeService.getHeartbeat();
-    const keybasesNodesArr: Keybase[] = nodes
-      .filter((node) => !!node.identity)
-      .map((node) => {
-        return { identity: node.identity, key: node.bls };
-      });
+  private async getHeartbeatAndValidatorIdentities(): Promise<string[]> {
+    const nodes = await this.nodeService.getHeartbeatAndValidators();
 
-    return keybasesNodesArr;
-  }
-
-  async confirmKeybasesAgainstCache(): Promise<{ [key: string]: KeybaseState }> {
-    const keybaseProvidersArr: Keybase[] = await this.getProvidersKeybasesRaw();
-    const keybasesNodesArr: Keybase[] = await this.getNodesKeybasesRaw();
-
-    const keybasesArr: Keybase[] = [...keybaseProvidersArr, ...keybasesNodesArr];
-
-    const keybaseGetPromises = keybasesArr.map(keybase => this.cachingService.get<boolean>(CacheInfo.KeybaseConfirmation(keybase.key).key));
-    const keybaseGetResults = await Promise.all(keybaseGetPromises);
-
-    const confirmedKeybases = keybasesArr.zip<(boolean | undefined), KeybaseState>(keybaseGetResults, (first, second) => ({ identity: first.identity, confirmed: second ?? false }));
-
-    const keybasesDict: { [key: string]: KeybaseState } = {};
-    for (const [index, confirmedKeybase] of confirmedKeybases.entries()) {
-      const key = keybasesArr[index].key;
-      if (key !== undefined) {
-        const keybaseState = ApiUtils.mergeObjects(new KeybaseState(), confirmedKeybase);
-        keybasesDict[key] = keybaseState;
-      }
-    }
-
-    return keybasesDict;
-  }
-
-  async getIdentitiesProfilesAgainstCache(): Promise<KeybaseIdentity[]> {
-    const nodes = await this.nodeService.getAllNodes();
-
-    const keys = nodes.map((node) => node.identity).distinct().map((x) => x ?? '');
-
-    const keybaseGetPromises = keys.map(key => this.cachingService.get<KeybaseIdentity>(CacheInfo.IdentityProfile(key).key));
-    const keybaseGetResults = await Promise.all(keybaseGetPromises);
-
-    // @ts-ignore
-    return keybaseGetResults.filter(x => x !== undefined && x !== null);
+    return nodes.filter(x => x.identity).map(x => x.identity ?? '');
   }
 
   private async getDistinctIdentities(): Promise<string[]> {
-    const providerKeybases: Keybase[] = await this.getProvidersKeybasesRaw();
-    const nodeKeybases: Keybase[] = await this.getNodesKeybasesRaw();
-    const allKeybases: Keybase[] = [...providerKeybases, ...nodeKeybases];
+    const providerIdentities = await this.getProviderIdentities();
+    const heartbeatAndValidatorIdentities = await this.getHeartbeatAndValidatorIdentities();
+    const allIdentities = [...providerIdentities, ...heartbeatAndValidatorIdentities];
 
-    const distinctIdentities = allKeybases.map(x => x.identity ?? '').filter(x => x !== '').distinct().shuffle();
+    const distinctIdentities = allIdentities.distinct().shuffle();
 
     return distinctIdentities;
   }
 
-  async confirmKeybasesAgainstDatabase(): Promise<void> {
+  async confirmIdentities(): Promise<void> {
     const distinctIdentities = await this.getDistinctIdentities();
 
+    const heartbeatEntries = await this.nodeService.getHeartbeatValidatorsAndQueue();
+    const blsIdentityDict = heartbeatEntries.filter(x => x.identity).toRecord(x => x.bls, x => x.identity ?? '');
+    const confirmations: Record<string, string> = {};
+
     for (const identity of distinctIdentities) {
-      await this.confirmKeybasesAgainstDatabaseForIdentity(identity);
+      await this.confirmIdentity(identity, blsIdentityDict, confirmations);
+    }
+
+    for (const key of Object.keys(confirmations)) {
+      await this.cachingService.set(CacheInfo.ConfirmedIdentity(key).key, confirmations[key], CacheInfo.ConfirmedIdentity(key).ttl);
+    }
+  }
+
+  async confirmIdentity(identity: string, blsIdentityDict: Record<string, string>, confirmations: Record<string, string>): Promise<void> {
+    const keys = await this.persistenceService.getKeybaseConfirmationForIdentity(identity);
+    if (!keys) {
+      return;
+    }
+
+    for (const key of keys) {
+      if (AddressUtils.isAddressValid(key)) {
+        const providerMetadata = await this.providerService.getProviderMetadata(key);
+        if (providerMetadata && providerMetadata.identity && providerMetadata.identity === identity) {
+          await this.cachingService.set(CacheInfo.ConfirmedProvider(key).key, identity, CacheInfo.ConfirmedProvider(key).ttl);
+
+          // if the identity is confirmed from the smart contract, we consider all BLS keys within valid
+          const blses = await this.nodeService.getOwnerBlses(key);
+          for (const bls of blses) {
+            confirmations[bls] = identity;
+          }
+        }
+      } else if (blsIdentityDict[key] === identity && confirmations[key] === undefined) {
+        confirmations[key] = identity;
+      }
     }
   }
 
@@ -117,9 +105,13 @@ export class KeybaseService {
 
   async confirmKeybasesAgainstGithubForIdentity(identity: string): Promise<void> {
     try {
-      const multiversxResults = await this.githubService.getRepoFileContents(identity, 'multiversx', 'keys.json');
+      const network = this.apiConfigService.getNetwork();
+      const networkPath = network === 'mainnet' ? '' : `${network}/`;
+      const filePath = networkPath + 'keys.json';
 
+      const multiversxResults = await this.githubService.getRepoFileContents(identity, 'multiversx', filePath);
       if (!multiversxResults) {
+        this.logger.log(`github.com validation not found for identity '${identity}'`);
         return;
       }
 
@@ -127,73 +119,24 @@ export class KeybaseService {
 
       this.logger.log(`github.com validation: for identity '${identity}', found ${keys.length} keys`);
 
-      await this.cachingService.batchProcess(
-        keys,
-        (key: string) => CacheInfo.KeybaseConfirmation(key).key,
-        async () => await true,
-        CacheInfo.KeybaseConfirmation('*').ttl,
-        true
-      );
+      await this.cachingService.setRemote(CacheInfo.GithubKeysValidated(identity).key, Math.round(Date.now() / 1000), CacheInfo.GithubKeysValidated(identity).ttl);
 
       await this.persistenceService.setKeybaseConfirmationForIdentity(identity, keys);
     } catch (error) {
-      this.logger.log(`Error when confirming keybase against github for identity '${identity}'`);
+      this.logger.log(`github.com validation failure for identity '${identity}'`);
       this.logger.error(error);
-    }
-  }
-
-  async confirmKeybasesAgainstDatabaseForIdentity(identity: string): Promise<boolean> {
-    try {
-      const keys = await this.persistenceService.getKeybaseConfirmationForIdentity(identity);
-      if (!keys) {
-        return false;
-      }
-
-      this.logger.log(`database validation: for identity '${identity}', found ${keys.length} keys`);
-
-      await this.cachingService.batchProcess(
-        keys,
-        (key: string) => CacheInfo.KeybaseConfirmation(key).key,
-        async () => await true,
-        CacheInfo.KeybaseConfirmation('*').ttl,
-        true
-      );
-
-      return true;
-    } catch (error) {
-      this.logger.log(`Error when confirming keybase against database for identity '${identity}'`);
-      this.logger.error(error);
-      return false;
     }
   }
 
   async confirmIdentityProfilesAgainstKeybaseIo(): Promise<void> {
-    const nodes = await this.nodeService.getAllNodes();
-
-    const keys = nodes.map((node) => node.identity).distinct().map(x => x ?? '');
+    const identities = await this.getDistinctIdentities();
 
     await this.cachingService.batchProcess(
-      keys,
-      key => CacheInfo.IdentityProfile(key).key,
-      async key => await this.getProfile(key),
+      identities,
+      identity => CacheInfo.IdentityProfile(identity).key,
+      async identity => await this.getProfile(identity),
       Constants.oneMonth() * 6,
       true
-    );
-  }
-
-  async getCachedIdentityProfilesKeybases(): Promise<KeybaseIdentity[]> {
-    return await this.cachingService.getOrSet(
-      CacheInfo.IdentityProfilesKeybases.key,
-      async () => await this.getIdentitiesProfilesAgainstCache(),
-      CacheInfo.IdentityProfilesKeybases.ttl
-    );
-  }
-
-  async getCachedNodesAndProvidersKeybases(): Promise<{ [key: string]: KeybaseState } | undefined> {
-    return await this.cachingService.getOrSet(
-      CacheInfo.Keybases.key,
-      async () => await this.confirmKeybasesAgainstCache(),
-      CacheInfo.Keybases.ttl
     );
   }
 
@@ -201,16 +144,15 @@ export class KeybaseService {
     const keybaseProfile = await this.getProfileFromKeybase(identity);
     if (keybaseProfile) {
       this.logger.log(`Got profile details from keybase.io for identity '${identity}'`);
-      return keybaseProfile;
     }
 
     const githubProfile = await this.getProfileFromGithub(identity);
     if (githubProfile) {
       this.logger.log(`Got profile details from github.com for identity '${identity}'`);
-      return githubProfile;
+      await this.cachingService.setRemote(CacheInfo.GithubProfileValidated(identity).key, Math.round(Date.now() / 1000), CacheInfo.GithubProfileValidated(identity).ttl);
     }
 
-    return null;
+    return githubProfile ?? keybaseProfile;
   }
 
   async getProfileFromGithub(identity: string): Promise<KeybaseIdentity | null> {

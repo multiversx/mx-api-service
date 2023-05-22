@@ -3,7 +3,8 @@ import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { VmQueryService } from "src/endpoints/vm.query/vm.query.service";
 import { DelegationLegacy } from "./entities/delegation.legacy";
 import { AccountDelegationLegacy } from "./entities/account.delegation.legacy";
-import { AddressUtils, ElrondCachingService } from "@multiversx/sdk-nestjs";
+import { AddressUtils } from "@multiversx/sdk-nestjs-common";
+import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { CacheInfo } from "src/utils/cache.info";
 
 @Injectable()
@@ -11,7 +12,7 @@ export class DelegationLegacyService {
   constructor(
     private readonly vmQueryService: VmQueryService,
     private readonly apiConfigService: ApiConfigService,
-    private readonly cachingService: ElrondCachingService,
+    private readonly cachingService: CacheService,
   ) { }
 
   async getDelegation(): Promise<DelegationLegacy> {

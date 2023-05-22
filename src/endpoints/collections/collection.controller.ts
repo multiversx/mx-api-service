@@ -7,7 +7,7 @@ import { Nft } from "../nfts/entities/nft";
 import { NftService } from "../nfts/nft.service";
 import { NftFilter } from "../nfts/entities/nft.filter";
 import { NftQueryOptions } from "../nfts/entities/nft.query.options";
-import { ParseAddressPipe, ParseArrayPipe, ParseCollectionPipe, ParseBoolPipe, ParseEnumArrayPipe, ParseIntPipe, ApplyComplexity, ParseAddressArrayPipe, ParseBlockHashPipe, ParseEnumPipe, ParseRecordPipe } from '@multiversx/sdk-nestjs';
+import { ParseAddressPipe, ParseArrayPipe, ParseCollectionPipe, ParseBoolPipe, ParseEnumArrayPipe, ParseIntPipe, ApplyComplexity, ParseAddressArrayPipe, ParseBlockHashPipe, ParseEnumPipe, ParseRecordPipe } from '@multiversx/sdk-nestjs-common';
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { CollectionFilter } from "./entities/collection.filter";
 import { CollectionAccount } from "./entities/collection.account";
@@ -23,6 +23,7 @@ import { SortCollectionNfts } from "./entities/sort.collection.nfts";
 import { NftCollectionDetailed } from "./entities/nft.collection.detailed";
 import { Response } from "express";
 import { SortCollections } from "./entities/sort.collections";
+import { ParseArrayPipeOptions } from "@multiversx/sdk-nestjs-common/lib/pipes/entities/parse.array.options";
 
 @Controller()
 @ApiTags('collections')
@@ -343,7 +344,7 @@ export class CollectionController {
     @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash?: string,
     @Query('hashes', ParseArrayPipe) hashes?: string[],
     @Query('status', new ParseEnumPipe(TransactionStatus)) status?: TransactionStatus,
-    @Query('function', ParseArrayPipe) functions?: string[],
+    @Query('function', new ParseArrayPipe(new ParseArrayPipeOptions({ allowEmptyString: true }))) functions?: string[],
     @Query('before', ParseIntPipe) before?: number,
     @Query('after', ParseIntPipe) after?: number,
     @Query('order', new ParseEnumPipe(SortOrder)) order?: SortOrder,

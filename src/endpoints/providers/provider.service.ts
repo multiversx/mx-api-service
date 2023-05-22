@@ -5,12 +5,13 @@ import { ProviderConfig } from "./entities/provider.config";
 import { NodeService } from "../nodes/node.service";
 import { NodesInfos } from "./entities/nodes.infos";
 import { DelegationData } from "./entities/delegation.data";
-import { KeybaseService } from "src/common/keybase/keybase.service";
 import { CacheInfo } from "src/utils/cache.info";
 import { ProviderFilter } from "./entities/provider.filter";
 import { Provider } from "./entities/provider";
-import { AddressUtils, Constants, ElrondCachingService, ApiService } from "@multiversx/sdk-nestjs";
-import { OriginLogger } from "@multiversx/sdk-nestjs";
+import { AddressUtils, Constants } from "@multiversx/sdk-nestjs-common";
+import { ApiService } from "@multiversx/sdk-nestjs-http";
+import { CacheService } from "@multiversx/sdk-nestjs-cache";
+import { OriginLogger } from "@multiversx/sdk-nestjs-common";
 import { IdentitiesService } from "../identities/identities.service";
 
 @Injectable()
@@ -18,14 +19,12 @@ export class ProviderService {
   private readonly logger = new OriginLogger(ProviderService.name);
 
   constructor(
-    private readonly cachingService: ElrondCachingService,
+    private readonly cachingService: CacheService,
     private readonly apiConfigService: ApiConfigService,
     private readonly vmQueryService: VmQueryService,
     @Inject(forwardRef(() => NodeService))
     private readonly nodeService: NodeService,
     private readonly apiService: ApiService,
-    @Inject(forwardRef(() => KeybaseService))
-    private readonly keybaseService: KeybaseService,
     @Inject(forwardRef(() => IdentitiesService))
     private readonly identitiesService: IdentitiesService
   ) { }
@@ -97,7 +96,7 @@ export class ProviderService {
   }
 
   async getProvidersWithStakeInformationRaw(): Promise<Provider[]> {
-    let providers = await this.getAllProviders();
+    const providers = await this.getAllProviders();
     const nodes = await this.nodeService.getAllNodes();
 
     const nodesGroupedByProvider: { [key: string]: any[] } = nodes.groupBy(x => x.provider);
@@ -139,11 +138,28 @@ export class ProviderService {
       return bSort - aSort;
     });
 
-    providers = providers.filter(provider => provider.numNodes > 0 && this.isIdentityFormattedCorrectly(provider.identity ?? ''));
+
+
+    // providers = providers.filter(provider => provider.numNodes > 0);
+
+    for (const provider of providers) {
+      if (!provider.identity) {
+        continue;
+      }
+
+      const githubProfileValidatedAt = await this.cachingService.getRemote<number>(CacheInfo.GithubProfileValidated(provider.identity).key);
+      const githubKeysValidatedAt = await this.cachingService.getRemote<number>(CacheInfo.GithubKeysValidated(provider.identity).key);
+
+      provider.githubProfileValidatedAt = githubProfileValidatedAt !== undefined && Number.isInteger(githubProfileValidatedAt) ? new Date(githubProfileValidatedAt * 1000).toISOString() : undefined;
+      provider.githubKeysValidatedAt = githubKeysValidatedAt !== undefined && Number.isInteger(githubKeysValidatedAt) ? new Date(githubKeysValidatedAt * 1000).toISOString() : undefined;
+      provider.githubProfileValidated = githubProfileValidatedAt !== undefined && Number.isInteger(githubProfileValidatedAt) ? true : false;
+      provider.githubKeysValidated = githubKeysValidatedAt !== undefined && Number.isInteger(githubKeysValidatedAt) ? true : false;
+    }
 
     return providers;
   }
 
+  // @ts-ignore
   private isIdentityFormattedCorrectly(identity: string): boolean {
     return /^[\w]*$/g.test(identity ?? '');
   }
@@ -201,17 +217,11 @@ export class ProviderService {
   async getAllProvidersRaw(): Promise<Provider[]> {
     const providerAddresses = await this.getProviderAddresses();
 
-    const [configs, metadatas, numUsers, cumulatedRewards] = await Promise.all([
+    const [configs, numUsers, cumulatedRewards] = await Promise.all([
       this.cachingService.batchProcess(
         providerAddresses,
         address => `providerConfig:${address}`,
         async address => await this.getProviderConfig(address),
-        Constants.oneMinute() * 15,
-      ),
-      this.cachingService.batchProcess(
-        providerAddresses,
-        address => `providerMetadata:${address}`,
-        async address => await this.getProviderMetadata(address),
         Constants.oneMinute() * 15,
       ),
       this.cachingService.batchProcess(
@@ -229,33 +239,28 @@ export class ProviderService {
     ]);
 
     const providersRaw: Provider[] = providerAddresses.map((provider, index) => {
-      return {
+      return new Provider({
         provider,
-        ...configs[index],
+        ...configs[index] ?? new ProviderConfig(),
         numUsers: numUsers[index] ?? 0,
         cumulatedRewards: cumulatedRewards[index] ?? '0',
-        identity: metadatas[index]?.identity ?? undefined,
         numNodes: 0,
         stake: '0',
         topUp: '0',
         locked: '0',
         featured: false,
-      };
+      });
     });
 
-    const providerKeybases = await this.keybaseService.getCachedNodesAndProvidersKeybases();
-
-    if (providerKeybases) {
-      for (const providerAddress of providerAddresses) {
-        const providerInfo = providerKeybases[providerAddress];
-
-        if (!providerInfo || !providerInfo.confirmed) {
-          const found = providersRaw.find(x => x.provider === providerAddress);
-          if (found) {
-            found.identity = undefined;
-          }
-        }
+    for (const provider of providersRaw) {
+      const identity = await this.cachingService.getRemote<string>(CacheInfo.ConfirmedProvider(provider.provider).key);
+      if (identity) {
+        provider.identity = identity;
       }
+    }
+
+    for (const provider of providersRaw) {
+      await this.cachingService.set(CacheInfo.ProviderOwner(provider.provider).key, provider.owner, CacheInfo.ProviderOwner(provider.provider).ttl);
     }
 
     return providersRaw;
@@ -284,64 +289,74 @@ export class ProviderService {
     return value;
   }
 
-  async getProviderConfig(address: string): Promise<ProviderConfig> {
-    const [
-      ownerBase64,
-      serviceFeeBase64,
-      delegationCapBase64,
-      // initialOwnerFundsBase64,
-      // automaticActivationBase64,
-      // changeableServiceFeeBase64,
-      // checkCapOnredelegateBase64,
-      // unBondPeriodBase64,
-      // createdNonceBase64,
-    ] = await this.vmQueryService.vmQuery(
-      address,
-      'getContractConfig',
-    );
+  async getProviderConfig(address: string): Promise<ProviderConfig | undefined> {
+    if (address === this.apiConfigService.getDelegationContractAddress()) {
+      return undefined;
+    }
 
-    const owner = AddressUtils.bech32Encode(Buffer.from(ownerBase64, 'base64').toString('hex'));
+    try {
+      const [
+        ownerBase64,
+        serviceFeeBase64,
+        delegationCapBase64,
+        // initialOwnerFundsBase64,
+        // automaticActivationBase64,
+        // changeableServiceFeeBase64,
+        // checkCapOnredelegateBase64,
+        // unBondPeriodBase64,
+        // createdNonceBase64,
+      ] = await this.vmQueryService.vmQuery(
+        address,
+        'getContractConfig',
+      );
 
-    const [serviceFee, delegationCap] = [
-      // , initialOwnerFunds, createdNonce
-      serviceFeeBase64,
-      delegationCapBase64,
-      // initialOwnerFundsBase64,
-      // createdNonceBase64,
-    ].map((base64) => {
-      const hex = base64 ? Buffer.from(base64, 'base64').toString('hex') : base64;
-      return hex === null ? null : BigInt(hex ? '0x' + hex : hex).toString();
-    });
+      const owner = AddressUtils.bech32Encode(Buffer.from(ownerBase64, 'base64').toString('hex'));
 
-    // const [automaticActivation, changeableServiceFee, checkCapOnredelegate] = [
-    //   automaticActivationBase64,
-    //   changeableServiceFeeBase64,
-    //   checkCapOnredelegateBase64,
-    // ].map((base64) => (Buffer.from(base64, 'base64').toString() === 'true' ? true : false));
+      const [serviceFee, delegationCap] = [
+        // , initialOwnerFunds, createdNonce
+        serviceFeeBase64,
+        delegationCapBase64,
+        // initialOwnerFundsBase64,
+        // createdNonceBase64,
+      ].map((base64) => {
+        const hex = base64 ? Buffer.from(base64, 'base64').toString('hex') : base64;
+        return hex === null ? null : BigInt(hex ? '0x' + hex : hex).toString();
+      });
 
-    const serviceFeeString = String(parseInt(serviceFee ?? '0') / 10000);
+      // const [automaticActivation, changeableServiceFee, checkCapOnredelegate] = [
+      //   automaticActivationBase64,
+      //   changeableServiceFeeBase64,
+      //   checkCapOnredelegateBase64,
+      // ].map((base64) => (Buffer.from(base64, 'base64').toString() === 'true' ? true : false));
 
-    return {
-      owner,
-      serviceFee: parseFloat(serviceFeeString),
-      delegationCap: delegationCap ?? '0',
-      apr: 0,
-      // initialOwnerFunds,
-      // automaticActivation,
-      // changeableServiceFee,
-      // checkCapOnredelegate,
-      // createdNonce: parseInt(createdNonce),
-    };
+      const serviceFeeString = String(parseInt(serviceFee ?? '0') / 10000);
+
+      return {
+        owner,
+        serviceFee: parseFloat(serviceFeeString),
+        delegationCap: delegationCap ?? '0',
+        apr: 0,
+        // initialOwnerFunds,
+        // automaticActivation,
+        // changeableServiceFee,
+        // checkCapOnredelegate,
+        // createdNonce: parseInt(createdNonce),
+      };
+    } catch (error) {
+      this.logger.error(`An unhandled error occurred when fetching provider config for address '${address}'`);
+      this.logger.error(error);
+      return undefined;
+    }
   }
 
-  async getProviderMetadata(address: string) {
-    const response = await this.vmQueryService.vmQuery(
-      address,
-      'getMetaData',
-    );
+  async getProviderMetadata(address: string): Promise<{ name: string | null, website: string | null, identity: string | null }> {
+    try {
+      const response = await this.vmQueryService.vmQuery(
+        address,
+        'getMetaData',
+      );
 
-    if (response) {
-      try {
+      if (response) {
         const [name, website, identity] = response.map((base64) => {
           if (base64) {
             return Buffer.from(base64, 'base64').toString().trim().toLowerCase();
@@ -350,11 +365,10 @@ export class ProviderService {
         });
 
         return { name, website, identity };
-      } catch (error) {
-        this.logger.error(`Could not get provider metadata for address '${address}'`);
-        this.logger.error(error);
-        return { name: null, website: null, identity: null };
       }
+    } catch (error) {
+      this.logger.error(`Could not get provider metadata for address '${address}'`);
+      this.logger.error(error);
     }
 
     return { name: null, website: null, identity: null };

@@ -1,4 +1,4 @@
-import { ParseBlockHashPipe, ParseEnumPipe, ParseIntPipe, ParseArrayPipe, ParseAddressArrayPipe, ParseBoolPipe, ApplyComplexity } from "@multiversx/sdk-nestjs";
+import { ParseBlockHashPipe, ParseEnumPipe, ParseIntPipe, ParseArrayPipe, ParseAddressArrayPipe, ParseBoolPipe, ApplyComplexity } from "@multiversx/sdk-nestjs-common";
 import { Controller, DefaultValuePipe, Get, Query } from "@nestjs/common";
 import { ApiExcludeEndpoint, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { QueryPagination } from "src/common/entities/query.pagination";
@@ -9,6 +9,7 @@ import { TransactionFilter } from "../transactions/entities/transaction.filter";
 import { TransactionStatus } from "../transactions/entities/transaction.status";
 import { TransactionQueryOptions } from "../transactions/entities/transactions.query.options";
 import { TransferService } from "./transfer.service";
+import { ParseArrayPipeOptions } from "@multiversx/sdk-nestjs-common/lib/pipes/entities/parse.array.options";
 
 @Controller()
 @ApiTags('transfers')
@@ -44,7 +45,7 @@ export class TransferController {
     @Query('receiver', ParseAddressArrayPipe) receiver?: string[],
     @Query('sender', ParseAddressArrayPipe) sender?: string[],
     @Query('token') token?: string,
-    @Query('function', ParseArrayPipe) functions?: string[],
+    @Query('function', new ParseArrayPipe(new ParseArrayPipeOptions({ allowEmptyString: true }))) functions?: string[],
     @Query('senderShard', ParseIntPipe) senderShard?: number,
     @Query('receiverShard', ParseIntPipe) receiverShard?: number,
     @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash?: string,
@@ -103,7 +104,7 @@ export class TransferController {
     @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash?: string,
     @Query('hashes', ParseArrayPipe) hashes?: string[],
     @Query('status', new ParseEnumPipe(TransactionStatus)) status?: TransactionStatus,
-    @Query('function', ParseArrayPipe) functions?: string[],
+    @Query('function', new ParseArrayPipe(new ParseArrayPipeOptions({ allowEmptyString: true }))) functions?: string[],
     @Query('before', ParseIntPipe) before?: number,
     @Query('after', ParseIntPipe) after?: number,
   ): Promise<number> {
@@ -133,7 +134,7 @@ export class TransferController {
     @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash?: string,
     @Query('hashes', ParseArrayPipe) hashes?: string[],
     @Query('status', new ParseEnumPipe(TransactionStatus)) status?: TransactionStatus,
-    @Query('function', ParseArrayPipe) functions?: string[],
+    @Query('function', new ParseArrayPipe(new ParseArrayPipeOptions({ allowEmptyString: true }))) functions?: string[],
     @Query('before', ParseIntPipe) before?: number,
     @Query('after', ParseIntPipe) after?: number,
   ): Promise<number> {

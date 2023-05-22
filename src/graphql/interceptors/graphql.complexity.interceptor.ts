@@ -1,7 +1,7 @@
 import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from "@nestjs/common";
 import { GqlExecutionContext } from "@nestjs/graphql";
 
-import { ApplyComplexityOptions, ComplexityExceededException, ComplexityUtils, DecoratorUtils } from "@multiversx/sdk-nestjs";
+import { ApplyComplexityOptions, ComplexityExceededException, ComplexityUtils, DecoratorUtils } from "@multiversx/sdk-nestjs-common";
 
 import { fieldsList } from "graphql-fields-list";
 import { Observable } from "rxjs";

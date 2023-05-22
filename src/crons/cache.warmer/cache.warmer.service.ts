@@ -17,7 +17,8 @@ import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.com
 import { MexSettingsService } from "src/endpoints/mex/mex.settings.service";
 import { MexPairService } from "src/endpoints/mex/mex.pair.service";
 import { MexFarmService } from "src/endpoints/mex/mex.farm.service";
-import { ElrondCachingService, Constants, Lock, GuestCachingWarmer, OriginLogger } from "@multiversx/sdk-nestjs";
+import { CacheService, GuestCacheWarmer } from "@multiversx/sdk-nestjs-cache";
+import { Constants, Lock, OriginLogger } from "@multiversx/sdk-nestjs-common";
 import { DelegationLegacyService } from "src/endpoints/delegation.legacy/delegation.legacy.service";
 import { SettingsService } from "src/common/settings/settings.service";
 import { TokenService } from "src/endpoints/tokens/token.service";
@@ -39,7 +40,7 @@ export class CacheWarmerService {
     private readonly identitiesService: IdentitiesService,
     private readonly providerService: ProviderService,
     private readonly keybaseService: KeybaseService,
-    private readonly cachingService: ElrondCachingService,
+    private readonly cachingService: CacheService,
     @Inject('PUBSUB_SERVICE') private clientProxy: ClientProxy,
     private readonly apiConfigService: ApiConfigService,
     private readonly settingsService: SettingsService,
@@ -56,22 +57,15 @@ export class CacheWarmerService {
     private readonly tokenService: TokenService,
     private readonly indexerService: IndexerService,
     private readonly nftService: NftService,
-    private readonly guestCachingWarmer: GuestCachingWarmer,
+    private readonly guestCachingWarmer: GuestCacheWarmer,
     private readonly dataApiService: DataApiService,
     private readonly blockService: BlockService,
   ) {
     this.configCronJob(
-      'handleKeybaseAgainstKeybasePubInvalidations',
+      'handleKeysAgainstDatabaseAndGithubInvalidations',
       CronExpression.EVERY_MINUTE,
       CronExpression.EVERY_30_MINUTES,
-      async () => await this.handleKeybaseAgainstKeybasePubInvalidations()
-    );
-
-    this.configCronJob(
-      'handleKeybaseAgainstCacheInvalidations',
-      CronExpression.EVERY_MINUTE,
-      CronExpression.EVERY_10_MINUTES,
-      async () => await this.handleKeybaseAgainstCacheInvalidations()
+      async () => await this.handleKeysAgainstDatabaseAndGithubInvalidations()
     );
 
     this.configCronJob(
@@ -155,27 +149,15 @@ export class CacheWarmerService {
     await this.invalidateKey(CacheInfo.ProvidersWithStakeInformation.key, providersWithStakeInformation, CacheInfo.ProvidersWithStakeInformation.ttl);
   }
 
-  @Lock({ name: 'Keybase against cache invalidations', verbose: true })
-  async handleKeybaseAgainstCacheInvalidations() {
-    const nodesAndProvidersKeybases = await this.keybaseService.confirmKeybasesAgainstCache();
-    const identityProfilesKeybases = await this.keybaseService.getIdentitiesProfilesAgainstCache();
-    await Promise.all([
-      this.invalidateKey(CacheInfo.Keybases.key, nodesAndProvidersKeybases, CacheInfo.Keybases.ttl),
-      this.invalidateKey(CacheInfo.IdentityProfilesKeybases.key, identityProfilesKeybases, CacheInfo.IdentityProfilesKeybases.ttl),
-    ]);
+  @Lock({ name: 'Keys against database / github invalidations', verbose: true })
+  async handleKeysAgainstDatabaseAndGithubInvalidations() {
+    await this.keybaseService.confirmKeybasesAgainstGithub();
+    await this.keybaseService.confirmIdentities();
+    await this.keybaseService.confirmIdentityProfilesAgainstKeybaseIo();
 
     await this.handleNodeInvalidations();
     await this.handleProviderInvalidations();
     await this.handleIdentityInvalidations();
-  }
-
-  @Lock({ name: 'Keybase against database / keybase.pub / keybase.io invalidations', verbose: true })
-  async handleKeybaseAgainstKeybasePubInvalidations() {
-    await this.keybaseService.confirmKeybasesAgainstDatabase();
-    await this.keybaseService.confirmKeybasesAgainstGithub();
-    await this.keybaseService.confirmIdentityProfilesAgainstKeybaseIo();
-
-    await this.handleKeybaseAgainstCacheInvalidations();
   }
 
   @Cron(CronExpression.EVERY_MINUTE)
@@ -189,12 +171,12 @@ export class CacheWarmerService {
 
   @Cron("*/6 * * * * *")
   @Lock({ name: 'Guest caching recompute', verbose: true })
-  async handleGuestCaching() {
-    if (this.apiConfigService.isGuestCachingFeatureActive()) {
+  async handleGuestCache() {
+    if (this.apiConfigService.isGuestCacheFeatureActive()) {
       await this.guestCachingWarmer.recompute({
         targetUrl: this.apiConfigService.getSelfUrl(),
-        cacheTriggerHitsThreshold: this.apiConfigService.getGuestCachingHitsThreshold(),
-        cacheTtl: this.apiConfigService.getGuestCachingTtl(),
+        cacheTriggerHitsThreshold: this.apiConfigService.getGuestCacheHitsThreshold(),
+        cacheTtl: this.apiConfigService.getGuestCacheTtl(),
       });
     }
   }

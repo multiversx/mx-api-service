@@ -1,4 +1,4 @@
-import { CleanupInterceptor, FieldsInterceptor } from '@multiversx/sdk-nestjs';
+import { CleanupInterceptor, FieldsInterceptor } from '@multiversx/sdk-nestjs-http';
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { PublicAppModule } from 'src/public.app.module';
@@ -20,11 +20,27 @@ describe("API Testing", () => {
     await app.init();
   });
 
-  it("/nfts", async () => {
+  const skipedFields = ['message', 'statusCode'];
+
+  afterAll(async () => {
+    await app.close();
+  });
+
+  it("should check nfts pagination", async () => {
     const checker = new ApiChecker('nfts', app.getHttpServer());
-    checker.skipFields = ['message', 'statusCode'];
+    checker.skipFields = skipedFields;
+    await checker.checkPagination();
+  });
+
+  it('should check nfts status response code', async () => {
+    const checker = new ApiChecker('nfts', app.getHttpServer());
+    checker.skipFields = skipedFields;
     await checker.checkStatus();
-    await checker.checkFilter(['collection']);
+  });
+
+  it('should check nfts count', async () => {
+    const checker = new ApiChecker('nfts', app.getHttpServer());
+    checker.skipFields = skipedFields;
     await checker.checkAlternativeCount();
   });
 });

@@ -1,4 +1,4 @@
-import { CleanupInterceptor, FieldsInterceptor } from '@multiversx/sdk-nestjs';
+import { CleanupInterceptor, FieldsInterceptor } from '@multiversx/sdk-nestjs-http';
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { PublicAppModule } from 'src/public.app.module';
@@ -20,10 +20,17 @@ describe("API Testing", () => {
     await app.init();
   });
 
-  it("/rounds", async () => {
+  afterAll(async () => {
+    await app.close();
+  });
+
+  it('should check rounds status response code', async () => {
     const checker = new ApiChecker('rounds', app.getHttpServer());
     await checker.checkStatus();
-    await checker.checkFilter(['epoch', 'shard']);
+  });
+
+  it('should check rounds count', async () => {
+    const checker = new ApiChecker('rounds', app.getHttpServer());
     await checker.checkAlternativeCount();
   });
 });

@@ -11,7 +11,7 @@ import { NftMetadataService } from "./job-services/metadata/nft.metadata.service
 import { GenerateThumbnailResult } from "./job-services/thumbnails/entities/generate.thumbnail.result";
 import { NftThumbnailService } from "./job-services/thumbnails/nft.thumbnail.service";
 import { NftAssetService } from "./job-services/assets/nft.asset.service";
-import { ContextTracker, OriginLogger } from "@multiversx/sdk-nestjs";
+import { ContextTracker, OriginLogger } from "@multiversx/sdk-nestjs-common";
 import { ProcessNftSettings } from "src/endpoints/process-nfts/entities/process.nft.settings";
 
 @Controller()
@@ -153,7 +153,7 @@ export class NftQueueController {
   private async generateThumbnail(nft: Nft, media: NftMedia, forceRefresh: boolean = false): Promise<void> {
     let result: GenerateThumbnailResult;
     try {
-      result = await this.nftThumbnailService.generateThumbnail(nft, media.url, media.fileType, forceRefresh);
+      result = await this.nftThumbnailService.generateThumbnail(nft, media.url.trim(), media.fileType, forceRefresh);
     } catch (error) {
       this.logger.error(`An unhandled exception occurred when generating thumbnail for nft with identifier '${nft.identifier}' and url '${media.url}'`);
       this.logger.error(error);

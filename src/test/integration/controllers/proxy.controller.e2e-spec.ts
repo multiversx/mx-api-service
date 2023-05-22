@@ -1,6 +1,6 @@
 import { Test } from '@nestjs/testing';
 import { PublicAppModule } from 'src/public.app.module';
-import '@multiversx/sdk-nestjs/lib/src/utils/extensions/jest.extensions';
+import '@multiversx/sdk-nestjs-common/lib/utils/extensions/jest.extensions';
 import { ProxyController } from 'src/endpoints/proxy/proxy.controller';
 
 describe('Proxy Controller', () => {

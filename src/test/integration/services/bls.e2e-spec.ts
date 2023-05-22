@@ -1,4 +1,4 @@
-import { ElrondCachingService } from "@multiversx/sdk-nestjs";
+import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { Test } from "@nestjs/testing";
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { BlsService } from "src/endpoints/bls/bls.service";
@@ -6,7 +6,7 @@ import { BlsService } from "src/endpoints/bls/bls.service";
 describe('BlsService', () => {
   let blsService: BlsService;
   let indexerService: IndexerService;
-  let elrondCachingService: ElrondCachingService;
+  let cachingService: CacheService;
 
   beforeEach(async () => {
     const moduleRef = await Test.createTestingModule({
@@ -19,7 +19,7 @@ describe('BlsService', () => {
           },
         },
         {
-          provide: ElrondCachingService,
+          provide: CacheService,
           useValue: {
             getOrSet: jest.fn(),
           },
@@ -29,7 +29,7 @@ describe('BlsService', () => {
 
     blsService = moduleRef.get<BlsService>(BlsService);
     indexerService = moduleRef.get<IndexerService>(IndexerService);
-    elrondCachingService = moduleRef.get<ElrondCachingService>(ElrondCachingService);
+    cachingService = moduleRef.get<CacheService>(CacheService);
   });
 
   afterEach(() => {
@@ -41,7 +41,7 @@ describe('BlsService', () => {
       const shard = 0;
       const epoch = 10;
       const expectedPublicKeys = ['public-key-1', 'public-key-2', 'public-key-3'];
-      jest.spyOn(elrondCachingService, 'getOrSet').mockResolvedValue(expectedPublicKeys);
+      jest.spyOn(cachingService, 'getOrSet').mockResolvedValue(expectedPublicKeys);
 
       const result = await blsService.getPublicKeys(shard, epoch);
 
@@ -52,7 +52,7 @@ describe('BlsService', () => {
       const shard = 0;
       const epoch = 10;
       const publicKeys = ['public-key-1', 'public-key-2', 'public-key-3'];
-      jest.spyOn(elrondCachingService, 'getOrSet').mockImplementation(async (_key, promise) => await promise());
+      jest.spyOn(cachingService, 'getOrSet').mockImplementation(async (_key, promise) => await promise());
       jest.spyOn(indexerService, 'getPublicKeys').mockResolvedValue(publicKeys);
 
       const result = await blsService.getPublicKeys(shard, epoch);

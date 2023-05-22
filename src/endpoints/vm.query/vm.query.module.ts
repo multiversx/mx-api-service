@@ -9,7 +9,7 @@ import { VmQueryService } from "./vm.query.service";
 
 @Module({
   imports: [
-    DynamicModuleUtils.getCachingModule(),
+    DynamicModuleUtils.getCacheModule(),
     GatewayModule,
     ProtocolModule,
     ApiConfigModule,

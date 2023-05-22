@@ -1,6 +1,7 @@
-import { Address, Transaction as ErdJsTransaction, TransactionHash, TransactionOptions, TransactionPayload, TransactionVersion } from "@elrondnetwork/erdjs/out";
-import { Signature } from "@elrondnetwork/erdjs/out/signature";
-import { BinaryUtils, ElrondCachingService } from "@multiversx/sdk-nestjs";
+import { Address, Transaction as ErdJsTransaction, TransactionHash, TransactionOptions, TransactionPayload, TransactionVersion } from "@multiversx/sdk-core/out";
+import { Signature } from "@multiversx/sdk-core/out/signature";
+import { BinaryUtils } from "@multiversx/sdk-nestjs-common";
+import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { Injectable, Logger } from "@nestjs/common";
 import { TransactionBatch } from "./entities/transaction.batch";
 import { TransactionBatchStatus } from "./entities/transaction.batch.status";
@@ -20,7 +21,7 @@ export class TransactionsBatchService {
   private readonly logger: Logger;
 
   constructor(
-    private readonly cachingService: ElrondCachingService,
+    private readonly cachingService: CacheService,
     private readonly transactionService: TransactionService,
   ) {
     this.logger = new Logger(TransactionsBatchService.name);
@@ -45,10 +46,15 @@ export class TransactionsBatchService {
           chainID: tx.chainID,
           version: new TransactionVersion(tx.version),
           options: tx.options ? new TransactionOptions(tx.options) : undefined,
+          guardian: tx.guardian ? new Address(tx.guardian) : undefined,
           sender: new Address(tx.sender),
         });
 
-        trans.applySignature(new Signature(tx.signature), new Address(tx.sender));
+        if (tx.guardianSignature) {
+          trans.applyGuardianSignature(new Signature(tx.guardianSignature));
+        }
+
+        trans.applySignature(new Signature(tx.signature));
 
         item.transaction.hash = TransactionHash.compute(trans).toString();
       }
@@ -173,9 +179,10 @@ export class TransactionsBatchService {
     const transactionBatch = new TransactionBatchSimplifiedResult();
     transactionBatch.id = batch.id;
     transactionBatch.status = batch.status;
+    transactionBatch.transactions = [];
 
-    const transactionBatchItems: TransactionDetailsWithResult[] = [];
     for (const transactionBatchGroup of batch.groups) {
+      const transactionBatchItems: TransactionDetailsWithResult[] = [];
       for (const transactionItem of transactionBatchGroup.items) {
         const transaction = transactionItem.transaction.tx;
 
@@ -193,9 +200,9 @@ export class TransactionsBatchService {
 
         transactionBatchItems.push(transactionBatchItem);
       }
-    }
 
-    transactionBatch.transactions = transactionBatchItems;
+      transactionBatch.transactions.push(transactionBatchItems);
+    }
 
     return transactionBatch;
   }

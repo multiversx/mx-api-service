@@ -1,4 +1,4 @@
-import { PerformanceProfiler } from "@multiversx/sdk-nestjs";
+import { PerformanceProfiler } from "@multiversx/sdk-nestjs-monitoring";
 import { Inject } from "@nestjs/common";
 import { EventEmitter2 } from "@nestjs/event-emitter";
 import { LogMetricsEvent } from "../common/entities/log.metrics.event";

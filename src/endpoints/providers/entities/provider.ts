@@ -1,5 +1,5 @@
 
-import { SwaggerUtils } from "@multiversx/sdk-nestjs";
+import { SwaggerUtils } from "@multiversx/sdk-nestjs-common";
 import { Field, Float, ObjectType } from "@nestjs/graphql";
 import { ApiProperty } from "@nestjs/swagger";
 import { NodesInfos } from "./nodes.infos";
@@ -48,17 +48,29 @@ export class Provider extends NodesInfos {
   identity: string | undefined = undefined;
 
   @ApiProperty({ type: String })
-  initialOwnerFunds?: string = "";
+  initialOwnerFunds: string | undefined = undefined;
 
   @ApiProperty({ type: Boolean, default: false })
-  automaticActivation?: boolean = false;
+  automaticActivation: boolean | undefined = undefined;
 
   @ApiProperty({ type: Boolean, default: false })
-  checkCapOnRedelegate?: boolean = false;
+  checkCapOnRedelegate: boolean | undefined = undefined;
 
   @ApiProperty({ type: String })
-  totalUnStaked?: string = "";
+  totalUnStaked: string | undefined = undefined;
 
   @ApiProperty({ type: Number })
-  createdNonce?: number = 0;
+  createdNonce: number | undefined = undefined;
+
+  @ApiProperty({ type: Boolean, nullable: true })
+  githubProfileValidated: boolean | undefined = undefined;
+
+  @ApiProperty({ type: String, nullable: true })
+  githubProfileValidatedAt: string | undefined = undefined;
+
+  @ApiProperty({ type: Boolean, nullable: true })
+  githubKeysValidated: boolean | undefined = undefined;
+
+  @ApiProperty({ type: String, nullable: true })
+  githubKeysValidatedAt: string | undefined = undefined;
 }
