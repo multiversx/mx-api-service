@@ -33,6 +33,10 @@ describe('RabbitMqConsumer', () => {
     tokenHandlerService = module.get<RabbitMqTokenHandlerService>(RabbitMqTokenHandlerService);
   });
 
+  it('should be defined', () => {
+    expect(service).toBeDefined();
+  });
+
   it('should call the appropriate handler based on the event identifier', async () => {
     const event1: NotifierEvent = {
       identifier: NotifierEventIdentifier.ESDTNFTCreate,

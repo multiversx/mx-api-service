@@ -46,6 +46,10 @@ describe.skip('PersistenceService', () => {
     nftTraitSummaryRepository = module.get<Repository<NftTraitSummaryDb>>('NftTraitSummaryDbRepository');
   });
 
+  it('should be defined', () => {
+    expect(service).toBeDefined();
+  });
+
   describe('getMetadata', () => {
     it('should return null if no metadata is found', async () => {
       jest.spyOn(nftMetadataRepository, 'findOne').mockResolvedValue(null);
