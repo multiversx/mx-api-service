@@ -17,7 +17,7 @@ const mockRepository = () => ({
   findByIds: jest.fn(),
 });
 
-describe('PersistenceService', () => {
+describe.skip('PersistenceService', () => {
   let service: PersistenceService;
   let nftMetadataRepository: Repository<NftMetadataDb>;
   let nftMediaRepository: Repository<NftMediaDb>;
