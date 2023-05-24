@@ -2,7 +2,7 @@ import { Controller, Get, HttpException, HttpStatus, Param, Query, Res } from "@
 import { ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { ProviderService } from "./provider.service";
 import { Provider } from "./entities/provider";
-import { ParseAddressArrayPipe, ParseAddressPipe } from "@multiversx/sdk-nestjs-common";
+import { ParseAddressArrayPipe, ParseAddressPipe, ParseBoolPipe } from "@multiversx/sdk-nestjs-common";
 import { ProviderFilter } from "./entities/provider.filter";
 import { Response } from "express";
 
@@ -16,11 +16,15 @@ export class ProviderController {
   @ApiOkResponse({ type: [Provider] })
   @ApiQuery({ name: 'identity', description: 'Search by identity', required: false })
   @ApiQuery({ name: 'providers', description: 'Search by multiple providers address', required: false })
+  @ApiQuery({ name: 'withIdentityInfo', description: 'Returns identity data for providers', required: false })
   async getProviders(
     @Query('identity') identity?: string,
     @Query('providers', ParseAddressArrayPipe) providers?: string[],
+    @Query('withIdentityInfo', new ParseBoolPipe) withIdentityInfo?: boolean,
   ): Promise<Provider[]> {
-    return await this.providerService.getProviders(new ProviderFilter({ identity, providers }));
+    return await this.providerService.getProviders(
+      new ProviderFilter({ identity, providers }),
+      withIdentityInfo);
   }
 
   @Get('/providers/:address')
