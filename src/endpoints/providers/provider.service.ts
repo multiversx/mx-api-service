@@ -164,8 +164,23 @@ export class ProviderService {
     return /^[\w]*$/g.test(identity ?? '');
   }
 
-  async getProviders(filter: ProviderFilter): Promise<Provider[]> {
-    return await this.getFilteredProviders(filter);
+  async getProviders(filter: ProviderFilter, withIdentityInfo?: boolean): Promise<Provider[]> {
+    const providers = await this.getFilteredProviders(filter);
+
+    if (withIdentityInfo === true) {
+      for (const provider of providers) {
+        if (provider.identity) {
+          const identityInfo = await this.identitiesService.getIdentity(provider.identity);
+          provider.identityInfo = identityInfo;
+        }
+      }
+    } else {
+      for (const provider of providers) {
+        delete provider.identityInfo;
+      }
+    }
+
+    return providers;
   }
 
   async getDelegationProviders(): Promise<DelegationData[]> {
