@@ -494,10 +494,10 @@ export class AccountService {
     return await this.indexerService.getAccountContractsCount(address);
   }
 
-  async getContractUpgrades(queryPagination: QueryPagination, address: string): Promise<ContractUpgrades[] | null> {
+  async getContractUpgrades(queryPagination: QueryPagination, address: string): Promise<ContractUpgrades[]> {
     const details = await this.indexerService.getScDeploy(address);
     if (!details) {
-      return null;
+      return [];
     }
 
     const upgrades = details.upgrades.map(item => ApiUtils.mergeObjects(new ContractUpgrades(), {

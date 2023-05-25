@@ -706,13 +706,13 @@ describe('Account Service', () => {
       expect(result).toEqual(expectedResult);
     });
 
-    it('should return null if no details are found', async () => {
+    it('should return empty array if no upgrades are found', async () => {
       jest.spyOn(indexerService, 'getScDeploy').mockResolvedValue(undefined);
 
       const result = await service.getContractUpgrades(queryPagination, address);
 
       expect(indexerService.getScDeploy).toHaveBeenCalledWith(address);
-      expect(result).toBeNull();
+      expect(result).toStrictEqual([]);
     });
   });
 

@@ -933,14 +933,8 @@ export class AccountController {
     @Param('address', ParseAddressPipe) address: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
-  ): Promise<ContractUpgrades[] | null> {
-    const upgrades = this.accountService.getContractUpgrades(new QueryPagination({ from, size }), address);
-
-    if (!upgrades) {
-      throw new NotFoundException();
-    }
-
-    return upgrades;
+  ): Promise<ContractUpgrades[]> {
+    return this.accountService.getContractUpgrades(new QueryPagination({ from, size }), address);
   }
 
   @Get("/accounts/:address/results")
