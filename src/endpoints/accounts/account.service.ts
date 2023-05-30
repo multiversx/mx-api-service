@@ -500,13 +500,13 @@ export class AccountService {
       return [];
     }
 
-    const upgrades = details.upgrades.map(item => ApiUtils.mergeObjects(new ContractUpgrades(), {
+    let upgrades = details.upgrades.map(item => ApiUtils.mergeObjects(new ContractUpgrades(), {
       address: item.upgrader,
       txHash: item.upgradeTxHash,
       timestamp: item.timestamp,
     }));
 
-    upgrades.sort((a, b) => b.timestamp - a.timestamp);
+    upgrades = upgrades.sortedDescending(item => item.timestamp);
 
     return upgrades.slice(queryPagination.from, queryPagination.from + queryPagination.size);
   }
