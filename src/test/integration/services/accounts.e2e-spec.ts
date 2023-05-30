@@ -702,6 +702,8 @@ describe('Account Service', () => {
         }),
       );
 
+      upgrades.sort((a, b) => b.timestamp - a.timestamp);
+
       const expectedResult = upgrades.slice(queryPagination.from, queryPagination.from + queryPagination.size);
       expect(result).toEqual(expectedResult);
     });

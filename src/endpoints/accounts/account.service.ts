@@ -506,6 +506,8 @@ export class AccountService {
       timestamp: item.timestamp,
     }));
 
+    upgrades.sort((a, b) => b.timestamp - a.timestamp);
+
     return upgrades.slice(queryPagination.from, queryPagination.from + queryPagination.size);
   }
 
