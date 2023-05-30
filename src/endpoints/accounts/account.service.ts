@@ -504,7 +504,7 @@ export class AccountService {
       address: item.upgrader,
       txHash: item.upgradeTxHash,
       timestamp: item.timestamp,
-    }));
+    })).sortedDescending(item => item.timestamp);
 
     return upgrades.slice(queryPagination.from, queryPagination.from + queryPagination.size);
   }

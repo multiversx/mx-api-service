@@ -694,13 +694,11 @@ describe('Account Service', () => {
 
       expect(indexerService.getScDeploy).toHaveBeenCalledWith(address);
 
-      const upgrades = details.upgrades.map(item =>
-        ApiUtils.mergeObjects(new ContractUpgrades(), {
-          address: item.upgrader,
-          txHash: item.upgradeTxHash,
-          timestamp: item.timestamp,
-        }),
-      );
+      const upgrades = details.upgrades.map(item => ApiUtils.mergeObjects(new ContractUpgrades(), {
+        address: item.upgrader,
+        txHash: item.upgradeTxHash,
+        timestamp: item.timestamp,
+      })).sortedDescending(item => item.timestamp);
 
       const expectedResult = upgrades.slice(queryPagination.from, queryPagination.from + queryPagination.size);
       expect(result).toEqual(expectedResult);
