@@ -190,6 +190,13 @@ export class CacheInfo {
     };
   }
 
+  static CollectionProperties(identifier: string): CacheInfo {
+    return {
+      key: `collection:${identifier}`,
+      ttl: Constants.oneDay(),
+    };
+  }
+
   static EsdtAddressesRoles(identifier: string): CacheInfo {
     return {
       key: `esdt:roles:${identifier}`,

@@ -46,6 +46,21 @@ export class EsdtService {
     return properties;
   }
 
+  async getCollectionProperties(identifier: string): Promise<TokenProperties | undefined> {
+    const properties = await this.cachingService.getOrSet(
+      CacheInfo.CollectionProperties(identifier).key,
+      async () => await this.getEsdtTokenPropertiesRawFromGateway(identifier),
+      Constants.oneWeek(),
+      CacheInfo.CollectionProperties(identifier).ttl
+    );
+
+    if (!properties) {
+      return undefined;
+    }
+
+    return properties;
+  }
+
   async getEsdtAddressesRoles(identifier: string): Promise<TokenRoles[] | undefined> {
     const addressesRoles = await this.cachingService.getOrSet(
       CacheInfo.EsdtAddressesRoles(identifier).key,

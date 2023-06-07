@@ -137,10 +137,10 @@ export class CollectionService {
     const collectionsProperties: { [key: string]: TokenProperties | undefined } = {};
     await this.cachingService.batchApplyAll(
       identifiers,
-      identifier => CacheInfo.EsdtProperties(identifier).key,
-      identifier => this.esdtService.getEsdtTokenProperties(identifier),
+      identifier => CacheInfo.CollectionProperties(identifier).key,
+      identifier => this.esdtService.getCollectionProperties(identifier),
       (identifier, properties) => collectionsProperties[identifier] = properties,
-      CacheInfo.EsdtProperties('').ttl
+      CacheInfo.CollectionProperties('').ttl
     );
 
     return collectionsProperties;
@@ -217,7 +217,7 @@ export class CollectionService {
   }
 
   async applyCollectionRoles(collection: NftCollectionDetailed | TokenDetailed, elasticCollection: any) {
-    collection.roles = await this.getNftCollectionRoles(elasticCollection);
+    collection.roles = await this.getNftCollectionRolesFromGateway(elasticCollection);
     const isTransferProhibitedByDefault = collection.roles?.some(x => x.canTransfer === true) === true;
     collection.canTransfer = !isTransferProhibitedByDefault;
     if (collection.canTransfer) {
@@ -233,6 +233,10 @@ export class CollectionService {
     }
 
     return this.getNftCollectionRolesFromElasticResponse(elasticCollection);
+  }
+
+  async getNftCollectionRolesFromGateway(elasticCollection: any): Promise<CollectionRoles[]> {
+    return await this.getNftCollectionRolesFromEsdtContract(elasticCollection.token);
   }
 
   private getNftCollectionRolesFromElasticResponse(elasticCollection: any): CollectionRoles[] {
