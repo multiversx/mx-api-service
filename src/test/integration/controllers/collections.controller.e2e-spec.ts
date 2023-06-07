@@ -59,7 +59,7 @@ describe("collections Controller", () => {
             canPause: false,
             canTransferNftCreateRole: false,
             canChangeOwner: false,
-            canUpgrade: true,
+            canUpgrade: false,
             canAddSpecialRoles: true,
             traits: [],
           }];
