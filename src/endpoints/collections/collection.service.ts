@@ -137,21 +137,9 @@ export class CollectionService {
     const collectionsProperties: { [key: string]: TokenProperties | undefined } = {};
 
     if (this.apiConfigService.getCollectionPropertiesFromGateway()) {
-      await this.cachingService.batchApplyAll(
-        identifiers,
-        identifier => CacheInfo.CollectionProperties(identifier).key,
-        identifier => this.esdtService.getCollectionProperties(identifier),
-        (identifier, properties) => collectionsProperties[identifier] = properties,
-        CacheInfo.CollectionProperties('').ttl
-      );
+      await this.getCollectionProperties(identifiers, collectionsProperties);
     } else {
-      await this.cachingService.batchApplyAll(
-        identifiers,
-        identifier => CacheInfo.EsdtProperties(identifier).key,
-        identifier => this.esdtService.getEsdtTokenProperties(identifier),
-        (identifier, properties) => collectionsProperties[identifier] = properties,
-        CacheInfo.EsdtProperties('').ttl
-      );
+      await this.getEsdtProperties(identifiers, collectionsProperties);
     }
 
     return collectionsProperties;
@@ -396,5 +384,25 @@ export class CollectionService {
     }
 
     return collectionLogo.svgUrl;
+  }
+
+  private async getCollectionProperties(identifiers: string[], collectionsProperties: { [key: string]: TokenProperties | undefined }) {
+    return await this.cachingService.batchApplyAll(
+      identifiers,
+      identifier => CacheInfo.CollectionProperties(identifier).key,
+      identifier => this.esdtService.getCollectionProperties(identifier),
+      (identifier, properties) => collectionsProperties[identifier] = properties,
+      CacheInfo.CollectionProperties('').ttl
+    );
+  }
+
+  private async getEsdtProperties(identifiers: string[], collectionsProperties: { [key: string]: TokenProperties | undefined }) {
+    return await this.cachingService.batchApplyAll(
+      identifiers,
+      identifier => CacheInfo.EsdtProperties(identifier).key,
+      identifier => this.esdtService.getEsdtTokenProperties(identifier),
+      (identifier, properties) => collectionsProperties[identifier] = properties,
+      CacheInfo.EsdtProperties('').ttl
+    );
   }
 }
