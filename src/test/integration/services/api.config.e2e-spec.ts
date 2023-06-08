@@ -843,6 +843,17 @@ describe('API Config', () => {
     });
   });
 
+  describe("getCollectionPropertiesFromGateway", () => {
+    it("should return collection properties from gateway flag", () => {
+      jest
+        .spyOn(ConfigService.prototype, "get")
+        .mockImplementation(jest.fn(() => true));
+
+      const results = apiConfigService.getCollectionPropertiesFromGateway();
+      expect(results).toEqual(true);
+    });
+  });
+
   describe("getIsAuthActive", () => {
     it("should return is auth active flag", () => {
       jest

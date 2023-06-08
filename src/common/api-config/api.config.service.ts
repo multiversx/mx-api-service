@@ -224,6 +224,10 @@ export class ApiConfigService {
     return this.configService.get<boolean>('flags.useVmQueryTracing') ?? false;
   }
 
+  getCollectionPropertiesFromGateway(): boolean {
+    return this.configService.get<boolean>('flags.collectionPropertiesFromGateway') ?? false;
+  }
+
   getProvidersUrl(): string {
     const providerUrl = this.configService.get<string>('urls.providers');
     if (providerUrl) {
