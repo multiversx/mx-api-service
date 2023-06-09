@@ -134,15 +134,11 @@ export class CollectionService {
   }
 
   async batchGetCollectionsProperties(identifiers: string[]): Promise<{ [key: string]: TokenProperties | undefined }> {
-    const collectionsProperties: { [key: string]: TokenProperties | undefined } = {};
-
     if (this.apiConfigService.getCollectionPropertiesFromGateway()) {
-      await this.getCollectionProperties(identifiers, collectionsProperties);
-    } else {
-      await this.getEsdtProperties(identifiers, collectionsProperties);
+      return await this.getCollectionProperties(identifiers);
     }
 
-    return collectionsProperties;
+    return await this.getEsdtProperties(identifiers);
   }
 
   async batchGetCollectionsAssets(identifiers: string[]): Promise<{ [key: string]: TokenAssets | undefined }> {
@@ -386,23 +382,31 @@ export class CollectionService {
     return collectionLogo.svgUrl;
   }
 
-  private async getCollectionProperties(identifiers: string[], collectionsProperties: { [key: string]: TokenProperties | undefined }) {
-    return await this.cachingService.batchApplyAll(
+  private async getCollectionProperties(identifiers: string[]): Promise<{ [key: string]: TokenProperties | undefined }> {
+    const collectionsProperties: { [key: string]: TokenProperties | undefined } = {};
+
+    await this.cachingService.batchApplyAll(
       identifiers,
       identifier => CacheInfo.CollectionProperties(identifier).key,
       identifier => this.esdtService.getCollectionProperties(identifier),
       (identifier, properties) => collectionsProperties[identifier] = properties,
       CacheInfo.CollectionProperties('').ttl
     );
+
+    return collectionsProperties;
   }
 
-  private async getEsdtProperties(identifiers: string[], collectionsProperties: { [key: string]: TokenProperties | undefined }) {
-    return await this.cachingService.batchApplyAll(
+  private async getEsdtProperties(identifiers: string[]): Promise<{ [key: string]: TokenProperties | undefined }> {
+    const collectionsProperties: { [key: string]: TokenProperties | undefined } = {};
+
+    await this.cachingService.batchApplyAll(
       identifiers,
       identifier => CacheInfo.EsdtProperties(identifier).key,
       identifier => this.esdtService.getEsdtTokenProperties(identifier),
       (identifier, properties) => collectionsProperties[identifier] = properties,
       CacheInfo.EsdtProperties('').ttl
     );
+
+    return collectionsProperties;
   }
 }
