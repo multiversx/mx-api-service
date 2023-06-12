@@ -272,14 +272,18 @@ export class NodeService {
   }
 
   private async applyNodeUnbondingPeriods(nodes: Node[]): Promise<void> {
-    await Promise.all(nodes.map(async node => {
-      if (node.status === NodeStatus.leaving) {
-        const keyUnbondPeriod = await this.keysService.getKeyUnbondPeriod(node.bls);
-        node.remainingUnBondPeriod = keyUnbondPeriod?.remainingUnBondPeriod;
-      } else {
+    const leavingNodes = nodes.filter(node => node.status === NodeStatus.leaving);
+
+    await Promise.all(leavingNodes.map(async node => {
+      const keyUnbondPeriod = await this.keysService.getKeyUnbondPeriod(node.bls);
+      node.remainingUnBondPeriod = keyUnbondPeriod?.remainingUnBondPeriod;
+    }));
+
+    for (const node of nodes) {
+      if (node.status !== NodeStatus.leaving) {
         node.remainingUnBondPeriod = undefined;
       }
-    }));
+    }
   }
 
   private async applyNodeStakeInfo(nodes: Node[]) {
