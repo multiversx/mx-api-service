@@ -14,6 +14,7 @@ import { NodeStatus } from "src/endpoints/nodes/entities/node.status";
 import { NodeType } from "src/endpoints/nodes/entities/node.type";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { NodeSort } from "src/endpoints/nodes/entities/node.sort";
+import { KeysService } from "src/endpoints/keys/keys.service";
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -85,6 +86,13 @@ describe('NodeService', () => {
             getShardIds: jest.fn(),
           },
         },
+        {
+          provide: KeysService,
+          useValue: {
+            getKeyUnbondPeriod: jest.fn(),
+          },
+        },
+
       ],
     }).compile();
 
