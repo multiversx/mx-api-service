@@ -77,8 +77,9 @@ export class EsdtService {
   }
 
   async getEsdtTokenPropertiesRaw(identifier: string): Promise<TokenProperties | null> {
+    const getCollectionPropertiesFromGateway = this.apiConfigService.getCollectionPropertiesFromGateway();
     const isIndexerV5Active = await this.elasticIndexerService.isIndexerV5Active();
-    if (isIndexerV5Active) {
+    if (isIndexerV5Active && !getCollectionPropertiesFromGateway) {
       return await this.getEsdtTokenPropertiesRawFromElastic(identifier);
     } else {
       return await this.getEsdtTokenPropertiesRawFromGateway(identifier);
