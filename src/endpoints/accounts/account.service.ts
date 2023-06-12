@@ -33,6 +33,7 @@ import { AccountHistoryFilter } from './entities/account.history.filter';
 import { ProtocolService } from 'src/common/protocol/protocol.service';
 import { ProviderService } from '../providers/provider.service';
 import { Provider } from '../providers/entities/provider';
+import { KeysService } from '../keys/keys.service';
 
 @Injectable()
 export class AccountService {
@@ -60,6 +61,7 @@ export class AccountService {
     private readonly protocolService: ProtocolService,
     @Inject(forwardRef(() => ProviderService))
     private readonly providerService: ProviderService,
+    private readonly keysService: KeysService
   ) { }
 
   async getAccountsCount(filter: AccountFilter): Promise<number> {
@@ -432,8 +434,11 @@ export class AccountService {
       for (const node of nodes) {
         node.rewardAddress = rewardAddress;
         node.topUp = topUp;
+        node.remainingUnBondPeriod = undefined;
       }
     }
+
+    await this.applyNodeUnbondingPeriods(nodes);
 
     const queuedNodes: string[] = nodes
       .filter((node: AccountKey) => node.status === 'queued')
@@ -525,5 +530,13 @@ export class AccountService {
   async getAccountTokenHistory(address: string, tokenIdentifier: string, pagination: QueryPagination, filter: AccountHistoryFilter): Promise<AccountEsdtHistory[]> {
     const elasticResult = await this.indexerService.getAccountTokenHistory(address, tokenIdentifier, pagination, filter);
     return elasticResult.map(item => ApiUtils.mergeObjects(new AccountEsdtHistory(), item));
+  }
+
+  private async applyNodeUnbondingPeriods(nodes: AccountKey[]): Promise<void> {
+    const leavingNodes = nodes.filter(node => node.status === 'unStaked');
+    await Promise.all(leavingNodes.map(async node => {
+      const keyUnbondPeriod = await this.keysService.getKeyUnbondPeriod(node.blsKey);
+      node.remainingUnBondPeriod = keyUnbondPeriod?.remainingUnBondPeriod;
+    }));
   }
 }

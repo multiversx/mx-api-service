@@ -14,6 +14,7 @@ import { VmQueryModule } from "../vm.query/vm.query.module";
 import { WaitingListModule } from "../waiting-list/waiting.list.module";
 import { AccountService } from "./account.service";
 import { ProviderModule } from "../providers/provider.module";
+import { KeysModule } from "../keys/keys.module";
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { ProviderModule } from "../providers/provider.module";
     forwardRef(() => AssetsModule),
     forwardRef(() => ProviderModule),
     UsernameModule,
+    forwardRef(() => KeysModule),
   ],
   providers: [
     AccountService,

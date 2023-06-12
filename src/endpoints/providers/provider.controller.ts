@@ -15,15 +15,17 @@ export class ProviderController {
   @ApiOperation({ summary: 'Providers', description: 'Returns a list of all providers' })
   @ApiOkResponse({ type: [Provider] })
   @ApiQuery({ name: 'identity', description: 'Search by identity', required: false })
+  @ApiQuery({ name: 'owner', description: 'Search by owner', required: false })
   @ApiQuery({ name: 'providers', description: 'Search by multiple providers address', required: false })
   @ApiQuery({ name: 'withIdentityInfo', description: 'Returns identity data for providers', required: false })
   async getProviders(
     @Query('identity') identity?: string,
+    @Query('owner', ParseAddressPipe) owner?: string,
     @Query('providers', ParseAddressArrayPipe) providers?: string[],
     @Query('withIdentityInfo', new ParseBoolPipe) withIdentityInfo?: boolean,
   ): Promise<Provider[]> {
     return await this.providerService.getProviders(
-      new ProviderFilter({ identity, providers }),
+      new ProviderFilter({ identity, providers, owner }),
       withIdentityInfo);
   }
 
