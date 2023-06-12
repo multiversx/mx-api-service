@@ -19,6 +19,7 @@ import { AddressUtils } from "@multiversx/sdk-nestjs-common";
 import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { NodeSort } from "./entities/node.sort";
 import { ProtocolService } from "src/common/protocol/protocol.service";
+import { KeysService } from "../keys/keys.service";
 
 @Injectable()
 export class NodeService {
@@ -32,6 +33,7 @@ export class NodeService {
     @Inject(forwardRef(() => BlockService))
     private readonly blockService: BlockService,
     private readonly protocolService: ProtocolService,
+    private readonly keysService: KeysService
   ) { }
 
   private getIssues(node: Node, version: string | undefined): string[] {
@@ -269,6 +271,17 @@ export class NodeService {
     }
   }
 
+  private async applyNodeUnbondingPeriods(nodes: Node[]): Promise<void> {
+    await Promise.all(nodes.map(async node => {
+      if (node.status === NodeStatus.leaving) {
+        const keyUnbondPeriod = await this.keysService.getKeyUnbondPeriod(node.bls);
+        node.remainingUnBondPeriod = keyUnbondPeriod?.remainingUnBondPeriod;
+      } else {
+        node.remainingUnBondPeriod = undefined;
+      }
+    }));
+  }
+
   private async applyNodeStakeInfo(nodes: Node[]) {
     let addresses = nodes
       .filter(({ type }) => type === NodeType.validator)
@@ -319,6 +332,8 @@ export class NodeService {
       const auctions = await this.gatewayService.getValidatorAuctions();
       this.processAuctions(nodes, auctions);
     }
+
+    await this.applyNodeUnbondingPeriods(nodes);
 
     return nodes;
   }

@@ -5,6 +5,7 @@ import { ProviderModule } from "../providers/provider.module";
 import { StakeModule } from "../stake/stake.module";
 import { VmQueryModule } from "../vm.query/vm.query.module";
 import { NodeService } from "./node.service";
+import { KeysModule } from "../keys/keys.module";
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { NodeService } from "./node.service";
     VmQueryModule,
     forwardRef(() => BlockModule),
     forwardRef(() => StakeModule),
+    forwardRef(() => KeysModule),
   ],
   providers: [
     NodeService,
