@@ -711,6 +711,7 @@ export class AccountController {
   @ApiQuery({ name: 'function', description: 'Filter transactions by function name', required: false })
   @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
+  @ApiQuery({ name: 'senderOrReceiver', description: 'One address that current address interacted with', required: false })
   async getAccountTransactionsCount(
     @Param('address', ParseAddressPipe) address: string,
     @Query('sender', ParseAddressPipe) sender?: string,
@@ -724,6 +725,7 @@ export class AccountController {
     @Query('function', new ParseArrayPipe(new ParseArrayPipeOptions({ allowEmptyString: true }))) functions?: string[],
     @Query('before', ParseIntPipe) before?: number,
     @Query('after', ParseIntPipe) after?: number,
+    @Query('senderOrReceiver', ParseAddressPipe) senderOrReceiver?: string,
   ): Promise<number> {
 
     return await this.transactionService.getTransactionCount(new TransactionFilter({
@@ -738,6 +740,7 @@ export class AccountController {
       status,
       before,
       after,
+      senderOrReceiver,
     }), address);
   }
 
@@ -828,9 +831,10 @@ export class AccountController {
   @ApiQuery({ name: 'function', description: 'Filter transfers by function name', required: false })
   @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
+  @ApiQuery({ name: 'senderOrReceiver', description: 'One address that current address interacted with', required: false })
   async getAccountTransfersCount(
     @Param('address', ParseAddressPipe) address: string,
-    @Query('sender', ParseAddressPipe) sender?: string,
+    @Query('sender', ParseAddressArrayPipe) sender?: string[],
     @Query('receiver', ParseAddressArrayPipe) receiver?: string[],
     @Query('token') token?: string,
     @Query('senderShard', ParseIntPipe) senderShard?: number,
@@ -841,6 +845,7 @@ export class AccountController {
     @Query('function', new ParseArrayPipe(new ParseArrayPipeOptions({ allowEmptyString: true }))) functions?: string[],
     @Query('before', ParseIntPipe) before?: number,
     @Query('after', ParseIntPipe) after?: number,
+    @Query('senderOrReceiver', ParseAddressPipe) senderOrReceiver?: string,
   ): Promise<number> {
     if (!this.apiConfigService.getIsIndexerV3FlagActive()) {
       throw new HttpException('Endpoint not live yet', HttpStatus.NOT_IMPLEMENTED);
@@ -848,7 +853,7 @@ export class AccountController {
 
     return await this.transferService.getTransfersCount(new TransactionFilter({
       address,
-      sender,
+      senders: sender,
       receivers: receiver,
       token,
       functions,
@@ -859,6 +864,7 @@ export class AccountController {
       status,
       before,
       after,
+      senderOrReceiver,
     }));
   }
 
@@ -866,7 +872,7 @@ export class AccountController {
   @ApiExcludeEndpoint()
   async getAccountTransfersCountAlternative(
     @Param('address', ParseAddressPipe) address: string,
-    @Query('sender', ParseAddressPipe) sender?: string,
+    @Query('sender', ParseAddressArrayPipe) sender?: string[],
     @Query('receiver', ParseAddressArrayPipe) receiver?: string[],
     @Query('token') token?: string,
     @Query('senderShard', ParseIntPipe) senderShard?: number,
@@ -877,6 +883,7 @@ export class AccountController {
     @Query('function', new ParseArrayPipe(new ParseArrayPipeOptions({ allowEmptyString: true }))) functions?: string[],
     @Query('before', ParseIntPipe) before?: number,
     @Query('after', ParseIntPipe) after?: number,
+    @Query('senderOrReceiver', ParseAddressPipe) senderOrReceiver?: string,
   ): Promise<number> {
     if (!this.apiConfigService.getIsIndexerV3FlagActive()) {
       throw new HttpException('Endpoint not live yet', HttpStatus.NOT_IMPLEMENTED);
@@ -884,7 +891,7 @@ export class AccountController {
 
     return await this.transferService.getTransfersCount(new TransactionFilter({
       address,
-      sender,
+      senders: sender,
       receivers: receiver,
       token,
       functions,
@@ -895,6 +902,7 @@ export class AccountController {
       status,
       before,
       after,
+      senderOrReceiver,
     }));
   }
 
