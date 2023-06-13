@@ -46,6 +46,21 @@ export class EsdtService {
     return properties;
   }
 
+  async getCollectionProperties(identifier: string): Promise<TokenProperties | undefined> {
+    const properties = await this.cachingService.getOrSet(
+      CacheInfo.CollectionProperties(identifier).key,
+      async () => await this.getEsdtTokenPropertiesRawFromGateway(identifier),
+      Constants.oneWeek(),
+      CacheInfo.CollectionProperties(identifier).ttl
+    );
+
+    if (!properties) {
+      return undefined;
+    }
+
+    return properties;
+  }
+
   async getEsdtAddressesRoles(identifier: string): Promise<TokenRoles[] | undefined> {
     const addressesRoles = await this.cachingService.getOrSet(
       CacheInfo.EsdtAddressesRoles(identifier).key,
@@ -62,8 +77,9 @@ export class EsdtService {
   }
 
   async getEsdtTokenPropertiesRaw(identifier: string): Promise<TokenProperties | null> {
+    const getCollectionPropertiesFromGateway = this.apiConfigService.getCollectionPropertiesFromGateway();
     const isIndexerV5Active = await this.elasticIndexerService.isIndexerV5Active();
-    if (isIndexerV5Active) {
+    if (isIndexerV5Active && !getCollectionPropertiesFromGateway) {
       return await this.getEsdtTokenPropertiesRawFromElastic(identifier);
     } else {
       return await this.getEsdtTokenPropertiesRawFromGateway(identifier);
@@ -152,7 +168,7 @@ export class EsdtService {
 
   async getAllFungibleTokenProperties(): Promise<TokenProperties[]> {
     const isIndexerV5Active = await this.elasticIndexerService.isIndexerV5Active();
-    if (isIndexerV5Active) {
+    if (isIndexerV5Active && !this.apiConfigService.getCollectionPropertiesFromGateway()) {
       return await this.getAllFungibleTokenPropertiesFromElastic();
     } else {
       return await this.getAllFungibleTokenPropertiesFromGateway();

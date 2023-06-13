@@ -23,6 +23,7 @@ flags:
   useVmQueryTracing: false
   processNfts: true
   indexer-v3: true
+  collectionPropertiesFromGateway: false
 features:
   eventsNotifier:
     enabled: false
