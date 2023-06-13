@@ -134,16 +134,11 @@ export class CollectionService {
   }
 
   async batchGetCollectionsProperties(identifiers: string[]): Promise<{ [key: string]: TokenProperties | undefined }> {
-    const collectionsProperties: { [key: string]: TokenProperties | undefined } = {};
-    await this.cachingService.batchApplyAll(
-      identifiers,
-      identifier => CacheInfo.EsdtProperties(identifier).key,
-      identifier => this.esdtService.getEsdtTokenProperties(identifier),
-      (identifier, properties) => collectionsProperties[identifier] = properties,
-      CacheInfo.EsdtProperties('').ttl
-    );
+    if (this.apiConfigService.getCollectionPropertiesFromGateway()) {
+      return await this.getCollectionProperties(identifiers);
+    }
 
-    return collectionsProperties;
+    return await this.getEsdtProperties(identifiers);
   }
 
   async batchGetCollectionsAssets(identifiers: string[]): Promise<{ [key: string]: TokenAssets | undefined }> {
@@ -217,7 +212,7 @@ export class CollectionService {
   }
 
   async applyCollectionRoles(collection: NftCollectionDetailed | TokenDetailed, elasticCollection: any) {
-    collection.roles = await this.getNftCollectionRoles(elasticCollection);
+    collection.roles = await this.getNftCollectionRolesFromGateway(elasticCollection);
     const isTransferProhibitedByDefault = collection.roles?.some(x => x.canTransfer === true) === true;
     collection.canTransfer = !isTransferProhibitedByDefault;
     if (collection.canTransfer) {
@@ -233,6 +228,10 @@ export class CollectionService {
     }
 
     return this.getNftCollectionRolesFromElasticResponse(elasticCollection);
+  }
+
+  async getNftCollectionRolesFromGateway(elasticCollection: any): Promise<CollectionRoles[]> {
+    return await this.getNftCollectionRolesFromEsdtContract(elasticCollection.token);
   }
 
   private getNftCollectionRolesFromElasticResponse(elasticCollection: any): CollectionRoles[] {
@@ -381,5 +380,33 @@ export class CollectionService {
     }
 
     return collectionLogo.svgUrl;
+  }
+
+  private async getCollectionProperties(identifiers: string[]): Promise<{ [key: string]: TokenProperties | undefined }> {
+    const collectionsProperties: { [key: string]: TokenProperties | undefined } = {};
+
+    await this.cachingService.batchApplyAll(
+      identifiers,
+      identifier => CacheInfo.CollectionProperties(identifier).key,
+      identifier => this.esdtService.getCollectionProperties(identifier),
+      (identifier, properties) => collectionsProperties[identifier] = properties,
+      CacheInfo.CollectionProperties('').ttl
+    );
+
+    return collectionsProperties;
+  }
+
+  private async getEsdtProperties(identifiers: string[]): Promise<{ [key: string]: TokenProperties | undefined }> {
+    const collectionsProperties: { [key: string]: TokenProperties | undefined } = {};
+
+    await this.cachingService.batchApplyAll(
+      identifiers,
+      identifier => CacheInfo.EsdtProperties(identifier).key,
+      identifier => this.esdtService.getEsdtTokenProperties(identifier),
+      (identifier, properties) => collectionsProperties[identifier] = properties,
+      CacheInfo.EsdtProperties('').ttl
+    );
+
+    return collectionsProperties;
   }
 }
