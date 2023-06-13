@@ -421,7 +421,7 @@ export class AccountService {
 
       const accountKey: AccountKey = new AccountKey;
       accountKey.blsKey = BinaryUtils.padHex(Buffer.from(encodedBlsKey, 'base64').toString('hex'));
-      accountKey.status = Buffer.from(encodedStatus, 'base64').toString() === 'unStaked' ? 'leaving' : Buffer.from(encodedStatus, 'base64').toString();
+      accountKey.status = Buffer.from(encodedStatus, 'base64').toString();
       accountKey.stake = '2500000000000000000000';
 
       nodes.push(accountKey);
