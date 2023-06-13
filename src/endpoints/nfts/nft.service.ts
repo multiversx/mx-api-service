@@ -31,6 +31,7 @@ import { NftRarity } from "./entities/nft.rarity";
 import { NftRarities } from "./entities/nft.rarities";
 import { SortCollectionNfts } from "../collections/entities/sort.collection.nfts";
 import { TokenAssets } from "src/common/assets/entities/token.assets";
+import { ScamInfo } from "src/common/entities/scam-info.dto";
 
 @Injectable()
 export class NftService {
@@ -101,7 +102,7 @@ export class NftService {
       await this.applyUnlockFields(nft);
     }
 
-    await this.pluginService.processNfts(nfts, queryOptions?.withScamInfo || queryOptions?.computeScamInfo);
+    await this.pluginService.processNfts(nfts);
 
     return nfts;
   }
@@ -182,7 +183,7 @@ export class NftService {
     await Promise.all([
       this.applyMedia(nft),
       this.applyMetadata(nft),
-      this.pluginService.processNfts([nft], true),
+      this.pluginService.processNfts([nft]),
     ]);
 
     if (TokenHelpers.needsDefaultMedia(nft)) {
@@ -338,6 +339,12 @@ export class NftService {
       nft.nonce = parseInt('0x' + nft.identifier.split('-')[2]);
       nft.timestamp = elasticNft.timestamp;
 
+      if (elasticNft.nft_scamInfoType || elasticNft.nft_scamInfoDescription) {
+        nft.scamInfo = new ScamInfo();
+        nft.scamInfo.type = elasticNft.nft_scamInfoType;
+        nft.scamInfo.info = elasticNft.nft_scamInfoDescription;
+      }
+
       await this.applyExtendedAttributes(nft, elasticNft);
 
       const elasticNftData = elasticNft.data;
@@ -474,9 +481,7 @@ export class NftService {
       await this.applyUnlockFields(nft, fields);
     }
 
-    const withScamInfo = (queryOptions?.withScamInfo || queryOptions?.computeScamInfo) && (!fields || fields.includes('scamInfo'));
-
-    await this.pluginService.processNfts(nfts, withScamInfo);
+    await this.pluginService.processNfts(nfts);
 
     return nfts;
   }
@@ -528,7 +533,7 @@ export class NftService {
       return undefined;
     }
 
-    const nfts = await this.getNftsForAddress(address, new QueryPagination({ from: 0, size: 1 }), filter, fields, new NftQueryOptions({ withScamInfo: true, computeScamInfo: true }));
+    const nfts = await this.getNftsForAddress(address, new QueryPagination({ from: 0, size: 1 }), filter, fields);
     if (nfts.length === 0) {
       return undefined;
     }

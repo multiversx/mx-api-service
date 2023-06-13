@@ -27,6 +27,7 @@ import { NftRank } from "src/common/assets/entities/nft.rank";
 import { TokenDetailed } from "../tokens/entities/token.detailed";
 import { NftCollectionDetailed } from "./entities/nft.collection.detailed";
 import { CollectionLogo } from "./entities/collection.logo";
+import { ScamInfo } from "src/common/entities/scam-info.dto";
 
 @Injectable()
 export class CollectionService {
@@ -91,8 +92,13 @@ export class CollectionService {
       nftCollection.nftCount = indexedCollection.api_nftCount;
       nftCollection.holderCount = indexedCollection.api_holderCount;
     }
-  }
 
+    if (indexedCollection.nft_scamInfoType || indexedCollection.nft_scamInfoDescription) {
+      nftCollection.scamInfo = new ScamInfo();
+      nftCollection.scamInfo.type = indexedCollection.nft_scamInfoType;
+      nftCollection.scamInfo.info = indexedCollection.nft_scamInfoDescription;
+    }
+  }
   async applyPropertiesToCollections(collectionsIdentifiers: string[]): Promise<NftCollection[]> {
     const nftCollections: NftCollection[] = [];
     const collectionsProperties = await this.batchGetCollectionsProperties(collectionsIdentifiers);

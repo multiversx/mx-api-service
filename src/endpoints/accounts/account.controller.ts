@@ -484,8 +484,6 @@ export class AccountController {
   @ApiQuery({ name: 'includeFlagged', description: 'Include NFTs that are flagged or not', required: false })
   @ApiQuery({ name: 'withSupply', description: 'Return supply where type = SemiFungibleESDT', required: false })
   @ApiQuery({ name: 'source', description: 'Data source of request', required: false })
-  @ApiQuery({ name: 'withScamInfo', description: 'Include scam info in the response', required: false, type: Boolean })
-  @ApiQuery({ name: 'computeScamInfo', description: 'Compute scam info in the response', required: false, type: Boolean })
   @ApiQuery({ name: 'excludeMetaESDT', description: 'Exclude NFTs of type "MetaESDT" in the response', required: false, type: Boolean })
   @ApiQuery({ name: 'fields', description: 'List of fields to filter by', required: false })
   async getAccountNfts(
@@ -503,20 +501,17 @@ export class AccountController {
     @Query('hasUris', new ParseBoolPipe) hasUris?: boolean,
     @Query('includeFlagged', new ParseBoolPipe) includeFlagged?: boolean,
     @Query('withSupply', new ParseBoolPipe) withSupply?: boolean,
-    @Query('withScamInfo', new ParseBoolPipe) withScamInfo?: boolean,
-    @Query('computeScamInfo', new ParseBoolPipe) computeScamInfo?: boolean,
     @Query('source', new ParseEnumPipe(EsdtDataSource)) source?: EsdtDataSource,
     @Query('excludeMetaESDT', new ParseBoolPipe) excludeMetaESDT?: boolean,
     @Query('fields', ParseArrayPipe) fields?: string[],
   ): Promise<NftAccount[]> {
-    const options = NftQueryOptions.enforceScamInfoFlag(size, new NftQueryOptions({ withSupply, withScamInfo, computeScamInfo }));
 
     return await this.nftService.getNftsForAddress(
       address,
       new QueryPagination({ from, size }),
       new NftFilter({ search, identifiers, type, collection, name, collections, tags, creator, hasUris, includeFlagged, excludeMetaESDT }),
       fields,
-      options,
+      new NftQueryOptions({ withSupply }),
       source
     );
   }

@@ -8,11 +8,11 @@ import { Transaction } from "src/endpoints/transactions/entities/transaction";
 
 @Injectable()
 export class PluginService {
-  async processTransactions(_transactions: Transaction[], _withScamInfo?: boolean): Promise<void> { }
+  async processTransactions(_transactions: Transaction[]): Promise<void> { }
 
   async processTransactionSend(_transaction: any): Promise<any> { }
 
-  async processNfts(_nft: Nft[], _withScamInfo?: boolean): Promise<void> { }
+  async processNfts(_nft: Nft[]): Promise<void> { }
 
   async processCollections(_collections: NftCollection[]): Promise<void> { }
 
@@ -20,7 +20,7 @@ export class PluginService {
 
   async bootstrapPublicApp(_application: NestExpressApplication): Promise<void> { }
 
-  async batchProcessNfts(_nfts: Nft[], _withScamInfo?: boolean): Promise<void> { }
+  async batchProcessNfts(_nfts: Nft[]): Promise<void> { }
 
   async processAbout(_about: About): Promise<void> { }
 }

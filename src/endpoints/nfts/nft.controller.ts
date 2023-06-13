@@ -47,8 +47,6 @@ export class NftController {
   @ApiQuery({ name: 'before', description: 'Return all NFTs before given timestamp', required: false, type: Number })
   @ApiQuery({ name: 'after', description: 'Return all NFTs after given timestamp', required: false, type: Number })
   @ApiQuery({ name: 'withOwner', description: 'Return owner where type = NonFungibleESDT', required: false, type: Boolean })
-  @ApiQuery({ name: 'withSupply', description: 'Return supply where type = SemiFungibleESDT', required: false, type: Boolean })
-  @ApiQuery({ name: 'withScamInfo', required: false, type: Boolean })
   @ApiQuery({ name: 'computeScamInfo', required: false, type: Boolean })
   async getNfts(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
@@ -68,15 +66,12 @@ export class NftController {
     @Query('after', new ParseIntPipe) after?: number,
     @Query('withOwner', new ParseBoolPipe) withOwner?: boolean,
     @Query('withSupply', new ParseBoolPipe) withSupply?: boolean,
-    @Query('withScamInfo', new ParseBoolPipe) withScamInfo?: boolean,
-    @Query('computeScamInfo', new ParseBoolPipe) computeScamInfo?: boolean,
   ): Promise<Nft[]> {
-    const options = NftQueryOptions.enforceScamInfoFlag(size, new NftQueryOptions({ withOwner, withSupply, withScamInfo, computeScamInfo }));
 
     return await this.nftService.getNfts(
       new QueryPagination({ from, size }),
       new NftFilter({ search, identifiers, type, collection, name, tags, creator, hasUris, isWhitelistedStorage, isNsfw, traits, before, after }),
-      options
+      new NftQueryOptions({ withOwner, withSupply })
     );
   }
 

@@ -67,7 +67,6 @@ export class TransferService {
     }
 
     await this.transactionService.processTransactions(transactions, {
-      withScamInfo: queryOptions.withScamInfo ?? false,
       withUsername: queryOptions.withUsername ?? false,
     });
 
