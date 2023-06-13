@@ -429,6 +429,10 @@ export class ProviderService {
       providers = providers.filter(x => x.provider && filter.providers?.includes(x.provider));
     }
 
+    if (filter.owner) {
+      providers = providers.filter((provider) => provider.owner === filter.owner);
+    }
+
     return providers;
   }
 

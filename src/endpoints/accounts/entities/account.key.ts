@@ -36,4 +36,8 @@ export class AccountKey {
   @Field(() => String, { description: 'Queue size for the given provider account.', nullable: true })
   @ApiProperty({ type: String, nullable: true, example: '100' })
   queueSize: string | undefined = undefined;
+
+  @Field(() => Number, { description: "Remaining UnBond Period for node with status leaving.", nullable: true })
+  @ApiProperty({ type: Number, example: 10 })
+  remainingUnBondPeriod: number | undefined = 0;
 }

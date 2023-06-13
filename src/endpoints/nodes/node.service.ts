@@ -606,6 +606,10 @@ export class NodeService {
         }
       }
 
+      if (node.remainingUnBondPeriod !== undefined && node.remainingUnBondPeriod >= 0) {
+        node.status = NodeStatus.leaving;
+      }
+
       node.issues = this.getIssues(node, config.erd_latest_tag_software_version);
 
       nodes.push(node);

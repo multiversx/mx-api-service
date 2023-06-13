@@ -17,6 +17,7 @@ import { AccountFilter } from "src/endpoints/accounts/entities/account.filter";
 import { AccountHistory } from "src/endpoints/accounts/entities/account.history";
 import { AccountHistoryFilter } from "src/endpoints/accounts/entities/account.history.filter";
 import { ContractUpgrades } from "src/endpoints/accounts/entities/contract.upgrades";
+import { KeysService } from "src/endpoints/keys/keys.service";
 import { ProviderService } from "src/endpoints/providers/provider.service";
 import { SmartContractResultService } from "src/endpoints/sc-results/scresult.service";
 import { StakeService } from "src/endpoints/stake/stake.service";
@@ -147,6 +148,12 @@ describe('Account Service', () => {
           provide: ProviderService,
           useValue: {
             getProvider: jest.fn(),
+          },
+        },
+        {
+          provide: KeysService,
+          useValue: {
+            getKeyUnbondPeriod: jest.fn(),
           },
         },
       ],
