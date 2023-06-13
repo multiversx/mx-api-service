@@ -168,7 +168,7 @@ export class EsdtService {
 
   async getAllFungibleTokenProperties(): Promise<TokenProperties[]> {
     const isIndexerV5Active = await this.elasticIndexerService.isIndexerV5Active();
-    if (isIndexerV5Active) {
+    if (isIndexerV5Active && !this.apiConfigService.getCollectionPropertiesFromGateway()) {
       return await this.getAllFungibleTokenPropertiesFromElastic();
     } else {
       return await this.getAllFungibleTokenPropertiesFromGateway();
