@@ -533,7 +533,7 @@ export class AccountService {
   }
 
   private async applyNodeUnbondingPeriods(nodes: AccountKey[]): Promise<void> {
-    const leavingNodes = nodes.filter(node => node.status === 'leaving');
+    const leavingNodes = nodes.filter(node => node.status === 'unStaked');
     await Promise.all(leavingNodes.map(async node => {
       const keyUnbondPeriod = await this.keysService.getKeyUnbondPeriod(node.blsKey);
       node.remainingUnBondPeriod = keyUnbondPeriod?.remainingUnBondPeriod;
