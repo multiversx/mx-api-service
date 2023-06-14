@@ -153,7 +153,7 @@ export class TokenTransferService {
 
       for (const operation of operations) {
         if (elasticNftsDict[operation.identifier]) {
-          operation.name = operation.name ?? elasticNftsDict[operation.identifier].data?.name;
+          operation.name = elasticNftsDict[operation.identifier].data?.name ?? operation.name;
         }
       }
     }
