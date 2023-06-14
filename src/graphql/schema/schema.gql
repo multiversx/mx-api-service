@@ -317,6 +317,9 @@ type AccountKey {
   """Queue size for the given provider account."""
   queueSize: String
 
+  """Remaining UnBond Period for node with status leaving."""
+  remainingUnBondPeriod: Float
+
   """Reward address for the given provider account ."""
   rewardAddress: String!
 
@@ -2731,6 +2734,9 @@ type Node {
 
   """Rating modifier for the given node."""
   ratingModifier: Float!
+
+  """Remaining UnBond Period for node with status leaving."""
+  remainingUnBondPeriod: Float
 
   """Shard for the given node."""
   shard: Float

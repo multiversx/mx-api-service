@@ -434,11 +434,8 @@ export class AccountService {
       for (const node of nodes) {
         node.rewardAddress = rewardAddress;
         node.topUp = topUp;
-        node.remainingUnBondPeriod = undefined;
       }
     }
-
-    await this.applyNodeUnbondingPeriods(nodes);
 
     const queuedNodes: string[] = nodes
       .filter((node: AccountKey) => node.status === 'queued')
@@ -532,6 +529,7 @@ export class AccountService {
     return elasticResult.map(item => ApiUtils.mergeObjects(new AccountEsdtHistory(), item));
   }
 
+  // @ts-ignore
   private async applyNodeUnbondingPeriods(nodes: AccountKey[]): Promise<void> {
     const leavingNodes = nodes.filter(node => node.status === 'unStaked');
     await Promise.all(leavingNodes.map(async node => {
