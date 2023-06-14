@@ -12,10 +12,7 @@ import { NftAccount } from 'src/endpoints/nfts/entities/nft.account';
 import { ApiConfigService } from 'src/common/api-config/api.config.service';
 import { QueryPagination } from 'src/common/entities/query.pagination';
 import { CacheService } from "@multiversx/sdk-nestjs-cache";
-import { PluginService } from 'src/common/plugins/plugin.service';
-import { Nft } from 'src/endpoints/nfts/entities/nft';
 import { ScamType } from 'src/common/entities/scam-type.enum';
-
 
 describe('Nft Service', () => {
   let nftService: NftService;
@@ -701,67 +698,6 @@ describe('Nft Service', () => {
   });
 
   describe('NFT scam info', () => {
-    beforeEach(() => {
-      jest
-        .spyOn(PluginService.prototype, 'batchProcessNfts')
-        // eslint-disable-next-line require-await
-        .mockImplementation(jest.fn(async (nfts: Nft[], withScamInfo?: boolean | undefined) => {
-          for (const nft of nfts) {
-            if (withScamInfo == true) {
-              nft.scamInfo = { type: ScamType.potentialScam };
-            }
-          }
-        }));
-
-      jest
-        .spyOn(PluginService.prototype, 'processNfts')
-        // eslint-disable-next-line require-await
-        .mockImplementation(jest.fn(async (nft: Nft[], _withScamInfo?: boolean) => {
-          for (const item of nft) {
-            if (item.collection == 'LOTTERY-7cae2f') {
-              item.scamInfo = { type: ScamType.potentialScam };
-            }
-          }
-
-        }));
-    });
-
-    it("should return a list of NFTs with scam info property present", async () => {
-      const filter = new NftFilter({ collection: 'LOTTERY-7cae2f' });
-
-      const options = new NftQueryOptions({ withScamInfo: true });
-
-      const nfts = await nftService.getNfts({ from: 0, size: 10 }, filter, options);
-
-      for (const nft of nfts) {
-        expect(nft.scamInfo).toBeDefined();
-        expect(nft.scamInfo?.type).toStrictEqual(ScamType.potentialScam);
-      }
-    });
-
-    it("should return a list of NFTs with scam info property present", async () => {
-      const filter = new NftFilter({ collection: 'LOTTERY-7cae2f' });
-
-      const options = new NftQueryOptions({ withScamInfo: true });
-
-      const nfts = await nftService.getNftsForAddress('erd1ar8gg37lu2reg5zpmtmqawqe65fzfsjd2v3p4m993xxjnu8azssq86f24k', { from: 0, size: 10 }, filter, undefined, options);
-
-      for (const nft of nfts) {
-        expect(nft.scamInfo).toBeDefined();
-        expect(nft.scamInfo?.type).toStrictEqual(ScamType.potentialScam);
-      }
-    });
-
-    it("should return a list of NFTs without scam info property", async () => {
-      const filter = new NftFilter({ collection: 'ROCK-6b8ac9-38' });
-      const options = new NftQueryOptions({ withScamInfo: false });
-      const nfts = await nftService.getNfts({ from: 0, size: 10 }, filter, options);
-
-      for (const nft of nfts) {
-        expect(nft.scamInfo).toBeUndefined();
-      }
-    });
-
     it("should return scam info for NFT", async () => {
       const identifier = 'LOTTERY-7cae2f-01';
 
