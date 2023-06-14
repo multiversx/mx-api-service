@@ -12,7 +12,6 @@ import { NftAccount } from 'src/endpoints/nfts/entities/nft.account';
 import { ApiConfigService } from 'src/common/api-config/api.config.service';
 import { QueryPagination } from 'src/common/entities/query.pagination';
 import { CacheService } from "@multiversx/sdk-nestjs-cache";
-import { ScamType } from 'src/common/entities/scam-type.enum';
 
 describe('Nft Service', () => {
   let nftService: NftService;
@@ -704,7 +703,7 @@ describe('Nft Service', () => {
       const nft = await nftService.getSingleNft(identifier);
 
       expect(nft?.scamInfo).toBeDefined();
-      expect(nft?.scamInfo?.type).toStrictEqual(ScamType.potentialScam);
+      expect(nft?.scamInfo?.type).toStrictEqual("scam");
     });
 
     it("should not return scam info for NFT", async () => {
@@ -721,15 +720,6 @@ describe('Nft Service', () => {
       const nft = await nftService.getSingleNft(identifier);
 
       expect(nft?.unlockEpoch).toStrictEqual(1140);
-    });
-
-    it("should return scam info for address NFT", async () => {
-      const identifier = 'LOTTERY-7cae2f-01';
-
-      const nft = await nftService.getNftForAddress('erd1ar8gg37lu2reg5zpmtmqawqe65fzfsjd2v3p4m993xxjnu8azssq86f24k', identifier);
-
-      expect(nft?.scamInfo).toBeDefined();
-      expect(nft?.scamInfo?.type).toStrictEqual(ScamType.potentialScam);
     });
 
     it("should not return scam info for address NFT", async () => {

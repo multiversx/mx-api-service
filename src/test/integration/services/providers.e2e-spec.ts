@@ -283,6 +283,14 @@ describe('Provider Service', () => {
       expect(providerResults.includes("erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq8hlllls7a6h85")).toBeTruthy();
     });
 
+    it(`should return provider details with the "owner" filter applied`, async () => {
+      const filter = new ProviderFilter();
+      filter.owner = "erd1p3423t9rj5nxnqnyz2hzr43xrddxvzggwhp0amjgyhr4v939vstsmh6vtc";
+      const result = await providerService.getProviders(filter);
+
+      expect(result[0].provider).toStrictEqual("erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqc0llllsayxegu");
+    });
+
     it("should return providers with stake information", async () => {
       const results = await providerService.getProvidersWithStakeInformation();
 
