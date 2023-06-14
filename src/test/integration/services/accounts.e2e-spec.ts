@@ -20,6 +20,7 @@ import { ContractUpgrades } from "src/endpoints/accounts/entities/contract.upgra
 import { KeysService } from "src/endpoints/keys/keys.service";
 import { ProviderService } from "src/endpoints/providers/provider.service";
 import { SmartContractResultService } from "src/endpoints/sc-results/scresult.service";
+import { StakeTopup } from "src/endpoints/stake/entities/stake.topup";
 import { StakeService } from "src/endpoints/stake/stake.service";
 import { TransactionFilter } from "src/endpoints/transactions/entities/transaction.filter";
 import { TransactionType } from "src/endpoints/transactions/entities/transaction.type";
@@ -38,6 +39,8 @@ describe('Account Service', () => {
   let transferService: TransferService;
   let smartContractResultService: SmartContractResultService;
   let assetsService: AssetsService;
+  let vmQueryService: VmQueryService;
+  let stakeService: StakeService;
 
   beforeEach((async () => {
     const moduleRef = await Test.createTestingModule({
@@ -168,6 +171,8 @@ describe('Account Service', () => {
     transferService = moduleRef.get<TransferService>(TransferService);
     smartContractResultService = moduleRef.get<SmartContractResultService>(SmartContractResultService);
     assetsService = moduleRef.get<AssetsService>(AssetsService);
+    vmQueryService = moduleRef.get<VmQueryService>(VmQueryService);
+    stakeService = moduleRef.get<StakeService>(StakeService);
   }));
 
   afterEach(() => {
@@ -784,6 +789,69 @@ describe('Account Service', () => {
       }));
 
       expect(result).toEqual(expectedAccounts);
+    });
+  });
+
+  describe('getKeys', () => {
+    const testAddress = 'erd1qga7ze0l03chfgru0a32wxqf2226nzrxnyhzer9lmudqhjgy7ycqjjyknz';
+    const decodedTestAddress = '023be165ff7c7174a07c7f62a718095295a98866992e2c8cbfdf1a0bc904f130';
+    const auctionContractAddress = 'auctionContractAddress';
+    const stakingContractAddress = 'stakingContractAddress';
+    const queueSizeEncoded = 'queueSizeEncoded';
+    const queueSize = 'queueSize';
+    let originalBufferFrom: any;
+
+    beforeAll(() => {
+      originalBufferFrom = Buffer.from;
+    });
+
+    beforeEach(() => {
+      Buffer.from = jest.fn().mockReturnValue({ toString: () => queueSize });
+      jest.spyOn(AddressUtils, 'bech32Decode').mockReturnValue(decodedTestAddress);
+      jest.spyOn(vmQueryService, 'vmQuery').mockResolvedValue([queueSizeEncoded]);
+      Buffer.from = jest.fn().mockReturnValue({ toString: () => queueSize });
+      jest.spyOn(apiConfigService, 'getAuctionContractAddress').mockReturnValue(auctionContractAddress);
+      jest.spyOn(apiConfigService, 'getStakingContractAddress').mockReturnValue(stakingContractAddress);
+    });
+
+    afterEach(() => {
+      Buffer.from = originalBufferFrom;
+    });
+
+    it('should return an empty array if vmQuery for blsKeysStatus returns undefined', async () => {
+      jest.spyOn(vmQueryService, 'vmQuery').mockResolvedValueOnce([]);
+      const result = await service.getKeys(testAddress);
+      expect(result).toEqual([]);
+    });
+
+    it('should return expected AccountKey array if vmQuery for blsKeysStatus is defined', async () => {
+      const blsKeysStatus = ['blsKey1', 'status1', 'blsKey2', 'status2'];
+      jest.spyOn(vmQueryService, 'vmQuery').mockResolvedValueOnce(blsKeysStatus);
+      const encodedRewardAddress = ['encodedRewardAddress'];
+      const rewardAddress = 'rewardAddress';
+      const allStakes: StakeTopup = {
+        topUp: '500',
+        address: "erd1qga7ze0l03chfgru0a32wxqf2226nzrxnyhzer9lmudqhjgy7ycqjjyknz",
+        blses: ["bls1", "bls2"],
+        locked: "2500000000000000000000",
+        numNodes: 1,
+        stake: "2500000000000000000000",
+      };
+
+      jest.spyOn(vmQueryService, 'vmQuery').mockResolvedValueOnce(encodedRewardAddress);
+      jest.spyOn(AddressUtils, 'bech32Encode').mockReturnValue(rewardAddress);
+      jest.spyOn(stakeService, 'getAllStakesForNode').mockResolvedValue(allStakes);
+
+      const result = await service.getKeys(testAddress);
+      expect(result).toHaveLength(blsKeysStatus.length / 2);
+
+      result.forEach(node => {
+        expect(node.blsKey).toBeDefined();
+        expect(node.status).toBeDefined();
+        expect(node.stake).toBeDefined();
+        expect(node.rewardAddress).toBe(rewardAddress);
+        expect(node.topUp).toBe(allStakes.topUp);
+      });
     });
   });
 });
