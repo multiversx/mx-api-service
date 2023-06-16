@@ -606,7 +606,7 @@ export class NodeService {
         }
       }
 
-      if (node.remainingUnBondPeriod !== undefined && node.remainingUnBondPeriod >= 0) {
+      if (node.status === NodeStatus.inactive && node.remainingUnBondPeriod === 0) {
         node.status = NodeStatus.leaving;
       }
 
