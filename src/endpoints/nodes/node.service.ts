@@ -171,6 +171,10 @@ export class NodeService {
         }
       }
 
+      if (query.keys !== undefined && !query.keys.includes(node.bls)) {
+        return false;
+      }
+
       return true;
     });
 

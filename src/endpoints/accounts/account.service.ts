@@ -34,6 +34,7 @@ import { ProtocolService } from 'src/common/protocol/protocol.service';
 import { ProviderService } from '../providers/provider.service';
 import { Provider } from '../providers/entities/provider';
 import { KeysService } from '../keys/keys.service';
+import { NodeGatewayStatus } from '../nodes/entities/node.status';
 
 @Injectable()
 export class AccountService {
@@ -409,17 +410,68 @@ export class AccountService {
 
   async getKeys(address: string): Promise<AccountKey[]> {
     const publicKey = AddressUtils.bech32Decode(address);
+    const isStakingProvider = await this.providerService.isProvider(address);
+    let notStakedNodes: AccountKey[] = [];
 
-    const blsKeysStatus = await this.getBlsKeysStatusForPublicKey(publicKey);
-    if (!blsKeysStatus) {
-      return [];
+    const checkIfCurrentItemIsStatus = (currentNodeData: string) =>
+      Object.values(NodeGatewayStatus).includes(
+        currentNodeData as NodeGatewayStatus
+      );
+
+    if (isStakingProvider) {
+      const allNodeStates = await this.vmQueryService.vmQuery(
+        address,
+        'getAllNodeStates'
+      );
+
+      const inactiveNodesBuffers = allNodeStates.reduce(
+        (totalNodes: string[], currentNodeState, nodeIndex, allNodesDataArray) => {
+          const decodedData = Buffer.from(currentNodeState, 'base64').toString();
+          const isNotStakedStatus =
+            decodedData === NodeGatewayStatus.notStaked;
+
+          const isCurrentItemTheStatus = checkIfCurrentItemIsStatus(decodedData);
+
+          const nextStatusItemIndex = allNodesDataArray.findIndex(
+            (nodeData, nodeDataIndex) =>
+              nodeIndex < nodeDataIndex
+                ? checkIfCurrentItemIsStatus(Buffer.from(nodeData, 'base64').toString())
+                : false
+          );
+
+          if (isCurrentItemTheStatus && nextStatusItemIndex < 0 && isNotStakedStatus) {
+            return [...totalNodes, ...allNodesDataArray.slice(nodeIndex + 1)];
+          }
+
+          if (isCurrentItemTheStatus && isNotStakedStatus) {
+            return [...totalNodes, ...allNodesDataArray.slice(nodeIndex + 1, nextStatusItemIndex)];
+          }
+
+          return totalNodes;
+        },
+        []
+      );
+
+      notStakedNodes = inactiveNodesBuffers.map((inactiveNodeBuffer) => {
+        const accountKey: AccountKey = new AccountKey();
+        accountKey.blsKey = BinaryUtils.padHex(Buffer.from(inactiveNodeBuffer, 'base64').toString('hex'));
+        accountKey.status = NodeGatewayStatus.notStaked;
+        accountKey.stake = '2500000000000000000000';
+        return accountKey;
+      });
     }
 
+    const blsKeysStatus = await this.getBlsKeysStatusForPublicKey(publicKey);
     const nodes: AccountKey[] = [];
+
+    if (!blsKeysStatus) {
+      return notStakedNodes;
+    }
+
     for (let index = 0; index < blsKeysStatus.length; index += 2) {
       const [encodedBlsKey, encodedStatus] = blsKeysStatus.slice(index, index + 2);
 
-      const accountKey: AccountKey = new AccountKey;
+      const accountKey: AccountKey = new AccountKey();
       accountKey.blsKey = BinaryUtils.padHex(Buffer.from(encodedBlsKey, 'base64').toString('hex'));
       accountKey.status = Buffer.from(encodedStatus, 'base64').toString();
       accountKey.stake = '2500000000000000000000';
@@ -453,8 +505,8 @@ export class AccountService {
       if (queueSizeEncoded) {
         const queueSize = Buffer.from(queueSizeEncoded, 'base64').toString();
 
-        const queueIndexes = await Promise.all([
-          ...queuedNodes.map((blsKey: string) =>
+        const queueIndexes = await Promise.all(
+          queuedNodes.map((blsKey: string) =>
             this.vmQueryService.vmQuery(
               this.apiConfigService.getStakingContractAddress(),
               'getQueueIndex',
@@ -462,7 +514,7 @@ export class AccountService {
               [blsKey],
             )
           ),
-        ]);
+        );
 
         let index = 0;
         for (const queueIndexEncoded of queueIndexes) {
@@ -478,7 +530,7 @@ export class AccountService {
       }
     }
 
-    return nodes;
+    return [...notStakedNodes, ...nodes];
   }
 
   async getAccountContracts(pagination: QueryPagination, address: string): Promise<DeployedContract[]> {

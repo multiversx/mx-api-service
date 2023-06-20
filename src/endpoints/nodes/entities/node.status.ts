@@ -11,6 +11,14 @@ export enum NodeStatus {
   inactive = 'inactive'
 }
 
+export enum NodeGatewayStatus {
+  staked = 'staked',
+  jailed = 'jailed',
+  queued = 'queued',
+  unStaked = 'unStaked',
+  notStaked = 'notStaked'
+}
+
 registerEnumType(NodeStatus, {
   name: 'NodeStatus',
   description: 'Node status object type.',

@@ -49,7 +49,6 @@ export class ProviderService {
 
       return modifiedProvider;
     }
-
     return provider;
   }
 
@@ -434,6 +433,11 @@ export class ProviderService {
     }
 
     return providers;
+  }
+
+  async isProvider(address: string): Promise<boolean> {
+    const provider = await this.getProvider(address);
+    return !!provider;
   }
 
   private async getProviderIdentity(address: string): Promise<string | undefined> {
