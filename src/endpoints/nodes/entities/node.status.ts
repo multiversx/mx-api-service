@@ -11,7 +11,7 @@ export enum NodeStatus {
   inactive = 'inactive'
 }
 
-export enum NodeGatewayStatus {
+export enum NodeStatusRaw {
   staked = 'staked',
   jailed = 'jailed',
   queued = 'queued',
@@ -46,6 +46,29 @@ registerEnumType(NodeStatus, {
     },
     inactive: {
       description: 'Inactive status.',
+    },
+  },
+});
+
+registerEnumType(NodeStatusRaw, {
+  name: 'NodeStatusRaw',
+  description: 'Node status raw object type.',
+  valuesMap: {
+    staked: {
+      description: 'New status.',
+    },
+    jailed: {
+      description: 'Jailed status.',
+    },
+    queued: {
+      description: 'Queued status.',
+    },
+
+    unStaked: {
+      description: 'UnStaked status.',
+    },
+    notStaked: {
+      description: 'NotStaked status.',
     },
   },
 });

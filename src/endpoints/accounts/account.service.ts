@@ -34,7 +34,7 @@ import { ProtocolService } from 'src/common/protocol/protocol.service';
 import { ProviderService } from '../providers/provider.service';
 import { Provider } from '../providers/entities/provider';
 import { KeysService } from '../keys/keys.service';
-import { NodeGatewayStatus } from '../nodes/entities/node.status';
+import { NodeStatusRaw } from '../nodes/entities/node.status';
 
 @Injectable()
 export class AccountService {
@@ -414,8 +414,8 @@ export class AccountService {
     let notStakedNodes: AccountKey[] = [];
 
     const checkIfCurrentItemIsStatus = (currentNodeData: string) =>
-      Object.values(NodeGatewayStatus).includes(
-        currentNodeData as NodeGatewayStatus
+      Object.values(NodeStatusRaw).includes(
+        currentNodeData as NodeStatusRaw
       );
 
     if (isStakingProvider) {
@@ -428,7 +428,7 @@ export class AccountService {
         (totalNodes: string[], currentNodeState, nodeIndex, allNodesDataArray) => {
           const decodedData = Buffer.from(currentNodeState, 'base64').toString();
           const isNotStakedStatus =
-            decodedData === NodeGatewayStatus.notStaked;
+            decodedData === NodeStatusRaw.notStaked;
 
           const isCurrentItemTheStatus = checkIfCurrentItemIsStatus(decodedData);
 
@@ -455,7 +455,7 @@ export class AccountService {
       notStakedNodes = inactiveNodesBuffers.map((inactiveNodeBuffer) => {
         const accountKey: AccountKey = new AccountKey();
         accountKey.blsKey = BinaryUtils.padHex(Buffer.from(inactiveNodeBuffer, 'base64').toString('hex'));
-        accountKey.status = NodeGatewayStatus.notStaked;
+        accountKey.status = NodeStatusRaw.notStaked;
         accountKey.stake = '2500000000000000000000';
         return accountKey;
       });
