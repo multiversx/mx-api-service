@@ -408,6 +408,13 @@ export class AccountService {
     return AddressUtils.bech32Encode(rewardsPublicKey);
   }
 
+  private async getAllNodeStates(address: string) {
+    return await this.vmQueryService.vmQuery(
+      address,
+      'getAllNodeStates'
+    );
+  }
+
   async getKeys(address: string): Promise<AccountKey[]> {
     const publicKey = AddressUtils.bech32Decode(address);
     const isStakingProvider = await this.providerService.isProvider(address);
@@ -415,11 +422,7 @@ export class AccountService {
     let notStakedNodes: AccountKey[] = [];
 
     if (isStakingProvider) {
-      const allNodeStates = await this.vmQueryService.vmQuery(
-        address,
-        'getAllNodeStates'
-      );
-
+      const allNodeStates = await this.getAllNodeStates(address);
       const inactiveNodesBuffers = this.getInactiveNodesBuffers(allNodeStates);
       notStakedNodes = this.createNotStakedNodes(inactiveNodesBuffers);
     }
