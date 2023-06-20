@@ -55,20 +55,19 @@ registerEnumType(NodeStatusRaw, {
   description: 'Node status raw object type.',
   valuesMap: {
     staked: {
-      description: 'New status.',
+      description: 'Staked raw status.',
     },
     jailed: {
-      description: 'Jailed status.',
+      description: 'Jailed raw status.',
     },
     queued: {
-      description: 'Queued status.',
+      description: 'Queued raw status.',
     },
-
     unStaked: {
-      description: 'UnStaked status.',
+      description: 'UnStaked raw status.',
     },
     notStaked: {
-      description: 'NotStaked status.',
+      description: 'NotStaked raw status.',
     },
   },
 });
