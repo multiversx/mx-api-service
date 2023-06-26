@@ -36,6 +36,7 @@ export class TransactionController {
   @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
   @ApiQuery({ name: 'order', description: 'Sort order (asc/desc)', required: false, enum: SortOrder })
+  @ApiQuery({ name: 'fields', description: 'List of fields to filter by', required: false })
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   @ApiQuery({ name: 'condition', description: 'Condition for elastic search queries', required: false, deprecated: true })

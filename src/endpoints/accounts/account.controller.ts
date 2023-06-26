@@ -643,6 +643,7 @@ export class AccountController {
   @ApiQuery({ name: 'status', description: 'Status of the transaction (success / pending / invalid / fail)', required: false, enum: TransactionStatus })
   @ApiQuery({ name: 'function', description: 'Filter transactions by function name', required: false })
   @ApiQuery({ name: 'order', description: 'Sort order (asc/desc)', required: false, enum: SortOrder })
+  @ApiQuery({ name: 'fields', description: 'List of fields to filter by', required: false })
   @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
   @ApiQuery({ name: 'withScResults', description: 'Return scResults for transactions. When "withScresults" parameter is applied, complexity estimation is 200', required: false })
