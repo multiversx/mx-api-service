@@ -432,7 +432,12 @@ export class ElasticIndexerHelper {
       if (filter.functions[0] === '') {
         elasticQuery = elasticQuery.withMustNotExistCondition('function');
       } else {
-        elasticQuery = elasticQuery.withMustMultiShouldCondition(filter.functions, func => QueryType.Match('function', func));
+        for (const field of filter.functions) {
+          elasticQuery = elasticQuery.withMustCondition(QueryType.Should([
+            QueryType.Match('function', field),
+            QueryType.Match('operation', field),
+          ]));
+        }
       }
     }
 
