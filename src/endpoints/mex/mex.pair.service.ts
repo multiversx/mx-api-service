@@ -150,8 +150,6 @@ export class MexPairService {
 
     if (xexchangeTypes.includes(type)) {
       exchange = MexPairExchange.xexchange;
-    } else if (type === MexPairType.jungle) {
-      exchange = MexPairExchange.jungledex;
     } else {
       exchange = MexPairExchange.unknown;
     }
@@ -224,10 +222,6 @@ export class MexPairService {
         return MexPairType.ecosystem;
       case 'Experimental':
         return MexPairType.experimental;
-      case 'Jungle':
-      case 'Jungle-Experimental':
-      case 'Jungle-Community':
-        return MexPairType.jungle;
       case 'Unlisted':
         return MexPairType.unlisted;
       default:
