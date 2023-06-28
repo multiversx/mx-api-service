@@ -2034,9 +2034,6 @@ enum MexPairType {
   """Experimental Type."""
   experimental
 
-  """Jungle Type."""
-  jungle
-
   """Unlisted Type."""
   unlisted
 }

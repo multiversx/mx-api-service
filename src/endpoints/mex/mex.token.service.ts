@@ -9,7 +9,6 @@ import { MexFarmService } from "./mex.farm.service";
 import { MexSettingsService } from "./mex.settings.service";
 import { Constants } from "@multiversx/sdk-nestjs-common";
 import { CacheService } from "@multiversx/sdk-nestjs-cache";
-import { MexPairType } from "./entities/mex.pair.type";
 import { OriginLogger } from "@multiversx/sdk-nestjs-common";
 import { QueryPagination } from "src/common/entities/query.pagination";
 
@@ -187,12 +186,11 @@ export class MexTokenService {
       mexTokens.push(mexToken);
     }
 
-    return mexTokens;
+    return mexTokens.distinct(x => x.id);
   }
 
   private getMexToken(pair: MexPair): MexToken | null {
-    if ((pair.type !== MexPairType.jungle && pair.quoteSymbol === 'WEGLD') ||
-      (pair.type === MexPairType.jungle && pair.quoteSymbol === 'USDC')) {
+    if (['WEGLD', 'USDC'].includes(pair.quoteSymbol)) {
       return {
         id: pair.baseId,
         symbol: pair.baseSymbol,
@@ -201,8 +199,7 @@ export class MexTokenService {
       };
     }
 
-    if ((pair.type !== MexPairType.jungle && pair.baseSymbol === 'WEGLD') ||
-      (pair.type === MexPairType.jungle && pair.baseSymbol === 'USDC')) {
+    if (['WEGLD', 'USDC'].includes(pair.baseSymbol)) {
       return {
         id: pair.quoteId,
         symbol: pair.quoteSymbol,
