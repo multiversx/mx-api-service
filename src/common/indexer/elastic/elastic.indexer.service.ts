@@ -450,10 +450,8 @@ export class ElasticIndexerService implements IndexerInterface {
   }
 
   private processTransaction(transaction: any) {
-    if (transaction) {
-      if (!transaction.function) {
-        transaction.function = transaction.operation;
-      }
+    if (transaction && !transaction.function) {
+      transaction.function = transaction.operation;
     }
   }
 
