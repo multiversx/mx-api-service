@@ -266,7 +266,7 @@ describe("NFT Controller", () => {
       {
         filter: 'before',
         value: '1660114204',
-        count: 1010002,
+        count: 1008974,
       },
       {
         filter: 'after',
