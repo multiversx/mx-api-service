@@ -190,7 +190,7 @@ describe('Transaction Service', () => {
     });
 
     it('should return processStatus with value "success" if withProcessStatus flag is true', async () => {
-      const txHash: string = "b01fece9628091094889832e935603f9c1d12e259d0f7feab6f744a69b51a7e5";
+      const txHash: string = "ee2d9d8b282c840c9c20f1480e027f9f6aa5a375340b75f147ff683185bf740f";
       const options = { withProcessStatus: true };
       const result = await transactionService.getTransaction(txHash, undefined, options);
 
@@ -198,7 +198,7 @@ describe('Transaction Service', () => {
     });
 
     it('should return processStatus with value "fail" if withProcessStatus flag is true', async () => {
-      const txHash: string = "e0224dbebd32fecafafb15163c2ddd101a6b086ec6dcf2300a96c1bec89bac26";
+      const txHash: string = "2a70f9b0197a0c579ec3d787d940e1184e8f9bedc8a0f88697ee4d0faa60586c";
       const options = { withProcessStatus: true };
       const result = await transactionService.getTransaction(txHash, undefined, options);
 
