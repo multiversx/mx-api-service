@@ -20,7 +20,6 @@ describe('Transaction Service', () => {
     }).compile();
 
     transactionService = moduleRef.get<TransactionService>(TransactionService);
-
   });
   beforeEach(() => { jest.restoreAllMocks(); });
 
@@ -188,6 +187,30 @@ describe('Transaction Service', () => {
           }),
         ]),
       }));
+    });
+
+    it('should return processStatus with value "success" if withProcessStatus flag is true', async () => {
+      const txHash: string = "b01fece9628091094889832e935603f9c1d12e259d0f7feab6f744a69b51a7e5";
+      const options = { withProcessStatus: true };
+      const result = await transactionService.getTransaction(txHash, undefined, options);
+
+      expect(result?.processStatus).toStrictEqual("success");
+    });
+
+    it('should return processStatus with value "fail" if withProcessStatus flag is true', async () => {
+      const txHash: string = "e0224dbebd32fecafafb15163c2ddd101a6b086ec6dcf2300a96c1bec89bac26";
+      const options = { withProcessStatus: true };
+      const result = await transactionService.getTransaction(txHash, undefined, options);
+
+      expect(result?.processStatus).toStrictEqual("fail");
+    });
+
+    it('should return processStatus undefined if withProcessStatus flag is false', async () => {
+      const txHash: string = "b01fece9628091094889832e935603f9c1d12e259d0f7feab6f744a69b51a7e5";
+      const options = { withProcessStatus: false };
+      const result = await transactionService.getTransaction(txHash, undefined, options);
+
+      expect(result?.processStatus).toBeUndefined();
     });
   });
 
