@@ -196,7 +196,11 @@ export class ElasticIndexerService implements IndexerInterface {
   }
 
   async getTransaction(txHash: string): Promise<any> {
-    return await this.elasticService.getItem('transactions', 'txHash', txHash);
+    const transaction = await this.elasticService.getItem('transactions', 'txHash', txHash);
+
+    this.processTransaction(transaction);
+
+    return transaction;
   }
 
   async getScDeploy(address: string): Promise<any> {
@@ -436,7 +440,19 @@ export class ElasticIndexerService implements IndexerInterface {
       .withPagination({ from: pagination.from, size: pagination.size })
       .withSort([timestamp, nonce]);
 
-    return await this.elasticService.getList('transactions', 'txHash', elasticQuery);
+    const transactions = await this.elasticService.getList('transactions', 'txHash', elasticQuery);
+
+    for (const transaction of transactions) {
+      this.processTransaction(transaction);
+    }
+
+    return transactions;
+  }
+
+  private processTransaction(transaction: any) {
+    if (transaction && !transaction.function) {
+      transaction.function = transaction.operation;
+    }
   }
 
   private buildTokenFilter(query: ElasticQuery, filter: TokenFilter): ElasticQuery {

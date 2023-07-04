@@ -119,6 +119,14 @@ export class ProviderService {
         if (delegationData.owner) {
           element.owner = delegationData.owner;
         }
+
+        if (delegationData.automaticActivation) {
+          element.automaticActivation = delegationData.automaticActivation;
+        }
+
+        if (delegationData.checkCapOnRedelegate) {
+          element.checkCapOnRedelegate = delegationData.checkCapOnRedelegate;
+        }
       }
 
       // Add Nodes details for provider
