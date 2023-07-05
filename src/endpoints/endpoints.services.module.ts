@@ -35,6 +35,7 @@ import { WebsocketModule } from "./websocket/websocket.module";
 import { DelegationContractAddressModule } from "./vm.query/contracts/delegation.contract.address.module";
 import { AuctionContractAddressModule } from "./vm.query/contracts/auction.contract.address.module";
 import { StakingContractAddressModule } from "./vm.query/contracts/staking.contract.address..module";
+import { EsdtContractAddressModule } from "./vm.query/contracts/esdt.contract.address.module";
 
 @Module({
   imports: [
@@ -75,6 +76,7 @@ import { StakingContractAddressModule } from "./vm.query/contracts/staking.contr
     DelegationContractAddressModule,
     AuctionContractAddressModule,
     StakingContractAddressModule,
+    EsdtContractAddressModule,
   ],
   exports: [
     AccountModule, CollectionModule, BlockModule, DelegationModule, DelegationLegacyModule, IdentitiesModule, KeysModule,
@@ -82,7 +84,7 @@ import { StakingContractAddressModule } from "./vm.query/contracts/staking.contr
     RoundModule, SmartContractResultModule, ShardModule, StakeModule, TokenModule, RoundModule, TransactionModule, UsernameModule, VmQueryModule,
     WaitingListModule, EsdtModule, BlsModule, DappConfigModule, TransferModule, TransactionActionModule, WebsocketModule, MexModule,
     ProcessNftsModule, NftMarketplaceModule, TransactionsBatchModule, DelegationContractAddressModule, AuctionContractAddressModule,
-    StakingContractAddressModule,
+    StakingContractAddressModule, EsdtContractAddressModule,
   ],
 })
 export class EndpointsServicesModule { }

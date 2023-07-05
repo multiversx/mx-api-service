@@ -6,7 +6,6 @@ import { CollectionFilter } from "./entities/collection.filter";
 import { NftCollection } from "./entities/nft.collection";
 import { NftType } from "../nfts/entities/nft.type";
 import { AssetsService } from "../../common/assets/assets.service";
-import { VmQueryService } from "../vm.query/vm.query.service";
 import { NftCollectionWithRoles } from "./entities/nft.collection.with.roles";
 import { TokenProperties } from "../tokens/entities/token.properties";
 import { CacheInfo } from "src/utils/cache.info";
@@ -27,6 +26,7 @@ import { NftRank } from "src/common/assets/entities/nft.rank";
 import { TokenDetailed } from "../tokens/entities/token.detailed";
 import { NftCollectionDetailed } from "./entities/nft.collection.detailed";
 import { CollectionLogo } from "./entities/collection.logo";
+import { EsdtContractAddressService } from "../vm.query/contracts/esdt.contract.address.service";
 
 @Injectable()
 export class CollectionService {
@@ -35,12 +35,12 @@ export class CollectionService {
     private readonly indexerService: IndexerService,
     private readonly esdtService: EsdtService,
     private readonly assetsService: AssetsService,
-    private readonly vmQueryService: VmQueryService,
     private readonly cachingService: CacheService,
     @Inject(forwardRef(() => EsdtAddressService))
     private readonly esdtAddressService: EsdtAddressService,
     private readonly pluginService: PluginService,
     private readonly persistenceService: PersistenceService,
+    private readonly esdtContractAddressService: EsdtContractAddressService
   ) { }
 
   async isCollection(identifier: string): Promise<boolean> {
@@ -262,12 +262,7 @@ export class CollectionService {
   }
 
   private async getNftCollectionRolesFromEsdtContract(identifier: string): Promise<CollectionRoles[]> {
-    const collectionRolesEncoded = await this.vmQueryService.vmQuery(
-      this.apiConfigService.getEsdtContractAddress(),
-      'getSpecialRoles',
-      undefined,
-      [BinaryUtils.stringToHex(identifier)]
-    );
+    const collectionRolesEncoded = await this.esdtContractAddressService.getSpecialRoles(identifier);
 
     if (!collectionRolesEncoded) {
       return [];
