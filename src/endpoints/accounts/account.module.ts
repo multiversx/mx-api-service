@@ -17,6 +17,7 @@ import { ProviderModule } from "../providers/provider.module";
 import { KeysModule } from "../keys/keys.module";
 import { DelegationContractAddressModule } from "../vm.query/contracts/delegation.contract.address.module";
 import { AuctionContractAddressModule } from "../vm.query/contracts/auction.contract.address.module";
+import { StakingContractAddressModule } from "../vm.query/contracts/staking.contract.address..module";
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { AuctionContractAddressModule } from "../vm.query/contracts/auction.cont
     forwardRef(() => KeysModule),
     DelegationContractAddressModule,
     AuctionContractAddressModule,
+    StakingContractAddressModule,
   ],
   providers: [
     AccountService,

@@ -1,7 +1,6 @@
 import { forwardRef, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { AccountDetailed } from './entities/account.detailed';
 import { Account } from './entities/account';
-import { VmQueryService } from 'src/endpoints/vm.query/vm.query.service';
 import { ApiConfigService } from 'src/common/api-config/api.config.service';
 import { AccountDeferred } from './entities/account.deferred';
 import { QueryPagination } from 'src/common/entities/query.pagination';
@@ -36,6 +35,7 @@ import { Provider } from '../providers/entities/provider';
 import { KeysService } from '../keys/keys.service';
 import { DelegationContractAddressService } from '../vm.query/contracts/delegation.contract.address.service';
 import { AuctionContractAddressService } from '../vm.query/contracts/auction.contract.address.service';
+import { StakingContractAddressService } from '../vm.query/contracts/staking.contract.address.service';
 
 @Injectable()
 export class AccountService {
@@ -45,7 +45,6 @@ export class AccountService {
     private readonly indexerService: IndexerService,
     private readonly gatewayService: GatewayService,
     private readonly cachingService: CacheService,
-    private readonly vmQueryService: VmQueryService,
     private readonly apiConfigService: ApiConfigService,
     @Inject(forwardRef(() => TransactionService))
     private readonly transactionService: TransactionService,
@@ -65,7 +64,8 @@ export class AccountService {
     private readonly providerService: ProviderService,
     private readonly keysService: KeysService,
     private readonly delegationContractAddressService: DelegationContractAddressService,
-    private readonly auctionContractAddressService: AuctionContractAddressService
+    private readonly auctionContractAddressService: AuctionContractAddressService,
+    private readonly stakingContractAddressService: StakingContractAddressService
   ) { }
 
   async getAccountsCount(filter: AccountFilter): Promise<number> {
@@ -388,12 +388,8 @@ export class AccountService {
   }
 
   private async getRewardAddressForNode(blsKey: string): Promise<string> {
-    const [encodedRewardsPublicKey] = await this.vmQueryService.vmQuery(
-      this.apiConfigService.getStakingContractAddress(),
-      'getRewardAddress',
-      undefined,
-      [blsKey],
-    );
+    const stakingContractAddress = this.apiConfigService.getStakingContractAddress();
+    const [encodedRewardsPublicKey] = await this.stakingContractAddressService.getRewardAddress(stakingContractAddress, blsKey);
 
     const rewardsPublicKey = Buffer.from(encodedRewardsPublicKey, 'base64').toString();
     return AddressUtils.bech32Encode(rewardsPublicKey);
@@ -437,21 +433,20 @@ export class AccountService {
       .map(({ blsKey }) => blsKey);
 
     if (queuedNodes.length) {
-      const [queueSizeEncoded] = await this.vmQueryService.vmQuery(
-        this.apiConfigService.getStakingContractAddress(),
-        'getQueueSize',
-      );
+      const stakingContractAddress = this.apiConfigService.getStakingContractAddress();
+      const [queueSizeEncoded] = await this.stakingContractAddressService.getQueueSize(stakingContractAddress);
 
       if (queueSizeEncoded) {
         const queueSize = Buffer.from(queueSizeEncoded, 'base64').toString();
+        const stakingContractAddress = this.apiConfigService.getStakingContractAddress();
+        const auctionContractAddress = this.apiConfigService.getAuctionContractAddress();
 
         const queueIndexes = await Promise.all([
           ...queuedNodes.map((blsKey: string) =>
-            this.vmQueryService.vmQuery(
-              this.apiConfigService.getStakingContractAddress(),
-              'getQueueIndex',
-              this.apiConfigService.getAuctionContractAddress(),
-              [blsKey],
+            this.stakingContractAddressService.getQueueIndex(
+              stakingContractAddress,
+              auctionContractAddress,
+              blsKey
             )
           ),
         ]);
