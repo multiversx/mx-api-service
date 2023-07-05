@@ -15,6 +15,8 @@ import { WaitingListModule } from "../waiting-list/waiting.list.module";
 import { AccountService } from "./account.service";
 import { ProviderModule } from "../providers/provider.module";
 import { KeysModule } from "../keys/keys.module";
+import { DelegationContractAddressModule } from "../vm.query/contracts/delegation.contract.address.module";
+import { AuctionContractAddressModule } from "../vm.query/contracts/auction.contract.address.module";
 
 @Module({
   imports: [
@@ -33,6 +35,8 @@ import { KeysModule } from "../keys/keys.module";
     forwardRef(() => ProviderModule),
     UsernameModule,
     forwardRef(() => KeysModule),
+    DelegationContractAddressModule,
+    AuctionContractAddressModule,
   ],
   providers: [
     AccountService,

@@ -34,6 +34,8 @@ import { ProtocolService } from 'src/common/protocol/protocol.service';
 import { ProviderService } from '../providers/provider.service';
 import { Provider } from '../providers/entities/provider';
 import { KeysService } from '../keys/keys.service';
+import { DelegationContractAddressService } from '../vm.query/contracts/delegation.contract.address.service';
+import { AuctionContractAddressService } from '../vm.query/contracts/auction.contract.address.service';
 
 @Injectable()
 export class AccountService {
@@ -61,7 +63,9 @@ export class AccountService {
     private readonly protocolService: ProtocolService,
     @Inject(forwardRef(() => ProviderService))
     private readonly providerService: ProviderService,
-    private readonly keysService: KeysService
+    private readonly keysService: KeysService,
+    private readonly delegationContractAddressService: DelegationContractAddressService,
+    private readonly auctionContractAddressService: AuctionContractAddressService
   ) { }
 
   async getAccountsCount(filter: AccountFilter): Promise<number> {
@@ -352,16 +356,8 @@ export class AccountService {
         erd_nonce,
       },
     ] = await Promise.all([
-      this.vmQueryService.vmQuery(
-        delegationContractAddress,
-        'getUserDeferredPaymentList',
-        undefined,
-        [publicKey]
-      ),
-      this.vmQueryService.vmQuery(
-        delegationContractAddress,
-        'getNumBlocksBeforeUnBond',
-      ),
+      this.delegationContractAddressService.getUserDeferredPaymentList(delegationContractAddress, publicKey),
+      this.delegationContractAddressService.getNumBlocksBeforeUnBond(delegationContractAddress),
       this.gatewayService.getNetworkStatus(`${delegationContractShardId}`),
     ]);
 
@@ -387,12 +383,8 @@ export class AccountService {
   }
 
   private async getBlsKeysStatusForPublicKey(publicKey: string) {
-    return await this.vmQueryService.vmQuery(
-      this.apiConfigService.getAuctionContractAddress(),
-      'getBlsKeysStatus',
-      this.apiConfigService.getAuctionContractAddress(),
-      [publicKey],
-    );
+    const auctionContractAddress = this.apiConfigService.getAuctionContractAddress();
+    return await this.auctionContractAddressService.getBlsKeysStatus(auctionContractAddress, publicKey);
   }
 
   private async getRewardAddressForNode(blsKey: string): Promise<string> {
