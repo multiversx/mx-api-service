@@ -1,27 +1,19 @@
 import { OriginLogger } from "@multiversx/sdk-nestjs-common";
 import { Injectable } from "@nestjs/common";
-import { ApiConfigService } from "src/common/api-config/api.config.service";
-import { VmQueryService } from "../vm.query/vm.query.service";
 import { KeyUnbondPeriod } from "./entities/key.unbond.period";
+import { StakingContractService } from "../vm.query/contracts/staking.contract.service";
 
 @Injectable()
 export class KeysService {
   private readonly logger = new OriginLogger(KeysService.name);
 
   constructor(
-    private readonly vmQueryService: VmQueryService,
-    private readonly apiConfigService: ApiConfigService
+    private readonly stakingContractService: StakingContractService
   ) { }
 
   async getKeyUnbondPeriod(key: string): Promise<KeyUnbondPeriod | undefined> {
     try {
-      const encoded = await this.vmQueryService.vmQuery(
-        this.apiConfigService.getStakingContractAddress(),
-        'getRemainingUnBondPeriod',
-        undefined,
-        [key]
-      );
-
+      const encoded = await this.stakingContractService.getRemainingUnBondPeriod(key);
       let remainingUnBondPeriod = parseInt(Buffer.from(encoded[0], 'base64').toString('ascii'));
 
       if (isNaN(remainingUnBondPeriod)) {

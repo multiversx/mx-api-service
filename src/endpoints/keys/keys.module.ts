@@ -1,10 +1,10 @@
 import { Module } from "@nestjs/common";
-import { VmQueryModule } from "../vm.query/vm.query.module";
 import { KeysService } from "./keys.service";
+import { StakingContractModule } from "../vm.query/contracts/staking.contract.module";
 
 @Module({
   imports: [
-    VmQueryModule,
+    StakingContractModule,
   ],
   providers: [
     KeysService,

@@ -388,8 +388,7 @@ export class AccountService {
   }
 
   private async getRewardAddressForNode(blsKey: string): Promise<string> {
-    const stakingContractAddress = this.apiConfigService.getStakingContractAddress();
-    const [encodedRewardsPublicKey] = await this.stakingContractService.getRewardAddress(stakingContractAddress, blsKey);
+    const [encodedRewardsPublicKey] = await this.stakingContractService.getRewardAddress(blsKey);
 
     const rewardsPublicKey = Buffer.from(encodedRewardsPublicKey, 'base64').toString();
     return AddressUtils.bech32Encode(rewardsPublicKey);
@@ -433,21 +432,13 @@ export class AccountService {
       .map(({ blsKey }) => blsKey);
 
     if (queuedNodes.length) {
-      const stakingContractAddress = this.apiConfigService.getStakingContractAddress();
-      const [queueSizeEncoded] = await this.stakingContractService.getQueueSize(stakingContractAddress);
+      const [queueSizeEncoded] = await this.stakingContractService.getQueueSize();
 
       if (queueSizeEncoded) {
         const queueSize = Buffer.from(queueSizeEncoded, 'base64').toString();
-        const stakingContractAddress = this.apiConfigService.getStakingContractAddress();
-        const auctionContractAddress = this.apiConfigService.getAuctionContractAddress();
-
         const queueIndexes = await Promise.all([
           ...queuedNodes.map((blsKey: string) =>
-            this.stakingContractService.getQueueIndex(
-              stakingContractAddress,
-              auctionContractAddress,
-              blsKey
-            )
+            this.stakingContractService.getQueueIndex(blsKey)
           ),
         ]);
 
