@@ -356,8 +356,8 @@ export class AccountService {
         erd_nonce,
       },
     ] = await Promise.all([
-      this.delegationContractService.getUserDeferredPaymentList(delegationContractAddress, publicKey),
-      this.delegationContractService.getNumBlocksBeforeUnBond(delegationContractAddress),
+      this.delegationContractService.getUserDeferredPaymentList(publicKey),
+      this.delegationContractService.getNumBlocksBeforeUnBond(),
       this.gatewayService.getNetworkStatus(`${delegationContractShardId}`),
     ]);
 

@@ -3,7 +3,7 @@ import { Test } from "@nestjs/testing";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { DelegationLegacyService } from "src/endpoints/delegation.legacy/delegation.legacy.service";
 import { DelegationLegacy } from "src/endpoints/delegation.legacy/entities/delegation.legacy";
-import { VmQueryService } from "src/endpoints/vm.query/vm.query.service";
+import { DelegationContractService } from "src/endpoints/vm.query/contracts/delegation.contract.service";
 import { CacheInfo } from "src/utils/cache.info";
 
 describe('DelegationLegacyService', () => {
@@ -32,9 +32,12 @@ describe('DelegationLegacyService', () => {
           },
         },
         {
-          provide: VmQueryService,
+          provide: DelegationContractService,
           useValue: {
-            vmQuery: jest.fn(),
+            getTotalStakeByType: jest.fn(),
+            getNumUsers: jest.fn(),
+            getUserStakeByType: jest.fn(),
+            getClaimableRewards: jest.fn(),
           },
         },
       ],
@@ -89,8 +92,8 @@ describe('DelegationLegacyService', () => {
       ];
       const numUsersEncoded = ['ia8='];
 
-      jest.spyOn(delegationLegacyService['vmQueryService'], 'vmQuery').mockResolvedValueOnce(totalStakeByTypeEncoded);
-      jest.spyOn(delegationLegacyService['vmQueryService'], 'vmQuery').mockResolvedValueOnce(numUsersEncoded);
+      jest.spyOn(delegationLegacyService['delegationContractService'], 'getTotalStakeByType').mockResolvedValueOnce(totalStakeByTypeEncoded);
+      jest.spyOn(delegationLegacyService['delegationContractService'], 'getNumUsers').mockResolvedValueOnce(numUsersEncoded);
 
       (apiConfigService.getDelegationContractAddress as jest.Mock).mockReturnValueOnce('erd1');
 

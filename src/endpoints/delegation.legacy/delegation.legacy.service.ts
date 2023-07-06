@@ -1,18 +1,16 @@
 import { Injectable } from "@nestjs/common";
-import { ApiConfigService } from "src/common/api-config/api.config.service";
-import { VmQueryService } from "src/endpoints/vm.query/vm.query.service";
 import { DelegationLegacy } from "./entities/delegation.legacy";
 import { AccountDelegationLegacy } from "./entities/account.delegation.legacy";
 import { AddressUtils } from "@multiversx/sdk-nestjs-common";
 import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { CacheInfo } from "src/utils/cache.info";
+import { DelegationContractService } from "../vm.query/contracts/delegation.contract.service";
 
 @Injectable()
 export class DelegationLegacyService {
   constructor(
-    private readonly vmQueryService: VmQueryService,
-    private readonly apiConfigService: ApiConfigService,
     private readonly cachingService: CacheService,
+    private readonly delegationContractService: DelegationContractService,
   ) { }
 
   async getDelegation(): Promise<DelegationLegacy> {
@@ -25,14 +23,8 @@ export class DelegationLegacyService {
 
   async getDelegationRaw(): Promise<DelegationLegacy> {
     const [totalStakeByTypeEncoded, numUsersEncoded] = await Promise.all([
-      this.vmQueryService.vmQuery(
-        this.apiConfigService.getDelegationContractAddress(),
-        'getTotalStakeByType',
-      ),
-      this.vmQueryService.vmQuery(
-        this.apiConfigService.getDelegationContractAddress(),
-        'getNumUsers',
-      ),
+      this.delegationContractService.getTotalStakeByType(),
+      this.delegationContractService.getNumUsers(),
     ]);
 
     const [
@@ -59,18 +51,8 @@ export class DelegationLegacyService {
     const publicKey = AddressUtils.bech32Decode(address);
 
     const [userStakeByTypeEncoded, claimableRewardsEncoded] = await Promise.all([
-      this.vmQueryService.vmQuery(
-        this.apiConfigService.getDelegationContractAddress(),
-        'getUserStakeByType',
-        undefined,
-        [publicKey]
-      ),
-      this.vmQueryService.vmQuery(
-        this.apiConfigService.getDelegationContractAddress(),
-        'getClaimableRewards',
-        undefined,
-        [publicKey]
-      ),
+      this.delegationContractService.getUserStakeByType(publicKey),
+      this.delegationContractService.getClaimableRewards(publicKey),
     ]);
 
     const [

@@ -1,10 +1,10 @@
 import { Module } from "@nestjs/common";
-import { VmQueryModule } from "../vm.query/vm.query.module";
 import { DelegationLegacyService } from "./delegation.legacy.service";
+import { DelegationContractModule } from "../vm.query/contracts/delegation.contract.module";
 
 @Module({
   imports: [
-    VmQueryModule,
+    DelegationContractModule,
   ],
   providers: [
     DelegationLegacyService,
