@@ -26,7 +26,7 @@ import { NftRank } from "src/common/assets/entities/nft.rank";
 import { TokenDetailed } from "../tokens/entities/token.detailed";
 import { NftCollectionDetailed } from "./entities/nft.collection.detailed";
 import { CollectionLogo } from "./entities/collection.logo";
-import { EsdtContractAddressService } from "../vm.query/contracts/esdt.contract.address.service";
+import { EsdtContractService } from "../vm.query/contracts/esdt.contract.service";
 
 @Injectable()
 export class CollectionService {
@@ -40,7 +40,7 @@ export class CollectionService {
     private readonly esdtAddressService: EsdtAddressService,
     private readonly pluginService: PluginService,
     private readonly persistenceService: PersistenceService,
-    private readonly esdtContractAddressService: EsdtContractAddressService
+    private readonly esdtContractService: EsdtContractService
   ) { }
 
   async isCollection(identifier: string): Promise<boolean> {
@@ -262,7 +262,7 @@ export class CollectionService {
   }
 
   private async getNftCollectionRolesFromEsdtContract(identifier: string): Promise<CollectionRoles[]> {
-    const collectionRolesEncoded = await this.esdtContractAddressService.getSpecialRoles(identifier);
+    const collectionRolesEncoded = await this.esdtContractService.getSpecialRoles(identifier);
 
     if (!collectionRolesEncoded) {
       return [];

@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { VmQueryService } from '../vm.query.service';
 
 @Injectable()
-export class DelegationContractAddressService {
+export class DelegationContractService {
   constructor(private vmQueryService: VmQueryService) { }
 
   async getUserDeferredPaymentList(delegationContractAddress: string, publicKey: string) {

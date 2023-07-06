@@ -4,7 +4,7 @@ import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { VmQueryService } from "../vm.query.service";
 
 @Injectable()
-export class EsdtContractAddressService {
+export class EsdtContractService {
   constructor(
     private vmQueryService: VmQueryService,
     private apiConfigService: ApiConfigService) { }

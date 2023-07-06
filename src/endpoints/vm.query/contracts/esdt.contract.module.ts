@@ -1,18 +1,18 @@
 import { Module } from "@nestjs/common";
 import { VmQueryService } from "../vm.query.service";
-import { EsdtContractAddressService } from "./esdt.contract.address.service";
+import { EsdtContractService } from "./esdt.contract.service";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { ConfigService } from "@nestjs/config";
 
 @Module({
   providers: [
-    EsdtContractAddressService,
+    EsdtContractService,
     VmQueryService,
     ApiConfigService,
     ConfigService,
   ],
   exports: [
-    EsdtContractAddressService,
+    EsdtContractService,
   ],
 })
-export class EsdtContractAddressModule { }
+export class EsdtContractModule { }

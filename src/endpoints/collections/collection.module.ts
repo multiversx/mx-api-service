@@ -6,7 +6,7 @@ import { NftMarketplaceModule } from "../marketplace/nft.marketplace.module";
 import { TokenModule } from "../tokens/token.module";
 import { VmQueryModule } from "../vm.query/vm.query.module";
 import { CollectionService } from "./collection.service";
-import { EsdtContractAddressModule } from "../vm.query/contracts/esdt.contract.address.module";
+import { EsdtContractModule } from "../vm.query/contracts/esdt.contract.module";
 
 @Module({
   imports: [
@@ -16,7 +16,7 @@ import { EsdtContractAddressModule } from "../vm.query/contracts/esdt.contract.a
     forwardRef(() => AssetsModule),
     forwardRef(() => PluginModule),
     forwardRef(() => NftMarketplaceModule),
-    forwardRef(() => EsdtContractAddressModule),
+    forwardRef(() => EsdtContractModule),
   ],
   providers: [
     CollectionService,

@@ -15,9 +15,9 @@ import { WaitingListModule } from "../waiting-list/waiting.list.module";
 import { AccountService } from "./account.service";
 import { ProviderModule } from "../providers/provider.module";
 import { KeysModule } from "../keys/keys.module";
-import { DelegationContractAddressModule } from "../vm.query/contracts/delegation.contract.address.module";
-import { AuctionContractAddressModule } from "../vm.query/contracts/auction.contract.address.module";
-import { StakingContractAddressModule } from "../vm.query/contracts/staking.contract.address..module";
+import { AuctionContractModule } from "../vm.query/contracts/auction.contract.module";
+import { DelegationContractModule } from "../vm.query/contracts/delegation.contract.module";
+import { StakingContractModule } from "../vm.query/contracts/staking.contract.module";
 
 @Module({
   imports: [
@@ -36,9 +36,9 @@ import { StakingContractAddressModule } from "../vm.query/contracts/staking.cont
     forwardRef(() => ProviderModule),
     UsernameModule,
     forwardRef(() => KeysModule),
-    DelegationContractAddressModule,
-    AuctionContractAddressModule,
-    StakingContractAddressModule,
+    DelegationContractModule,
+    AuctionContractModule,
+    StakingContractModule,
   ],
   providers: [
     AccountService,

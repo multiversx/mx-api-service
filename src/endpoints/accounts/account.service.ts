@@ -33,9 +33,9 @@ import { ProtocolService } from 'src/common/protocol/protocol.service';
 import { ProviderService } from '../providers/provider.service';
 import { Provider } from '../providers/entities/provider';
 import { KeysService } from '../keys/keys.service';
-import { DelegationContractAddressService } from '../vm.query/contracts/delegation.contract.address.service';
-import { AuctionContractAddressService } from '../vm.query/contracts/auction.contract.address.service';
-import { StakingContractAddressService } from '../vm.query/contracts/staking.contract.address.service';
+import { AuctionContractService } from '../vm.query/contracts/auction.contract.service';
+import { DelegationContractService } from '../vm.query/contracts/delegation.contract.service';
+import { StakingContractService } from '../vm.query/contracts/staking.contract.service';
 
 @Injectable()
 export class AccountService {
@@ -63,9 +63,9 @@ export class AccountService {
     @Inject(forwardRef(() => ProviderService))
     private readonly providerService: ProviderService,
     private readonly keysService: KeysService,
-    private readonly delegationContractAddressService: DelegationContractAddressService,
-    private readonly auctionContractAddressService: AuctionContractAddressService,
-    private readonly stakingContractAddressService: StakingContractAddressService
+    private readonly delegationContractService: DelegationContractService,
+    private readonly auctionContractService: AuctionContractService,
+    private readonly stakingContractService: StakingContractService
   ) { }
 
   async getAccountsCount(filter: AccountFilter): Promise<number> {
@@ -356,8 +356,8 @@ export class AccountService {
         erd_nonce,
       },
     ] = await Promise.all([
-      this.delegationContractAddressService.getUserDeferredPaymentList(delegationContractAddress, publicKey),
-      this.delegationContractAddressService.getNumBlocksBeforeUnBond(delegationContractAddress),
+      this.delegationContractService.getUserDeferredPaymentList(delegationContractAddress, publicKey),
+      this.delegationContractService.getNumBlocksBeforeUnBond(delegationContractAddress),
       this.gatewayService.getNetworkStatus(`${delegationContractShardId}`),
     ]);
 
@@ -384,12 +384,12 @@ export class AccountService {
 
   private async getBlsKeysStatusForPublicKey(publicKey: string) {
     const auctionContractAddress = this.apiConfigService.getAuctionContractAddress();
-    return await this.auctionContractAddressService.getBlsKeysStatus(auctionContractAddress, publicKey);
+    return await this.auctionContractService.getBlsKeysStatus(auctionContractAddress, publicKey);
   }
 
   private async getRewardAddressForNode(blsKey: string): Promise<string> {
     const stakingContractAddress = this.apiConfigService.getStakingContractAddress();
-    const [encodedRewardsPublicKey] = await this.stakingContractAddressService.getRewardAddress(stakingContractAddress, blsKey);
+    const [encodedRewardsPublicKey] = await this.stakingContractService.getRewardAddress(stakingContractAddress, blsKey);
 
     const rewardsPublicKey = Buffer.from(encodedRewardsPublicKey, 'base64').toString();
     return AddressUtils.bech32Encode(rewardsPublicKey);
@@ -434,7 +434,7 @@ export class AccountService {
 
     if (queuedNodes.length) {
       const stakingContractAddress = this.apiConfigService.getStakingContractAddress();
-      const [queueSizeEncoded] = await this.stakingContractAddressService.getQueueSize(stakingContractAddress);
+      const [queueSizeEncoded] = await this.stakingContractService.getQueueSize(stakingContractAddress);
 
       if (queueSizeEncoded) {
         const queueSize = Buffer.from(queueSizeEncoded, 'base64').toString();
@@ -443,7 +443,7 @@ export class AccountService {
 
         const queueIndexes = await Promise.all([
           ...queuedNodes.map((blsKey: string) =>
-            this.stakingContractAddressService.getQueueIndex(
+            this.stakingContractService.getQueueIndex(
               stakingContractAddress,
               auctionContractAddress,
               blsKey

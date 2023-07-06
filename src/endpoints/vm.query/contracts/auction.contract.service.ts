@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { VmQueryService } from '../vm.query.service';
 
 @Injectable()
-export class AuctionContractAddressService {
+export class AuctionContractService {
   constructor(private vmQueryService: VmQueryService) { }
 
   async getBlsKeysStatus(auctionContractAddress: string, publicKey: string) {
