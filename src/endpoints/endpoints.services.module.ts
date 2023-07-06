@@ -32,7 +32,7 @@ import { UsernameModule } from "./usernames/username.module";
 import { VmQueryModule } from "./vm.query/vm.query.module";
 import { WaitingListModule } from "./waiting-list/waiting.list.module";
 import { WebsocketModule } from "./websocket/websocket.module";
-import { ContractsServiceModule } from "./vm.query/contracts/contracts.module";
+import { ContractsModule } from "./vm.query/contracts/contracts.module";
 
 @Module({
   imports: [
@@ -70,14 +70,14 @@ import { ContractsServiceModule } from "./vm.query/contracts/contracts.module";
     ProcessNftsModule,
     NftMarketplaceModule,
     TransactionsBatchModule,
-    ContractsServiceModule,
+    ContractsModule,
   ],
   exports: [
     AccountModule, CollectionModule, BlockModule, DelegationModule, DelegationLegacyModule, IdentitiesModule, KeysModule,
     MiniBlockModule, NetworkModule, NftModule, NftMediaModule, TagModule, NodeModule, ProviderModule,
     RoundModule, SmartContractResultModule, ShardModule, StakeModule, TokenModule, RoundModule, TransactionModule, UsernameModule, VmQueryModule,
     WaitingListModule, EsdtModule, BlsModule, DappConfigModule, TransferModule, TransactionActionModule, WebsocketModule, MexModule,
-    ProcessNftsModule, NftMarketplaceModule, TransactionsBatchModule, ContractsServiceModule,
+    ProcessNftsModule, NftMarketplaceModule, TransactionsBatchModule, ContractsModule,
   ],
 })
 export class EndpointsServicesModule { }

@@ -18,4 +18,4 @@ import { StakingContractModule } from "./staking.contract.module";
     EsdtContractModule,
   ],
 })
-export class ContractsServiceModule { }
+export class ContractsModule { }
