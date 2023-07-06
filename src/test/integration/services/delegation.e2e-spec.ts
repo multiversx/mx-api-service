@@ -9,12 +9,12 @@ import { NodeStatus } from "src/endpoints/nodes/entities/node.status";
 import { NodeType } from "src/endpoints/nodes/entities/node.type";
 import { NodeService } from "src/endpoints/nodes/node.service";
 import { AccountDelegation } from "src/endpoints/stake/entities/account.delegation";
-import { VmQueryService } from "src/endpoints/vm.query/vm.query.service";
+import { DelegationManagerContractService } from "src/endpoints/vm.query/contracts/delegation.manager.contract.service";
 
 describe('Delegation Service', () => {
   let delegationService: DelegationService;
   let cachingService: CacheService;
-  let vmQueryService: VmQueryService;
+  let delegationManagerContractService: DelegationManagerContractService;
   let apiConfigService: ApiConfigService;
   let nodeService: NodeService;
   let apiService: ApiService;
@@ -26,9 +26,9 @@ describe('Delegation Service', () => {
       providers: [
         DelegationService,
         {
-          provide: VmQueryService,
+          provide: DelegationManagerContractService,
           useValue: {
-            vmQuery: jest.fn(),
+            getContractConfig: jest.fn(),
           },
         },
         {
@@ -61,7 +61,7 @@ describe('Delegation Service', () => {
     }).compile();
 
     delegationService = moduleRef.get<DelegationService>(DelegationService);
-    vmQueryService = moduleRef.get<VmQueryService>(VmQueryService);
+    delegationManagerContractService = moduleRef.get<DelegationManagerContractService>(DelegationManagerContractService);
     apiConfigService = moduleRef.get<ApiConfigService>(ApiConfigService);
     cachingService = moduleRef.get<CacheService>(CacheService);
     nodeService = moduleRef.get<NodeService>(NodeService);
@@ -124,7 +124,7 @@ describe('Delegation Service', () => {
       const result = await delegationService.getDelegation();
 
       expect(cachingService.getOrSet).toHaveBeenCalledTimes(1);
-      expect(vmQueryService.vmQuery).not.toHaveBeenCalled();
+      expect(delegationManagerContractService.getContractConfig).not.toHaveBeenCalled();
       expect(nodeService.getAllNodes).not.toHaveBeenCalled();
       expect(apiService.get).not.toHaveBeenCalled();
       expect(result).toEqual(mockDelegationRaw);
@@ -140,7 +140,7 @@ describe('Delegation Service', () => {
         minDelegation: '55254700823955191970041559200',
       };
 
-      jest.spyOn(delegationService['vmQueryService'], 'vmQuery').mockResolvedValueOnce(['someBase64Config']);
+      jest.spyOn(delegationService['delegationManagerContractService'], 'getContractConfig').mockResolvedValueOnce(['someBase64Config']);
       jest.spyOn(delegationService['nodeService'], 'getAllNodes').mockResolvedValueOnce(mockNodes);
 
       const result = await delegationService.getDelegationRaw();
@@ -156,7 +156,7 @@ describe('Delegation Service', () => {
         minDelegation: '55254700823955191970041559200',
       };
 
-      jest.spyOn(delegationService['vmQueryService'], 'vmQuery').mockResolvedValueOnce(['someBase64Config']);
+      jest.spyOn(delegationService['delegationManagerContractService'], 'getContractConfig').mockResolvedValueOnce(['someBase64Config']);
       jest.spyOn(delegationService['nodeService'], 'getAllNodes').mockResolvedValueOnce([]);
 
       const result = await delegationService.getDelegationRaw();

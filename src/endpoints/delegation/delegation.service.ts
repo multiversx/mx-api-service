@@ -1,6 +1,5 @@
 import { Injectable } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
-import { VmQueryService } from "src/endpoints/vm.query/vm.query.service";
 import { Delegation } from "./entities/delegation";
 import { NodeService } from "../nodes/node.service";
 import { OriginLogger } from "@multiversx/sdk-nestjs-common";
@@ -8,17 +7,18 @@ import { ApiService } from "@multiversx/sdk-nestjs-http";
 import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { CacheInfo } from "src/utils/cache.info";
 import { AccountDelegation } from "../stake/entities/account.delegation";
+import { DelegationManagerContractService } from "../vm.query/contracts/delegation.manager.contract.service";
 
 @Injectable()
 export class DelegationService {
   private readonly logger = new OriginLogger(DelegationService.name);
 
   constructor(
-    private readonly vmQueryService: VmQueryService,
     private readonly apiConfigService: ApiConfigService,
     private readonly cachingService: CacheService,
     private readonly nodeService: NodeService,
     private readonly apiService: ApiService,
+    private readonly delegationManagerContractService: DelegationManagerContractService
   ) { }
 
   async getDelegation(): Promise<Delegation> {
@@ -30,10 +30,7 @@ export class DelegationService {
   }
 
   async getDelegationRaw(): Promise<Delegation> {
-    const configsBase64 = await this.vmQueryService.vmQuery(
-      this.apiConfigService.getDelegationManagerContractAddress(),
-      'getContractConfig',
-    );
+    const configsBase64 = await this.delegationManagerContractService.getContractConfig();
 
     const nodes = await this.nodeService.getAllNodes();
     let providerAddresses = nodes.map(node => node.provider ? node.provider : node.owner);
