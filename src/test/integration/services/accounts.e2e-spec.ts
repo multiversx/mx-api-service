@@ -26,9 +26,9 @@ import { TransactionType } from "src/endpoints/transactions/entities/transaction
 import { TransactionService } from "src/endpoints/transactions/transaction.service";
 import { TransferService } from "src/endpoints/transfers/transfer.service";
 import { UsernameService } from "src/endpoints/usernames/username.service";
-import { AuctionContractAddressService } from "src/endpoints/vm.query/contracts/auction.contract.address.service";
-import { DelegationContractAddressService } from "src/endpoints/vm.query/contracts/delegation.contract.address.service";
-import { StakingContractAddressService } from "src/endpoints/vm.query/contracts/staking.contract.address.service";
+import { AuctionContractService } from "src/endpoints/vm.query/contracts/auction.contract.service";
+import { DelegationContractService } from "src/endpoints/vm.query/contracts/delegation.contract.service";
+import { StakingContractService } from "src/endpoints/vm.query/contracts/staking.contract.service";
 
 describe('Account Service', () => {
   let service: AccountService;
@@ -77,20 +77,20 @@ describe('Account Service', () => {
           },
         },
         {
-          provide: DelegationContractAddressService,
+          provide: DelegationContractService,
           useValue: {
             getUserDeferredPaymentList: jest.fn(),
             getNumBlocksBeforeUnBond: jest.fn(),
           },
         },
         {
-          provide: AuctionContractAddressService,
+          provide: AuctionContractService,
           useValue: {
             getBlsKeysStatus: jest.fn(),
           },
         },
         {
-          provide: StakingContractAddressService,
+          provide: StakingContractService,
           useValue: {
             getRewardAddress: jest.fn(),
             getQueueIndex: jest.fn(),
