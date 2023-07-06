@@ -1,17 +1,15 @@
 import { AddressUtils, NumberUtils } from "@multiversx/sdk-nestjs-common";
 import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { Injectable } from "@nestjs/common";
-import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { CacheInfo } from "src/utils/cache.info";
-import { VmQueryService } from "../vm.query/vm.query.service";
 import { WaitingList } from "./entities/waiting.list";
+import { DelegationContractService } from "../vm.query/contracts/delegation.contract.service";
 
 @Injectable()
 export class WaitingListService {
   constructor(
-    private readonly vmQueryService: VmQueryService,
-    private readonly apiConfigService: ApiConfigService,
+    private readonly delegationContractService: DelegationContractService,
     private readonly cachingService: CacheService,
   ) { }
 
@@ -46,10 +44,7 @@ export class WaitingListService {
   }
 
   private async getFullWaitingListRaw(): Promise<WaitingList[]> {
-    const fullWaitingListEncoded = await this.vmQueryService.vmQuery(
-      this.apiConfigService.getDelegationContractAddress(),
-      'getFullWaitingList',
-    );
+    const fullWaitingListEncoded = await this.delegationContractService.getFullWaitingList();
 
     const fullWaitingList: WaitingList[] = fullWaitingListEncoded.reduce((result, _, index, array) => {
       if (index % 3 === 0) {

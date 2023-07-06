@@ -77,4 +77,13 @@ export class DelegationContractService {
       'getTotalActiveStake',
     );
   }
+
+  async getFullWaitingList() {
+    const contractAddress = this.apiConfigService.getDelegationContractAddress();
+
+    return await this.vmQueryService.vmQuery(
+      contractAddress,
+      'getFullWaitingList',
+    );
+  }
 }
