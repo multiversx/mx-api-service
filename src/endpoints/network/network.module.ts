@@ -6,19 +6,19 @@ import { SmartContractResultModule } from "../sc-results/scresult.module";
 import { StakeModule } from "../stake/stake.module";
 import { TokenModule } from "../tokens/token.module";
 import { TransactionModule } from "../transactions/transaction.module";
-import { VmQueryModule } from "../vm.query/vm.query.module";
 import { NetworkService } from "./network.service";
+import { DelegationContractModule } from "../vm.query/contracts/delegation.contract.module";
 
 @Module({
   imports: [
     forwardRef(() => TokenModule),
-    forwardRef(() => VmQueryModule),
     forwardRef(() => BlockModule),
     forwardRef(() => AccountModule),
     forwardRef(() => TransactionModule),
     forwardRef(() => StakeModule),
     forwardRef(() => PluginModule),
     forwardRef(() => SmartContractResultModule),
+    forwardRef(() => DelegationContractModule),
   ],
   providers: [
     NetworkService,

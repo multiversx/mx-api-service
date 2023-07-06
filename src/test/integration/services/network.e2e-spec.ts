@@ -18,8 +18,8 @@ import { SmartContractResultService } from "src/endpoints/sc-results/scresult.se
 import { StakeService } from "src/endpoints/stake/stake.service";
 import { TokenService } from "src/endpoints/tokens/token.service";
 import { TransactionService } from "src/endpoints/transactions/transaction.service";
-import { VmQueryService } from "src/endpoints/vm.query/vm.query.service";
 import { CacheInfo } from "src/utils/cache.info";
+import { DelegationContractService } from "src/endpoints/vm.query/contracts/delegation.contract.service";
 
 describe('NetworkService', () => {
   let networkService: NetworkService;
@@ -68,7 +68,11 @@ describe('NetworkService', () => {
           provide: CacheService, useValue: { getOrSet: jest.fn() },
         },
         {
-          provide: VmQueryService, useValue: { vmQuery: jest.fn() },
+          provide: DelegationContractService, useValue:
+          {
+            getTotalStakeByType: jest.fn(),
+            getTotalActiveStake: jest.fn(),
+          },
         },
         {
           provide: BlockService, useValue: { getBlocksCount: jest.fn() },

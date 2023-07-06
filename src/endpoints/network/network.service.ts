@@ -6,7 +6,6 @@ import { BlockService } from '../blocks/block.service';
 import { BlockFilter } from '../blocks/entities/block.filter';
 import { TransactionFilter } from '../transactions/entities/transaction.filter';
 import { TransactionService } from '../transactions/transaction.service';
-import { VmQueryService } from '../vm.query/vm.query.service';
 import { NetworkConstants } from './entities/constants';
 import { Economics } from './entities/economics';
 import { NetworkConfig } from './entities/network.config';
@@ -22,6 +21,7 @@ import { SmartContractResultService } from '../sc-results/scresult.service';
 import { TokenService } from '../tokens/token.service';
 import { AccountFilter } from '../accounts/entities/account.filter';
 import { DataApiService } from 'src/common/data-api/data-api.service';
+import { DelegationContractService } from '../vm.query/contracts/delegation.contract.service';
 
 @Injectable()
 export class NetworkService {
@@ -31,7 +31,6 @@ export class NetworkService {
     private readonly apiConfigService: ApiConfigService,
     private readonly cachingService: CacheService,
     private readonly gatewayService: GatewayService,
-    private readonly vmQueryService: VmQueryService,
     @Inject(forwardRef(() => BlockService))
     private readonly blockService: BlockService,
     @Inject(forwardRef(() => AccountService))
@@ -43,7 +42,8 @@ export class NetworkService {
     @Inject(forwardRef(() => StakeService))
     private readonly stakeService: StakeService,
     private readonly pluginService: PluginService,
-    private readonly smartContractResultService: SmartContractResultService
+    private readonly smartContractResultService: SmartContractResultService,
+    private readonly delegationContractService: DelegationContractService,
   ) { }
 
   async getConstants(): Promise<NetworkConstants> {
@@ -148,14 +148,10 @@ export class NetworkService {
     ] = await Promise.all([
       this.gatewayService.getAddressDetails(`${this.apiConfigService.getAuctionContractAddress()}`),
       this.gatewayService.getNetworkEconomics(),
-      this.vmQueryService.vmQuery(
-        this.apiConfigService.getDelegationContractAddress(),
-        'getTotalStakeByType',
-      ),
+      this.delegationContractService.getTotalStakeByType(),
       this.dataApiService.getEgldPrice(),
       this.tokenService.getTokenMarketCapRaw(),
     ]);
-
 
     const totalWaitingStakeHex = Buffer.from(
       totalWaitingStakeBase64,
@@ -247,10 +243,8 @@ export class NetworkService {
     const {
       account: { balance: stakedBalance },
     } = await this.gatewayService.getAddressDetails(`${this.apiConfigService.getAuctionContractAddress()}`);
-    let [activeStake] = await this.vmQueryService.vmQuery(
-      this.apiConfigService.getDelegationContractAddress(),
-      'getTotalActiveStake',
-    );
+    let [activeStake] = await this.delegationContractService.getTotalActiveStake();
+
     activeStake = this.numberDecode(activeStake);
 
     const elrondConfig = {

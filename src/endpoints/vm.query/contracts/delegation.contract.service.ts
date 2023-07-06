@@ -68,4 +68,13 @@ export class DelegationContractService {
       [publicKey]
     );
   }
+
+  async getTotalActiveStake() {
+    const contractAddress = this.apiConfigService.getDelegationContractAddress();
+
+    return await this.vmQueryService.vmQuery(
+      contractAddress,
+      'getTotalActiveStake',
+    );
+  }
 }
