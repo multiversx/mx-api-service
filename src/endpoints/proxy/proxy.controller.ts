@@ -156,6 +156,14 @@ export class ProxyController {
     return await this.gatewayGet(`transaction/${hash}`, GatewayComponentRequest.transactionDetails, { sender, withResults });
   }
 
+  @Get('/transaction/:hash/process-status')
+  @ApiExcludeEndpoint()
+  async getTransactionProcessStatus(
+    @Param('hash', ParseTransactionHashPipe) hash: string,
+  ) {
+    return await this.gatewayGet(`transaction/${hash}/process-status`, GatewayComponentRequest.transactionProcessStatus);
+  }
+
   @Get('/transaction/:hash/status')
   @ApiExcludeEndpoint()
   @ApiQuery({ name: 'sender', description: 'Sender', required: false })
