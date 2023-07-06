@@ -176,11 +176,15 @@ export class TransactionController {
   @ApiOkResponse({ type: TransactionDetailed })
   @ApiNotFoundResponse({ description: 'Transaction not found' })
   @ApiQuery({ name: 'fields', description: 'List of fields to filter by', required: false })
+  @ApiQuery({ name: 'withProcessStatus', description: 'Returns process status for transaction', required: false })
   async getTransaction(
     @Param('txHash', ParseTransactionHashPipe) txHash: string,
     @Query('fields', ParseArrayPipe) fields?: string[],
+    @Query('withProcessStatus', ParseBoolPipe) withProcessStatus?: boolean,
   ): Promise<TransactionDetailed> {
-    const transaction = await this.transactionService.getTransaction(txHash, fields);
+    const options = { withProcessStatus };
+    const transaction = await this.transactionService.getTransaction(txHash, fields, options);
+
     if (transaction === null) {
       throw new NotFoundException('Transaction not found');
     }
