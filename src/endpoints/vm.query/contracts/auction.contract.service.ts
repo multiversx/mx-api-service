@@ -5,37 +5,35 @@ import { AddressUtils } from '@multiversx/sdk-nestjs-common';
 
 @Injectable()
 export class AuctionContractService {
+  private contractAddress: string;
   constructor(
     private vmQueryService: VmQueryService,
-    private apiConfigService: ApiConfigService) { }
+    private apiConfigService: ApiConfigService) {
+    this.contractAddress = this.apiConfigService.getAuctionContractAddress();
+  }
 
   async getBlsKeysStatus(publicKey: string) {
-    const contractAddress = this.apiConfigService.getAuctionContractAddress();
-
     return await this.vmQueryService.vmQuery(
-      contractAddress,
+      this.contractAddress,
       'getBlsKeysStatus',
-      contractAddress,
+      this.contractAddress,
       [publicKey],
     );
   }
 
   async getTotalStaked(address: string) {
-    const contractAddress = this.apiConfigService.getAuctionContractAddress();
-
     return await this.vmQueryService.vmQuery(
-      contractAddress,
+      this.contractAddress,
       'getTotalStaked',
       address,
     );
   }
 
   async getUnStakedTokensList(address: string) {
-    const contractAddress = this.apiConfigService.getAuctionContractAddress();
     const hexAddress = AddressUtils.bech32Decode(address);
 
     return await this.vmQueryService.vmQuery(
-      contractAddress,
+      this.contractAddress,
       'getUnStakedTokensList',
       address,
       [hexAddress]
@@ -43,13 +41,12 @@ export class AuctionContractService {
   }
 
   async getTotalStakedTopUpStakedBlsKeys(address: string) {
-    const contractAddress = this.apiConfigService.getAuctionContractAddress();
     const hexAddress = AddressUtils.bech32Decode(address);
 
     return await this.vmQueryService.vmQuery(
-      contractAddress,
+      this.contractAddress,
       'getTotalStakedTopUpStakedBlsKeys',
-      contractAddress,
+      this.contractAddress,
       [hexAddress]
     );
   }

@@ -4,15 +4,17 @@ import { ApiConfigService } from 'src/common/api-config/api.config.service';
 
 @Injectable()
 export class StakingContractService {
+  private contractAddress: string;
+
   constructor(
     private vmQueryService: VmQueryService,
-    private apiConfigService: ApiConfigService) { }
+    private apiConfigService: ApiConfigService) {
+    this.contractAddress = this.apiConfigService.getStakingContractAddress();
+  }
 
   async getRewardAddress(blsKey: string) {
-    const contractAddres = this.apiConfigService.getStakingContractAddress();
-
     return await this.vmQueryService.vmQuery(
-      contractAddres,
+      this.contractAddress,
       'getRewardAddress',
       undefined,
       [blsKey]
@@ -20,20 +22,17 @@ export class StakingContractService {
   }
 
   async getQueueSize() {
-    const contractAddres = this.apiConfigService.getStakingContractAddress();
-
     return await this.vmQueryService.vmQuery(
-      contractAddres,
+      this.contractAddress,
       'getQueueSize',
     );
   }
 
   async getQueueIndex(blsKey: string) {
-    const stakingContractAddress = this.apiConfigService.getStakingContractAddress();
     const auctionContractAddress = this.apiConfigService.getAuctionContractAddress();
 
     return await this.vmQueryService.vmQuery(
-      stakingContractAddress,
+      this.contractAddress,
       'getQueueIndex',
       auctionContractAddress,
       [blsKey]
@@ -41,10 +40,8 @@ export class StakingContractService {
   }
 
   async getRemainingUnBondPeriod(blsKey: string) {
-    const contractAddres = this.apiConfigService.getStakingContractAddress();
-
     return await this.vmQueryService.vmQuery(
-      contractAddres,
+      this.contractAddress,
       'getRemainingUnBondPeriod',
       undefined,
       [blsKey]

@@ -4,16 +4,17 @@ import { ApiConfigService } from 'src/common/api-config/api.config.service';
 
 @Injectable()
 export class DelegationContractService {
+  private contractAddress: string;
+
   constructor(
     private vmQueryService: VmQueryService,
-    private apiConfigService: ApiConfigService
-  ) { }
+    private apiConfigService: ApiConfigService) {
+    this.contractAddress = this.apiConfigService.getDelegationContractAddress();
+  }
 
   async getUserDeferredPaymentList(publicKey: string) {
-    const contractAddress = this.apiConfigService.getDelegationContractAddress();
-
     return await this.vmQueryService.vmQuery(
-      contractAddress,
+      this.contractAddress,
       'getUserDeferredPaymentList',
       undefined,
       [publicKey]
@@ -21,37 +22,29 @@ export class DelegationContractService {
   }
 
   async getNumBlocksBeforeUnBond() {
-    const contractAddress = this.apiConfigService.getDelegationContractAddress();
-
     return await this.vmQueryService.vmQuery(
-      contractAddress,
+      this.contractAddress,
       'getNumBlocksBeforeUnBond'
     );
   }
 
   async getTotalStakeByType() {
-    const contractAddress = this.apiConfigService.getDelegationContractAddress();
-
     return await this.vmQueryService.vmQuery(
-      contractAddress,
+      this.contractAddress,
       'getTotalStakeByType',
     );
   }
 
   async getNumUsers() {
-    const contractAddress = this.apiConfigService.getDelegationContractAddress();
-
     return await this.vmQueryService.vmQuery(
-      contractAddress,
+      this.contractAddress,
       'getNumUsers',
     );
   }
 
   async getUserStakeByType(publicKey: string) {
-    const contractAddress = this.apiConfigService.getDelegationContractAddress();
-
     return await this.vmQueryService.vmQuery(
-      contractAddress,
+      this.contractAddress,
       'getUserStakeByType',
       undefined,
       [publicKey]
@@ -59,10 +52,8 @@ export class DelegationContractService {
   }
 
   async getClaimableRewards(publicKey: string) {
-    const contractAddress = this.apiConfigService.getDelegationContractAddress();
-
     return await this.vmQueryService.vmQuery(
-      contractAddress,
+      this.contractAddress,
       'getClaimableRewards',
       undefined,
       [publicKey]
@@ -70,19 +61,15 @@ export class DelegationContractService {
   }
 
   async getTotalActiveStake() {
-    const contractAddress = this.apiConfigService.getDelegationContractAddress();
-
     return await this.vmQueryService.vmQuery(
-      contractAddress,
+      this.contractAddress,
       'getTotalActiveStake',
     );
   }
 
   async getFullWaitingList() {
-    const contractAddress = this.apiConfigService.getDelegationContractAddress();
-
     return await this.vmQueryService.vmQuery(
-      contractAddress,
+      this.contractAddress,
       'getFullWaitingList',
     );
   }

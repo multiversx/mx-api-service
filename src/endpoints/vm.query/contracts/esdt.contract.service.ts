@@ -5,16 +5,18 @@ import { VmQueryService } from "../vm.query.service";
 
 @Injectable()
 export class EsdtContractService {
+  private contractAddress: string;
+
   constructor(
     private vmQueryService: VmQueryService,
-    private apiConfigService: ApiConfigService) { }
+    private apiConfigService: ApiConfigService) {
+    this.contractAddress = this.apiConfigService.getEsdtContractAddress();
+  }
 
   async getSpecialRoles(identifier: string) {
-    const contractAddress = this.apiConfigService.getEsdtContractAddress();
     const hexIdentifier = BinaryUtils.stringToHex(identifier);
-
     return await this.vmQueryService.vmQuery(
-      contractAddress,
+      this.contractAddress,
       'getSpecialRoles',
       undefined,
       [hexIdentifier]
