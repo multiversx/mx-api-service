@@ -195,16 +195,11 @@ export class TransactionService {
     });
   }
 
-  async getTransaction(txHash: string, fields?: string[], options?: { withProcessStatus?: boolean }): Promise<TransactionDetailed | null> {
+  async getTransaction(txHash: string, fields?: string[]): Promise<TransactionDetailed | null> {
     let transaction = await this.transactionGetService.tryGetTransactionFromElastic(txHash, fields);
 
     if (transaction === null) {
       transaction = await this.transactionGetService.tryGetTransactionFromGateway(txHash);
-    }
-
-    if (transaction && options && options.withProcessStatus) {
-      const processStatus = await this.gatewayService.getTransactionProcessStatus(transaction.txHash);
-      transaction.processStatus = processStatus.status;
     }
 
     if (transaction !== null) {
