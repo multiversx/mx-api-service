@@ -383,8 +383,7 @@ export class AccountService {
   }
 
   private async getBlsKeysStatusForPublicKey(publicKey: string) {
-    const auctionContractAddress = this.apiConfigService.getAuctionContractAddress();
-    return await this.auctionContractService.getBlsKeysStatus(auctionContractAddress, publicKey);
+    return await this.auctionContractService.getBlsKeysStatus(publicKey);
   }
 
   private async getRewardAddressForNode(blsKey: string): Promise<string> {

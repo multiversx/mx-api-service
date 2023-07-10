@@ -6,13 +6,14 @@ import { GatewayService } from "src/common/gateway/gateway.service";
 import { NetworkService } from "src/endpoints/network/network.service";
 import { NodeService } from "src/endpoints/nodes/node.service";
 import { StakeService } from "src/endpoints/stake/stake.service";
-import { VmQueryService } from "src/endpoints/vm.query/vm.query.service";
+import { AuctionContractService } from "src/endpoints/vm.query/contracts/auction.contract.service";
+import { StakingContractService } from "src/endpoints/vm.query/contracts/staking.contract.service";
 import { CacheInfo } from "src/utils/cache.info";
 
 describe('Stake Service', () => {
   let stakeService: StakeService;
   let cachingService: CacheService;
-  let vmQueryService: VmQueryService;
+  let stakingContractService: StakingContractService;
 
   beforeEach(async () => {
     const moduleRef = await Test.createTestingModule({
@@ -26,9 +27,17 @@ describe('Stake Service', () => {
           },
         },
         {
-          provide: VmQueryService,
+          provide: StakingContractService,
           useValue: {
-            vmQuery: jest.fn(),
+            getQueueSize: jest.fn(),
+          },
+        },
+        {
+          provide: AuctionContractService,
+          useValue: {
+            getTotalStakedTopUpStakedBlsKeys: jest.fn(),
+            getTotalStaked: jest.fn(),
+            getUnStakedTokensList: jest.fn(),
           },
         },
         {
@@ -61,7 +70,7 @@ describe('Stake Service', () => {
 
     stakeService = moduleRef.get<StakeService>(StakeService);
     cachingService = moduleRef.get<CacheService>(CacheService);
-    vmQueryService = moduleRef.get<VmQueryService>(VmQueryService);
+    stakingContractService = moduleRef.get<StakingContractService>(StakingContractService);
   });
 
   describe('getGlobalStake', () => {
@@ -107,7 +116,7 @@ describe('Stake Service', () => {
         expect.any(Function),
         CacheInfo.GlobalStake.ttl,
       );
-      expect(vmQueryService.vmQuery).not.toHaveBeenCalled();
+      expect(stakingContractService.getQueueSize).not.toHaveBeenCalled();
       expect(result).toEqual(cachedValue);
     });
   });
@@ -149,7 +158,7 @@ describe('Stake Service', () => {
       const queueSize = Buffer.from('10', 'ascii').toString('base64');
       const nodesMock = require('../../mocks/nodes.mock.json');
 
-      jest.spyOn(stakeService['vmQueryService'], 'vmQuery').mockResolvedValue([queueSize]);
+      jest.spyOn(stakeService['stakingContractService'], 'getQueueSize').mockResolvedValue([queueSize]);
       jest.spyOn(stakeService['nodeService'], 'getAllNodes').mockResolvedValue(nodesMock);
 
       const result = await stakeService.getValidators();

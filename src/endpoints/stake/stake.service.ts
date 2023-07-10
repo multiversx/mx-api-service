@@ -1,6 +1,4 @@
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
-import { ApiConfigService } from "src/common/api-config/api.config.service";
-import { VmQueryService } from "src/endpoints/vm.query/vm.query.service";
 import { NodeStatus } from "../nodes/entities/node.status";
 import { NodeType } from "../nodes/entities/node.type";
 import { NodeService } from "../nodes/node.service";
@@ -9,10 +7,12 @@ import { StakeTopup } from "./entities/stake.topup";
 import { NetworkService } from "../network/network.service";
 import { GatewayService } from "src/common/gateway/gateway.service";
 import { CacheInfo } from "src/utils/cache.info";
-import { AddressUtils, RoundUtils } from "@multiversx/sdk-nestjs-common";
+import { RoundUtils } from "@multiversx/sdk-nestjs-common";
 import { ApiUtils } from "@multiversx/sdk-nestjs-http";
 import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { OriginLogger } from "@multiversx/sdk-nestjs-common";
+import { StakingContractService } from "../vm.query/contracts/staking.contract.service";
+import { AuctionContractService } from "../vm.query/contracts/auction.contract.service";
 
 @Injectable()
 export class StakeService {
@@ -20,13 +20,13 @@ export class StakeService {
 
   constructor(
     private readonly cachingService: CacheService,
-    private readonly vmQueryService: VmQueryService,
-    private readonly apiConfigService: ApiConfigService,
     @Inject(forwardRef(() => NodeService))
     private readonly nodeService: NodeService,
     private readonly gatewayService: GatewayService,
     @Inject(forwardRef(() => NetworkService))
     private readonly networkService: NetworkService,
+    private readonly stakingContractService: StakingContractService,
+    private readonly auctionContractService: AuctionContractService,
   ) { }
 
   async getGlobalStake() {
@@ -53,10 +53,7 @@ export class StakeService {
 
   async getValidators() {
     const [[queueSize], nodes] = await Promise.all([
-      this.vmQueryService.vmQuery(
-        this.apiConfigService.getStakingContractAddress(),
-        'getQueueSize',
-      ),
+      this.stakingContractService.getQueueSize(),
       this.nodeService.getAllNodes(),
     ]);
 
@@ -117,12 +114,7 @@ export class StakeService {
 
     let response: string[] | undefined;
     try {
-      response = await this.vmQueryService.vmQuery(
-        this.apiConfigService.getAuctionContractAddress(),
-        'getTotalStakedTopUpStakedBlsKeys',
-        this.apiConfigService.getAuctionContractAddress(),
-        [AddressUtils.bech32Decode(address)],
-      );
+      response = await this.auctionContractService.getTotalStakedTopUpStakedBlsKeys(address);
     } catch (error) {
       this.logger.log(`Unexpected error when trying to get stake informations from contract for address '${address}'`);
       this.logger.log(error);
@@ -181,20 +173,9 @@ export class StakeService {
   }
 
   async getStakeForAddress(address: string) {
-    const hexAddress = AddressUtils.bech32Decode(address);
-
     const [totalStakedEncoded, unStakedTokensListEncoded] = await Promise.all([
-      this.vmQueryService.vmQuery(
-        this.apiConfigService.getAuctionContractAddress(),
-        'getTotalStaked',
-        address,
-      ),
-      this.vmQueryService.vmQuery(
-        this.apiConfigService.getAuctionContractAddress(),
-        'getUnStakedTokensList',
-        address,
-        [hexAddress],
-      ),
+      await this.auctionContractService.getTotalStaked(address),
+      await this.auctionContractService.getUnStakedTokensList(address),
     ]);
 
     const data: any = {
