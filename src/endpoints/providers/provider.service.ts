@@ -13,6 +13,7 @@ import { ApiService } from "@multiversx/sdk-nestjs-http";
 import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { OriginLogger } from "@multiversx/sdk-nestjs-common";
 import { IdentitiesService } from "../identities/identities.service";
+import { DelegationManagerContractService } from "../vm.query/contracts/delegation.manager.contract.service";
 
 @Injectable()
 export class ProviderService {
@@ -26,7 +27,8 @@ export class ProviderService {
     private readonly nodeService: NodeService,
     private readonly apiService: ApiService,
     @Inject(forwardRef(() => IdentitiesService))
-    private readonly identitiesService: IdentitiesService
+    private readonly identitiesService: IdentitiesService,
+    private readonly delegationManagerContractService: DelegationManagerContractService,
   ) { }
 
   async getProvider(address: string): Promise<Provider | undefined> {
@@ -292,10 +294,7 @@ export class ProviderService {
   async getProviderAddresses() {
     let providersBase64: string[];
     try {
-      providersBase64 = await this.vmQueryService.vmQuery(
-        this.apiConfigService.getDelegationManagerContractAddress(),
-        'getAllContractAddresses',
-      );
+      providersBase64 = await this.delegationManagerContractService.getAllContractAddresses();
     } catch (error) {
       this.logger.error(error);
       return [];

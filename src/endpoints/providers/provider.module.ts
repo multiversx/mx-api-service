@@ -4,6 +4,7 @@ import { IdentitiesModule } from "../identities/identities.module";
 import { NodeModule } from "../nodes/node.module";
 import { VmQueryModule } from "../vm.query/vm.query.module";
 import { ProviderService } from "./provider.service";
+import { DelegationManagerContractModule } from "../vm.query/contracts/delegation.manager.contract.module";
 
 @Module({
   imports: [
@@ -11,6 +12,7 @@ import { ProviderService } from "./provider.service";
     forwardRef(() => NodeModule),
     VmQueryModule,
     IdentitiesModule,
+    DelegationManagerContractModule,
   ],
   providers: [
     ProviderService,

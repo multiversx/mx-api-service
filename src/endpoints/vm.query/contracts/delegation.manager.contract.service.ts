@@ -4,16 +4,25 @@ import { VmQueryService } from "../vm.query.service";
 
 @Injectable()
 export class DelegationManagerContractService {
+  private contractAddress: string;
+
   constructor(
     private vmQueryService: VmQueryService,
-    private apiConfigService: ApiConfigService) { }
+    private apiConfigService: ApiConfigService) {
+    this.contractAddress = this.apiConfigService.getDelegationManagerContractAddress();
+  }
 
   async getContractConfig() {
-    const contractAddress = this.apiConfigService.getDelegationManagerContractAddress();
-
     return await this.vmQueryService.vmQuery(
-      contractAddress,
+      this.contractAddress,
       'getContractConfig'
+    );
+  }
+
+  async getAllContractAddresses() {
+    return await this.vmQueryService.vmQuery(
+      this.contractAddress,
+      'getAllContractAddresses'
     );
   }
 }
