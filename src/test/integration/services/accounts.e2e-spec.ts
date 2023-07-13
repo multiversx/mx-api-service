@@ -11,6 +11,7 @@ import { IndexerService } from "src/common/indexer/indexer.service";
 import { PluginService } from "src/common/plugins/plugin.service";
 import { ProtocolService } from "src/common/protocol/protocol.service";
 import { AccountService } from "src/endpoints/accounts/account.service";
+import { Account } from "src/endpoints/accounts/entities/account";
 import { AccountDetailed } from "src/endpoints/accounts/entities/account.detailed";
 import { AccountEsdtHistory } from "src/endpoints/accounts/entities/account.esdt.history";
 import { AccountFilter } from "src/endpoints/accounts/entities/account.filter";
@@ -26,6 +27,7 @@ import { TransactionType } from "src/endpoints/transactions/entities/transaction
 import { TransactionService } from "src/endpoints/transactions/transaction.service";
 import { TransferService } from "src/endpoints/transfers/transfer.service";
 import { UsernameService } from "src/endpoints/usernames/username.service";
+import { CacheInfo } from "src/utils/cache.info";
 import { AuctionContractService } from "src/endpoints/vm.query/contracts/auction.contract.service";
 import { DelegationContractService } from "src/endpoints/vm.query/contracts/delegation.contract.service";
 import { StakingContractService } from "src/endpoints/vm.query/contracts/staking.contract.service";
@@ -40,6 +42,8 @@ describe('Account Service', () => {
   let transferService: TransferService;
   let smartContractResultService: SmartContractResultService;
   let assetsService: AssetsService;
+  let gatewayService: GatewayService;
+  let protocolService: ProtocolService;
 
   beforeEach((async () => {
     const moduleRef = await Test.createTestingModule({
@@ -177,6 +181,7 @@ describe('Account Service', () => {
     }).compile();
 
     service = moduleRef.get<AccountService>(AccountService);
+    gatewayService = moduleRef.get<GatewayService>(GatewayService);
     indexerService = moduleRef.get<IndexerService>(IndexerService);
     cacheService = moduleRef.get<CacheService>(CacheService);
     apiService = moduleRef.get<ApiService>(ApiService);
@@ -185,6 +190,7 @@ describe('Account Service', () => {
     transferService = moduleRef.get<TransferService>(TransferService);
     smartContractResultService = moduleRef.get<SmartContractResultService>(SmartContractResultService);
     assetsService = moduleRef.get<AssetsService>(AssetsService);
+    protocolService = moduleRef.get<ProtocolService>(ProtocolService);
   }));
 
   afterEach(() => {
@@ -193,6 +199,78 @@ describe('Account Service', () => {
 
   it('service should be defined', () => {
     expect(service).toBeDefined();
+  });
+
+  describe('getAccountsRaw', () => {
+    it('should return correct account data', async () => {
+      const mockQueryPagination = new QueryPagination();
+      const mockAccountFilter = new AccountFilter();
+      const mockIndexerResult = [{
+        address: 'erd1932eft30w753xyvme8d49qejgkjc09n5e49w4mwdjtm0neld797su0dlxp',
+        totalBalanceWithStakeNum: 6354510.45079846,
+        balance: '6354510450798460000000000',
+        balanceNum: 6354510.45079846,
+        developerRewards: '0',
+        totalBalanceWithStake: '6354510450798460000000000',
+        shardID: 1,
+        nonce: 234,
+        timestamp: 1688732352,
+      }];
+
+      const mockShardCount = 2;
+      jest.spyOn(indexerService, 'getAccounts').mockResolvedValueOnce(mockIndexerResult);
+      jest.spyOn(assetsService, 'getAllAccountAssets').mockResolvedValueOnce({});
+      jest.spyOn(protocolService, 'getShardCount').mockResolvedValueOnce(mockShardCount);
+
+      const accounts = await service.getAccountsRaw(mockQueryPagination, mockAccountFilter);
+      expect(accounts.length).toBe(mockIndexerResult.length);
+      expect(accounts[0].address).toBe(mockIndexerResult[0].address);
+      expect(accounts[0].shard).toBe(mockIndexerResult[0].shardID);
+    });
+  });
+
+  describe('getAccounts', () => {
+    const mockAccounts = [
+      new Account(
+        {
+          address: 'erd1932eft30w753xyvme8d49qejgkjc09n5e49w4mwdjtm0neld797su0dlxp',
+          balance: '6354510450798460000000000',
+          nonce: 234,
+          timestamp: 1688732352,
+          shard: 1,
+          ownerAddress: undefined,
+          assets: undefined,
+        }),
+    ];
+
+    it('should return accounts from cache only if are available', async () => {
+      const queryPagination = new QueryPagination();
+      const accountFilter = new AccountFilter();
+
+      jest.spyOn(cacheService, 'getOrSet').mockResolvedValueOnce(mockAccounts);
+
+      const accounts = await service.getAccounts(queryPagination, accountFilter);
+
+      expect(cacheService.getOrSet).toHaveBeenCalledWith(
+        CacheInfo.Accounts(queryPagination).key,
+        expect.any(Function),
+        CacheInfo.Accounts(queryPagination).ttl
+      );
+      expect(accounts).toEqual(mockAccounts);
+    });
+
+    it('should return accounts from accounts raw if accounts details are not available from cache', async () => {
+      const queryPagination = new QueryPagination();
+      const accountFilter = new AccountFilter();
+
+      accountFilter.ownerAddress = 'erd1qga7ze0l03chfgru0a32wxqf2226nzrxnyhzer9lmudqhjgy7ycqjjyknz';
+      jest.spyOn(service, 'getAccountsRaw').mockResolvedValueOnce(mockAccounts);
+
+      const accounts = await service.getAccounts(queryPagination, accountFilter);
+
+      expect(service.getAccountsRaw).toHaveBeenCalledWith(queryPagination, accountFilter);
+      expect(accounts).toEqual(mockAccounts);
+    });
   });
 
   describe('getAccountsCount', () => {
@@ -801,6 +879,63 @@ describe('Account Service', () => {
       }));
 
       expect(result).toEqual(expectedAccounts);
+    });
+  });
+
+  describe('applyGuardianInfo', () => {
+    it('should correctly apply active guardian data if returned by the service and if account is gaurded', async () => {
+      const mockAccount = new AccountDetailed();
+      const guardianData = {
+        activeGuardian: {
+          activationEpoch: 1566,
+          address: 'erd10tjm9sd98h9fmjvswnya8ejj75evfwyd363fhfc8qrude9aytstshfllqc',
+          serviceUID: 'ServiceID',
+        },
+        guarded: true,
+      };
+      jest.spyOn(gatewayService, 'getGuardianData').mockResolvedValueOnce({ guardianData });
+
+      await service.applyGuardianInfo(mockAccount);
+
+      expect(mockAccount.activeGuardianActivationEpoch).toBe(guardianData.activeGuardian.activationEpoch);
+      expect(mockAccount.activeGuardianAddress).toBe(guardianData.activeGuardian.address);
+      expect(mockAccount.activeGuardianServiceUid).toBe(guardianData.activeGuardian.serviceUID);
+      expect(mockAccount.isGuarded).toBe(guardianData.guarded);
+    });
+
+    it('should handle unguarded accounts correctly', async () => {
+      const mockAccount = new AccountDetailed();
+      const guardianData = {
+        activeGuardian: {},
+      };
+      jest.spyOn(gatewayService, 'getGuardianData').mockResolvedValueOnce({ guardianData });
+
+      await service.applyGuardianInfo(mockAccount);
+
+      expect(mockAccount.activeGuardianActivationEpoch).not.toBeDefined();
+      expect(mockAccount.activeGuardianAddress).not.toBeDefined();
+      expect(mockAccount.activeGuardianServiceUid).not.toBeDefined();
+      expect(mockAccount.isGuarded).not.toBeDefined();
+    });
+
+    it('should correctly apply pending guardian data if returned by the service and if account is gaurded', async () => {
+      const mockAccount = new AccountDetailed();
+      const guardianData = {
+        pendingGuardian: {
+          activationEpoch: 1566,
+          address: 'erd10tjm9sd98h9fmjvswnya8ejj75evfwyd363fhfc8qrude9aytstshfllqc',
+          serviceUID: 'ServiceID',
+        },
+        guarded: true,
+      };
+      jest.spyOn(gatewayService, 'getGuardianData').mockResolvedValueOnce({ guardianData });
+
+      await service.applyGuardianInfo(mockAccount);
+
+      expect(mockAccount.pendingGuardianActivationEpoch).toBe(guardianData.pendingGuardian.activationEpoch);
+      expect(mockAccount.pendingGuardianAddress).toBe(guardianData.pendingGuardian.address);
+      expect(mockAccount.pendingGuardianServiceUid).toBe(guardianData.pendingGuardian.serviceUID);
+      expect(mockAccount.isGuarded).toBe(guardianData.guarded);
     });
   });
 });
