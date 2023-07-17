@@ -100,12 +100,15 @@ export class TokenController {
 
   @Get('/tokens/:identifier')
   @ApiOperation({ summary: 'Token', description: 'Returns token details based on a specific token identifier' })
+  @ApiQuery({ name: 'withSupplyFullPrecision', description: 'Return results with supply full precision', required: false })
   @ApiOkResponse({ type: TokenDetailed })
   @ApiNotFoundResponse({ description: 'Token not found' })
   async getToken(
-    @Param('identifier', ParseTokenPipe) identifier: string
+    @Param('identifier', ParseTokenPipe) identifier: string,
+    @Query('withSupplyFullPrecision', new ParseBoolPipe) withSupplyFullPrecision?: boolean,
   ): Promise<TokenDetailed> {
-    const token = await this.tokenService.getToken(identifier);
+    const supplyOptions = { withSupplyFullPrecision };
+    const token = await this.tokenService.getToken(identifier, supplyOptions);
     if (token === undefined) {
       throw new NotFoundException('Token not found');
     }
@@ -127,7 +130,8 @@ export class TokenController {
       throw new HttpException('Token not found', HttpStatus.NOT_FOUND);
     }
 
-    const getSupplyResult = await this.tokenService.getTokenSupply(identifier, denominated);
+    const supplyOptions = { denominated };
+    const getSupplyResult = await this.tokenService.getTokenSupply(identifier, supplyOptions);
     if (!getSupplyResult) {
       throw new NotFoundException('Token not found');
     }
