@@ -1078,5 +1078,38 @@
     "canWipe": false,
     "canTransferNftCreateRole": false,
     "timestamp": 1636896426
+  },
+  {
+    "type": "FungibleESDT",
+    "identifier": "WBTC-5349b3",
+    "name": "WrappedBTC",
+    "ticker": "WBTC",
+    "owner": "erd179tt6596jdcdtp03r03qnnxhp3vze7x0lrfgfzvn842edes6yfkql93jjs",
+    "decimals": 8,
+    "isPaused": false,
+    "assets": {
+      "website": "https://xexchange.com",
+      "description": "WBTC originating on Ethereum, bridged as an ESDT token on MultiversX. 1 WBTC = 1 WrappedBTC",
+      "status": "active",
+      "pngUrl": "https://media.elrond.com/tokens/asset/WBTC-5349b3/logo.png",
+      "svgUrl": "https://media.elrond.com/tokens/asset/WBTC-5349b3/logo.svg",
+      "priceSource": {
+        "type": "dataApi"
+      }
+    },
+    "transactions": 2907,
+    "accounts": 12793,
+    "canUpgrade": true,
+    "canMint": false,
+    "canBurn": false,
+    "canChangeOwner": false,
+    "canAddSpecialRoles": true,
+    "canPause": false,
+    "canFreeze": false,
+    "canWipe": false,
+    "price": 29964.081650316308,
+    "marketCap": 2449480.885202043,
+    "supply": "8063486157",
+    "circulatingSupply": "8063486157"
   }
 ]
