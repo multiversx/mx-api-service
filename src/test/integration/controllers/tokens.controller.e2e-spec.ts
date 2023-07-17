@@ -176,22 +176,6 @@ describe("Tokens Controller", () => {
         });
     });
 
-    it.skip('should return minted, burnt, supply, circulatingSupply fields for a specific MetaESDT', async () => {
-      const identifier: string = 'XMEX-fda355';
-
-      await request(app.getHttpServer())
-        .get(`${path}/${identifier}`)
-        .expect(200)
-        .then(res => {
-          expect(res.body).toBeDefined();
-          expect(res.body.supply).toBeDefined();
-          expect(res.body.circulatingSupply).toBeDefined();
-          expect(res.body.minted).toBeDefined();
-          expect(res.body.burnt).toBeDefined();
-          expect(res.body.initialMinted).toBeDefined();
-        });
-    });
-
     it('should returns general supply information for a specific token', async () => {
       const identifier: string = 'MEX-455c57';
 
@@ -261,6 +245,34 @@ describe("Tokens Controller", () => {
           expect(res.body.canLocalBurn).toStrictEqual(true);
           expect(res.body.roles[0]).toStrictEqual('ESDTRoleLocalMint');
           expect(res.body.roles[1]).toStrictEqual('ESDTRoleLocalBurn');
+        });
+    });
+
+    it('should return supply and circulatingSupply with full precision when "withSupplyFullPrecision" is true', async () => {
+      const identifier: string = 'WBTC-5349b3';
+      const params = new URLSearchParams({
+        'withSupplyFullPrecision': 'true',
+      });
+      await request(app.getHttpServer())
+        .get(`${path}/${identifier}?${params}`)
+        .expect(200)
+        .then(res => {
+          const supplyValue = Number(res.body.supply);
+          expect(supplyValue).toBeGreaterThanOrEqual(801486157);
+        });
+    });
+
+    it('should return supply and circulatingSupply with no full precision when "withSupplyFullPrecision" is false', async () => {
+      const identifier: string = 'WBTC-5349b3';
+      const params = new URLSearchParams({
+        'withSupplyFullPrecision': 'false',
+      });
+      await request(app.getHttpServer())
+        .get(`${path}/${identifier}?${params}`)
+        .expect(200)
+        .then(res => {
+          const supplyValue = Number(res.body.supply);
+          expect(supplyValue).not.toBeGreaterThanOrEqual(300);
         });
     });
   });
