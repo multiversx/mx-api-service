@@ -240,6 +240,32 @@ describe('Token Service', () => {
       expect(tokenService.applySupply).toHaveBeenCalledTimes(0);
       expect(result).toBeUndefined();
     });
+
+    it('should return supply and circulationSupply with full precision', async () => {
+      const data = require('../../mocks/tokens.mock.json');
+      const mockApplySupply = {
+        totalSupply: '8063486157',
+        circulatingSupply: '8063486157',
+        minted: '8407676274',
+        burned: '344190117',
+        initialMinted: '0',
+        lockedAccounts: [],
+      };
+
+      tokenService.getAllTokens = jest.fn().mockResolvedValue(data);
+      tokenService.applyTickerFromAssets = jest.fn().mockResolvedValue(undefined);
+      tokenService.applySupply = jest.fn().mockResolvedValue(mockApplySupply);
+      tokenService.getTokenRoles = jest.fn().mockResolvedValue([]);
+      const result = await tokenService.getToken('WBTC-5349b3', { withSupplyFullPrecision: true });
+
+      expect(tokenService.getAllTokens).toHaveBeenCalledTimes(1);
+      expect(tokenService.applyTickerFromAssets).toHaveBeenCalledTimes(1);
+      expect(tokenService.applySupply).toHaveBeenCalledTimes(1);
+      expect(tokenService.getTokenRoles).toHaveBeenCalledTimes(1);
+
+      expect(result?.supply).toStrictEqual('8063486157');
+      expect(result?.circulatingSupply).toStrictEqual('8063486157');
+    });
   });
 
   describe('getTokens', () => {
