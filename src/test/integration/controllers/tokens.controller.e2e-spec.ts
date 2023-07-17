@@ -85,10 +85,6 @@ describe("Tokens Controller", () => {
         filter: 'sort',
         value: 'transactions',
       },
-      {
-        filter: 'sort',
-        value: 'price',
-      },
     ].forEach(({ filter, value }) => {
       describe(`when filter ${filter} is applied`, () => {
         it(`should return tokens details based on ${filter} with value ${value} and ordered descendent `, async () => {
@@ -103,6 +99,18 @@ describe("Tokens Controller", () => {
             });
         });
       });
+    });
+  });
+
+  describe('/tokens?order=desc&sort=price', () => {
+    it('should return token when price filter is applied and ordered descending, first token should have price greater than the second token from list', async () => {
+      await request(app.getHttpServer())
+        .get(`${path}?order=desc&sort=price`)
+        .expect(200)
+        .then(res => {
+          expect(res.body).toBeDefined();
+          expect(res.body[0].price).toBeGreaterThan(res.body[1].price);
+        });
     });
   });
 
