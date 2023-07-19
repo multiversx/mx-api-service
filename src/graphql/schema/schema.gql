@@ -3909,9 +3909,6 @@ type TransactionDetailed {
   """Price for the given detailed transaction."""
   price: Float
 
-  """Process status for the given detailed transaction."""
-  processStatus: String
-
   """Transaction receipt for the given detailed transaction."""
   receipt: TransactionReceipt
 
