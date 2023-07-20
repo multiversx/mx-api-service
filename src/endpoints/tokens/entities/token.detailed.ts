@@ -13,11 +13,11 @@ export class TokenDetailed extends Token {
 
   @Field(() => String, { description: "Token supply amount details.", nullable: true })
   @ApiProperty(SwaggerUtils.amountPropertyOptions({ description: 'Supply amount' }))
-  supply: string | undefined = undefined;
+  supply: string | number | undefined = undefined;
 
   @Field(() => String, { description: "Token circulating supply amount details.", nullable: true })
   @ApiProperty(SwaggerUtils.amountPropertyOptions({ description: 'Circulating supply amount' }))
-  circulatingSupply: string | undefined = undefined;
+  circulatingSupply: string | number | undefined = undefined;
 
   @Field(() => [TokenRoles], { description: "Token roles details.", nullable: true })
   @ApiProperty({ type: TokenRoles, nullable: true, isArray: true })
