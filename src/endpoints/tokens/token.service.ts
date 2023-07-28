@@ -107,7 +107,6 @@ export class TokenService {
   }
 
   applyTickerFromAssets(token: Token) {
-    console.log({ token });
     if (token.assets) {
       token.ticker = token.identifier.split('-')[0];
     } else {
