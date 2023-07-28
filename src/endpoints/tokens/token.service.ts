@@ -252,6 +252,8 @@ export class TokenService {
 
         this.applyValueUsd(tokenWithBalance);
 
+        this.applyTickerFromAssets(tokenWithBalance);
+
         result.push(tokenWithBalance);
       }
     }
