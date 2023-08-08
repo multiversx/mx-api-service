@@ -207,6 +207,8 @@ export class MexPairService {
         return MexPairState.inactive;
       case 'ActiveNoSwaps':
         return MexPairState.paused;
+      case 'PartialActive':
+        return MexPairState.partial;
       default:
         throw new Error(`Unsupported pair state '${state}'`);
     }
