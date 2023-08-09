@@ -726,13 +726,11 @@ export class TokenService {
     for (const token of tokens) {
       if (token.assets?.priceSource?.type === TokenAssetsPriceSourceType.dataApi) {
         token.price = await this.dataApiService.getEsdtTokenPrice(token.identifier);
-
-        const supply = await this.esdtService.getTokenSupply(token.identifier);
-        token.supply = supply.totalSupply;
-        token.circulatingSupply = supply.circulatingSupply;
-
-        if (token.price && token.circulatingSupply) {
-          token.marketCap = token.price * NumberUtils.denominateString(token.circulatingSupply, token.decimals);
+        if (token.price) {
+          const supply = await this.esdtService.getTokenSupply(token.identifier);
+          if (supply.circulatingSupply) {
+            token.marketCap = token.price * NumberUtils.denominateString(supply.circulatingSupply, token.decimals);
+          }
         }
       }
     }
