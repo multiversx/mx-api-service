@@ -1,3 +1,4 @@
+import { BinaryUtils } from '@multiversx/sdk-nestjs-common';
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { PublicAppModule } from 'src/public.app.module';
@@ -58,6 +59,27 @@ describe("Transactions Controller", () => {
           .expect(200)
           .then(res => {
             expect(+res.text).toBeGreaterThanOrEqual(count);
+          });
+      });
+    });
+  });
+
+  [
+    {
+      filter: 'isRelayedV2',
+      value: 'true',
+    },
+  ].forEach(({ filter, value }) => {
+    describe(`when filter ${filter} is applied`, () => {
+      it(`should return all transactions with relayedTxV2`, async () => {
+        await request(app.getHttpServer())
+          .get(`${path}?${filter}=${value}`)
+          .expect(200)
+          .then(res => {
+            for (const item of res.body) {
+              const decodedData = BinaryUtils.base64Decode(item.data);
+              expect(decodedData).toContain('relayedTxV2');
+            }
           });
       });
     });
