@@ -51,6 +51,11 @@ describe("Transactions Controller", () => {
       value: 'erd1576w79rz7zq8jv5nuzrnntghrxjnzapjppcv6u7pya257gk9x9eq59qrhu',
       count: 189,
     },
+    {
+      filter: 'isRelayedV2',
+      value: 'true',
+      count: 3060906,
+    },
   ].forEach(({ filter, value, count }) => {
     describe(`when filter ${filter} is applied`, () => {
       it(`should return total number of transactions of sender ${value}`, async () => {
