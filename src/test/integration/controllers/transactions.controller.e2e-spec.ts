@@ -52,7 +52,7 @@ describe("Transactions Controller", () => {
       count: 189,
     },
     {
-      filter: 'isRelayedV2',
+      filter: 'isRelayed',
       value: 'true',
       count: 3060906,
     },
@@ -71,7 +71,7 @@ describe("Transactions Controller", () => {
 
   [
     {
-      filter: 'isRelayedV2',
+      filter: 'isRelayed',
       value: 'true',
     },
   ].forEach(({ filter, value }) => {
