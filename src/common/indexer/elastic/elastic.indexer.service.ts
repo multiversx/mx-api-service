@@ -234,6 +234,11 @@ export class ElasticIndexerService implements IndexerInterface {
       .withSort([timestamp, nonce]);
 
     const elasticOperations = await this.elasticService.getList('operations', 'txHash', elasticQuery);
+
+    for (const operation of elasticOperations) {
+      this.processTransaction(operation);
+    }
+
     return elasticOperations;
   }
 
