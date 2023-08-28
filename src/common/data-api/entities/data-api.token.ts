@@ -4,5 +4,5 @@ export class DataApiToken {
   }
 
   identifier: string = '';
-  market: 'cex' | 'xexchange' = 'cex';
+  market: 'cex' | 'xexchange' | 'hatom' = 'cex';
 }

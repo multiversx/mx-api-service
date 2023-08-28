@@ -20,7 +20,6 @@ describe('Transaction Service', () => {
     }).compile();
 
     transactionService = moduleRef.get<TransactionService>(TransactionService);
-
   });
   beforeEach(() => { jest.restoreAllMocks(); });
 

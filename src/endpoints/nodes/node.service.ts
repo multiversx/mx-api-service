@@ -276,18 +276,12 @@ export class NodeService {
   }
 
   private async applyNodeUnbondingPeriods(nodes: Node[]): Promise<void> {
-    const leavingNodes = nodes.filter(node => node.status === NodeStatus.leaving);
+    const leavingNodes = nodes.filter(node => node.status === NodeStatus.leaving || node.status === NodeStatus.inactive);
 
     await Promise.all(leavingNodes.map(async node => {
       const keyUnbondPeriod = await this.keysService.getKeyUnbondPeriod(node.bls);
       node.remainingUnBondPeriod = keyUnbondPeriod?.remainingUnBondPeriod;
     }));
-
-    for (const node of nodes) {
-      if (node.status !== NodeStatus.leaving) {
-        node.remainingUnBondPeriod = undefined;
-      }
-    }
   }
 
   private async applyNodeStakeInfo(nodes: Node[]) {
@@ -608,10 +602,6 @@ export class NodeService {
         if (node.syncProgress > 1) {
           node.syncProgress = 1;
         }
-      }
-
-      if (node.status === NodeStatus.inactive && node.remainingUnBondPeriod === 0) {
-        node.status = NodeStatus.leaving;
       }
 
       node.issues = this.getIssues(node, config.erd_latest_tag_software_version);

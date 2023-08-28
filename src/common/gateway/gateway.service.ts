@@ -18,6 +18,7 @@ import { ApiConfigService } from "../api-config/api.config.service";
 import { BinaryUtils } from "@multiversx/sdk-nestjs-common";
 import { ApiService, ApiSettings } from "@multiversx/sdk-nestjs-http";
 import { GuardianResult } from "./entities/guardian.result";
+import { TransactionProcessStatus } from "./entities/transaction.process.status";
 
 @Injectable()
 export class GatewayService {
@@ -81,6 +82,20 @@ export class GatewayService {
 
   async getGuardianData(address: string): Promise<GuardianResult> {
     const result = await this.get(`address/${address}/guardian-data`, GatewayComponentRequest.guardianData);
+    return result;
+  }
+
+  async getTransactionProcessStatus(txHash: string): Promise<TransactionProcessStatus> {
+    // eslint-disable-next-line require-await
+    const result = await this.get(`transaction/${txHash}/process-status`, GatewayComponentRequest.transactionProcessStatus, async (error) => {
+      const errorMessage = error?.response?.data?.error;
+      if (errorMessage && errorMessage.includes('transaction not found')) {
+        return true;
+      }
+
+      return false;
+    });
+
     return result;
   }
 

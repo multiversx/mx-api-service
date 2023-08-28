@@ -181,6 +181,7 @@ export class TransactionController {
     @Query('fields', ParseArrayPipe) fields?: string[],
   ): Promise<TransactionDetailed> {
     const transaction = await this.transactionService.getTransaction(txHash, fields);
+
     if (transaction === null) {
       throw new NotFoundException('Transaction not found');
     }

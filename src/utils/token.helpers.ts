@@ -28,7 +28,7 @@ export class TokenHelpers {
   }
 
   static getUrlHash(url: string) {
-    return crypto.SHA256(url).toString().slice(0, 8);
+    return crypto.SHA256(url.trim()).toString().slice(0, 8);
   }
 
   static getThumbnailUrlIdentifier(nftIdentifier: string, fileUrl: string) {
