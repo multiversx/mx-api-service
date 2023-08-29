@@ -8,7 +8,7 @@ import { DelegationData } from "./entities/delegation.data";
 import { CacheInfo } from "src/utils/cache.info";
 import { ProviderFilter } from "./entities/provider.filter";
 import { Provider } from "./entities/provider";
-import { AddressUtils, Constants } from "@multiversx/sdk-nestjs-common";
+import { AddressUtils, BinaryUtils, Constants } from "@multiversx/sdk-nestjs-common";
 import { ApiService } from "@multiversx/sdk-nestjs-http";
 import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { OriginLogger } from "@multiversx/sdk-nestjs-common";
@@ -479,11 +479,7 @@ export class ProviderService {
       address,
       'getTotalActiveStake',
     );
-    return this.numberDecode(activeStake);
-  }
 
-  numberDecode(encoded: string): string {
-    const hex = Buffer.from(encoded, 'base64').toString('hex');
-    return BigInt(hex ? '0x' + hex : hex).toString();
+    return BinaryUtils.base64ToBigInt(activeStake).toString();
   }
 }
