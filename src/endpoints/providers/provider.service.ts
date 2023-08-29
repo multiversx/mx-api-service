@@ -13,6 +13,7 @@ import { ApiService } from "@multiversx/sdk-nestjs-http";
 import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { OriginLogger } from "@multiversx/sdk-nestjs-common";
 import { IdentitiesService } from "../identities/identities.service";
+import { ProviderQueryOptions } from "./entities/provider.query.options";
 
 @Injectable()
 export class ProviderService {
@@ -168,10 +169,10 @@ export class ProviderService {
     return /^[\w]*$/g.test(identity ?? '');
   }
 
-  async getProviders(filter: ProviderFilter, options?: { withIdentityInfo?: boolean, withLatestInfo?: boolean }): Promise<Provider[]> {
+  async getProviders(filter: ProviderFilter, queryOptions?: ProviderQueryOptions): Promise<Provider[]> {
     const providers = await this.getFilteredProviders(filter);
 
-    if (options && options.withIdentityInfo === true) {
+    if (queryOptions && queryOptions.withIdentityInfo === true) {
       for (const provider of providers) {
         if (provider.identity) {
           const identityInfo = await this.identitiesService.getIdentity(provider.identity);
@@ -184,7 +185,7 @@ export class ProviderService {
       }
     }
 
-    if (options && options.withLatestInfo) {
+    if (queryOptions && queryOptions.withLatestInfo) {
       for (const provider of providers) {
         const contractConfig = await this.getProviderConfig(provider.provider);
         const contractTotalActiveStake = await this.getTotalActiveStake(provider.provider);
