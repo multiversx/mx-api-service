@@ -23,10 +23,14 @@ export class ProviderController {
     @Query('owner', ParseAddressPipe) owner?: string,
     @Query('providers', ParseAddressArrayPipe) providers?: string[],
     @Query('withIdentityInfo', new ParseBoolPipe) withIdentityInfo?: boolean,
+    @Query('withLatestInfo', new ParseBoolPipe) withLatestInfo?: boolean,
   ): Promise<Provider[]> {
+    const options = {
+      withIdentityInfo: withIdentityInfo ?? false,
+      withLatestInfo: withLatestInfo ?? false,
+    };
     return await this.providerService.getProviders(
-      new ProviderFilter({ identity, providers, owner }),
-      withIdentityInfo);
+      new ProviderFilter({ identity, providers, owner }), options);
   }
 
   @Get('/providers/:address')
