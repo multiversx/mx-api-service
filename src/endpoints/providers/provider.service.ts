@@ -188,6 +188,7 @@ export class ProviderService {
       for (const provider of providers) {
         const contractConfig = await this.getProviderConfig(provider.provider);
         const contractTotalActiveStake = await this.getTotalActiveStake(provider.provider);
+        const contractNodesCount = await this.getNumNodes(provider.provider);
 
         if (contractConfig) {
           if (provider.serviceFee !== undefined) {
@@ -204,6 +205,10 @@ export class ProviderService {
 
           if (provider.delegationCap !== undefined) {
             provider.delegationCap = contractConfig.delegationCap;
+          }
+
+          if (provider.numNodes !== undefined) {
+            provider.numNodes = contractNodesCount;
           }
 
           if (contractTotalActiveStake !== undefined) {
@@ -481,5 +486,14 @@ export class ProviderService {
     );
 
     return BinaryUtils.base64ToBigInt(activeStake).toString();
+  }
+
+  private async getNumNodes(address: string): Promise<number> {
+    const [numNodesBase64] = await this.vmQueryService.vmQuery(
+      address,
+      'getNumNodes'
+    );
+
+    return Number(BinaryUtils.base64ToBigInt(numNodesBase64));
   }
 }
