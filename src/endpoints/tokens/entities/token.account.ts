@@ -1,6 +1,7 @@
 import { SwaggerUtils } from "@multiversx/sdk-nestjs-common";
 import { Field, ObjectType } from "@nestjs/graphql";
 import { ApiProperty } from "@nestjs/swagger";
+import { AccountAssets } from "src/common/assets/entities/account.assets";
 
 @ObjectType("TokenAccount", { description: "TokenAccount object type." })
 export class TokenAccount {
@@ -23,4 +24,8 @@ export class TokenAccount {
   @Field(() => String, { description: "Token attributes if MetaESDT.", nullable: true })
   @ApiProperty({ type: String, nullable: true })
   attributes: string | undefined = undefined;
+
+  @Field(() => AccountAssets, { description: 'Account assets for the given account.', nullable: true })
+  @ApiProperty({ type: AccountAssets, nullable: true, description: 'Account assets' })
+  assets: AccountAssets | undefined = undefined;
 }

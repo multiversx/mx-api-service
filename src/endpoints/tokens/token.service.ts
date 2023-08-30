@@ -394,13 +394,14 @@ export class TokenService {
     }
 
     const tokenAccounts = await this.indexerService.getTokenAccounts(pagination, identifier);
-
+    const assets = await this.assetsService.getAllAccountAssets();
     const result: TokenAccount[] = [];
 
     for (const tokenAccount of tokenAccounts) {
       result.push(new TokenAccount({
         address: tokenAccount.address,
         balance: tokenAccount.balance,
+        assets: assets[tokenAccount.address],
         attributes: tokenAccount.data?.attributes,
         identifier: tokenAccount.type === TokenType.MetaESDT ? tokenAccount.identifier : undefined,
       }));
