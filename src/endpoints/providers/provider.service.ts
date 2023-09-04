@@ -14,6 +14,7 @@ import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { OriginLogger } from "@multiversx/sdk-nestjs-common";
 import { IdentitiesService } from "../identities/identities.service";
 import { ProviderQueryOptions } from "./entities/provider.query.options";
+import { DelegationManagerContractService } from "../vm.query/contracts/delegation.manager.contract.service";
 
 @Injectable()
 export class ProviderService {
