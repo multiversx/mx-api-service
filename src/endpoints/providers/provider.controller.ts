@@ -5,6 +5,7 @@ import { Provider } from "./entities/provider";
 import { ParseAddressArrayPipe, ParseAddressPipe, ParseBoolPipe } from "@multiversx/sdk-nestjs-common";
 import { ProviderFilter } from "./entities/provider.filter";
 import { Response } from "express";
+import { ProviderQueryOptions } from "./entities/provider.query.options";
 
 @Controller()
 @ApiTags('providers')
@@ -23,10 +24,12 @@ export class ProviderController {
     @Query('owner', ParseAddressPipe) owner?: string,
     @Query('providers', ParseAddressArrayPipe) providers?: string[],
     @Query('withIdentityInfo', new ParseBoolPipe) withIdentityInfo?: boolean,
+    @Query('withLatestInfo', new ParseBoolPipe) withLatestInfo?: boolean,
   ): Promise<Provider[]> {
+    const options = ProviderQueryOptions.applyDefaultOptions(owner, { withIdentityInfo, withLatestInfo });
+
     return await this.providerService.getProviders(
-      new ProviderFilter({ identity, providers, owner }),
-      withIdentityInfo);
+      new ProviderFilter({ identity, providers, owner }), options);
   }
 
   @Get('/providers/:address')
