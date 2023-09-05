@@ -441,6 +441,10 @@ export class AccountService {
   }
 
   getInactiveNodesBuffers(allNodeStates: string[]): string[] {
+    if (!allNodeStates) {
+      return [];
+    }
+
     const checkIfCurrentItemIsStatus = (currentNodeData: string) =>
       Object.values(NodeStatusRaw).includes(
         currentNodeData as NodeStatusRaw
