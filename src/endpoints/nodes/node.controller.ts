@@ -21,6 +21,7 @@ export class NodeController {
   @ApiOkResponse({ type: [Node] })
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
+  @ApiQuery({ name: 'keys', description: 'Search by multiple keys, comma-separated', required: false })
   @ApiQuery({ name: 'search', description: 'Search by name, bls or version', required: false })
   @ApiQuery({ name: 'online', description: 'Whether node is online or not', required: false, type: 'boolean' })
   @ApiQuery({ name: 'type', description: 'Type of node', required: false, enum: NodeType })
@@ -38,6 +39,7 @@ export class NodeController {
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
     @Query('search') search?: string,
+    @Query('keys') keys?: string[],
     @Query('online', ParseBoolPipe) online?: boolean,
     @Query('type', new ParseEnumPipe(NodeType)) type?: NodeType,
     @Query('status', new ParseEnumPipe(NodeStatus)) status?: NodeStatus,
@@ -51,7 +53,7 @@ export class NodeController {
     @Query('sort', new ParseEnumPipe(NodeSort)) sort?: NodeSort,
     @Query('order', new ParseEnumPipe(SortOrder)) order?: SortOrder,
   ): Promise<Node[]> {
-    return await this.nodeService.getNodes(new QueryPagination({ from, size }), new NodeFilter({ search, online, type, status, shard, issues, identity, provider, owner, auctioned, fullHistory, sort, order }));
+    return await this.nodeService.getNodes(new QueryPagination({ from, size }), new NodeFilter({ search, keys, online, type, status, shard, issues, identity, provider, owner, auctioned, fullHistory, sort, order }));
   }
 
   @Get("/nodes/versions")
