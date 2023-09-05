@@ -689,6 +689,12 @@ export class TokenService {
     let tokens = tokensProperties.map(properties => ApiUtils.mergeObjects(new TokenDetailed(), properties));
 
     for (const token of tokens) {
+      const assets = await this.assetsService.getTokenAssets(token.identifier);
+
+      if (assets && assets.name) {
+        token.name = assets.name;
+      }
+
       token.type = TokenType.FungibleESDT;
     }
 
