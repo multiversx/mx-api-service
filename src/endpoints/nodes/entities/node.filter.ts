@@ -48,4 +48,7 @@ export class NodeFilter {
 
   @Field(() => SortOrder, { description: "Node order filter .", nullable: true })
   order: SortOrder | undefined;
+
+  @Field(() => [String], { description: "Search by multiple keys, comma-separated.", nullable: true })
+  keys: string[] | undefined;
 } 

@@ -22,12 +22,14 @@ import { TokenProperties } from "src/endpoints/tokens/entities/token.properties"
 import { EsdtType } from "src/endpoints/esdt/entities/esdt.type";
 import * as fs from 'fs';
 import * as path from 'path';
+import { AccountAssets } from "src/common/assets/entities/account.assets";
 
 describe('Token Service', () => {
   let tokenService: TokenService;
   let esdtService: EsdtService;
   let collectionService: CollectionService;
   let indexerService: IndexerService;
+  let assetsService: AssetsService;
 
   beforeEach(async () => {
     const moduleRef = await Test.createTestingModule({
@@ -86,6 +88,7 @@ describe('Token Service', () => {
           provide: AssetsService,
           useValue: {
             getTokenAssets: jest.fn(),
+            getAllAccountAssets: jest.fn(),
           },
         },
         {
@@ -120,6 +123,7 @@ describe('Token Service', () => {
     esdtService = moduleRef.get<EsdtService>(EsdtService);
     collectionService = moduleRef.get<CollectionService>(CollectionService);
     indexerService = moduleRef.get<IndexerService>(IndexerService);
+    assetsService = moduleRef.get<AssetsService>(AssetsService);
   });
 
   afterEach(() => {
@@ -606,6 +610,7 @@ describe('Token Service', () => {
     const assetsMock: TokenAssets = {
       website: 'https://example.com',
       description: 'Example token',
+      name: 'Example',
       status: TokenAssetStatus.active,
       pngUrl: 'https://example.com/token.png',
       svgUrl: 'https://example.com/token.svg',
@@ -741,6 +746,18 @@ describe('Token Service', () => {
       NFTCreateStopped: false,
     };
 
+    const assets = {
+      erd16jruked88jgtsar78ej85hjp3qsd9jkjcw4swsn7k0teqh3wgcqqgyrupq: new AccountAssets({
+        name: 'Exchange: Tests',
+        description: '',
+        tags: ['exchange', 'tests'],
+        iconPng:
+          'https://raw.githubusercontent.com/multiversx/mx-assets/master/accounts/icons/test.png',
+        iconSvg:
+          'https://raw.githubusercontent.com/multiversx/mx-assets/master/accounts/icons/test.svg',
+      }),
+    };
+
     it('should returns undefined if getTokenProperties returns undefined', async () => {
       const tokensPropertiesMock = jest.spyOn(tokenService, 'getTokenProperties').mockResolvedValueOnce(Promise.resolve(undefined));
       const result = await tokenService.getTokenAccounts(new QueryPagination(), identifier);
@@ -753,6 +770,7 @@ describe('Token Service', () => {
       const mockTokens = JSON.parse(fs.readFileSync(path.join(__dirname, '../../mocks/token.accounts.mock.json'), 'utf-8'));
       const tokensPropertiesMock = jest.spyOn(tokenService, 'getTokenProperties').mockResolvedValueOnce(Promise.resolve(propertiesMock));
       const tokenAccountsMock = jest.spyOn(indexerService, 'getTokenAccounts').mockResolvedValueOnce(mockTokens);
+      const accountAssetsMock = jest.spyOn(assetsService, 'getAllAccountAssets').mockResolvedValueOnce(assets);
 
       const results = await tokenService.getTokenAccounts(new QueryPagination(), identifier);
       if (results) {
@@ -761,16 +779,19 @@ describe('Token Service', () => {
         for (const result of results) {
           expect(result.hasOwnProperty('address')).toBe(true);
           expect(result.hasOwnProperty('balance')).toBe(true);
+          expect(result.hasOwnProperty('assets')).toBe(true);
         }
       }
       expect(tokensPropertiesMock).toHaveBeenCalledTimes(1);
       expect(tokenAccountsMock).toHaveBeenCalledTimes(1);
+      expect(accountAssetsMock).toHaveBeenCalledTimes(1);
     });
 
     it('should return single account for given identifier', async () => {
       const mockTokens = JSON.parse(fs.readFileSync(path.join(__dirname, '../../mocks/token.accounts.mock.json'), 'utf-8'));
       const tokensPropertiesMock = jest.spyOn(tokenService, 'getTokenProperties').mockResolvedValueOnce(Promise.resolve(propertiesMock));
       const tokenAccountsMock = jest.spyOn(indexerService, 'getTokenAccounts').mockResolvedValueOnce([mockTokens[2]]);
+      const accountAssetsMock = jest.spyOn(assetsService, 'getAllAccountAssets').mockResolvedValueOnce(assets);
 
       const results = await tokenService.getTokenAccounts(new QueryPagination({ size: 1 }), identifier);
       if (results) {
@@ -778,10 +799,12 @@ describe('Token Service', () => {
           expect(result.address).toStrictEqual("erd1qqqqqqqqqqqqqpgq0lzzvt2faev4upyf586tg38s84d7zsaj2jpsglugga");
           expect(result.hasOwnProperty('address')).toBe(true);
           expect(result.hasOwnProperty('balance')).toBe(true);
+          expect(result.hasOwnProperty('assets')).toBe(true);
         }
       }
       expect(tokensPropertiesMock).toHaveBeenCalledTimes(1);
       expect(tokenAccountsMock).toHaveBeenCalledTimes(1);
+      expect(accountAssetsMock).toHaveBeenCalledTimes(1);
     });
   });
 });
