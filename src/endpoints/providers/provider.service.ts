@@ -52,7 +52,6 @@ export class ProviderService {
 
       return modifiedProvider;
     }
-
     return provider;
   }
 
@@ -474,6 +473,11 @@ export class ProviderService {
     return providers;
   }
 
+  async isProvider(address: string): Promise<boolean> {
+    const provider = await this.getProvider(address);
+    return !!provider;
+  }
+
   private async getProviderIdentity(address: string): Promise<string | undefined> {
     const providerDetails = await this.getProvider(address);
     return providerDetails && providerDetails.identity ? providerDetails.identity : undefined;
@@ -494,6 +498,11 @@ export class ProviderService {
       'getNumNodes'
     );
 
-    return Number(BinaryUtils.base64ToBigInt(numNodesBase64));
+    return Number(this.numberDecode(numNodesBase64));
+  }
+
+  numberDecode(encoded: string) {
+    const hex = Buffer.from(encoded, 'base64').toString('hex');
+    return BigInt(hex ? '0x' + hex : hex).toString();
   }
 }

@@ -610,6 +610,7 @@ describe('Token Service', () => {
     const assetsMock: TokenAssets = {
       website: 'https://example.com',
       description: 'Example token',
+      name: 'Example',
       status: TokenAssetStatus.active,
       pngUrl: 'https://example.com/token.png',
       svgUrl: 'https://example.com/token.svg',
