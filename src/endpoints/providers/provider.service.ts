@@ -8,11 +8,12 @@ import { DelegationData } from "./entities/delegation.data";
 import { CacheInfo } from "src/utils/cache.info";
 import { ProviderFilter } from "./entities/provider.filter";
 import { Provider } from "./entities/provider";
-import { AddressUtils, Constants } from "@multiversx/sdk-nestjs-common";
+import { AddressUtils, BinaryUtils, Constants } from "@multiversx/sdk-nestjs-common";
 import { ApiService } from "@multiversx/sdk-nestjs-http";
 import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { OriginLogger } from "@multiversx/sdk-nestjs-common";
 import { IdentitiesService } from "../identities/identities.service";
+import { ProviderQueryOptions } from "./entities/provider.query.options";
 
 @Injectable()
 export class ProviderService {
@@ -49,7 +50,6 @@ export class ProviderService {
 
       return modifiedProvider;
     }
-
     return provider;
   }
 
@@ -146,10 +146,6 @@ export class ProviderService {
       return bSort - aSort;
     });
 
-
-
-    // providers = providers.filter(provider => provider.numNodes > 0);
-
     for (const provider of providers) {
       if (!provider.identity) {
         continue;
@@ -172,10 +168,10 @@ export class ProviderService {
     return /^[\w]*$/g.test(identity ?? '');
   }
 
-  async getProviders(filter: ProviderFilter, withIdentityInfo?: boolean): Promise<Provider[]> {
+  async getProviders(filter: ProviderFilter, queryOptions?: ProviderQueryOptions): Promise<Provider[]> {
     const providers = await this.getFilteredProviders(filter);
 
-    if (withIdentityInfo === true) {
+    if (queryOptions && queryOptions.withIdentityInfo === true) {
       for (const provider of providers) {
         if (provider.identity) {
           const identityInfo = await this.identitiesService.getIdentity(provider.identity);
@@ -185,6 +181,42 @@ export class ProviderService {
     } else {
       for (const provider of providers) {
         delete provider.identityInfo;
+      }
+    }
+
+    if (queryOptions && queryOptions.withLatestInfo) {
+      for (const provider of providers) {
+        const contractConfig = await this.getProviderConfig(provider.provider);
+        const contractTotalActiveStake = await this.getTotalActiveStake(provider.provider);
+        const contractNodesCount = await this.getNumNodes(provider.provider);
+
+        if (contractConfig) {
+          if (provider.serviceFee !== undefined) {
+            provider.serviceFee = contractConfig.serviceFee;
+          }
+
+          if (provider.automaticActivation !== undefined) {
+            provider.automaticActivation = contractConfig.automaticActivation;
+          }
+
+          if (provider.checkCapOnRedelegate !== undefined) {
+            provider.checkCapOnRedelegate = contractConfig.checkCapOnRedelegate;
+          }
+
+          if (provider.delegationCap !== undefined) {
+            provider.delegationCap = contractConfig.delegationCap;
+          }
+
+          if (provider.numNodes !== undefined) {
+            provider.numNodes = contractNodesCount;
+          }
+
+          if (contractTotalActiveStake !== undefined) {
+            if (provider.locked !== undefined) {
+              provider.locked = contractTotalActiveStake;
+            }
+          }
+        }
       }
     }
 
@@ -318,39 +350,37 @@ export class ProviderService {
     }
 
     try {
-      const [
-        ownerBase64,
-        serviceFeeBase64,
-        delegationCapBase64,
-        // initialOwnerFundsBase64,
-        // automaticActivationBase64,
-        // changeableServiceFeeBase64,
-        // checkCapOnredelegateBase64,
-        // unBondPeriodBase64,
-        // createdNonceBase64,
-      ] = await this.vmQueryService.vmQuery(
+      const ownerAddressIndex = 0;
+      const serviceFeeIndex = 1;
+      const delegationCapIndex = 2;
+      const automaticActivationIndex = 4;
+      const redelegationCapIndex = 7;
+
+      const response = await this.vmQueryService.vmQuery(
         address,
         'getContractConfig',
       );
 
-      const owner = AddressUtils.bech32Encode(Buffer.from(ownerBase64, 'base64').toString('hex'));
+      const ownerAddress = response[ownerAddressIndex];
+      const serviceFeeBase64 = response[serviceFeeIndex];
+      const delegationCapBase64 = response[delegationCapIndex];
+      const automaticActivationBase64 = response[automaticActivationIndex];
+      const checkCapOnRedelegateBase64 = response[redelegationCapIndex];
+
+      const owner = AddressUtils.bech32Encode(Buffer.from(ownerAddress, 'base64').toString('hex'));
 
       const [serviceFee, delegationCap] = [
-        // , initialOwnerFunds, createdNonce
         serviceFeeBase64,
         delegationCapBase64,
-        // initialOwnerFundsBase64,
-        // createdNonceBase64,
       ].map((base64) => {
         const hex = base64 ? Buffer.from(base64, 'base64').toString('hex') : base64;
         return hex === null ? null : BigInt(hex ? '0x' + hex : hex).toString();
       });
 
-      // const [automaticActivation, changeableServiceFee, checkCapOnredelegate] = [
-      //   automaticActivationBase64,
-      //   changeableServiceFeeBase64,
-      //   checkCapOnredelegateBase64,
-      // ].map((base64) => (Buffer.from(base64, 'base64').toString() === 'true' ? true : false));
+      const [automaticActivation, checkCapOnRedelegate] = [
+        automaticActivationBase64,
+        checkCapOnRedelegateBase64,
+      ].map((base64) => (Buffer.from(base64, 'base64').toString() === 'true' ? true : false));
 
       const serviceFeeString = String(parseInt(serviceFee ?? '0') / 10000);
 
@@ -360,9 +390,9 @@ export class ProviderService {
         delegationCap: delegationCap ?? '0',
         apr: 0,
         // initialOwnerFunds,
-        // automaticActivation,
+        automaticActivation,
         // changeableServiceFee,
-        // checkCapOnredelegate,
+        checkCapOnRedelegate,
         // createdNonce: parseInt(createdNonce),
       };
     } catch (error) {
@@ -444,8 +474,36 @@ export class ProviderService {
     return providers;
   }
 
+  async isProvider(address: string): Promise<boolean> {
+    const provider = await this.getProvider(address);
+    return !!provider;
+  }
+
   private async getProviderIdentity(address: string): Promise<string | undefined> {
     const providerDetails = await this.getProvider(address);
     return providerDetails && providerDetails.identity ? providerDetails.identity : undefined;
+  }
+
+  private async getTotalActiveStake(address: string): Promise<string> {
+    const [activeStake] = await this.vmQueryService.vmQuery(
+      address,
+      'getTotalActiveStake',
+    );
+
+    return BinaryUtils.base64ToBigInt(activeStake).toString();
+  }
+
+  private async getNumNodes(address: string): Promise<number> {
+    const [numNodesBase64] = await this.vmQueryService.vmQuery(
+      address,
+      'getNumNodes'
+    );
+
+    return Number(this.numberDecode(numNodesBase64));
+  }
+
+  numberDecode(encoded: string) {
+    const hex = Buffer.from(encoded, 'base64').toString('hex');
+    return BigInt(hex ? '0x' + hex : hex).toString();
   }
 }

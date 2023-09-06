@@ -34,6 +34,7 @@ import { ProtocolService } from 'src/common/protocol/protocol.service';
 import { ProviderService } from '../providers/provider.service';
 import { Provider } from '../providers/entities/provider';
 import { KeysService } from '../keys/keys.service';
+import { NodeStatusRaw } from '../nodes/entities/node.status';
 
 @Injectable()
 export class AccountService {
@@ -407,26 +408,104 @@ export class AccountService {
     return AddressUtils.bech32Encode(rewardsPublicKey);
   }
 
+  private async getAllNodeStates(address: string) {
+    return await this.vmQueryService.vmQuery(
+      address,
+      'getAllNodeStates'
+    );
+  }
+
   async getKeys(address: string): Promise<AccountKey[]> {
     const publicKey = AddressUtils.bech32Decode(address);
+    const isStakingProvider = await this.providerService.isProvider(address);
+
+    let notStakedNodes: AccountKey[] = [];
+
+    if (isStakingProvider) {
+      const allNodeStates = await this.getAllNodeStates(address);
+      const inactiveNodesBuffers = this.getInactiveNodesBuffers(allNodeStates);
+      notStakedNodes = this.createNotStakedNodes(inactiveNodesBuffers);
+    }
 
     const blsKeysStatus = await this.getBlsKeysStatusForPublicKey(publicKey);
-    if (!blsKeysStatus) {
+    let nodes: AccountKey[] = [];
+
+    if (blsKeysStatus) {
+      nodes = this.createAccountKeys(blsKeysStatus);
+      await this.applyRewardAddressAndTopUpToNodes(nodes, address);
+      await this.applyNodeUnbondingPeriods(nodes);
+      await this.updateQueuedNodes(nodes);
+    }
+
+    return [...notStakedNodes, ...nodes];
+  }
+
+  getInactiveNodesBuffers(allNodeStates: string[]): string[] {
+    if (!allNodeStates) {
       return [];
     }
 
+    const checkIfCurrentItemIsStatus = (currentNodeData: string) =>
+      Object.values(NodeStatusRaw).includes(
+        currentNodeData as NodeStatusRaw
+      );
+
+    return allNodeStates.reduce(
+      (totalNodes: string[], currentNodeState, nodeIndex, allNodesDataArray) => {
+        const decodedData = Buffer.from(currentNodeState, 'base64').toString();
+        const isNotStakedStatus =
+          decodedData === NodeStatusRaw.notStaked;
+
+        const isCurrentItemTheStatus = checkIfCurrentItemIsStatus(decodedData);
+
+        const nextStatusItemIndex = allNodesDataArray.findIndex(
+          (nodeData, nodeDataIndex) =>
+            nodeIndex < nodeDataIndex
+              ? checkIfCurrentItemIsStatus(Buffer.from(nodeData, 'base64').toString())
+              : false
+        );
+
+        if (isCurrentItemTheStatus && nextStatusItemIndex < 0 && isNotStakedStatus) {
+          return [...totalNodes, ...allNodesDataArray.slice(nodeIndex + 1)];
+        }
+
+        if (isCurrentItemTheStatus && isNotStakedStatus) {
+          return [...totalNodes, ...allNodesDataArray.slice(nodeIndex + 1, nextStatusItemIndex)];
+        }
+
+        return totalNodes;
+      },
+      []
+    );
+  }
+
+  createNotStakedNodes(inactiveNodesBuffers: string[]): AccountKey[] {
+    return inactiveNodesBuffers.map((inactiveNodeBuffer) => {
+      const accountKey: AccountKey = new AccountKey();
+      accountKey.blsKey = BinaryUtils.padHex(Buffer.from(inactiveNodeBuffer, 'base64').toString('hex'));
+      accountKey.status = NodeStatusRaw.notStaked;
+      accountKey.stake = '2500000000000000000000';
+
+      return accountKey;
+    });
+  }
+
+  createAccountKeys(blsKeysStatus: string[]): AccountKey[] {
     const nodes: AccountKey[] = [];
     for (let index = 0; index < blsKeysStatus.length; index += 2) {
       const [encodedBlsKey, encodedStatus] = blsKeysStatus.slice(index, index + 2);
 
-      const accountKey: AccountKey = new AccountKey;
+      const accountKey: AccountKey = new AccountKey();
       accountKey.blsKey = BinaryUtils.padHex(Buffer.from(encodedBlsKey, 'base64').toString('hex'));
       accountKey.status = Buffer.from(encodedStatus, 'base64').toString();
       accountKey.stake = '2500000000000000000000';
 
       nodes.push(accountKey);
     }
+    return nodes;
+  }
 
+  async applyRewardAddressAndTopUpToNodes(nodes: AccountKey[], address: string) {
     if (nodes.length) {
       const rewardAddress = await this.getRewardAddressForNode(nodes[0].blsKey);
       const { topUp } = await this.stakeService.getAllStakesForNode(address);
@@ -437,9 +516,9 @@ export class AccountService {
         node.remainingUnBondPeriod = undefined;
       }
     }
+  }
 
-    await this.applyNodeUnbondingPeriods(nodes);
-
+  async updateQueuedNodes(nodes: AccountKey[]) {
     const queuedNodes: string[] = nodes
       .filter((node: AccountKey) => node.status === 'queued')
       .map(({ blsKey }) => blsKey);
@@ -453,8 +532,8 @@ export class AccountService {
       if (queueSizeEncoded) {
         const queueSize = Buffer.from(queueSizeEncoded, 'base64').toString();
 
-        const queueIndexes = await Promise.all([
-          ...queuedNodes.map((blsKey: string) =>
+        const queueIndexes = await Promise.all(
+          queuedNodes.map((blsKey: string) =>
             this.vmQueryService.vmQuery(
               this.apiConfigService.getStakingContractAddress(),
               'getQueueIndex',
@@ -462,7 +541,7 @@ export class AccountService {
               [blsKey],
             )
           ),
-        ]);
+        );
 
         let index = 0;
         for (const queueIndexEncoded of queueIndexes) {
@@ -477,8 +556,6 @@ export class AccountService {
         }
       }
     }
-
-    return nodes;
   }
 
   async getAccountContracts(pagination: QueryPagination, address: string): Promise<DeployedContract[]> {

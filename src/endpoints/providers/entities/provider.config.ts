@@ -7,4 +7,6 @@ export class ProviderConfig {
   serviceFee: number = 0;
   delegationCap: string = '';
   apr: number = 0;
+  automaticActivation: boolean = false;
+  checkCapOnRedelegate: boolean = false;
 }
