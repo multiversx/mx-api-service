@@ -27,4 +27,6 @@ export class TransactionFilter {
   tokens?: string[];
   senderOrReceiver?: string;
   isRelayed?: boolean;
+  isRelayedV1?: boolean;
+  isRelayedV2?: boolean;
 }

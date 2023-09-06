@@ -655,6 +655,8 @@ export class AccountController {
   @ApiQuery({ name: 'computeScamInfo', required: false, type: Boolean })
   @ApiQuery({ name: 'senderOrReceiver', description: 'One address that current address interacted with', required: false })
   @ApiQuery({ name: 'isRelayed', description: 'Returns isRelayed transactions details', required: false, type: Boolean })
+  @ApiQuery({ name: 'isRelayedV1', description: 'Returns relayedV1 transactions details', required: false, type: Boolean })
+  @ApiQuery({ name: 'isRelayedV2', description: 'Returns relayedV2 transactions details', required: false, type: Boolean })
   async getAccountTransactions(
     @Param('address', ParseAddressPipe) address: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
@@ -680,6 +682,8 @@ export class AccountController {
     @Query('withBlockInfo', new ParseBoolPipe) withBlockInfo?: boolean,
     @Query('senderOrReceiver', ParseAddressPipe) senderOrReceiver?: string,
     @Query('isRelayed', new ParseBoolPipe) isRelayed?: boolean,
+    @Query('isRelayedV1', new ParseBoolPipe) isRelayedV1?: boolean,
+    @Query('isRelayedV2', new ParseBoolPipe) isRelayedV2?: boolean,
   ) {
     const options = TransactionQueryOptions.applyDefaultOptions(size, { withScResults, withOperations, withLogs, withScamInfo, withUsername, withBlockInfo });
 
@@ -698,6 +702,8 @@ export class AccountController {
       order,
       senderOrReceiver,
       isRelayed,
+      isRelayedV1,
+      isRelayedV2,
     }), new QueryPagination({ from, size }), options, address, fields);
   }
 
@@ -717,6 +723,8 @@ export class AccountController {
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
   @ApiQuery({ name: 'senderOrReceiver', description: 'One address that current address interacted with', required: false })
   @ApiQuery({ name: 'isRelayed', description: 'Returns isRelayed transactions details', required: false, type: Boolean })
+  @ApiQuery({ name: 'isRelayedV1', description: 'Returns isRelayedV1 transactions details', required: false, type: Boolean })
+  @ApiQuery({ name: 'isRelayedV2', description: 'Returns isRelayedV2 transactions details', required: false, type: Boolean })
   async getAccountTransactionsCount(
     @Param('address', ParseAddressPipe) address: string,
     @Query('sender', ParseAddressPipe) sender?: string,
@@ -732,6 +740,8 @@ export class AccountController {
     @Query('after', ParseIntPipe) after?: number,
     @Query('senderOrReceiver', ParseAddressPipe) senderOrReceiver?: string,
     @Query('isRelayed', new ParseBoolPipe) isRelayed?: boolean,
+    @Query('isRelayedV1', new ParseBoolPipe) isRelayedV1?: boolean,
+    @Query('isRelayedV2', new ParseBoolPipe) isRelayedV2?: boolean,
   ): Promise<number> {
 
     return await this.transactionService.getTransactionCount(new TransactionFilter({
@@ -748,6 +758,8 @@ export class AccountController {
       after,
       senderOrReceiver,
       isRelayed,
+      isRelayedV1,
+      isRelayedV2,
     }), address);
   }
 
