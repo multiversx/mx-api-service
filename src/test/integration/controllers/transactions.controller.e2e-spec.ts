@@ -84,6 +84,7 @@ describe("Transactions Controller", () => {
             for (const item of res.body) {
               const decodedData = BinaryUtils.base64Decode(item.data);
               expect(decodedData).toContain('relayedTxV2');
+              expect(item.isRelayed).toBeDefined();
             }
           });
       });

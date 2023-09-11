@@ -47,8 +47,6 @@ export class TransactionController {
   @ApiQuery({ name: 'withUsername', description: 'Integrates username in assets for all addresses present in the transactions', required: false, type: Boolean })
   @ApiQuery({ name: 'withBlockInfo', description: 'Returns sender / receiver block details', required: false, type: Boolean })
   @ApiQuery({ name: 'isRelayed', description: 'Returns relayed transactions details', required: false, type: Boolean })
-  @ApiQuery({ name: 'isRelayedV1', description: 'Returns relayedV1 transactions details', required: false, type: Boolean })
-  @ApiQuery({ name: 'isRelayedV2', description: 'Returns relayedV2 transactions details', required: false, type: Boolean })
   getTransactions(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
@@ -73,8 +71,6 @@ export class TransactionController {
     @Query('withUsername', new ParseBoolPipe) withUsername?: boolean,
     @Query('withBlockInfo', new ParseBoolPipe) withBlockInfo?: boolean,
     @Query('isRelayed', new ParseBoolPipe) isRelayed?: boolean,
-    @Query('isRelayedV1', new ParseBoolPipe) isRelayedV1?: boolean,
-    @Query('isRelayedV2', new ParseBoolPipe) isRelayedV2?: boolean,
   ) {
     const options = TransactionQueryOptions.applyDefaultOptions(size, { withScResults, withOperations, withLogs, withScamInfo, withUsername, withBlockInfo });
 
@@ -93,8 +89,6 @@ export class TransactionController {
       condition,
       order,
       isRelayed,
-      isRelayedV1,
-      isRelayedV2,
     }),
       new QueryPagination({ from, size }),
       options,
@@ -119,8 +113,6 @@ export class TransactionController {
   @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
   @ApiQuery({ name: 'isRelayed', description: 'Returns relayed transactions details', required: false, type: Boolean })
-  @ApiQuery({ name: 'isRelayedV1', description: 'Returns relayedV1 transactions details', required: false, type: Boolean })
-  @ApiQuery({ name: 'isRelayedV2', description: 'Returns relayedV2 transactions details', required: false, type: Boolean })
   getTransactionCount(
     @Query('sender', ParseAddressAndMetachainPipe) sender?: string,
     @Query('receiver', ParseAddressArrayPipe) receiver?: string[],
@@ -135,8 +127,6 @@ export class TransactionController {
     @Query('before', ParseIntPipe) before?: number,
     @Query('after', ParseIntPipe) after?: number,
     @Query('isRelayed', new ParseBoolPipe) isRelayed?: boolean,
-    @Query('isRelayedV1', new ParseBoolPipe) isRelayedV1?: boolean,
-    @Query('isRelayedV2', new ParseBoolPipe) isRelayedV2?: boolean,
   ): Promise<number> {
     return this.transactionService.getTransactionCount(new TransactionFilter({
       sender,
@@ -152,8 +142,6 @@ export class TransactionController {
       after,
       condition,
       isRelayed,
-      isRelayedV1,
-      isRelayedV2,
     }));
   }
 
@@ -173,8 +161,6 @@ export class TransactionController {
     @Query('before', ParseIntPipe) before?: number,
     @Query('after', ParseIntPipe) after?: number,
     @Query('isRelayed', new ParseBoolPipe) isRelayed?: boolean,
-    @Query('isRelayedV1', new ParseBoolPipe) isRelayedV1?: boolean,
-    @Query('isRelayedV2', new ParseBoolPipe) isRelayedV2?: boolean,
   ): Promise<number> {
     return this.transactionService.getTransactionCount(new TransactionFilter({
       sender,
@@ -190,8 +176,6 @@ export class TransactionController {
       after,
       condition,
       isRelayed,
-      isRelayedV1,
-      isRelayedV2,
     }));
   }
 
