@@ -76,14 +76,14 @@ describe("Transactions Controller", () => {
     },
   ].forEach(({ filter, value }) => {
     describe(`when filter ${filter} is applied`, () => {
-      it(`should return all transactions with relayedTxV2`, async () => {
+      it(`should return all transactions with relayedTx`, async () => {
         await request(app.getHttpServer())
           .get(`${path}?${filter}=${value}`)
           .expect(200)
           .then(res => {
             for (const item of res.body) {
               const decodedData = BinaryUtils.base64Decode(item.data);
-              expect(decodedData).toContain('relayedTxV2');
+              expect(decodedData).toContain('relayedTx');
               expect(item.isRelayed).toBeDefined();
             }
           });
