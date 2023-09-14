@@ -34,7 +34,7 @@
     "test:e2e": "jest --config ./src/test/jest-e2e.json --forceExit --maxWorkers=4",
     "test:e2e:warm": "npm run copy-e2e-mainnet-config & nest build & jest --config ./src/test/jest-e2e-warm.json --forceExit",
     "test:e2e:warm:mocked": "npm run copy-e2e-mocked-mainnet-config & nest build & jest --config ./src/test/jest-e2e-warm.json --forceExit",
-    "test:e2e:cov": "node --expose-gc --no-compilation-cache ./node_modules/.bin/jest --config ./src/test/jest-e2e.json --coverage --forceExit --logHeapUsage --maxWorkers=6",
+    "test:e2e:cov": "node --expose-gc --no-compilation-cache ./node_modules/.bin/jest --config ./src/test/jest-e2e.json --coverage --forceExit --logHeapUsage --maxWorkers=4",
     "test:e2e:local": "npm run test:e2e:warm & npm run test:e2e",
     "test:api": "jest --config ./src/test/jest-api.json --runInBand --detectOpenHandles --forceExit",
     "test:graph": "jest --config ./src/test/jest-graph-spec.json --runInBand --detectOpenHandles --forceExit",
