@@ -17,12 +17,12 @@ describe("Username Controller", () => {
   });
 
   describe('/usernames/{username}', () => {
-    it('should return return account details for a given username', async () => {
+    it('should return account details for a given username', async () => {
       const username: string = 'alice';
 
       await request(app.getHttpServer())
         .get(`${path}/${username}`)
-        .expect(302);
+        .expect(200);
     });
   });
 
