@@ -5,6 +5,7 @@ import { UsernameService } from "./username.service";
 import { NoCache } from '@multiversx/sdk-nestjs-cache';
 import { AccountService } from '../accounts/account.service';
 import { ParseBoolPipe } from '@multiversx/sdk-nestjs-common';
+import { AccountDetailed } from '../accounts/entities/account.detailed';
 
 @Controller()
 @ApiTags('usernames')
@@ -22,7 +23,7 @@ export class UsernameController {
   @NoCache()
   async getUsernameDetails(
     @Param('username') username: string,
-    @Query('withGuardianInfo', new ParseBoolPipe) withGuardianInfo: boolean): Promise<any> {
+    @Query('withGuardianInfo', new ParseBoolPipe) withGuardianInfo: boolean): Promise<AccountDetailed | null> {
     const address = await this.usernameService.getAddressForUsername(username);
     if (!address) {
       throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
