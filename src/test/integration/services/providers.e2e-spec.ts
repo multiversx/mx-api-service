@@ -30,52 +30,6 @@ describe('Provider Service', () => {
   beforeEach(() => { jest.restoreAllMocks(); });
 
   describe("Get Provider", () => {
-    // skip temp 
-    it.skip("should return provider based on address", async () => {
-      const address: string = "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqz8llllsh6u4jp";
-
-      const result = await providerService.getProvider(address);
-
-      if (!result) {
-        throw new Error("Properties are not defined");
-      }
-
-      expect(result.hasOwnProperty("provider")).toBeTruthy();
-      expect(result.hasOwnProperty("owner")).toBeTruthy();
-      expect(result.hasOwnProperty("serviceFee")).toBeTruthy();
-      expect(result.hasOwnProperty("delegationCap")).toBeTruthy();
-      expect(result.hasOwnProperty("apr")).toBeTruthy();
-      expect(result.hasOwnProperty("numUsers")).toBeTruthy();
-      expect(result.hasOwnProperty("cumulatedRewards")).toBeTruthy();
-      expect(result.hasOwnProperty("identity")).toBeTruthy();
-      expect(result.hasOwnProperty("numNodes")).toBeTruthy();
-      expect(result.hasOwnProperty("stake")).toBeTruthy();
-      expect(result.hasOwnProperty("topUp")).toBeTruthy();
-      expect(result.hasOwnProperty("locked")).toBeTruthy();
-      expect(result.hasOwnProperty("featured")).toBeTruthy();
-      expect(result.hasOwnProperty("automaticActivation")).toBeTruthy();
-      expect(result.hasOwnProperty("initialOwnerFunds")).toBeTruthy();
-      expect(result.hasOwnProperty("checkCapOnRedelegate")).toBeTruthy();
-      expect(result.hasOwnProperty("totalUnStaked")).toBeTruthy();
-    });
-
-    it.skip("should verify if provider identity is defined", async () => {
-      const address: string = "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqz8llllsh6u4jp";
-      const result = await providerService.getProvider(address);
-
-      if (!result) {
-        throw new Error("Properties are not defined");
-      }
-
-      expect(result.identity).toBeDefined();
-      expect(result.identity).toStrictEqual("arcstake");
-      expect(result.provider).toStrictEqual("erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqz8llllsh6u4jp");
-      expect(result.owner).toStrictEqual("erd1g9gu7525zvaft6vtcwaj678flafmcgn9adws4ducls2zwvl0dmksr9u4nc");
-      expect(result.automaticActivation).toStrictEqual(false);
-      expect(result.initialOwnerFunds).toStrictEqual("1250000000000000000000");
-      expect(result.checkCapOnRedelegate).toStrictEqual(false);
-    });
-
     it("should return provider addresses", async () => {
       const results = await providerService.getProviderAddresses();
 

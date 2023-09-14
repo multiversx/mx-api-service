@@ -3,7 +3,6 @@ import { Nft } from "src/endpoints/nfts/entities/nft";
 import { NftFilter } from "src/endpoints/nfts/entities/nft.filter";
 import { NftService } from "src/endpoints/nfts/nft.service";
 import { PublicAppModule } from "src/public.app.module";
-import { GenerateThumbnailResult } from "src/queue.worker/nft.worker/queue/job-services/thumbnails/entities/generate.thumbnail.result";
 import { NftThumbnailModule } from "src/queue.worker/nft.worker/queue/job-services/thumbnails/nft.thumbnail.module";
 import { NftThumbnailService } from "src/queue.worker/nft.worker/queue/job-services/thumbnails/nft.thumbnail.service";
 
@@ -40,21 +39,6 @@ describe('Nft Queue Service', () => {
       nftFilter.identifier = 'MEXFARM-e7af52-438c8a';
       const thumbnailGenerated = await nftQueueService.hasThumbnailGenerated(nftFilter.identifier, elrondMediaUrl);
       expect(thumbnailGenerated).toStrictEqual(false);
-    });
-  });
-
-  describe.skip('Generate Thumbnail', () => {
-    it('should generate thumbnail', async () => {
-      const nftFilter = new Nft();
-      nftFilter.identifier = 'WWWINE-5a5331-03e6';
-      const nftFileType = '998.jpg';
-      const thumbnail: String = await nftQueueService.generateThumbnail(
-        nftFilter,
-        myPinataUrl,
-        nftFileType,
-        false);
-
-      expect(thumbnail).toBe(GenerateThumbnailResult.success);
     });
   });
 });

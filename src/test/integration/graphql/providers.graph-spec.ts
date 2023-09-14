@@ -79,37 +79,5 @@ describe('Providers', () => {
           expect(res.body.data.providers).toBeDefined();
         });
     });
-
-    //Should be unskiped when keysbase is resolved
-    it.skip('should returns provider details', async () => {
-      await request(app.getHttpServer())
-        .post(gql)
-        .send({
-          query: `{
-            providers(input:{
-              identity: "binance_staking"
-            }){
-              provider
-              serviceFee
-              delegationCap
-              apr
-              numUsers
-              cumulatedRewards
-              identity
-              numNodes
-              stake
-              topUp
-              locked
-              featured
-            }
-          }`,
-        })
-        .expect(200)
-        .then(res => {
-          expect(res.body.data.providers).toBeDefined();
-          expect(res.body.data.providers[0].identity).toStrictEqual("binance_staking");
-          expect(res.body.data.providers[0].provider).toStrictEqual("erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqc0llllsayxegu");
-        });
-    });
   });
 });

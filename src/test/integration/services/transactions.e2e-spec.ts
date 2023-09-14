@@ -206,23 +206,6 @@ describe('Transaction Service', () => {
     }
   });
 
-  //TBD
-  it.skip(`should return a list of transfers between two accounts`, async () => {
-    const sender = 'erd18kmncel8a32yd94ktzlqag9etdrpdnyph8wus2nqyd4lp865gncq40znww';
-    const receiver = 'erd1sdslvlxvfnnflzj42l8czrcngq3xjjzkjp3rgul4ttk6hntr4qdsv6sets';
-    const transactionFilter = new TransactionFilter();
-    transactionFilter.address = sender;
-    transactionFilter.senderOrReceiver = receiver;
-
-    const transfers = await transactionService.getTransactions(transactionFilter, { from: 0, size: 25 }, new TransactionQueryOptions());
-    expect(transfers.length).toBeGreaterThan(0);
-
-    for (const transfer of transfers) {
-      expect([sender, receiver].includes(transfer.sender)).toBe(true);
-      expect([sender, receiver].includes(transfer.receiver)).toBe(true);
-    }
-  });
-
   it('should return an array of transactions and if withBlockInfo is set to true, block extra fields should be defined', async () => {
     const transactions = await transactionService.getTransactions(
       new TransactionFilter(),
