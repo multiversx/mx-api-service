@@ -23,7 +23,8 @@ export class UsernameController {
   @NoCache()
   async getUsernameDetails(
     @Param('username') username: string,
-    @Query('withGuardianInfo', new ParseBoolPipe) withGuardianInfo: boolean): Promise<AccountDetailed | null> {
+    @Query('withGuardianInfo', new ParseBoolPipe) withGuardianInfo: boolean
+  ): Promise<AccountDetailed | null> {
     const address = await this.usernameService.getAddressForUsername(username);
     if (!address) {
       throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
