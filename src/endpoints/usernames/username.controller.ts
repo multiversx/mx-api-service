@@ -1,9 +1,8 @@
 import { AccountUsername } from './entities/account.username';
-import { Controller, Get, HttpException, HttpStatus, Param, Query } from "@nestjs/common";
+import { Controller, Get, HttpException, HttpStatus, Param, Query, Res } from "@nestjs/common";
 import { ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiTags } from "@nestjs/swagger";
 import { UsernameService } from "./username.service";
 import { NoCache } from '@multiversx/sdk-nestjs-cache';
-import { AccountService } from '../accounts/account.service';
 import { ParseBoolPipe } from '@multiversx/sdk-nestjs-common';
 import { AccountDetailed } from '../accounts/entities/account.detailed';
 
@@ -12,7 +11,6 @@ import { AccountDetailed } from '../accounts/entities/account.detailed';
 export class UsernameController {
   constructor(
     private readonly usernameService: UsernameService,
-    private readonly accountService: AccountService,
   ) { }
 
   @Get("/usernames/:username")
@@ -22,6 +20,7 @@ export class UsernameController {
 
   @NoCache()
   async getUsernameDetails(
+    @Res() res: any,
     @Param('username') username: string,
     @Query('withGuardianInfo', new ParseBoolPipe) withGuardianInfo: boolean
   ): Promise<AccountDetailed | null> {
@@ -30,6 +29,8 @@ export class UsernameController {
       throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
     }
 
-    return await this.accountService.getAccount(address, undefined, withGuardianInfo);
+    const route = this.usernameService.getUsernameRedirectRoute(address, withGuardianInfo);
+
+    return res.redirect(route);
   }
 }
