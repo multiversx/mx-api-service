@@ -73,4 +73,11 @@ export class DelegationContractService {
       'getFullWaitingList',
     );
   }
+
+  async getAllNodeStates(publicKey: string) {
+    return await this.vmQueryService.vmQuery(
+      publicKey,
+      'getAllNodeStates'
+    );
+  }
 }

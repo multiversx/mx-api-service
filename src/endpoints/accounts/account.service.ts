@@ -37,7 +37,6 @@ import { AuctionContractService } from '../vm.query/contracts/auction.contract.s
 import { DelegationContractService } from '../vm.query/contracts/delegation.contract.service';
 import { StakingContractService } from '../vm.query/contracts/staking.contract.service';
 import { NodeStatusRaw } from '../nodes/entities/node.status';
-import { VmQueryService } from '../vm.query/vm.query.service';
 
 @Injectable()
 export class AccountService {
@@ -68,7 +67,6 @@ export class AccountService {
     private readonly delegationContractService: DelegationContractService,
     private readonly auctionContractService: AuctionContractService,
     private readonly stakingContractService: StakingContractService,
-    private readonly vmQueryService: VmQueryService
   ) { }
 
   async getAccountsCount(filter: AccountFilter): Promise<number> {
@@ -396,13 +394,6 @@ export class AccountService {
     return AddressUtils.bech32Encode(rewardsPublicKey);
   }
 
-  private async getAllNodeStates(address: string) {
-    return await this.vmQueryService.vmQuery(
-      address,
-      'getAllNodeStates'
-    );
-  }
-
   async getKeys(address: string): Promise<AccountKey[]> {
     const publicKey = AddressUtils.bech32Decode(address);
     const isStakingProvider = await this.providerService.isProvider(address);
@@ -410,7 +401,7 @@ export class AccountService {
     let notStakedNodes: AccountKey[] = [];
 
     if (isStakingProvider) {
-      const allNodeStates = await this.getAllNodeStates(address);
+      const allNodeStates = await this.delegationContractService.getAllNodeStates(address);
       const inactiveNodesBuffers = this.getInactiveNodesBuffers(allNodeStates);
       notStakedNodes = this.createNotStakedNodes(inactiveNodesBuffers);
     }
