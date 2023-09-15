@@ -347,13 +347,13 @@ export class ElasticIndexerService implements IndexerInterface {
       query = query.withShouldCondition(filter.originalTxHashes.map(originalTxHash => QueryType.Match('originalTxHash', originalTxHash)));
     }
 
-    const items = await this.elasticService.getList('scresults', 'hash', query);
+    const results = await this.elasticService.getList('scresults', 'hash', query);
 
-    for (const item of items) {
-      this.processTransaction(item);
+    for (const result of results) {
+      this.processTransaction(result);
     }
 
-    return items;
+    return results;
   }
 
   async getMiniBlocks(pagination: QueryPagination, filter: MiniBlockFilter): Promise<any[]> {
@@ -524,8 +524,8 @@ export class ElasticIndexerService implements IndexerInterface {
 
     const results = await this.elasticService.getList('scresults', 'hash', elasticQuerySc);
 
-    for (const item of results) {
-      this.processTransaction(item);
+    for (const result of results) {
+      this.processTransaction(result);
     }
 
     return results;
