@@ -208,7 +208,11 @@ export class ElasticIndexerService implements IndexerInterface {
   }
 
   async getScResult(scHash: string): Promise<any> {
-    return await this.elasticService.getItem('scresults', 'hash', scHash);
+    const result = await this.elasticService.getItem('scresults', 'hash', scHash);
+
+    this.processTransaction(result);
+
+    return result;
   }
 
   async getBlock(hash: string): Promise<Block> {
@@ -343,7 +347,15 @@ export class ElasticIndexerService implements IndexerInterface {
       query = query.withShouldCondition(filter.originalTxHashes.map(originalTxHash => QueryType.Match('originalTxHash', originalTxHash)));
     }
 
-    return await this.elasticService.getList('scresults', 'hash', query);
+    const items = await this.elasticService.getList('scresults', 'hash', query);
+
+    console.log({ items });
+
+    for (const item of items) {
+      this.processTransaction(item);
+    }
+
+    return items;
   }
 
   async getMiniBlocks(pagination: QueryPagination, filter: MiniBlockFilter): Promise<any[]> {
