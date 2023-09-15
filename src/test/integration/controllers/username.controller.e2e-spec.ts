@@ -22,7 +22,7 @@ describe("Username Controller", () => {
 
       await request(app.getHttpServer())
         .get(`${path}/${username}`)
-        .expect(200);
+        .expect(302);
     });
   });
 
