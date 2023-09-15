@@ -37,6 +37,7 @@ import { AuctionContractService } from '../vm.query/contracts/auction.contract.s
 import { DelegationContractService } from '../vm.query/contracts/delegation.contract.service';
 import { StakingContractService } from '../vm.query/contracts/staking.contract.service';
 import { NodeStatusRaw } from '../nodes/entities/node.status';
+import { VmQueryService } from '../vm.query/vm.query.service';
 
 @Injectable()
 export class AccountService {
@@ -66,7 +67,8 @@ export class AccountService {
     private readonly keysService: KeysService,
     private readonly delegationContractService: DelegationContractService,
     private readonly auctionContractService: AuctionContractService,
-    private readonly stakingContractService: StakingContractService
+    private readonly stakingContractService: StakingContractService,
+    private readonly vmQueryService: VmQueryService
   ) { }
 
   async getAccountsCount(filter: AccountFilter): Promise<number> {
@@ -514,18 +516,10 @@ export class AccountService {
 
       if (queueSizeEncoded) {
         const queueSize = Buffer.from(queueSizeEncoded, 'base64').toString();
-        const queueIndexes = await Promise.all([
-          ...queuedNodes.map((blsKey: string) =>
-            this.stakingContractService.getQueueIndex(blsKey)
 
         const queueIndexes = await Promise.all(
           queuedNodes.map((blsKey: string) =>
-            this.vmQueryService.vmQuery(
-              this.apiConfigService.getStakingContractAddress(),
-              'getQueueIndex',
-              this.apiConfigService.getAuctionContractAddress(),
-              [blsKey],
-            )
+            this.stakingContractService.getQueueIndex(blsKey)
           ),
         );
 
