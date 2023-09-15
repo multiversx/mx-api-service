@@ -512,7 +512,13 @@ export class ElasticIndexerService implements IndexerInterface {
       .withSort([timestamp])
       .withCondition(QueryConditionOptions.must, [originalTxHashQuery]);
 
-    return await this.elasticService.getList('scresults', 'hash', elasticQuerySc);
+    const results = await this.elasticService.getList('scresults', 'hash', elasticQuerySc);
+
+    for (const item of results) {
+      this.processTransaction(item);
+    }
+
+    return results;
   }
 
   async getScResultsForTransactions(elasticTransactions: any[]): Promise<any[]> {
