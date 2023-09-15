@@ -168,4 +168,24 @@ describe('UsernameService', () => {
       expect(result).toBeNull();
     });
   });
+
+  describe('getUsernameRedirectRoute', () => {
+    it('should return route with address only when withGuardianInfo is undefined', () => {
+      const address = 'erd1qga7ze0l03chfgru0a32wxqf2226nzrxnyhzer9lmudqhjgy7ycqjjyknz';
+      const result = service.getUsernameRedirectRoute(address, undefined);
+      expect(result).toEqual(`/accounts/${address}`);
+    });
+
+    it('should return route with address only when withGuardianInfo is false', () => {
+      const address = 'erd1qga7ze0l03chfgru0a32wxqf2226nzrxnyhzer9lmudqhjgy7ycqjjyknz';
+      const result = service.getUsernameRedirectRoute(address, false);
+      expect(result).toEqual(`/accounts/${address}`);
+    });
+
+    it('should return route with address and withGuardianInfo when withGuardianInfo is true', () => {
+      const address = 'erd1qga7ze0l03chfgru0a32wxqf2226nzrxnyhzer9lmudqhjgy7ycqjjyknz';
+      const result = service.getUsernameRedirectRoute(address, true);
+      expect(result).toEqual(`/accounts/${address}?withGuardianInfo=true`);
+    });
+  });
 });
