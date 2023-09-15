@@ -86,4 +86,8 @@ export class SmartContractResult {
   @Field(() => TransactionAction, { description: 'Transaction action for the given smart contract result.', nullable: true })
   @ApiProperty({ type: TransactionAction, nullable: true })
   action: TransactionAction | undefined = undefined;
+
+  @Field(() => String, { description: 'Function call', nullable: true })
+  @ApiProperty({ type: String, nullable: true })
+  function: string | undefined = undefined;
 }
