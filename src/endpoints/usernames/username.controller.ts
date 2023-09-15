@@ -30,8 +30,6 @@ export class UsernameController {
       throw new HttpException('Account not found', HttpStatus.NOT_FOUND);
     }
 
-    const account = await this.accountService.getAccount(address, undefined, withGuardianInfo);
-
-    return account;
+    return await this.accountService.getAccount(address, undefined, withGuardianInfo);
   }
 }
