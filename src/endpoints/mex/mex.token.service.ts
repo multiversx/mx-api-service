@@ -190,6 +190,15 @@ export class MexTokenService {
   }
 
   private getMexToken(pair: MexPair): MexToken | null {
+    if (pair.baseSymbol === 'WEGLD' && pair.quoteSymbol === "USDC") {
+      return {
+        id: pair.quoteId,
+        symbol: pair.quoteSymbol,
+        name: pair.quoteName,
+        price: pair.quotePrice,
+      };
+    }
+
     if (['WEGLD', 'USDC'].includes(pair.quoteSymbol)) {
       return {
         id: pair.baseId,
