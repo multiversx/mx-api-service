@@ -349,8 +349,6 @@ export class ElasticIndexerService implements IndexerInterface {
 
     const items = await this.elasticService.getList('scresults', 'hash', query);
 
-    console.log({ items });
-
     for (const item of items) {
       this.processTransaction(item);
     }
