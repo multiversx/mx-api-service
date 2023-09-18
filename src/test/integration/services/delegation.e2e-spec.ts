@@ -192,6 +192,8 @@ describe('Delegation Service', () => {
       const mockError = new Error('API error');
       const mockGetFn = jest.fn().mockRejectedValue(mockError);
       jest.spyOn(apiService, 'get').mockImplementation(mockGetFn);
+      jest.spyOn(delegationService['logger'], 'error').mockImplementation(() =>
+        "Error when getting account delegation details for address erd1qga7ze0l03chfgru0a32wxqf2226nzrxnyhzer9lmudqhjgy7ycqjjyknz");
 
       await expect(delegationService.getDelegationForAddress(mockAddress)).rejects.toThrow(mockError);
       expect(mockGetFn).toHaveBeenCalledWith(`${apiConfigService.getDelegationUrl()}/accounts/${mockAddress}/delegations`);
