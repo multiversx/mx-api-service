@@ -42,6 +42,9 @@ describe('GraphQlService', () => {
 
     it('should return null if the request fails', async () => {
       jest.spyOn(mockGraphQLClient, 'request').mockRejectedValueOnce(new Error('Unexpected error when running graphql query'));
+      jest.spyOn(service['logger'], 'error').mockImplementation(() =>
+        "Unexpected error when running graphql query");
+
       const result = await service.getData('query', {});
       expect(result).toBeNull();
     });
@@ -57,6 +60,9 @@ describe('GraphQlService', () => {
 
     it('should return null if the request fails', async () => {
       jest.spyOn(mockGraphQLClient, 'request').mockRejectedValueOnce(new Error('Unexpected error when running graphql query'));
+      jest.spyOn(service['logger'], 'error').mockImplementation(() =>
+        "Unexpected error when running graphql query");
+
       const result = await service.getNftServiceData('query', {});
       expect(result).toBeNull();
     });
