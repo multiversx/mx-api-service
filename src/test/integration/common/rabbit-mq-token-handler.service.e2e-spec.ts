@@ -88,7 +88,8 @@ describe('RabbitMqTokenHandlerService', () => {
 
     esdtServiceMock.getEsdtTokenPropertiesRaw.mockRejectedValue(new Error('Test error'));
 
-    const loggerSpy = jest.spyOn(service['logger'], 'error');
+    const loggerSpy = jest.spyOn(service['logger'], 'error').mockImplementation(() =>
+      "An unhandled error occurred when processing transferOwnership event for token with identifier 'WEGLD-bd4d79'");
 
     const result = await service.handleTransferOwnershipEvent(event);
 

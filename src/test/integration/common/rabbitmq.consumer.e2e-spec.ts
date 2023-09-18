@@ -59,7 +59,7 @@ describe('RabbitMqConsumer', () => {
   it('should log the error when an unhandled error occurs', async () => {
     const event: NotifierEvent = {
       identifier: NotifierEventIdentifier.ESDTNFTCreate,
-      address: "erd1",
+      address: "erd1qga7ze0l03chfgru0a32wxqf2226nzrxnyhzer9lmudqhjgy7ycqjjyknz",
       topics: [''],
     };
 
@@ -69,7 +69,8 @@ describe('RabbitMqConsumer', () => {
       throw error;
     });
 
-    const loggerSpy = jest.spyOn(service['logger'], 'error');
+    const loggerSpy = jest.spyOn(service['logger'], 'error').mockImplementation(() =>
+      `An unhandled error occurred when consuming events: {"events":[{"identifier":"ESDTNFTCreate","address":"erd1qga7ze0l03chfgru0a32wxqf2226nzrxnyhzer9lmudqhjgy7ycqjjyknz","topics":[""]}]}`);
 
     await service.consumeEvents({ events: [event] });
 

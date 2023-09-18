@@ -13,7 +13,6 @@ describe('Transaction Get Service', () => {
     }).compile();
 
     transactionGetService = moduleRef.get<TransactionGetService>(TransactionGetService);
-
   });
 
   beforeEach(() => {
@@ -84,6 +83,9 @@ describe('Transaction Get Service', () => {
         .mockImplementation(jest.fn(async (_: string) => {
           throw new HttpException({ status: HttpStatus.BAD_GATEWAY, message: "BAD GATEWAY" }, HttpStatus.BAD_GATEWAY);
         }));
+
+      jest.spyOn(transactionGetService['logger'], 'error').mockImplementation(() =>
+        "Unexpected error when getting transaction from elastic, hash '51ffbf3d27e06fd509c510ef0ff1ea7329359dba89c05aeec333de52a405664d'");
 
       await expect(transactionGetService.tryGetTransactionFromElastic(hash)).rejects.toThrow(Error);
     });
