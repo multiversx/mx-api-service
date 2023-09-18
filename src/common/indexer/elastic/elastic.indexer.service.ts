@@ -208,7 +208,11 @@ export class ElasticIndexerService implements IndexerInterface {
   }
 
   async getScResult(scHash: string): Promise<any> {
-    return await this.elasticService.getItem('scresults', 'hash', scHash);
+    const result = await this.elasticService.getItem('scresults', 'hash', scHash);
+
+    this.processTransaction(result);
+
+    return result;
   }
 
   async getBlock(hash: string): Promise<Block> {
@@ -343,7 +347,13 @@ export class ElasticIndexerService implements IndexerInterface {
       query = query.withShouldCondition(filter.originalTxHashes.map(originalTxHash => QueryType.Match('originalTxHash', originalTxHash)));
     }
 
-    return await this.elasticService.getList('scresults', 'hash', query);
+    const results = await this.elasticService.getList('scresults', 'hash', query);
+
+    for (const result of results) {
+      this.processTransaction(result);
+    }
+
+    return results;
   }
 
   async getMiniBlocks(pagination: QueryPagination, filter: MiniBlockFilter): Promise<any[]> {
@@ -512,7 +522,13 @@ export class ElasticIndexerService implements IndexerInterface {
       .withSort([timestamp])
       .withCondition(QueryConditionOptions.must, [originalTxHashQuery]);
 
-    return await this.elasticService.getList('scresults', 'hash', elasticQuerySc);
+    const results = await this.elasticService.getList('scresults', 'hash', elasticQuerySc);
+
+    for (const result of results) {
+      this.processTransaction(result);
+    }
+
+    return results;
   }
 
   async getScResultsForTransactions(elasticTransactions: any[]): Promise<any[]> {
