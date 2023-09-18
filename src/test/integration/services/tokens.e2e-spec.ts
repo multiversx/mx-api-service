@@ -697,6 +697,7 @@ describe('Token Service', () => {
       canAddSpecialRoles: false,
       canTransferNFTCreateRole: false,
       NFTCreateStopped: false,
+      timestamp: 1643824710,
     };
 
     it('should returns undefined if getTokenProperties returns undefined', async () => {
@@ -744,6 +745,7 @@ describe('Token Service', () => {
       canAddSpecialRoles: false,
       canTransferNFTCreateRole: false,
       NFTCreateStopped: false,
+      timestamp: 1643824710,
     };
 
     const assets = {
