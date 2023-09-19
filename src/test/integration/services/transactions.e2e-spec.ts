@@ -169,6 +169,27 @@ describe('Transaction Service', () => {
       expect(result?.operations[0].action).toStrictEqual("transfer");
     });
 
+    it(`should return "action" key for ESDTNFTBurn transaction`, async () => {
+      const txHash: string = "1a9176f5e3be9b2bff237e9fc6da34589d1cd9a8f3499354df26c5efd7a8a5a8";
+      const result = await transactionService.getTransaction(txHash);
+
+      expect(result?.action?.name).toStrictEqual('burn');
+    });
+
+    it(`should return "action" key for ESDTNFTTransfer transaction`, async () => {
+      const txHash: string = "01e30ddf688f72aace6eea1df650945d89ccb7057c77a8298ff0cc2a1aec84a7";
+      const result = await transactionService.getTransaction(txHash);
+
+      expect(result?.action?.name).toStrictEqual('transfer');
+    });
+
+    it(`should return "action" key for Freeze transaction`, async () => {
+      const txHash: string = "f6f4db3260248d2ace15d5dd4cb22c566a33900efbad68e6b9a97e77cf6eab88";
+      const result = await transactionService.getTransaction(txHash);
+
+      expect(result?.action?.name).toStrictEqual('freeze');
+    });
+
     it('should return logs attribute for a given transaction', async () => {
       const txHash: string = "4302d0af550e47a21e5d183f0918af7dbc015f1e7dea6d2ab2025ee675bf8517";
       const results = await transactionService.getTransaction(txHash, [TransactionOptionalFieldOption.logs]);
