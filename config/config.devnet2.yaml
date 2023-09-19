@@ -39,13 +39,13 @@ features:
     enabled: false
   marketplace:
     enabled: false
-    serviceUrl: 'https://devnet-nfts-graph.multiversx.com/graphql'
+    serviceUrl: 'https://devnet2-nfts-graph.multiversx.com/graphql'
   exchange:
     enabled: false
     serviceUrl: 'https://devnet2-graph.xexchange.com/graphql'
   dataApi:
     enabled: false
-    serviceUrl: 'https://devnet-data-api.multiversx.com'
+    serviceUrl: 'https://devnet2-data-api.multiversx.com'
   auth:
     enabled: false
     maxExpirySeconds: 86400
@@ -61,7 +61,7 @@ image:
 aws:
   s3KeyId: ''
   s3Secret: ''
-  s3Bucket: 'devnet-media.elrond.com'
+  s3Bucket: 'devnet2-media.elrond.com'
   s3Region: ''
 urls:
   self: 'https://devnet2-api.multiversx.com'
@@ -79,11 +79,11 @@ urls:
   rabbitmq: 'amqp://127.0.0.1:5672'
   providers: 'https://devnet2-delegation-api.multiversx.com/providers'
   delegation: 'https://devnet2-delegation-api.multiversx.com'
-  media: 'https://devnet-media.elrond.com'
-  nftThumbnails: 'https://devnet-media.elrond.com/nfts/thumbnail'
+  media: 'https://devnet2-media.elrond.com'
+  nftThumbnails: 'https://devnet2-media.elrond.com/nfts/thumbnail'
   tmp: '/tmp'
   ipfs: 'https://ipfs.io/ipfs'
-  socket: 'devnet-socket-fra.elrond.com'
+  socket: 'devnet2-socket-fra.elrond.com'
   maiarId: 'https://devnet2-id-api.multiversx.com'
 indexer:
   type: 'elastic'
