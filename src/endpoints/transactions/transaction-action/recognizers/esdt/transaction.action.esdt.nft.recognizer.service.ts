@@ -63,6 +63,7 @@ export class TransactionActionEsdtNftRecognizerService implements TransactionAct
     }
 
     const tokenIdentifier = BinaryUtils.hexToString(metadata.functionArgs[0]);
+    const value = BinaryUtils.hexToNumber(metadata.functionArgs[2]);
     const tokenProperties = await this.tokenTransferService.getTokenTransferProperties(tokenIdentifier);
 
     if (!tokenProperties) {
@@ -77,7 +78,7 @@ export class TransactionActionEsdtNftRecognizerService implements TransactionAct
       token: {
         ...tokenProperties,
       },
-      value: BinaryUtils.hexToNumber(metadata.functionArgs[2]),
+      value: value,
     };
     return result;
   }
