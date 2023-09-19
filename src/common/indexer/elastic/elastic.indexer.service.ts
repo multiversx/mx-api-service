@@ -804,7 +804,7 @@ export class ElasticIndexerService implements IndexerInterface {
   async getAllFungibleTokens(): Promise<any[]> {
     const query = ElasticQuery.create()
       .withMustMatchCondition('type', TokenType.FungibleESDT)
-      .withFields(["name", "type", "currentOwner", "numDecimals", "properties"])
+      .withFields(["name", "type", "currentOwner", "numDecimals", "properties", "timestamp"])
       .withMustNotExistCondition('identifier');
 
     const allTokens: any[] = [];
