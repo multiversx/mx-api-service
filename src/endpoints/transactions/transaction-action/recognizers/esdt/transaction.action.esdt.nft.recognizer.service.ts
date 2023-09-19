@@ -77,6 +77,7 @@ export class TransactionActionEsdtNftRecognizerService implements TransactionAct
       token: {
         ...tokenProperties,
       },
+      value: BinaryUtils.hexToNumber(metadata.functionArgs[2]),
     };
     return result;
   }
