@@ -247,11 +247,6 @@ export class NetworkService {
     const {
       account: { balance: stakedBalance },
     } = await this.gatewayService.getAddressDetails(`${this.apiConfigService.getAuctionContractAddress()}`);
-    let [activeStake] = await this.vmQueryService.vmQuery(
-      this.apiConfigService.getDelegationContractAddress(),
-      'getTotalActiveStake',
-    );
-    activeStake = this.numberDecode(activeStake);
 
     const elrondConfig = {
       feesInEpoch: 0,
