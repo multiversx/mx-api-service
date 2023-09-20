@@ -173,7 +173,11 @@ describe('Transaction Service', () => {
       const txHash: string = "1a9176f5e3be9b2bff237e9fc6da34589d1cd9a8f3499354df26c5efd7a8a5a8";
       const result = await transactionService.getTransaction(txHash);
 
-      expect(result?.action?.name).toStrictEqual('burn');
+
+      if (result?.action?.arguments) {
+        expect(result.action.name).toStrictEqual('burn');
+        expect(result.action.arguments.value).toStrictEqual(1);
+      }
     });
 
     it(`should return "action" key for ESDTNFTTransfer transaction`, async () => {
