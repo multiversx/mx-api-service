@@ -81,14 +81,17 @@ export class AccountController {
   @ApiQuery({ name: 'ownerAddress', description: 'Search by owner address', required: false })
   @ApiQuery({ name: 'sort', description: 'Sort criteria (balance / timestamp)', required: false, enum: AccountSort })
   @ApiQuery({ name: 'order', description: 'Sort order (asc/desc)', required: false, enum: SortOrder })
+  @ApiQuery({ name: 'isSmartContract', description: 'Return a list of smart contracts', required: false })
   getAccounts(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number,
     @Query("ownerAddress", ParseAddressPipe) ownerAddress?: string,
     @Query('sort', new ParseEnumPipe(AccountSort)) sort?: AccountSort,
     @Query('order', new ParseEnumPipe(SortOrder)) order?: SortOrder,
+    @Query("isSmartContract", new ParseBoolPipe) isSmartContract?: boolean,
   ): Promise<Account[]> {
-    return this.accountService.getAccounts({ from, size }, new AccountFilter({ ownerAddress, sort, order }));
+
+    return this.accountService.getAccounts({ from, size }, new AccountFilter({ ownerAddress, sort, order, isSmartContract }));
   }
 
   @Get("/accounts/count")

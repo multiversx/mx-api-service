@@ -293,7 +293,7 @@ export class AccountService {
   }
 
   async getAccounts(queryPagination: QueryPagination, filter: AccountFilter): Promise<Account[]> {
-    if (!filter.ownerAddress && !filter.sort && !filter.order) {
+    if (!filter.ownerAddress && !filter.sort && !filter.order && !filter.isSmartContract) {
       return await this.cachingService.getOrSet(
         CacheInfo.Accounts(queryPagination).key,
         async () => await this.getAccountsRaw(queryPagination, filter),

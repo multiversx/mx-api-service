@@ -535,8 +535,13 @@ export class ElasticIndexerHelper {
 
   public buildAccountFilterQuery(filter: AccountFilter): ElasticQuery {
     let elasticQuery = ElasticQuery.create();
+
     if (filter.ownerAddress) {
       elasticQuery = elasticQuery.withMustCondition(QueryType.Match('currentOwner', filter.ownerAddress, QueryOperator.AND));
+    }
+
+    if (filter.isSmartContract) {
+      elasticQuery = elasticQuery.withMustExistCondition('currentOwner');
     }
 
     return elasticQuery;
