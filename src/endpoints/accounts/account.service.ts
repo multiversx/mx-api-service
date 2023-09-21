@@ -336,18 +336,6 @@ export class AccountService {
     for (const account of accounts) {
       account.shard = AddressUtils.computeShard(AddressUtils.bech32Decode(account.address), shardCount);
       account.assets = assets[account.address];
-
-      if (filter.isSmartContract) {
-        const deployedAt = await this.getAccountDeployedAt(account.address);
-        if (deployedAt) {
-          account.deployedAt = deployedAt;
-        }
-
-        const latestUpgrade = await this.getLatestContractUpgrade(account.address);
-        if (deployedAt) {
-          account.latestUpgrade = latestUpgrade;
-        }
-      }
     }
 
     return accounts;
@@ -601,24 +589,6 @@ export class AccountService {
     })).sortedDescending(item => item.timestamp);
 
     return upgrades.slice(queryPagination.from, queryPagination.from + queryPagination.size);
-  }
-
-  async getLatestContractUpgrade(address: string): Promise<number | null> {
-    return await this.cachingService.getOrSet(
-      CacheInfo.ContractLatestUpgrade(address).key,
-      async () => await this.getLatestContractUpgradeRaw(address),
-      CacheInfo.ContractLatestUpgrade(address).ttl
-    );
-  }
-
-  async getLatestContractUpgradeRaw(address: string): Promise<number | null> {
-    const upgrades = await this.getContractUpgrades(new QueryPagination({ size: 1 }), address);
-
-    if (upgrades.length === 0) {
-      return null;
-    }
-
-    return upgrades[0].timestamp;
   }
 
   async getAccountHistory(address: string, pagination: QueryPagination, filter: AccountHistoryFilter): Promise<AccountHistory[]> {

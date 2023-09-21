@@ -540,8 +540,12 @@ export class ElasticIndexerHelper {
       elasticQuery = elasticQuery.withMustCondition(QueryType.Match('currentOwner', filter.ownerAddress, QueryOperator.AND));
     }
 
-    if (filter.isSmartContract) {
-      elasticQuery = elasticQuery.withMustExistCondition('currentOwner');
+    if (filter.isSmartContract !== undefined) {
+      if (filter.isSmartContract) {
+        elasticQuery = elasticQuery.withMustExistCondition('currentOwner');
+      } else {
+        elasticQuery = elasticQuery.withMustNotExistCondition('currentOwner');
+      }
     }
 
     return elasticQuery;
