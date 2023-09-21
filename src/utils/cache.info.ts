@@ -412,6 +412,13 @@ export class CacheInfo {
     };
   }
 
+  static ContractLatestUpgrade(address: string): CacheInfo {
+    return {
+      key: `contractLatestUpgrade:${address}`,
+      ttl: Constants.oneDay(),
+    };
+  }
+
   static AccountIsVerified(address: string): CacheInfo {
     return {
       key: `accountIsVerified:${address}`,

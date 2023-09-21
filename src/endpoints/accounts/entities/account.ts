@@ -36,4 +36,12 @@ export class Account {
   @Field(() => AccountAssets, { description: 'Account assets for the given account.', nullable: true })
   @ApiProperty({ type: AccountAssets, nullable: true, description: 'Account assets' })
   assets: AccountAssets | undefined = undefined;
+
+  @Field(() => Float, { description: 'Deployment timestamp for the given detailed smart contract.', nullable: true })
+  @ApiProperty({ description: 'Specific property flag for smart contract', type: Number })
+  deployedAt?: number | undefined = undefined;
+
+  @Field(() => Float, { description: 'Latest upgrade timestamp for the given detailed smart contract.', nullable: true })
+  @ApiProperty({ description: 'Specific property flag for smart contract', type: Number })
+  latestUpgrade?: number | null = null;
 }
