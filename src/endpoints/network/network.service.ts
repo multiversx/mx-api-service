@@ -13,7 +13,7 @@ import { NetworkConfig } from './entities/network.config';
 import { StakeService } from '../stake/stake.service';
 import { GatewayService } from 'src/common/gateway/gateway.service';
 import { CacheInfo } from 'src/utils/cache.info';
-import { NumberUtils } from '@multiversx/sdk-nestjs-common';
+import { BinaryUtils, NumberUtils } from '@multiversx/sdk-nestjs-common';
 import { ApiService } from "@multiversx/sdk-nestjs-http";
 import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { About } from './entities/about';
@@ -135,49 +135,18 @@ export class NetworkService {
   }
 
   async getEconomicsRaw(): Promise<Economics> {
-    const [
-      {
-        account: { balance },
-      },
-      {
-        erd_total_supply,
-      },
-      [, totalWaitingStakeBase64],
-      priceValue,
-      tokenMarketCap,
-    ] = await Promise.all([
-      this.gatewayService.getAddressDetails(`${this.apiConfigService.getAuctionContractAddress()}`),
-      this.gatewayService.getNetworkEconomics(),
-      this.vmQueryService.vmQuery(
-        this.apiConfigService.getDelegationContractAddress(),
-        'getTotalStakeByType',
-      ),
-      this.dataApiService.getEgldPrice(),
-      this.tokenService.getTokenMarketCapRaw(),
-    ]);
+    const auctionContractBalance = await this.getAuctionContractBalance();
+    const totalWaitingStake = await this.getTotalWaitingStake();
+    const egldPrice = await this.dataApiService.getEgldPrice();
+    const tokenMarketCap = await this.tokenService.getTokenMarketCapRaw();
 
+    const staked = NumberUtils.denominate(BigInt(auctionContractBalance.toString()) + BigInt(totalWaitingStake.toString()));
 
-    const totalWaitingStakeHex = Buffer.from(
-      totalWaitingStakeBase64,
-      'base64',
-    ).toString('hex');
-    const totalWaitingStake = BigInt(
-      totalWaitingStakeHex ? '0x' + totalWaitingStakeHex : totalWaitingStakeHex,
-    );
-
-    const staked = parseInt((BigInt(balance) + totalWaitingStake).toString().slice(0, -18));
-    const totalSupply = parseInt(erd_total_supply.slice(0, -18));
-
-    let locked: number = 0;
-    if (this.apiConfigService.getNetwork() === 'mainnet') {
-      const account = await this.accountService.getAccountRaw('erd195fe57d7fm5h33585sc7wl8trqhrmy85z3dg6f6mqd0724ymljxq3zjemc');
-      if (account) {
-        locked = Math.round(NumberUtils.denominate(BigInt(account.balance), 18));
-      }
-    }
-
+    const totalSupply = await this.getTotalSupply();
+    const locked = await this.getLockedSupply();
     const circulatingSupply = totalSupply - locked;
-    const price = priceValue ? parseFloat(priceValue.toFixed(2)) : undefined;
+
+    const price = egldPrice?.toRounded(2);
     const marketCap = price ? Math.round(price * circulatingSupply) : undefined;
 
     const aprInfo = await this.getApr();
@@ -199,6 +168,55 @@ export class NetworkService {
     }
 
     return economics;
+  }
+
+  private async getAuctionContractBalance(): Promise<BigInt> {
+    const addressDetails = await this.gatewayService.getAddressDetails(this.apiConfigService.getAuctionContractAddress());
+
+    const balance = addressDetails?.account?.balance;
+    if (!balance) {
+      throw new Error(`Could not fetch balance from auction contract address '${this.apiConfigService.getAuctionContractAddress()}'`);
+    }
+
+    return BigInt(balance);
+  }
+
+  private async getTotalSupply(): Promise<number> {
+    const economics = await this.gatewayService.getNetworkEconomics();
+
+    const totalSupply = economics?.erd_total_supply;
+    if (!totalSupply) {
+      throw new Error('Could not extract erd_total_supply from network economics');
+    }
+
+    return NumberUtils.denominate(BigInt(totalSupply));
+  }
+
+  private async getTotalWaitingStake(): Promise<BigInt> {
+    const vmQueryResult = await this.vmQueryService.vmQuery(
+      this.apiConfigService.getDelegationContractAddress(),
+      'getTotalStakeByType',
+    );
+
+    if (!vmQueryResult || vmQueryResult.length < 2) {
+      throw new Error(`Could not fetch getTotalStakeByType from delegation contract address '${this.apiConfigService.getDelegationContractAddress()}'`);
+    }
+
+    const totalWaitingStakeBase64 = vmQueryResult[1];
+
+    return BinaryUtils.base64ToBigInt(totalWaitingStakeBase64);
+  }
+
+  private async getLockedSupply(): Promise<number> {
+    let locked: number = 0;
+    if (this.apiConfigService.getNetwork() === 'mainnet') {
+      const account = await this.accountService.getAccountRaw('erd195fe57d7fm5h33585sc7wl8trqhrmy85z3dg6f6mqd0724ymljxq3zjemc');
+      if (account) {
+        locked = Math.round(NumberUtils.denominate(BigInt(account.balance), 18));
+      }
+    }
+
+    return locked;
   }
 
   async getStats(): Promise<Stats> {
@@ -244,9 +262,7 @@ export class NetworkService {
     const stats = await this.getStats();
     const config = await this.getNetworkConfig();
     const stake = await this.stakeService.getGlobalStake();
-    const {
-      account: { balance: stakedBalance },
-    } = await this.gatewayService.getAddressDetails(`${this.apiConfigService.getAuctionContractAddress()}`);
+    const stakedBalance = await this.getAuctionContractBalance();
 
     const elrondConfig = {
       feesInEpoch: 0,
@@ -272,7 +288,7 @@ export class NetworkService {
 
     const topUpRewardsLimit = 0.5 * rewardsPerEpoch;
     const networkBaseStake = stake.activeValidators * stakePerNode;
-    const networkTotalStake = NumberUtils.denominateString(stakedBalance) - (stake.queueSize * stakePerNode);
+    const networkTotalStake = NumberUtils.denominateString(stakedBalance.toString()) - (stake.queueSize * stakePerNode);
 
     const networkTopUpStake = networkTotalStake - networkBaseStake;
 
