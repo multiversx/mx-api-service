@@ -140,7 +140,7 @@ export class NetworkService {
     const egldPrice = await this.dataApiService.getEgldPrice();
     const tokenMarketCap = await this.tokenService.getTokenMarketCapRaw();
 
-    const staked = NumberUtils.denominate(BigInt(auctionContractBalance.toString()) + BigInt(totalWaitingStake.toString()));
+    const staked = NumberUtils.denominate(BigInt(auctionContractBalance.toString()) + BigInt(totalWaitingStake.toString())).toRounded();
 
     const totalSupply = await this.getTotalSupply();
     const locked = await this.getLockedSupply();
