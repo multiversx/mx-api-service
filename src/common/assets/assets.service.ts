@@ -93,7 +93,11 @@ export class AssetsService {
   }
 
   private getImageUrl(tokenIdentifier: string, name: string) {
-    return `${this.apiConfigService.getExternalMediaUrl()}/tokens/asset/${tokenIdentifier}/${name}`;
+    if (['mainnet', 'devnet', 'testnet'].includes(this.apiConfigService.getNetwork())) {
+      return `${this.apiConfigService.getExternalMediaUrl()}/tokens/asset/${tokenIdentifier}/${name}`;
+    }
+
+    return `https://raw.githubusercontent.com/multiversx/mx-assets/master/${this.apiConfigService.getNetwork()}/tokens/${tokenIdentifier}/${name}`;
   }
 
   private getTokenAssetsPath() {
