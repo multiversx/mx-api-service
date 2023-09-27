@@ -65,10 +65,6 @@ aws:
   s3Region: ''
 urls:
   self: 'https://api.multiversx.com'
-  api:
-    - 'https://api.multiversx.com'
-    - 'https://devnet-api.multiversx.com'
-    - 'https://testnet-api.multiversx.com'
   elastic:
     - 'https://index.multiversx.com'
   gateway:

@@ -18,33 +18,6 @@ describe('API Config', () => {
 
   beforeEach(() => { jest.restoreAllMocks(); });
 
-  describe("getApiUrls", () => {
-    it("should return api urls", () => {
-      jest
-        .spyOn(ConfigService.prototype, "get")
-        .mockImplementation(jest.fn(() => [
-          'https://api.multiversx.com',
-          'https://devnet-api.multiversx.com',
-          'https://testnet-api.multiversx.com',
-        ]));
-
-      const results = apiConfigService.getApiUrls();
-      expect(results).toEqual(expect.arrayContaining([
-        'https://api.multiversx.com',
-        'https://devnet-api.multiversx.com',
-        'https://testnet-api.multiversx.com',
-      ]));
-    });
-
-    it("should throw error because test simulates that api urls are not defined", () => {
-      jest
-        .spyOn(ConfigService.prototype, 'get')
-        .mockImplementation(jest.fn(() => undefined));
-
-      expect(() => apiConfigService.getApiUrls()).toThrowError('No API urls present');
-    });
-  });
-
   describe("getGatewayUrl", () => {
     it("should return gateway url", () => {
       jest
