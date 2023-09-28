@@ -9,7 +9,7 @@ import { NftType } from "./entities/nft.type";
 import { NftService } from "./nft.service";
 import { QueryPagination } from 'src/common/entities/query.pagination';
 import { NftQueryOptions } from './entities/nft.query.options';
-import { ParseAddressPipe, ParseBoolPipe, ParseArrayPipe, ParseIntPipe, ParseNftPipe, ParseCollectionPipe, ApplyComplexity, ParseAddressArrayPipe, ParseBlockHashPipe, ParseEnumPipe, ParseRecordPipe } from '@multiversx/sdk-nestjs-common';
+import { ParseAddressPipe, ParseBoolPipe, ParseArrayPipe, ParseIntPipe, ParseNftPipe, ParseCollectionPipe, ApplyComplexity, ParseAddressArrayPipe, ParseBlockHashPipe, ParseEnumPipe, ParseRecordPipe, ParseNftArrayPipe } from '@multiversx/sdk-nestjs-common';
 import { TransactionDetailed } from '../transactions/entities/transaction.detailed';
 import { TransactionStatus } from '../transactions/entities/transaction.status';
 import { SortOrder } from 'src/common/entities/sort.order';
@@ -54,7 +54,7 @@ export class NftController {
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
     @Query('search') search?: string,
-    @Query('identifiers', ParseArrayPipe) identifiers?: string[],
+    @Query('identifiers', ParseNftArrayPipe) identifiers?: string[],
     @Query('type') type?: NftType,
     @Query('collection', ParseCollectionPipe) collection?: string,
     @Query('name') name?: string,
@@ -98,7 +98,7 @@ export class NftController {
   @ApiQuery({ name: 'after', description: 'Return all NFTs after given timestamp', required: false, type: Number })
   async getNftCount(
     @Query('search') search?: string,
-    @Query('identifiers', ParseArrayPipe) identifiers?: string[],
+    @Query('identifiers', ParseNftArrayPipe) identifiers?: string[],
     @Query('type') type?: NftType,
     @Query('collection', ParseCollectionPipe) collection?: string,
     @Query('name') name?: string,
@@ -118,7 +118,7 @@ export class NftController {
   @ApiExcludeEndpoint()
   async getNftCountAlternative(
     @Query('search') search?: string,
-    @Query('identifiers', ParseArrayPipe) identifiers?: string[],
+    @Query('identifiers', ParseNftArrayPipe) identifiers?: string[],
     @Query('type') type?: NftType,
     @Query('collection', ParseCollectionPipe) collection?: string,
     @Query('name') name?: string,
