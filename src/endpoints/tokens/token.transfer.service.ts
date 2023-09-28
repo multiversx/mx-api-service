@@ -248,9 +248,21 @@ export class TokenTransferService {
 
   private getTransactionTransferValueOperation(txHash: string, log: TransactionLog, event: TransactionLogEvent, action: TransactionOperationAction): TransactionOperation | undefined {
     try {
-      const sender = BinaryUtils.base64ToAddress(event.topics[0]);
-      const receiver = BinaryUtils.base64ToAddress(event.topics[1]);
-      const value = BinaryUtils.base64ToBigInt(event.topics[2]).toString();
+      let sender: string;
+      let receiver: string;
+      let value: string;
+
+      if (event.topics.length === 2) {
+        sender = event.address;
+        receiver = BinaryUtils.base64ToAddress(event.topics[1]);
+        value = BinaryUtils.base64ToBigInt(event.topics[0]).toString();
+      } else if (event.topics.length === 3) {
+        sender = BinaryUtils.base64ToAddress(event.topics[0]);
+        receiver = BinaryUtils.base64ToAddress(event.topics[1]);
+        value = BinaryUtils.base64ToBigInt(event.topics[2]).toString();
+      } else {
+        throw new Error(`Unrecognized topic count when interpreting transferValue event`);
+      }
 
       const operation = new TransactionOperation();
       operation.id = log.id ?? '';
