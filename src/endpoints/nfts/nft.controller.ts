@@ -9,7 +9,7 @@ import { NftType } from "./entities/nft.type";
 import { NftService } from "./nft.service";
 import { QueryPagination } from 'src/common/entities/query.pagination';
 import { NftQueryOptions } from './entities/nft.query.options';
-import { ParseAddressPipe, ParseBoolPipe, ParseArrayPipe, ParseIntPipe, ParseNftPipe, ParseCollectionPipe, ApplyComplexity, ParseAddressArrayPipe, ParseBlockHashPipe, ParseEnumPipe, ParseRecordPipe, ParseNftArrayPipe } from '@multiversx/sdk-nestjs-common';
+import { ParseAddressPipe, ParseBoolPipe, ParseArrayPipe, ParseIntPipe, ParseNftPipe, ParseCollectionPipe, ApplyComplexity, ParseAddressArrayPipe, ParseBlockHashPipe, ParseEnumPipe, ParseRecordPipe, ParseNftArrayPipe, ParseCollectionArrayPipe } from '@multiversx/sdk-nestjs-common';
 import { TransactionDetailed } from '../transactions/entities/transaction.detailed';
 import { TransactionStatus } from '../transactions/entities/transaction.status';
 import { SortOrder } from 'src/common/entities/sort.order';
@@ -37,6 +37,7 @@ export class NftController {
   @ApiQuery({ name: 'identifiers', description: 'Search by token identifiers, comma-separated', required: false })
   @ApiQuery({ name: 'type', description: 'Filter by type (NonFungibleESDT/SemiFungibleESDT/MetaESDT)', required: false })
   @ApiQuery({ name: 'collection', description: 'Get all tokens by token collection', required: false })
+  @ApiQuery({ name: 'collections', description: 'Get all tokens by token collections, comma-separated', required: false })
   @ApiQuery({ name: 'name', description: 'Get all nfts by name', required: false })
   @ApiQuery({ name: 'tags', description: 'Filter by one or more comma-separated tags', required: false })
   @ApiQuery({ name: 'creator', description: 'Return all NFTs associated with a given creator', required: false })
@@ -57,6 +58,7 @@ export class NftController {
     @Query('identifiers', ParseNftArrayPipe) identifiers?: string[],
     @Query('type') type?: NftType,
     @Query('collection', ParseCollectionPipe) collection?: string,
+    @Query('collections', ParseCollectionArrayPipe) collections?: string[],
     @Query('name') name?: string,
     @Query('tags', ParseArrayPipe) tags?: string[],
     @Query('creator', ParseAddressPipe) creator?: string,
@@ -75,7 +77,7 @@ export class NftController {
 
     return await this.nftService.getNfts(
       new QueryPagination({ from, size }),
-      new NftFilter({ search, identifiers, type, collection, name, tags, creator, hasUris, isWhitelistedStorage, isNsfw, traits, before, after }),
+      new NftFilter({ search, identifiers, type, collection, collections, name, tags, creator, hasUris, isWhitelistedStorage, isNsfw, traits, before, after }),
       options
     );
   }
@@ -87,6 +89,7 @@ export class NftController {
   @ApiQuery({ name: 'identifiers', description: 'Search by token identifiers, comma-separated', required: false })
   @ApiQuery({ name: 'type', description: 'Filter by type (NonFungibleESDT/SemiFungibleESDT/MetaESDT)', required: false })
   @ApiQuery({ name: 'collection', description: 'Get all tokens by token collection', required: false })
+  @ApiQuery({ name: 'collections', description: 'Get all tokens by token collections, comma-separated', required: false })
   @ApiQuery({ name: 'name', description: 'Get all nfts by name', required: false })
   @ApiQuery({ name: 'tags', description: 'Filter by one or more comma-separated tags', required: false })
   @ApiQuery({ name: 'creator', description: 'Return all NFTs associated with a given creator', required: false })
@@ -101,6 +104,7 @@ export class NftController {
     @Query('identifiers', ParseNftArrayPipe) identifiers?: string[],
     @Query('type') type?: NftType,
     @Query('collection', ParseCollectionPipe) collection?: string,
+    @Query('collections', ParseCollectionArrayPipe) collections?: string[],
     @Query('name') name?: string,
     @Query('tags', ParseArrayPipe) tags?: string[],
     @Query('creator', ParseAddressPipe) creator?: string,
@@ -111,7 +115,7 @@ export class NftController {
     @Query('before', new ParseIntPipe) before?: number,
     @Query('after', new ParseIntPipe) after?: number,
   ): Promise<number> {
-    return await this.nftService.getNftCount(new NftFilter({ search, identifiers, type, collection, name, tags, creator, isWhitelistedStorage, hasUris, isNsfw, traits, before, after }));
+    return await this.nftService.getNftCount(new NftFilter({ search, identifiers, type, collection, collections, name, tags, creator, isWhitelistedStorage, hasUris, isNsfw, traits, before, after }));
   }
 
   @Get("/nfts/c")
@@ -121,6 +125,7 @@ export class NftController {
     @Query('identifiers', ParseNftArrayPipe) identifiers?: string[],
     @Query('type') type?: NftType,
     @Query('collection', ParseCollectionPipe) collection?: string,
+    @Query('collections', ParseCollectionArrayPipe) collections?: string[],
     @Query('name') name?: string,
     @Query('tags', ParseArrayPipe) tags?: string[],
     @Query('creator', ParseAddressPipe) creator?: string,
@@ -131,7 +136,7 @@ export class NftController {
     @Query('before', new ParseIntPipe) before?: number,
     @Query('after', new ParseIntPipe) after?: number,
   ): Promise<number> {
-    return await this.nftService.getNftCount(new NftFilter({ search, identifiers, type, collection, name, tags, creator, isWhitelistedStorage, hasUris, isNsfw, traits, before, after }));
+    return await this.nftService.getNftCount(new NftFilter({ search, identifiers, type, collection, collections, name, tags, creator, isWhitelistedStorage, hasUris, isNsfw, traits, before, after }));
   }
 
   @Get('/nfts/:identifier')
