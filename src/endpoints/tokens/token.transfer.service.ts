@@ -98,7 +98,7 @@ export class TokenTransferService {
 
     const operations: TransactionOperation[] = [];
     for (const scResult of scResults) {
-      if (scResult.value === undefined || scResult.value === '0') {
+      if (scResult.nonce !== 0 || scResult.value === undefined || scResult.value === '0') {
         continue;
       }
 
