@@ -7,7 +7,7 @@ import { Nft } from "../nfts/entities/nft";
 import { NftService } from "../nfts/nft.service";
 import { NftFilter } from "../nfts/entities/nft.filter";
 import { NftQueryOptions } from "../nfts/entities/nft.query.options";
-import { ParseAddressPipe, ParseArrayPipe, ParseCollectionPipe, ParseBoolPipe, ParseEnumArrayPipe, ParseIntPipe, ApplyComplexity, ParseAddressArrayPipe, ParseBlockHashPipe, ParseEnumPipe, ParseRecordPipe, ParseNftArrayPipe } from '@multiversx/sdk-nestjs-common';
+import { ParseAddressPipe, ParseArrayPipe, ParseCollectionPipe, ParseBoolPipe, ParseEnumArrayPipe, ParseIntPipe, ApplyComplexity, ParseAddressArrayPipe, ParseBlockHashPipe, ParseEnumPipe, ParseRecordPipe, ParseNftArrayPipe, ParseCollectionArrayPipe } from '@multiversx/sdk-nestjs-common';
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { CollectionFilter } from "./entities/collection.filter";
 import { CollectionAccount } from "./entities/collection.account";
@@ -58,7 +58,7 @@ export class CollectionController {
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
     @Query('search') search?: string,
-    @Query('identifiers', ParseArrayPipe) identifiers?: string[],
+    @Query('identifiers', ParseCollectionArrayPipe) identifiers?: string[],
     @Query('type', new ParseEnumArrayPipe(NftType)) type?: NftType[],
     @Query('creator', ParseAddressPipe) creator?: string,
     @Query('before', new ParseIntPipe) before?: number,
