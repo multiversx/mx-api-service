@@ -126,7 +126,7 @@ export class Transaction {
   @ApiProperty({ type: String, nullable: true })
   guardianSignature: string | undefined = undefined;
 
-  @Field(() => String, { description: "Is relayed transaction.", nullable: true })
+  @Field(() => Boolean, { description: "Is relayed transaction.", nullable: true })
   @ApiProperty({ type: String, nullable: true })
   isRelayed: boolean | undefined = undefined;
 

@@ -18,7 +18,7 @@ import { GatewayComponentRequest } from 'src/common/gateway/entities/gateway.com
 import { TransactionActionService } from './transaction-action/transaction.action.service';
 import { TransactionDecodeDto } from './entities/dtos/transaction.decode.dto';
 import { TransactionStatus } from './entities/transaction.status';
-import { AddressUtils, Constants, PendingExecuter } from '@multiversx/sdk-nestjs-common';
+import { AddressUtils, BinaryUtils, Constants, PendingExecuter } from '@multiversx/sdk-nestjs-common';
 import { ApiUtils } from "@multiversx/sdk-nestjs-http";
 import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { TransactionUtils } from './transaction.utils';
@@ -175,6 +175,15 @@ export class TransactionService {
       queryOptions.withScResultLogs = queryOptions.withLogs;
       transactions = await this.getExtraDetailsForTransactions(elasticTransactions, transactions, queryOptions);
     }
+
+    transactions = transactions.map(transaction => {
+      const relayedVersion = this.extractRelayedVersion(transaction);
+      if (relayedVersion) {
+        transaction.relayedVersion = relayedVersion;
+      }
+
+      return transaction;
+    });
 
     await this.processTransactions(transactions, {
       withScamInfo: queryOptions?.withScamInfo ?? false,
@@ -539,5 +548,21 @@ export class TransactionService {
         }
       }
     }
+  }
+
+  private extractRelayedVersion(transaction: TransactionDetailed): string | null {
+    if (transaction.isRelayed && transaction.data) {
+      const decodedData = BinaryUtils.base64Decode(transaction.data);
+
+      const relayedMatch = decodedData.match(/relayedTx(V\d+)?/);
+      if (relayedMatch) {
+        if (relayedMatch[1]) {
+          return relayedMatch[1].toLowerCase();
+        } else {
+          return 'v1';
+        }
+      }
+    }
+    return null;
   }
 }
