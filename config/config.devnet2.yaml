@@ -1,17 +1,17 @@
-network: 'mainnet'
+network: 'devnet2'
 metaChainShardId: 4294967295
 api:
   public: true
   private: true
 cron:
   transactionProcessor: true
-  transactionProcessorMaxLookBehind: 1000
+  transactionProcessorMaxLookBehind: 100
   transactionCompleted: false
   transactionCompletedMaxLookBehind: 100
-  transactionBatch: true
+  transactionBatch: false
   transactionBatchMaxLookBehind: 100
   cacheWarmer: true
-  fastWarm: false
+  fastWarm: true
   queueWorker: true
   elasticUpdater: false
   statusChecker: false
@@ -22,13 +22,13 @@ flags:
   useRequestLogging: false
   useVmQueryTracing: false
   processNfts: true
-  indexer-v3: false
+  indexer-v3: true
   collectionPropertiesFromGateway: false
 features:
   eventsNotifier:
     enabled: false
     port: 5674
-    url: 'amqp://guest:guest@127.0.0.1:5672'
+    url: 'amqp://guest:guest@127.0.0.1:5673'
     exchange: 'all_events'
     queue: 'api-process-logs-and-events'
   guestCaching:
@@ -39,13 +39,13 @@ features:
     enabled: false
   marketplace:
     enabled: false
-    serviceUrl: 'https://nfts-graph.multiversx.com/graphql'
+    serviceUrl: 'https://devnet2-nfts-graph.multiversx.com/graphql'
   exchange:
     enabled: false
-    serviceUrl: 'https://graph.xexchange.com/graphql'
+    serviceUrl: 'https://devnet2-graph.xexchange.com/graphql'
   dataApi:
     enabled: false
-    serviceUrl: 'https://data-api.multiversx.com'
+    serviceUrl: 'https://devnet2-data-api.multiversx.com'
   auth:
     enabled: false
     maxExpirySeconds: 86400
@@ -61,25 +61,25 @@ image:
 aws:
   s3KeyId: ''
   s3Secret: ''
-  s3Bucket: 'media.elrond.com'
+  s3Bucket: 'devnet2-media.elrond.com'
   s3Region: ''
 urls:
-  self: 'https://api.multiversx.com'
+  self: 'https://devnet2-api.multiversx.com'
   elastic:
-    - 'https://index.multiversx.com'
+    - 'https://devnet2-index.multiversx.com'
   gateway:
-    - 'https://gateway.multiversx.com'
+    - 'https://devnet2-gateway.multiversx.com'
   verifier: 'https://play-api.multiversx.com'
   redis: '127.0.0.1'
   rabbitmq: 'amqp://127.0.0.1:5672'
-  providers: 'https://delegation-api.multiversx.com/providers'
-  delegation: 'https://delegation-api.multiversx.com'
-  media: 'https://media.elrond.com'
-  nftThumbnails: 'https://media.elrond.com/nfts/thumbnail'
+  providers: 'https://devnet2-delegation-api.multiversx.com/providers'
+  delegation: 'https://devnet2-delegation-api.multiversx.com'
+  media: 'https://devnet2-media.elrond.com'
+  nftThumbnails: 'https://devnet2-media.elrond.com/nfts/thumbnail'
   tmp: '/tmp'
   ipfs: 'https://ipfs.io/ipfs'
-  socket: 'socket-fra.elrond.com'
-  maiarId: 'https://id-api.multiversx.com'
+  socket: 'devnet2-socket-fra.elrond.com'
+  maiarId: 'https://devnet2-id-api.multiversx.com'
 indexer:
   type: 'elastic'
   maxPagination: 10000
@@ -104,8 +104,8 @@ contracts:
   auction: 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqplllst77y4l'
   staking: 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqllls0lczs7'
   delegationManager: 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqylllslmq6y6'
-  delegation: 'erd1qqqqqqqqqqqqqpgqxwakt2g7u9atsnr03gqcgmhcv38pt7mkd94q6shuwt'
-  metabonding: 'erd1qqqqqqqqqqqqqpgq50dge6rrpcra4tp9hl57jl0893a4r2r72jpsk39rjj'
+  delegation: 'erd1qqqqqqqqqqqqqpgqp699jngundfqw07d8jzkepucvpzush6k3wvqyc44rx'
+  metabonding: 'erd1qqqqqqqqqqqqqpgqkg7we73j769ew5we4yyx7uyvnn0nefqgd8ssm6vjc2'
 inflation:
   - 1952123
   - 1746637

@@ -20,7 +20,9 @@ export class TransactionActionEsdtNftRecognizerService implements TransactionAct
 
   async recognize(metadata: TransactionMetadata): Promise<TransactionAction | undefined> {
     return this.recognizeTransfer(metadata) ??
-      await this.recognizeFreeze(metadata);
+      await this.recognizeFreeze(metadata) ??
+      await this.recognizeBurn(metadata);
+
   }
 
   async recognizeFreeze(metadata: TransactionMetadata): Promise<TransactionAction | undefined> {
@@ -52,6 +54,34 @@ export class TransactionActionEsdtNftRecognizerService implements TransactionAct
       },
     };
 
+    return result;
+  }
+
+  async recognizeBurn(metadata: TransactionMetadata): Promise<TransactionAction | undefined> {
+    if (!metadata || metadata.functionName !== 'ESDTNFTBurn') {
+      return undefined;
+    }
+
+    const identifier = BinaryUtils.hexToString(metadata.functionArgs[0]);
+    const value = BinaryUtils.hexToNumber(metadata.functionArgs[2]);
+    const nonce = metadata.functionArgs[1];
+    const tokenProperties = await this.tokenTransferService.getTokenTransferProperties(identifier);
+
+    if (!tokenProperties) {
+      return undefined;
+    }
+
+    const result = new TransactionAction();
+    result.category = TransactionActionCategory.esdtNft;
+    result.name = 'burn';
+    result.description = `Burned token ${identifier}`;
+    result.arguments = {
+      token: {
+        ...tokenProperties,
+        identifier: `${identifier}-${nonce}`,
+        value: value,
+      },
+    };
     return result;
   }
 

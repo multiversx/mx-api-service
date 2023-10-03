@@ -11,15 +11,6 @@ export class ApiConfigService {
     return this.configService.get<T>(configKey);
   }
 
-  getApiUrls(): string[] {
-    const apiUrls = this.configService.get<string[]>('urls.api');
-    if (!apiUrls) {
-      throw new Error('No API urls present');
-    }
-
-    return apiUrls;
-  }
-
   getSelfUrl(): string {
     const selfUrl = this.configService.get<string>('urls.self');
     if (!selfUrl) {

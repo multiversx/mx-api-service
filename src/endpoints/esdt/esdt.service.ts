@@ -219,6 +219,7 @@ export class EsdtService {
       canTransferNFTCreateRole: elasticProperties.properties?.canTransferNFTCreateRole ?? false,
       NFTCreateStopped: elasticProperties.properties?.NFTCreateStopped ?? false,
       isPaused: elasticProperties.properties?.isPaused ?? false,
+      timestamp: elasticProperties.timestamp,
     });
 
     if (elasticProperties.type === 'FungibleESDT') {

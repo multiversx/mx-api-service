@@ -77,4 +77,25 @@ export class UsernameService {
 
     return address;
   }
+
+  getUsernameRedirectRoute(address: string, withGuardianInfo: boolean | undefined) {
+    const params: {} = {
+      withGuardianInfo,
+    };
+
+    const paramArray = [];
+
+    for (const [key, value] of Object.entries(params)) {
+      if (value) {
+        paramArray.push(`${key}=${value}`);
+      }
+    }
+
+    let route = `/accounts/${address}`;
+    if (paramArray.length > 0) {
+      route += '?' + paramArray.join('&');
+    }
+
+    return route;
+  }
 }

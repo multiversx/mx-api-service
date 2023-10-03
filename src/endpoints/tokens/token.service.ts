@@ -37,6 +37,7 @@ import { TokenType } from "src/common/indexer/entities";
 import { TokenAssetsPriceSourceType } from "src/common/assets/entities/token.assets.price.source.type";
 import { DataApiService } from "src/common/data-api/data-api.service";
 import { TrieOperationsTimeoutError } from "../esdt/exceptions/trie.operations.timeout.error";
+import { TokenSupplyOptions } from "./entities/token.supply.options";
 
 @Injectable()
 export class TokenService {
@@ -62,7 +63,7 @@ export class TokenService {
     return tokens.find(x => x.identifier === identifier) !== undefined;
   }
 
-  async getToken(identifier: string): Promise<TokenDetailed | undefined> {
+  async getToken(identifier: string, supplyOptions?: TokenSupplyOptions): Promise<TokenDetailed | undefined> {
     const tokens = await this.getAllTokens();
     let token = tokens.find(x => x.identifier === identifier);
 
@@ -78,7 +79,7 @@ export class TokenService {
 
     await this.applyTickerFromAssets(token);
 
-    await this.applySupply(token);
+    await this.applySupply(token, supplyOptions);
 
     if (token.type === TokenType.FungibleESDT) {
       token.roles = await this.getTokenRoles(identifier);
@@ -497,11 +498,20 @@ export class TokenService {
     return addressRoles;
   }
 
-  async applySupply(token: TokenDetailed): Promise<void> {
+  async applySupply(token: TokenDetailed, supplyOptions?: TokenSupplyOptions): Promise<void> {
     const supply = await this.esdtService.getTokenSupply(token.identifier);
+    const denominated = supplyOptions && supplyOptions.denominated;
 
-    token.supply = NumberUtils.denominate(BigInt(supply.totalSupply), token.decimals).toFixed();
-    token.circulatingSupply = NumberUtils.denominate(BigInt(supply.circulatingSupply), token.decimals).toFixed();
+    if (denominated === true) {
+      token.supply = NumberUtils.denominate(BigInt(supply.totalSupply), token.decimals);
+      token.circulatingSupply = NumberUtils.denominate(BigInt(supply.circulatingSupply), token.decimals);
+    } else if (denominated === false) {
+      token.supply = supply.totalSupply;
+      token.circulatingSupply = supply.circulatingSupply;
+    } else {
+      token.supply = NumberUtils.denominate(BigInt(supply.totalSupply), token.decimals).toFixed();
+      token.circulatingSupply = NumberUtils.denominate(BigInt(supply.circulatingSupply), token.decimals).toFixed();
+    }
 
     if (supply.minted) {
       token.minted = supply.minted;
@@ -516,16 +526,28 @@ export class TokenService {
     }
   }
 
-  async getTokenSupply(identifier: string, denominated: boolean | undefined = undefined): Promise<TokenSupplyResult | undefined> {
+  async getTokenSupply(identifier: string, supplyOptions?: TokenSupplyOptions): Promise<TokenSupplyResult | undefined> {
+    let totalSupply: string | number;
+    let circulatingSupply: string | number;
+
     const properties = await this.getTokenProperties(identifier);
     if (!properties) {
       return undefined;
     }
 
     const result = await this.esdtService.getTokenSupply(identifier);
+    const denominated = supplyOptions && supplyOptions.denominated;
 
-    const totalSupply = NumberUtils.denominateString(result.totalSupply, properties.decimals);
-    const circulatingSupply = NumberUtils.denominateString(result.circulatingSupply, properties.decimals);
+    if (denominated === true) {
+      totalSupply = NumberUtils.denominateString(result.totalSupply, properties.decimals);
+      circulatingSupply = NumberUtils.denominateString(result.circulatingSupply, properties.decimals);
+    } else if (denominated === false) {
+      totalSupply = result.totalSupply;
+      circulatingSupply = result.circulatingSupply;
+    } else {
+      totalSupply = NumberUtils.denominateString(result.totalSupply, properties.decimals).toFixed();
+      circulatingSupply = NumberUtils.denominateString(result.circulatingSupply, properties.decimals).toFixed();
+    }
 
     let lockedAccounts = result.lockedAccounts;
     if (lockedAccounts !== undefined) {
@@ -539,8 +561,8 @@ export class TokenService {
     }
 
     return {
-      supply: denominated === true ? totalSupply : totalSupply.toFixed(),
-      circulatingSupply: denominated === true ? circulatingSupply : circulatingSupply.toFixed(),
+      supply: totalSupply,
+      circulatingSupply: circulatingSupply,
       minted: denominated === true && result.minted ? NumberUtils.denominateString(result.minted, properties.decimals) : result.minted,
       burnt: denominated === true && result.burned ? NumberUtils.denominateString(result.burned, properties.decimals) : result.burned,
       initialMinted: denominated === true && result.initialMinted ? NumberUtils.denominateString(result.initialMinted, properties.decimals) : result.initialMinted,

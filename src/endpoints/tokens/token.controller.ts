@@ -100,12 +100,15 @@ export class TokenController {
 
   @Get('/tokens/:identifier')
   @ApiOperation({ summary: 'Token', description: 'Returns token details based on a specific token identifier' })
+  @ApiQuery({ name: 'denominated', description: 'Return results denominated', required: false })
   @ApiOkResponse({ type: TokenDetailed })
   @ApiNotFoundResponse({ description: 'Token not found' })
   async getToken(
-    @Param('identifier', ParseTokenPipe) identifier: string
+    @Param('identifier', ParseTokenPipe) identifier: string,
+    @Query('denominated', new ParseBoolPipe) denominated?: boolean,
   ): Promise<TokenDetailed> {
-    const token = await this.tokenService.getToken(identifier);
+    const supplyOptions = { denominated };
+    const token = await this.tokenService.getToken(identifier, supplyOptions);
     if (token === undefined) {
       throw new NotFoundException('Token not found');
     }
@@ -127,7 +130,7 @@ export class TokenController {
       throw new HttpException('Token not found', HttpStatus.NOT_FOUND);
     }
 
-    const getSupplyResult = await this.tokenService.getTokenSupply(identifier, denominated);
+    const getSupplyResult = await this.tokenService.getTokenSupply(identifier, { denominated });
     if (!getSupplyResult) {
       throw new NotFoundException('Token not found');
     }
