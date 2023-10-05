@@ -13,6 +13,7 @@ import { AddressUtils, RoundUtils } from "@multiversx/sdk-nestjs-common";
 import { ApiUtils } from "@multiversx/sdk-nestjs-http";
 import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { OriginLogger } from "@multiversx/sdk-nestjs-common";
+import { ProviderStake } from "./entities/provider.stake";
 
 @Injectable()
 export class StakeService {
@@ -115,12 +116,17 @@ export class StakeService {
       return new StakeTopup();
     }
 
+    const auctionContractAddress = this.apiConfigService.getAuctionContractAddress();
+    if (!auctionContractAddress) {
+      return new StakeTopup();
+    }
+
     let response: string[] | undefined;
     try {
       response = await this.vmQueryService.vmQuery(
-        this.apiConfigService.getAuctionContractAddress(),
+        auctionContractAddress,
         'getTotalStakedTopUpStakedBlsKeys',
-        this.apiConfigService.getAuctionContractAddress(),
+        auctionContractAddress,
         [AddressUtils.bech32Decode(address)],
       );
     } catch (error) {
@@ -181,16 +187,24 @@ export class StakeService {
   }
 
   async getStakeForAddress(address: string) {
+    const auctionContractAddress = this.apiConfigService.getAuctionContractAddress();
+    if (!auctionContractAddress) {
+      return new ProviderStake({
+        totalStaked: '0',
+      });
+    }
+
+
     const hexAddress = AddressUtils.bech32Decode(address);
 
     const [totalStakedEncoded, unStakedTokensListEncoded] = await Promise.all([
       this.vmQueryService.vmQuery(
-        this.apiConfigService.getAuctionContractAddress(),
+        auctionContractAddress,
         'getTotalStaked',
         address,
       ),
       this.vmQueryService.vmQuery(
-        this.apiConfigService.getAuctionContractAddress(),
+        auctionContractAddress,
         'getUnStakedTokensList',
         address,
         [hexAddress],

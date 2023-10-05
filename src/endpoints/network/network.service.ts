@@ -171,11 +171,16 @@ export class NetworkService {
   }
 
   private async getAuctionContractBalance(): Promise<BigInt> {
-    const addressDetails = await this.gatewayService.getAddressDetails(this.apiConfigService.getAuctionContractAddress());
+    const auctionContractAddress = this.apiConfigService.getAuctionContractAddress();
+    if (!auctionContractAddress) {
+      return BigInt(0);
+    }
+
+    const addressDetails = await this.gatewayService.getAddressDetails(auctionContractAddress);
 
     const balance = addressDetails?.account?.balance;
     if (!balance) {
-      throw new Error(`Could not fetch balance from auction contract address '${this.apiConfigService.getAuctionContractAddress()}'`);
+      throw new Error(`Could not fetch balance from auction contract address '${auctionContractAddress}'`);
     }
 
     return BigInt(balance);

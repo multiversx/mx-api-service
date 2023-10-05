@@ -94,13 +94,8 @@ export class ApiConfigService {
     return address;
   }
 
-  getAuctionContractAddress(): string {
-    const address = this.configService.get<string>('contracts.auction');
-    if (!address) {
-      throw new Error('No auction contract present');
-    }
-
-    return address;
+  getAuctionContractAddress(): string | undefined {
+    return this.configService.get<string>('contracts.auction');
   }
 
   getStakingContractAddress(): string {

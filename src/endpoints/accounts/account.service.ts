@@ -388,10 +388,15 @@ export class AccountService {
   }
 
   private async getBlsKeysStatusForPublicKey(publicKey: string) {
+    const auctionContractAddress = this.apiConfigService.getAuctionContractAddress();
+    if (!auctionContractAddress) {
+      return undefined;
+    }
+
     return await this.vmQueryService.vmQuery(
-      this.apiConfigService.getAuctionContractAddress(),
+      auctionContractAddress,
       'getBlsKeysStatus',
-      this.apiConfigService.getAuctionContractAddress(),
+      auctionContractAddress,
       [publicKey],
     );
   }
