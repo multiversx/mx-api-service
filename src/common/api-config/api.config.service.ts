@@ -107,13 +107,8 @@ export class ApiConfigService {
     return address;
   }
 
-  getDelegationContractAddress(): string {
-    const address = this.configService.get<string>('contracts.delegation');
-    if (!address) {
-      throw new Error('No delegation contract present');
-    }
-
-    return address;
+  getDelegationContractAddress(): string | undefined {
+    return this.configService.get<string>('contracts.delegation');
   }
 
   getMetabondingContractAddress(): string | undefined {

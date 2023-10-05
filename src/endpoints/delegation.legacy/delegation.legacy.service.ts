@@ -24,13 +24,18 @@ export class DelegationLegacyService {
   }
 
   async getDelegationRaw(): Promise<DelegationLegacy> {
+    const delegationContractAddress = this.apiConfigService.getDelegationContractAddress();
+    if (!delegationContractAddress) {
+      return new DelegationLegacy();
+    }
+
     const [totalStakeByTypeEncoded, numUsersEncoded] = await Promise.all([
       this.vmQueryService.vmQuery(
-        this.apiConfigService.getDelegationContractAddress(),
+        delegationContractAddress,
         'getTotalStakeByType',
       ),
       this.vmQueryService.vmQuery(
-        this.apiConfigService.getDelegationContractAddress(),
+        delegationContractAddress,
         'getNumUsers',
       ),
     ]);
@@ -56,17 +61,22 @@ export class DelegationLegacyService {
   }
 
   async getDelegationForAddress(address: string): Promise<AccountDelegationLegacy> {
+    const delegationContractAddress = this.apiConfigService.getDelegationContractAddress();
+    if (!delegationContractAddress) {
+      return new AccountDelegationLegacy();
+    }
+
     const publicKey = AddressUtils.bech32Decode(address);
 
     const [userStakeByTypeEncoded, claimableRewardsEncoded] = await Promise.all([
       this.vmQueryService.vmQuery(
-        this.apiConfigService.getDelegationContractAddress(),
+        delegationContractAddress,
         'getUserStakeByType',
         undefined,
         [publicKey]
       ),
       this.vmQueryService.vmQuery(
-        this.apiConfigService.getDelegationContractAddress(),
+        delegationContractAddress,
         'getClaimableRewards',
         undefined,
         [publicKey]

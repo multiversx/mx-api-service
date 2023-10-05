@@ -344,6 +344,10 @@ export class AccountService {
   async getDeferredAccount(address: string): Promise<AccountDeferred[]> {
     const publicKey = AddressUtils.bech32Decode(address);
     const delegationContractAddress = this.apiConfigService.getDelegationContractAddress();
+    if (!delegationContractAddress) {
+      return [];
+    }
+
     const delegationContractShardId = AddressUtils.computeShard(AddressUtils.bech32Decode(delegationContractAddress), await this.protocolService.getShardCount());
 
     const [

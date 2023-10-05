@@ -198,13 +198,18 @@ export class NetworkService {
   }
 
   private async getTotalWaitingStake(): Promise<BigInt> {
+    const delegationContractAddress = this.apiConfigService.getDelegationContractAddress();
+    if (!delegationContractAddress) {
+      return BigInt(0);
+    }
+
     const vmQueryResult = await this.vmQueryService.vmQuery(
-      this.apiConfigService.getDelegationContractAddress(),
+      delegationContractAddress,
       'getTotalStakeByType',
     );
 
     if (!vmQueryResult || vmQueryResult.length < 2) {
-      throw new Error(`Could not fetch getTotalStakeByType from delegation contract address '${this.apiConfigService.getDelegationContractAddress()}'`);
+      throw new Error(`Could not fetch getTotalStakeByType from delegation contract address '${delegationContractAddress}'`);
     }
 
     const totalWaitingStakeBase64 = vmQueryResult[1];
