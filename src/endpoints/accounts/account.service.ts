@@ -406,8 +406,13 @@ export class AccountService {
   }
 
   private async getRewardAddressForNode(blsKey: string): Promise<string> {
+    const stakingContractAddress = this.apiConfigService.getStakingContractAddress();
+    if (!stakingContractAddress) {
+      return '';
+    }
+
     const [encodedRewardsPublicKey] = await this.vmQueryService.vmQuery(
-      this.apiConfigService.getStakingContractAddress(),
+      stakingContractAddress,
       'getRewardAddress',
       undefined,
       [blsKey],
@@ -528,13 +533,18 @@ export class AccountService {
   }
 
   async updateQueuedNodes(nodes: AccountKey[]) {
+    const stakingContractAddress = this.apiConfigService.getStakingContractAddress();
+    if (!stakingContractAddress) {
+      return;
+    }
+
     const queuedNodes: string[] = nodes
       .filter((node: AccountKey) => node.status === 'queued')
       .map(({ blsKey }) => blsKey);
 
     if (queuedNodes.length) {
       const [queueSizeEncoded] = await this.vmQueryService.vmQuery(
-        this.apiConfigService.getStakingContractAddress(),
+        stakingContractAddress,
         'getQueueSize',
       );
 
@@ -544,7 +554,7 @@ export class AccountService {
         const queueIndexes = await Promise.all(
           queuedNodes.map((blsKey: string) =>
             this.vmQueryService.vmQuery(
-              this.apiConfigService.getStakingContractAddress(),
+              stakingContractAddress,
               'getQueueIndex',
               this.apiConfigService.getAuctionContractAddress(),
               [blsKey],

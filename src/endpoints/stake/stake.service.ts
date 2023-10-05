@@ -53,9 +53,18 @@ export class StakeService {
   }
 
   async getValidators() {
+    const stakingContractAddress = this.apiConfigService.getStakingContractAddress();
+    if (!stakingContractAddress) {
+      return {
+        totalValidators: 0,
+        activeValidators: 0,
+        queueSize: 0,
+      };
+    }
+
     const [[queueSize], nodes] = await Promise.all([
       this.vmQueryService.vmQuery(
-        this.apiConfigService.getStakingContractAddress(),
+        stakingContractAddress,
         'getQueueSize',
       ),
       this.nodeService.getAllNodes(),

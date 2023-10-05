@@ -401,8 +401,13 @@ export class NodeService {
       return undefined;
     }
 
+    const stakingContractAddress = this.apiConfigService.getStakingContractAddress();
+    if (!stakingContractAddress) {
+      return undefined;
+    }
+
     const result = await this.vmQueryService.vmQuery(
-      this.apiConfigService.getStakingContractAddress(),
+      stakingContractAddress,
       'getOwner',
       auctionContractAddress,
       [bls],
@@ -453,8 +458,13 @@ export class NodeService {
       return [];
     }
 
+    const stakingContractAddress = this.apiConfigService.getStakingContractAddress();
+    if (!stakingContractAddress) {
+      return [];
+    }
+
     const queueEncoded = await this.vmQueryService.vmQuery(
-      this.apiConfigService.getStakingContractAddress(),
+      stakingContractAddress,
       'getQueueRegisterNonceAndRewardAddress',
       auctionContractAddress,
     );
