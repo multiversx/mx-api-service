@@ -176,7 +176,7 @@ describe('Transaction Service', () => {
 
       if (result?.action?.arguments) {
         expect(result.action.name).toStrictEqual('burn');
-        expect(result.action.arguments.value).toStrictEqual(1);
+        expect(result.action.arguments.token.value).toStrictEqual(1);
       }
     });
 

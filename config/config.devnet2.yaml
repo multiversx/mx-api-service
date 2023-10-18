@@ -65,11 +65,6 @@ aws:
   s3Region: ''
 urls:
   self: 'https://devnet2-api.multiversx.com'
-  api:
-    - 'https://devnet2-api.multiversx.com'
-    - 'https://testnet-api.multiversx.com'
-    - 'https://api.multiversx.com'
-    - 'http://localhost:3001'
   elastic:
     - 'https://devnet2-index.multiversx.com'
   gateway:

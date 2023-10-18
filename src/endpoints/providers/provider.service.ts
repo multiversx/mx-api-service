@@ -499,11 +499,6 @@ export class ProviderService {
       'getNumNodes'
     );
 
-    return Number(this.numberDecode(numNodesBase64));
-  }
-
-  numberDecode(encoded: string) {
-    const hex = Buffer.from(encoded, 'base64').toString('hex');
-    return BigInt(hex ? '0x' + hex : hex).toString();
+    return Number(BinaryUtils.base64ToBigInt(numNodesBase64));
   }
 }

@@ -4,7 +4,7 @@ export enum MexPairState {
   active = 'active',
   inactive = 'inactive',
   paused = 'paused',
-  partial = 'partial'
+  partial = 'partial',
 }
 
 registerEnumType(MexPairState, {

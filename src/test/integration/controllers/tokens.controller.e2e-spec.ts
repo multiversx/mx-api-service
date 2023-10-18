@@ -215,14 +215,14 @@ describe("Tokens Controller", () => {
         });
     });
 
-    it('should a list of accounts that can perform various actions on a specific token', async () => {
+    it('should return a list of accounts that can perform various actions on a specific token', async () => {
       const identifier: string = 'MEX-455c57';
 
       await request(app.getHttpServer())
         .get(`${path}/${identifier}/roles`)
         .expect(200)
         .then(res => {
-          expect(res.body).toHaveLength(20);
+          expect(res.body).toHaveLength(21);
 
           for (const item of res.body) {
             expect(item.address).toBeDefined();

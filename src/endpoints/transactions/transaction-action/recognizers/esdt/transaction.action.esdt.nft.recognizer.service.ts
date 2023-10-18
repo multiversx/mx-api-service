@@ -62,9 +62,10 @@ export class TransactionActionEsdtNftRecognizerService implements TransactionAct
       return undefined;
     }
 
-    const tokenIdentifier = BinaryUtils.hexToString(metadata.functionArgs[0]);
+    const identifier = BinaryUtils.hexToString(metadata.functionArgs[0]);
     const value = BinaryUtils.hexToNumber(metadata.functionArgs[2]);
-    const tokenProperties = await this.tokenTransferService.getTokenTransferProperties(tokenIdentifier);
+    const nonce = metadata.functionArgs[1];
+    const tokenProperties = await this.tokenTransferService.getTokenTransferProperties(identifier);
 
     if (!tokenProperties) {
       return undefined;
@@ -73,12 +74,13 @@ export class TransactionActionEsdtNftRecognizerService implements TransactionAct
     const result = new TransactionAction();
     result.category = TransactionActionCategory.esdtNft;
     result.name = 'burn';
-    result.description = `Burned token ${tokenIdentifier}`;
+    result.description = `Burned token ${identifier}`;
     result.arguments = {
       token: {
         ...tokenProperties,
+        identifier: `${identifier}-${nonce}`,
+        value: value,
       },
-      value: value,
     };
     return result;
   }
