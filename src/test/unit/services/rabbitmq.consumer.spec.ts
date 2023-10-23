@@ -37,6 +37,10 @@ describe('RabbitMqConsumer', () => {
     expect(service).toBeDefined();
   });
 
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
   it('should call the appropriate handler based on the event identifier', async () => {
     const event1: NotifierEvent = {
       identifier: NotifierEventIdentifier.ESDTNFTCreate,
