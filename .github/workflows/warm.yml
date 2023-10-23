@@ -1,0 +1,30 @@
+name: Warm
+
+on:
+  push:
+    branches: [main, development]
+  pull_request:
+    branches: [main, development]
+
+jobs:
+  warm:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Use Node.js 16.x
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16.x
+          cache: 'npm'
+      - run: npm ci
+      - name: Initialize
+        run: npm run init
+      - name: Warm
+        run: |
+          if ${{ github.ref == 'refs/heads/main' }}; then
+            npm run test:e2e:warm
+          else
+            npm run test:e2e:warm:mocked
+          fi
+        shell: bash
