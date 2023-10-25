@@ -376,7 +376,7 @@ describe('Account Service', () => {
       const address = 'erd1qqqqqqqqqqqqqpgqa0fsfshnff4n76jhcye6k7uvd7qacsq42jpsp6shh2';
 
       jest.spyOn(indexerService, 'getScDeploy').mockResolvedValue(
-        Promise.resolve({ deployTxHash: '', address: address, contract: address, deployer: address, timestamp: 1620000000, upgrades: [] }));
+        Promise.resolve({ deployTxHash: '', address: address, contract: address, initialCodeHash: '', deployer: address, timestamp: 1620000000, upgrades: [] }));
 
       const result = await service.getAccountDeployedAtRaw(address);
 
@@ -390,7 +390,7 @@ describe('Account Service', () => {
       const timestamp = 1620000000;
 
       jest.spyOn(indexerService, 'getScDeploy').mockResolvedValue(
-        Promise.resolve({ deployTxHash: txHash, address: address, contract: address, deployer: address, timestamp: 1620000000, upgrades: [] }));
+        Promise.resolve({ deployTxHash: txHash, address: address, contract: address, initialCodeHash: 'kUVJtdwvHG2sCTi9l2uneSONUVonWfgHCK69gdB+52o=', deployer: address, timestamp: 1620000000, upgrades: [] }));
 
       jest.spyOn(indexerService, 'getTransaction').mockResolvedValue({
         hash: 'ca7acccc20a07695ba5657aac9c6e97b50fdcc9a77763447b9003721812271c7',
@@ -433,7 +433,7 @@ describe('Account Service', () => {
       const txHash = "invalid-tx";
 
       jest.spyOn(indexerService, 'getScDeploy').mockResolvedValue(
-        Promise.resolve({ deployTxHash: txHash, address: address, contract: address, deployer: address, timestamp: 1620000000, upgrades: [] }));
+        Promise.resolve({ deployTxHash: txHash, address: address, contract: address, initialCodeHash: '', deployer: address, timestamp: 1620000000, upgrades: [] }));
       jest.spyOn(indexerService, 'getTransaction').mockResolvedValue(null);
 
       const result = await service.getAccountDeployedAtRaw(address);
@@ -462,6 +462,7 @@ describe('Account Service', () => {
   describe('getAccountDeployedTxHashRaw', () => {
     const address = 'erd1qga7ze0l03chfgru0a32wxqf2226nzrxnyhzer9lmudqhjgy7ycqjjyknz';
     const txHash = 'ca7acccc20a07695ba5657aac9c6e97b50fdcc9a77763447b9003721812271c7';
+    const initialCodeHash = 'kUVJtdwvHG2sCTi9l2uneSONUVonWfgHCK69gdB+52o=';
 
     it('should return null if no scDeploy is found', async () => {
       jest.spyOn(indexerService, 'getScDeploy').mockResolvedValue(undefined);
@@ -476,7 +477,7 @@ describe('Account Service', () => {
       jest.spyOn(indexerService, 'getScDeploy').mockResolvedValue(
         Promise.resolve({
           deployTxHash: txHash,
-          address: address, contract: address, deployer: address, timestamp: 1620000000, upgrades: [],
+          address: address, contract: address, initialCodeHash: initialCodeHash, deployer: address, timestamp: 1620000000, upgrades: [],
         }));
 
       const result = await service.getAccountDeployedTxHashRaw(address);
@@ -668,26 +669,31 @@ describe('Account Service', () => {
       address: 'erd1qqqqqqqqqqqqqpgqeel2kumf0r8ffyhth7pqdujjat9nx0862jpsg2pqaq',
       deployTxHash: '32be840b215a7343ca7c0cbd35c517fd2c04aba22e4465ee1146d59dc7359cd3',
       deployer: 'erd1qqqqqqqqqqqqqpgqq66xk9gfr4esuhem3jru86wg5hvp33a62jps2fy57p',
+      initialCodeHash: 'kUVJtdwvHG2sCTi9l2uneSONUVonWfgHCK69gdB',
       timestamp: 1636895604,
       contract: 'erd1qqqqqqqqqqqqqpgqeel2kumf0r8ffyhth7pqdujjat9nx0862jpsg2pqaq',
       upgrades: [
         {
           upgrader: 'erd1qqqqqqqqqqqqqpgqq66xk9gfr4esuhem3jru86wg5hvp33a62jps2fy57p',
+          codeHash: 'WFdobEwmytuddWRc8yVm0Pm1AMwoES5n4yQ0WRjtG2g=',
           upgradeTxHash: '1c8c6b2148f25621fa2c798a2c9a184df61fdd1991aa0af7ea01eb7b89025d2a',
           timestamp: 1638577452,
         },
         {
           upgrader: 'erd1qqqqqqqqqqqqqpgqq66xk9gfr4esuhem3jru86wg5hvp33a62jps2fy57p',
+          codeHash: 'WFdobEwmytuddWRc8yVm0Pm1AMwoES5n4yQ0WRjtG3g=',
           upgradeTxHash: 'fb586bdbdeadab8e7a5d0cf6b4aa815e459614eea357b912de6a9087a7c00ab3',
           timestamp: 1638577752,
         },
         {
           upgrader: 'erd1qqqqqqqqqqqqqpgqq66xk9gfr4esuhem3jru86wg5hvp33a62jps2fy57p',
+          codeHash: 'WFdobEwmytuddWRc8yVm0Pm1AMwoES5n4yQ0WRjtG4g=',
           upgradeTxHash: 'a0a94ee0e8f9c4de12fe35d849d81f7b0885eb203eca33275faf115536290af8',
           timestamp: 1654616658,
         },
         {
           upgradeTxHash: '7af97da5a00e9f927df7f19a095800f381c185a6a0a6d6bca46b3db6235ff1d2',
+          codeHash: 'WFdobEwmytuddWRc8yVm0Pm1AMwoES5n4yQ0WRjtG5g=',
           upgrader: 'erd1qqqqqqqqqqqqqpgqq66xk9gfr4esuhem3jru86wg5hvp33a62jps2fy57p',
           timestamp: 1670612868,
         },
@@ -703,6 +709,7 @@ describe('Account Service', () => {
 
       const upgrades = details.upgrades.map(item => ApiUtils.mergeObjects(new ContractUpgrades(), {
         address: item.upgrader,
+        codeHash: item.codeHash,
         txHash: item.upgradeTxHash,
         timestamp: item.timestamp,
       })).sortedDescending(item => item.timestamp);
@@ -729,26 +736,31 @@ describe('Account Service', () => {
       address: 'erd1qqqqqqqqqqqqqpgqeel2kumf0r8ffyhth7pqdujjat9nx0862jpsg2pqaq',
       deployTxHash: '32be840b215a7343ca7c0cbd35c517fd2c04aba22e4465ee1146d59dc7359cd3',
       deployer: 'erd1qqqqqqqqqqqqqpgqq66xk9gfr4esuhem3jru86wg5hvp33a62jps2fy57p',
+      initialCodeHash: 'kUVJtdwvHG2sCTi9l2uneSONUVonWfgHCK69gdB',
       timestamp: 1636895604,
       contract: 'erd1qqqqqqqqqqqqqpgqeel2kumf0r8ffyhth7pqdujjat9nx0862jpsg2pqaq',
       upgrades: [
         {
           upgrader: 'erd1qqqqqqqqqqqqqpgqq66xk9gfr4esuhem3jru86wg5hvp33a62jps2fy57p',
+          codeHash: 'WFdobEwmytuddWRc8yVm0Pm1AMwoES5n4yQ0WRjtG2g=',
           upgradeTxHash: '1c8c6b2148f25621fa2c798a2c9a184df61fdd1991aa0af7ea01eb7b89025d2a',
           timestamp: 1638577452,
         },
         {
           upgrader: 'erd1qqqqqqqqqqqqqpgqq66xk9gfr4esuhem3jru86wg5hvp33a62jps2fy57p',
+          codeHash: 'WFdobEwmytuddWRc8yVm0Pm1AMwoES5n4yQ0WRjtG3g=',
           upgradeTxHash: 'fb586bdbdeadab8e7a5d0cf6b4aa815e459614eea357b912de6a9087a7c00ab3',
           timestamp: 1638577752,
         },
         {
           upgrader: 'erd1qqqqqqqqqqqqqpgqq66xk9gfr4esuhem3jru86wg5hvp33a62jps2fy57p',
+          codeHash: 'WFdobEwmytuddWRc8yVm0Pm1AMwoES5n4yQ0WRjtG4g=',
           upgradeTxHash: 'a0a94ee0e8f9c4de12fe35d849d81f7b0885eb203eca33275faf115536290af8',
           timestamp: 1654616658,
         },
         {
           upgradeTxHash: '7af97da5a00e9f927df7f19a095800f381c185a6a0a6d6bca46b3db6235ff1d2',
+          codeHash: 'WFdobEwmytuddWRc8yVm0Pm1AMwoES5n4yQ0WRjtG5g=',
           upgrader: 'erd1qqqqqqqqqqqqqpgqq66xk9gfr4esuhem3jru86wg5hvp33a62jps2fy57p',
           timestamp: 1670612868,
         },
