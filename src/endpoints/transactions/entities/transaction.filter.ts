@@ -26,4 +26,5 @@ export class TransactionFilter {
   type?: TransactionType;
   tokens?: string[];
   senderOrReceiver?: string;
+  isRelayed?: boolean;
 }
