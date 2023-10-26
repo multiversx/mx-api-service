@@ -177,11 +177,9 @@ export class TransactionService {
     }
 
     for (const transaction of transactions) {
-      const relayedVersion = this.extractRelayedVersion(transaction);
-      if (relayedVersion) {
-        transaction.relayedVersion = relayedVersion;
-      }
+      transaction.relayedVersion = this.extractRelayedVersion(transaction);
     }
+
 
     await this.processTransactions(transactions, {
       withScamInfo: queryOptions?.withScamInfo ?? false,
@@ -548,7 +546,7 @@ export class TransactionService {
     }
   }
 
-  private extractRelayedVersion(transaction: TransactionDetailed): string | null {
+  private extractRelayedVersion(transaction: TransactionDetailed): string | undefined {
     if (transaction.isRelayed == true && transaction.data) {
       const decodedData = BinaryUtils.base64Decode(transaction.data);
 
@@ -559,6 +557,6 @@ export class TransactionService {
       }
     }
 
-    return null;
+    return undefined;
   }
 }
