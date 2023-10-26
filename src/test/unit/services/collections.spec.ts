@@ -16,6 +16,46 @@ describe('CollectionService', () => {
   let indexerService: IndexerService;
   let esdtAddressService: EsdtAddressService;
 
+  const indexerCollectionMock = {
+    _id: 'XDAY23TEAM-f7a346',
+    name: 'XDAY2023TEAM',
+    ticker: 'XDAY23TEAM',
+    token: 'XDAY23TEAM-f7a346',
+    issuer: 'erd178ah2z70a442g9hrt39w2ld67lav62jq72gzp3r9tu5egz4hr4cswr5unp',
+    currentOwner: 'erd178ah2z70a442g9hrt39w2ld67lav62jq72gzp3r9tu5egz4hr4cswr5unp',
+    numDecimals: 0,
+    type: 'NonFungibleESDT',
+    timestamp: 1696923978,
+    ownersHistory: [
+      {
+        address: 'erd178ah2z70a442g9hrt39w2ld67lav62jq72gzp3r9tu5egz4hr4cswr5unp',
+        timestamp: 1696923978,
+      },
+    ],
+    properties: {
+      canMint: false,
+      canBurn: false,
+      canUpgrade: true,
+      canTransferNFTCreateRole: true,
+      canAddSpecialRoles: true,
+      canPause: true,
+      canFreeze: true,
+      canWipe: true,
+      canChangeOwner: false,
+      canCreateMultiShard: false,
+    },
+    nft_hasTraitSummary: true,
+    roles: {
+      ESDTRoleNFTCreate: ['erd178ah2z70a442g9hrt39w2ld67lav62jq72gzp3r9tu5egz4hr4cswr5unp'],
+      ESDTTransferRole: ['erd178ah2z70a442g9hrt39w2ld67lav62jq72gzp3r9tu5egz4hr4cswr5unp'],
+      ESDTRoleNFTBurn: ['erd178ah2z70a442g9hrt39w2ld67lav62jq72gzp3r9tu5egz4hr4cswr5unp'],
+    },
+    nft_hasRarities: false,
+    api_holderCount: 101,
+    api_isVerified: true,
+    api_nftCount: 131,
+  };
+
   beforeEach(async () => {
     const moduleRef = await Test.createTestingModule({
       providers: [
@@ -133,4 +173,37 @@ describe('CollectionService', () => {
       expect(esdtAddressService.getCollectionCountForAddressFromElastic).toHaveBeenCalledTimes(1);
     });
   });
+
+  describe('isCollection', () => {
+    it('should return true if given collection identifier is a collections', async () => {
+      const identifier = 'XDAY23TEAM-f7a346';
+      jest.spyOn(indexerService, 'getCollection').mockResolvedValue(indexerCollectionMock);
+
+      const result = await service.isCollection(identifier);
+
+      expect(result).toBeTruthy();
+      expect(indexerService.getCollection).toHaveBeenCalledWith(identifier);
+      expect(indexerService.getCollection).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  // describe('getCollection', () => {
+  //   it('should return collection details for a given collection identifier', async () => {
+  //     const identifier = 'XDAY23TEAM-f7a346';
+  //     jest.spyOn(indexerService, 'getCollection').mockResolvedValue(indexerCollectionMock);
+  //     jest.spyOn(TokenUtils, 'isCollection').mockReturnValue(true);
+
+  //     const result = await service.getNftCollection(identifier);
+  //     console.log(result);
+  //   });
+  // });
 });
+
+
+
+
+
+
+
+
+
