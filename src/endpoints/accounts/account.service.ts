@@ -604,6 +604,7 @@ export class AccountService {
     const upgrades = details.upgrades.map(item => ApiUtils.mergeObjects(new ContractUpgrades(), {
       address: item.upgrader,
       txHash: item.upgradeTxHash,
+      codeHash: item.codeHash,
       timestamp: item.timestamp,
     })).sortedDescending(item => item.timestamp);
 
