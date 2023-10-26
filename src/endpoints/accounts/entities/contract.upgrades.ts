@@ -14,6 +14,10 @@ export class ContractUpgrades {
   @ApiProperty({ type: String, nullable: true, example: '1c8c6b2148f25621fa2c798a2c9a184df61fdd1991aa0af7ea01eb7b89025d2a' })
   txHash: string = '';
 
+  @Field(() => String, { description: 'CodeHash details.' })
+  @ApiProperty({ type: String, nullable: true, example: '1c8c6b2148f25621fa2c798a2c9a184df61fdd1991aa0af7ea01eb7b89025d2a' })
+  codeHash: string = '';
+
   @Field(() => Float, { description: 'Timestamp details.' })
   @ApiProperty({ type: Number, nullable: true, example: '1638577452' })
   timestamp: number = 0;
