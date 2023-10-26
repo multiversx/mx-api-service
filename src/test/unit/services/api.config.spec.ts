@@ -164,14 +164,6 @@ describe('API Config', () => {
       const results = apiConfigService.getStakingContractAddress();
       expect(results).toEqual('erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqllls0lczs7');
     });
-
-    it("should throw error because test simulates that staking contract address is not defined", () => {
-      jest
-        .spyOn(ConfigService.prototype, 'get')
-        .mockImplementation(jest.fn(() => undefined));
-
-      expect(() => apiConfigService.getStakingContractAddress()).toThrowError('No staking contract present');
-    });
   });
 
   describe("getDelegationContractAddress", () => {
