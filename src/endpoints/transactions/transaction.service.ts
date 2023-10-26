@@ -176,14 +176,12 @@ export class TransactionService {
       transactions = await this.getExtraDetailsForTransactions(elasticTransactions, transactions, queryOptions);
     }
 
-    transactions = transactions.map(transaction => {
+    for (const transaction of transactions) {
       const relayedVersion = this.extractRelayedVersion(transaction);
       if (relayedVersion) {
         transaction.relayedVersion = relayedVersion;
       }
-
-      return transaction;
-    });
+    }
 
     await this.processTransactions(transactions, {
       withScamInfo: queryOptions?.withScamInfo ?? false,
@@ -551,18 +549,16 @@ export class TransactionService {
   }
 
   private extractRelayedVersion(transaction: TransactionDetailed): string | null {
-    if (transaction.isRelayed && transaction.data) {
+    if ((transaction.isRelayed == true && transaction.data)) {
       const decodedData = BinaryUtils.base64Decode(transaction.data);
 
-      const relayedMatch = decodedData.match(/relayedTx(V\d+)?/);
-      if (relayedMatch) {
-        if (relayedMatch[1]) {
-          return relayedMatch[1].toLowerCase();
-        } else {
-          return 'v1';
-        }
+      if (decodedData.startsWith('relayedTxV2@')) {
+        return 'v2';
+      } else if (decodedData.startsWith('relayedTx@')) {
+        return 'v1';
       }
     }
+
     return null;
   }
 }
