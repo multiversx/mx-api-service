@@ -1,3 +1,4 @@
+import { BinaryUtils } from '@multiversx/sdk-nestjs-common';
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { PublicAppModule } from 'src/public.app.module';
@@ -50,6 +51,11 @@ describe("Transactions Controller", () => {
       value: 'erd1576w79rz7zq8jv5nuzrnntghrxjnzapjppcv6u7pya257gk9x9eq59qrhu',
       count: 189,
     },
+    {
+      filter: 'isRelayed',
+      value: 'true',
+      count: 3060906,
+    },
   ].forEach(({ filter, value, count }) => {
     describe(`when filter ${filter} is applied`, () => {
       it(`should return total number of transactions of sender ${value}`, async () => {
@@ -58,6 +64,28 @@ describe("Transactions Controller", () => {
           .expect(200)
           .then(res => {
             expect(+res.text).toBeGreaterThanOrEqual(count);
+          });
+      });
+    });
+  });
+
+  [
+    {
+      filter: 'isRelayed',
+      value: 'true',
+    },
+  ].forEach(({ filter, value }) => {
+    describe(`when filter ${filter} is applied`, () => {
+      it(`should return all transactions with relayedTx`, async () => {
+        await request(app.getHttpServer())
+          .get(`${path}?${filter}=${value}`)
+          .expect(200)
+          .then(res => {
+            for (const item of res.body) {
+              const decodedData = BinaryUtils.base64Decode(item.data);
+              expect(decodedData).toContain('relayedTx');
+              expect(item.isRelayed).toBeDefined();
+            }
           });
       });
     });

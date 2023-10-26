@@ -231,23 +231,6 @@ describe('Transaction Service', () => {
     }
   });
 
-  //TBD
-  it.skip(`should return a list of transfers between two accounts`, async () => {
-    const sender = 'erd18kmncel8a32yd94ktzlqag9etdrpdnyph8wus2nqyd4lp865gncq40znww';
-    const receiver = 'erd1sdslvlxvfnnflzj42l8czrcngq3xjjzkjp3rgul4ttk6hntr4qdsv6sets';
-    const transactionFilter = new TransactionFilter();
-    transactionFilter.address = sender;
-    transactionFilter.senderOrReceiver = receiver;
-
-    const transfers = await transactionService.getTransactions(transactionFilter, { from: 0, size: 25 }, new TransactionQueryOptions());
-    expect(transfers.length).toBeGreaterThan(0);
-
-    for (const transfer of transfers) {
-      expect([sender, receiver].includes(transfer.sender)).toBe(true);
-      expect([sender, receiver].includes(transfer.receiver)).toBe(true);
-    }
-  });
-
   it('should return an array of transactions and if withBlockInfo is set to true, block extra fields should be defined', async () => {
     const transactions = await transactionService.getTransactions(
       new TransactionFilter(),
@@ -276,5 +259,33 @@ describe('Transaction Service', () => {
       receiverBlockHash: expect.anything(),
       receiverBlockNonce: expect.anything(),
     }));
+  });
+
+  it('should return an array of relayed transactions and isRelayed key should be true', async () => {
+    const transactionFilter = new TransactionFilter();
+    transactionFilter.isRelayed = true;
+
+    const transactions = await transactionService.getTransactions(
+      transactionFilter,
+      new QueryPagination(),
+    );
+
+    for (const transaction of transactions) {
+      expect(transaction.isRelayed).toBeDefined();
+    }
+  });
+
+  it('should not return isRelayed key if isRelayed filter is not defined', async () => {
+    const transactionFilter = new TransactionFilter();
+    transactionFilter.isRelayed = false;
+
+    const transactions = await transactionService.getTransactions(
+      transactionFilter,
+      new QueryPagination(),
+    );
+
+    for (const transaction of transactions) {
+      expect(transaction.isRelayed).not.toBeDefined();
+    }
   });
 });

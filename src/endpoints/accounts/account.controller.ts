@@ -657,6 +657,7 @@ export class AccountController {
   @ApiQuery({ name: 'withBlockInfo', description: 'Returns sender / receiver block details', required: false, type: Boolean })
   @ApiQuery({ name: 'computeScamInfo', required: false, type: Boolean })
   @ApiQuery({ name: 'senderOrReceiver', description: 'One address that current address interacted with', required: false })
+  @ApiQuery({ name: 'isRelayed', description: 'Returns isRelayed transactions details', required: false, type: Boolean })
   async getAccountTransactions(
     @Param('address', ParseAddressPipe) address: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
@@ -681,6 +682,7 @@ export class AccountController {
     @Query('withUsername', new ParseBoolPipe) withUsername?: boolean,
     @Query('withBlockInfo', new ParseBoolPipe) withBlockInfo?: boolean,
     @Query('senderOrReceiver', ParseAddressPipe) senderOrReceiver?: string,
+    @Query('isRelayed', new ParseBoolPipe) isRelayed?: boolean,
   ) {
     const options = TransactionQueryOptions.applyDefaultOptions(size, { withScResults, withOperations, withLogs, withScamInfo, withUsername, withBlockInfo });
 
@@ -698,6 +700,7 @@ export class AccountController {
       after,
       order,
       senderOrReceiver,
+      isRelayed,
     }), new QueryPagination({ from, size }), options, address, fields);
   }
 
@@ -716,6 +719,7 @@ export class AccountController {
   @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
   @ApiQuery({ name: 'senderOrReceiver', description: 'One address that current address interacted with', required: false })
+  @ApiQuery({ name: 'isRelayed', description: 'Returns isRelayed transactions details', required: false, type: Boolean })
   async getAccountTransactionsCount(
     @Param('address', ParseAddressPipe) address: string,
     @Query('sender', ParseAddressPipe) sender?: string,
@@ -730,6 +734,7 @@ export class AccountController {
     @Query('before', ParseIntPipe) before?: number,
     @Query('after', ParseIntPipe) after?: number,
     @Query('senderOrReceiver', ParseAddressPipe) senderOrReceiver?: string,
+    @Query('isRelayed', new ParseBoolPipe) isRelayed?: boolean,
   ): Promise<number> {
 
     return await this.transactionService.getTransactionCount(new TransactionFilter({
@@ -745,6 +750,7 @@ export class AccountController {
       before,
       after,
       senderOrReceiver,
+      isRelayed,
     }), address);
   }
 

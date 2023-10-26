@@ -126,6 +126,10 @@ export class Transaction {
   @ApiProperty({ type: String, nullable: true })
   guardianSignature: string | undefined = undefined;
 
+  @Field(() => Boolean, { description: "Is relayed transaction.", nullable: true })
+  @ApiProperty({ type: String, nullable: true })
+  isRelayed: boolean | undefined = undefined;
+
   getDate(): Date | undefined {
     if (this.timestamp) {
       return new Date(this.timestamp * 1000);
