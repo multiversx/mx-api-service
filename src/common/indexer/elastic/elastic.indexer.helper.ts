@@ -452,6 +452,10 @@ export class ElasticIndexerHelper {
       elasticQuery = elasticQuery.withMustMatchCondition('tokens', filter.token, QueryOperator.AND);
     }
 
+    if (filter.isRelayed) {
+      elasticQuery = elasticQuery.withMustMatchCondition('isRelayed', filter.isRelayed);
+    }
+
     if (filter.condition === QueryConditionOptions.should) {
       if (filter.sender) {
         elasticQuery = elasticQuery.withShouldCondition(QueryType.Match('sender', filter.sender));

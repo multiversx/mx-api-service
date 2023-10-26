@@ -60,5 +60,9 @@ export class TransactionDetailed extends Transaction {
   @Field(() => Boolean, { description: "InTransit transaction details.", nullable: true })
   @ApiProperty({ type: Boolean, nullable: true })
   inTransit: boolean | undefined = undefined;
+
+  @Field(() => String, { description: "Relayed transaction version.", nullable: true })
+  @ApiProperty({ type: String, nullable: true })
+  relayedVersion: string | undefined = undefined;
 }
 

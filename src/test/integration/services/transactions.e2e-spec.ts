@@ -260,4 +260,32 @@ describe('Transaction Service', () => {
       receiverBlockNonce: expect.anything(),
     }));
   });
+
+  it('should return an array of relayed transactions and isRelayed key should be true', async () => {
+    const transactionFilter = new TransactionFilter();
+    transactionFilter.isRelayed = true;
+
+    const transactions = await transactionService.getTransactions(
+      transactionFilter,
+      new QueryPagination(),
+    );
+
+    for (const transaction of transactions) {
+      expect(transaction.isRelayed).toBeDefined();
+    }
+  });
+
+  it('should not return isRelayed key if isRelayed filter is not defined', async () => {
+    const transactionFilter = new TransactionFilter();
+    transactionFilter.isRelayed = false;
+
+    const transactions = await transactionService.getTransactions(
+      transactionFilter,
+      new QueryPagination(),
+    );
+
+    for (const transaction of transactions) {
+      expect(transaction.isRelayed).not.toBeDefined();
+    }
+  });
 });

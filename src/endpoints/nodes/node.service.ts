@@ -224,6 +224,7 @@ export class NodeService {
     );
   }
 
+  // @ts-ignore
   private processQueuedNodes(nodes: Node[], queue: Queue[]) {
     for (const queueItem of queue) {
       const node = nodes.find(node => node.bls === queueItem.bls);
@@ -395,10 +396,20 @@ export class NodeService {
   }
 
   async getBlsOwner(bls: string): Promise<string | undefined> {
+    const auctionContractAddress = this.apiConfigService.getAuctionContractAddress();
+    if (!auctionContractAddress) {
+      return undefined;
+    }
+
+    const stakingContractAddress = this.apiConfigService.getStakingContractAddress();
+    if (!stakingContractAddress) {
+      return undefined;
+    }
+
     const result = await this.vmQueryService.vmQuery(
-      this.apiConfigService.getStakingContractAddress(),
+      stakingContractAddress,
       'getOwner',
-      this.apiConfigService.getAuctionContractAddress(),
+      auctionContractAddress,
       [bls],
     );
 
@@ -412,10 +423,15 @@ export class NodeService {
   }
 
   async getOwnerBlses(owner: string): Promise<string[]> {
+    const auctionContractAddress = this.apiConfigService.getAuctionContractAddress();
+    if (!auctionContractAddress) {
+      return [];
+    }
+
     const getBlsKeysStatusListEncoded = await this.vmQueryService.vmQuery(
-      this.apiConfigService.getAuctionContractAddress(),
+      auctionContractAddress,
       'getBlsKeysStatus',
-      this.apiConfigService.getAuctionContractAddress(),
+      auctionContractAddress,
       [AddressUtils.bech32Decode(owner)],
     );
 
@@ -437,10 +453,20 @@ export class NodeService {
   }
 
   async getQueue(): Promise<Queue[]> {
+    const auctionContractAddress = this.apiConfigService.getAuctionContractAddress();
+    if (!auctionContractAddress) {
+      return [];
+    }
+
+    const stakingContractAddress = this.apiConfigService.getStakingContractAddress();
+    if (!stakingContractAddress) {
+      return [];
+    }
+
     const queueEncoded = await this.vmQueryService.vmQuery(
-      this.apiConfigService.getStakingContractAddress(),
+      stakingContractAddress,
       'getQueueRegisterNonceAndRewardAddress',
-      this.apiConfigService.getAuctionContractAddress(),
+      auctionContractAddress,
     );
 
     if (!queueEncoded) {
