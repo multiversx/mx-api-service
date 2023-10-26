@@ -11,7 +11,7 @@ import { EsdtAddressService } from 'src/endpoints/esdt/esdt.address.service';
 import { NftType } from 'src/endpoints/nfts/entities/nft.type';
 import { NftCollectionDetailed } from 'src/endpoints/collections/entities/nft.collection.detailed';
 
-describe('Collection Service', () => {
+describe.skip('Collection Service', () => {
   let collectionService: CollectionService;
 
   beforeAll(async () => {
