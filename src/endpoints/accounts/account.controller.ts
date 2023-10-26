@@ -33,7 +33,7 @@ import { ProviderStake } from '../stake/entities/provider.stake';
 import { TokenDetailedWithBalance } from '../tokens/entities/token.detailed.with.balance';
 import { NftCollectionAccount } from '../collections/entities/nft.collection.account';
 import { TokenWithRoles } from '../tokens/entities/token.with.roles';
-import { ParseAddressPipe, ParseTokenPipe, OriginLogger, ParseArrayPipe, ParseBlockHashPipe, ParseCollectionPipe, ParseNftPipe, ParseBoolPipe, ParseEnumArrayPipe, ParseEnumPipe, ParseIntPipe, ParseTokenOrNftPipe, ParseTransactionHashPipe, ParseAddressArrayPipe, ApplyComplexity } from '@multiversx/sdk-nestjs-common';
+import { ParseAddressPipe, ParseTokenPipe, OriginLogger, ParseArrayPipe, ParseBlockHashPipe, ParseCollectionPipe, ParseNftPipe, ParseBoolPipe, ParseEnumArrayPipe, ParseEnumPipe, ParseIntPipe, ParseTokenOrNftPipe, ParseTransactionHashPipe, ParseAddressArrayPipe, ApplyComplexity, ParseNftArrayPipe } from '@multiversx/sdk-nestjs-common';
 import { QueryPagination } from 'src/common/entities/query.pagination';
 import { TransactionQueryOptions } from '../transactions/entities/transactions.query.options';
 import { TokenWithRolesFilter } from '../tokens/entities/token.with.roles.filter';
@@ -496,7 +496,7 @@ export class AccountController {
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
     @Query('search') search?: string,
-    @Query('identifiers', ParseArrayPipe) identifiers?: string[],
+    @Query('identifiers', ParseNftArrayPipe) identifiers?: string[],
     @Query('type') type?: NftType,
     @Query('collection') collection?: string,
     @Query('collections', ParseArrayPipe) collections?: string[],
@@ -540,7 +540,7 @@ export class AccountController {
   @ApiOkResponse({ type: Number })
   async getNftCount(
     @Param('address', ParseAddressPipe) address: string,
-    @Query('identifiers', ParseArrayPipe) identifiers?: string[],
+    @Query('identifiers', ParseNftArrayPipe) identifiers?: string[],
     @Query('search') search?: string,
     @Query('type') type?: NftType,
     @Query('collection') collection?: string,
@@ -560,7 +560,7 @@ export class AccountController {
   async getNftCountAlternative(
     @Param('address', ParseAddressPipe) address: string,
     @Query('search') search?: string,
-    @Query('identifiers', ParseArrayPipe) identifiers?: string[],
+    @Query('identifiers', ParseNftArrayPipe) identifiers?: string[],
     @Query('type') type?: NftType,
     @Query('collection') collection?: string,
     @Query('collections', ParseArrayPipe) collections?: string[],
