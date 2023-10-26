@@ -35,6 +35,7 @@ import { ProviderService } from '../providers/provider.service';
 import { Provider } from '../providers/entities/provider';
 import { KeysService } from '../keys/keys.service';
 import { NodeStatusRaw } from '../nodes/entities/node.status';
+import { AccountKeyFilter } from './entities/account.key.filter';
 
 @Injectable()
 export class AccountService {
@@ -429,7 +430,7 @@ export class AccountService {
     );
   }
 
-  async getKeys(address: string): Promise<AccountKey[]> {
+  async getKeys(address: string, filter: AccountKeyFilter): Promise<AccountKey[]> {
     const publicKey = AddressUtils.bech32Decode(address);
     const isStakingProvider = await this.providerService.isProvider(address);
 
@@ -451,7 +452,13 @@ export class AccountService {
       await this.updateQueuedNodes(nodes);
     }
 
-    return [...notStakedNodes, ...nodes];
+    let filteredNodes = [...notStakedNodes, ...nodes];
+
+    if (filter && filter.status && filter.status.length > 0) {
+      filteredNodes = filteredNodes.filter(node => filter.status.includes(node.status as NodeStatusRaw));
+    }
+
+    return filteredNodes;
   }
 
   getInactiveNodesBuffers(allNodeStates: string[]): string[] {

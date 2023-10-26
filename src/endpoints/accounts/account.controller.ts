@@ -52,6 +52,8 @@ import { AccountFilter } from './entities/account.filter';
 import { AccountSort } from './entities/account.sort';
 import { AccountHistoryFilter } from './entities/account.history.filter';
 import { ParseArrayPipeOptions } from '@multiversx/sdk-nestjs-common/lib/pipes/entities/parse.array.options';
+import { NodeStatusRaw } from '../nodes/entities/node.status';
+import { AccountKeyFilter } from './entities/account.key.filter';
 
 @Controller()
 @ApiTags('accounts')
@@ -619,8 +621,12 @@ export class AccountController {
   @Get("/accounts/:address/keys")
   @ApiOperation({ summary: 'Account nodes', description: 'Returns all active / queued nodes where the account is owner' })
   @ApiOkResponse({ type: [AccountKey] })
-  async getAccountKeys(@Param('address', ParseAddressPipe) address: string): Promise<AccountKey[]> {
-    return await this.accountService.getKeys(address);
+  @ApiQuery({ name: 'status', description: 'Key status', required: false, enum: NodeStatusRaw })
+  async getAccountKeys(
+    @Param('address', ParseAddressPipe) address: string,
+    @Query('status', new ParseEnumArrayPipe(NodeStatusRaw)) status?: NodeStatusRaw[],
+  ): Promise<AccountKey[]> {
+    return await this.accountService.getKeys(address, new AccountKeyFilter({ status }));
   }
 
   @Get("/accounts/:address/waiting-list")

@@ -33,6 +33,7 @@ import { SmartContractResultService } from "src/endpoints/sc-results/scresult.se
 import { AccountHistory } from "src/endpoints/accounts/entities/account.history";
 import { AccountEsdtHistory } from "src/endpoints/accounts/entities/account.esdt.history";
 import { AccountHistoryFilter } from "src/endpoints/accounts/entities/account.history.filter";
+import { AccountKeyFilter } from "src/endpoints/accounts/entities/account.key.filter";
 
 @Resolver(() => AccountDetailed)
 export class AccountDetailedResolver extends AccountDetailedQuery {
@@ -78,7 +79,7 @@ export class AccountDetailedResolver extends AccountDetailedQuery {
 
   @ResolveField("keys", () => [AccountKey], { name: "keys", description: "Returns all nodes in the node queue where the account is owner." })
   public async getKeys(@Parent() account: AccountDetailed) {
-    return await this.accountService.getKeys(account.address);
+    return await this.accountService.getKeys(account.address, new AccountKeyFilter());
   }
 
   @ResolveField("resultsAccount", () => [SmartContractResult], { name: "resultsAccount", description: "Returns smart contract results where the account is sender or receiver." })
