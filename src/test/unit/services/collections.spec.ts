@@ -21,6 +21,7 @@ describe('CollectionService', () => {
   let service: CollectionService;
   let indexerService: IndexerService;
   let esdtAddressService: EsdtAddressService;
+  let assetsService: AssetsService;
 
   const indexerCollectionMock = {
     _id: 'XDAY23TEAM-f7a346',
@@ -135,6 +136,7 @@ describe('CollectionService', () => {
     service = moduleRef.get<CollectionService>(CollectionService);
     indexerService = moduleRef.get<IndexerService>(IndexerService);
     esdtAddressService = moduleRef.get<EsdtAddressService>(EsdtAddressService);
+    assetsService = moduleRef.get<AssetsService>(AssetsService);
   });
 
   it('service should be defined', () => {
@@ -320,6 +322,63 @@ describe('CollectionService', () => {
         expect(service.getNftCollectionRolesFromGateway).toHaveBeenCalledWith(gatewayCollectionRolesMock);
         expect(service.getNftCollectionRolesFromGateway).toHaveBeenCalledTimes(1);
       }
+    });
+  });
+
+  describe('getLogoPng', () => {
+    const assetsTokenMock = {
+      website: 'https://xday.com',
+      description:
+        'Test description.',
+      status: TokenAssetStatus.active,
+      pngUrl: 'https://media.elrond.com/tokens/asset/XDAY23TEAM-f7a346/logo.png',
+      name: '',
+      svgUrl: 'https://media.elrond.com/tokens/asset/XDAY23TEAM-f7a346/logo.svg',
+      extraTokens: [''],
+      ledgerSignature: '',
+      priceSource: undefined,
+      preferredRankAlgorithm: undefined,
+      lockedAccounts: undefined,
+    };
+
+    it('should return the PNG URL if available', async () => {
+      const identifier = 'XDAY23TEAM-f7a346';
+      const mockPngUrl = 'https://media.elrond.com/tokens/asset/XDAY23TEAM-f7a346/logo.png';
+
+      jest.spyOn(assetsService, 'getTokenAssets').mockResolvedValue(assetsTokenMock);
+      const result = await service.getLogoPng(identifier);
+
+      expect(result).toBe(mockPngUrl);
+    });
+
+    it('should return the SVG URL if available', async () => {
+      const identifier = 'XDAY23TEAM-f7a346';
+      const mockSvgUrl = 'https://media.elrond.com/tokens/asset/XDAY23TEAM-f7a346/logo.svg';
+
+      jest.spyOn(assetsService, 'getTokenAssets').mockResolvedValue(assetsTokenMock);
+      const result = await service.getLogoSvg(identifier);
+
+      expect(result).toBe(mockSvgUrl);
+    });
+
+    it('should return undefined if the PNG URL is not available', async () => {
+      const identifier = 'XDAY23TEAM-f7a346';
+
+      jest.spyOn(assetsService, 'getTokenAssets').mockResolvedValue(undefined);
+
+      const result = await service.getLogoPng(identifier);
+
+      expect(result).toBeUndefined();
+    });
+
+    it('should return undefined if the SVG URL is not available', async () => {
+      const identifier = 'XDAY23TEAM-f7a346';
+
+      jest.spyOn(assetsService, 'getTokenAssets').mockResolvedValue(undefined);
+
+      const result = await service.getLogoSvg(identifier);
+
+      expect(result).toBeUndefined();
     });
   });
 });
