@@ -295,7 +295,6 @@ describe('CollectionService', () => {
       const result = await service.getNftCollection(identifier);
 
       expect(result).toBeInstanceOf(NftCollectionDetailed);
-      // verifică alte aspecte ale procesării
     });
   });
 
