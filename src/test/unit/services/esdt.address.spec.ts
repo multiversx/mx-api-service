@@ -22,6 +22,9 @@ describe('EsdtAddressService', () => {
   let indexerService: IndexerService;
   let apiConfigService: ApiConfigService;
   let collectionService: CollectionService;
+  let cacheService: CacheService;
+  let metricsService: MetricsService;
+  let protocolService: ProtocolService;
   beforeEach(async () => {
     const moduleRef = await Test.createTestingModule({
       providers: [
@@ -61,7 +64,11 @@ describe('EsdtAddressService', () => {
           },
         },
         {
-          provide: MetricsService, useValue: { incrementPendingApiHit: jest.fn() },
+          provide: MetricsService, useValue:
+          {
+            incrementPendingApiHit: jest.fn(),
+            incrementCachedApiHit: jest.fn(),
+          },
         },
         {
           provide: ProtocolService, useValue: { getSecondsRemainingUntilNextRound: jest.fn() },
@@ -79,6 +86,9 @@ describe('EsdtAddressService', () => {
     indexerService = moduleRef.get<IndexerService>(IndexerService);
     apiConfigService = moduleRef.get<ApiConfigService>(ApiConfigService);
     collectionService = moduleRef.get<CollectionService>(CollectionService);
+    cacheService = moduleRef.get<CacheService>(CacheService);
+    metricsService = moduleRef.get<MetricsService>(MetricsService);
+    protocolService = moduleRef.get<ProtocolService>(ProtocolService);
   });
 
   it('service should be defined', () => {
@@ -299,6 +309,39 @@ describe('EsdtAddressService', () => {
       const firstCollection = results[0];
       expect(firstCollection.canTransfer).toBe(false);
       expect(firstCollection.role.canBurn).toBe(false);
+    });
+
+    it('should return cached ESDTs for a given address', async () => {
+      const address = 'erd1qga7ze0l03chfgru0a32wxqf2226nzrxnyhzer9lmudqhjgy7ycqjjyknz';
+      const cachedEsdts = {
+        "BUSD-19079b": {
+          balance: "50850380000",
+          tokenIdentifier: "BUSD-19079b",
+        },
+      };
+
+      jest.spyOn(cacheService, 'getLocal').mockResolvedValue(cachedEsdts);
+      jest.spyOn(metricsService, 'incrementCachedApiHit');
+
+      const result = await service.getAllEsdtsForAddressFromGateway(address);
+
+      expect(result).toEqual(cachedEsdts);
+      expect(metricsService.incrementCachedApiHit).toHaveBeenCalledWith('Gateway.AccountEsdts');
+    });
+
+    it('should update the cache with new ESDTs data for a given address', async () => {
+      const address = 'some-address';
+      const ttl = 1000;
+
+      jest.spyOn(cacheService, 'getLocal').mockResolvedValueOnce(null);
+      jest.spyOn(cacheService, 'setLocal');
+      jest.spyOn(protocolService, 'getSecondsRemainingUntilNextRound').mockResolvedValue(ttl);
+
+      await service.getAllEsdtsForAddressFromGateway(address);
+      const result = await service.getAllEsdtsForAddressFromGateway(address);
+
+      expect(cacheService.setLocal).toHaveBeenCalledWith(`address:${address}:esdts`, expect.anything(), ttl);
+      expect(result).toBeDefined();
     });
   });
 });
