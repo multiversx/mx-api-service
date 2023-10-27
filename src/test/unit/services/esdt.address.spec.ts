@@ -283,5 +283,22 @@ describe('EsdtAddressService', () => {
       expect(indexerService.getNftCollections).toHaveBeenCalledTimes(1);
       expect(collectionService.applyPropertiesToCollections).toHaveBeenCalled();
     });
+
+    it('should correctly apply roles to collections for a given address with IndexerV3Flag active', async () => {
+      jest.spyOn(apiConfigService, 'getIsIndexerV3FlagActive').mockReturnValue(true);
+      jest.spyOn(indexerService, 'getNftCollections').mockResolvedValue([indexerCollectionMock]);
+      jest.spyOn(collectionService, 'applyPropertiesToCollections').mockResolvedValue([propertiesToCollectionsMock]);
+
+      const address = 'erd1qga7ze0l03chfgru0a32wxqf2226nzrxnyhzer9lmudqhjgy7ycqjjyknz';
+      const filter = new CollectionFilter();
+      const pagination = new QueryPagination();
+
+      const results = await service.getCollectionsForAddress(address, filter, pagination);
+
+      expect(results).toHaveLength(1);
+      const firstCollection = results[0];
+      expect(firstCollection.canTransfer).toBe(false);
+      expect(firstCollection.role.canBurn).toBe(false);
+    });
   });
 });
