@@ -1,4 +1,5 @@
 import { CacheService } from "@multiversx/sdk-nestjs-cache";
+import { TokenUtils } from "@multiversx/sdk-nestjs-common";
 import { Test } from "@nestjs/testing";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { AssetsService } from "src/common/assets/assets.service";
@@ -7,8 +8,13 @@ import { PersistenceService } from "src/common/persistence/persistence.service";
 import { PluginService } from "src/common/plugins/plugin.service";
 import { CollectionService } from "src/endpoints/collections/collection.service";
 import { CollectionFilter } from "src/endpoints/collections/entities/collection.filter";
+import { NftCollection } from "src/endpoints/collections/entities/nft.collection";
+import { NftCollectionDetailed } from "src/endpoints/collections/entities/nft.collection.detailed";
 import { EsdtAddressService } from "src/endpoints/esdt/esdt.address.service";
 import { EsdtService } from "src/endpoints/esdt/esdt.service";
+import { NftType } from "src/endpoints/nfts/entities/nft.type";
+import { CollectionRoles } from "src/endpoints/tokens/entities/collection.roles";
+import { TokenAssetStatus } from "src/endpoints/tokens/entities/token.asset.status";
 import { VmQueryService } from "src/endpoints/vm.query/vm.query.service";
 
 describe('CollectionService', () => {
@@ -96,6 +102,7 @@ describe('CollectionService', () => {
             get: jest.fn(),
             getOrSet: jest.fn(),
             batchGetAll: jest.fn(),
+            batchApplyAll: jest.fn(),
           },
         },
         {
@@ -187,16 +194,135 @@ describe('CollectionService', () => {
     });
   });
 
-  // describe('getCollection', () => {
-  //   it('should return collection details for a given collection identifier', async () => {
-  //     const identifier = 'XDAY23TEAM-f7a346';
-  //     jest.spyOn(indexerService, 'getCollection').mockResolvedValue(indexerCollectionMock);
-  //     jest.spyOn(TokenUtils, 'isCollection').mockReturnValue(true);
+  describe('getCollection', () => {
+    const propertiesToCollectionsMock: NftCollection = {
+      collection: 'XDAY23TEAM-f7a346',
+      type: NftType.NonFungibleESDT,
+      name: 'xPortalAchievements',
+      ticker: 'XDAY23TEAM',
+      owner: 'erd1lpc6wjh2hav6q50p8y6a44r2lhtnseqksygakjfgep6c9uduchkqphzu6t',
+      timestamp: 0,
+      canFreeze: true,
+      canWipe: true,
+      canPause: true,
+      canTransferNftCreateRole: true,
+      canChangeOwner: false,
+      canUpgrade: false,
+      canAddSpecialRoles: false,
+      decimals: undefined,
+      assets: {
+        website: 'https://xday.com',
+        description:
+          'Test description.',
+        status: TokenAssetStatus.active,
+        pngUrl: 'https://media.elrond.com/tokens/asset/XDAY23TEAM-f7a346/logo.png',
+        name: '',
+        svgUrl: 'https://media.elrond.com/tokens/asset/XDAY23TEAM-f7a346/logo.svg',
+        extraTokens: [''],
+        ledgerSignature: '',
+        priceSource: undefined,
+        preferredRankAlgorithm: undefined,
+        lockedAccounts: undefined,
+      },
+      scamInfo: undefined,
+      traits: [],
+      auctionStats: undefined,
+      isVerified: undefined,
+      holderCount: undefined,
+      nftCount: undefined,
+    };
 
-  //     const result = await service.getNftCollection(identifier);
-  //     console.log(result);
-  //   });
-  // });
+    it('should return collection details for a given collection identifier', async () => {
+      const identifier = 'XDAY23TEAM-f7a346';
+
+      jest.spyOn(indexerService, 'getCollection').mockResolvedValue(indexerCollectionMock);
+      jest.spyOn(service, 'applyPropertiesToCollections').mockResolvedValue([propertiesToCollectionsMock]);
+
+      const result = await service.getNftCollection(identifier);
+
+      expect(result).toBeInstanceOf(Object);
+      expect(indexerService.getCollection).toHaveBeenCalledTimes(1);
+      expect(indexerService.getCollection).toHaveBeenCalledWith(identifier);
+      expect(service.applyPropertiesToCollections).toHaveBeenCalledWith([identifier]);
+    });
+
+    it('should return undefined if the collection is not found', async () => {
+      const identifier = 'XDAY23TEAM';
+      jest.spyOn(indexerService, 'getCollection').mockResolvedValue(undefined);
+
+      const result = await service.getNftCollection(identifier);
+
+      expect(result).toBeUndefined();
+      expect(indexerService.getCollection).toHaveBeenCalledWith(identifier);
+    });
+
+    it('should return undefined if the identifier is not a valid collection', async () => {
+      const identifier = 'XDAY23TEAM';
+      jest.spyOn(indexerService, 'getCollection').mockResolvedValue(undefined);
+      jest.spyOn(TokenUtils, 'isCollection').mockReturnValue(true);
+
+      const result = await service.getNftCollection(identifier);
+
+      expect(result).toBeUndefined();
+    });
+
+    it('should return undefined for an unsupported collection type', async () => {
+      const identifier = 'XDAY23TEAM';
+      jest.spyOn(indexerService, 'getCollection').mockResolvedValue({
+        ...indexerCollectionMock,
+        type: 'UnsupportedType',
+      });
+
+      const result = await service.getNftCollection(identifier);
+
+      expect(result).toBeUndefined();
+    });
+
+    it('should return undefined if no additional properties are applied to the collection', async () => {
+      const identifier = 'XDAY23TEAM';
+      jest.spyOn(indexerService, 'getCollection').mockResolvedValue(indexerCollectionMock);
+      jest.spyOn(service, 'applyPropertiesToCollections').mockResolvedValue([]);
+
+      const result = await service.getNftCollection(identifier);
+
+      expect(result).toBeUndefined();
+    });
+
+    it('should process the collection details fully', async () => {
+      const identifier = 'XDAY23TEAM';
+      jest.spyOn(indexerService, 'getCollection').mockResolvedValue(indexerCollectionMock);
+      jest.spyOn(service, 'applyPropertiesToCollections').mockResolvedValue([propertiesToCollectionsMock]);
+      const result = await service.getNftCollection(identifier);
+
+      expect(result).toBeInstanceOf(NftCollectionDetailed);
+      // verifică alte aspecte ale procesării
+    });
+  });
+
+  describe('getNftCollectionRolesFromGateway', () => {
+    const gatewayCollectionRolesMock: CollectionRoles = {
+      address: 'erd1lpc6wjh2hav6q50p8y6a44r2lhtnseqksygakjfgep6c9uduchkqphzu6t',
+      canCreate: false,
+      canBurn: false,
+      canAddQuantity: false,
+      canUpdateAttributes: false,
+      canAddUri: false,
+      canTransfer: undefined,
+      roles: ['ESDTRoleBurnForAll'],
+    };
+
+    it('should return collection roles from gateway', async () => {
+      jest.spyOn(service, 'getNftCollectionRolesFromGateway').mockResolvedValue([gatewayCollectionRolesMock]);
+
+      const results = await service.getNftCollectionRolesFromGateway(gatewayCollectionRolesMock);
+
+      for (const result of results) {
+        expect(result.address).toStrictEqual(gatewayCollectionRolesMock.address);
+        expect(service.getNftCollectionRolesFromGateway).toHaveBeenCalledWith(gatewayCollectionRolesMock);
+        expect(service.getNftCollectionRolesFromGateway).toHaveBeenCalledTimes(1);
+      }
+    });
+  });
 });
 
 
