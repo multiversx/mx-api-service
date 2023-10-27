@@ -59,7 +59,7 @@ export interface IndexerInterface {
 
   getToken(identifier: string): Promise<Token>
 
-  getCollection(identifier: string): Promise<Collection>
+  getCollection(identifier: string): Promise<Collection | undefined>
 
   getTransaction(txHash: string): Promise<Transaction | null>
 
