@@ -430,7 +430,8 @@ export class AccountService {
     );
   }
 
-  async getKeys(address: string, filter: AccountKeyFilter): Promise<AccountKey[]> {
+  async getKeys(address: string, filter: AccountKeyFilter, pagination: QueryPagination): Promise<AccountKey[]> {
+    const { from, size } = pagination;
     const publicKey = AddressUtils.bech32Decode(address);
     const isStakingProvider = await this.providerService.isProvider(address);
 
@@ -456,9 +457,10 @@ export class AccountService {
 
     if (filter && filter.status && filter.status.length > 0) {
       filteredNodes = filteredNodes.filter(node => filter.status.includes(node.status as NodeStatusRaw));
+      this.sortNodesByStatus(filteredNodes, filter.status);
     }
 
-    return filteredNodes;
+    return filteredNodes.slice(from, from + size);
   }
 
   getInactiveNodesBuffers(allNodeStates: string[]): string[] {
@@ -524,6 +526,18 @@ export class AccountService {
       nodes.push(accountKey);
     }
     return nodes;
+  }
+
+  private sortNodesByStatus(nodes: AccountKey[], status: NodeStatusRaw[]): void {
+    nodes.sort((a, b) => {
+      let indexA = status.indexOf(a.status as NodeStatusRaw);
+      let indexB = status.indexOf(b.status as NodeStatusRaw);
+
+      if (indexA === -1) indexA = status.length;
+      if (indexB === -1) indexB = status.length;
+
+      return indexA - indexB;
+    });
   }
 
   async applyRewardAddressAndTopUpToNodes(nodes: AccountKey[], address: string) {

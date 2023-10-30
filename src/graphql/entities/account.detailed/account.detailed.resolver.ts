@@ -79,7 +79,7 @@ export class AccountDetailedResolver extends AccountDetailedQuery {
 
   @ResolveField("keys", () => [AccountKey], { name: "keys", description: "Returns all nodes in the node queue where the account is owner." })
   public async getKeys(@Parent() account: AccountDetailed) {
-    return await this.accountService.getKeys(account.address, new AccountKeyFilter());
+    return await this.accountService.getKeys(account.address, new AccountKeyFilter(), new QueryPagination());
   }
 
   @ResolveField("resultsAccount", () => [SmartContractResult], { name: "resultsAccount", description: "Returns smart contract results where the account is sender or receiver." })
