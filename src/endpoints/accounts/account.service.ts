@@ -533,8 +533,13 @@ export class AccountService {
       let indexA = status.indexOf(a.status as NodeStatusRaw);
       let indexB = status.indexOf(b.status as NodeStatusRaw);
 
-      if (indexA === -1) indexA = status.length;
-      if (indexB === -1) indexB = status.length;
+      if (indexA === -1) {
+        indexA = status.length;
+      }
+
+      if (indexB === -1) {
+        indexB = status.length;
+      }
 
       return indexA - indexB;
     });
