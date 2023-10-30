@@ -21,6 +21,8 @@ import * as path from 'path';
 describe('NodeService', () => {
   let nodeService: NodeService;
   let cacheService: CacheService;
+  let vmQueryService: VmQueryService;
+  let apiConfigService: ApiConfigService;
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
@@ -98,6 +100,8 @@ describe('NodeService', () => {
 
     nodeService = moduleRef.get<NodeService>(NodeService);
     cacheService = moduleRef.get<CacheService>(CacheService);
+    vmQueryService = moduleRef.get<VmQueryService>(VmQueryService);
+    apiConfigService = moduleRef.get<ApiConfigService>(ApiConfigService);
   });
 
   beforeEach(() => { jest.restoreAllMocks(); });
@@ -417,27 +421,30 @@ describe('NodeService', () => {
     describe('getOwnerBlses', () => {
       it('should return empty array if getBlsKeysStatusListEncoded is returning []', async () => {
         const address = 'erd1kz2kumr0clug4ht2ek0l4l9drvq3rne9lmkwrjf3qv2luyuuaj2szjwv0f';
-        const vmQuerySpy = jest.spyOn(nodeService['vmQueryService'], 'vmQuery').mockResolvedValueOnce([]);
+
+        jest.spyOn(apiConfigService, 'getAuctionContractAddress').mockReturnValue('erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqplllst77y4l');
+        jest.spyOn(nodeService['vmQueryService'], 'vmQuery').mockResolvedValueOnce([]);
 
         const result = await nodeService.getOwnerBlses(address);
 
         expect(result).toEqual([]);
-        expect(vmQuerySpy).toHaveBeenCalled();
+        expect(vmQueryService.vmQuery).toHaveBeenCalled();
       });
 
       it('should return an array of BLS keys', async () => {
         const address = 'erd1kz2kumr0clug4ht2ek0l4l9drvq3rne9lmkwrjf3qv2luyuuaj2szjwv0f';
         const expectedBls = ["00198be6aae517a382944cd5a97845857f3b122bb1edf1588d60ed421d32d16ea2767f359a0d714fae3a35c1b0cf4e1141d701d5d1d24160e49eeaebeab21e2f89a2b7c44f3a313383d542e69800cfb6e115406d3d8114b4044ef5a04acf0408"];
-
         const getBlsKeysStatusListEncoded = [
           'ABmL5qrlF6OClEzVqXhFhX87Eiux7fFYjWDtQh0y0W6idn81mg1xT646NcGwz04RQdcB1dHSQWDknurr6rIeL4mit8RPOjEzg9VC5pgAz7bhFUBtPYEUtARO9aBKzwQI',
           'ADumI38PfCae6/7LagoHlgdsAlk4RuHOia7puDK5TdVOk9NbA9w9WUSxqukWciUG+vlZpHyr8tAPVnrVCxD48aQKsDFv3zAkVPeupYsjEJzP3OCCvRb7JiNCoTgrgCwQ',
         ];
-        const vmQuerySpy = jest.spyOn(nodeService['vmQueryService'], 'vmQuery').mockResolvedValueOnce(getBlsKeysStatusListEncoded);
+
+        jest.spyOn(apiConfigService, 'getAuctionContractAddress').mockReturnValue('erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqplllst77y4l');
+        jest.spyOn(nodeService['vmQueryService'], 'vmQuery').mockResolvedValueOnce(getBlsKeysStatusListEncoded);
 
         const result = await nodeService.getOwnerBlses(address);
 
-        expect(vmQuerySpy).toHaveBeenCalled();
+        expect(vmQueryService.vmQuery).toHaveBeenCalled();
         expect(result).toStrictEqual(expectedBls);
       });
     });

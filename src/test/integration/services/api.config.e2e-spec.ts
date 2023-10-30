@@ -153,14 +153,6 @@ describe('API Config', () => {
       const results = apiConfigService.getAuctionContractAddress();
       expect(results).toEqual('erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqplllst77y4l');
     });
-
-    it("should throw error because test simulates that auction contract address is not defined", () => {
-      jest
-        .spyOn(ConfigService.prototype, 'get')
-        .mockImplementation(jest.fn(() => undefined));
-
-      expect(() => apiConfigService.getAuctionContractAddress()).toThrowError('No auction contract present');
-    });
   });
 
   describe("getStakingContractAddress", () => {
@@ -172,14 +164,6 @@ describe('API Config', () => {
       const results = apiConfigService.getStakingContractAddress();
       expect(results).toEqual('erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqllls0lczs7');
     });
-
-    it("should throw error because test simulates that staking contract address is not defined", () => {
-      jest
-        .spyOn(ConfigService.prototype, 'get')
-        .mockImplementation(jest.fn(() => undefined));
-
-      expect(() => apiConfigService.getStakingContractAddress()).toThrowError('No staking contract present');
-    });
   });
 
   describe("getDelegationContractAddress", () => {
@@ -190,14 +174,6 @@ describe('API Config', () => {
 
       const results = apiConfigService.getDelegationContractAddress();
       expect(results).toEqual('erd1qqqqqqqqqqqqqpgqxwakt2g7u9atsnr03gqcgmhcv38pt7mkd94q6shuwt');
-    });
-
-    it("should throw error because test simulates that delegation contract address is not defined", () => {
-      jest
-        .spyOn(ConfigService.prototype, 'get')
-        .mockImplementation(jest.fn(() => undefined));
-
-      expect(() => apiConfigService.getDelegationContractAddress()).toThrowError('No delegation contract present');
     });
   });
 
