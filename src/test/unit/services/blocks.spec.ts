@@ -21,14 +21,16 @@ describe('Block Service', () => {
       providers: [
         BlockService,
         {
-          provide: IndexerService, useValue: {
+          provide: IndexerService,
+          useValue: {
             getBlocksCount: jest.fn(),
             getBlocks: jest.fn(),
             getBlock: jest.fn(),
           },
         },
         {
-          provide: CacheService, useValue: {
+          provide: CacheService,
+          useValue: {
             getOrSet: jest.fn(),
             setLocal: jest.fn(),
             getLocal: jest.fn(),
@@ -37,17 +39,20 @@ describe('Block Service', () => {
           },
         },
         {
-          provide: BlsService, useValue: {
+          provide: BlsService,
+          useValue: {
             getPublicKeys: jest.fn(),
           },
         },
         {
-          provide: NodeService, useValue: {
+          provide: NodeService,
+          useValue: {
             getAllNodes: jest.fn(),
           },
         },
         {
-          provide: IdentitiesService, useValue: {
+          provide: IdentitiesService,
+          useValue: {
             getIdentity: jest.fn(),
           },
         },

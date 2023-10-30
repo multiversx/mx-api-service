@@ -17,7 +17,8 @@ describe('ProviderService', () => {
       providers: [
         ProviderService,
         {
-          provide: CacheService, useValue: {
+          provide: CacheService,
+          useValue: {
             getOrSet: jest.fn(),
             getRemote: jest.fn(),
             batchProcess: jest.fn(),
@@ -25,23 +26,34 @@ describe('ProviderService', () => {
           },
         },
         {
-          provide: ApiConfigService, useValue: {
+          provide: ApiConfigService,
+          useValue: {
             getProvidersUrl: jest.fn(),
             getDelegationManagerContractAddress: jest.fn(),
             getDelegationContractAddress: jest.fn(),
           },
         },
         {
-          provide: VmQueryService, useValue: { vmQuery: jest.fn() },
+          provide: VmQueryService,
+          useValue: {
+            vmQuery: jest.fn(),
+          },
         },
         {
-          provide: NodeService, useValue: { getAllNodes: jest.fn() },
+          provide: NodeService,
+          useValue: {
+            getAllNodes: jest.fn(),
+          },
         },
         {
-          provide: ApiService, useValue: { get: jest.fn() },
+          provide: ApiService,
+          useValue: {
+            get: jest.fn(),
+          },
         },
         {
-          provide: IdentitiesService, useValue: {
+          provide: IdentitiesService,
+          useValue: {
             getIdentityAvatar: jest.fn(),
             getIdentity: jest.fn(),
           },

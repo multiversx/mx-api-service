@@ -68,7 +68,8 @@ describe('CollectionService', () => {
       providers: [
         CollectionService,
         {
-          provide: IndexerService, useValue: {
+          provide: IndexerService,
+          useValue: {
             getCollection: jest.fn(),
             getNftCollections: jest.fn(),
             getNftCollectionsByIds: jest.fn(),
@@ -77,29 +78,34 @@ describe('CollectionService', () => {
           },
         },
         {
-          provide: EsdtService, useValue: {
+          provide: EsdtService,
+          useValue: {
             getCollectionProperties: jest.fn(),
             getEsdtTokenProperties: jest.fn(),
           },
         },
         {
-          provide: EsdtAddressService, useValue: {
+          provide: EsdtAddressService,
+          useValue: {
             getCollectionsForAddress: jest.fn(),
             getCollectionCountForAddressFromElastic: jest.fn(),
           },
         },
         {
-          provide: VmQueryService, useValue: {
+          provide: VmQueryService,
+          useValue: {
             vmQuery: jest.fn(),
           },
         },
         {
-          provide: CacheService, useValue: {
+          provide: CacheService,
+          useValue: {
             batchApplyAll: jest.fn(),
           },
         },
         {
-          provide: CacheService, useValue: {
+          provide: CacheService,
+          useValue: {
             get: jest.fn(),
             getOrSet: jest.fn(),
             batchGetAll: jest.fn(),
@@ -107,10 +113,14 @@ describe('CollectionService', () => {
           },
         },
         {
-          provide: PersistenceService, useValue: { getCollectionTraits: jest.fn() },
+          provide: PersistenceService,
+          useValue: {
+            getCollectionTraits: jest.fn(),
+          },
         },
         {
-          provide: ApiConfigService, useValue:
+          provide: ApiConfigService,
+          useValue:
           {
             getCollectionPropertiesFromGateway: jest.fn(),
             getIsIndexerV3FlagActive: jest.fn(),
@@ -118,14 +128,16 @@ describe('CollectionService', () => {
           },
         },
         {
-          provide: AssetsService, useValue:
+          provide: AssetsService,
+          useValue:
           {
             getTokenAssets: jest.fn(),
             getCollectionRanks: jest.fn(),
           },
         },
         {
-          provide: PluginService, useValue:
+          provide: PluginService,
+          useValue:
           {
             processCollections: jest.fn(),
           },

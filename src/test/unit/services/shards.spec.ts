@@ -13,12 +13,14 @@ describe('ShardService', () => {
       providers: [
         ShardService,
         {
-          provide: NodeService, useValue: {
+          provide: NodeService,
+          useValue: {
             getAllNodes: jest.fn(),
           },
         },
         {
-          provide: CacheService, useValue:
+          provide: CacheService,
+          useValue:
           {
             getOrSet: jest.fn(),
           },

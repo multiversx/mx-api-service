@@ -27,7 +27,8 @@ describe('TransactionService', () => {
       providers: [
         TransactionService,
         {
-          provide: IndexerService, useValue: {
+          provide: IndexerService,
+          useValue: {
             getTransactionCountForAddress: jest.fn(),
             getTransactionCount: jest.fn(),
             getTransactions: jest.fn(),
@@ -38,7 +39,8 @@ describe('TransactionService', () => {
           },
         },
         {
-          provide: TransactionGetService, useValue: {
+          provide: TransactionGetService,
+          useValue: {
             tryGetTransactionFromGatewayForList: jest.fn(),
             tryGetTransactionFromElastic: jest.fn(),
             tryGetTransactionFromGateway: jest.fn(),
@@ -46,43 +48,67 @@ describe('TransactionService', () => {
           },
         },
         {
-          provide: TokenTransferService, useValue: {
+          provide: TokenTransferService,
+          useValue: {
             getOperationsForTransaction: jest.fn(),
           },
         },
         {
-          provide: PluginService, useValue: {
+          provide: PluginService,
+          useValue: {
             processTransactionSend: jest.fn(),
             processTransactions: jest.fn(),
           },
         },
         {
-          provide: CacheService, useValue: {
+          provide: CacheService,
+          useValue: {
             get: jest.fn(),
             getOrSet: jest.fn(),
             batchGetAll: jest.fn(),
           },
         },
         {
-          provide: GatewayService, useValue: { create: jest.fn() },
+          provide: GatewayService,
+          useValue: {
+            create: jest.fn(),
+          },
         },
         {
-          provide: TransactionPriceService, useValue: { getTransactionPrice: jest.fn() },
+          provide: TransactionPriceService,
+          useValue: {
+            getTransactionPrice: jest.fn(),
+          },
         },
         {
-          provide: TransactionActionService, useValue: { getTransactionAction: jest.fn() },
+          provide: TransactionActionService,
+          useValue: {
+            getTransactionAction: jest.fn(),
+          },
         },
         {
-          provide: AssetsService, useValue: { getAllAccountAssets: jest.fn() },
+          provide: AssetsService,
+          useValue: {
+            getAllAccountAssets: jest.fn(),
+          },
         },
         {
-          provide: ApiConfigService, useValue: { getMaiarIdUrl: jest.fn() },
+          provide: ApiConfigService,
+          useValue: {
+            getMaiarIdUrl: jest.fn(),
+          },
         },
         {
-          provide: UsernameService, useValue: { getUsernameForAddressRaw: jest.fn() },
+          provide: UsernameService,
+          useValue: {
+            getUsernameForAddressRaw: jest.fn(),
+          },
         },
         {
-          provide: ProtocolService, useValue: { getShardCount: jest.fn() },
+          provide: ProtocolService,
+          useValue: {
+            getShardCount: jest.fn(),
+          },
         },
       ],
     }).compile();

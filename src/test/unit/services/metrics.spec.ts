@@ -13,22 +13,26 @@ describe('ApiMetricService', () => {
       providers: [
         ApiMetricsService,
         {
-          provide: ApiConfigService, useValue: {
+          provide: ApiConfigService,
+          useValue: {
             getIsTransactionProcessorCronActive: jest.fn(),
           },
         },
         {
-          provide: GatewayService, useValue: {
+          provide: GatewayService,
+          useValue: {
             getNetworkStatus: jest.fn(),
           },
         },
         {
-          provide: ProtocolService, useValue: {
+          provide: ProtocolService,
+          useValue: {
             getShardIds: jest.fn(),
           },
         },
         {
-          provide: MetricsService, useValue: {
+          provide: MetricsService,
+          useValue: {
             vmQueriesHistogram: jest.fn(),
             gatewayDurationHistogram: jest.fn(),
             persistenceDurationHistogram: jest.fn(),

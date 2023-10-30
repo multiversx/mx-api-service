@@ -30,7 +30,8 @@ describe('EsdtAddressService', () => {
       providers: [
         EsdtAddressService,
         {
-          provide: IndexerService, useValue: {
+          provide: IndexerService,
+          useValue: {
             getNftCountForAddress: jest.fn(),
             getCollectionCountForAddress: jest.fn(),
             getNftsForAddress: jest.fn(),
@@ -38,25 +39,29 @@ describe('EsdtAddressService', () => {
           },
         },
         {
-          provide: ApiConfigService, useValue:
+          provide: ApiConfigService,
+          useValue:
           {
             getExternalMediaUrl: jest.fn(),
             getIsIndexerV3FlagActive: jest.fn(),
           },
         },
         {
-          provide: EsdtService, useValue: {
+          provide: EsdtService,
+          useValue: {
             getEsdtTokenProperties: jest.fn(),
           },
         },
         {
-          provide: GatewayService, useValue: {
+          provide: GatewayService,
+          useValue: {
             get: jest.fn(),
             getAddressEsdtRoles: jest.fn(),
           },
         },
         {
-          provide: CacheService, useValue: {
+          provide: CacheService,
+          useValue: {
             get: jest.fn(),
             set: jest.fn(),
             getLocal: jest.fn(),
@@ -64,20 +69,30 @@ describe('EsdtAddressService', () => {
           },
         },
         {
-          provide: MetricsService, useValue:
+          provide: MetricsService,
+          useValue:
           {
             incrementPendingApiHit: jest.fn(),
             incrementCachedApiHit: jest.fn(),
           },
         },
         {
-          provide: ProtocolService, useValue: { getSecondsRemainingUntilNextRound: jest.fn() },
+          provide: ProtocolService,
+          useValue: {
+            getSecondsRemainingUntilNextRound: jest.fn(),
+          },
         },
         {
-          provide: NftExtendedAttributesService, useValue: { getTags: jest.fn() },
+          provide: NftExtendedAttributesService,
+          useValue: {
+            getTags: jest.fn(),
+          },
         },
         {
-          provide: CollectionService, useValue: { applyPropertiesToCollections: jest.fn() },
+          provide: CollectionService,
+          useValue: {
+            applyPropertiesToCollections: jest.fn(),
+          },
         },
       ],
     }).compile();

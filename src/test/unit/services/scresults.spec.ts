@@ -16,7 +16,8 @@ describe('TagService', () => {
       providers: [
         SmartContractResultService,
         {
-          provide: IndexerService, useValue: {
+          provide: IndexerService,
+          useValue: {
             getScResults: jest.fn(),
             getScResult: jest.fn(),
             getScResultsCount: jest.fn(),
@@ -25,12 +26,14 @@ describe('TagService', () => {
           },
         },
         {
-          provide: TransactionActionService, useValue: {
+          provide: TransactionActionService,
+          useValue: {
             getTransactionAction: jest.fn(),
           },
         },
         {
-          provide: AssetsService, useValue: {
+          provide: AssetsService,
+          useValue: {
             getAllAccountAssets: jest.fn(),
           },
         },
