@@ -248,30 +248,37 @@ export class EsdtService {
       return [];
     }
 
-    const tokenAddressesAndRoles: TokenRoles[] = [];
-    let currentAddressRoles = new TokenRoles();
-    for (const valueEncoded of tokenAddressesAndRolesEncoded) {
+    return this.processEncodedAddressesAndRoles(tokenAddressesAndRolesEncoded);
+  }
+
+  private processEncodedAddressesAndRoles(encodedData: any[]): TokenRoles[] {
+    const result: TokenRoles[] = [];
+    let currentRole: TokenRoles | null = null;
+
+    for (const valueEncoded of encodedData) {
       const address = BinaryUtils.tryBase64ToAddress(valueEncoded);
-      if (address) {
-        if (currentAddressRoles.address) {
-          tokenAddressesAndRoles.push(currentAddressRoles);
+
+      if (address || valueEncoded === null) {
+        if (currentRole && currentRole.address) {
+          result.push(currentRole);
+        }
+        currentRole = new TokenRoles();
+        currentRole.address = address;
+      } else {
+        if (!currentRole) {
+          currentRole = new TokenRoles();
         }
 
-        currentAddressRoles = new TokenRoles();
-        currentAddressRoles.address = address;
-
-        continue;
+        const role = BinaryUtils.base64Decode(valueEncoded);
+        TokenHelpers.setTokenRole(currentRole, role);
       }
-
-      const role = BinaryUtils.base64Decode(valueEncoded);
-      TokenHelpers.setTokenRole(currentAddressRoles, role);
     }
 
-    if (currentAddressRoles.address) {
-      tokenAddressesAndRoles.push(currentAddressRoles);
+    if (currentRole && currentRole.address) {
+      result.push(currentRole);
     }
 
-    return tokenAddressesAndRoles;
+    return result;
   }
 
   private async getLockedAccounts(identifier: string): Promise<EsdtLockedAccount[]> {
