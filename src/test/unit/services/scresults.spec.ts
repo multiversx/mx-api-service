@@ -163,7 +163,10 @@ describe('TagService', () => {
       name: 'transfer',
       description: 'Transfer',
       arguments: {
-        transfers: [[Object]],
+        transfers: [{
+          category: "scCall",
+          name: "esdtTransfer",
+        }],
         receiver: 'erd1ahauxqcaxvcksrcyyxzk5lrr3p8p8rjtayfue068nktrpjpvzers3dgvax',
         functionName: undefined,
         functionArgs: [],
