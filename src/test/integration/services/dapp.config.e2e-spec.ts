@@ -59,11 +59,11 @@ describe('Dapp Config Service', () => {
       }
     });
 
-    it("should return devnet2 dapp configuration", () => {
+    it("should return devnet-old dapp configuration", () => {
       jest
         .spyOn(DappConfigService.prototype, 'getDappConfigurationRaw')
         .mockImplementation(jest.fn(() => new DappConfig({
-          "id": "devnet2",
+          "id": "devnet-old",
           "name": "Devnet",
           "egldLabel": "xEGLD",
           "decimals": "4",
@@ -71,9 +71,9 @@ describe('Dapp Config Service', () => {
           "gasPerDataByte": "1500",
           "apiTimeout": "4000",
           "walletConnectDeepLink": "https://maiar.page.link/?apn=com.multiversx.maiar.wallet&isi=1519405832&ibi=com.multiversx.maiar.wallet&link=https://maiar.com/",
-          "walletAddress": "https://devnet2-wallet.multiversx.com",
-          "apiAddress": "https://devnet2-api.multiversx.com",
-          "explorerAddress": "http://devnet2-explorer.multiversx.com",
+          "walletAddress": "https://devnet-old-wallet.multiversx.com",
+          "apiAddress": "https://devnet-old-api.multiversx.com",
+          "explorerAddress": "http://devnet-old-explorer.multiversx.com",
           "chainId": "D",
         })));
 
