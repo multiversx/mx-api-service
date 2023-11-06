@@ -1,4 +1,4 @@
-network: 'devnet2'
+network: 'devnet-old'
 metaChainShardId: 4294967295
 api:
   public: true
@@ -39,13 +39,13 @@ features:
     enabled: false
   marketplace:
     enabled: false
-    serviceUrl: 'https://devnet2-nfts-graph.multiversx.com/graphql'
+    serviceUrl: 'https://devnet-old-nfts-graph.multiversx.com/graphql'
   exchange:
     enabled: false
-    serviceUrl: 'https://devnet2-graph.xexchange.com/graphql'
+    serviceUrl: 'https://devnet-old-graph.xexchange.com/graphql'
   dataApi:
     enabled: false
-    serviceUrl: 'https://devnet2-data-api.multiversx.com'
+    serviceUrl: 'https://devnet-old-data-api.multiversx.com'
   auth:
     enabled: false
     maxExpirySeconds: 86400
@@ -61,25 +61,25 @@ image:
 aws:
   s3KeyId: ''
   s3Secret: ''
-  s3Bucket: 'devnet2-media.elrond.com'
+  s3Bucket: 'devnet-old-media.elrond.com'
   s3Region: ''
 urls:
-  self: 'https://devnet2-api.multiversx.com'
+  self: 'https://devnet-old-api.multiversx.com'
   elastic:
-    - 'https://devnet2-index.multiversx.com'
+    - 'https://devnet-old-index.multiversx.com'
   gateway:
-    - 'https://devnet2-gateway.multiversx.com'
+    - 'https://devnet-old-gateway.multiversx.com'
   verifier: 'https://play-api.multiversx.com'
   redis: '127.0.0.1'
   rabbitmq: 'amqp://127.0.0.1:5672'
-  providers: 'https://devnet2-delegation-api.multiversx.com/providers'
-  delegation: 'https://devnet2-delegation-api.multiversx.com'
-  media: 'https://devnet2-media.elrond.com'
-  nftThumbnails: 'https://devnet2-media.elrond.com/nfts/thumbnail'
+  providers: 'https://devnet-old-delegation-api.multiversx.com/providers'
+  delegation: 'https://devnet-old-delegation-api.multiversx.com'
+  media: 'https://devnet-old-media.elrond.com'
+  nftThumbnails: 'https://devnet-old-media.elrond.com/nfts/thumbnail'
   tmp: '/tmp'
   ipfs: 'https://ipfs.io/ipfs'
-  socket: 'devnet2-socket-fra.elrond.com'
-  maiarId: 'https://devnet2-id-api.multiversx.com'
+  socket: 'devnet-old-socket-fra.elrond.com'
+  maiarId: 'https://devnet-old-id-api.multiversx.com'
 indexer:
   type: 'elastic'
   maxPagination: 10000
