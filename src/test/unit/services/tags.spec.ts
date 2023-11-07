@@ -16,13 +16,19 @@ describe('TagService', () => {
       providers: [
         TagService,
         {
-          provide: IndexerService, useValue: {
+          provide: IndexerService,
+          useValue: {
             getNftTagCount: jest.fn(),
             getNftTags: jest.fn(),
             getTag: jest.fn(),
           },
         },
-        { provide: CacheService, useValue: { getOrSet: jest.fn() } },
+        {
+          provide: CacheService,
+          useValue: {
+            getOrSet: jest.fn(),
+          },
+        },
       ],
     }).compile();
 

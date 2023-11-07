@@ -66,6 +66,7 @@ describe('UsernameService', () => {
       const address = 'erd1qga7ze0l03chfgru0a32wxqf2226nzrxnyhzer9lmudqhjgy7ycqjjyknz';
 
       jest.spyOn(service['apiService'], 'get').mockRejectedValue(new Error('Invalid address'));
+      jest.spyOn(service['logger'], 'error').mockImplementation(() => { });
 
       const result = await service.getUsernameForAddressRaw(address);
 

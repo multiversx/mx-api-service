@@ -15,13 +15,15 @@ describe('Transfers Service', () => {
       providers: [
         TransferService,
         {
-          provide: IndexerService, useValue: {
+          provide: IndexerService,
+          useValue: {
             getTransfers: jest.fn(),
             getTransfersCount: jest.fn(),
           },
         },
         {
-          provide: TransactionService, useValue: {
+          provide: TransactionService,
+          useValue: {
             applyBlockInfo: jest.fn(),
             processTransactions: jest.fn(),
           },

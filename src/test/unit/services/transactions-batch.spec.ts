@@ -19,12 +19,14 @@ describe('TransactionsBatchService', () => {
       providers: [
         TransactionsBatchService,
         {
-          provide: TransactionService, useValue: {
+          provide: TransactionService,
+          useValue: {
             createTransaction: jest.fn(),
           },
         },
         {
-          provide: CacheService, useValue:
+          provide: CacheService,
+          useValue:
           {
             getKeys: jest.fn(),
             getRemote: jest.fn(),

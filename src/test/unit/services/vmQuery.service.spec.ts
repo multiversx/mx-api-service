@@ -101,6 +101,9 @@ describe('VmQueryService', () => {
     it('should throw an error if the vm query fails', async () => {
       const error = new Error('VM query failed');
       jest.spyOn(service, 'vmQueryRaw').mockRejectedValue(error);
+      jest.spyOn(service['logger'], 'error').mockImplementation(() =>
+        "Error in vm query for address 'contract', function 'func', caller 'caller', value 'value', args['']. Error message: undefined");
+
       await expect(service.vmQuery(contract, func, caller, args, value)).rejects.toThrow("Cannot read properties of undefined (reading 'data')");
     });
   });

@@ -103,23 +103,6 @@ describe("NFT Controller", () => {
             });
         });
 
-    it.skip('should return all NFTs that are whitelisted in storage', async () => {
-      const params = new URLSearchParams({
-        'isWhitelistedStorage': 'true',
-      });
-
-      await request(app.getHttpServer())
-        .get(`${path}?${params}`)
-        .expect(200)
-        .then(res => {
-          expect(res.body).toHaveLength(25);
-
-          for (const response of res.body) {
-            expect(response.isWhitelistedStorage).toStrictEqual(true);
-          }
-        });
-    });
-
     it('should return a list of 25 esdts that are marked as scam', async () => {
       const params = new URLSearchParams({
         'isNsfw': 'true',

@@ -50,6 +50,9 @@ describe('GithubService', () => {
 
     it('should return undefined if an error occurs', async () => {
       mockApiService.get.mockRejectedValueOnce(new Error('Github API error'));
+      jest.spyOn(service['logger'], 'error').mockImplementation(() =>
+        " An unhandled error occurred when getting Github user info for username 'testuser'");
+
       const result = await service.getUserInfo('testuser');
       expect(result).toBeUndefined();
     });

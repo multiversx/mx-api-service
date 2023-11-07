@@ -13,6 +13,7 @@ describe('Stake Service', () => {
   let stakeService: StakeService;
   let cachingService: CacheService;
   let vmQueryService: VmQueryService;
+  let apiConfigService: ApiConfigService;
 
   beforeEach(async () => {
     const moduleRef = await Test.createTestingModule({
@@ -62,6 +63,7 @@ describe('Stake Service', () => {
     stakeService = moduleRef.get<StakeService>(StakeService);
     cachingService = moduleRef.get<CacheService>(CacheService);
     vmQueryService = moduleRef.get<VmQueryService>(VmQueryService);
+    apiConfigService = moduleRef.get<ApiConfigService>(ApiConfigService);
   });
 
   describe('getGlobalStake', () => {
@@ -149,6 +151,7 @@ describe('Stake Service', () => {
       const queueSize = Buffer.from('10', 'ascii').toString('base64');
       const nodesMock = require('../../mocks/nodes.mock.json');
 
+      jest.spyOn(apiConfigService, 'getStakingContractAddress').mockReturnValue('erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqllls0lczs7');
       jest.spyOn(stakeService['vmQueryService'], 'vmQuery').mockResolvedValue([queueSize]);
       jest.spyOn(stakeService['nodeService'], 'getAllNodes').mockResolvedValue(nodesMock);
 
