@@ -179,6 +179,7 @@ describe('TransactionService', () => {
         receiversShardIDs: [1],
         operation: 'transfer',
         scResults: [''],
+        function: 'lockTokens',
       },
       {
         hash: '2b1ce5558f5faa533afd437a42a5aeadea8302dc3cca778c0ed50d19c0a047a4',
@@ -210,6 +211,7 @@ describe('TransactionService', () => {
         receiversShardIDs: [1],
         operation: 'transfer',
         scResults: [''],
+        function: 'unDelegate',
       },
     ];
 
