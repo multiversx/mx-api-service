@@ -1,14 +1,22 @@
+import { BinaryUtils, StringUtils } from "@multiversx/sdk-nestjs-common";
 import { Test } from "@nestjs/testing";
+import { ApiConfigService } from "src/common/api-config/api.config.service";
+import { QueryPagination } from "src/common/entities/query.pagination";
+import { Operation } from "src/common/indexer/entities";
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { AccountFilter } from "src/endpoints/accounts/entities/account.filter";
 import { TransactionFilter } from "src/endpoints/transactions/entities/transaction.filter";
 import { TransactionStatus } from "src/endpoints/transactions/entities/transaction.status";
 import { TransactionType } from "src/endpoints/transactions/entities/transaction.type";
+import { TransactionQueryOptions } from "src/endpoints/transactions/entities/transactions.query.options";
 import { TransactionService } from "src/endpoints/transactions/transaction.service";
 import { TransferService } from "src/endpoints/transfers/transfer.service";
 
 describe('Transfers Service', () => {
   let service: TransferService;
+  let indexerService: IndexerService;
+  let apiConfigService: ApiConfigService;
+  let transactionService: TransactionService;
 
   beforeEach(async () => {
     const moduleRef = await Test.createTestingModule({
@@ -28,10 +36,19 @@ describe('Transfers Service', () => {
             processTransactions: jest.fn(),
           },
         },
+        {
+          provide: ApiConfigService,
+          useValue: {
+            getMetaChainShardId: jest.fn(),
+          },
+        },
       ],
     }).compile();
 
     service = moduleRef.get<TransferService>(TransferService);
+    indexerService = moduleRef.get<IndexerService>(IndexerService);
+    apiConfigService = moduleRef.get<ApiConfigService>(ApiConfigService);
+    transactionService = moduleRef.get<TransactionService>(TransactionService);
   });
 
   it('service should be defined', () => {
@@ -261,6 +278,143 @@ describe('Transfers Service', () => {
 
       expect(indexerServiceMock).toHaveBeenCalledWith(filter);
       expect(result).toStrictEqual(2);
+    });
+  });
+
+  describe('getTransfers', () => {
+    const mockElasticOperations: Operation[] = [
+      {
+        hash: '97f859debd4d68b5cf69d1659c7dd48009dc9f1f87774812907f68dd60d11f11',
+        miniBlockHash: 'd1df5a025f57aa1fbbb09bb5b0ab5cb08ed972d2bf56a87d4c63407dd876657b',
+        nonce: 339,
+        round: 17221533,
+        value: '0',
+        receiver: 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllllls27850s',
+        sender: 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqllls0lczs7',
+        receiverShard: 4294967295,
+        senderShard: 4294967295,
+        gasPrice: '1000000000',
+        gasLimit: '12000000',
+        gasUsed: '6075500',
+        fee: '135500000000000',
+        data: 'cmVEZWxlZ2F0ZVJld2FyZHM=',
+        signature: '45da4a3fa98f76fea8843bac2b30f807aa136bee9a128ebdb5031eff39db6a191416cd159ca9c118ce0ceccc584cbbf298ce7ddcb6427371749a879d0c3a0e05',
+        timestamp: 1699446798,
+        status: 'success',
+        searchOrder: 0,
+        hasScResults: true,
+        hasOperations: true,
+        type: 'normal',
+        operation: 'transfer',
+        function: '6e6f646573436f6e666967',
+        canBeIgnored: false,
+        esdtValues: [],
+        receivers: [],
+        receiversShardIDs: [],
+        scResults: [],
+        tokens: [],
+      },
+      {
+        hash: '2fbb24458f6e8ac233aaffdf1a5d93710650563c541d3566aff1e56d319d28b9',
+        miniBlockHash: '8a4eb533f2b2ed8543c461d00d7db55fa496144af882cc002233aab1a6c9b107',
+        nonce: 339,
+        round: 17221533,
+        value: '0',
+        receiver: 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllllls27850s',
+        sender: 'erd1wh9c0sjr2xn8hzf02lwwcr4jk2s84tat9ud2kaq6zr7xzpvl9l5q8awmex',
+        receiverShard: 4294967295,
+        senderShard: 1,
+        gasPrice: '1000000000',
+        gasLimit: '12000000',
+        gasUsed: '6075500',
+        fee: '135500000000000',
+        data: 'cmVEZWxlZ2F0ZVJld2FyZHM=',
+        signature: '45da4a3fa98f76fea8843bac2b30f807aa136bee9a128ebdb5031eff39db6a191416cd159ca9c118ce0ceccc584cbbf298ce7ddcb6427371749a879d0c3a0e05',
+        timestamp: 1699446798,
+        status: 'success',
+        searchOrder: 0,
+        hasScResults: true,
+        hasOperations: true,
+        type: 'Transaction',
+        operation: 'unStakeNodes',
+        function: 'unStakeNodes',
+        canBeIgnored: false,
+        esdtValues: [],
+        receivers: [],
+        receiversShardIDs: [],
+        scResults: [],
+        tokens: [],
+      },
+    ];
+    it('should return an array of transfers', async () => {
+      jest.spyOn(indexerService, 'getTransfers').mockResolvedValue(mockElasticOperations);
+
+      const filter = new TransactionFilter();
+      const pagination = new QueryPagination();
+      const queryOptions = new TransactionQueryOptions();
+      const transactions = await service.getTransfers(filter, pagination, queryOptions);
+
+      expect(transactions).toBeInstanceOf(Array);
+    });
+
+    it('should decode function when senderShard and receiverShard are metaChainShardId', async () => {
+      const filter = new TransactionFilter();
+      const pagination = new QueryPagination();
+      const queryOptions = new TransactionQueryOptions();
+
+      jest.spyOn(indexerService, 'getTransfers').mockResolvedValue(mockElasticOperations);
+      jest.spyOn(apiConfigService, 'getMetaChainShardId').mockReturnValue(4294967295);
+
+      jest.spyOn(StringUtils, 'isHex').mockReturnValue(true);
+      jest.spyOn(BinaryUtils, 'hexToString').mockReturnValue('nodesConfig');
+
+      const transactions = await service.getTransfers(filter, pagination, queryOptions);
+
+      expect(transactions[0].function).toEqual('nodesConfig');
+    });
+
+    it('should decode function when senderShard and receiverShard are metaChainShardId', async () => {
+      const filter = new TransactionFilter();
+      const pagination = new QueryPagination();
+      const queryOptions = new TransactionQueryOptions();
+
+      jest.spyOn(indexerService, 'getTransfers').mockResolvedValue(mockElasticOperations);
+      jest.spyOn(apiConfigService, 'getMetaChainShardId').mockReturnValue(4294967295);
+
+      jest.spyOn(StringUtils, 'isHex').mockReturnValue(true);
+      jest.spyOn(BinaryUtils, 'hexToString').mockReturnValue('nodesConfig');
+
+      const transactions = await service.getTransfers(filter, pagination, queryOptions);
+
+      expect(transactions[0].function).toEqual('nodesConfig');
+    });
+
+    it('should not decode function when senderShard and receiverShard are not metaChainShardId', async () => {
+      const filter = new TransactionFilter();
+      const pagination = new QueryPagination();
+      const queryOptions = new TransactionQueryOptions();
+
+      jest.spyOn(indexerService, 'getTransfers').mockResolvedValue(mockElasticOperations);
+      jest.spyOn(StringUtils, 'isHex').mockReturnValue(false);
+      const transactions = await service.getTransfers(filter, pagination, queryOptions);
+
+      expect(transactions[1].function).toEqual('unStakeNodes');
+    });
+
+    it('should call processTransactions with correct options', async () => {
+      const filter = new TransactionFilter();
+      const pagination = new QueryPagination();
+      const queryOptions = new TransactionQueryOptions();
+      const fields = ['senderBlockHash'];
+
+      jest.spyOn(indexerService, 'getTransfers').mockResolvedValue(mockElasticOperations);
+
+      await service.getTransfers(filter, pagination, queryOptions, fields);
+
+      expect(transactionService.processTransactions).toHaveBeenCalledWith(expect.anything(), {
+        withScamInfo: false,
+        withUsername: false,
+      });
     });
   });
 });

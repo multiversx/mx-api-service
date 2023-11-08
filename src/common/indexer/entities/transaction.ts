@@ -24,5 +24,6 @@ export interface Transaction {
   receivers: string[];
   receiversShardIDs: number[];
   operation: string;
+  function: string;
   scResults: any[];
 }

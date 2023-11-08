@@ -12,6 +12,7 @@ import { TransactionType } from "src/endpoints/transactions/entities/transaction
 import { MetabondingActionRecognizerService } from "./recognizers/mex/mex.metabonding.action.recognizer.service";
 import { AddressUtils, BinaryUtils, StringUtils } from "@multiversx/sdk-nestjs-common";
 import { OriginLogger } from "@multiversx/sdk-nestjs-common";
+import { ApiConfigService } from "src/common/api-config/api.config.service";
 
 @Injectable()
 export class TransactionActionService {
@@ -26,6 +27,7 @@ export class TransactionActionService {
     @Inject(forwardRef(() => TokenTransferService))
     private readonly tokenTransferService: TokenTransferService,
     private readonly metabondingRecognizer: MetabondingActionRecognizerService,
+    private readonly apiConfigService: ApiConfigService,
   ) { }
 
   private async getRecognizers() {
@@ -46,12 +48,15 @@ export class TransactionActionService {
 
   async getTransactionAction(transaction: Transaction): Promise<TransactionAction | undefined> {
     const metadata = await this.getTransactionMetadata(transaction);
-
     const recognizers = await this.getRecognizers();
+    const metaChainShardId = this.apiConfigService.getMetaChainShardId();
 
     for (const recognizer of recognizers) {
       const action = await recognizer.recognize(metadata);
       if (action !== undefined) {
+        if (transaction.senderShard === metaChainShardId && transaction.receiverShard === metaChainShardId && StringUtils.isHex(action.name)) {
+          action.name = BinaryUtils.hexToString(action.name);
+        }
         return action;
       }
     }
