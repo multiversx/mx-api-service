@@ -419,6 +419,7 @@ describe('Account Service', () => {
         receiversShardIDs: [],
         operation: '',
         scResults: [],
+        function: 'unDelegate',
       });
 
       const result = await service.getAccountDeployedAtRaw(address);
