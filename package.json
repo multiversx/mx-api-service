@@ -40,6 +40,7 @@
     "test:e2e:cov": "node --expose-gc --no-compilation-cache ./node_modules/.bin/jest --config ./src/test/jest-e2e.json --coverage --forceExit --logHeapUsage --maxWorkers=4",
     "test:e2e:local": "npm run test:e2e:warm & npm run test:e2e",
     "test:api": "jest --config ./src/test/jest-api.json --runInBand --detectOpenHandles --forceExit",
+    "test:api:cov": "node --expose-gc --no-compilation-cache ./node_modules/.bin/jest --config ./src/test/jest-api.json --coverage --forceExit --logHeapUsage --maxWorkers=4",
     "test:graph": "jest --config ./src/test/jest-graph-spec.json --runInBand --detectOpenHandles --forceExit",
     "init": "run-script-os",
     "copy-mainnet-config": "run-script-os",

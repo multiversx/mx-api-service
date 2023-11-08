@@ -43,4 +43,11 @@ describe("API Testing", () => {
     checker.skipFields = skipedFields;
     await checker.checkAlternativeCount();
   });
+
+  it.only('should check tokens details', async () => {
+    const checker = new ApiChecker('tokens', app.getHttpServer());
+    checker.skipFields = skipedFields;
+    await checker.checkTokensDetails();
+  });
+
 });

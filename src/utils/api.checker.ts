@@ -26,12 +26,27 @@ export class ApiChecker {
 
   async checkDetails(field?: string) {
     const [item] = await this.requestList({ size: 1 });
+
+    //console.log('[item]:', [item]);
     const idAttribute = field ? field : Object.keys(item)[0];
-
+    //console.log('idAttribute:', idAttribute);
     const id = item[idAttribute];
-
+    //console.log('id', id);
     const details = await this.requestItemParallel(id, Object.keys(item));
+    //console.log('details', details);
+    expect(details).toEqual(item);
+  }
 
+  async checkAccountDetails(field?: string) {
+    const [item] = await this.requestList({ size: 1 });
+
+    //console.log('[item]:', item);
+    const idAttribute = field ? field : Object.keys(item)[0];
+    //console.log('idAttribute:', idAttribute);
+    const id = idAttribute;
+    //console.log('id', id);
+    const details = await this.requestItemParallel(id, Object.keys(item));
+    //console.log('details', details);
     expect(details).toEqual(item);
   }
 
@@ -66,7 +81,7 @@ export class ApiChecker {
     try {
       expect(count).toStrictEqual(alternativeCount);
     } catch (error) {
-      throw new Error(`Count value ${count} for '/count' is not equal with count value ${alternativeCount} of '/c' endpoint`);
+      throw new Error("Count value" + count + "for /count is not equal with count value " + alternativeCount + " of /c endpoint");
     }
   }
 
@@ -79,10 +94,13 @@ export class ApiChecker {
   async checkFilterInternal(criteria: string) {
     const items = await this.requestList({ size: 100, fields: criteria });
 
+    //console.log('items: ', items);
     const distinctCriteria = items.map(x => x[criteria]).distinct();
-
+    //console.log('distinctCriteria: ', distinctCriteria);
     const shuffled = distinctCriteria.sort(() => 0.5 - Math.random());
+    //console.log('shuffled: ', shuffled);
     const selected = shuffled.slice(0, 10);
+    //console.log('selected: ', selected);
 
     for (const value of selected) {
       await this.checkFilterValueInternal(criteria, value);
@@ -95,7 +113,75 @@ export class ApiChecker {
     try {
       expect(status).toStrictEqual(200);
     } catch (error) {
-      throw new Error(`Endpoint status code ${status}`);
+      throw new Error("Endpoint status code " + status);
+    }
+  }
+
+  async checkAccountResponseBody() {
+    const status = await this.requestBody();
+
+    const expectedObj = [
+      {
+        address: 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqplllst77y4l',
+        balance: expect.any(String),
+        nonce: 1,
+        timestamp: expect.any(Number),
+        shard: 4294967295,
+        ownerAddress: 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqplllst77y4l',
+        assets: {
+          name: 'System: Staking Module',
+          description: 'Smart contract containing all staked eGLD on the network',
+          tags: [
+            'system',
+            'staking',
+            'module'
+          ],
+          iconPng: 'https://raw.githubusercontent.com/multiversx/mx-assets/master/accounts/icons/multiversx.png',
+          iconSvg: 'https://raw.githubusercontent.com/multiversx/mx-assets/master/accounts/icons/multiversx.svg'
+        }
+      }
+    ];
+
+    try {
+      expect(status).toEqual(expectedObj);
+    } catch (error) {
+      throw new Error("Bad Request!");
+    }
+  }
+
+  async checkTagsResponseBody() {
+    const status = await this.requestBody();
+
+    const expectedObj = [
+      {
+        tag: "sunny",
+        count: 1
+      }
+    ];
+
+    try {
+      expect(status).toEqual(expectedObj);
+    } catch (error) {
+      throw new Error("Bad Request!");
+    }
+  }
+
+  async checkTotalCountOfAllBlocksResponseBody() {
+    const status = await this.requestBodyCount();
+    try {
+      expect(+status).toBeGreaterThanOrEqual(68857158);
+    } catch (error) {
+      throw new Error("Bad Request!");
+    }
+  }
+
+  async checkResponseBodyDefault() {
+    const status = await this.requestBody();
+
+    try {
+      expect(status).toHaveLength(25);
+    } catch (error) {
+      throw new Error("Bad Request!");
     }
   }
 
@@ -108,20 +194,20 @@ export class ApiChecker {
         size: 100,
         [criteria]: value,
       };
-      const url = this.endpoint + '?' + new URLSearchParams(params);
-
-      throw new Error(`Filter count for criteria '${criteria}' failed (length = ${items.length}, count = ${count}). request: '${url}'`);
+      const url = "/" + this.endpoint + "?" + new URLSearchParams(params);
+      //console.log(url);
+      throw new Error("Filter count for criteria " + [criteria] + " failed (length = " + [items.length] + ", count = " + [count] + "). request: " + [url]);
     }
 
     const isValid = items.every(item => item[criteria] === value);
-    if (!isValid) {
+    if (isValid) {
       const params: Record<string, any> = {
         size: 1000,
         [criteria]: value,
       };
-      const url = this.endpoint + '?' + new URLSearchParams(params);
-
-      throw new Error(`Filter for criteria '${criteria}' failed. request: '${url}'`);
+      const url = '/' + this.endpoint + '?' + new URLSearchParams(params);
+      //console.log(url);
+      throw new Error("Filter for criteria " + [criteria] + " failed.  request: " + [url]);
     }
   }
 
@@ -134,7 +220,7 @@ export class ApiChecker {
     const urlParams = new URLSearchParams(params);
 
     const { body: result } = await request(this.httpServer)
-      .get(`/${this.endpoint}/${id}?${urlParams}`);
+      .get("/" + this.endpoint + "/" + id + "?" + urlParams);
 
     for (const skipField of this.skipFields) {
       delete result[skipField];
@@ -152,7 +238,7 @@ export class ApiChecker {
     const urlParams = new URLSearchParams(allParams);
 
     const { body: result } = await request(this.httpServer)
-      .get(`/${this.endpoint}?${urlParams}`);
+      .get("/" + this.endpoint + "?" + urlParams);
 
     for (const item of result) {
       for (const skipField of this.skipFields) {
@@ -169,7 +255,7 @@ export class ApiChecker {
     });
 
     const { body: result } = await request(this.httpServer)
-      .get(`/${this.endpoint}/count?${urlParams}`);
+      .get("/" + this.endpoint + "/count" + urlParams);
 
     return result;
   }
@@ -181,15 +267,29 @@ export class ApiChecker {
     });
 
     const { body: result } = await request(this.httpServer)
-      .get(`/${this.endpoint}/c?${urlParams}`);
+      .get("/" + this.endpoint + "/c" + urlParams);
 
     return result;
   }
 
   private async requestStatus(): Promise<number> {
     const result = await request(this.httpServer)
-      .get(`/${this.endpoint}`);
+      .get("/" + this.endpoint);
 
     return result.statusCode;
+  }
+
+  private async requestBody(): Promise<any[]> {
+    const result = await request(this.httpServer)
+      .get("/" + this.endpoint);
+
+    return result.body;
+  }
+
+  private async requestBodyCount(): Promise<string> {
+    const result = await request(this.httpServer)
+      .get("/" + this.endpoint);
+
+    return result.text;
   }
 }

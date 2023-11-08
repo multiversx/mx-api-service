@@ -38,4 +38,19 @@ describe("API Testing", () => {
     const checker = new ApiChecker('collections', app.getHttpServer());
     await checker.checkAlternativeCount();
   });
+
+  it('should check collections details', async () => {
+    const checker = new ApiChecker('collections', app.getHttpServer());
+    await checker.checkDetails();
+  });
+
+  describe("Response Format Validation", () => {
+
+    it('should check the response body: should return 25 collections', async () => {
+      const checker = new ApiChecker('collections', app.getHttpServer());
+      await checker.checkResponseBodyDefault();
+    });
+
+  })
+
 });
