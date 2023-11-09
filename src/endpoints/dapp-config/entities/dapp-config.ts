@@ -16,7 +16,7 @@ export class DappConfig {
   name: string = '';
 
   @Field(() => String, { description: 'Token label details' })
-  @ApiProperty({ type: String, example: 'eGLD' })
+  @ApiProperty({ type: String, example: 'EGLD' })
   egldLabel: string = '';
 
   @Field(() => String, { description: 'Token details' })
