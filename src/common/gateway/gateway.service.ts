@@ -156,19 +156,17 @@ export class GatewayService {
   }
 
   private getUrl(component: GatewayComponentRequest): string {
-    const snapshotlessGatewayComponents = [
+    const snapshotlessGatewayComponents = new Set([
       GatewayComponentRequest.addressBalance,
       GatewayComponentRequest.addressDetails,
       GatewayComponentRequest.addressEsdt,
       GatewayComponentRequest.addressNftByNonce,
       GatewayComponentRequest.vmQuery,
-    ];
+    ]);
 
-    if (snapshotlessGatewayComponents.includes(component)) {
-      return this.apiConfigService.getSnapshotlessGatewayUrl() ?? this.apiConfigService.getGatewayUrl();
-    }
-
-    return this.apiConfigService.getGatewayUrl();
+    return snapshotlessGatewayComponents.has(component)
+      ? this.apiConfigService.getSnapshotlessGatewayUrl() ?? this.apiConfigService.getGatewayUrl()
+      : this.apiConfigService.getGatewayUrl();
   }
 
   @LogPerformanceAsync(MetricsEvents.SetGatewayDuration, { argIndex: 1 })
