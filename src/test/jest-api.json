@@ -16,5 +16,10 @@
   "modulePaths": [
     "../.."
   ],
+  "collectCoverageFrom": [
+    "./src/**/*.(t|j)s",
+    "!./src/test/**"
+  ],
+  "coverageDirectory": "./coverage/api",
   "testTimeout": 180000
 }
