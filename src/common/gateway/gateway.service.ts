@@ -156,7 +156,7 @@ export class GatewayService {
   }
 
   private getUrl(component: GatewayComponentRequest): string {
-    const lightGatewayComponents = [
+    const snapshotlessGatewayComponents = [
       GatewayComponentRequest.addressBalance,
       GatewayComponentRequest.addressDetails,
       GatewayComponentRequest.addressEsdt,
@@ -164,8 +164,8 @@ export class GatewayService {
       GatewayComponentRequest.vmQuery,
     ];
 
-    if (lightGatewayComponents.includes(component)) {
-      return this.apiConfigService.getLightGatewayUrl() ?? this.apiConfigService.getGatewayUrl();
+    if (snapshotlessGatewayComponents.includes(component)) {
+      return this.apiConfigService.getSnapshotlessGatewayUrl() ?? this.apiConfigService.getGatewayUrl();
     }
 
     return this.apiConfigService.getGatewayUrl();
