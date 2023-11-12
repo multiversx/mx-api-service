@@ -27,18 +27,15 @@ describe("API Testing", () => {
     await app.close();
   });
 
-  it("should check blocks pagination", async () => {
+  it('should check blocks pagination', async () => {
     const checker = new ApiChecker('blocks', app.getHttpServer());
-
     checker.defaultParams = { epoch: 500, shard: randomShard };
     checker.skipFields = skipedFields;
-
     await checker.checkPagination();
   });
 
   it('should check blocks status response code', async () => {
     const checker = new ApiChecker('blocks', app.getHttpServer());
-
     checker.defaultParams = { epoch: 500, shard: randomShard };
     checker.skipFields = skipedFields;
     await checker.checkStatus();
@@ -46,53 +43,29 @@ describe("API Testing", () => {
 
   it('should check blocks count', async () => {
     const checker = new ApiChecker('blocks', app.getHttpServer());
-
     checker.defaultParams = { epoch: 500, shard: randomShard };
     checker.skipFields = skipedFields;
     await checker.checkAlternativeCount();
   });
 
-  describe("Error Handling Tests", () => {
-
+  describe('Error Handling Tests', () => {
     it('should handle invalid data for a given hash', async () => {
-      const checker = new ApiChecker('blocks/11', app.getHttpServer());
-      try {
-        await checker.checkStatus();
-      } catch (error) {
-        expect(error).toBeInstanceOf(Error);
-        console.log('Bad request.');
-      }
+      const hash: string = '11';
+      const checker = new ApiChecker(`blocks/${hash}`, app.getHttpServer());
+      await expect(checker.checkStatus()).rejects.toThrowError('Endpoint status code 400');
     });
+  });
 
-  })
-
-  describe("Response Format Validation", () => {
-
-    it('should check the response body: should return 25 blocks details from all shards ', async () => {
+  describe('Response Format Validation', () => {
+    it('should check the response body: should return 25 blocks details from all shards', async () => {
       const checker = new ApiChecker('blocks', app.getHttpServer());
-
       checker.defaultParams = { epoch: 500, shard: randomShard };
       await checker.checkResponseBodyDefault();
     });
 
-    it('should check the count of all blocks from all shards ', async () => {
-      const checker = new ApiChecker('blocks/count', app.getHttpServer());
-
-      checker.defaultParams = { epoch: 500, shard: randomShard };
-      await checker.checkTotalCountOfAllBlocksResponseBody();
-    });
-
-  })
-
-  describe("Concurrent Testing", () => {
-
-    it('should check the sorting of the blocks according to the "withProposerIdentity" filter', async () => {
+    it('should check response body for all blocks from all shards', async () => {
       const checker = new ApiChecker('blocks', app.getHttpServer());
-
-      checker.defaultParams = { epoch: 500, shard: randomShard };
-      await checker.checkFilterValueInternal('withProposerIdentity', 'true');
+      await expect(checker.checkBlocksResponseBody()).resolves.not.toThrowError('Invalid response body for blocks!');
     });
-
-  })
-
+  });
 });

@@ -25,7 +25,7 @@ describe("API Testing", () => {
     await app.close();
   });
 
-  it("should check tags pagination", async () => {
+  it('should check tags pagination', async () => {
     const checker = new ApiChecker('tags', app.getHttpServer());
     await checker.checkPagination();
   });
@@ -36,33 +36,23 @@ describe("API Testing", () => {
   });
 
   it('should handle valid data', async () => {
-    const checker = new ApiChecker('tags/sunny', app.getHttpServer());
+    const tag: string = 'sunny';
+    const checker = new ApiChecker(`tags/${tag}`, app.getHttpServer());
     await checker.checkStatus();
   });
 
-  describe("Response Format Validation", () => {
-
-    it("should check data response format for a tag search by tag name ", async () => {
-
-      const checker = new ApiChecker('tags?search=sunny', app.getHttpServer());
-      await checker.checkTagsResponseBody();
-
+  describe('Response Format Validation', () => {
+    it('should check response body for all distinct NFT tags', async () => {
+      const checker = new ApiChecker('tags', app.getHttpServer());
+      await expect(checker.checkTagsResponseBody()).resolves.not.toThrowError('Invalid response body for tags!');
     });
-
   });
 
-  describe("Error Handling Tests", () => {
-
+  describe('Error Handling Tests', () => {
     it('should handle invalid data', async () => {
-      const checker = new ApiChecker('tags/aa', app.getHttpServer());
-      try {
-        await checker.checkStatus();
-      } catch (error) {
-        expect(error).toBeInstanceOf(Error);
-        console.log('Nft tag not found.');
-      }
+      const tag: string = 'aa';
+      const checker = new ApiChecker(`tags/${tag}`, app.getHttpServer());
+      await expect(checker.checkStatus()).rejects.toThrowError('Endpoint status code 404');
     });
-
   });
-
 });

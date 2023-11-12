@@ -24,7 +24,7 @@ describe("API Testing", () => {
     await app.close();
   });
 
-  it("should check nodes pagination", async () => {
+  it('should check nodes pagination', async () => {
     const checker = new ApiChecker('nodes', app.getHttpServer());
     await checker.checkPagination();
   });
@@ -37,5 +37,12 @@ describe("API Testing", () => {
   it('should check nodes count', async () => {
     const checker = new ApiChecker('nodes', app.getHttpServer());
     await checker.checkAlternativeCount();
+  });
+
+  describe('Response Format Validation', () => {
+    it('should check response body for a list of nodes of type observer or validator', async () => {
+      const checker = new ApiChecker('nodes', app.getHttpServer());
+      await expect(checker.checkNodesResponseBody()).resolves.not.toThrowError('Invalid response body for nodes!');
+    });
   });
 });
