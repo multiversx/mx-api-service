@@ -232,21 +232,7 @@ export class NetworkService {
   async getStats(): Promise<Stats> {
     const metaChainShard = this.apiConfigService.getMetaChainShardId();
 
-    const [
-      {
-        erd_num_shards_without_meta: shards,
-        erd_round_duration: refreshRate,
-      },
-      {
-        erd_epoch_number: epoch,
-        erd_rounds_passed_in_current_epoch: roundsPassed,
-        erd_rounds_per_epoch: roundsPerEpoch,
-      },
-      blocks,
-      accounts,
-      transactions,
-      scResults,
-    ] = await Promise.all([
+    const promiseResults = await Promise.all([
       this.gatewayService.getNetworkConfig(),
       this.gatewayService.getNetworkStatus(metaChainShard),
       this.blockService.getBlocksCount(new BlockFilter()),
@@ -255,12 +241,22 @@ export class NetworkService {
       this.smartContractResultService.getScResultsCount(),
     ]);
 
+    const networkConfig = promiseResults[0];
+    const networkStatus = promiseResults[1];
+    const blocksCount = promiseResults[2];
+    const accountsCount = promiseResults[3];
+    const transactionsCount = promiseResults[4];
+    const scResultsCount = promiseResults[5];
+
+    const { erd_num_shards_without_meta: shards, erd_round_duration: refreshRate } = networkConfig;
+    const { erd_epoch_number: epoch, erd_rounds_passed_in_current_epoch: roundsPassed, erd_rounds_per_epoch: roundsPerEpoch } = networkStatus;
+
     return {
       shards,
-      blocks,
-      accounts,
-      transactions: transactions + scResults,
-      scResults,
+      blocks: blocksCount,
+      accounts: accountsCount,
+      transactions: transactionsCount + scResultsCount,
+      scResults: scResultsCount,
       refreshRate,
       epoch,
       roundsPassed: roundsPassed % roundsPerEpoch,
