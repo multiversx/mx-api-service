@@ -1,4 +1,3 @@
-import { ApiService } from "@multiversx/sdk-nestjs-http";
 import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { Test } from "@nestjs/testing";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
@@ -96,12 +95,6 @@ describe('NetworkService', () => {
           provide: TransactionService,
           useValue: {
             getTransactionCount: jest.fn(),
-          },
-        },
-        {
-          provide: ApiService,
-          useValue: {
-            get: jest.fn(),
           },
         },
         {

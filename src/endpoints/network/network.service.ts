@@ -14,7 +14,6 @@ import { StakeService } from '../stake/stake.service';
 import { GatewayService } from 'src/common/gateway/gateway.service';
 import { CacheInfo } from 'src/utils/cache.info';
 import { BinaryUtils, NumberUtils } from '@multiversx/sdk-nestjs-common';
-import { ApiService } from "@multiversx/sdk-nestjs-http";
 import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { About } from './entities/about';
 import { PluginService } from 'src/common/plugins/plugin.service';
@@ -39,7 +38,6 @@ export class NetworkService {
     @Inject(forwardRef(() => TransactionService))
     private readonly transactionService: TransactionService,
     private readonly dataApiService: DataApiService,
-    private readonly apiService: ApiService,
     @Inject(forwardRef(() => StakeService))
     private readonly stakeService: StakeService,
     private readonly pluginService: PluginService,
@@ -55,23 +53,13 @@ export class NetworkService {
   }
 
   private async getConstantsRaw(): Promise<NetworkConstants> {
-    const gatewayUrl = this.apiConfigService.getGatewayUrl();
+    const networkConfig = await this.gatewayService.getNetworkConfig();
 
-    const {
-      data: {
-        data: {
-          config: {
-            erd_chain_id: chainId,
-            // erd_denomination: denomination,
-            erd_gas_per_data_byte: gasPerDataByte,
-            erd_min_gas_limit: minGasLimit,
-            erd_min_gas_price: minGasPrice,
-            erd_min_transaction_version: minTransactionVersion,
-            // erd_round_duration: roundDuration,
-          },
-        },
-      },
-    } = await this.apiService.get(`${gatewayUrl}/network/config`);
+    const chainId = networkConfig.erd_chain_id;
+    const gasPerDataByte = networkConfig.erd_gas_per_data_byte;
+    const minGasLimit = networkConfig.erd_min_gas_limit;
+    const minGasPrice = networkConfig.erd_min_gas_price;
+    const minTransactionVersion = networkConfig.erd_min_transaction_version;
 
     return {
       chainId,
