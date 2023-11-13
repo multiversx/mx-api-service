@@ -270,13 +270,13 @@ export class NetworkService {
     const stake = await this.stakeService.getGlobalStake();
     const stakedBalance = await this.getAuctionContractBalance();
 
-    const elrondConfig = {
+    const multiversxConfig = {
       feesInEpoch: 0,
       stakePerNode: 2500,
     };
 
-    const feesInEpoch = elrondConfig.feesInEpoch;
-    const stakePerNode = elrondConfig.stakePerNode;
+    const feesInEpoch = multiversxConfig.feesInEpoch;
+    const stakePerNode = multiversxConfig.stakePerNode;
     const epochDuration = config.roundDuration * config.roundsPerEpoch;
     const secondsInYear = 365 * 24 * 3600;
     const epochsInYear = secondsInYear / epochDuration;
