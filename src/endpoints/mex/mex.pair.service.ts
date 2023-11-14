@@ -70,9 +70,19 @@ export class MexPairService {
         throw new BadRequestException('Could not fetch MEX settings');
       }
 
+      const pairsLimit = gql`
+      query PairCount {
+        factory {
+          pairCount
+        }
+      }`;
+
+      const pairsLimitResult: any = await this.graphQlService.getData(pairsLimit);
+      const totalPairs = pairsLimitResult?.factory?.pairCount;
+
       const variables = {
         "offset": 0,
-        "pairsLimit": 100,
+        "pairsLimit": totalPairs,
       };
 
       const query = gql`

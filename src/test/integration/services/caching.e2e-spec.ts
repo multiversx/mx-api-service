@@ -75,7 +75,5 @@ describe('Caching Service', () => {
       const cacheValueChunks = await cachingService.batchGetManyRemote(input.map((x) => cacheKeyFunction(x)));
       expect(cacheValueChunks).toStrictEqual(output);
     });
-
   });
-
 });

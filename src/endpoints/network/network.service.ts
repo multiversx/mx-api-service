@@ -171,11 +171,16 @@ export class NetworkService {
   }
 
   private async getAuctionContractBalance(): Promise<BigInt> {
-    const addressDetails = await this.gatewayService.getAddressDetails(this.apiConfigService.getAuctionContractAddress());
+    const auctionContractAddress = this.apiConfigService.getAuctionContractAddress();
+    if (!auctionContractAddress) {
+      return BigInt(0);
+    }
+
+    const addressDetails = await this.gatewayService.getAddressDetails(auctionContractAddress);
 
     const balance = addressDetails?.account?.balance;
     if (!balance) {
-      throw new Error(`Could not fetch balance from auction contract address '${this.apiConfigService.getAuctionContractAddress()}'`);
+      throw new Error(`Could not fetch balance from auction contract address '${auctionContractAddress}'`);
     }
 
     return BigInt(balance);
@@ -193,13 +198,18 @@ export class NetworkService {
   }
 
   private async getTotalWaitingStake(): Promise<BigInt> {
+    const delegationContractAddress = this.apiConfigService.getDelegationContractAddress();
+    if (!delegationContractAddress) {
+      return BigInt(0);
+    }
+
     const vmQueryResult = await this.vmQueryService.vmQuery(
-      this.apiConfigService.getDelegationContractAddress(),
+      delegationContractAddress,
       'getTotalStakeByType',
     );
 
     if (!vmQueryResult || vmQueryResult.length < 2) {
-      throw new Error(`Could not fetch getTotalStakeByType from delegation contract address '${this.apiConfigService.getDelegationContractAddress()}'`);
+      throw new Error(`Could not fetch getTotalStakeByType from delegation contract address '${delegationContractAddress}'`);
     }
 
     const totalWaitingStakeBase64 = vmQueryResult[1];

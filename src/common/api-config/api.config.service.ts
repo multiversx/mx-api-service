@@ -94,31 +94,16 @@ export class ApiConfigService {
     return address;
   }
 
-  getAuctionContractAddress(): string {
-    const address = this.configService.get<string>('contracts.auction');
-    if (!address) {
-      throw new Error('No auction contract present');
-    }
-
-    return address;
+  getAuctionContractAddress(): string | undefined {
+    return this.configService.get<string>('contracts.auction');
   }
 
-  getStakingContractAddress(): string {
-    const address = this.configService.get<string>('contracts.staking');
-    if (!address) {
-      throw new Error('No staking contract present');
-    }
-
-    return address;
+  getStakingContractAddress(): string | undefined {
+    return this.configService.get<string>('contracts.staking');
   }
 
-  getDelegationContractAddress(): string {
-    const address = this.configService.get<string>('contracts.delegation');
-    if (!address) {
-      throw new Error('No delegation contract present');
-    }
-
-    return address;
+  getDelegationContractAddress(): string | undefined {
+    return this.configService.get<string>('contracts.delegation');
   }
 
   getMetabondingContractAddress(): string | undefined {

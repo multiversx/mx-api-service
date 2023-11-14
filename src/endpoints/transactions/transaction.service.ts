@@ -18,7 +18,7 @@ import { GatewayComponentRequest } from 'src/common/gateway/entities/gateway.com
 import { TransactionActionService } from './transaction-action/transaction.action.service';
 import { TransactionDecodeDto } from './entities/dtos/transaction.decode.dto';
 import { TransactionStatus } from './entities/transaction.status';
-import { AddressUtils, Constants, PendingExecuter } from '@multiversx/sdk-nestjs-common';
+import { AddressUtils, BinaryUtils, Constants, PendingExecuter } from '@multiversx/sdk-nestjs-common';
 import { ApiUtils } from "@multiversx/sdk-nestjs-http";
 import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { TransactionUtils } from './transaction.utils';
@@ -175,6 +175,11 @@ export class TransactionService {
       queryOptions.withScResultLogs = queryOptions.withLogs;
       transactions = await this.getExtraDetailsForTransactions(elasticTransactions, transactions, queryOptions);
     }
+
+    for (const transaction of transactions) {
+      transaction.relayedVersion = this.extractRelayedVersion(transaction);
+    }
+
 
     await this.processTransactions(transactions, {
       withScamInfo: queryOptions?.withScamInfo ?? false,
@@ -539,5 +544,19 @@ export class TransactionService {
         }
       }
     }
+  }
+
+  private extractRelayedVersion(transaction: TransactionDetailed): string | undefined {
+    if (transaction.isRelayed == true && transaction.data) {
+      const decodedData = BinaryUtils.base64Decode(transaction.data);
+
+      if (decodedData.startsWith('relayedTx@')) {
+        return 'v1';
+      } else if (decodedData.startsWith('relayedTxV2@')) {
+        return 'v2';
+      }
+    }
+
+    return undefined;
   }
 }

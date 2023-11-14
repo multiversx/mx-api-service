@@ -1,0 +1,119 @@
+network: 'devnet-old'
+metaChainShardId: 4294967295
+api:
+  public: true
+  private: true
+cron:
+  transactionProcessor: true
+  transactionProcessorMaxLookBehind: 100
+  transactionCompleted: false
+  transactionCompletedMaxLookBehind: 100
+  transactionBatch: false
+  transactionBatchMaxLookBehind: 100
+  cacheWarmer: true
+  fastWarm: true
+  queueWorker: true
+  elasticUpdater: false
+  statusChecker: false
+flags:
+  useRequestCaching: true
+  useKeepAliveAgent: true
+  useTracing: false
+  useRequestLogging: false
+  useVmQueryTracing: false
+  processNfts: true
+  indexer-v3: true
+  collectionPropertiesFromGateway: false
+features:
+  eventsNotifier:
+    enabled: false
+    port: 5674
+    url: 'amqp://guest:guest@127.0.0.1:5673'
+    exchange: 'all_events'
+    queue: 'api-process-logs-and-events'
+  guestCaching:
+    enabled: false
+    hitsThreshold: 100
+    ttl: 12
+  updateCollectionExtraDetails:
+    enabled: false
+  marketplace:
+    enabled: false
+    serviceUrl: 'https://devnet-old-nfts-graph.multiversx.com/graphql'
+  exchange:
+    enabled: false
+    serviceUrl: 'https://devnet-old-graph.xexchange.com/graphql'
+  dataApi:
+    enabled: false
+    serviceUrl: 'https://devnet-old-data-api.multiversx.com'
+  auth:
+    enabled: false
+    maxExpirySeconds: 86400
+    acceptedOrigins:
+      - ''
+    admins:
+      - ''
+    jwtSecret: ''
+image:
+  width: 600
+  height: 600
+  type: 'png'
+aws:
+  s3KeyId: ''
+  s3Secret: ''
+  s3Bucket: 'devnet-old-media.elrond.com'
+  s3Region: ''
+urls:
+  self: 'https://devnet-old-api.multiversx.com'
+  elastic:
+    - 'https://devnet-old-index.multiversx.com'
+  gateway:
+    - 'https://devnet-old-gateway.multiversx.com'
+  verifier: 'https://play-api.multiversx.com'
+  redis: '127.0.0.1'
+  rabbitmq: 'amqp://127.0.0.1:5672'
+  providers: 'https://devnet-old-delegation-api.multiversx.com/providers'
+  delegation: 'https://devnet-old-delegation-api.multiversx.com'
+  media: 'https://devnet-old-media.elrond.com'
+  nftThumbnails: 'https://devnet-old-media.elrond.com/nfts/thumbnail'
+  tmp: '/tmp'
+  ipfs: 'https://ipfs.io/ipfs'
+  socket: 'devnet-old-socket-fra.elrond.com'
+  maiarId: 'https://devnet-old-id-api.multiversx.com'
+indexer:
+  type: 'elastic'
+  maxPagination: 10000
+database:
+  enabled: false
+  url: 'mongodb://127.0.0.1:27017/api?authSource=admin'
+  type: 'mysql'
+  host: 'localhost'
+  port: 3306
+  username: 'root'
+  password: 'root'
+  database: 'api'
+caching:
+  cacheTtl: 6
+  processTtl: 600
+  poolLimit: 50
+keepAliveTimeout:
+  downstream: 61000
+  upstream: 60000
+contracts:
+  esdt: 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u'
+  auction: 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqplllst77y4l'
+  staking: 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqllls0lczs7'
+  delegationManager: 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqylllslmq6y6'
+  delegation: 'erd1qqqqqqqqqqqqqpgqp699jngundfqw07d8jzkepucvpzush6k3wvqyc44rx'
+  metabonding: 'erd1qqqqqqqqqqqqqpgqkg7we73j769ew5we4yyx7uyvnn0nefqgd8ssm6vjc2'
+inflation:
+  - 1952123
+  - 1746637
+  - 1541150
+  - 1335663
+  - 1130177
+  - 924690
+  - 719203
+nftProcess:
+  parallelism: 1
+  maxRetries: 3
