@@ -57,7 +57,9 @@ export class GatewayService {
   async getTrieStatistics(shardId: number): Promise<TrieStatistics> {
     const result = await this.get(`network/trie-statistics/${shardId}`, GatewayComponentRequest.trieStatistics);
 
-    return result;
+    return new TrieStatistics({
+      accounts_snapshot_num_nodes: result['accounts-snapshot-num-nodes'],
+    });
   }
 
   async getAddressDetails(address: string): Promise<Account> {

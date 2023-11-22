@@ -514,8 +514,7 @@ export class NodeService {
       for (const shardId of shardIds) {
         const shardTrieStatistics = await this.gatewayService.getTrieStatistics(shardId);
 
-        // @ts-ignore
-        nodesPerShardDict[shardId] = shardTrieStatistics['accounts-snapshot-num-nodes'];
+        nodesPerShardDict[shardId] = shardTrieStatistics.accounts_snapshot_num_nodes;
       }
     }
 
