@@ -742,7 +742,7 @@ export class ApiConfigService {
   }
 
   isNodeSyncProgressEnabled(): boolean {
-    return this.configService.get<boolean>('features.nodeSyncProgress.enabled') ?? false;
+    return this.configService.get<boolean>('features.nodeSyncProgress.enabled') ?? true;
   }
 
   isUpdateCollectionExtraDetailsEnabled(): boolean {
