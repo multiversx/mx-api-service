@@ -514,8 +514,6 @@ export class NodeService {
       for (const shardId of shardIds) {
         const shardTrieStatistics = await this.gatewayService.getTrieStatistics(shardId);
 
-        console.log({ shardTrieStatistics });
-
         // @ts-ignore
         nodesPerShardDict[shardId] = shardTrieStatistics['accounts-snapshot-num-nodes'];
       }
@@ -628,8 +626,6 @@ export class NodeService {
       const nodesPerShard = nodesPerShardDict[shard];
       if (this.apiConfigService.isNodeSyncProgressEnabled() && numTrieNodesReceived > 0 && nodesPerShard > 0) {
         node.syncProgress = numTrieNodesReceived / nodesPerShard;
-
-        console.log(`Sync progress for node with bls ${bls} is ${node.syncProgress}`);
 
         if (node.syncProgress > 1) {
           node.syncProgress = 1;
