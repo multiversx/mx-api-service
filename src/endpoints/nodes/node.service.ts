@@ -625,6 +625,8 @@ export class NodeService {
       if (this.apiConfigService.isNodeSyncProgressEnabled() && numTrieNodesReceived > 0) {
         node.syncProgress = numTrieNodesReceived / nodesPerShardDict[shard];
 
+        console.log(`Sync progress for node with bls ${bls} is ${node.syncProgress}`);
+
         if (node.syncProgress > 1) {
           node.syncProgress = 1;
         }
