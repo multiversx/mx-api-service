@@ -35,6 +35,7 @@ import { ProviderService } from '../providers/provider.service';
 import { Provider } from '../providers/entities/provider';
 import { KeysService } from '../keys/keys.service';
 import { NodeStatusRaw } from '../nodes/entities/node.status';
+import { AccountKeyFilter } from './entities/account.key.filter';
 
 @Injectable()
 export class AccountService {
@@ -429,7 +430,8 @@ export class AccountService {
     );
   }
 
-  async getKeys(address: string): Promise<AccountKey[]> {
+  async getKeys(address: string, filter: AccountKeyFilter, pagination: QueryPagination): Promise<AccountKey[]> {
+    const { from, size } = pagination;
     const publicKey = AddressUtils.bech32Decode(address);
     const isStakingProvider = await this.providerService.isProvider(address);
 
@@ -451,7 +453,14 @@ export class AccountService {
       await this.updateQueuedNodes(nodes);
     }
 
-    return [...notStakedNodes, ...nodes];
+    let filteredNodes = [...notStakedNodes, ...nodes];
+
+    if (filter && filter.status && filter.status.length > 0) {
+      filteredNodes = filteredNodes.filter(node => filter.status.includes(node.status as NodeStatusRaw));
+      filteredNodes = this.sortNodesByStatus(filteredNodes, filter.status);
+    }
+
+    return filteredNodes.slice(from, from + size);
   }
 
   getInactiveNodesBuffers(allNodeStates: string[]): string[] {
@@ -517,6 +526,13 @@ export class AccountService {
       nodes.push(accountKey);
     }
     return nodes;
+  }
+
+  private sortNodesByStatus(nodes: AccountKey[], status: NodeStatusRaw[]): AccountKey[] {
+    return nodes.sorted(node => {
+      const statusIndex = status.indexOf(node.status as NodeStatusRaw);
+      return statusIndex === -1 ? status.length : statusIndex;
+    });
   }
 
   async applyRewardAddressAndTopUpToNodes(nodes: AccountKey[], address: string) {
