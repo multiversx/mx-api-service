@@ -457,7 +457,7 @@ export class AccountService {
 
     if (filter && filter.status && filter.status.length > 0) {
       filteredNodes = filteredNodes.filter(node => filter.status.includes(node.status as NodeStatusRaw));
-      this.sortNodesByStatus(filteredNodes, filter.status);
+      filteredNodes = this.sortNodesByStatus(filteredNodes, filter.status);
     }
 
     return filteredNodes.slice(from, from + size);
@@ -528,20 +528,10 @@ export class AccountService {
     return nodes;
   }
 
-  private sortNodesByStatus(nodes: AccountKey[], status: NodeStatusRaw[]): void {
-    nodes.sort((a, b) => {
-      let indexA = status.indexOf(a.status as NodeStatusRaw);
-      let indexB = status.indexOf(b.status as NodeStatusRaw);
-
-      if (indexA === -1) {
-        indexA = status.length;
-      }
-
-      if (indexB === -1) {
-        indexB = status.length;
-      }
-
-      return indexA - indexB;
+  private sortNodesByStatus(nodes: AccountKey[], status: NodeStatusRaw[]): AccountKey[] {
+    return nodes.sorted(node => {
+      const statusIndex = status.indexOf(node.status as NodeStatusRaw);
+      return statusIndex === -1 ? status.length : statusIndex;
     });
   }
 
