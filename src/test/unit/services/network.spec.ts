@@ -1,4 +1,3 @@
-import { ApiService } from "@multiversx/sdk-nestjs-http";
 import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { Test } from "@nestjs/testing";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
@@ -23,6 +22,12 @@ import { CacheInfo } from "src/utils/cache.info";
 
 describe('NetworkService', () => {
   let networkService: NetworkService;
+  let apiConfigService: ApiConfigService;
+  let gatewayService: GatewayService;
+  let blockService: BlockService;
+  let accountService: AccountService;
+  let transactionService: TransactionService;
+  let smartContractResultService: SmartContractResultService;
 
   beforeEach(async () => {
     const moduleRef = await Test.createTestingModule({
@@ -93,12 +98,6 @@ describe('NetworkService', () => {
           },
         },
         {
-          provide: ApiService,
-          useValue: {
-            get: jest.fn(),
-          },
-        },
-        {
           provide: StakeService,
           useValue: {
             getGlobalStake: jest.fn(),
@@ -108,6 +107,7 @@ describe('NetworkService', () => {
           provide: SmartContractResultService,
           useValue: {
             getScResultsCount: jest.fn(),
+            getAccountScResultsCount: jest.fn(),
           },
         },
         {
@@ -126,6 +126,12 @@ describe('NetworkService', () => {
     }).compile();
 
     networkService = moduleRef.get<NetworkService>(NetworkService);
+    apiConfigService = moduleRef.get<ApiConfigService>(ApiConfigService);
+    gatewayService = moduleRef.get<GatewayService>(GatewayService);
+    blockService = moduleRef.get<BlockService>(BlockService);
+    accountService = moduleRef.get<AccountService>(AccountService);
+    transactionService = moduleRef.get<TransactionService>(TransactionService);
+    smartContractResultService = moduleRef.get<SmartContractResultService>(SmartContractResultService);
   });
 
   it('service should be defined', () => {
@@ -393,6 +399,77 @@ describe('NetworkService', () => {
       const decodedNumber = networkService.numberDecode(encodedNumber);
 
       expect(decodedNumber).toBe('0');
+    });
+  });
+
+  describe('getStats', () => {
+    it('should return stats details', async () => {
+      const mockNetworkConfig: NetworkConfig = {
+        erd_adaptivity: false,
+        erd_chain_id: '1',
+        erd_denomination: 18,
+        erd_gas_per_data_byte: 1500,
+        erd_gas_price_modifier: '0.01',
+        erd_hysteresis: '0.200000',
+        erd_latest_tag_software_version: 'v1.5.14.0',
+        erd_max_gas_per_transaction: 600000000,
+        erd_meta_consensus_group_size: 400,
+        erd_min_gas_limit: 50000,
+        erd_min_gas_price: 1000000000,
+        erd_min_transaction_version: 1,
+        erd_num_metachain_nodes: 400,
+        erd_num_nodes_in_shard: 400,
+        erd_num_shards_without_meta: 3,
+        erd_rewards_top_up_gradient_point: '2000000000000000000000000',
+        erd_round_duration: 6000,
+        erd_rounds_per_epoch: 14400,
+        erd_shard_consensus_group_size: 63,
+        erd_start_time: 1596117600,
+        erd_top_up_factor: '0.500000',
+      };
+
+      const mockNetworkStatus: NetworkStatus = {
+        erd_cross_check_block_height: '0: 17287291, 1: 17280583, 2: 17287747, ',
+        erd_current_round: 17293220,
+        erd_epoch_number: 1200,
+        erd_highest_final_nonce: 17272382,
+        erd_nonce: 17272383,
+        erd_nonce_at_epoch_start: 17260366,
+        erd_nonces_passed_in_current_epoch: 12017,
+        erd_round_at_epoch_start: 17281202,
+        erd_rounds_passed_in_current_epoch: 12018,
+        erd_rounds_per_epoch: 14400,
+      };
+
+      jest.spyOn(apiConfigService, 'getMetaChainShardId').mockReturnValue(4294967295);
+      jest.spyOn(gatewayService, 'getNetworkConfig').mockResolvedValue(mockNetworkConfig);
+      jest.spyOn(gatewayService, 'getNetworkStatus').mockResolvedValue(mockNetworkStatus);
+      jest.spyOn(blockService, 'getBlocksCount').mockResolvedValue(97128014);
+      jest.spyOn(accountService, 'getAccountsCount').mockResolvedValue(2429648);
+      jest.spyOn(transactionService, 'getTransactionCount').mockResolvedValue(87054604);
+      jest.spyOn(smartContractResultService, 'getScResultsCount').mockResolvedValue(271213143);
+
+      const result = await networkService.getStats();
+
+      expect(apiConfigService.getMetaChainShardId).toHaveBeenCalled();
+      expect(gatewayService.getNetworkConfig).toHaveBeenCalled();
+      expect(gatewayService.getNetworkStatus).toHaveBeenCalled();
+      expect(blockService.getBlocksCount).toHaveBeenCalled();
+      expect(accountService.getAccountsCount).toHaveBeenCalled();
+      expect(transactionService.getTransactionCount).toHaveBeenCalled();
+      expect(smartContractResultService.getScResultsCount).toHaveBeenCalled();
+
+      expect(result).toEqual(expect.objectContaining({
+        shards: 3,
+        blocks: 97128014,
+        accounts: 2429648,
+        transactions: 358267747,
+        scResults: 271213143,
+        refreshRate: 6000,
+        epoch: 1200,
+        roundsPassed: 12018,
+        roundsPerEpoch: 14400,
+      }));
     });
   });
 });
