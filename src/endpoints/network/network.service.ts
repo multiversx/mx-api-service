@@ -220,7 +220,14 @@ export class NetworkService {
   async getStats(): Promise<Stats> {
     const metaChainShard = this.apiConfigService.getMetaChainShardId();
 
-    const promiseResults = await Promise.all([
+    const [
+      networkConfig,
+      networkStatus,
+      blocksCount,
+      accountsCount,
+      transactionsCount,
+      scResultsCount,
+    ] = await Promise.all([
       this.gatewayService.getNetworkConfig(),
       this.gatewayService.getNetworkStatus(metaChainShard),
       this.blockService.getBlocksCount(new BlockFilter()),
@@ -228,13 +235,6 @@ export class NetworkService {
       this.transactionService.getTransactionCount(new TransactionFilter()),
       this.smartContractResultService.getScResultsCount(),
     ]);
-
-    const networkConfig = promiseResults[0];
-    const networkStatus = promiseResults[1];
-    const blocksCount = promiseResults[2];
-    const accountsCount = promiseResults[3];
-    const transactionsCount = promiseResults[4];
-    const scResultsCount = promiseResults[5];
 
     const { erd_num_shards_without_meta: shards, erd_round_duration: refreshRate } = networkConfig;
     const { erd_epoch_number: epoch, erd_rounds_passed_in_current_epoch: roundsPassed, erd_rounds_per_epoch: roundsPerEpoch } = networkStatus;
