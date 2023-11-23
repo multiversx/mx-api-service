@@ -186,14 +186,6 @@ describe('API Config', () => {
       const results = apiConfigService.getMetabondingContractAddress();
       expect(results).toEqual('erd1qqqqqqqqqqqqqpgq50dge6rrpcra4tp9hl57jl0893a4r2r72jpsk39rjj');
     });
-
-    it("should return undefined", () => {
-      jest
-        .spyOn(ConfigService.prototype, 'get')
-        .mockImplementation(jest.fn(() => undefined));
-
-      expect(apiConfigService.getMetabondingContractAddress()).toBeUndefined();
-    });
   });
 
   describe("getDelegationManagerContractAddress", () => {

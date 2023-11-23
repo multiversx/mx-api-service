@@ -137,7 +137,7 @@ export class IndexerService implements IndexerInterface {
   }
 
   @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
-  async getCollection(identifier: string): Promise<Collection> {
+  async getCollection(identifier: string): Promise<Collection | undefined> {
     return await this.indexerInterface.getCollection(identifier);
   }
 

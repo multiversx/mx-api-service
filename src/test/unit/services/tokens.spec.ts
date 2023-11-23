@@ -36,7 +36,8 @@ describe('Token Service', () => {
       providers: [
         TokenService,
         {
-          provide: IndexerService, useValue: {
+          provide: IndexerService,
+          useValue: {
             getCollection: jest.fn(),
             getTokenCountForAddress: jest.fn(),
             getTokensForAddress: jest.fn(),

@@ -9,7 +9,6 @@ import { NftType } from "src/endpoints/nfts/entities/nft.type";
 import { NftOwner } from 'src/endpoints/nfts/entities/nft.owner';
 import { EsdtAddressService } from 'src/endpoints/esdt/esdt.address.service';
 import { NftAccount } from 'src/endpoints/nfts/entities/nft.account';
-import { ApiConfigService } from 'src/common/api-config/api.config.service';
 import { QueryPagination } from 'src/common/entities/query.pagination';
 import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { PluginService } from 'src/common/plugins/plugin.service';
@@ -276,22 +275,6 @@ describe('Nft Service', () => {
 
       for (const result of results) {
         expect(result.uris).toBeDefined();
-      }
-    });
-
-    it.skip('should return 10 nfts that have isWhitelisted property true', async () => {
-      jest.spyOn(ApiConfigService.prototype, 'getIsIndexerV3FlagActive')
-        // eslint-disable-next-line require-await
-        .mockImplementation(jest.fn(() => true));
-
-      const filter = new NftFilter();
-      filter.hasUris = true;
-
-      const results = await nftService.getNfts({ from: 0, size: 10 }, filter);
-      expect(results.length).toStrictEqual(10);
-
-      for (const result of results) {
-        expect(result.isWhitelistedStorage).toStrictEqual(true);
       }
     });
 

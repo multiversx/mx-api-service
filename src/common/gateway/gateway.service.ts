@@ -57,7 +57,9 @@ export class GatewayService {
   async getTrieStatistics(shardId: number): Promise<TrieStatistics> {
     const result = await this.get(`network/trie-statistics/${shardId}`, GatewayComponentRequest.trieStatistics);
 
-    return result;
+    return new TrieStatistics({
+      accounts_snapshot_num_nodes: result['accounts-snapshot-num-nodes'],
+    });
   }
 
   async getAddressDetails(address: string): Promise<Account> {
@@ -156,19 +158,17 @@ export class GatewayService {
   }
 
   private getUrl(component: GatewayComponentRequest): string {
-    const lightGatewayComponents = [
+    const snapshotlessGatewayComponents = new Set([
       GatewayComponentRequest.addressBalance,
       GatewayComponentRequest.addressDetails,
       GatewayComponentRequest.addressEsdt,
       GatewayComponentRequest.addressNftByNonce,
       GatewayComponentRequest.vmQuery,
-    ];
+    ]);
 
-    if (lightGatewayComponents.includes(component)) {
-      return this.apiConfigService.getLightGatewayUrl() ?? this.apiConfigService.getGatewayUrl();
-    }
-
-    return this.apiConfigService.getGatewayUrl();
+    return snapshotlessGatewayComponents.has(component)
+      ? this.apiConfigService.getSnapshotlessGatewayUrl() ?? this.apiConfigService.getGatewayUrl()
+      : this.apiConfigService.getGatewayUrl();
   }
 
   @LogPerformanceAsync(MetricsEvents.SetGatewayDuration, { argIndex: 1 })

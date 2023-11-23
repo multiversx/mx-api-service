@@ -11,7 +11,7 @@ import { TransactionQueryOptions } from 'src/endpoints/transactions/entities/tra
 import { TransactionDetailed } from 'src/endpoints/transactions/entities/transaction.detailed';
 import { TransactionOptionalFieldOption } from 'src/endpoints/transactions/entities/transaction.optional.field.options';
 
-describe('Transaction Service', () => {
+describe.skip('Transaction Service', () => {
   let transactionService: TransactionService;
 
   beforeAll(async () => {

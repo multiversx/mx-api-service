@@ -106,28 +106,4 @@ describe('Network', () => {
         });
     });
   });
-
-  describe.skip('Query - Get About', () => {
-    it('should returns general information about API deployment', async () => {
-      await request(app.getHttpServer())
-        .post(gql)
-        .send({
-          query: `{
-            about{
-              appVersion
-              pluginsVersion
-              network
-              version
-            }
-          }`,
-        })
-        .expect(200)
-        .then(res => {
-          expect(res.body.data.about.appVersion).toBeDefined();
-          expect(res.body.data.about.pluginsVersion).toBeDefined();
-          expect(res.body.data.about.network).toBeDefined();
-          expect(res.body.data.about.version).toContain('-next');
-        });
-    });
-  });
 });

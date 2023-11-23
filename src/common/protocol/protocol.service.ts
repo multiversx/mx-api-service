@@ -4,6 +4,7 @@ import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { CacheInfo } from "../../utils/cache.info";
 import { GatewayService } from "../gateway/gateway.service";
 import { IndexerService } from "../indexer/indexer.service";
+import { ApiConfigService } from "../api-config/api.config.service";
 
 @Injectable()
 export class ProtocolService {
@@ -15,7 +16,8 @@ export class ProtocolService {
     @Inject(forwardRef(() => CacheService))
     private readonly cachingService: CacheService,
     @Inject(forwardRef(() => IndexerService))
-    private readonly indexerService: IndexerService
+    private readonly indexerService: IndexerService,
+    private readonly apiConfigService: ApiConfigService,
   ) { }
 
   async getShardIds(): Promise<number[]> {
@@ -42,13 +44,14 @@ export class ProtocolService {
 
   private async getShardIdsRaw(): Promise<number[]> {
     const shardCount = await this.getShardCountRaw();
+    const metaChainShardId = this.apiConfigService.getMetaChainShardId();
 
     const result = [];
     for (let i = 0; i < shardCount; i++) {
       result.push(i);
     }
 
-    result.push(4294967295);
+    result.push(metaChainShardId);
     return result;
   }
 

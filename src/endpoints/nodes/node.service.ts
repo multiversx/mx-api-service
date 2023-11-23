@@ -622,8 +622,9 @@ export class NodeService {
         node.online = false;
       }
 
-      if (this.apiConfigService.isNodeSyncProgressEnabled() && numTrieNodesReceived > 0) {
-        node.syncProgress = numTrieNodesReceived / nodesPerShardDict[shard];
+      const nodesPerShard = nodesPerShardDict[shard];
+      if (this.apiConfigService.isNodeSyncProgressEnabled() && numTrieNodesReceived > 0 && nodesPerShard > 0) {
+        node.syncProgress = numTrieNodesReceived / nodesPerShard;
 
         if (node.syncProgress > 1) {
           node.syncProgress = 1;
