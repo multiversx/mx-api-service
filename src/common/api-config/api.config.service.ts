@@ -50,8 +50,8 @@ export class ApiConfigService {
     return gatewayUrls[Math.floor(Math.random() * gatewayUrls.length)];
   }
 
-  getLightGatewayUrl(): string | undefined {
-    const gatewayUrls = this.configService.get<string[]>('urls.lightGateway');
+  getSnapshotlessGatewayUrl(): string | undefined {
+    const gatewayUrls = this.configService.get<string[]>('urls.snapshotlessGateway') ?? this.configService.get<string[]>('urls.lightGateway');
     if (!gatewayUrls) {
       return undefined;
     }
