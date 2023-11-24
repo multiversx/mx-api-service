@@ -1,5 +1,6 @@
 import { Field, ObjectType } from "@nestjs/graphql";
 import { ApiProperty } from "@nestjs/swagger";
+import { FeatureConfigs } from "./feature.configs";
 
 @ObjectType("About", { description: "About object type." })
 export class About {
@@ -30,4 +31,8 @@ export class About {
   @Field(() => String, { description: "Scam engine version.", nullable: true })
   @ApiProperty({ type: String, nullable: true })
   scamEngineVersion: string | undefined = undefined;
+
+  @Field(() => FeatureConfigs, { description: "Feature Flags.", nullable: true })
+  @ApiProperty({ type: FeatureConfigs, nullable: true })
+  features: FeatureConfigs | undefined = undefined;
 }

@@ -44,6 +44,10 @@ describe('NetworkService', () => {
             getMetaChainShardId: jest.fn(),
             getAuctionContractAddress: jest.fn(),
             getDelegationContractAddress: jest.fn(),
+            isUpdateCollectionExtraDetailsEnabled: jest.fn(),
+            isMarketplaceFeatureEnabled: jest.fn(),
+            isExchangeEnabled: jest.fn(),
+            isDataApiFeatureEnabled: jest.fn(),
           },
         },
         {
@@ -338,6 +342,12 @@ describe('NetworkService', () => {
         cluster: undefined,
         version: '',
         scamEngineVersion: '1.0.0',
+        features: {
+          updateCollectionExtraDetails: false,
+          marketplace: true,
+          exchange: true,
+          dataApi: true,
+        },
       };
       jest
         .spyOn(networkService['cachingService'], 'getOrSet')
@@ -356,6 +366,11 @@ describe('NetworkService', () => {
             scamEngineVersion: '1.0.0',
           });
         }));
+
+      jest.spyOn(apiConfigService, 'isUpdateCollectionExtraDetailsEnabled').mockReturnValue(false);
+      jest.spyOn(apiConfigService, 'isMarketplaceFeatureEnabled').mockReturnValue(true);
+      jest.spyOn(apiConfigService, 'isExchangeEnabled').mockReturnValue(true);
+      jest.spyOn(apiConfigService, 'isDataApiFeatureEnabled').mockReturnValue(true);
 
       const result = await networkService.getAbout();
       expect(result).toStrictEqual(expectedValues);
