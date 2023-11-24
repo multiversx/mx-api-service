@@ -21,6 +21,7 @@ import { SmartContractResultService } from '../sc-results/scresult.service';
 import { TokenService } from '../tokens/token.service';
 import { AccountFilter } from '../accounts/entities/account.filter';
 import { DataApiService } from 'src/common/data-api/data-api.service';
+import { FeatureConfigs } from './entities/feature.configs';
 
 @Injectable()
 export class NetworkService {
@@ -332,12 +333,20 @@ export class NetworkService {
       }
     }
 
+    const features = new FeatureConfigs({
+      updateCollectionExtraDetails: this.apiConfigService.isUpdateCollectionExtraDetailsEnabled(),
+      marketplace: this.apiConfigService.isMarketplaceFeatureEnabled(),
+      exchange: this.apiConfigService.isExchangeEnabled(),
+      dataApi: this.apiConfigService.isDataApiFeatureEnabled(),
+    });
+
     const about = new About({
       appVersion,
       pluginsVersion,
       network: this.apiConfigService.getNetwork(),
       cluster: this.apiConfigService.getCluster(),
       version: apiVersion,
+      features: features,
     });
 
     await this.pluginService.processAbout(about);
