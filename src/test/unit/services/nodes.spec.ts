@@ -23,6 +23,7 @@ describe('NodeService', () => {
   let cacheService: CacheService;
   let vmQueryService: VmQueryService;
   let apiConfigService: ApiConfigService;
+  let gatewayService: GatewayService;
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
@@ -36,6 +37,7 @@ describe('NodeService', () => {
             getNetworkConfig: jest.fn(),
             getValidatorAuctions: jest.fn(),
             getNodeHeartbeatStatus: jest.fn(),
+            getNodeWaitingEpochsLeft: jest.fn(),
           },
         },
         {
@@ -102,6 +104,7 @@ describe('NodeService', () => {
     cacheService = moduleRef.get<CacheService>(CacheService);
     vmQueryService = moduleRef.get<VmQueryService>(VmQueryService);
     apiConfigService = moduleRef.get<ApiConfigService>(ApiConfigService);
+    gatewayService = moduleRef.get<GatewayService>(GatewayService);
   });
 
   beforeEach(() => { jest.restoreAllMocks(); });
@@ -189,6 +192,25 @@ describe('NodeService', () => {
 
         const result = await nodeService.getNode(bls);
         expect(result).toStrictEqual(expectedNode);
+      });
+
+      it('should return epochsLeft key from gateway for a specific node', async () => {
+        const bls = "00198be6aae517a382944cd5a97845857f3b122bb1edf1588d60ed421d32d16ea2767f359a0d714fae3a35c1b0cf4e1141d701d5d1d24160e49eeaebeab21e2f89a2b7c44f3a313383d542e69800cfb6e115406d3d8114b4044ef5a04acf0408";
+
+        // eslint-disable-next-line require-await
+        jest.spyOn(nodeService['cacheService'], 'getOrSet').mockImplementation(async (key, getter) => {
+          if (key === CacheInfo.Nodes.key) {
+            return mockNodes;
+          }
+          return getter();
+        });
+
+        jest.spyOn(nodeService, 'getAllNodes').mockResolvedValue(mockNodes);
+        jest.spyOn(gatewayService, 'getNodeWaitingEpochsLeft').mockResolvedValue(10);
+
+        const result = await nodeService.getNode(bls);
+
+        expect(result).toEqual(expect.objectContaining({ epochsLeft: 10 }));
       });
     });
 

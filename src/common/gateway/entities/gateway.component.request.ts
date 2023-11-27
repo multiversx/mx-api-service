@@ -9,6 +9,7 @@ export enum GatewayComponentRequest {
   addressEsdtBalance = 'addressEsdtBalance',
   addressNfts = 'addressNfts',
   nodeHeartbeat = 'nodeHeartbeat',
+  getNodeWaitingEpochsLeft = 'getNodeWaitingEpochsLeft',
   validatorStatistics = 'validatorStatistics',
   transactionDetails = 'transactionDetails',
   sendTransaction = 'sendTransaction',
