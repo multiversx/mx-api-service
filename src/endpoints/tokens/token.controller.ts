@@ -393,7 +393,6 @@ export class TokenController {
     }
 
     const options = TransactionQueryOptions.applyDefaultOptions(size, { withScamInfo, withUsername, withBlockInfo });
-    console.log(sender);
     return await this.transferService.getTransfers(new TransactionFilter({
       senders: sender,
       receivers: receiver,
