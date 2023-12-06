@@ -1,4 +1,4 @@
-import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, NotFoundException, Param, Query } from '@nestjs/common';
+import { Body, Controller, DefaultValuePipe, Get, HttpException, HttpStatus, NotFoundException, Param, Post, Query } from '@nestjs/common';
 import { ApiExcludeEndpoint, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { AccountService } from './account.service';
 import { AccountDetailed } from './entities/account.detailed';
@@ -1122,5 +1122,20 @@ export class AccountController {
       address, tokenIdentifier,
       new QueryPagination({ from, size }),
       new AccountHistoryFilter({ before, after }));
+  }
+
+  @Post('/accounts/bulk')
+  @ApiOperation({ summary: 'Perform bulk accounts request', description: 'Receives an array of addresses and returns the accounts details, as a map/dictionary' })
+  @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
+  @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
+  async handleAccountsBulkRequest(
+    @Body(new ParseAddressArrayPipe) accounts: string[],
+    @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
+    @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
+  ): Promise<Record<string, AccountDetailed>> {
+    return await this.accountService.getAccountsBulk(
+      accounts,
+      new QueryPagination({ from, size }),
+    );
   }
 }

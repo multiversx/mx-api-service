@@ -36,6 +36,9 @@ import { Provider } from '../providers/entities/provider';
 import { KeysService } from '../keys/keys.service';
 import { NodeStatusRaw } from '../nodes/entities/node.status';
 import { AccountKeyFilter } from './entities/account.key.filter';
+import { GatewayComponentRequest } from 'src/common/gateway/entities/gateway.component.request';
+import { Account as GatewayAccount } from 'src/common/gateway/entities/account';
+import { AccountDetailed as GatewayAccountDetailed } from 'src/common/gateway/entities/account.detailed';
 
 @Injectable()
 export class AccountService {
@@ -78,7 +81,7 @@ export class AccountService {
     return await this.indexerService.getAccountsCount(filter);
   }
 
-  async getAccount(address: string, fields?: string[], withGuardianInfo?: boolean): Promise<AccountDetailed | null> {
+  async getAccount(address: string, fields?: string[], withGuardianInfo?: boolean, optionalGatewayAccount?: GatewayAccount): Promise<AccountDetailed | null> {
     if (!AddressUtils.isAddressValid(address)) {
       return null;
     }
@@ -97,7 +100,7 @@ export class AccountService {
     }
 
     const [account, elasticSearchAccount] = await Promise.all([
-      this.getAccountRaw(address, txCount, scrCount),
+      this.getAccountRaw(address, txCount, scrCount, optionalGatewayAccount),
       this.indexerService.getAccount(address),
     ]);
 
@@ -160,12 +163,39 @@ export class AccountService {
     return await this.getAccountRaw(address);
   }
 
-  async getAccountRaw(address: string, txCount: number = 0, scrCount: number = 0): Promise<AccountDetailed | null> {
+  async getAccountsBulk(addresses: string[], queryPagination?: QueryPagination): Promise<Record<string, AccountDetailed>> {
+    if (addresses.length === 0) {
+      return {};
+    }
+    console.log(queryPagination?.from); // TODO: integrate pagination
+
+    let finalAccounts: Record<string, AccountDetailed> = {};
+    const accountsDetails = await this.gatewayService.create('address/bulk', GatewayComponentRequest.addressesBulk, addresses);
+    const accountsMap: Map<string, GatewayAccountDetailed> = new Map(Object.entries(accountsDetails.accounts));
+
+    for (const [address, account] of accountsMap) {
+      const finalAccount = await this.getAccount(address, undefined, false, new GatewayAccount({ account: account }));
+      if (finalAccount) {
+        finalAccounts[address] = finalAccount;
+      }
+    }
+
+    return finalAccounts;
+  }
+
+  async getAccountRaw(address: string, txCount: number = 0, scrCount: number = 0, optionalGatewayAccount?: GatewayAccount): Promise<AccountDetailed | null> {
     const assets = await this.assetsService.getAllAccountAssets();
     try {
+      let accountDetails;
+      if (optionalGatewayAccount) {
+        accountDetails = optionalGatewayAccount;
+      } else {
+        accountDetails = await this.gatewayService.getAddressDetails(address);
+      }
+
       const {
         account: { nonce, balance, code, codeHash, rootHash, developerReward, ownerAddress, codeMetadata },
-      } = await this.gatewayService.getAddressDetails(address);
+      } = accountDetails;
 
       const shardCount = await this.protocolService.getShardCount();
       const shard = AddressUtils.computeShard(AddressUtils.bech32Decode(address), shardCount);
