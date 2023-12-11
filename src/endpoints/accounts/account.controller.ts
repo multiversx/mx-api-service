@@ -88,12 +88,13 @@ export class AccountController {
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number,
     @Query("ownerAddress", ParseAddressPipe) ownerAddress?: string,
+    @Query("address", ParseAddressArrayPipe) address?: string[],
     @Query('sort', new ParseEnumPipe(AccountSort)) sort?: AccountSort,
     @Query('order', new ParseEnumPipe(SortOrder)) order?: SortOrder,
     @Query("isSmartContract", new ParseBoolPipe) isSmartContract?: boolean,
   ): Promise<Account[]> {
 
-    return this.accountService.getAccounts({ from, size }, new AccountFilter({ ownerAddress, sort, order, isSmartContract }));
+    return this.accountService.getAccounts({ from, size }, new AccountFilter({ ownerAddress, sort, order, isSmartContract, address }));
   }
 
   @Get("/accounts/count")

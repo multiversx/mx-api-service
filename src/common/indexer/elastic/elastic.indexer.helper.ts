@@ -552,6 +552,10 @@ export class ElasticIndexerHelper {
       }
     }
 
+    if (filter.address) {
+      elasticQuery = elasticQuery.withMustMultiShouldCondition(filter.address, address => QueryType.Match('address', address, QueryOperator.AND));
+    }
+
     return elasticQuery;
   }
 }
