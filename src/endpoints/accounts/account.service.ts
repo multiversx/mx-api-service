@@ -36,6 +36,7 @@ import { Provider } from '../providers/entities/provider';
 import { KeysService } from '../keys/keys.service';
 import { NodeStatusRaw } from '../nodes/entities/node.status';
 import { AccountKeyFilter } from './entities/account.key.filter';
+import { AccountQueryOptions } from './entities/account.query.options';
 
 @Injectable()
 export class AccountService {
@@ -293,7 +294,9 @@ export class AccountService {
     return null;
   }
 
-  async getAccounts(queryPagination: QueryPagination, filter: AccountFilter): Promise<Account[]> {
+  async getAccounts(queryPagination: QueryPagination, filter: AccountFilter, options: AccountQueryOptions): Promise<Account[]> {
+    options.validateAddressArraySize();
+
     if (!filter.ownerAddress && !filter.sort && !filter.order && filter.isSmartContract === undefined && !filter.address) {
       return await this.cachingService.getOrSet(
         CacheInfo.Accounts(queryPagination).key,

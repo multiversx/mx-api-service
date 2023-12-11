@@ -54,6 +54,7 @@ import { AccountHistoryFilter } from './entities/account.history.filter';
 import { ParseArrayPipeOptions } from '@multiversx/sdk-nestjs-common/lib/pipes/entities/parse.array.options';
 import { NodeStatusRaw } from '../nodes/entities/node.status';
 import { AccountKeyFilter } from './entities/account.key.filter';
+import { AccountQueryOptions } from './entities/account.query.options';
 
 @Controller()
 @ApiTags('accounts')
@@ -94,7 +95,10 @@ export class AccountController {
     @Query("isSmartContract", new ParseBoolPipe) isSmartContract?: boolean,
   ): Promise<Account[]> {
 
-    return this.accountService.getAccounts({ from, size }, new AccountFilter({ ownerAddress, sort, order, isSmartContract, address }));
+    return this.accountService.getAccounts(
+      new QueryPagination({ from, size }),
+      new AccountFilter({ ownerAddress, sort, order, isSmartContract, address }),
+      new AccountQueryOptions({ address }));
   }
 
   @Get("/accounts/count")

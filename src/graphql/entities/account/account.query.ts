@@ -6,6 +6,7 @@ import { GetAccountFilteredInput, GetAccountsInput } from "src/graphql/entities/
 import { ApplyComplexity } from "@multiversx/sdk-nestjs-common";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { AccountFilter } from "src/endpoints/accounts/entities/account.filter";
+import { AccountQueryOptions } from "src/endpoints/accounts/entities/account.query.options";
 
 @Resolver()
 export class AccountQuery {
@@ -15,7 +16,7 @@ export class AccountQuery {
   @ApplyComplexity({ target: Account })
   public async getAccounts(@Args("input", { description: "Input to retrieve the given accounts for." }) input: GetAccountsInput): Promise<Account[]> {
     return await this.accountService.getAccounts(
-      new QueryPagination({ from: input.from, size: input.size }), new AccountFilter({ ownerAddress: input.ownerAddress })
+      new QueryPagination({ from: input.from, size: input.size }), new AccountFilter({ ownerAddress: input.ownerAddress }), new AccountQueryOptions()
     );
   }
 
