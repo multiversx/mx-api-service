@@ -55,7 +55,7 @@ export class NodeService {
     const node = allNodes.find(x => x.bls === bls);
     const epochsLeft = await this.gatewayService.getNodeWaitingEpochsLeft(bls);
 
-    if (node && epochsLeft) {
+    if (node && node.status === NodeStatus.waiting && epochsLeft) {
       node.epochsLeft = epochsLeft;
     }
 
