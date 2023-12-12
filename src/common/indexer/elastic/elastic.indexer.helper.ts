@@ -279,7 +279,12 @@ export class ElasticIndexerHelper {
       if (filter.functions[0] === '') {
         elasticQuery = elasticQuery.withMustNotExistCondition('function');
       } else {
-        elasticQuery = this.applyFunctionFilter(elasticQuery, filter.functions);
+        for (const field of filter.functions) {
+          elasticQuery = elasticQuery.withMustCondition(QueryType.Should([
+            QueryType.Match('function', field),
+            QueryType.Match('operation', field),
+          ]));
+        }
       }
     }
 
@@ -432,7 +437,12 @@ export class ElasticIndexerHelper {
       if (filter.functions[0] === '') {
         elasticQuery = elasticQuery.withMustNotExistCondition('function');
       } else {
-        elasticQuery = this.applyFunctionFilter(elasticQuery, filter.functions);
+        for (const field of filter.functions) {
+          elasticQuery = elasticQuery.withMustCondition(QueryType.Should([
+            QueryType.Match('function', field),
+            QueryType.Match('operation', field),
+          ]));
+        }
       }
     }
 
@@ -542,22 +552,6 @@ export class ElasticIndexerHelper {
       }
     }
 
-    return elasticQuery;
-  }
-
-  public applyFunctionFilter(elasticQuery: ElasticQuery, functions: string[]) {
-    const functionConditions = [];
-    for (const field of functions) {
-      const shouldConditions = QueryType.Should([
-        QueryType.Match('function', field, QueryOperator.AND),
-        QueryType.Match('operation', field),
-      ]);
-      functionConditions.push(shouldConditions);
-    }
-
-    if (functionConditions.length > 0) {
-      return elasticQuery.withMustCondition(QueryType.Should(functionConditions));
-    }
     return elasticQuery;
   }
 }
