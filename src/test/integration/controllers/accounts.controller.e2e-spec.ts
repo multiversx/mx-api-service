@@ -865,7 +865,7 @@ ${10000}`
       const address: string = 'erd1rf4hv70arudgzus0ymnnsnc4pml0jkywg2xjvzslg0mz4nn2tg7q7k0t6p';
 
       await request(app.getHttpServer())
-        .get(`${path}/${address}/collections?type=NonFungibleESDT&type=MetaESDT`)
+        .get(`${path}/${address}/collections?type=NonFungibleESDT,MetaESDT`)
         .expect(200)
         .then(res => {
           expect(res.body).toBeInstanceOf(Array<NftCollectionAccount>);
