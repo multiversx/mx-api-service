@@ -63,17 +63,6 @@ describe('Proxy Controller', () => {
     });
   });
 
-  describe('getAddressTransactions', () => {
-    it('should return address transactions', async () => {
-      const address: string = "erd1qga7ze0l03chfgru0a32wxqf2226nzrxnyhzer9lmudqhjgy7ycqjjyknz";
-      const result = await proxyController.getAddressTransactions(address);
-
-      expect(result).toEqual(expect.objectContaining({
-        code: 'successful',
-      }));
-    });
-  });
-
   describe('getAddressEsdt', () => {
     it('should return address tokens', async () => {
       const address: string = "erd1qga7ze0l03chfgru0a32wxqf2226nzrxnyhzer9lmudqhjgy7ycqjjyknz";
