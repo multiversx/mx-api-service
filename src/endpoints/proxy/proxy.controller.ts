@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Get, Param, Post, Query, Req, Res } from "@nestjs/common";
+import { BadRequestException, Body, Controller, Get, InternalServerErrorException, Param, Post, Query, Req, Res } from "@nestjs/common";
 import { ApiExcludeEndpoint, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { VmQueryRequest } from "../vm.query/entities/vm.query.request";
 import { VmQueryService } from "../vm.query/vm.query.service";
@@ -139,9 +139,22 @@ export class ProxyController {
   @Get('/transaction/pool')
   @ApiExcludeEndpoint()
   @NoCache()
-  async getTransactionPool(@Req() request: Request) {
-    const url = request.url.replace(/^\//, '');
-    return await this.gatewayGet(url, GatewayComponentRequest.transactionPool);
+  async getTransactionPool(@Req() request: Request, @Res() res: Response) {
+    try {
+      const url = request.url.replace(/^\//, '');
+      // use the full path since there can be additional params, for example `?fields=sender,receiver,nonce`
+      const transactionPool = await this.cachingService.getOrSet(
+        url,
+        async () => {
+          return await this.gatewayGet(url, GatewayComponentRequest.transactionPool);
+        },
+        Constants.oneSecond() * 4,
+      );
+
+      res.type('application/json').send(transactionPool);
+    } catch (error: any) {
+      throw new InternalServerErrorException(error.response.data);
+    }
   }
 
   @Get('/transaction/:hash')
