@@ -153,8 +153,6 @@ describe("Block Controller", () => {
     });
   });
 
-  // TBD
-
   afterEach(async () => {
     await app.close();
   });
