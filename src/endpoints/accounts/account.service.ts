@@ -293,16 +293,16 @@ export class AccountService {
     return null;
   }
 
-  async getAccounts(queryPagination: QueryPagination, filter: AccountFilter): Promise<Account[]> {
-    if (!filter.ownerAddress && !filter.sort && !filter.order && filter.isSmartContract === undefined) {
+  async getAccounts(queryPagination: QueryPagination, filter: AccountFilter, withContractExtraDetails?: boolean): Promise<Account[]> {
+    if (!filter.ownerAddress && !filter.sort && !filter.order && filter.isSmartContract === undefined && withContractExtraDetails === undefined) {
       return await this.cachingService.getOrSet(
         CacheInfo.Accounts(queryPagination).key,
-        async () => await this.getAccountsRaw(queryPagination, filter),
+        async () => await this.getAccountsRaw(queryPagination, filter, withContractExtraDetails),
         CacheInfo.Accounts(queryPagination).ttl
       );
     }
 
-    return await this.getAccountsRaw(queryPagination, filter);
+    return await this.getAccountsRaw(queryPagination, filter, withContractExtraDetails);
   }
 
   public async getAccountsForAddresses(addresses: Array<string>): Promise<Array<Account>> {
@@ -320,7 +320,7 @@ export class AccountService {
     return accounts;
   }
 
-  async getAccountsRaw(queryPagination: QueryPagination, filter: AccountFilter): Promise<Account[]> {
+  async getAccountsRaw(queryPagination: QueryPagination, filter: AccountFilter, withContractExtraDetails?: boolean): Promise<Account[]> {
     const result = await this.indexerService.getAccounts(queryPagination, filter);
 
     const assets = await this.assetsService.getAllAccountAssets();
@@ -337,6 +337,18 @@ export class AccountService {
     for (const account of accounts) {
       account.shard = AddressUtils.computeShard(AddressUtils.bech32Decode(account.address), shardCount);
       account.assets = assets[account.address];
+
+      if (filter.isSmartContract && withContractExtraDetails) {
+        const [txCount, deployedAt, deployTxHash] = await Promise.all([
+          this.getAccountTxCount(account.address),
+          this.getAccountDeployedAt(account.address),
+          this.getAccountDeployedTxHash(account.address),
+        ]);
+
+        account.txCount = txCount;
+        account.deployedAt = deployedAt;
+        account.deployTxHash = deployTxHash;
+      }
     }
 
     return accounts;
