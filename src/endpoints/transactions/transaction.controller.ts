@@ -71,6 +71,7 @@ export class TransactionController {
     @Query('withUsername', new ParseBoolPipe) withUsername?: boolean,
     @Query('withBlockInfo', new ParseBoolPipe) withBlockInfo?: boolean,
     @Query('isRelayed', new ParseBoolPipe) isRelayed?: boolean,
+    @Query('excludeFields', ParseArrayPipe) excludeFields?: string[],
   ) {
     const options = TransactionQueryOptions.applyDefaultOptions(size, { withScResults, withOperations, withLogs, withScamInfo, withUsername, withBlockInfo });
 
@@ -94,6 +95,7 @@ export class TransactionController {
       options,
       undefined,
       fields,
+      excludeFields
     );
   }
 

@@ -148,7 +148,7 @@ export class TransactionService {
     return result;
   }
 
-  async getTransactions(filter: TransactionFilter, pagination: QueryPagination, queryOptions?: TransactionQueryOptions, address?: string, fields?: string[]): Promise<Transaction[]> {
+  async getTransactions(filter: TransactionFilter, pagination: QueryPagination, queryOptions?: TransactionQueryOptions, address?: string, fields?: string[], excludeFields?: string[]): Promise<Transaction[]> {
     const elasticTransactions = await this.indexerService.getTransactions(filter, pagination, address);
 
     let transactions: TransactionDetailed[] = [];
@@ -180,6 +180,16 @@ export class TransactionService {
       transaction.relayedVersion = this.extractRelayedVersion(transaction);
     }
 
+    if (excludeFields && excludeFields.length > 0) {
+      transactions = transactions.map(transaction => {
+        for (const field of excludeFields) {
+          if (field in transaction) {
+            delete transaction[field as keyof TransactionDetailed];
+          }
+        }
+        return transaction;
+      });
+    }
 
     await this.processTransactions(transactions, {
       withScamInfo: queryOptions?.withScamInfo ?? false,

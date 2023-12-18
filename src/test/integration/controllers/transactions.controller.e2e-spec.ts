@@ -91,6 +91,21 @@ describe("Transactions Controller", () => {
     });
   });
 
+  describe('getTransactions', () => {
+    it('should return a list of transactions without gasLimit, gasPrice attribute', async () => {
+      const excludeFields = ['gasLimit,gasPrice'];
+      await request(app.getHttpServer())
+        .get(`${path}?excludeFields=${excludeFields}`)
+        .expect(200)
+        .then(res => {
+          for (const item of res.body) {
+            expect(item.gasLimit).not.toBeDefined();
+            expect(item.gasPrice).not.toBeDefined();
+          }
+        });
+    });
+  });
+
   afterEach(async () => {
     await app.close();
   });
