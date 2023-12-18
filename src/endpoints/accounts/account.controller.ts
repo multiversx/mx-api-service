@@ -660,6 +660,7 @@ export class AccountController {
   @ApiQuery({ name: 'function', description: 'Filter transactions by function name', required: false })
   @ApiQuery({ name: 'order', description: 'Sort order (asc/desc)', required: false, enum: SortOrder })
   @ApiQuery({ name: 'fields', description: 'List of fields to filter by', required: false })
+  @ApiQuery({ name: 'excludeFields', description: 'List of excludedFields to filter by', required: false })
   @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
   @ApiQuery({ name: 'withScResults', description: 'Return scResults for transactions. When "withScresults" parameter is applied, complexity estimation is 200', required: false })
@@ -688,6 +689,7 @@ export class AccountController {
     @Query('after', ParseIntPipe) after?: number,
     @Query('order', new ParseEnumPipe(SortOrder)) order?: SortOrder,
     @Query('fields', ParseArrayPipe) fields?: string[],
+    @Query('excludeFields', ParseArrayPipe) excludeFields?: string[],
     @Query('withScResults', new ParseBoolPipe) withScResults?: boolean,
     @Query('withOperations', new ParseBoolPipe) withOperations?: boolean,
     @Query('withLogs', new ParseBoolPipe) withLogs?: boolean,
@@ -714,7 +716,7 @@ export class AccountController {
       order,
       senderOrReceiver,
       isRelayed,
-    }), new QueryPagination({ from, size }), options, address, fields);
+    }), new QueryPagination({ from, size }), options, address, fields, excludeFields);
   }
 
   @Get("/accounts/:address/transactions/count")

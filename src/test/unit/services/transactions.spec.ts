@@ -250,5 +250,20 @@ describe('TransactionService', () => {
 
       expect(service.applyBlockInfo).toHaveBeenCalledWith(expect.any(Array));
     });
+
+    it('should return transactions details without gasLimit and gasPrice keys', async () => {
+      const filter = new TransactionFilter();
+      const pagination = new QueryPagination();
+
+      jest.spyOn(assetsService, 'getAllAccountAssets').mockResolvedValue(assetsAccountMock);
+      jest.spyOn(indexerService, 'getTransactions').mockResolvedValue(elasticTransactionsMock);
+
+      const results = await service.getTransactions(filter, pagination, undefined, undefined, undefined, ['gasLimit', 'gasPrice']);
+
+      for (const result of results) {
+        expect(result.gasLimit).not.toBeDefined();
+        expect(result.gasPrice).not.toBeDefined();
+      }
+    });
   });
 });
