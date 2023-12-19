@@ -54,7 +54,7 @@ export class CacheInfo {
   static TransactionPool: CacheInfo = {
     key: 'txpool',
     ttl: Constants.oneSecond() * 6,
-  }
+  };
 
   static Identities: CacheInfo = {
     key: 'identities',

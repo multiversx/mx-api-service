@@ -18,6 +18,6 @@ registerEnumType(TransactionType, {
     },
     Reward: {
       description: 'Reward type.',
-    }
+    },
   },
 });

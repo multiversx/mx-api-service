@@ -38,7 +38,7 @@ export class PoolService {
   }
 
   async getTxPoolRaw(): Promise<TransactionInPool[]> {
-    let pool = await this.gatewayService.getTransactionPool();
+    const pool = await this.gatewayService.getTransactionPool();
     return this.parseTransactions(pool);
   }
 
