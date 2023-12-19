@@ -664,6 +664,26 @@ export class ApiConfigService {
     return this.configService.get<string>('github.token');
   }
 
+  isTransactionPoolEnabled(): boolean {
+    return this.configService.get<boolean>('features.transactionPool.enabled') ?? false;
+  }
+
+  isTransactionPoolCacheWarmerEnabled(): boolean {
+    return this.configService.get<boolean>('features.transactionPoolWarmer.enabled') ?? false;
+  }
+
+  getTransactionPoolCacheWarmerCronExpression(): string {
+    const cronExpression = this.configService.get<string>('features.transactionPoolWarmer.cronExpression');
+    if (!cronExpression) {
+      throw new Error('No transaction pool cron expression present');
+    }
+    return cronExpression;
+  }
+
+  getTransactionPoolCacheWarmerTtlInSeconds(): number {
+    return this.configService.get<number>('features.transactionPoolWarmer.ttlInSeconds') ?? 6;
+  }
+
   isStakingV4Enabled(): boolean {
     return this.configService.get<boolean>('features.stakingV4.enabled') ?? false;
   }

@@ -29,6 +29,7 @@ import { TokenType } from "src/common/indexer/entities";
 import { TokenDetailed } from "src/endpoints/tokens/entities/token.detailed";
 import { DataApiService } from "src/common/data-api/data-api.service";
 import { BlockService } from "src/endpoints/blocks/block.service";
+import { PoolService } from "src/endpoints/pool/pool.service";
 
 @Injectable()
 export class CacheWarmerService {
@@ -60,6 +61,7 @@ export class CacheWarmerService {
     private readonly guestCachingWarmer: GuestCacheWarmer,
     private readonly dataApiService: DataApiService,
     private readonly blockService: BlockService,
+    private readonly poolService: PoolService,
   ) {
     this.configCronJob(
       'handleKeysAgainstDatabaseAndGithubInvalidations',
@@ -85,6 +87,12 @@ export class CacheWarmerService {
       const handleUpdateCollectionExtraDetailsCronJob = new CronJob(CronExpression.EVERY_10_MINUTES, async () => await this.handleUpdateCollectionExtraDetails());
       this.schedulerRegistry.addCronJob(this.handleUpdateCollectionExtraDetails.name, handleUpdateCollectionExtraDetailsCronJob);
       handleUpdateCollectionExtraDetailsCronJob.start();
+    }
+
+    if (this.apiConfigService.isTransactionPoolCacheWarmerEnabled()) {
+      const handleTransactionPoolCacheInvalidation = new CronJob(this.apiConfigService.getTransactionPoolCacheWarmerCronExpression(), async () => await this.handleTxPoolInvalidations());
+      this.schedulerRegistry.addCronJob(this.handleTxPoolInvalidations.name, handleTransactionPoolCacheInvalidation);
+      handleTransactionPoolCacheInvalidation.start();
     }
   }
 
@@ -124,6 +132,13 @@ export class CacheWarmerService {
     this.nodeService.processAuctions(nodes, auctions);
 
     await this.invalidateKey(CacheInfo.Nodes.key, nodes, CacheInfo.Nodes.ttl);
+  }
+
+  @Lock({ name: 'Transaction pool invalidation', verbose: true })
+  async handleTxPoolInvalidations() {
+    const pool = await this.poolService.getTxPoolRaw();
+
+    await this.invalidateKey(CacheInfo.TransactionPool.key, pool, this.apiConfigService.getTransactionPoolCacheWarmerTtlInSeconds());
   }
 
   @Cron(CronExpression.EVERY_MINUTE)

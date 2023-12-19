@@ -1,5 +1,5 @@
-export class TransactionPool {
-  constructor(init?: Partial<TransactionPool>) {
+export class TransactionInPool {
+  constructor(init?: Partial<TransactionInPool>) {
     Object.assign(this, init);
   }
 
@@ -11,4 +11,5 @@ export class TransactionPool {
   gasprice: number = 0;
   gaslimit: number = 0;
   data: string = '';
+  type: string = '';
 }

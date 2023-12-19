@@ -35,6 +35,12 @@ features:
     enabled: false
     hitsThreshold: 100
     ttl: 12
+  transactionPool:
+    enabled: true
+  transactionPoolWarmer:
+    enabled: true
+    cronExpression: '*/5 * * * * *'
+    ttlInSeconds: 6
   updateCollectionExtraDetails:
     enabled: false
   marketplace:
@@ -68,7 +74,7 @@ urls:
   elastic:
     - 'https://devnet-index.multiversx.com'
   gateway:
-    - 'https://devnet-gateway.multiversx.com'
+    - 'http://34.154.137.116:8080'
   verifier: 'https://play-api.multiversx.com'
   redis: '127.0.0.1'
   rabbitmq: 'amqp://127.0.0.1:5672'

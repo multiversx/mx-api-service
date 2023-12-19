@@ -32,6 +32,7 @@ import { UsernameModule } from "./usernames/username.module";
 import { VmQueryModule } from "./vm.query/vm.query.module";
 import { WaitingListModule } from "./waiting-list/waiting.list.module";
 import { WebsocketModule } from "./websocket/websocket.module";
+import { PoolModule } from "./pool/pool.module";
 
 @Module({
   imports: [
@@ -63,6 +64,7 @@ import { WebsocketModule } from "./websocket/websocket.module";
     BlsModule,
     DappConfigModule,
     TransferModule,
+    PoolModule,
     TransactionActionModule,
     WebsocketModule,
     MexModule.forRoot(),
@@ -74,7 +76,7 @@ import { WebsocketModule } from "./websocket/websocket.module";
     AccountModule, CollectionModule, BlockModule, DelegationModule, DelegationLegacyModule, IdentitiesModule, KeysModule,
     MiniBlockModule, NetworkModule, NftModule, NftMediaModule, TagModule, NodeModule, ProviderModule,
     RoundModule, SmartContractResultModule, ShardModule, StakeModule, TokenModule, RoundModule, TransactionModule, UsernameModule, VmQueryModule,
-    WaitingListModule, EsdtModule, BlsModule, DappConfigModule, TransferModule, TransactionActionModule, WebsocketModule, MexModule,
+    WaitingListModule, EsdtModule, BlsModule, DappConfigModule, TransferModule, PoolModule, TransactionActionModule, WebsocketModule, MexModule,
     ProcessNftsModule, NftMarketplaceModule, TransactionsBatchModule,
   ],
 })
