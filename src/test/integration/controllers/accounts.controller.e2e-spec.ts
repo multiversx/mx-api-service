@@ -2,6 +2,11 @@ import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { Account } from 'src/endpoints/accounts/entities/account';
 import { AccountDeferred } from 'src/endpoints/accounts/entities/account.deferred';
+import { AccountEsdtHistory } from 'src/endpoints/accounts/entities/account.esdt.history';
+import { AccountHistory } from 'src/endpoints/accounts/entities/account.history';
+import { AccountKey } from 'src/endpoints/accounts/entities/account.key';
+import { ContractUpgrades } from 'src/endpoints/accounts/entities/contract.upgrades';
+import { DeployedContract } from 'src/endpoints/accounts/entities/deployed.contract';
 import { NftCollectionAccount } from 'src/endpoints/collections/entities/nft.collection.account';
 import { NftCollectionWithRoles } from 'src/endpoints/collections/entities/nft.collection.with.roles';
 import { NftAccount } from 'src/endpoints/nfts/entities/nft.account';
@@ -9,6 +14,7 @@ import { SmartContractResult } from 'src/endpoints/sc-results/entities/smart.con
 import { AccountDelegation } from 'src/endpoints/stake/entities/account.delegation';
 import { TokenWithBalance } from 'src/endpoints/tokens/entities/token.with.balance';
 import { TokenWithRoles } from 'src/endpoints/tokens/entities/token.with.roles';
+import { Transaction } from 'src/endpoints/transactions/entities/transaction';
 import { PublicAppModule } from 'src/public.app.module';
 import request = require('supertest');
 
@@ -975,7 +981,6 @@ describe("Account Controller", () => {
     it('should return details about Fungible token roles where the account is owner or has some special roles assigned to it', async () => {
       const address: string = 'erd1qqqqqqqqqqqqqpgqxp28qpnv7rfcmk6qrgxgw5uf2fnp84ar78ssqdk6hr';
       const identifier: string = 'HUSDC-d80042';
-
       await request(app.getHttpServer())
         .get(`${path}/${address}/roles/tokens/${identifier}`)
         .expect(200)
@@ -1557,7 +1562,7 @@ describe("Account Controller", () => {
   });
 
   describe('/accounts/{address}/nft/{nft}', () => {
-    it('should return details about a specific fungible token from a given address', async () => {
+    it('should return details about a specific Fungible token from a given address', async () => {
       const address: string = 'erd1c04typx388cmk72vz9c4g0yjefeuek5ygpk9k4tcryvaykdy9pmq4fp4nl';
       const nft: string = 'LOONAWL-52ed87-0cab';
       await request(app.getHttpServer())
@@ -1609,7 +1614,7 @@ describe("Account Controller", () => {
         ${'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqpy8lllls84ykc7'}
         ${'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqu8lllls8clacj'}`
       (
-        `should summarizes total staked amount for the given provider, as well as when and how much unbond will be performed`,
+        `should summarize total staked amount for the given provider, as well as when and how much unbond will be performed`,
         async ({ address }) => {
           await request(app.getHttpServer())
             .get(`${path}/${address}/stake`)
@@ -1689,7 +1694,31 @@ describe("Account Controller", () => {
   });
 
   describe('/accounts/{address}/keys', () => {
+    test.each`
+        address
+        ${'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqprhllllsj9265l'}
+        ${'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq9hllllsz2je7q'}`
+      (
+        `should return all active / queued nodes where the account is owner`,
+        async ({ address }) => {
+          await request(app.getHttpServer())
+            .get(`${path}/${address}/keys`)
+            .expect(200)
+            .then(res => {
+              expect(res.body).toBeInstanceOf(Array<AccountKey>);
+            });
+        }
+      );
 
+    it('should return 400 Bad Request for an invalid address', async () => {
+      const address: string = 'erd1qqqqqqqqqqqqqqqqqqqqqqqqq9hllllsz2je7q';
+      await request(app.getHttpServer())
+        .get(`${path}/${address}/keys`)
+        .expect(400)
+        .then(res => {
+          expect(res.body.message).toStrictEqual("Validation failed for argument 'address' (a bech32 address is expected)");
+        });
+    });
   });
 
   describe('/accounts/{address}/waiting-list', () => {
@@ -1697,59 +1726,739 @@ describe("Account Controller", () => {
   });
 
   describe('/accounts/{address}/transactions', () => {
+    test.each`
+        address
+        ${'erd1ff377y7qdldtsahvt28ec45zkyu0pepuup33adhr8wr2yuelwv7qpevs9e'}
+        ${'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq9hllllsz2je7q'}`
+      (
+        `should return details of all transactions where the account is sender or receiver`,
+        async ({ address }) => {
+          await request(app.getHttpServer())
+            .get(`${path}/${address}/transactions`)
+            .expect(200)
+            .then(res => {
+              expect(res.body).toBeInstanceOf(Array<AccountKey>);
+            });
+        }
+      );
 
+    it('should return 400 Bad Request for an invalid address', async () => {
+      const address: string = 'erd1qqqqqqqqqqqqqqqqqqqqqqqqq9hllllsz2je7q';
+      await request(app.getHttpServer())
+        .get(`${path}/${address}/keys`)
+        .expect(400)
+        .then(res => {
+          expect(res.body.message).toStrictEqual("Validation failed for argument 'address' (a bech32 address is expected)");
+        });
+    });
   });
 
   describe('/accounts/{address}/transactions/count', () => {
+    [
+      {
+        address: 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqplllst77y4l',
+        count: 73,
+      },
+      {
+        address: 'erd1lh08nq6j75s39vtgn2gtzed8p62nr77my8h3wyhdcv7xjql7gn9szasf5c',
+        count: 1746,
+      },
+      {
+        address: 'erd1sxhameujglefnrzxyj8eha6uxqtclezmjz3t27s3e9tew0ufhqqqkxz37g',
+        count: 45,
+      },
+    ].forEach(({ address, count }) => {
+      describe(`address = ${address}`, () => {
+        it(`should return total number of transactions for a given address  ${address}, where the account is sender or receiver, as well as total transactions count that have a certain status`, async () => {
+          await request(app.getHttpServer())
+            .get(`${path}/${address}/transactions/count`)
+            .expect(200)
+            .then(res => {
+              expect(+res.text).toBeGreaterThanOrEqual(count);
+            });
+        });
+      });
+    });
 
+    it('should return 400 Bad Request for an invalid address', async () => {
+      const address: string = 'erd1qqqqqqqqqqqqqqqqqqqqqqqqq9hllllsz2je7q';
+      await request(app.getHttpServer())
+        .get(`${path}/${address}/transactions/count`)
+        .expect(400)
+        .then(res => {
+          expect(res.body.message).toStrictEqual("Validation failed for argument 'address' (a bech32 address is expected)");
+        });
+    });
   });
 
   describe('/accounts/{address}/transfers', () => {
+    test.each`
+        address
+        ${'erd1qqqqqqqqqqqqqpgqrgsjhg3cyhla4td4kdqz3mxpnsta6swzys5srynv6y'}
+        ${'erd1uke5q3gae57w8zxr8ajl9kp3yqxqm2k6su25gm3ym8d7qltays5sscd790'}
+        ${'erd1qqqqqqqqqqqqqpgq3uzpsutjdkf2fzf2xtr2hkj2am7pak5eys5shffwec'}`
+      (
+        `should return both transfers triggerred by a user account (type = Transaction), as well as transfers triggerred by smart contracts (type = SmartContractResult), thus providing a full picture of all in/out value transfers for a given account`,
+        async ({ address }) => {
+          await request(app.getHttpServer())
+            .get(`${path}/${address}/transfers`)
+            .expect(200)
+            .then(res => {
+              expect(res.body).toBeInstanceOf(Array<Transaction>);
+            });
+        }
+      );
 
+    [
+      {
+        size: 3,
+      },
+      {
+        size: 7,
+      },
+    ].forEach(({ size }) => {
+      describe(`size = ${size}`, () => {
+        it(`should return a list of ${size} transfers triggerred by smart contracts (type = SmartContractResult), thus providing a full picture of all in/out value transfers for a given account`, async () => {
+          const address: string = 'erd1qqqqqqqqqqqqqpgq3uzpsutjdkf2fzf2xtr2hkj2am7pak5eys5shffwec';
+          await request(app.getHttpServer())
+            .get(`${path}/${address}/transfers?size=${size}`)
+            .expect(200)
+            .then(res => {
+              expect(res.body).toBeInstanceOf(Array<Transaction>);
+              expect(res.body).toHaveLength(size);
+            });
+        });
+      });
+    });
+
+    it('should return 400 Bad Request for an invalid address', async () => {
+      const address: string = 'erd1qqqqqqqqqqqqqqqqqqqqqqqqq9hllllsz2je7q';
+      await request(app.getHttpServer())
+        .get(`${path}/${address}/transfers`)
+        .expect(400)
+        .then(res => {
+          expect(res.body.message).toStrictEqual("Validation failed for argument 'address' (a bech32 address is expected)");
+        });
+    });
   });
 
   describe('/accounts/{address}/transfers/count', () => {
+    [
+      {
+        address: 'erd1qqqqqqqqqqqqqpgq3uzpsutjdkf2fzf2xtr2hkj2am7pak5eys5shffwec',
+        count: 47,
+      },
+      {
+        address: 'erd1uke5q3gae57w8zxr8ajl9kp3yqxqm2k6su25gm3ym8d7qltays5sscd790',
+        count: 13306,
+      },
+    ].forEach(({ address, count }) => {
+      describe(`address = ${address}`, () => {
+        it(`should return total count of tranfers triggerred by a user account (type = Transaction), as well as transfers triggerred by smart contracts (type = SmartContractResult)`, async () => {
+          await request(app.getHttpServer())
+            .get(`${path}/${address}/transfers/count`)
+            .expect(200)
+            .then(res => {
+              expect(+res.text).toBeGreaterThanOrEqual(count);
+            });
+        });
+      });
+    });
 
+    it('should return 400 Bad Request for an invalid address', async () => {
+      const address: string = 'erd1qqqqqqqqqqqqqqqqqqqqqqqqq9hllllsz2je7q';
+      await request(app.getHttpServer())
+        .get(`${path}/${address}/transfers/count`)
+        .expect(400)
+        .then(res => {
+          expect(res.body.message).toStrictEqual("Validation failed for argument 'address' (a bech32 address is expected)");
+        });
+    });
   });
 
   describe('/accounts/{address}/contracts', () => {
+    test.each`
+        address
+        ${'erd1uke5q3gae57w8zxr8ajl9kp3yqxqm2k6su25gm3ym8d7qltays5sscd790'}
+        ${'erd1ap8q5g6e5ku78r4nuw752pmpnuu9ttxh2q2y7hdzs7dpwhhskz6q8w4nnw'}
+        ${'erd1c04typx388cmk72vz9c4g0yjefeuek5ygpk9k4tcryvaykdy9pmq4fp4nl'}`
+      (
+        `should return smart contracts details for a given account`,
+        async ({ address }) => {
+          await request(app.getHttpServer())
+            .get(`${path}/${address}/contracts`)
+            .expect(200)
+            .then(res => {
+              expect(res.body).toBeInstanceOf(Array<DeployedContract>);
+            });
+        }
+      );
 
+    [
+      {
+        size: 3,
+      },
+      {
+        size: 7,
+      },
+    ].forEach(({ size }) => {
+      describe(`size = ${size}`, () => {
+        it(`should return a list of ${size} smart contracts details for a given account`, async () => {
+          const address: string = 'erd1uke5q3gae57w8zxr8ajl9kp3yqxqm2k6su25gm3ym8d7qltays5sscd790';
+          await request(app.getHttpServer())
+            .get(`${path}/${address}/contracts?size=${size}`)
+            .expect(200)
+            .then(res => {
+              expect(res.body).toBeInstanceOf(Array<DeployedContract>);
+              expect(res.body).toHaveLength(size);
+            });
+        });
+      });
+    });
+
+    it('should return 400 Bad Request for an invalid address', async () => {
+      const address: string = 'erd1qqqqqqqqqqqqqqqqqqqqqqqqq9hllllsz2je7q';
+      await request(app.getHttpServer())
+        .get(`${path}/${address}/contracts`)
+        .expect(400)
+        .then(res => {
+          expect(res.body.message).toStrictEqual("Validation failed for argument 'address' (a bech32 address is expected)");
+        });
+    });
   });
 
   describe('/accounts/{address}/contracts/count', () => {
+    [
+      {
+        address: 'erd1uke5q3gae57w8zxr8ajl9kp3yqxqm2k6su25gm3ym8d7qltays5sscd790',
+        count: 8,
+      },
+      {
+        address: 'erd1ap8q5g6e5ku78r4nuw752pmpnuu9ttxh2q2y7hdzs7dpwhhskz6q8w4nnw',
+        count: 1,
+      },
+      {
+        address: 'erd1c04typx388cmk72vz9c4g0yjefeuek5ygpk9k4tcryvaykdy9pmq4fp4nl',
+        count: 7,
+      },
+    ].forEach(({ address, count }) => {
+      describe(`address = ${address}`, () => {
+        it(`should return total number of deployed contracts for a given address  ${address}`, async () => {
+          await request(app.getHttpServer())
+            .get(`${path}/${address}/contracts/count`)
+            .expect(200)
+            .then(res => {
+              expect(+res.text).toBeGreaterThanOrEqual(count);
+            });
+        });
+      });
+    });
 
+    it('should return 400 Bad Request for an invalid address', async () => {
+      const address: string = 'erd1qqqqqqqqqqqqqqqqqqq9hllllsz2je7q';
+      await request(app.getHttpServer())
+        .get(`${path}/${address}/contracts/count`)
+        .expect(400)
+        .then(res => {
+          expect(res.body.message).toStrictEqual("Validation failed for argument 'address' (a bech32 address is expected)");
+        });
+    });
+  });
+
+  describe('/accounts/{address}/contracts/c', () => {
+    [
+      {
+        address: 'erd1uke5q3gae57w8zxr8ajl9kp3yqxqm2k6su25gm3ym8d7qltays5sscd790',
+        count: 8,
+      },
+      {
+        address: 'erd1ap8q5g6e5ku78r4nuw752pmpnuu9ttxh2q2y7hdzs7dpwhhskz6q8w4nnw',
+        count: 1,
+      },
+      {
+        address: 'erd1c04typx388cmk72vz9c4g0yjefeuek5ygpk9k4tcryvaykdy9pmq4fp4nl',
+        count: 7,
+      },
+    ].forEach(({ address, count }) => {
+      describe(`address = ${address}`, () => {
+        it(`should return alternative count of deployed contracts for a given address  ${address}`, async () => {
+          await request(app.getHttpServer())
+            .get(`${path}/${address}/contracts/c`)
+            .expect(200)
+            .then(res => {
+              expect(+res.text).toBeGreaterThanOrEqual(count);
+            });
+        });
+      });
+    });
+
+    it('should return 400 Bad Request for an invalid address', async () => {
+      const address: string = 'erd1qqqqqqqqqqqqqqqqqqq9hllllsz2je7q';
+      await request(app.getHttpServer())
+        .get(`${path}/${address}/contracts/c`)
+        .expect(400)
+        .then(res => {
+          expect(res.body.message).toStrictEqual("Validation failed for argument 'address' (a bech32 address is expected)");
+        });
+    });
   });
 
   describe('/accounts/{address}/upgrades', () => {
+    it('should return all upgrades details for a specific contract address', async () => {
+      const address: string = 'erd1qqqqqqqqqqqqqpgqrgsjhg3cyhla4td4kdqz3mxpnsta6swzys5srynv6y';
+      await request(app.getHttpServer())
+        .get(`${path}/${address}/upgrades`)
+        .expect(200)
+        .then(res => {
+          expect(res.body).toBeInstanceOf(Array<ContractUpgrades>);
+        });
+    });
 
+    it('should return 400 Bad Request for an invalid address', async () => {
+      const address: string = 'erd1ffvt28ecpuup33adhr8wr2yuelwv7qpevs9e';
+      await request(app.getHttpServer())
+        .get(`${path}/${address}/upgrades`)
+        .expect(400)
+        .then(res => {
+          expect(res.body.message).toContain("Validation failed");
+        });
+    });
+
+    [
+      {
+        size: 3,
+      },
+      {
+        size: 1,
+      },
+    ].forEach(({ size }) => {
+      describe(`size = ${size}`, () => {
+        it(`should return a list of ${size} upgrades details for a specific contract address`, async () => {
+          const address: string = 'erd1qqqqqqqqqqqqqpgqrgsjhg3cyhla4td4kdqz3mxpnsta6swzys5srynv6y';
+          await request(app.getHttpServer())
+            .get(`${path}/${address}/upgrades?size=${size}`)
+            .expect(200)
+            .then(res => {
+              expect(res.body).toBeInstanceOf(Array<ContractUpgrades>);
+              expect(res.body).toHaveLength(size);
+            });
+        });
+      });
+    });
   });
 
   describe('/accounts/{address}/results', () => {
+    it('should return smart contract results where the account is sender or receiver', async () => {
+      const address: string = 'erd1qqqqqqqqqqqqqpgq9a0dc9dmzyuteca85xlk0z7hufq064epkz6qq045h5';
+      await request(app.getHttpServer())
+        .get(`${path}/${address}/results`)
+        .expect(200)
+        .then(res => {
+          expect(res.body).toBeInstanceOf(Array<SmartContractResult>);
+          expect(res.body).toHaveLength(25);
+        });
+    });
 
+    it('should return 400 Bad Request for an invalid address', async () => {
+      const address: string = 'erd1ffvt28ecpuup33adhr8wr2yuelwv7qpevs9e';
+      await request(app.getHttpServer())
+        .get(`${path}/${address}/results`)
+        .expect(400)
+        .then(res => {
+          expect(res.body.message).toContain("Validation failed");
+        });
+    });
+
+    [
+      {
+        size: 100,
+      },
+      {
+        size: 1000,
+      },
+    ].forEach(({ size }) => {
+      describe(`size = ${size}`, () => {
+        it(`should return a list of ${size} smart contract results where the account is sender or receiver`, async () => {
+          const address: string = 'erd1qqqqqqqqqqqqqpgq9a0dc9dmzyuteca85xlk0z7hufq064epkz6qq045h5';
+          await request(app.getHttpServer())
+            .get(`${path}/${address}/results?size=${size}`)
+            .expect(200)
+            .then(res => {
+              expect(res.body).toBeInstanceOf(Array<SmartContractResult>);
+              expect(res.body).toHaveLength(size);
+            });
+        });
+      });
+    });
   });
 
   describe('/accounts/{address}/results/count', () => {
+    [
+      {
+        address: 'erd1qqqqqqqqqqqqqpgq9a0dc9dmzyuteca85xlk0z7hufq064epkz6qq045h5',
+        count: 2832,
+      },
+      {
+        address: 'erd1qqqqqqqqqqqqqpgqehedyl2ue2plvjtd9u02fkem2gjffsf79pmqj6p4xy',
+        count: 10840,
+      },
+      {
+        address: 'erd1qqqqqqqqqqqqqpgqlptrfxrjj63gg954f2mh2lwge0ss8rjh9pmq302fdk',
+        count: 286,
+      },
+    ].forEach(({ address, count }) => {
+      describe(`address = ${address}`, () => {
+        it(`should return number of smart contract results where the account  ${address} is sender or receiver`, async () => {
+          await request(app.getHttpServer())
+            .get(`${path}/${address}/results/count`)
+            .expect(200)
+            .then(res => {
+              expect(+res.text).toBeGreaterThanOrEqual(count);
+            });
+        });
+      });
+    });
 
+    it('should return 400 Bad Request for an invalid address', async () => {
+      const address: string = 'erd1qqqqqqqqq0dc9dmzyuteca85xlk0z7hufq064epkz6qq045h5';
+      await request(app.getHttpServer())
+        .get(`${path}/${address}/results/count`)
+        .expect(400)
+        .then(res => {
+          expect(res.body.message).toStrictEqual("Validation failed for argument 'address' (a bech32 address is expected)");
+        });
+    });
   });
 
   describe('/accounts/{address}/results/{scHash}', () => {
+    it('should return 400 Bad Request for an invalid transaction hash', async () => {
+      const address: string = 'erd1qqqqqqqqqqqqqpgq9a0dc9dmzyuteca85xlk0z7hufq064epkz6qq045h5';
+      const scHash: string = 'c39611c081e958b0bbed3bb21ec9eed55a605e39e3ae03b5';
+      await request(app.getHttpServer())
+        .get(`${path}/${address}/results/${scHash}`)
+        .expect(400)
+        .then(res => {
+          expect(res.body.message).toStrictEqual("Validation failed for transaction hash 'scHash'. Length should be 64.");
+        });
+    });
 
+    it('should return 400 Bad Request for an invalid address', async () => {
+      const address: string = 'erd1qqqqqqqqqqqqqpgq9aa85xlk0z7hufq064epkz6qq045h5';
+      const scHash: string = 'c39611c081e51b4ffa8982ce608958b0bbed3bb21ec9eed55a605e39e3ae03b5';
+      await request(app.getHttpServer())
+        .get(`${path}/${address}/results/${scHash}`)
+        .expect(400)
+        .then(res => {
+          expect(res.body.message).toStrictEqual("Validation failed for argument 'address' (a bech32 address is expected)");
+        });
+    });
+
+    it('should return 404 Smart contract result not found', async () => {
+      const address: string = 'erd1qqqqqqqqqqqqqpgq9a0dc9dmzyuteca85xlk0z7hufq064epkz6qq045h5';
+      const scHash: string = 'c396000000e51b4ffa8982ce608958b0bbed3bb21ec9eed55a605e39e3ae03b5';
+      await request(app.getHttpServer())
+        .get(`${path}/${address}/results/${scHash}`)
+        .expect(404)
+        .then(res => {
+          expect(res.body.message).toStrictEqual('Smart contract result not found');
+        });
+    });
+
+    it('should return details of a smart contract result where the account is sender or receiver', async () => {
+      const address: string = 'erd1qqqqqqqqqqqqqpgq9a0dc9dmzyuteca85xlk0z7hufq064epkz6qq045h5';
+      const scHash: string = 'c39611c081e51b4ffa8982ce608958b0bbed3bb21ec9eed55a605e39e3ae03b5';
+      await request(app.getHttpServer())
+        .get(`${path}/${address}/results/${scHash}`)
+        .expect(200)
+        .then(res => {
+          expect(res.body.hash).toStrictEqual(scHash);
+          expect(res.body.receiver === 'erd1qqqqqqqqqqqqqpgq9a0dc9dmzyuteca85xlk0z7hufq064epkz6qq045h5' || res.body.sender === 'erd1qqqqqqqqqqqqqpgq9a0dc9dmzyuteca85xlk0z7hufq064epkz6qq045h5').toBe(true);
+          expect(res.body.timestamp).toBeDefined();
+          expect(res.body.nonce).toBeDefined();
+          expect(res.body.gasLimit).toBeDefined();
+          expect(res.body.gasPrice).toBeDefined();
+          expect(res.body.value).toBeDefined();
+          expect(res.body.miniBlockHash).toBeDefined();
+          expect(res.body.prevTxHash).toBeDefined();
+          expect(res.body.originalTxHash).toBeDefined();
+          expect(res.body.function).toBeDefined();
+        });
+    });
   });
 
   describe('/accounts/{address}/history', () => {
+    it('should return account EGLD balance history', async () => {
+      const address: string = 'erd1ff377y7qdldtsahvt28ec45zkyu0pepuup33adhr8wr2yuelwv7qpevs9e';
+      await request(app.getHttpServer())
+        .get(`${path}/${address}/history`)
+        .expect(200)
+        .then(res => {
+          expect(res.body).toBeInstanceOf(Array<AccountHistory>);
+          expect(res.body).toHaveLength(25);
+        });
+    });
 
+    it('should return 400 Bad Request for an invalid address', async () => {
+      const address: string = 'erd1ffvt28ecpuup33adhr8wr2yuelwv7qpevs9e';
+      await request(app.getHttpServer())
+        .get(`${path}/${address}/history`)
+        .expect(400)
+        .then(res => {
+          expect(res.body.message).toContain("Validation failed");
+        });
+    });
+
+    [
+      {
+        size: 2,
+      },
+      {
+        size: 4,
+      },
+    ].forEach(({ size }) => {
+      describe(`size = ${size}`, () => {
+        it(`should return a list of ${size} items from the account EGLD balance history`, async () => {
+          const address: string = 'erd1qqqqqqqqqqqqqpgq9a0dc9dmzyuteca85xlk0z7hufq064epkz6qq045h5';
+          await request(app.getHttpServer())
+            .get(`${path}/${address}/history?size=${size}`)
+            .expect(200)
+            .then(res => {
+              expect(res.body).toBeInstanceOf(Array<AccountHistory>);
+              expect(res.body).toHaveLength(size);
+            });
+        });
+      });
+    });
+
+    [
+      {
+        after: 1702175646,
+      },
+      {
+        after: 1701588120,
+      },
+    ].forEach(({ after }) => {
+      describe(`after = ${after}`, () => {
+        it(`should return account EGLD balance history, after ${after} timestamp`, async () => {
+          const address: string = 'erd1qqqqqqqqqqqqqpgq9a0dc9dmzyuteca85xlk0z7hufq064epkz6qq045h5';
+          await request(app.getHttpServer())
+            .get(`${path}/${address}/history?after=${after}`)
+            .expect(200)
+            .then(res => {
+              expect(res.body).toBeInstanceOf(Array<AccountHistory>);
+              for (let i = 0; i < res.body.length; i++) {
+                expect(res.body[i].timestamp).toBeGreaterThanOrEqual(after);
+              }
+            });
+        });
+      });
+    });
+
+    [
+      {
+        before: 1695236388,
+      },
+      {
+        before: 1695991596,
+      },
+    ].forEach(({ before }) => {
+      describe(`before = ${before}`, () => {
+        it(`should return account EGLD balance history, before ${before} timestamp`, async () => {
+          const address: string = 'erd1qqqqqqqqqqqqqpgq9a0dc9dmzyuteca85xlk0z7hufq064epkz6qq045h5';
+          await request(app.getHttpServer())
+            .get(`${path}/${address}/history?before=${before}`)
+            .expect(200)
+            .then(res => {
+              expect(res.body).toBeInstanceOf(Array<AccountHistory>);
+              for (let i = 0; i < res.body.length; i++) {
+                expect(res.body[i].timestamp).toBeLessThanOrEqual(before);
+              }
+            });
+        });
+      });
+    });
   });
 
   describe('/accounts/{address}/history/count', () => {
+    [
+      {
+        address: 'erd1qqqqqqqqqqqqqpgq9a0dc9dmzyuteca85xlk0z7hufq064epkz6qq045h5',
+        count: 477,
+      },
+      {
+        address: 'erd1qqqqqqqqqqqqqpgqehedyl2ue2plvjtd9u02fkem2gjffsf79pmqj6p4xy',
+        count: 3093,
+      },
+      {
+        address: 'erd1qqqqqqqqqqqqqpgqlptrfxrjj63gg954f2mh2lwge0ss8rjh9pmq302fdk',
+        count: 33,
+      },
+    ].forEach(({ address, count }) => {
+      describe(`address = ${address}`, () => {
+        it(`should return account ${address} EGLD balance history count`, async () => {
+          await request(app.getHttpServer())
+            .get(`${path}/${address}/history/count`)
+            .expect(200)
+            .then(res => {
+              expect(+res.text).toBeGreaterThanOrEqual(count);
+            });
+        });
+      });
+    });
 
+    it('should return 400 Bad Request for an invalid address', async () => {
+      const address: string = 'erd1qqqqqqqqq0dc9dmzyuteca85xlk0z7hufq064epkz6qq045h5';
+      await request(app.getHttpServer())
+        .get(`${path}/${address}/history/count`)
+        .expect(400)
+        .then(res => {
+          expect(res.body.message).toStrictEqual("Validation failed for argument 'address' (a bech32 address is expected)");
+        });
+    });
+
+    [
+      {
+        before: 1695236388,
+        count: 7,
+      },
+      {
+        before: 1695991596,
+        count: 26,
+      },
+    ].forEach(({ before, count }) => {
+      describe(`before = ${before}`, () => {
+        it(`should return account EGLD balance history count, before ${before} timestamp`, async () => {
+          const address: string = 'erd1qqqqqqqqqqqqqpgq9a0dc9dmzyuteca85xlk0z7hufq064epkz6qq045h5';
+          await request(app.getHttpServer())
+            .get(`${path}/${address}/history/count?before=${before}`)
+            .expect(200)
+            .then(res => {
+              expect(+res.text).toBeGreaterThanOrEqual(count);
+            });
+        });
+      });
+    });
+
+    [
+      {
+        after: 1702175646,
+        count: 3,
+      },
+      {
+        after: 1701588120,
+        count: 8,
+      },
+    ].forEach(({ after, count }) => {
+      describe(`after = ${after}`, () => {
+        it(`should return account EGLD balance history count, after ${after} timestamp`, async () => {
+          const address: string = 'erd1qqqqqqqqqqqqqpgq9a0dc9dmzyuteca85xlk0z7hufq064epkz6qq045h5';
+          await request(app.getHttpServer())
+            .get(`${path}/${address}/history/count?after=${after}`)
+            .expect(200)
+            .then(res => {
+              expect(+res.text).toBeGreaterThanOrEqual(count);
+            });
+        });
+      });
+    });
   });
 
   describe('/accounts/{address}/history/{tokenIdentifier}/count', () => {
+    [
+      {
+        address: 'erd1ff377y7qdldtsahvt28ec45zkyu0pepuup33adhr8wr2yuelwv7qpevs9e',
+        tokenIdentifier: 'AIR-317920',
+        count: 1,
+      },
+      {
+        address: 'erd1qqqqqqqqqqqqqpgqxp28qpnv7rfcmk6qrgxgw5uf2fnp84ar78ssqdk6hr',
+        tokenIdentifier: 'HSEGLD-c13a4e',
+        count: 45082,
+      },
+    ].forEach(({ address, tokenIdentifier, count }) => {
+      describe(`address = ${address} & tokenIdentifier = ${tokenIdentifier}`, () => {
+        it(`should return account token balance history count`, async () => {
+          await request(app.getHttpServer())
+            .get(`${path}/${address}/history/${tokenIdentifier}/count`)
+            .expect(200)
+            .then(res => {
+              expect(+res.text).toBeGreaterThanOrEqual(count);
+            });
+        });
+      });
+    });
 
+    it('should return 400 Bad Request for an invalid address', async () => {
+      const tokenIdentifier: string = 'HSEGLD-c13a4e';
+      const address: string = 'erd1qqqqqqqqqqqqqpgqxpcmk6qrgxgw5uf2fnp84ar78ssqdk6hr';
+      await request(app.getHttpServer())
+        .get(`${path}/${address}/history/${tokenIdentifier}/count`)
+        .expect(400)
+        .then(res => {
+          expect(res.body.message).toStrictEqual("Validation failed for argument 'address' (a bech32 address is expected)");
+        });
+    });
   });
 
   describe('/accounts/{address}/history/{tokenIdentifier}', () => {
+    it('should return 400 Bad Request for an invalid token identifier', async () => {
+      const address: string = 'erd1qqqqqqqqqqqqqpgqxp28qpnv7rfcmk6qrgxgw5uf2fnp84ar78ssqdk6hr';
+      const tokenIdentifier: string = 'HSEGLD';
+      await request(app.getHttpServer())
+        .get(`${path}/${address}/history/${tokenIdentifier}`)
+        .expect(400)
+        .then(res => {
+          expect(res.body.message).toStrictEqual("Validation failed for argument 'tokenIdentifier': Invalid token / NFT identifier.");
+        });
+    });
 
+    it('should return 400 Bad Request for an invalid address', async () => {
+      const address: string = 'erd1qqqqqqqqqqqqrfcmk6qrgxgw5uf2fnp84ar78ssqdk6hr';
+      const tokenIdentifier: string = 'HSEGLD-c13a4e';
+      await request(app.getHttpServer())
+        .get(`${path}/${address}/history/${tokenIdentifier}`)
+        .expect(400)
+        .then(res => {
+          expect(res.body.message).toStrictEqual("Validation failed for argument 'address' (a bech32 address is expected)");
+        });
+    });
+
+    it('should return 404 token not found', async () => {
+      const address: string = 'erd1qqqqqqqqqqqqqpgqxp28qpnv7rfcmk6qrgxgw5uf2fnp84ar78ssqdk6hr';
+      const tokenIdentifier: string = 'HSEGLD-c13a4a';
+      await request(app.getHttpServer())
+        .get(`${path}/${address}/history/${tokenIdentifier}`)
+        .expect(404)
+        .then(res => {
+          expect(res.body.message).toStrictEqual("Token 'HSEGLD-c13a4a' not found");
+        });
+    });
+
+    it('should return account token balance history', async () => {
+      const address: string = 'erd1ff377y7qdldtsahvt28ec45zkyu0pepuup33adhr8wr2yuelwv7qpevs9e';
+      const tokenIdentifier: string = 'AIR-317920';
+      await request(app.getHttpServer())
+        .get(`${path}/${address}/history/${tokenIdentifier}`)
+        .expect(200)
+        .then(res => {
+          expect(res.body).toBeInstanceOf(Array<AccountEsdtHistory>);
+          expect(res.body[0].address).toStrictEqual(address);
+        });
+    });
+
+    it('should return account token balance history', async () => {
+      const address: string = 'erd1qqqqqqqqqqqqqpgqxp28qpnv7rfcmk6qrgxgw5uf2fnp84ar78ssqdk6hr';
+      const tokenIdentifier: string = 'HSEGLD-c13a4e';
+      await request(app.getHttpServer())
+        .get(`${path}/${address}/history/${tokenIdentifier}`)
+        .expect(200)
+        .then(res => {
+          expect(res.body).toBeInstanceOf(Array<AccountEsdtHistory>);
+          for (let i = 0; i < res.body.length; i++) {
+            expect(res.body[i].address).toStrictEqual(address);
+          }
+        });
+    });
   });
 
   afterEach(async () => {
