@@ -19,7 +19,7 @@ import { BinaryUtils } from "@multiversx/sdk-nestjs-common";
 import { ApiService, ApiSettings } from "@multiversx/sdk-nestjs-http";
 import { GuardianResult } from "./entities/guardian.result";
 import { TransactionProcessStatus } from "./entities/transaction.process.status";
-import { TransactionInPool } from "./entities/transaction.pool";
+import { TxPoolGatewayResponse } from "./entities/transaction.pool";
 
 @Injectable()
 export class GatewayService {
@@ -135,10 +135,8 @@ export class GatewayService {
     return new NftData(result.tokenData);
   }
 
-  async getTransactionPool(): Promise<TransactionInPool[]> {
-    const result = await this.get(`transaction/pool?fields=nonce,sender,receiver,gaslimit,gasprice,receiverusername,data,value`, GatewayComponentRequest.transactionPool);
-
-    return result;
+  async getTransactionPool(): Promise<TxPoolGatewayResponse> {
+    return await this.get(`transaction/pool?fields=nonce,sender,receiver,gaslimit,gasprice,receiverusername,data,value`, GatewayComponentRequest.transactionPool);
   }
 
   async getTransaction(txHash: string): Promise<Transaction | undefined> {

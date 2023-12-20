@@ -3,7 +3,7 @@ import { Controller, DefaultValuePipe, Get, Query } from "@nestjs/common";
 import { ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { PoolService } from "./pool.service";
 import { QueryPagination } from "src/common/entities/query.pagination";
-import { TransactionInPool } from "src/common/gateway/entities/transaction.pool";
+import { TransactionInPool } from "./entities/transaction.in.pool.dto";
 
 @Controller()
 @ApiTags('pool')

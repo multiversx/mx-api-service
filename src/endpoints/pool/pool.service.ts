@@ -4,8 +4,9 @@ import { GatewayService } from "src/common/gateway/gateway.service";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { CacheInfo } from "src/utils/cache.info";
-import { TransactionInPool } from "src/common/gateway/entities/transaction.pool";
+import { TxInPoolFields, TxPoolGatewayResponse } from "src/common/gateway/entities/transaction.pool";
 import { TransactionType } from "../transactions/entities/transaction.type";
+import { TransactionInPool } from "./entities/transaction.in.pool.dto";
 
 @Injectable()
 export class PoolService {
@@ -16,16 +17,15 @@ export class PoolService {
   ) { }
 
   async getPool(
-    pagination: QueryPagination,
+    queryPagination: QueryPagination,
   ): Promise<TransactionInPool[]> {
     if (!this.apiConfigService.isTransactionPoolEnabled()) {
       return [];
     }
 
-    const { from, size } = pagination;
+    const { from, size } = queryPagination;
 
     const pool = await this.getEntirePool();
-    console.log(pool);
     return pool.slice(from, from + size);
   }
 
@@ -42,7 +42,7 @@ export class PoolService {
     return this.parseTransactions(pool);
   }
 
-  private parseTransactions(rawPool: any): TransactionInPool[] {
+  private parseTransactions(rawPool: TxPoolGatewayResponse): TransactionInPool[] {
     const transactionPool: TransactionInPool[] = [];
     // Check if 'txPool' property exists in the response
     if (rawPool && rawPool.txPool) {
@@ -50,43 +50,43 @@ export class PoolService {
 
       // Parse regular transactions
       if (txPool.regularTransactions && txPool.regularTransactions.length > 0) {
-        txPool.regularTransactions.forEach((tx: any) => {
-          const transaction = this.parseTransaction(tx, TransactionType.Transaction);
+        for (const regularTx of txPool.regularTransactions) {
+          const transaction = this.parseTransaction(regularTx.txFields, TransactionType.Transaction);
           transactionPool.push(transaction);
-        });
+        }
       }
 
       // Parse smart contract results
       if (txPool.smartContractResults && txPool.smartContractResults.length > 0) {
-        txPool.smartContractResults.forEach((tx: any) => {
-          const transaction = this.parseTransaction(tx, TransactionType.SmartContractResult);
+        for (const scr of txPool.smartContractResults) {
+          const transaction = this.parseTransaction(scr.txFields, TransactionType.SmartContractResult);
           transactionPool.push(transaction);
-        });
+        }
       }
 
       // Parse rewards
       if (txPool.rewards && txPool.rewards.length > 0) {
-        txPool.rewards.forEach((reward: any) => {
-          const transaction = this.parseTransaction(reward.txFields, TransactionType.Reward);
+        for (const rewardTx of txPool.rewards) {
+          const transaction = this.parseTransaction(rewardTx.txFields, TransactionType.Reward);
           transactionPool.push(transaction);
-        });
+        }
       }
     }
 
     return transactionPool;
   }
 
-  private parseTransaction(tx: any, type: TransactionType): TransactionInPool {
+  private parseTransaction(tx: TxInPoolFields, type: TransactionType): TransactionInPool {
     return new TransactionInPool({
-      hash: tx.hash || '',
+      txHash: tx.hash || '',
       sender: tx.sender || '',
       receiver: tx.receiver || '',
       nonce: tx.nonce || 0,
-      value: tx.value || 0,
-      gasprice: tx.gasprice || 0,
-      gaslimit: tx.gaslimit || 0,
+      value: tx.value || '',
+      gasPrice: tx.gasprice || 0,
+      gasLimit: tx.gaslimit || 0,
       data: tx.data || '',
-      type: type,
+      type: type || TransactionType.Transaction,
     });
   }
 }
