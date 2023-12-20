@@ -2093,6 +2093,44 @@ describe("Account Controller", () => {
     });
   });
 
+  describe('/accounts/{address}/transactions/c', () => {
+    [
+      {
+        address: 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqplllst77y4l',
+        count: 73,
+      },
+      {
+        address: 'erd1lh08nq6j75s39vtgn2gtzed8p62nr77my8h3wyhdcv7xjql7gn9szasf5c',
+        count: 1746,
+      },
+      {
+        address: 'erd1sxhameujglefnrzxyj8eha6uxqtclezmjz3t27s3e9tew0ufhqqqkxz37g',
+        count: 45,
+      },
+    ].forEach(({ address, count }) => {
+      describe(`address = ${address}`, () => {
+        it(`should return alternative count of transactions for a given address  ${address}, where the account is sender or receiver, as well as total transactions count that have a certain status`, async () => {
+          await request(app.getHttpServer())
+            .get(`${path}/${address}/transactions/c`)
+            .expect(200)
+            .then(res => {
+              expect(+res.text).toBeGreaterThanOrEqual(count);
+            });
+        });
+      });
+    });
+
+    it('should return 400 Bad Request for an invalid address', async () => {
+      const address: string = 'erd1qqqqqqqqqqqqqqqqqqqqqqqqq9hllllsz2je7q';
+      await request(app.getHttpServer())
+        .get(`${path}/${address}/transactions/c`)
+        .expect(400)
+        .then(res => {
+          expect(res.body.message).toStrictEqual("Validation failed for argument 'address' (a bech32 address is expected)");
+        });
+    });
+  });
+
   describe('/accounts/{address}/transfers', () => {
     test.each`
         address
@@ -2171,6 +2209,40 @@ describe("Account Controller", () => {
       const address: string = 'erd1qqqqqqqqqqqqqqqqqqqqqqqqq9hllllsz2je7q';
       await request(app.getHttpServer())
         .get(`${path}/${address}/transfers/count`)
+        .expect(400)
+        .then(res => {
+          expect(res.body.message).toStrictEqual("Validation failed for argument 'address' (a bech32 address is expected)");
+        });
+    });
+  });
+
+  describe('/accounts/{address}/transfers/c', () => {
+    [
+      {
+        address: 'erd1qqqqqqqqqqqqqpgq3uzpsutjdkf2fzf2xtr2hkj2am7pak5eys5shffwec',
+        count: 47,
+      },
+      {
+        address: 'erd1uke5q3gae57w8zxr8ajl9kp3yqxqm2k6su25gm3ym8d7qltays5sscd790',
+        count: 13306,
+      },
+    ].forEach(({ address, count }) => {
+      describe(`address = ${address}`, () => {
+        it(`should return alternative count of tranfers triggerred by a user account (type = Transaction), as well as transfers triggerred by smart contracts (type = SmartContractResult)`, async () => {
+          await request(app.getHttpServer())
+            .get(`${path}/${address}/transfers/c`)
+            .expect(200)
+            .then(res => {
+              expect(+res.text).toBeGreaterThanOrEqual(count);
+            });
+        });
+      });
+    });
+
+    it('should return 400 Bad Request for an invalid address', async () => {
+      const address: string = 'erd1qqqqqqqqqqqqqqqqqqqqqqqqq9hllllsz2je7q';
+      await request(app.getHttpServer())
+        .get(`${path}/${address}/transfers/c`)
         .expect(400)
         .then(res => {
           expect(res.body.message).toStrictEqual("Validation failed for argument 'address' (a bech32 address is expected)");
@@ -2410,7 +2482,7 @@ describe("Account Controller", () => {
       },
     ].forEach(({ address, count }) => {
       describe(`address = ${address}`, () => {
-        it(`should return number of smart contract results where the account  ${address} is sender or receiver`, async () => {
+        it(`should return the total number of smart contract results where the account  ${address} is sender or receiver`, async () => {
           await request(app.getHttpServer())
             .get(`${path}/${address}/results/count`)
             .expect(200)
@@ -2425,6 +2497,44 @@ describe("Account Controller", () => {
       const address: string = 'erd1qqqqqqqqq0dc9dmzyuteca85xlk0z7hufq064epkz6qq045h5';
       await request(app.getHttpServer())
         .get(`${path}/${address}/results/count`)
+        .expect(400)
+        .then(res => {
+          expect(res.body.message).toStrictEqual("Validation failed for argument 'address' (a bech32 address is expected)");
+        });
+    });
+  });
+
+  describe('/accounts/{address}/results/c', () => {
+    [
+      {
+        address: 'erd1qqqqqqqqqqqqqpgq9a0dc9dmzyuteca85xlk0z7hufq064epkz6qq045h5',
+        count: 2832,
+      },
+      {
+        address: 'erd1qqqqqqqqqqqqqpgqehedyl2ue2plvjtd9u02fkem2gjffsf79pmqj6p4xy',
+        count: 10840,
+      },
+      {
+        address: 'erd1qqqqqqqqqqqqqpgqlptrfxrjj63gg954f2mh2lwge0ss8rjh9pmq302fdk',
+        count: 286,
+      },
+    ].forEach(({ address, count }) => {
+      describe(`address = ${address}`, () => {
+        it(`should return alternative count of smart contract results where the account  ${address} is sender or receiver`, async () => {
+          await request(app.getHttpServer())
+            .get(`${path}/${address}/results/c`)
+            .expect(200)
+            .then(res => {
+              expect(+res.text).toBeGreaterThanOrEqual(count);
+            });
+        });
+      });
+    });
+
+    it('should return 400 Bad Request for an invalid address', async () => {
+      const address: string = 'erd1qqqqqqqqq0dc9dmzyuteca85xlk0z7hufq064epkz6qq045h5';
+      await request(app.getHttpServer())
+        .get(`${path}/${address}/results/c`)
         .expect(400)
         .then(res => {
           expect(res.body.message).toStrictEqual("Validation failed for argument 'address' (a bech32 address is expected)");
@@ -2665,6 +2775,34 @@ describe("Account Controller", () => {
     });
   });
 
+  describe('/accounts/{address}/history/c', () => {
+    [
+      {
+        address: 'erd1qqqqqqqqqqqqqpgq9a0dc9dmzyuteca85xlk0z7hufq064epkz6qq045h5',
+        count: 477,
+      },
+      {
+        address: 'erd1qqqqqqqqqqqqqpgqehedyl2ue2plvjtd9u02fkem2gjffsf79pmqj6p4xy',
+        count: 3093,
+      },
+      {
+        address: 'erd1qqqqqqqqqqqqqpgqlptrfxrjj63gg954f2mh2lwge0ss8rjh9pmq302fdk',
+        count: 33,
+      },
+    ].forEach(({ address, count }) => {
+      describe(`address = ${address}`, () => {
+        it(`should return account ${address} EGLD balance history alternative count`, async () => {
+          await request(app.getHttpServer())
+            .get(`${path}/${address}/history/c`)
+            .expect(200)
+            .then(res => {
+              expect(+res.text).toBeGreaterThanOrEqual(count);
+            });
+        });
+      });
+    });
+  });
+
   describe('/accounts/{address}/history/{tokenIdentifier}/count', () => {
     [
       {
@@ -2699,6 +2837,32 @@ describe("Account Controller", () => {
         .then(res => {
           expect(res.body.message).toStrictEqual("Validation failed for argument 'address' (a bech32 address is expected)");
         });
+    });
+  });
+
+  describe('/accounts/{address}/history/{tokenIdentifier}/c', () => {
+    [
+      {
+        address: 'erd1ff377y7qdldtsahvt28ec45zkyu0pepuup33adhr8wr2yuelwv7qpevs9e',
+        tokenIdentifier: 'AIR-317920',
+        count: 1,
+      },
+      {
+        address: 'erd1qqqqqqqqqqqqqpgqxp28qpnv7rfcmk6qrgxgw5uf2fnp84ar78ssqdk6hr',
+        tokenIdentifier: 'HSEGLD-c13a4e',
+        count: 45082,
+      },
+    ].forEach(({ address, tokenIdentifier, count }) => {
+      describe(`address = ${address} & tokenIdentifier = ${tokenIdentifier}`, () => {
+        it(`should return account token balance history alternative count`, async () => {
+          await request(app.getHttpServer())
+            .get(`${path}/${address}/history/${tokenIdentifier}/c`)
+            .expect(200)
+            .then(res => {
+              expect(+res.text).toBeGreaterThanOrEqual(count);
+            });
+        });
+      });
     });
   });
 
