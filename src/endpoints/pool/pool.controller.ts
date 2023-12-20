@@ -1,5 +1,5 @@
-import { ParseIntPipe } from "@multiversx/sdk-nestjs-common";
-import { Controller, DefaultValuePipe, Get, Query } from "@nestjs/common";
+import { ParseIntPipe, ParseTransactionHashPipe } from "@multiversx/sdk-nestjs-common";
+import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Param, Query } from "@nestjs/common";
 import { ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { PoolService } from "./pool.service";
 import { QueryPagination } from "src/common/entities/query.pagination";
@@ -13,7 +13,7 @@ export class PoolController {
   ) { }
 
   @Get("/pool")
-  @ApiOperation({ summary: 'Transaction pool', description: 'Returns the transactions that are currently in the memory pool.' })
+  @ApiOperation({ summary: 'Transactions pool', description: 'Returns the transactions that are currently in the memory pool.' })
   @ApiOkResponse({ type: [TransactionInPool], isArray: true })
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
@@ -23,4 +23,19 @@ export class PoolController {
   ): Promise<TransactionInPool[]> {
     return await this.poolService.getPool(new QueryPagination({ from, size }));
   }
+
+  @Get("/pool/:txhash")
+  @ApiOperation({ summary: 'Transaction from pool', description: 'Returns a transaction from the memory pool.' })
+  @ApiOkResponse({ type: [TransactionInPool] })
+  async getTransactionFromPool(
+    @Param('txhash', ParseTransactionHashPipe) txHash: string,
+  ): Promise<TransactionInPool> {
+    const transaction = await this.poolService.getTransactionFromPool(txHash);
+    if (transaction === undefined) {
+      throw new HttpException('Transaction not found', HttpStatus.NOT_FOUND);
+    }
+
+    return transaction;
+  }
+
 }
