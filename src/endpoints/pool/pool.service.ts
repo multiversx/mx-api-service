@@ -20,7 +20,7 @@ export class PoolService {
     const pool = await this.getEntirePool();
     const transaction = pool.find(tx => tx.txHash === txHash);
 
-    return transaction
+    return transaction;
   }
 
   async getPool(
