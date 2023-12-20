@@ -276,15 +276,10 @@ export class ElasticIndexerHelper {
     }
 
     if (filter.functions && filter.functions.length > 0 && this.apiConfigService.getIsIndexerV3FlagActive()) {
-      if (filter.functions[0] === '') {
+      if (filter.functions.length === 1 && filter.functions[0] === '') {
         elasticQuery = elasticQuery.withMustNotExistCondition('function');
       } else {
-        for (const field of filter.functions) {
-          elasticQuery = elasticQuery.withMustCondition(QueryType.Should([
-            QueryType.Match('function', field),
-            QueryType.Match('operation', field),
-          ]));
-        }
+        elasticQuery = this.applyFunctionFilter(elasticQuery, filter.functions);
       }
     }
 
@@ -434,15 +429,10 @@ export class ElasticIndexerHelper {
       .withDateRangeFilter('timestamp', filter.before, filter.after);
 
     if (filter.functions && filter.functions.length > 0 && this.apiConfigService.getIsIndexerV3FlagActive()) {
-      if (filter.functions[0] === '') {
+      if (filter.functions.length === 1 && filter.functions[0] === '') {
         elasticQuery = elasticQuery.withMustNotExistCondition('function');
       } else {
-        for (const field of filter.functions) {
-          elasticQuery = elasticQuery.withMustCondition(QueryType.Should([
-            QueryType.Match('function', field),
-            QueryType.Match('operation', field),
-          ]));
-        }
+        elasticQuery = this.applyFunctionFilter(elasticQuery, filter.functions);
       }
     }
 
@@ -553,5 +543,16 @@ export class ElasticIndexerHelper {
     }
 
     return elasticQuery;
+  }
+
+  public applyFunctionFilter(elasticQuery: ElasticQuery, functions: string[]) {
+    const functionConditions = [];
+
+    for (const field of functions) {
+      functionConditions.push(QueryType.Match('function', field));
+      functionConditions.push(QueryType.Match('operation', field));
+    }
+
+    return elasticQuery.withMustCondition(QueryType.Should(functionConditions));
   }
 }
