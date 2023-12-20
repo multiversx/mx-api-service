@@ -12,7 +12,7 @@ cron:
   transactionBatchMaxLookBehind: 100
   cacheWarmer: true
   fastWarm: false
-  queueWorker: true
+  queueWorker: false
   elasticUpdater: false
   statusChecker: false
 flags:
@@ -21,8 +21,8 @@ flags:
   useTracing: false
   useRequestLogging: false
   useVmQueryTracing: false
-  processNfts: true
-  indexer-v3: false
+  processNfts: false
+  indexer-v3: true
   collectionPropertiesFromGateway: false
 features:
   eventsNotifier:
