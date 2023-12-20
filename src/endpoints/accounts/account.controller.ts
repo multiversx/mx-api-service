@@ -767,6 +767,42 @@ export class AccountController {
     }), address);
   }
 
+  @Get("/accounts/:address/transactions/c")
+  @ApiExcludeEndpoint()
+  async getAccountTransactionsCountAlternative(
+    @Param('address', ParseAddressPipe) address: string,
+    @Query('sender', ParseAddressPipe) sender?: string,
+    @Query('receiver', ParseAddressArrayPipe) receiver?: string[],
+    @Query('token') token?: string,
+    @Query('senderShard', ParseIntPipe) senderShard?: number,
+    @Query('receiverShard', ParseIntPipe) receiverShard?: number,
+    @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash?: string,
+    @Query('hashes', ParseArrayPipe) hashes?: string[],
+    @Query('status', new ParseEnumPipe(TransactionStatus)) status?: TransactionStatus,
+    @Query('function', new ParseArrayPipe(new ParseArrayPipeOptions({ allowEmptyString: true }))) functions?: string[],
+    @Query('before', ParseIntPipe) before?: number,
+    @Query('after', ParseIntPipe) after?: number,
+    @Query('senderOrReceiver', ParseAddressPipe) senderOrReceiver?: string,
+    @Query('isRelayed', new ParseBoolPipe) isRelayed?: boolean,
+  ): Promise<number> {
+
+    return await this.transactionService.getTransactionCount(new TransactionFilter({
+      sender,
+      receivers: receiver,
+      token,
+      functions,
+      senderShard,
+      receiverShard,
+      miniBlockHash,
+      hashes,
+      status,
+      before,
+      after,
+      senderOrReceiver,
+      isRelayed,
+    }), address);
+  }
+
   @Get("/accounts/:address/transfers")
   @ApiOperation({ summary: 'Account value transfers', description: 'Returns both transfers triggerred by a user account (type = Transaction), as well as transfers triggerred by smart contracts (type = SmartContractResult), thus providing a full picture of all in/out value transfers for a given account' })
   @ApiOkResponse({ type: [Transaction] })
@@ -990,6 +1026,14 @@ export class AccountController {
     return this.scResultService.getAccountScResultsCount(address);
   }
 
+  @Get("/accounts/:address/results/c")
+  @ApiExcludeEndpoint()
+  getAccountScResultsCountAlternative(
+    @Param('address', ParseAddressPipe) address: string,
+  ): Promise<number> {
+    return this.scResultService.getAccountScResultsCount(address);
+  }
+
   @Get("/accounts/:address/results/:scHash")
   @ApiOperation({ summary: 'Account smart contract result', description: 'Returns details of a smart contract result where the account is sender or receiver' })
   @ApiOkResponse({ type: SmartContractResult })
@@ -1040,12 +1084,42 @@ export class AccountController {
       new AccountHistoryFilter({ before, after }));
   }
 
+  @Get("/accounts/:address/history/c")
+  @ApiExcludeEndpoint()
+  getAccountHistoryCountAlternative(
+    @Param('address', ParseAddressPipe) address: string,
+    @Query('before', ParseIntPipe) before?: number,
+    @Query('after', ParseIntPipe) after?: number,
+  ): Promise<number> {
+    return this.accountService.getAccountHistoryCount(
+      address,
+      new AccountHistoryFilter({ before, after }));
+  }
+
   @Get("/accounts/:address/history/:tokenIdentifier/count")
   @ApiOperation({ summary: 'Account token history count', description: 'Return account token balance history count' })
   @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
   @ApiOkResponse({ type: Number })
   async getAccountTokenHistoryCount(
+    @Param('address', ParseAddressPipe) address: string,
+    @Param('tokenIdentifier', ParseTokenOrNftPipe) tokenIdentifier: string,
+    @Query('before', ParseIntPipe) before?: number,
+    @Query('after', ParseIntPipe) after?: number,
+  ): Promise<number> {
+    const isToken = await this.tokenService.isToken(tokenIdentifier) || await this.collectionService.isCollection(tokenIdentifier) || await this.nftService.isNft(tokenIdentifier);
+    if (!isToken) {
+      throw new NotFoundException(`Token '${tokenIdentifier}' not found`);
+    }
+    return this.accountService.getAccountTokenHistoryCount(
+      address,
+      tokenIdentifier,
+      new AccountHistoryFilter({ before, after }));
+  }
+
+  @Get("/accounts/:address/history/:tokenIdentifier/c")
+  @ApiExcludeEndpoint()
+  async getAccountTokenHistoryCountAlternative(
     @Param('address', ParseAddressPipe) address: string,
     @Param('tokenIdentifier', ParseTokenOrNftPipe) tokenIdentifier: string,
     @Query('before', ParseIntPipe) before?: number,
