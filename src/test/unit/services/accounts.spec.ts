@@ -206,6 +206,34 @@ describe('Account Service', () => {
       expect(indexerService.getAccountsCount).toHaveBeenCalled();
       expect(result).toEqual(expectedResult);
     });
+
+    it('should call cachingService.getOrSet if filter.isSmartContract is not provided', async () => {
+      const filter: AccountFilter = { isSmartContract: undefined };
+      const expectedResult = 3000;
+
+      jest.spyOn(cacheService, 'getOrSet').mockResolvedValue(expectedResult);
+      jest.spyOn(indexerService, 'getAccountsCount').mockResolvedValue(expectedResult);
+
+      const result = await service.getAccountsCount(filter);
+
+      expect(cacheService.getOrSet).toHaveBeenCalled();
+      expect(indexerService.getAccountsCount).not.toHaveBeenCalled();
+      expect(result).toEqual(expectedResult);
+    });
+
+    it('should call indexerService.getAccountsCount directly if filter.isSmartContract is provided', async () => {
+      const filter = { isSmartContract: true };
+      const expectedResult = 3000;
+
+      jest.spyOn(cacheService, 'getOrSet').mockResolvedValue(expectedResult);
+      jest.spyOn(indexerService, 'getAccountsCount').mockResolvedValue(expectedResult);
+
+      const result = await service.getAccountsCount(filter);
+
+      expect(cacheService.getOrSet).not.toHaveBeenCalled();
+      expect(indexerService.getAccountsCount).toHaveBeenCalled();
+      expect(result).toEqual(expectedResult);
+    });
   });
 
   describe('getAccountVerification', () => {
