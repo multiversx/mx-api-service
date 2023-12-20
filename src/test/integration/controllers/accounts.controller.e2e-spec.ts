@@ -283,6 +283,16 @@ describe("Account Controller", () => {
         });
       });
     });
+
+    it('should return 400 Bad Request for an invalid owner address', async () => {
+      const ownerAddress: string = 'erd1qqqqqqqk2csqma5j6ncguwj4zvdqc6xzwj';
+      await request(app.getHttpServer())
+        .get(`${path}/count?ownerAddress=${ownerAddress}`)
+        .expect(400)
+        .then(res => {
+          expect(res.body.message).toContain("Validation failed");
+        });
+    });
   });
 
   describe('/accounts/{address}', () => {
@@ -548,6 +558,74 @@ describe("Account Controller", () => {
         }
       });
     });
+
+    [
+      {
+        size: 3,
+      },
+      {
+        size: 10,
+      },
+    ].forEach(({ size }) => {
+      describe(`size = ${size}`, () => {
+        it(`should return a list of ${size} available fungible tokens for a given address, together with their balance`, async () => {
+          const address: string = 'erd1rf4hv70arudgzus0ymnnsnc4pml0jkywg2xjvzslg0mz4nn2tg7q7k0t6p';
+          await request(app.getHttpServer())
+            .get(`${path}/${address}/tokens?size=${size}&includeMetaESDT=true`)
+            .expect(200)
+            .then(res => {
+              expect(res.body).toBeInstanceOf(Array<TokenWithBalance>);
+              expect(res.body).toHaveLength(size);
+            });
+        });
+      });
+    });
+
+    [
+      {
+        filter: 'search',
+        value: 'AERO-458bbf',
+      },
+      {
+        filter: 'name',
+        value: 'Aerovek',
+      },
+      {
+        filter: 'identifier',
+        value: 'AERO-458bbf',
+      },
+    ].forEach(({ filter, value }) => {
+      describe(`when filter ${filter} is applied`, () => {
+        it(`should return a list of all available fungible tokens for a given address based on value ${value}`, async () => {
+          const address: string = 'erd1rf4hv70arudgzus0ymnnsnc4pml0jkywg2xjvzslg0mz4nn2tg7q7k0t6p';
+          await request(app.getHttpServer())
+            .get(`${path}/${address}/tokens?${filter}=${value}`)
+            .expect(200)
+            .then(res => {
+              expect(res.body).toBeDefined();
+              expect(res.body[0].identifier).toStrictEqual('AERO-458bbf');
+              expect(res.body[0].owner).toStrictEqual('erd1kyunz8z7393k6f0mfa5vhfgzjnvm4nk7p5gjzgfnhtyu92q3tqas70hpv5');
+              expect(res.body[0].assets).toBeDefined();
+            });
+        });
+      });
+    });
+
+    it(`should return a list of all available fungible tokens for a given address, when filter identifiers is applied`, async () => {
+      const address: string = 'erd1rf4hv70arudgzus0ymnnsnc4pml0jkywg2xjvzslg0mz4nn2tg7q7k0t6p';
+      const params = new URLSearchParams({
+        'identifiers': 'AERO-458bbf,BLK-62896c',
+      });
+      await request(app.getHttpServer())
+        .get(`${path}/${address}/tokens?${params}`)
+        .expect(200)
+        .then(res => {
+          expect(res.body).toBeDefined();
+          for (let i = 0; i < res.body.length; i++) {
+            expect(res.body[i].identifier === 'AERO-458bbf' || res.body[i].identifier === 'BLK-62896c').toBe(true);
+          }
+        });
+    });
   });
 
   describe('/accounts/{address}/tokens/count', () => {
@@ -636,6 +714,49 @@ describe("Account Controller", () => {
           });
         }
       });
+    });
+
+    [
+      {
+        filter: 'search',
+        value: 'AERO-458bbf',
+        count: 1,
+      },
+      {
+        filter: 'name',
+        value: 'Aerovek',
+        count: 1,
+      },
+      {
+        filter: 'identifier',
+        value: 'AERO-458bbf',
+        count: 1,
+      },
+    ].forEach(({ filter, value, count }) => {
+      describe(`when filter ${filter} is applied`, () => {
+        it(`should return he total number of tokens for a given address based on value ${value}`, async () => {
+          const address: string = 'erd1rf4hv70arudgzus0ymnnsnc4pml0jkywg2xjvzslg0mz4nn2tg7q7k0t6p';
+          await request(app.getHttpServer())
+            .get(`${path}/${address}/tokens/count?${filter}=${value}`)
+            .expect(200)
+            .then(res => {
+              expect(+res.text).toBeGreaterThanOrEqual(count);
+            });
+        });
+      });
+    });
+
+    it(`should return the total number of tokens for a given address, when filter identifiers is applied`, async () => {
+      const address: string = 'erd1rf4hv70arudgzus0ymnnsnc4pml0jkywg2xjvzslg0mz4nn2tg7q7k0t6p';
+      const params = new URLSearchParams({
+        'identifiers': 'AERO-458bbf,BLK-62896c',
+      });
+      await request(app.getHttpServer())
+        .get(`${path}/${address}/tokens/count?${params}`)
+        .expect(200)
+        .then(res => {
+          expect(+res.text).toBeGreaterThanOrEqual(2);
+        });
     });
   });
 
@@ -811,6 +932,122 @@ describe("Account Controller", () => {
           expect(res.body.message).toStrictEqual("Validation failed for argument 'address' (a bech32 address is expected)");
         });
     });
+
+    [
+      {
+        filter: 'search',
+        value: 'BONPASS-31488b',
+      },
+      {
+        filter: 'owner',
+        value: 'erd1v07t9d57hsftstsj6ua8fppjxz2gh585erjpfg3y4kk39nap58sqy9zvsz',
+      },
+    ].forEach(({ filter, value }) => {
+      describe(`when filter ${filter} is applied`, () => {
+        it(`should return NFT/SFT/MetaESDT collections where the account is owner or has some special roles assigned to it, based on value ${value}`, async () => {
+          const address: string = 'erd1v07t9d57hsftstsj6ua8fppjxz2gh585erjpfg3y4kk39nap58sqy9zvsz';
+          await request(app.getHttpServer())
+            .get(`${path}/${address}/roles/collections?${filter}=${value}`)
+            .expect(200)
+            .then(res => {
+              expect(res.body).toBeDefined();
+              expect(res.body[0].collection).toStrictEqual('BONPASS-31488b');
+              expect(res.body[0].owner).toStrictEqual('erd1v07t9d57hsftstsj6ua8fppjxz2gh585erjpfg3y4kk39nap58sqy9zvsz');
+            });
+        });
+      });
+    });
+
+    [
+      {
+        size: 3,
+      },
+      {
+        size: 5,
+      },
+    ].forEach(({ size }) => {
+      describe(`size = ${size}`, () => {
+        it(`should return a list of ${size} NFT/SFT/MetaESDT collections where the account is owner or has some special roles assigned to it`, async () => {
+          const address: string = 'erd1v07t9d57hsftstsj6ua8fppjxz2gh585erjpfg3y4kk39nap58sqy9zvsz';
+          await request(app.getHttpServer())
+            .get(`${path}/${address}/roles/collections?size=${size}&excludeMetaESDT=false`)
+            .expect(200)
+            .then(res => {
+              expect(res.body).toBeInstanceOf(Array<NftCollectionWithRoles>);
+              expect(res.body).toHaveLength(size);
+            });
+        });
+      });
+    });
+
+    [
+      {
+        filter: 'type',
+        value: 'NonFungibleESDT',
+      },
+      {
+        filter: 'type',
+        value: 'SemiFungibleESDT',
+      },
+    ].forEach(({ filter, value }) => {
+      describe(`when filter ${filter} is applied`, () => {
+        if (value === 'NonFungibleESDT') {
+          it(`should return a list of all available NonFungibleESDT collections for a given address`, async () => {
+            const address: string = 'erd1v07t9d57hsftstsj6ua8fppjxz2gh585erjpfg3y4kk39nap58sqy9zvsz';
+            await request(app.getHttpServer())
+              .get(`${path}/${address}/roles/collections?${filter}=${value}`)
+              .expect(200)
+              .then(res => {
+                expect(res.body).toBeInstanceOf(Array<NftCollectionWithRoles>);
+                for (let i = 0; i < res.body.length; i++) {
+                  expect(res.body[i].type).toStrictEqual('NonFungibleESDT');
+                }
+              });
+          });
+        } else if (value === 'SemiFungibleESDT') {
+          it(`should return a list of all available SemiFungibleESDT collections for a given address`, async () => {
+            const address: string = 'erd1v07t9d57hsftstsj6ua8fppjxz2gh585erjpfg3y4kk39nap58sqy9zvsz';
+            await request(app.getHttpServer())
+              .get(`${path}/${address}/roles/collections?${filter}=${value}`)
+              .expect(200)
+              .then(res => {
+                expect(res.body).toBeInstanceOf(Array<NftCollectionWithRoles>);
+                for (let i = 0; i < res.body.length; i++) {
+                  expect(res.body[i].type).toStrictEqual('SemiFungibleESDT');
+                }
+              });
+          });
+        }
+      });
+    });
+
+    it(`should return NFT/SFT/MetaESDT collections where the account is owner or has some special roles assigned to it, when filters canCreate, canBurn, canAddQuantity, canUpdateAttributes, canAddUri, canTransferRole, excludeMetaESDT are applied`, async () => {
+      const address: string = 'erd1v07t9d57hsftstsj6ua8fppjxz2gh585erjpfg3y4kk39nap58sqy9zvsz';
+      const params = new URLSearchParams({
+        'canCreate': 'true',
+        'canBurn': 'true',
+        'canAddQuantity': 'true',
+        'canUpdateAttributes': 'false',
+        'canAddUri': 'false',
+        'canTransferRole': 'true',
+        'excludeMetaESDT': 'true',
+      });
+      await request(app.getHttpServer())
+        .get(`${path}/${address}/roles/collections?${params}`)
+        .expect(200)
+        .then(res => {
+          expect(res.body).toBeInstanceOf(Array<NftCollectionWithRoles>);
+          for (let i = 0; i < res.body.length; i++) {
+            expect(res.body[i].canCreate).toStrictEqual(true);
+            expect(res.body[i].canBurn).toStrictEqual(true);
+            expect(res.body[i].canAddQuantity).toStrictEqual(true);
+            expect(res.body[i].canUpdateAttributes).toStrictEqual(false);
+            expect(res.body[i].canAddUri).toStrictEqual(false);
+            expect(res.body[i].role.canTransfer).toStrictEqual(true);
+            expect(res.body[i].type).not.toStrictEqual('MetaESDT');
+          }
+        });
+    });
   });
 
   describe('/accounts/{address}/roles/collections/count', () => {
@@ -831,6 +1068,53 @@ describe("Account Controller", () => {
         .expect(400)
         .then(res => {
           expect(res.body.message).toStrictEqual("Validation failed for argument 'address' (a bech32 address is expected)");
+        });
+    });
+
+    [
+      {
+        filter: 'search',
+        value: 'BONPASS-31488b',
+        count: 1,
+      },
+      {
+        filter: 'owner',
+        value: 'erd1v07t9d57hsftstsj6ua8fppjxz2gh585erjpfg3y4kk39nap58sqy9zvsz',
+        count: 6,
+      },
+      {
+        filter: 'type',
+        value: 'SemiFungibleESDT',
+        count: 6,
+      },
+
+    ].forEach(({ filter, value, count }) => {
+      describe(`when filter ${filter} is applied`, () => {
+        it(`should return the total number of NFT/SFT/MetaESDT collections where the account is owner or has some special roles assigned to it, based on value ${value}`, async () => {
+          const address: string = 'erd1v07t9d57hsftstsj6ua8fppjxz2gh585erjpfg3y4kk39nap58sqy9zvsz';
+          await request(app.getHttpServer())
+            .get(`${path}/${address}/roles/collections/count?${filter}=${value}`)
+            .expect(200)
+            .then(res => {
+              expect(+res.text).toBeGreaterThanOrEqual(count);
+            });
+        });
+      });
+    });
+
+    it(`should return the total number of NFT/SFT/MetaESDT collections where the account is owner or has some special roles assigned to it, when filters canCreate, canBurn, canAddQuantity, excludeMetaESDT are applied`, async () => {
+      const address: string = 'erd1v07t9d57hsftstsj6ua8fppjxz2gh585erjpfg3y4kk39nap58sqy9zvsz';
+      const params = new URLSearchParams({
+        'canCreate': 'true',
+        'canBurn': 'true',
+        'canAddQuantity': 'true',
+        'excludeMetaESDT': 'false',
+      });
+      await request(app.getHttpServer())
+        .get(`${path}/${address}/roles/collections/count?${params}`)
+        .expect(200)
+        .then(res => {
+          expect(+res.text).toBeGreaterThanOrEqual(5);
         });
     });
   });
@@ -1562,7 +1846,7 @@ describe("Account Controller", () => {
   });
 
   describe('/accounts/{address}/nft/{nft}', () => {
-    it('should return details about a specific Fungible token from a given address', async () => {
+    it('should return details about a specific Fungible token for a given address', async () => {
       const address: string = 'erd1c04typx388cmk72vz9c4g0yjefeuek5ygpk9k4tcryvaykdy9pmq4fp4nl';
       const nft: string = 'LOONAWL-52ed87-0cab';
       await request(app.getHttpServer())
@@ -1719,10 +2003,28 @@ describe("Account Controller", () => {
           expect(res.body.message).toStrictEqual("Validation failed for argument 'address' (a bech32 address is expected)");
         });
     });
-  });
 
-  describe('/accounts/{address}/waiting-list', () => {
-
+    [
+      {
+        size: 3,
+      },
+      {
+        size: 7,
+      },
+    ].forEach(({ size }) => {
+      describe(`size = ${size}`, () => {
+        it(`should return a list of ${size} active / queued nodes where the account is owner`, async () => {
+          const address: string = 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq9hllllsz2je7q';
+          await request(app.getHttpServer())
+            .get(`${path}/${address}/keys?size=${size}`)
+            .expect(200)
+            .then(res => {
+              expect(res.body).toBeInstanceOf(Array<AccountKey>);
+              expect(res.body).toHaveLength(size);
+            });
+        });
+      });
+    });
   });
 
   describe('/accounts/{address}/transactions', () => {
