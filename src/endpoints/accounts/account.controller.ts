@@ -100,18 +100,21 @@ export class AccountController {
   @ApiOperation({ summary: 'Total number of accounts', description: 'Returns total number of accounts available on blockchain' })
   @ApiOkResponse({ type: Number })
   @ApiQuery({ name: 'ownerAddress', description: 'Search by owner address', required: false })
+  @ApiQuery({ name: 'isSmartContract', description: 'Return total smart contracts count', required: false })
   async getAccountsCount(
     @Query("ownerAddress", ParseAddressPipe) ownerAddress?: string,
+    @Query("isSmartContract", new ParseBoolPipe) isSmartContract?: boolean,
   ): Promise<number> {
-    return await this.accountService.getAccountsCount(new AccountFilter({ ownerAddress }));
+    return await this.accountService.getAccountsCount(new AccountFilter({ ownerAddress, isSmartContract }));
   }
 
   @Get("/accounts/c")
   @ApiExcludeEndpoint()
   async getAccountsCountAlternative(
     @Query("ownerAddress", ParseAddressPipe) ownerAddress?: string,
+    @Query("isSmartContract", new ParseBoolPipe) isSmartContract?: boolean,
   ): Promise<number> {
-    return await this.accountService.getAccountsCount(new AccountFilter({ ownerAddress }));
+    return await this.accountService.getAccountsCount(new AccountFilter({ ownerAddress, isSmartContract }));
   }
 
   @Get("/accounts/:address")
