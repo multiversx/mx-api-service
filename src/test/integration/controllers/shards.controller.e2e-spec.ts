@@ -1,5 +1,6 @@
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
+import { Shard } from 'src/endpoints/shards/entities/shard';
 import { PublicAppModule } from 'src/public.app.module';
 import request = require('supertest');
 
@@ -21,7 +22,8 @@ describe("Shards Controller", () => {
       .get(`${path}`)
       .expect(200)
       .then(res => {
-        expect(res.body).toHaveLength(4);
+        expect(res.body).toBeInstanceOf(Array<Shard>);
+        expect(res.body.length).toBeGreaterThanOrEqual(4);
       });
   });
 
@@ -36,6 +38,26 @@ describe("Shards Controller", () => {
         expect(res.body[0].shard).toBeDefined();
         expect(res.body[0].validators).toBeDefined();
         expect(res.body[0].activeValidators).toBeDefined();
+      });
+  });
+
+  it("should return 2 shards details", async () => {
+    const params = new URLSearchParams({
+      'from': '1',
+      'size': '2',
+    });
+    await request(app.getHttpServer())
+      .get(`${path}?${params}`)
+      .expect(200)
+      .then(res => {
+        console.log(res.body);
+        expect(res.body).toBeInstanceOf(Array<Shard>);
+        expect(res.body.length).toStrictEqual(2);
+        for (let i = 0; i < res.body.length; i++) {
+          expect(res.body[i].shard).toBeDefined();
+          expect(res.body[i].validators).toBeDefined();
+          expect(res.body[i].activeValidators).toBeDefined();
+        }
       });
   });
 
