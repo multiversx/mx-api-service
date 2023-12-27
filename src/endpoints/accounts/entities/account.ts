@@ -36,4 +36,8 @@ export class Account {
   @Field(() => AccountAssets, { description: 'Account assets for the given account.', nullable: true })
   @ApiProperty({ type: AccountAssets, nullable: true, description: 'Account assets' })
   assets: AccountAssets | undefined = undefined;
+
+  @Field(() => AccountAssets, { description: 'Owner Account Address assets details.', nullable: true })
+  @ApiProperty({ type: AccountAssets, nullable: true, description: 'Account assets' })
+  ownerAssets: AccountAssets | undefined = undefined;
 }

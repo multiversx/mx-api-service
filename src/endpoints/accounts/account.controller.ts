@@ -84,6 +84,7 @@ export class AccountController {
   @ApiQuery({ name: 'sort', description: 'Sort criteria (balance / timestamp)', required: false, enum: AccountSort })
   @ApiQuery({ name: 'order', description: 'Sort order (asc/desc)', required: false, enum: SortOrder })
   @ApiQuery({ name: 'isSmartContract', description: 'Return a list of smart contracts', required: false })
+  @ApiQuery({ name: 'withOwnerAssets', description: 'Return a list accounts with owner assets', required: false })
   getAccounts(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number,
@@ -91,9 +92,12 @@ export class AccountController {
     @Query('sort', new ParseEnumPipe(AccountSort)) sort?: AccountSort,
     @Query('order', new ParseEnumPipe(SortOrder)) order?: SortOrder,
     @Query("isSmartContract", new ParseBoolPipe) isSmartContract?: boolean,
-  ): Promise<Account[]> {
+    @Query("withOwnerAssets", new ParseBoolPipe) withOwnerAssets?: boolean,
 
-    return this.accountService.getAccounts({ from, size }, new AccountFilter({ ownerAddress, sort, order, isSmartContract }));
+  ): Promise<Account[]> {
+    return this.accountService.getAccounts(
+      new QueryPagination({ from, size }),
+      new AccountFilter({ ownerAddress, sort, order, isSmartContract, withOwnerAssets }));
   }
 
   @Get("/accounts/count")

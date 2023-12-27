@@ -294,7 +294,7 @@ export class AccountService {
   }
 
   async getAccounts(queryPagination: QueryPagination, filter: AccountFilter): Promise<Account[]> {
-    if (!filter.ownerAddress && !filter.sort && !filter.order && filter.isSmartContract === undefined) {
+    if (!filter.ownerAddress && !filter.sort && !filter.order && filter.isSmartContract === undefined && filter.withOwnerAssets === undefined) {
       return await this.cachingService.getOrSet(
         CacheInfo.Accounts(queryPagination).key,
         async () => await this.getAccountsRaw(queryPagination, filter),
@@ -322,9 +322,7 @@ export class AccountService {
 
   async getAccountsRaw(queryPagination: QueryPagination, filter: AccountFilter): Promise<Account[]> {
     const result = await this.indexerService.getAccounts(queryPagination, filter);
-
     const assets = await this.assetsService.getAllAccountAssets();
-
     const accounts: Account[] = result.map(item => {
       const account = ApiUtils.mergeObjects(new Account(), item);
       account.ownerAddress = item.currentOwner;
@@ -337,6 +335,10 @@ export class AccountService {
     for (const account of accounts) {
       account.shard = AddressUtils.computeShard(AddressUtils.bech32Decode(account.address), shardCount);
       account.assets = assets[account.address];
+
+      if (filter.withOwnerAssets && account.ownerAddress) {
+        account.ownerAssets = assets[account.ownerAddress];
+      }
     }
 
     return accounts;
