@@ -35,7 +35,6 @@ describe("Tags Controller", () => {
         'search': 'elrond',
         'size': '10',
       });
-
       await request(app.getHttpServer())
         .get(`${path}?${params}`)
         .expect(200)
@@ -65,7 +64,6 @@ describe("Tags Controller", () => {
             });
         }
       );
-
 
     [
       {

@@ -1,5 +1,6 @@
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
+import { MiniBlockDetailed } from 'src/endpoints/miniblocks/entities/mini.block.detailed';
 import { PublicAppModule } from 'src/public.app.module';
 import request = require('supertest');
 
@@ -17,7 +18,121 @@ describe("Miniblocks Controller", () => {
   });
 
   describe('/miniblocks', () => {
-    it('should return miniBlock details for a given identifier', async () => {
+    it('should return 25 distinct miniblocks', async () => {
+      await request(app.getHttpServer())
+        .get(`${path}`)
+        .expect(200)
+        .then(res => {
+          expect(res.body).toBeInstanceOf(Array<MiniBlockDetailed>);
+          expect(res.body).toHaveLength(25);
+        });
+    });
+
+    [
+      {
+        size: 3,
+      },
+      {
+        size: 100,
+      },
+    ].forEach(({ size }) => {
+      describe(`size = ${size}`, () => {
+        it(`should return a list of ${size} distinct miniblocks`, async () => {
+          await request(app.getHttpServer())
+            .get(`${path}?size=${size}`)
+            .expect(200)
+            .then(res => {
+              expect(res.body).toBeInstanceOf(Array<MiniBlockDetailed>);
+              expect(res.body).toHaveLength(size);
+            });
+        });
+      });
+    });
+
+    [
+      {
+        filter: 'hashes',
+        value: '11184c20703542b11e225f48c825812611c9291f2694075f9006b7cdec409987',
+      },
+      {
+        filter: 'hashes',
+        value: '11184c20703542b11e225f48c825812611c9291f2694075f9006b7cdec409987,d598d0f6f04949ae572ea1c44e1cf4f981c06abfd6fca2e2a9c0a05b267dfd6a',
+      },
+    ].forEach(({ filter, value }) => {
+      describe(`when filter ${filter} is applied`, () => {
+        it(`should return a list of all distinct miniblocks, filtered by miniblocks blocks hashes=${value}`, async () => {
+          await request(app.getHttpServer())
+            .get(`${path}?${filter}=${value}`)
+            .expect(200)
+            .then(res => {
+              expect(res.body).toBeDefined();
+              expect(res.body).toBeInstanceOf(Array<MiniBlockDetailed>);
+              for (let i = 0; i < res.body.length; i++) {
+                expect(res.body[i].miniBlockHash === '11184c20703542b11e225f48c825812611c9291f2694075f9006b7cdec409987' || res.body[i].miniBlockHash === 'd598d0f6f04949ae572ea1c44e1cf4f981c06abfd6fca2e2a9c0a05b267dfd6a').toBe(true);
+              }
+            });
+        });
+      });
+    });
+
+    [
+      {
+        filter: 'type',
+        value: 'SmartContractResultBlock',
+      },
+      {
+        filter: 'type',
+        value: 'TxBlock',
+      },
+      {
+        filter: 'type',
+        value: 'InvalidBlock',
+      },
+    ].forEach(({ filter, value }) => {
+      describe(`when filter ${filter} is applied`, () => {
+        if (value === 'SmartContractResultBlock') {
+          it(`should return a list of distinct miniblocks, sorted by type=${value}`, async () => {
+            await request(app.getHttpServer())
+              .get(`${path}?${filter}=${value}`)
+              .expect(200)
+              .then(res => {
+                expect(res.body).toBeInstanceOf(Array<MiniBlockDetailed>);
+                for (let i = 0; i < res.body.length; i++) {
+                  expect(res.body[i].type).toStrictEqual('SmartContractResultBlock');
+                }
+              });
+          });
+        } else if (value === 'TxBlock') {
+          it(`should return a list of distinct miniblocks, sorted by type=${value}`, async () => {
+            await request(app.getHttpServer())
+              .get(`${path}?${filter}=${value}`)
+              .expect(200)
+              .then(res => {
+                expect(res.body).toBeInstanceOf(Array<MiniBlockDetailed>);
+                for (let i = 0; i < res.body.length; i++) {
+                  expect(res.body[i].type).toStrictEqual('TxBlock');
+                }
+              });
+          });
+        } else if (value === 'InvalidBlock') {
+          it(`should return a list of distinct miniblocks, sorted by type=${value}`, async () => {
+            await request(app.getHttpServer())
+              .get(`${path}?${filter}=${value}`)
+              .expect(200)
+              .then(res => {
+                expect(res.body).toBeInstanceOf(Array<MiniBlockDetailed>);
+                for (let i = 0; i < res.body.length; i++) {
+                  expect(res.body[i].type).toStrictEqual('InvalidBlock');
+                }
+              });
+          });
+        }
+      });
+    });
+  });
+
+  describe('/miniblocks/{miniBlockHash}', () => {
+    it('should return miniBlock details for a given miniBlockHash', async () => {
       const miniblock: string = 'e336ba1b720bb153b4e0d2049d722b0e39bf275f9d35e79b0f757271a963ad4c';
       const expected = {
         miniBlockHash: "e336ba1b720bb153b4e0d2049d722b0e39bf275f9d35e79b0f757271a963ad4c",
@@ -28,7 +143,6 @@ describe("Miniblocks Controller", () => {
         timestamp: 1644529902,
         type: "TxBlock",
       };
-
       await request(app.getHttpServer())
         .get(`${path}/${miniblock}`)
         .expect(200)
@@ -36,12 +150,9 @@ describe("Miniblocks Controller", () => {
           expect(res.body).toStrictEqual(expected);
         });
     });
-  });
 
-  describe('Validations', () => {
-    it('should return 400 Bad Request if an invalid block hash is given', async () => {
+    it('should return 400 Bad Request if an invalid miniBlockHash is given', async () => {
       const miniBlockHash: string = 'invalidMiniBlockHash';
-
       await request(app.getHttpServer())
         .get(`${path}/${miniBlockHash}`)
         .expect(400)
