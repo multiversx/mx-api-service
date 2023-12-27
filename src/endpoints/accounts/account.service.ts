@@ -169,7 +169,7 @@ export class AccountService {
 
       const shardCount = await this.protocolService.getShardCount();
       const shard = AddressUtils.computeShard(AddressUtils.bech32Decode(address), shardCount);
-      let account = new AccountDetailed({ address, nonce, balance, code, codeHash, rootHash, txCount, scrCount, shard, developerReward, ownerAddress, scamInfo: undefined, assets: assets[address], nftCollections: undefined, nfts: undefined });
+      let account = new AccountDetailed({ address, nonce, balance, code, codeHash, rootHash, txCount, scrCount, shard, developerReward, ownerAddress, scamInfo: undefined, assets: assets[address], ownerAssets: assets[ownerAddress], nftCollections: undefined, nfts: undefined });
 
       const codeAttributes = AddressUtils.decodeCodeMetadata(codeMetadata);
       if (codeAttributes) {
