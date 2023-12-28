@@ -1,5 +1,5 @@
-import { ParseAddressAndMetachainPipe, ParseAddressArrayPipe, ParseIntPipe, ParseTransactionHashPipe } from "@multiversx/sdk-nestjs-common";
-import { Controller, DefaultValuePipe, Get, NotFoundException, Param, Query } from "@nestjs/common";
+import { ParseAddressAndMetachainPipe, ParseAddressPipe, ParseIntPipe, ParseTransactionHashPipe } from "@multiversx/sdk-nestjs-common";
+import { Controller, DefaultValuePipe, Get, NotFoundException, Param, ParseEnumPipe, Query } from "@nestjs/common";
 import { ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { PoolService } from "./pool.service";
 import { QueryPagination } from "src/common/entities/query.pagination";
@@ -26,8 +26,8 @@ export class PoolController {
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
     @Query('sender', ParseAddressAndMetachainPipe) sender?: string,
-    @Query('receiver', ParseAddressArrayPipe) receiver?: string,
-    @Query('type') type?: TransactionType,
+    @Query('receiver', ParseAddressPipe) receiver?: string,
+    @Query('type', new ParseEnumPipe(TransactionType)) type?: TransactionType,
   ): Promise<TransactionInPool[]> {
     return await this.poolService.getPool(new QueryPagination({ from, size }), new PoolFilter({ sender: sender, receiver: receiver, type: type }));
   }
@@ -40,8 +40,8 @@ export class PoolController {
   @ApiQuery({ name: 'type', description: 'Returns the number of transactions with a specific type', required: false })
   async getTransactionPoolCount(
     @Query('sender', ParseAddressAndMetachainPipe) sender?: string,
-    @Query('receiver', ParseAddressArrayPipe) receiver?: string,
-    @Query('type') type?: TransactionType,
+    @Query('receiver', ParseAddressPipe) receiver?: string,
+    @Query('type', new ParseEnumPipe(TransactionType)) type?: TransactionType,
   ): Promise<number> {
     return await this.poolService.getPoolCount(new PoolFilter({ sender: sender, receiver: receiver, type: type }));
   }
