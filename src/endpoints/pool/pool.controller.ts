@@ -1,5 +1,5 @@
 import { ParseAddressAndMetachainPipe, ParseAddressArrayPipe, ParseIntPipe, ParseTransactionHashPipe } from "@multiversx/sdk-nestjs-common";
-import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, NotFoundException, Param, Query } from "@nestjs/common";
+import { Controller, DefaultValuePipe, Get, NotFoundException, Param, Query } from "@nestjs/common";
 import { ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { PoolService } from "./pool.service";
 import { QueryPagination } from "src/common/entities/query.pagination";
