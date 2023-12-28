@@ -1,6 +1,6 @@
-import { ParseAddressAndMetachainPipe, ParseAddressPipe, ParseIntPipe, ParseTransactionHashPipe } from "@multiversx/sdk-nestjs-common";
-import { Controller, DefaultValuePipe, Get, NotFoundException, Param, ParseEnumPipe, Query } from "@nestjs/common";
-import { ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from "@nestjs/swagger";
+import { ParseAddressAndMetachainPipe, ParseAddressPipe, ParseEnumPipe, ParseIntPipe, ParseTransactionHashPipe } from "@multiversx/sdk-nestjs-common";
+import { Controller, DefaultValuePipe, Get, NotFoundException, Param, Query } from "@nestjs/common";
+import { ApiExcludeEndpoint, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { PoolService } from "./pool.service";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { TransactionInPool } from "./entities/transaction.in.pool.dto";
@@ -43,7 +43,17 @@ export class PoolController {
     @Query('receiver', ParseAddressPipe) receiver?: string,
     @Query('type', new ParseEnumPipe(TransactionType)) type?: TransactionType,
   ): Promise<number> {
-    return await this.poolService.getPoolCount(new PoolFilter({ sender: sender, receiver: receiver, type: type }));
+    return await this.poolService.getPoolCount(new PoolFilter({ sender, receiver, type }));
+  }
+
+  @Get("/pool/c")
+  @ApiExcludeEndpoint()
+  async getTransactionPoolCountAlternative(
+    @Query('sender', ParseAddressAndMetachainPipe) sender?: string,
+    @Query('receiver', ParseAddressPipe) receiver?: string,
+    @Query('type', new ParseEnumPipe(TransactionType)) type?: TransactionType,
+  ): Promise<number> {
+    return await this.poolService.getPoolCount(new PoolFilter({ sender, receiver, type }));
   }
 
   @Get("/pool/:txhash")

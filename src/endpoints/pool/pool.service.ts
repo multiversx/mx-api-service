@@ -43,32 +43,6 @@ export class PoolService {
     return pool.slice(from, from + size);
   }
 
-  private applyFilters(pool: TransactionInPool[], filters: PoolFilter): TransactionInPool[] {
-    if (!filters.receiver && !filters.sender && !filters.type) {
-      return pool;
-    }
-
-    const results: TransactionInPool[] = [];
-
-    for (const transaction of pool) {
-      if (filters.sender && transaction.sender !== filters.sender) {
-        continue;
-      }
-
-      if (filters.receiver && transaction.receiver !== filters.receiver) {
-        continue;
-      }
-
-      if (filters.type && transaction.type !== filters.type) {
-        continue;
-      }
-
-      results.push(transaction);
-    }
-
-    return results;
-  }
-
   async getEntirePool(): Promise<TransactionInPool[]> {
     return await this.cacheService.getOrSet(
       CacheInfo.TransactionPool.key,
@@ -128,5 +102,31 @@ export class PoolService {
       data: tx.data || '',
       type: type || TransactionType.Transaction,
     });
+  }
+
+  private applyFilters(pool: TransactionInPool[], filters: PoolFilter): TransactionInPool[] {
+    if (!filters.receiver && !filters.sender && !filters.type) {
+      return pool;
+    }
+
+    const results: TransactionInPool[] = [];
+
+    for (const transaction of pool) {
+      if (filters.sender && transaction.sender !== filters.sender) {
+        continue;
+      }
+
+      if (filters.receiver && transaction.receiver !== filters.receiver) {
+        continue;
+      }
+
+      if (filters.type && transaction.type !== filters.type) {
+        continue;
+      }
+
+      results.push(transaction);
+    }
+
+    return results;
   }
 }
