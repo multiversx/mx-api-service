@@ -7,6 +7,7 @@ import { CacheInfo } from "src/utils/cache.info";
 import { TxInPoolFields, TxPoolGatewayResponse } from "src/common/gateway/entities/transaction.pool";
 import { TransactionType } from "../transactions/entities/transaction.type";
 import { TransactionInPool } from "./entities/transaction.in.pool.dto";
+import { PoolFilter } from "./entities/pool.filter";
 
 @Injectable()
 export class PoolService {
@@ -23,8 +24,14 @@ export class PoolService {
     return transaction;
   }
 
+  async getPoolCount(filter: PoolFilter): Promise<number> {
+    const pool = await this.getEntirePool();
+    return this.applyFilters(pool, filter).length;
+  }
+
   async getPool(
     queryPagination: QueryPagination,
+    filter: PoolFilter,
   ): Promise<TransactionInPool[]> {
     if (!this.apiConfigService.isTransactionPoolEnabled()) {
       return [];
@@ -32,8 +39,30 @@ export class PoolService {
 
     const { from, size } = queryPagination;
 
-    const pool = await this.getEntirePool();
+    const pool = this.applyFilters(await this.getEntirePool(), filter);
     return pool.slice(from, from + size);
+  }
+
+  private applyFilters(pool: TransactionInPool[], filters: PoolFilter): TransactionInPool[] {
+    let results: TransactionInPool[] = [];
+
+    for (const transaction of pool) {
+      if (filters.sender && transaction.sender !== filters.sender) {
+        continue;
+      }
+
+      if (filters.receiver && transaction.receiver !== filters.receiver) {
+        continue;
+      }
+
+      if (filters.type && transaction.type !== filters.type) {
+        continue;
+      }
+
+      results.push(transaction);
+    }
+
+    return results;
   }
 
   async getEntirePool(): Promise<TransactionInPool[]> {

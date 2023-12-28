@@ -40,7 +40,7 @@ features:
   transactionPoolWarmer:
     enabled: true
     cronExpression: '*/5 * * * * *'
-    ttlInSeconds: 6 
+    ttlInSeconds: 60 
   updateCollectionExtraDetails:
     enabled: false
   marketplace:
