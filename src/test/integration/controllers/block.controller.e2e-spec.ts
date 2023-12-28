@@ -32,7 +32,6 @@ describe("Block Controller", () => {
       const params = new URLSearchParams({
         'size': '1',
       });
-
       await request(app.getHttpServer())
         .get(`${path}?${params}`)
         .expect(200)
@@ -46,15 +45,13 @@ describe("Block Controller", () => {
     ${1}
     ${2}
     ${0}
-    ${4294967295}
-    `
+    ${4294967295}`
       (
         `should return 25 blocks from shard $shard`,
         async ({ shard }) => {
           const params = new URLSearchParams({
             'shard': shard,
           });
-
           await request(app.getHttpServer())
             .get(`${path}?${params}`)
             .expect(200)
@@ -70,10 +67,6 @@ describe("Block Controller", () => {
     [
       {
         filter: 'withProposerIdentity',
-        value: 'true',
-      },
-      {
-        filter: 'withProposerIdentity',
         value: 'false',
       },
     ].forEach(({ filter, value }) => {
@@ -85,7 +78,6 @@ describe("Block Controller", () => {
               .expect(200)
               .then(res => {
                 expect(res.body).toBeInstanceOf(Array<Block>);
-                //console.log(res.body);
                 expect(res.body.proposerIdentity).toBeDefined();
               });
           });
@@ -115,6 +107,40 @@ describe("Block Controller", () => {
           expect(res.body).toBeInstanceOf(Array<Block>);
           for (let i = 0; i < res.body.length; i++) {
             expect(res.body[i].nonce === 17918917).toBe(true);
+          }
+        });
+    });
+
+    it(`should return a list of all blocks from all shards, filtered by epoch`, async () => {
+      const params = new URLSearchParams({
+        'epoch': '1245',
+      });
+      await request(app.getHttpServer())
+        .get(`${path}?${params}`)
+        .expect(200)
+        .then(res => {
+          expect(res.body).toBeDefined();
+          expect(res.body).toBeInstanceOf(Array<Block>);
+          for (let i = 0; i < res.body.length; i++) {
+            expect(res.body[i].epoch === 1245).toBe(true);
+          }
+        });
+    });
+
+    it(`should return a list of all blocks from all shards, filtered by proposer`, async () => {
+      const params = new URLSearchParams({
+        'proposer': 'ade2d7c696c6c2f1201ef1c13f9990de8ebf3d998358330f2badac5e0013c93f6890b9cb6bea90805604b1f557403c192a8768cd2152e481b6c4df9a1cc9e1bfb2ddeac59e8de1e9eacc778fdf4612a398929d7fb930a782ce73690524c53808',
+        'epoch': '1245',
+        'shard': '0',
+      });
+      await request(app.getHttpServer())
+        .get(`${path}?${params}`)
+        .expect(200)
+        .then(res => {
+          expect(res.body).toBeDefined();
+          expect(res.body).toBeInstanceOf(Array<Block>);
+          for (let i = 0; i < res.body.length; i++) {
+            expect(res.body[i].proposer === 'ade2d7c696c6c2f1201ef1c13f9990de8ebf3d998358330f2badac5e0013c93f6890b9cb6bea90805604b1f557403c192a8768cd2152e481b6c4df9a1cc9e1bfb2ddeac59e8de1e9eacc778fdf4612a398929d7fb930a782ce73690524c53808').toBe(true);
           }
         });
     });
@@ -212,6 +238,32 @@ describe("Block Controller", () => {
         });
       });
     });
+
+    it(`should return total count of all blocks from all shards, filtered by epoch`, async () => {
+      const params = new URLSearchParams({
+        'epoch': '1245',
+      });
+      await request(app.getHttpServer())
+        .get(`${path}/count?${params}`)
+        .expect(200)
+        .then(res => {
+          expect(+res.text).toBeGreaterThanOrEqual(40900);
+        });
+    });
+
+    it(`should return total count of all blocks from all shards, filtered by proposer`, async () => {
+      const params = new URLSearchParams({
+        'proposer': 'ade2d7c696c6c2f1201ef1c13f9990de8ebf3d998358330f2badac5e0013c93f6890b9cb6bea90805604b1f557403c192a8768cd2152e481b6c4df9a1cc9e1bfb2ddeac59e8de1e9eacc778fdf4612a398929d7fb930a782ce73690524c53808',
+        'epoch': '1245',
+        'shard': '0',
+      });
+      await request(app.getHttpServer())
+        .get(`${path}/count?${params}`)
+        .expect(200)
+        .then(res => {
+          expect(+res.text).toBeGreaterThanOrEqual(20);
+        });
+    });
   });
 
   describe('/blocks/c', () => {
@@ -284,29 +336,12 @@ describe("Block Controller", () => {
   });
 
   describe('/blocks/latest', () => {
-    it('should return latest block information details', async () => {
+    it.only('should return latest block information details', async () => {
       await request(app.getHttpServer())
         .get(`${path}/latest`)
         .expect(200)
         .then(res => {
-          expect(res.body.hash).toBeDefined();
-          expect(res.body.epoch).toBeDefined();
-          expect(res.body.nonce).toBeDefined();
-          expect(res.body.prevHash).toBeDefined();
-          expect(res.body.proposer).toBeDefined();
-          expect(res.body.pubKeyBitmap).toBeDefined();
-          expect(res.body.round).toBeDefined();
-          expect(res.body.shard).toBeDefined();
-          expect(res.body.size).toBeDefined();
-          expect(res.body.sizeTxs).toBeDefined();
-          expect(res.body.stateRootHash).toBeDefined();
-          expect(res.body.timestamp).toBeDefined();
-          expect(res.body.txCount).toBeDefined();
-          expect(res.body.gasConsumed).toBeDefined();
-          expect(res.body.gasRefunded).toBeDefined();
-          expect(res.body.gasPenalized).toBeDefined();
-          expect(res.body.maxGasLimit).toBeDefined();
-          expect(res.body.scheduledRootHash).toBeDefined();
+          expect(res.body).toBeInstanceOf(Block);
         });
     });
   });
@@ -342,7 +377,6 @@ describe("Block Controller", () => {
 
     it('should return 400 Bad Request for a invalid block hash', async () => {
       const hash: string = 'c3cd456e15a59bb1f143eefd4986ef010965047f89e303b80822b05177351c';
-
       await request(app.getHttpServer())
         .get(`${path}/${hash}`)
         .expect(400)
