@@ -45,7 +45,7 @@ export class PoolService {
 
   private applyFilters(pool: TransactionInPool[], filters: PoolFilter): TransactionInPool[] {
     if (!filters.receiver && !filters.sender && !filters.type) {
-      return pool
+      return pool;
     }
 
     const results: TransactionInPool[] = [];
