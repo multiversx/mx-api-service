@@ -184,6 +184,16 @@ describe("xExchange Controller", () => {
           expect(res.body.price).toBeDefined();
         });
     });
+
+    it('should return 400 Bad Request if an invalid identifier is given', async () => {
+      const identifier: string = 'WEGLD';
+      await request(app.getHttpServer())
+        .get(`${path}/tokens/${identifier}`)
+        .expect(400)
+        .then(res => {
+          expect(res.body.message).toContain("Validation failed");
+        });
+    });
   });
 
   describe('/mex/farms', () => {
@@ -255,6 +265,28 @@ describe("xExchange Controller", () => {
           expect(res.body.state).toBeDefined();
           expect(res.body.type).toBeDefined();
           expect(res.body.exchange).toBeDefined();
+        });
+    });
+
+    it('should return 404 Not Found if an invalid baseId is given', async () => {
+      const baseId: string = 'invalidBaseId';
+      const quoteId: string = 'WEGLD-bd4d79';
+      await request(app.getHttpServer())
+        .get(`${path}/pairs/${baseId}/${quoteId}`)
+        .expect(404)
+        .then(res => {
+          expect(res.body.message).toContain("Not Found");
+        });
+    });
+
+    it('should return 404 Not Found if an invalid quoteId is given', async () => {
+      const baseId: string = 'BSK-baa025';
+      const quoteId: string = 'WEGLD';
+      await request(app.getHttpServer())
+        .get(`${path}/pairs/${baseId}/${quoteId}`)
+        .expect(404)
+        .then(res => {
+          expect(res.body.message).toContain("Not Found");
         });
     });
   });
