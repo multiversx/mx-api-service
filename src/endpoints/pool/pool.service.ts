@@ -44,7 +44,11 @@ export class PoolService {
   }
 
   private applyFilters(pool: TransactionInPool[], filters: PoolFilter): TransactionInPool[] {
-    let results: TransactionInPool[] = [];
+    if (!filters.receiver && !filters.sender && !filters.type) {
+      return pool
+    }
+
+    const results: TransactionInPool[] = [];
 
     for (const transaction of pool) {
       if (filters.sender && transaction.sender !== filters.sender) {
