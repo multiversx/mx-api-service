@@ -73,7 +73,7 @@ describe('PoolService', () => {
     });
 
     it('should work and return the pool with query pagination', async () => {
-      let pool = await service.getPool(new QueryPagination({ from: 0, size: 2 }), new PoolFilter({ type: TransactionType.Reward }));
+      const pool = await service.getPool(new QueryPagination({ from: 0, size: 2 }), new PoolFilter({ type: TransactionType.Reward }));
       expect(pool).toHaveLength(2);
       expect(pool[0].type).toBe(TransactionType.Reward);
     });
