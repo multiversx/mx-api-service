@@ -58,7 +58,7 @@ describe('PoolService', () => {
     it('should work and return the pool', async () => {
       const pool = await service.getPool(new QueryPagination(), new PoolFilter());
       expect(pool).toHaveLength(7);
-      expect(pool[0].type).toBe(TransactionType.Transaction);
+      expect(pool[0].type).toStrictEqual(TransactionType.Transaction);
     });
 
     it('should work and return the pool with filters', async () => {
@@ -75,25 +75,25 @@ describe('PoolService', () => {
     it('should work and return the pool with query pagination', async () => {
       const pool = await service.getPool(new QueryPagination({ from: 0, size: 2 }), new PoolFilter({ type: TransactionType.Reward }));
       expect(pool).toHaveLength(2);
-      expect(pool[0].type).toBe(TransactionType.Reward);
+      expect(pool[0].type).toStrictEqual(TransactionType.Reward);
     });
   });
 
   describe('getPoolCount', () => {
     it('should work and return the pool count', async () => {
       const poolCount = await service.getPoolCount(new PoolFilter());
-      expect(poolCount).toBe(7);
+      expect(poolCount).toStrictEqual(7);
     });
 
     it('should work and return the pool count with filters', async () => {
       let poolCount = await service.getPoolCount(new PoolFilter({ type: TransactionType.Transaction }));
-      expect(poolCount).toBe(1);
+      expect(poolCount).toStrictEqual(1);
 
       poolCount = await service.getPoolCount(new PoolFilter({ type: TransactionType.SmartContractResult }));
-      expect(poolCount).toBe(1);
+      expect(poolCount).toStrictEqual(1);
 
       poolCount = await service.getPoolCount(new PoolFilter({ type: TransactionType.Reward }));
-      expect(poolCount).toBe(5);
+      expect(poolCount).toStrictEqual(5);
     });
   });
 
