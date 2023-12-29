@@ -38,8 +38,8 @@ export class PoolService {
     }
 
     const { from, size } = queryPagination;
-
-    const pool = this.applyFilters(await this.getEntirePool(), filter);
+    const entirePool = await this.getEntirePool();
+    const pool = this.applyFilters(entirePool, filter);
     return pool.slice(from, from + size);
   }
 
@@ -58,36 +58,17 @@ export class PoolService {
 
   private parseTransactions(rawPool: TxPoolGatewayResponse): TransactionInPool[] {
     const transactionPool: TransactionInPool[] = [];
-    // Check if 'txPool' property exists in the response
     if (rawPool && rawPool.txPool) {
-      const txPool = rawPool.txPool;
-
-      // Parse regular transactions
-      if (txPool.regularTransactions && txPool.regularTransactions.length > 0) {
-        for (const regularTx of txPool.regularTransactions) {
-          const transaction = this.parseTransaction(regularTx.txFields, TransactionType.Transaction);
-          transactionPool.push(transaction);
-        }
-      }
-
-      // Parse smart contract results
-      if (txPool.smartContractResults && txPool.smartContractResults.length > 0) {
-        for (const scr of txPool.smartContractResults) {
-          const transaction = this.parseTransaction(scr.txFields, TransactionType.SmartContractResult);
-          transactionPool.push(transaction);
-        }
-      }
-
-      // Parse rewards
-      if (txPool.rewards && txPool.rewards.length > 0) {
-        for (const rewardTx of txPool.rewards) {
-          const transaction = this.parseTransaction(rewardTx.txFields, TransactionType.Reward);
-          transactionPool.push(transaction);
-        }
-      }
+      transactionPool.push(...this.processTransactionType(rawPool.txPool.regularTransactions || [], TransactionType.Transaction));
+      transactionPool.push(...this.processTransactionType(rawPool.txPool.smartContractResults || [], TransactionType.SmartContractResult));
+      transactionPool.push(...this.processTransactionType(rawPool.txPool.rewards || [], TransactionType.Reward));
     }
 
     return transactionPool;
+  }
+
+  private processTransactionType(transactions: any[], transactionType: TransactionType): TransactionInPool[] {
+    return transactions.map(tx => this.parseTransaction(tx.txFields, transactionType));
   }
 
   private parseTransaction(tx: TxInPoolFields, type: TransactionType): TransactionInPool {
