@@ -30,7 +30,7 @@ export class GatewayService {
     GatewayComponentRequest.addressNftByNonce,
     GatewayComponentRequest.vmQuery,
     GatewayComponentRequest.transactionPool,
-  ]);;
+  ]);
   constructor(
     private readonly apiConfigService: ApiConfigService,
     @Inject(forwardRef(() => ApiService))
