@@ -19,11 +19,18 @@ import { BinaryUtils } from "@multiversx/sdk-nestjs-common";
 import { ApiService, ApiSettings } from "@multiversx/sdk-nestjs-http";
 import { GuardianResult } from "./entities/guardian.result";
 import { TransactionProcessStatus } from "./entities/transaction.process.status";
-import { TxPoolGatewayResponse } from "./entities/transaction.pool";
+import { TxPoolGatewayResponse } from "./entities/tx.pool.gateway.response";
 
 @Injectable()
 export class GatewayService {
-  private snapshotlessRequestsSet: Set<String> | undefined;
+  private readonly snapshotlessRequestsSet: Set<String> = new Set([
+    GatewayComponentRequest.addressBalance,
+    GatewayComponentRequest.addressDetails,
+    GatewayComponentRequest.addressEsdt,
+    GatewayComponentRequest.addressNftByNonce,
+    GatewayComponentRequest.vmQuery,
+    GatewayComponentRequest.transactionPool,
+  ]);;
   constructor(
     private readonly apiConfigService: ApiConfigService,
     @Inject(forwardRef(() => ApiService))
@@ -164,17 +171,6 @@ export class GatewayService {
   }
 
   private getUrl(component: GatewayComponentRequest): string {
-    if (!this.snapshotlessRequestsSet) {
-      this.snapshotlessRequestsSet = new Set([
-        GatewayComponentRequest.addressBalance,
-        GatewayComponentRequest.addressDetails,
-        GatewayComponentRequest.addressEsdt,
-        GatewayComponentRequest.addressNftByNonce,
-        GatewayComponentRequest.vmQuery,
-        GatewayComponentRequest.transactionPool,
-      ]);
-    }
-
     return this.snapshotlessRequestsSet.has(component)
       ? this.apiConfigService.getSnapshotlessGatewayUrl() ?? this.apiConfigService.getGatewayUrl()
       : this.apiConfigService.getGatewayUrl();

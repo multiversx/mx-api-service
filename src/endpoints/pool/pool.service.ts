@@ -4,7 +4,7 @@ import { GatewayService } from "src/common/gateway/gateway.service";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { CacheInfo } from "src/utils/cache.info";
-import { TxInPoolFields, TxPoolGatewayResponse } from "src/common/gateway/entities/transaction.pool";
+import { TxInPoolFields, TxPoolGatewayResponse } from "src/common/gateway/entities/tx.pool.gateway.response";
 import { TransactionType } from "../transactions/entities/transaction.type";
 import { TransactionInPool } from "./entities/transaction.in.pool.dto";
 import { PoolFilter } from "./entities/pool.filter";
@@ -59,9 +59,9 @@ export class PoolService {
   private parseTransactions(rawPool: TxPoolGatewayResponse): TransactionInPool[] {
     const transactionPool: TransactionInPool[] = [];
     if (rawPool && rawPool.txPool) {
-      transactionPool.push(...this.processTransactionType(rawPool.txPool.regularTransactions || [], TransactionType.Transaction));
-      transactionPool.push(...this.processTransactionType(rawPool.txPool.smartContractResults || [], TransactionType.SmartContractResult));
-      transactionPool.push(...this.processTransactionType(rawPool.txPool.rewards || [], TransactionType.Reward));
+      transactionPool.push(...this.processTransactionType(rawPool.txPool.regularTransactions ?? [], TransactionType.Transaction));
+      transactionPool.push(...this.processTransactionType(rawPool.txPool.smartContractResults ?? [], TransactionType.SmartContractResult));
+      transactionPool.push(...this.processTransactionType(rawPool.txPool.rewards ?? [], TransactionType.Reward));
     }
 
     return transactionPool;
@@ -73,41 +73,25 @@ export class PoolService {
 
   private parseTransaction(tx: TxInPoolFields, type: TransactionType): TransactionInPool {
     return new TransactionInPool({
-      txHash: tx.hash || '',
-      sender: tx.sender || '',
-      receiver: tx.receiver || '',
-      nonce: tx.nonce || 0,
-      value: tx.value || '',
-      gasPrice: tx.gasprice || 0,
-      gasLimit: tx.gaslimit || 0,
-      data: tx.data || '',
-      type: type || TransactionType.Transaction,
+      txHash: tx.hash ?? '',
+      sender: tx.sender ?? '',
+      receiver: tx.receiver ?? '',
+      nonce: tx.nonce ?? 0,
+      value: tx.value ?? '',
+      gasPrice: tx.gasprice ?? 0,
+      gasLimit: tx.gaslimit ?? 0,
+      data: tx.data ?? '',
+      type: type ?? TransactionType.Transaction,
     });
   }
 
   private applyFilters(pool: TransactionInPool[], filters: PoolFilter): TransactionInPool[] {
-    if (!filters.receiver && !filters.sender && !filters.type) {
-      return pool;
-    }
-
-    const results: TransactionInPool[] = [];
-
-    for (const transaction of pool) {
-      if (filters.sender && transaction.sender !== filters.sender) {
-        continue;
-      }
-
-      if (filters.receiver && transaction.receiver !== filters.receiver) {
-        continue;
-      }
-
-      if (filters.type && transaction.type !== filters.type) {
-        continue;
-      }
-
-      results.push(transaction);
-    }
-
-    return results;
+    return pool.filter((transaction) => {
+      return (
+        (!filters.sender || transaction.sender === filters.sender) &&
+        (!filters.receiver || transaction.receiver === filters.receiver) &&
+        (!filters.type || transaction.type === filters.type)
+      );
+    });
   }
 }
