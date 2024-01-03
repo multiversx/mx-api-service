@@ -61,10 +61,6 @@ export class AccountDetailed extends Account {
   @ApiProperty({ description: 'Specific property flag for smart contract', type: Boolean })
   isReadable?: boolean;
 
-  @Field(() => Boolean, { description: 'If the given detailed account is verified.', nullable: true })
-  @ApiProperty({ description: 'Specific property flag for smart contract', type: Boolean })
-  isVerified?: boolean;
-
   @Field(() => Boolean, { description: 'If the given detailed account is payable.', nullable: true })
   @ApiProperty({ description: 'Specific property flag for smart contract', type: Boolean })
   isPayable?: boolean;

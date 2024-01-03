@@ -176,6 +176,11 @@ export class CacheInfo {
     ttl: Constants.oneHour(),
   };
 
+  static VerifiedAccounts: CacheInfo = {
+    key: "verifiedAccounts",
+    ttl: Constants.oneMinute() * 10,
+  };
+
   static TokenTransferProperties(identifier: string): CacheInfo {
     return {
       key: `token:transfer:properties:v2:${identifier}`,
