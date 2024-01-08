@@ -34,8 +34,6 @@ export class RabbitMqConsumer {
   }
 
   private async handleEvent(event: NotifierEvent): Promise<void> {
-
-    console.log({ event });
     switch (event.identifier) {
       case NotifierEventIdentifier.ESDTNFTCreate:
         await this.nftHandlerService.handleNftCreateEvent(event);

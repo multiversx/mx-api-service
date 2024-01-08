@@ -240,9 +240,6 @@ export class NetworkService {
     const { erd_num_shards_without_meta: shards, erd_round_duration: refreshRate } = networkConfig;
     const { erd_epoch_number: epoch, erd_rounds_passed_in_current_epoch: roundsPassed, erd_rounds_per_epoch: roundsPerEpoch } = networkStatus;
 
-    console.log({ networkConfig: JSON.stringify(networkConfig) });
-    console.log({ networkStatus: JSON.stringify(networkStatus) });
-
     return {
       shards,
       blocks: blocksCount,

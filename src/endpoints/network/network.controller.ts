@@ -31,12 +31,7 @@ export class NetworkController {
   @ApiOperation({ summary: 'Network statistics', description: 'Returns general network statistics' })
   @ApiOkResponse({ type: Stats })
   async getStats(): Promise<Stats> {
-    console.log('started getting stats');
-    const stats = await this.networkService.getStats();
-
-    console.log('finished getting stats ' + JSON.stringify(stats));
-
-    return stats;
+    return await this.networkService.getStats();
   }
 
   @Get("/about")
