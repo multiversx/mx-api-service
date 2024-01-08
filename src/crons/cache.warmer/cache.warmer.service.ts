@@ -172,7 +172,6 @@ export class CacheWarmerService {
   @Cron("*/6 * * * * *")
   @Lock({ name: 'Guest caching recompute', verbose: true })
   async handleGuestCache() {
-    this.logger.log(`Guest caching active: ${this.apiConfigService.isGuestCacheFeatureActive()}`);
     if (this.apiConfigService.isGuestCacheFeatureActive()) {
       await this.guestCachingWarmer.recompute({
         targetUrl: this.apiConfigService.getSelfUrl(),
