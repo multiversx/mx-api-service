@@ -12,7 +12,7 @@ export class AccountAssetsSocial {
   @Field(() => String, { description: "Email asset for the given account asset." })
   email: string = '';
 
-  @Field(() => String, { description: "Blog assetfor the given account asset." })
+  @Field(() => String, { description: "Blog asset for the given account asset." })
   blog: string = '';
 
   @Field(() => String, { description: "Twitter asset for the given account asset." })
