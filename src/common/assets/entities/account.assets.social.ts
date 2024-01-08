@@ -9,6 +9,9 @@ export class AccountAssetsSocial {
   @Field(() => String, { description: "Website asset for the given account asset." })
   website: string = '';
 
+  @Field(() => String, { description: "Email asset for the given account asset." })
+  email: string = '';
+
   @Field(() => String, { description: "Blog assetfor the given account asset." })
   blog: string = '';
 
@@ -41,5 +44,4 @@ export class AccountAssetsSocial {
 
   @Field(() => String, { description: "Linkedin asset for the given account asset." })
   linkedin: string = '';
-
 }
