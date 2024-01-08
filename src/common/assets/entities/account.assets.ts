@@ -1,4 +1,5 @@
 import { Field, ObjectType } from "@nestjs/graphql";
+import { AccountAssetsSocial } from "./account.assets.social";
 
 @ObjectType("AccountAssets", { description: "Account assets object type." })
 export class AccountAssets {
@@ -11,6 +12,9 @@ export class AccountAssets {
 
   @Field(() => String, { description: "Description for the given account asset." })
   description: string = '';
+
+  @Field(() => String, { description: "Social for the given account asset." })
+  social: AccountAssetsSocial | undefined = undefined;
 
   @Field(() => [String], { description: "Tags list for the given account asset." })
   tags: string[] = [];
