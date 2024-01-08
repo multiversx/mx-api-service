@@ -33,7 +33,7 @@ export class AccountAssetsSocial {
   @Field(() => String, { description: "YouTube asset for the given account asset." })
   youtube: string = '';
 
-  @Field(() => String, { description: "Whitepapper asset for the given account asset." })
+  @Field(() => String, { description: "Whitepaper asset for the given account asset." })
   whitepaper: string = '';
 
   @Field(() => String, { description: "Coinmarketcap asset for the given account asset." })
