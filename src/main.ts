@@ -25,7 +25,7 @@ import { ApiConfigModule } from './common/api-config/api.config.module';
 import { CacheService, CachingInterceptor, GuestCacheInterceptor, GuestCacheService } from '@multiversx/sdk-nestjs-cache';
 import { LoggerInitializer } from '@multiversx/sdk-nestjs-common';
 import { MetricsService, RequestCpuTimeInterceptor, LoggingInterceptor, LogRequestsInterceptor } from '@multiversx/sdk-nestjs-monitoring';
-import { FieldsInterceptor, ExtractInterceptor, CleanupInterceptor, PaginationInterceptor, QueryCheckInterceptor, ComplexityInterceptor, OriginInterceptor } from '@multiversx/sdk-nestjs-http';
+import { FieldsInterceptor, ExtractInterceptor, CleanupInterceptor, PaginationInterceptor, QueryCheckInterceptor, ComplexityInterceptor, OriginInterceptor, ExcludeFieldsInterceptor } from '@multiversx/sdk-nestjs-http';
 import { ErdnestConfigServiceImpl } from './common/api-config/erdnest.config.service.impl';
 import { RabbitMqModule } from './common/rabbitmq/rabbitmq.module';
 import { TransactionLoggingInterceptor } from './interceptors/transaction.logging.interceptor';
@@ -234,6 +234,9 @@ async function configurePublicApp(publicApp: NestExpressApplication, apiConfigSe
     // @ts-ignore
     globalInterceptors.push(cachingInterceptor);
   }
+
+  // @ts-ignore
+  globalInterceptors.push(new ExcludeFieldsInterceptor());
 
   // @ts-ignore
   globalInterceptors.push(new FieldsInterceptor());
