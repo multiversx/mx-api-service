@@ -57,7 +57,7 @@ export class MexController {
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number,
     @Query('exchange', new ParseEnumPipe(MexPairExchange)) exchange?: MexPairExchange,
-  ): Promise<any> {
+  ): Promise<MexPair[]> {
     const filter = new MexPairsFilter({ exchange });
     return await this.mexPairsService.getMexPairs(from, size, filter);
   }
@@ -114,7 +114,7 @@ export class MexController {
   async getMexFarms(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number
-  ): Promise<any> {
+  ): Promise<MexFarm[]> {
     return await this.mexFarmsService.getMexFarms(new QueryPagination({ from, size }));
   }
 

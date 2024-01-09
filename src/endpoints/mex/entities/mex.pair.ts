@@ -30,6 +30,14 @@ export class MexPair {
   @ApiProperty()
   price: number = 0;
 
+  @Field(() => Number, { description: "Mex token basePrevious24hPrice equivalent" })
+  @ApiProperty()
+  basePrevious24hPrice: number = 0;
+
+  @Field(() => Number, { description: "Mex token quotePrevious24hPrice equivalent" })
+  @ApiProperty()
+  quotePrevious24hPrice: number = 0;
+
   @Field(() => String, { description: "Base id details." })
   @ApiProperty({ type: String, example: 'MEX-455c57' })
   baseId: string = '';

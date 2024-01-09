@@ -295,6 +295,12 @@ export class CacheWarmerService {
     }));
   }
 
+  @Cron(CronExpression.EVERY_10_MINUTES)
+  async handleVerifiedAccountsInvalidation() {
+    const verifiedAccounts = await this.accountService.getVerifiedAccounts();
+    await this.invalidateKey(CacheInfo.VerifiedAccounts.key, verifiedAccounts, CacheInfo.VerifiedAccounts.ttl);
+  }
+
   @Lock({ name: 'Elastic updater: Update collection isVerified, nftCount, holderCount', verbose: true })
   async handleUpdateCollectionExtraDetails() {
     const allAssets = await this.assetsService.getAllTokenAssets();
