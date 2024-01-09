@@ -174,8 +174,8 @@ export class MexTokenService {
         wegldToken.symbol = pair.baseSymbol;
         wegldToken.name = pair.baseName;
         wegldToken.price = pair.basePrice;
-        wegldToken.previous24hPrice = pair.basePrevious24hPrice,
-          mexTokens.push(wegldToken);
+        wegldToken.previous24hPrice = pair.basePrevious24hPrice;
+        mexTokens.push(wegldToken);
       }
 
       const mexToken = this.getMexToken(pair);
