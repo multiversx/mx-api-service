@@ -172,6 +172,8 @@ async function bootstrap() {
   logger.log(`Staking v4 enabled: ${apiConfigService.isStakingV4Enabled()}`);
   logger.log(`Events notifier enabled: ${apiConfigService.isEventsNotifierFeatureActive()}`);
   logger.log(`Guest caching enabled: ${apiConfigService.isGuestCacheFeatureActive()}`);
+  logger.log(`Transaction pool enabled: ${apiConfigService.isTransactionPoolEnabled()}`);
+  logger.log(`Transaction pool cache warmer enabled: ${apiConfigService.isTransactionPoolCacheWarmerEnabled()}`);
 }
 
 async function configurePublicApp(publicApp: NestExpressApplication, apiConfigService: ApiConfigService) {

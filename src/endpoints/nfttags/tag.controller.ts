@@ -5,7 +5,6 @@ import { QueryPagination } from 'src/common/entities/query.pagination';
 import { Tag } from './entities/tag';
 import { TagService } from './tag.service';
 
-
 @Controller()
 @ApiTags('tags')
 export class TagController {

@@ -19,9 +19,18 @@ import { BinaryUtils } from "@multiversx/sdk-nestjs-common";
 import { ApiService, ApiSettings } from "@multiversx/sdk-nestjs-http";
 import { GuardianResult } from "./entities/guardian.result";
 import { TransactionProcessStatus } from "./entities/transaction.process.status";
+import { TxPoolGatewayResponse } from "./entities/tx.pool.gateway.response";
 
 @Injectable()
 export class GatewayService {
+  private readonly snapshotlessRequestsSet: Set<String> = new Set([
+    GatewayComponentRequest.addressBalance,
+    GatewayComponentRequest.addressDetails,
+    GatewayComponentRequest.addressEsdt,
+    GatewayComponentRequest.addressNftByNonce,
+    GatewayComponentRequest.vmQuery,
+    GatewayComponentRequest.transactionPool,
+  ]);
   constructor(
     private readonly apiConfigService: ApiConfigService,
     @Inject(forwardRef(() => ApiService))
@@ -133,6 +142,10 @@ export class GatewayService {
     return new NftData(result.tokenData);
   }
 
+  async getTransactionPool(): Promise<TxPoolGatewayResponse> {
+    return await this.get(`transaction/pool?fields=nonce,sender,receiver,gaslimit,gasprice,receiverusername,data,value`, GatewayComponentRequest.transactionPool);
+  }
+
   async getTransaction(txHash: string): Promise<Transaction | undefined> {
     // eslint-disable-next-line require-await
     const result = await this.get(`transaction/${txHash}?withResults=true`, GatewayComponentRequest.transactionDetails, async (error) => {
@@ -158,15 +171,7 @@ export class GatewayService {
   }
 
   private getUrl(component: GatewayComponentRequest): string {
-    const snapshotlessGatewayComponents = new Set([
-      GatewayComponentRequest.addressBalance,
-      GatewayComponentRequest.addressDetails,
-      GatewayComponentRequest.addressEsdt,
-      GatewayComponentRequest.addressNftByNonce,
-      GatewayComponentRequest.vmQuery,
-    ]);
-
-    return snapshotlessGatewayComponents.has(component)
+    return this.snapshotlessRequestsSet.has(component)
       ? this.apiConfigService.getSnapshotlessGatewayUrl() ?? this.apiConfigService.getGatewayUrl()
       : this.apiConfigService.getGatewayUrl();
   }
