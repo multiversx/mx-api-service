@@ -4,10 +4,11 @@ import { GatewayService } from "src/common/gateway/gateway.service";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { CacheInfo } from "src/utils/cache.info";
-import { TxInPoolFields, TxPoolGatewayResponse } from "src/common/gateway/entities/tx.pool.gateway.response";
+import { TxPoolGatewayResponse } from "src/common/gateway/entities/tx.pool.gateway.response";
 import { TransactionType } from "../transactions/entities/transaction.type";
 import { TransactionInPool } from "./entities/transaction.in.pool.dto";
 import { PoolFilter } from "./entities/pool.filter";
+import { TxInPoolFields } from "src/common/gateway/entities/tx.in.pool.fields";
 
 @Injectable()
 export class PoolService {
