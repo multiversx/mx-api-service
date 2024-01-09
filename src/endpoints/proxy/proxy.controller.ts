@@ -23,6 +23,15 @@ export class ProxyController {
     private readonly pluginService: PluginService,
   ) { }
 
+  @Get('*')
+  async forwardRequest(@Req() request: Request) {
+    const url = request.url.startsWith('/') ? request.url.substring(1) : request.url;
+    return await this.forwardGateway(
+      url,
+      GatewayComponentRequest.forward,
+    );
+  }
+
   @Get('/address/:address')
   async getAddress(@Param('address', ParseAddressPipe) address: string) {
     return await this.gatewayGet(`address/${address}`, GatewayComponentRequest.addressDetails);
@@ -357,5 +366,9 @@ export class ProxyController {
       this.logger.error(`Unhandled exception when calling gateway url '${url}'`);
       throw new BadRequestException(`Unhandled exception when calling gateway url '${url}'`);
     }
+  }
+
+  private async forwardGateway(url: string, component: GatewayComponentRequest, errorHandler?: (error: any) => Promise<boolean>): Promise<any> {
+    return await this.gatewayGet(url, component, errorHandler);
   }
 }
