@@ -27,28 +27,51 @@ describe("API Testing", () => {
     await app.close();
   });
 
-  it("should check blocks pagination", async () => {
-    const checker = new ApiChecker('blocks', app.getHttpServer());
+  describe('/blocks', () => {
+    //Response Format
+    it('should check blocks pagination', async () => {
+      const checker = new ApiChecker('blocks', app.getHttpServer());
+      checker.defaultParams = { epoch: 500, shard: randomShard };
+      checker.skipFields = skipedFields;
+      await checker.checkPagination();
+    });
 
-    checker.defaultParams = { epoch: 500, shard: randomShard };
-    checker.skipFields = skipedFields;
+    it('should check blocks status response code', async () => {
+      const checker = new ApiChecker('blocks', app.getHttpServer());
+      checker.defaultParams = { epoch: 500, shard: randomShard };
+      checker.skipFields = skipedFields;
+      await checker.checkStatus();
+    });
 
-    await checker.checkPagination();
+    it('should check response body for all blocks from all shards', async () => {
+      const checker = new ApiChecker('blocks', app.getHttpServer());
+      await expect(checker.checkBlocksResponseBody()).resolves.not.toThrowError('Invalid response body for blocks!');
+    });
   });
 
-  it('should check blocks status response code', async () => {
-    const checker = new ApiChecker('blocks', app.getHttpServer());
-
-    checker.defaultParams = { epoch: 500, shard: randomShard };
-    checker.skipFields = skipedFields;
-    await checker.checkStatus();
+  describe('/blocks/count', () => {
+    it('should check blocks count', async () => {
+      const checker = new ApiChecker('blocks', app.getHttpServer());
+      checker.defaultParams = { epoch: 500, shard: randomShard };
+      checker.skipFields = skipedFields;
+      await checker.checkAlternativeCount();
+    });
   });
 
-  it('should check blocks count', async () => {
-    const checker = new ApiChecker('blocks', app.getHttpServer());
+  describe('/blocks/latest', () => {
+    //Response Format
+    it('should check status response code for latest block information details', async () => {
+      const checker = new ApiChecker('blocks/latest', app.getHttpServer());
+      await checker.checkStatus();
+    });
+  });
 
-    checker.defaultParams = { epoch: 500, shard: randomShard };
-    checker.skipFields = skipedFields;
-    await checker.checkAlternativeCount();
+  describe('/blocks/{hash}', () => {
+    //Error Handling
+    it('should handle invalid data for a given hash', async () => {
+      const hash: string = '11';
+      const checker = new ApiChecker(`blocks/${hash}`, app.getHttpServer());
+      await expect(checker.checkStatus()).rejects.toThrowError('Endpoint status code 400');
+    });
   });
 });

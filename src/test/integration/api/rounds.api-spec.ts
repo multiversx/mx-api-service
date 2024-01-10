@@ -24,13 +24,15 @@ describe("API Testing", () => {
     await app.close();
   });
 
-  it('should check rounds status response code', async () => {
-    const checker = new ApiChecker('rounds', app.getHttpServer());
-    await checker.checkStatus();
-  });
+  describe('/rounds', () => {
+    it('should check rounds status response code', async () => {
+      const checker = new ApiChecker('rounds', app.getHttpServer());
+      await checker.checkStatus();
+    });
 
-  it('should check rounds count', async () => {
-    const checker = new ApiChecker('rounds', app.getHttpServer());
-    await checker.checkAlternativeCount();
+    it('should check rounds count', async () => {
+      const checker = new ApiChecker('rounds', app.getHttpServer());
+      await checker.checkAlternativeCount();
+    });
   });
 });

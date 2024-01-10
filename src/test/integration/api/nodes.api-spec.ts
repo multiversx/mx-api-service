@@ -24,18 +24,25 @@ describe("API Testing", () => {
     await app.close();
   });
 
-  it("should check nodes pagination", async () => {
-    const checker = new ApiChecker('nodes', app.getHttpServer());
-    await checker.checkPagination();
-  });
+  describe('/nodes', () => {
+    it('should check nodes pagination', async () => {
+      const checker = new ApiChecker('nodes', app.getHttpServer());
+      await checker.checkPagination();
+    });
 
-  it('should check nodes status response code', async () => {
-    const checker = new ApiChecker('nodes', app.getHttpServer());
-    await checker.checkStatus();
-  });
+    it('should check nodes status response code', async () => {
+      const checker = new ApiChecker('nodes', app.getHttpServer());
+      await checker.checkStatus();
+    });
 
-  it('should check nodes count', async () => {
-    const checker = new ApiChecker('nodes', app.getHttpServer());
-    await checker.checkAlternativeCount();
+    it('should check nodes count', async () => {
+      const checker = new ApiChecker('nodes', app.getHttpServer());
+      await checker.checkAlternativeCount();
+    });
+
+    it('should check response body for a list of nodes of type observer or validator', async () => {
+      const checker = new ApiChecker('nodes', app.getHttpServer());
+      await expect(checker.checkNodesResponseBody()).resolves.not.toThrowError('Invalid response body for nodes!');
+    });
   });
 });

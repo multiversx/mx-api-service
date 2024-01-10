@@ -26,21 +26,23 @@ describe("API Testing", () => {
     await app.close();
   });
 
-  it("should check tokens pagination", async () => {
-    const checker = new ApiChecker('tokens', app.getHttpServer());
-    checker.skipFields = skipedFields;
-    await checker.checkPagination();
-  });
+  describe('/tokens', () => {
+    it("should check tokens pagination", async () => {
+      const checker = new ApiChecker('tokens', app.getHttpServer());
+      checker.skipFields = skipedFields;
+      await checker.checkPagination();
+    });
 
-  it('should check tokens status response code', async () => {
-    const checker = new ApiChecker('tokens', app.getHttpServer());
-    checker.skipFields = skipedFields;
-    await checker.checkStatus();
-  });
+    it('should check tokens status response code', async () => {
+      const checker = new ApiChecker('tokens', app.getHttpServer());
+      checker.skipFields = skipedFields;
+      await checker.checkStatus();
+    });
 
-  it('should check tokens count', async () => {
-    const checker = new ApiChecker('tokens', app.getHttpServer());
-    checker.skipFields = skipedFields;
-    await checker.checkAlternativeCount();
+    it('should check tokens count', async () => {
+      const checker = new ApiChecker('tokens', app.getHttpServer());
+      checker.skipFields = skipedFields;
+      await checker.checkAlternativeCount();
+    });
   });
 });

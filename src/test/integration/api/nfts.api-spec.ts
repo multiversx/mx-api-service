@@ -26,21 +26,28 @@ describe("API Testing", () => {
     await app.close();
   });
 
-  it("should check nfts pagination", async () => {
-    const checker = new ApiChecker('nfts', app.getHttpServer());
-    checker.skipFields = skipedFields;
-    await checker.checkPagination();
-  });
+  describe('/nfts', () => {
+    it('should check nfts pagination', async () => {
+      const checker = new ApiChecker('nfts', app.getHttpServer());
+      checker.skipFields = skipedFields;
+      await checker.checkPagination();
+    });
 
-  it('should check nfts status response code', async () => {
-    const checker = new ApiChecker('nfts', app.getHttpServer());
-    checker.skipFields = skipedFields;
-    await checker.checkStatus();
-  });
+    it('should check nfts status response code', async () => {
+      const checker = new ApiChecker('nfts', app.getHttpServer());
+      checker.skipFields = skipedFields;
+      await checker.checkStatus();
+    });
 
-  it('should check nfts count', async () => {
-    const checker = new ApiChecker('nfts', app.getHttpServer());
-    checker.skipFields = skipedFields;
-    await checker.checkAlternativeCount();
+    it('should check nfts count', async () => {
+      const checker = new ApiChecker('nfts', app.getHttpServer());
+      checker.skipFields = skipedFields;
+      await checker.checkAlternativeCount();
+    });
+
+    it('should check response body for a list of Non-Fungible / Semi-Fungible / MetaESDT tokens available on blockchain', async () => {
+      const checker = new ApiChecker('nfts', app.getHttpServer());
+      await expect(checker.checkNftResponseBody()).resolves.not.toThrowError('Invalid response body for nfts!');
+    });
   });
 });

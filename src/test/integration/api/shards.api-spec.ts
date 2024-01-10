@@ -24,13 +24,15 @@ describe("API Testing", () => {
     await app.close();
   });
 
-  it("should check shards pagination", async () => {
-    const checker = new ApiChecker('shards', app.getHttpServer());
-    await checker.checkPagination();
-  });
+  describe('/shards', () => {
+    it("should check shards pagination", async () => {
+      const checker = new ApiChecker('shards', app.getHttpServer());
+      await checker.checkPagination();
+    });
 
-  it('should check shards status response code', async () => {
-    const checker = new ApiChecker('shards', app.getHttpServer());
-    await checker.checkStatus();
+    it('should check shards status response code', async () => {
+      const checker = new ApiChecker('shards', app.getHttpServer());
+      await checker.checkStatus();
+    });
   });
 });

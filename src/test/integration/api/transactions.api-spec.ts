@@ -24,13 +24,51 @@ describe("API Testing", () => {
     await app.close();
   });
 
-  it('should check transactions status response code', async () => {
-    const checker = new ApiChecker('transactions', app.getHttpServer());
-    await checker.checkStatus();
-  });
+  describe('/transactions', () => {
+    it('should check transactions status response code', async () => {
+      const checker = new ApiChecker('transactions', app.getHttpServer());
+      await checker.checkStatus();
+    });
 
-  it('should check transactions count', async () => {
-    const checker = new ApiChecker('transactions', app.getHttpServer());
-    await checker.checkAlternativeCount();
+    it('should check transactions count', async () => {
+      const checker = new ApiChecker('transactions', app.getHttpServer());
+      await checker.checkAlternativeCount();
+    });
+
+    it('should check response body for a list of transactions available on the blockchain', async () => {
+      const checker = new ApiChecker('transactions', app.getHttpServer());
+      await expect(checker.checkTransactionsResponseBody()).resolves.not.toThrowError('Invalid response body for transactions!');
+    });
+    //rate limit
+    it('should check a list of transactions available on the blockchain with the maximum requested size=50', async () => {
+      const queryParams = {
+        size: 50,
+        withScResults: true,
+      };
+      const checker = new ApiChecker(`transactions?size=${queryParams.size}&withScResults=${queryParams.withScResults}`, app.getHttpServer());
+      await expect(checker.checkWindowForTransactions(queryParams.size)).resolves.not.toThrowError('Complexity exceeded threshold 10000.');
+    });
+
+    it('should check a list of transactions available on the blockchain with the maximum requested size=50 and some fields', async () => {
+      const queryParams = {
+        size: 50,
+        withOperations: true,
+        withLogs: true,
+        withScResults: true,
+      };
+      const checker = new ApiChecker(`transactions?size=${queryParams.size}&withOperations=${queryParams.withOperations}&withLogs=${queryParams.withLogs}&withScResults=${queryParams.withScResults}`, app.getHttpServer());
+      await expect(checker.checkWindowForTransactions(queryParams.size)).resolves.not.toThrowError('Complexity exceeded threshold 10000.');
+    });
+    //error
+    it('should handle complexity exceeded', async () => {
+      const queryParams = {
+        size: 60,
+        withOperations: true,
+        withLogs: true,
+        withScResults: true,
+      };
+      const checker = new ApiChecker(`transactions?size=${queryParams.size}&withOperations=${queryParams.withOperations}&withLogs=${queryParams.withLogs}&withScResults=${queryParams.withScResults}`, app.getHttpServer());
+      await expect(checker.checkWindowForTransactions(queryParams.size)).rejects.toThrowError('Complexity exceeded threshold 10000.');
+    });
   });
 });
