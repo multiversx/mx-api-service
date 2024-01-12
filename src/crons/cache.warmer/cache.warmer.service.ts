@@ -79,19 +79,19 @@ export class CacheWarmerService {
 
     if (this.apiConfigService.isStakingV4Enabled()) {
       const handleNodeAuctionInvalidationsCronJob = new CronJob(this.apiConfigService.getStakingV4CronExpression(), async () => await this.handleNodeAuctionInvalidations());
-      this.schedulerRegistry.addCronJob(this.handleNodeAuctionInvalidations.name, handleNodeAuctionInvalidationsCronJob);
+      this.schedulerRegistry.addCronJob('handleNodeAuctionInvalidations', handleNodeAuctionInvalidationsCronJob);
       handleNodeAuctionInvalidationsCronJob.start();
     }
 
     if (this.apiConfigService.isUpdateCollectionExtraDetailsEnabled()) {
       const handleUpdateCollectionExtraDetailsCronJob = new CronJob(CronExpression.EVERY_10_MINUTES, async () => await this.handleUpdateCollectionExtraDetails());
-      this.schedulerRegistry.addCronJob(this.handleUpdateCollectionExtraDetails.name, handleUpdateCollectionExtraDetailsCronJob);
+      this.schedulerRegistry.addCronJob('handleUpdateCollectionExtraDetails', handleUpdateCollectionExtraDetailsCronJob);
       handleUpdateCollectionExtraDetailsCronJob.start();
     }
 
     if (this.apiConfigService.isTransactionPoolCacheWarmerEnabled()) {
       const handleTransactionPoolCacheInvalidation = new CronJob(this.apiConfigService.getTransactionPoolCacheWarmerCronExpression(), async () => await this.handleTxPoolInvalidations());
-      this.schedulerRegistry.addCronJob(this.handleTxPoolInvalidations.name, handleTransactionPoolCacheInvalidation);
+      this.schedulerRegistry.addCronJob('handleTxPoolInvalidations', handleTransactionPoolCacheInvalidation);
       handleTransactionPoolCacheInvalidation.start();
     }
   }
