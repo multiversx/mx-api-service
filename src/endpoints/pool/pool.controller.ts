@@ -16,7 +16,7 @@ export class PoolController {
 
   @Get("/pool")
   @ApiOperation({ summary: 'Transactions pool', description: 'Returns the transactions that are currently in the memory pool.' })
-  @ApiOkResponse({ type: [TransactionInPool], isArray: true })
+  @ApiOkResponse({ type: TransactionInPool, isArray: true })
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   @ApiQuery({ name: 'sender', description: 'Search in transaction pool by a specific sender', required: false })
