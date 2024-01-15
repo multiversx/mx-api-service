@@ -30,14 +30,41 @@ describe("API Testing", () => {
       await checker.checkStatus();
     });
 
-    it('should check providers count', async () => {
+    it('should check response body for all providers', async () => {
       const checker = new ApiChecker('providers', app.getHttpServer());
-      await checker.checkAlternativeCount();
+      await expect(checker.checkArrayResponseBody()).resolves.not.toThrowError('Invalid response body!');
     });
 
     it('should check providers details', async () => {
       const checker = new ApiChecker('providers', app.getHttpServer());
       await checker.checkDetails('provider');
+    });
+
+    it('should not exceed rate limit', async () => {
+      const checker = new ApiChecker('providers', app.getHttpServer());
+      await expect(checker.checkRateLimit()).resolves.not.toThrowError('Exceed rate limit for parallel requests!');
+    });
+  });
+
+  describe('/providers/{address}', () => {
+    it('should check provider details for a given address status response code', async () => {
+      const address: string = 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqhllllsajxzat';
+      const checker = new ApiChecker(`providers/${address}`, app.getHttpServer());
+      await checker.checkStatus();
+    });
+
+    it('should handle invalid data', async () => {
+      const address: string = 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqhllllsajxzat';
+      const checker = new ApiChecker(`providers/${address}`, app.getHttpServer());
+      await expect(checker.checkStatus()).rejects.toThrowError('Endpoint status code 400');
+    });
+  });
+
+  describe('/providers/{address}/avatar', () => {
+    it('should check the avatar of a specific provider address status response code', async () => {
+      const address: string = 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqhllllsajxzat';
+      const checker = new ApiChecker(`providers/${address}/avatar`, app.getHttpServer());
+      await checker.checkStatus();
     });
   });
 });

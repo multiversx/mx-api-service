@@ -24,29 +24,19 @@ describe("API Testing", () => {
     await app.close();
   });
 
-  describe('/shards', () => {
-    it("should check shards pagination", async () => {
-      const checker = new ApiChecker('shards', app.getHttpServer());
-      await checker.checkPagination();
-    });
-
-    it('should handle pagination error', async () => {
-      const checker = new ApiChecker('shards', app.getHttpServer());
-      await checker.checkPaginationError();
-    });
-
-    it('should check response body for all available shards', async () => {
-      const checker = new ApiChecker('shards', app.getHttpServer());
-      await expect(checker.checkArrayResponseBody()).resolves.not.toThrowError('Invalid response body!');
-    });
-
-    it('should check shards status response code', async () => {
-      const checker = new ApiChecker('shards', app.getHttpServer());
+  describe('/websocket/config', () => {
+    it('should check websocket/config status response code', async () => {
+      const checker = new ApiChecker('websocket/config', app.getHttpServer());
       await checker.checkStatus();
     });
 
+    it('should check response body for config used for accessing websocket on the same cluster', async () => {
+      const checker = new ApiChecker('websocket/config', app.getHttpServer());
+      await expect(checker.checkObjectResponseBody()).resolves.not.toThrowError('Invalid response body!');
+    });
+
     it('should not exceed rate limit', async () => {
-      const checker = new ApiChecker('shards', app.getHttpServer());
+      const checker = new ApiChecker('websocket/config', app.getHttpServer());
       await expect(checker.checkRateLimit()).resolves.not.toThrowError('Exceed rate limit for parallel requests!');
     });
   });

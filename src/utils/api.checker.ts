@@ -1,10 +1,4 @@
-import { Account } from 'src/endpoints/accounts/entities/account';
-import { Block } from 'src/endpoints/blocks/entities/block';
 import { NftCollection } from 'src/endpoints/collections/entities/nft.collection';
-import { Nft } from 'src/endpoints/nfts/entities/nft';
-import { Tag } from 'src/endpoints/nfttags/entities/tag';
-import { Node } from 'src/endpoints/nodes/entities/node';
-import { SmartContractResult } from 'src/endpoints/sc-results/entities/smart.contract.result';
 import { Transaction } from 'src/endpoints/transactions/entities/transaction';
 import request = require('supertest');
 
@@ -18,28 +12,54 @@ export class ApiChecker {
   ) { }
 
   async checkPagination() {
-    const items = await this.requestList({ size: 100 });
+    const items = await this.requestList({ size: 10000 });
     const paginationParams = [
       { from: 0, size: 1 },
       { from: 1, size: 5 },
       { from: 5, size: 5 },
-      { from: 10, size: 20 },
+      { from: 0, size: 10000 },
+      { from: 9975, size: 25 },
     ];
     for (const params of paginationParams) {
       await this.checkPaginationInternal(items, params.from, params.size);
     }
   }
 
-  async checkWindow(from?: number, size?: number) {
-    const defaultFrom = 0;
-    const defaultSize = 25;
-    const effectiveFrom = from !== undefined ? from : defaultFrom;
-    const effectiveSize = size !== undefined ? size : defaultSize;
-    if ((effectiveFrom <= 9975) && (effectiveSize <= 10000) && ((effectiveFrom + effectiveSize) <= 10000)) {
-      const result = await this.requestBody();
-      expect(result).toBeInstanceOf(Array<any[]>);
+  async checkRateLimit() {
+    const urlParams = new URLSearchParams({
+      ...this.defaultParams,
+    });
+    try {
+      const startTime = Date.now();
+      const parallelRequests = Array.from({ length: 2 }, () => request(this.httpServer).get(`/${this.endpoint}?${urlParams}`));
+      const responses = await Promise.all(parallelRequests);
+      const endTime = Date.now();
+      const duration = endTime - startTime;
+      expect(responses[1].status).toBe(200);
+      expect(duration).toBeLessThan(1000);
+    } catch (error) {
+      throw new Error("Exceed rate limit for parallel requests!");
+    }
+  }
+
+  async checkPaginationError() {
+    const items = await this.requestList({ size: 10000 });
+    const paginationParams = [
+      { from: 30, size: 9975 },
+      { from: 9976, size: 25 },
+      { from: 0, size: 10003 },
+    ];
+    for (const params of paginationParams) {
+      await expect(this.checkPaginationInternal(items, params.from, params.size)).rejects.toThrowError(`Result window is too large, from + size must be less than or equal to: [10000] but was [${params.from + params.size}]`);
+    }
+  }
+
+  private async checkPaginationInternal(allItems: any, from: number, size: number) {
+    if ((from <= 9975) && (size <= 10000) && ((from + size) <= 10000)) {
+      const items = await this.requestList({ from, size });
+      expect(items).toEqual(allItems.slice(from, from + size));
     } else {
-      throw new Error('Result window is too large!');
+      throw new Error(`Result window is too large, from + size must be less than or equal to: [10000] but was [${from + size}]`);
     }
   }
 
@@ -52,75 +72,25 @@ export class ApiChecker {
     }
   }
 
-  async checkAccountsResponseBody() {
-    const result = await this.requestBody();
+  async checkArrayResponseBody() {
+    const body = await this.requestBody();
+    const code = await this.requestStatus();
     try {
-      expect(result).toBeInstanceOf(Array<Account>);
+      expect(code).toStrictEqual(200);
+      expect(body).toBeInstanceOf(Array<Object>);
     } catch (error) {
-      throw new Error("Invalid response body for accounts!");
+      throw new Error("Invalid response body!");
     }
   }
 
-  async checkBlocksResponseBody() {
-    const result = await this.requestBody();
+  async checkObjectResponseBody() {
+    const body = await this.requestBody();
+    const code = await this.requestStatus();
     try {
-      expect(result).toBeInstanceOf(Array<Block>);
+      expect(code).toStrictEqual(200);
+      expect(body).toBeInstanceOf(Object);
     } catch (error) {
-      throw new Error("Invalid response body for blocks!");
-    }
-  }
-
-  async checkCollectionsResponseBody() {
-    const result = await this.requestBody();
-    try {
-      expect(result).toBeInstanceOf(Array<NftCollection>);
-    } catch (error) {
-      throw new Error("Invalid response body for collections!");
-    }
-  }
-
-  async checkNftResponseBody() {
-    const result = await this.requestBody();
-    try {
-      expect(result).toBeInstanceOf(Array<Nft>);
-    } catch (error) {
-      throw new Error("Invalid response body for nfts!");
-    }
-  }
-
-  async checkNodesResponseBody() {
-    const result = await this.requestBody();
-    try {
-      expect(result).toBeInstanceOf(Array<Node>);
-    } catch (error) {
-      throw new Error("Invalid response body for nodes!");
-    }
-  }
-
-  async checkResultsResponseBody() {
-    const result = await this.requestBody();
-    try {
-      expect(result).toBeInstanceOf(Array<SmartContractResult>);
-    } catch (error) {
-      throw new Error("Invalid response body for results!");
-    }
-  }
-
-  async checkTagsResponseBody() {
-    const result = await this.requestBody();
-    try {
-      expect(result).toBeInstanceOf(Array<Tag>);
-    } catch (error) {
-      throw new Error("Invalid response body for tags!");
-    }
-  }
-
-  async checkTransactionsResponseBody() {
-    const result = await this.requestBody();
-    try {
-      expect(result).toBeInstanceOf(Array<Transaction>);
-    } catch (error) {
-      throw new Error("Invalid response body for transactions!");
+      throw new Error("Invalid response body!");
     }
   }
 
@@ -128,9 +98,7 @@ export class ApiChecker {
     const [item] = await this.requestList({ size: 1 });
     const idAttribute = field ? field : Object.keys(item)[0];
     const id = item[idAttribute];
-    console.log(item);
     const details = await this.requestItemParallel(id, Object.keys(item));
-    console.log(details);
     expect(details).toEqual(item);
   }
 
@@ -194,7 +162,7 @@ export class ApiChecker {
     }
   }
 
-  async checkType(criteria: string, value: string) {
+  async checkTypeCollections(criteria: string, value: string) {
     if ((value === 'NonFungibleESDT') || (value === 'SemiFungibleESDT') || (value === 'MetaESDT')) {
       const result = await this.requestType(criteria, value);
       expect(result).toBeInstanceOf(Array<NftCollection>);
@@ -212,23 +180,7 @@ export class ApiChecker {
     }
   }
 
-  // async checkSearchFilterByTagName(value: string) {
-  //   const items = await this.requestSearchItems(value);
-  //   try {
-  //     for (let i = 0; i < items.length; i++) {
-  //       expect(items[i].tag).toMatch(value);
-  //     }
-  //   } catch (error) {
-  //     throw new Error('Nft tag not found');
-  //   }
-  // }
-
-  private async checkPaginationInternal(allItems: any, from: number, size: number) {
-    const items = await this.requestList({ from, size });
-    expect(items).toEqual(allItems.slice(from, from + size));
-  }
-
-  private async requestBody(): Promise<any[]> {
+  private async requestBody(): Promise<any | any[]> {
     const result = await request(this.httpServer).get(`/${this.endpoint}`);
     return result.body;
   }
@@ -295,15 +247,10 @@ export class ApiChecker {
   }
 
   private async requestStatus(): Promise<number> {
-    const result = await request(this.httpServer).get(`/${this.endpoint}`);
+    const urlParams = new URLSearchParams({
+      ...this.defaultParams,
+    });
+    const result = await request(this.httpServer).get(`/${this.endpoint}?${urlParams}`);
     return result.statusCode;
   }
-
-  // private async requestSearchItems(value: string) {
-  //   const { body: result } = await request(this.httpServer).get(`/${this.endpoint}?search=${value}`);
-  //   for (const skipField of this.skipFields) {
-  //     delete result[skipField];
-  //   }
-  //   return result;
-  // }
 }

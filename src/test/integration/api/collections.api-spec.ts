@@ -25,10 +25,14 @@ describe("API Testing", () => {
   });
 
   describe('/collections', () => {
-    //response format
-    it("should check collections pagination", async () => {
+    it('should check collections pagination', async () => {
       const checker = new ApiChecker('collections', app.getHttpServer());
       await checker.checkPagination();
+    });
+
+    it('should handle pagination error', async () => {
+      const checker = new ApiChecker('collections', app.getHttpServer());
+      await checker.checkPaginationError();
     });
 
     it('should check collections status response code', async () => {
@@ -43,24 +47,23 @@ describe("API Testing", () => {
 
     it('should check response body for non-fungible/semi-fungible/meta-esdt collections', async () => {
       const checker = new ApiChecker('collections', app.getHttpServer());
-      await expect(checker.checkCollectionsResponseBody()).resolves.not.toThrowError('Invalid response body for collections!');
+      await expect(checker.checkArrayResponseBody()).resolves.not.toThrowError('Invalid response body!');
     });
 
     it('should check type parameter', async () => {
       const checker = new ApiChecker('collections', app.getHttpServer());
       const type = 'type';
       const value = 'NonFungibleESDT';
-      await expect(checker.checkType(type, value)).resolves.not.toThrowError("Validation failed for argument 'type' (one of the following values is expected: NonFungibleESDT, SemiFungibleESDT, MetaESDT).");
+      await expect(checker.checkTypeCollections(type, value)).resolves.not.toThrowError("Validation failed for argument 'type' (one of the following values is expected: NonFungibleESDT, SemiFungibleESDT, MetaESDT).");
     });
 
-    //error
     it('should handle invalid type parameter', async () => {
       const checker = new ApiChecker('collections', app.getHttpServer());
       const type = 'type';
       const value = 'aaa';
-      await expect(checker.checkType(type, value)).rejects.toThrowError("Validation failed for argument 'type' (one of the following values is expected: NonFungibleESDT, SemiFungibleESDT, MetaESDT).");
+      await expect(checker.checkTypeCollections(type, value)).rejects.toThrowError("Validation failed for argument 'type' (one of the following values is expected: NonFungibleESDT, SemiFungibleESDT, MetaESDT).");
     });
-    //concurent
+
     it('should check sorting of the collections according to the sorting criterias ', async () => {
       const checker = new ApiChecker('collections', app.getHttpServer());
       const sortCriterias = ['timestamp'];
@@ -74,23 +77,27 @@ describe("API Testing", () => {
       const checker = new ApiChecker('collections', app.getHttpServer());
       const type = 'type';
       const typesCriterias = ['NonFungibleESDT', 'SemiFungibleESDT', 'MetaESDT'];
-      const promise1 = Promise.resolve(checker.checkType(type, typesCriterias[0]));
-      const promise2 = Promise.resolve(checker.checkType(type, typesCriterias[1]));
-      const promise3 = Promise.resolve(checker.checkType(type, typesCriterias[2]));
+      const promise1 = Promise.resolve(checker.checkTypeCollections(type, typesCriterias[0]));
+      const promise2 = Promise.resolve(checker.checkTypeCollections(type, typesCriterias[1]));
+      const promise3 = Promise.resolve(checker.checkTypeCollections(type, typesCriterias[2]));
       await Promise.all([promise1, promise2, promise3]);
+    });
+
+    it('should not exceed rate limit', async () => {
+      const checker = new ApiChecker('collections', app.getHttpServer());
+      await expect(checker.checkRateLimit()).resolves.not.toThrowError('Exceed rate limit for parallel requests!');
     });
   });
 
   describe('/collections/count', () => {
-    //response format
     it('should check collections count', async () => {
       const checker = new ApiChecker('collections', app.getHttpServer());
       await checker.checkAlternativeCount();
     });
 
-  });
-
-  describe('/collections/{collection}', () => {
-
+    it('should not exceed rate limit', async () => {
+      const checker = new ApiChecker('collections/count', app.getHttpServer());
+      await expect(checker.checkRateLimit()).resolves.not.toThrowError('Exceed rate limit for parallel requests!');
+    });
   });
 });

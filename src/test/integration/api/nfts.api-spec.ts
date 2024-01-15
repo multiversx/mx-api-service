@@ -33,21 +33,49 @@ describe("API Testing", () => {
       await checker.checkPagination();
     });
 
+    it('should handle pagination error', async () => {
+      const checker = new ApiChecker('nfts', app.getHttpServer());
+      checker.skipFields = skipedFields;
+      await checker.checkPaginationError();
+    });
+
     it('should check nfts status response code', async () => {
       const checker = new ApiChecker('nfts', app.getHttpServer());
       checker.skipFields = skipedFields;
       await checker.checkStatus();
     });
 
+    it('should check response body for a list of Non-Fungible / Semi-Fungible / MetaESDT tokens available on blockchain', async () => {
+      const checker = new ApiChecker('nfts', app.getHttpServer());
+      await expect(checker.checkArrayResponseBody()).resolves.not.toThrowError('Invalid response body!');
+    });
+
+    it('should not exceed rate limit', async () => {
+      const checker = new ApiChecker('nfts', app.getHttpServer());
+      await expect(checker.checkRateLimit()).resolves.not.toThrowError('Exceed rate limit for parallel requests!');
+    });
+  });
+
+  describe('/nfts/count', () => {
     it('should check nfts count', async () => {
       const checker = new ApiChecker('nfts', app.getHttpServer());
       checker.skipFields = skipedFields;
       await checker.checkAlternativeCount();
     });
+  });
 
-    it('should check response body for a list of Non-Fungible / Semi-Fungible / MetaESDT tokens available on blockchain', async () => {
-      const checker = new ApiChecker('nfts', app.getHttpServer());
-      await expect(checker.checkNftResponseBody()).resolves.not.toThrowError('Invalid response body for nfts!');
+  describe('/nfts/{identifier}', () => {
+    it('should check nfts/{identifier} status response code', async () => {
+      const identifier: string = 'CITEM-bdf5f1-047338';
+      const checker = new ApiChecker(`nfts/${identifier}`, app.getHttpServer());
+      checker.skipFields = skipedFields;
+      await checker.checkStatus();
+    });
+
+    it('should handle invalid value for identifier parameter', async () => {
+      const identifier: string = 'aa';
+      const checker = new ApiChecker(`nfts/${identifier}`, app.getHttpServer());
+      await expect(checker.checkStatus()).rejects.toThrowError('Endpoint status code 400');
     });
   });
 });

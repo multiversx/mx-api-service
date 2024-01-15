@@ -30,11 +30,9 @@ describe("API Testing", () => {
       await checker.checkPagination();
     });
 
-    it('should handle exceeding the limit value for "from" and "size" parameters', async () => {
-      const fromNumber = 30;
-      const sizeNumber = 9975;
-      const checker = new ApiChecker(`tags?from=${fromNumber}&size=${sizeNumber}`, app.getHttpServer());
-      await expect(checker.checkWindow(fromNumber, sizeNumber)).rejects.toThrowError('Result window is too large!');
+    it('should handle pagination error', async () => {
+      const checker = new ApiChecker('tags', app.getHttpServer());
+      await checker.checkPaginationError();
     });
 
     it('should check tags status response code', async () => {
@@ -42,9 +40,14 @@ describe("API Testing", () => {
       await checker.checkStatus();
     });
 
+    it('should check tags details', async () => {
+      const checker = new ApiChecker(`tags`, app.getHttpServer());
+      await checker.checkDetails();
+    });
+
     it('should check response body for all distinct NFT tags', async () => {
       const checker = new ApiChecker(`tags`, app.getHttpServer());
-      await expect(checker.checkTagsResponseBody()).resolves.not.toThrowError('Invalid response body for tags!');
+      await expect(checker.checkArrayResponseBody()).resolves.not.toThrowError('Invalid response body!');
     });
 
     it('should check "search" filter', async () => {
@@ -52,11 +55,22 @@ describe("API Testing", () => {
       const checker = new ApiChecker(`tags?search=${value}`, app.getHttpServer());
       await checker.checkStatus();
     });
+
+    it('should not exceed rate limit', async () => {
+      const checker = new ApiChecker('tags', app.getHttpServer());
+      await expect(checker.checkRateLimit()).resolves.not.toThrowError('Exceed rate limit for parallel requests!');
+    });
   });
 
   describe('/tags/count', () => {
     it('should check tags count', async () => {
       const checker = new ApiChecker(`tags/count`, app.getHttpServer());
+      await checker.checkStatus();
+    });
+
+    it('should check tags count, when "search" filter is applied', async () => {
+      const value: string = 'multiversx';
+      const checker = new ApiChecker(`tags/count?search=${value}`, app.getHttpServer());
       await checker.checkStatus();
     });
   });

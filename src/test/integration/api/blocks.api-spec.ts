@@ -28,12 +28,18 @@ describe("API Testing", () => {
   });
 
   describe('/blocks', () => {
-    //Response Format
     it('should check blocks pagination', async () => {
       const checker = new ApiChecker('blocks', app.getHttpServer());
       checker.defaultParams = { epoch: 500, shard: randomShard };
       checker.skipFields = skipedFields;
       await checker.checkPagination();
+    });
+
+    it('should handle pagination error', async () => {
+      const checker = new ApiChecker('blocks', app.getHttpServer());
+      checker.defaultParams = { epoch: 500, shard: randomShard };
+      checker.skipFields = skipedFields;
+      await checker.checkPaginationError();
     });
 
     it('should check blocks status response code', async () => {
@@ -45,7 +51,14 @@ describe("API Testing", () => {
 
     it('should check response body for all blocks from all shards', async () => {
       const checker = new ApiChecker('blocks', app.getHttpServer());
-      await expect(checker.checkBlocksResponseBody()).resolves.not.toThrowError('Invalid response body for blocks!');
+      checker.skipFields = skipedFields;
+      await expect(checker.checkArrayResponseBody()).resolves.not.toThrowError('Invalid response body!');
+    });
+
+    it('should not exceed rate limit', async () => {
+      const checker = new ApiChecker('blocks', app.getHttpServer());
+      checker.defaultParams = { epoch: 500, shard: randomShard };
+      await expect(checker.checkRateLimit()).resolves.not.toThrowError('Exceed rate limit for parallel requests!');
     });
   });
 
@@ -59,7 +72,6 @@ describe("API Testing", () => {
   });
 
   describe('/blocks/latest', () => {
-    //Response Format
     it('should check status response code for latest block information details', async () => {
       const checker = new ApiChecker('blocks/latest', app.getHttpServer());
       await checker.checkStatus();
@@ -67,7 +79,13 @@ describe("API Testing", () => {
   });
 
   describe('/blocks/{hash}', () => {
-    //Error Handling
+    it('should check blocks/{hash} status response code', async () => {
+      const hash: string = '6e206540a8567c9113de2517ae073a765c9be49e6e41d6310256e656c6bf9a7d';
+      const checker = new ApiChecker(`blocks/${hash}`, app.getHttpServer());
+      checker.skipFields = skipedFields;
+      await checker.checkStatus();
+    });
+
     it('should handle invalid data for a given hash', async () => {
       const hash: string = '11';
       const checker = new ApiChecker(`blocks/${hash}`, app.getHttpServer());

@@ -24,29 +24,19 @@ describe("API Testing", () => {
     await app.close();
   });
 
-  describe('/shards', () => {
-    it("should check shards pagination", async () => {
-      const checker = new ApiChecker('shards', app.getHttpServer());
-      await checker.checkPagination();
-    });
-
-    it('should handle pagination error', async () => {
-      const checker = new ApiChecker('shards', app.getHttpServer());
-      await checker.checkPaginationError();
-    });
-
-    it('should check response body for all available shards', async () => {
-      const checker = new ApiChecker('shards', app.getHttpServer());
-      await expect(checker.checkArrayResponseBody()).resolves.not.toThrowError('Invalid response body!');
-    });
-
-    it('should check shards status response code', async () => {
-      const checker = new ApiChecker('shards', app.getHttpServer());
+  describe('/stake', () => {
+    it('should check stake status response code', async () => {
+      const checker = new ApiChecker('stake', app.getHttpServer());
       await checker.checkStatus();
     });
 
+    it('should check response body for general staking information', async () => {
+      const checker = new ApiChecker('stake', app.getHttpServer());
+      await expect(checker.checkObjectResponseBody()).resolves.not.toThrowError('Invalid response body!');
+    });
+
     it('should not exceed rate limit', async () => {
-      const checker = new ApiChecker('shards', app.getHttpServer());
+      const checker = new ApiChecker('stake', app.getHttpServer());
       await expect(checker.checkRateLimit()).resolves.not.toThrowError('Exceed rate limit for parallel requests!');
     });
   });
