@@ -67,8 +67,7 @@ export class KeybaseService {
 
     for (const key of keys) {
       if (AddressUtils.isAddressValid(key)) {
-        const providerMetadata = await this.providerService.getProviderMetadata(key);
-        if (providerMetadata && providerMetadata.identity && providerMetadata.identity === identity) {
+        if (providerAddresses.includes(key)) {
           await this.cachingService.set(CacheInfo.ConfirmedProvider(key).key, identity, CacheInfo.ConfirmedProvider(key).ttl);
         }
 
