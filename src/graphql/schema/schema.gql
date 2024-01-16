@@ -46,6 +46,9 @@ type Account {
   """Current owner address."""
   ownerAddress: String!
 
+  """Owner Account Address assets details."""
+  ownerAssets: AccountAssets
+
   """Shard for the given account."""
   shard: Float!
 
@@ -212,6 +215,9 @@ type AccountDetailed {
 
   """Owner address for the given detailed account."""
   ownerAddress: String!
+
+  """Owner Account Address assets details."""
+  ownerAssets: AccountAssets
 
   """
   Returns smart contract results where the account is sender or receiver.
