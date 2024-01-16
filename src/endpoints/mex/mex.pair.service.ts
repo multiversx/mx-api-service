@@ -99,12 +99,14 @@ export class MexPairService {
               name
               identifier
               decimals
+              previous24hPrice
               __typename
             }
             secondToken {
               name
               identifier
               decimals
+              previous24hPrice
               __typename
             }
             firstTokenPrice
@@ -171,6 +173,8 @@ export class MexPairService {
         symbol: pair.liquidityPoolToken.identifier.split('-')[0],
         name: pair.liquidityPoolToken.name,
         price: Number(pair.liquidityPoolTokenPriceUSD),
+        basePrevious24hPrice: Number(pair.firstToken.previous24hPrice),
+        quotePrevious24hPrice: Number(pair.secondToken.previous24hPrice),
         baseId: pair.firstToken.identifier,
         basePrice: Number(pair.firstTokenPriceUSD),
         baseSymbol: firstTokenSymbol,
@@ -193,6 +197,8 @@ export class MexPairService {
       symbol: pair.liquidityPoolToken.identifier.split('-')[0],
       name: pair.liquidityPoolToken.name,
       price: Number(pair.liquidityPoolTokenPriceUSD),
+      basePrevious24hPrice: Number(pair.secondToken.previous24hPrice),
+      quotePrevious24hPrice: Number(pair.firstToken.previous24hPrice),
       baseId: pair.secondToken.identifier,
       basePrice: Number(pair.secondTokenPriceUSD),
       baseSymbol: secondTokenSymbol,

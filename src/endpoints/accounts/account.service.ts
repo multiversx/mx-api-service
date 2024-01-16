@@ -152,6 +152,11 @@ export class AccountService {
     return verificationResponse.data;
   }
 
+  async getVerifiedAccounts(): Promise<string[]> {
+    const verificationResponse = await this.apiService.get(`${this.apiConfigService.getVerifierUrl()}/verifier`);
+    return verificationResponse.data;
+  }
+
   async getAccountSimple(address: string): Promise<AccountDetailed | null> {
     if (!AddressUtils.isAddressValid(address)) {
       return null;
@@ -332,12 +337,18 @@ export class AccountService {
 
     const shardCount = await this.protocolService.getShardCount();
 
+    const verifiedAccounts = await this.cachingService.get<string[]>(CacheInfo.VerifiedAccounts.key);
+
     for (const account of accounts) {
       account.shard = AddressUtils.computeShard(AddressUtils.bech32Decode(account.address), shardCount);
       account.assets = assets[account.address];
 
       if (filter.withOwnerAssets && account.ownerAddress) {
         account.ownerAssets = assets[account.ownerAddress];
+      }
+
+      if (verifiedAccounts && verifiedAccounts.includes(account.address)) {
+        account.isVerified = true;
       }
     }
 

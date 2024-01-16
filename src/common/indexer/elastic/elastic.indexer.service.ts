@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { BinaryUtils } from "@multiversx/sdk-nestjs-common";
 import { ApiService } from "@multiversx/sdk-nestjs-http";
-import { ElasticService, ElasticQuery, QueryOperator, QueryType, QueryConditionOptions, ElasticSortOrder, ElasticSortProperty, TermsQuery, RangeGreaterThanOrEqual } from "@multiversx/sdk-nestjs-elastic";
+import { ElasticService, ElasticQuery, QueryOperator, QueryType, QueryConditionOptions, ElasticSortOrder, ElasticSortProperty, TermsQuery, RangeGreaterThanOrEqual, MatchQuery } from "@multiversx/sdk-nestjs-elastic";
 import { IndexerInterface } from "../indexer.interface";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { NftType } from "src/endpoints/nfts/entities/nft.type";
@@ -490,11 +490,11 @@ export class ElasticIndexerService implements IndexerInterface {
     }
 
     if (filter.name) {
-      query = query.withMustCondition(QueryType.Nested('data.name', filter.name));
+      query = query.withMustCondition(QueryType.Nested('data.name', [new MatchQuery('data.name', filter.name)]));
     }
 
     if (filter.search) {
-      query = query.withMustCondition(QueryType.Nested('data.name', filter.search));
+      query = query.withMustCondition(QueryType.Nested('data.name', [new MatchQuery('data.name', filter.name)]));
     }
 
     return query;

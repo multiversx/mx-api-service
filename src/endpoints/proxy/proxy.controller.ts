@@ -9,7 +9,6 @@ import { PluginService } from "src/common/plugins/plugin.service";
 import { Constants, ParseAddressPipe, ParseBlockHashPipe, ParseTransactionHashPipe } from "@multiversx/sdk-nestjs-common";
 import { CacheService, NoCache } from "@multiversx/sdk-nestjs-cache";
 import { OriginLogger } from "@multiversx/sdk-nestjs-common";
-
 @Controller()
 @ApiTags('proxy')
 @ApiExcludeController()
@@ -357,5 +356,20 @@ export class ProxyController {
       this.logger.error(`Unhandled exception when calling gateway url '${url}'`);
       throw new BadRequestException(`Unhandled exception when calling gateway url '${url}'`);
     }
+  }
+
+  private async forwardGateway(url: string, component: GatewayComponentRequest, params?: any, errorHandler?: (error: any) => Promise<boolean>): Promise<any> {
+    return await this.gatewayGet(url, component, params, errorHandler);
+  }
+
+  @Get('/gateway/*')
+  async forwardRequest(@Req() request: Request) {
+    const url = request.url.startsWith('/') ? request.url.substring(1) : request.url;
+    const queryParams = request.query;
+    return await this.forwardGateway(
+      url.replace('gateway/', ''),
+      GatewayComponentRequest.forward,
+      queryParams
+    );
   }
 }

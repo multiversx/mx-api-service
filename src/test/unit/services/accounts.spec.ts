@@ -5,6 +5,7 @@ import { Test } from "@nestjs/testing";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { AssetsService } from "src/common/assets/assets.service";
 import { AccountAssets } from "src/common/assets/entities/account.assets";
+import { AccountAssetsSocial } from "src/common/assets/entities/account.assets.social";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { GatewayService } from "src/common/gateway/gateway.service";
 import { IndexerService } from "src/common/indexer/indexer.service";
@@ -801,6 +802,12 @@ describe('Account Service', () => {
       erd1qqqqqqqqqqqqqpgqc0htpys8vhtf5m3tg7t6ts2wvkgx3favqrhsdsz9w0: {
         name: 'Multiversx DNS: Contract 239',
         description: '',
+        social: new AccountAssetsSocial({
+          website: "https://xexchange.com",
+          twitter: "https://twitter.com/xExchangeApp",
+          telegram: "https://t.me/xExchangeApp",
+          blog: "https://multiversx.com/blog/maiar-exchange-mex-tokenomics",
+        }),
         tags: ['dns'],
         icon: 'multiversx',
         iconPng: '',

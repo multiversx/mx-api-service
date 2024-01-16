@@ -29,6 +29,7 @@ import { TokenType } from "src/common/indexer/entities";
 import { TokenDetailed } from "src/endpoints/tokens/entities/token.detailed";
 import { DataApiService } from "src/common/data-api/data-api.service";
 import { BlockService } from "src/endpoints/blocks/block.service";
+import { PoolService } from "src/endpoints/pool/pool.service";
 
 @Injectable()
 export class CacheWarmerService {
@@ -60,31 +61,31 @@ export class CacheWarmerService {
     private readonly guestCachingWarmer: GuestCacheWarmer,
     private readonly dataApiService: DataApiService,
     private readonly blockService: BlockService,
+    private readonly poolService: PoolService,
   ) {
     this.configCronJob(
-      'handleKeysAgainstDatabaseAndGithubInvalidations',
+      'handleTokenAssetsInvalidations',
       CronExpression.EVERY_MINUTE,
-      CronExpression.EVERY_30_MINUTES,
-      async () => await this.handleKeysAgainstDatabaseAndGithubInvalidations()
-    );
-
-    this.configCronJob(
-      'handleIdentityInvalidations',
-      CronExpression.EVERY_MINUTE,
-      CronExpression.EVERY_5_MINUTES,
-      async () => await this.handleIdentityInvalidations()
+      CronExpression.EVERY_10_MINUTES,
+      async () => await this.handleTokenAssetsInvalidations()
     );
 
     if (this.apiConfigService.isStakingV4Enabled()) {
       const handleNodeAuctionInvalidationsCronJob = new CronJob(this.apiConfigService.getStakingV4CronExpression(), async () => await this.handleNodeAuctionInvalidations());
-      this.schedulerRegistry.addCronJob(this.handleNodeAuctionInvalidations.name, handleNodeAuctionInvalidationsCronJob);
+      this.schedulerRegistry.addCronJob('handleNodeAuctionInvalidations', handleNodeAuctionInvalidationsCronJob);
       handleNodeAuctionInvalidationsCronJob.start();
     }
 
     if (this.apiConfigService.isUpdateCollectionExtraDetailsEnabled()) {
       const handleUpdateCollectionExtraDetailsCronJob = new CronJob(CronExpression.EVERY_10_MINUTES, async () => await this.handleUpdateCollectionExtraDetails());
-      this.schedulerRegistry.addCronJob(this.handleUpdateCollectionExtraDetails.name, handleUpdateCollectionExtraDetailsCronJob);
+      this.schedulerRegistry.addCronJob('handleUpdateCollectionExtraDetails', handleUpdateCollectionExtraDetailsCronJob);
       handleUpdateCollectionExtraDetailsCronJob.start();
+    }
+
+    if (this.apiConfigService.isTransactionPoolCacheWarmerEnabled()) {
+      const handleTransactionPoolCacheInvalidation = new CronJob(this.apiConfigService.getTransactionPoolCacheWarmerCronExpression(), async () => await this.handleTxPoolInvalidations());
+      this.schedulerRegistry.addCronJob('handleTxPoolInvalidations', handleTransactionPoolCacheInvalidation);
+      handleTransactionPoolCacheInvalidation.start();
     }
   }
 
@@ -126,6 +127,13 @@ export class CacheWarmerService {
     await this.invalidateKey(CacheInfo.Nodes.key, nodes, CacheInfo.Nodes.ttl);
   }
 
+  @Lock({ name: 'Transaction pool invalidation', verbose: true })
+  async handleTxPoolInvalidations() {
+    const pool = await this.poolService.getTxPoolRaw();
+
+    await this.invalidateKey(CacheInfo.TransactionPool.key, pool, this.apiConfigService.getTransactionPoolCacheWarmerTtlInSeconds());
+  }
+
   @Cron(CronExpression.EVERY_MINUTE)
   @Lock({ name: 'All Tokens invalidations', verbose: true })
   async handleEsdtTokenInvalidations() {
@@ -147,17 +155,6 @@ export class CacheWarmerService {
 
     const providersWithStakeInformation = await this.providerService.getProvidersWithStakeInformationRaw();
     await this.invalidateKey(CacheInfo.ProvidersWithStakeInformation.key, providersWithStakeInformation, CacheInfo.ProvidersWithStakeInformation.ttl);
-  }
-
-  @Lock({ name: 'Keys against database / github invalidations', verbose: true })
-  async handleKeysAgainstDatabaseAndGithubInvalidations() {
-    await this.keybaseService.confirmKeybasesAgainstGithub();
-    await this.keybaseService.confirmIdentities();
-    await this.keybaseService.confirmIdentityProfilesAgainstKeybaseIo();
-
-    await this.handleNodeInvalidations();
-    await this.handleProviderInvalidations();
-    await this.handleIdentityInvalidations();
   }
 
   @Cron(CronExpression.EVERY_MINUTE)
@@ -218,12 +215,18 @@ export class CacheWarmerService {
     await this.invalidateKey('validatorstatistics', JSON.stringify(result.data), Constants.oneMinute() * 2);
   }
 
-  @Cron(CronExpression.EVERY_MINUTE)
   @Lock({ name: 'Token / account assets invalidations', verbose: true })
   async handleTokenAssetsInvalidations() {
     await this.assetsService.checkout();
     const assets = this.assetsService.getAllTokenAssetsRaw();
     await this.invalidateKey(CacheInfo.TokenAssets.key, assets, CacheInfo.TokenAssets.ttl);
+
+    await this.keybaseService.confirmIdentities();
+    await this.keybaseService.confirmIdentityProfiles();
+
+    await this.handleNodeInvalidations();
+    await this.handleProviderInvalidations();
+    await this.handleIdentityInvalidations();
 
     const providers = await this.providerService.getAllProviders();
     const identities = await this.identitiesService.getAllIdentities();
@@ -278,6 +281,12 @@ export class CacheWarmerService {
     await Promise.all(settings.map(async (setting) => {
       await this.invalidateKey(CacheInfo.Setting(setting.name).key, setting.value, CacheInfo.Setting(setting.name).ttl);
     }));
+  }
+
+  @Cron(CronExpression.EVERY_10_MINUTES)
+  async handleVerifiedAccountsInvalidation() {
+    const verifiedAccounts = await this.accountService.getVerifiedAccounts();
+    await this.invalidateKey(CacheInfo.VerifiedAccounts.key, verifiedAccounts, CacheInfo.VerifiedAccounts.ttl);
   }
 
   @Lock({ name: 'Elastic updater: Update collection isVerified, nftCount, holderCount', verbose: true })
