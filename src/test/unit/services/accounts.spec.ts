@@ -866,6 +866,7 @@ describe('Account Service', () => {
         iconSvg: "https://raw.githubusercontent.com/multiversx/mx-assets/master/accounts/icons/multiversx.svg",
         icon: '',
         proof: '',
+        social: undefined,
       },
     };
 
@@ -882,6 +883,7 @@ describe('Account Service', () => {
         iconSvg: "https://raw.githubusercontent.com/multiversx/mx-assets/master/accounts/icons/multiversx.svg",
         icon: '',
         proof: '',
+        social: undefined,
       },
     };
 
@@ -905,6 +907,7 @@ describe('Account Service', () => {
           iconSvg: "https://raw.githubusercontent.com/multiversx/mx-assets/master/accounts/icons/multiversx.svg",
           icon: '',
           proof: '',
+          social: undefined,
         },
         ownerAssets: ownerAssets['erd1qqqqqqqqqqqqqpgqykt0f03czqj2p9qltpygzu7jwlzkaxqaqpdq07cak6'],
       }),
