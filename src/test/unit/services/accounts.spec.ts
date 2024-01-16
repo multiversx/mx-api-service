@@ -12,6 +12,7 @@ import { IndexerService } from "src/common/indexer/indexer.service";
 import { PluginService } from "src/common/plugins/plugin.service";
 import { ProtocolService } from "src/common/protocol/protocol.service";
 import { AccountService } from "src/endpoints/accounts/account.service";
+import { Account } from "src/endpoints/accounts/entities/account";
 import { AccountDetailed } from "src/endpoints/accounts/entities/account.detailed";
 import { AccountEsdtHistory } from "src/endpoints/accounts/entities/account.esdt.history";
 import { AccountFilter } from "src/endpoints/accounts/entities/account.filter";
@@ -285,6 +286,7 @@ describe('Account Service', () => {
         shard: 0,
         ownerAddress: '',
         assets: undefined,
+        ownerAssets: undefined,
         code: '',
         codeHash: "",
         rootHash: 'w4fUiW+zHBmft9XlGbzVfcfn3rMtWKwi4bF+cjPPZ2k=',
@@ -831,6 +833,127 @@ describe('Account Service', () => {
       }));
 
       expect(result).toEqual(expectedAccounts);
+    });
+  });
+
+  describe('getAccounts', () => {
+    const elasticIndexerMock = [
+      {
+        address: 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqplllst77y4l',
+        developerRewardsNum: 1.2784189545,
+        totalBalanceWithStakeNum: 17420283.932524484,
+        balance: '17420283932524481604580318',
+        balanceNum: 17420283.932524484,
+        developerRewards: '1278418954499998714',
+        currentOwner: 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqplllst77y4l',
+        totalBalanceWithStake: '17420283932524481604580318',
+        shardID: 4294967295,
+        nonce: 1,
+        timestamp: 1703676282,
+      },
+    ];
+
+    const assets: { [key: string]: AccountAssets } = {
+      erd1qqqqqqqqqqqqqpgqykt0f03czqj2p9qltpygzu7jwlzkaxqaqpdq07cak6: {
+        name: "System: Staking Module",
+        description: "Smart contract containing all staked eGLD on the network",
+        tags: [
+          "system",
+          "staking",
+          "module",
+        ],
+        iconPng: "https://raw.githubusercontent.com/multiversx/mx-assets/master/accounts/icons/multiversx.png",
+        iconSvg: "https://raw.githubusercontent.com/multiversx/mx-assets/master/accounts/icons/multiversx.svg",
+        icon: '',
+        proof: '',
+      },
+    };
+
+    const ownerAssets: { [key: string]: AccountAssets } = {
+      erd1qqqqqqqqqqqqqpgqykt0f03czqj2p9qltpygzu7jwlzkaxqaqpdq07cak6: {
+        name: "System: Staking Module",
+        description: "Smart contract containing all staked eGLD on the network",
+        tags: [
+          "system",
+          "staking",
+          "module",
+        ],
+        iconPng: "https://raw.githubusercontent.com/multiversx/mx-assets/master/accounts/icons/multiversx.png",
+        iconSvg: "https://raw.githubusercontent.com/multiversx/mx-assets/master/accounts/icons/multiversx.svg",
+        icon: '',
+        proof: '',
+      },
+    };
+
+    const accountsRawMock = [
+      new Account({
+        address: 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqplllst77y4l',
+        balance: '17420808473771662313204012',
+        nonce: 1,
+        timestamp: 1703677860,
+        shard: 4294967295,
+        ownerAddress: 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqplllst77y4l',
+        assets: {
+          name: "System: Staking Module",
+          description: "Smart contract containing all staked eGLD on the network",
+          tags: [
+            "system",
+            "staking",
+            "module",
+          ],
+          iconPng: "https://raw.githubusercontent.com/multiversx/mx-assets/master/accounts/icons/multiversx.png",
+          iconSvg: "https://raw.githubusercontent.com/multiversx/mx-assets/master/accounts/icons/multiversx.svg",
+          icon: '',
+          proof: '',
+        },
+        ownerAssets: ownerAssets['erd1qqqqqqqqqqqqqpgqykt0f03czqj2p9qltpygzu7jwlzkaxqaqpdq07cak6'],
+      }),
+    ];
+
+    it('should use cache if no filter is applied and merge with account assets', async () => {
+      const filter = new AccountFilter();
+
+      const mockCacheFunction = jest.fn();
+      mockCacheFunction.mockResolvedValue(elasticIndexerMock);
+      cacheService.getOrSet = mockCacheFunction;
+
+      assetsService.getAllAccountAssets = jest.fn().mockResolvedValue(assets);
+
+      const result = await service.getAccounts(new QueryPagination({ size: 1 }), filter);
+
+      expect(mockCacheFunction).toHaveBeenCalled();
+
+      expect(result[0]).toEqual(expect.objectContaining(elasticIndexerMock[0]));
+      expect(result[0].assets).toEqual(assets[result[0].address]);
+    });
+
+    it('should use cache if no filter is applied and merge with account assets', async () => {
+      const filter = new AccountFilter();
+
+      const mockCacheFunction = jest.fn();
+      mockCacheFunction.mockResolvedValue(elasticIndexerMock);
+      cacheService.getOrSet = mockCacheFunction;
+
+      assetsService.getAllAccountAssets = jest.fn().mockResolvedValue(assets);
+
+      const result = await service.getAccounts(new QueryPagination({ size: 1 }), filter);
+
+      expect(mockCacheFunction).toHaveBeenCalled();
+
+      expect(result[0]).toEqual(expect.objectContaining(elasticIndexerMock[0]));
+      expect(result[0].assets).toEqual(assets[result[0].address]);
+    });
+
+    it('should return accounts with owner assets details when withOwnerAssets filter is applied', async () => {
+      const filter = new AccountFilter({ withOwnerAssets: true });
+
+      jest.spyOn(service, 'getAccountsRaw').mockResolvedValue(accountsRawMock);
+
+      const result = await service.getAccounts(new QueryPagination({ size: 1 }), filter);
+
+      expect(service.getAccountsRaw).toHaveBeenCalledWith(new QueryPagination({ size: 1 }), filter);
+      expect(result[0]).toHaveProperty('ownerAssets');
+      expect(result[0].ownerAssets).toEqual(ownerAssets['erd1qqqqqqqqqqqqqpgqykt0f03czqj2p9qltpygzu7jwlzkaxqaqpdq07cak6']);
     });
   });
 });

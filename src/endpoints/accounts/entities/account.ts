@@ -37,6 +37,10 @@ export class Account {
   @ApiProperty({ type: AccountAssets, nullable: true, description: 'Account assets' })
   assets: AccountAssets | undefined = undefined;
 
+  @Field(() => AccountAssets, { description: 'Owner Account Address assets details.', nullable: true })
+  @ApiProperty({ type: AccountAssets, nullable: true, description: 'Account assets' })
+  ownerAssets: AccountAssets | undefined = undefined;
+
   @Field(() => Boolean, { description: 'If the given detailed account is verified.', nullable: true })
   @ApiProperty({ description: 'Specific property flag for smart contract', type: Boolean })
   isVerified?: boolean;

@@ -10,4 +10,5 @@ export class AccountFilter {
   sort?: AccountSort;
   order?: SortOrder;
   isSmartContract?: boolean;
+  withOwnerAssets?: boolean;
 }
