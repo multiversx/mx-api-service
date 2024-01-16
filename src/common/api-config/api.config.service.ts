@@ -11,15 +11,6 @@ export class ApiConfigService {
     return this.configService.get<T>(configKey);
   }
 
-  getApiUrls(): string[] {
-    const apiUrls = this.configService.get<string[]>('urls.api');
-    if (!apiUrls) {
-      throw new Error('No API urls present');
-    }
-
-    return apiUrls;
-  }
-
   getSelfUrl(): string {
     const selfUrl = this.configService.get<string>('urls.self');
     if (!selfUrl) {
@@ -59,8 +50,8 @@ export class ApiConfigService {
     return gatewayUrls[Math.floor(Math.random() * gatewayUrls.length)];
   }
 
-  getLightGatewayUrl(): string | undefined {
-    const gatewayUrls = this.configService.get<string[]>('urls.lightGateway');
+  getSnapshotlessGatewayUrl(): string | undefined {
+    const gatewayUrls = this.configService.get<string[]>('urls.snapshotlessGateway') ?? this.configService.get<string[]>('urls.lightGateway');
     if (!gatewayUrls) {
       return undefined;
     }
@@ -103,31 +94,16 @@ export class ApiConfigService {
     return address;
   }
 
-  getAuctionContractAddress(): string {
-    const address = this.configService.get<string>('contracts.auction');
-    if (!address) {
-      throw new Error('No auction contract present');
-    }
-
-    return address;
+  getAuctionContractAddress(): string | undefined {
+    return this.configService.get<string>('contracts.auction');
   }
 
-  getStakingContractAddress(): string {
-    const address = this.configService.get<string>('contracts.staking');
-    if (!address) {
-      throw new Error('No staking contract present');
-    }
-
-    return address;
+  getStakingContractAddress(): string | undefined {
+    return this.configService.get<string>('contracts.staking');
   }
 
-  getDelegationContractAddress(): string {
-    const address = this.configService.get<string>('contracts.delegation');
-    if (!address) {
-      throw new Error('No delegation contract present');
-    }
-
-    return address;
+  getDelegationContractAddress(): string | undefined {
+    return this.configService.get<string>('contracts.delegation');
   }
 
   getMetabondingContractAddress(): string | undefined {
@@ -222,6 +198,10 @@ export class ApiConfigService {
 
   getUseVmQueryTracingFlag(): boolean {
     return this.configService.get<boolean>('flags.useVmQueryTracing') ?? false;
+  }
+
+  getCollectionPropertiesFromGateway(): boolean {
+    return this.configService.get<boolean>('flags.collectionPropertiesFromGateway') ?? false;
   }
 
   getProvidersUrl(): string {
@@ -682,6 +662,26 @@ export class ApiConfigService {
 
   getGithubToken(): string | undefined {
     return this.configService.get<string>('github.token');
+  }
+
+  isTransactionPoolEnabled(): boolean {
+    return this.configService.get<boolean>('features.transactionPool.enabled') ?? false;
+  }
+
+  isTransactionPoolCacheWarmerEnabled(): boolean {
+    return this.configService.get<boolean>('features.transactionPoolWarmer.enabled') ?? false;
+  }
+
+  getTransactionPoolCacheWarmerCronExpression(): string {
+    const cronExpression = this.configService.get<string>('features.transactionPoolWarmer.cronExpression');
+    if (!cronExpression) {
+      throw new Error('No transaction pool cron expression present');
+    }
+    return cronExpression;
+  }
+
+  getTransactionPoolCacheWarmerTtlInSeconds(): number {
+    return this.configService.get<number>('features.transactionPoolWarmer.ttlInSeconds') ?? 6;
   }
 
   isStakingV4Enabled(): boolean {

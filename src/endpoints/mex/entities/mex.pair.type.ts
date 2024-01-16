@@ -5,7 +5,6 @@ export enum MexPairType {
   community = 'community',
   ecosystem = 'ecosystem',
   experimental = 'experimental',
-  jungle = 'jungle',
   unlisted = 'unlisted',
 }
 
@@ -24,9 +23,6 @@ registerEnumType(MexPairType, {
     },
     experimental: {
       description: 'Experimental Type.',
-    },
-    jungle: {
-      description: 'Jungle Type.',
     },
     unlisted: {
       description: 'Unlisted Type.',

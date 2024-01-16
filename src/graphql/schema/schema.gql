@@ -317,6 +317,9 @@ type AccountKey {
   """Queue size for the given provider account."""
   queueSize: String
 
+  """Remaining UnBond Period for node with status leaving."""
+  remainingUnBondPeriod: Float
+
   """Reward address for the given provider account ."""
   rewardAddress: String!
 
@@ -2013,6 +2016,9 @@ enum MexPairState {
   """Inactive state."""
   inactive
 
+  """Partial state."""
+  partial
+
   """Pause state."""
   paused
 }
@@ -2030,9 +2036,6 @@ enum MexPairType {
 
   """Experimental Type."""
   experimental
-
-  """Jungle Type."""
-  jungle
 
   """Unlisted Type."""
   unlisted
@@ -2732,6 +2735,9 @@ type Node {
   """Rating modifier for the given node."""
   ratingModifier: Float!
 
+  """Remaining UnBond Period for node with status leaving."""
+  remainingUnBondPeriod: Float
+
   """Shard for the given node."""
   shard: Float
 
@@ -3423,6 +3429,9 @@ type TokenAccount {
   """Token account address."""
   address: String!
 
+  """Account assets for the given account."""
+  assets: AccountAssets
+
   """Token attributes if MetaESDT."""
   attributes: String
 
@@ -3446,6 +3455,9 @@ type TokenAssets {
 
   """Locked accounts for the given token assets."""
   lockedAccounts: JSON
+
+  """Name for the given token assets."""
+  name: String!
 
   """PNG URL for the given token assets."""
   pngUrl: String!

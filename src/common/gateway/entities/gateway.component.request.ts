@@ -38,4 +38,6 @@ export enum GatewayComponentRequest {
   trieStatistics = 'trieStatistics',
   transactionPool = 'transactionPool',
   gasConfigs = 'gasConfigs',
+  transactionProcessStatus = 'transactionProcessStatus',
+  forward = 'forward'
 }

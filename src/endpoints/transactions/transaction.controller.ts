@@ -36,6 +36,7 @@ export class TransactionController {
   @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
   @ApiQuery({ name: 'order', description: 'Sort order (asc/desc)', required: false, enum: SortOrder })
+  @ApiQuery({ name: 'fields', description: 'List of fields to filter by', required: false })
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   @ApiQuery({ name: 'condition', description: 'Condition for elastic search queries', required: false, deprecated: true })
@@ -45,6 +46,7 @@ export class TransactionController {
   @ApiQuery({ name: 'withScamInfo', description: 'Returns scam information', required: false, type: Boolean })
   @ApiQuery({ name: 'withUsername', description: 'Integrates username in assets for all addresses present in the transactions', required: false, type: Boolean })
   @ApiQuery({ name: 'withBlockInfo', description: 'Returns sender / receiver block details', required: false, type: Boolean })
+  @ApiQuery({ name: 'isRelayed', description: 'Returns relayed transactions details', required: false, type: Boolean })
   getTransactions(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
@@ -68,6 +70,7 @@ export class TransactionController {
     @Query('withScamInfo', new ParseBoolPipe) withScamInfo?: boolean,
     @Query('withUsername', new ParseBoolPipe) withUsername?: boolean,
     @Query('withBlockInfo', new ParseBoolPipe) withBlockInfo?: boolean,
+    @Query('isRelayed', new ParseBoolPipe) isRelayed?: boolean,
   ) {
     const options = TransactionQueryOptions.applyDefaultOptions(size, { withScResults, withOperations, withLogs, withScamInfo, withUsername, withBlockInfo });
 
@@ -85,6 +88,7 @@ export class TransactionController {
       after,
       condition,
       order,
+      isRelayed,
     }),
       new QueryPagination({ from, size }),
       options,
@@ -108,6 +112,7 @@ export class TransactionController {
   @ApiQuery({ name: 'function', description: 'Filter transactions by function name', required: false })
   @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
+  @ApiQuery({ name: 'isRelayed', description: 'Returns relayed transactions details', required: false, type: Boolean })
   getTransactionCount(
     @Query('sender', ParseAddressAndMetachainPipe) sender?: string,
     @Query('receiver', ParseAddressArrayPipe) receiver?: string[],
@@ -121,6 +126,7 @@ export class TransactionController {
     @Query('condition') condition?: QueryConditionOptions,
     @Query('before', ParseIntPipe) before?: number,
     @Query('after', ParseIntPipe) after?: number,
+    @Query('isRelayed', new ParseBoolPipe) isRelayed?: boolean,
   ): Promise<number> {
     return this.transactionService.getTransactionCount(new TransactionFilter({
       sender,
@@ -135,6 +141,7 @@ export class TransactionController {
       before,
       after,
       condition,
+      isRelayed,
     }));
   }
 
@@ -153,6 +160,7 @@ export class TransactionController {
     @Query('condition') condition?: QueryConditionOptions,
     @Query('before', ParseIntPipe) before?: number,
     @Query('after', ParseIntPipe) after?: number,
+    @Query('isRelayed', new ParseBoolPipe) isRelayed?: boolean,
   ): Promise<number> {
     return this.transactionService.getTransactionCount(new TransactionFilter({
       sender,
@@ -167,6 +175,7 @@ export class TransactionController {
       before,
       after,
       condition,
+      isRelayed,
     }));
   }
 
@@ -180,6 +189,7 @@ export class TransactionController {
     @Query('fields', ParseArrayPipe) fields?: string[],
   ): Promise<TransactionDetailed> {
     const transaction = await this.transactionService.getTransaction(txHash, fields);
+
     if (transaction === null) {
       throw new NotFoundException('Transaction not found');
     }

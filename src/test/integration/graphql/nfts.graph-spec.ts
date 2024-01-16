@@ -227,7 +227,7 @@ describe('Nfts', () => {
       {
         filter: 'before',
         value: '1660114204',
-        count: 1011221,
+        count: 1008974,
       },
       {
         filter: 'after',

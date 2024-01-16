@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { BinaryUtils } from "@multiversx/sdk-nestjs-common";
 import { ApiService } from "@multiversx/sdk-nestjs-http";
-import { ElasticService, ElasticQuery, QueryOperator, QueryType, QueryConditionOptions, ElasticSortOrder, ElasticSortProperty, TermsQuery, RangeGreaterThanOrEqual } from "@multiversx/sdk-nestjs-elastic";
+import { ElasticService, ElasticQuery, QueryOperator, QueryType, QueryConditionOptions, ElasticSortOrder, ElasticSortProperty, TermsQuery, RangeGreaterThanOrEqual, MatchQuery } from "@multiversx/sdk-nestjs-elastic";
 import { IndexerInterface } from "../indexer.interface";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { NftType } from "src/endpoints/nfts/entities/nft.type";
@@ -196,7 +196,11 @@ export class ElasticIndexerService implements IndexerInterface {
   }
 
   async getTransaction(txHash: string): Promise<any> {
-    return await this.elasticService.getItem('transactions', 'txHash', txHash);
+    const transaction = await this.elasticService.getItem('transactions', 'txHash', txHash);
+
+    this.processTransaction(transaction);
+
+    return transaction;
   }
 
   async getScDeploy(address: string): Promise<any> {
@@ -204,7 +208,11 @@ export class ElasticIndexerService implements IndexerInterface {
   }
 
   async getScResult(scHash: string): Promise<any> {
-    return await this.elasticService.getItem('scresults', 'hash', scHash);
+    const result = await this.elasticService.getItem('scresults', 'hash', scHash);
+
+    this.processTransaction(result);
+
+    return result;
   }
 
   async getBlock(hash: string): Promise<Block> {
@@ -230,6 +238,11 @@ export class ElasticIndexerService implements IndexerInterface {
       .withSort([timestamp, nonce]);
 
     const elasticOperations = await this.elasticService.getList('operations', 'txHash', elasticQuery);
+
+    for (const operation of elasticOperations) {
+      this.processTransaction(operation);
+    }
+
     return elasticOperations;
   }
 
@@ -334,7 +347,13 @@ export class ElasticIndexerService implements IndexerInterface {
       query = query.withShouldCondition(filter.originalTxHashes.map(originalTxHash => QueryType.Match('originalTxHash', originalTxHash)));
     }
 
-    return await this.elasticService.getList('scresults', 'hash', query);
+    const results = await this.elasticService.getList('scresults', 'hash', query);
+
+    for (const result of results) {
+      this.processTransaction(result);
+    }
+
+    return results;
   }
 
   async getMiniBlocks(pagination: QueryPagination, filter: MiniBlockFilter): Promise<any[]> {
@@ -436,7 +455,19 @@ export class ElasticIndexerService implements IndexerInterface {
       .withPagination({ from: pagination.from, size: pagination.size })
       .withSort([timestamp, nonce]);
 
-    return await this.elasticService.getList('transactions', 'txHash', elasticQuery);
+    const transactions = await this.elasticService.getList('transactions', 'txHash', elasticQuery);
+
+    for (const transaction of transactions) {
+      this.processTransaction(transaction);
+    }
+
+    return transactions;
+  }
+
+  private processTransaction(transaction: any) {
+    if (transaction && !transaction.function) {
+      transaction.function = transaction.operation;
+    }
   }
 
   private buildTokenFilter(query: ElasticQuery, filter: TokenFilter): ElasticQuery {
@@ -459,11 +490,11 @@ export class ElasticIndexerService implements IndexerInterface {
     }
 
     if (filter.name) {
-      query = query.withMustCondition(QueryType.Nested('data.name', filter.name));
+      query = query.withMustCondition(QueryType.Nested('data.name', [new MatchQuery('data.name', filter.name)]));
     }
 
     if (filter.search) {
-      query = query.withMustCondition(QueryType.Nested('data.name', filter.search));
+      query = query.withMustCondition(QueryType.Nested('data.name', [new MatchQuery('data.name', filter.name)]));
     }
 
     return query;
@@ -491,7 +522,13 @@ export class ElasticIndexerService implements IndexerInterface {
       .withSort([timestamp])
       .withCondition(QueryConditionOptions.must, [originalTxHashQuery]);
 
-    return await this.elasticService.getList('scresults', 'hash', elasticQuerySc);
+    const results = await this.elasticService.getList('scresults', 'hash', elasticQuerySc);
+
+    for (const result of results) {
+      this.processTransaction(result);
+    }
+
+    return results;
   }
 
   async getScResultsForTransactions(elasticTransactions: any[]): Promise<any[]> {
@@ -767,7 +804,7 @@ export class ElasticIndexerService implements IndexerInterface {
   async getAllFungibleTokens(): Promise<any[]> {
     const query = ElasticQuery.create()
       .withMustMatchCondition('type', TokenType.FungibleESDT)
-      .withFields(["name", "type", "currentOwner", "numDecimals", "properties"])
+      .withFields(["name", "type", "currentOwner", "numDecimals", "properties", "timestamp"])
       .withMustNotExistCondition('identifier');
 
     const allTokens: any[] = [];

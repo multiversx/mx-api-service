@@ -70,9 +70,19 @@ export class MexPairService {
         throw new BadRequestException('Could not fetch MEX settings');
       }
 
+      const pairsLimit = gql`
+      query PairCount {
+        factory {
+          pairCount
+        }
+      }`;
+
+      const pairsLimitResult: any = await this.graphQlService.getData(pairsLimit);
+      const totalPairs = pairsLimitResult?.factory?.pairCount;
+
       const variables = {
         "offset": 0,
-        "pairsLimit": 100,
+        "pairsLimit": totalPairs,
       };
 
       const query = gql`
@@ -89,12 +99,14 @@ export class MexPairService {
               name
               identifier
               decimals
+              previous24hPrice
               __typename
             }
             secondToken {
               name
               identifier
               decimals
+              previous24hPrice
               __typename
             }
             firstTokenPrice
@@ -150,8 +162,6 @@ export class MexPairService {
 
     if (xexchangeTypes.includes(type)) {
       exchange = MexPairExchange.xexchange;
-    } else if (type === MexPairType.jungle) {
-      exchange = MexPairExchange.jungledex;
     } else {
       exchange = MexPairExchange.unknown;
     }
@@ -163,6 +173,8 @@ export class MexPairService {
         symbol: pair.liquidityPoolToken.identifier.split('-')[0],
         name: pair.liquidityPoolToken.name,
         price: Number(pair.liquidityPoolTokenPriceUSD),
+        basePrevious24hPrice: Number(pair.firstToken.previous24hPrice),
+        quotePrevious24hPrice: Number(pair.secondToken.previous24hPrice),
         baseId: pair.firstToken.identifier,
         basePrice: Number(pair.firstTokenPriceUSD),
         baseSymbol: firstTokenSymbol,
@@ -185,6 +197,8 @@ export class MexPairService {
       symbol: pair.liquidityPoolToken.identifier.split('-')[0],
       name: pair.liquidityPoolToken.name,
       price: Number(pair.liquidityPoolTokenPriceUSD),
+      basePrevious24hPrice: Number(pair.secondToken.previous24hPrice),
+      quotePrevious24hPrice: Number(pair.firstToken.previous24hPrice),
       baseId: pair.secondToken.identifier,
       basePrice: Number(pair.secondTokenPriceUSD),
       baseSymbol: secondTokenSymbol,
@@ -209,6 +223,8 @@ export class MexPairService {
         return MexPairState.inactive;
       case 'ActiveNoSwaps':
         return MexPairState.paused;
+      case 'PartialActive':
+        return MexPairState.partial;
       default:
         throw new Error(`Unsupported pair state '${state}'`);
     }
@@ -224,10 +240,6 @@ export class MexPairService {
         return MexPairType.ecosystem;
       case 'Experimental':
         return MexPairType.experimental;
-      case 'Jungle':
-      case 'Jungle-Experimental':
-      case 'Jungle-Community':
-        return MexPairType.jungle;
       case 'Unlisted':
         return MexPairType.unlisted;
       default:

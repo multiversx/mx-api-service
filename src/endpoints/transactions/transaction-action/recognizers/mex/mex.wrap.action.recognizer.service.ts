@@ -43,7 +43,7 @@ export class MexWrapActionRecognizerService {
     const result = new TransactionAction();
     result.category = TransactionActionCategory.mex;
     result.name = MexFunction.wrapEgld;
-    result.description = `Wrap ${valueDenominated} eGLD`;
+    result.description = `Wrap ${valueDenominated} EGLD`;
     result.arguments = {
       token: {
         type: EsdtType.FungibleESDT,

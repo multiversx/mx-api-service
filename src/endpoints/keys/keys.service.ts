@@ -14,9 +14,14 @@ export class KeysService {
   ) { }
 
   async getKeyUnbondPeriod(key: string): Promise<KeyUnbondPeriod | undefined> {
+    const stakingContractAddress = this.apiConfigService.getStakingContractAddress();
+    if (!stakingContractAddress) {
+      return undefined;
+    }
+
     try {
       const encoded = await this.vmQueryService.vmQuery(
-        this.apiConfigService.getStakingContractAddress(),
+        stakingContractAddress,
         'getRemainingUnBondPeriod',
         undefined,
         [key]

@@ -13,6 +13,8 @@ import { UsernameModule } from "../usernames/username.module";
 import { VmQueryModule } from "../vm.query/vm.query.module";
 import { WaitingListModule } from "../waiting-list/waiting.list.module";
 import { AccountService } from "./account.service";
+import { ProviderModule } from "../providers/provider.module";
+import { KeysModule } from "../keys/keys.module";
 
 @Module({
   imports: [
@@ -28,7 +30,9 @@ import { AccountService } from "./account.service";
     forwardRef(() => TransferModule),
     forwardRef(() => TokenModule),
     forwardRef(() => AssetsModule),
+    forwardRef(() => ProviderModule),
     UsernameModule,
+    forwardRef(() => KeysModule),
   ],
   providers: [
     AccountService,

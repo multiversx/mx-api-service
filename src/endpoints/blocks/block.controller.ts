@@ -22,6 +22,7 @@ export class BlockController {
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   @ApiQuery({ name: 'nonce', description: 'Filter by nonce', required: false })
+  @ApiQuery({ name: 'hashes', description: 'Search by blocks hashes, comma-separated', required: false })
   @ApiQuery({ name: 'withProposerIdentity', description: 'Provide identity information for proposer node', required: false })
   getBlocks(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,

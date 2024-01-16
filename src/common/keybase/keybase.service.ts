@@ -66,14 +66,23 @@ export class KeybaseService {
     }
 
     for (const key of keys) {
-      // key is a staking provider address
-      if (AddressUtils.isAddressValid(key) && providerAddresses.includes(key)) {
-        await this.cachingService.set(CacheInfo.ConfirmedProvider(key).key, identity, CacheInfo.ConfirmedProvider(key).ttl);
+      if (AddressUtils.isAddressValid(key)) {
+        const providerMetadata = await this.providerService.getProviderMetadata(key);
+        if (providerMetadata && providerMetadata.identity && providerMetadata.identity === identity) {
+          await this.cachingService.set(CacheInfo.ConfirmedProvider(key).key, identity, CacheInfo.ConfirmedProvider(key).ttl);
+        }
 
         // if the identity is confirmed from the smart contract, we consider all BLS keys within valid
-        const blses = await this.nodeService.getOwnerBlses(key);
-        for (const bls of blses) {
-          confirmations[bls] = identity;
+        try {
+          const blses = await this.nodeService.getOwnerBlses(key);
+          this.logger.log(`Confirmed identity '${identity}' for address '${key}' with ${blses.length} BLS keys`);
+
+          for (const bls of blses) {
+            confirmations[bls] = identity;
+          }
+        } catch (error) {
+          this.logger.error(`Failed to get BLS keys for address ${key}`);
+          this.logger.error(error);
         }
       }
 

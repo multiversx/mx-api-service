@@ -19,6 +19,7 @@ import { AddressUtils, OriginLogger } from "@multiversx/sdk-nestjs-common";
 import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { NodeSort } from "./entities/node.sort";
 import { ProtocolService } from "src/common/protocol/protocol.service";
+import { KeysService } from "../keys/keys.service";
 
 @Injectable()
 export class NodeService {
@@ -34,6 +35,7 @@ export class NodeService {
     @Inject(forwardRef(() => BlockService))
     private readonly blockService: BlockService,
     private readonly protocolService: ProtocolService,
+    private readonly keysService: KeysService
   ) { }
 
   private getIssues(node: Node, version: string | undefined): string[] {
@@ -171,6 +173,10 @@ export class NodeService {
         }
       }
 
+      if (query.keys !== undefined && !query.keys.includes(node.bls)) {
+        return false;
+      }
+
       return true;
     });
 
@@ -220,6 +226,7 @@ export class NodeService {
     );
   }
 
+  // @ts-ignore
   private processQueuedNodes(nodes: Node[], queue: Queue[]) {
     for (const queueItem of queue) {
       const node = nodes.find(node => node.bls === queueItem.bls);
@@ -273,6 +280,15 @@ export class NodeService {
     }
   }
 
+  private async applyNodeUnbondingPeriods(nodes: Node[]): Promise<void> {
+    const leavingNodes = nodes.filter(node => node.status === NodeStatus.leaving || node.status === NodeStatus.inactive);
+
+    await Promise.all(leavingNodes.map(async node => {
+      const keyUnbondPeriod = await this.keysService.getKeyUnbondPeriod(node.bls);
+      node.remainingUnBondPeriod = keyUnbondPeriod?.remainingUnBondPeriod;
+    }));
+  }
+
   private async applyNodeStakeInfo(nodes: Node[]) {
     let addresses = nodes
       .filter(({ type }) => type === NodeType.validator)
@@ -323,6 +339,8 @@ export class NodeService {
       const auctions = await this.gatewayService.getValidatorAuctions();
       this.processAuctions(nodes, auctions);
     }
+
+    await this.applyNodeUnbondingPeriods(nodes);
 
     return nodes;
   }
@@ -382,10 +400,20 @@ export class NodeService {
   }
 
   async getBlsOwner(bls: string): Promise<string | undefined> {
+    const auctionContractAddress = this.apiConfigService.getAuctionContractAddress();
+    if (!auctionContractAddress) {
+      return undefined;
+    }
+
+    const stakingContractAddress = this.apiConfigService.getStakingContractAddress();
+    if (!stakingContractAddress) {
+      return undefined;
+    }
+
     const result = await this.vmQueryService.vmQuery(
-      this.apiConfigService.getStakingContractAddress(),
+      stakingContractAddress,
       'getOwner',
-      this.apiConfigService.getAuctionContractAddress(),
+      auctionContractAddress,
       [bls],
     );
 
@@ -399,6 +427,11 @@ export class NodeService {
   }
 
   async getOwnerBlses(owner: string): Promise<string[]> {
+    const auctionContractAddress = this.apiConfigService.getAuctionContractAddress();
+    if (!auctionContractAddress) {
+      return [];
+    }
+
     let getBlsKeysStatusListEncoded: string[] | undefined = undefined;
 
     try {
@@ -432,10 +465,20 @@ export class NodeService {
   }
 
   async getQueue(): Promise<Queue[]> {
+    const auctionContractAddress = this.apiConfigService.getAuctionContractAddress();
+    if (!auctionContractAddress) {
+      return [];
+    }
+
+    const stakingContractAddress = this.apiConfigService.getStakingContractAddress();
+    if (!stakingContractAddress) {
+      return [];
+    }
+
     const queueEncoded = await this.vmQueryService.vmQuery(
-      this.apiConfigService.getStakingContractAddress(),
+      stakingContractAddress,
       'getQueueRegisterNonceAndRewardAddress',
-      this.apiConfigService.getAuctionContractAddress(),
+      auctionContractAddress,
     );
 
     if (!queueEncoded) {
@@ -591,8 +634,9 @@ export class NodeService {
         node.online = false;
       }
 
-      if (this.apiConfigService.isNodeSyncProgressEnabled() && numTrieNodesReceived > 0) {
-        node.syncProgress = numTrieNodesReceived / nodesPerShardDict[shard];
+      const nodesPerShard = nodesPerShardDict[shard];
+      if (this.apiConfigService.isNodeSyncProgressEnabled() && numTrieNodesReceived > 0 && nodesPerShard > 0) {
+        node.syncProgress = numTrieNodesReceived / nodesPerShard;
 
         if (node.syncProgress > 1) {
           node.syncProgress = 1;

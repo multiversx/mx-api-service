@@ -8,16 +8,13 @@ import { TransactionOperationType } from "src/endpoints/transactions/entities/tr
 import { TransactionDetailed } from "src/endpoints/transactions/entities/transaction.detailed";
 import { SmartContractResult } from "src/endpoints/sc-results/entities/smart.contract.result";
 import { TokenTransferService } from "src/endpoints/tokens/token.transfer.service";
-import { EsdtService } from "src/endpoints/esdt/esdt.service";
 import transactionsWithLogs from "src/test/data/transactions/transactions.with.logs";
 
 describe('Token Transfer Service', () => {
   let tokenTransferService: TokenTransferService;
-  let esdtService: EsdtService;
 
   const txHash: string = '0a89f1b739e0d522d80159bfd3ba8565d04b175c704559898d0fb024a64aa48d';
   const tokenIdentifier: string = 'RIDE-7d18e9';
-  const invalidTokenIdentifier: string = 'LKFARM-9d1ea8-4d2842';
   const sender: string = 'erd1hz65lr7ry7sa3p8jjeplwzujm2d7ktj7s6glk9hk8f4zj8znftgqaey5f5';
   let transaction: TransactionDetailed;
 
@@ -27,7 +24,6 @@ describe('Token Transfer Service', () => {
     }).compile();
 
     tokenTransferService = moduleRef.get<TokenTransferService>(TokenTransferService);
-    esdtService = moduleRef.get<EsdtService>(EsdtService);
 
     transaction = new TransactionDetailed();
     transaction.txHash = txHash;
@@ -174,12 +170,6 @@ describe('Token Transfer Service', () => {
         expect(properties).toHaveProperty('svgUrl');
       });
 
-      //Skip until ES issues are solved
-      it.skip('should return null if token identifier is not valid', async () => {
-        const properties = await tokenTransferService.getTokenTransferProperties(invalidTokenIdentifier);
-        expect(properties).toBeNull();
-      });
-
       it('token transfer should have "TokenTransferProperties"', async () => {
         const properties = await tokenTransferService.getTokenTransferProperties(tokenIdentifier);
         if (!properties) {
@@ -204,15 +194,6 @@ describe('Token Transfer Service', () => {
         expect(properties.type).toBe(tokenDetails.type);
         expect(properties.token).toBe(tokenDetails.identifier);
         expect(properties.decimals).toBe(tokenDetails.decimals);
-      });
-
-      //Skip until ES issues are solved
-      it.skip('should return null for invalidIdentifier and with null properties', async () => {
-        const transferProperties = await tokenTransferService.getTokenTransferPropertiesRaw(invalidTokenIdentifier);
-        const esdtProperties = await esdtService.getEsdtTokenProperties(invalidTokenIdentifier);
-
-        expect(esdtProperties).toBeUndefined();
-        expect(transferProperties).toBeNull();
       });
     });
   });

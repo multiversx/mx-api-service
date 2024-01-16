@@ -153,7 +153,7 @@ export class TokenTransferService {
 
       for (const operation of operations) {
         if (elasticNftsDict[operation.identifier]) {
-          operation.name = elasticNftsDict[operation.identifier].data?.name;
+          operation.name = elasticNftsDict[operation.identifier].data?.name ?? operation.name;
         }
       }
     }
@@ -180,7 +180,7 @@ export class TokenTransferService {
       operation.data = BinaryUtils.base64Decode(event.data);
     }
 
-    if (event.topics.length > 1 && event.topics[1]) {
+    if (event.topics && event.topics.length > 1 && event.topics[1]) {
       operation.message = BinaryUtils.base64Decode(event.topics[1]);
     }
 
@@ -248,9 +248,21 @@ export class TokenTransferService {
 
   private getTransactionTransferValueOperation(txHash: string, log: TransactionLog, event: TransactionLogEvent, action: TransactionOperationAction): TransactionOperation | undefined {
     try {
-      const sender = BinaryUtils.base64ToAddress(event.topics[0]);
-      const receiver = BinaryUtils.base64ToAddress(event.topics[1]);
-      const value = BinaryUtils.base64ToBigInt(event.topics[2]).toString();
+      let sender: string;
+      let receiver: string;
+      let value: string;
+
+      if (event.topics.length === 2) {
+        sender = event.address;
+        receiver = BinaryUtils.base64ToAddress(event.topics[1]);
+        value = BinaryUtils.base64ToBigInt(event.topics[0]).toString();
+      } else if (event.topics.length === 3) {
+        sender = BinaryUtils.base64ToAddress(event.topics[0]);
+        receiver = BinaryUtils.base64ToAddress(event.topics[1]);
+        value = BinaryUtils.base64ToBigInt(event.topics[2]).toString();
+      } else {
+        throw new Error(`Unrecognized topic count when interpreting transferValue event`);
+      }
 
       const operation = new TransactionOperation();
       operation.id = log.id ?? '';

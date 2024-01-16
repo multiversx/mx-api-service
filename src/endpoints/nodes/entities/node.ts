@@ -133,4 +133,8 @@ export class Node {
   @Field(() => Number, { description: "Sync progress in case the node is currently in sync mode. If specified, the value can be between 0 and 1.", nullable: true })
   @ApiProperty({ type: Number, nullable: true })
   syncProgress: number | undefined = undefined;
+
+  @Field(() => Number, { description: "Remaining UnBond Period for node with status leaving.", nullable: true })
+  @ApiProperty({ type: Number, example: 10 })
+  remainingUnBondPeriod: number | undefined = undefined;
 }

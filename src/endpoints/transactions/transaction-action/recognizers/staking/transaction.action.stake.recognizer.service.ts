@@ -84,7 +84,7 @@ export class StakeActionRecognizerService implements TransactionActionRecognizer
     const result = new TransactionAction();
     result.category = TransactionActionCategory.stake;
     result.name = StakeFunction.delegate;
-    result.description = `Delegate ${valueDenominated} eGLD to staking provider ${providerDetails.providerName}`;
+    result.description = `Delegate ${valueDenominated} EGLD to staking provider ${providerDetails.providerName}`;
     result.arguments = {
       value: value.toString(),
       ...providerDetails,
@@ -100,7 +100,7 @@ export class StakeActionRecognizerService implements TransactionActionRecognizer
     const result = new TransactionAction();
     result.category = TransactionActionCategory.stake;
     result.name = StakeFunction.unDelegate;
-    result.description = `Undelegate ${valueDenominated} eGLD from staking provider ${providerDetails.providerName}`;
+    result.description = `Undelegate ${valueDenominated} EGLD from staking provider ${providerDetails.providerName}`;
     result.arguments = {
       value: value.toString(),
       ...providerDetails,

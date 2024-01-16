@@ -100,12 +100,15 @@ export class TokenController {
 
   @Get('/tokens/:identifier')
   @ApiOperation({ summary: 'Token', description: 'Returns token details based on a specific token identifier' })
+  @ApiQuery({ name: 'denominated', description: 'Return results denominated', required: false })
   @ApiOkResponse({ type: TokenDetailed })
   @ApiNotFoundResponse({ description: 'Token not found' })
   async getToken(
-    @Param('identifier', ParseTokenPipe) identifier: string
+    @Param('identifier', ParseTokenPipe) identifier: string,
+    @Query('denominated', new ParseBoolPipe) denominated?: boolean,
   ): Promise<TokenDetailed> {
-    const token = await this.tokenService.getToken(identifier);
+    const supplyOptions = { denominated };
+    const token = await this.tokenService.getToken(identifier, supplyOptions);
     if (token === undefined) {
       throw new NotFoundException('Token not found');
     }
@@ -127,7 +130,7 @@ export class TokenController {
       throw new HttpException('Token not found', HttpStatus.NOT_FOUND);
     }
 
-    const getSupplyResult = await this.tokenService.getTokenSupply(identifier, denominated);
+    const getSupplyResult = await this.tokenService.getTokenSupply(identifier, { denominated });
     if (!getSupplyResult) {
       throw new NotFoundException('Token not found');
     }
@@ -364,7 +367,7 @@ export class TokenController {
     @Param('identifier', ParseTokenPipe) identifier: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
-    @Query('sender', ParseAddressPipe) sender?: string,
+    @Query('sender', ParseAddressArrayPipe) sender?: string[],
     @Query('receiver', ParseAddressArrayPipe) receiver?: string[],
     @Query('senderShard', ParseIntPipe) senderShard?: number,
     @Query('receiverShard', ParseIntPipe) receiverShard?: number,
@@ -390,9 +393,8 @@ export class TokenController {
     }
 
     const options = TransactionQueryOptions.applyDefaultOptions(size, { withScamInfo, withUsername, withBlockInfo });
-
     return await this.transferService.getTransfers(new TransactionFilter({
-      sender,
+      senders: sender,
       receivers: receiver,
       token: identifier,
       functions,
@@ -426,7 +428,7 @@ export class TokenController {
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
   async getTokenTransfersCount(
     @Param('identifier', ParseTokenPipe) identifier: string,
-    @Query('sender', ParseAddressPipe) sender?: string,
+    @Query('sender', ParseAddressArrayPipe) sender?: string[],
     @Query('receiver', ParseAddressArrayPipe) receiver?: string[],
     @Query('senderShard', ParseIntPipe) senderShard?: number,
     @Query('receiverShard', ParseIntPipe) receiverShard?: number,
@@ -447,7 +449,7 @@ export class TokenController {
     }
 
     return await this.transferService.getTransfersCount(new TransactionFilter({
-      sender,
+      senders: sender,
       receivers: receiver,
       token: identifier,
       functions,
@@ -465,7 +467,7 @@ export class TokenController {
   @ApiExcludeEndpoint()
   async getAccountTransfersCountAlternative(
     @Param('identifier', ParseTokenPipe) identifier: string,
-    @Query('sender', ParseAddressPipe) sender?: string,
+    @Query('sender', ParseAddressArrayPipe) sender?: string[],
     @Query('receiver', ParseAddressArrayPipe) receiver?: string[],
     @Query('senderShard', ParseIntPipe) senderShard?: number,
     @Query('receiverShard', ParseIntPipe) receiverShard?: number,
@@ -486,7 +488,7 @@ export class TokenController {
     }
 
     return await this.transferService.getTransfersCount(new TransactionFilter({
-      sender,
+      senders: sender,
       receivers: receiver,
       token: identifier,
       functions,

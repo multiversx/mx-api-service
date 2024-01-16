@@ -68,4 +68,7 @@ export class TokenProperties {
 
   @ApiProperty()
   NFTCreateStopped: boolean = false;
+
+  @ApiProperty()
+  timestamp: number = 0;
 }

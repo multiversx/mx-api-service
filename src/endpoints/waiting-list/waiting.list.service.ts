@@ -46,8 +46,13 @@ export class WaitingListService {
   }
 
   private async getFullWaitingListRaw(): Promise<WaitingList[]> {
+    const delegationContractAddress = this.apiConfigService.getDelegationContractAddress();
+    if (!delegationContractAddress) {
+      return [];
+    }
+
     const fullWaitingListEncoded = await this.vmQueryService.vmQuery(
-      this.apiConfigService.getDelegationContractAddress(),
+      delegationContractAddress,
       'getFullWaitingList',
     );
 

@@ -131,19 +131,24 @@ describe('Data API Service', () => {
       jest.spyOn(ApiConfigService.prototype, 'getDataApiServiceUrl').mockReturnValueOnce('https://data-api.multiversx.com');
       const mockCexTokens = { data: [{ identifier: 'EGLD' }, { identifier: 'USDC' }] };
       const mockXExchangeTokens = { data: [{ identifier: 'MEX-455c57' }, { identifier: 'RIDE-7d18e9' }, { identifier: 'ITHEUM-df6f26' }] };
+      const mockHatomTokens = { data: [{ identifier: 'HEGLD-d61095' }, { identifier: 'HSEGLD-c13a4e' }, { identifier: 'HWBTC-49ca31' }] };
+
       jest.spyOn(apiService, 'get')
         .mockReturnValueOnce(Promise.resolve(mockCexTokens))
-        .mockReturnValueOnce(Promise.resolve(mockXExchangeTokens));
+        .mockReturnValueOnce(Promise.resolve(mockXExchangeTokens))
+        .mockReturnValueOnce(Promise.resolve(mockHatomTokens));
 
       const result = await service.getDataApiTokensRaw();
-
-      expect(apiService.get).toHaveBeenCalledTimes(2);
+      expect(apiService.get).toHaveBeenCalledTimes(3);
       expect(result).toEqual({
         'EGLD': { identifier: 'EGLD', market: 'cex' },
         'USDC': { identifier: 'USDC', market: 'cex' },
         'MEX-455c57': { identifier: 'MEX-455c57', market: 'xexchange' },
         'RIDE-7d18e9': { identifier: 'RIDE-7d18e9', market: 'xexchange' },
         'ITHEUM-df6f26': { identifier: 'ITHEUM-df6f26', market: 'xexchange' },
+        'HEGLD-d61095': { identifier: 'HEGLD-d61095', market: 'hatom' },
+        'HSEGLD-c13a4e': { identifier: 'HSEGLD-c13a4e', market: 'hatom' },
+        'HWBTC-49ca31': { identifier: 'HWBTC-49ca31', market: 'hatom' },
       });
     });
 
@@ -154,7 +159,7 @@ describe('Data API Service', () => {
 
       const result = await service.getDataApiTokensRaw();
 
-      expect(apiService.get).toHaveBeenCalledTimes(2);
+      expect(apiService.get).toHaveBeenCalledTimes(3);
       expect(service['logger'].error).toHaveBeenCalled();
       expect(result).toEqual({});
     });

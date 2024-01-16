@@ -23,6 +23,7 @@ flags:
   useVmQueryTracing: false
   processNfts: true
   indexer-v3: true
+  collectionPropertiesFromGateway: false
 features:
   eventsNotifier:
     enabled: false
@@ -34,6 +35,12 @@ features:
     enabled: false
     hitsThreshold: 100
     ttl: 12
+  transactionPool:
+    enabled: true
+  transactionPoolWarmer:
+    enabled: true
+    cronExpression: '*/5 * * * * *'
+    ttlInSeconds: 60
   updateCollectionExtraDetails:
     enabled: false
   marketplace:
@@ -64,10 +71,6 @@ aws:
   s3Region: ''
 urls:
   self: 'https://testnet-api.multiversx.com'
-  api:
-    - 'https://testnet-api.multiversx.com'
-    - 'https://devnet-api.multiversx.com'
-    - 'https://api.multiversx.com'
   elastic:
     - 'https://testnet-index.multiversx.com'
   gateway:
