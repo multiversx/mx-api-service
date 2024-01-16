@@ -266,7 +266,7 @@ export class TokenTransferService {
 
       return { id: log.id ?? '', action, type, esdtType, collection, identifier, ticker, name, sender: address, receiver, value, decimals, svgUrl, senderAssets: undefined, receiverAssets: undefined };
     } catch (error) {
-      this.logger.error(`Error when parsing NFT transaction log for tx hash '${txHash}' with action '${action}' and topics: ${event.topics}`);
+      this.logger.error(`Error when parsing NFT transaction log for tx hash '${txHash}' with action '${action}' and topics: ${topics}`);
       this.logger.error(error);
       return undefined;
     }
