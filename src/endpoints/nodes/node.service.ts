@@ -436,9 +436,9 @@ export class NodeService {
 
     try {
       getBlsKeysStatusListEncoded = await this.vmQueryService.vmQuery(
-        this.apiConfigService.getAuctionContractAddress(),
+        auctionContractAddress,
         'getBlsKeysStatus',
-        this.apiConfigService.getAuctionContractAddress(),
+        auctionContractAddress,
         [AddressUtils.bech32Decode(owner)],
       );
     } catch (error) {
