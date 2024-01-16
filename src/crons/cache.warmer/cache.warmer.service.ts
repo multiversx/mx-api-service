@@ -64,17 +64,10 @@ export class CacheWarmerService {
     private readonly poolService: PoolService,
   ) {
     this.configCronJob(
-      'handleKeysAgainstDatabaseAndGithubInvalidations',
+      'handleTokenAssetsInvalidations',
       CronExpression.EVERY_MINUTE,
-      CronExpression.EVERY_30_MINUTES,
-      async () => await this.handleKeysAgainstDatabaseAndGithubInvalidations()
-    );
-
-    this.configCronJob(
-      'handleIdentityInvalidations',
-      CronExpression.EVERY_MINUTE,
-      CronExpression.EVERY_5_MINUTES,
-      async () => await this.handleIdentityInvalidations()
+      CronExpression.EVERY_10_MINUTES,
+      async () => await this.handleTokenAssetsInvalidations()
     );
 
     if (this.apiConfigService.isStakingV4Enabled()) {
@@ -164,17 +157,6 @@ export class CacheWarmerService {
     await this.invalidateKey(CacheInfo.ProvidersWithStakeInformation.key, providersWithStakeInformation, CacheInfo.ProvidersWithStakeInformation.ttl);
   }
 
-  @Lock({ name: 'Keys against database / github invalidations', verbose: true })
-  async handleKeysAgainstDatabaseAndGithubInvalidations() {
-    await this.keybaseService.confirmKeybasesAgainstGithub();
-    await this.keybaseService.confirmIdentities();
-    await this.keybaseService.confirmIdentityProfilesAgainstKeybaseIo();
-
-    await this.handleNodeInvalidations();
-    await this.handleProviderInvalidations();
-    await this.handleIdentityInvalidations();
-  }
-
   @Cron(CronExpression.EVERY_MINUTE)
   @Lock({ name: 'Current price invalidations', verbose: true })
   async handleCurrentPriceInvalidations() {
@@ -233,12 +215,18 @@ export class CacheWarmerService {
     await this.invalidateKey('validatorstatistics', JSON.stringify(result.data), Constants.oneMinute() * 2);
   }
 
-  @Cron(CronExpression.EVERY_MINUTE)
   @Lock({ name: 'Token / account assets invalidations', verbose: true })
   async handleTokenAssetsInvalidations() {
     await this.assetsService.checkout();
     const assets = this.assetsService.getAllTokenAssetsRaw();
     await this.invalidateKey(CacheInfo.TokenAssets.key, assets, CacheInfo.TokenAssets.ttl);
+
+    await this.keybaseService.confirmIdentities();
+    await this.keybaseService.confirmIdentityProfiles();
+
+    await this.handleNodeInvalidations();
+    await this.handleProviderInvalidations();
+    await this.handleIdentityInvalidations();
 
     const providers = await this.providerService.getAllProviders();
     const identities = await this.identitiesService.getAllIdentities();
