@@ -2,7 +2,8 @@ import { registerEnumType } from "@nestjs/graphql";
 
 export enum TransactionType {
   Transaction = 'Transaction',
-  SmartContractResult = 'SmartContractResult'
+  SmartContractResult = 'SmartContractResult',
+  Reward = 'Reward'
 }
 
 registerEnumType(TransactionType, {
@@ -15,6 +16,8 @@ registerEnumType(TransactionType, {
     SmartContractResult: {
       description: 'SmartContractResult type.',
     },
-
+    Reward: {
+      description: 'Reward type.',
+    },
   },
 });

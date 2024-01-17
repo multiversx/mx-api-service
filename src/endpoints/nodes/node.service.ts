@@ -15,7 +15,7 @@ import { CacheInfo } from "src/utils/cache.info";
 import { Stake } from "../stake/entities/stake";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
 import { Auction } from "src/common/gateway/entities/auction";
-import { AddressUtils } from "@multiversx/sdk-nestjs-common";
+import { AddressUtils, OriginLogger } from "@multiversx/sdk-nestjs-common";
 import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { NodeSort } from "./entities/node.sort";
 import { ProtocolService } from "src/common/protocol/protocol.service";
@@ -23,6 +23,8 @@ import { KeysService } from "../keys/keys.service";
 
 @Injectable()
 export class NodeService {
+  private readonly logger = new OriginLogger(NodeService.name);
+
   constructor(
     private readonly gatewayService: GatewayService,
     private readonly vmQueryService: VmQueryService,
@@ -254,7 +256,9 @@ export class NodeService {
 
   private async applyNodeIdentities(nodes: Node[]) {
     for (const node of nodes) {
-      node.identity = await this.cacheService.getRemote<string>(CacheInfo.ConfirmedIdentity(node.bls).key);
+      if (node.status !== NodeStatus.inactive) {
+        node.identity = await this.cacheService.getRemote<string>(CacheInfo.ConfirmedIdentity(node.bls).key);
+      }
     }
   }
 
@@ -435,12 +439,20 @@ export class NodeService {
       return [];
     }
 
-    const getBlsKeysStatusListEncoded = await this.vmQueryService.vmQuery(
-      auctionContractAddress,
-      'getBlsKeysStatus',
-      auctionContractAddress,
-      [AddressUtils.bech32Decode(owner)],
-    );
+    let getBlsKeysStatusListEncoded: string[] | undefined = undefined;
+
+    try {
+      getBlsKeysStatusListEncoded = await this.vmQueryService.vmQuery(
+        auctionContractAddress,
+        'getBlsKeysStatus',
+        auctionContractAddress,
+        [AddressUtils.bech32Decode(owner)],
+      );
+    } catch (error) {
+      this.logger.error(`An unhandled error occurred when getting BLSes for owner '${owner}'`);
+      this.logger.error(error);
+      return [];
+    }
 
     if (!getBlsKeysStatusListEncoded) {
       return [];

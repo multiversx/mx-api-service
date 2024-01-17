@@ -1,3 +1,4 @@
+import { AccountAssetsSocial } from "src/common/assets/entities/account.assets.social";
 import { TransactionLog } from "src/endpoints/transactions/entities/transaction.log";
 import { TransactionLogEvent } from "src/endpoints/transactions/entities/transaction.log.event";
 
@@ -16,6 +17,7 @@ const transactionsWithLogs: TransactionLog[] =
         "mex",
         "liquiditypool",
       ],
+      social: new AccountAssetsSocial(),
     },
     events: [] as TransactionLogEvent[],
   },

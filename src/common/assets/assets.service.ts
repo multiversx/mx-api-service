@@ -108,6 +108,14 @@ export class AssetsService {
     return path.join(process.cwd(), 'dist/repos/assets', this.getRelativePath('accounts'));
   }
 
+  getIdentityAssetsPath() {
+    return path.join(process.cwd(), 'dist/repos/assets', this.getRelativePath('identities'));
+  }
+
+  getIdentityInfoJsonPath(identity: string): string {
+    return path.join(this.getIdentityAssetsPath(), identity, 'info.json');
+  }
+
   private getRelativePath(name: string): string {
     const network = this.apiConfigService.getNetwork();
     if (network !== 'mainnet') {
