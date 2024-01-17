@@ -33,7 +33,7 @@ import { ProviderStake } from '../stake/entities/provider.stake';
 import { TokenDetailedWithBalance } from '../tokens/entities/token.detailed.with.balance';
 import { NftCollectionAccount } from '../collections/entities/nft.collection.account';
 import { TokenWithRoles } from '../tokens/entities/token.with.roles';
-import { ParseAddressPipe, ParseTokenPipe, OriginLogger, ParseArrayPipe, ParseBlockHashPipe, ParseCollectionPipe, ParseNftPipe, ParseBoolPipe, ParseEnumArrayPipe, ParseEnumPipe, ParseIntPipe, ParseTokenOrNftPipe, ParseTransactionHashPipe, ParseAddressArrayPipe, ApplyComplexity } from '@multiversx/sdk-nestjs-common';
+import { ParseAddressPipe, ParseTokenPipe, OriginLogger, ParseArrayPipe, ParseBlockHashPipe, ParseCollectionPipe, ParseNftPipe, ParseBoolPipe, ParseEnumArrayPipe, ParseEnumPipe, ParseIntPipe, ParseTokenOrNftPipe, ParseTransactionHashPipe, ParseAddressArrayPipe, ApplyComplexity, ParseNftArrayPipe } from '@multiversx/sdk-nestjs-common';
 import { QueryPagination } from 'src/common/entities/query.pagination';
 import { TransactionQueryOptions } from '../transactions/entities/transactions.query.options';
 import { TokenWithRolesFilter } from '../tokens/entities/token.with.roles.filter';
@@ -52,6 +52,8 @@ import { AccountFilter } from './entities/account.filter';
 import { AccountSort } from './entities/account.sort';
 import { AccountHistoryFilter } from './entities/account.history.filter';
 import { ParseArrayPipeOptions } from '@multiversx/sdk-nestjs-common/lib/pipes/entities/parse.array.options';
+import { NodeStatusRaw } from '../nodes/entities/node.status';
+import { AccountKeyFilter } from './entities/account.key.filter';
 
 @Controller()
 @ApiTags('accounts')
@@ -81,32 +83,42 @@ export class AccountController {
   @ApiQuery({ name: 'ownerAddress', description: 'Search by owner address', required: false })
   @ApiQuery({ name: 'sort', description: 'Sort criteria (balance / timestamp)', required: false, enum: AccountSort })
   @ApiQuery({ name: 'order', description: 'Sort order (asc/desc)', required: false, enum: SortOrder })
+  @ApiQuery({ name: 'isSmartContract', description: 'Return a list of smart contracts', required: false })
+  @ApiQuery({ name: 'withOwnerAssets', description: 'Return a list accounts with owner assets', required: false })
   getAccounts(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number,
     @Query("ownerAddress", ParseAddressPipe) ownerAddress?: string,
     @Query('sort', new ParseEnumPipe(AccountSort)) sort?: AccountSort,
     @Query('order', new ParseEnumPipe(SortOrder)) order?: SortOrder,
+    @Query("isSmartContract", new ParseBoolPipe) isSmartContract?: boolean,
+    @Query("withOwnerAssets", new ParseBoolPipe) withOwnerAssets?: boolean,
+
   ): Promise<Account[]> {
-    return this.accountService.getAccounts({ from, size }, new AccountFilter({ ownerAddress, sort, order }));
+    return this.accountService.getAccounts(
+      new QueryPagination({ from, size }),
+      new AccountFilter({ ownerAddress, sort, order, isSmartContract, withOwnerAssets }));
   }
 
   @Get("/accounts/count")
   @ApiOperation({ summary: 'Total number of accounts', description: 'Returns total number of accounts available on blockchain' })
   @ApiOkResponse({ type: Number })
   @ApiQuery({ name: 'ownerAddress', description: 'Search by owner address', required: false })
+  @ApiQuery({ name: 'isSmartContract', description: 'Return total smart contracts count', required: false })
   async getAccountsCount(
     @Query("ownerAddress", ParseAddressPipe) ownerAddress?: string,
+    @Query("isSmartContract", new ParseBoolPipe) isSmartContract?: boolean,
   ): Promise<number> {
-    return await this.accountService.getAccountsCount(new AccountFilter({ ownerAddress }));
+    return await this.accountService.getAccountsCount(new AccountFilter({ ownerAddress, isSmartContract }));
   }
 
   @Get("/accounts/c")
   @ApiExcludeEndpoint()
   async getAccountsCountAlternative(
     @Query("ownerAddress", ParseAddressPipe) ownerAddress?: string,
+    @Query("isSmartContract", new ParseBoolPipe) isSmartContract?: boolean,
   ): Promise<number> {
-    return await this.accountService.getAccountsCount(new AccountFilter({ ownerAddress }));
+    return await this.accountService.getAccountsCount(new AccountFilter({ ownerAddress, isSmartContract }));
   }
 
   @Get("/accounts/:address")
@@ -493,7 +505,7 @@ export class AccountController {
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
     @Query('search') search?: string,
-    @Query('identifiers', ParseArrayPipe) identifiers?: string[],
+    @Query('identifiers', ParseNftArrayPipe) identifiers?: string[],
     @Query('type') type?: NftType,
     @Query('collection') collection?: string,
     @Query('collections', ParseArrayPipe) collections?: string[],
@@ -537,7 +549,7 @@ export class AccountController {
   @ApiOkResponse({ type: Number })
   async getNftCount(
     @Param('address', ParseAddressPipe) address: string,
-    @Query('identifiers', ParseArrayPipe) identifiers?: string[],
+    @Query('identifiers', ParseNftArrayPipe) identifiers?: string[],
     @Query('search') search?: string,
     @Query('type') type?: NftType,
     @Query('collection') collection?: string,
@@ -557,7 +569,7 @@ export class AccountController {
   async getNftCountAlternative(
     @Param('address', ParseAddressPipe) address: string,
     @Query('search') search?: string,
-    @Query('identifiers', ParseArrayPipe) identifiers?: string[],
+    @Query('identifiers', ParseNftArrayPipe) identifiers?: string[],
     @Query('type') type?: NftType,
     @Query('collection') collection?: string,
     @Query('collections', ParseArrayPipe) collections?: string[],
@@ -616,8 +628,19 @@ export class AccountController {
   @Get("/accounts/:address/keys")
   @ApiOperation({ summary: 'Account nodes', description: 'Returns all active / queued nodes where the account is owner' })
   @ApiOkResponse({ type: [AccountKey] })
-  async getAccountKeys(@Param('address', ParseAddressPipe) address: string): Promise<AccountKey[]> {
-    return await this.accountService.getKeys(address);
+  @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
+  @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
+  @ApiQuery({ name: 'status', description: 'Key status', required: false, enum: NodeStatusRaw })
+  async getAccountKeys(
+    @Param('address', ParseAddressPipe) address: string,
+    @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
+    @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
+    @Query('status', new ParseEnumArrayPipe(NodeStatusRaw)) status?: NodeStatusRaw[],
+  ): Promise<AccountKey[]> {
+    return await this.accountService.getKeys(
+      address,
+      new AccountKeyFilter({ status }),
+      new QueryPagination({ from, size }));
   }
 
   @Get("/accounts/:address/waiting-list")
@@ -643,6 +666,7 @@ export class AccountController {
   @ApiQuery({ name: 'status', description: 'Status of the transaction (success / pending / invalid / fail)', required: false, enum: TransactionStatus })
   @ApiQuery({ name: 'function', description: 'Filter transactions by function name', required: false })
   @ApiQuery({ name: 'order', description: 'Sort order (asc/desc)', required: false, enum: SortOrder })
+  @ApiQuery({ name: 'fields', description: 'List of fields to filter by', required: false })
   @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
   @ApiQuery({ name: 'withScResults', description: 'Return scResults for transactions. When "withScresults" parameter is applied, complexity estimation is 200', required: false })
@@ -653,6 +677,7 @@ export class AccountController {
   @ApiQuery({ name: 'withBlockInfo', description: 'Returns sender / receiver block details', required: false, type: Boolean })
   @ApiQuery({ name: 'computeScamInfo', required: false, type: Boolean })
   @ApiQuery({ name: 'senderOrReceiver', description: 'One address that current address interacted with', required: false })
+  @ApiQuery({ name: 'isRelayed', description: 'Returns isRelayed transactions details', required: false, type: Boolean })
   async getAccountTransactions(
     @Param('address', ParseAddressPipe) address: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
@@ -677,6 +702,7 @@ export class AccountController {
     @Query('withUsername', new ParseBoolPipe) withUsername?: boolean,
     @Query('withBlockInfo', new ParseBoolPipe) withBlockInfo?: boolean,
     @Query('senderOrReceiver', ParseAddressPipe) senderOrReceiver?: string,
+    @Query('isRelayed', new ParseBoolPipe) isRelayed?: boolean,
   ) {
     const options = TransactionQueryOptions.applyDefaultOptions(size, { withScResults, withOperations, withLogs, withScamInfo, withUsername, withBlockInfo });
 
@@ -694,6 +720,7 @@ export class AccountController {
       after,
       order,
       senderOrReceiver,
+      isRelayed,
     }), new QueryPagination({ from, size }), options, address, fields);
   }
 
@@ -711,6 +738,8 @@ export class AccountController {
   @ApiQuery({ name: 'function', description: 'Filter transactions by function name', required: false })
   @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
+  @ApiQuery({ name: 'senderOrReceiver', description: 'One address that current address interacted with', required: false })
+  @ApiQuery({ name: 'isRelayed', description: 'Returns isRelayed transactions details', required: false, type: Boolean })
   async getAccountTransactionsCount(
     @Param('address', ParseAddressPipe) address: string,
     @Query('sender', ParseAddressPipe) sender?: string,
@@ -724,6 +753,8 @@ export class AccountController {
     @Query('function', new ParseArrayPipe(new ParseArrayPipeOptions({ allowEmptyString: true }))) functions?: string[],
     @Query('before', ParseIntPipe) before?: number,
     @Query('after', ParseIntPipe) after?: number,
+    @Query('senderOrReceiver', ParseAddressPipe) senderOrReceiver?: string,
+    @Query('isRelayed', new ParseBoolPipe) isRelayed?: boolean,
   ): Promise<number> {
 
     return await this.transactionService.getTransactionCount(new TransactionFilter({
@@ -738,6 +769,8 @@ export class AccountController {
       status,
       before,
       after,
+      senderOrReceiver,
+      isRelayed,
     }), address);
   }
 
@@ -828,9 +861,10 @@ export class AccountController {
   @ApiQuery({ name: 'function', description: 'Filter transfers by function name', required: false })
   @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
+  @ApiQuery({ name: 'senderOrReceiver', description: 'One address that current address interacted with', required: false })
   async getAccountTransfersCount(
     @Param('address', ParseAddressPipe) address: string,
-    @Query('sender', ParseAddressPipe) sender?: string,
+    @Query('sender', ParseAddressArrayPipe) sender?: string[],
     @Query('receiver', ParseAddressArrayPipe) receiver?: string[],
     @Query('token') token?: string,
     @Query('senderShard', ParseIntPipe) senderShard?: number,
@@ -841,6 +875,7 @@ export class AccountController {
     @Query('function', new ParseArrayPipe(new ParseArrayPipeOptions({ allowEmptyString: true }))) functions?: string[],
     @Query('before', ParseIntPipe) before?: number,
     @Query('after', ParseIntPipe) after?: number,
+    @Query('senderOrReceiver', ParseAddressPipe) senderOrReceiver?: string,
   ): Promise<number> {
     if (!this.apiConfigService.getIsIndexerV3FlagActive()) {
       throw new HttpException('Endpoint not live yet', HttpStatus.NOT_IMPLEMENTED);
@@ -848,7 +883,7 @@ export class AccountController {
 
     return await this.transferService.getTransfersCount(new TransactionFilter({
       address,
-      sender,
+      senders: sender,
       receivers: receiver,
       token,
       functions,
@@ -859,6 +894,7 @@ export class AccountController {
       status,
       before,
       after,
+      senderOrReceiver,
     }));
   }
 
@@ -866,7 +902,7 @@ export class AccountController {
   @ApiExcludeEndpoint()
   async getAccountTransfersCountAlternative(
     @Param('address', ParseAddressPipe) address: string,
-    @Query('sender', ParseAddressPipe) sender?: string,
+    @Query('sender', ParseAddressArrayPipe) sender?: string[],
     @Query('receiver', ParseAddressArrayPipe) receiver?: string[],
     @Query('token') token?: string,
     @Query('senderShard', ParseIntPipe) senderShard?: number,
@@ -877,6 +913,7 @@ export class AccountController {
     @Query('function', new ParseArrayPipe(new ParseArrayPipeOptions({ allowEmptyString: true }))) functions?: string[],
     @Query('before', ParseIntPipe) before?: number,
     @Query('after', ParseIntPipe) after?: number,
+    @Query('senderOrReceiver', ParseAddressPipe) senderOrReceiver?: string,
   ): Promise<number> {
     if (!this.apiConfigService.getIsIndexerV3FlagActive()) {
       throw new HttpException('Endpoint not live yet', HttpStatus.NOT_IMPLEMENTED);
@@ -884,7 +921,7 @@ export class AccountController {
 
     return await this.transferService.getTransfersCount(new TransactionFilter({
       address,
-      sender,
+      senders: sender,
       receivers: receiver,
       token,
       functions,
@@ -895,6 +932,7 @@ export class AccountController {
       status,
       before,
       after,
+      senderOrReceiver,
     }));
   }
 
@@ -933,14 +971,8 @@ export class AccountController {
     @Param('address', ParseAddressPipe) address: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
-  ): Promise<ContractUpgrades[] | null> {
-    const upgrades = this.accountService.getContractUpgrades(new QueryPagination({ from, size }), address);
-
-    if (!upgrades) {
-      throw new NotFoundException();
-    }
-
-    return upgrades;
+  ): Promise<ContractUpgrades[]> {
+    return this.accountService.getContractUpgrades(new QueryPagination({ from, size }), address);
   }
 
   @Get("/accounts/:address/results")

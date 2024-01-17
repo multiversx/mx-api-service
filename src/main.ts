@@ -25,7 +25,7 @@ import { ApiConfigModule } from './common/api-config/api.config.module';
 import { CacheService, CachingInterceptor, GuestCacheInterceptor, GuestCacheService } from '@multiversx/sdk-nestjs-cache';
 import { LoggerInitializer } from '@multiversx/sdk-nestjs-common';
 import { MetricsService, RequestCpuTimeInterceptor, LoggingInterceptor, LogRequestsInterceptor } from '@multiversx/sdk-nestjs-monitoring';
-import { FieldsInterceptor, ExtractInterceptor, CleanupInterceptor, PaginationInterceptor, QueryCheckInterceptor, ComplexityInterceptor, OriginInterceptor } from '@multiversx/sdk-nestjs-http';
+import { FieldsInterceptor, ExtractInterceptor, CleanupInterceptor, PaginationInterceptor, QueryCheckInterceptor, ComplexityInterceptor, OriginInterceptor, ExcludeFieldsInterceptor } from '@multiversx/sdk-nestjs-http';
 import { ErdnestConfigServiceImpl } from './common/api-config/erdnest.config.service.impl';
 import { RabbitMqModule } from './common/rabbitmq/rabbitmq.module';
 import { TransactionLoggingInterceptor } from './interceptors/transaction.logging.interceptor';
@@ -148,7 +148,7 @@ async function bootstrap() {
       },
     },
   );
-  // pubSubApp.useLogger(pubSubApp.get(WINSTON_MODULE_NEST_PROVIDER));
+  pubSubApp.useLogger(pubSubApp.get(WINSTON_MODULE_NEST_PROVIDER));
   pubSubApp.useWebSocketAdapter(new SocketAdapter(pubSubApp));
   // eslint-disable-next-line @typescript-eslint/no-floating-promises
   pubSubApp.listen();
@@ -172,6 +172,8 @@ async function bootstrap() {
   logger.log(`Staking v4 enabled: ${apiConfigService.isStakingV4Enabled()}`);
   logger.log(`Events notifier enabled: ${apiConfigService.isEventsNotifierFeatureActive()}`);
   logger.log(`Guest caching enabled: ${apiConfigService.isGuestCacheFeatureActive()}`);
+  logger.log(`Transaction pool enabled: ${apiConfigService.isTransactionPoolEnabled()}`);
+  logger.log(`Transaction pool cache warmer enabled: ${apiConfigService.isTransactionPoolCacheWarmerEnabled()}`);
 }
 
 async function configurePublicApp(publicApp: NestExpressApplication, apiConfigService: ApiConfigService) {
@@ -236,6 +238,9 @@ async function configurePublicApp(publicApp: NestExpressApplication, apiConfigSe
   }
 
   // @ts-ignore
+  globalInterceptors.push(new ExcludeFieldsInterceptor());
+
+  // @ts-ignore
   globalInterceptors.push(new FieldsInterceptor());
 
   const getUseRequestLoggingFlag = await settingsService.getUseRequestLoggingFlag();
@@ -261,16 +266,11 @@ async function configurePublicApp(publicApp: NestExpressApplication, apiConfigSe
     'utf8',
   );
 
-  let documentBuilder = new DocumentBuilder()
+  const documentBuilder = new DocumentBuilder()
     .setTitle('Multiversx API')
     .setDescription(description)
     .setVersion('1.0.0')
     .setExternalDoc('Find out more about Multiversx API', 'https://docs.multiversx.com/sdk-and-tools/rest-api/rest-api/');
-
-  const apiUrls = apiConfigService.getApiUrls();
-  for (const apiUrl of apiUrls) {
-    documentBuilder = documentBuilder.addServer(apiUrl);
-  }
 
   const config = documentBuilder.build();
   const options = {

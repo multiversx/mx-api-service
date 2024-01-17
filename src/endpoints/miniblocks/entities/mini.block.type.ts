@@ -3,6 +3,7 @@ import { registerEnumType } from "@nestjs/graphql";
 export enum MiniBlockType {
   SmartContractResultBlock = 'SmartContractResultBlock',
   TxBlock = 'TxBlock',
+  InvalidBlock = 'InvalidBlock',
 }
 
 registerEnumType(MiniBlockType, {
@@ -14,6 +15,9 @@ registerEnumType(MiniBlockType, {
     },
     TxBlock: {
       description: 'TxBlock.',
+    },
+    InvalidBlock: {
+      description: 'InvalidBlock.',
     },
   },
 });

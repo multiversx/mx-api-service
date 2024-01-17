@@ -51,6 +51,11 @@ export class CacheInfo {
     ttl: Constants.oneHour(),
   };
 
+  static TransactionPool: CacheInfo = {
+    key: 'txpool',
+    ttl: Constants.oneSecond() * 6,
+  };
+
   static Identities: CacheInfo = {
     key: 'identities',
     ttl: Constants.oneMinute() * 15,
@@ -176,6 +181,11 @@ export class CacheInfo {
     ttl: Constants.oneHour(),
   };
 
+  static VerifiedAccounts: CacheInfo = {
+    key: "verifiedAccounts",
+    ttl: Constants.oneMinute() * 10,
+  };
+
   static TokenTransferProperties(identifier: string): CacheInfo {
     return {
       key: `token:transfer:properties:v2:${identifier}`,
@@ -186,6 +196,13 @@ export class CacheInfo {
   static EsdtProperties(identifier: string): CacheInfo {
     return {
       key: `esdt:${identifier}`,
+      ttl: Constants.oneDay(),
+    };
+  }
+
+  static CollectionProperties(identifier: string): CacheInfo {
+    return {
+      key: `collection:${identifier}`,
       ttl: Constants.oneDay(),
     };
   }

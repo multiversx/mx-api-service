@@ -58,5 +58,30 @@ describe('Dapp Config Service', () => {
         throw new Error('Properties are not defined');
       }
     });
+
+    it("should return devnet-old dapp configuration", () => {
+      jest
+        .spyOn(DappConfigService.prototype, 'getDappConfigurationRaw')
+        .mockImplementation(jest.fn(() => new DappConfig({
+          "id": "devnet-old",
+          "name": "Devnet",
+          "egldLabel": "xEGLD",
+          "decimals": "4",
+          "egldDenomination": "18",
+          "gasPerDataByte": "1500",
+          "apiTimeout": "4000",
+          "walletConnectDeepLink": "https://maiar.page.link/?apn=com.multiversx.maiar.wallet&isi=1519405832&ibi=com.multiversx.maiar.wallet&link=https://maiar.com/",
+          "walletAddress": "https://devnet-old-wallet.multiversx.com",
+          "apiAddress": "https://devnet-old-api.multiversx.com",
+          "explorerAddress": "http://devnet-old-explorer.multiversx.com",
+          "chainId": "D",
+        })));
+
+      const config = dappConfigService.getDappConfiguration();
+
+      if (!config) {
+        throw new Error('Properties are not defined');
+      }
+    });
   });
 });

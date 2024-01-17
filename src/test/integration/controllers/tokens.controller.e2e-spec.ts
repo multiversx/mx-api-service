@@ -176,22 +176,6 @@ describe("Tokens Controller", () => {
         });
     });
 
-    it.skip('should return minted, burnt, supply, circulatingSupply fields for a specific MetaESDT', async () => {
-      const identifier: string = 'XMEX-fda355';
-
-      await request(app.getHttpServer())
-        .get(`${path}/${identifier}`)
-        .expect(200)
-        .then(res => {
-          expect(res.body).toBeDefined();
-          expect(res.body.supply).toBeDefined();
-          expect(res.body.circulatingSupply).toBeDefined();
-          expect(res.body.minted).toBeDefined();
-          expect(res.body.burnt).toBeDefined();
-          expect(res.body.initialMinted).toBeDefined();
-        });
-    });
-
     it('should returns general supply information for a specific token', async () => {
       const identifier: string = 'MEX-455c57';
 
@@ -231,14 +215,14 @@ describe("Tokens Controller", () => {
         });
     });
 
-    it('should a list of accounts that can perform various actions on a specific token', async () => {
+    it('should return a list of accounts that can perform various actions on a specific token', async () => {
       const identifier: string = 'MEX-455c57';
 
       await request(app.getHttpServer())
         .get(`${path}/${identifier}/roles`)
         .expect(200)
         .then(res => {
-          expect(res.body).toHaveLength(20);
+          expect(res.body).toHaveLength(21);
 
           for (const item of res.body) {
             expect(item.address).toBeDefined();

@@ -18,9 +18,19 @@ import { ApiConfigService } from "../api-config/api.config.service";
 import { BinaryUtils } from "@multiversx/sdk-nestjs-common";
 import { ApiService, ApiSettings } from "@multiversx/sdk-nestjs-http";
 import { GuardianResult } from "./entities/guardian.result";
+import { TransactionProcessStatus } from "./entities/transaction.process.status";
+import { TxPoolGatewayResponse } from "./entities/tx.pool.gateway.response";
 
 @Injectable()
 export class GatewayService {
+  private readonly snapshotlessRequestsSet: Set<String> = new Set([
+    GatewayComponentRequest.addressBalance,
+    GatewayComponentRequest.addressDetails,
+    GatewayComponentRequest.addressEsdt,
+    GatewayComponentRequest.addressNftByNonce,
+    GatewayComponentRequest.vmQuery,
+    GatewayComponentRequest.transactionPool,
+  ]);
   constructor(
     private readonly apiConfigService: ApiConfigService,
     @Inject(forwardRef(() => ApiService))
@@ -56,7 +66,9 @@ export class GatewayService {
   async getTrieStatistics(shardId: number): Promise<TrieStatistics> {
     const result = await this.get(`network/trie-statistics/${shardId}`, GatewayComponentRequest.trieStatistics);
 
-    return result;
+    return new TrieStatistics({
+      accounts_snapshot_num_nodes: result['accounts-snapshot-num-nodes'],
+    });
   }
 
   async getAddressDetails(address: string): Promise<Account> {
@@ -81,6 +93,20 @@ export class GatewayService {
 
   async getGuardianData(address: string): Promise<GuardianResult> {
     const result = await this.get(`address/${address}/guardian-data`, GatewayComponentRequest.guardianData);
+    return result;
+  }
+
+  async getTransactionProcessStatus(txHash: string): Promise<TransactionProcessStatus> {
+    // eslint-disable-next-line require-await
+    const result = await this.get(`transaction/${txHash}/process-status`, GatewayComponentRequest.transactionProcessStatus, async (error) => {
+      const errorMessage = error?.response?.data?.error;
+      if (errorMessage && errorMessage.includes('transaction not found')) {
+        return true;
+      }
+
+      return false;
+    });
+
     return result;
   }
 
@@ -116,6 +142,10 @@ export class GatewayService {
     return new NftData(result.tokenData);
   }
 
+  async getTransactionPool(): Promise<TxPoolGatewayResponse> {
+    return await this.get(`transaction/pool?fields=nonce,sender,receiver,gaslimit,gasprice,receiverusername,data,value`, GatewayComponentRequest.transactionPool);
+  }
+
   async getTransaction(txHash: string): Promise<Transaction | undefined> {
     // eslint-disable-next-line require-await
     const result = await this.get(`transaction/${txHash}?withResults=true`, GatewayComponentRequest.transactionDetails, async (error) => {
@@ -141,19 +171,9 @@ export class GatewayService {
   }
 
   private getUrl(component: GatewayComponentRequest): string {
-    const lightGatewayComponents = [
-      GatewayComponentRequest.addressBalance,
-      GatewayComponentRequest.addressDetails,
-      GatewayComponentRequest.addressEsdt,
-      GatewayComponentRequest.addressNftByNonce,
-      GatewayComponentRequest.vmQuery,
-    ];
-
-    if (lightGatewayComponents.includes(component)) {
-      return this.apiConfigService.getLightGatewayUrl() ?? this.apiConfigService.getGatewayUrl();
-    }
-
-    return this.apiConfigService.getGatewayUrl();
+    return this.snapshotlessRequestsSet.has(component)
+      ? this.apiConfigService.getSnapshotlessGatewayUrl() ?? this.apiConfigService.getGatewayUrl()
+      : this.apiConfigService.getGatewayUrl();
   }
 
   @LogPerformanceAsync(MetricsEvents.SetGatewayDuration, { argIndex: 1 })

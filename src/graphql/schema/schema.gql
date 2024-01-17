@@ -10,6 +10,9 @@ type About {
   """Deployment cluster."""
   cluster: String!
 
+  """Feature Flags."""
+  features: FeatureConfigs
+
   """Current network details."""
   network: String!
 
@@ -34,11 +37,17 @@ type Account {
   """Balance for the given account."""
   balance: String!
 
+  """If the given detailed account is verified."""
+  isVerified: Boolean
+
   """Nonce for the given account."""
   nonce: Float!
 
   """Current owner address."""
   ownerAddress: String!
+
+  """Owner Account Address assets details."""
+  ownerAssets: AccountAssets
 
   """Shard for the given account."""
   shard: Float!
@@ -66,6 +75,9 @@ type AccountAssets {
 
   """Proof for the given account asset."""
   proof: String
+
+  """Social for the given account asset."""
+  social: String!
 
   """Tags list for the given account asset."""
   tags: [String!]!
@@ -204,6 +216,9 @@ type AccountDetailed {
   """Owner address for the given detailed account."""
   ownerAddress: String!
 
+  """Owner Account Address assets details."""
+  ownerAssets: AccountAssets
+
   """
   Returns smart contract results where the account is sender or receiver.
   """
@@ -317,6 +332,9 @@ type AccountKey {
   """Queue size for the given provider account."""
   queueSize: String
 
+  """Remaining UnBond Period for node with status leaving."""
+  remainingUnBondPeriod: Float
+
   """Reward address for the given provider account ."""
   rewardAddress: String!
 
@@ -328,6 +346,12 @@ type AccountKey {
 
   """Top Up for the given  provideraccount."""
   topUp: String!
+}
+
+"""Account key filter object type."""
+type AccountKeyFilter {
+  """Account key status filter for the given keys."""
+  status: AccountKeyFilter
 }
 
 """Account undelegation object type that extends Account."""
@@ -705,6 +729,21 @@ enum EsdtType {
 
   """Semi-fungible ESDT token type."""
   SemiFungibleESDT
+}
+
+"""FeatureConfigs object type."""
+type FeatureConfigs {
+  """DataApi flag details."""
+  dataApi: Boolean!
+
+  """Exchange flag details."""
+  exchange: Boolean!
+
+  """Marketplace flag details."""
+  marketplace: Boolean!
+
+  """Update Collection Extra Details flag details."""
+  updateCollectionExtraDetails: Boolean!
 }
 
 """Input to retrieve the given detailed account for."""
@@ -1868,7 +1907,7 @@ type Identity {
 """
 The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
 """
-scalar JSON @specifiedBy(url: "http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf")
+scalar JSON
 
 """MexEconomics object type."""
 type MexEconomics {
@@ -1959,11 +1998,17 @@ type MexPair {
   """Base name details."""
   baseName: String!
 
+  """Mex token basePrevious24hPrice equivalent"""
+  basePrevious24hPrice: Float!
+
   """Base price details."""
   basePrice: String!
 
   """Base symbol details."""
   baseSymbol: String!
+
+  """Mex pair exchange details."""
+  exchange: String
 
   """Id details."""
   id: String!
@@ -1979,6 +2024,9 @@ type MexPair {
 
   """Quote name details."""
   quoteName: String!
+
+  """Mex token quotePrevious24hPrice equivalent"""
+  quotePrevious24hPrice: Float!
 
   """Quote price details."""
   quotePrice: String!
@@ -2010,6 +2058,9 @@ enum MexPairState {
   """Inactive state."""
   inactive
 
+  """Partial state."""
+  partial
+
   """Pause state."""
   paused
 }
@@ -2028,9 +2079,6 @@ enum MexPairType {
   """Experimental Type."""
   experimental
 
-  """Jungle Type."""
-  jungle
-
   """Unlisted Type."""
   unlisted
 }
@@ -2042,6 +2090,9 @@ type MexToken {
 
   """Mex token name."""
   name: String!
+
+  """Mex token previous24hPrice."""
+  previous24hPrice: Float!
 
   """Mex token current price."""
   price: Float!
@@ -2729,6 +2780,9 @@ type Node {
   """Rating modifier for the given node."""
   ratingModifier: Float!
 
+  """Remaining UnBond Period for node with status leaving."""
+  remainingUnBondPeriod: Float
+
   """Shard for the given node."""
   shard: Float
 
@@ -3318,6 +3372,9 @@ type SmartContractResult {
   """Data for the given smart contract result."""
   data: String!
 
+  """Function call"""
+  function: String
+
   """Gas limit for the given smart contract result."""
   gasLimit: Float!
 
@@ -3420,6 +3477,9 @@ type TokenAccount {
   """Token account address."""
   address: String!
 
+  """Account assets for the given account."""
+  assets: AccountAssets
+
   """Token attributes if MetaESDT."""
   attributes: String
 
@@ -3443,6 +3503,9 @@ type TokenAssets {
 
   """Locked accounts for the given token assets."""
   lockedAccounts: JSON
+
+  """Name for the given token assets."""
+  name: String!
 
   """PNG URL for the given token assets."""
   pngUrl: String!
@@ -3774,6 +3837,9 @@ type Transaction {
   """Guardian signature for the given transaction."""
   guardianSignature: String
 
+  """Is relayed transaction."""
+  isRelayed: Boolean
+
   """Mini block hash for the given transaction."""
   miniBlockHash: String
 
@@ -3879,6 +3945,12 @@ type TransactionDetailed {
   """Guardian signature for the given transaction."""
   guardianSignature: String
 
+  """InTransit transaction details."""
+  inTransit: Boolean
+
+  """Is relayed transaction."""
+  isRelayed: Boolean
+
   """Transaction log for the given detailed transaction."""
   logs: TransactionLog
 
@@ -3920,6 +3992,9 @@ type TransactionDetailed {
 
   """Receiver account shard for the given transaction."""
   receiverShard: String!
+
+  """Relayed transaction version."""
+  relayedVersion: String
 
   """Smart contract results for the given detailed transaction."""
   results: [SmartContractResult!]
@@ -4146,6 +4221,9 @@ enum TransactionStatus {
 
 """Transaction type object type."""
 enum TransactionType {
+  """Reward type."""
+  Reward
+
   """SmartContractResult type."""
   SmartContractResult
 

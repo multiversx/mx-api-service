@@ -10,4 +10,6 @@ export class TransactionDetails {
   value: string = '';
   version: number = 0;
   options?: number;
+  guardian?: string;
+  guardianSignature?: string;
 }

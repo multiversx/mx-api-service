@@ -29,6 +29,10 @@ export class TokenAssets {
   @ApiProperty({ type: String })
   pngUrl: string = '';
 
+  @Field(() => String, { description: 'Name for the given token assets.' })
+  @ApiProperty({ type: String })
+  name: string = '';
+
   @Field(() => String, { description: 'SVG URL for the given token assets.' })
   @ApiProperty({ type: String })
   svgUrl: string = '';

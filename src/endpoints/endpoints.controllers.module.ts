@@ -35,6 +35,7 @@ import { UsernameController } from "./usernames/username.controller";
 import { VmQueryController } from "./vm.query/vm.query.controller";
 import { WaitingListController } from "./waiting-list/waiting.list.controller";
 import { WebsocketController } from "./websocket/websocket.controller";
+import { PoolController } from "./pool/pool.controller";
 
 @Module({})
 export class EndpointsControllersModule {
@@ -60,6 +61,11 @@ export class EndpointsControllersModule {
 
     if (isExchangeEnabled) {
       controllers.push(MexController);
+    }
+
+    const isTxPoolEnabled = configuration().features?.transactionPool?.enabled;
+    if (isTxPoolEnabled) {
+      controllers.push(PoolController);
     }
 
     return {

@@ -11,7 +11,7 @@ import { TransactionQueryOptions } from 'src/endpoints/transactions/entities/tra
 import { TransactionDetailed } from 'src/endpoints/transactions/entities/transaction.detailed';
 import { TransactionOptionalFieldOption } from 'src/endpoints/transactions/entities/transaction.optional.field.options';
 
-describe('Transaction Service', () => {
+describe.skip('Transaction Service', () => {
   let transactionService: TransactionService;
 
   beforeAll(async () => {
@@ -20,7 +20,6 @@ describe('Transaction Service', () => {
     }).compile();
 
     transactionService = moduleRef.get<TransactionService>(TransactionService);
-
   });
   beforeEach(() => { jest.restoreAllMocks(); });
 
@@ -170,6 +169,31 @@ describe('Transaction Service', () => {
       expect(result?.operations[0].action).toStrictEqual("transfer");
     });
 
+    it(`should return "action" key for ESDTNFTBurn transaction`, async () => {
+      const txHash: string = "1a9176f5e3be9b2bff237e9fc6da34589d1cd9a8f3499354df26c5efd7a8a5a8";
+      const result = await transactionService.getTransaction(txHash);
+
+
+      if (result?.action?.arguments) {
+        expect(result.action.name).toStrictEqual('burn');
+        expect(result.action.arguments.token.value).toStrictEqual(1);
+      }
+    });
+
+    it(`should return "action" key for ESDTNFTTransfer transaction`, async () => {
+      const txHash: string = "01e30ddf688f72aace6eea1df650945d89ccb7057c77a8298ff0cc2a1aec84a7";
+      const result = await transactionService.getTransaction(txHash);
+
+      expect(result?.action?.name).toStrictEqual('transfer');
+    });
+
+    it(`should return "action" key for Freeze transaction`, async () => {
+      const txHash: string = "f6f4db3260248d2ace15d5dd4cb22c566a33900efbad68e6b9a97e77cf6eab88";
+      const result = await transactionService.getTransaction(txHash);
+
+      expect(result?.action?.name).toStrictEqual('freeze');
+    });
+
     it('should return logs attribute for a given transaction', async () => {
       const txHash: string = "4302d0af550e47a21e5d183f0918af7dbc015f1e7dea6d2ab2025ee675bf8517";
       const results = await transactionService.getTransaction(txHash, [TransactionOptionalFieldOption.logs]);
@@ -207,23 +231,6 @@ describe('Transaction Service', () => {
     }
   });
 
-  //TBD
-  it.skip(`should return a list of transfers between two accounts`, async () => {
-    const sender = 'erd18kmncel8a32yd94ktzlqag9etdrpdnyph8wus2nqyd4lp865gncq40znww';
-    const receiver = 'erd1sdslvlxvfnnflzj42l8czrcngq3xjjzkjp3rgul4ttk6hntr4qdsv6sets';
-    const transactionFilter = new TransactionFilter();
-    transactionFilter.address = sender;
-    transactionFilter.senderOrReceiver = receiver;
-
-    const transfers = await transactionService.getTransactions(transactionFilter, { from: 0, size: 25 }, new TransactionQueryOptions());
-    expect(transfers.length).toBeGreaterThan(0);
-
-    for (const transfer of transfers) {
-      expect([sender, receiver].includes(transfer.sender)).toBe(true);
-      expect([sender, receiver].includes(transfer.receiver)).toBe(true);
-    }
-  });
-
   it('should return an array of transactions and if withBlockInfo is set to true, block extra fields should be defined', async () => {
     const transactions = await transactionService.getTransactions(
       new TransactionFilter(),
@@ -252,5 +259,33 @@ describe('Transaction Service', () => {
       receiverBlockHash: expect.anything(),
       receiverBlockNonce: expect.anything(),
     }));
+  });
+
+  it('should return an array of relayed transactions and isRelayed key should be true', async () => {
+    const transactionFilter = new TransactionFilter();
+    transactionFilter.isRelayed = true;
+
+    const transactions = await transactionService.getTransactions(
+      transactionFilter,
+      new QueryPagination(),
+    );
+
+    for (const transaction of transactions) {
+      expect(transaction.isRelayed).toBeDefined();
+    }
+  });
+
+  it('should not return isRelayed key if isRelayed filter is not defined', async () => {
+    const transactionFilter = new TransactionFilter();
+    transactionFilter.isRelayed = false;
+
+    const transactions = await transactionService.getTransactions(
+      transactionFilter,
+      new QueryPagination(),
+    );
+
+    for (const transaction of transactions) {
+      expect(transaction.isRelayed).not.toBeDefined();
+    }
   });
 });

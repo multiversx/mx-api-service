@@ -93,7 +93,11 @@ export class AssetsService {
   }
 
   private getImageUrl(tokenIdentifier: string, name: string) {
-    return `${this.apiConfigService.getExternalMediaUrl()}/tokens/asset/${tokenIdentifier}/${name}`;
+    if (['mainnet', 'devnet', 'testnet'].includes(this.apiConfigService.getNetwork())) {
+      return `${this.apiConfigService.getExternalMediaUrl()}/tokens/asset/${tokenIdentifier}/${name}`;
+    }
+
+    return `https://raw.githubusercontent.com/multiversx/mx-assets/master/${this.apiConfigService.getNetwork()}/tokens/${tokenIdentifier}/${name}`;
   }
 
   private getTokenAssetsPath() {
@@ -102,6 +106,14 @@ export class AssetsService {
 
   private getAccountAssetsPath() {
     return path.join(process.cwd(), 'dist/repos/assets', this.getRelativePath('accounts'));
+  }
+
+  getIdentityAssetsPath() {
+    return path.join(process.cwd(), 'dist/repos/assets', this.getRelativePath('identities'));
+  }
+
+  getIdentityInfoJsonPath(identity: string): string {
+    return path.join(this.getIdentityAssetsPath(), identity, 'info.json');
   }
 
   private getRelativePath(name: string): string {

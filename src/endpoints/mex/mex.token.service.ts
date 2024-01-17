@@ -9,7 +9,6 @@ import { MexFarmService } from "./mex.farm.service";
 import { MexSettingsService } from "./mex.settings.service";
 import { Constants } from "@multiversx/sdk-nestjs-common";
 import { CacheService } from "@multiversx/sdk-nestjs-cache";
-import { MexPairType } from "./entities/mex.pair.type";
 import { OriginLogger } from "@multiversx/sdk-nestjs-common";
 import { QueryPagination } from "src/common/entities/query.pagination";
 
@@ -175,7 +174,7 @@ export class MexTokenService {
         wegldToken.symbol = pair.baseSymbol;
         wegldToken.name = pair.baseName;
         wegldToken.price = pair.basePrice;
-
+        wegldToken.previous24hPrice = pair.basePrevious24hPrice;
         mexTokens.push(wegldToken);
       }
 
@@ -187,27 +186,37 @@ export class MexTokenService {
       mexTokens.push(mexToken);
     }
 
-    return mexTokens;
+    return mexTokens.distinct(x => x.id);
   }
 
   private getMexToken(pair: MexPair): MexToken | null {
-    if ((pair.type !== MexPairType.jungle && pair.quoteSymbol === 'WEGLD') ||
-      (pair.type === MexPairType.jungle && pair.quoteSymbol === 'USDC')) {
-      return {
-        id: pair.baseId,
-        symbol: pair.baseSymbol,
-        name: pair.baseName,
-        price: pair.basePrice,
-      };
-    }
-
-    if ((pair.type !== MexPairType.jungle && pair.baseSymbol === 'WEGLD') ||
-      (pair.type === MexPairType.jungle && pair.baseSymbol === 'USDC')) {
+    if (pair.baseSymbol === 'WEGLD' && pair.quoteSymbol === "USDC") {
       return {
         id: pair.quoteId,
         symbol: pair.quoteSymbol,
         name: pair.quoteName,
         price: pair.quotePrice,
+        previous24hPrice: pair.quotePrevious24hPrice,
+      };
+    }
+
+    if (['WEGLD', 'USDC'].includes(pair.quoteSymbol)) {
+      return {
+        id: pair.baseId,
+        symbol: pair.baseSymbol,
+        name: pair.baseName,
+        price: pair.basePrice,
+        previous24hPrice: pair.basePrevious24hPrice,
+      };
+    }
+
+    if (['WEGLD', 'USDC'].includes(pair.baseSymbol)) {
+      return {
+        id: pair.quoteId,
+        symbol: pair.quoteSymbol,
+        name: pair.quoteName,
+        price: pair.quotePrice,
+        previous24hPrice: pair.quotePrevious24hPrice,
       };
     }
 

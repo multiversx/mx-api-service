@@ -11,13 +11,14 @@ export class GraphQlService {
     private readonly apiConfigService: ApiConfigService
   ) { }
 
-  async getData(query: string, variables: any): Promise<any> {
+  async getData(query: string, variables?: any): Promise<any> {
     const MAIAR_EXCHANGE_URL = this.apiConfigService.getExchangeServiceUrlMandatory();
-
     const graphqlClient = new GraphQLClient(MAIAR_EXCHANGE_URL);
 
     try {
-      const data = await graphqlClient.request(query, variables);
+      const data = variables
+        ? await graphqlClient.request(query, variables)
+        : await graphqlClient.request(query);
 
       if (!data) {
         return null;

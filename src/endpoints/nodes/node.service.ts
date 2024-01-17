@@ -15,13 +15,16 @@ import { CacheInfo } from "src/utils/cache.info";
 import { Stake } from "../stake/entities/stake";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
 import { Auction } from "src/common/gateway/entities/auction";
-import { AddressUtils } from "@multiversx/sdk-nestjs-common";
+import { AddressUtils, OriginLogger } from "@multiversx/sdk-nestjs-common";
 import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { NodeSort } from "./entities/node.sort";
 import { ProtocolService } from "src/common/protocol/protocol.service";
+import { KeysService } from "../keys/keys.service";
 
 @Injectable()
 export class NodeService {
+  private readonly logger = new OriginLogger(NodeService.name);
+
   constructor(
     private readonly gatewayService: GatewayService,
     private readonly vmQueryService: VmQueryService,
@@ -32,6 +35,7 @@ export class NodeService {
     @Inject(forwardRef(() => BlockService))
     private readonly blockService: BlockService,
     private readonly protocolService: ProtocolService,
+    private readonly keysService: KeysService
   ) { }
 
   private getIssues(node: Node, version: string | undefined): string[] {
@@ -169,6 +173,10 @@ export class NodeService {
         }
       }
 
+      if (query.keys !== undefined && !query.keys.includes(node.bls)) {
+        return false;
+      }
+
       return true;
     });
 
@@ -218,6 +226,7 @@ export class NodeService {
     );
   }
 
+  // @ts-ignore
   private processQueuedNodes(nodes: Node[], queue: Queue[]) {
     for (const queueItem of queue) {
       const node = nodes.find(node => node.bls === queueItem.bls);
@@ -240,7 +249,9 @@ export class NodeService {
 
   private async applyNodeIdentities(nodes: Node[]) {
     for (const node of nodes) {
-      node.identity = await this.cacheService.getRemote<string>(CacheInfo.ConfirmedIdentity(node.bls).key);
+      if (node.status !== NodeStatus.inactive) {
+        node.identity = await this.cacheService.getRemote<string>(CacheInfo.ConfirmedIdentity(node.bls).key);
+      }
     }
   }
 
@@ -267,6 +278,15 @@ export class NodeService {
         }
       }
     }
+  }
+
+  private async applyNodeUnbondingPeriods(nodes: Node[]): Promise<void> {
+    const leavingNodes = nodes.filter(node => node.status === NodeStatus.leaving || node.status === NodeStatus.inactive);
+
+    await Promise.all(leavingNodes.map(async node => {
+      const keyUnbondPeriod = await this.keysService.getKeyUnbondPeriod(node.bls);
+      node.remainingUnBondPeriod = keyUnbondPeriod?.remainingUnBondPeriod;
+    }));
   }
 
   private async applyNodeStakeInfo(nodes: Node[]) {
@@ -319,6 +339,8 @@ export class NodeService {
       const auctions = await this.gatewayService.getValidatorAuctions();
       this.processAuctions(nodes, auctions);
     }
+
+    await this.applyNodeUnbondingPeriods(nodes);
 
     return nodes;
   }
@@ -378,10 +400,20 @@ export class NodeService {
   }
 
   async getBlsOwner(bls: string): Promise<string | undefined> {
+    const auctionContractAddress = this.apiConfigService.getAuctionContractAddress();
+    if (!auctionContractAddress) {
+      return undefined;
+    }
+
+    const stakingContractAddress = this.apiConfigService.getStakingContractAddress();
+    if (!stakingContractAddress) {
+      return undefined;
+    }
+
     const result = await this.vmQueryService.vmQuery(
-      this.apiConfigService.getStakingContractAddress(),
+      stakingContractAddress,
       'getOwner',
-      this.apiConfigService.getAuctionContractAddress(),
+      auctionContractAddress,
       [bls],
     );
 
@@ -395,12 +427,25 @@ export class NodeService {
   }
 
   async getOwnerBlses(owner: string): Promise<string[]> {
-    const getBlsKeysStatusListEncoded = await this.vmQueryService.vmQuery(
-      this.apiConfigService.getAuctionContractAddress(),
-      'getBlsKeysStatus',
-      this.apiConfigService.getAuctionContractAddress(),
-      [AddressUtils.bech32Decode(owner)],
-    );
+    const auctionContractAddress = this.apiConfigService.getAuctionContractAddress();
+    if (!auctionContractAddress) {
+      return [];
+    }
+
+    let getBlsKeysStatusListEncoded: string[] | undefined = undefined;
+
+    try {
+      getBlsKeysStatusListEncoded = await this.vmQueryService.vmQuery(
+        auctionContractAddress,
+        'getBlsKeysStatus',
+        auctionContractAddress,
+        [AddressUtils.bech32Decode(owner)],
+      );
+    } catch (error) {
+      this.logger.error(`An unhandled error occurred when getting BLSes for owner '${owner}'`);
+      this.logger.error(error);
+      return [];
+    }
 
     if (!getBlsKeysStatusListEncoded) {
       return [];
@@ -420,10 +465,20 @@ export class NodeService {
   }
 
   async getQueue(): Promise<Queue[]> {
+    const auctionContractAddress = this.apiConfigService.getAuctionContractAddress();
+    if (!auctionContractAddress) {
+      return [];
+    }
+
+    const stakingContractAddress = this.apiConfigService.getStakingContractAddress();
+    if (!stakingContractAddress) {
+      return [];
+    }
+
     const queueEncoded = await this.vmQueryService.vmQuery(
-      this.apiConfigService.getStakingContractAddress(),
+      stakingContractAddress,
       'getQueueRegisterNonceAndRewardAddress',
-      this.apiConfigService.getAuctionContractAddress(),
+      auctionContractAddress,
     );
 
     if (!queueEncoded) {
@@ -579,8 +634,9 @@ export class NodeService {
         node.online = false;
       }
 
-      if (this.apiConfigService.isNodeSyncProgressEnabled() && numTrieNodesReceived > 0) {
-        node.syncProgress = numTrieNodesReceived / nodesPerShardDict[shard];
+      const nodesPerShard = nodesPerShardDict[shard];
+      if (this.apiConfigService.isNodeSyncProgressEnabled() && numTrieNodesReceived > 0 && nodesPerShard > 0) {
+        node.syncProgress = numTrieNodesReceived / nodesPerShard;
 
         if (node.syncProgress > 1) {
           node.syncProgress = 1;
