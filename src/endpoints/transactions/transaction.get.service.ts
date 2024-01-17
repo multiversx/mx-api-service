@@ -7,13 +7,13 @@ import { TransactionLog } from "./entities/transaction.log";
 import { TransactionOptionalFieldOption } from "./entities/transaction.optional.field.options";
 import { TransactionReceipt } from "./entities/transaction.receipt";
 import { TokenTransferService } from "../tokens/token.transfer.service";
-import { BinaryUtils } from "@multiversx/sdk-nestjs-common";
+import { BinaryUtils, OriginLogger } from "@multiversx/sdk-nestjs-common";
 import { ApiUtils } from "@multiversx/sdk-nestjs-http";
 import { TransactionUtils } from "./transaction.utils";
 import { IndexerService } from "src/common/indexer/indexer.service";
-import { OriginLogger } from "@multiversx/sdk-nestjs-common";
 import { MiniBlockType } from "../miniblocks/entities/mini.block.type";
 import { TransactionStatus } from "./entities/transaction.status";
+import { UsernameUtils } from "../usernames/username.utils";
 
 @Injectable()
 export class TransactionGetService {
@@ -116,6 +116,14 @@ export class TransactionGetService {
         }
       }
 
+      if (transaction.senderUserName) {
+        transactionDetailed.senderUsername = UsernameUtils.extractUsernameFromRawBase64(transaction.senderUserName);
+      }
+
+      if (transaction.receiverUserName) {
+        transactionDetailed.receiverUsername = UsernameUtils.extractUsernameFromRawBase64(transaction.receiverUserName);
+      }
+
       return ApiUtils.mergeObjects(new TransactionDetailed(), transactionDetailed);
     } catch (error) {
       this.logger.error(error);
@@ -128,7 +136,7 @@ export class TransactionGetService {
     if (gatewayTransaction) {
       return ApiUtils.mergeObjects(new Transaction(), gatewayTransaction);
     }
-    return undefined; //invalid hash 
+    return undefined; //invalid hash
   }
 
   async tryGetTransactionFromGateway(txHash: string, queryInElastic: boolean = true): Promise<TransactionDetailed | null> {
@@ -183,7 +191,9 @@ export class TransactionGetService {
         receiverShard: transaction.destinationShard,
         nonce: transaction.nonce,
         receiver: transaction.receiver,
+        receiverUsername: UsernameUtils.extractUsernameFromRawBase64(transaction.receiverUsername),
         sender: transaction.sender,
+        senderUsername: UsernameUtils.extractUsernameFromRawBase64(transaction.senderUsername),
         signature: transaction.signature,
         status: transaction.status,
         value: transaction.value,

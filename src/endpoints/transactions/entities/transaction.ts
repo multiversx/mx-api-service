@@ -40,6 +40,10 @@ export class Transaction {
   @ApiProperty({ type: String })
   receiver: string = '';
 
+  @Field(() => String, { name: "receiverUsername", description: "The username of the receiver for the given transaction." })
+  @ApiProperty({ type: String })
+  receiverUsername: string = '';
+
   @Field(() => Account, { description: "Receiver account for the given transaction." })
   receiverAccount: Account | undefined = undefined;
 
@@ -58,6 +62,10 @@ export class Transaction {
   @Field(() => String, { name: "senderAddress", description: "Sender account for the given transaction." })
   @ApiProperty({ type: String })
   sender: string = '';
+
+  @Field(() => String, { name: "senderUsername", description: "The username of the sender for the given transaction." })
+  @ApiProperty({ type: String })
+  senderUsername: string = '';
 
   @Field(() => Account, { description: "Sender account for the given transaction." })
   senderAccount: Account | undefined = undefined;

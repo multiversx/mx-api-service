@@ -19,4 +19,17 @@ describe('Username Utils', () => {
       expect(UsernameUtils.getContractAddress('alice@google.com')).toStrictEqual('erd1qqqqqqqqqqqqqpgqexv860na2t9cwgrvmrydgre23uc5g0ptqqts4tusev');
     });
   });
+  describe('extractUsernameFromRawBase64', () => {
+    it('should return an empty string for invalid inputs', () => {
+      expect(UsernameUtils.extractUsernameFromRawBase64("")).toStrictEqual("");
+      expect(UsernameUtils.extractUsernameFromRawBase64("invalid base64")).toStrictEqual("");
+    });
+    it('should work', () => {
+      expect(UsernameUtils.extractUsernameFromRawBase64("YWxpY2U=")).toStrictEqual("alice");
+      expect(UsernameUtils.extractUsernameFromRawBase64("YWxpY2UuZWxyb25k")).toStrictEqual("alice");
+      expect(UsernameUtils.extractUsernameFromRawBase64("YWxpY2UyLmVscm9uZA==")).toStrictEqual("alice2");
+      expect(UsernameUtils.extractUsernameFromRawBase64("dGVzdC4=")).toStrictEqual("test.");
+      expect(UsernameUtils.extractUsernameFromRawBase64("YWxpY2UubXZ4")).toStrictEqual("alice.mvx");
+    });
+  });
 });

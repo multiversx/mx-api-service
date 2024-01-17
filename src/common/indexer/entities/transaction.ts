@@ -5,7 +5,9 @@ export interface Transaction {
   round: number;
   value: string;
   receiver: string;
+  receiverUserName: string; // TODO: newer versions of ES will have this field named receiverUsername
   sender: string;
+  senderUserName: string; // TODO: newer versions of ES will have this field named senderUsername
   receiverShard: number;
   senderShard: number;
   gasPrice: string;
