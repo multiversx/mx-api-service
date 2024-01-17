@@ -55,10 +55,9 @@ export class NodeService {
   async getNode(bls: string): Promise<Node | undefined> {
     const allNodes = await this.getAllNodes();
     const node = allNodes.find(x => x.bls === bls);
-    const epochsLeft = await this.gatewayService.getNodeWaitingEpochsLeft(bls);
 
-    if (node && node.status === NodeStatus.waiting && epochsLeft) {
-      node.epochsLeft = epochsLeft;
+    if (node && node.status === NodeStatus.waiting) {
+      node.epochsLeft = await this.gatewayService.getNodeWaitingEpochsLeft(bls);
     }
 
     return node;
