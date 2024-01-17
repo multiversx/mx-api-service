@@ -291,11 +291,7 @@ export class UsernameUtils {
   }
 
   static extractUsernameFromRawBase64(rawUsername: string): string {
-    if (rawUsername.length == 0) {
-      return '';
-    }
-
-    if (!this.isBase64(rawUsername)) {
+    if (rawUsername.length == 0 || !this.isBase64(rawUsername)) {
       return '';
     }
 
@@ -304,12 +300,12 @@ export class UsernameUtils {
       return '';
     }
 
-    return decodedUsername.removeSuffix(".elrond");
+    return decodedUsername;
   }
 
   // TODO: might move this to BinaryUtils
   private static isBase64(str: string): boolean {
-    return str.length % 4 == 0 && /^[A-Za-z0-9+/]+[=]{0,2}$/.test(str);
+    return str.length % 4 == 0 && /^[A-Za-z0-9+/]+={0,2}$/.test(str);
   }
 
   static encodeUsername(username: string): string {

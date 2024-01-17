@@ -26,8 +26,8 @@ describe('Username Utils', () => {
     });
     it('should work', () => {
       expect(UsernameUtils.extractUsernameFromRawBase64("YWxpY2U=")).toStrictEqual("alice");
-      expect(UsernameUtils.extractUsernameFromRawBase64("YWxpY2UuZWxyb25k")).toStrictEqual("alice");
-      expect(UsernameUtils.extractUsernameFromRawBase64("YWxpY2UyLmVscm9uZA==")).toStrictEqual("alice2");
+      expect(UsernameUtils.extractUsernameFromRawBase64("YWxpY2UuZWxyb25k")).toStrictEqual("alice.elrond");
+      expect(UsernameUtils.extractUsernameFromRawBase64("YWxpY2UyLnN1ZmZpeA==")).toStrictEqual("alice2.suffix");
       expect(UsernameUtils.extractUsernameFromRawBase64("dGVzdC4=")).toStrictEqual("test.");
       expect(UsernameUtils.extractUsernameFromRawBase64("YWxpY2UubXZ4")).toStrictEqual("alice.mvx");
     });
