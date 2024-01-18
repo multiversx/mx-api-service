@@ -130,6 +130,7 @@ export class TransactionGetService {
     if (transaction.senderUserName) {
       transactionDetailed.senderUsername = UsernameUtils.extractUsernameFromRawBase64(transaction.senderUserName);
     }
+
     if (transaction.senderUsername) {
       transactionDetailed.senderUsername = UsernameUtils.extractUsernameFromRawBase64(transaction.senderUsername);
     }
@@ -137,6 +138,7 @@ export class TransactionGetService {
     if (transaction.receiverUserName) {
       transactionDetailed.receiverUsername = UsernameUtils.extractUsernameFromRawBase64(transaction.receiverUserName);
     }
+
     if (transaction.receiverUsername) {
       transactionDetailed.receiverUsername = UsernameUtils.extractUsernameFromRawBase64(transaction.receiverUsername);
     }
