@@ -24,7 +24,13 @@ export class TransactionCreate {
   receiver: string = '';
 
   @ApiProperty()
+  receiverUsername: string | undefined = undefined;
+
+  @ApiProperty()
   sender: string = '';
+
+  @ApiProperty()
+  senderUsername: string | undefined = undefined;
 
   @ApiProperty()
   signature: string = '';
