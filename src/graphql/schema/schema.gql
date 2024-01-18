@@ -55,17 +55,11 @@ type Account {
   """Owner Account Address assets details."""
   ownerAssets: AccountAssets
 
-  """Smart contract results count for the given detailed account."""
-  scrCount: Float!
-
   """Shard for the given account."""
   shard: Float!
 
   """Timestamp of the block where the account was first indexed."""
   timestamp: Float!
-
-  """Transactions count for the given detailed account."""
-  txCount: Float!
 }
 
 """Account assets object type."""

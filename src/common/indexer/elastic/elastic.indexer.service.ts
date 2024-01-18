@@ -21,7 +21,7 @@ import { Tag } from "../entities/tag";
 import { ElasticIndexerHelper } from "./elastic.indexer.helper";
 import { TokenType } from "../entities";
 import { SortCollections } from "src/endpoints/collections/entities/sort.collections";
-import { AccountFilter } from "src/endpoints/accounts/entities/account.filter";
+import { AccountFilter } from "src/endpoints/accounts/entities/account.query.options";
 import { AccountSort } from "src/endpoints/accounts/entities/account.sort";
 import { MiniBlockFilter } from "src/endpoints/miniblocks/entities/mini.block.filter";
 import { AccountHistoryFilter } from "src/endpoints/accounts/entities/account.history.filter";

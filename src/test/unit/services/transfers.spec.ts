@@ -1,6 +1,6 @@
 import { Test } from "@nestjs/testing";
 import { IndexerService } from "src/common/indexer/indexer.service";
-import { AccountFilter } from "src/endpoints/accounts/entities/account.filter";
+import { AccountFilter } from "src/endpoints/accounts/entities/account.query.options";
 import { TransactionFilter } from "src/endpoints/transactions/entities/transaction.filter";
 import { TransactionStatus } from "src/endpoints/transactions/entities/transaction.status";
 import { TransactionType } from "src/endpoints/transactions/entities/transaction.type";

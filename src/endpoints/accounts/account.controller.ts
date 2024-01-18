@@ -48,7 +48,7 @@ import { DelegationService } from '../delegation/delegation.service';
 import { TokenType } from '../tokens/entities/token.type';
 import { ContractUpgrades } from './entities/contract.upgrades';
 import { AccountVerification } from './entities/account.verification';
-import { AccountFilter } from './entities/account.filter';
+import { AccountFilter as AccountQueryOptions } from './entities/account.query.options';
 import { AccountSort } from './entities/account.sort';
 import { AccountHistoryFilter } from './entities/account.history.filter';
 import { ParseArrayPipeOptions } from '@multiversx/sdk-nestjs-common/lib/pipes/entities/parse.array.options';
@@ -96,9 +96,12 @@ export class AccountController {
     @Query("withDetails", new ParseBoolPipe) withDetails?: boolean,
     @Query("withOwnerAssets", new ParseBoolPipe) withOwnerAssets?: boolean,
   ): Promise<Account[]> {
+    const queryOptions = new AccountQueryOptions({ ownerAddress, sort, order, isSmartContract, withOwnerAssets, withDetails });
+
+
     return this.accountService.getAccounts(
       new QueryPagination({ from, size }),
-      new AccountFilter({ ownerAddress, sort, order, isSmartContract, withOwnerAssets, withDetails }),
+      queryOptions,
     );
   }
 
@@ -111,7 +114,7 @@ export class AccountController {
     @Query("ownerAddress", ParseAddressPipe) ownerAddress?: string,
     @Query("isSmartContract", new ParseBoolPipe) isSmartContract?: boolean,
   ): Promise<number> {
-    return await this.accountService.getAccountsCount(new AccountFilter({ ownerAddress, isSmartContract }));
+    return await this.accountService.getAccountsCount(new AccountQueryOptions({ ownerAddress, isSmartContract }));
   }
 
   @Get("/accounts/c")
@@ -120,7 +123,7 @@ export class AccountController {
     @Query("ownerAddress", ParseAddressPipe) ownerAddress?: string,
     @Query("isSmartContract", new ParseBoolPipe) isSmartContract?: boolean,
   ): Promise<number> {
-    return await this.accountService.getAccountsCount(new AccountFilter({ ownerAddress, isSmartContract }));
+    return await this.accountService.getAccountsCount(new AccountQueryOptions({ ownerAddress, isSmartContract }));
   }
 
   @Get("/accounts/:address")

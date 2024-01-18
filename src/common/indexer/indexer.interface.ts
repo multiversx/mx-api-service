@@ -1,4 +1,4 @@
-import { AccountFilter } from "src/endpoints/accounts/entities/account.filter";
+import { AccountFilter } from "src/endpoints/accounts/entities/account.query.options";
 import { AccountHistoryFilter } from "src/endpoints/accounts/entities/account.history.filter";
 import { BlockFilter } from "src/endpoints/blocks/entities/block.filter";
 import { CollectionFilter } from "src/endpoints/collections/entities/collection.filter";

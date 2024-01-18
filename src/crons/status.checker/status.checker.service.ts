@@ -20,7 +20,7 @@ import { NetworkService } from "src/endpoints/network/network.service";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { TokenFilter } from "src/endpoints/tokens/entities/token.filter";
 import { NodeType } from "src/endpoints/nodes/entities/node.type";
-import { AccountFilter } from "src/endpoints/accounts/entities/account.filter";
+import { AccountFilter } from "src/endpoints/accounts/entities/account.query.options";
 
 @Injectable()
 export class StatusCheckerService {

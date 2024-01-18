@@ -14,7 +14,7 @@ import { QueryPagination } from "../entities/query.pagination";
 import { Account, AccountHistory, AccountTokenHistory, Block, Collection, MiniBlock, Operation, Round, ScDeploy, ScResult, Tag, Token, TokenAccount, Transaction, TransactionLog, TransactionReceipt } from "./entities";
 import { IndexerInterface } from "./indexer.interface";
 import { LogPerformanceAsync } from "src/utils/log.performance.decorator";
-import { AccountFilter } from "src/endpoints/accounts/entities/account.filter";
+import { AccountFilter } from "src/endpoints/accounts/entities/account.query.options";
 import { MiniBlockFilter } from "src/endpoints/miniblocks/entities/mini.block.filter";
 import { AccountHistoryFilter } from "src/endpoints/accounts/entities/account.history.filter";
 

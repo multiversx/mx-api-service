@@ -15,7 +15,7 @@ import { AccountService } from "src/endpoints/accounts/account.service";
 import { Account } from "src/endpoints/accounts/entities/account";
 import { AccountDetailed } from "src/endpoints/accounts/entities/account.detailed";
 import { AccountEsdtHistory } from "src/endpoints/accounts/entities/account.esdt.history";
-import { AccountFilter } from "src/endpoints/accounts/entities/account.filter";
+import { AccountFilter } from "src/endpoints/accounts/entities/account.query.options";
 import { AccountHistory } from "src/endpoints/accounts/entities/account.history";
 import { AccountHistoryFilter } from "src/endpoints/accounts/entities/account.history.filter";
 import { ContractUpgrades } from "src/endpoints/accounts/entities/contract.upgrades";

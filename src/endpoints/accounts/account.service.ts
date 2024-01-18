@@ -28,7 +28,7 @@ import { CacheInfo } from 'src/utils/cache.info';
 import { UsernameService } from '../usernames/username.service';
 import { ContractUpgrades } from './entities/contract.upgrades';
 import { AccountVerification } from './entities/account.verification';
-import { AccountFilter } from './entities/account.filter';
+import { AccountFilter } from './entities/account.query.options';
 import { AccountHistoryFilter } from './entities/account.history.filter';
 import { ProtocolService } from 'src/common/protocol/protocol.service';
 import { ProviderService } from '../providers/provider.service';
@@ -344,15 +344,11 @@ export class AccountService {
       account.assets = assets[account.address];
 
       if (filter.withDetails) {
-        const [txCount, scrCount, deployedAt, deployTxHash] = await Promise.all([
-          this.getAccountTxCount(account.address),
-          this.getAccountScResults(account.address),
+        const [deployedAt, deployTxHash] = await Promise.all([
           this.getAccountDeployedAt(account.address),
           this.getAccountDeployedTxHash(account.address),
         ]);
 
-        account.txCount = txCount;
-        account.scrCount = scrCount;
         account.deployedAt = deployedAt;
         account.deployTxHash = deployTxHash;
       }

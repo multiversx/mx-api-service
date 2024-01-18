@@ -37,14 +37,6 @@ export class Account {
   @ApiProperty({ type: AccountAssets, nullable: true, description: 'Account assets' })
   assets: AccountAssets | undefined = undefined;
 
-  @Field(() => Float, { description: 'Transactions count for the given detailed account.' })
-  @ApiProperty({ description: 'The number of transactions performed on this account' })
-  txCount?: number;
-
-  @Field(() => Float, { description: 'Smart contract results count for the given detailed account.' })
-  @ApiProperty({ description: 'The number of smart contract results of this account' })
-  scrCount: number = 0;
-
   @Field(() => Float, { description: 'Deployment timestamp for the given detailed account.', nullable: true })
   @ApiProperty({ description: 'Specific property flag for smart contract', type: Number })
   deployedAt?: number | null;

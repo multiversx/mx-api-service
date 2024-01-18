@@ -19,7 +19,7 @@ import { About } from './entities/about';
 import { PluginService } from 'src/common/plugins/plugin.service';
 import { SmartContractResultService } from '../sc-results/scresult.service';
 import { TokenService } from '../tokens/token.service';
-import { AccountFilter } from '../accounts/entities/account.filter';
+import { AccountFilter } from '../accounts/entities/account.query.options';
 import { DataApiService } from 'src/common/data-api/data-api.service';
 import { FeatureConfigs } from './entities/feature.configs';
 

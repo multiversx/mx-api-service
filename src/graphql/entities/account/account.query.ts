@@ -5,7 +5,7 @@ import { AccountService } from "src/endpoints/accounts/account.service";
 import { GetAccountFilteredInput, GetAccountsInput } from "src/graphql/entities/account/account.input";
 import { ApplyComplexity } from "@multiversx/sdk-nestjs-common";
 import { QueryPagination } from "src/common/entities/query.pagination";
-import { AccountFilter } from "src/endpoints/accounts/entities/account.filter";
+import { AccountFilter } from "src/endpoints/accounts/entities/account.query.options";
 
 @Resolver()
 export class AccountQuery {
