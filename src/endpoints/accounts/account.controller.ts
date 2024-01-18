@@ -97,7 +97,7 @@ export class AccountController {
     @Query("withOwnerAssets", new ParseBoolPipe) withOwnerAssets?: boolean,
   ): Promise<Account[]> {
     const queryOptions = new AccountQueryOptions({ ownerAddress, sort, order, isSmartContract, withOwnerAssets, withDetails });
-
+    queryOptions.validate(size);
 
     return this.accountService.getAccounts(
       new QueryPagination({ from, size }),
