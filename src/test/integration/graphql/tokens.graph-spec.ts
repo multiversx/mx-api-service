@@ -45,8 +45,6 @@ describe('Tokens', () => {
               transactions
               accounts
               canUpgrade
-              canMint
-              canBurn
               canChangeOwner
               canPause
               canFreeze
@@ -93,8 +91,6 @@ describe('Tokens', () => {
               transactions
               accounts
               canUpgrade
-              canMint
-              canBurn
               canChangeOwner
               canPause
               canFreeze
@@ -140,8 +136,6 @@ describe('Tokens', () => {
               transactions
               accounts
               canUpgrade
-              canMint
-              canBurn
               canChangeOwner
               canPause
               canFreeze

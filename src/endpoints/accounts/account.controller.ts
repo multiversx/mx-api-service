@@ -355,8 +355,6 @@ export class AccountController {
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   @ApiQuery({ name: 'search', description: 'Search by token identifier or name', required: false })
   @ApiQuery({ name: 'owner', description: 'Filter by token owner', required: false })
-  @ApiQuery({ name: 'canMint', description: 'Filter by property canMint (boolean)', required: false })
-  @ApiQuery({ name: 'canBurn', description: 'Filter by property canBurn (boolean)', required: false })
   @ApiQuery({ name: 'includeMetaESDT', description: 'Include MetaESDTs in response', required: false, type: Boolean })
   @ApiOkResponse({ type: [TokenWithRoles] })
   async getAccountTokensWithRoles(
@@ -365,30 +363,24 @@ export class AccountController {
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
     @Query('search') search?: string,
     @Query('owner', ParseAddressPipe) owner?: string,
-    @Query('canMint', new ParseBoolPipe) canMint?: boolean,
-    @Query('canBurn', new ParseBoolPipe) canBurn?: boolean,
     @Query('includeMetaESDT', new ParseBoolPipe) includeMetaESDT?: boolean,
   ): Promise<TokenWithRoles[]> {
-    return await this.tokenService.getTokensWithRolesForAddress(address, new TokenWithRolesFilter({ search, owner, canMint, canBurn, includeMetaESDT }), new QueryPagination({ from, size }));
+    return await this.tokenService.getTokensWithRolesForAddress(address, new TokenWithRolesFilter({ search, owner, includeMetaESDT }), new QueryPagination({ from, size }));
   }
 
   @Get("/accounts/:address/roles/tokens/count")
   @ApiOperation({ summary: 'Account token roles count', description: 'Returns the total number of fungible token roles where the account is owner or has some special roles assigned to it' })
   @ApiQuery({ name: 'search', description: 'Search by token identifier or name', required: false })
   @ApiQuery({ name: 'owner', description: 'Filter by token owner', required: false })
-  @ApiQuery({ name: 'canMint', description: 'Filter by property canMint (boolean)', required: false })
-  @ApiQuery({ name: 'canBurn', description: 'Filter by property canCreate (boolean)', required: false })
   @ApiQuery({ name: 'includeMetaESDT', description: 'Include MetaESDTs in response', required: false, type: Boolean })
   @ApiOkResponse({ type: Number })
   async getTokensWithRolesCount(
     @Param('address', ParseAddressPipe) address: string,
     @Query('search') search?: string,
     @Query('owner', ParseAddressPipe) owner?: string,
-    @Query('canMint', new ParseBoolPipe) canMint?: boolean,
-    @Query('canBurn', new ParseBoolPipe) canBurn?: boolean,
     @Query('includeMetaESDT', new ParseBoolPipe) includeMetaESDT?: boolean,
   ): Promise<number> {
-    return await this.tokenService.getTokensWithRolesForAddressCount(address, new TokenWithRolesFilter({ search, owner, canMint, canBurn, includeMetaESDT }));
+    return await this.tokenService.getTokensWithRolesForAddressCount(address, new TokenWithRolesFilter({ search, owner, includeMetaESDT }));
   }
 
   @Get("/accounts/:address/roles/tokens/c")
@@ -397,11 +389,9 @@ export class AccountController {
     @Param('address', ParseAddressPipe) address: string,
     @Query('search') search?: string,
     @Query('owner', ParseAddressPipe) owner?: string,
-    @Query('canMint', new ParseBoolPipe) canMint?: boolean,
-    @Query('canBurn', new ParseBoolPipe) canBurn?: boolean,
     @Query('includeMetaESDT', new ParseBoolPipe) includeMetaESDT?: boolean,
   ): Promise<number> {
-    return await this.tokenService.getTokensWithRolesForAddressCount(address, new TokenWithRolesFilter({ search, owner, canMint, canBurn, includeMetaESDT }));
+    return await this.tokenService.getTokensWithRolesForAddressCount(address, new TokenWithRolesFilter({ search, owner, includeMetaESDT }));
   }
 
   @Get("/accounts/:address/roles/tokens/:identifier")

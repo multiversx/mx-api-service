@@ -110,8 +110,6 @@ describe('ESDT Service', () => {
       expect(results.hasOwnProperty("owner")).toBeTruthy();
       expect(results.hasOwnProperty("isPaused")).toBeTruthy();
       expect(results.hasOwnProperty("canUpgrade")).toBeTruthy();
-      expect(results.hasOwnProperty("canMint")).toBeTruthy();
-      expect(results.hasOwnProperty("canBurn")).toBeTruthy();
       expect(results.hasOwnProperty("canChangeOwner")).toBeTruthy();
       expect(results.hasOwnProperty("canPause")).toBeTruthy();
       expect(results.hasOwnProperty("canFreeze")).toBeTruthy();

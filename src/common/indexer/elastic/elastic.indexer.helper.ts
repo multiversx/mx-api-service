@@ -358,16 +358,6 @@ export class ElasticIndexerHelper {
         ]);
     }
 
-    if (filter.canMint !== undefined) {
-      const condition = filter.canMint === true ? QueryConditionOptions.must : QueryConditionOptions.mustNot;
-      elasticQuery = elasticQuery.withCondition(condition, QueryType.Nested('roles', [new MatchQuery('roles.ESDTRoleLocalMint', address)]));
-    }
-
-    if (filter.canBurn !== undefined) {
-      const condition = filter.canBurn === true ? QueryConditionOptions.must : QueryConditionOptions.mustNot;
-      elasticQuery = elasticQuery.withCondition(condition, QueryType.Nested('roles', [new MatchQuery('roles.ESDTRoleLocalBurn', address)]));
-    }
-
     if (pagination) {
       elasticQuery = elasticQuery.withPagination(pagination);
     }

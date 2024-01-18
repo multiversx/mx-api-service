@@ -221,8 +221,6 @@ describe('EsdtAddressService', () => {
         },
       ],
       properties: {
-        canMint: false,
-        canBurn: false,
         canUpgrade: true,
         canTransferNFTCreateRole: true,
         canAddSpecialRoles: true,

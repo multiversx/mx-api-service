@@ -43,12 +43,6 @@ export class TokenProperties {
   canUpgrade: boolean = false;
 
   @ApiProperty()
-  canMint: boolean = false;
-
-  @ApiProperty()
-  canBurn: boolean = false;
-
-  @ApiProperty()
   canChangeOwner: boolean = false;
 
   @ApiProperty()
