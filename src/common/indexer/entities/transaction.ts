@@ -5,9 +5,11 @@ export interface Transaction {
   round: number;
   value: string;
   receiver: string;
-  receiverUserName: string; // TODO: newer versions of ES will have this field named receiverUsername
+  receiverUserName: string;
+  receiverUsername: string; // for newer ES indexer versions
   sender: string;
-  senderUserName: string; // TODO: newer versions of ES will have this field named senderUsername
+  senderUserName: string;
+  senderUsername: string; // for newer ES indexer versions
   receiverShard: number;
   senderShard: number;
   gasPrice: string;

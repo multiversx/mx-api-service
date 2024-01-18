@@ -11,6 +11,7 @@ import { BinaryUtils, OriginLogger } from "@multiversx/sdk-nestjs-common";
 import { ApiUtils } from "@multiversx/sdk-nestjs-http";
 import { TransactionUtils } from "./transaction.utils";
 import { IndexerService } from "src/common/indexer/indexer.service";
+import { Transaction as IndexerTransaction } from "src/common/indexer/entities/transaction";
 import { MiniBlockType } from "../miniblocks/entities/mini.block.type";
 import { TransactionStatus } from "./entities/transaction.status";
 import { UsernameUtils } from "../usernames/username.utils";
@@ -116,18 +117,28 @@ export class TransactionGetService {
         }
       }
 
-      if (transaction.senderUserName) {
-        transactionDetailed.senderUsername = UsernameUtils.extractUsernameFromRawBase64(transaction.senderUserName);
-      }
-
-      if (transaction.receiverUserName) {
-        transactionDetailed.receiverUsername = UsernameUtils.extractUsernameFromRawBase64(transaction.receiverUserName);
-      }
+      this.applyUsernamesToDetailedTransaction(transaction, transactionDetailed);
 
       return ApiUtils.mergeObjects(new TransactionDetailed(), transactionDetailed);
     } catch (error) {
       this.logger.error(error);
       return null;
+    }
+  }
+
+  private applyUsernamesToDetailedTransaction(transaction: IndexerTransaction, transactionDetailed: TransactionDetailed) {
+    if (transaction.senderUserName) {
+      transactionDetailed.senderUsername = UsernameUtils.extractUsernameFromRawBase64(transaction.senderUserName);
+    }
+    if (transaction.senderUsername) {
+      transactionDetailed.senderUsername = UsernameUtils.extractUsernameFromRawBase64(transaction.senderUsername);
+    }
+
+    if (transaction.receiverUserName) {
+      transactionDetailed.receiverUsername = UsernameUtils.extractUsernameFromRawBase64(transaction.receiverUserName);
+    }
+    if (transaction.receiverUsername) {
+      transactionDetailed.receiverUsername = UsernameUtils.extractUsernameFromRawBase64(transaction.receiverUsername);
     }
   }
 
