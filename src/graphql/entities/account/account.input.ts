@@ -1,5 +1,5 @@
 import { Field, InputType, Float } from "@nestjs/graphql";
-import { AccountFilter } from "src/endpoints/accounts/entities/account.filter";
+import { AccountFilter } from "src/endpoints/accounts/entities/account.query.options";
 
 @InputType({ description: "Input to retrieve the given accounts for." })
 export class GetAccountFilteredInput {

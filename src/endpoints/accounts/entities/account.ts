@@ -37,6 +37,14 @@ export class Account {
   @ApiProperty({ type: AccountAssets, nullable: true, description: 'Account assets' })
   assets: AccountAssets | undefined = undefined;
 
+  @Field(() => Float, { description: 'Deployment timestamp for the given detailed account.', nullable: true })
+  @ApiProperty({ description: 'Specific property flag for smart contract', type: Number })
+  deployedAt?: number | null;
+
+  @Field(() => String, { description: 'DeployTxHash for the given detailed account.', nullable: true })
+  @ApiProperty({ description: 'The contract deploy transaction hash' })
+  deployTxHash?: string | null;
+
   @Field(() => AccountAssets, { description: 'Owner Account Address assets details.', nullable: true })
   @ApiProperty({ type: AccountAssets, nullable: true, description: 'Account assets' })
   ownerAssets: AccountAssets | undefined = undefined;

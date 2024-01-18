@@ -48,7 +48,7 @@ import { DelegationService } from '../delegation/delegation.service';
 import { TokenType } from '../tokens/entities/token.type';
 import { ContractUpgrades } from './entities/contract.upgrades';
 import { AccountVerification } from './entities/account.verification';
-import { AccountFilter } from './entities/account.filter';
+import { AccountFilter as AccountQueryOptions } from './entities/account.query.options';
 import { AccountSort } from './entities/account.sort';
 import { AccountHistoryFilter } from './entities/account.history.filter';
 import { ParseArrayPipeOptions } from '@multiversx/sdk-nestjs-common/lib/pipes/entities/parse.array.options';
@@ -83,7 +83,8 @@ export class AccountController {
   @ApiQuery({ name: 'ownerAddress', description: 'Search by owner address', required: false })
   @ApiQuery({ name: 'sort', description: 'Sort criteria (balance / timestamp)', required: false, enum: AccountSort })
   @ApiQuery({ name: 'order', description: 'Sort order (asc/desc)', required: false, enum: SortOrder })
-  @ApiQuery({ name: 'isSmartContract', description: 'Return a list of smart contracts', required: false })
+  @ApiQuery({ name: 'isSmartContract', description: 'Filter accounts by whether they are smart contract or not', required: false })
+  @ApiQuery({ name: 'withDeployInfo', description: 'Include deployedAt and deployTxHash fields in the result', required: false })
   @ApiQuery({ name: 'withOwnerAssets', description: 'Return a list accounts with owner assets', required: false })
   getAccounts(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
@@ -92,12 +93,16 @@ export class AccountController {
     @Query('sort', new ParseEnumPipe(AccountSort)) sort?: AccountSort,
     @Query('order', new ParseEnumPipe(SortOrder)) order?: SortOrder,
     @Query("isSmartContract", new ParseBoolPipe) isSmartContract?: boolean,
+    @Query("withDeployInfo", new ParseBoolPipe) withDeployInfo?: boolean,
     @Query("withOwnerAssets", new ParseBoolPipe) withOwnerAssets?: boolean,
-
   ): Promise<Account[]> {
+    const queryOptions = new AccountQueryOptions({ ownerAddress, sort, order, isSmartContract, withOwnerAssets, withDeployInfo });
+    queryOptions.validate(size);
+
     return this.accountService.getAccounts(
       new QueryPagination({ from, size }),
-      new AccountFilter({ ownerAddress, sort, order, isSmartContract, withOwnerAssets }));
+      queryOptions,
+    );
   }
 
   @Get("/accounts/count")
@@ -109,7 +114,7 @@ export class AccountController {
     @Query("ownerAddress", ParseAddressPipe) ownerAddress?: string,
     @Query("isSmartContract", new ParseBoolPipe) isSmartContract?: boolean,
   ): Promise<number> {
-    return await this.accountService.getAccountsCount(new AccountFilter({ ownerAddress, isSmartContract }));
+    return await this.accountService.getAccountsCount(new AccountQueryOptions({ ownerAddress, isSmartContract }));
   }
 
   @Get("/accounts/c")
@@ -118,7 +123,7 @@ export class AccountController {
     @Query("ownerAddress", ParseAddressPipe) ownerAddress?: string,
     @Query("isSmartContract", new ParseBoolPipe) isSmartContract?: boolean,
   ): Promise<number> {
-    return await this.accountService.getAccountsCount(new AccountFilter({ ownerAddress, isSmartContract }));
+    return await this.accountService.getAccountsCount(new AccountQueryOptions({ ownerAddress, isSmartContract }));
   }
 
   @Get("/accounts/:address")

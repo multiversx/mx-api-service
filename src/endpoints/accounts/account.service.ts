@@ -28,7 +28,7 @@ import { CacheInfo } from 'src/utils/cache.info';
 import { UsernameService } from '../usernames/username.service';
 import { ContractUpgrades } from './entities/contract.upgrades';
 import { AccountVerification } from './entities/account.verification';
-import { AccountFilter } from './entities/account.filter';
+import { AccountFilter } from './entities/account.query.options';
 import { AccountHistoryFilter } from './entities/account.history.filter';
 import { ProtocolService } from 'src/common/protocol/protocol.service';
 import { ProviderService } from '../providers/provider.service';
@@ -36,6 +36,7 @@ import { Provider } from '../providers/entities/provider';
 import { KeysService } from '../keys/keys.service';
 import { NodeStatusRaw } from '../nodes/entities/node.status';
 import { AccountKeyFilter } from './entities/account.key.filter';
+import { Address } from '@multiversx/sdk-core/out';
 
 @Injectable()
 export class AccountService {
@@ -299,7 +300,7 @@ export class AccountService {
   }
 
   async getAccounts(queryPagination: QueryPagination, filter: AccountFilter): Promise<Account[]> {
-    if (!filter.ownerAddress && !filter.sort && !filter.order && filter.isSmartContract === undefined && filter.withOwnerAssets === undefined) {
+    if (!filter.isSet()) {
       return await this.cachingService.getOrSet(
         CacheInfo.Accounts(queryPagination).key,
         async () => await this.getAccountsRaw(queryPagination, filter),
@@ -342,6 +343,16 @@ export class AccountService {
     for (const account of accounts) {
       account.shard = AddressUtils.computeShard(AddressUtils.bech32Decode(account.address), shardCount);
       account.assets = assets[account.address];
+
+      if (filter.withDeployInfo && new Address(account.address).isContractAddress()) {
+        const [deployedAt, deployTxHash] = await Promise.all([
+          this.getAccountDeployedAt(account.address),
+          this.getAccountDeployedTxHash(account.address),
+        ]);
+
+        account.deployedAt = deployedAt;
+        account.deployTxHash = deployTxHash;
+      }
 
       if (filter.withOwnerAssets && account.ownerAddress) {
         account.ownerAssets = assets[account.ownerAddress];
