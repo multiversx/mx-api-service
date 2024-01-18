@@ -84,7 +84,8 @@ export class AccountController {
   @ApiQuery({ name: 'sort', description: 'Sort criteria (balance / timestamp)', required: false, enum: AccountSort })
   @ApiQuery({ name: 'order', description: 'Sort order (asc/desc)', required: false, enum: SortOrder })
   @ApiQuery({ name: 'isSmartContract', description: 'Return a list of smart contracts', required: false })
-  @ApiQuery({ name: 'withContractExtraDetails', description: 'Return a list of smart contracts with extra details', required: false })
+  @ApiQuery({ name: 'withDetails', description: 'Return a list of smart contracts with extra details', required: false })
+  @ApiQuery({ name: 'withOwnerAssets', description: 'Return a list accounts with owner assets', required: false })
   getAccounts(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number,
@@ -92,31 +93,35 @@ export class AccountController {
     @Query('sort', new ParseEnumPipe(AccountSort)) sort?: AccountSort,
     @Query('order', new ParseEnumPipe(SortOrder)) order?: SortOrder,
     @Query("isSmartContract", new ParseBoolPipe) isSmartContract?: boolean,
-    @Query("withContractExtraDetails", new ParseBoolPipe) withContractExtraDetails?: boolean,
+    @Query("withDetails", new ParseBoolPipe) withDetails?: boolean,
+    @Query("withOwnerAssets", new ParseBoolPipe) withOwnerAssets?: boolean,
   ): Promise<Account[]> {
 
     return this.accountService.getAccounts(
       new QueryPagination({ from, size }),
-      new AccountFilter({ ownerAddress, sort, order, isSmartContract }),
-      withContractExtraDetails);
+      new AccountFilter({ ownerAddress, sort, order, isSmartContract, withOwnerAssets, withDetails }),
+    );
   }
 
   @Get("/accounts/count")
   @ApiOperation({ summary: 'Total number of accounts', description: 'Returns total number of accounts available on blockchain' })
   @ApiOkResponse({ type: Number })
   @ApiQuery({ name: 'ownerAddress', description: 'Search by owner address', required: false })
+  @ApiQuery({ name: 'isSmartContract', description: 'Return total smart contracts count', required: false })
   async getAccountsCount(
     @Query("ownerAddress", ParseAddressPipe) ownerAddress?: string,
+    @Query("isSmartContract", new ParseBoolPipe) isSmartContract?: boolean,
   ): Promise<number> {
-    return await this.accountService.getAccountsCount(new AccountFilter({ ownerAddress }));
+    return await this.accountService.getAccountsCount(new AccountFilter({ ownerAddress, isSmartContract }));
   }
 
   @Get("/accounts/c")
   @ApiExcludeEndpoint()
   async getAccountsCountAlternative(
     @Query("ownerAddress", ParseAddressPipe) ownerAddress?: string,
+    @Query("isSmartContract", new ParseBoolPipe) isSmartContract?: boolean,
   ): Promise<number> {
-    return await this.accountService.getAccountsCount(new AccountFilter({ ownerAddress }));
+    return await this.accountService.getAccountsCount(new AccountFilter({ ownerAddress, isSmartContract }));
   }
 
   @Get("/accounts/:address")

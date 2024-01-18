@@ -1,5 +1,5 @@
 import { BadRequestException, Body, Controller, Get, Param, Post, Query, Req, Res } from "@nestjs/common";
-import { ApiExcludeEndpoint, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { ApiExcludeController, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { VmQueryRequest } from "../vm.query/entities/vm.query.request";
 import { VmQueryService } from "../vm.query/vm.query.service";
 import { GatewayService } from "src/common/gateway/gateway.service";
@@ -9,9 +9,9 @@ import { PluginService } from "src/common/plugins/plugin.service";
 import { Constants, ParseAddressPipe, ParseBlockHashPipe, ParseTransactionHashPipe } from "@multiversx/sdk-nestjs-common";
 import { CacheService, NoCache } from "@multiversx/sdk-nestjs-cache";
 import { OriginLogger } from "@multiversx/sdk-nestjs-common";
-
 @Controller()
 @ApiTags('proxy')
+@ApiExcludeController()
 export class ProxyController {
   private readonly logger = new OriginLogger(ProxyController.name);
 
@@ -23,31 +23,26 @@ export class ProxyController {
   ) { }
 
   @Get('/address/:address')
-  @ApiExcludeEndpoint()
   async getAddress(@Param('address', ParseAddressPipe) address: string) {
     return await this.gatewayGet(`address/${address}`, GatewayComponentRequest.addressDetails);
   }
 
   @Get('/address/:address/balance')
-  @ApiExcludeEndpoint()
   async getAddressBalance(@Param('address', ParseAddressPipe) address: string) {
     return await this.gatewayGet(`address/${address}/balance`, GatewayComponentRequest.addressBalance);
   }
 
   @Get('/address/:address/nonce')
-  @ApiExcludeEndpoint()
   async getAddressNonce(@Param('address', ParseAddressPipe) address: string) {
     return await this.gatewayGet(`address/${address}/nonce`, GatewayComponentRequest.addressNonce);
   }
 
   @Get('/address/:address/shard')
-  @ApiExcludeEndpoint()
   async getAddressShard(@Param('address', ParseAddressPipe) address: string) {
     return await this.gatewayGet(`address/${address}/shard`, GatewayComponentRequest.addressShard);
   }
 
   @Get('/address/:address/key/:key')
-  @ApiExcludeEndpoint()
   async getAddressStorageKey(@Param('address', ParseAddressPipe) address: string, @Param('key') key: string) {
     // eslint-disable-next-line require-await
     return await this.gatewayGet(`address/${address}/key/${key}`, GatewayComponentRequest.addressStorage, undefined, async (error) => {
@@ -60,19 +55,16 @@ export class ProxyController {
   }
 
   @Get('/address/:address/transactions')
-  @ApiExcludeEndpoint()
   async getAddressTransactions(@Param('address', ParseAddressPipe) address: string) {
     return await this.gatewayGet(`address/${address}/transactions`, GatewayComponentRequest.addressTransactions);
   }
 
   @Get('/address/:address/guardian-data')
-  @ApiExcludeEndpoint()
   async getAddressGuardianData(@Param('address', ParseAddressPipe) address: string) {
     return await this.gatewayGet(`address/${address}/guardian-data`, GatewayComponentRequest.guardianData);
   }
 
   @Get('/address/:address/esdt')
-  @ApiExcludeEndpoint()
   async getAddressEsdt(@Param('address', ParseAddressPipe) address: string) {
     // eslint-disable-next-line require-await
     return await this.gatewayGet(`address/${address}/esdt`, GatewayComponentRequest.addressDetails, undefined, async (error) => {
@@ -86,7 +78,6 @@ export class ProxyController {
   }
 
   @Post('/transaction/send')
-  @ApiExcludeEndpoint()
   async transactionSend(@Body() body: any) {
     if (!body.sender) {
       throw new BadRequestException('Sender must be provided');
@@ -113,31 +104,26 @@ export class ProxyController {
   }
 
   @Post('/transaction/simulate')
-  @ApiExcludeEndpoint()
   async transactionSimulate(@Body() body: any) {
     return await this.gatewayPost('transaction/simulate', GatewayComponentRequest.simulateTransaction, body);
   }
 
   @Post('/transaction/send-multiple')
-  @ApiExcludeEndpoint()
   async transactionSendMultiple(@Body() body: any) {
     return await this.gatewayPost('transaction/send-multiple', GatewayComponentRequest.sendTransactionMultiple, body);
   }
 
   @Post('/transaction/send-user-funds')
-  @ApiExcludeEndpoint()
   async transactionSendUserFunds(@Body() body: any) {
     return await this.gatewayPost('transaction/send-user-funds', GatewayComponentRequest.sendUserFunds, body);
   }
 
   @Post('/transaction/cost')
-  @ApiExcludeEndpoint()
   async transactionCost(@Body() body: any) {
     return await this.gatewayPost('transaction/cost', GatewayComponentRequest.transactionCost, body);
   }
 
   @Get('/transaction/pool')
-  @ApiExcludeEndpoint()
   @NoCache()
   async getTransactionPool(@Req() request: Request) {
     const url = request.url.replace(/^\//, '');
@@ -145,7 +131,6 @@ export class ProxyController {
   }
 
   @Get('/transaction/:hash')
-  @ApiExcludeEndpoint()
   @ApiQuery({ name: 'sender', description: 'Sender', required: false })
   @ApiQuery({ name: 'withResults', description: 'Include results which correspond to the hash', required: false })
   async getTransaction(
@@ -157,7 +142,6 @@ export class ProxyController {
   }
 
   @Get('/transaction/:hash/process-status')
-  @ApiExcludeEndpoint()
   async getTransactionProcessStatus(
     @Param('hash', ParseTransactionHashPipe) hash: string,
   ) {
@@ -165,7 +149,6 @@ export class ProxyController {
   }
 
   @Get('/transaction/:hash/status')
-  @ApiExcludeEndpoint()
   @ApiQuery({ name: 'sender', description: 'Sender', required: false })
   async getTransactionStatus(
     @Param('hash', ParseTransactionHashPipe) hash: string,
@@ -183,7 +166,6 @@ export class ProxyController {
   }
 
   @Post('/vm-values/hex')
-  @ApiExcludeEndpoint()
   async vmValuesHex(@Body() body: any) {
     // eslint-disable-next-line require-await
     return await this.gatewayPost('vm-values/hex', GatewayComponentRequest.vmQuery, body, async (error) => {
@@ -197,19 +179,16 @@ export class ProxyController {
   }
 
   @Post('/vm-values/string')
-  @ApiExcludeEndpoint()
   async vmValuesString(@Body() body: any) {
     return await this.gatewayPost('vm-values/string', GatewayComponentRequest.vmQuery, body);
   }
 
   @Post('/vm-values/int')
-  @ApiExcludeEndpoint()
   async vmValuesInt(@Body() body: any) {
     return await this.gatewayPost('vm-values/int', GatewayComponentRequest.vmQuery, body);
   }
 
   @Post('/vm-values/query')
-  @ApiExcludeEndpoint()
   @ApiResponse({
     status: 201,
     description: 'Returns the result of the query (legacy)',
@@ -223,31 +202,26 @@ export class ProxyController {
   }
 
   @Get('/network/status/:shard')
-  @ApiExcludeEndpoint()
   async getNetworkStatusShard(@Param('shard') shard: string) {
     return await this.gatewayGet(`network/status/${shard}`, GatewayComponentRequest.networkStatus);
   }
 
   @Get('/network/config')
-  @ApiExcludeEndpoint()
   async getNetworkConfig() {
     return await this.gatewayGet('network/config', GatewayComponentRequest.networkConfig);
   }
 
   @Get('/network/economics')
-  @ApiExcludeEndpoint()
   async getNetworkEconomics() {
     return await this.gatewayGet('network/economics', GatewayComponentRequest.networkEconomics);
   }
 
   @Get('/network/total-staked')
-  @ApiExcludeEndpoint()
   async getNetworkTotalStaked() {
     return await this.gatewayGet('network/total-staked', GatewayComponentRequest.networkTotalStaked);
   }
 
   @Get('/node/heartbeatstatus')
-  @ApiExcludeEndpoint()
   @NoCache()
   async getNodeHeartbeatStatus(@Res() res: Response) {
     try {
@@ -267,7 +241,6 @@ export class ProxyController {
   }
 
   @Get('/validator/statistics')
-  @ApiExcludeEndpoint()
   @NoCache()
   async getValidatorStatistics(@Res() res: Response) {
     try {
@@ -287,7 +260,6 @@ export class ProxyController {
   }
 
   @Get('/block/:shard/by-nonce/:nonce')
-  @ApiExcludeEndpoint()
   @ApiQuery({ name: 'withTxs', description: 'Include transactions', required: false })
   async getBlockByShardAndNonce(
     @Param('shard') shard: string,
@@ -298,7 +270,6 @@ export class ProxyController {
   }
 
   @Get('/block/:shard/by-hash/:hash')
-  @ApiExcludeEndpoint()
   @ApiQuery({ name: 'withTxs', description: 'Include transactions', required: false })
   async getBlockByShardAndHash(
     @Param('shard') shard: string,
@@ -309,7 +280,6 @@ export class ProxyController {
   }
 
   @Get('/block-atlas/:shard/:nonce')
-  @ApiExcludeEndpoint()
   async getBlockAtlas(
     @Param('shard') shard: string,
     @Param('nonce') nonce: number,
@@ -318,7 +288,6 @@ export class ProxyController {
   }
 
   @Get('/hyperblock/by-nonce/:nonce')
-  @ApiExcludeEndpoint()
   async getHyperblockByNonce(@Param('nonce') nonce: number) {
     try {
       return await this.cachingService.getOrSet(
@@ -340,13 +309,11 @@ export class ProxyController {
   }
 
   @Get('/hyperblock/by-hash/:hash')
-  @ApiExcludeEndpoint()
   async getHyperblockByHash(@Param('hash', ParseBlockHashPipe) hash: number) {
     return await this.gatewayGet(`hyperblock/by-hash/${hash}`, GatewayComponentRequest.hyperblockByHash);
   }
 
   @Get('/network/gas-configs')
-  @ApiExcludeEndpoint()
   async getGasConfigs() {
     return await this.gatewayGet('network/gas-configs', GatewayComponentRequest.gasConfigs);
   }
@@ -389,5 +356,20 @@ export class ProxyController {
       this.logger.error(`Unhandled exception when calling gateway url '${url}'`);
       throw new BadRequestException(`Unhandled exception when calling gateway url '${url}'`);
     }
+  }
+
+  private async forwardGateway(url: string, component: GatewayComponentRequest, params?: any, errorHandler?: (error: any) => Promise<boolean>): Promise<any> {
+    return await this.gatewayGet(url, component, params, errorHandler);
+  }
+
+  @Get('/gateway/*')
+  async forwardRequest(@Req() request: Request) {
+    const url = request.url.startsWith('/') ? request.url.substring(1) : request.url;
+    const queryParams = request.query;
+    return await this.forwardGateway(
+      url.replace('gateway/', ''),
+      GatewayComponentRequest.forward,
+      queryParams
+    );
   }
 }

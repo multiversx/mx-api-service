@@ -1,4 +1,6 @@
 import * as crypto from 'crypto-js';
+import {BinaryUtils} from "@multiversx/sdk-nestjs-common";
+import '@multiversx/sdk-nestjs-common/lib/utils/extensions/string.extensions';
 
 export class UsernameUtils {
   private static dnsContracts = [
@@ -259,6 +261,7 @@ export class UsernameUtils {
     'erd1qqqqqqqqqqqqqpgqlkk3dj24u5gfn75ymsd3g490qya7xzumqrlq03ed6p',
     'erd1qqqqqqqqqqqqqpgqd3z70c44v7g9makg800l3r3gx3e5a97xqrlslqwqa9',
   ];
+
   static normalizeUsername(username: string): string {
     const prefix = '@';
     const suffix = '.elrond';
@@ -279,12 +282,30 @@ export class UsernameUtils {
   static getContractAddress(username: string): string {
     const normalized = UsernameUtils.normalizeUsername(username);
 
-    const hash = crypto.SHA3(normalized, { outputLength: 256 }).toString(crypto.enc.Hex);
+    const hash = crypto.SHA3(normalized, {outputLength: 256}).toString(crypto.enc.Hex);
 
     const buffer = Buffer.from(hash, 'hex');
     const last = buffer[buffer.length - 1];
 
     return UsernameUtils.dnsContracts[last];
+  }
+
+  static extractUsernameFromRawBase64(rawUsername: string): string {
+    if (rawUsername.length == 0 || !this.isBase64(rawUsername)) {
+      return '';
+    }
+
+    const decodedUsername = BinaryUtils.base64Decode(rawUsername);
+    if (decodedUsername.length == 0) {
+      return '';
+    }
+
+    return decodedUsername;
+  }
+
+  // TODO: might move this to BinaryUtils
+  private static isBase64(str: string): boolean {
+    return str.length % 4 == 0 && /^[A-Za-z0-9+/]+={0,2}$/.test(str);
   }
 
   static encodeUsername(username: string): string {

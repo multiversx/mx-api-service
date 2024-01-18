@@ -5,6 +5,7 @@ import { ApiConfigModule } from "../api-config/api.config.module";
 import { GithubModule } from "../github/github.module";
 import { PersistenceModule } from "../persistence/persistence.module";
 import { KeybaseService } from "./keybase.service";
+import { AssetsModule } from "../assets/assets.module";
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { KeybaseService } from "./keybase.service";
     forwardRef(() => GithubModule),
     ApiConfigModule,
     PersistenceModule.forRoot(),
+    AssetsModule,
   ],
   providers: [
     KeybaseService,

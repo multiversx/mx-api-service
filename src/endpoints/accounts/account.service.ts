@@ -67,7 +67,7 @@ export class AccountService {
   ) { }
 
   async getAccountsCount(filter: AccountFilter): Promise<number> {
-    if (!filter.ownerAddress) {
+    if (!filter.ownerAddress && filter.isSmartContract === undefined) {
       return await this.cachingService.getOrSet(
         CacheInfo.AccountsCount.key,
         async () => await this.indexerService.getAccountsCount(filter),
@@ -152,6 +152,11 @@ export class AccountService {
     return verificationResponse.data;
   }
 
+  async getVerifiedAccounts(): Promise<string[]> {
+    const verificationResponse = await this.apiService.get(`${this.apiConfigService.getVerifierUrl()}/verifier`);
+    return verificationResponse.data;
+  }
+
   async getAccountSimple(address: string): Promise<AccountDetailed | null> {
     if (!AddressUtils.isAddressValid(address)) {
       return null;
@@ -169,7 +174,7 @@ export class AccountService {
 
       const shardCount = await this.protocolService.getShardCount();
       const shard = AddressUtils.computeShard(AddressUtils.bech32Decode(address), shardCount);
-      let account = new AccountDetailed({ address, nonce, balance, code, codeHash, rootHash, txCount, scrCount, shard, developerReward, ownerAddress, scamInfo: undefined, assets: assets[address], nftCollections: undefined, nfts: undefined });
+      let account = new AccountDetailed({ address, nonce, balance, code, codeHash, rootHash, txCount, scrCount, shard, developerReward, ownerAddress, scamInfo: undefined, assets: assets[address], ownerAssets: assets[ownerAddress], nftCollections: undefined, nfts: undefined });
 
       const codeAttributes = AddressUtils.decodeCodeMetadata(codeMetadata);
       if (codeAttributes) {
@@ -293,16 +298,16 @@ export class AccountService {
     return null;
   }
 
-  async getAccounts(queryPagination: QueryPagination, filter: AccountFilter, withContractExtraDetails?: boolean): Promise<Account[]> {
-    if (!filter.ownerAddress && !filter.sort && !filter.order && filter.isSmartContract === undefined && withContractExtraDetails === undefined) {
+  async getAccounts(queryPagination: QueryPagination, filter: AccountFilter): Promise<Account[]> {
+    if (!filter.isSet()) {
       return await this.cachingService.getOrSet(
         CacheInfo.Accounts(queryPagination).key,
-        async () => await this.getAccountsRaw(queryPagination, filter, withContractExtraDetails),
+        async () => await this.getAccountsRaw(queryPagination, filter),
         CacheInfo.Accounts(queryPagination).ttl
       );
     }
 
-    return await this.getAccountsRaw(queryPagination, filter, withContractExtraDetails);
+    return await this.getAccountsRaw(queryPagination, filter);
   }
 
   public async getAccountsForAddresses(addresses: Array<string>): Promise<Array<Account>> {
@@ -320,11 +325,9 @@ export class AccountService {
     return accounts;
   }
 
-  async getAccountsRaw(queryPagination: QueryPagination, filter: AccountFilter, withContractExtraDetails?: boolean): Promise<Account[]> {
+  async getAccountsRaw(queryPagination: QueryPagination, filter: AccountFilter): Promise<Account[]> {
     const result = await this.indexerService.getAccounts(queryPagination, filter);
-
     const assets = await this.assetsService.getAllAccountAssets();
-
     const accounts: Account[] = result.map(item => {
       const account = ApiUtils.mergeObjects(new Account(), item);
       account.ownerAddress = item.currentOwner;
@@ -334,20 +337,32 @@ export class AccountService {
 
     const shardCount = await this.protocolService.getShardCount();
 
+    const verifiedAccounts = await this.cachingService.get<string[]>(CacheInfo.VerifiedAccounts.key);
+
     for (const account of accounts) {
       account.shard = AddressUtils.computeShard(AddressUtils.bech32Decode(account.address), shardCount);
       account.assets = assets[account.address];
 
-      if (filter.isSmartContract && withContractExtraDetails) {
-        const [txCount, deployedAt, deployTxHash] = await Promise.all([
+      if (filter.withDetails) {
+        const [txCount, scrCount, deployedAt, deployTxHash] = await Promise.all([
           this.getAccountTxCount(account.address),
+          this.getAccountScResults(account.address),
           this.getAccountDeployedAt(account.address),
           this.getAccountDeployedTxHash(account.address),
         ]);
 
         account.txCount = txCount;
+        account.scrCount = scrCount;
         account.deployedAt = deployedAt;
         account.deployTxHash = deployTxHash;
+      }
+
+      if (filter.withOwnerAssets && account.ownerAddress) {
+        account.ownerAssets = assets[account.ownerAddress];
+      }
+
+      if (verifiedAccounts && verifiedAccounts.includes(account.address)) {
+        account.isVerified = true;
       }
     }
 

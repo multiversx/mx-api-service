@@ -5,12 +5,14 @@ import { Test } from "@nestjs/testing";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { AssetsService } from "src/common/assets/assets.service";
 import { AccountAssets } from "src/common/assets/entities/account.assets";
+import { AccountAssetsSocial } from "src/common/assets/entities/account.assets.social";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { GatewayService } from "src/common/gateway/gateway.service";
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { PluginService } from "src/common/plugins/plugin.service";
 import { ProtocolService } from "src/common/protocol/protocol.service";
 import { AccountService } from "src/endpoints/accounts/account.service";
+import { Account } from "src/endpoints/accounts/entities/account";
 import { AccountDetailed } from "src/endpoints/accounts/entities/account.detailed";
 import { AccountEsdtHistory } from "src/endpoints/accounts/entities/account.esdt.history";
 import { AccountFilter } from "src/endpoints/accounts/entities/account.filter";
@@ -206,6 +208,34 @@ describe('Account Service', () => {
       expect(indexerService.getAccountsCount).toHaveBeenCalled();
       expect(result).toEqual(expectedResult);
     });
+
+    it('should call cachingService.getOrSet if filter.isSmartContract is not provided', async () => {
+      const filter: AccountFilter = { isSmartContract: undefined };
+      const expectedResult = 3000;
+
+      jest.spyOn(cacheService, 'getOrSet').mockResolvedValue(expectedResult);
+      jest.spyOn(indexerService, 'getAccountsCount').mockResolvedValue(expectedResult);
+
+      const result = await service.getAccountsCount(filter);
+
+      expect(cacheService.getOrSet).toHaveBeenCalled();
+      expect(indexerService.getAccountsCount).not.toHaveBeenCalled();
+      expect(result).toEqual(expectedResult);
+    });
+
+    it('should call indexerService.getAccountsCount directly if filter.isSmartContract is provided', async () => {
+      const filter = { isSmartContract: true };
+      const expectedResult = 3000;
+
+      jest.spyOn(cacheService, 'getOrSet').mockResolvedValue(expectedResult);
+      jest.spyOn(indexerService, 'getAccountsCount').mockResolvedValue(expectedResult);
+
+      const result = await service.getAccountsCount(filter);
+
+      expect(cacheService.getOrSet).not.toHaveBeenCalled();
+      expect(indexerService.getAccountsCount).toHaveBeenCalled();
+      expect(result).toEqual(expectedResult);
+    });
   });
 
   describe('getAccountVerification', () => {
@@ -256,6 +286,7 @@ describe('Account Service', () => {
         shard: 0,
         ownerAddress: '',
         assets: undefined,
+        ownerAssets: undefined,
         code: '',
         codeHash: "",
         rootHash: 'w4fUiW+zHBmft9XlGbzVfcfn3rMtWKwi4bF+cjPPZ2k=',
@@ -399,7 +430,11 @@ describe('Account Service', () => {
         round: 100,
         value: "100000",
         receiver: '',
+        receiverUserName: '',
+        receiverUsername: '',
         sender: '',
+        senderUserName: '',
+        senderUsername: '',
         receiverShard: 1,
         senderShard: 2,
         gasPrice: '20000',
@@ -771,6 +806,12 @@ describe('Account Service', () => {
       erd1qqqqqqqqqqqqqpgqc0htpys8vhtf5m3tg7t6ts2wvkgx3favqrhsdsz9w0: {
         name: 'Multiversx DNS: Contract 239',
         description: '',
+        social: new AccountAssetsSocial({
+          website: "https://xexchange.com",
+          twitter: "https://twitter.com/xExchangeApp",
+          telegram: "https://t.me/xExchangeApp",
+          blog: "https://multiversx.com/blog/maiar-exchange-mex-tokenomics",
+        }),
         tags: ['dns'],
         icon: 'multiversx',
         iconPng: '',
@@ -796,6 +837,130 @@ describe('Account Service', () => {
       }));
 
       expect(result).toEqual(expectedAccounts);
+    });
+  });
+
+  describe('getAccounts', () => {
+    const elasticIndexerMock = [
+      {
+        address: 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqplllst77y4l',
+        developerRewardsNum: 1.2784189545,
+        totalBalanceWithStakeNum: 17420283.932524484,
+        balance: '17420283932524481604580318',
+        balanceNum: 17420283.932524484,
+        developerRewards: '1278418954499998714',
+        currentOwner: 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqplllst77y4l',
+        totalBalanceWithStake: '17420283932524481604580318',
+        shardID: 4294967295,
+        nonce: 1,
+        timestamp: 1703676282,
+      },
+    ];
+
+    const assets: { [key: string]: AccountAssets } = {
+      erd1qqqqqqqqqqqqqpgqykt0f03czqj2p9qltpygzu7jwlzkaxqaqpdq07cak6: {
+        name: "System: Staking Module",
+        description: "Smart contract containing all staked eGLD on the network",
+        tags: [
+          "system",
+          "staking",
+          "module",
+        ],
+        iconPng: "https://raw.githubusercontent.com/multiversx/mx-assets/master/accounts/icons/multiversx.png",
+        iconSvg: "https://raw.githubusercontent.com/multiversx/mx-assets/master/accounts/icons/multiversx.svg",
+        icon: '',
+        proof: '',
+        social: undefined,
+      },
+    };
+
+    const ownerAssets: { [key: string]: AccountAssets } = {
+      erd1qqqqqqqqqqqqqpgqykt0f03czqj2p9qltpygzu7jwlzkaxqaqpdq07cak6: {
+        name: "System: Staking Module",
+        description: "Smart contract containing all staked eGLD on the network",
+        tags: [
+          "system",
+          "staking",
+          "module",
+        ],
+        iconPng: "https://raw.githubusercontent.com/multiversx/mx-assets/master/accounts/icons/multiversx.png",
+        iconSvg: "https://raw.githubusercontent.com/multiversx/mx-assets/master/accounts/icons/multiversx.svg",
+        icon: '',
+        proof: '',
+        social: undefined,
+      },
+    };
+
+    const accountsRawMock = [
+      new Account({
+        address: 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqplllst77y4l',
+        balance: '17420808473771662313204012',
+        nonce: 1,
+        timestamp: 1703677860,
+        shard: 4294967295,
+        ownerAddress: 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqplllst77y4l',
+        assets: {
+          name: "System: Staking Module",
+          description: "Smart contract containing all staked eGLD on the network",
+          tags: [
+            "system",
+            "staking",
+            "module",
+          ],
+          iconPng: "https://raw.githubusercontent.com/multiversx/mx-assets/master/accounts/icons/multiversx.png",
+          iconSvg: "https://raw.githubusercontent.com/multiversx/mx-assets/master/accounts/icons/multiversx.svg",
+          icon: '',
+          proof: '',
+          social: undefined,
+        },
+        ownerAssets: ownerAssets['erd1qqqqqqqqqqqqqpgqykt0f03czqj2p9qltpygzu7jwlzkaxqaqpdq07cak6'],
+      }),
+    ];
+
+    it('should use cache if no filter is applied and merge with account assets', async () => {
+      const filter = new AccountFilter();
+
+      const mockCacheFunction = jest.fn();
+      mockCacheFunction.mockResolvedValue(elasticIndexerMock);
+      cacheService.getOrSet = mockCacheFunction;
+
+      assetsService.getAllAccountAssets = jest.fn().mockResolvedValue(assets);
+
+      const result = await service.getAccounts(new QueryPagination({ size: 1 }), filter);
+
+      expect(mockCacheFunction).toHaveBeenCalled();
+
+      expect(result[0]).toEqual(expect.objectContaining(elasticIndexerMock[0]));
+      expect(result[0].assets).toEqual(assets[result[0].address]);
+    });
+
+    it('should use cache if no filter is applied and merge with account assets', async () => {
+      const filter = new AccountFilter();
+
+      const mockCacheFunction = jest.fn();
+      mockCacheFunction.mockResolvedValue(elasticIndexerMock);
+      cacheService.getOrSet = mockCacheFunction;
+
+      assetsService.getAllAccountAssets = jest.fn().mockResolvedValue(assets);
+
+      const result = await service.getAccounts(new QueryPagination({ size: 1 }), filter);
+
+      expect(mockCacheFunction).toHaveBeenCalled();
+
+      expect(result[0]).toEqual(expect.objectContaining(elasticIndexerMock[0]));
+      expect(result[0].assets).toEqual(assets[result[0].address]);
+    });
+
+    it('should return accounts with owner assets details when withOwnerAssets filter is applied', async () => {
+      const filter = new AccountFilter({ withOwnerAssets: true });
+
+      jest.spyOn(service, 'getAccountsRaw').mockResolvedValue(accountsRawMock);
+
+      const result = await service.getAccounts(new QueryPagination({ size: 1 }), filter);
+
+      expect(service.getAccountsRaw).toHaveBeenCalledWith(new QueryPagination({ size: 1 }), filter);
+      expect(result[0]).toHaveProperty('ownerAssets');
+      expect(result[0].ownerAssets).toEqual(ownerAssets['erd1qqqqqqqqqqqqqpgqykt0f03czqj2p9qltpygzu7jwlzkaxqaqpdq07cak6']);
     });
   });
 });
