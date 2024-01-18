@@ -17,7 +17,7 @@ export class AccountFilter {
 
   validate(size: number) {
     if (this.withDetails && size > 25) {
-      throw new BadRequestException('Size must be less than 25 when withDetails is set');
+      throw new BadRequestException('Size must be less than or equal to 25 when withDetails is set');
     }
   }
 
