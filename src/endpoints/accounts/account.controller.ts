@@ -83,8 +83,8 @@ export class AccountController {
   @ApiQuery({ name: 'ownerAddress', description: 'Search by owner address', required: false })
   @ApiQuery({ name: 'sort', description: 'Sort criteria (balance / timestamp)', required: false, enum: AccountSort })
   @ApiQuery({ name: 'order', description: 'Sort order (asc/desc)', required: false, enum: SortOrder })
-  @ApiQuery({ name: 'isSmartContract', description: 'Return a list of smart contracts', required: false })
-  @ApiQuery({ name: 'withDetails', description: 'Return a list of smart contracts with extra details', required: false })
+  @ApiQuery({ name: 'isSmartContract', description: 'Filter accounts by whether they are smart contract or not', required: false })
+  @ApiQuery({ name: 'withDeployInfo', description: 'Include deployedAt and deployTxHash fields in the result', required: false })
   @ApiQuery({ name: 'withOwnerAssets', description: 'Return a list accounts with owner assets', required: false })
   getAccounts(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
@@ -93,10 +93,10 @@ export class AccountController {
     @Query('sort', new ParseEnumPipe(AccountSort)) sort?: AccountSort,
     @Query('order', new ParseEnumPipe(SortOrder)) order?: SortOrder,
     @Query("isSmartContract", new ParseBoolPipe) isSmartContract?: boolean,
-    @Query("withDetails", new ParseBoolPipe) withDetails?: boolean,
+    @Query("withDeployInfo", new ParseBoolPipe) withDeployInfo?: boolean,
     @Query("withOwnerAssets", new ParseBoolPipe) withOwnerAssets?: boolean,
   ): Promise<Account[]> {
-    const queryOptions = new AccountQueryOptions({ ownerAddress, sort, order, isSmartContract, withOwnerAssets, withDetails });
+    const queryOptions = new AccountQueryOptions({ ownerAddress, sort, order, isSmartContract, withOwnerAssets, withDeployInfo });
     queryOptions.validate(size);
 
     return this.accountService.getAccounts(

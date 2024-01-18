@@ -13,11 +13,11 @@ export class AccountFilter {
   order?: SortOrder;
   isSmartContract?: boolean;
   withOwnerAssets?: boolean;
-  withDetails?: boolean;
+  withDeployInfo?: boolean;
 
   validate(size: number) {
-    if (this.withDetails && size > 25) {
-      throw new BadRequestException('Size must be less than or equal to 25 when withDetails is set');
+    if (this.withDeployInfo && size > 25) {
+      throw new BadRequestException('Size must be less than or equal to 25 when withDeployInfo is set');
     }
   }
 
@@ -27,6 +27,6 @@ export class AccountFilter {
       this.order !== undefined ||
       this.isSmartContract !== undefined ||
       this.withOwnerAssets !== undefined ||
-      this.withDetails !== undefined;
+      this.withDeployInfo !== undefined;
   }
 }

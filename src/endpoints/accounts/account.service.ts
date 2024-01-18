@@ -36,6 +36,7 @@ import { Provider } from '../providers/entities/provider';
 import { KeysService } from '../keys/keys.service';
 import { NodeStatusRaw } from '../nodes/entities/node.status';
 import { AccountKeyFilter } from './entities/account.key.filter';
+import { Address } from '@multiversx/sdk-core/out';
 
 @Injectable()
 export class AccountService {
@@ -343,7 +344,7 @@ export class AccountService {
       account.shard = AddressUtils.computeShard(AddressUtils.bech32Decode(account.address), shardCount);
       account.assets = assets[account.address];
 
-      if (filter.withDetails) {
+      if (filter.withDeployInfo && new Address(account.address).isContractAddress()) {
         const [deployedAt, deployTxHash] = await Promise.all([
           this.getAccountDeployedAt(account.address),
           this.getAccountDeployedTxHash(account.address),
