@@ -138,7 +138,7 @@ export class AccountService {
         account.isGuarded = guardianData.guarded;
       }
     } catch (error) {
-      this.logger.error(`Error when getting guardian data for address '${account.address}'`);
+      this.logger.error(`Error when getting guardian data for addresss '${account.address}'`);
       this.logger.error(error);
     }
   }
