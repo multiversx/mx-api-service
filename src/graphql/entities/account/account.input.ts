@@ -1,5 +1,5 @@
 import { Field, InputType, Float } from "@nestjs/graphql";
-import { AccountFilter } from "src/endpoints/accounts/entities/account.query.options";
+import { AccountQueryOptions } from "src/endpoints/accounts/entities/account.query.options";
 
 @InputType({ description: "Input to retrieve the given accounts for." })
 export class GetAccountFilteredInput {
@@ -9,8 +9,8 @@ export class GetAccountFilteredInput {
 
   @Field(() => String, { name: "ownerAddress", description: "Owner address to retrieve for the given result set.", nullable: true })
   ownerAddress: string | undefined = undefined;
-  public static resolve(input: GetAccountFilteredInput): AccountFilter {
-    return new AccountFilter({
+  public static resolve(input: GetAccountFilteredInput): AccountQueryOptions {
+    return new AccountQueryOptions({
       ownerAddress: input.ownerAddress,
     });
   }

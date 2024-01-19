@@ -1,4 +1,4 @@
-import { AccountFilter } from "src/endpoints/accounts/entities/account.query.options";
+import { AccountQueryOptions } from "src/endpoints/accounts/entities/account.query.options";
 import { AccountHistoryFilter } from "src/endpoints/accounts/entities/account.history.filter";
 import { BlockFilter } from "src/endpoints/blocks/entities/block.filter";
 import { CollectionFilter } from "src/endpoints/collections/entities/collection.filter";
@@ -15,7 +15,7 @@ import { QueryPagination } from "../entities/query.pagination";
 import { Account, AccountHistory, AccountTokenHistory, Block, Collection, MiniBlock, Operation, Round, ScDeploy, ScResult, Tag, Token, TokenAccount, Transaction, TransactionLog, TransactionReceipt } from "./entities";
 
 export interface IndexerInterface {
-  getAccountsCount(filter: AccountFilter): Promise<number>
+  getAccountsCount(filter: AccountQueryOptions): Promise<number>
 
   getScResultsCount(): Promise<number>
 
@@ -99,7 +99,7 @@ export interface IndexerInterface {
 
   getAccount(address: string): Promise<Account>
 
-  getAccounts(queryPagination: QueryPagination, filter: AccountFilter): Promise<Account[]>
+  getAccounts(queryPagination: QueryPagination, filter: AccountQueryOptions): Promise<Account[]>
 
   getAccountContracts(pagination: QueryPagination, address: string): Promise<ScDeploy[]>
 
