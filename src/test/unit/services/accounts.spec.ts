@@ -182,7 +182,7 @@ describe('Account Service', () => {
 
   describe('getAccountsCount', () => {
     it('should call cachingService.getOrSet if filter.ownerAddress is not provided', async () => {
-      const filter: AccountQueryOptions = { ownerAddress: undefined };
+      const filter = new AccountQueryOptions({ ownerAddress: undefined });
       const expectedResult = 5;
 
       jest.spyOn(cacheService, 'getOrSet').mockResolvedValue(expectedResult);
@@ -196,7 +196,7 @@ describe('Account Service', () => {
     });
 
     it('should call indexerService.getAccountsCount directly if filter.ownerAddress is provided', async () => {
-      const filter = { ownerAddress: 'erd1qga7ze0l03chfgru0a32wxqf2226nzrxnyhzer9lmudqhjgy7ycqjjyknz' };
+      const filter = new AccountQueryOptions({ ownerAddress: "erd1qga7ze0l03chfgru0a32wxqf2226nzrxnyhzer9lmudqhjgy7ycqjjyknz" });
       const expectedResult = 10;
 
       jest.spyOn(cacheService, 'getOrSet').mockResolvedValue(expectedResult);
@@ -210,7 +210,7 @@ describe('Account Service', () => {
     });
 
     it('should call cachingService.getOrSet if filter.isSmartContract is not provided', async () => {
-      const filter: AccountQueryOptions = { isSmartContract: undefined };
+      const filter = new AccountQueryOptions({ isSmartContract: undefined });
       const expectedResult = 3000;
 
       jest.spyOn(cacheService, 'getOrSet').mockResolvedValue(expectedResult);
@@ -224,7 +224,7 @@ describe('Account Service', () => {
     });
 
     it('should call indexerService.getAccountsCount directly if filter.isSmartContract is provided', async () => {
-      const filter = { isSmartContract: true };
+      const filter = new AccountQueryOptions({ isSmartContract: true });
       const expectedResult = 3000;
 
       jest.spyOn(cacheService, 'getOrSet').mockResolvedValue(expectedResult);
