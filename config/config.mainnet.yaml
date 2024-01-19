@@ -60,6 +60,8 @@ features:
     admins:
       - ''
     jwtSecret: ''
+  nodeEpochsLeft:
+    enabled: false
 image:
   width: 600
   height: 600

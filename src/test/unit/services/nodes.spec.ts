@@ -54,6 +54,7 @@ describe('NodeService', () => {
             getStakingContractAddress: jest.fn(),
             getAuctionContractAddress: jest.fn(),
             isNodeSyncProgressEnabled: jest.fn(),
+            isNodeEpochsLeftEnabled: jest.fn(),
           },
         },
         {
@@ -197,6 +198,7 @@ describe('NodeService', () => {
       it('should return epochsLeft key from gateway for a specific node', async () => {
         const bls = "72043abcbb6c3f472c3f486eb181794eeb11c70df5cdbb2c12eb16b92ec0dea12dfae0762641d92bf9a1c8743156f008f19a6a1b5160ace7c304390133c47a54399def909a7caeb59b9534002e7de7140d3241cce1a857f6c733dcfa80a1f28e";
 
+        jest.spyOn(apiConfigService, 'isNodeEpochsLeftEnabled').mockReturnValue(true);
         // eslint-disable-next-line require-await
         jest.spyOn(nodeService['cacheService'], 'getOrSet').mockImplementation(async (key, getter) => {
           if (key === CacheInfo.Nodes.key) {
