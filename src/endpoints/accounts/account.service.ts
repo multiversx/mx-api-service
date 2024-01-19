@@ -28,7 +28,7 @@ import { CacheInfo } from 'src/utils/cache.info';
 import { UsernameService } from '../usernames/username.service';
 import { ContractUpgrades } from './entities/contract.upgrades';
 import { AccountVerification } from './entities/account.verification';
-import { AccountFilter } from './entities/account.query.options';
+import { AccountQueryOptions } from './entities/account.query.options';
 import { AccountHistoryFilter } from './entities/account.history.filter';
 import { ProtocolService } from 'src/common/protocol/protocol.service';
 import { ProviderService } from '../providers/provider.service';
@@ -36,7 +36,6 @@ import { Provider } from '../providers/entities/provider';
 import { KeysService } from '../keys/keys.service';
 import { NodeStatusRaw } from '../nodes/entities/node.status';
 import { AccountKeyFilter } from './entities/account.key.filter';
-import { Address } from '@multiversx/sdk-core/out';
 
 @Injectable()
 export class AccountService {
@@ -67,7 +66,7 @@ export class AccountService {
     private readonly keysService: KeysService
   ) { }
 
-  async getAccountsCount(filter: AccountFilter): Promise<number> {
+  async getAccountsCount(filter: AccountQueryOptions): Promise<number> {
     if (!filter.ownerAddress && filter.isSmartContract === undefined) {
       return await this.cachingService.getOrSet(
         CacheInfo.AccountsCount.key,
@@ -299,7 +298,7 @@ export class AccountService {
     return null;
   }
 
-  async getAccounts(queryPagination: QueryPagination, filter: AccountFilter): Promise<Account[]> {
+  async getAccounts(queryPagination: QueryPagination, filter: AccountQueryOptions): Promise<Account[]> {
     if (!filter.isSet()) {
       return await this.cachingService.getOrSet(
         CacheInfo.Accounts(queryPagination).key,
@@ -326,8 +325,8 @@ export class AccountService {
     return accounts;
   }
 
-  async getAccountsRaw(queryPagination: QueryPagination, filter: AccountFilter): Promise<Account[]> {
-    const result = await this.indexerService.getAccounts(queryPagination, filter);
+  async getAccountsRaw(queryPagination: QueryPagination, options: AccountQueryOptions): Promise<Account[]> {
+    const result = await this.indexerService.getAccounts(queryPagination, options);
     const assets = await this.assetsService.getAllAccountAssets();
     const accounts: Account[] = result.map(item => {
       const account = ApiUtils.mergeObjects(new Account(), item);
@@ -344,7 +343,7 @@ export class AccountService {
       account.shard = AddressUtils.computeShard(AddressUtils.bech32Decode(account.address), shardCount);
       account.assets = assets[account.address];
 
-      if (filter.withDeployInfo && new Address(account.address).isContractAddress()) {
+      if (options.withDeployInfo && AddressUtils.isSmartContractAddress(account.address)) {
         const [deployedAt, deployTxHash] = await Promise.all([
           this.getAccountDeployedAt(account.address),
           this.getAccountDeployedTxHash(account.address),
@@ -354,13 +353,23 @@ export class AccountService {
         account.deployTxHash = deployTxHash;
       }
 
-      if (filter.withOwnerAssets && account.ownerAddress) {
+      if (options.withTxCount) {
+        account.txCount = await this.getAccountTxCount(account.address);
+      }
+
+      if (options.withScrCount) {
+        account.scrCount = await this.getAccountScResults(account.address);
+      }
+
+      if (options.withOwnerAssets && account.ownerAddress) {
         account.ownerAssets = assets[account.ownerAddress];
       }
 
       if (verifiedAccounts && verifiedAccounts.includes(account.address)) {
         account.isVerified = true;
       }
+
+
     }
 
     return accounts;

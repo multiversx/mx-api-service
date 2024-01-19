@@ -52,4 +52,12 @@ export class Account {
   @Field(() => Boolean, { description: 'If the given detailed account is verified.', nullable: true })
   @ApiProperty({ description: 'Specific property flag for smart contract', type: Boolean })
   isVerified?: boolean;
+
+  @Field(() => Float, { description: 'Transactions count for the given detailed account.' })
+  @ApiProperty({ description: 'The number of transactions performed on this account' })
+  txCount?: number;
+
+  @Field(() => Float, { description: 'Smart contract results count for the given detailed account.' })
+  @ApiProperty({ description: 'The number of smart contract results of this account' })
+  scrCount?: number;
 }

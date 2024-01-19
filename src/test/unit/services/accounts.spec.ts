@@ -15,7 +15,7 @@ import { AccountService } from "src/endpoints/accounts/account.service";
 import { Account } from "src/endpoints/accounts/entities/account";
 import { AccountDetailed } from "src/endpoints/accounts/entities/account.detailed";
 import { AccountEsdtHistory } from "src/endpoints/accounts/entities/account.esdt.history";
-import { AccountFilter } from "src/endpoints/accounts/entities/account.query.options";
+import { AccountQueryOptions } from "src/endpoints/accounts/entities/account.query.options";
 import { AccountHistory } from "src/endpoints/accounts/entities/account.history";
 import { AccountHistoryFilter } from "src/endpoints/accounts/entities/account.history.filter";
 import { ContractUpgrades } from "src/endpoints/accounts/entities/contract.upgrades";
@@ -182,7 +182,7 @@ describe('Account Service', () => {
 
   describe('getAccountsCount', () => {
     it('should call cachingService.getOrSet if filter.ownerAddress is not provided', async () => {
-      const filter: AccountFilter = { ownerAddress: undefined };
+      const filter = new AccountQueryOptions({ ownerAddress: undefined });
       const expectedResult = 5;
 
       jest.spyOn(cacheService, 'getOrSet').mockResolvedValue(expectedResult);
@@ -196,7 +196,7 @@ describe('Account Service', () => {
     });
 
     it('should call indexerService.getAccountsCount directly if filter.ownerAddress is provided', async () => {
-      const filter = { ownerAddress: 'erd1qga7ze0l03chfgru0a32wxqf2226nzrxnyhzer9lmudqhjgy7ycqjjyknz' };
+      const filter = new AccountQueryOptions({ ownerAddress: "erd1qga7ze0l03chfgru0a32wxqf2226nzrxnyhzer9lmudqhjgy7ycqjjyknz" });
       const expectedResult = 10;
 
       jest.spyOn(cacheService, 'getOrSet').mockResolvedValue(expectedResult);
@@ -210,7 +210,7 @@ describe('Account Service', () => {
     });
 
     it('should call cachingService.getOrSet if filter.isSmartContract is not provided', async () => {
-      const filter: AccountFilter = { isSmartContract: undefined };
+      const filter = new AccountQueryOptions({ isSmartContract: undefined });
       const expectedResult = 3000;
 
       jest.spyOn(cacheService, 'getOrSet').mockResolvedValue(expectedResult);
@@ -224,7 +224,7 @@ describe('Account Service', () => {
     });
 
     it('should call indexerService.getAccountsCount directly if filter.isSmartContract is provided', async () => {
-      const filter = { isSmartContract: true };
+      const filter = new AccountQueryOptions({ isSmartContract: true });
       const expectedResult = 3000;
 
       jest.spyOn(cacheService, 'getOrSet').mockResolvedValue(expectedResult);
@@ -918,7 +918,7 @@ describe('Account Service', () => {
     ];
 
     it('should use cache if no filter is applied and merge with account assets', async () => {
-      const filter = new AccountFilter();
+      const filter = new AccountQueryOptions();
 
       const mockCacheFunction = jest.fn();
       mockCacheFunction.mockResolvedValue(elasticIndexerMock);
@@ -935,7 +935,7 @@ describe('Account Service', () => {
     });
 
     it('should use cache if no filter is applied and merge with account assets', async () => {
-      const filter = new AccountFilter();
+      const filter = new AccountQueryOptions();
 
       const mockCacheFunction = jest.fn();
       mockCacheFunction.mockResolvedValue(elasticIndexerMock);
@@ -952,7 +952,7 @@ describe('Account Service', () => {
     });
 
     it('should return accounts with owner assets details when withOwnerAssets filter is applied', async () => {
-      const filter = new AccountFilter({ withOwnerAssets: true });
+      const filter = new AccountQueryOptions({ withOwnerAssets: true });
 
       jest.spyOn(service, 'getAccountsRaw').mockResolvedValue(accountsRawMock);
 

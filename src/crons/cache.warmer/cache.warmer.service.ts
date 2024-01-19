@@ -24,7 +24,7 @@ import { SettingsService } from "src/common/settings/settings.service";
 import { TokenService } from "src/endpoints/tokens/token.service";
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { NftService } from "src/endpoints/nfts/nft.service";
-import { AccountFilter } from "src/endpoints/accounts/entities/account.query.options";
+import { AccountQueryOptions } from "src/endpoints/accounts/entities/account.query.options";
 import { TokenType } from "src/common/indexer/entities";
 import { TokenDetailed } from "src/endpoints/tokens/entities/token.detailed";
 import { DataApiService } from "src/common/data-api/data-api.service";
@@ -195,7 +195,7 @@ export class CacheWarmerService {
   @Cron(CronExpression.EVERY_MINUTE)
   @Lock({ name: 'Accounts invalidations', verbose: true })
   async handleAccountInvalidations() {
-    const accounts = await this.accountService.getAccountsRaw({ from: 0, size: 25 }, new AccountFilter());
+    const accounts = await this.accountService.getAccountsRaw({ from: 0, size: 25 }, new AccountQueryOptions());
 
     const accountsCacheInfo = CacheInfo.Accounts({ from: 0, size: 25 });
     await this.invalidateKey(accountsCacheInfo.key, accounts, accountsCacheInfo.ttl);

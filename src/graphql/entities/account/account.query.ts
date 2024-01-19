@@ -5,7 +5,7 @@ import { AccountService } from "src/endpoints/accounts/account.service";
 import { GetAccountFilteredInput, GetAccountsInput } from "src/graphql/entities/account/account.input";
 import { ApplyComplexity } from "@multiversx/sdk-nestjs-common";
 import { QueryPagination } from "src/common/entities/query.pagination";
-import { AccountFilter } from "src/endpoints/accounts/entities/account.query.options";
+import { AccountQueryOptions } from "src/endpoints/accounts/entities/account.query.options";
 
 @Resolver()
 export class AccountQuery {
@@ -15,12 +15,12 @@ export class AccountQuery {
   @ApplyComplexity({ target: Account })
   public async getAccounts(@Args("input", { description: "Input to retrieve the given accounts for." }) input: GetAccountsInput): Promise<Account[]> {
     return await this.accountService.getAccounts(
-      new QueryPagination({ from: input.from, size: input.size }), new AccountFilter({ ownerAddress: input.ownerAddress })
+      new QueryPagination({ from: input.from, size: input.size }), new AccountQueryOptions({ ownerAddress: input.ownerAddress })
     );
   }
 
   @Query(() => Float, { name: "accountsCount", description: "Retrieve all accounts count." })
   public async getAccountsCount(@Args("input", { description: "Input to retrieve the given accounts for." }) input: GetAccountFilteredInput): Promise<number> {
-    return await this.accountService.getAccountsCount(new AccountFilter({ ownerAddress: input.ownerAddress }));
+    return await this.accountService.getAccountsCount(new AccountQueryOptions({ ownerAddress: input.ownerAddress }));
   }
 }
