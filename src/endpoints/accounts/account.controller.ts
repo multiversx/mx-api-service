@@ -87,7 +87,7 @@ export class AccountController {
   @ApiQuery({ name: 'withOwnerAssets', description: 'Return a list accounts with owner assets', required: false })
   @ApiQuery({ name: 'withDeployInfo', description: 'Include deployedAt and deployTxHash fields in the result', required: false })
   @ApiQuery({ name: 'withTxCount', description: 'Include txCount field in the result', required: false })
-  @ApiQuery({ name: 'withScrCount', description: 'Include txCount field in the result', required: false })
+  @ApiQuery({ name: 'withScrCount', description: 'Include scrCount field in the result', required: false })
   getAccounts(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number,
