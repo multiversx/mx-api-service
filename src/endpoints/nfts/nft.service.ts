@@ -31,6 +31,7 @@ import { NftRarity } from "./entities/nft.rarity";
 import { NftRarities } from "./entities/nft.rarities";
 import { SortCollectionNfts } from "../collections/entities/sort.collection.nfts";
 import { TokenAssets } from "src/common/assets/entities/token.assets";
+import { ScamInfo } from "src/common/entities/scam-info.dto";
 
 @Injectable()
 export class NftService {
@@ -337,6 +338,10 @@ export class NftService {
       nft.collection = elasticNft.token;
       nft.nonce = parseInt('0x' + nft.identifier.split('-')[2]);
       nft.timestamp = elasticNft.timestamp;
+
+      nft.scamInfo = new ScamInfo();
+      nft.scamInfo.type = elasticNft.nft_scamInfoType;
+      nft.scamInfo.info = elasticNft.nft_scamInfoDescription;
 
       await this.applyExtendedAttributes(nft, elasticNft);
 

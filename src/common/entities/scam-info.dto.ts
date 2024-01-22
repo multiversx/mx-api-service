@@ -5,8 +5,7 @@ import { ScamType } from './scam-type.enum';
 @ObjectType("ScamInformation", { description: "Scam information object type." })
 export class ScamInfo {
   @Field(() => ScamType, { description: "Type for the given scam information." })
-  @ApiProperty({ enum: ScamType })
-  type: ScamType = ScamType.none;
+  type?: string | null;
 
   @Field(() => String, { description: "Information for the given scam.", nullable: true })
   @ApiProperty({ type: String, nullable: true })

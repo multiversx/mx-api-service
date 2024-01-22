@@ -27,6 +27,7 @@ import { NftRank } from "src/common/assets/entities/nft.rank";
 import { TokenDetailed } from "../tokens/entities/token.detailed";
 import { NftCollectionDetailed } from "./entities/nft.collection.detailed";
 import { CollectionLogo } from "./entities/collection.logo";
+import { ScamInfo } from "src/common/entities/scam-info.dto";
 
 @Injectable()
 export class CollectionService {
@@ -90,6 +91,10 @@ export class CollectionService {
       nftCollection.isVerified = indexedCollection.api_isVerified;
       nftCollection.nftCount = indexedCollection.api_nftCount;
       nftCollection.holderCount = indexedCollection.api_holderCount;
+
+      nftCollection.scamInfo = new ScamInfo();
+      nftCollection.scamInfo.type = indexedCollection.nft_scamInfoType;
+      nftCollection.scamInfo.info = indexedCollection.nft_scamInfoDescription;
     }
   }
 
