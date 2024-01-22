@@ -542,6 +542,13 @@ export class ElasticIndexerHelper {
       }
     }
 
+    if (filter.name) {
+      elasticQuery = elasticQuery.withMustCondition(QueryType.Match('api_name', filter.name));
+    }
+
+    if (filter.tags && filter.tags.length > 0) {
+      elasticQuery = elasticQuery.withMustCondition(QueryType.Match('api_tags', filter.tags, QueryOperator.AND));
+    }
     return elasticQuery;
   }
 

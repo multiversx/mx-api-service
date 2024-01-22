@@ -17,6 +17,7 @@ import { LogPerformanceAsync } from "src/utils/log.performance.decorator";
 import { AccountQueryOptions } from "src/endpoints/accounts/entities/account.query.options";
 import { MiniBlockFilter } from "src/endpoints/miniblocks/entities/mini.block.filter";
 import { AccountHistoryFilter } from "src/endpoints/accounts/entities/account.history.filter";
+import { AccountAssets } from "../assets/entities/account.assets";
 
 @Injectable()
 export class IndexerService implements IndexerInterface {
@@ -374,5 +375,10 @@ export class IndexerService implements IndexerInterface {
   @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
   async getAccountsForAddresses(addresses: string[]): Promise<Account[]> {
     return await this.indexerInterface.getAccountsForAddresses(addresses);
+  }
+
+  @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
+  async setAccountAssetsFields(address: string, assets: AccountAssets): Promise<void> {
+    return await this.indexerInterface.setAccountAssetsFields(address, assets);
   }
 }

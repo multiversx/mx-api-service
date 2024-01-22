@@ -16,6 +16,8 @@ export class AccountQueryOptions {
   withDeployInfo?: boolean;
   withTxCount?: boolean;
   withScrCount?: boolean;
+  name?: string;
+  tags?: string[];
 
   validate(size: number) {
     if (this.withDeployInfo && size > 25) {
@@ -37,6 +39,8 @@ export class AccountQueryOptions {
       this.order !== undefined ||
       this.isSmartContract !== undefined ||
       this.withOwnerAssets !== undefined ||
-      this.withDeployInfo !== undefined;
+      this.withDeployInfo !== undefined ||
+      this.name !== undefined ||
+      this.tags !== undefined;
   }
 }

@@ -311,6 +311,18 @@ export class CacheWarmerService {
     }
   }
 
+  @Cron(CronExpression.EVERY_HOUR)
+  @Lock({ name: 'Elastic updater: Update account assets', verbose: true })
+  async handleUpdateAccountAssets() {
+    const allAccountAssets = await this.assetsService.getAllAccountAssets();
+
+    for (const accountId of Object.keys(allAccountAssets)) {
+      const assets = allAccountAssets[accountId];
+      this.logger.log(`Updating assets for account with address '${accountId}'`);
+      await this.indexerService.setAccountAssetsFields(accountId, assets);
+    }
+  }
+
   private async invalidateKey(key: string, data: any, ttl: number) {
     await this.cachingService.set(key, data, ttl);
     await this.refreshCacheKey(key, ttl);

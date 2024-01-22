@@ -25,6 +25,7 @@ import { AccountQueryOptions } from "src/endpoints/accounts/entities/account.que
 import { AccountSort } from "src/endpoints/accounts/entities/account.sort";
 import { MiniBlockFilter } from "src/endpoints/miniblocks/entities/mini.block.filter";
 import { AccountHistoryFilter } from "src/endpoints/accounts/entities/account.history.filter";
+import { AccountAssets } from "src/common/assets/entities/account.assets";
 
 
 @Injectable()
@@ -382,7 +383,6 @@ export class ElasticIndexerService implements IndexerInterface {
 
   async getAccounts(queryPagination: QueryPagination, filter: AccountQueryOptions): Promise<any[]> {
     let elasticQuery = this.indexerHelper.buildAccountFilterQuery(filter);
-
     const sortOrder: ElasticSortOrder = !filter.order || filter.order === SortOrder.desc ? ElasticSortOrder.descending : ElasticSortOrder.ascending;
     const sort: AccountSort = filter.sort ?? AccountSort.balance;
 
@@ -826,6 +826,12 @@ export class ElasticIndexerService implements IndexerInterface {
       isVerified,
       holderCount,
       nftCount,
+    });
+  }
+
+  async setAccountAssetsFields(address: string, assets: AccountAssets): Promise<void> {
+    return await this.elasticService.setCustomValues('accounts', address, {
+      ...assets,
     });
   }
 }

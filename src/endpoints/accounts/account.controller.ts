@@ -88,10 +88,15 @@ export class AccountController {
   @ApiQuery({ name: 'withDeployInfo', description: 'Include deployedAt and deployTxHash fields in the result', required: false })
   @ApiQuery({ name: 'withTxCount', description: 'Include txCount field in the result', required: false })
   @ApiQuery({ name: 'withScrCount', description: 'Include scrCount field in the result', required: false })
+  @ApiQuery({ name: 'name', description: 'Filter accounts by assets name', required: false })
+  @ApiQuery({ name: 'tags', description: 'Filter accounts by assets tags', required: false })
+
   getAccounts(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number,
     @Query("ownerAddress", ParseAddressPipe) ownerAddress?: string,
+    @Query("name") name?: string,
+    @Query("tags") tags?: string[],
     @Query('sort', new ParseEnumPipe(AccountSort)) sort?: AccountSort,
     @Query('order', new ParseEnumPipe(SortOrder)) order?: SortOrder,
     @Query("isSmartContract", new ParseBoolPipe) isSmartContract?: boolean,
@@ -100,9 +105,20 @@ export class AccountController {
     @Query("withTxCount", new ParseBoolPipe) withTxCount?: boolean,
     @Query("withScrCount", new ParseBoolPipe) withScrCount?: boolean,
   ): Promise<Account[]> {
-    const queryOptions = new AccountQueryOptions({ ownerAddress, sort, order, isSmartContract, withOwnerAssets, withDeployInfo, withTxCount, withScrCount });
+    const queryOptions = new AccountQueryOptions(
+      {
+        ownerAddress,
+        sort,
+        order,
+        isSmartContract,
+        withOwnerAssets,
+        withDeployInfo,
+        withTxCount,
+        withScrCount,
+        name,
+        tags,
+      });
     queryOptions.validate(size);
-
     return this.accountService.getAccounts(
       new QueryPagination({ from, size }),
       queryOptions,
@@ -114,11 +130,22 @@ export class AccountController {
   @ApiOkResponse({ type: Number })
   @ApiQuery({ name: 'ownerAddress', description: 'Search by owner address', required: false })
   @ApiQuery({ name: 'isSmartContract', description: 'Return total smart contracts count', required: false })
+  @ApiQuery({ name: 'name', description: 'Filter accounts by assets name', required: false })
+  @ApiQuery({ name: 'tags', description: 'Filter accounts by assets tags', required: false })
   async getAccountsCount(
     @Query("ownerAddress", ParseAddressPipe) ownerAddress?: string,
     @Query("isSmartContract", new ParseBoolPipe) isSmartContract?: boolean,
+    @Query("name") name?: string,
+    @Query("tags") tags?: string[],
   ): Promise<number> {
-    return await this.accountService.getAccountsCount(new AccountQueryOptions({ ownerAddress, isSmartContract }));
+    return await this.accountService.getAccountsCount(
+      new AccountQueryOptions(
+        {
+          ownerAddress,
+          isSmartContract,
+          name,
+          tags,
+        }));
   }
 
   @Get("/accounts/c")
@@ -126,8 +153,17 @@ export class AccountController {
   async getAccountsCountAlternative(
     @Query("ownerAddress", ParseAddressPipe) ownerAddress?: string,
     @Query("isSmartContract", new ParseBoolPipe) isSmartContract?: boolean,
+    @Query("name") name?: string,
+    @Query("tags") tags?: string[],
   ): Promise<number> {
-    return await this.accountService.getAccountsCount(new AccountQueryOptions({ ownerAddress, isSmartContract }));
+    return await this.accountService.getAccountsCount(
+      new AccountQueryOptions(
+        {
+          ownerAddress,
+          isSmartContract,
+          name,
+          tags,
+        }));
   }
 
   @Get("/accounts/:address")
