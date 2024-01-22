@@ -831,7 +831,9 @@ export class ElasticIndexerService implements IndexerInterface {
 
   async setAccountAssetsFields(address: string, assets: AccountAssets): Promise<void> {
     return await this.elasticService.setCustomValues('accounts', address, {
-      ...assets,
+      assets: {
+        ...assets,
+      },
     });
   }
 }
