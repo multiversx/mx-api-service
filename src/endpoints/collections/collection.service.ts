@@ -15,7 +15,6 @@ import { EsdtAddressService } from "../esdt/esdt.address.service";
 import { CollectionRoles } from "../tokens/entities/collection.roles";
 import { TokenHelpers } from "src/utils/token.helpers";
 import { NftCollectionAccount } from "./entities/nft.collection.account";
-import { PluginService } from "src/common/plugins/plugin.service";
 import { BinaryUtils, TokenUtils } from "@multiversx/sdk-nestjs-common";
 import { ApiUtils } from "@multiversx/sdk-nestjs-http";
 import { CacheService } from "@multiversx/sdk-nestjs-cache";
@@ -40,7 +39,6 @@ export class CollectionService {
     private readonly cachingService: CacheService,
     @Inject(forwardRef(() => EsdtAddressService))
     private readonly esdtAddressService: EsdtAddressService,
-    private readonly pluginService: PluginService,
     private readonly persistenceService: PersistenceService,
   ) { }
 
@@ -77,8 +75,6 @@ export class CollectionService {
 
       this.applyPropertiesToCollectionFromElasticSearch(nftCollection, indexedCollection);
     }
-
-    await this.pluginService.processCollections(nftCollections);
 
     return nftCollections;
   }
@@ -210,7 +206,6 @@ export class CollectionService {
 
     collectionDetailed.traits = await this.persistenceService.getCollectionTraits(identifier) ?? [];
 
-    await this.pluginService.processCollections([collectionDetailed]);
     await this.applyCollectionRoles(collectionDetailed, elasticCollection);
 
     return collectionDetailed;
@@ -330,8 +325,6 @@ export class CollectionService {
       return undefined;
     }
 
-    await this.pluginService.processCollections([collection]);
-
     return collection;
   }
 
@@ -350,8 +343,6 @@ export class CollectionService {
         collection.count = item.count;
       }
     }
-
-    await this.pluginService.processCollections(accountCollections);
 
     return accountCollections;
   }

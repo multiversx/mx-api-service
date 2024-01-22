@@ -46,7 +46,6 @@ export class NftService {
     private readonly assetsService: AssetsService,
     private readonly cachingService: CacheService,
     @Inject(forwardRef(() => PluginService))
-    private readonly pluginService: PluginService,
     private readonly nftMetadataService: NftMetadataService,
     private readonly nftMediaService: NftMediaService,
     private readonly persistenceService: PersistenceService,
@@ -101,8 +100,6 @@ export class NftService {
     for (const nft of nfts) {
       await this.applyUnlockFields(nft);
     }
-
-    await this.pluginService.processNfts(nfts, queryOptions?.withScamInfo || queryOptions?.computeScamInfo);
 
     return nfts;
   }
@@ -183,7 +180,6 @@ export class NftService {
     await Promise.all([
       this.applyMedia(nft),
       this.applyMetadata(nft),
-      this.pluginService.processNfts([nft], true),
     ]);
 
     if (TokenHelpers.needsDefaultMedia(nft)) {
@@ -478,10 +474,6 @@ export class NftService {
     for (const nft of nfts) {
       await this.applyUnlockFields(nft, fields);
     }
-
-    const withScamInfo = (queryOptions?.withScamInfo || queryOptions?.computeScamInfo) && (!fields || fields.includes('scamInfo'));
-
-    await this.pluginService.processNfts(nfts, withScamInfo);
 
     return nfts;
   }
