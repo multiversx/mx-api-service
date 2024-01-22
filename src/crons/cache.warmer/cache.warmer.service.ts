@@ -316,10 +316,14 @@ export class CacheWarmerService {
   async handleUpdateAccountAssets() {
     const allAccountAssets = await this.assetsService.getAllAccountAssets();
 
-    for (const accountId of Object.keys(allAccountAssets)) {
-      const assets = allAccountAssets[accountId];
-      this.logger.log(`Updating assets for account with address '${accountId}'`);
-      await this.indexerService.setAccountAssetsFields(accountId, assets);
+    for (const address of Object.keys(allAccountAssets)) {
+      try {
+        const assets = allAccountAssets[address];
+        this.logger.log(`Updating assets for account with address '${address}'`);
+        await this.indexerService.setAccountAssetsFields(address, assets);
+      } catch (error) {
+        this.logger.error(`Failed to update assets for account with address '${address}': ${error}`);
+      }
     }
   }
 
