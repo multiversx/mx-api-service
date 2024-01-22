@@ -543,7 +543,7 @@ export class ElasticIndexerHelper {
     }
 
     if (filter.name) {
-      elasticQuery = elasticQuery.withMustCondition(QueryType.Match('api_assets.name', filter.name));
+      elasticQuery = elasticQuery.withMustWildcardCondition('api_assets.name', filter.name);
     }
 
     if (filter.tags && filter.tags.length > 0) {
