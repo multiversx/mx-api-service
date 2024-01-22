@@ -67,7 +67,7 @@ export class AccountService {
   ) { }
 
   async getAccountsCount(filter: AccountQueryOptions): Promise<number> {
-    if (!filter.ownerAddress && filter.isSmartContract === undefined && !filter.name === undefined && filter.tags === undefined) {
+    if (!filter.isSet()) {
       return await this.cachingService.getOrSet(
         CacheInfo.AccountsCount.key,
         async () => await this.indexerService.getAccountsCount(filter),
