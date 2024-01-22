@@ -96,7 +96,7 @@ export class AccountController {
     @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number,
     @Query("ownerAddress", ParseAddressPipe) ownerAddress?: string,
     @Query("name") name?: string,
-    @Query("tags") tags?: string[],
+    @Query("tags", new ParseArrayPipe()) tags?: string[],
     @Query('sort', new ParseEnumPipe(AccountSort)) sort?: AccountSort,
     @Query('order', new ParseEnumPipe(SortOrder)) order?: SortOrder,
     @Query("isSmartContract", new ParseBoolPipe) isSmartContract?: boolean,
@@ -136,7 +136,7 @@ export class AccountController {
     @Query("ownerAddress", ParseAddressPipe) ownerAddress?: string,
     @Query("isSmartContract", new ParseBoolPipe) isSmartContract?: boolean,
     @Query("name") name?: string,
-    @Query("tags") tags?: string[],
+    @Query("tags", new ParseArrayPipe()) tags?: string[],
   ): Promise<number> {
     return await this.accountService.getAccountsCount(
       new AccountQueryOptions(
@@ -154,7 +154,7 @@ export class AccountController {
     @Query("ownerAddress", ParseAddressPipe) ownerAddress?: string,
     @Query("isSmartContract", new ParseBoolPipe) isSmartContract?: boolean,
     @Query("name") name?: string,
-    @Query("tags") tags?: string[],
+    @Query("tags", new ParseArrayPipe()) tags?: string[],
   ): Promise<number> {
     return await this.accountService.getAccountsCount(
       new AccountQueryOptions(

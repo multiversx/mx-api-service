@@ -547,11 +547,22 @@ export class ElasticIndexerHelper {
     }
 
     if (filter.tags && filter.tags.length > 0) {
-      elasticQuery = elasticQuery.withMustCondition(QueryType.Match('api_assets.tags', filter.tags));
+      elasticQuery = this.applyTagsFilter(elasticQuery, filter.tags);
     }
 
     return elasticQuery;
   }
+
+  public applyTagsFilter(elasticQuery: ElasticQuery, tags: string[]) {
+    const tagsConditions = [];
+
+    for (const field of tags) {
+      tagsConditions.push(QueryType.Match('api_assets.tags', field));
+    }
+
+    return elasticQuery.withMustCondition(QueryType.Should(tagsConditions));
+  }
+
 
   public applyFunctionFilter(elasticQuery: ElasticQuery, functions: string[]) {
     const functionConditions = [];
