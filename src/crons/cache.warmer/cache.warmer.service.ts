@@ -18,7 +18,7 @@ import { MexSettingsService } from "src/endpoints/mex/mex.settings.service";
 import { MexPairService } from "src/endpoints/mex/mex.pair.service";
 import { MexFarmService } from "src/endpoints/mex/mex.farm.service";
 import { CacheService, GuestCacheWarmer } from "@multiversx/sdk-nestjs-cache";
-import { Constants, Lock, OriginLogger } from "@multiversx/sdk-nestjs-common";
+import { AddressUtils, Constants, Lock, OriginLogger } from "@multiversx/sdk-nestjs-common";
 import { DelegationLegacyService } from "src/endpoints/delegation.legacy/delegation.legacy.service";
 import { SettingsService } from "src/common/settings/settings.service";
 import { TokenService } from "src/endpoints/tokens/token.service";
@@ -312,15 +312,26 @@ export class CacheWarmerService {
   }
 
   @Cron(CronExpression.EVERY_HOUR)
-  @Lock({ name: 'Elastic updater: Update account assets', verbose: true })
-  async handleUpdateAccountAssets() {
+  @Lock({ name: 'Elastic updater: Update account assets / txCount / scrCount / deployedAt', verbose: true })
+  async handleUpdateAccountAssetsExtraDetails() {
     const allAccountAssets = await this.assetsService.getAllAccountAssets();
 
     for (const address of Object.keys(allAccountAssets)) {
       try {
         const assets = allAccountAssets[address];
+        let txCount = 0;
+        let scrCount = 0;
+        let deployedAt: number | null = null;
+
+        if (AddressUtils.isSmartContractAddress(address)) {
+          txCount = await this.accountService.getAccountTxCount(address);
+          scrCount = await this.accountService.getAccountScResults(address);
+          deployedAt = await this.accountService.getAccountDeployedAt(address);
+          this.logger.log(`Setting txCount: ${txCount}, scrCount: ${scrCount}, deployedAt: ${deployedAt} for address ${address}`);
+        }
+
         this.logger.log(`Updating assets for account with address '${address}'`);
-        await this.indexerService.setAccountAssetsFields(address, assets);
+        await this.indexerService.setAccountAssetsExtraFields(address, assets, txCount, scrCount, deployedAt);
       } catch (error) {
         this.logger.error(`Failed to update assets for account with address '${address}': ${error}`);
       }

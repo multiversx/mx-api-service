@@ -829,11 +829,17 @@ export class ElasticIndexerService implements IndexerInterface {
     });
   }
 
-  async setAccountAssetsFields(address: string, assets: AccountAssets): Promise<void> {
-    return await this.elasticService.setCustomValues('accounts', address, {
-      assets: {
-        ...assets,
-      },
-    });
+  async setAccountAssetsExtraFields(address: string, assets: AccountAssets, txCount: number, scrCount: number, deployedAt: number | null): Promise<void> {
+    const updateData: any = {
+      assets: { ...assets },
+      txCount: txCount,
+      scrCount: scrCount,
+    };
+
+    if (deployedAt !== null) {
+      updateData.deployedAt = deployedAt;
+    }
+
+    return await this.elasticService.setCustomValues('accounts', address, updateData);
   }
 }

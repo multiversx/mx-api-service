@@ -51,7 +51,7 @@ export class PostgresIndexerService implements IndexerInterface {
     private readonly validatorPublicKeysRepository: Repository<ValidatorPublicKeysDb>,
     private readonly indexerHelper: PostgresIndexerHelper,
   ) { }
-  setAccountAssetsFields(_address: string, _assets: AccountAssets): Promise<void> {
+  setAccountAssetsExtraFields(_address: string, _assets: AccountAssets, _txCount: number, _scrCount: number, _deployedAt: number | null): Promise<void> {
     throw new Error("Method not implemented.");
   }
 
