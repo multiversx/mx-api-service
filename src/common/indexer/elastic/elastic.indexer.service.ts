@@ -829,17 +829,23 @@ export class ElasticIndexerService implements IndexerInterface {
     });
   }
 
-  async setAccountAssetsExtraFields(address: string, assets: AccountAssets, txCount: number, scrCount: number, deployedAt: number | null): Promise<void> {
-    const updateData: any = {
+  async setAccountAssetsFields(address: string, assets: AccountAssets): Promise<void> {
+    return await this.elasticService.setCustomValues('accounts', address, {
       assets: { ...assets },
+    });
+  }
+
+  async setAccountExtraFields(address: string, txCount: number, scrCount: number, deployedAt: number | null): Promise<void> {
+    const updateExtraFields: any = {
       txCount: txCount,
       scrCount: scrCount,
     };
 
     if (deployedAt !== null) {
-      updateData.deployedAt = deployedAt;
+      updateExtraFields.deployedAt = deployedAt;
     }
 
-    return await this.elasticService.setCustomValues('accounts', address, updateData);
+
+    return await this.elasticService.setCustomValues('accounts', address, updateExtraFields);
   }
 }

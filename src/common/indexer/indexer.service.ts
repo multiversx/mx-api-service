@@ -378,7 +378,12 @@ export class IndexerService implements IndexerInterface {
   }
 
   @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
-  async setAccountAssetsExtraFields(address: string, assets: AccountAssets, txCount: number, scrCount: number, deployedAt: number | null): Promise<void> {
-    return await this.indexerInterface.setAccountAssetsExtraFields(address, assets, txCount, scrCount, deployedAt);
+  async setAccountAssetsFields(address: string, assets: AccountAssets): Promise<void> {
+    return await this.indexerInterface.setAccountAssetsFields(address, assets);
+  }
+
+  @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
+  async setAccountExtraFields(address: string, txCount: number, scrCount: number, deployedAt: number | null): Promise<void> {
+    return await this.indexerInterface.setAccountExtraFields(address, txCount, scrCount, deployedAt);
   }
 }

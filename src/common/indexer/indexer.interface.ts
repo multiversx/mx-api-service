@@ -156,5 +156,7 @@ export interface IndexerInterface {
 
   setExtraCollectionFields(identifier: string, isVerified: boolean, holderCount: number, nftCount: number): Promise<void>
 
-  setAccountAssetsExtraFields(address: string, assets: AccountAssets, txCount: number, scrCount: number, deployedAt: number | null): Promise<void>;
+  setAccountAssetsFields(address: string, assets: AccountAssets): Promise<void>;
+
+  setAccountExtraFields(address: string, txCount: number, scrCount: number, deployedAt: number | null): Promise<void>;
 }

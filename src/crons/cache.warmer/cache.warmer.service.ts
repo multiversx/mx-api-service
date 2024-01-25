@@ -312,13 +312,28 @@ export class CacheWarmerService {
   }
 
   @Cron(CronExpression.EVERY_HOUR)
-  @Lock({ name: 'Elastic updater: Update account assets / txCount / scrCount / deployedAt', verbose: true })
-  async handleUpdateAccountAssetsExtraDetails() {
+  @Lock({ name: 'Elastic updater: Update account assets', verbose: true })
+  async handleUpdateAccountAssets() {
     const allAccountAssets = await this.assetsService.getAllAccountAssets();
 
     for (const address of Object.keys(allAccountAssets)) {
       try {
         const assets = allAccountAssets[address];
+        this.logger.log(`Updating assets for account with address '${address}'`);
+        await this.indexerService.setAccountAssetsFields(address, assets);
+      } catch (error) {
+        this.logger.error(`Failed to update assets for account with address '${address}': ${error}`);
+      }
+    }
+  }
+
+  @Cron(CronExpression.EVERY_HOUR)
+  @Lock({ name: 'Elastic updater: Update account extra fields', verbose: true })
+  async handleUpdateAccountExtraFields() {
+    const allAccountAssets = await this.assetsService.getAllAccountAssets();
+
+    for (const address of Object.keys(allAccountAssets)) {
+      try {
         let txCount = 0;
         let scrCount = 0;
         let deployedAt: number | null = null;
@@ -330,10 +345,9 @@ export class CacheWarmerService {
           this.logger.log(`Setting txCount: ${txCount}, scrCount: ${scrCount}, deployedAt: ${deployedAt} for address ${address}`);
         }
 
-        this.logger.log(`Updating assets for account with address '${address}'`);
-        await this.indexerService.setAccountAssetsExtraFields(address, assets, txCount, scrCount, deployedAt);
+        await this.indexerService.setAccountExtraFields(address, txCount, scrCount, deployedAt);
       } catch (error) {
-        this.logger.error(`Failed to update assets for account with address '${address}': ${error}`);
+        this.logger.error(`Failed to setting extra fields for account with address '${address}': ${error}`);
       }
     }
   }
