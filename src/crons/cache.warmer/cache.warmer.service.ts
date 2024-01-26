@@ -371,9 +371,8 @@ export class CacheWarmerService {
     const after = Math.floor(startDate.getTime() / 1000);
     const before = Math.floor(endDate.getTime() / 1000);
     const filter: TransactionFilter = { before, after };
-    const result = await this.indexerService.getTransactionCount(filter, address);
 
-    return result;
+    return await this.indexerService.getTransactionCount(filter, address);
   }
 
   private subtractDays(date: Date, days: number): Date {
