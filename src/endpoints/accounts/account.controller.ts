@@ -90,6 +90,7 @@ export class AccountController {
   @ApiQuery({ name: 'withScrCount', description: 'Include scrCount field in the result', required: false })
   @ApiQuery({ name: 'name', description: 'Filter accounts by assets name', required: false })
   @ApiQuery({ name: 'tags', description: 'Filter accounts by assets tags', required: false })
+  @ApiQuery({ name: 'excludeTags', description: 'Filter smart contracts with no tags', required: false })
 
   getAccounts(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
@@ -104,6 +105,7 @@ export class AccountController {
     @Query("withDeployInfo", new ParseBoolPipe) withDeployInfo?: boolean,
     @Query("withTxCount", new ParseBoolPipe) withTxCount?: boolean,
     @Query("withScrCount", new ParseBoolPipe) withScrCount?: boolean,
+    @Query("excludeTags", new ParseBoolPipe) excludeTags?: boolean,
   ): Promise<Account[]> {
     const queryOptions = new AccountQueryOptions(
       {
@@ -117,6 +119,7 @@ export class AccountController {
         withScrCount,
         name,
         tags,
+        excludeTags,
       });
     queryOptions.validate(size);
     return this.accountService.getAccounts(

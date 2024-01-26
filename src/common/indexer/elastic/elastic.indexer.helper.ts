@@ -550,6 +550,10 @@ export class ElasticIndexerHelper {
       elasticQuery = this.applyGenericArrayFilter(elasticQuery, ['api_assets.tags'], filter.tags);
     }
 
+    if (filter.excludeTags) {
+      elasticQuery = elasticQuery.withMustNotCondition(QueryType.Exists('api_assets.tags'));
+    }
+
     return elasticQuery;
   }
 

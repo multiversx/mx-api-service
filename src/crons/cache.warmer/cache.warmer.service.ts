@@ -30,6 +30,7 @@ import { TokenDetailed } from "src/endpoints/tokens/entities/token.detailed";
 import { DataApiService } from "src/common/data-api/data-api.service";
 import { BlockService } from "src/endpoints/blocks/block.service";
 import { PoolService } from "src/endpoints/pool/pool.service";
+import { TransactionFilter } from "src/endpoints/transactions/entities/transaction.filter";
 
 @Injectable()
 export class CacheWarmerService {
@@ -345,7 +346,12 @@ export class CacheWarmerService {
           this.logger.log(`Setting txCount: ${txCount}, scrCount: ${scrCount}, deployedAt: ${deployedAt} for address ${address}`);
         }
 
-        await this.indexerService.setAccountExtraFields(address, txCount, scrCount, deployedAt);
+        const now = new Date();
+        const txCount24h = await this.getTransactionCountForInterval(address, this.subtractHours(now, 24), now);
+        const txCount7d = await this.getTransactionCountForInterval(address, this.subtractDays(now, 7), now);
+        const txCount30d = await this.getTransactionCountForInterval(address, this.subtractDays(now, 30), now);
+
+        await this.indexerService.setAccountExtraFields(address, txCount, scrCount, deployedAt, txCount24h, txCount7d, txCount30d);
       } catch (error) {
         this.logger.error(`Failed to setting extra fields for account with address '${address}': ${error}`);
       }
@@ -359,5 +365,31 @@ export class CacheWarmerService {
 
   private async refreshCacheKey(key: string, ttl: number) {
     await this.clientProxy.emit('refreshCacheKey', { key, ttl });
+  }
+
+  private async getTransactionCountForInterval(address: string, startDate: Date, endDate: Date): Promise<number> {
+    const after = startDate.getTime();
+    const before = endDate.getTime();
+
+    console.log(`Interval: ${new Date(after).toISOString()} - ${new Date(before).toISOString()}`);
+
+    const filter: TransactionFilter = { before, after };
+
+    console.log(`Before value: ${filter.before} and After value: ${filter.after}`);
+    const result = await this.indexerService.getTransactionCount(filter, address);
+
+    return result;
+  }
+
+  private subtractDays(date: Date, days: number): Date {
+    const result = new Date(date);
+    result.setDate(result.getDate() - days);
+    return result;
+  }
+
+  private subtractHours(date: Date, hours: number): Date {
+    const result = new Date(date);
+    result.setHours(result.getHours() - hours);
+    return result;
   }
 }

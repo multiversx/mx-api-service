@@ -835,10 +835,13 @@ export class ElasticIndexerService implements IndexerInterface {
     });
   }
 
-  async setAccountExtraFields(address: string, txCount: number, scrCount: number, deployedAt: number | null): Promise<void> {
+  async setAccountExtraFields(address: string, txCount: number, scrCount: number, deployedAt: number | null, txCount24h: number, txCount7d: number, txCount30d: number): Promise<void> {
     const updateExtraFields: any = {
       txCount: txCount,
       scrCount: scrCount,
+      txCount24h: txCount24h,
+      txCount7d: txCount7d,
+      txCount30d: txCount30d,
     };
 
     if (deployedAt !== null) {

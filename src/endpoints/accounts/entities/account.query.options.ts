@@ -18,6 +18,7 @@ export class AccountQueryOptions {
   withScrCount?: boolean;
   name?: string;
   tags?: string[];
+  excludeTags?: boolean;
 
   validate(size: number) {
     if (this.withDeployInfo && size > 25) {
@@ -41,6 +42,7 @@ export class AccountQueryOptions {
       this.withOwnerAssets !== undefined ||
       this.withDeployInfo !== undefined ||
       this.name !== undefined ||
-      this.tags !== undefined;
+      this.tags !== undefined ||
+      this.excludeTags !== undefined;
   }
 }

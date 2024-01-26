@@ -383,7 +383,7 @@ export class IndexerService implements IndexerInterface {
   }
 
   @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
-  async setAccountExtraFields(address: string, txCount: number, scrCount: number, deployedAt: number | null): Promise<void> {
-    return await this.indexerInterface.setAccountExtraFields(address, txCount, scrCount, deployedAt);
+  async setAccountExtraFields(address: string, txCount: number, scrCount: number, deployedAt: number | null, txCount24h: number, txCount7d: number, txCount30d: number): Promise<void> {
+    return await this.indexerInterface.setAccountExtraFields(address, txCount, scrCount, deployedAt, txCount7d, txCount24h, txCount30d);
   }
 }
