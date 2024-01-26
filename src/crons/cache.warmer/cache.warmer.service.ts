@@ -368,14 +368,9 @@ export class CacheWarmerService {
   }
 
   private async getTransactionCountForInterval(address: string, startDate: Date, endDate: Date): Promise<number> {
-    const after = startDate.getTime();
-    const before = endDate.getTime();
-
-    console.log(`Interval: ${new Date(after).toISOString()} - ${new Date(before).toISOString()}`);
-
+    const after = Math.floor(startDate.getTime() / 1000);
+    const before = Math.floor(endDate.getTime() / 1000);
     const filter: TransactionFilter = { before, after };
-
-    console.log(`Before value: ${filter.before} and After value: ${filter.after}`);
     const result = await this.indexerService.getTransactionCount(filter, address);
 
     return result;
