@@ -1,8 +1,8 @@
 network: 'mainnet'
 metaChainShardId: 4294967295
 api:
-  public: true
-  private: true
+  public: ${bool:API_PUBLIC}
+  private: ${bool:API_PRIVATE}
 cron:
   transactionProcessor: true
   transactionProcessorMaxLookBehind: 1000
@@ -70,34 +70,32 @@ aws:
   s3Bucket: 'media.elrond.com'
   s3Region: ''
 urls:
-  self: 'https://api.multiversx.com'
-  elastic:
-    - 'https://index.multiversx.com'
-  gateway:
-    - 'https://gateway.multiversx.com'
-  verifier: 'https://play-api.multiversx.com'
-  redis: '127.0.0.1'
-  rabbitmq: 'amqp://127.0.0.1:5672'
-  providers: 'https://delegation-api.multiversx.com/providers'
-  delegation: 'https://delegation-api.multiversx.com'
-  media: 'https://media.elrond.com'
-  nftThumbnails: 'https://media.elrond.com/nfts/thumbnail'
+  self: ${arr:API_URL}
+  elastic: ${arr:ELASTIC_URL}
+  gateway: ${arr:GATEWAY_URL}
+  verifier: ${VERIFIER_URL}
+  redis: ${REDIS_URL}
+  rabbitmq: ${RABBITMQ_URL}
+  providers: ${PROVIDERS_URL}
+  delegation: ${DELEGATION_URL}
+  media: ${MEDIA_URL}
+  nftThumbnails: ${arr:NFTTHUMBNAILS_URL}
   tmp: '/tmp'
-  ipfs: 'https://ipfs.io/ipfs'
-  socket: 'socket-fra.elrond.com'
-  maiarId: 'https://id-api.multiversx.com'
+  ipfs: ${arr:IPFS_URL}
+  socket: ${arr:SOCKET_URL}
+  maiarId: ${MAIARID_URL}
 indexer:
   type: 'elastic'
   maxPagination: 10000
 database:
   enabled: false
-  url: 'mongodb://127.0.0.1:27017/api?authSource=admin'
-  type: 'mysql'
-  host: 'localhost'
-  port: 3306
-  username: 'root'
-  password: 'root'
-  database: 'api'
+  url: ${DB_URL}
+  type: ${DB_TYPE}
+  host: ${DB_HOST}
+  port: ${num:DB_PORT}
+  username: ${DB_USERNAME}
+  password: ${DB_PASSWORD}'
+  database: ${DB_NAME}
 caching:
   cacheTtl: 6
   processTtl: 600

@@ -13,7 +13,6 @@ describe('API Config', () => {
     }).compile();
 
     apiConfigService = moduleRef.get<ApiConfigService>(ApiConfigService);
-
   });
 
   beforeEach(() => { jest.restoreAllMocks(); });
@@ -22,7 +21,12 @@ describe('API Config', () => {
     it("should return gateway url", () => {
       jest
         .spyOn(ConfigService.prototype, "get")
-        .mockImplementation(jest.fn(() => ['https://gateway.multiversx.com']));
+        .mockImplementation(jest.fn((key: string) => {
+          if (key === 'urls.gateway') {
+            return ['https://gateway.multiversx.com'];
+          }
+          return undefined;
+        }));
 
       const results = apiConfigService.getGatewayUrl();
       expect(results).toEqual('https://gateway.multiversx.com');
@@ -60,7 +64,12 @@ describe('API Config', () => {
     it("should return elastic url", () => {
       jest
         .spyOn(ConfigService.prototype, "get")
-        .mockImplementation(jest.fn(() => ['https://index.multiversx.com']));
+        .mockImplementation(jest.fn((key: string) => {
+          if (key === 'urls.elastic') {
+            return ['https://index.multiversx.com'];
+          }
+          return undefined;
+        }));
 
       const results = apiConfigService.getElasticUrl();
       expect(results).toEqual('https://index.multiversx.com');
@@ -79,7 +88,12 @@ describe('API Config', () => {
     it("should return Ipfs url", () => {
       jest
         .spyOn(ConfigService.prototype, "get")
-        .mockImplementation(jest.fn(() => ['https://ipfs.io/ipfs']));
+        .mockImplementation(jest.fn((key: string) => {
+          if (key === 'urls.ipfs') {
+            return ['https://ipfs.io/ipfs'];
+          }
+          return undefined;
+        }));
 
       const results = apiConfigService.getIpfsUrl();
       expect(results).toEqual(['https://ipfs.io/ipfs']);
@@ -99,7 +113,12 @@ describe('API Config', () => {
     it("should return socket url", () => {
       jest
         .spyOn(ConfigService.prototype, "get")
-        .mockImplementation(jest.fn(() => ['socket-fra.elrond.com']));
+        .mockImplementation(jest.fn((key: string) => {
+          if (key === 'urls.socket') {
+            return ['socket-fra.elrond.com'];
+          }
+          return undefined;
+        }));
 
       const results = apiConfigService.getSocketUrl();
       expect(results).toEqual(['socket-fra.elrond.com']);
@@ -211,7 +230,12 @@ describe('API Config', () => {
     it("should return vm query url", () => {
       jest
         .spyOn(ConfigService.prototype, "get")
-        .mockImplementation(jest.fn(() => ['https://gateway.multiversx.com']));
+        .mockImplementation(jest.fn((key: string) => {
+          if (key === 'urls.gateway') {
+            return ['https://gateway.multiversx.com'];
+          }
+          return undefined;
+        }));
 
       const results = apiConfigService.getVmQueryUrl();
       expect(results).toEqual('https://gateway.multiversx.com');
@@ -268,7 +292,12 @@ describe('API Config', () => {
     it("should return cache tll value", () => {
       jest
         .spyOn(ConfigService.prototype, "get")
-        .mockImplementation(jest.fn(() => 6));
+        .mockImplementation(jest.fn((key: string) => {
+          if (key === 'caching.cacheTtl') {
+            return 6;
+          }
+          return undefined;
+        }));
 
       const results = apiConfigService.getCacheTtl();
       expect(results).toEqual(6);
@@ -343,9 +372,12 @@ describe('API Config', () => {
 
   describe("getPoolLimit", () => {
     it("should return pool limit value", () => {
-      jest
-        .spyOn(ConfigService.prototype, "get")
-        .mockImplementation(jest.fn(() => 10));
+      jest.spyOn(ConfigService.prototype, 'get').mockImplementation((key: string) => {
+        if (key === 'caching.poolLimit') {
+          return 10;
+        }
+        return undefined;
+      });
 
       const results = apiConfigService.getPoolLimit();
       expect(results).toEqual(10);
@@ -365,7 +397,12 @@ describe('API Config', () => {
     it("should return process ttl value", () => {
       jest
         .spyOn(ConfigService.prototype, "get")
-        .mockImplementation(jest.fn(() => 600));
+        .mockImplementation(jest.fn((key: string) => {
+          if (key === 'caching.processTtl') {
+            return 600;
+          }
+          return undefined;
+        }));
 
       const results = apiConfigService.getProcessTtl();
       expect(results).toEqual(600);
@@ -385,7 +422,12 @@ describe('API Config', () => {
     it("should return axios timeout value", () => {
       jest
         .spyOn(ConfigService.prototype, "get")
-        .mockImplementation(jest.fn(() => 61000));
+        .mockImplementation(jest.fn((key: string) => {
+          if (key === 'keepAliveTimeout.downstream') {
+            return 61000;
+          }
+          return undefined;
+        }));
 
       const results = apiConfigService.getAxiosTimeout();
       expect(results).toEqual(61000);
@@ -405,7 +447,12 @@ describe('API Config', () => {
     it("should return server timeout value", () => {
       jest
         .spyOn(ConfigService.prototype, "get")
-        .mockImplementation(jest.fn(() => 60000));
+        .mockImplementation(jest.fn((key: string) => {
+          if (key === 'keepAliveTimeout.upstream') {
+            return 60000;
+          }
+          return undefined;
+        }));
 
       const results = apiConfigService.getServerTimeout();
       expect(results).toEqual(60000);
@@ -425,7 +472,12 @@ describe('API Config', () => {
     it("should return headers timeout value", () => {
       jest
         .spyOn(ConfigService.prototype, "get")
-        .mockImplementation(jest.fn(() => 60000));
+        .mockImplementation(jest.fn((key: string) => {
+          if (key === 'keepAliveTimeout.upstream') {
+            return 60000;
+          }
+          return undefined;
+        }));
 
       const results = apiConfigService.getHeadersTimeout();
       expect(results).toEqual(61000);
@@ -436,7 +488,12 @@ describe('API Config', () => {
     it("should return request caching flag value", () => {
       jest
         .spyOn(ConfigService.prototype, "get")
-        .mockImplementation(jest.fn(() => true));
+        .mockImplementation(jest.fn((key: string) => {
+          if (key === 'flags.useRequestCaching') {
+            return true;
+          }
+          return undefined;
+        }));
 
       const results = apiConfigService.getUseRequestCachingFlag();
       expect(results).toEqual(true);
@@ -456,7 +513,12 @@ describe('API Config', () => {
     it("should return request logging flag value", () => {
       jest
         .spyOn(ConfigService.prototype, "get")
-        .mockImplementation(jest.fn(() => true));
+        .mockImplementation(jest.fn((key: string) => {
+          if (key === 'flags.useRequestLogging') {
+            return true;
+          }
+          return undefined;
+        }));
 
       const results = apiConfigService.getUseRequestLoggingFlag();
       expect(results).toEqual(true);
@@ -476,7 +538,12 @@ describe('API Config', () => {
     it("should return keep alive agent flag value", () => {
       jest
         .spyOn(ConfigService.prototype, "get")
-        .mockImplementation(jest.fn(() => true));
+        .mockImplementation(jest.fn((key: string) => {
+          if (key === 'flags.useKeepAliveAgent') {
+            return true;
+          }
+          return undefined;
+        }));
 
       const results = apiConfigService.getUseKeepAliveAgentFlag();
       expect(results).toEqual(true);
@@ -554,7 +621,12 @@ describe('API Config', () => {
     it("should return transactoion processor cron active flag", () => {
       jest
         .spyOn(ConfigService.prototype, "get")
-        .mockImplementation(jest.fn(() => true));
+        .mockImplementation(jest.fn((key: string) => {
+          if (key === 'cron.transactionProcessor') {
+            return true;
+          }
+          return undefined;
+        }));
 
       const results = apiConfigService.getIsTransactionProcessorCronActive();
       expect(results).toEqual(true);
@@ -573,7 +645,12 @@ describe('API Config', () => {
     it("should returntransaction processor max look behind", () => {
       jest
         .spyOn(ConfigService.prototype, "get")
-        .mockImplementation(jest.fn(() => 1000));
+        .mockImplementation(jest.fn((key: string) => {
+          if (key === 'cron.transactionProcessorMaxLookBehind') {
+            return 1000;
+          }
+          return undefined;
+        }));
 
       const results = apiConfigService.getTransactionProcessorMaxLookBehind();
       expect(results).toEqual(1000);
@@ -612,7 +689,12 @@ describe('API Config', () => {
     it("should return transaction complete max look behind value", () => {
       jest
         .spyOn(ConfigService.prototype, "get")
-        .mockImplementation(jest.fn(() => 100));
+        .mockImplementation(jest.fn((key: string) => {
+          if (key === 'cron.transactionCompletedMaxLookBehind') {
+            return 100;
+          }
+          return undefined;
+        }));
 
       const results = apiConfigService.getTransactionCompletedMaxLookBehind();
       expect(results).toEqual(100);
@@ -632,7 +714,12 @@ describe('API Config', () => {
     it("should return cache warmer cron active flag", () => {
       jest
         .spyOn(ConfigService.prototype, "get")
-        .mockImplementation(jest.fn(() => true));
+        .mockImplementation(jest.fn((key: string) => {
+          if (key === 'cron.cacheWarmer') {
+            return true;
+          }
+          return undefined;
+        }));
 
       const results = apiConfigService.getIsCacheWarmerCronActive();
       expect(results).toEqual(true);
@@ -651,7 +738,12 @@ describe('API Config', () => {
     it("should return queue worker cron active flag", () => {
       jest
         .spyOn(ConfigService.prototype, "get")
-        .mockImplementation(jest.fn(() => true));
+        .mockImplementation(jest.fn((key: string) => {
+          if (key === 'cron.queueWorker') {
+            return true;
+          }
+          return undefined;
+        }));
 
       const results = apiConfigService.getIsQueueWorkerCronActive();
       expect(results).toEqual(true);
@@ -670,7 +762,12 @@ describe('API Config', () => {
     it("should return fast warmer cron active flag", () => {
       jest
         .spyOn(ConfigService.prototype, "get")
-        .mockImplementation(jest.fn(() => true));
+        .mockImplementation(jest.fn((key: string) => {
+          if (key === 'cron.fastWarm') {
+            return true;
+          }
+          return undefined;
+        }));
 
       const results = apiConfigService.getIsFastWarmerCronActive();
       expect(results).toEqual(true);
@@ -690,7 +787,12 @@ describe('API Config', () => {
     it("should return vm query tracing flag", () => {
       jest
         .spyOn(ConfigService.prototype, "get")
-        .mockImplementation(jest.fn(() => true));
+        .mockImplementation(jest.fn((key: string) => {
+          if (key === 'flags.useVmQueryTracing') {
+            return true;
+          }
+          return undefined;
+        }));
 
       const results = apiConfigService.getUseVmQueryTracingFlag();
       expect(results).toEqual(true);
@@ -710,7 +812,12 @@ describe('API Config', () => {
     it("should return process nfts flag active", () => {
       jest
         .spyOn(ConfigService.prototype, "get")
-        .mockImplementation(jest.fn(() => true));
+        .mockImplementation(jest.fn((key: string) => {
+          if (key === 'flags.processNfts') {
+            return true;
+          }
+          return undefined;
+        }));
 
       const results = apiConfigService.getIsProcessNftsFlagActive();
       expect(results).toEqual(true);
@@ -730,7 +837,12 @@ describe('API Config', () => {
     it("should return indexer V3 flag active", () => {
       jest
         .spyOn(ConfigService.prototype, "get")
-        .mockImplementation(jest.fn(() => true));
+        .mockImplementation(jest.fn((key: string) => {
+          if (key === 'flags.indexer-v3') {
+            return true;
+          }
+          return undefined;
+        }));
 
       const results = apiConfigService.getIsIndexerV3FlagActive();
       expect(results).toEqual(true);
@@ -750,7 +862,12 @@ describe('API Config', () => {
     it("should return is public api active flag", () => {
       jest
         .spyOn(ConfigService.prototype, "get")
-        .mockImplementation(jest.fn(() => true));
+        .mockImplementation(jest.fn((key: string) => {
+          if (key === 'api.public') {
+            return true;
+          }
+          return undefined;
+        }));
 
       const results = apiConfigService.getIsPublicApiActive();
       expect(results).toEqual(true);
@@ -769,7 +886,12 @@ describe('API Config', () => {
     it("should return is private api active flag", () => {
       jest
         .spyOn(ConfigService.prototype, "get")
-        .mockImplementation(jest.fn(() => true));
+        .mockImplementation(jest.fn((key: string) => {
+          if (key === 'api.private') {
+            return true;
+          }
+          return undefined;
+        }));
 
       const results = apiConfigService.getIsPrivateApiActive();
       expect(results).toEqual(true);
@@ -788,7 +910,12 @@ describe('API Config', () => {
     it("should return collection properties from gateway flag", () => {
       jest
         .spyOn(ConfigService.prototype, "get")
-        .mockImplementation(jest.fn(() => true));
+        .mockImplementation(jest.fn((key: string) => {
+          if (key === 'flags.collectionPropertiesFromGateway') {
+            return true;
+          }
+          return undefined;
+        }));
 
       const results = apiConfigService.getCollectionPropertiesFromGateway();
       expect(results).toEqual(true);
@@ -799,7 +926,12 @@ describe('API Config', () => {
     it("should return is auth active flag", () => {
       jest
         .spyOn(ConfigService.prototype, "get")
-        .mockImplementation(jest.fn(() => true));
+        .mockImplementation(jest.fn((key: string) => {
+          if (key === 'features.auth.enabled') {
+            return true;
+          }
+          return undefined;
+        }));
 
       const results = apiConfigService.getIsAuthActive();
       expect(results).toEqual(true);
@@ -838,7 +970,12 @@ describe('API Config', () => {
     it("should return database port", () => {
       jest
         .spyOn(ConfigService.prototype, "get")
-        .mockImplementation(jest.fn(() => 3306));
+        .mockImplementation(jest.fn((key: string) => {
+          if (key === 'database.port') {
+            return 3306;
+          }
+          return undefined;
+        }));
 
       const results = apiConfigService.getDatabasePort();
       expect(results).toEqual(3306);
@@ -898,7 +1035,12 @@ describe('API Config', () => {
     it("should return database slave connections", () => {
       jest
         .spyOn(ConfigService.prototype, "get")
-        .mockImplementation(jest.fn(() => DatabaseConnectionOptions));
+        .mockImplementation(jest.fn((key: string) => {
+          if (key === 'database.slaves') {
+            return DatabaseConnectionOptions;
+          }
+          return undefined;
+        }));
 
       const results = apiConfigService.getDatabaseSlaveConnections();
       expect(results).toEqual(DatabaseConnectionOptions);
@@ -918,7 +1060,12 @@ describe('API Config', () => {
     it("should return image width", () => {
       jest
         .spyOn(ConfigService.prototype, "get")
-        .mockImplementation(jest.fn(() => 600));
+        .mockImplementation(jest.fn((key: string) => {
+          if (key === 'image.width') {
+            return 600;
+          }
+          return undefined;
+        }));
 
       const results = apiConfigService.getImageWidth();
       expect(results).toEqual(600);
@@ -937,7 +1084,12 @@ describe('API Config', () => {
     it("should return image width", () => {
       jest
         .spyOn(ConfigService.prototype, "get")
-        .mockImplementation(jest.fn(() => 600));
+        .mockImplementation(jest.fn((key: string) => {
+          if (key === 'image.height') {
+            return 600;
+          }
+          return undefined;
+        }));
 
       const results = apiConfigService.getImageHeight();
       expect(results).toEqual(600);
@@ -1048,10 +1200,15 @@ describe('API Config', () => {
   });
 
   describe("getMetaChainShardId", () => {
-    it("should return awsS3 Region", () => {
+    it("should return metaChainShardId", () => {
       jest
         .spyOn(ConfigService.prototype, "get")
-        .mockImplementation(jest.fn(() => 4294967295));
+        .mockImplementation(jest.fn((key: string) => {
+          if (key === 'metaChainShardId') {
+            return 4294967295;
+          }
+          return undefined;
+        }));
 
       const results = apiConfigService.getMetaChainShardId();
       expect(results).toEqual(4294967295);
@@ -1081,15 +1238,20 @@ describe('API Config', () => {
     it("should return inflation amounts", () => {
       jest
         .spyOn(ConfigService.prototype, "get")
-        .mockImplementation(jest.fn(() => [
-          1952123,
-          1746637,
-          1541150,
-          1335663,
-          1130177,
-          924690,
-          719203,
-        ]));
+        .mockImplementation(jest.fn((key: string) => {
+          if (key === 'inflation') {
+            return [
+              1952123,
+              1746637,
+              1541150,
+              1335663,
+              1130177,
+              924690,
+              719203,
+            ];
+          }
+          return undefined;
+        }));
 
       const results = apiConfigService.getInflationAmounts();
       expect(results).toEqual(expect.arrayContaining([
@@ -1165,10 +1327,15 @@ describe('API Config', () => {
   });
 
   describe("getSecurityAdmins", () => {
-    it("should return nft thumbnails url", () => {
+    it("should return security admins", () => {
       jest
         .spyOn(ConfigService.prototype, "get")
-        .mockImplementation(jest.fn(() => ['testAdmin']));
+        .mockImplementation(jest.fn((key: string) => {
+          if (key === 'features.auth.admins') {
+            return ['testAdmin'];
+          }
+          return undefined;
+        }));
 
       const results = apiConfigService.getSecurityAdmins();
       expect(results).toEqual(['testAdmin']);
@@ -1206,7 +1373,12 @@ describe('API Config', () => {
     it("should return mock keybases flag", () => {
       jest
         .spyOn(ConfigService.prototype, "get")
-        .mockImplementation(jest.fn(() => true));
+        .mockImplementation(jest.fn((key: string) => {
+          if (key === 'test.mockKeybases') {
+            return true;
+          }
+          return undefined;
+        }));
 
       const results = apiConfigService.getMockKeybases();
       expect(results).toEqual(true);
@@ -1226,7 +1398,12 @@ describe('API Config', () => {
     it("should return mock nodes flag", () => {
       jest
         .spyOn(ConfigService.prototype, "get")
-        .mockImplementation(jest.fn(() => true));
+        .mockImplementation(jest.fn((key: string) => {
+          if (key === 'test.mockNodes') {
+            return true;
+          }
+          return undefined;
+        }));
 
       const results = apiConfigService.getMockNodes();
       expect(results).toEqual(true);
@@ -1246,7 +1423,12 @@ describe('API Config', () => {
     it("should return mock tokens flag", () => {
       jest
         .spyOn(ConfigService.prototype, "get")
-        .mockImplementation(jest.fn(() => true));
+        .mockImplementation(jest.fn((key: string) => {
+          if (key === 'test.mockTokens') {
+            return true;
+          }
+          return undefined;
+        }));
 
       const results = apiConfigService.getMockTokens();
       expect(results).toEqual(true);
@@ -1285,7 +1467,12 @@ describe('API Config', () => {
     it("should return nft process parallelism value", () => {
       jest
         .spyOn(ConfigService.prototype, "get")
-        .mockImplementation(jest.fn(() => 1));
+        .mockImplementation(jest.fn((key: string) => {
+          if (key === 'nftProcess.parallelism') {
+            return 1;
+          }
+          return undefined;
+        }));
 
       const results = apiConfigService.getNftProcessParallelism();
       expect(results).toEqual(1);
@@ -1305,7 +1492,12 @@ describe('API Config', () => {
     it("should return nft process max retries value", () => {
       jest
         .spyOn(ConfigService.prototype, "get")
-        .mockImplementation(jest.fn(() => 3));
+        .mockImplementation(jest.fn((key: string) => {
+          if (key === 'nftProcess.maxRetries') {
+            return 3;
+          }
+          return undefined;
+        }));
 
       const results = apiConfigService.getNftProcessMaxRetries();
       expect(results).toEqual(3);
@@ -1440,7 +1632,12 @@ describe('API Config', () => {
     it("should return events notifier event flag", () => {
       jest
         .spyOn(ConfigService.prototype, "get")
-        .mockImplementation(jest.fn(() => true));
+        .mockImplementation(jest.fn((key: string) => {
+          if (key === 'features.eventsNotifier.enabled') {
+            return true;
+          }
+          return undefined;
+        }));
 
       const results = apiConfigService.isEventsNotifierFeatureActive();
       expect(results).toEqual(true);
@@ -1460,7 +1657,12 @@ describe('API Config', () => {
     it("should return true if elastic updater cron active is enabled", () => {
       jest
         .spyOn(ConfigService.prototype, "get")
-        .mockImplementation(jest.fn(() => true));
+        .mockImplementation(jest.fn((key: string) => {
+          if (key === 'cron.elasticUpdater') {
+            return true;
+          }
+          return undefined;
+        }));
 
       const results = apiConfigService.getIsElasticUpdaterCronActive();
       expect(results).toEqual(true);
@@ -1480,11 +1682,16 @@ describe('API Config', () => {
     it("should return true if elastic updater cron active is enabled", () => {
       jest
         .spyOn(ConfigService.prototype, "get")
-        .mockImplementation(jest.fn(() => [
-          'https://api.multiversx.com',
-          'https://devnet-api.multiversx.com',
-          'https://testnet-api.multiversx.com',
-        ]));
+        .mockImplementation(jest.fn((key: string) => {
+          if (key === 'urls.api') {
+            return [
+              'https://api.multiversx.com',
+              'https://devnet-api.multiversx.com',
+              'https://testnet-api.multiversx.com',
+            ];
+          }
+          return undefined;
+        }));
 
       const results = apiConfigService.getConfig('urls.api');
 
@@ -1539,7 +1746,12 @@ describe('API Config', () => {
     it("should return true if isStakingV4Enable flag is true", () => {
       jest
         .spyOn(ConfigService.prototype, "get")
-        .mockImplementation(jest.fn(() => true));
+        .mockImplementation(jest.fn((key: string) => {
+          if (key === 'features.stakingV4.enabled') {
+            return true;
+          }
+          return undefined;
+        }));
 
       const results = apiConfigService.isStakingV4Enabled();
       expect(results).toStrictEqual(true);
@@ -1602,9 +1814,15 @@ describe('API Config', () => {
         username: '',
         password: '',
       }];
+
       jest
         .spyOn(ConfigService.prototype, "get")
-        .mockImplementation(jest.fn(() => mockResult));
+        .mockImplementation((key: string) => {
+          if (key === 'indexer.slaves') {
+            return mockResult;
+          }
+          return undefined;
+        });
 
       const results = apiConfigService.getIndexerSlaveConnections();
       expect(results).toEqual(mockResult);
@@ -1613,7 +1831,7 @@ describe('API Config', () => {
     it("should throw error because test simulates that indexer slave connections are not defined", () => {
       jest
         .spyOn(ConfigService.prototype, 'get')
-        .mockImplementation(jest.fn(() => []));
+        .mockImplementation(jest.fn(() => undefined));
 
       const results = apiConfigService.getIndexerSlaveConnections();
       expect(results).toEqual([]);
