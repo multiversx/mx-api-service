@@ -70,7 +70,7 @@ aws:
   s3Bucket: 'testnet-media.elrond.com'
   s3Region: ''
 urls:
-  self: ${arr:API_URL}
+  self: ${API_URL}
   elastic: ${arr:ELASTIC_URL}
   gateway: ${arr:GATEWAY_URL}
   verifier: ${VERIFIER_URL}
