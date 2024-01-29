@@ -79,10 +79,10 @@ urls:
   providers: ${PROVIDERS_URL}
   delegation: ${DELEGATION_URL}
   media: ${MEDIA_URL}
-  nftThumbnails: ${arr:NFTTHUMBNAILS_URL}
+  nftThumbnails: ${NFTTHUMBNAILS_URL}
   tmp: '/tmp'
-  ipfs: ${arr:IPFS_URL}
-  socket: ${arr:SOCKET_URL}
+  ipfs: ${IPFS_URL}
+  socket: ${SOCKET_URL}
   maiarId: ${MAIARID_URL}
 database:
   enabled: false
