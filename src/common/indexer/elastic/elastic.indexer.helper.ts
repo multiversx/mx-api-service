@@ -551,7 +551,11 @@ export class ElasticIndexerHelper {
     }
 
     if (filter.excludeTags) {
-      elasticQuery = elasticQuery.withMustNotCondition(QueryType.Exists('api_assets.tags'));
+      elasticQuery = this.applyExcludeTags(elasticQuery, filter.excludeTags);
+    }
+
+    if (filter.hasAssets) {
+      elasticQuery = elasticQuery.withMustExistCondition('api_assets');
     }
 
     return elasticQuery;
@@ -567,5 +571,15 @@ export class ElasticIndexerHelper {
     }
 
     return elasticQuery.withMustCondition(QueryType.Should(conditions));
+  }
+
+  public applyExcludeTags(elasticQuery: ElasticQuery, tags: string[]) {
+    const tagsConditions: any[] = [];
+
+    for (const field of tags) {
+      tagsConditions.push(QueryType.Match('api_assets.tags', field));
+    }
+
+    return elasticQuery.withMustNotCondition(QueryType.Should(tagsConditions));
   }
 }

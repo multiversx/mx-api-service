@@ -90,7 +90,8 @@ export class AccountController {
   @ApiQuery({ name: 'withScrCount', description: 'Include scrCount field in the result', required: false })
   @ApiQuery({ name: 'name', description: 'Filter accounts by assets name', required: false })
   @ApiQuery({ name: 'tags', description: 'Filter accounts by assets tags', required: false })
-  @ApiQuery({ name: 'excludeTags', description: 'Filter smart contracts with no tags', required: false })
+  @ApiQuery({ name: 'excludeTags', description: 'Exclude specific tags from result', required: false })
+  @ApiQuery({ name: 'hasAssets', description: 'Return a list accounts with assets', required: false })
 
   getAccounts(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
@@ -105,7 +106,8 @@ export class AccountController {
     @Query("withDeployInfo", new ParseBoolPipe) withDeployInfo?: boolean,
     @Query("withTxCount", new ParseBoolPipe) withTxCount?: boolean,
     @Query("withScrCount", new ParseBoolPipe) withScrCount?: boolean,
-    @Query("excludeTags", new ParseBoolPipe) excludeTags?: boolean,
+    @Query("excludeTags", new ParseArrayPipe) excludeTags?: string[],
+    @Query("hasAssets", new ParseBoolPipe) hasAssets?: boolean,
   ): Promise<Account[]> {
     const queryOptions = new AccountQueryOptions(
       {
@@ -120,6 +122,7 @@ export class AccountController {
         name,
         tags,
         excludeTags,
+        hasAssets,
       });
     queryOptions.validate(size);
     return this.accountService.getAccounts(
@@ -135,11 +138,15 @@ export class AccountController {
   @ApiQuery({ name: 'isSmartContract', description: 'Return total smart contracts count', required: false })
   @ApiQuery({ name: 'name', description: 'Filter accounts by assets name', required: false })
   @ApiQuery({ name: 'tags', description: 'Filter accounts by assets tags', required: false })
+  @ApiQuery({ name: 'excludeTags', description: 'Exclude specific tags from result', required: false })
+  @ApiQuery({ name: 'hasAssets', description: 'Return a list accounts with assets', required: false })
   async getAccountsCount(
     @Query("ownerAddress", ParseAddressPipe) ownerAddress?: string,
     @Query("isSmartContract", new ParseBoolPipe) isSmartContract?: boolean,
     @Query("name") name?: string,
     @Query("tags", new ParseArrayPipe()) tags?: string[],
+    @Query("excludeTags", new ParseArrayPipe) excludeTags?: string[],
+    @Query("hasAssets", new ParseBoolPipe) hasAssets?: boolean,
   ): Promise<number> {
     return await this.accountService.getAccountsCount(
       new AccountQueryOptions(
@@ -148,6 +155,8 @@ export class AccountController {
           isSmartContract,
           name,
           tags,
+          excludeTags,
+          hasAssets,
         }));
   }
 
@@ -158,6 +167,8 @@ export class AccountController {
     @Query("isSmartContract", new ParseBoolPipe) isSmartContract?: boolean,
     @Query("name") name?: string,
     @Query("tags", new ParseArrayPipe()) tags?: string[],
+    @Query("excludeTags", new ParseArrayPipe) excludeTags?: string[],
+    @Query("hasAssets", new ParseBoolPipe) hasAssets?: boolean,
   ): Promise<number> {
     return await this.accountService.getAccountsCount(
       new AccountQueryOptions(
@@ -166,6 +177,8 @@ export class AccountController {
           isSmartContract,
           name,
           tags,
+          excludeTags,
+          hasAssets,
         }));
   }
 
