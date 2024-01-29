@@ -828,4 +828,20 @@ export class ElasticIndexerService implements IndexerInterface {
       nftCount,
     });
   }
+
+  async setAccountExtraFields(address: string, txCount: number, scrCount: number, deployedAt: number | null, txCount24h: number, txCount7d: number, txCount30d: number): Promise<void> {
+    const updateExtraFields: any = {
+      txCount: txCount,
+      scrCount: scrCount,
+      txCount24h: txCount24h,
+      txCount7d: txCount7d,
+      txCount30d: txCount30d,
+    };
+
+    if (deployedAt !== null) {
+      updateExtraFields.deployedAt = deployedAt;
+    }
+
+    return await this.elasticService.setCustomValues('accounts', address, updateExtraFields);
+  }
 }

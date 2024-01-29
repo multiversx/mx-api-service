@@ -18,7 +18,7 @@ import { MexSettingsService } from "src/endpoints/mex/mex.settings.service";
 import { MexPairService } from "src/endpoints/mex/mex.pair.service";
 import { MexFarmService } from "src/endpoints/mex/mex.farm.service";
 import { CacheService, GuestCacheWarmer } from "@multiversx/sdk-nestjs-cache";
-import { Constants, Lock, OriginLogger } from "@multiversx/sdk-nestjs-common";
+import { AddressUtils, Constants, Lock, OriginLogger } from "@multiversx/sdk-nestjs-common";
 import { DelegationLegacyService } from "src/endpoints/delegation.legacy/delegation.legacy.service";
 import { SettingsService } from "src/common/settings/settings.service";
 import { TokenService } from "src/endpoints/tokens/token.service";
@@ -30,6 +30,7 @@ import { TokenDetailed } from "src/endpoints/tokens/entities/token.detailed";
 import { DataApiService } from "src/common/data-api/data-api.service";
 import { BlockService } from "src/endpoints/blocks/block.service";
 import { PoolService } from "src/endpoints/pool/pool.service";
+import { TransactionFilter } from "src/endpoints/transactions/entities/transaction.filter";
 
 @Injectable()
 export class CacheWarmerService {
@@ -311,6 +312,36 @@ export class CacheWarmerService {
     }
   }
 
+  @Cron(CronExpression.EVERY_HOUR)
+  @Lock({ name: 'Elastic updater: Update account extra fields', verbose: true })
+  async handleUpdateAccountExtraFields() {
+    const allAccountAssets = await this.assetsService.getAllAccountAssets();
+
+    for (const address of Object.keys(allAccountAssets)) {
+      try {
+        let txCount = 0;
+        let scrCount = 0;
+        let deployedAt: number | null = null;
+
+        if (AddressUtils.isSmartContractAddress(address)) {
+          txCount = await this.accountService.getAccountTxCount(address);
+          scrCount = await this.accountService.getAccountScResults(address);
+          deployedAt = await this.accountService.getAccountDeployedAt(address);
+          this.logger.log(`Setting txCount: ${txCount}, scrCount: ${scrCount}, deployedAt: ${deployedAt} for address ${address}`);
+        }
+
+        const now = new Date();
+        const txCount24h = await this.getTransactionCountForInterval(address, this.subtractHours(now, 24), now);
+        const txCount7d = await this.getTransactionCountForInterval(address, this.subtractDays(now, 7), now);
+        const txCount30d = await this.getTransactionCountForInterval(address, this.subtractDays(now, 30), now);
+
+        await this.indexerService.setAccountExtraFields(address, txCount, scrCount, deployedAt, txCount24h, txCount7d, txCount30d);
+      } catch (error) {
+        this.logger.error(`Failed to setting extra fields for account with address '${address}': ${error}`);
+      }
+    }
+  }
+
   private async invalidateKey(key: string, data: any, ttl: number) {
     await this.cachingService.set(key, data, ttl);
     await this.refreshCacheKey(key, ttl);
@@ -318,5 +349,25 @@ export class CacheWarmerService {
 
   private async refreshCacheKey(key: string, ttl: number) {
     await this.clientProxy.emit('refreshCacheKey', { key, ttl });
+  }
+
+  private async getTransactionCountForInterval(address: string, startDate: Date, endDate: Date): Promise<number> {
+    const after = Math.floor(startDate.getTime() / 1000);
+    const before = Math.floor(endDate.getTime() / 1000);
+    const filter: TransactionFilter = { before, after };
+
+    return await this.indexerService.getTransactionCount(filter, address);
+  }
+
+  private subtractDays(date: Date, days: number): Date {
+    const result = new Date(date);
+    result.setDate(result.getDate() - days);
+    return result;
+  }
+
+  private subtractHours(date: Date, hours: number): Date {
+    const result = new Date(date);
+    result.setHours(result.getHours() - hours);
+    return result;
   }
 }
