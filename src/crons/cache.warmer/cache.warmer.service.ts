@@ -321,21 +321,24 @@ export class CacheWarmerService {
       try {
         let txCount = 0;
         let scrCount = 0;
+        let transfersCount = 0;
         let deployedAt: number | null = null;
+        const transferFilter: TransactionFilter = { address };
 
         if (AddressUtils.isSmartContractAddress(address)) {
           txCount = await this.accountService.getAccountTxCount(address);
           scrCount = await this.accountService.getAccountScResults(address);
+          transfersCount = await this.indexerService.getTransfersCount(transferFilter);
           deployedAt = await this.accountService.getAccountDeployedAt(address);
-          this.logger.log(`Setting txCount: ${txCount}, scrCount: ${scrCount}, deployedAt: ${deployedAt} for address ${address}`);
+          this.logger.log(`Setting txCount: ${txCount}, transferCount: ${transfersCount}, scrCount: ${scrCount}, deployedAt: ${deployedAt} for address ${address}`);
         }
 
         const now = new Date();
-        const txCount24h = await this.getTransactionCountForInterval(address, this.subtractHours(now, 24), now);
-        const txCount7d = await this.getTransactionCountForInterval(address, this.subtractDays(now, 7), now);
-        const txCount30d = await this.getTransactionCountForInterval(address, this.subtractDays(now, 30), now);
+        const transfersCount24h = await this.getTransactionCountForInterval(address, this.subtractHours(now, 24), now);
+        const transfersCount7d = await this.getTransactionCountForInterval(address, this.subtractDays(now, 7), now);
+        const transfersCount30d = await this.getTransactionCountForInterval(address, this.subtractDays(now, 30), now);
 
-        await this.indexerService.setAccountExtraFields(address, txCount, scrCount, deployedAt, txCount24h, txCount7d, txCount30d);
+        await this.indexerService.setAccountExtraFields(address, txCount, transfersCount, scrCount, deployedAt, transfersCount24h, transfersCount7d, transfersCount30d);
       } catch (error) {
         this.logger.error(`Failed to setting extra fields for account with address '${address}': ${error}`);
       }
@@ -354,9 +357,9 @@ export class CacheWarmerService {
   private async getTransactionCountForInterval(address: string, startDate: Date, endDate: Date): Promise<number> {
     const after = Math.floor(startDate.getTime() / 1000);
     const before = Math.floor(endDate.getTime() / 1000);
-    const filter: TransactionFilter = { before, after };
+    const filter: TransactionFilter = { before, after, address };
 
-    return await this.indexerService.getTransactionCount(filter, address);
+    return await this.indexerService.getTransfersCount(filter);
   }
 
   private subtractDays(date: Date, days: number): Date {
