@@ -10,7 +10,6 @@ import { NftType } from "./entities/nft.type";
 import { NftQueryOptions } from "./entities/nft.query.options";
 import { EsdtService } from "../esdt/esdt.service";
 import { AssetsService } from "../../common/assets/assets.service";
-import { PluginService } from "src/common/plugins/plugin.service";
 import { NftMetadataService } from "src/queue.worker/nft.worker/queue/job-services/metadata/nft.metadata.service";
 import { NftMediaService } from "src/queue.worker/nft.worker/queue/job-services/media/nft.media.service";
 import { NftMedia } from "./entities/nft.media";
