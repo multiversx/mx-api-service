@@ -312,7 +312,7 @@ export class CacheWarmerService {
     }
   }
 
-  @Cron(CronExpression.EVERY_HOUR)
+  @Cron(CronExpression.EVERY_DAY_AT_1AM)
   @Lock({ name: 'Elastic updater: Update account extra fields', verbose: true })
   async handleUpdateAccountExtraFields() {
     const allAccountAssets = await this.assetsService.getAllAccountAssets();
