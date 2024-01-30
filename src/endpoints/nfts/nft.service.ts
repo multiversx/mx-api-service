@@ -333,9 +333,12 @@ export class NftService {
       nft.nonce = parseInt('0x' + nft.identifier.split('-')[2]);
       nft.timestamp = elasticNft.timestamp;
 
-      nft.scamInfo = new ScamInfo();
-      nft.scamInfo.type = elasticNft.nft_scamInfoType;
-      nft.scamInfo.info = elasticNft.nft_scamInfoDescription;
+      if (elasticNft.nft_scamInfoType && elasticNft.nft_scamInfoType !== 'none') {
+        nft.scamInfo = new ScamInfo({
+          type: elasticNft.nft_scamInfoType,
+          info: elasticNft.nft_scamInfoDescription,
+        });
+      }
 
       await this.applyExtendedAttributes(nft, elasticNft);
 

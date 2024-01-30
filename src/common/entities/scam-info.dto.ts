@@ -4,6 +4,10 @@ import { ScamType } from './scam-type.enum';
 
 @ObjectType("ScamInformation", { description: "Scam information object type." })
 export class ScamInfo {
+  constructor(init?: Partial<ScamInfo>) {
+    Object.assign(this, init);
+  }
+
   @Field(() => ScamType, { description: "Type for the given scam information." })
   type?: string | null;
 
