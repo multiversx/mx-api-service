@@ -17,6 +17,7 @@ import { TransactionQueryOptions } from '../transactions/entities/transactions.q
 import { TransactionService } from '../transactions/transaction.service';
 import { TransactionFilter } from '../transactions/entities/transaction.filter';
 import { Transaction } from '../transactions/entities/transaction';
+import { ScamType } from 'src/common/entities/scam-type.enum';
 
 @Controller()
 @ApiTags('nfts')
@@ -65,6 +66,8 @@ export class NftController {
     @Query('isWhitelistedStorage', new ParseBoolPipe) isWhitelistedStorage?: boolean,
     @Query('hasUris', new ParseBoolPipe) hasUris?: boolean,
     @Query('isNsfw', new ParseBoolPipe) isNsfw?: boolean,
+    @Query('isScam', new ParseBoolPipe) isScam?: boolean,
+    @Query('scamType', new ParseEnumPipe(ScamType)) scamType?: ScamType,
     @Query('traits', new ParseRecordPipe) traits?: Record<string, string>,
     @Query('before', new ParseIntPipe) before?: number,
     @Query('after', new ParseIntPipe) after?: number,
@@ -77,7 +80,7 @@ export class NftController {
 
     return await this.nftService.getNfts(
       new QueryPagination({ from, size }),
-      new NftFilter({ search, identifiers, type, collection, collections, name, tags, creator, hasUris, isWhitelistedStorage, isNsfw, traits, before, after }),
+      new NftFilter({ search, identifiers, type, collection, collections, name, tags, creator, hasUris, isWhitelistedStorage, isNsfw, isScam, scamType, traits, before, after }),
       options
     );
   }
