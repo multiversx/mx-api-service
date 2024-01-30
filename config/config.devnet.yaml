@@ -52,6 +52,8 @@ features:
   dataApi:
     enabled: false
     serviceUrl: 'https://devnet-data-api.multiversx.com'
+  accountExtraDetails:
+    enabled: false
   auth:
     enabled: false
     maxExpirySeconds: 86400

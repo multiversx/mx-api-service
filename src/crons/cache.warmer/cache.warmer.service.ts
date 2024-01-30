@@ -315,6 +315,11 @@ export class CacheWarmerService {
   @Cron(CronExpression.EVERY_DAY_AT_1AM)
   @Lock({ name: 'Elastic updater: Update account extra fields', verbose: true })
   async handleUpdateAccountExtraFields() {
+    if (!this.apiConfigService.isAccountExtraDetailsFeatureFlagEnabled()) {
+      this.logger.log('Account extra details feature flag is disabled. Skipping update.');
+      return;
+    }
+
     const allAccountAssets = await this.assetsService.getAllAccountAssets();
 
     for (const address of Object.keys(allAccountAssets)) {
