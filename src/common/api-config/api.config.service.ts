@@ -773,6 +773,10 @@ export class ApiConfigService {
     return this.configService.get<boolean>('features.marketplace.enabled') ?? false;
   }
 
+  isAccountAssetsFeatureEnabled(): boolean {
+    return this.configService.get<boolean>('features.accountAssets.enabled') ?? false;
+  }
+
   getMarketplaceServiceUrl(): string {
     const serviceUrl = this.configService.get<string>('features.marketplace.serviceUrl');
     if (!serviceUrl) {

@@ -314,6 +314,11 @@ export class CacheWarmerService {
   @Cron(CronExpression.EVERY_HOUR)
   @Lock({ name: 'Elastic updater: Update account assets', verbose: true })
   async handleUpdateAccountAssets() {
+    if (!this.apiConfigService.isAccountAssetsFeatureEnabled()) {
+      this.logger.log('Account assets feature flag is disabled. Skipping update.');
+      return;
+    }
+
     const allAccountAssets = await this.assetsService.getAllAccountAssets();
 
     for (const address of Object.keys(allAccountAssets)) {
