@@ -339,9 +339,9 @@ export class CacheWarmerService {
         }
 
         const now = new Date();
-        const transfersCount24h = await this.getTransactionCountForInterval(address, this.subtractHours(now, 24), now);
-        const transfersCount7d = await this.getTransactionCountForInterval(address, this.subtractDays(now, 7), now);
-        const transfersCount30d = await this.getTransactionCountForInterval(address, this.subtractDays(now, 30), now);
+        const transfersCount24h = await this.getTransactionCountForInterval(address, now.addHours(-24), now);
+        const transfersCount7d = await this.getTransactionCountForInterval(address, now.addDays(-7), now);
+        const transfersCount30d = await this.getTransactionCountForInterval(address, now.addDays(-30), now);
 
         await this.indexerService.setAccountExtraFields(address, txCount, transfersCount, scrCount, deployedAt, transfersCount24h, transfersCount7d, transfersCount30d);
       } catch (error) {
@@ -365,17 +365,5 @@ export class CacheWarmerService {
     const filter: TransactionFilter = { before, after, address };
 
     return await this.indexerService.getTransfersCount(filter);
-  }
-
-  private subtractDays(date: Date, days: number): Date {
-    const result = new Date(date);
-    result.setDate(result.getDate() - days);
-    return result;
-  }
-
-  private subtractHours(date: Date, hours: number): Date {
-    const result = new Date(date);
-    result.setHours(result.getHours() - hours);
-    return result;
   }
 }
