@@ -45,7 +45,6 @@ export class NftService {
     private readonly esdtService: EsdtService,
     private readonly assetsService: AssetsService,
     private readonly cachingService: CacheService,
-    @Inject(forwardRef(() => PluginService))
     private readonly nftMetadataService: NftMetadataService,
     private readonly nftMediaService: NftMediaService,
     private readonly persistenceService: PersistenceService,
