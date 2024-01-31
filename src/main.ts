@@ -89,7 +89,7 @@ async function bootstrap() {
 
   if (apiConfigService.getIsCacheWarmerCronActive()) {
     const cacheWarmerApp = await NestFactory.create(CacheWarmerModule);
-    await ensureCacheWarmerCanStart(cacheWarmerApp, apiConfigService);
+    await configureCacheWarmerApp(cacheWarmerApp, apiConfigService);
     await cacheWarmerApp.listen(6001);
   }
 
@@ -302,6 +302,33 @@ async function configurePublicApp(publicApp: NestExpressApplication, apiConfigSe
   logger.log(`Use vm query tracing: ${await settingsService.getUseVmQueryTracingFlag()}`);
 }
 
+async function configureCacheWarmerApp(cacheWarmerApp: INestApplication<any>, apiConfigService: ApiConfigService): Promise<void> {
+  const indexerService = cacheWarmerApp.get<IndexerService>(IndexerService);
+  const logger = new Logger('Cache warmer initializer');
+
+  try {
+    if (apiConfigService.isUpdateAccountAssetsFeatureEnabled()) {
+      await indexerService.ensureAccountsWritable();
+    }
+
+    if (apiConfigService.isUpdateCollectionExtraDetailsEnabled()) {
+      await indexerService.ensureTokensWritable();
+    }
+  } catch (error) {
+    if (error instanceof NotWritableError) {
+      logger.error(error.message);
+    } else {
+      logger.error(`An unhandled error occurred while ensuring database schema is writable`);
+      logger.error(error);
+    }
+
+    process.kill(process.pid, 'SIGTERM');
+  }
+
+  logger.log(`Update account assets: ${apiConfigService.isUpdateAccountAssetsFeatureEnabled()}`);
+  logger.log(`Update collection extra details: ${apiConfigService.isUpdateCollectionExtraDetailsEnabled()}`);
+}
+
 // eslint-disable-next-line @typescript-eslint/no-floating-promises
 bootstrap();
 
@@ -324,28 +351,4 @@ RedisClient.prototype.on_error = function (err: any) {
   // then we should try to reconnect.
   this.connection_gone('error', err);
 };
-
-async function ensureCacheWarmerCanStart(cacheWarmerApp: INestApplication<any>, apiConfigService: ApiConfigService): Promise<void> {
-  const indexerService = cacheWarmerApp.get<IndexerService>(IndexerService);
-  const logger = new Logger('Cache warmer initializer');
-
-  try {
-    if (apiConfigService.isUpdateAccountAssetsFeatureEnabled()) {
-      await indexerService.ensureAccountsWritable();
-    }
-
-    if (apiConfigService.isUpdateCollectionExtraDetailsEnabled()) {
-      await indexerService.ensureTokensWritable();
-    }
-  } catch (error) {
-    if (error instanceof NotWritableError) {
-      logger.error(error.message);
-    } else {
-      logger.error(`An unhandled error occurred while ensuring database schema is writable`);
-      logger.error(error);
-    }
-
-    process.kill(process.pid, 'SIGTERM');
-  }
-}
 
