@@ -279,7 +279,7 @@ export class ElasticIndexerHelper {
       if (filter.functions.length === 1 && filter.functions[0] === '') {
         elasticQuery = elasticQuery.withMustNotExistCondition('function');
       } else {
-        elasticQuery = this.applyGenericArrayFilter(elasticQuery, ['function', 'operation'], filter.functions);
+        elasticQuery = this.applyArrayFilter(elasticQuery, ['function', 'operation'], filter.functions);
       }
     }
 
@@ -432,7 +432,7 @@ export class ElasticIndexerHelper {
       if (filter.functions.length === 1 && filter.functions[0] === '') {
         elasticQuery = elasticQuery.withMustNotExistCondition('function');
       } else {
-        elasticQuery = this.applyGenericArrayFilter(elasticQuery, ['function', 'operation'], filter.functions);
+        elasticQuery = this.applyArrayFilter(elasticQuery, ['function', 'operation'], filter.functions);
       }
     }
 
@@ -547,10 +547,10 @@ export class ElasticIndexerHelper {
     }
 
     if (filter.tags && filter.tags.length > 0) {
-      elasticQuery = this.applyGenericArrayFilter(elasticQuery, ['api_assets.tags'], filter.tags);
+      elasticQuery = this.applyArrayFilter(elasticQuery, ['api_assets.tags'], filter.tags);
     }
 
-    if (filter.excludeTags) {
+    if (filter.excludeTags && filter.excludeTags.length > 0) {
       elasticQuery = this.applyExcludeTags(elasticQuery, filter.excludeTags);
     }
 
@@ -561,13 +561,13 @@ export class ElasticIndexerHelper {
     return elasticQuery;
   }
 
-  public applyGenericArrayFilter(elasticQuery: ElasticQuery, fields: string[], values: string[]) {
+  public applyArrayFilter(elasticQuery: ElasticQuery, fields: string[], values: string[]) {
     const conditions: any[] = [];
 
     for (const value of values) {
-      fields.forEach(field => {
+      for (const field of fields) {
         conditions.push(QueryType.Match(field, value));
-      });
+      }
     }
 
     return elasticQuery.withMustCondition(QueryType.Should(conditions));
