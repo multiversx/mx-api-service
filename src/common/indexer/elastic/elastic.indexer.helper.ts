@@ -198,14 +198,7 @@ export class ElasticIndexerHelper {
     }
 
     if (filter.scamType) {
-      switch (filter.scamType) {
-        case 'scam':
-          elasticQuery = elasticQuery.withMustCondition(QueryType.Match('nft_scamInfoType', 'scam'));
-          break;
-        case 'potentialScam':
-          elasticQuery = elasticQuery.withMustCondition(QueryType.Match('nft_scamInfoType', 'potentialScam'));
-          break;
-      }
+      elasticQuery = elasticQuery.withMustCondition(QueryType.Match('nft_scamInfoType', filter.scamType));
     }
 
     if (filter.traits !== undefined) {
