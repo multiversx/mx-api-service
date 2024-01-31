@@ -444,7 +444,7 @@ export class NftService {
   }
 
   async getNftsForAddress(address: string, queryPagination: QueryPagination, filter: NftFilter, fields?: string[], queryOptions?: NftQueryOptions, source?: EsdtDataSource): Promise<NftAccount[]> {
-    const nfts = await this.esdtAddressService.getNftsForAddress(address, filter, queryPagination, source);
+    let nfts = await this.esdtAddressService.getNftsForAddress(address, filter, queryPagination, source);
 
     for (const nft of nfts) {
       await this.applyAssetsAndTicker(nft, fields);
@@ -458,9 +458,8 @@ export class NftService {
 
     await this.batchProcessNfts(nfts, fields);
 
-    if (this.apiConfigService.isNftExtendedAttributesEnabled() && (!fields || fields.includesSome(['score', 'rank', 'isNsfw']))) {
+    if (this.apiConfigService.isNftExtendedAttributesEnabled() && (!fields || fields.includesSome(['score', 'rank', 'isNsfw', 'nft_scamInfoType', 'nft_scamInfoDescription']))) {
       const internalNfts = await this.getNftsInternalByIdentifiers(nfts.map(x => x.identifier));
-
       const indexedInternalNfts = internalNfts.toRecord<Nft>(x => x.identifier);
       for (const nft of nfts) {
         const indexedNft = indexedInternalNfts[nft.identifier];
@@ -468,7 +467,27 @@ export class NftService {
           nft.score = indexedNft.score;
           nft.rank = indexedNft.rank;
           nft.isNsfw = indexedNft.isNsfw;
+
+          if (indexedNft.scamInfo) {
+            if (indexedNft.scamInfo.type && indexedNft.scamInfo.info) {
+              nft.scamInfo = new ScamInfo();
+              nft.scamInfo.type = indexedNft.scamInfo.type;
+              nft.scamInfo.info = indexedNft.scamInfo.info;
+            }
+          }
         }
+      }
+    }
+
+    if (filter.scamType) {
+      nfts = nfts.filter(nft => nft.scamInfo?.type === filter.scamType);
+    }
+
+    if (filter.isScam !== undefined) {
+      if (filter.isScam) {
+        nfts = nfts.filter(nft => nft.scamInfo && nft.scamInfo.type);
+      } else {
+        nfts = nfts.filter(nft => !nft.scamInfo || !nft.scamInfo.type);
       }
     }
 

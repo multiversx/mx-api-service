@@ -45,6 +45,8 @@ export class NftController {
   @ApiQuery({ name: 'isWhitelistedStorage', description: 'Return all NFTs that are whitelisted in storage', required: false, type: Boolean })
   @ApiQuery({ name: 'hasUris', description: 'Return all NFTs that have one or more uris', required: false, type: Boolean })
   @ApiQuery({ name: 'isNsfw', description: 'Filter by NSFW status', required: false, type: Boolean })
+  @ApiQuery({ name: 'isScam', description: 'Filter by scam status', required: false, type: Boolean })
+  @ApiQuery({ name: 'scamType', description: 'Filter by type (scam/potentialScam)', required: false })
   @ApiQuery({ name: 'traits', description: 'Filter NFTs by traits. Key-value format (<key1>:<value1>;<key2>:<value2>)', required: false, type: Boolean })
   @ApiQuery({ name: 'before', description: 'Return all NFTs before given timestamp', required: false, type: Number })
   @ApiQuery({ name: 'after', description: 'Return all NFTs after given timestamp', required: false, type: Number })
@@ -80,7 +82,24 @@ export class NftController {
 
     return await this.nftService.getNfts(
       new QueryPagination({ from, size }),
-      new NftFilter({ search, identifiers, type, collection, collections, name, tags, creator, hasUris, isWhitelistedStorage, isNsfw, isScam, scamType, traits, before, after }),
+      new NftFilter({
+        search,
+        identifiers,
+        type,
+        collection,
+        collections,
+        name,
+        tags,
+        creator,
+        hasUris,
+        isWhitelistedStorage,
+        isNsfw,
+        isScam,
+        scamType,
+        traits,
+        before,
+        after,
+      }),
       options
     );
   }
@@ -102,6 +121,8 @@ export class NftController {
   @ApiQuery({ name: 'traits', description: 'Filter NFTs by traits. Key-value format (<key1>:<value1>;<key2>:<value2>)', required: false, type: Boolean })
   @ApiQuery({ name: 'before', description: 'Return all NFTs before given timestamp', required: false, type: Number })
   @ApiQuery({ name: 'after', description: 'Return all NFTs after given timestamp', required: false, type: Number })
+  @ApiQuery({ name: 'isScam', description: 'Filter by scam status', required: false, type: Boolean })
+  @ApiQuery({ name: 'scamType', description: 'Filter by type (scam/potentialScam)', required: false })
   async getNftCount(
     @Query('search') search?: string,
     @Query('identifiers', ParseNftArrayPipe) identifiers?: string[],
@@ -117,8 +138,28 @@ export class NftController {
     @Query('traits', new ParseRecordPipe) traits?: Record<string, string>,
     @Query('before', new ParseIntPipe) before?: number,
     @Query('after', new ParseIntPipe) after?: number,
+    @Query('isScam', new ParseBoolPipe) isScam?: boolean,
+    @Query('scamType', new ParseEnumPipe(ScamType)) scamType?: ScamType,
   ): Promise<number> {
-    return await this.nftService.getNftCount(new NftFilter({ search, identifiers, type, collection, collections, name, tags, creator, isWhitelistedStorage, hasUris, isNsfw, traits, before, after }));
+    return await this.nftService.getNftCount(
+      new NftFilter({
+        search,
+        identifiers,
+        type,
+        collection,
+        collections,
+        name,
+        tags,
+        creator,
+        isWhitelistedStorage,
+        hasUris,
+        isNsfw,
+        traits,
+        before,
+        after,
+        isScam,
+        scamType,
+      }));
   }
 
   @Get("/nfts/c")
@@ -138,8 +179,10 @@ export class NftController {
     @Query('traits', new ParseRecordPipe) traits?: Record<string, string>,
     @Query('before', new ParseIntPipe) before?: number,
     @Query('after', new ParseIntPipe) after?: number,
+    @Query('isScam', new ParseBoolPipe) isScam?: boolean,
+    @Query('scamType', new ParseEnumPipe(ScamType)) scamType?: ScamType,
   ): Promise<number> {
-    return await this.nftService.getNftCount(new NftFilter({ search, identifiers, type, collection, collections, name, tags, creator, isWhitelistedStorage, hasUris, isNsfw, traits, before, after }));
+    return await this.nftService.getNftCount(new NftFilter({ search, identifiers, type, collection, collections, name, tags, creator, isWhitelistedStorage, hasUris, isNsfw, traits, before, after, isScam, scamType }));
   }
 
   @Get('/nfts/:identifier')
