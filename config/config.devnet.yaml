@@ -52,7 +52,7 @@ features:
   dataApi:
     enabled: false
     serviceUrl: 'https://devnet-data-api.multiversx.com'
-  accountAssets:
+  updateAccountAssets:
     enabled: false
   auth:
     enabled: false
