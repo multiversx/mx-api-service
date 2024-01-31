@@ -381,4 +381,14 @@ export class IndexerService implements IndexerInterface {
   async setAccountAssetsFields(address: string, assets: AccountAssets): Promise<void> {
     return await this.indexerInterface.setAccountAssetsFields(address, assets);
   }
+
+  @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
+  async ensureAccountsWritable(): Promise<void> {
+    return await this.indexerInterface.ensureAccountsWritable();
+  }
+
+  @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
+  async ensureTokensWritable(): Promise<void> {
+    return await this.indexerInterface.ensureTokensWritable();
+  }
 }

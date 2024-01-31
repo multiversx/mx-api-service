@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { HttpStatus, Injectable } from "@nestjs/common";
 import { BinaryUtils } from "@multiversx/sdk-nestjs-common";
 import { ApiService } from "@multiversx/sdk-nestjs-http";
 import { ElasticService, ElasticQuery, QueryOperator, QueryType, QueryConditionOptions, ElasticSortOrder, ElasticSortProperty, TermsQuery, RangeGreaterThanOrEqual, MatchQuery } from "@multiversx/sdk-nestjs-elastic";
@@ -26,6 +26,7 @@ import { AccountSort } from "src/endpoints/accounts/entities/account.sort";
 import { MiniBlockFilter } from "src/endpoints/miniblocks/entities/mini.block.filter";
 import { AccountHistoryFilter } from "src/endpoints/accounts/entities/account.history.filter";
 import { AccountAssets } from "src/common/assets/entities/account.assets";
+import { NotWritableError } from "../entities/not.writable.error";
 
 
 @Injectable()
@@ -831,5 +832,33 @@ export class ElasticIndexerService implements IndexerInterface {
 
   async setAccountAssetsFields(address: string, assets: AccountAssets): Promise<void> {
     return await this.elasticService.setCustomValues('accounts', address, { assets });
+  }
+
+  async ensureAccountsWritable(): Promise<void> {
+    await this.ensureCollectionWritable('accounts');
+  }
+
+  async ensureTokensWritable(): Promise<void> {
+    await this.ensureCollectionWritable('tokens');
+  }
+
+  private async ensureCollectionWritable(collection: string) {
+    const query = new ElasticQuery().withPagination({ from: 0, size: 1 });
+    const items = await this.elasticService.getList(collection, 'id', query);
+
+    if (items.length === 0) {
+      throw new Error(`No entries available in the '${collection}' collection`);
+    }
+
+    const item = items[0];
+
+    try {
+      await this.elasticService.setCustomValue(collection, item.id, 'ensureWritable', undefined);
+    } catch (error) {
+      // @ts-ignore
+      if (error.status === HttpStatus.FORBIDDEN) {
+        throw new NotWritableError(collection);
+      }
+    }
   }
 }
