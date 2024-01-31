@@ -88,7 +88,7 @@ export class CacheWarmerService {
       handleTransactionPoolCacheInvalidation.start();
     }
 
-    if (this.apiConfigService.isAccountAssetsFeatureEnabled()) {
+    if (this.apiConfigService.isUpdateAccountAssetsFeatureEnabled()) {
       const handleUpdateAccountAssetsCronJob = new CronJob(CronExpression.EVERY_HOUR, async () => await this.handleUpdateAccountAssets());
       this.schedulerRegistry.addCronJob('handleUpdateAccountAssets', handleUpdateAccountAssetsCronJob);
       handleUpdateAccountAssetsCronJob.start();
