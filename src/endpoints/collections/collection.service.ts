@@ -88,9 +88,12 @@ export class CollectionService {
       nftCollection.nftCount = indexedCollection.api_nftCount;
       nftCollection.holderCount = indexedCollection.api_holderCount;
 
-      nftCollection.scamInfo = new ScamInfo();
-      nftCollection.scamInfo.type = indexedCollection.nft_scamInfoType;
-      nftCollection.scamInfo.info = indexedCollection.nft_scamInfoDescription;
+      if (indexedCollection.nft_scamInfoType && indexedCollection.nft_scamInfoType !== 'none') {
+        nftCollection.scamInfo = new ScamInfo({
+          type: indexedCollection.nft_scamInfoType,
+          info: indexedCollection.nft_scamInfoDescription,
+        });
+      }
     }
   }
 
