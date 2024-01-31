@@ -87,6 +87,12 @@ export class CacheWarmerService {
       this.schedulerRegistry.addCronJob('handleTxPoolInvalidations', handleTransactionPoolCacheInvalidation);
       handleTransactionPoolCacheInvalidation.start();
     }
+
+    if (this.apiConfigService.isAccountAssetsFeatureEnabled()) {
+      const handleUpdateAccountAssetsCronJob = new CronJob(CronExpression.EVERY_HOUR, async () => await this.handleUpdateAccountAssets());
+      this.schedulerRegistry.addCronJob('handleUpdateAccountAssets', handleUpdateAccountAssetsCronJob);
+      handleUpdateAccountAssetsCronJob.start();
+    }
   }
 
   private configCronJob(name: string, fastExpression: string, normalExpression: string, callback: () => Promise<void>) {
@@ -311,14 +317,8 @@ export class CacheWarmerService {
     }
   }
 
-  @Cron(CronExpression.EVERY_HOUR)
   @Lock({ name: 'Elastic updater: Update account assets', verbose: true })
   async handleUpdateAccountAssets() {
-    if (!this.apiConfigService.isAccountAssetsFeatureEnabled()) {
-      this.logger.log('Account assets feature flag is disabled. Skipping update.');
-      return;
-    }
-
     const allAccountAssets = await this.assetsService.getAllAccountAssets();
 
     for (const address of Object.keys(allAccountAssets)) {
