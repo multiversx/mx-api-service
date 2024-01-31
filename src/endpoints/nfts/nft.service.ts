@@ -478,18 +478,7 @@ export class NftService {
         }
       }
     }
-
-    if (filter.scamType) {
-      nfts = nfts.filter(nft => nft.scamInfo?.type === filter.scamType);
-    }
-
-    if (filter.isScam !== undefined) {
-      if (filter.isScam) {
-        nfts = nfts.filter(nft => nft.scamInfo && nft.scamInfo.type);
-      } else {
-        nfts = nfts.filter(nft => !nft.scamInfo || !nft.scamInfo.type);
-      }
-    }
+    nfts = this.applyScamFilter(nfts, filter);
 
     for (const nft of nfts) {
       await this.applyUnlockFields(nft, fields);
@@ -531,6 +520,22 @@ export class NftService {
       this.logger.error(`Unable to apply price on MetaESDT with identifier '${nft.identifier}'`);
       this.logger.error(error);
     }
+  }
+
+  private applyScamFilter(nfts: NftAccount[], filter: NftFilter): NftAccount[] {
+    if (filter.scamType) {
+      nfts = nfts.filter(nft => nft.scamInfo?.type === filter.scamType);
+    }
+
+    if (filter.isScam !== undefined) {
+      if (filter.isScam) {
+        nfts = nfts.filter(nft => nft.scamInfo && nft.scamInfo.type);
+      } else {
+        nfts = nfts.filter(nft => !nft.scamInfo || !nft.scamInfo.type);
+      }
+    }
+
+    return nfts;
   }
 
   async getNftCountForAddress(address: string, filter: NftFilter): Promise<number> {
