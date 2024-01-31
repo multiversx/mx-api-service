@@ -89,8 +89,6 @@ async function bootstrap() {
 
   if (apiConfigService.getIsCacheWarmerCronActive()) {
     const cacheWarmerApp = await NestFactory.create(CacheWarmerModule);
-
-
     await ensureCacheWarmerCanStart(cacheWarmerApp, apiConfigService);
     await cacheWarmerApp.listen(6001);
   }
