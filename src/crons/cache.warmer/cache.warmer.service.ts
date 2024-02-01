@@ -326,6 +326,10 @@ export class CacheWarmerService {
       try {
         const assets = allAccountAssets[address];
         const account = await this.indexerService.getAccount(address);
+        if (!account) {
+          continue;
+        }
+
         if (JsonDiff.diff(account.api_assets, assets)) {
           this.logger.log(`Updating assets for account with address '${address}'`);
           await this.indexerService.setAccountAssetsFields(address, assets);
