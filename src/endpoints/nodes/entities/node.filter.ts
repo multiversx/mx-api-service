@@ -54,4 +54,7 @@ export class NodeFilter {
 
   @Field(() => Boolean, { description: "Node isQualified filter for the given nodes.", nullable: true })
   isQualified: boolean | undefined;
+
+  @Field(() => Boolean, { description: "Node isAuctionDangeZone filter for the given nodes.", nullable: true })
+  isAuctionDangerZone: boolean | undefined;
 } 

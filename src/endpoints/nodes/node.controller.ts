@@ -36,6 +36,7 @@ export class NodeController {
   @ApiQuery({ name: 'sort', description: 'Sorting criteria', required: false, enum: SortNodes })
   @ApiQuery({ name: 'order', description: 'Sorting order (asc / desc)', required: false, enum: SortOrder })
   @ApiQuery({ name: 'isQualified', description: 'Whether node is qualified or not', required: false, type: 'boolean' })
+  @ApiQuery({ name: 'isAuctionDangerZone', description: 'Whether node is in danger zone or not', required: false, type: 'boolean' })
   async getNodes(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
@@ -54,8 +55,9 @@ export class NodeController {
     @Query('sort', new ParseEnumPipe(NodeSort)) sort?: NodeSort,
     @Query('order', new ParseEnumPipe(SortOrder)) order?: SortOrder,
     @Query('isQualified', ParseBoolPipe) isQualified?: boolean,
+    @Query('isAuctionDangerZone', ParseBoolPipe) isAuctionDangerZone?: boolean,
   ): Promise<Node[]> {
-    return await this.nodeService.getNodes(new QueryPagination({ from, size }), new NodeFilter({ search, keys, online, type, status, shard, issues, identity, provider, owner, auctioned, fullHistory, sort, order, isQualified }));
+    return await this.nodeService.getNodes(new QueryPagination({ from, size }), new NodeFilter({ search, keys, online, type, status, shard, issues, identity, provider, owner, auctioned, fullHistory, sort, order, isQualified, isAuctionDangerZone }));
   }
 
   @Get("/nodes/versions")
