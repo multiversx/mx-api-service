@@ -84,6 +84,7 @@ export class NodeController {
   @ApiQuery({ name: 'sort', description: 'Sorting criteria', required: false, enum: SortNodes })
   @ApiQuery({ name: 'order', description: 'Sorting order (asc / desc)', required: false, enum: SortOrder })
   @ApiQuery({ name: 'isQualified', description: 'Whether node is qualified or not', required: false, type: 'boolean' })
+  @ApiQuery({ name: 'isAuctionDangerZone', description: 'Whether node is in danger zone or not', required: false, type: 'boolean' })
   getNodeCount(
     @Query('search') search?: string,
     @Query('online', ParseBoolPipe) online?: boolean,
@@ -99,8 +100,9 @@ export class NodeController {
     @Query('sort', new ParseEnumPipe(NodeSort)) sort?: NodeSort,
     @Query('order', new ParseEnumPipe(SortOrder)) order?: SortOrder,
     @Query('isQualified', ParseBoolPipe) isQualified?: boolean,
+    @Query('isAuctionDangerZone', ParseBoolPipe) isAuctionDangerZone?: boolean,
   ): Promise<number> {
-    return this.nodeService.getNodeCount(new NodeFilter({ search, online, type, status, shard, issues, identity, provider, owner, auctioned, fullHistory, sort, order, isQualified }));
+    return this.nodeService.getNodeCount(new NodeFilter({ search, online, type, status, shard, issues, identity, provider, owner, auctioned, fullHistory, sort, order, isQualified, isAuctionDangerZone }));
   }
 
   @Get("/nodes/c")
@@ -120,8 +122,9 @@ export class NodeController {
     @Query('sort', new ParseEnumPipe(NodeSort)) sort?: NodeSort,
     @Query('order', new ParseEnumPipe(SortOrder)) order?: SortOrder,
     @Query('isQualified', ParseBoolPipe) isQualified?: boolean,
+    @Query('isAuctionDangerZone', ParseBoolPipe) isAuctionDangerZone?: boolean,
   ): Promise<number> {
-    return this.nodeService.getNodeCount(new NodeFilter({ search, online, type, status, shard, issues, identity, provider, owner, auctioned, fullHistory, sort, order, isQualified }));
+    return this.nodeService.getNodeCount(new NodeFilter({ search, online, type, status, shard, issues, identity, provider, owner, auctioned, fullHistory, sort, order, isQualified, isAuctionDangerZone }));
   }
 
   @Get('/nodes/:bls')
