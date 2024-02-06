@@ -35,23 +35,26 @@ export class IdentitiesService {
   }
 
   async getIdentities(ids: string[], sort?: IdentitySortCriteria): Promise<Identity[]> {
-    let identities = await this.getAllIdentities(sort);
+    let identities = await this.getAllIdentities();
     if (ids.length > 0) {
       identities = identities.filter(x => x.identity && ids.includes(x.identity));
+    }
+
+    switch (sort) {
+      case IdentitySortCriteria.validators:
+        identities = identities.sortedDescending(x => x.validators ?? 0);
+        break;
     }
 
     return identities;
   }
 
-  async getAllIdentities(sort?: IdentitySortCriteria): Promise<Identity[]> {
-    if (!sort) {
-      return await this.cacheService.getOrSet(
-        CacheInfo.Identities.key,
-        async () => await this.getAllIdentitiesRaw(sort),
-        CacheInfo.Identities.ttl
-      );
-    }
-    return await this.getAllIdentitiesRaw(sort);
+  async getAllIdentities(): Promise<Identity[]> {
+    return await this.cacheService.getOrSet(
+      CacheInfo.Identities.key,
+      async () => await this.getAllIdentitiesRaw(),
+      CacheInfo.Identities.ttl
+    );
   }
 
   private computeTotalStakeAndTopUp(nodes: Node[]): NodesInfos {
@@ -153,7 +156,7 @@ export class IdentitiesService {
     return stakeInfo;
   }
 
-  async getAllIdentitiesRaw(sort?: IdentitySortCriteria): Promise<Identity[]> {
+  async getAllIdentitiesRaw(): Promise<Identity[]> {
     const nodes = await this.nodeService.getAllNodes();
 
     const distinctIdentities = nodes.filter(x => x.identity).map(x => x.identity).distinct();
@@ -238,15 +241,7 @@ export class IdentitiesService {
     identities = identities
       .filter((identity) => identity && (identity.validators ?? 0) > 0);
 
-    if (sort) {
-      switch (sort) {
-        case IdentitySortCriteria.validators:
-          identities = identities.sort((a, b) => (b.validators ?? 0) - (a.validators ?? 0));
-          break;
-      }
-    } else {
-      identities = identities.sortedDescending(identity => new BigNumber(identity.locked).dividedBy(10 ** 18).toNumber());
-    }
+    identities = identities.sortedDescending(identity => new BigNumber(identity.locked).dividedBy(10 ** 18).toNumber());
 
     for (const [index, identity] of identities.entries()) {
       if (identity) {

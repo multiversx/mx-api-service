@@ -9,13 +9,14 @@ import { StakeTopup } from "./entities/stake.topup";
 import { NetworkService } from "../network/network.service";
 import { GatewayService } from "src/common/gateway/gateway.service";
 import { CacheInfo } from "src/utils/cache.info";
-import { AddressUtils, RoundUtils } from "@multiversx/sdk-nestjs-common";
+import { AddressUtils, BinaryUtils, RoundUtils } from "@multiversx/sdk-nestjs-common";
 import { ApiUtils } from "@multiversx/sdk-nestjs-http";
 import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { OriginLogger } from "@multiversx/sdk-nestjs-common";
 import { ProviderStake } from "./entities/provider.stake";
 import { IdentitiesService } from "../identities/identities.service";
-import { IdentitySortCriteria } from "../identities/entities/identity.sort.criteria";
+import { GlobalStake } from "./entities/global.stake";
+import { ValidatorInfoResult } from "./entities/validator.info.result";
 
 @Injectable()
 export class StakeService {
@@ -34,7 +35,7 @@ export class StakeService {
     private readonly identitiesService: IdentitiesService
   ) { }
 
-  async getGlobalStake() {
+  async getGlobalStake(): Promise<GlobalStake | undefined> {
     return await this.cachingService.getOrSet(
       CacheInfo.GlobalStake.key,
       async () => await this.getGlobalStakeRaw(),
@@ -42,51 +43,63 @@ export class StakeService {
     );
   }
 
-  async getGlobalStakeRaw() {
-    const [
-      validators,
-      {
-        erd_total_base_staked_value: totalBaseStaked,
-        erd_total_top_up_value: totalTopUp,
-      },
-    ] = await Promise.all([this.getValidators(), this.gatewayService.getNetworkEconomics()]);
+  async getGlobalStakeRaw(): Promise<GlobalStake> {
+    const validators = await this.getValidators();
+
+    const economics = await this.gatewayService.getNetworkEconomics();
+    const totalBaseStaked = economics.erd_total_base_staked_value;
+    const totalTopUp = economics.erd_total_top_up_value;
 
     const totalStaked = BigInt(BigInt(totalBaseStaked) + BigInt(totalTopUp)).toString();
-    const minimumAuctionTopUp = await this.getMinimumAuctionTopUp();
-    const minimumAuctionStake = await this.getMinimumAuctionStake();
-    const nakamotoCoefficient = await this.getNakamotoCoefficient();
 
-    return { ...validators, totalStaked, minimumAuctionTopUp, minimumAuctionStake, nakamotoCoefficient };
-  }
+    let minimumAuctionTopUp: string | undefined = undefined;
+    let minimumAuctionStake: string | undefined = undefined;
 
-  async getValidators() {
-    const stakingContractAddress = this.apiConfigService.getStakingContractAddress();
-    if (!stakingContractAddress) {
-      return {
-        totalValidators: 0,
-        activeValidators: 0,
-        queueSize: 0,
-      };
+    if (this.apiConfigService.isStakingV4Enabled()) {
+      minimumAuctionTopUp = await this.getMinimumAuctionTopUp();
+      minimumAuctionStake = await this.getMinimumAuctionStake();
     }
 
-    const [[queueSize], nodes] = await Promise.all([
-      this.vmQueryService.vmQuery(
-        stakingContractAddress,
-        'getQueueSize',
-      ),
-      this.nodeService.getAllNodes(),
-    ]);
+    const nakamotoCoefficient = await this.getNakamotoCoefficient();
 
-    return {
+    return new GlobalStake({ ...validators, totalStaked, minimumAuctionTopUp, minimumAuctionStake, nakamotoCoefficient });
+  }
+
+  async getValidators(): Promise<ValidatorInfoResult> {
+    const stakingContractAddress = this.apiConfigService.getStakingContractAddress();
+    if (!stakingContractAddress) {
+      return new ValidatorInfoResult({
+        totalValidators: 0,
+        activeValidators: 0,
+      });
+    }
+
+    const nodes = await this.nodeService.getAllNodes();
+
+    const result = new ValidatorInfoResult({
       totalValidators: nodes.filter(
-        ({ type, status }) => type === NodeType.validator && [NodeStatus.eligible, NodeStatus.waiting].includes(status ?? NodeStatus.unknown)
+        node => node.type === NodeType.validator && [NodeStatus.eligible, NodeStatus.waiting].includes(node.status ?? NodeStatus.unknown)
       ).length,
       activeValidators: nodes.filter(
-        ({ type, status, online }) =>
-          type === NodeType.validator && [NodeStatus.eligible, NodeStatus.waiting].includes(status ?? NodeStatus.unknown) && online === true
+        node => node.type === NodeType.validator && [NodeStatus.eligible, NodeStatus.waiting].includes(node.status ?? NodeStatus.unknown) && node.online === true
       ).length,
-      queueSize: parseInt(Buffer.from(queueSize, 'base64').toString()),
-    };
+    });
+
+    if (this.apiConfigService.isStakingV4Enabled()) {
+      const queueSizeResult = await this.vmQueryService.vmQuery(
+        stakingContractAddress,
+        'getQueueSize',
+      );
+      if (queueSizeResult.length === 0) {
+        throw new Error(`Invalid length for getQueueSize result`);
+      }
+
+      const queueSize = queueSizeResult[0];
+
+      result.queueSize = BinaryUtils.hexToNumber(BinaryUtils.base64ToHex(queueSize));
+    }
+
+    return result;
   }
 
   async getStakes(addresses: string[]): Promise<Stake[]> {
@@ -296,14 +309,16 @@ export class StakeService {
   }
 
   async getNakamotoCoefficient(): Promise<number> {
-    const identities = await this.identitiesService.getAllIdentities(IdentitySortCriteria.validators);
+    const identities = await this.identitiesService.getAllIdentities();
+    const sortedIdentities = identities.sortedDescending(x => x.validators ?? 0);
+
     const totalValidators = await this.getValidators();
     const threshold = Math.ceil((totalValidators).totalValidators * 0.33);
 
     let cumulativeValidators = 0;
     let nakamotoCoefficient = 0;
 
-    for (const identity of identities) {
+    for (const identity of sortedIdentities) {
       cumulativeValidators += identity.validators ?? 0;
       nakamotoCoefficient++;
 

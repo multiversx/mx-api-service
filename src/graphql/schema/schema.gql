@@ -689,9 +689,6 @@ type Economics {
   marketCap: Float
 
   """Total Supply general information."""
-  minimumAuctionTopUp: String
-
-  """Total Supply general information."""
   price: Float
 
   """Total Supply general information."""
@@ -1852,6 +1849,15 @@ type GlobalStake {
   """Active validators."""
   activeValidators: Float!
 
+  """Minimum Auction Stake information."""
+  minimumAuctionStake: String
+
+  """Minimum Auction Top Up information."""
+  minimumAuctionTopUp: String
+
+  """Nakamoto Coefficient."""
+  nakamotoCoefficient: Float!
+
   """Validators queue size."""
   queueSize: Float!
 
@@ -2736,7 +2742,7 @@ type Node {
   auctionPosition: Float
 
   """Auction selected for the given node."""
-  auctionSelected: Boolean
+  auctionQualified: Boolean
 
   """Auction top up for the given node."""
   auctionTopUp: String

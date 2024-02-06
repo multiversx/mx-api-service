@@ -22,7 +22,7 @@ export class GlobalStake {
 
   @Field(() => Float, { description: "Total stake amount." })
   @ApiProperty(SwaggerUtils.amountPropertyOptions())
-  totalStaked: number = 0;
+  totalStaked: string = '';
 
   @Field(() => String, { description: "Minimum Auction Top Up information.", nullable: true })
   @ApiProperty({ type: String, nullable: true })

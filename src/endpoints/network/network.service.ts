@@ -237,6 +237,10 @@ export class NetworkService {
     const stats = await this.getStats();
     const config = await this.getNetworkConfig();
     const stake = await this.stakeService.getGlobalStake();
+    if (!stake) {
+      throw new Error('Global stake not available');
+    }
+
     const stakedBalance = await this.getAuctionContractBalance();
 
     const multiversxConfig = {
