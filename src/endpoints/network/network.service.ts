@@ -173,15 +173,6 @@ export class NetworkService {
       'getTotalStakeByType',
     );
 
-    // [
-    //   'IN5SBbvBmUa/',
-    //   'AxhNV5NfKm7moA==',
-    //   'AoKvrf8o1lHgAAA=',
-    //   '',
-    //   'DpB6ZG+2NMl2RA=='
-    // ]
-
-    console.log(vmQueryResult);
     if (!vmQueryResult || vmQueryResult.length < 2) {
       throw new Error(`Could not fetch getTotalStakeByType from delegation contract address '${delegationContractAddress}'`);
     }
