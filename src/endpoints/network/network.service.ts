@@ -105,9 +105,13 @@ export class NetworkService {
 
   async getEconomicsRaw(): Promise<Economics> {
     const auctionContractBalance = await this.getAuctionContractBalance();
-    const totalWaitingStake = await this.getTotalWaitingStake();
     const egldPrice = await this.dataApiService.getEgldPrice();
     const tokenMarketCap = await this.tokenService.getTokenMarketCapRaw();
+
+    let totalWaitingStake: BigInt = BigInt(0);
+    if (!this.apiConfigService.isStakingV4Enabled) {
+      totalWaitingStake = await this.getTotalWaitingStake();
+    }
 
     const staked = NumberUtils.denominate(BigInt(auctionContractBalance.toString()) + BigInt(totalWaitingStake.toString())).toRounded();
 

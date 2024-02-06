@@ -12,6 +12,7 @@ import { IdentityDetailed } from "./entities/identity.detailed";
 import { StakeInfo } from "./entities/stake.info";
 import { NodeType } from "../nodes/entities/node.type";
 import { NodeStatus } from "../nodes/entities/node.status";
+import { IdentitySortCriteria } from "./entities/identity.sort.criteria";
 
 @Injectable()
 export class IdentitiesService {
@@ -33,8 +34,8 @@ export class IdentitiesService {
     return identity ? identity.avatar : undefined;
   }
 
-  async getIdentities(ids: string[]): Promise<Identity[]> {
-    let identities = await this.getAllIdentities();
+  async getIdentities(ids: string[], sort?: IdentitySortCriteria): Promise<Identity[]> {
+    let identities = await this.getAllIdentities(sort);
     if (ids.length > 0) {
       identities = identities.filter(x => x.identity && ids.includes(x.identity));
     }
@@ -42,12 +43,15 @@ export class IdentitiesService {
     return identities;
   }
 
-  async getAllIdentities(): Promise<Identity[]> {
-    return await this.cacheService.getOrSet(
-      CacheInfo.Identities.key,
-      async () => await this.getAllIdentitiesRaw(),
-      CacheInfo.Identities.ttl
-    );
+  async getAllIdentities(sort?: IdentitySortCriteria): Promise<Identity[]> {
+    if (!sort) {
+      return await this.cacheService.getOrSet(
+        CacheInfo.Identities.key,
+        async () => await this.getAllIdentitiesRaw(sort),
+        CacheInfo.Identities.ttl
+      );
+    }
+    return await this.getAllIdentitiesRaw(sort);
   }
 
   private computeTotalStakeAndTopUp(nodes: Node[]): NodesInfos {
@@ -149,7 +153,7 @@ export class IdentitiesService {
     return stakeInfo;
   }
 
-  async getAllIdentitiesRaw(): Promise<Identity[]> {
+  async getAllIdentitiesRaw(sort?: IdentitySortCriteria): Promise<Identity[]> {
     const nodes = await this.nodeService.getAllNodes();
 
     const distinctIdentities = nodes.filter(x => x.identity).map(x => x.identity).distinct();
@@ -234,7 +238,15 @@ export class IdentitiesService {
     identities = identities
       .filter((identity) => identity && (identity.validators ?? 0) > 0);
 
-    identities = identities.sortedDescending(identity => new BigNumber(identity.locked).dividedBy(10 ** 18).toNumber());
+    if (sort) {
+      switch (sort) {
+        case IdentitySortCriteria.validators:
+          identities = identities.sort((a, b) => (b.validators ?? 0) - (a.validators ?? 0));
+          break;
+      }
+    } else {
+      identities = identities.sortedDescending(identity => new BigNumber(identity.locked).dividedBy(10 ** 18).toNumber());
+    }
 
     for (const [index, identity] of identities.entries()) {
       if (identity) {
