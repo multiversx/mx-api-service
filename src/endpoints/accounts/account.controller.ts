@@ -134,13 +134,15 @@ export class AccountController {
   @ApiOperation({ summary: 'Account details', description: 'Returns account details for a given address' })
   @ApiQuery({ name: 'withGuardianInfo', description: 'Returns guardian data for a given address', required: false })
   @ApiQuery({ name: 'fields', description: 'List of fields to filter by', required: false })
+  @ApiQuery({ name: 'timestamp', description: 'Retrieve entry from timestamp', required: false, type: Number })
   @ApiOkResponse({ type: AccountDetailed })
   async getAccountDetails(
     @Param('address', ParseAddressPipe) address: string,
     @Query('withGuardianInfo', new ParseBoolPipe) withGuardianInfo?: boolean,
     @Query('fields', ParseArrayPipe) fields?: string[],
+    @Query('timestamp', new ParseIntPipe) timestamp?: number,
   ): Promise<AccountDetailed> {
-    const account = await this.accountService.getAccount(address, fields, withGuardianInfo);
+    const account = await this.accountService.getAccount(address, fields, withGuardianInfo, timestamp);
     if (!account) {
       throw new NotFoundException('Account not found');
     }
@@ -184,6 +186,7 @@ export class AccountController {
   @ApiQuery({ name: 'identifier', description: 'Search by token identifier', required: false })
   @ApiQuery({ name: 'identifiers', description: 'A comma-separated list of identifiers to filter by', required: false, type: String })
   @ApiQuery({ name: 'includeMetaESDT', description: 'Include MetaESDTs in response', required: false, type: Boolean })
+  @ApiQuery({ name: 'timestamp', description: 'Retrieve entries from timestamp', required: false, type: Number })
   @ApiOkResponse({ type: [TokenWithBalance] })
   async getAccountTokens(
     @Param('address', ParseAddressPipe) address: string,
@@ -195,9 +198,10 @@ export class AccountController {
     @Query('identifier') identifier?: string,
     @Query('identifiers', ParseArrayPipe) identifiers?: string[],
     @Query('includeMetaESDT', new ParseBoolPipe) includeMetaESDT?: boolean,
+    @Query('timestamp', new ParseIntPipe) timestamp?: number,
   ): Promise<TokenWithBalance[]> {
     try {
-      return await this.tokenService.getTokensForAddress(address, new QueryPagination({ from, size }), new TokenFilter({ type, search, name, identifier, identifiers, includeMetaESDT }));
+      return await this.tokenService.getTokensForAddress(address, new QueryPagination({ from, size }), new TokenFilter({ type, search, name, identifier, identifiers, includeMetaESDT, timestamp }));
     } catch (error) {
       this.logger.error(`Error in getAccountTokens for address ${address}`);
       this.logger.error(error);

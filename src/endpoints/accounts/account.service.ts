@@ -78,7 +78,7 @@ export class AccountService {
     return await this.indexerService.getAccountsCount(filter);
   }
 
-  async getAccount(address: string, fields?: string[], withGuardianInfo?: boolean): Promise<AccountDetailed | null> {
+  async getAccount(address: string, fields?: string[], withGuardianInfo?: boolean, timestamp?: number): Promise<AccountDetailed | null> {
     if (!AddressUtils.isAddressValid(address)) {
       return null;
     }

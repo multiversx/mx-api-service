@@ -22,4 +22,6 @@ export class TokenFilter {
   sort?: TokenSort;
 
   order?: SortOrder;
+
+  timestamp?: number;
 }
