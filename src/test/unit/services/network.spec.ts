@@ -226,19 +226,19 @@ describe('NetworkService', () => {
           new Auction({
             "qualifiedTopUp": "2500000000000000000000",
             "auctionList": [
-              new AuctionNode({ "selected": true }),
+              new AuctionNode({ "qualified": true }),
             ],
           }),
           new Auction({
             "qualifiedTopUp": "2400000000000000000000",
             "auctionList": [
-              new AuctionNode({ "selected": true }),
+              new AuctionNode({ "qualified": true }),
             ],
           }),
           new Auction({
             "qualifiedTopUp": "0",
             "auctionList": [
-              new AuctionNode({ "selected": false }),
+              new AuctionNode({ "qualified": false }),
             ],
           }),
         ])));
@@ -254,19 +254,19 @@ describe('NetworkService', () => {
           new Auction({
             "qualifiedTopUp": "2400000000000000000000",
             "auctionList": [
-              new AuctionNode({ "selected": true }),
+              new AuctionNode({ "qualified": true }),
             ],
           }),
           new Auction({
             "qualifiedTopUp": "2500000000000000000000",
             "auctionList": [
-              new AuctionNode({ "selected": true }),
+              new AuctionNode({ "qualified": true }),
             ],
           }),
           new Auction({
             "qualifiedTopUp": "0",
             "auctionList": [
-              new AuctionNode({ "selected": false }),
+              new AuctionNode({ "qualified": false }),
             ],
           }),
         ])));
@@ -282,19 +282,19 @@ describe('NetworkService', () => {
           new Auction({
             "qualifiedTopUp": "2500000000000000000000",
             "auctionList": [
-              new AuctionNode({ "selected": true }),
+              new AuctionNode({ "qualified": true }),
             ],
           }),
           new Auction({
             "qualifiedTopUp": "2400000000000000000000",
             "auctionList": [
-              new AuctionNode({ "selected": true }),
+              new AuctionNode({ "qualified": true }),
             ],
           }),
           new Auction({
             "qualifiedTopUp": "2300000000000000000000",
             "auctionList": [
-              new AuctionNode({ "selected": true }),
+              new AuctionNode({ "qualified": true }),
             ],
           }),
         ])));
@@ -310,19 +310,19 @@ describe('NetworkService', () => {
           new Auction({
             "qualifiedTopUp": "2500000000000000000000",
             "auctionList": [
-              new AuctionNode({ "selected": false }),
+              new AuctionNode({ "qualified": false }),
             ],
           }),
           new Auction({
             "qualifiedTopUp": "2400000000000000000000",
             "auctionList": [
-              new AuctionNode({ "selected": false }),
+              new AuctionNode({ "qualified": false }),
             ],
           }),
           new Auction({
             "qualifiedTopUp": "2300000000000000000000",
             "auctionList": [
-              new AuctionNode({ "selected": false }),
+              new AuctionNode({ "qualified": false }),
             ],
           }),
         ])));

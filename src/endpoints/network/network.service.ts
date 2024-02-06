@@ -114,7 +114,7 @@ export class NetworkService {
 
     for (const auction of auctions) {
       for (const auctionNode of auction.auctionList) {
-        if (auctionNode.selected === true && (!minimumAuctionTopUp || BigInt(minimumAuctionTopUp) > BigInt(auction.qualifiedTopUp))) {
+        if (auctionNode.qualified === true && (!minimumAuctionTopUp || BigInt(minimumAuctionTopUp) > BigInt(auction.qualifiedTopUp))) {
           minimumAuctionTopUp = auction.qualifiedTopUp;
         }
       }
@@ -197,6 +197,15 @@ export class NetworkService {
       'getTotalStakeByType',
     );
 
+    // [
+    //   'IN5SBbvBmUa/',
+    //   'AxhNV5NfKm7moA==',
+    //   'AoKvrf8o1lHgAAA=',
+    //   '',
+    //   'DpB6ZG+2NMl2RA=='
+    // ]
+
+    console.log(vmQueryResult);
     if (!vmQueryResult || vmQueryResult.length < 2) {
       throw new Error(`Could not fetch getTotalStakeByType from delegation contract address '${delegationContractAddress}'`);
     }

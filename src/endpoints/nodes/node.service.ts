@@ -354,7 +354,7 @@ export class NodeService {
             node.auctioned = true;
             node.auctionPosition = position;
             node.auctionTopUp = auction.qualifiedTopUp;
-            node.auctionSelected = auctionNode.selected;
+            node.auctionQualified = auctionNode.qualified;
           }
 
           position++;
@@ -623,7 +623,7 @@ export class NodeService {
         auctioned: undefined,
         auctionPosition: undefined,
         auctionTopUp: undefined,
-        auctionSelected: undefined,
+        auctionQualified: undefined,
       });
 
       if (['queued', 'jailed'].includes(peerType)) {

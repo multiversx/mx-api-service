@@ -102,7 +102,7 @@ describe('Delegation Service', () => {
         position: 0,
         auctioned: undefined,
         auctionPosition: undefined,
-        auctionSelected: undefined,
+        auctionQualified: undefined,
         auctionTopUp: undefined,
         fullHistory: undefined,
         issues: [],
