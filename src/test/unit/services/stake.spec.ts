@@ -8,6 +8,9 @@ import { NodeService } from "src/endpoints/nodes/node.service";
 import { StakeService } from "src/endpoints/stake/stake.service";
 import { VmQueryService } from "src/endpoints/vm.query/vm.query.service";
 import { CacheInfo } from "src/utils/cache.info";
+import * as fs from 'fs';
+import * as path from 'path';
+import { IdentitiesService } from "src/endpoints/identities/identities.service";
 
 describe('Stake Service', () => {
   let stakeService: StakeService;
@@ -15,6 +18,7 @@ describe('Stake Service', () => {
   let vmQueryService: VmQueryService;
   let apiConfigService: ApiConfigService;
   let gatewayService: GatewayService;
+  let identitiesService: IdentitiesService;
 
   beforeEach(async () => {
     const moduleRef = await Test.createTestingModule({
@@ -59,6 +63,12 @@ describe('Stake Service', () => {
             getNetworkConfig: jest.fn(),
           },
         },
+        {
+          provide: IdentitiesService,
+          useValue: {
+            getAllIdentities: jest.fn(),
+          },
+        },
       ],
     }).compile();
 
@@ -67,6 +77,7 @@ describe('Stake Service', () => {
     vmQueryService = moduleRef.get<VmQueryService>(VmQueryService);
     apiConfigService = moduleRef.get<ApiConfigService>(ApiConfigService);
     gatewayService = moduleRef.get<GatewayService>(GatewayService);
+    identitiesService = moduleRef.get<IdentitiesService>(IdentitiesService);
   });
 
   describe('getGlobalStake', () => {
@@ -137,10 +148,12 @@ describe('Stake Service', () => {
 
       const expectedTotalStaked = '120';
       const expectedMinimumAuctionTopUp = '2500';
+      const expectedNakamotoCoefficient = 4;
 
       jest.spyOn(stakeService, 'getValidators').mockResolvedValue(validators);
       jest.spyOn(stakeService['gatewayService'], 'getNetworkEconomics').mockResolvedValue(economicsMocks);
       jest.spyOn(stakeService, 'getMinimumAuctionTopUp').mockResolvedValue(expectedMinimumAuctionTopUp);
+      jest.spyOn(stakeService, 'getNakamotoCoefficient').mockResolvedValue(expectedNakamotoCoefficient);
 
       const result = await stakeService.getGlobalStakeRaw();
 
@@ -149,6 +162,7 @@ describe('Stake Service', () => {
       expect(result.queueSize).toEqual(validators.queueSize);
       expect(result.totalStaked).toEqual(expectedTotalStaked);
       expect(result.minimumAuctionTopUp).toEqual(expectedMinimumAuctionTopUp);
+      expect(result.nakamotoCoefficient).toEqual(expectedNakamotoCoefficient);
     });
   });
 
@@ -408,6 +422,24 @@ describe('Stake Service', () => {
       const result = await stakeService.getMinimumAuctionStake();
 
       expect(result).toEqual('1002500');
+    });
+  });
+
+  describe('getNakamotoCoefficient', () => {
+    it('should correctly calculate Nakamoto Coefficient', async () => {
+      const data = JSON.parse(fs.readFileSync(path.join(__dirname, '../../mocks/identities.mock.json'), 'utf-8'));
+      jest.spyOn(identitiesService, 'getAllIdentities').mockResolvedValue(data);
+
+      const mockedValidators = {
+        totalValidators: 3200,
+        activeValidators: 3100,
+        queueSize: 100,
+      };
+      jest.spyOn(stakeService, 'getValidators').mockResolvedValue(mockedValidators);
+
+      const nakamotoCoefficient = await stakeService.getNakamotoCoefficient();
+
+      expect(nakamotoCoefficient).toStrictEqual(4);
     });
   });
 });

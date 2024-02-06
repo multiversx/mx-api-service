@@ -14,6 +14,8 @@ import { ApiUtils } from "@multiversx/sdk-nestjs-http";
 import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { OriginLogger } from "@multiversx/sdk-nestjs-common";
 import { ProviderStake } from "./entities/provider.stake";
+import { IdentitiesService } from "../identities/identities.service";
+import { IdentitySortCriteria } from "../identities/entities/identity.sort.criteria";
 
 @Injectable()
 export class StakeService {
@@ -28,6 +30,8 @@ export class StakeService {
     private readonly gatewayService: GatewayService,
     @Inject(forwardRef(() => NetworkService))
     private readonly networkService: NetworkService,
+    @Inject(forwardRef(() => IdentitiesService))
+    private readonly identitiesService: IdentitiesService
   ) { }
 
   async getGlobalStake() {
@@ -50,8 +54,9 @@ export class StakeService {
     const totalStaked = BigInt(BigInt(totalBaseStaked) + BigInt(totalTopUp)).toString();
     const minimumAuctionTopUp = await this.getMinimumAuctionTopUp();
     const minimumAuctionStake = await this.getMinimumAuctionStake();
+    const nakamotoCoefficient = await this.getNakamotoCoefficient();
 
-    return { ...validators, totalStaked, minimumAuctionTopUp, minimumAuctionStake };
+    return { ...validators, totalStaked, minimumAuctionTopUp, minimumAuctionStake, nakamotoCoefficient };
   }
 
   async getValidators() {
@@ -288,5 +293,24 @@ export class StakeService {
     const topUp = minimumAuctionTopUp ? BigInt(minimumAuctionTopUp) : BigInt(0);
 
     return (baseStake + topUp).toString();
+  }
+
+  async getNakamotoCoefficient(): Promise<number> {
+    const identities = await this.identitiesService.getAllIdentities(IdentitySortCriteria.validators);
+    const totalValidators = await this.getValidators();
+    const threshold = Math.ceil((totalValidators).totalValidators * 0.33);
+
+    let cumulativeValidators = 0;
+    let nakamotoCoefficient = 0;
+
+    for (const identity of identities) {
+      cumulativeValidators += identity.validators ?? 0;
+      nakamotoCoefficient++;
+
+      if (cumulativeValidators > threshold) {
+        break;
+      }
+    }
+    return nakamotoCoefficient;
   }
 }

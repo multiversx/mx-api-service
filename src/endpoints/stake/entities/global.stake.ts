@@ -31,4 +31,8 @@ export class GlobalStake {
   @Field(() => String, { description: "Minimum Auction Stake information.", nullable: true })
   @ApiProperty({ type: String, nullable: true })
   minimumAuctionStake: string | undefined = undefined;
+
+  @Field(() => Float, { description: "Nakamoto Coefficient." })
+  @ApiProperty({ type: Number, default: 4 })
+  nakamotoCoefficient: number = 0;
 }
