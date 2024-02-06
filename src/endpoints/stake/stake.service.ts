@@ -48,8 +48,9 @@ export class StakeService {
     ] = await Promise.all([this.getValidators(), this.gatewayService.getNetworkEconomics()]);
 
     const totalStaked = BigInt(BigInt(totalBaseStaked) + BigInt(totalTopUp)).toString();
+    const minimumAuctionTopUp = await this.getMinimumAuctionTopUp();
 
-    return { ...validators, totalStaked };
+    return { ...validators, totalStaked, minimumAuctionTopUp };
   }
 
   async getValidators() {
@@ -257,5 +258,25 @@ export class StakeService {
     }
 
     return data;
+  }
+
+  async getMinimumAuctionTopUp(): Promise<string | undefined> {
+    const auctions = await this.gatewayService.getValidatorAuctions();
+
+    if (auctions.length === 0) {
+      return undefined;
+    }
+
+    let minimumAuctionTopUp: string | undefined = undefined;
+
+    for (const auction of auctions) {
+      for (const auctionNode of auction.auctionList) {
+        if (auctionNode.qualified === true && (!minimumAuctionTopUp || BigInt(minimumAuctionTopUp) > BigInt(auction.qualifiedTopUp))) {
+          minimumAuctionTopUp = auction.qualifiedTopUp;
+        }
+      }
+    }
+
+    return minimumAuctionTopUp;
   }
 }

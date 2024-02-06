@@ -103,26 +103,6 @@ export class NetworkService {
     return new Economics({ ...economics });
   }
 
-  async getMinimumAuctionTopUp(): Promise<string | undefined> {
-    const auctions = await this.gatewayService.getValidatorAuctions();
-
-    if (auctions.length === 0) {
-      return undefined;
-    }
-
-    let minimumAuctionTopUp: string | undefined = undefined;
-
-    for (const auction of auctions) {
-      for (const auctionNode of auction.auctionList) {
-        if (auctionNode.qualified === true && (!minimumAuctionTopUp || BigInt(minimumAuctionTopUp) > BigInt(auction.qualifiedTopUp))) {
-          minimumAuctionTopUp = auction.qualifiedTopUp;
-        }
-      }
-    }
-
-    return minimumAuctionTopUp;
-  }
-
   async getEconomicsRaw(): Promise<Economics> {
     const auctionContractBalance = await this.getAuctionContractBalance();
     const totalWaitingStake = await this.getTotalWaitingStake();
@@ -151,10 +131,6 @@ export class NetworkService {
       baseApr: aprInfo.baseApr ? aprInfo.baseApr.toRounded(6) : 0,
       tokenMarketCap: tokenMarketCap ? Math.round(tokenMarketCap) : undefined,
     });
-
-    if (this.apiConfigService.isStakingV4Enabled()) {
-      economics.minimumAuctionTopUp = await this.getMinimumAuctionTopUp();
-    }
 
     return economics;
   }

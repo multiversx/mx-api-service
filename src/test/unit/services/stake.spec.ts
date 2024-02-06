@@ -14,6 +14,7 @@ describe('Stake Service', () => {
   let cachingService: CacheService;
   let vmQueryService: VmQueryService;
   let apiConfigService: ApiConfigService;
+  let gatewayService: GatewayService;
 
   beforeEach(async () => {
     const moduleRef = await Test.createTestingModule({
@@ -49,6 +50,7 @@ describe('Stake Service', () => {
           provide: GatewayService,
           useValue: {
             getNetworkEconomics: jest.fn(),
+            getValidatorAuctions: jest.fn(),
           },
         },
         {
@@ -64,6 +66,7 @@ describe('Stake Service', () => {
     cachingService = moduleRef.get<CacheService>(CacheService);
     vmQueryService = moduleRef.get<VmQueryService>(VmQueryService);
     apiConfigService = moduleRef.get<ApiConfigService>(ApiConfigService);
+    gatewayService = moduleRef.get<GatewayService>(GatewayService);
   });
 
   describe('getGlobalStake', () => {
@@ -115,7 +118,7 @@ describe('Stake Service', () => {
   });
 
   describe('getGlobalStakeRaw', () => {
-    it('should return global stake information', async () => {
+    it('should return global stake information, including minimumAuctionTopUp', async () => {
       const validators = {
         totalValidators: 10,
         activeValidators: 5,
@@ -133,9 +136,11 @@ describe('Stake Service', () => {
       };
 
       const expectedTotalStaked = '120';
+      const expectedMinimumAuctionTopUp = '2500';
 
       jest.spyOn(stakeService, 'getValidators').mockResolvedValue(validators);
       jest.spyOn(stakeService['gatewayService'], 'getNetworkEconomics').mockResolvedValue(economicsMocks);
+      jest.spyOn(stakeService, 'getMinimumAuctionTopUp').mockResolvedValue(expectedMinimumAuctionTopUp);
 
       const result = await stakeService.getGlobalStakeRaw();
 
@@ -143,8 +148,10 @@ describe('Stake Service', () => {
       expect(result.activeValidators).toEqual(validators.activeValidators);
       expect(result.queueSize).toEqual(validators.queueSize);
       expect(result.totalStaked).toEqual(expectedTotalStaked);
+      expect(result.minimumAuctionTopUp).toEqual(expectedMinimumAuctionTopUp);
     });
   });
+
 
   describe('getValidators', () => {
     it('should return details about validators and return valid results', async () => {
@@ -160,6 +167,131 @@ describe('Stake Service', () => {
       expect(result.totalValidators).toEqual(97);
       expect(result.activeValidators).toEqual(96);
       expect(result.queueSize).toEqual(parseInt(Buffer.from(queueSize, 'base64').toString()));
+    });
+  });
+
+  describe('getMinimumAuctionTopUp', () => {
+    it('should return undefined when there are no auctions', async () => {
+      const response = { auctionList: [] };
+      jest.spyOn(gatewayService, 'getValidatorAuctions').mockResolvedValue(response.auctionList);
+
+      const minimumAuctionTopUp = await stakeService.getMinimumAuctionTopUp();
+
+      expect(minimumAuctionTopUp).toBeUndefined();
+    });
+
+    it('should return "0" when all qualifiedTopUp are zero', async () => {
+      const response = {
+        auctionList: [
+          {
+            qualifiedTopUp: '0',
+            owner: "erd1netql0lyhcyd8ugpcfrchr60273rjemr5thug9g0fgxqa9ep5yeqvj7qfv",
+            numStakedNodes: 1,
+            totalTopUp: "0",
+            topUpPerNode: "0",
+            auctionList: [
+              {
+                blsKey: "bc832a1c856963abd94b3bc28ce25473a47078e0a397fd2aad7e1c853352e5c8b6926075e31d0ca8fefcadeb652f3005aca644cf62d11c4a679aed8c9eb4c0d91bd2135a9af3ed285afd2a44c4d4e8741600b4ac8431681530bb018d251dac99",
+                qualified: true,
+              },
+            ],
+          },
+          {
+            qualifiedTopUp: '0',
+            owner: "erd1crmrdw7dgkcmj6a045yjcq3ehvzyntegtn6pu9ttnl35l9kcmjjqsf5v59",
+            numStakedNodes: 1,
+            totalTopUp: "0",
+            topUpPerNode: "0",
+            auctionList: [
+              {
+                blsKey: "a5e971635917fd89c76f7967a1d2a5d83e18219126f85933b46ac7af3afba8a3d46479bf151b7e56c4379c3b9d756e0161e2d59bfbb4a7b9b33dfa7952735132a350fb32ab38dacbed85ca8f0d5ccf046a8e68eff2cddf5fe317a34ec8dee40e",
+                qualified: true,
+              },
+            ],
+          },
+        ],
+      };
+      jest.spyOn(gatewayService, 'getValidatorAuctions').mockResolvedValue(response.auctionList);
+
+      const minimumAuctionTopUp = await stakeService.getMinimumAuctionTopUp();
+
+      expect(minimumAuctionTopUp).toStrictEqual("0");
+    });
+
+    it('should return the smallest positive qualifiedTopUp', async () => {
+      const response = {
+        auctionList: [
+          {
+            qualifiedTopUp: '100',
+            owner: "erd1netql0lyhcyd8ugpcfrchr60273rjemr5thug9g0fgxqa9ep5yeqvj7qfv",
+            numStakedNodes: 1,
+            totalTopUp: "0",
+            topUpPerNode: "0",
+            auctionList: [
+              {
+                blsKey: "bc832a1c856963abd94b3bc28ce25473a47078e0a397fd2aad7e1c853352e5c8b6926075e31d0ca8fefcadeb652f3005aca644cf62d11c4a679aed8c9eb4c0d91bd2135a9af3ed285afd2a44c4d4e8741600b4ac8431681530bb018d251dac99",
+                qualified: true,
+              },
+            ],
+          },
+          {
+            qualifiedTopUp: '50',
+            owner: "erd1crmrdw7dgkcmj6a045yjcq3ehvzyntegtn6pu9ttnl35l9kcmjjqsf5v59",
+            numStakedNodes: 1,
+            totalTopUp: "0",
+            topUpPerNode: "0",
+            auctionList: [
+              {
+                blsKey: "a5e971635917fd89c76f7967a1d2a5d83e18219126f85933b46ac7af3afba8a3d46479bf151b7e56c4379c3b9d756e0161e2d59bfbb4a7b9b33dfa7952735132a350fb32ab38dacbed85ca8f0d5ccf046a8e68eff2cddf5fe317a34ec8dee40e",
+                qualified: true,
+              },
+            ],
+          },
+        ],
+      };
+      jest.spyOn(gatewayService, 'getValidatorAuctions').mockResolvedValue(response.auctionList);
+
+      const minimumAuctionTopUp = await stakeService.getMinimumAuctionTopUp();
+
+      expect(minimumAuctionTopUp).toEqual('50');
+    });
+
+    it('should only consider qualified nodes', async () => {
+      const response = {
+        auctionList: [
+          {
+            qualifiedTopUp: '100',
+            owner: "erd1netql0lyhcyd8ugpcfrchr60273rjemr5thug9g0fgxqa9ep5yeqvj7qfv",
+            numStakedNodes: 1,
+            totalTopUp: "0",
+            topUpPerNode: "0",
+            auctionList: [
+              {
+                blsKey: "bc832a1c856963abd94b3bc28ce25473a47078e0a397fd2aad7e1c853352e5c8b6926075e31d0ca8fefcadeb652f3005aca644cf62d11c4a679aed8c9eb4c0d91bd2135a9af3ed285afd2a44c4d4e8741600b4ac8431681530bb018d251dac99",
+                qualified: true,
+              },
+            ],
+          },
+          {
+            qualifiedTopUp: '50',
+            owner: "erd1crmrdw7dgkcmj6a045yjcq3ehvzyntegtn6pu9ttnl35l9kcmjjqsf5v59",
+            numStakedNodes: 1,
+            totalTopUp: "0",
+            topUpPerNode: "0",
+            auctionList: [
+              {
+                blsKey: "a5e971635917fd89c76f7967a1d2a5d83e18219126f85933b46ac7af3afba8a3d46479bf151b7e56c4379c3b9d756e0161e2d59bfbb4a7b9b33dfa7952735132a350fb32ab38dacbed85ca8f0d5ccf046a8e68eff2cddf5fe317a34ec8dee40e",
+                qualified: false,
+              },
+            ],
+          },
+        ],
+      };
+      jest.spyOn(gatewayService, 'getValidatorAuctions').mockResolvedValue(response.auctionList);
+
+      const minimumAuctionTopUp = await stakeService.getMinimumAuctionTopUp();
+
+      expect(minimumAuctionTopUp).toEqual('100');
     });
   });
 });
