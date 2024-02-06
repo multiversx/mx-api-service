@@ -27,4 +27,8 @@ export class GlobalStake {
   @Field(() => String, { description: "Minimum Auction Top Up information.", nullable: true })
   @ApiProperty({ type: String, nullable: true })
   minimumAuctionTopUp: string | undefined = undefined;
+
+  @Field(() => String, { description: "Minimum Auction Stake information.", nullable: true })
+  @ApiProperty({ type: String, nullable: true })
+  minimumAuctionStake: string | undefined = undefined;
 }

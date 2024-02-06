@@ -49,8 +49,9 @@ export class StakeService {
 
     const totalStaked = BigInt(BigInt(totalBaseStaked) + BigInt(totalTopUp)).toString();
     const minimumAuctionTopUp = await this.getMinimumAuctionTopUp();
+    const minimumAuctionStake = await this.getMinimumAuctionStake();
 
-    return { ...validators, totalStaked, minimumAuctionTopUp };
+    return { ...validators, totalStaked, minimumAuctionTopUp, minimumAuctionStake };
   }
 
   async getValidators() {
@@ -278,5 +279,14 @@ export class StakeService {
     }
 
     return minimumAuctionTopUp;
+  }
+
+  async getMinimumAuctionStake(): Promise<string> {
+    const MINIMUM_STAKE_AMOUNT = 2500;
+    const minimumAuctionTopUp = await this.getMinimumAuctionTopUp();
+    const baseStake = BigInt(MINIMUM_STAKE_AMOUNT);
+    const topUp = minimumAuctionTopUp ? BigInt(minimumAuctionTopUp) : BigInt(0);
+
+    return (baseStake + topUp).toString();
   }
 }
