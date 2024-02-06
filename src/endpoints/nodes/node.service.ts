@@ -177,6 +177,10 @@ export class NodeService {
         return false;
       }
 
+      if (query.isQualified !== undefined && node.auctionQualified !== query.isQualified) {
+        return false;
+      }
+
       return true;
     });
 

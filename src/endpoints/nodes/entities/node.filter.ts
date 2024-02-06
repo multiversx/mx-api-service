@@ -51,4 +51,7 @@ export class NodeFilter {
 
   @Field(() => [String], { description: "Search by multiple keys, comma-separated.", nullable: true })
   keys: string[] | undefined;
+
+  @Field(() => Boolean, { description: "Node isQualified filter for the given nodes.", nullable: true })
+  isQualified: boolean | undefined;
 } 
