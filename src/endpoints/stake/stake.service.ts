@@ -85,7 +85,7 @@ export class StakeService {
       ).length,
     });
 
-    if (this.apiConfigService.isStakingV4Enabled()) {
+    if (!this.apiConfigService.isStakingV4Enabled()) {
       const queueSizeResult = await this.vmQueryService.vmQuery(
         stakingContractAddress,
         'getQueueSize',
