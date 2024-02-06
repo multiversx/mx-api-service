@@ -35,4 +35,16 @@ export class GlobalStake {
   @Field(() => Float, { description: "Nakamoto Coefficient." })
   @ApiProperty({ type: Number, default: 4 })
   nakamotoCoefficient: number = 0;
+
+  @Field(() => Float, { description: "Danger Zone Validators." })
+  @ApiProperty({ type: Number, default: 15 })
+  dangerZoneValidators: number = 0;
+
+  @Field(() => Float, { description: "Eligible Validators." })
+  @ApiProperty({ type: Number, default: 15 })
+  eligibleValidators: number = 0;
+
+  @Field(() => Float, { description: "Not Eligible Validators." })
+  @ApiProperty({ type: Number, default: 15 })
+  notEligibleValidators: number = 0;
 }

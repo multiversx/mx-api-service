@@ -17,6 +17,7 @@ import { ProviderStake } from "./entities/provider.stake";
 import { IdentitiesService } from "../identities/identities.service";
 import { GlobalStake } from "./entities/global.stake";
 import { ValidatorInfoResult } from "./entities/validator.info.result";
+import { NodeFilter } from "../nodes/entities/node.filter";
 
 @Injectable()
 export class StakeService {
@@ -61,8 +62,21 @@ export class StakeService {
     }
 
     const nakamotoCoefficient = await this.getNakamotoCoefficient();
+    const eligibleValidators = await this.nodeService.getNodeCount(new NodeFilter({ status: NodeStatus.eligible }));
+    const notEligibleValidators = await this.nodeService.getNodeCount(new NodeFilter({ status: NodeStatus.waiting }));
+    const dangerZoneValidators = (await this.nodeService.getNodesWithAuctionDangerZoneFilter()).length;
 
-    return new GlobalStake({ ...validators, totalStaked, minimumAuctionTopUp, minimumAuctionStake, nakamotoCoefficient });
+    return new GlobalStake(
+      {
+        ...validators,
+        totalStaked,
+        minimumAuctionTopUp,
+        minimumAuctionStake,
+        nakamotoCoefficient,
+        eligibleValidators,
+        notEligibleValidators,
+        dangerZoneValidators,
+      });
   }
 
   async getValidators(): Promise<ValidatorInfoResult> {
