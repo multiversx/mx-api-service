@@ -683,4 +683,10 @@ export class NodeService {
       BigInt(node.stake) < dangerZoneThreshold
     );
   }
+
+  async getNodesWithAuctionDangerZoneCount(): Promise<number> {
+    const nodesCount = await this.getNodesWithAuctionDangerZoneFilter();
+
+    return nodesCount.length;
+  }
 }

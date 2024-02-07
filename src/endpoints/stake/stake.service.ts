@@ -62,9 +62,9 @@ export class StakeService {
     }
 
     const nakamotoCoefficient = await this.getNakamotoCoefficient();
+    const dangerZoneValidators = await this.nodeService.getNodesWithAuctionDangerZoneCount();
     const eligibleValidators = await this.nodeService.getNodeCount(new NodeFilter({ status: NodeStatus.eligible }));
-    const notEligibleValidators = await this.nodeService.getNodeCount(new NodeFilter({ status: NodeStatus.waiting }));
-    const dangerZoneValidators = (await this.nodeService.getNodesWithAuctionDangerZoneFilter()).length;
+    const waitingValidators = await this.nodeService.getNodeCount(new NodeFilter({ status: NodeStatus.waiting }));
 
     return new GlobalStake(
       {
@@ -74,7 +74,7 @@ export class StakeService {
         minimumAuctionStake,
         nakamotoCoefficient,
         eligibleValidators,
-        notEligibleValidators,
+        waitingValidators,
         dangerZoneValidators,
       });
   }

@@ -46,5 +46,5 @@ export class GlobalStake {
 
   @Field(() => Float, { description: "Not Eligible Validators." })
   @ApiProperty({ type: Number, default: 15 })
-  notEligibleValidators: number = 0;
+  waitingValidators: number = 0;
 }
