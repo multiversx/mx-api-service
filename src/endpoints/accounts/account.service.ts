@@ -113,6 +113,11 @@ export class AccountService {
       account.ownerAddress = provider.owner;
     }
 
+    if (timestamp) {
+      // TODO: remove
+      console.log('timestamp', timestamp);
+    }
+
     return account;
   }
 
