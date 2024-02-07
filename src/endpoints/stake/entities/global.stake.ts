@@ -24,13 +24,13 @@ export class GlobalStake {
   @ApiProperty(SwaggerUtils.amountPropertyOptions())
   totalStaked: string = '';
 
-  @Field(() => String, { description: "Minimum Auction Top Up information.", nullable: true })
+  @Field(() => String, { description: "Minimum Auction Qualified Top Up information.", nullable: true })
   @ApiProperty({ type: String, nullable: true })
-  minimumAuctionTopUp: string | undefined = undefined;
+  minimumAuctionQualifiedTopUp: string | undefined = undefined;
 
-  @Field(() => String, { description: "Minimum Auction Stake information.", nullable: true })
+  @Field(() => String, { description: "Minimum Auction Qualified Stake information.", nullable: true })
   @ApiProperty({ type: String, nullable: true })
-  minimumAuctionStake: string | undefined = undefined;
+  minimumAuctionQualifiedStake: string | undefined = undefined;
 
   @Field(() => Float, { description: "Nakamoto Coefficient." })
   @ApiProperty({ type: Number, default: 4 })

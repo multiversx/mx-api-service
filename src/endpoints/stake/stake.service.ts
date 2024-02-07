@@ -53,12 +53,12 @@ export class StakeService {
 
     const totalStaked = BigInt(BigInt(totalBaseStaked) + BigInt(totalTopUp)).toString();
 
-    let minimumAuctionTopUp: string | undefined = undefined;
-    let minimumAuctionStake: string | undefined = undefined;
+    let minimumAuctionQualifiedTopUp: string | undefined = undefined;
+    let minimumAuctionQualifiedStake: string | undefined = undefined;
 
     if (this.apiConfigService.isStakingV4Enabled()) {
-      minimumAuctionTopUp = await this.getMinimumAuctionTopUp();
-      minimumAuctionStake = await this.getMinimumAuctionStake();
+      minimumAuctionQualifiedTopUp = await this.getMinimumAuctionTopUp();
+      minimumAuctionQualifiedStake = await this.getMinimumAuctionStake();
     }
 
     const nakamotoCoefficient = await this.getNakamotoCoefficient();
@@ -70,8 +70,8 @@ export class StakeService {
       {
         ...validators,
         totalStaked,
-        minimumAuctionTopUp,
-        minimumAuctionStake,
+        minimumAuctionQualifiedTopUp,
+        minimumAuctionQualifiedStake,
         nakamotoCoefficient,
         eligibleValidators,
         waitingValidators,
