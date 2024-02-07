@@ -4,24 +4,24 @@ api:
   public: true
   private: true
 cron:
-  transactionProcessor: false
+  transactionProcessor: true
   transactionProcessorMaxLookBehind: 100
   transactionCompleted: false
   transactionCompletedMaxLookBehind: 100
   transactionBatch: false
   transactionBatchMaxLookBehind: 100
-  cacheWarmer: false
-  fastWarm: false
-  queueWorker: false
+  cacheWarmer: true
+  fastWarm: true
+  queueWorker: true
   elasticUpdater: false
   statusChecker: false
 flags:
-  useRequestCaching: false
-  useKeepAliveAgent: false
+  useRequestCaching: true
+  useKeepAliveAgent: true
   useTracing: false
   useRequestLogging: false
   useVmQueryTracing: false
-  processNfts: false
+  processNfts: true
   indexer-v3: true
   collectionPropertiesFromGateway: false
 features:
@@ -36,9 +36,9 @@ features:
     hitsThreshold: 100
     ttl: 12
   transactionPool:
-    enabled: false
+    enabled: true
   transactionPoolWarmer:
-    enabled: false
+    enabled: true
     cronExpression: '*/5 * * * * *'
     ttlInSeconds: 60
   updateCollectionExtraDetails:
@@ -60,9 +60,6 @@ features:
     admins:
       - ''
     jwtSecret: ''
-  deepHistory:
-    enabled: false
-    url: ''
 image:
   width: 600
   height: 600
