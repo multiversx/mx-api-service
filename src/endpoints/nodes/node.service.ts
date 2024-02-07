@@ -185,6 +185,10 @@ export class NodeService {
         return false;
       }
 
+      if (query.isAuctioned !== undefined && node.auctioned !== query.isAuctioned) {
+        return false;
+      }
+
       return true;
     });
 

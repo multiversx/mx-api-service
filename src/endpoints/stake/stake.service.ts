@@ -55,10 +55,12 @@ export class StakeService {
 
     let minimumAuctionQualifiedTopUp: string | undefined = undefined;
     let minimumAuctionQualifiedStake: string | undefined = undefined;
+    let auctionValidators: number | undefined = undefined;
 
     if (this.apiConfigService.isStakingV4Enabled()) {
       minimumAuctionQualifiedTopUp = await this.getMinimumAuctionTopUp();
       minimumAuctionQualifiedStake = await this.getMinimumAuctionStake();
+      auctionValidators = await this.nodeService.getNodeCount(new NodeFilter({ auctioned: true }));
     }
 
     const nakamotoCoefficient = await this.getNakamotoCoefficient();
@@ -72,6 +74,7 @@ export class StakeService {
         totalStaked,
         minimumAuctionQualifiedTopUp,
         minimumAuctionQualifiedStake,
+        auctionValidators,
         nakamotoCoefficient,
         eligibleValidators,
         waitingValidators,
