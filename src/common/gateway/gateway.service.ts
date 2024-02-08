@@ -201,7 +201,7 @@ export class GatewayService {
     const url = new URL(`${this.getGatewayUrl(component)}/${suffix}`);
 
     const context = ContextTracker.get();
-    if (context.deepHistoryBlockNonce && this.deepHistoryRequestsSet.has(component)) {
+    if (context && context.deepHistoryBlockNonce && this.deepHistoryRequestsSet.has(component)) {
       url.searchParams.set('blockNonce', context.deepHistoryBlockNonce);
     }
 
@@ -210,7 +210,7 @@ export class GatewayService {
 
   private getGatewayUrl(component: GatewayComponentRequest): string {
     const context = ContextTracker.get();
-    if (context.deepHistoryBlockNonce && this.deepHistoryRequestsSet.has(component)) {
+    if (context && context.deepHistoryBlockNonce && this.deepHistoryRequestsSet.has(component)) {
       return this.apiConfigService.getDeepHistoryGatewayUrl();
     }
 
@@ -223,7 +223,7 @@ export class GatewayService {
 
   private applyDeepHistoryBlockInfoIfRequired(component: GatewayComponentRequest, result: any) {
     const context = ContextTracker.get();
-    if (context.deepHistoryBlockNonce && this.deepHistoryRequestsSet.has(component)) {
+    if (context && context.deepHistoryBlockNonce && this.deepHistoryRequestsSet.has(component)) {
       const blockInfo = result?.data?.data?.blockInfo;
       if (blockInfo) {
         ContextTracker.assign({
