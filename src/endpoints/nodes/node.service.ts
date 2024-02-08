@@ -349,7 +349,7 @@ export class NodeService {
 
     if (this.apiConfigService.isStakingV4Enabled()) {
       const auctions = await this.gatewayService.getValidatorAuctions();
-      this.processAuctions(nodes, auctions);
+      await this.processAuctions(nodes, auctions);
     }
 
     await this.applyNodeUnbondingPeriods(nodes);
@@ -357,7 +357,10 @@ export class NodeService {
     return nodes;
   }
 
-  processAuctions(nodes: Node[], auctions: Auction[]) {
+  async processAuctions(nodes: Node[], auctions: Auction[]) {
+    const minimumAuctionStake = await this.stakeService.getMinimumAuctionStake();
+    const dangerZoneThreshold = BigInt(minimumAuctionStake) * BigInt(105) / BigInt(100);
+
     for (const node of nodes) {
       let position = 1;
       for (const auction of auctions) {
@@ -367,6 +370,14 @@ export class NodeService {
             node.auctionPosition = position;
             node.auctionTopUp = auction.qualifiedTopUp;
             node.auctionQualified = auctionNode.qualified;
+          }
+
+          const nodeStake = node.stake || "0";
+          const nodeAuctionTopUp = node.auctionTopUp || "0";
+
+          const totalStake = BigInt(nodeStake) + BigInt(nodeAuctionTopUp);
+          if (node.status === 'eligible' && totalStake < dangerZoneThreshold) {
+            node.isInDangerZone = true;
           }
 
           position++;

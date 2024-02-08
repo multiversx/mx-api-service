@@ -104,6 +104,7 @@ describe('Delegation Service', () => {
         auctionPosition: undefined,
         auctionQualified: undefined,
         auctionTopUp: undefined,
+        isInDangerZone: undefined,
         fullHistory: undefined,
         issues: [],
         syncProgress: undefined,
