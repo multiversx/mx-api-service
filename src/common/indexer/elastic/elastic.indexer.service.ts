@@ -828,4 +828,15 @@ export class ElasticIndexerService implements IndexerInterface {
       nftCount,
     });
   }
+
+  async getBlockByTimestampAndShardId(timestamp: number, shardId: number): Promise<Block | undefined> {
+    const elasticQuery = ElasticQuery.create()
+      .withRangeFilter('timestamp', new RangeGreaterThanOrEqual(timestamp))
+      .withCondition(QueryConditionOptions.must, [QueryType.Match('shardId', shardId, QueryOperator.AND)])
+      .withSort([{ name: 'timestamp', order: ElasticSortOrder.ascending }]);
+
+    const blocks: Block[] =  await this.elasticService.getList('blocks', '_search', elasticQuery);
+
+    return blocks.at(0);
+  }
 }

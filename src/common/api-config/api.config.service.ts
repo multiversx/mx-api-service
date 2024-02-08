@@ -803,11 +803,11 @@ export class ApiConfigService {
     return serviceUrl;
   }
 
-  isDeepHistoryFeatureEnabled(): boolean {
+  isDeepHistoryGatewayEnabled(): boolean {
     return this.configService.get<boolean>('features.deepHistory.enabled') ?? false;
   }
 
-  getDeepHistoryUrl(): string {
+  getDeepHistoryGatewayUrl(): string {
     const deepHistoryUrl = this.configService.get<string>('features.deepHistory.url');
     if (!deepHistoryUrl) {
       throw new Error('No deep history url present');
