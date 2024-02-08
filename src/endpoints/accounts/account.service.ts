@@ -32,10 +32,10 @@ import { AccountQueryOptions } from './entities/account.query.options';
 import { AccountHistoryFilter } from './entities/account.history.filter';
 import { ProtocolService } from 'src/common/protocol/protocol.service';
 import { ProviderService } from '../providers/provider.service';
-import { Provider } from '../providers/entities/provider';
 import { KeysService } from '../keys/keys.service';
 import { NodeStatusRaw } from '../nodes/entities/node.status';
 import { AccountKeyFilter } from './entities/account.key.filter';
+import { Provider } from '../providers/entities/provider';
 
 @Injectable()
 export class AccountService {
@@ -78,7 +78,7 @@ export class AccountService {
     return await this.indexerService.getAccountsCount(filter);
   }
 
-  async getAccount(address: string, fields?: string[], withGuardianInfo?: boolean, timestamp?: number): Promise<AccountDetailed | null> {
+  async getAccount(address: string, fields?: string[], withGuardianInfo?: boolean): Promise<AccountDetailed | null> {
     if (!AddressUtils.isAddressValid(address)) {
       return null;
     }
@@ -111,11 +111,6 @@ export class AccountService {
 
     if (account && provider && provider.owner) {
       account.ownerAddress = provider.owner;
-    }
-
-    if (timestamp) {
-      // TODO: remove
-      console.log('timestamp', timestamp);
     }
 
     return account;
