@@ -613,6 +613,7 @@ export class PostgresIndexerService implements IndexerInterface {
     return [];
   }
 
+  // eslint-disable-next-line require-await
   async getBlockByTimestampAndShardId(_timestamp: number, _shardId: number): Promise<Block | undefined> {
     // TODO not implemented
     return undefined;
