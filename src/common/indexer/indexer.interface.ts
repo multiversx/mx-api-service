@@ -154,4 +154,6 @@ export interface IndexerInterface {
   setMetadataForToken(identifier: string, value: any): Promise<void>
 
   setExtraCollectionFields(identifier: string, isVerified: boolean, holderCount: number, nftCount: number): Promise<void>
+
+  getBlockByTimestampAndShardId(timestamp: number, shardId: number): Promise<Block | undefined>
 }
