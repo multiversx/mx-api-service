@@ -797,4 +797,17 @@ export class ApiConfigService {
 
     return serviceUrl;
   }
+
+  isDeepHistoryGatewayEnabled(): boolean {
+    return this.configService.get<boolean>('features.deepHistory.enabled') ?? false;
+  }
+
+  getDeepHistoryGatewayUrl(): string {
+    const deepHistoryUrl = this.configService.get<string>('features.deepHistory.url');
+    if (!deepHistoryUrl) {
+      throw new Error('No deep history url present');
+    }
+
+    return deepHistoryUrl;
+  }
 }

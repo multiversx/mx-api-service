@@ -64,6 +64,9 @@ features:
   transactionBatch:
     enabled: false
     maxLookBehind: 1000
+  deepHistory:
+    enabled: false
+    url: ''
 image:
   width: 600
   height: 600

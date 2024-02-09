@@ -375,4 +375,9 @@ export class IndexerService implements IndexerInterface {
   async getAccountsForAddresses(addresses: string[]): Promise<Account[]> {
     return await this.indexerInterface.getAccountsForAddresses(addresses);
   }
+
+  @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
+  async getBlockByTimestampAndShardId(timestamp: number, shardId: number): Promise<Block | undefined> {
+    return await this.indexerInterface.getBlockByTimestampAndShardId(timestamp, shardId);
+  }
 }
