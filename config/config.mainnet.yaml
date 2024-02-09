@@ -60,6 +60,9 @@ features:
     admins:
       - ''
     jwtSecret: ''
+  deepHistory:
+    enabled: false
+    url: ''
 image:
   width: 600
   height: 600

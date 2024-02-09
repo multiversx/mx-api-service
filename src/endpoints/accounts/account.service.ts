@@ -32,10 +32,10 @@ import { AccountQueryOptions } from './entities/account.query.options';
 import { AccountHistoryFilter } from './entities/account.history.filter';
 import { ProtocolService } from 'src/common/protocol/protocol.service';
 import { ProviderService } from '../providers/provider.service';
-import { Provider } from '../providers/entities/provider';
 import { KeysService } from '../keys/keys.service';
 import { NodeStatusRaw } from '../nodes/entities/node.status';
 import { AccountKeyFilter } from './entities/account.key.filter';
+import { Provider } from '../providers/entities/provider';
 
 @Injectable()
 export class AccountService {

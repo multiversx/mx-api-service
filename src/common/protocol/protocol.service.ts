@@ -1,10 +1,11 @@
-import { OriginLogger } from "@multiversx/sdk-nestjs-common";
+import { AddressUtils, OriginLogger } from "@multiversx/sdk-nestjs-common";
 import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { CacheInfo } from "../../utils/cache.info";
 import { GatewayService } from "../gateway/gateway.service";
 import { IndexerService } from "../indexer/indexer.service";
 import { ApiConfigService } from "../api-config/api.config.service";
+import { Address } from "@multiversx/sdk-core/out";
 
 @Injectable()
 export class ProtocolService {
@@ -84,5 +85,16 @@ export class ProtocolService {
       this.logger.error(error);
       return 0;
     }
+  }
+
+  async getShardIdForAddress(address: string): Promise<number | undefined> {
+    if (!AddressUtils.isAddressValid(address)) {
+      return undefined;
+    }
+
+    const shardCount = await this.getShardCount();
+    const addressHex = new Address(address).hex();
+
+    return AddressUtils.computeShard(addressHex, shardCount);
   }
 }
