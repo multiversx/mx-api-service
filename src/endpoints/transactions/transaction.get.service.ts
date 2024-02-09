@@ -149,7 +149,7 @@ export class TransactionGetService {
 
     // Count occurrences of each data value and store topics for each data value
     for (const event of events) {
-      const {identifier: eventId, data, topics} = event;
+      const { identifier: eventId, data, topics } = event;
 
       if (!eventId || !data || !topics || eventId !== identifier) {
         continue;
