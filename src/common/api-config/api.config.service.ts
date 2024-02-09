@@ -2,6 +2,7 @@ import { Constants } from '@multiversx/sdk-nestjs-common';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { DatabaseConnectionOptions } from '../persistence/entities/connection.options';
+import { LogTopic } from '@elrondnetwork/transaction-processor';
 
 @Injectable()
 export class ApiConfigService {
@@ -246,7 +247,7 @@ export class ApiConfigService {
   }
 
   getTransactionProcessorMaxLookBehind(): number {
-    const transactionProcessorMaxLookBehind = this.configService.get<number>('cron.transactionProcessorMaxLookBehind');
+    const transactionProcessorMaxLookBehind = this.configService.get<number>('features.transactionProcessor.maxLookBehind') ?? this.configService.get<number>('cron.transactionProcessorMaxLookBehind');
     if (transactionProcessorMaxLookBehind === undefined) {
       throw new Error('No cron.transactionProcessorMaxLookBehind flag present');
     }
@@ -255,19 +256,23 @@ export class ApiConfigService {
   }
 
   getIsTransactionCompletedCronActive(): boolean {
-    return this.configService.get<boolean>('cron.transactionCompleted') ?? false;
+    return this.configService.get<boolean>('features.transactionCompleted.enabled') ?? this.configService.get<boolean>('cron.transactionCompleted') ?? false;
   }
 
   getTransactionCompletedMaxLookBehind(): number {
-    return this.configService.get<number>('cron.transactionCompletedMaxLookBehind') ?? 100;
+    return this.configService.get<number>('features.transactionCompleted.maxLookBehind') ?? this.configService.get<number>('cron.transactionCompletedMaxLookBehind') ?? 100;
+  }
+
+  getTransactionCompletedLogLevel(): LogTopic {
+    return this.configService.get<LogTopic>('features.transactionCompleted.logLevel') ?? LogTopic.CrossShardSmartContractResult;
   }
 
   getIsTransactionBatchCronActive(): boolean {
-    return this.configService.get<boolean>('cron.transactionBatch') ?? false;
+    return this.configService.get<boolean>('features.transactionBatch.enabled') ?? this.configService.get<boolean>('cron.transactionBatch') ?? false;
   }
 
   getTransactionBatchMaxLookBehind(): number {
-    return this.configService.get<number>('cron.transactionBatchMaxLookBehind') ?? 100;
+    return this.configService.get<number>('features.transactionBatch.maxLookBehind') ?? this.configService.get<number>('cron.transactionBatchMaxLookBehind') ?? 100;
   }
 
   getIsCacheWarmerCronActive(): boolean {
