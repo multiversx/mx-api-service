@@ -110,7 +110,7 @@ export class TransactionGetService {
           if (log.id === txHash) {
             transactionDetailed.logs = log;
           } else if (transactionDetailed.results) {
-            const foundScResult = transactionDetailed.results.find(({hash}) => log.id === hash);
+            const foundScResult = transactionDetailed.results.find(({ hash }) => log.id === hash);
             if (foundScResult) {
               foundScResult.logs = log;
             }
@@ -141,8 +141,8 @@ export class TransactionGetService {
 
   private hasDuplicateDataWithMatchingTopics(events: TransactionLogEvent[]): boolean {
     const identifier = "transferValueOnly";
-    const dataValue1 = BinaryUtils.base64Encode("BackTransfer");
-    const dataValue2 = BinaryUtils.base64Encode("AsyncCallback");
+    const backTransferEncoded = BinaryUtils.base64Encode("BackTransfer");
+    const asyncCallbackEncoded = BinaryUtils.base64Encode("AsyncCallback");
 
     const dataCounts: { [key: string]: number } = {};
     const topicMap: { [key: string]: string[] } = {};
@@ -163,10 +163,10 @@ export class TransactionGetService {
     }
 
     // Check if we have exactly two occurrences of each data value
-    if (dataCounts[dataValue1] === 1 && dataCounts[dataValue2] === 1) {
+    if (dataCounts[backTransferEncoded] === 1 && dataCounts[asyncCallbackEncoded] === 1) {
       // Check if the topics are the same for the two data values
-      const topics1 = topicMap[dataValue1];
-      const topics2 = topicMap[dataValue2];
+      const topics1 = topicMap[backTransferEncoded];
+      const topics2 = topicMap[asyncCallbackEncoded];
       return topics1.toString() === topics2.toString();
     }
 
