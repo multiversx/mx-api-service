@@ -238,21 +238,11 @@ export class ApiConfigService {
   }
 
   getIsTransactionProcessorCronActive(): boolean {
-    const isCronActive = this.configService.get<boolean>('cron.transactionProcessor');
-    if (isCronActive === undefined) {
-      throw new Error('No cron.transactionProcessor flag present');
-    }
-
-    return isCronActive;
+    return this.configService.get<boolean>('features.transactionProcessor.enabled') ?? this.configService.get<boolean>('cron.transactionProcessor') ?? false;
   }
 
   getTransactionProcessorMaxLookBehind(): number {
-    const transactionProcessorMaxLookBehind = this.configService.get<number>('features.transactionProcessor.maxLookBehind') ?? this.configService.get<number>('cron.transactionProcessorMaxLookBehind');
-    if (transactionProcessorMaxLookBehind === undefined) {
-      throw new Error('No cron.transactionProcessorMaxLookBehind flag present');
-    }
-
-    return transactionProcessorMaxLookBehind;
+    return this.configService.get<number>('features.transactionProcessor.maxLookBehind') ?? this.configService.get<number>('cron.transactionProcessorMaxLookBehind') ?? 100;
   }
 
   getIsTransactionCompletedCronActive(): boolean {

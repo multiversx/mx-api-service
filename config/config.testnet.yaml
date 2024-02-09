@@ -4,12 +4,6 @@ api:
   public: true
   private: true
 cron:
-  transactionProcessor: true
-  transactionProcessorMaxLookBehind: 100
-  transactionCompleted: false
-  transactionCompletedMaxLookBehind: 100
-  transactionBatch: false
-  transactionBatchMaxLookBehind: 100
   cacheWarmer: true
   fastWarm: true
   queueWorker: true
@@ -60,6 +54,16 @@ features:
     admins:
       - ''
     jwtSecret: ''
+  transactionProcessor:
+    enabled: false
+    maxLookBehind: 100
+  transactionCompleted:
+    enabled: false
+    maxLookBehind: 100
+    logLevel: 'Error'
+  transactionBatch:
+    enabled: true
+    maxLookBehind: 100
 image:
   width: 600
   height: 600
