@@ -115,6 +115,8 @@ export class TransactionGetService {
             }
           }
         }
+
+        this.alterDuplicatedTransferValueOnlyEvents(transactionDetailed);
       }
 
       this.applyUsernamesToDetailedTransaction(transaction, transactionDetailed);
@@ -123,6 +125,27 @@ export class TransactionGetService {
     } catch (error) {
       this.logger.error(error);
       return null;
+    }
+  }
+
+  private alterDuplicatedTransferValueOnlyEvents(transactionDetailed: TransactionDetailed) {
+    const events = transactionDetailed.logs?.events;
+    if (!events) {
+      return;
+    }
+
+    const backTransferEncoded = BinaryUtils.base64Encode('BackTransfer');
+    const asyncCallbackEncoded = BinaryUtils.base64Encode('AsyncCallback');
+
+    const transferValueOnlyEvents = events.filter(x => x.identifier === 'transferValueOnly');
+    const backTransferEvents = transferValueOnlyEvents.filter(x => x.data === backTransferEncoded);
+    const asyncCallbackEvents = transferValueOnlyEvents.filter(x => x.data == asyncCallbackEncoded);
+
+    if (backTransferEvents.length === 1 && asyncCallbackEvents.length === 1 &&
+      backTransferEvents[0].topics.length > 1 &&
+      JSON.stringify(backTransferEvents[0].topics) === JSON.stringify(asyncCallbackEvents[0].topics)
+    ) {
+      backTransferEvents[0].topics[0] = '0';
     }
   }
 
