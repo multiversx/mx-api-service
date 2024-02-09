@@ -15,7 +15,6 @@ import { Transaction as IndexerTransaction } from "src/common/indexer/entities/t
 import { MiniBlockType } from "../miniblocks/entities/mini.block.type";
 import { TransactionStatus } from "./entities/transaction.status";
 import { UsernameUtils } from "../usernames/username.utils";
-import { TransactionLogEvent } from "./entities/transaction.log.event";
 
 @Injectable()
 export class TransactionGetService {
@@ -130,59 +129,22 @@ export class TransactionGetService {
   }
 
   private alterDuplicatedTransferValueOnlyEvents(transactionDetailed: TransactionDetailed) {
-    if (!transactionDetailed || !transactionDetailed.logs || !transactionDetailed.logs.events) {
-      return;
-    }
-
-    if (this.hasDuplicateDataWithMatchingTopics(transactionDetailed.logs.events)) {
-      this.setTopicAtIndexInEventWhereIdentifier("0", 0, transactionDetailed.logs.events, "transferValueOnly");
-    }
-  }
-
-  private hasDuplicateDataWithMatchingTopics(events: TransactionLogEvent[]): boolean {
-    const identifier = "transferValueOnly";
-    const backTransferEncoded = BinaryUtils.base64Encode("BackTransfer");
-    const asyncCallbackEncoded = BinaryUtils.base64Encode("AsyncCallback");
-
-    const dataCounts: { [key: string]: number } = {};
-    const topicMap: { [key: string]: string[] } = {};
-
-    // Count occurrences of each data value and store topics for each data value
-    for (const event of events) {
-      const { identifier: eventId, data, topics } = event;
-
-      if (!eventId || !data || !topics || eventId !== identifier) {
-        continue;
-      }
-
-      // Count occurrences of each data value
-      dataCounts[data] = (dataCounts[data] || 0) + 1;
-
-      // Store topics for each data value
-      topicMap[data] = topics;
-    }
-
-    // Check if we have exactly two occurrences of each data value
-    if (dataCounts[backTransferEncoded] === 1 && dataCounts[asyncCallbackEncoded] === 1) {
-      // Check if the topics are the same for the two data values
-      const topics1 = topicMap[backTransferEncoded];
-      const topics2 = topicMap[asyncCallbackEncoded];
-      return topics1.toString() === topics2.toString();
-    }
-
-    return false;
-  }
-
-  private setTopicAtIndexInEventWhereIdentifier(topic: string, index: number, events: TransactionLogEvent[], identifier: string) {
+    const events = transactionDetailed.logs?.events;
     if (!events) {
       return;
     }
 
-    for (const event of events) {
-      if (event && event.identifier === identifier && event.topics && event.topics[index]) {
-        event.topics[index] = topic;
-        return;
-      }
+    const backTransferEncoded = BinaryUtils.base64Encode('BackTransfer');
+    const asyncCallbackEncoded = BinaryUtils.base64Encode('AsyncCallback');
+
+    const transferValueOnlyEvents = events.filter(x => x.identifier === 'transferValueOnly');
+    const backTransferEvents = transferValueOnlyEvents.filter(x => x.data === backTransferEncoded);
+    const asyncCallbackEvents = transferValueOnlyEvents.filter(x => x.data == asyncCallbackEncoded);
+
+    if (backTransferEvents.length === 1 && asyncCallbackEvents.length === 1 &&
+      JSON.stringify(backTransferEvents[0].topics) === JSON.stringify(asyncCallbackEvents[0].topics)
+    ) {
+      backTransferEvents[0].topics[0] = '0';
     }
   }
 
