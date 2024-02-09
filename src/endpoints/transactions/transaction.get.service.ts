@@ -142,10 +142,10 @@ export class TransactionGetService {
     const asyncCallbackEvents = transferValueOnlyEvents.filter(x => x.data == asyncCallbackEncoded);
 
     if (backTransferEvents.length === 1 && asyncCallbackEvents.length === 1 &&
-      backTransferEvents[0].topics.length > 1 &&
+      asyncCallbackEvents[0].topics.length > 1 &&
       JSON.stringify(backTransferEvents[0].topics) === JSON.stringify(asyncCallbackEvents[0].topics)
     ) {
-      backTransferEvents[0].topics[0] = '0';
+      asyncCallbackEvents[0].topics[0] = '0';
     }
   }
 
