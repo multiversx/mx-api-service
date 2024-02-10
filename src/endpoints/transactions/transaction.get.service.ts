@@ -15,6 +15,7 @@ import { Transaction as IndexerTransaction } from "src/common/indexer/entities/t
 import { MiniBlockType } from "../miniblocks/entities/mini.block.type";
 import { TransactionStatus } from "./entities/transaction.status";
 import { UsernameUtils } from "../usernames/username.utils";
+import { TransactionLogEvent } from "./entities/transaction.log.event";
 
 @Injectable()
 export class TransactionGetService {
@@ -99,6 +100,9 @@ export class TransactionGetService {
 
       if (!fields || fields.length === 0 || fields.includesSome([TransactionOptionalFieldOption.logs, TransactionOptionalFieldOption.operations])) {
         const logs = await this.getTransactionLogsFromElastic(hashes);
+        for (const log of logs) {
+          this.alterDuplicatedTransferValueOnlyEvents(log.events);
+        }
 
         if (!fields || fields.length === 0 || fields.includes(TransactionOptionalFieldOption.operations)) {
           transactionDetailed.operations = await this.tokenTransferService.getOperationsForTransaction(transactionDetailed, logs);
@@ -116,7 +120,6 @@ export class TransactionGetService {
           }
         }
 
-        this.alterDuplicatedTransferValueOnlyEvents(transactionDetailed);
       }
 
       this.applyUsernamesToDetailedTransaction(transaction, transactionDetailed);
@@ -128,12 +131,7 @@ export class TransactionGetService {
     }
   }
 
-  private alterDuplicatedTransferValueOnlyEvents(transactionDetailed: TransactionDetailed) {
-    const events = transactionDetailed.logs?.events;
-    if (!events) {
-      return;
-    }
-
+  private alterDuplicatedTransferValueOnlyEvents(events: TransactionLogEvent[]) {
     const backTransferEncoded = BinaryUtils.base64Encode('BackTransfer');
     const asyncCallbackEncoded = BinaryUtils.base64Encode('AsyncCallback');
 
@@ -145,7 +143,7 @@ export class TransactionGetService {
       asyncCallbackEvents[0].topics.length > 1 &&
       JSON.stringify(backTransferEvents[0].topics) === JSON.stringify(asyncCallbackEvents[0].topics)
     ) {
-      asyncCallbackEvents[0].topics[0] = '0';
+      asyncCallbackEvents[0].topics[0] = BinaryUtils.hexToBase64(BinaryUtils.numberToHex(0));
     }
   }
 
