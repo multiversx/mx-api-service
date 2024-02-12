@@ -24,7 +24,7 @@ export class DeepHistoryInterceptor implements NestInterceptor {
       return next.handle();
     }
 
-    const address = request.params.address;
+    const address = request.params.address ?? request.body.scAddress;
     if (!address) {
       return next.handle();
     }

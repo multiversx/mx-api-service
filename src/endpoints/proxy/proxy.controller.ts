@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Get, Param, Post, Query, Req, Res } from "@nestjs/common";
+import { BadRequestException, Body, Controller, Get, Param, Post, Query, Req, Res, UseInterceptors } from "@nestjs/common";
 import { ApiExcludeController, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { VmQueryRequest } from "../vm.query/entities/vm.query.request";
 import { VmQueryService } from "../vm.query/vm.query.service";
@@ -9,6 +9,7 @@ import { PluginService } from "src/common/plugins/plugin.service";
 import { Constants, ParseAddressPipe, ParseBlockHashPipe, ParseTransactionHashPipe } from "@multiversx/sdk-nestjs-common";
 import { CacheService, NoCache } from "@multiversx/sdk-nestjs-cache";
 import { OriginLogger } from "@multiversx/sdk-nestjs-common";
+import { DeepHistoryInterceptor } from "src/interceptors/deep-history.interceptor";
 @Controller()
 @ApiTags('proxy')
 @ApiExcludeController()
@@ -193,9 +194,13 @@ export class ProxyController {
     status: 201,
     description: 'Returns the result of the query (legacy)',
   })
-  async queryLegacy(@Body() query: VmQueryRequest) {
+  @UseInterceptors(DeepHistoryInterceptor)
+  async queryLegacy(
+    @Body() query: VmQueryRequest,
+    @Query('timestamp') timestamp: number | undefined,
+  ) {
     try {
-      return await this.vmQueryService.vmQueryFullResult(query.scAddress, query.funcName, query.caller, query.args, query.value);
+      return await this.vmQueryService.vmQueryFullResult(query.scAddress, query.funcName, query.caller, query.args, query.value, timestamp);
     } catch (error: any) {
       throw new BadRequestException(error.response.data);
     }
