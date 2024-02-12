@@ -54,7 +54,7 @@ export class Nft {
   royalties: number | undefined = undefined;
 
   @Field(() => [String], { description: "URIs for the given NFT." })
-  @ApiProperty({ isArray: true })
+  @ApiProperty({ type: String, isArray: true })
   uris: string[] = [];
 
   @Field(() => String, { description: "URL for the given NFT." })
@@ -74,7 +74,7 @@ export class Nft {
   thumbnailUrl: string = '';
 
   @Field(() => [String], { description: "Tags for the given NFT." })
-  @ApiProperty({ isArray: true })
+  @ApiProperty({ type: String, isArray: true })
   tags: string[] = [];
 
   @Field(() => NftMetadata, { description: "Metadata for the given NFT.", nullable: true })
@@ -100,7 +100,7 @@ export class Nft {
   decimals: number | undefined = undefined;
 
   @Field(() => TokenAssets, { description: "Assets for the given NFT.", nullable: true })
-  @ApiProperty()
+  @ApiProperty({ type: TokenAssets })
   assets?: TokenAssets;
 
   @Field(() => String, { description: "Ticker for the given NFT." })
