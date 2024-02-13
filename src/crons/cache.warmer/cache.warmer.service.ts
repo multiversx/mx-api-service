@@ -122,7 +122,7 @@ export class CacheWarmerService {
     const nodes = await this.nodeService.getAllNodes();
     const auctions = await this.gatewayService.getValidatorAuctions();
 
-    this.nodeService.processAuctions(nodes, auctions);
+    await this.nodeService.processAuctions(nodes, auctions);
 
     await this.invalidateKey(CacheInfo.Nodes.key, nodes, CacheInfo.Nodes.ttl);
   }
