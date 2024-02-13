@@ -364,24 +364,27 @@ export class NodeService {
     for (const node of nodes) {
       let position = 1;
       for (const auction of auctions) {
-        for (const auctionNode of auction.auctionList) {
-          if (node.bls === auctionNode.blsKey) {
-            node.auctioned = true;
-            node.auctionPosition = position;
-            node.auctionTopUp = auction.qualifiedTopUp;
-            node.auctionQualified = auctionNode.qualified;
+        if (auction.nodes) {
+          for (const auctionNode of auction.nodes) {
+            if (node.bls === auctionNode.blsKey) {
+              node.auctioned = true;
+              node.auctionPosition = position;
+              node.auctionTopUp = auction.qualifiedTopUp;
+              node.auctionQualified = auctionNode.qualified;
+            }
+
+            const nodeStake = node.stake || "0";
+            const nodeAuctionTopUp = node.auctionTopUp || "0";
+
+            const totalStake = BigInt(nodeStake) + BigInt(nodeAuctionTopUp);
+            if (node.status === 'eligible' && totalStake < dangerZoneThreshold) {
+              node.isInDangerZone = true;
+            }
+
+            position++;
           }
-
-          const nodeStake = node.stake || "0";
-          const nodeAuctionTopUp = node.auctionTopUp || "0";
-
-          const totalStake = BigInt(nodeStake) + BigInt(nodeAuctionTopUp);
-          if (node.status === 'eligible' && totalStake < dangerZoneThreshold) {
-            node.isInDangerZone = true;
-          }
-
-          position++;
         }
+
       }
     }
   }

@@ -306,9 +306,11 @@ export class StakeService {
     let minimumAuctionTopUp: string | undefined = undefined;
 
     for (const auction of auctions) {
-      for (const auctionNode of auction.auctionList) {
-        if (auctionNode.qualified === true && (!minimumAuctionTopUp || BigInt(minimumAuctionTopUp) > BigInt(auction.qualifiedTopUp))) {
-          minimumAuctionTopUp = auction.qualifiedTopUp;
+      if (auction.nodes) {
+        for (const auctionNode of auction.nodes) {
+          if (auctionNode.qualified === true && (!minimumAuctionTopUp || BigInt(minimumAuctionTopUp) > BigInt(auction.qualifiedTopUp))) {
+            minimumAuctionTopUp = auction.qualifiedTopUp;
+          }
         }
       }
     }

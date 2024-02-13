@@ -39,8 +39,7 @@ export class GatewayService {
 
   async getValidatorAuctions(): Promise<Auction[]> {
     const result = await this.get('validator/auction', GatewayComponentRequest.validatorAuction);
-
-    return result.nodes;
+    return result.auctionList;
   }
 
   async getNetworkStatus(metaChainShardId: number | string): Promise<NetworkStatus> {

@@ -1849,11 +1849,20 @@ type GlobalStake {
   """Active validators."""
   activeValidators: Float!
 
-  """Minimum Auction Stake information."""
-  minimumAuctionStake: String
+  """Auction Validators."""
+  auctionValidators: Float!
 
-  """Minimum Auction Top Up information."""
-  minimumAuctionTopUp: String
+  """Danger Zone Validators."""
+  dangerZoneValidators: Float!
+
+  """Eligible Validators."""
+  eligibleValidators: Float!
+
+  """Minimum Auction Qualified Stake information."""
+  minimumAuctionQualifiedStake: String
+
+  """Minimum Auction Qualified Top Up information."""
+  minimumAuctionQualifiedTopUp: String
 
   """Nakamoto Coefficient."""
   nakamotoCoefficient: Float!
@@ -1866,6 +1875,9 @@ type GlobalStake {
 
   """Total validators."""
   totalValidators: Float!
+
+  """Not Eligible Validators."""
+  waitingValidators: Float!
 }
 
 """Identity object type."""
@@ -2761,6 +2773,9 @@ type Node {
 
   """Instances for the given node."""
   instances: Float!
+
+  """Nodes in auction danger zone."""
+  isInDangerZone: Boolean
 
   """Issues for the given node."""
   issues: [String!]!
