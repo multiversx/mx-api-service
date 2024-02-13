@@ -1867,6 +1867,9 @@ type GlobalStake {
   """Nakamoto Coefficient."""
   nakamotoCoefficient: Float!
 
+  """Qualified Auction Validators."""
+  qualifiedAuctionValidators: Float!
+
   """Validators queue size."""
   queueSize: Float!
 
