@@ -602,7 +602,12 @@ export class NodeService {
       if (validatorStatus === 'new') {
         nodeType = NodeType.validator;
         nodeStatus = NodeStatus.new;
-      } else if (validatorStatus === 'jailed') {
+      }
+      if (validatorStatus === 'auction') {
+        nodeType = NodeType.validator;
+        nodeStatus = NodeStatus.auction;
+      }
+      else if (validatorStatus === 'jailed') {
         nodeType = NodeType.validator;
         nodeStatus = NodeStatus.jailed;
       } else if (validatorStatus && validatorStatus.includes('leaving')) {

@@ -2893,6 +2893,8 @@ enum NodeSort {
 
 """Node status object type."""
 enum NodeStatus {
+  auction
+
   """Eligible status."""
   eligible
 
