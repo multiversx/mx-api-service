@@ -604,7 +604,7 @@ export class NodeService {
         nodeType = NodeType.validator;
         nodeStatus = NodeStatus.new;
       }
-      if (validatorStatus === 'auction') {
+      else if (validatorStatus === 'auction') {
         nodeType = NodeType.validator;
         nodeStatus = NodeStatus.auction;
       }
