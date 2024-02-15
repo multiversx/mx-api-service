@@ -322,7 +322,7 @@ export class StakeService {
   }
 
   async getMinimumAuctionStake(): Promise<string> {
-    const MINIMUM_STAKE_AMOUNT = 2500;
+    const MINIMUM_STAKE_AMOUNT = 2500000000000000000000;
     const minimumAuctionTopUp = await this.getMinimumAuctionTopUp();
     const baseStake = BigInt(MINIMUM_STAKE_AMOUNT);
     const topUp = minimumAuctionTopUp ? BigInt(minimumAuctionTopUp) : BigInt(0);

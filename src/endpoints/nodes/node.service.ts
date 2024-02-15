@@ -112,9 +112,6 @@ export class NodeService {
   private async getFilteredNodes(query: NodeFilter): Promise<Node[]> {
     const allNodes = await this.getAllNodes();
 
-    if (query.isAuctionDangerZone) {
-      return this.getNodesWithAuctionDangerZoneFilter();
-    }
 
     const filteredNodes = allNodes.filter(node => {
       if (query.search !== undefined) {
@@ -173,6 +170,12 @@ export class NodeService {
         }
 
         if (query.fullHistory === false && node.fullHistory === true) {
+          return false;
+        }
+      }
+
+      if (query.isAuctionDangerZone !== undefined) {
+        if (query.isAuctionDangerZone === true && !node.isInDangerZone) {
           return false;
         }
       }
@@ -360,7 +363,6 @@ export class NodeService {
   async processAuctions(nodes: Node[], auctions: Auction[]) {
     const minimumAuctionStake = await this.stakeService.getMinimumAuctionStake();
     const dangerZoneThreshold = BigInt(minimumAuctionStake) * BigInt(105) / BigInt(100);
-
     for (const node of nodes) {
       let position = 1;
       for (const auction of auctions) {
@@ -377,14 +379,13 @@ export class NodeService {
             const nodeAuctionTopUp = node.auctionTopUp || "0";
 
             const totalStake = BigInt(nodeStake) + BigInt(nodeAuctionTopUp);
-            if (node.status === 'eligible' && totalStake < dangerZoneThreshold) {
+            if (node.status === NodeStatus.auction && node.auctionQualified && totalStake < dangerZoneThreshold) {
               node.isInDangerZone = true;
             }
 
             position++;
           }
         }
-
       }
     }
   }

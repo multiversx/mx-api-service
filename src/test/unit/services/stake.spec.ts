@@ -410,7 +410,7 @@ describe('Stake Service', () => {
 
       const result = await stakeService.getMinimumAuctionStake();
 
-      expect(result).toEqual('2500');
+      expect(result).toEqual('2500000000000000000000');
     });
 
     it('should return the sum of 2500 and a positive minimum auction top up', async () => {
@@ -418,7 +418,7 @@ describe('Stake Service', () => {
 
       const result = await stakeService.getMinimumAuctionStake();
 
-      expect(result).toEqual('3000');
+      expect(result).toEqual('2500000000000000000500');
     });
 
     it('should correctly handle large minimum auction top up values', async () => {
@@ -426,7 +426,7 @@ describe('Stake Service', () => {
 
       const result = await stakeService.getMinimumAuctionStake();
 
-      expect(result).toEqual('1002500');
+      expect(result).toEqual('2500000000000001000000');
     });
   });
 
