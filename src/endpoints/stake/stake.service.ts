@@ -66,7 +66,7 @@ export class StakeService {
     }
 
     const nakamotoCoefficient = await this.getNakamotoCoefficient();
-    const dangerZoneValidators = await this.nodeService.getNodesWithAuctionDangerZoneCount();
+    const dangerZoneValidators = await this.nodeService.getNodeCount(new NodeFilter({ isAuctionDangerZone: true, isQualified: true }));
     const eligibleValidators = await this.nodeService.getNodeCount(new NodeFilter({ status: NodeStatus.eligible }));
     const waitingValidators = await this.nodeService.getNodeCount(new NodeFilter({ status: NodeStatus.waiting }));
 

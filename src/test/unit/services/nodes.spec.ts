@@ -450,41 +450,4 @@ describe('NodeService', () => {
       });
     });
   });
-
-  describe('getNodesWithAuctionDangerZoneFilter', () => {
-    const mockNodes = JSON.parse(fs.readFileSync(path.join(__dirname, '../../mocks/nodes.mock.json'), 'utf-8'));
-    const minimumAuctionStake = '2625000000000000000000'; // 2500 + 5%
-
-    beforeEach(() => {
-      jest.restoreAllMocks();
-    });
-
-    it('should return nodes in danger zone', async () => {
-      jest.spyOn(nodeService['stakeService'], 'getMinimumAuctionStake').mockResolvedValue(minimumAuctionStake);
-
-      jest.spyOn(nodeService, 'getAllNodes').mockResolvedValue(mockNodes);
-
-      const result = await nodeService.getNodesWithAuctionDangerZoneFilter();
-      expect(result.length).toBeGreaterThan(0);
-
-      for (const node of result) {
-        expect(BigInt(node.stake)).toBeLessThan(BigInt(minimumAuctionStake));
-        expect(node.status).toEqual('eligible');
-      }
-    });
-
-    it('should return an empty array if no nodes are in danger zone', async () => {
-      const modifiedNodes = mockNodes.map((node: any) => ({
-        ...node,
-        stake: '2800000000000000000000',
-      }));
-
-      jest.spyOn(nodeService['stakeService'], 'getMinimumAuctionStake').mockResolvedValue(minimumAuctionStake);
-      jest.spyOn(nodeService, 'getAllNodes').mockResolvedValue(modifiedNodes);
-
-      const result = await nodeService.getNodesWithAuctionDangerZoneFilter();
-
-      expect(result.length).toBe(0);
-    });
-  });
 });

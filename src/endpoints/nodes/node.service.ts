@@ -696,21 +696,4 @@ export class NodeService {
 
     return keys;
   }
-
-  async getNodesWithAuctionDangerZoneFilter(): Promise<Node[]> {
-    const nodes = await this.getAllNodes();
-    const minimumAuctionStake = await this.stakeService.getMinimumAuctionStake();
-    const dangerZoneThreshold = BigInt(minimumAuctionStake) * BigInt(105) / BigInt(100);
-
-    return nodes.filter(node =>
-      node.status === 'eligible' &&
-      BigInt(node.stake) < dangerZoneThreshold
-    );
-  }
-
-  async getNodesWithAuctionDangerZoneCount(): Promise<number> {
-    const nodesCount = await this.getNodesWithAuctionDangerZoneFilter();
-
-    return nodesCount.length;
-  }
 }
