@@ -65,6 +65,12 @@ export class TokenTransferService {
         if (action) {
           identifiers.push(BinaryUtils.base64Decode(event.topics[0]));
         }
+
+        if (event.identifier === TransactionLogEventIdentifier.MultiESDTNFTTransfer) {
+          for (let i = 1; i < (event.topics.length - 1) / 3; i++) {
+            identifiers.push(BinaryUtils.base64Decode(event.topics[i * 3]));
+          }
+        }
       }
     }
 

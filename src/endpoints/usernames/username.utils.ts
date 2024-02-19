@@ -1,5 +1,5 @@
 import * as crypto from 'crypto-js';
-import {BinaryUtils} from "@multiversx/sdk-nestjs-common";
+import { BinaryUtils } from "@multiversx/sdk-nestjs-common";
 import '@multiversx/sdk-nestjs-common/lib/utils/extensions/string.extensions';
 
 export class UsernameUtils {
@@ -282,7 +282,7 @@ export class UsernameUtils {
   static getContractAddress(username: string): string {
     const normalized = UsernameUtils.normalizeUsername(username);
 
-    const hash = crypto.SHA3(normalized, {outputLength: 256}).toString(crypto.enc.Hex);
+    const hash = crypto.SHA3(normalized, { outputLength: 256 }).toString(crypto.enc.Hex);
 
     const buffer = Buffer.from(hash, 'hex');
     const last = buffer[buffer.length - 1];
@@ -291,7 +291,7 @@ export class UsernameUtils {
   }
 
   static extractUsernameFromRawBase64(rawUsername: string): string {
-    if (rawUsername.length == 0 || !this.isBase64(rawUsername)) {
+    if (!rawUsername || rawUsername.length == 0 || !this.isBase64(rawUsername)) {
       return '';
     }
 
@@ -305,6 +305,10 @@ export class UsernameUtils {
 
   // TODO: might move this to BinaryUtils
   private static isBase64(str: string): boolean {
+    if (!str) {
+      return false;
+    }
+
     return str.length % 4 == 0 && /^[A-Za-z0-9+/]+={0,2}$/.test(str);
   }
 

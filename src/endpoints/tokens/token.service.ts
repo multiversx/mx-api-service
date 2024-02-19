@@ -779,7 +779,7 @@ export class TokenService {
     await this.cachingService.batchApplyAll(
       tokens,
       token => CacheInfo.TokenTransactions(token.identifier).key,
-      token => this.getTransactionCount(token),
+      async token => await this.getTransactionCount(token),
       (token, transactions) => token.transactions = transactions,
       CacheInfo.TokenTransactions('').ttl,
     );
@@ -787,17 +787,23 @@ export class TokenService {
     await this.cachingService.batchApplyAll(
       tokens,
       token => CacheInfo.TokenAccounts(token.identifier).key,
-      token => this.getAccountsCount(token),
+      async token => await this.getAccountsCount(token),
       (token, accounts) => token.accounts = accounts,
       CacheInfo.TokenAccounts('').ttl,
     );
   }
 
-  private async getTransactionCount(token: TokenDetailed): Promise<number> {
-    return await this.transactionService.getTransactionCount(new TransactionFilter({ tokens: [token.identifier, ...token.assets?.extraTokens ?? []] }));
+  private async getTransactionCount(token: TokenDetailed): Promise<number | undefined> {
+    try {
+      return await this.transactionService.getTransactionCount(new TransactionFilter({ tokens: [token.identifier, ...token.assets?.extraTokens ?? []] }));
+    } catch (error) {
+      this.logger.error(`An unhandled error occurred when getting transaction count for token '${token.identifier}'`);
+      this.logger.error(error);
+      return undefined;
+    }
   }
 
-  private async getAccountsCount(token: TokenDetailed): Promise<number> {
+  private async getAccountsCount(token: TokenDetailed): Promise<number | undefined> {
     let accounts = await this.cachingService.getRemote<number>(CacheInfo.TokenAccountsExtra(token.identifier).key);
     if (!accounts) {
       accounts = await this.getEsdtAccountsCount(token.identifier);
@@ -806,8 +812,14 @@ export class TokenService {
     return accounts;
   }
 
-  private async getEsdtAccountsCount(identifier: string): Promise<number> {
-    return await this.indexerService.getEsdtAccountsCount(identifier);
+  private async getEsdtAccountsCount(identifier: string): Promise<number | undefined> {
+    try {
+      return await this.indexerService.getEsdtAccountsCount(identifier);
+    } catch (error) {
+      this.logger.error(`An unhandled error occurred when getting account count for token '${identifier}'`);
+      this.logger.error(error);
+      return undefined;
+    }
   }
 
   private async applyMexPrices(tokens: TokenDetailed[]): Promise<void> {
