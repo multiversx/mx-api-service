@@ -109,7 +109,7 @@ export class NetworkService {
     const tokenMarketCap = await this.tokenService.getTokenMarketCapRaw();
 
     let totalWaitingStake: BigInt = BigInt(0);
-    if (!this.apiConfigService.isStakingV4Enabled) {
+    if (!this.apiConfigService.isStakingV4Enabled()) {
       totalWaitingStake = await this.getTotalWaitingStake();
     }
 
