@@ -7,5 +7,7 @@ export class ValidatorInfoResult {
 
   activeValidators: number = 0;
 
+  inactiveValidators: number = 0;
+
   queueSize: number | undefined = undefined;
 }

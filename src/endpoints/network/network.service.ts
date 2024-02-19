@@ -266,8 +266,9 @@ export class NetworkService {
     const rewardsPerEpoch = Math.max(inflation / epochsInYear, feesInEpoch);
 
     const topUpRewardsLimit = 0.5 * rewardsPerEpoch;
-    const networkBaseStake = stake.activeValidators * stakePerNode;
-    const networkTotalStake = NumberUtils.denominateString(stakedBalance.toString()) - ((stake.queueSize ?? 0) * stakePerNode);
+
+    const networkBaseStake = stake.totalValidators * stakePerNode;
+    const networkTotalStake = NumberUtils.denominateString(stakedBalance.toString()) - ((stake.inactiveValidators ?? 0) * stakePerNode);
 
     const networkTopUpStake = networkTotalStake - networkBaseStake;
 

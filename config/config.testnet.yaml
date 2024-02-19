@@ -60,6 +60,12 @@ features:
     admins:
       - ''
     jwtSecret: ''
+  stakingV4:
+    enabled: false
+    cronExpression: '*/5 * * * * *'
+    stakingV4Step1EnableEpoch: 1043
+    stakingV4Step2EnableEpoch: 1044
+    stakingV4Step3EnableEpoch: 1045
 image:
   width: 600
   height: 600

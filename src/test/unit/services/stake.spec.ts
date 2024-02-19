@@ -11,6 +11,7 @@ import { CacheInfo } from "src/utils/cache.info";
 import * as fs from 'fs';
 import * as path from 'path';
 import { IdentitiesService } from "src/endpoints/identities/identities.service";
+import { BlockService } from "src/endpoints/blocks/block.service";
 
 describe('Stake Service', () => {
   let stakeService: StakeService;
@@ -72,6 +73,12 @@ describe('Stake Service', () => {
             getAllIdentities: jest.fn(),
           },
         },
+        {
+          provide: BlockService,
+          useValue: {
+            getCurrentEpoch: jest.fn(),
+          },
+        },
       ],
     }).compile();
 
@@ -85,7 +92,7 @@ describe('Stake Service', () => {
 
   describe('getGlobalStake', () => {
     it('should return global stake with total staked value', async () => {
-      const expected = { validators: { totalValidators: 1, activeValidators: 1, queueSize: 1 }, totalStaked: '123456' };
+      const expected = { validators: { totalValidators: 1, activeValidators: 1, inactiveValidators: 0, queueSize: 1 }, totalStaked: '123456' };
 
       const economicsMocks: NetworkEconomics = {
         erd_dev_rewards: '100',
@@ -136,6 +143,7 @@ describe('Stake Service', () => {
       const validators = {
         totalValidators: 10,
         activeValidators: 5,
+        inactiveValidators: 0,
         queueSize: 100,
       };
 
@@ -438,6 +446,7 @@ describe('Stake Service', () => {
       const mockedValidators = {
         totalValidators: 3200,
         activeValidators: 3100,
+        inactiveValidators: 0,
         queueSize: 100,
       };
       jest.spyOn(stakeService, 'getValidators').mockResolvedValue(mockedValidators);

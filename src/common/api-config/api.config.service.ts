@@ -102,6 +102,33 @@ export class ApiConfigService {
     return this.configService.get<string>('contracts.staking');
   }
 
+  getStakingV4Step1EnableEpoch(): number {
+    const stakingV4ActivationEpoch = this.configService.get<number>('features.stakingV4.stakingV4Step1EnableEpoch');
+    if (stakingV4ActivationEpoch === undefined) {
+      throw new Error('No stakingV4 activation step 1 epoch present');
+    }
+
+    return stakingV4ActivationEpoch;
+  }
+
+  getStakingV4Step2EnableEpoch(): number {
+    const stakingV4ActivationEpoch = this.configService.get<number>('features.stakingV4.stakingV4Step2EnableEpoch');
+    if (stakingV4ActivationEpoch === undefined) {
+      throw new Error('No stakingV4 activation step 2 epoch present');
+    }
+
+    return stakingV4ActivationEpoch;
+  }
+
+  getStakingV4Step3EnableEpoch(): number {
+    const stakingV4ActivationEpoch = this.configService.get<number>('features.stakingV4.stakingV4Step3EnableEpoch');
+    if (stakingV4ActivationEpoch === undefined) {
+      throw new Error('No stakingV4 activation step 3 epoch present');
+    }
+
+    return stakingV4ActivationEpoch;
+  }
+
   getDelegationContractAddress(): string | undefined {
     return this.configService.get<string>('contracts.delegation');
   }
