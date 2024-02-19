@@ -156,7 +156,7 @@ export class StakeService {
   }
 
   async getTotalAndInactiveValidatorsDuringStakingV4(validators: Node[]): Promise<{ totalValidators: number, inactiveValidators: number }> {
-    const inactiveValidatorsCount = await this.nodeService.getNodeCount(new NodeFilter({ isAuctioned: true, isQualified: false }));
+    const inactiveValidatorsCount = await this.nodeService.getNodeCount(new NodeFilter({ isAuctioned: true }));
 
     const totalValidators = validators.filter(
       node => [NodeStatus.eligible, NodeStatus.waiting].includes(node.status ?? NodeStatus.unknown)
