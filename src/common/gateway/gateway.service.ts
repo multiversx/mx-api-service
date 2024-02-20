@@ -37,6 +37,7 @@ export class GatewayService {
     GatewayComponentRequest.addressEsdt,
     GatewayComponentRequest.addressEsdtBalance,
     GatewayComponentRequest.addressNftByNonce,
+    GatewayComponentRequest.vmQuery,
   ]);
 
   constructor(
@@ -193,7 +194,9 @@ export class GatewayService {
 
   @LogPerformanceAsync(MetricsEvents.SetGatewayDuration, { argIndex: 1 })
   async createRaw(url: string, component: GatewayComponentRequest, data: any, errorHandler?: (error: any) => Promise<boolean>): Promise<any> {
-    return await this.apiService.post(`${this.getGatewayUrl(component)}/${url}`, data, new ApiSettings(), errorHandler);
+    const fullUrl = this.getFullUrl(component, url);
+
+    return await this.apiService.post(fullUrl, data, new ApiSettings(), errorHandler);
   }
 
   private getFullUrl(component: GatewayComponentRequest, suffix: string) {
