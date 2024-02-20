@@ -55,4 +55,8 @@ export class GlobalStake {
   @Field(() => Float, { description: "Qualified Auction Validators." })
   @ApiProperty({ type: Number, default: 10 })
   qualifiedAuctionValidators: number = 0;
+
+  @Field(() => Float, { description: "All Staked Nodes." })
+  @ApiProperty({ type: Number, default: 27 })
+  allStakedNodes: number = 0;
 }

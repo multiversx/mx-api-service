@@ -74,10 +74,12 @@ export class StakeService {
     const dangerZoneValidators = await this.nodeService.getNodeCount(new NodeFilter({ isAuctionDangerZone: true, isQualified: true }));
     const eligibleValidators = await this.nodeService.getNodeCount(new NodeFilter({ status: NodeStatus.eligible }));
     const waitingValidators = await this.nodeService.getNodeCount(new NodeFilter({ status: NodeStatus.waiting }));
+    const allStakedNodes = validators.totalValidators + validators.inactiveValidators;
 
     return new GlobalStake(
       {
         ...validators,
+        allStakedNodes,
         totalStaked,
         minimumAuctionQualifiedTopUp,
         minimumAuctionQualifiedStake,
