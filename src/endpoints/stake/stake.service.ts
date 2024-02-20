@@ -138,16 +138,23 @@ export class StakeService {
       node => [NodeStatus.eligible, NodeStatus.waiting].includes(node.status ?? NodeStatus.unknown)
     );
 
-    const queueSizeResult = await this.vmQueryService.vmQuery(
-      stakingContractAddress,
-      'getQueueSize',
-    );
+    let queueSizeResult;
 
-    if (queueSizeResult.length === 0) {
-      throw new Error(`Invalid length for getQueueSize result`);
+    if (!this.apiConfigService.isStakingV4Enabled()) {
+      queueSizeResult = await this.vmQueryService.vmQuery(
+        stakingContractAddress,
+        'getQueueSize',
+      );
+
+      if (queueSizeResult.length === 0) {
+        throw new Error(`Invalid length for getQueueSize result`);
+      }
     }
 
-    const queueSize = BinaryUtils.hexToNumber(BinaryUtils.base64ToHex(queueSizeResult[0]));
+    let queueSize = 0;
+    if (queueSizeResult) {
+      queueSize = BinaryUtils.hexToNumber(BinaryUtils.base64ToHex(queueSizeResult[0]));
+    }
 
     return {
       totalValidators: totalValidators.length,
