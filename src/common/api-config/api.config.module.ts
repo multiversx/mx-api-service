@@ -7,7 +7,9 @@ import { ApiConfigService } from "./api.config.service";
 @Module({
   imports: [
     ConfigModule.forRoot({
+      envFilePath: '.env',
       load: [configuration],
+      expandVariables: true,
     }),
   ],
   providers: [

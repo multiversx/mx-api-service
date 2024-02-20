@@ -42,3 +42,7 @@ lerna-debug.log*
 /src/plugins
 
 .env
+**/config/.env.devnet
+**/config/.env.testnet
+**/config/.env.mainnet
+**/config/.env.custom

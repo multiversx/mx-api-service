@@ -1,18 +1,20 @@
-import { Constants } from '@multiversx/sdk-nestjs-common';
+import { BaseConfigService, Constants } from '@multiversx/sdk-nestjs-common';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { DatabaseConnectionOptions } from '../persistence/entities/connection.options';
 
 @Injectable()
-export class ApiConfigService {
-  constructor(private readonly configService: ConfigService) { }
+export class ApiConfigService extends BaseConfigService {
+  constructor(protected readonly configService: ConfigService) {
+    super(configService);
+  }
 
   getConfig<T>(configKey: string): T | undefined {
-    return this.configService.get<T>(configKey);
+    return this.get<T>(configKey);
   }
 
   getSelfUrl(): string {
-    const selfUrl = this.configService.get<string>('urls.self');
+    const selfUrl = this.get<string>('urls.self');
     if (!selfUrl) {
       throw new Error('No self url present');
     }
@@ -21,19 +23,19 @@ export class ApiConfigService {
   }
 
   isGuestCacheFeatureActive(): boolean {
-    return this.configService.get<boolean>('features.guestCaching.enabled') ?? false;
+    return this.get<boolean>('features.guestCaching.enabled') ?? false;
   }
 
   getGuestCacheHitsThreshold(): number {
-    return this.configService.get<number>('features.guestCaching.hitsThreshold') ?? 100;
+    return this.get<number>('features.guestCaching.hitsThreshold') ?? 100;
   }
 
   getGuestCacheTtl(): number {
-    return this.configService.get<number>('features.guestCaching.ttl') ?? 12;
+    return this.get<number>('features.guestCaching.ttl') ?? 12;
   }
 
   getVerifierUrl(): string {
-    const verifierUrl = this.configService.get<string>('urls.verifier');
+    const verifierUrl = this.get<string>('urls.verifier');
     if (!verifierUrl) {
       throw new Error('No verifier url present');
     }
@@ -42,7 +44,7 @@ export class ApiConfigService {
   }
 
   getGatewayUrl(): string {
-    const gatewayUrls = this.configService.get<string[]>('urls.gateway');
+    const gatewayUrls = this.get<string[]>('urls.gateway');
     if (!gatewayUrls) {
       throw new Error('No gateway urls present');
     }
@@ -51,7 +53,7 @@ export class ApiConfigService {
   }
 
   getSnapshotlessGatewayUrl(): string | undefined {
-    const gatewayUrls = this.configService.get<string[]>('urls.snapshotlessGateway') ?? this.configService.get<string[]>('urls.lightGateway');
+    const gatewayUrls = this.get<string[]>('urls.snapshotlessGateway') ?? this.get<string[]>('urls.lightGateway');
     if (!gatewayUrls) {
       return undefined;
     }
@@ -60,7 +62,7 @@ export class ApiConfigService {
   }
 
   getElasticUrl(): string {
-    const elasticUrls = this.configService.get<string[]>('urls.elastic');
+    const elasticUrls = this.get<string[]>('urls.elastic');
     if (!elasticUrls) {
       throw new Error('No elastic urls present');
     }
@@ -69,11 +71,11 @@ export class ApiConfigService {
   }
 
   getIpfsUrl(): string {
-    return this.configService.get<string>('urls.ipfs') ?? 'https://ipfs.io/ipfs';
+    return this.get<string>('urls.ipfs') ?? 'https://ipfs.io/ipfs';
   }
 
   getSocketUrl(): string {
-    const url = this.configService.get<string>('urls.socket');
+    const url = this.get<string>('urls.socket');
     if (!url) {
       throw new Error('No socket url present');
     }
@@ -82,11 +84,11 @@ export class ApiConfigService {
   }
 
   getMaiarIdUrl(): string | undefined {
-    return this.configService.get<string>('urls.maiarId');
+    return this.get<string>('urls.maiarId');
   }
 
   getEsdtContractAddress(): string {
-    const address = this.configService.get<string>('contracts.esdt');
+    const address = this.get<string>('contracts.esdt');
     if (!address) {
       throw new Error('No ESDT contract present');
     }
@@ -95,23 +97,23 @@ export class ApiConfigService {
   }
 
   getAuctionContractAddress(): string | undefined {
-    return this.configService.get<string>('contracts.auction');
+    return this.get<string>('contracts.auction');
   }
 
   getStakingContractAddress(): string | undefined {
-    return this.configService.get<string>('contracts.staking');
+    return this.get<string>('contracts.staking');
   }
 
   getDelegationContractAddress(): string | undefined {
-    return this.configService.get<string>('contracts.delegation');
+    return this.get<string>('contracts.delegation');
   }
 
   getMetabondingContractAddress(): string | undefined {
-    return this.configService.get<string>('contracts.metabonding');
+    return this.get<string>('contracts.metabonding');
   }
 
   getDelegationManagerContractAddress(): string {
-    const address = this.configService.get<string>(
+    const address = this.get<string>(
       'contracts.delegationManager',
     );
     if (!address) {
@@ -126,7 +128,7 @@ export class ApiConfigService {
   }
 
   getRedisUrl(): string {
-    const redisUrl = this.configService.get<string>('urls.redis');
+    const redisUrl = this.get<string>('urls.redis');
     if (!redisUrl) {
       throw new Error('No redis url present');
     }
@@ -135,7 +137,7 @@ export class ApiConfigService {
   }
 
   getRabbitmqUrl(): string {
-    const rabbitmqUrl = this.configService.get<string>('urls.rabbitmq');
+    const rabbitmqUrl = this.get<string>('urls.rabbitmq');
     if (!rabbitmqUrl) {
       throw new Error('No rabbitmq url present');
     }
@@ -144,11 +146,11 @@ export class ApiConfigService {
   }
 
   getCacheTtl(): number {
-    return this.configService.get<number>('caching.cacheTtl') ?? 6;
+    return this.get<number>('caching.cacheTtl') ?? 6;
   }
 
   getNetwork(): string {
-    const network = this.configService.get<string>('network');
+    const network = this.get<string>('network');
     if (!network) {
       throw new Error('No network present');
     }
@@ -157,23 +159,23 @@ export class ApiConfigService {
   }
 
   getCluster(): string | undefined {
-    return this.configService.get<string>('cluster');
+    return this.get<string>('cluster');
   }
 
   getPoolLimit(): number {
-    return this.configService.get<number>('caching.poolLimit') ?? 100;
+    return this.get<number>('caching.poolLimit') ?? 100;
   }
 
   getProcessTtl(): number {
-    return this.configService.get<number>('caching.processTtl') ?? 60;
+    return this.get<number>('caching.processTtl') ?? 60;
   }
 
   getAxiosTimeout(): number {
-    return this.configService.get<number>('keepAliveTimeout.downstream') ?? 61000;
+    return this.get<number>('keepAliveTimeout.downstream') ?? 61000;
   }
 
   getServerTimeout(): number {
-    return this.configService.get<number>('keepAliveTimeout.upstream') ?? 60000;
+    return this.get<number>('keepAliveTimeout.upstream') ?? 60000;
   }
 
   getHeadersTimeout(): number {
@@ -181,36 +183,36 @@ export class ApiConfigService {
   }
 
   getUseRequestCachingFlag(): boolean {
-    return this.configService.get<boolean>('flags.useRequestCaching') ?? true;
+    return this.get<boolean>('flags.useRequestCaching') ?? true;
   }
 
   getUseRequestLoggingFlag(): boolean {
-    return this.configService.get<boolean>('flags.useRequestLogging') ?? false;
+    return this.get<boolean>('flags.useRequestLogging') ?? false;
   }
 
   getUseKeepAliveAgentFlag(): boolean {
-    return this.configService.get<boolean>('flags.useKeepAliveAgent') ?? true;
+    return this.get<boolean>('flags.useKeepAliveAgent') ?? true;
   }
 
   getUseTracingFlag(): boolean {
-    return this.configService.get<boolean>('flags.useTracing') ?? false;
+    return this.get<boolean>('flags.useTracing') ?? false;
   }
 
   getUseVmQueryTracingFlag(): boolean {
-    return this.configService.get<boolean>('flags.useVmQueryTracing') ?? false;
+    return this.get<boolean>('flags.useVmQueryTracing') ?? false;
   }
 
   getCollectionPropertiesFromGateway(): boolean {
-    return this.configService.get<boolean>('flags.collectionPropertiesFromGateway') ?? false;
+    return this.get<boolean>('flags.collectionPropertiesFromGateway') ?? false;
   }
 
   getProvidersUrl(): string {
-    const providerUrl = this.configService.get<string>('urls.providers');
+    const providerUrl = this.get<string>('urls.providers');
     if (providerUrl) {
       return providerUrl;
     }
 
-    const delegationUrl = this.configService.get<string>('urls.delegation');
+    const delegationUrl = this.get<string>('urls.delegation');
     if (delegationUrl) {
       return delegationUrl + '/providers';
     }
@@ -219,7 +221,7 @@ export class ApiConfigService {
   }
 
   getDelegationUrl(): string {
-    const delegationUrl = this.configService.get<string>('urls.delegation');
+    const delegationUrl = this.get<string>('urls.delegation');
     if (!delegationUrl) {
       throw new Error('No delegation url present');
     }
@@ -228,7 +230,7 @@ export class ApiConfigService {
   }
 
   getTempUrl(): string {
-    const tmpUrl = this.configService.get<string>('urls.tmp');
+    const tmpUrl = this.get<string>('urls.tmp');
     if (!tmpUrl) {
       throw new Error("No tmp url present");
     }
@@ -237,7 +239,7 @@ export class ApiConfigService {
   }
 
   getIsTransactionProcessorCronActive(): boolean {
-    const isCronActive = this.configService.get<boolean>('cron.transactionProcessor');
+    const isCronActive = this.get<boolean>('cron.transactionProcessor');
     if (isCronActive === undefined) {
       throw new Error('No cron.transactionProcessor flag present');
     }
@@ -246,7 +248,7 @@ export class ApiConfigService {
   }
 
   getTransactionProcessorMaxLookBehind(): number {
-    const transactionProcessorMaxLookBehind = this.configService.get<number>('cron.transactionProcessorMaxLookBehind');
+    const transactionProcessorMaxLookBehind = this.get<number>('cron.transactionProcessorMaxLookBehind');
     if (transactionProcessorMaxLookBehind === undefined) {
       throw new Error('No cron.transactionProcessorMaxLookBehind flag present');
     }
@@ -255,23 +257,23 @@ export class ApiConfigService {
   }
 
   getIsTransactionCompletedCronActive(): boolean {
-    return this.configService.get<boolean>('cron.transactionCompleted') ?? false;
+    return this.get<boolean>('cron.transactionCompleted') ?? false;
   }
 
   getTransactionCompletedMaxLookBehind(): number {
-    return this.configService.get<number>('cron.transactionCompletedMaxLookBehind') ?? 100;
+    return this.get<number>('cron.transactionCompletedMaxLookBehind') ?? 100;
   }
 
   getIsTransactionBatchCronActive(): boolean {
-    return this.configService.get<boolean>('cron.transactionBatch') ?? false;
+    return this.get<boolean>('cron.transactionBatch') ?? false;
   }
 
   getTransactionBatchMaxLookBehind(): number {
-    return this.configService.get<number>('cron.transactionBatchMaxLookBehind') ?? 100;
+    return this.get<number>('cron.transactionBatchMaxLookBehind') ?? 100;
   }
 
   getIsCacheWarmerCronActive(): boolean {
-    const isCronActive = this.configService.get<boolean>('cron.cacheWarmer');
+    const isCronActive = this.get<boolean>('cron.cacheWarmer');
     if (isCronActive === undefined) {
       throw new Error('No cron.cacheWarmer flag present');
     }
@@ -280,15 +282,15 @@ export class ApiConfigService {
   }
 
   getIsApiStatusCheckerActive(): boolean {
-    return this.configService.get<boolean>('cron.statusChecker') ?? false;
+    return this.get<boolean>('cron.statusChecker') ?? false;
   }
 
   getIsElasticUpdaterCronActive(): boolean {
-    return this.configService.get<boolean>('cron.elasticUpdater') ?? false;
+    return this.get<boolean>('cron.elasticUpdater') ?? false;
   }
 
   getIsQueueWorkerCronActive(): boolean {
-    const isQueueWorkerActive = this.configService.get<boolean>('cron.queueWorker');
+    const isQueueWorkerActive = this.get<boolean>('cron.queueWorker');
     if (isQueueWorkerActive === undefined) {
       throw new Error('No queue worker cron flag present');
     }
@@ -297,7 +299,7 @@ export class ApiConfigService {
   }
 
   getIsFastWarmerCronActive(): boolean {
-    const isCronActive = this.configService.get<boolean>('cron.fastWarm');
+    const isCronActive = this.get<boolean>('cron.fastWarm');
     if (isCronActive === undefined) {
       return false;
     }
@@ -306,7 +308,7 @@ export class ApiConfigService {
   }
 
   isEventsNotifierFeatureActive(): boolean {
-    const isEventsNotifierActive = this.configService.get<boolean>('features.eventsNotifier.enabled');
+    const isEventsNotifierActive = this.get<boolean>('features.eventsNotifier.enabled');
     if (isEventsNotifierActive === undefined) {
       return false;
     }
@@ -315,7 +317,7 @@ export class ApiConfigService {
   }
 
   getEventsNotifierFeaturePort(): number {
-    const eventsNotifierPort = this.configService.get<number>('features.eventsNotifier.port');
+    const eventsNotifierPort = this.get<number>('features.eventsNotifier.port');
     if (eventsNotifierPort === undefined) {
       throw new Error('No events notifier port present');
     }
@@ -324,7 +326,7 @@ export class ApiConfigService {
   }
 
   getEventsNotifierUrl(): string {
-    const url = this.configService.get<string>('features.eventsNotifier.url');
+    const url = this.get<string>('features.eventsNotifier.url');
     if (!url) {
       throw new Error('No events notifier url present');
     }
@@ -333,7 +335,7 @@ export class ApiConfigService {
   }
 
   getEventsNotifierExchange(): string {
-    const exchange = this.configService.get<string>('features.eventsNotifier.exchange');
+    const exchange = this.get<string>('features.eventsNotifier.exchange');
     if (!exchange) {
       throw new Error('No events notifier exchange present');
     }
@@ -342,19 +344,19 @@ export class ApiConfigService {
   }
 
   getIsProcessNftsFlagActive(): boolean {
-    return this.configService.get<boolean>('flags.processNfts') ?? false;
+    return this.get<boolean>('flags.processNfts') ?? false;
   }
 
   getIsIndexerV3FlagActive(): boolean {
-    return this.configService.get<boolean>('flags.indexer-v3') ?? false;
+    return this.get<boolean>('flags.indexer-v3') ?? false;
   }
 
   isGraphQlActive(): boolean {
-    return this.configService.get<boolean>('api.graphql') ?? false;
+    return this.get<boolean>('api.graphql') ?? false;
   }
 
   getIsPublicApiActive(): boolean {
-    const isApiActive = this.configService.get<boolean>('api.public');
+    const isApiActive = this.get<boolean>('api.public');
     if (isApiActive === undefined) {
       throw new Error('No api.public flag present');
     }
@@ -363,7 +365,7 @@ export class ApiConfigService {
   }
 
   getIsPrivateApiActive(): boolean {
-    const isApiActive = this.configService.get<boolean>('api.private');
+    const isApiActive = this.get<boolean>('api.private');
     if (isApiActive === undefined) {
       throw new Error('No api.private flag present');
     }
@@ -372,11 +374,11 @@ export class ApiConfigService {
   }
 
   getIsAuthActive(): boolean {
-    return this.configService.get<boolean>('features.auth.enabled') ?? this.configService.get<boolean>('api.auth') ?? false;
+    return this.get<boolean>('features.auth.enabled') ?? this.get<boolean>('api.auth') ?? false;
   }
 
   getDatabaseType(): string {
-    const databaseType = this.configService.get<string>('database.type');
+    const databaseType = this.get<string>('database.type');
     if (!databaseType) {
       throw new Error('No database.type present');
     }
@@ -385,7 +387,7 @@ export class ApiConfigService {
   }
 
   getDatabaseHost(): string {
-    const databaseHost = this.configService.get<string>('database.host');
+    const databaseHost = this.get<string>('database.host');
     if (!databaseHost) {
       throw new Error('No database.host present');
     }
@@ -394,7 +396,7 @@ export class ApiConfigService {
   }
 
   getDatabasePort(): number {
-    const databasePort = this.configService.get<number>('database.port');
+    const databasePort = this.get<number>('database.port');
     if (!databasePort) {
       throw new Error('No database.port present');
     }
@@ -404,19 +406,19 @@ export class ApiConfigService {
 
 
   getDatabaseUsername(): string | undefined {
-    const databaseUsername = this.configService.get<string>('database.username');
+    const databaseUsername = this.get<string>('database.username');
 
     return databaseUsername;
   }
 
   getDatabasePassword(): string | undefined {
-    const databasePassword = this.configService.get<string>('database.password');
+    const databasePassword = this.get<string>('database.password');
 
     return databasePassword;
   }
 
   getDatabaseName(): string {
-    const databaseName = this.configService.get<string>('database.database');
+    const databaseName = this.get<string>('database.database');
     if (!databaseName) {
       throw new Error('No database.database present');
     }
@@ -425,7 +427,7 @@ export class ApiConfigService {
   }
 
   getDatabaseUrl(): string {
-    const databaseUrl = this.configService.get<string>('database.url');
+    const databaseUrl = this.get<string>('database.url');
     if (!databaseUrl) {
       throw new Error('No database.url present');
     }
@@ -444,7 +446,7 @@ export class ApiConfigService {
   }
 
   getDatabaseSlaveConnections(): DatabaseConnectionOptions[] {
-    const slaves = this.configService.get<DatabaseConnectionOptions[]>('database.slaves');
+    const slaves = this.get<DatabaseConnectionOptions[]>('database.slaves');
     if (!slaves) {
       return [];
     }
@@ -453,7 +455,7 @@ export class ApiConfigService {
   }
 
   getImageWidth(): number {
-    const imageWidth = this.configService.get<number>('image.width');
+    const imageWidth = this.get<number>('image.width');
     if (!imageWidth) {
       throw new Error('No imageWidth present');
     }
@@ -462,7 +464,7 @@ export class ApiConfigService {
   }
 
   getImageHeight(): number {
-    const imageHeight = this.configService.get<number>('image.height');
+    const imageHeight = this.get<number>('image.height');
     if (!imageHeight) {
       throw new Error('No imageHeight present');
     }
@@ -471,7 +473,7 @@ export class ApiConfigService {
   }
 
   getImageType(): string {
-    const imageType = this.configService.get<string>('image.type');
+    const imageType = this.get<string>('image.type');
     if (!imageType) {
       throw new Error('No imageType present');
     }
@@ -480,7 +482,7 @@ export class ApiConfigService {
   }
 
   getAwsS3KeyId(): string {
-    const s3KeyId = this.configService.get<string>('aws.s3KeyId');
+    const s3KeyId = this.get<string>('aws.s3KeyId');
     if (!s3KeyId) {
       throw new Error('No s3KeyId present');
     }
@@ -489,7 +491,7 @@ export class ApiConfigService {
   }
 
   getAwsS3Secret(): string {
-    const s3Secret = this.configService.get<string>('aws.s3Secret');
+    const s3Secret = this.get<string>('aws.s3Secret');
     if (!s3Secret) {
       throw new Error('No s3Secret present');
     }
@@ -498,7 +500,7 @@ export class ApiConfigService {
   }
 
   getAwsS3Bucket(): string {
-    const s3Bucket = this.configService.get<string>('aws.s3Bucket');
+    const s3Bucket = this.get<string>('aws.s3Bucket');
     if (!s3Bucket) {
       throw new Error('No s3Bucket present');
     }
@@ -507,7 +509,7 @@ export class ApiConfigService {
   }
 
   getAwsS3Region(): string {
-    const s3Region = this.configService.get<string>('aws.s3Region');
+    const s3Region = this.get<string>('aws.s3Region');
     if (!s3Region) {
       throw new Error('No s3Region present');
     }
@@ -516,7 +518,7 @@ export class ApiConfigService {
   }
 
   getMetaChainShardId(): number {
-    const metaChainShardId = this.configService.get<number>('metaChainShardId');
+    const metaChainShardId = this.get<number>('metaChainShardId');
     if (metaChainShardId === undefined) {
       throw new Error('No metaChainShardId present');
     }
@@ -525,11 +527,11 @@ export class ApiConfigService {
   }
 
   getRateLimiterSecret(): string | undefined {
-    return this.configService.get<string>('rateLimiterSecret');
+    return this.get<string>('rateLimiterSecret');
   }
 
   getInflationAmounts(): number[] {
-    const inflationAmounts = this.configService.get<number[]>('inflation');
+    const inflationAmounts = this.get<number[]>('inflation');
     if (!inflationAmounts) {
       throw new Error('No inflation amounts present');
     }
@@ -538,7 +540,7 @@ export class ApiConfigService {
   }
 
   getMediaUrl(): string {
-    const mediaUrl = this.configService.get<string>('urls.media');
+    const mediaUrl = this.get<string>('urls.media');
     if (!mediaUrl) {
       throw new Error('No media url present');
     }
@@ -547,7 +549,7 @@ export class ApiConfigService {
   }
 
   getMediaInternalUrl(): string | undefined {
-    return this.configService.get<string>('urls.mediaInternal');
+    return this.get<string>('urls.mediaInternal');
   }
 
   getExternalMediaUrl(): string {
@@ -560,7 +562,7 @@ export class ApiConfigService {
   }
 
   getNftThumbnailsUrl(): string {
-    const nftThumbnailsUrl = this.configService.get<string>('urls.nftThumbnails');
+    const nftThumbnailsUrl = this.get<string>('urls.nftThumbnails');
     if (!nftThumbnailsUrl) {
       throw new Error('No nft thumbnails url present');
     }
@@ -569,7 +571,7 @@ export class ApiConfigService {
   }
 
   getSecurityAdmins(): string[] {
-    const admins = this.configService.get<string[]>('features.auth.admins') ?? this.configService.get<string[]>('security.admins');
+    const admins = this.get<string[]>('features.auth.admins') ?? this.get<string[]>('security.admins');
     if (admins === undefined) {
       throw new Error('No security admins value present');
     }
@@ -578,7 +580,7 @@ export class ApiConfigService {
   }
 
   getJwtSecret(): string {
-    const jwtSecret = this.configService.get<string>('features.auth.jwtSecret') ?? this.configService.get<string>('security.jwtSecret');
+    const jwtSecret = this.get<string>('features.auth.jwtSecret') ?? this.get<string>('security.jwtSecret');
     if (!jwtSecret) {
       throw new Error('No jwtSecret present');
     }
@@ -587,19 +589,19 @@ export class ApiConfigService {
   }
 
   getMockKeybases(): boolean | undefined {
-    return this.configService.get<boolean>('test.mockKeybases');
+    return this.get<boolean>('test.mockKeybases');
   }
 
   getMockNodes(): boolean | undefined {
-    return this.configService.get<boolean>('test.mockNodes');
+    return this.get<boolean>('test.mockNodes');
   }
 
   getMockTokens(): boolean | undefined {
-    return this.configService.get<boolean>('test.mockTokens');
+    return this.get<boolean>('test.mockTokens');
   }
 
   getMockPath(): string | undefined {
-    const mockPath = this.configService.get<string>('test.mockPath');
+    const mockPath = this.get<string>('test.mockPath');
     if (mockPath === undefined) {
       throw new Error('No mock path value present');
     }
@@ -608,19 +610,19 @@ export class ApiConfigService {
   }
 
   getNftProcessParallelism(): number {
-    return this.configService.get<number>('nftProcess.parallelism') ?? 1;
+    return this.get<number>('nftProcess.parallelism') ?? 1;
   }
 
   getNftProcessMaxRetries(): number {
-    return this.configService.get<number>('nftProcess.maxRetries') ?? 3;
+    return this.get<number>('nftProcess.maxRetries') ?? 3;
   }
 
   private isExchangeEnabledInternal(): boolean {
-    return this.configService.get<boolean>('features.exchange.enabled') ?? false;
+    return this.get<boolean>('features.exchange.enabled') ?? false;
   }
 
   private getExchangeServiceUrlLegacy(): string | undefined {
-    return this.configService.get<string>('transaction-action.mex.microServiceUrl') ?? this.configService.get<string>('plugins.transaction-action.mex.microServiceUrl');
+    return this.get<string>('transaction-action.mex.microServiceUrl') ?? this.get<string>('plugins.transaction-action.mex.microServiceUrl');
   }
 
   isExchangeEnabled(): boolean {
@@ -640,7 +642,7 @@ export class ApiConfigService {
   getExchangeServiceUrl(): string | undefined {
     const isExchangeEnabled = this.isExchangeEnabledInternal();
     if (isExchangeEnabled) {
-      return this.configService.get<string>('features.exchange.serviceUrl');
+      return this.get<string>('features.exchange.serviceUrl');
     }
 
     const legacyUrl = this.getExchangeServiceUrlLegacy();
@@ -661,19 +663,19 @@ export class ApiConfigService {
   }
 
   getGithubToken(): string | undefined {
-    return this.configService.get<string>('github.token');
+    return this.get<string>('github.token');
   }
 
   isTransactionPoolEnabled(): boolean {
-    return this.configService.get<boolean>('features.transactionPool.enabled') ?? false;
+    return this.get<boolean>('features.transactionPool.enabled') ?? false;
   }
 
   isTransactionPoolCacheWarmerEnabled(): boolean {
-    return this.configService.get<boolean>('features.transactionPoolWarmer.enabled') ?? false;
+    return this.get<boolean>('features.transactionPoolWarmer.enabled') ?? false;
   }
 
   getTransactionPoolCacheWarmerCronExpression(): string {
-    const cronExpression = this.configService.get<string>('features.transactionPoolWarmer.cronExpression');
+    const cronExpression = this.get<string>('features.transactionPoolWarmer.cronExpression');
     if (!cronExpression) {
       throw new Error('No transaction pool cron expression present');
     }
@@ -681,15 +683,15 @@ export class ApiConfigService {
   }
 
   getTransactionPoolCacheWarmerTtlInSeconds(): number {
-    return this.configService.get<number>('features.transactionPoolWarmer.ttlInSeconds') ?? 6;
+    return this.get<number>('features.transactionPoolWarmer.ttlInSeconds') ?? 6;
   }
 
   isStakingV4Enabled(): boolean {
-    return this.configService.get<boolean>('features.stakingV4.enabled') ?? false;
+    return this.get<boolean>('features.stakingV4.enabled') ?? false;
   }
 
   getStakingV4CronExpression(): string {
-    const cronExpression = this.configService.get<string>('features.stakingV4.cronExpression');
+    const cronExpression = this.get<string>('features.stakingV4.cronExpression');
     if (!cronExpression) {
       throw new Error('No staking V4 cron expression present');
     }
@@ -698,15 +700,15 @@ export class ApiConfigService {
   }
 
   isNftExtendedAttributesEnabled(): boolean {
-    return this.configService.get<boolean>('features.nftExtendedAttributes.enabled') ?? false;
+    return this.get<boolean>('features.nftExtendedAttributes.enabled') ?? false;
   }
 
   getNftExtendedAttributesNsfwThreshold(): number {
-    return this.configService.get<number>('features.nftExtendedAttributes.nsfwThreshold') ?? 0.85;
+    return this.get<number>('features.nftExtendedAttributes.nsfwThreshold') ?? 0.85;
   }
 
   getIndexerSlaveConnections(): DatabaseConnectionOptions[] {
-    const slaves = this.configService.get<DatabaseConnectionOptions[]>('indexer.slaves');
+    const slaves = this.get<DatabaseConnectionOptions[]>('indexer.slaves');
     if (!slaves) {
       return [];
     }
@@ -714,7 +716,7 @@ export class ApiConfigService {
   }
 
   private getIndexerHost(): string {
-    const indexerHost = this.configService.get<string>('indexer.host');
+    const indexerHost = this.get<string>('indexer.host');
     if (!indexerHost) {
       throw new Error('No indexer.host present');
     }
@@ -722,7 +724,7 @@ export class ApiConfigService {
   }
 
   private getIndexerPort(): number {
-    const indexerPort = this.configService.get<number>('indexer.port');
+    const indexerPort = this.get<number>('indexer.port');
     if (!indexerPort) {
       throw new Error('No indexer.port present');
     }
@@ -730,17 +732,17 @@ export class ApiConfigService {
   }
 
   private getIndexerUsername(): string | undefined {
-    const indexerUsername = this.configService.get<string>('indexer.username');
+    const indexerUsername = this.get<string>('indexer.username');
     return indexerUsername;
   }
 
   private getIndexerPassword(): string | undefined {
-    const indexerPassword = this.configService.get<string>('indexer.password');
+    const indexerPassword = this.get<string>('indexer.password');
     return indexerPassword;
   }
 
   private getIndexerName(): string {
-    const indexerName = this.configService.get<string>('indexer.database');
+    const indexerName = this.get<string>('indexer.database');
     if (!indexerName) {
       throw new Error('No indexer.database present');
     }
@@ -758,23 +760,23 @@ export class ApiConfigService {
   }
 
   getIndexerMaxPagination(): number {
-    return this.configService.get<number>('indexer.maxPagination') ?? 10000;
+    return this.get<number>('indexer.maxPagination') ?? 10000;
   }
 
   isNodeSyncProgressEnabled(): boolean {
-    return this.configService.get<boolean>('features.nodeSyncProgress.enabled') ?? false;
+    return this.get<boolean>('features.nodeSyncProgress.enabled') ?? false;
   }
 
   isUpdateCollectionExtraDetailsEnabled(): boolean {
-    return this.configService.get<boolean>('features.updateCollectionExtraDetails.enabled') ?? false;
+    return this.get<boolean>('features.updateCollectionExtraDetails.enabled') ?? false;
   }
 
   isMarketplaceFeatureEnabled(): boolean {
-    return this.configService.get<boolean>('features.marketplace.enabled') ?? false;
+    return this.get<boolean>('features.marketplace.enabled') ?? false;
   }
 
   getMarketplaceServiceUrl(): string {
-    const serviceUrl = this.configService.get<string>('features.marketplace.serviceUrl');
+    const serviceUrl = this.get<string>('features.marketplace.serviceUrl');
     if (!serviceUrl) {
       throw new Error('No marketplace service url present');
     }
@@ -783,19 +785,19 @@ export class ApiConfigService {
   }
 
   getNativeAuthAcceptedOrigins(): string[] {
-    return this.configService.get<string[]>('features.auth.acceptedOrigins') ?? [''];
+    return this.get<string[]>('features.auth.acceptedOrigins') ?? [''];
   }
 
   getNativeAuthMaxExpirySeconds(): number {
-    return this.configService.get<number>('features.auth.maxExpirySeconds') ?? Constants.oneDay();
+    return this.get<number>('features.auth.maxExpirySeconds') ?? Constants.oneDay();
   }
 
   isDataApiFeatureEnabled(): boolean {
-    return this.configService.get<boolean>('features.dataApi.enabled') ?? false;
+    return this.get<boolean>('features.dataApi.enabled') ?? false;
   }
 
   getDataApiServiceUrl(): string {
-    const serviceUrl = this.configService.get<string>('features.dataApi.serviceUrl');
+    const serviceUrl = this.get<string>('features.dataApi.serviceUrl');
     if (!serviceUrl) {
       throw new Error('No data-api service url present');
     }
