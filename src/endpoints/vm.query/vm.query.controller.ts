@@ -1,7 +1,8 @@
-import { BadRequestException, Body, Controller, HttpStatus, Post } from "@nestjs/common";
+import { BadRequestException, Body, Controller, HttpStatus, ParseIntPipe, Post, Query, UseInterceptors } from "@nestjs/common";
 import { ApiCreatedResponse, ApiOperation, ApiTags } from "@nestjs/swagger";
 import { VmQueryRequest } from "./entities/vm.query.request";
 import { VmQueryService } from "./vm.query.service";
+import { DeepHistoryInterceptor } from "src/interceptors/deep-history.interceptor";
 
 @Controller()
 @ApiTags('query')
@@ -13,10 +14,14 @@ export class VmQueryController {
   @Post('/query')
   @ApiOperation({ summary: 'VM query', description: 'Performs a vm query on a given smart contract and returns its results' })
   @ApiCreatedResponse()
-  async query(@Body() query: VmQueryRequest) {
+  @UseInterceptors(DeepHistoryInterceptor)
+  async query(
+    @Body() query: VmQueryRequest,
+    @Query('timestamp', ParseIntPipe) timestamp: number | undefined,
+  ) {
     let result: any;
     try {
-      result = await this.vmQueryService.vmQueryFullResult(query.scAddress, query.funcName, query.caller, query.args, query.value);
+      result = await this.vmQueryService.vmQueryFullResult(query.scAddress, query.funcName, query.caller, query.args, query.value, timestamp);
     } catch (error: any) {
       throw new BadRequestException({
         statusCode: HttpStatus.BAD_REQUEST,
