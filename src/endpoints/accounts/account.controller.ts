@@ -201,7 +201,7 @@ export class AccountController {
     @Query('identifier') identifier?: string,
     @Query('identifiers', ParseArrayPipe) identifiers?: string[],
     @Query('includeMetaESDT', new ParseBoolPipe) includeMetaESDT?: boolean,
-    @Query('timestamp', new ParseIntPipe) _timestamp?: number,
+    @Query('timestamp', ParseIntPipe) _timestamp?: number,
   ): Promise<TokenWithBalance[]> {
     try {
       return await this.tokenService.getTokensForAddress(address, new QueryPagination({ from, size }), new TokenFilter({ type, search, name, identifier, identifiers, includeMetaESDT }));
@@ -232,7 +232,7 @@ export class AccountController {
     @Query('identifier') identifier?: string,
     @Query('identifiers', ParseArrayPipe) identifiers?: string[],
     @Query('includeMetaESDT', new ParseBoolPipe) includeMetaESDT?: boolean,
-    @Query('timestamp', new ParseIntPipe) _timestamp?: number,
+    @Query('timestamp', ParseIntPipe) _timestamp?: number,
   ): Promise<number> {
     try {
       return await this.tokenService.getTokenCountForAddress(address, new TokenFilter({ type, search, name, identifier, identifiers, includeMetaESDT }));
@@ -255,7 +255,7 @@ export class AccountController {
     @Query('identifier') identifier?: string,
     @Query('identifiers', ParseArrayPipe) identifiers?: string[],
     @Query('includeMetaESDT', new ParseBoolPipe) includeMetaESDT?: boolean,
-    @Query('timestamp', new ParseIntPipe) _timestamp?: number,
+    @Query('timestamp', ParseIntPipe) _timestamp?: number,
   ): Promise<number> {
     try {
       return await this.tokenService.getTokenCountForAddress(address, new TokenFilter({ type, search, name, identifier, identifiers, includeMetaESDT }));
@@ -274,7 +274,7 @@ export class AccountController {
   async getAccountToken(
     @Param('address', ParseAddressPipe) address: string,
     @Param('token', ParseTokenOrNftPipe) token: string,
-    @Query('timestamp', new ParseIntPipe) _timestamp?: number,
+    @Query('timestamp', ParseIntPipe) _timestamp?: number,
   ): Promise<TokenDetailedWithBalance> {
     const result = await this.tokenService.getTokenForAddress(address, token);
     if (!result) {
