@@ -151,8 +151,6 @@ describe("Tokens Controller", () => {
           expect(res.body.assets).toBeDefined();
 
           expect(res.body.canUpgrade).toStrictEqual(true);
-          expect(res.body.canMint).toStrictEqual(true);
-          expect(res.body.canBurn).toStrictEqual(true);
           expect(res.body.canChangeOwner).toStrictEqual(true);
           expect(res.body.canPause).toStrictEqual(true);
           expect(res.body.canFreeze).toStrictEqual(true);

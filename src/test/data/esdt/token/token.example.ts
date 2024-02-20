@@ -24,8 +24,6 @@ const tokenExample = {
   transactions: 4003,
   accounts: 2782,
   canUpgrade: true,
-  canMint: true,
-  canBurn: true,
   canChangeOwner: true,
   canPause: true,
   canFreeze: true,

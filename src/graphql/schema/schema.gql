@@ -3560,17 +3560,11 @@ type TokenDetailed {
   """Token canAddSpecialRoles property in case of type MetaESDT."""
   canAddSpecialRoles: Boolean
 
-  """Token canBurn property."""
-  canBurn: Boolean
-
   """Token canChangeOwner property."""
   canChangeOwner: Boolean
 
   """Token canFreeze property."""
   canFreeze: Boolean
-
-  """Token canMint property."""
-  canMint: Boolean
 
   """Token canPause property."""
   canPause: Boolean!
@@ -3744,17 +3738,11 @@ type TokenWithBalanceAccountFlat {
   """Token canAddSpecialRoles property in case of type MetaESDT."""
   canAddSpecialRoles: Boolean
 
-  """Token canBurn property."""
-  canBurn: Boolean
-
   """Token canChangeOwner property."""
   canChangeOwner: Boolean
 
   """Token canFreeze property."""
   canFreeze: Boolean
-
-  """Token canMint property."""
-  canMint: Boolean
 
   """Token canPause property."""
   canPause: Boolean!

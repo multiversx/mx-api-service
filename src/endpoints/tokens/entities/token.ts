@@ -74,14 +74,6 @@ export class Token {
   @ApiProperty({ type: Boolean, default: false })
   canUpgrade: boolean = false;
 
-  @Field(() => Boolean, { description: "Token canMint property.", nullable: true })
-  @ApiProperty({ type: Boolean, nullable: true })
-  canMint: boolean | undefined = undefined;
-
-  @Field(() => Boolean, { description: "Token canBurn property.", nullable: true })
-  @ApiProperty({ type: Boolean, nullable: true })
-  canBurn: boolean | undefined = undefined;
-
   @Field(() => Boolean, { description: "Token canChangeOwner property.", nullable: true })
   @ApiProperty({ type: Boolean, nullable: true })
   canChangeOwner: boolean | undefined = undefined;
