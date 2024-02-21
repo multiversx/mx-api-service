@@ -117,9 +117,11 @@ export class ProviderService {
           element.featured = delegationData.featured;
         }
 
-        if (delegationData.owner) {
-          element.owner = delegationData.owner;
-        }
+        //To be reverted
+        // if (delegationData.owner) {
+        //   element.owner = delegationData.owner;
+        //   console.log(element.owner);
+        // }
 
         if (delegationData.automaticActivation) {
           element.automaticActivation = delegationData.automaticActivation;
