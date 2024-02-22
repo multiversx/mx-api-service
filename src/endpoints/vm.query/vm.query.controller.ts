@@ -1,8 +1,9 @@
-import { BadRequestException, Body, Controller, HttpStatus, ParseIntPipe, Post, Query, UseInterceptors } from "@nestjs/common";
+import { BadRequestException, Body, Controller, HttpStatus, Post, Query, UseInterceptors } from "@nestjs/common";
 import { ApiCreatedResponse, ApiOperation, ApiTags } from "@nestjs/swagger";
 import { VmQueryRequest } from "./entities/vm.query.request";
 import { VmQueryService } from "./vm.query.service";
 import { DeepHistoryInterceptor } from "src/interceptors/deep-history.interceptor";
+import { ParseIntPipe } from "@multiversx/sdk-nestjs-common";
 
 @Controller()
 @ApiTags('query')

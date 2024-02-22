@@ -559,6 +559,14 @@ describe('API Config', () => {
       const results = apiConfigService.getIsTransactionProcessorCronActive();
       expect(results).toEqual(true);
     });
+
+    it("should throw error because test simulates that transaction processor cron is not defined", () => {
+      jest
+        .spyOn(ConfigService.prototype, 'get')
+        .mockImplementation(jest.fn(() => undefined));
+
+      expect(apiConfigService.getIsTransactionProcessorCronActive()).toStrictEqual(false);
+    });
   });
 
   describe("getTransactionProcessorMaxLookBehind", () => {
@@ -569,6 +577,14 @@ describe('API Config', () => {
 
       const results = apiConfigService.getTransactionProcessorMaxLookBehind();
       expect(results).toEqual(1000);
+    });
+
+    it("should throw error because test simulates that transaction processor max look behind is not defined", () => {
+      jest
+        .spyOn(ConfigService.prototype, 'get')
+        .mockImplementation(jest.fn(() => undefined));
+
+      expect(apiConfigService.getTransactionProcessorMaxLookBehind()).toStrictEqual(100);
     });
   });
 
