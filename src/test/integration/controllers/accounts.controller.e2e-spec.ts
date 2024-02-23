@@ -25,12 +25,24 @@ import { CollectionModule } from "src/endpoints/collections/collection.module";
 import { TransferModule } from "src/endpoints/transfers/transfer.module";
 import { ApiConfigModule } from "src/common/api-config/api.config.module";
 import { DelegationModule } from "src/endpoints/delegation/delegation.module";
-import { mockAccountService, mockApiConfigService, mockCollectionService, mockDelegationLegacyService, mockDelegationService, mockNftService, mockSmartContractResultService, mockStakeService, mockTokenService, mockTransactionService, mockTransferService, mockWaitingListService } from "src/test/integration/controllers/services.mock/account.services.mock";
+import { mockApiConfigService, mockCollectionService, mockDelegationLegacyService, mockDelegationService, mockNftService, mockSmartContractResultService, mockStakeService, mockTokenService, mockTransactionService, mockTransferService, mockWaitingListService } from "src/test/integration/controllers/services.mock/account.services.mock";
 import request = require('supertest');
 
 describe('AccountController', () => {
   let app: INestApplication;
   const path = "/accounts";
+
+  const mockAccountService = () => ({
+    getAccounts: jest.fn().mockResolvedValue([]),
+    getAccountsCount: jest.fn().mockResolvedValue(0),
+    getAccount: jest.fn().mockResolvedValue({}),
+    getDeferredAccount: jest.fn().mockResolvedValue([]),
+    getAccountVerification: jest.fn().mockResolvedValue(null),
+    getAccountContracts: jest.fn().mockResolvedValue([]),
+    getAccountContractsCount: jest.fn().mockResolvedValue(0),
+    getKeys: jest.fn().mockResolvedValue([]),
+    getWaitingListForAddress: jest.fn().mockResolvedValue([]),
+  });
 
   const accountServiceMocks = mockAccountService();
 
@@ -133,4 +145,8 @@ describe('AccountController', () => {
         });
     });
   });
+
+
 });
+
+
