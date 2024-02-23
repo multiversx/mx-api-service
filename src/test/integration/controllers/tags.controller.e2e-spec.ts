@@ -1,88 +1,76 @@
-import { INestApplication } from '@nestjs/common';
-import { Test } from '@nestjs/testing';
-import { PublicAppModule } from 'src/public.app.module';
+import { INestApplication } from "@nestjs/common";
+import { Test } from "@nestjs/testing";
+import { Tag } from "src/endpoints/nfttags/entities/tag";
+import { TagService } from "src/endpoints/nfttags/tag.service";
 import request = require('supertest');
-import { URLSearchParams } from 'url';
+import { TagController } from "src/endpoints/nfttags/tag.controller";
+import { TagModule } from "src/endpoints/nfttags/tag.module";
 
-describe("Tags Controller", () => {
+describe('TagController', () => {
   let app: INestApplication;
   const path: string = "/tags";
 
+  const tagService = {
+    getNftTags: jest.fn(),
+    getNftTagCount: jest.fn(),
+    getNftTag: jest.fn(),
+  };
+
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
-      imports: [PublicAppModule],
-    }).compile();
-
+      controllers: [TagController],
+      imports: [TagModule],
+    })
+      .overrideProvider(TagService)
+      .useValue(tagService)
+      .compile();
 
     app = moduleRef.createNestApplication();
     await app.init();
   });
 
-  describe('/tags', () => {
-    it("should return 25 tags", async () => {
-      await request(app.getHttpServer())
-        .get(`${path}`)
-        .expect(200)
-        .then(res => {
-          expect(res.body).toHaveLength(25);
-        });
-    });
+  it(`/GET tags`, async () => {
+    const mockTags: Tag[] = [{ tag: 'multiversx', count: 48974 }, { tag: 'xPortal', count: 34750 }];
+    tagService.getNftTags.mockResolvedValue(mockTags);
 
-    it('should return a list of 10 tags that contains "elrond" in tag name ', async () => {
-      const params = new URLSearchParams({
-        'search': 'elrond',
-        'size': '10',
+    const params = new URLSearchParams({ from: '0', size: '2' }).toString();
+
+    await request(app.getHttpServer())
+      .get(`${path}?${params}`)
+      .expect(200)
+      .expect(mockTags);
+  });
+
+  it(`/GET tags/count`, async () => {
+    tagService.getNftTagCount.mockResolvedValue(10);
+
+    await request(app.getHttpServer())
+      .get(`${path}/count`)
+      .expect(200)
+      .expect(response => {
+        expect(+response.text).toBeGreaterThanOrEqual(10);
       });
-
-      await request(app.getHttpServer())
-        .get(`${path}?${params}`)
-        .expect(200)
-        .then(res => {
-          expect(res.body).toHaveLength(10);
-          expect(res.body[0].tag).toMatch('elrond');
-        });
-    });
   });
 
-  describe('tags/{tag}', () => {
-    it('should return NFT tag details for a given tag', async () => {
-      const tag: string = 'elrond';
+  it(`/GET tags/:tag`, async () => {
+    const mockTag: Tag = { tag: 'Art', count: 1 };
+    tagService.getNftTag.mockResolvedValue(mockTag);
 
-      await request(app.getHttpServer())
-        .get(`${path}/${tag}`)
-        .expect(200)
-        .then(res => {
-          expect(res.body.tag).toMatch('elrond');
-          expect(res.body.count).toBeGreaterThanOrEqual(3500);
-        });
-    });
+    await request(app.getHttpServer())
+      .get(`${path}/Art`)
+      .expect(200)
+      .expect(mockTag);
   });
 
-  describe('tags/count', () => {
-    it('should return total number of NFTs tags', async () => {
-      await request(app.getHttpServer())
-        .get(`${path}/count`)
-        .expect(200)
-        .then(res => {
-          expect(+res.text).toBeGreaterThanOrEqual(2500);
-        });
-    });
+  it(`/GET tags/:tag - not found`, async () => {
+    tagService.getNftTag.mockRejectedValue(new Error('Nft tag not found'));
 
-    it('should total number of distinct NFT tags', async () => {
-      const params = new URLSearchParams({
-        'search': 'elrond',
-      });
-
-      await request(app.getHttpServer())
-        .get(`${path}/count?${params}`)
-        .expect(200)
-        .then(res => {
-          expect(+res.text).toBeGreaterThanOrEqual(30);
-        });
-    });
+    await request(app.getHttpServer())
+      .get('/tags/invalidTag')
+      .expect(404);
   });
 
-  afterEach(async () => {
+  afterAll(async () => {
     await app.close();
   });
 });
