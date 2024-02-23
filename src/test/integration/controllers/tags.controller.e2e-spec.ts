@@ -70,6 +70,16 @@ describe('TagController', () => {
       .expect(404);
   });
 
+  it('/GET tags with invalid integer parameters', async () => {
+    const params = new URLSearchParams({ from: 'invalid', size: '1' }).toString();
+    await request(app.getHttpServer())
+      .get(`${path}?${params}`)
+      .expect(400)
+      .expect(response => {
+        expect(response.body.message).toStrictEqual("Validation failed for argument 'from' (optional number is expected)");
+      });
+  });
+
   afterAll(async () => {
     await app.close();
   });
