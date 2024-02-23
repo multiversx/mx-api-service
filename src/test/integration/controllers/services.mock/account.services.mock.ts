@@ -75,6 +75,7 @@ export const mockApiConfigService = () => ({
   getPoolLimit: jest.fn().mockReturnValue(''),
   getProcessTtl: jest.fn().mockReturnValue(''),
   getExternalMediaUrl: jest.fn().mockReturnValue(''),
+  getConfig: jest.fn(),
 });
 
 export const mockDelegationService = () => ({
