@@ -12,7 +12,6 @@ import { TokenService } from "src/endpoints/tokens/token.service";
 import { TransactionService } from "src/endpoints/transactions/transaction.service";
 import { TransferService } from "src/endpoints/transfers/transfer.service";
 import { WaitingListService } from "src/endpoints/waiting-list/waiting.list.service";
-import { mockAccountService, mockTokenService, mockNftService, mockDelegationLegacyService, mockWaitingListService, mockStakeService, mockTransactionService, mockSmartContractResultService, mockCollectionService, mockTransferService, mockApiConfigService, mockDelegationService } from "./services.mock/account.services.mock";
 import { AccountController } from "src/endpoints/accounts/account.controller";
 import { AccountModule } from "src/endpoints/accounts/account.module";
 import { TokenModule } from "src/endpoints/tokens/token.module";
@@ -26,9 +25,10 @@ import { CollectionModule } from "src/endpoints/collections/collection.module";
 import { TransferModule } from "src/endpoints/transfers/transfer.module";
 import { ApiConfigModule } from "src/common/api-config/api.config.module";
 import { DelegationModule } from "src/endpoints/delegation/delegation.module";
+import { mockAccountService, mockApiConfigService, mockCollectionService, mockDelegationLegacyService, mockDelegationService, mockNftService, mockSmartContractResultService, mockStakeService, mockTokenService, mockTransactionService, mockTransferService, mockWaitingListService } from "src/test/integration/controllers/services.mock/account.services.mock";
 import request = require('supertest');
 
-describe('AccountController (e2e)', () => {
+describe('AccountController', () => {
   let app: INestApplication;
   const path = "/accounts";
 
