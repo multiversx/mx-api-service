@@ -13,20 +13,21 @@ import { TransactionService } from "src/endpoints/transactions/transaction.servi
 import { TransferService } from "src/endpoints/transfers/transfer.service";
 import { WaitingListService } from "src/endpoints/waiting-list/waiting.list.service";
 import { AccountController } from "src/endpoints/accounts/account.controller";
-import { AccountModule } from "src/endpoints/accounts/account.module";
-import { TokenModule } from "src/endpoints/tokens/token.module";
-import { NftModule } from "src/endpoints/nfts/nft.module";
-import { DelegationLegacyModule } from "src/endpoints/delegation.legacy/delegation.legacy.module";
-import { WaitingListModule } from "src/endpoints/waiting-list/waiting.list.module";
-import { StakeModule } from "src/endpoints/stake/stake.module";
-import { TransactionModule } from "src/endpoints/transactions/transaction.module";
-import { SmartContractResultModule } from "src/endpoints/sc-results/scresult.module";
-import { CollectionModule } from "src/endpoints/collections/collection.module";
-import { TransferModule } from "src/endpoints/transfers/transfer.module";
-import { ApiConfigModule } from "src/common/api-config/api.config.module";
-import { DelegationModule } from "src/endpoints/delegation/delegation.module";
 import { mockAccountService, mockApiConfigService, mockCollectionService, mockDelegationLegacyService, mockDelegationService, mockNftService, mockSmartContractResultService, mockStakeService, mockTokenService, mockTransactionService, mockTransferService, mockWaitingListService } from "src/test/integration/controllers/services.mock/account.services.mock";
+import { ApiConfigModule } from "src/common/api-config/api.config.module";
+import { AccountModule } from "src/endpoints/accounts/account.module";
+import { CollectionModule } from "src/endpoints/collections/collection.module";
+import { DelegationLegacyModule } from "src/endpoints/delegation.legacy/delegation.legacy.module";
+import { DelegationModule } from "src/endpoints/delegation/delegation.module";
+import { NftModule } from "src/endpoints/nfts/nft.module";
+import { SmartContractResultModule } from "src/endpoints/sc-results/scresult.module";
+import { StakeModule } from "src/endpoints/stake/stake.module";
+import { TokenModule } from "src/endpoints/tokens/token.module";
+import { TransactionModule } from "src/endpoints/transactions/transaction.module";
+import { TransferModule } from "src/endpoints/transfers/transfer.module";
+import { WaitingListModule } from "src/endpoints/waiting-list/waiting.list.module";
 import request = require('supertest');
+import { ConfigModule } from "@nestjs/config";
 
 describe('AccountController', () => {
   let app: INestApplication;
@@ -51,6 +52,7 @@ describe('AccountController', () => {
         TransferModule,
         ApiConfigModule,
         DelegationModule,
+        ConfigModule.forRoot({}),
       ],
     })
       .overrideProvider(AccountService).useValue(accountServiceMocks)
