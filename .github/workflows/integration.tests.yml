@@ -27,13 +27,6 @@ jobs:
           cache: 'npm'
       - run: npm ci
       - run: npm run init
-
-      - name: List working directory contents
-        run: ls -la
-
-      - name: List config directory contents
-        run: ls -la config/
-        
       - run: npm run test:e2e
       - name: Collect code coverage
         run: npm run test:e2e:cov

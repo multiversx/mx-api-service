@@ -29,7 +29,7 @@ import { WaitingListModule } from "src/endpoints/waiting-list/waiting.list.modul
 import request = require('supertest');
 import { ConfigModule } from "@nestjs/config";
 
-describe('AccountController', () => {
+describe.only('AccountController', () => {
   let app: INestApplication;
   const path = "/accounts";
 
@@ -134,6 +134,10 @@ describe('AccountController', () => {
           expect(response.body.message).toStrictEqual("Validation failed for argument 'isSmartContract' (optional boolean string is expected)");
         });
     });
+  });
+
+  afterAll(async () => {
+    await app.close();
   });
 });
 
