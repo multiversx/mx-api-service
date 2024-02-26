@@ -29,7 +29,7 @@ import { WaitingListModule } from "src/endpoints/waiting-list/waiting.list.modul
 import request = require('supertest');
 import { ConfigModule } from "@nestjs/config";
 
-describe.only('AccountController', () => {
+describe('AccountController', () => {
   let app: INestApplication;
   const path = "/accounts";
 
