@@ -28,6 +28,7 @@ import { TransferModule } from "src/endpoints/transfers/transfer.module";
 import { WaitingListModule } from "src/endpoints/waiting-list/waiting.list.module";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { ConfigModule } from "@nestjs/config";
+import { AccountDeferred } from "src/endpoints/accounts/entities/account.deferred";
 import request = require('supertest');
 
 
@@ -206,6 +207,126 @@ describe('AccountController', () => {
     });
   });
 
+  describe("GET /accounts/:address", () => {
+    const mockAccount = {
+      address: 'erd1vtlpm6sxxvmgt43ldsrpswjrfcsudmradylpxn9jkp66ra3rkz4qruzvfw',
+      balance: '707809',
+      nonce: 46,
+      timestamp: 1708946805,
+      shard: 3,
+      ownerAddress: 'erd1vtlpm6sxxvmgt43ldsrpswjrfcsudmradylpxn9jkp66ra3rkz4qruzvfw',
+      ownerAssets: undefined,
+      assets: undefined,
+    };
+
+    it('should return account details for a given address', async () => {
+      accountServiceMocks.getAccount.mockReturnValue(mockAccount);
+
+      await request(app.getHttpServer())
+        .get(`${path}/${mockAccount.address}`)
+        .expect(200)
+        .expect(response => {
+          expect(response.body).toEqual(mockAccount);
+        });
+    });
+
+    it('should throw 400 Bad Request for a given invalid address value', async () => {
+      await request(app.getHttpServer())
+        .get(`${path}/erd1...`)
+        .expect(400)
+        .expect(response => {
+          expect(response.body.message).toStrictEqual("Validation failed for argument 'address' (a bech32 address is expected)");
+        });
+    });
+
+    it('should return account details including guardian info when withGuardianInfo is true', async () => {
+      const mockAddressList = createMockAccountsList(1);
+      const accountDetails = mockAddressList[0];
+      const address = "erd1rf4hv70arudgzus0ymnnsnc4pml0jkywg2xjvzslg0mz4nn2tg7q7k0t6p";
+      const mockAccountWithGuardianInfo = {
+        ...accountDetails,
+        isGuarded: true,
+        activeGuardianActivationEpoch: 496,
+        activeGuardianAddress: "erd1x5d4p63uwcns8cvyrl4g3qgvwwa2nkt5jdp0vwetc7csqzpjzz0qec58k0",
+        activeGuardianServiceUid: "MultiversXTCSService",
+      };
+
+      accountServiceMocks.getAccount.mockResolvedValue(mockAccountWithGuardianInfo);
+
+      await request(app.getHttpServer())
+        .get(`/accounts/${address}?withGuardianInfo=true`)
+        .expect(200)
+        .expect(response => {
+          expect(response.body).toEqual(mockAccountWithGuardianInfo);
+          expect(response.body.isGuarded).toStrictEqual(true);
+        });
+    });
+
+    it('should return account details filtered by fields', async () => {
+      const address = "erd1s6uspvcnwr254ag8urs62m8e554hkf8yqpegwrgtxvzw3ddksjcs66g0u2";
+      const fields = ['balance', 'nonce'];
+      const mockAccountFilteredFields = {
+        balance: "1000",
+        nonce: 1,
+      };
+
+      accountServiceMocks.getAccount.mockResolvedValue(mockAccountFilteredFields);
+
+      await request(app.getHttpServer())
+        .get(`/accounts/${address}?fields=${fields.join(',')}`)
+        .expect(200)
+        .expect(response => {
+          expect(response.body).toEqual(mockAccountFilteredFields);
+          expect(Object.keys(response.body).sort()).toEqual(fields.sort());
+        });
+    });
+  });
+
+  describe("GET /accounts/:address/deferred", () => {
+    const address = "erd1s6uspvcnwr254ag8urs62m8e554hkf8yqpegwrgtxvzw3ddksjcs66g0u2";
+
+    it('should return deferred payments from legacy staking', async () => {
+      const mockDeferred: AccountDeferred[] = [
+        {
+          deferredPayment: "1",
+          secondsLeft: 2,
+        },
+      ];
+
+      accountServiceMocks.getDeferredAccount.mockResolvedValue(mockDeferred);
+
+      await request(app.getHttpServer())
+        .get(`/accounts/${address}/deferred`)
+        .expect(200)
+        .expect(response => {
+          expect(response.body).toEqual(mockDeferred);
+        });
+    });
+
+    it('should return an empty array when there are no deferred payments', async () => {
+      accountServiceMocks.getDeferredAccount.mockResolvedValue([]);
+
+      await request(app.getHttpServer())
+        .get(`/accounts/${address}/deferred`)
+        .expect(200)
+        .expect(response => {
+          expect(response.body).toEqual([]);
+        });
+    });
+
+    it('should return 400 Bad Request for an invalid address format', async () => {
+      const invalidAddress = "invalid_address";
+
+      await request(app.getHttpServer())
+        .get(`/accounts/${invalidAddress}/deferred`)
+        .expect(400)
+        .expect(response => {
+          expect(response.body.message).toContain("Validation failed for argument 'address' (a bech32 address is expected)");
+        });
+    });
+
+  });
+
   afterAll(async () => {
     await app.close();
   });
@@ -234,7 +355,7 @@ describe('AccountController', () => {
     let suffix = '';
 
     while (suffix.length < suffixLength) {
-      suffix += Math.random().toString(36).substr(2);
+      suffix += Math.random().toString(36).substring(2);
     }
 
     suffix = suffix.substring(0, suffixLength);
