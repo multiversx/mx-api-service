@@ -13,7 +13,6 @@ import { TransactionService } from "src/endpoints/transactions/transaction.servi
 import { TransferService } from "src/endpoints/transfers/transfer.service";
 import { WaitingListService } from "src/endpoints/waiting-list/waiting.list.service";
 import { AccountController } from "src/endpoints/accounts/account.controller";
-import { mockAccountService, mockApiConfigService, mockCollectionService, mockDelegationLegacyService, mockDelegationService, mockNftService, mockSmartContractResultService, mockStakeService, mockTokenService, mockTransactionService, mockTransferService, mockWaitingListService } from "src/test/integration/controllers/services.mock/account.services.mock";
 import { ApiConfigModule } from "src/common/api-config/api.config.module";
 import { AccountModule } from "src/endpoints/accounts/account.module";
 import { CollectionModule } from "src/endpoints/collections/collection.module";
@@ -30,7 +29,7 @@ import { QueryPagination } from "src/common/entities/query.pagination";
 import { ConfigModule } from "@nestjs/config";
 import { AccountDeferred } from "src/endpoints/accounts/entities/account.deferred";
 import request = require('supertest');
-
+import { mockAccountService, mockTokenService, mockNftService, mockDelegationLegacyService, mockWaitingListService, mockStakeService, mockTransactionService, mockSmartContractResultService, mockCollectionService, mockTransferService, mockApiConfigService, mockDelegationService } from "./services.mock/account.services.mock";
 
 describe('AccountController', () => {
   let app: INestApplication;
