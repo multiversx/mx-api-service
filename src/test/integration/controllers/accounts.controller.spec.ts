@@ -26,8 +26,10 @@ import { TokenModule } from "src/endpoints/tokens/token.module";
 import { TransactionModule } from "src/endpoints/transactions/transaction.module";
 import { TransferModule } from "src/endpoints/transfers/transfer.module";
 import { WaitingListModule } from "src/endpoints/waiting-list/waiting.list.module";
-import request = require('supertest');
+import { QueryPagination } from "src/common/entities/query.pagination";
 import { ConfigModule } from "@nestjs/config";
+import request = require('supertest');
+
 
 describe('AccountController', () => {
   let app: INestApplication;
@@ -71,6 +73,61 @@ describe('AccountController', () => {
 
     app = moduleFixture.createNestApplication();
     await app.init();
+  });
+
+  describe("GET /accounts", () => {
+    it('should return the default list of 25 accounts', async () => {
+      const defaultAccountsList = createMockAccountsList(25);
+      accountServiceMocks.getAccounts.mockReturnValue(defaultAccountsList);
+
+      await request(app.getHttpServer())
+        .get(`${path}`)
+        .expect(200)
+        .expect(response => {
+          expect(response.body.length).toBe(25);
+          expect(response.body).toEqual(defaultAccountsList);
+        });
+    });
+
+    it('should return a paginated list of accounts when "from" and "size" query parameters are provided', async () => {
+      const paginatedAccountsList = createMockAccountsList(10);
+      accountServiceMocks.getAccounts.mockReturnValue(paginatedAccountsList);
+
+      const queryPagination = new QueryPagination({ from: 5, size: 10 });
+      await request(app.getHttpServer())
+        .get(`${path}?from=${queryPagination.from}&size=${queryPagination.size}`)
+        .expect(200)
+        .expect(response => {
+          expect(response.body.length).toBe(10);
+          expect(response.body).toEqual(paginatedAccountsList);
+        });
+    });
+
+    it('should sort accounts by balance when "sort" query parameter is set to "balance"', async () => {
+      const sortedAccountsList = createMockAccountsList(10).sort((a, b) => parseInt(a.balance) - parseInt(b.balance));
+      accountServiceMocks.getAccounts.mockReturnValue(sortedAccountsList);
+
+      const sort = 'balance';
+      await request(app.getHttpServer())
+        .get(`${path}?sort=${sort}`)
+        .expect(200)
+        .expect(response => {
+          const isSortedByBalance = response.body.every(
+            (account: { balance: string; }, i: number, arr: { balance: string; }[]) => i === 0 || parseInt(arr[i - 1].balance) <= parseInt(account.balance));
+          expect(isSortedByBalance).toBeTruthy();
+        });
+    });
+
+    it('should return only smart contracts when "isSmartContract" query parameter is set to true', async () => {
+      const smartContractsList = createMockAccountsList(5, undefined, true);
+      accountServiceMocks.getAccounts.mockReturnValue(smartContractsList);
+      await request(app.getHttpServer())
+        .get(`${path}?isSmartContract=true`)
+        .expect(200)
+        .expect(response => {
+          expect(response.body.length).toBe(5);
+        });
+    });
   });
 
   describe("GET /accounts/count", () => {
@@ -136,9 +193,69 @@ describe('AccountController', () => {
     });
   });
 
+  describe("GET /accounts/c", () => {
+    it('should return total alternative accounts count', async () => {
+      accountServiceMocks.getAccountsCount.mockReturnValue(100);
+
+      await request(app.getHttpServer())
+        .get(`${path}/c`)
+        .expect(200)
+        .expect(response => {
+          expect(+response.text).toStrictEqual(100);
+        });
+    });
+  });
+
   afterAll(async () => {
     await app.close();
   });
+
+  function createMockAccountsList(numberOfAccounts: number, ownerAddress = null, includeSmartContracts = false) {
+    return Array.from({ length: numberOfAccounts }, (_, index) => {
+      const isSmartContractAddress = includeSmartContracts && Math.random() < 0.5;
+
+      return {
+        address: ownerAddress || (isSmartContractAddress ? generateMockSmartContractAddress() : generateMockAddress()),
+        balance: generateRandomBalance(),
+        nonce: Math.floor(Math.random() * 100),
+        timestamp: Math.floor(Date.now() / 1000) - index * 1000,
+        shard: Math.floor(Math.random() * 4),
+        ownerAddress: ownerAddress || generateMockAddress(),
+        ownerAssets: undefined,
+        assets: undefined,
+      };
+    });
+  }
+
+  function generateMockSmartContractAddress() {
+    const prefix = 'erd1';
+    const middle = 'q'.repeat(38);
+    const suffixLength = 62 - prefix.length - middle.length;
+    let suffix = '';
+
+    while (suffix.length < suffixLength) {
+      suffix += Math.random().toString(36).substr(2);
+    }
+
+    suffix = suffix.substring(0, suffixLength);
+
+    return `${prefix}${middle}${suffix}`;
+  }
+
+  function generateRandomBalance() {
+    return (Math.floor(Math.random() * 1000000) + 100000).toString();
+  }
+
+  function generateMockAddress() {
+    const desiredLength = 62 - 'erd1'.length;
+    let address = 'erd1';
+
+    while (address.length < desiredLength + 'erd1'.length) {
+      address += Math.random().toString(36).substring(2);
+    }
+
+    return address.substring(0, desiredLength + 'erd1'.length);
+  }
 });
 
 
