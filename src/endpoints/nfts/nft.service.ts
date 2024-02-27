@@ -458,7 +458,7 @@ export class NftService {
 
     await this.batchProcessNfts(nfts, fields);
 
-    if (this.apiConfigService.isNftExtendedAttributesEnabled() && (!fields || fields.includesSome(['score', 'rank', 'isNsfw', 'nft_scamInfoType', 'nft_scamInfoDescription']))) {
+    if (this.apiConfigService.isNftExtendedAttributesEnabled() && (!fields || fields.includesSome(['score', 'rank', 'isNsfw', 'scamInfo']))) {
       const internalNfts = await this.getNftsInternalByIdentifiers(nfts.map(x => x.identifier));
       const indexedInternalNfts = internalNfts.toRecord<Nft>(x => x.identifier);
       for (const nft of nfts) {
@@ -468,16 +468,17 @@ export class NftService {
           nft.rank = indexedNft.rank;
           nft.isNsfw = indexedNft.isNsfw;
 
-          if (indexedNft.scamInfo) {
-            if (indexedNft.scamInfo.type && indexedNft.scamInfo.info) {
-              nft.scamInfo = new ScamInfo();
-              nft.scamInfo.type = indexedNft.scamInfo.type;
-              nft.scamInfo.info = indexedNft.scamInfo.info;
-            }
+          const scamInfo = indexedNft.scamInfo;
+          if (scamInfo) {
+            nft.scamInfo = new ScamInfo({
+              type: scamInfo.type,
+              info: scamInfo.info,
+            });
           }
         }
       }
     }
+
     nfts = this.applyScamFilter(nfts, filter);
 
     for (const nft of nfts) {
