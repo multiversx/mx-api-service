@@ -42,15 +42,18 @@ describe("BlockController", () => {
 
     it('should filter blocks by shard', async () => {
       const shard = 1;
-      const filteredBlocksList = createMockBlocksList(5).map(block => ({ ...block, shard }));
+      const filteredBlocksList = createMockBlocksList(5);
       blockServiceMock.getBlocks.mockResolvedValue(filteredBlocksList);
 
       await request(app.getHttpServer())
         .get(`${path}?shard=${shard}`)
-        .expect(200)
-        .expect(response => {
-          expect(response.body.every((block: { shard: number; }) => block.shard === shard)).toBeTruthy();
-        });
+        .expect(200);
+
+      expect(blockServiceMock.getBlocks).toHaveBeenCalledWith(
+        expect.objectContaining({ shard: 1 }),
+        expect.objectContaining({ from: 0, size: 25 }),
+        undefined
+      );
     });
 
     it('should paginate the blocks list', async () => {

@@ -103,22 +103,24 @@ describe('AccountController', () => {
         });
     });
 
-    it('should sort accounts by balance when "sort" query parameter is set to "balance"', async () => {
+    it('should sort accounts by balance when sort query parameter is set to balance', async () => {
       const sortedAccountsList = createMockAccountsList(10).sort((a, b) => parseInt(a.balance) - parseInt(b.balance));
       accountServiceMocks.getAccounts.mockReturnValue(sortedAccountsList);
 
       const sort = 'balance';
       await request(app.getHttpServer())
-        .get(`${path}?sort=${sort}`)
-        .expect(200)
-        .expect(response => {
-          const isSortedByBalance = response.body.every(
-            (account: { balance: string; }, i: number, arr: { balance: string; }[]) => i === 0 || parseInt(arr[i - 1].balance) <= parseInt(account.balance));
-          expect(isSortedByBalance).toBeTruthy();
-        });
+        .get(`/accounts?sort=${sort}`)
+        .expect(200);
+
+      expect(accountServiceMocks.getAccounts).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({
+          sort: 'balance',
+        })
+      );
     });
 
-    it('should return only smart contracts when "isSmartContract" query parameter is set to true', async () => {
+    it('should return only smart contracts when isSmartContract query parameter is set to true', async () => {
       const smartContractsList = createMockAccountsList(5, undefined, true);
       accountServiceMocks.getAccounts.mockReturnValue(smartContractsList);
       await request(app.getHttpServer())
@@ -130,7 +132,7 @@ describe('AccountController', () => {
     });
   });
 
-  describe("GET /accounts/count", () => {
+  describe('GET /accounts/count', () => {
     it('should return total accounts count', async () => {
       accountServiceMocks.getAccountsCount.mockReturnValue(100);
 
@@ -193,7 +195,7 @@ describe('AccountController', () => {
     });
   });
 
-  describe("GET /accounts/c", () => {
+  describe('GET /accounts/c', () => {
     it('should return total alternative accounts count', async () => {
       accountServiceMocks.getAccountsCount.mockReturnValue(100);
 
@@ -206,7 +208,7 @@ describe('AccountController', () => {
     });
   });
 
-  describe("GET /accounts/:address", () => {
+  describe('GET /accounts/:address', () => {
     const mockAccount = {
       address: 'erd1vtlpm6sxxvmgt43ldsrpswjrfcsudmradylpxn9jkp66ra3rkz4qruzvfw',
       balance: '707809',
@@ -258,6 +260,8 @@ describe('AccountController', () => {
         .expect(response => {
           expect(response.body).toEqual(mockAccountWithGuardianInfo);
           expect(response.body.isGuarded).toStrictEqual(true);
+          expect(accountServiceMocks.getAccount).toHaveBeenCalledWith(
+            expect.any(String), undefined, true);
         });
     });
 
