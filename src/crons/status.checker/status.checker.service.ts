@@ -26,14 +26,6 @@ import { ApiConfigService } from 'src/common/api-config/api.config.service';
 @Injectable()
 export class StatusCheckerService {
   private readonly logger = new OriginLogger(StatusCheckerService.name);
-  private tokenCountThreshold: number = 0;
-  private nodesCountThreshold: number = 0;
-  private providersCountThreshold: number = 0;
-  private tokenSupplyThreshold: number = 0;
-  private tokenAssetsThreshold: number = 0;
-  private tokenAccountsThreshold: number = 0;
-  private tokenTransactionsThreshold: number = 0;
-  private nodeValidatorsThreshold: number = 0;
 
   constructor(
     private readonly elasticIndexerService: ElasticIndexerService,
@@ -50,52 +42,7 @@ export class StatusCheckerService {
     private readonly mexEconomicService: MexEconomicsService,
     private readonly economicService: NetworkService,
     private readonly apiConfigService: ApiConfigService
-  ) {
-    this.initializeThresholds();
-  }
-
-  private initializeThresholds() {
-    switch (this.apiConfigService.getNetwork()) {
-      case 'mainnet':
-        this.tokenCountThreshold = 1000;
-        this.nodesCountThreshold = 5000;
-        this.providersCountThreshold = 150;
-        this.tokenSupplyThreshold = 100;
-        this.tokenAssetsThreshold = 100;
-        this.tokenAccountsThreshold = 1000;
-        this.tokenTransactionsThreshold = 1000;
-        this.nodeValidatorsThreshold = 3260;
-        break;
-      case 'devnet':
-        this.tokenCountThreshold = 500;
-        this.nodesCountThreshold = 3000;
-        this.providersCountThreshold = 10;
-        this.tokenSupplyThreshold = 20;
-        this.tokenAssetsThreshold = 20;
-        this.tokenAccountsThreshold = 500;
-        this.tokenTransactionsThreshold = 500;
-        this.nodeValidatorsThreshold = 300;
-        break;
-      case 'testnet':
-        this.tokenCountThreshold = 100;
-        this.nodesCountThreshold = 300;
-        this.providersCountThreshold = 30;
-        this.tokenSupplyThreshold = 1;
-        this.tokenAssetsThreshold = 1;
-        this.tokenAccountsThreshold = 200;
-        this.nodeValidatorsThreshold = 3500;
-        break;
-      default:
-        this.tokenCountThreshold = 0;
-        this.nodesCountThreshold = 0;
-        this.providersCountThreshold = 0;
-        this.tokenSupplyThreshold = 0;
-        this.tokenAssetsThreshold = 0;
-        this.tokenAccountsThreshold = 0;
-        this.tokenTransactionsThreshold = 0;
-        this.nodeValidatorsThreshold = 0;
-    }
-  }
+  ) { }
 
   @Cron(CronExpression.EVERY_MINUTE)
   async handleAccountsCount() {
@@ -269,7 +216,7 @@ export class StatusCheckerService {
   async checkTokenCount() {
     await Locker.lock('Status Checker: Check token count', async () => {
       const tokenCount = await this.tokenService.getTokenCount({});
-      if (tokenCount > this.tokenCountThreshold) {
+      if (tokenCount > this.apiConfigService.getStatusCheckerTokenCountThreshold()) {
         MetricsService.setClusterComparisonValue(`check_token_count:success`, 1);
       } else {
         this.logger.error(`Invalid token count '${tokenCount}'`);
@@ -282,7 +229,7 @@ export class StatusCheckerService {
   async checkNodeCount() {
     await Locker.lock('Status Checker: Check node count', async () => {
       const allNodes = await this.nodeService.getAllNodes();
-      if (allNodes.length > this.nodesCountThreshold) {
+      if (allNodes.length > this.apiConfigService.getStatusCheckerNodesCountThreshold()) {
         MetricsService.setClusterComparisonValue(`check_node_count:success`, 1);
       } else {
         this.logger.error(`Invalid node count '${allNodes.length}'`);
@@ -295,7 +242,7 @@ export class StatusCheckerService {
   async checkProviderCount() {
     await Locker.lock('Status Checker: Check provider count', async () => {
       const providers = await this.providerService.getAllProviders();
-      if (providers.length > this.providersCountThreshold) {
+      if (providers.length > this.apiConfigService.getStatusCheckerProvidersCountThreshold()) {
         MetricsService.setClusterComparisonValue(`check_provider_count:success`, 1);
       } else {
         MetricsService.setClusterComparisonValue(`check_provider_count:error`, 1);
@@ -310,7 +257,7 @@ export class StatusCheckerService {
       const tokens = await this.tokenService.getTokens(new QueryPagination({ size: 1000 }), new TokenFilter());
 
       const tokensWithSupply = tokens.filter(token => token.supply);
-      if (tokensWithSupply.length > this.tokenSupplyThreshold) {
+      if (tokensWithSupply.length > this.apiConfigService.getStatusCheckerTokenSupplyCountThreshold()) {
         MetricsService.setClusterComparisonValue(`check_token_supply:success`, 1);
       } else {
         MetricsService.setClusterComparisonValue(`check_token_supply:error`, 1);
@@ -325,7 +272,7 @@ export class StatusCheckerService {
       const tokens = await this.tokenService.getTokens(new QueryPagination({ size: 1000 }), new TokenFilter());
 
       const tokensWithAssets = tokens.filter(token => token.assets);
-      if (tokensWithAssets.length > this.tokenAssetsThreshold) {
+      if (tokensWithAssets.length > this.apiConfigService.getStatusCheckerTokenAssetsCountThreshold()) {
         MetricsService.setClusterComparisonValue(`check_token_assets:success`, 1);
       } else {
         MetricsService.setClusterComparisonValue(`check_token_assets:error`, 1);
@@ -341,7 +288,7 @@ export class StatusCheckerService {
       const tokens = await this.tokenService.getTokens(new QueryPagination({ size: 1000 }), new TokenFilter());
 
       const tokensWithAccounts = tokens.filter(token => token.accounts);
-      if (tokensWithAccounts.length > this.tokenAccountsThreshold) {
+      if (tokensWithAccounts.length > this.apiConfigService.getStatusCheckerTokenAccountsCountThreshold()) {
         MetricsService.setClusterComparisonValue(`check_token_accounts:success`, 1);
       } else {
         MetricsService.setClusterComparisonValue(`check_token_accounts:error`, 1);
@@ -357,7 +304,7 @@ export class StatusCheckerService {
       const tokens = await this.tokenService.getTokens(new QueryPagination({ size: 1000 }), new TokenFilter());
 
       const tokensWithTransactions = tokens.filter(token => token.transactions);
-      if (tokensWithTransactions.length >= this.tokenTransactionsThreshold) {
+      if (tokensWithTransactions.length >= this.apiConfigService.getStatusCheckerTokenTransactionsCountThreshold()) {
         MetricsService.setClusterComparisonValue(`check_token_transactions:success`, 1);
       } else {
         MetricsService.setClusterComparisonValue(`check_token_transactions:error`, 1);
@@ -373,7 +320,7 @@ export class StatusCheckerService {
       const nodes = await this.nodeService.getAllNodes();
 
       const validators = nodes.filter(node => node.type === NodeType.validator);
-      if (validators.length >= this.nodeValidatorsThreshold) {
+      if (validators.length >= this.apiConfigService.getStatusCheckerNodeValidatorsCountThreshold()) {
         MetricsService.setClusterComparisonValue(`check_validator_node_count:success`, 1);
       } else {
         MetricsService.setClusterComparisonValue(`check_validator_node_count:error`, 1);

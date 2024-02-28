@@ -810,4 +810,36 @@ export class ApiConfigService {
 
     return deepHistoryUrl;
   }
+
+  getStatusCheckerTokenCountThreshold(): number {
+    return this.configService.get<number>('statusCheckerThreshold.tokenCount') ?? 0;
+  }
+
+  getStatusCheckerNodesCountThreshold(): number {
+    return this.configService.get<number>('statusCheckerThreshold.nodesCount') ?? 0;
+  }
+
+  getStatusCheckerProvidersCountThreshold(): number {
+    return this.configService.get<number>('statusCheckerThreshold.providersCount') ?? 0;
+  }
+
+  getStatusCheckerTokenSupplyCountThreshold(): number {
+    return this.configService.get<number>('statusCheckerThreshold.tokenSupplyCount') ?? 0;
+  }
+
+  getStatusCheckerTokenAssetsCountThreshold(): number {
+    return this.configService.get<number>('statusCheckerThreshold.tokenAssets') ?? 0;
+  }
+
+  getStatusCheckerTokenAccountsCountThreshold(): number {
+    return this.configService.get<number>('statusCheckerThreshold.tokenAccounts') ?? 0;
+  }
+
+  getStatusCheckerTokenTransactionsCountThreshold(): number {
+    return this.configService.get<number>('statusCheckerThreshold.tokenTransactions') ?? 0;
+  }
+
+  getStatusCheckerNodeValidatorsCountThreshold(): number {
+    return this.configService.get<number>('statusCheckerThreshold.nodeValidators') ?? 0;
+  }
 }

@@ -130,3 +130,12 @@ inflation:
 nftProcess:
   parallelism: 1
   maxRetries: 3
+statusCheckerThreshold:
+  tokenCount: 1000
+  nodesCount: 5000
+  providersCount: 150
+  tokenSupplyCount: 100
+  tokenAssets: 100
+  tokenAccounts: 1000
+  tokenTransactions: 1000
+  nodeValidators: 3260
