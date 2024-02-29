@@ -1,25 +1,24 @@
-import { forwardRef, Inject, Injectable } from "@nestjs/common";
-import { Node } from "src/endpoints/nodes/entities/node";
-import { NodeType } from "./entities/node.type";
-import { NodeStatus } from "./entities/node.status";
-import { Queue } from "./entities/queue";
-import { VmQueryService } from "src/endpoints/vm.query/vm.query.service";
-import { ApiConfigService } from "src/common/api-config/api.config.service";
-import { NodeFilter } from "./entities/node.filter";
-import { StakeService } from "../stake/stake.service";
-import { SortOrder } from "src/common/entities/sort.order";
-import { QueryPagination } from "src/common/entities/query.pagination";
-import { BlockService } from "../blocks/block.service";
-import { GatewayService } from "src/common/gateway/gateway.service";
-import { CacheInfo } from "src/utils/cache.info";
-import { Stake } from "../stake/entities/stake";
-import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
-import { Auction } from "src/common/gateway/entities/auction";
-import { AddressUtils, OriginLogger } from "@multiversx/sdk-nestjs-common";
-import { CacheService } from "@multiversx/sdk-nestjs-cache";
-import { NodeSort } from "./entities/node.sort";
-import { ProtocolService } from "src/common/protocol/protocol.service";
-import { KeysService } from "../keys/keys.service";
+import { CacheService } from '@multiversx/sdk-nestjs-cache';
+import { AddressUtils, OriginLogger } from '@multiversx/sdk-nestjs-common';
+import { ApiService } from '@multiversx/sdk-nestjs-http';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
+import { ApiConfigService } from 'src/common/api-config/api.config.service';
+import { QueryPagination } from 'src/common/entities/query.pagination';
+import { SortOrder } from 'src/common/entities/sort.order';
+import { Auction } from 'src/common/gateway/entities/auction';
+import { GatewayComponentRequest } from 'src/common/gateway/entities/gateway.component.request';
+import { GatewayService } from 'src/common/gateway/gateway.service';
+import { ProtocolService } from 'src/common/protocol/protocol.service';
+import { Node } from 'src/endpoints/nodes/entities/node';
+import { VmQueryService } from 'src/endpoints/vm.query/vm.query.service';
+import { CacheInfo } from 'src/utils/cache.info';
+
+import { BlockService } from '../blocks/block.service';
+import { NodeFilter } from './entities/node.filter';
+import { NodeSort } from './entities/node.sort';
+import { NodeStatus } from './entities/node.status';
+import { NodeType } from './entities/node.type';
+import { Queue } from './entities/queue';
 
 @Injectable()
 export class NodeService {
@@ -30,12 +29,10 @@ export class NodeService {
     private readonly vmQueryService: VmQueryService,
     private readonly apiConfigService: ApiConfigService,
     private readonly cacheService: CacheService,
-    @Inject(forwardRef(() => StakeService))
-    private readonly stakeService: StakeService,
     @Inject(forwardRef(() => BlockService))
     private readonly blockService: BlockService,
     private readonly protocolService: ProtocolService,
-    private readonly keysService: KeysService
+    private readonly apiService: ApiService,
   ) { }
 
   private getIssues(node: Node, version: string | undefined): string[] {
@@ -247,73 +244,6 @@ export class NodeService {
     }
   }
 
-  private async applyNodeIdentities(nodes: Node[]) {
-    for (const node of nodes) {
-      if (node.status !== NodeStatus.inactive) {
-        node.identity = await this.cacheService.getRemote<string>(CacheInfo.ConfirmedIdentity(node.bls).key);
-      }
-    }
-  }
-
-  private async applyNodeOwners(nodes: Node[]) {
-    const blses = nodes.filter(x => x.type === NodeType.validator).map(node => node.bls);
-    const epoch = await this.blockService.getCurrentEpoch();
-    const owners = await this.getOwners(blses, epoch);
-
-    for (const [index, bls] of blses.entries()) {
-      const node = nodes.find(node => node.bls === bls);
-      if (node) {
-        node.owner = owners[index];
-      }
-    }
-  }
-
-  private async applyNodeProviders(nodes: Node[]) {
-    for (const node of nodes) {
-      if (node.type === NodeType.validator) {
-        const providerOwner = await this.cacheService.getRemote<string>(CacheInfo.ProviderOwner(node.owner).key);
-        if (providerOwner) {
-          node.provider = node.owner;
-          node.owner = providerOwner;
-        }
-      }
-    }
-  }
-
-  private async applyNodeUnbondingPeriods(nodes: Node[]): Promise<void> {
-    const leavingNodes = nodes.filter(node => node.status === NodeStatus.leaving || node.status === NodeStatus.inactive);
-
-    await Promise.all(leavingNodes.map(async node => {
-      const keyUnbondPeriod = await this.keysService.getKeyUnbondPeriod(node.bls);
-      node.remainingUnBondPeriod = keyUnbondPeriod?.remainingUnBondPeriod;
-    }));
-  }
-
-  private async applyNodeStakeInfo(nodes: Node[]) {
-    let addresses = nodes
-      .filter(({ type }) => type === NodeType.validator)
-      .map(({ owner, provider }) => (provider ? provider : owner))
-      .filter(x => x);
-
-    addresses = addresses.distinct();
-
-    const stakes = await this.stakeService.getStakes(addresses);
-
-    for (const node of nodes) {
-      if (node.type === 'validator') {
-        let stake = stakes.find(({ bls }) => bls === node.bls) ?? new Stake();
-
-        if (node.status === "jailed") {
-          stake = stakes.find(({ address }) => node.provider ? address === node.provider : address === node.owner) ?? new Stake();
-        }
-
-        node.stake = stake.stake;
-        node.topUp = stake.topUp;
-        node.locked = stake.locked;
-      }
-    }
-  }
-
   async getHeartbeatValidatorsAndQueue(): Promise<Node[]> {
     const nodes = await this.getHeartbeatAndValidators();
 
@@ -325,22 +255,9 @@ export class NodeService {
   }
 
   async getAllNodesRaw(): Promise<Node[]> {
-    const nodes = await this.getHeartbeatValidatorsAndQueue();
-
-    await this.applyNodeIdentities(nodes);
-
-    await this.applyNodeOwners(nodes);
-
-    await this.applyNodeProviders(nodes);
-
-    await this.applyNodeStakeInfo(nodes);
-
-    if (this.apiConfigService.isStakingV4Enabled()) {
-      const auctions = await this.gatewayService.getValidatorAuctions();
-      this.processAuctions(nodes, auctions);
-    }
-
-    await this.applyNodeUnbondingPeriods(nodes);
+    const { data: nodes } = await this.apiService.get(
+      `${this.apiConfigService.getNodesApiServiceUrl()}/nodes`
+    );
 
     return nodes;
   }

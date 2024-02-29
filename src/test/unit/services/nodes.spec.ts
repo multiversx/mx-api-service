@@ -1,22 +1,23 @@
-import { CacheService } from "@multiversx/sdk-nestjs-cache";
-import { Test } from "@nestjs/testing";
-import { ApiConfigService } from "src/common/api-config/api.config.service";
-import { GatewayService } from "src/common/gateway/gateway.service";
-import { ProtocolService } from "src/common/protocol/protocol.service";
-import { BlockService } from "src/endpoints/blocks/block.service";
-import { NodeService } from "src/endpoints/nodes/node.service";
-import { ProviderService } from "src/endpoints/providers/provider.service";
-import { StakeService } from "src/endpoints/stake/stake.service";
-import { VmQueryService } from "src/endpoints/vm.query/vm.query.service";
-import { CacheInfo } from "src/utils/cache.info";
-import { NodeFilter } from "src/endpoints/nodes/entities/node.filter";
-import { NodeStatus } from "src/endpoints/nodes/entities/node.status";
-import { NodeType } from "src/endpoints/nodes/entities/node.type";
-import { QueryPagination } from "src/common/entities/query.pagination";
-import { NodeSort } from "src/endpoints/nodes/entities/node.sort";
-import { KeysService } from "src/endpoints/keys/keys.service";
+import { CacheService } from '@multiversx/sdk-nestjs-cache';
+import { ApiService } from '@multiversx/sdk-nestjs-http';
+import { Test } from '@nestjs/testing';
 import * as fs from 'fs';
 import * as path from 'path';
+import { ApiConfigService } from 'src/common/api-config/api.config.service';
+import { QueryPagination } from 'src/common/entities/query.pagination';
+import { GatewayService } from 'src/common/gateway/gateway.service';
+import { ProtocolService } from 'src/common/protocol/protocol.service';
+import { BlockService } from 'src/endpoints/blocks/block.service';
+import { KeysService } from 'src/endpoints/keys/keys.service';
+import { NodeFilter } from 'src/endpoints/nodes/entities/node.filter';
+import { NodeSort } from 'src/endpoints/nodes/entities/node.sort';
+import { NodeStatus } from 'src/endpoints/nodes/entities/node.status';
+import { NodeType } from 'src/endpoints/nodes/entities/node.type';
+import { NodeService } from 'src/endpoints/nodes/node.service';
+import { ProviderService } from 'src/endpoints/providers/provider.service';
+import { StakeService } from 'src/endpoints/stake/stake.service';
+import { VmQueryService } from 'src/endpoints/vm.query/vm.query.service';
+import { CacheInfo } from 'src/utils/cache.info';
 
 describe('NodeService', () => {
   let nodeService: NodeService;
@@ -94,6 +95,12 @@ describe('NodeService', () => {
             getKeyUnbondPeriod: jest.fn(),
           },
         },
+        {
+          provide: ApiService,
+          useValue: {
+            get: jest.fn(),
+          },
+        }
 
       ],
     }).compile();

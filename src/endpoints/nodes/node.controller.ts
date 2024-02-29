@@ -1,15 +1,22 @@
-import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Param, Query } from "@nestjs/common";
-import { ApiExcludeEndpoint, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from "@nestjs/swagger";
-import { NodeService } from "src/endpoints/nodes/node.service";
-import { Node } from "src/endpoints/nodes/entities/node";
-import { NodeType } from "./entities/node.type";
-import { NodeStatus } from "./entities/node.status";
-import { SortOrder } from "src/common/entities/sort.order";
-import { NodeSort } from "./entities/node.sort";
-import { SortNodes } from "src/common/entities/sort.nodes";
-import { NodeFilter } from "./entities/node.filter";
-import { QueryPagination } from "src/common/entities/query.pagination";
-import { ParseAddressPipe, ParseBlsHashPipe, ParseBoolPipe, ParseEnumPipe, ParseIntPipe } from "@multiversx/sdk-nestjs-common";
+import {
+  ParseAddressPipe,
+  ParseBlsHashPipe,
+  ParseBoolPipe,
+  ParseEnumPipe,
+  ParseIntPipe,
+} from '@multiversx/sdk-nestjs-common';
+import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Param, Query } from '@nestjs/common';
+import { ApiExcludeEndpoint, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { QueryPagination } from 'src/common/entities/query.pagination';
+import { SortNodes } from 'src/common/entities/sort.nodes';
+import { SortOrder } from 'src/common/entities/sort.order';
+import { Node } from 'src/endpoints/nodes/entities/node';
+
+import { NodeFilter } from './entities/node.filter';
+import { NodeSort } from './entities/node.sort';
+import { NodeStatus } from './entities/node.status';
+import { NodeType } from './entities/node.type';
+import { NodeService } from './node.service';
 
 @Controller()
 @ApiTags('nodes')

@@ -1,6 +1,7 @@
 import { Constants } from '@multiversx/sdk-nestjs-common';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+
 import { DatabaseConnectionOptions } from '../persistence/entities/connection.options';
 
 @Injectable()
@@ -798,6 +799,15 @@ export class ApiConfigService {
     const serviceUrl = this.configService.get<string>('features.dataApi.serviceUrl');
     if (!serviceUrl) {
       throw new Error('No data-api service url present');
+    }
+
+    return serviceUrl;
+  }
+
+  getNodesApiServiceUrl(): string {
+    const serviceUrl = this.configService.get<string>('features.nodesApi.serviceUrl');
+    if (!serviceUrl) {
+      throw new Error('No nodes-api service url present');
     }
 
     return serviceUrl;
