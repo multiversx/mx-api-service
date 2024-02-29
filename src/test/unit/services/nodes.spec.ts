@@ -100,7 +100,7 @@ describe('NodeService', () => {
           useValue: {
             get: jest.fn(),
           },
-        }
+        },
 
       ],
     }).compile();
