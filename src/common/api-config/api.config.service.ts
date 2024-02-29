@@ -3,6 +3,7 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { DatabaseConnectionOptions } from '../persistence/entities/connection.options';
 import { LogTopic } from '@elrondnetwork/transaction-processor';
+import { StatusCheckerThresholds } from './entities/status-checker-thresholds';
 
 @Injectable()
 export class ApiConfigService {
@@ -275,7 +276,12 @@ export class ApiConfigService {
   }
 
   getIsApiStatusCheckerActive(): boolean {
-    return this.configService.get<boolean>('cron.statusChecker') ?? false;
+    return this.configService.get<boolean>('features.statusChecker.enabled') ?? this.configService.get<boolean>('cron.statusChecker') ?? false;
+  }
+
+  getStatusCheckerThresholds(): StatusCheckerThresholds {
+    const thresholds = this.configService.get<StatusCheckerThresholds>('features.statusChecker.thresholds');
+    return new StatusCheckerThresholds(thresholds);
   }
 
   getIsElasticUpdaterCronActive(): boolean {
@@ -809,37 +815,5 @@ export class ApiConfigService {
     }
 
     return deepHistoryUrl;
-  }
-
-  getStatusCheckerTokenCountThreshold(): number {
-    return this.configService.get<number>('statusCheckerThreshold.tokenCount') ?? 0;
-  }
-
-  getStatusCheckerNodesCountThreshold(): number {
-    return this.configService.get<number>('statusCheckerThreshold.nodesCount') ?? 0;
-  }
-
-  getStatusCheckerProvidersCountThreshold(): number {
-    return this.configService.get<number>('statusCheckerThreshold.providersCount') ?? 0;
-  }
-
-  getStatusCheckerTokenSupplyCountThreshold(): number {
-    return this.configService.get<number>('statusCheckerThreshold.tokenSupplyCount') ?? 0;
-  }
-
-  getStatusCheckerTokenAssetsCountThreshold(): number {
-    return this.configService.get<number>('statusCheckerThreshold.tokenAssets') ?? 0;
-  }
-
-  getStatusCheckerTokenAccountsCountThreshold(): number {
-    return this.configService.get<number>('statusCheckerThreshold.tokenAccounts') ?? 0;
-  }
-
-  getStatusCheckerTokenTransactionsCountThreshold(): number {
-    return this.configService.get<number>('statusCheckerThreshold.tokenTransactions') ?? 0;
-  }
-
-  getStatusCheckerNodeValidatorsCountThreshold(): number {
-    return this.configService.get<number>('statusCheckerThreshold.nodeValidators') ?? 0;
   }
 }
