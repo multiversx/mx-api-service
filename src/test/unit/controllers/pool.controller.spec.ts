@@ -28,7 +28,7 @@ describe('PoolController', () => {
   });
 
   describe('GET /pool', () => {
-    it('should return a list o pool transactions', async () => {
+    it('should return a list of pool transactions', async () => {
       poolServiceMocks.getPool.mockReturnValue([]);
 
       await request(app.getHttpServer())
@@ -42,7 +42,7 @@ describe('PoolController', () => {
       );
     });
 
-    it('should return a list o pool transactions for a given receiver', async () => {
+    it('should return a list of pool transactions for a given receiver', async () => {
       poolServiceMocks.getPool.mockReturnValue([]);
       const receiver = 'erd1qga7ze0l03chfgru0a32wxqf2226nzrxnyhzer9lmudqhjgy7ycqjjyknz';
 
@@ -57,7 +57,7 @@ describe('PoolController', () => {
       );
     });
 
-    it('should return a list o pool transactions for a given sender', async () => {
+    it('should return a list of pool transactions for a given sender', async () => {
       poolServiceMocks.getPool.mockReturnValue([]);
       const sender = 'erd1qga7ze0l03chfgru0a32wxqf2226nzrxnyhzer9lmudqhjgy7ycqjjyknz';
 
@@ -72,7 +72,7 @@ describe('PoolController', () => {
       );
     });
 
-    it('should return a list o pool transactions of type SmartContractResult', async () => {
+    it('should return a list of pool transactions of type SmartContractResult', async () => {
       poolServiceMocks.getPool.mockReturnValue([]);
 
       await request(app.getHttpServer())
