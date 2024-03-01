@@ -5,6 +5,7 @@ import { TagService } from "src/endpoints/nfttags/tag.service";
 import request = require('supertest');
 import { TagController } from "src/endpoints/nfttags/tag.controller";
 import { TagModule } from "src/endpoints/nfttags/tag.module";
+import { QueryPagination } from "src/common/entities/query.pagination";
 
 describe('TagController', () => {
   let app: INestApplication;
@@ -39,6 +40,9 @@ describe('TagController', () => {
       .get(`${path}?${params}`)
       .expect(200)
       .expect(mockTags);
+
+    expect(tagService.getNftTags).toHaveBeenCalledWith(
+      new QueryPagination({ from: 0, size: 2 }), undefined);
   });
 
   it(`/GET tags/count`, async () => {
@@ -60,6 +64,8 @@ describe('TagController', () => {
       .get(`${path}/Art`)
       .expect(200)
       .expect(mockTag);
+
+    expect(tagService.getNftTag).toHaveBeenCalledWith("Art");
   });
 
   it(`/GET tags/:tag - not found`, async () => {
