@@ -202,22 +202,232 @@ describe('CollectionController', () => {
     });
   });
 
-  function createCollectionFilter(options: CollectionFilter = {}) {
-    return new CollectionFilter({
-      search: options.search,
-      type: options.type,
-      identifiers: options.identifiers,
-      canCreate: options.canCreate,
-      before: options.before,
-      after: options.after,
-      canBurn: options.canBurn,
-      canAddQuantity: options.canAddQuantity,
-      canUpdateAttributes: options.canUpdateAttributes,
-      canAddUri: options.canAddUri,
-      canTransferRole: options.canTransferRole,
-      excludeMetaESDT: options.excludeMetaESDT,
-      sort: options.sort,
-      order: options.order,
+  describe('GET /collections/count', () => {
+    it('should return total collections count', async () => {
+      collectionServiceMocks.getNftCollectionCount.mockReturnValue(5000);
+      await request(app.getHttpServer())
+        .get(`${path}/count`)
+        .expect(200)
+        .expect(response => {
+          expect(+response.text).toStrictEqual(5000);
+        });
+
+      expect(collectionServiceMocks.getNftCollectionCount).toHaveBeenCalled();
+      expect(collectionServiceMocks.getNftCollectionCount).toHaveBeenCalledWith(
+        createCollectionFilter({})
+      );
     });
-  }
+
+    it('should return total collection count with search filter applied', async () => {
+      collectionServiceMocks.getNftCollectionCount.mockReturnValue(2);
+      const search = 'Test';
+
+      await request(app.getHttpServer())
+        .get(`${path}/count?search=${search}`)
+        .expect(200);
+
+      expect(collectionServiceMocks.getNftCollectionCount).toHaveBeenCalled();
+      expect(collectionServiceMocks.getNftCollectionCount).toHaveBeenCalledWith(
+        createCollectionFilter({ search })
+      );
+    });
+
+    it('should return total collection count with type filter applied', async () => {
+      collectionServiceMocks.getNftCollectionCount.mockReturnValue(2500);
+      const type = [NftType.NonFungibleESDT];
+
+      await request(app.getHttpServer())
+        .get(`${path}/count?type=${type}`)
+        .expect(200);
+
+      expect(collectionServiceMocks.getNftCollectionCount).toHaveBeenCalled();
+      expect(collectionServiceMocks.getNftCollectionCount).toHaveBeenCalledWith(
+        createCollectionFilter({ type })
+      );
+    });
+
+    it('should return total collection count with canCreate filter applied', async () => {
+      collectionServiceMocks.getNftCollectionCount.mockReturnValue(10);
+      const canCreate = 'erd1qga7ze0l03chfgru0a32wxqf2226nzrxnyhzer9lmudqhjgy7ycqjjyknz';
+
+      await request(app.getHttpServer())
+        .get(`${path}/count?canCreate=${canCreate}`)
+        .expect(200);
+
+      expect(collectionServiceMocks.getNftCollectionCount).toHaveBeenCalled();
+      expect(collectionServiceMocks.getNftCollectionCount).toHaveBeenCalledWith(
+        createCollectionFilter({ canCreate })
+      );
+    });
+
+    it('should return total collection count with before filter applied', async () => {
+      collectionServiceMocks.getNftCollectionCount.mockReturnValue(20);
+      const before = 1694012940;
+
+      await request(app.getHttpServer())
+        .get(`${path}/count?before=${before}`)
+        .expect(200);
+
+      expect(collectionServiceMocks.getNftCollectionCount).toHaveBeenCalled();
+      expect(collectionServiceMocks.getNftCollectionCount).toHaveBeenCalledWith(
+        createCollectionFilter({ before })
+      );
+    });
+
+    it('should return total collection count with after filter applied', async () => {
+      collectionServiceMocks.getNftCollectionCount.mockReturnValue(5);
+      const after = 1694012940;
+
+      await request(app.getHttpServer())
+        .get(`${path}/count?after=${after}`)
+        .expect(200);
+
+      expect(collectionServiceMocks.getNftCollectionCount).toHaveBeenCalled();
+      expect(collectionServiceMocks.getNftCollectionCount).toHaveBeenCalledWith(
+        createCollectionFilter({ after })
+      );
+    });
+
+    it('should return total collection count with multiple filters applied', async () => {
+      collectionServiceMocks.getNftCollectionCount.mockReturnValue(10);
+      const canBurn = 'erd1qga7ze0l03chfgru0a32wxqf2226nzrxnyhzer9lmudqhjgy7ycqjjyknz';
+      const canAddQuantity = 'erd1qga7ze0l03chfgru0a32wxqf2226nzrxnyhzer9lmudqhjgy7ycqjjyknz';
+      const canUpdateAttributes = 'erd1qga7ze0l03chfgru0a32wxqf2226nzrxnyhzer9lmudqhjgy7ycqjjyknz';
+      const canAddUri = 'erd1qga7ze0l03chfgru0a32wxqf2226nzrxnyhzer9lmudqhjgy7ycqjjyknz';
+      const canTransferRole = 'erd1qga7ze0l03chfgru0a32wxqf2226nzrxnyhzer9lmudqhjgy7ycqjjyknz';
+
+      await request(app.getHttpServer())
+        .get(`${path}/count?canBurn=${canBurn}&canAddQuantity=${canAddQuantity}&canUpdateAttributes=${canUpdateAttributes}&canAddUri=${canAddUri}&canTransferRole=${canTransferRole}`)
+        .expect(200);
+
+      expect(collectionServiceMocks.getNftCollectionCount).toHaveBeenCalled();
+      expect(collectionServiceMocks.getNftCollectionCount).toHaveBeenCalledWith(
+        createCollectionFilter({ canBurn, canAddQuantity, canUpdateAttributes, canAddUri, canTransferRole })
+      );
+    });
+  });
+
+  describe('GET /collections/c', () => {
+    it('should return total collections count', async () => {
+      collectionServiceMocks.getNftCollectionCount.mockReturnValue(5000);
+      await request(app.getHttpServer())
+        .get(`${path}/c`)
+        .expect(200)
+        .expect(response => {
+          expect(+response.text).toStrictEqual(5000);
+        });
+
+      expect(collectionServiceMocks.getNftCollectionCount).toHaveBeenCalled();
+      expect(collectionServiceMocks.getNftCollectionCount).toHaveBeenCalledWith(
+        createCollectionFilter({})
+      );
+    });
+
+    it('should return total collection count with search filter applied', async () => {
+      collectionServiceMocks.getNftCollectionCount.mockReturnValue(2);
+      const search = 'Test';
+
+      await request(app.getHttpServer())
+        .get(`${path}/c?search=${search}`)
+        .expect(200);
+
+      expect(collectionServiceMocks.getNftCollectionCount).toHaveBeenCalled();
+      expect(collectionServiceMocks.getNftCollectionCount).toHaveBeenCalledWith(
+        createCollectionFilter({ search })
+      );
+    });
+
+    it('should return total collection count with type filter applied', async () => {
+      collectionServiceMocks.getNftCollectionCount.mockReturnValue(2500);
+      const type = [NftType.NonFungibleESDT];
+
+      await request(app.getHttpServer())
+        .get(`${path}/c?type=${type}`)
+        .expect(200);
+
+      expect(collectionServiceMocks.getNftCollectionCount).toHaveBeenCalled();
+      expect(collectionServiceMocks.getNftCollectionCount).toHaveBeenCalledWith(
+        createCollectionFilter({ type })
+      );
+    });
+
+    it('should return total collection count with canCreate filter applied', async () => {
+      collectionServiceMocks.getNftCollectionCount.mockReturnValue(10);
+      const canCreate = 'erd1qga7ze0l03chfgru0a32wxqf2226nzrxnyhzer9lmudqhjgy7ycqjjyknz';
+
+      await request(app.getHttpServer())
+        .get(`${path}/c?canCreate=${canCreate}`)
+        .expect(200);
+
+      expect(collectionServiceMocks.getNftCollectionCount).toHaveBeenCalled();
+      expect(collectionServiceMocks.getNftCollectionCount).toHaveBeenCalledWith(
+        createCollectionFilter({ canCreate })
+      );
+    });
+
+    it('should return total collection count with before filter applied', async () => {
+      collectionServiceMocks.getNftCollectionCount.mockReturnValue(20);
+      const before = 1694012940;
+
+      await request(app.getHttpServer())
+        .get(`${path}/c?before=${before}`)
+        .expect(200);
+
+      expect(collectionServiceMocks.getNftCollectionCount).toHaveBeenCalled();
+      expect(collectionServiceMocks.getNftCollectionCount).toHaveBeenCalledWith(
+        createCollectionFilter({ before })
+      );
+    });
+
+    it('should return total collection count with after filter applied', async () => {
+      collectionServiceMocks.getNftCollectionCount.mockReturnValue(5);
+      const after = 1694012940;
+
+      await request(app.getHttpServer())
+        .get(`${path}/c?after=${after}`)
+        .expect(200);
+
+      expect(collectionServiceMocks.getNftCollectionCount).toHaveBeenCalled();
+      expect(collectionServiceMocks.getNftCollectionCount).toHaveBeenCalledWith(
+        createCollectionFilter({ after })
+      );
+    });
+
+    it('should return total collection count with multiple filters applied', async () => {
+      collectionServiceMocks.getNftCollectionCount.mockReturnValue(10);
+      const canBurn = 'erd1qga7ze0l03chfgru0a32wxqf2226nzrxnyhzer9lmudqhjgy7ycqjjyknz';
+      const canAddQuantity = 'erd1qga7ze0l03chfgru0a32wxqf2226nzrxnyhzer9lmudqhjgy7ycqjjyknz';
+      const canUpdateAttributes = 'erd1qga7ze0l03chfgru0a32wxqf2226nzrxnyhzer9lmudqhjgy7ycqjjyknz';
+      const canAddUri = 'erd1qga7ze0l03chfgru0a32wxqf2226nzrxnyhzer9lmudqhjgy7ycqjjyknz';
+      const canTransferRole = 'erd1qga7ze0l03chfgru0a32wxqf2226nzrxnyhzer9lmudqhjgy7ycqjjyknz';
+
+      await request(app.getHttpServer())
+        .get(`${path}/c?canBurn=${canBurn}&canAddQuantity=${canAddQuantity}&canUpdateAttributes=${canUpdateAttributes}&canAddUri=${canAddUri}&canTransferRole=${canTransferRole}`)
+        .expect(200);
+
+      expect(collectionServiceMocks.getNftCollectionCount).toHaveBeenCalled();
+      expect(collectionServiceMocks.getNftCollectionCount).toHaveBeenCalledWith(
+        createCollectionFilter({ canBurn, canAddQuantity, canUpdateAttributes, canAddUri, canTransferRole })
+      );
+    });
+  });
 });
+
+function createCollectionFilter(options: CollectionFilter = {}) {
+  return new CollectionFilter({
+    search: options.search,
+    type: options.type,
+    identifiers: options.identifiers,
+    canCreate: options.canCreate,
+    before: options.before,
+    after: options.after,
+    canBurn: options.canBurn,
+    canAddQuantity: options.canAddQuantity,
+    canUpdateAttributes: options.canUpdateAttributes,
+    canAddUri: options.canAddUri,
+    canTransferRole: options.canTransferRole,
+    excludeMetaESDT: options.excludeMetaESDT,
+    sort: options.sort,
+    order: options.order,
+  });
+}
