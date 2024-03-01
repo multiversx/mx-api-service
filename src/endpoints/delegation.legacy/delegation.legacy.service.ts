@@ -90,7 +90,7 @@ export class DelegationLegacyService {
       userUnstakedStake,
       userDeferredPaymentStake,
     ] = userStakeByTypeEncoded ? userStakeByTypeEncoded.map((encoded) => this.numberDecode(encoded)) : 
-      ['0', '0', '0', '0', '0',];
+      ['0', '0', '0', '0', '0'];
 
     const claimableRewards = claimableRewardsEncoded ? this.numberDecode(claimableRewardsEncoded[0]) : '0';
 
