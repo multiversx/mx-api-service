@@ -638,10 +638,24 @@ export class AccountController {
     return result;
   }
 
-  @Get("/accounts/:address/stake")
-  @ApiOperation({ summary: 'Account stake details', description: 'Summarizes total staked amount for the given provider, as well as when and how much unbond will be performed' })
+  @Get('/accounts/:address/stake')
+  @UseInterceptors(DeepHistoryInterceptor)
+  @ApiOperation({
+    summary: 'Account stake details',
+    description:
+      'Summarizes total staked amount for the given provider, as well as when and how much unbond will be performed',
+  })
+  @ApiQuery({
+    name: 'timestamp',
+    description: 'Retrieve entry from timestamp',
+    required: false,
+    type: Number,
+  })
   @ApiOkResponse({ type: ProviderStake })
-  async getAccountStake(@Param('address', ParseAddressPipe) address: string): Promise<ProviderStake> {
+  async getAccountStake(
+    @Param('address', ParseAddressPipe) address: string,
+    @Query('timestamp', ParseIntPipe) _timestamp?: number,
+  ): Promise<ProviderStake> {
     return await this.stakeService.getStakeForAddress(address);
   }
 
@@ -653,9 +667,14 @@ export class AccountController {
   }
 
   @Get("/accounts/:address/delegation-legacy")
+  @UseInterceptors(DeepHistoryInterceptor)
   @ApiOperation({ summary: 'Account legacy delegation details', description: 'Returns staking information related to the legacy delegation pool' })
   @ApiOkResponse({ type: AccountDelegationLegacy })
-  async getAccountDelegationLegacy(@Param('address', ParseAddressPipe) address: string): Promise<AccountDelegationLegacy> {
+  @ApiQuery({ name: 'timestamp', description: 'Retrieve entry from timestamp', required: false, type: Number })
+  async getAccountDelegationLegacy(
+    @Param('address', ParseAddressPipe) address: string,
+    @Query('timestamp', ParseIntPipe) _timestamp?: number,
+   ): Promise<AccountDelegationLegacy> {
     return await this.delegationLegacyService.getDelegationForAddress(address);
   }
 
