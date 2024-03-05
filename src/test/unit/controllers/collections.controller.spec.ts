@@ -478,7 +478,7 @@ describe('CollectionController', () => {
       expect(collectionServiceMocks.getNftCollectionRanks).toHaveBeenCalled();
     });
 
-    it('should should throw collection validation pipe if given collection is not a valid collection', async () => {
+    it('should throw collection validation pipe if given collection is not a valid collection', async () => {
       collectionServiceMocks.getNftCollection.mockReturnValue({});
       const collection = 'TEST-5409d3-Test';
 
@@ -780,7 +780,7 @@ describe('CollectionController', () => {
       );
     });
 
-    it('should should throw collection validation pipe if given collection is not a valid collection', async () => {
+    it('should throw collection validation pipe if given collection is not a valid collection', async () => {
       nftServiceMocks.getNfts.mockResolvedValue([]);
       collectionServiceMocks.getNftCollection.mockReturnValue({});
       const collection = 'TEST-5409d3-Test';
@@ -943,7 +943,7 @@ describe('CollectionController', () => {
       );
     });
 
-    it('should should throw collection validation pipe if given collection is not a valid collection', async () => {
+    it('should throw collection validation pipe if given collection is not a valid collection', async () => {
       nftServiceMocks.getNftCount.mockResolvedValue(0);
       collectionServiceMocks.getNftCollection.mockReturnValue({});
       const collection = 'TEST-5409d3-Test';
@@ -1050,7 +1050,7 @@ describe('CollectionController', () => {
       );
     });
 
-    it('should return collection NFTs tranasctions count filtered by sender', async () => {
+    it('should return collection NFTs transactions count filtered by sender', async () => {
       collectionServiceMocks.isCollection.mockResolvedValue(true);
       transactionServiceMocks.getTransactionCount.mockResolvedValue(1000);
       const collection = 'TEST-5409d3';
@@ -1064,7 +1064,7 @@ describe('CollectionController', () => {
       );
     });
 
-    it('should return collection NFTs tranasctions count filtered by senderShard', async () => {
+    it('should return collection NFTs transactions count filtered by senderShard', async () => {
       collectionServiceMocks.isCollection.mockResolvedValue(true);
       transactionServiceMocks.getTransactionCount.mockResolvedValue(500);
       const collection = 'TEST-5409d3';
@@ -1078,7 +1078,7 @@ describe('CollectionController', () => {
       );
     });
 
-    it('should return collection NFTs tranasctions count filtered by receiverShard', async () => {
+    it('should return collection NFTs transactions count filtered by receiverShard', async () => {
       collectionServiceMocks.isCollection.mockResolvedValue(true);
       transactionServiceMocks.getTransactionCount.mockResolvedValue(500);
       const collection = 'TEST-5409d3';
@@ -1092,7 +1092,7 @@ describe('CollectionController', () => {
       );
     });
 
-    it('should return collection NFTs tranasctions count filtered by miniBlockHash', async () => {
+    it('should return collection NFTs transactions count filtered by miniBlockHash', async () => {
       collectionServiceMocks.isCollection.mockResolvedValue(true);
       transactionServiceMocks.getTransactionCount.mockResolvedValue(10);
       const collection = 'TEST-5409d3';
@@ -1106,7 +1106,7 @@ describe('CollectionController', () => {
       );
     });
 
-    it('should return collection NFTs tranasctions count filtered by transactions status', async () => {
+    it('should return collection NFTs transactions count filtered by transactions status', async () => {
       collectionServiceMocks.isCollection.mockResolvedValue(true);
       transactionServiceMocks.getTransactionCount.mockResolvedValue(10);
       const collection = 'TEST-5409d3';
@@ -1120,7 +1120,7 @@ describe('CollectionController', () => {
       );
     });
 
-    it('should return collection NFTs tranasctions count filtered by before timestamp', async () => {
+    it('should return collection NFTs transactions count filtered by before timestamp', async () => {
       collectionServiceMocks.isCollection.mockResolvedValue(true);
       transactionServiceMocks.getTransactionCount.mockResolvedValue(10);
       const collection = 'TEST-5409d3';
@@ -1134,7 +1134,7 @@ describe('CollectionController', () => {
       );
     });
 
-    it('should return collection NFTs tranasctions count filtered by after timestamp', async () => {
+    it('should return collection NFTs transactions count filtered by after timestamp', async () => {
       collectionServiceMocks.isCollection.mockResolvedValue(true);
       transactionServiceMocks.getTransactionCount.mockResolvedValue(10);
       const collection = 'TEST-5409d3';
