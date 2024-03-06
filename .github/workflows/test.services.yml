@@ -34,7 +34,7 @@ jobs:
         run: npm run test:cov -- services
       - uses: codecov/codecov-action@v3
         with:
-          files: ./coverage/unit/services/clover.xml
+          files: ./coverage/unit/clover.xml
           flags: unittests
           name: codecov-umbrella
           fail_ci_if_error: true
