@@ -1,0 +1,42 @@
+name: Controller Tests
+
+on:
+  push:
+    paths:
+      - 'src/controllers/**/*.ts'
+      - 'src/**/*.spec.ts'
+    branches: [main, development]
+  pull_request:
+    paths:
+      - 'src/controllers/**/*.ts'
+      - 'src/**/*.spec.ts'
+    branches: [main, development]
+
+jobs:
+  controller-tests:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [16.x]
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run init
+      
+      - run: npm test -- controllers
+      - name: Collect code coverage for controllers
+        run: npm run test:cov -- controllers
+      - uses: codecov/codecov-action@v3
+        with:
+          files: ./coverage/unit/controllers/clover.xml
+          flags: unittests_controllers
+          name: codecov-controllers
+          fail_ci_if_error: true
+          verbose: true

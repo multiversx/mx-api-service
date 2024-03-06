@@ -1,0 +1,41 @@
+name: Service Tests
+
+on:
+  push:
+    paths:
+      - 'src/services/**/*.ts'
+      - 'src/**/*.spec.ts'
+    branches: [main, development]
+  pull_request:
+    paths:
+      - 'src/services/**/*.ts'
+      - 'src/**/*.spec.ts'
+    branches: [main, development]
+
+jobs:
+  service-tests:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [16.x]
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run init
+      - run: npm test -- services
+      - name: Collect code coverage for services
+        run: npm run test:cov -- services
+      - uses: codecov/codecov-action@v3
+        with:
+          files: ./coverage/unit/services/clover.xml
+          flags: unittests_services
+          name: codecov-services
+          fail_ci_if_error: true
+          verbose: true
