@@ -35,7 +35,7 @@ jobs:
       - uses: codecov/codecov-action@v3
         with:
           files: ./coverage/unit/services/clover.xml
-          flags: unittests_services
-          name: codecov-services
+          flags: unittests
+          name: codecov-umbrella
           fail_ci_if_error: true
           verbose: true

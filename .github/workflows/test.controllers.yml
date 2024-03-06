@@ -36,7 +36,7 @@ jobs:
       - uses: codecov/codecov-action@v3
         with:
           files: ./coverage/unit/controllers/clover.xml
-          flags: unittests_controllers
-          name: codecov-controllers
+          flags: unittests
+          name: codecov-umbrella
           fail_ci_if_error: true
           verbose: true
