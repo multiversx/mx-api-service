@@ -24,7 +24,7 @@ export class DeepHistoryInterceptor implements NestInterceptor {
       return next.handle();
     }
 
-    const address = request.params.address;
+    const address = request.params.address ?? request.body.scAddress;
     if (!address) {
       return next.handle();
     }
@@ -34,7 +34,7 @@ export class DeepHistoryInterceptor implements NestInterceptor {
     }
 
     const shardId = await this.protocolService.getShardIdForAddress(address);
-    if (!shardId) {
+    if (shardId === undefined) {
       throw new BadRequestException('Could not determine shard based on the provided address');
     }
 

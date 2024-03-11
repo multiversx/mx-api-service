@@ -565,7 +565,7 @@ describe('API Config', () => {
         .spyOn(ConfigService.prototype, 'get')
         .mockImplementation(jest.fn(() => undefined));
 
-      expect(() => apiConfigService.getIsTransactionProcessorCronActive()).toThrowError('No cron.transactionProcessor flag present');
+      expect(apiConfigService.getIsTransactionProcessorCronActive()).toStrictEqual(false);
     });
   });
 
@@ -584,7 +584,7 @@ describe('API Config', () => {
         .spyOn(ConfigService.prototype, 'get')
         .mockImplementation(jest.fn(() => undefined));
 
-      expect(() => apiConfigService.getTransactionProcessorMaxLookBehind()).toThrowError('No cron.transactionProcessorMaxLookBehind flag present');
+      expect(apiConfigService.getTransactionProcessorMaxLookBehind()).toStrictEqual(100);
     });
   });
 
