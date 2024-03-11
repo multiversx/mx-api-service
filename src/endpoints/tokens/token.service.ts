@@ -38,6 +38,7 @@ import { TokenAssetsPriceSourceType } from "src/common/assets/entities/token.ass
 import { DataApiService } from "src/common/data-api/data-api.service";
 import { TrieOperationsTimeoutError } from "../esdt/exceptions/trie.operations.timeout.error";
 import { TokenSupplyOptions } from "./entities/token.supply.options";
+import { TransferService } from "../transfers/transfer.service";
 
 @Injectable()
 export class TokenService {
@@ -52,6 +53,8 @@ export class TokenService {
     private readonly cachingService: CacheService,
     @Inject(forwardRef(() => TransactionService))
     private readonly transactionService: TransactionService,
+    @Inject(forwardRef(() => TransferService))
+    private readonly transferService: TransferService,
     @Inject(forwardRef(() => MexTokenService))
     private readonly mexTokenService: MexTokenService,
     private readonly collectionService: CollectionService,
@@ -791,6 +794,14 @@ export class TokenService {
       (token, accounts) => token.accounts = accounts,
       CacheInfo.TokenAccounts('').ttl,
     );
+
+    await this.cachingService.batchApplyAll(
+      tokens,
+      token => CacheInfo.TokenTransfers(token.identifier).key,
+      async token => await this.getTransfersCount(token),
+      (token, transfersCount) => token.transfersCount = transfersCount,
+      CacheInfo.TokenTransfers('').ttl,
+    );
   }
 
   private async getTransactionCount(token: TokenDetailed): Promise<number | undefined> {
@@ -798,6 +809,17 @@ export class TokenService {
       return await this.transactionService.getTransactionCount(new TransactionFilter({ tokens: [token.identifier, ...token.assets?.extraTokens ?? []] }));
     } catch (error) {
       this.logger.error(`An unhandled error occurred when getting transaction count for token '${token.identifier}'`);
+      this.logger.error(error);
+      return undefined;
+    }
+  }
+
+  private async getTransfersCount(token: TokenDetailed): Promise<number | undefined> {
+    try {
+      const filter = new TransactionFilter({ tokens: [token.identifier, ...token.assets?.extraTokens ?? []] });
+      return await this.transferService.getTransfersCount(filter);
+    } catch (error) {
+      this.logger.error(`An unhandled error occurred when getting transfers count for token '${token.identifier}'`);
       this.logger.error(error);
       return undefined;
     }
