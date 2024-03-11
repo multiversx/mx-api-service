@@ -2,6 +2,8 @@ import { Constants } from '@multiversx/sdk-nestjs-common';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { DatabaseConnectionOptions } from '../persistence/entities/connection.options';
+import { LogTopic } from '@elrondnetwork/transaction-processor';
+import { StatusCheckerThresholds } from './entities/status-checker-thresholds';
 
 @Injectable()
 export class ApiConfigService {
@@ -237,37 +239,31 @@ export class ApiConfigService {
   }
 
   getIsTransactionProcessorCronActive(): boolean {
-    const isCronActive = this.configService.get<boolean>('cron.transactionProcessor');
-    if (isCronActive === undefined) {
-      throw new Error('No cron.transactionProcessor flag present');
-    }
-
-    return isCronActive;
+    return this.configService.get<boolean>('features.transactionProcessor.enabled') ?? this.configService.get<boolean>('cron.transactionProcessor') ?? false;
   }
 
   getTransactionProcessorMaxLookBehind(): number {
-    const transactionProcessorMaxLookBehind = this.configService.get<number>('cron.transactionProcessorMaxLookBehind');
-    if (transactionProcessorMaxLookBehind === undefined) {
-      throw new Error('No cron.transactionProcessorMaxLookBehind flag present');
-    }
-
-    return transactionProcessorMaxLookBehind;
+    return this.configService.get<number>('features.transactionProcessor.maxLookBehind') ?? this.configService.get<number>('cron.transactionProcessorMaxLookBehind') ?? 100;
   }
 
   getIsTransactionCompletedCronActive(): boolean {
-    return this.configService.get<boolean>('cron.transactionCompleted') ?? false;
+    return this.configService.get<boolean>('features.transactionCompleted.enabled') ?? this.configService.get<boolean>('cron.transactionCompleted') ?? false;
   }
 
   getTransactionCompletedMaxLookBehind(): number {
-    return this.configService.get<number>('cron.transactionCompletedMaxLookBehind') ?? 100;
+    return this.configService.get<number>('features.transactionCompleted.maxLookBehind') ?? this.configService.get<number>('cron.transactionCompletedMaxLookBehind') ?? 100;
+  }
+
+  getTransactionCompletedLogLevel(): LogTopic {
+    return this.configService.get<LogTopic>('features.transactionCompleted.logLevel') ?? LogTopic.CrossShardSmartContractResult;
   }
 
   getIsTransactionBatchCronActive(): boolean {
-    return this.configService.get<boolean>('cron.transactionBatch') ?? false;
+    return this.configService.get<boolean>('features.transactionBatch.enabled') ?? this.configService.get<boolean>('cron.transactionBatch') ?? false;
   }
 
   getTransactionBatchMaxLookBehind(): number {
-    return this.configService.get<number>('cron.transactionBatchMaxLookBehind') ?? 100;
+    return this.configService.get<number>('features.transactionBatch.maxLookBehind') ?? this.configService.get<number>('cron.transactionBatchMaxLookBehind') ?? 100;
   }
 
   getIsCacheWarmerCronActive(): boolean {
@@ -280,7 +276,12 @@ export class ApiConfigService {
   }
 
   getIsApiStatusCheckerActive(): boolean {
-    return this.configService.get<boolean>('cron.statusChecker') ?? false;
+    return this.configService.get<boolean>('features.statusChecker.enabled') ?? this.configService.get<boolean>('cron.statusChecker') ?? false;
+  }
+
+  getStatusCheckerThresholds(): StatusCheckerThresholds {
+    const thresholds = this.configService.get<StatusCheckerThresholds>('features.statusChecker.thresholds');
+    return new StatusCheckerThresholds(thresholds);
   }
 
   getIsElasticUpdaterCronActive(): boolean {
@@ -805,5 +806,18 @@ export class ApiConfigService {
     }
 
     return serviceUrl;
+  }
+
+  isDeepHistoryGatewayEnabled(): boolean {
+    return this.configService.get<boolean>('features.deepHistory.enabled') ?? false;
+  }
+
+  getDeepHistoryGatewayUrl(): string {
+    const deepHistoryUrl = this.configService.get<string>('features.deepHistory.url');
+    if (!deepHistoryUrl) {
+      throw new Error('No deep history url present');
+    }
+
+    return deepHistoryUrl;
   }
 }

@@ -14,7 +14,7 @@ import { QueryPagination } from "../entities/query.pagination";
 import { Account, AccountHistory, AccountTokenHistory, Block, Collection, MiniBlock, Operation, Round, ScDeploy, ScResult, Tag, Token, TokenAccount, Transaction, TransactionLog, TransactionReceipt } from "./entities";
 import { IndexerInterface } from "./indexer.interface";
 import { LogPerformanceAsync } from "src/utils/log.performance.decorator";
-import { AccountFilter } from "src/endpoints/accounts/entities/account.filter";
+import { AccountQueryOptions } from "src/endpoints/accounts/entities/account.query.options";
 import { MiniBlockFilter } from "src/endpoints/miniblocks/entities/mini.block.filter";
 import { AccountHistoryFilter } from "src/endpoints/accounts/entities/account.history.filter";
 
@@ -26,7 +26,7 @@ export class IndexerService implements IndexerInterface {
   ) { }
 
   @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
-  async getAccountsCount(filter: AccountFilter): Promise<number> {
+  async getAccountsCount(filter: AccountQueryOptions): Promise<number> {
     return await this.indexerInterface.getAccountsCount(filter);
   }
 
@@ -222,7 +222,7 @@ export class IndexerService implements IndexerInterface {
   }
 
   @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
-  async getAccounts(queryPagination: QueryPagination, filter: AccountFilter): Promise<Account[]> {
+  async getAccounts(queryPagination: QueryPagination, filter: AccountQueryOptions): Promise<Account[]> {
     return await this.indexerInterface.getAccounts(queryPagination, filter);
   }
 
@@ -374,5 +374,10 @@ export class IndexerService implements IndexerInterface {
   @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
   async getAccountsForAddresses(addresses: string[]): Promise<Account[]> {
     return await this.indexerInterface.getAccountsForAddresses(addresses);
+  }
+
+  @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
+  async getBlockByTimestampAndShardId(timestamp: number, shardId: number): Promise<Block | undefined> {
+    return await this.indexerInterface.getBlockByTimestampAndShardId(timestamp, shardId);
   }
 }

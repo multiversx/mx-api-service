@@ -37,6 +37,12 @@ type Account {
   """Balance for the given account."""
   balance: String!
 
+  """DeployTxHash for the given detailed account."""
+  deployTxHash: String
+
+  """Deployment timestamp for the given detailed account."""
+  deployedAt: Float
+
   """If the given detailed account is verified."""
   isVerified: Boolean
 
@@ -49,11 +55,17 @@ type Account {
   """Owner Account Address assets details."""
   ownerAssets: AccountAssets
 
+  """Smart contract results count for the given detailed account."""
+  scrCount: Float!
+
   """Shard for the given account."""
   shard: Float!
 
   """Timestamp of the block where the account was first indexed."""
   timestamp: Float!
+
+  """Transactions count for the given detailed account."""
+  txCount: Float!
 }
 
 """Account assets object type."""
@@ -3864,6 +3876,9 @@ type Transaction {
   """Receiver account shard for the given transaction."""
   receiverShard: String!
 
+  """The username of the receiver for the given transaction."""
+  receiverUsername: String!
+
   """Round for the given transaction."""
   round: Float
 
@@ -3881,6 +3896,9 @@ type Transaction {
 
   """Sender account shard for the given transaction."""
   senderShard: Float!
+
+  """The username of the sender for the given transaction."""
+  senderUsername: String!
 
   """Signature for the given transaction."""
   signature: String
@@ -3993,6 +4011,9 @@ type TransactionDetailed {
   """Receiver account shard for the given transaction."""
   receiverShard: String!
 
+  """The username of the receiver for the given transaction."""
+  receiverUsername: String!
+
   """Relayed transaction version."""
   relayedVersion: String
 
@@ -4022,6 +4043,9 @@ type TransactionDetailed {
 
   """Sender account shard for the given transaction."""
   senderShard: Float!
+
+  """The username of the sender for the given transaction."""
+  senderUsername: String!
 
   """Signature for the given transaction."""
   signature: String

@@ -1,5 +1,5 @@
 import { DappConfig } from './entities/dapp-config';
-import { Controller, Get, HttpException, HttpStatus } from "@nestjs/common";
+import { Controller, Get, NotFoundException } from "@nestjs/common";
 import { ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiTags } from "@nestjs/swagger";
 import { DappConfigService } from "./dapp.config.service";
 
@@ -17,7 +17,7 @@ export class DappConfigController {
   getDappConfiguration(): DappConfig {
     const configuration = this.dappConfigService.getDappConfiguration();
     if (!configuration) {
-      throw new HttpException(`Network configuration not found`, HttpStatus.NOT_FOUND);
+      throw new NotFoundException(`Network configuration not found`);
     }
 
     return configuration;

@@ -21,7 +21,7 @@ import { Tag } from "../entities/tag";
 import { ElasticIndexerHelper } from "./elastic.indexer.helper";
 import { TokenType } from "../entities";
 import { SortCollections } from "src/endpoints/collections/entities/sort.collections";
-import { AccountFilter } from "src/endpoints/accounts/entities/account.filter";
+import { AccountQueryOptions } from "src/endpoints/accounts/entities/account.query.options";
 import { AccountSort } from "src/endpoints/accounts/entities/account.sort";
 import { MiniBlockFilter } from "src/endpoints/miniblocks/entities/mini.block.filter";
 import { AccountHistoryFilter } from "src/endpoints/accounts/entities/account.history.filter";
@@ -36,7 +36,7 @@ export class ElasticIndexerService implements IndexerInterface {
     private readonly apiService: ApiService,
   ) { }
 
-  async getAccountsCount(filter: AccountFilter): Promise<number> {
+  async getAccountsCount(filter: AccountQueryOptions): Promise<number> {
     const query = this.indexerHelper.buildAccountFilterQuery(filter);
 
     return await this.elasticService.getCount('accounts', query);
@@ -380,7 +380,7 @@ export class ElasticIndexerService implements IndexerInterface {
     return await this.elasticService.getList('scresults', 'hash', elasticQuery);
   }
 
-  async getAccounts(queryPagination: QueryPagination, filter: AccountFilter): Promise<any[]> {
+  async getAccounts(queryPagination: QueryPagination, filter: AccountQueryOptions): Promise<any[]> {
     let elasticQuery = this.indexerHelper.buildAccountFilterQuery(filter);
 
     const sortOrder: ElasticSortOrder = !filter.order || filter.order === SortOrder.desc ? ElasticSortOrder.descending : ElasticSortOrder.ascending;
@@ -805,7 +805,8 @@ export class ElasticIndexerService implements IndexerInterface {
     const query = ElasticQuery.create()
       .withMustMatchCondition('type', TokenType.FungibleESDT)
       .withFields(["name", "type", "currentOwner", "numDecimals", "properties", "timestamp"])
-      .withMustNotExistCondition('identifier');
+      .withMustNotExistCondition('identifier')
+      .withPagination({ from: 0, size: 1000 });
 
     const allTokens: any[] = [];
 
@@ -827,5 +828,16 @@ export class ElasticIndexerService implements IndexerInterface {
       holderCount,
       nftCount,
     });
+  }
+
+  async getBlockByTimestampAndShardId(timestamp: number, shardId: number): Promise<Block | undefined> {
+    const elasticQuery = ElasticQuery.create()
+      .withRangeFilter('timestamp', new RangeGreaterThanOrEqual(timestamp))
+      .withCondition(QueryConditionOptions.must, [QueryType.Match('shardId', shardId, QueryOperator.AND)])
+      .withSort([{ name: 'timestamp', order: ElasticSortOrder.ascending }]);
+
+    const blocks: Block[] = await this.elasticService.getList('blocks', '_search', elasticQuery);
+
+    return blocks.at(0);
   }
 }

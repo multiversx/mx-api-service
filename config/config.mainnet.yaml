@@ -4,17 +4,10 @@ api:
   public: true
   private: true
 cron:
-  transactionProcessor: true
-  transactionProcessorMaxLookBehind: 1000
-  transactionCompleted: false
-  transactionCompletedMaxLookBehind: 100
-  transactionBatch: true
-  transactionBatchMaxLookBehind: 100
   cacheWarmer: true
   fastWarm: false
   queueWorker: true
   elasticUpdater: false
-  statusChecker: false
 flags:
   useRequestCaching: true
   useKeepAliveAgent: true
@@ -62,6 +55,30 @@ features:
     jwtSecret: ''
   nodeEpochsLeft:
     enabled: false
+  transactionProcessor:
+    enabled: false
+    maxLookBehind: 1000
+  transactionCompleted:
+    enabled: false
+    maxLookBehind: 1000
+    logLevel: 'Error'
+  transactionBatch:
+    enabled: false
+    maxLookBehind: 1000
+  deepHistory:
+    enabled: false
+    url: ''
+  statusChecker:
+    enabled: false
+    thresholds:
+      tokens: 1000
+      nodes: 5000
+      providers: 150
+      tokenSupplyCount: 100
+      tokenAssets: 100
+      tokenAccounts: 1000
+      tokenTransactions: 1000
+      nodeValidators: 3260
 image:
   width: 600
   height: 600

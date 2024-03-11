@@ -7,13 +7,15 @@ import { TransactionLog } from "./entities/transaction.log";
 import { TransactionOptionalFieldOption } from "./entities/transaction.optional.field.options";
 import { TransactionReceipt } from "./entities/transaction.receipt";
 import { TokenTransferService } from "../tokens/token.transfer.service";
-import { BinaryUtils } from "@multiversx/sdk-nestjs-common";
+import { BinaryUtils, OriginLogger } from "@multiversx/sdk-nestjs-common";
 import { ApiUtils } from "@multiversx/sdk-nestjs-http";
 import { TransactionUtils } from "./transaction.utils";
 import { IndexerService } from "src/common/indexer/indexer.service";
-import { OriginLogger } from "@multiversx/sdk-nestjs-common";
+import { Transaction as IndexerTransaction } from "src/common/indexer/entities/transaction";
 import { MiniBlockType } from "../miniblocks/entities/mini.block.type";
 import { TransactionStatus } from "./entities/transaction.status";
+import { UsernameUtils } from "../usernames/username.utils";
+import { TransactionLogEvent } from "./entities/transaction.log.event";
 
 @Injectable()
 export class TransactionGetService {
@@ -98,6 +100,9 @@ export class TransactionGetService {
 
       if (!fields || fields.length === 0 || fields.includesSome([TransactionOptionalFieldOption.logs, TransactionOptionalFieldOption.operations])) {
         const logs = await this.getTransactionLogsFromElastic(hashes);
+        for (const log of logs) {
+          this.alterDuplicatedTransferValueOnlyEvents(log.events);
+        }
 
         if (!fields || fields.length === 0 || fields.includes(TransactionOptionalFieldOption.operations)) {
           transactionDetailed.operations = await this.tokenTransferService.getOperationsForTransaction(transactionDetailed, logs);
@@ -114,7 +119,10 @@ export class TransactionGetService {
             }
           }
         }
+
       }
+
+      this.applyUsernamesToDetailedTransaction(transaction, transactionDetailed);
 
       return ApiUtils.mergeObjects(new TransactionDetailed(), transactionDetailed);
     } catch (error) {
@@ -123,12 +131,46 @@ export class TransactionGetService {
     }
   }
 
+  private alterDuplicatedTransferValueOnlyEvents(events: TransactionLogEvent[]) {
+    const backTransferEncoded = BinaryUtils.base64Encode('BackTransfer');
+    const asyncCallbackEncoded = BinaryUtils.base64Encode('AsyncCallback');
+
+    const transferValueOnlyEvents = events.filter(x => x.identifier === 'transferValueOnly');
+    const backTransferEvents = transferValueOnlyEvents.filter(x => x.data === backTransferEncoded);
+    const asyncCallbackEvents = transferValueOnlyEvents.filter(x => x.data == asyncCallbackEncoded);
+
+    if (backTransferEvents.length === 1 && asyncCallbackEvents.length === 1 &&
+      asyncCallbackEvents[0].topics.length > 1 &&
+      JSON.stringify(backTransferEvents[0].topics) === JSON.stringify(asyncCallbackEvents[0].topics)
+    ) {
+      asyncCallbackEvents[0].topics[0] = BinaryUtils.hexToBase64(BinaryUtils.numberToHex(0));
+    }
+  }
+
+  private applyUsernamesToDetailedTransaction(transaction: IndexerTransaction, transactionDetailed: TransactionDetailed) {
+    if (transaction.senderUserName) {
+      transactionDetailed.senderUsername = UsernameUtils.extractUsernameFromRawBase64(transaction.senderUserName);
+    }
+
+    if (transaction.senderUsername) {
+      transactionDetailed.senderUsername = UsernameUtils.extractUsernameFromRawBase64(transaction.senderUsername);
+    }
+
+    if (transaction.receiverUserName) {
+      transactionDetailed.receiverUsername = UsernameUtils.extractUsernameFromRawBase64(transaction.receiverUserName);
+    }
+
+    if (transaction.receiverUsername) {
+      transactionDetailed.receiverUsername = UsernameUtils.extractUsernameFromRawBase64(transaction.receiverUsername);
+    }
+  }
+
   async tryGetTransactionFromGatewayForList(txHash: string) {
     const gatewayTransaction = await this.tryGetTransactionFromGateway(txHash, false);
     if (gatewayTransaction) {
       return ApiUtils.mergeObjects(new Transaction(), gatewayTransaction);
     }
-    return undefined; //invalid hash 
+    return undefined; //invalid hash
   }
 
   async tryGetTransactionFromGateway(txHash: string, queryInElastic: boolean = true): Promise<TransactionDetailed | null> {
@@ -183,7 +225,9 @@ export class TransactionGetService {
         receiverShard: transaction.destinationShard,
         nonce: transaction.nonce,
         receiver: transaction.receiver,
+        receiverUsername: UsernameUtils.extractUsernameFromRawBase64(transaction.receiverUsername),
         sender: transaction.sender,
+        senderUsername: UsernameUtils.extractUsernameFromRawBase64(transaction.senderUsername),
         signature: transaction.signature,
         status: transaction.status,
         value: transaction.value,

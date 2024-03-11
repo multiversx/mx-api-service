@@ -37,6 +37,14 @@ export class Account {
   @ApiProperty({ type: AccountAssets, nullable: true, description: 'Account assets' })
   assets: AccountAssets | undefined = undefined;
 
+  @Field(() => Float, { description: 'Deployment timestamp for the given detailed account.', nullable: true })
+  @ApiProperty({ description: 'Specific property flag for smart contract', type: Number })
+  deployedAt?: number | null;
+
+  @Field(() => String, { description: 'DeployTxHash for the given detailed account.', nullable: true })
+  @ApiProperty({ description: 'The contract deploy transaction hash' })
+  deployTxHash?: string | null;
+
   @Field(() => AccountAssets, { description: 'Owner Account Address assets details.', nullable: true })
   @ApiProperty({ type: AccountAssets, nullable: true, description: 'Account assets' })
   ownerAssets: AccountAssets | undefined = undefined;
@@ -44,4 +52,12 @@ export class Account {
   @Field(() => Boolean, { description: 'If the given detailed account is verified.', nullable: true })
   @ApiProperty({ description: 'Specific property flag for smart contract', type: Boolean })
   isVerified?: boolean;
+
+  @Field(() => Float, { description: 'Transactions count for the given detailed account.' })
+  @ApiProperty({ description: 'The number of transactions performed on this account' })
+  txCount?: number;
+
+  @Field(() => Float, { description: 'Smart contract results count for the given detailed account.' })
+  @ApiProperty({ description: 'The number of smart contract results of this account' })
+  scrCount?: number;
 }

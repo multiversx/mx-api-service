@@ -1,5 +1,5 @@
 import { ComplexityEstimation } from "@multiversx/sdk-nestjs-common";
-import { Field, Float, ObjectType } from "@nestjs/graphql";
+import { Field, ObjectType } from "@nestjs/graphql";
 import { ApiProperty } from "@nestjs/swagger";
 import { ScamInfo } from "src/common/entities/scam-info.dto";
 import { NftCollectionAccount } from "src/endpoints/collections/entities/nft.collection.account";
@@ -25,14 +25,6 @@ export class AccountDetailed extends Account {
   @ApiProperty({ description: 'The hash of the root node' })
   rootHash: string = '';
 
-  @Field(() => Float, { description: 'Transactions count for the given detailed account.' })
-  @ApiProperty({ description: 'The number of transactions performed on this account' })
-  txCount: number = 0;
-
-  @Field(() => Float, { description: 'Smart contract results count for the given detailed account.' })
-  @ApiProperty({ description: 'The number of smart contract results of this account' })
-  scrCount: number = 0;
-
   @Field(() => String, { description: 'Username for the given detailed account.', nullable: true })
   @ApiProperty({ description: 'The username specific for this account', nullable: true })
   username: string | undefined = undefined;
@@ -44,14 +36,6 @@ export class AccountDetailed extends Account {
   @Field(() => String, { description: 'Owner address for the given detailed account.' })
   @ApiProperty({ description: 'The address in bech 32 format of owner account' })
   ownerAddress: string = '';
-
-  @Field(() => Float, { description: 'Deployment timestamp for the given detailed account.', nullable: true })
-  @ApiProperty({ description: 'Specific property flag for smart contract', type: Number })
-  deployedAt?: number;
-
-  @Field(() => String, { description: 'DeployTxHash for the given detailed account.', nullable: true })
-  @ApiProperty({ description: 'The contract deploy transaction hash' })
-  deployTxHash?: string;
 
   @Field(() => Boolean, { description: 'If the given detailed account is upgradeable.', nullable: true })
   @ApiProperty({ description: 'Specific property flag for smart contract', type: Boolean })
