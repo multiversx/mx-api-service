@@ -66,6 +66,10 @@ export class Token {
   @ApiProperty({ type: Number, nullable: true })
   transactions: number | undefined = undefined;
 
+  @Field(() => Float, { description: "Tokens transfers.", nullable: true })
+  @ApiProperty({ type: Number, nullable: true })
+  transfersCount: number | undefined = undefined;
+
   @Field(() => Float, { description: "Token accounts list." })
   @ApiProperty({ type: Number, nullable: true })
   accounts: number | undefined = undefined;

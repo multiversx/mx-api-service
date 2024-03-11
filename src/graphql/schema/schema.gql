@@ -3643,6 +3643,9 @@ type TokenDetailed {
   """Tokens transactions."""
   transactions: Float
 
+  """Tokens transfers."""
+  transfersCount: Float
+
   """Token type."""
   type: TokenType!
 }
@@ -3815,6 +3818,9 @@ type TokenWithBalanceAccountFlat {
 
   """Tokens transactions."""
   transactions: Float
+
+  """Tokens transfers."""
+  transfersCount: Float
 
   """Token type."""
   type: TokenType!
