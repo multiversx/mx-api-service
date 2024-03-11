@@ -2747,6 +2747,9 @@ type Node {
   """Bls address for the given node."""
   bls: String!
 
+  """Number of epochs left for a node in waiting state."""
+  epochsLeft: Float
+
   """Full history details for the given node."""
   fullHistory: Boolean
 
