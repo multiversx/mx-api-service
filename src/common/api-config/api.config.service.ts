@@ -706,6 +706,10 @@ export class ApiConfigService {
     return this.configService.get<number>('features.nftExtendedAttributes.nsfwThreshold') ?? 0.85;
   }
 
+  isNodeEpochsLeftEnabled(): boolean {
+    return this.configService.get<boolean>('features.nodeEpochsLeft.enabled') ?? false;
+  }
+
   getIndexerSlaveConnections(): DatabaseConnectionOptions[] {
     const slaves = this.configService.get<DatabaseConnectionOptions[]>('indexer.slaves');
     if (!slaves) {

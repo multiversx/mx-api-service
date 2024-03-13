@@ -53,6 +53,8 @@ features:
     admins:
       - ''
     jwtSecret: ''
+  nodeEpochsLeft:
+    enabled: false
   transactionProcessor:
     enabled: false
     maxLookBehind: 1000
