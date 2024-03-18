@@ -204,7 +204,7 @@ export class AccountController {
     @Query('identifiers', ParseArrayPipe) identifiers?: string[],
     @Query('includeMetaESDT', new ParseBoolPipe) includeMetaESDT?: boolean,
     @Query('timestamp', ParseIntPipe) _timestamp?: number,
-    @Query('mexPairType', new ParseEnumPipe(MexPairType)) mexPairType?: MexPairType,
+    @Query('mexPairType', new ParseEnumArrayPipe(MexPairType)) mexPairType?: MexPairType[],
   ): Promise<TokenWithBalance[]> {
     try {
       return await this.tokenService.getTokensForAddress(address, new QueryPagination({ from, size }), new TokenFilter({ type, search, name, identifier, identifiers, includeMetaESDT, mexPairType }));
@@ -237,7 +237,7 @@ export class AccountController {
     @Query('identifiers', ParseArrayPipe) identifiers?: string[],
     @Query('includeMetaESDT', new ParseBoolPipe) includeMetaESDT?: boolean,
     @Query('timestamp', ParseIntPipe) _timestamp?: number,
-    @Query('mexPairType', new ParseEnumPipe(MexPairType)) mexPairType?: MexPairType,
+    @Query('mexPairType', new ParseEnumArrayPipe(MexPairType)) mexPairType?: MexPairType[],
   ): Promise<number> {
     try {
       return await this.tokenService.getTokenCountForAddress(address, new TokenFilter({ type, search, name, identifier, identifiers, includeMetaESDT, mexPairType }));
@@ -261,7 +261,7 @@ export class AccountController {
     @Query('identifiers', ParseArrayPipe) identifiers?: string[],
     @Query('includeMetaESDT', new ParseBoolPipe) includeMetaESDT?: boolean,
     @Query('timestamp', ParseIntPipe) _timestamp?: number,
-    @Query('mexPairType', new ParseEnumPipe(MexPairType)) mexPairType?: MexPairType,
+    @Query('mexPairType', new ParseEnumArrayPipe(MexPairType)) mexPairType?: MexPairType[],
   ): Promise<number> {
     try {
       return await this.tokenService.getTokenCountForAddress(address, new TokenFilter({ type, search, name, identifier, identifiers, includeMetaESDT, mexPairType }));

@@ -18,7 +18,7 @@ import { QueryPagination } from "src/common/entities/query.pagination";
 import { TokenFilter } from "./entities/token.filter";
 import { TransactionFilter } from "../transactions/entities/transaction.filter";
 import { TransactionQueryOptions } from "../transactions/entities/transactions.query.options";
-import { ParseAddressPipe, ParseBlockHashPipe, ParseBoolPipe, ParseEnumPipe, ParseIntPipe, ParseArrayPipe, ParseTokenPipe, ParseAddressArrayPipe, ApplyComplexity } from "@multiversx/sdk-nestjs-common";
+import { ParseAddressPipe, ParseBlockHashPipe, ParseBoolPipe, ParseEnumPipe, ParseIntPipe, ParseArrayPipe, ParseTokenPipe, ParseAddressArrayPipe, ApplyComplexity, ParseEnumArrayPipe } from "@multiversx/sdk-nestjs-common";
 import { TransactionDetailed } from "../transactions/entities/transaction.detailed";
 import { Response } from "express";
 import { TokenType } from "src/common/indexer/entities";
@@ -60,7 +60,7 @@ export class TokenController {
     @Query('sort', new ParseEnumPipe(TokenSort)) sort?: TokenSort,
     @Query('order', new ParseEnumPipe(SortOrder)) order?: SortOrder,
     @Query('includeMetaESDT', new ParseBoolPipe) includeMetaESDT?: boolean,
-    @Query('mexPairType', new ParseEnumPipe(MexPairType)) mexPairType?: MexPairType,
+    @Query('mexPairType', new ParseEnumArrayPipe(MexPairType)) mexPairType?: MexPairType[],
   ): Promise<TokenDetailed[]> {
     return await this.tokenService.getTokens(
       new QueryPagination({ from, size }),
@@ -85,7 +85,7 @@ export class TokenController {
     @Query('identifier', ParseTokenPipe) identifier?: string,
     @Query('identifiers', ParseArrayPipe) identifiers?: string[],
     @Query('includeMetaESDT', new ParseBoolPipe) includeMetaESDT?: boolean,
-    @Query('mexPairType', new ParseEnumPipe(MexPairType)) mexPairType?: MexPairType,
+    @Query('mexPairType', new ParseEnumArrayPipe(MexPairType)) mexPairType?: MexPairType[],
   ): Promise<number> {
     return await this.tokenService.getTokenCount(new TokenFilter({ type, search, name, identifier, identifiers, includeMetaESDT, mexPairType }));
   }
@@ -99,7 +99,7 @@ export class TokenController {
     @Query('identifier', ParseTokenPipe) identifier?: string,
     @Query('identifiers', ParseArrayPipe) identifiers?: string[],
     @Query('includeMetaESDT', new ParseBoolPipe) includeMetaESDT?: boolean,
-    @Query('mexPairType', new ParseEnumPipe(MexPairType)) mexPairType?: MexPairType,
+    @Query('mexPairType', new ParseEnumArrayPipe(MexPairType)) mexPairType?: MexPairType[],
   ): Promise<number> {
     return await this.tokenService.getTokenCount(new TokenFilter({ type, search, name, identifier, identifiers, includeMetaESDT, mexPairType }));
   }

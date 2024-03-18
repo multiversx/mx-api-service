@@ -159,8 +159,9 @@ export class TokenService {
       tokens = this.sortTokens(tokens, filter.sort, filter.order ?? SortOrder.desc);
     }
 
-    if (filter.mexPairType) {
-      tokens = tokens.filter(token => token.mexPairType === filter.mexPairType);
+    const mexPairTypes = filter.mexPairType ?? [];
+    if (mexPairTypes.length > 0) {
+      tokens = tokens.filter(token => mexPairTypes.includes(token.mexPairType));
     }
 
     return tokens;

@@ -24,5 +24,5 @@ export class TokenFilter {
 
   order?: SortOrder;
 
-  mexPairType?: MexPairType;
+  mexPairType?: MexPairType[];
 }
