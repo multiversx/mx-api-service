@@ -3,6 +3,7 @@ import { Field, ObjectType } from "@nestjs/graphql";
 import { ApiProperty } from "@nestjs/swagger";
 import { Token } from "./token";
 import { TokenRoles } from "./token.roles";
+import { MexPairType } from "src/endpoints/mex/entities/mex.pair.type";
 
 @ObjectType("TokenDetailed", { description: "TokenDetailed object type." })
 export class TokenDetailed extends Token {
@@ -38,4 +39,8 @@ export class TokenDetailed extends Token {
   @Field(() => Boolean, { description: 'If the given NFT collection can transfer the underlying tokens by default.', nullable: true })
   @ApiProperty({ type: Boolean, nullable: true })
   canTransfer: boolean | undefined = undefined;
+
+  @Field(() => MexPairType, { description: "Mex pair type details." })
+  @ApiProperty({ enum: MexPairType })
+  mexPairType: MexPairType = MexPairType.experimental;
 }

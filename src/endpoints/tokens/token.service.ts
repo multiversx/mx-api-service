@@ -39,6 +39,7 @@ import { DataApiService } from "src/common/data-api/data-api.service";
 import { TrieOperationsTimeoutError } from "../esdt/exceptions/trie.operations.timeout.error";
 import { TokenSupplyOptions } from "./entities/token.supply.options";
 import { TransferService } from "../transfers/transfer.service";
+import { MexPairService } from "../mex/mex.pair.service";
 
 @Injectable()
 export class TokenService {
@@ -59,6 +60,7 @@ export class TokenService {
     private readonly mexTokenService: MexTokenService,
     private readonly collectionService: CollectionService,
     private readonly dataApiService: DataApiService,
+    private readonly mexPairService: MexPairService,
   ) { }
 
   async isToken(identifier: string): Promise<boolean> {
@@ -746,6 +748,7 @@ export class TokenService {
     await this.batchProcessTokens(tokens);
 
     await this.applyMexPrices(tokens.filter(x => x.type !== TokenType.MetaESDT));
+    await this.applyMexPairType(tokens.filter(x => x.type !== TokenType.MetaESDT));
 
     await this.cachingService.batchApplyAll(
       tokens,
@@ -776,6 +779,23 @@ export class TokenService {
 
   private async getTokenAssetsRaw(identifier: string): Promise<TokenAssets | undefined> {
     return await this.assetsService.getTokenAssets(identifier);
+  }
+
+  private async applyMexPairType(tokens: TokenDetailed[]): Promise<void> {
+    try {
+      const mexPairs = await this.mexPairService.getAllMexPairs();
+      const mexPairsMap = new Map(mexPairs.map(pair => [pair.baseId, pair.type]));
+
+      for (const token of tokens) {
+        const mexPairType = mexPairsMap.get(token.identifier);
+        if (mexPairType) {
+          token.mexPairType = mexPairType;
+        }
+      }
+    } catch (error) {
+      this.logger.error('Could not apply mex pair types');
+      this.logger.error(error);
+    }
   }
 
   private async batchProcessTokens(tokens: TokenDetailed[]) {
