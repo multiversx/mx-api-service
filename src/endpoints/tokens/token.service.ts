@@ -159,6 +159,10 @@ export class TokenService {
       tokens = this.sortTokens(tokens, filter.sort, filter.order ?? SortOrder.desc);
     }
 
+    if (filter.mexPairType) {
+      tokens = tokens.filter(token => token.mexPairType === filter.mexPairType);
+    }
+
     return tokens;
   }
 
@@ -793,8 +797,7 @@ export class TokenService {
         }
       }
     } catch (error) {
-      this.logger.error('Could not apply mex pair types');
-      this.logger.error(error);
+      this.logger.error('Could not apply mex pair types', error);
     }
   }
 

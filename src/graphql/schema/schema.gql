@@ -3798,6 +3798,9 @@ type TokenWithBalanceAccountFlat {
   """Current market cap details."""
   marketCap: Float
 
+  """Mex pair type details."""
+  mexPairType: MexPairType!
+
   """Token minted details."""
   minted: String!
 

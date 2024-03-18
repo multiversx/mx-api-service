@@ -23,6 +23,7 @@ import { TransactionDetailed } from "../transactions/entities/transaction.detail
 import { Response } from "express";
 import { TokenType } from "src/common/indexer/entities";
 import { ParseArrayPipeOptions } from "@multiversx/sdk-nestjs-common/lib/pipes/entities/parse.array.options";
+import { MexPairType } from "../mex/entities/mex.pair.type";
 
 @Controller()
 @ApiTags('tokens')
@@ -47,6 +48,7 @@ export class TokenController {
   @ApiQuery({ name: 'sort', description: 'Sorting criteria', required: false, enum: SortTokens })
   @ApiQuery({ name: 'order', description: 'Sorting order (asc / desc)', required: false, enum: SortOrder })
   @ApiQuery({ name: 'includeMetaESDT', description: 'Include MetaESDTs in response', required: false, type: Boolean })
+  @ApiQuery({ name: 'mexPairType', description: 'Token Mex Pair', required: false, enum: MexPairType })
   async getTokens(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
@@ -58,10 +60,11 @@ export class TokenController {
     @Query('sort', new ParseEnumPipe(TokenSort)) sort?: TokenSort,
     @Query('order', new ParseEnumPipe(SortOrder)) order?: SortOrder,
     @Query('includeMetaESDT', new ParseBoolPipe) includeMetaESDT?: boolean,
+    @Query('mexPairType', new ParseEnumPipe(MexPairType)) mexPairType?: MexPairType,
   ): Promise<TokenDetailed[]> {
     return await this.tokenService.getTokens(
       new QueryPagination({ from, size }),
-      new TokenFilter({ type, search, name, identifier, identifiers, includeMetaESDT, sort, order })
+      new TokenFilter({ type, search, name, identifier, identifiers, includeMetaESDT, sort, order, mexPairType })
     );
   }
 
@@ -74,6 +77,7 @@ export class TokenController {
   @ApiQuery({ name: 'identifier', description: 'Search by token identifier', required: false })
   @ApiQuery({ name: 'identifiers', description: 'Search by multiple token identifiers, comma-separated', required: false })
   @ApiQuery({ name: 'includeMetaESDT', description: 'Include MetaESDTs in response', required: false, type: Boolean })
+  @ApiQuery({ name: 'mexPairType', description: 'Token Mex Pair', required: false, enum: MexPairType })
   async getTokenCount(
     @Query('search') search?: string,
     @Query('name') name?: string,
@@ -81,8 +85,9 @@ export class TokenController {
     @Query('identifier', ParseTokenPipe) identifier?: string,
     @Query('identifiers', ParseArrayPipe) identifiers?: string[],
     @Query('includeMetaESDT', new ParseBoolPipe) includeMetaESDT?: boolean,
+    @Query('mexPairType', new ParseEnumPipe(MexPairType)) mexPairType?: MexPairType,
   ): Promise<number> {
-    return await this.tokenService.getTokenCount(new TokenFilter({ type, search, name, identifier, identifiers, includeMetaESDT }));
+    return await this.tokenService.getTokenCount(new TokenFilter({ type, search, name, identifier, identifiers, includeMetaESDT, mexPairType }));
   }
 
   @Get("/tokens/c")
@@ -94,8 +99,9 @@ export class TokenController {
     @Query('identifier', ParseTokenPipe) identifier?: string,
     @Query('identifiers', ParseArrayPipe) identifiers?: string[],
     @Query('includeMetaESDT', new ParseBoolPipe) includeMetaESDT?: boolean,
+    @Query('mexPairType', new ParseEnumPipe(MexPairType)) mexPairType?: MexPairType,
   ): Promise<number> {
-    return await this.tokenService.getTokenCount(new TokenFilter({ type, search, name, identifier, identifiers, includeMetaESDT }));
+    return await this.tokenService.getTokenCount(new TokenFilter({ type, search, name, identifier, identifiers, includeMetaESDT, mexPairType }));
   }
 
   @Get('/tokens/:identifier')
