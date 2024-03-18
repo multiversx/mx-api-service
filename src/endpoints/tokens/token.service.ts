@@ -40,6 +40,7 @@ import { TrieOperationsTimeoutError } from "../esdt/exceptions/trie.operations.t
 import { TokenSupplyOptions } from "./entities/token.supply.options";
 import { TransferService } from "../transfers/transfer.service";
 import { MexPairService } from "../mex/mex.pair.service";
+import { MexPairType } from "../mex/entities/mex.pair.type";
 
 @Injectable()
 export class TokenService {
@@ -168,7 +169,7 @@ export class TokenService {
   }
 
   private sortTokens(tokens: TokenDetailed[], sort: TokenSort, order: SortOrder): TokenDetailed[] {
-    let criteria: (token: Token) => number;
+    let criteria: (token: TokenDetailed) => number;
 
     switch (sort) {
       case TokenSort.accounts:
@@ -181,7 +182,7 @@ export class TokenService {
         criteria = token => token.price ?? 0;
         break;
       case TokenSort.marketCap:
-        criteria = token => token.marketCap ?? 0;
+        criteria = token => token.mexPairType === MexPairType.experimental ? 0 : token.marketCap ?? 0;
         break;
       default:
         throw new Error(`Unsupported sorting criteria '${sort}'`);
