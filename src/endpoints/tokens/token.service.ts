@@ -182,7 +182,7 @@ export class TokenService {
         criteria = token => token.price ?? 0;
         break;
       case TokenSort.marketCap:
-        criteria = token => token.mexPairType === MexPairType.experimental ? 0 : token.marketCap ?? 0;
+        criteria = token => token.marketCap ?? 0;
         break;
       default:
         throw new Error(`Unsupported sorting criteria '${sort}'`);
