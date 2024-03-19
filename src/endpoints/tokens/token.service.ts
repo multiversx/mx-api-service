@@ -40,6 +40,7 @@ import { TrieOperationsTimeoutError } from "../esdt/exceptions/trie.operations.t
 import { TokenSupplyOptions } from "./entities/token.supply.options";
 import { TransferService } from "../transfers/transfer.service";
 import { MexPairService } from "../mex/mex.pair.service";
+import { MexPairState } from "../mex/entities/mex.pair.state";
 
 @Injectable()
 export class TokenService {
@@ -181,7 +182,7 @@ export class TokenService {
         criteria = token => token.price ?? 0;
         break;
       case TokenSort.marketCap:
-        criteria = token => token.marketCap ?? 0;
+        criteria = token => token.isLowLiquidity ? 0 : (token.marketCap ?? 0);
         break;
       default:
         throw new Error(`Unsupported sorting criteria '${sort}'`);
@@ -752,6 +753,7 @@ export class TokenService {
 
     await this.batchProcessTokens(tokens);
 
+    await this.applyMexLiquidity(tokens.filter(x => x.type !== TokenType.MetaESDT));
     await this.applyMexPrices(tokens.filter(x => x.type !== TokenType.MetaESDT));
     await this.applyMexPairType(tokens.filter(x => x.type !== TokenType.MetaESDT));
 
@@ -868,6 +870,23 @@ export class TokenService {
     }
   }
 
+  private async applyMexLiquidity(tokens: TokenDetailed[]): Promise<void> {
+    try {
+      const pairs = await this.mexPairService.getAllMexPairs();
+      const filteredPairs = pairs.filter(x => x.state === MexPairState.active);
+
+      for (const token of tokens) {
+        const pairs = filteredPairs.filter(x => x.baseId === token.identifier || x.quoteId === token.identifier);
+        if (pairs.length > 0) {
+          token.totalLiquidity = pairs.sum(x => x.totalValue / 2);
+        }
+      }
+    } catch (error) {
+      this.logger.error('Could not apply mex liquidity');
+      this.logger.error(error);
+    }
+  }
+
   private async applyMexPrices(tokens: TokenDetailed[]): Promise<void> {
     try {
       const indexedTokens = await this.mexTokenService.getMexPricesRaw();
@@ -883,6 +902,10 @@ export class TokenService {
           if (price.isToken) {
             token.price = price.price;
             token.marketCap = price.price * NumberUtils.denominateString(supply.circulatingSupply, token.decimals);
+
+            if (token.totalLiquidity && token.marketCap && token.totalLiquidity / token.marketCap < 0.01) {
+              token.isLowLiquidity = true;
+            }
           }
 
           token.supply = supply.totalSupply;

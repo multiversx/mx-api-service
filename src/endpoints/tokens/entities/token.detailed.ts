@@ -43,4 +43,12 @@ export class TokenDetailed extends Token {
   @Field(() => MexPairType, { description: "Mex pair type details." })
   @ApiProperty({ enum: MexPairType })
   mexPairType: MexPairType = MexPairType.experimental;
+
+  @Field(() => Number, { description: "Total value captured in liquidity pools." })
+  @ApiProperty({ type: Number, nullable: true })
+  totalLiquidity: number | undefined = undefined;
+
+  @Field(() => Boolean, { description: 'If the liquidity to market cap ratio is less than 1%, we consider it as low liquidity.', nullable: true })
+  @ApiProperty({ type: Boolean, nullable: true })
+  isLowLiquidity: boolean | undefined = undefined;
 }
