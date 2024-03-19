@@ -40,7 +40,6 @@ import { TrieOperationsTimeoutError } from "../esdt/exceptions/trie.operations.t
 import { TokenSupplyOptions } from "./entities/token.supply.options";
 import { TransferService } from "../transfers/transfer.service";
 import { MexPairService } from "../mex/mex.pair.service";
-import { MexPairType } from "../mex/entities/mex.pair.type";
 
 @Injectable()
 export class TokenService {
