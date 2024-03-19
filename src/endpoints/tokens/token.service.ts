@@ -883,6 +883,7 @@ export class TokenService {
         const pairs = filteredPairs.filter(x => x.baseId === token.identifier || x.quoteId === token.identifier);
         if (pairs.length > 0) {
           token.totalLiquidity = pairs.sum(x => x.totalValue / 2);
+          token.totalVolume24h = pairs.sum(x => x.volume24h ?? 0);
         }
       }
     } catch (error) {

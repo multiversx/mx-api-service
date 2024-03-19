@@ -139,6 +139,10 @@ export class Token {
   @ApiProperty({ type: Number, nullable: true })
   totalLiquidity: number | undefined = undefined;
 
+  @Field(() => Number, { description: "Total traded value in the last 24h within the liquidity pools." })
+  @ApiProperty({ type: Number, nullable: true })
+  totalVolume24h: number | undefined = undefined;
+
   @Field(() => Boolean, { description: 'If the liquidity to market cap ratio is less than 1%, we consider it as low liquidity.', nullable: true })
   @ApiProperty({ type: Boolean, nullable: true })
   isLowLiquidity: boolean | undefined = undefined;

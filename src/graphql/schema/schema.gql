@@ -3800,6 +3800,11 @@ type TokenWithBalanceAccountFlat {
   """Token initial minting details."""
   initialMinted: String!
 
+  """
+  If the liquidity to market cap ratio is less than 1%, we consider it as low liquidity.
+  """
+  isLowLiquidity: Boolean
+
   """Token isPause property."""
   isPaused: Boolean!
 
@@ -3829,6 +3834,9 @@ type TokenWithBalanceAccountFlat {
 
   """Creation timestamp."""
   timestamp: Float!
+
+  """Total value captured in liquidity pools."""
+  totalLiquidity: Float!
 
   """Tokens transactions."""
   transactions: Float
