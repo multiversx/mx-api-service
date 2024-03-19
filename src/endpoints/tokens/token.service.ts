@@ -701,7 +701,7 @@ export class TokenService {
 
     const tokens = await this.getAllTokens();
     for (const token of tokens) {
-      if (token.price && token.marketCap) {
+      if (token.price && token.marketCap && !token.isLowLiquidity) {
         totalMarketCap += token.marketCap;
       }
     }
@@ -779,7 +779,11 @@ export class TokenService {
       }
     }
 
-    tokens = tokens.sortedDescending(token => token.assets ? 1 : 0, token => token.isLowLiquidity ? 0 : (token.marketCap ?? 0), token => token.transactions ?? 0);
+    tokens = tokens.sortedDescending(
+      token => token.assets ? 1 : 0,
+      token => token.isLowLiquidity ? 0 : (token.marketCap ?? 0),
+      token => token.transactions ?? 0,
+    );
 
     return tokens;
   }
