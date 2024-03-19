@@ -3,7 +3,6 @@ import { Field, ObjectType } from "@nestjs/graphql";
 import { ApiProperty } from "@nestjs/swagger";
 import { Token } from "./token";
 import { TokenRoles } from "./token.roles";
-import { MexPairType } from "src/endpoints/mex/entities/mex.pair.type";
 
 @ObjectType("TokenDetailed", { description: "TokenDetailed object type." })
 export class TokenDetailed extends Token {
@@ -39,16 +38,4 @@ export class TokenDetailed extends Token {
   @Field(() => Boolean, { description: 'If the given NFT collection can transfer the underlying tokens by default.', nullable: true })
   @ApiProperty({ type: Boolean, nullable: true })
   canTransfer: boolean | undefined = undefined;
-
-  @Field(() => MexPairType, { description: "Mex pair type details." })
-  @ApiProperty({ enum: MexPairType })
-  mexPairType: MexPairType = MexPairType.experimental;
-
-  @Field(() => Number, { description: "Total value captured in liquidity pools." })
-  @ApiProperty({ type: Number, nullable: true })
-  totalLiquidity: number | undefined = undefined;
-
-  @Field(() => Boolean, { description: 'If the liquidity to market cap ratio is less than 1%, we consider it as low liquidity.', nullable: true })
-  @ApiProperty({ type: Boolean, nullable: true })
-  isLowLiquidity: boolean | undefined = undefined;
 }
