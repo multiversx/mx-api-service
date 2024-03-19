@@ -22,6 +22,7 @@ import { TokenProperties } from "src/endpoints/tokens/entities/token.properties"
 import { EsdtType } from "src/endpoints/esdt/entities/esdt.type";
 import { AccountAssets } from "src/common/assets/entities/account.assets";
 import { TransferService } from "src/endpoints/transfers/transfer.service";
+import { MexPairService } from "src/endpoints/mex/mex.pair.service";
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -122,6 +123,12 @@ describe('Token Service', () => {
           provide: TransferService,
           useValue: {
             getTransfersCount: jest.fn(),
+          },
+        },
+        {
+          provide: MexPairService,
+          useValue: {
+            getAllMexPairs: jest.fn(),
           },
         },
       ],
