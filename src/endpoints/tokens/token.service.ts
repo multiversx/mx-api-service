@@ -38,6 +38,8 @@ import { TokenAssetsPriceSourceType } from "src/common/assets/entities/token.ass
 import { DataApiService } from "src/common/data-api/data-api.service";
 import { TrieOperationsTimeoutError } from "../esdt/exceptions/trie.operations.timeout.error";
 import { TokenSupplyOptions } from "./entities/token.supply.options";
+import { TransferService } from "../transfers/transfer.service";
+import { MexPairService } from "../mex/mex.pair.service";
 
 @Injectable()
 export class TokenService {
@@ -52,10 +54,13 @@ export class TokenService {
     private readonly cachingService: CacheService,
     @Inject(forwardRef(() => TransactionService))
     private readonly transactionService: TransactionService,
+    @Inject(forwardRef(() => TransferService))
+    private readonly transferService: TransferService,
     @Inject(forwardRef(() => MexTokenService))
     private readonly mexTokenService: MexTokenService,
     private readonly collectionService: CollectionService,
     private readonly dataApiService: DataApiService,
+    private readonly mexPairService: MexPairService,
   ) { }
 
   async isToken(identifier: string): Promise<boolean> {
@@ -154,11 +159,16 @@ export class TokenService {
       tokens = this.sortTokens(tokens, filter.sort, filter.order ?? SortOrder.desc);
     }
 
+    const mexPairTypes = filter.mexPairType ?? [];
+    if (mexPairTypes.length > 0) {
+      tokens = tokens.filter(token => mexPairTypes.includes(token.mexPairType));
+    }
+
     return tokens;
   }
 
   private sortTokens(tokens: TokenDetailed[], sort: TokenSort, order: SortOrder): TokenDetailed[] {
-    let criteria: (token: Token) => number;
+    let criteria: (token: TokenDetailed) => number;
 
     switch (sort) {
       case TokenSort.accounts:
@@ -743,6 +753,7 @@ export class TokenService {
     await this.batchProcessTokens(tokens);
 
     await this.applyMexPrices(tokens.filter(x => x.type !== TokenType.MetaESDT));
+    await this.applyMexPairType(tokens.filter(x => x.type !== TokenType.MetaESDT));
 
     await this.cachingService.batchApplyAll(
       tokens,
@@ -775,6 +786,22 @@ export class TokenService {
     return await this.assetsService.getTokenAssets(identifier);
   }
 
+  private async applyMexPairType(tokens: TokenDetailed[]): Promise<void> {
+    try {
+      const mexPairs = await this.mexPairService.getAllMexPairs();
+      const mexPairsMap = new Map(mexPairs.map(pair => [pair.baseId, pair.type]));
+
+      for (const token of tokens) {
+        const mexPairType = mexPairsMap.get(token.identifier);
+        if (mexPairType) {
+          token.mexPairType = mexPairType;
+        }
+      }
+    } catch (error) {
+      this.logger.error('Could not apply mex pair types', error);
+    }
+  }
+
   private async batchProcessTokens(tokens: TokenDetailed[]) {
     await this.cachingService.batchApplyAll(
       tokens,
@@ -791,6 +818,14 @@ export class TokenService {
       (token, accounts) => token.accounts = accounts,
       CacheInfo.TokenAccounts('').ttl,
     );
+
+    await this.cachingService.batchApplyAll(
+      tokens,
+      token => CacheInfo.TokenTransfers(token.identifier).key,
+      async token => await this.getTransfersCount(token),
+      (token, transfersCount) => token.transfersCount = transfersCount,
+      CacheInfo.TokenTransfers('').ttl,
+    );
   }
 
   private async getTransactionCount(token: TokenDetailed): Promise<number | undefined> {
@@ -798,6 +833,17 @@ export class TokenService {
       return await this.transactionService.getTransactionCount(new TransactionFilter({ tokens: [token.identifier, ...token.assets?.extraTokens ?? []] }));
     } catch (error) {
       this.logger.error(`An unhandled error occurred when getting transaction count for token '${token.identifier}'`);
+      this.logger.error(error);
+      return undefined;
+    }
+  }
+
+  private async getTransfersCount(token: TokenDetailed): Promise<number | undefined> {
+    try {
+      const filter = new TransactionFilter({ tokens: [token.identifier, ...token.assets?.extraTokens ?? []] });
+      return await this.transferService.getTransfersCount(filter);
+    } catch (error) {
+      this.logger.error(`An unhandled error occurred when getting transfers count for token '${token.identifier}'`);
       this.logger.error(error);
       return undefined;
     }

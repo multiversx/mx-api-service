@@ -104,6 +104,11 @@ export class GatewayService {
     return result;
   }
 
+  async getNodeWaitingEpochsLeft(bls: string): Promise<number> {
+    const result = await this.get(`node/waiting-epochs-left/${bls}`, GatewayComponentRequest.getNodeWaitingEpochsLeft);
+    return result.epochsLeft;
+  }
+
   async getTransactionProcessStatus(txHash: string): Promise<TransactionProcessStatus> {
     // eslint-disable-next-line require-await
     const result = await this.get(`transaction/${txHash}/process-status`, GatewayComponentRequest.transactionProcessStatus, async (error) => {

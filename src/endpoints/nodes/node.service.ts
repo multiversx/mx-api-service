@@ -54,7 +54,14 @@ export class NodeService {
 
   async getNode(bls: string): Promise<Node | undefined> {
     const allNodes = await this.getAllNodes();
-    return allNodes.find(x => x.bls === bls);
+    const node = allNodes.find(x => x.bls === bls);
+
+    if (this.apiConfigService.isNodeEpochsLeftEnabled()) {
+      if (node && node.status === NodeStatus.waiting) {
+        node.epochsLeft = await this.gatewayService.getNodeWaitingEpochsLeft(bls);
+      }
+    }
+    return node;
   }
 
   async getNodeCount(query: NodeFilter): Promise<number> {

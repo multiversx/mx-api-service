@@ -2768,6 +2768,9 @@ type Node {
   """Bls address for the given node."""
   bls: String!
 
+  """Number of epochs left for a node in waiting state."""
+  epochsLeft: Float
+
   """Full history details for the given node."""
   fullHistory: Boolean
 
@@ -3636,6 +3639,9 @@ type TokenDetailed {
   """Current market cap details."""
   marketCap: Float
 
+  """Mex pair type details."""
+  mexPairType: MexPairType!
+
   """Token minted amount details."""
   minted: String!
 
@@ -3665,6 +3671,9 @@ type TokenDetailed {
 
   """Tokens transactions."""
   transactions: Float
+
+  """Tokens transfers."""
+  transfersCount: Float
 
   """Token type."""
   type: TokenType!
@@ -3815,6 +3824,9 @@ type TokenWithBalanceAccountFlat {
   """Current market cap details."""
   marketCap: Float
 
+  """Mex pair type details."""
+  mexPairType: MexPairType!
+
   """Token minted details."""
   minted: String!
 
@@ -3838,6 +3850,9 @@ type TokenWithBalanceAccountFlat {
 
   """Tokens transactions."""
   transactions: Float
+
+  """Tokens transfers."""
+  transfersCount: Float
 
   """Token type."""
   type: TokenType!

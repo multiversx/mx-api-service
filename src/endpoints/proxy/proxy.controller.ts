@@ -10,9 +10,11 @@ import { Constants, ParseAddressPipe, ParseBlockHashPipe, ParseIntPipe, ParseTra
 import { CacheService, NoCache } from "@multiversx/sdk-nestjs-cache";
 import { OriginLogger } from "@multiversx/sdk-nestjs-common";
 import { DeepHistoryInterceptor } from "src/interceptors/deep-history.interceptor";
+import { DisableFieldsInterceptorOnController } from "@multiversx/sdk-nestjs-http";
 @Controller()
 @ApiTags('proxy')
 @ApiExcludeController()
+@DisableFieldsInterceptorOnController()
 export class ProxyController {
   private readonly logger = new OriginLogger(ProxyController.name);
 

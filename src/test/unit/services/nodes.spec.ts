@@ -23,6 +23,7 @@ describe('NodeService', () => {
   let cacheService: CacheService;
   let vmQueryService: VmQueryService;
   let apiConfigService: ApiConfigService;
+  let gatewayService: GatewayService;
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
@@ -36,6 +37,7 @@ describe('NodeService', () => {
             getNetworkConfig: jest.fn(),
             getValidatorAuctions: jest.fn(),
             getNodeHeartbeatStatus: jest.fn(),
+            getNodeWaitingEpochsLeft: jest.fn(),
           },
         },
         {
@@ -52,6 +54,7 @@ describe('NodeService', () => {
             getStakingContractAddress: jest.fn(),
             getAuctionContractAddress: jest.fn(),
             isNodeSyncProgressEnabled: jest.fn(),
+            isNodeEpochsLeftEnabled: jest.fn(),
           },
         },
         {
@@ -103,6 +106,7 @@ describe('NodeService', () => {
     cacheService = moduleRef.get<CacheService>(CacheService);
     vmQueryService = moduleRef.get<VmQueryService>(VmQueryService);
     apiConfigService = moduleRef.get<ApiConfigService>(ApiConfigService);
+    gatewayService = moduleRef.get<GatewayService>(GatewayService);
   });
 
   beforeEach(() => { jest.restoreAllMocks(); });
@@ -191,6 +195,26 @@ describe('NodeService', () => {
         const result = await nodeService.getNode(bls);
         expect(result).toStrictEqual(expectedNode);
       });
+
+      it('should return epochsLeft key from gateway for a specific node', async () => {
+        const bls = "72043abcbb6c3f472c3f486eb181794eeb11c70df5cdbb2c12eb16b92ec0dea12dfae0762641d92bf9a1c8743156f008f19a6a1b5160ace7c304390133c47a54399def909a7caeb59b9534002e7de7140d3241cce1a857f6c733dcfa80a1f28e";
+
+        jest.spyOn(apiConfigService, 'isNodeEpochsLeftEnabled').mockReturnValue(true);
+        // eslint-disable-next-line require-await
+        jest.spyOn(nodeService['cacheService'], 'getOrSet').mockImplementation(async (key, getter) => {
+          if (key === CacheInfo.Nodes.key) {
+            return mockNodes;
+          }
+          return getter();
+        });
+
+        jest.spyOn(nodeService, 'getAllNodes').mockResolvedValue(mockNodes);
+        jest.spyOn(gatewayService, 'getNodeWaitingEpochsLeft').mockResolvedValue(10);
+
+        const result = await nodeService.getNode(bls);
+
+        expect(result).toEqual(expect.objectContaining({ epochsLeft: 10 }));
+      });
     });
 
     describe('getNodeCount', () => {
@@ -198,7 +222,7 @@ describe('NodeService', () => {
         const allNodesSpy = jest.spyOn(nodeService, 'getAllNodes').mockResolvedValueOnce(Promise.resolve(mockNodes));
         const result = await nodeService.getNodeCount(new NodeFilter());
 
-        expect(result).toStrictEqual(99);
+        expect(result).toStrictEqual(100);
         expect(allNodesSpy).toHaveBeenCalledTimes(1);
       });
 
@@ -214,7 +238,7 @@ describe('NodeService', () => {
         const allNodesSpy = jest.spyOn(nodeService, 'getAllNodes').mockResolvedValueOnce(Promise.resolve(mockNodes));
         const result = await nodeService.getNodeCount(new NodeFilter({ type: NodeType.validator }));
 
-        expect(result).toStrictEqual(97);
+        expect(result).toStrictEqual(98);
         expect(allNodesSpy).toHaveBeenCalledTimes(1);
       });
 
@@ -222,7 +246,7 @@ describe('NodeService', () => {
         const allNodesSpy = jest.spyOn(nodeService, 'getAllNodes').mockResolvedValueOnce(Promise.resolve(mockNodes));
         const result = await nodeService.getNodeCount(new NodeFilter({ online: true }));
 
-        expect(result).toStrictEqual(97);
+        expect(result).toStrictEqual(98);
         expect(allNodesSpy).toHaveBeenCalledTimes(1);
       });
 
@@ -255,7 +279,7 @@ describe('NodeService', () => {
         const owner = "erd1kz2kumr0clug4ht2ek0l4l9drvq3rne9lmkwrjf3qv2luyuuaj2szjwv0f";
         const result = await nodeService.getNodeCount(new NodeFilter({ owner: owner }));
 
-        expect(result).toStrictEqual(2);
+        expect(result).toStrictEqual(3);
         expect(allNodesSpy).toHaveBeenCalledTimes(1);
       });
 
@@ -312,8 +336,8 @@ describe('NodeService', () => {
         const allNodesSpy = jest.spyOn(nodeService, 'getAllNodes').mockResolvedValueOnce(Promise.resolve(mockNodes));
 
         const expectedVersions = {
-          'v1.2.38.0': 0.8866,
-          'v1.2.39.0': 0.1134,
+          'v1.2.38.0': 0.8878,
+          'v1.2.39.0': 0.1122,
         };
         const result = await nodeService.getNodeVersionsRaw();
         expect(result).toStrictEqual(expectedVersions);

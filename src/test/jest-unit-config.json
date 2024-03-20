@@ -1,0 +1,26 @@
+{
+  "moduleFileExtensions": [
+    "js",
+    "json",
+    "ts"
+  ],
+  "rootDir": "../../",
+  "testEnvironment": "node",
+  "testRegex": ".spec.ts$",
+  "transform": {
+    "^.+\\.(t|j)s$": "ts-jest"
+  },
+  "modulePaths": [
+    "<rootDir>"
+  ],
+  "collectCoverageFrom": [
+    "./src/**/*.(t|j)s",
+    "!./src/crons/**",
+    "!./src/decorators/**",
+    "!./src/interceptors/**",
+    "!./src/test/**",
+    "!./src/websockets/**"
+  ],
+  "coverageDirectory": "./coverage/unit",
+  "testTimeout": 180000
+}

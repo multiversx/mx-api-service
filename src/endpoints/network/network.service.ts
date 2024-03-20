@@ -42,6 +42,7 @@ export class NetworkService {
     @Inject(forwardRef(() => StakeService))
     private readonly stakeService: StakeService,
     private readonly pluginService: PluginService,
+    @Inject(forwardRef(() => SmartContractResultService))
     private readonly smartContractResultService: SmartContractResultService
   ) { }
 

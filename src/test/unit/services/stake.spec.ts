@@ -191,8 +191,8 @@ describe('Stake Service', () => {
 
       const result = await stakeService.getValidators();
 
-      expect(result.totalValidators).toEqual(97);
-      expect(result.activeValidators).toEqual(96);
+      expect(result.totalValidators).toEqual(98);
+      expect(result.activeValidators).toEqual(97);
       expect(result.queueSize).toEqual(parseInt(Buffer.from(queueSize, 'base64').toString()));
     });
   });

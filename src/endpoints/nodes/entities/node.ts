@@ -141,4 +141,8 @@ export class Node {
   @Field(() => Boolean, { description: "Nodes in auction danger zone.", nullable: true })
   @ApiProperty({ type: Boolean, example: false })
   isInDangerZone: boolean | undefined = undefined;
+
+  @Field(() => Number, { description: "Number of epochs left for a node in waiting state.", nullable: true })
+  @ApiProperty({ type: Number, example: 15 })
+  epochsLeft: number | undefined = undefined;
 }
