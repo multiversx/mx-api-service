@@ -565,7 +565,7 @@ describe('API Config', () => {
         .spyOn(ConfigService.prototype, 'get')
         .mockImplementation(jest.fn(() => undefined));
 
-      expect(() => apiConfigService.getIsTransactionProcessorCronActive()).toThrowError('No cron.transactionProcessor flag present');
+      expect(apiConfigService.getIsTransactionProcessorCronActive()).toStrictEqual(false);
     });
   });
 
@@ -584,7 +584,7 @@ describe('API Config', () => {
         .spyOn(ConfigService.prototype, 'get')
         .mockImplementation(jest.fn(() => undefined));
 
-      expect(() => apiConfigService.getTransactionProcessorMaxLookBehind()).toThrowError('No cron.transactionProcessorMaxLookBehind flag present');
+      expect(apiConfigService.getTransactionProcessorMaxLookBehind()).toStrictEqual(100);
     });
   });
 
@@ -1674,6 +1674,25 @@ describe('API Config', () => {
         .mockImplementation(jest.fn(() => undefined));
 
       expect(() => apiConfigService.getSelfUrl()).toThrowError('No self url present');
+    });
+  });
+
+  describe('isNodeEpochsLeftEnabled', () => {
+    it("should return Node Epochs Left active flag", () => {
+      jest
+        .spyOn(ConfigService.prototype, "get")
+        .mockImplementation(jest.fn(() => true));
+
+      const results = apiConfigService.isNodeEpochsLeftEnabled();
+      expect(results).toEqual(true);
+    });
+
+    it("should throw error because test simulates that node epochs left flag is not defined", () => {
+      jest
+        .spyOn(ConfigService.prototype, 'get')
+        .mockImplementation(jest.fn(() => undefined));
+
+      expect(apiConfigService.isNodeEpochsLeftEnabled()).toStrictEqual(false);
     });
   });
 });

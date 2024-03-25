@@ -1,6 +1,6 @@
 import { CacheService } from "@multiversx/sdk-nestjs-cache";
-import { TransactionProcessor } from "@elrondnetwork/transaction-processor";
-import { Inject, Injectable } from "@nestjs/common";
+import { LogTopic, TransactionProcessor } from "@elrondnetwork/transaction-processor";
+import { Inject, Injectable, Logger } from "@nestjs/common";
 import { ClientProxy } from "@nestjs/microservices";
 import { Cron } from "@nestjs/schedule";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
@@ -10,6 +10,7 @@ import { CacheInfo } from "src/utils/cache.info";
 export class TransactionCompletedService {
   private transactionProcessor: TransactionProcessor = new TransactionProcessor();
   private isProcessing = false;
+  private readonly logger: Logger = new Logger(TransactionCompletedService.name);
 
   constructor(
     private readonly apiConfigService: ApiConfigService,
@@ -40,6 +41,7 @@ export class TransactionCompletedService {
             await this.cachingService.batchDelCache(keys);
           }
 
+          this.logger.log(`Transactions completed: ${transactionsExcludingSmartContractResults.map(x => x.hash).join(', ')}`);
           this.clientProxy.emit('transactionsCompleted', transactionsExcludingSmartContractResults);
         },
         onTransactionsPending: async (_, __, transactions) => {
@@ -58,6 +60,16 @@ export class TransactionCompletedService {
         },
         setLastProcessedNonce: async (shardId, nonce) => {
           await this.cachingService.set<number>(CacheInfo.TransactionCompletedShardNonce(shardId).key, nonce, CacheInfo.TransactionCompletedShardNonce(shardId).ttl);
+        },
+        onMessageLogged: (topic, message) => {
+          const logLevel = this.apiConfigService.getTransactionCompletedLogLevel();
+          if (topic === LogTopic.CrossShardSmartContractResult && [LogTopic.Error].includes(logLevel)) {
+            return;
+          } else if (topic === LogTopic.Debug && [LogTopic.Error, LogTopic.CrossShardSmartContractResult].includes(logLevel)) {
+            return;
+          }
+
+          this.logger.log(`[${topic}] ${message}`);
         },
       });
     } finally {
