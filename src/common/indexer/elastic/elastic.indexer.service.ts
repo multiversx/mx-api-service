@@ -845,6 +845,7 @@ export class ElasticIndexerService implements IndexerInterface {
     }
 
     return await this.elasticService.setCustomValues('accounts', address, updateExtraFields);
+  }
 
   async getBlockByTimestampAndShardId(timestamp: number, shardId: number): Promise<Block | undefined> {
     const elasticQuery = ElasticQuery.create()

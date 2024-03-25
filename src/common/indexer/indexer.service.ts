@@ -379,6 +379,7 @@ export class IndexerService implements IndexerInterface {
   @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
   async setAccountExtraFields(address: string, txCount: number, transfersCount: number, scrCount: number, deployedAt: number | null, transfersCount24h: number, transfersCount7d: number, transfersCount30d: number): Promise<void> {
     return await this.indexerInterface.setAccountExtraFields(address, txCount, transfersCount, scrCount, deployedAt, transfersCount24h, transfersCount7d, transfersCount30d);
+  }
 
   async getBlockByTimestampAndShardId(timestamp: number, shardId: number): Promise<Block | undefined> {
     return await this.indexerInterface.getBlockByTimestampAndShardId(timestamp, shardId);
