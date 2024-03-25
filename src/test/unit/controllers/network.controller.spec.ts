@@ -58,7 +58,6 @@ describe("NetworkController", () => {
         topUpApr: 0.052561,
         baseApr: 0.104972,
         tokenMarketCap: 552829990,
-        minimumAuctionTopUp: undefined,
       };
       networkServiceMocks.getEconomics.mockResolvedValue(mockEconomics);
 
