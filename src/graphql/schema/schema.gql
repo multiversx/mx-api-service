@@ -1849,6 +1849,9 @@ type GlobalStake {
   """Active validators."""
   activeValidators: Float!
 
+  """All Staked Nodes."""
+  allStakedNodes: Float!
+
   """Auction Validators."""
   auctionValidators: Float!
 
