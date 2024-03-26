@@ -613,7 +613,14 @@ export class CacheInfo {
   static SmartContractScrCount(address: string): CacheInfo {
     return {
       key: `smartContractScrCount:${address}`,
-      ttl: Constants.oneDay(),
+      ttl: Constants.oneHour(),
+    };
+  }
+
+  static SmartContractTxCount(address: string): CacheInfo {
+    return {
+      key: `smartContractTxCount:${address}`,
+      ttl: Constants.oneHour(),
     };
   }
 

@@ -301,6 +301,22 @@ export class CacheWarmerService {
     }
   }
 
+  @Cron(CronExpression.EVERY_HOUR)
+  @Lock({ name: 'Smart contract extra fields invalidations' })
+  async handleSmartContractsExtraFields() {
+    const smartContracts = await this.accountService.getAccountsRaw({ from: 0, size: 25 }, new AccountQueryOptions({ isSmartContract: true }));
+
+    for (const contract of smartContracts) {
+      const scrCount = await this.accountService.getAccountScResults(contract.address);
+      const scrCacheInfo = CacheInfo.SmartContractScrCount(contract.address);
+      await this.cachingService.set(scrCacheInfo.key, scrCount, scrCacheInfo.ttl);
+
+      const txCount = await this.accountService.getAccountTxCount(contract.address);
+      const txCacheInfo = CacheInfo.SmartContractTxCount(contract.address);
+      await this.cachingService.set(txCacheInfo.key, txCount, txCacheInfo.ttl);
+    }
+  }
+
   @Lock({ name: 'Elastic updater: Update collection isVerified, nftCount, holderCount', verbose: true })
   async handleUpdateCollectionExtraDetails() {
     const allAssets = await this.assetsService.getAllTokenAssets();
