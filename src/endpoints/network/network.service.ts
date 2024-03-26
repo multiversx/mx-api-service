@@ -344,10 +344,18 @@ export class NetworkService {
     });
 
     let indexerVersion: string | undefined;
+    let gatewayVersion: string | undefined;
+
     try {
       indexerVersion = await this.elasticIndexerService.getIndexerVersion();
     } catch (error) {
       throw new Error('Failed to fetch indexer version');
+    }
+
+    try {
+      gatewayVersion = await this.gatewayService.getGatewayVersion();
+    } catch (error) {
+      throw new Error('Failed to fetch gateway version');
     }
 
     const about = new About({
@@ -357,6 +365,7 @@ export class NetworkService {
       cluster: this.apiConfigService.getCluster(),
       version: apiVersion,
       indexerVersion: indexerVersion,
+      gatewayVersion: gatewayVersion,
       features: features,
     });
 

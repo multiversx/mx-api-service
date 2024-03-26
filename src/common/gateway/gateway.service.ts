@@ -46,6 +46,11 @@ export class GatewayService {
     private readonly apiService: ApiService
   ) { }
 
+  async getGatewayVersion(): Promise<string | undefined> {
+    const result = await this.get('about', GatewayComponentRequest.gatewayVersion);
+    return result.appVersion;
+  }
+
   async getValidatorAuctions(): Promise<Auction[]> {
     const result = await this.get('validator/auction', GatewayComponentRequest.validatorAuction);
 
