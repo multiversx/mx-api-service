@@ -199,7 +199,7 @@ export class ElasticIndexerService implements IndexerInterface {
     const query = ElasticQuery.create()
       .withMustMatchCondition('key', 'indexer-version');
 
-    const result = await this.elasticService.getList('values-000001', '_search', query);
+    const result = await this.elasticService.getList('values', '_search', query);
 
     if (result && result.length > 0) {
       return result[0].value;
