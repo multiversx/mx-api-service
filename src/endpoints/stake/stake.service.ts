@@ -10,7 +10,7 @@ import { StakeTopup } from "./entities/stake.topup";
 import { NetworkService } from "../network/network.service";
 import { GatewayService } from "src/common/gateway/gateway.service";
 import { CacheInfo } from "src/utils/cache.info";
-import { AddressUtils, BinaryUtils, RoundUtils } from "@multiversx/sdk-nestjs-common";
+import { AddressUtils, RoundUtils } from "@multiversx/sdk-nestjs-common";
 import { ApiUtils } from "@multiversx/sdk-nestjs-http";
 import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { OriginLogger } from "@multiversx/sdk-nestjs-common";
@@ -108,7 +108,7 @@ export class StakeService {
     const nodes = await this.nodeService.getAllNodes();
     const validators = nodes.filter(x => x.type === NodeType.validator);
 
-    const { totalValidators, inactiveValidators } = await this.getTotalAndInactiveValidators(validators, stakingContractAddress);
+    const { totalValidators, inactiveValidators } = await this.getTotalAndInactiveValidators(validators);
 
     const activeValidators = validators.filter(
       node => [NodeStatus.eligible, NodeStatus.waiting].includes(node.status ?? NodeStatus.unknown) && node.online === true
@@ -121,9 +121,9 @@ export class StakeService {
     });
   }
 
-  async getTotalAndInactiveValidators(validators: Node[], stakingContractAddress: string): Promise<{ totalValidators: number, inactiveValidators: number }> {
+  async getTotalAndInactiveValidators(validators: Node[]): Promise<{ totalValidators: number, inactiveValidators: number }> {
     if (!this.apiConfigService.isStakingV4Enabled()) {
-      return this.getTotalAndInactiveValidatorsBeforeStakingV4(validators, stakingContractAddress);
+      return this.getTotalAndInactiveValidatorsBeforeStakingV4(validators);
     }
 
     const currentEpoch = await this.blockService.getCurrentEpoch();
@@ -131,40 +131,24 @@ export class StakeService {
     const activationStep2Epoch = activationStep1Epoch + 1;
 
     if (currentEpoch < activationStep1Epoch) {
-      return this.getTotalAndInactiveValidatorsBeforeStakingV4(validators, stakingContractAddress);
+      return this.getTotalAndInactiveValidatorsBeforeStakingV4(validators);
     } else if (currentEpoch < activationStep2Epoch) {
-      return this.getTotalAndInactiveValidatorsDuringStakingV4(validators);
+      return await this.getTotalAndInactiveValidatorsDuringStakingV4(validators);
     } else {
-      return this.getTotalAndInactiveValidatorsAfterStakingV4(validators);
+      return await this.getTotalAndInactiveValidatorsAfterStakingV4(validators);
     }
   }
 
-  async getTotalAndInactiveValidatorsBeforeStakingV4(validators: Node[], stakingContractAddress: string): Promise<{ totalValidators: number, inactiveValidators: number }> {
+  getTotalAndInactiveValidatorsBeforeStakingV4(validators: Node[]): { totalValidators: number, inactiveValidators: number } {
     const totalValidators = validators.filter(
       node => [NodeStatus.eligible, NodeStatus.waiting].includes(node.status ?? NodeStatus.unknown)
     );
 
-    let queueSizeResult;
-
-    if (!this.apiConfigService.isStakingV4Enabled()) {
-      queueSizeResult = await this.vmQueryService.vmQuery(
-        stakingContractAddress,
-        'getQueueSize',
-      );
-
-      if (queueSizeResult.length === 0) {
-        throw new Error(`Invalid length for getQueueSize result`);
-      }
-    }
-
-    let queueSize = 0;
-    if (queueSizeResult) {
-      queueSize = BinaryUtils.hexToNumber(BinaryUtils.base64ToHex(queueSizeResult[0]));
-    }
+    const queuedValidators = validators.filter(node => node.status === NodeStatus.queued);
 
     return {
       totalValidators: totalValidators.length,
-      inactiveValidators: queueSize,
+      inactiveValidators: queuedValidators.length,
     };
   }
 
