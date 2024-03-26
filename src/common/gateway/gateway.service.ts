@@ -49,9 +49,10 @@ export class GatewayService {
   async getGatewayVersion(): Promise<string | undefined> {
     const result = await this.get('about', GatewayComponentRequest.gatewayVersion);
 
-    if (result && result.appVersion) {
+    if (result && result.appVersion && result.appVersion !== "undefined") {
       return result.appVersion;
     }
+
     return undefined;
   }
 

@@ -7,7 +7,7 @@ import { AuctionNode } from "src/common/gateway/entities/auction.node";
 import { NetworkConfig } from "src/common/gateway/entities/network.config";
 import { NetworkStatus } from "src/common/gateway/entities/network.status";
 import { GatewayService } from "src/common/gateway/gateway.service";
-import { ElasticIndexerService } from "src/common/indexer/elastic/elastic.indexer.service";
+import { IndexerService } from "src/common/indexer/indexer.service";
 import { PluginService } from "src/common/plugins/plugin.service";
 import { AccountService } from "src/endpoints/accounts/account.service";
 import { BlockService } from "src/endpoints/blocks/block.service";
@@ -128,7 +128,7 @@ describe('NetworkService', () => {
           },
         },
         {
-          provide: ElasticIndexerService,
+          provide: IndexerService,
           useValue: {
             getIndexerVersion: jest.fn(),
           },
