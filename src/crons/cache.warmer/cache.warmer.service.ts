@@ -290,18 +290,6 @@ export class CacheWarmerService {
   }
 
   @Cron(CronExpression.EVERY_HOUR)
-  @Lock({ name: 'Smart contract result count invalidation' })
-  async handleScrCountForSmartContracts() {
-    const smartContracts = await this.accountService.getAccountsRaw({ from: 0, size: 25 }, new AccountQueryOptions({ isSmartContract: true }));
-
-    for (const contract of smartContracts) {
-      const scrCount = await this.accountService.getAccountScResults(contract.address);
-      const cacheInfo = CacheInfo.SmartContractScrCount(contract.address);
-      await this.cachingService.set(cacheInfo.key, scrCount, cacheInfo.ttl);
-    }
-  }
-
-  @Cron(CronExpression.EVERY_HOUR)
   @Lock({ name: 'Smart contract extra fields invalidations' })
   async handleSmartContractsExtraFields() {
     const smartContracts = await this.accountService.getAccountsRaw({ from: 0, size: 25 }, new AccountQueryOptions({ isSmartContract: true }));
