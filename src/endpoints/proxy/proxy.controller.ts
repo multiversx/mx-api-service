@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Get, Param, Post, Query, Req, Res } from "@nestjs/common";
+import { BadRequestException, Body, Controller, Get, Param, Post, Query, Req, Res, UseInterceptors } from "@nestjs/common";
 import { ApiExcludeController, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { VmQueryRequest } from "../vm.query/entities/vm.query.request";
 import { VmQueryService } from "../vm.query/vm.query.service";
@@ -6,12 +6,15 @@ import { GatewayService } from "src/common/gateway/gateway.service";
 import { Response, Request } from "express";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
 import { PluginService } from "src/common/plugins/plugin.service";
-import { Constants, ParseAddressPipe, ParseBlockHashPipe, ParseTransactionHashPipe } from "@multiversx/sdk-nestjs-common";
+import { Constants, ParseAddressPipe, ParseBlockHashPipe, ParseIntPipe, ParseTransactionHashPipe } from "@multiversx/sdk-nestjs-common";
 import { CacheService, NoCache } from "@multiversx/sdk-nestjs-cache";
 import { OriginLogger } from "@multiversx/sdk-nestjs-common";
+import { DeepHistoryInterceptor } from "src/interceptors/deep-history.interceptor";
+import { DisableFieldsInterceptorOnController } from "@multiversx/sdk-nestjs-http";
 @Controller()
 @ApiTags('proxy')
 @ApiExcludeController()
+@DisableFieldsInterceptorOnController()
 export class ProxyController {
   private readonly logger = new OriginLogger(ProxyController.name);
 
@@ -193,9 +196,13 @@ export class ProxyController {
     status: 201,
     description: 'Returns the result of the query (legacy)',
   })
-  async queryLegacy(@Body() query: VmQueryRequest) {
+  @UseInterceptors(DeepHistoryInterceptor)
+  async queryLegacy(
+    @Body() query: VmQueryRequest,
+    @Query('timestamp', ParseIntPipe) timestamp: number | undefined,
+  ) {
     try {
-      return await this.vmQueryService.vmQueryFullResult(query.scAddress, query.funcName, query.caller, query.args, query.value);
+      return await this.vmQueryService.vmQueryFullResult(query.scAddress, query.funcName, query.caller, query.args, query.value, timestamp);
     } catch (error: any) {
       throw new BadRequestException(error.response.data);
     }
@@ -254,6 +261,25 @@ export class ProxyController {
       );
 
       res.type('application/json').send(validatorStatistics);
+    } catch (error: any) {
+      throw new BadRequestException(error.response.data);
+    }
+  }
+
+  @Get('/validator/auction')
+  @NoCache()
+  async getValidatorAuction(@Res() res: Response) {
+    try {
+      const validatorAuction = await this.cachingService.getOrSet(
+        'validatorAuction',
+        async () => {
+          const result = await this.gatewayService.getRaw('validator/auction', GatewayComponentRequest.validatorAuction);
+          return result.data;
+        },
+        Constants.oneMinute() * 2,
+      );
+
+      res.type('application/json').send(validatorAuction);
     } catch (error: any) {
       throw new BadRequestException(error.response.data);
     }

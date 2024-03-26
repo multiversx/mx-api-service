@@ -391,4 +391,9 @@ export class IndexerService implements IndexerInterface {
   async ensureTokensWritable(): Promise<void> {
     return await this.indexerInterface.ensureTokensWritable();
   }
+
+  @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
+  async getBlockByTimestampAndShardId(timestamp: number, shardId: number): Promise<Block | undefined> {
+    return await this.indexerInterface.getBlockByTimestampAndShardId(timestamp, shardId);
+  }
 }

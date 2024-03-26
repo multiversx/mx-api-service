@@ -156,9 +156,11 @@ export interface IndexerInterface {
 
   setExtraCollectionFields(identifier: string, isVerified: boolean, holderCount: number, nftCount: number): Promise<void>
 
-  setAccountAssetsFields(address: string, assets: AccountAssets): Promise<void>;
+  setAccountAssetsFields(address: string, assets: AccountAssets): Promise<void>
 
-  ensureAccountsWritable(): Promise<void>;
+  ensureAccountsWritable(): Promise<void>
 
-  ensureTokensWritable(): Promise<void>;
+  ensureTokensWritable(): Promise<void>
+
+  getBlockByTimestampAndShardId(timestamp: number, shardId: number): Promise<Block | undefined>
 }

@@ -1,4 +1,4 @@
-import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, NotFoundException, Param, Query } from '@nestjs/common';
+import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, NotFoundException, Param, Query, UseInterceptors } from '@nestjs/common';
 import { ApiExcludeEndpoint, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { AccountService } from './account.service';
 import { AccountDetailed } from './entities/account.detailed';
@@ -54,6 +54,8 @@ import { AccountHistoryFilter } from './entities/account.history.filter';
 import { ParseArrayPipeOptions } from '@multiversx/sdk-nestjs-common/lib/pipes/entities/parse.array.options';
 import { NodeStatusRaw } from '../nodes/entities/node.status';
 import { AccountKeyFilter } from './entities/account.key.filter';
+import { DeepHistoryInterceptor } from 'src/interceptors/deep-history.interceptor';
+import { MexPairType } from '../mex/entities/mex.pair.type';
 
 @Controller()
 @ApiTags('accounts')
@@ -183,14 +185,17 @@ export class AccountController {
   }
 
   @Get("/accounts/:address")
+  @UseInterceptors(DeepHistoryInterceptor)
   @ApiOperation({ summary: 'Account details', description: 'Returns account details for a given address' })
   @ApiQuery({ name: 'withGuardianInfo', description: 'Returns guardian data for a given address', required: false })
   @ApiQuery({ name: 'fields', description: 'List of fields to filter by', required: false })
+  @ApiQuery({ name: 'timestamp', description: 'Retrieve entry from timestamp', required: false, type: Number })
   @ApiOkResponse({ type: AccountDetailed })
   async getAccountDetails(
     @Param('address', ParseAddressPipe) address: string,
     @Query('withGuardianInfo', new ParseBoolPipe) withGuardianInfo?: boolean,
     @Query('fields', ParseArrayPipe) fields?: string[],
+    @Query('timestamp', ParseIntPipe) _timestamp?: number,
   ): Promise<AccountDetailed> {
     const account = await this.accountService.getAccount(address, fields, withGuardianInfo);
     if (!account) {
@@ -227,6 +232,7 @@ export class AccountController {
   }
 
   @Get("/accounts/:address/tokens")
+  @UseInterceptors(DeepHistoryInterceptor)
   @ApiOperation({ summary: 'Account tokens', description: 'Returns a list of all available fungible tokens for a given address, together with their balance' })
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
@@ -236,6 +242,8 @@ export class AccountController {
   @ApiQuery({ name: 'identifier', description: 'Search by token identifier', required: false })
   @ApiQuery({ name: 'identifiers', description: 'A comma-separated list of identifiers to filter by', required: false, type: String })
   @ApiQuery({ name: 'includeMetaESDT', description: 'Include MetaESDTs in response', required: false, type: Boolean })
+  @ApiQuery({ name: 'timestamp', description: 'Retrieve entries from timestamp', required: false, type: Number })
+  @ApiQuery({ name: 'mexPairType', description: 'Token Mex Pair', required: false, enum: MexPairType })
   @ApiOkResponse({ type: [TokenWithBalance] })
   async getAccountTokens(
     @Param('address', ParseAddressPipe) address: string,
@@ -247,9 +255,11 @@ export class AccountController {
     @Query('identifier') identifier?: string,
     @Query('identifiers', ParseArrayPipe) identifiers?: string[],
     @Query('includeMetaESDT', new ParseBoolPipe) includeMetaESDT?: boolean,
+    @Query('timestamp', ParseIntPipe) _timestamp?: number,
+    @Query('mexPairType', new ParseEnumArrayPipe(MexPairType)) mexPairType?: MexPairType[],
   ): Promise<TokenWithBalance[]> {
     try {
-      return await this.tokenService.getTokensForAddress(address, new QueryPagination({ from, size }), new TokenFilter({ type, search, name, identifier, identifiers, includeMetaESDT }));
+      return await this.tokenService.getTokensForAddress(address, new QueryPagination({ from, size }), new TokenFilter({ type, search, name, identifier, identifiers, includeMetaESDT, mexPairType }));
     } catch (error) {
       this.logger.error(`Error in getAccountTokens for address ${address}`);
       this.logger.error(error);
@@ -259,6 +269,7 @@ export class AccountController {
   }
 
   @Get("/accounts/:address/tokens/count")
+  @UseInterceptors(DeepHistoryInterceptor)
   @ApiOperation({ summary: 'Account token count', description: 'Returns the total number of tokens for a given address' })
   @ApiQuery({ name: 'type', description: 'Token type', required: false, enum: TokenType })
   @ApiQuery({ name: 'search', description: 'Search by collection identifier', required: false })
@@ -266,6 +277,8 @@ export class AccountController {
   @ApiQuery({ name: 'identifier', description: 'Search by token identifier', required: false })
   @ApiQuery({ name: 'identifiers', description: 'A comma-separated list of identifiers to filter by', required: false, type: String })
   @ApiQuery({ name: 'includeMetaESDT', description: 'Include MetaESDTs in response', required: false, type: Boolean })
+  @ApiQuery({ name: 'timestamp', description: 'Retrieve entries from timestamp', required: false, type: Number })
+  @ApiQuery({ name: 'mexPairType', description: 'Token Mex Pair', required: false, enum: MexPairType })
   @ApiOkResponse({ type: Number })
   async getTokenCount(
     @Param('address', ParseAddressPipe) address: string,
@@ -275,9 +288,11 @@ export class AccountController {
     @Query('identifier') identifier?: string,
     @Query('identifiers', ParseArrayPipe) identifiers?: string[],
     @Query('includeMetaESDT', new ParseBoolPipe) includeMetaESDT?: boolean,
+    @Query('timestamp', ParseIntPipe) _timestamp?: number,
+    @Query('mexPairType', new ParseEnumArrayPipe(MexPairType)) mexPairType?: MexPairType[],
   ): Promise<number> {
     try {
-      return await this.tokenService.getTokenCountForAddress(address, new TokenFilter({ type, search, name, identifier, identifiers, includeMetaESDT }));
+      return await this.tokenService.getTokenCountForAddress(address, new TokenFilter({ type, search, name, identifier, identifiers, includeMetaESDT, mexPairType }));
     } catch (error) {
       this.logger.error(`Error in getTokenCount for address ${address}`);
       this.logger.error(error);
@@ -287,6 +302,7 @@ export class AccountController {
   }
 
   @Get("/accounts/:address/tokens/c")
+  @UseInterceptors(DeepHistoryInterceptor)
   @ApiExcludeEndpoint()
   async getTokenCountAlternative(
     @Param('address', ParseAddressPipe) address: string,
@@ -296,9 +312,11 @@ export class AccountController {
     @Query('identifier') identifier?: string,
     @Query('identifiers', ParseArrayPipe) identifiers?: string[],
     @Query('includeMetaESDT', new ParseBoolPipe) includeMetaESDT?: boolean,
+    @Query('timestamp', ParseIntPipe) _timestamp?: number,
+    @Query('mexPairType', new ParseEnumArrayPipe(MexPairType)) mexPairType?: MexPairType[],
   ): Promise<number> {
     try {
-      return await this.tokenService.getTokenCountForAddress(address, new TokenFilter({ type, search, name, identifier, identifiers, includeMetaESDT }));
+      return await this.tokenService.getTokenCountForAddress(address, new TokenFilter({ type, search, name, identifier, identifiers, includeMetaESDT, mexPairType }));
     } catch (error) {
       this.logger.error(`Error in getTokenCount for address ${address}`);
       this.logger.error(error);
@@ -308,11 +326,13 @@ export class AccountController {
   }
 
   @Get("/accounts/:address/tokens/:token")
+  @UseInterceptors(DeepHistoryInterceptor)
   @ApiOkResponse({ type: TokenWithBalance })
   @ApiOperation({ summary: 'Account token details', description: 'Returns details about a specific fungible token from a given address' })
   async getAccountToken(
     @Param('address', ParseAddressPipe) address: string,
     @Param('token', ParseTokenOrNftPipe) token: string,
+    @Query('timestamp', ParseIntPipe) _timestamp?: number,
   ): Promise<TokenDetailedWithBalance> {
     const result = await this.tokenService.getTokenForAddress(address, token);
     if (!result) {
@@ -541,6 +561,7 @@ export class AccountController {
   }
 
   @Get("/accounts/:address/nfts")
+  @UseInterceptors(DeepHistoryInterceptor)
   @ApiOkResponse({ type: [NftAccount] })
   @ApiOperation({ summary: 'Account NFTs', description: 'Returns a list of all available NFTs/SFTs/MetaESDTs owned by the provided address' })
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
@@ -561,6 +582,7 @@ export class AccountController {
   @ApiQuery({ name: 'computeScamInfo', description: 'Compute scam info in the response', required: false, type: Boolean })
   @ApiQuery({ name: 'excludeMetaESDT', description: 'Exclude NFTs of type "MetaESDT" in the response', required: false, type: Boolean })
   @ApiQuery({ name: 'fields', description: 'List of fields to filter by', required: false })
+  @ApiQuery({ name: 'timestamp', description: 'Retrieve entry from timestamp', required: false, type: Number })
   async getAccountNfts(
     @Param('address', ParseAddressPipe) address: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
@@ -581,6 +603,7 @@ export class AccountController {
     @Query('source', new ParseEnumPipe(EsdtDataSource)) source?: EsdtDataSource,
     @Query('excludeMetaESDT', new ParseBoolPipe) excludeMetaESDT?: boolean,
     @Query('fields', ParseArrayPipe) fields?: string[],
+    @Query('timestamp', ParseIntPipe) _timestamp?: number,
   ): Promise<NftAccount[]> {
     const options = NftQueryOptions.enforceScamInfoFlag(size, new NftQueryOptions({ withSupply, withScamInfo, computeScamInfo }));
 
@@ -595,6 +618,7 @@ export class AccountController {
   }
 
   @Get("/accounts/:address/nfts/count")
+  @UseInterceptors(DeepHistoryInterceptor)
   @ApiOperation({ summary: 'Account NFT/SFT tokens count', description: 'Returns the total number of NFT/SFT tokens from a given address, as well as the total number of a certain type of ESDT ' })
   @ApiQuery({ name: 'search', description: 'Search by collection identifier', required: false })
   @ApiQuery({ name: 'identifiers', description: 'Filter by identifiers, comma-separated', required: false })
@@ -607,6 +631,7 @@ export class AccountController {
   @ApiQuery({ name: 'hasUris', description: 'Return all NFTs that have one or more uris', required: false })
   @ApiQuery({ name: 'includeFlagged', description: 'Include NFTs that are flagged or not', required: false })
   @ApiQuery({ name: 'excludeMetaESDT', description: 'Exclude NFTs of type "MetaESDT" in the response', required: false, type: Boolean })
+  @ApiQuery({ name: 'timestamp', description: 'Retrieve entry from timestamp', required: false, type: Number })
   @ApiOkResponse({ type: Number })
   async getNftCount(
     @Param('address', ParseAddressPipe) address: string,
@@ -621,11 +646,13 @@ export class AccountController {
     @Query('hasUris', new ParseBoolPipe) hasUris?: boolean,
     @Query('includeFlagged', new ParseBoolPipe) includeFlagged?: boolean,
     @Query('excludeMetaESDT', new ParseBoolPipe) excludeMetaESDT?: boolean,
+    @Query('timestamp', ParseIntPipe) _timestamp?: number,
   ): Promise<number> {
     return await this.nftService.getNftCountForAddress(address, new NftFilter({ search, identifiers, type, collection, collections, name, tags, creator, hasUris, includeFlagged, excludeMetaESDT }));
   }
 
   @Get("/accounts/:address/nfts/c")
+  @UseInterceptors(DeepHistoryInterceptor)
   @ApiExcludeEndpoint()
   async getNftCountAlternative(
     @Param('address', ParseAddressPipe) address: string,
@@ -640,20 +667,24 @@ export class AccountController {
     @Query('hasUris', new ParseBoolPipe) hasUris?: boolean,
     @Query('includeFlagged', new ParseBoolPipe) includeFlagged?: boolean,
     @Query('excludeMetaESDT', new ParseBoolPipe) excludeMetaESDT?: boolean,
+    @Query('timestamp', ParseIntPipe) _timestamp?: number,
   ): Promise<number> {
     return await this.nftService.getNftCountForAddress(address, new NftFilter({ search, identifiers, type, collection, collections, name, tags, creator, hasUris, includeFlagged, excludeMetaESDT }));
   }
 
   @Get("/accounts/:address/nfts/:nft")
+  @UseInterceptors(DeepHistoryInterceptor)
   @ApiOperation({ summary: 'Account NFT/SFT token details', description: 'Returns details about a specific fungible token for a given address' })
   @ApiQuery({ name: 'fields', description: 'List of fields to filter by', required: false })
   @ApiQuery({ name: 'extract', description: 'Extract a specific field', required: false })
+  @ApiQuery({ name: 'timestamp', description: 'Retrieve entry from timestamp', required: false, type: Number })
   @ApiOkResponse({ type: NftAccount })
   async getAccountNft(
     @Param('address', ParseAddressPipe) address: string,
     @Param('nft', ParseNftPipe) nft: string,
     @Query('fields', ParseArrayPipe) fields?: string[],
     @Query('extract') extract?: string,
+    @Query('timestamp', ParseIntPipe) _timestamp?: number,
   ): Promise<NftAccount> {
     const actualFields = extract ? [extract] : fields;
 
@@ -665,10 +696,24 @@ export class AccountController {
     return result;
   }
 
-  @Get("/accounts/:address/stake")
-  @ApiOperation({ summary: 'Account stake details', description: 'Summarizes total staked amount for the given provider, as well as when and how much unbond will be performed' })
+  @Get('/accounts/:address/stake')
+  @UseInterceptors(DeepHistoryInterceptor)
+  @ApiOperation({
+    summary: 'Account stake details',
+    description:
+      'Summarizes total staked amount for the given provider, as well as when and how much unbond will be performed',
+  })
+  @ApiQuery({
+    name: 'timestamp',
+    description: 'Retrieve entry from timestamp',
+    required: false,
+    type: Number,
+  })
   @ApiOkResponse({ type: ProviderStake })
-  async getAccountStake(@Param('address', ParseAddressPipe) address: string): Promise<ProviderStake> {
+  async getAccountStake(
+    @Param('address', ParseAddressPipe) address: string,
+    @Query('timestamp', ParseIntPipe) _timestamp?: number,
+  ): Promise<ProviderStake> {
     return await this.stakeService.getStakeForAddress(address);
   }
 
@@ -680,9 +725,14 @@ export class AccountController {
   }
 
   @Get("/accounts/:address/delegation-legacy")
+  @UseInterceptors(DeepHistoryInterceptor)
   @ApiOperation({ summary: 'Account legacy delegation details', description: 'Returns staking information related to the legacy delegation pool' })
   @ApiOkResponse({ type: AccountDelegationLegacy })
-  async getAccountDelegationLegacy(@Param('address', ParseAddressPipe) address: string): Promise<AccountDelegationLegacy> {
+  @ApiQuery({ name: 'timestamp', description: 'Retrieve entry from timestamp', required: false, type: Number })
+  async getAccountDelegationLegacy(
+    @Param('address', ParseAddressPipe) address: string,
+    @Query('timestamp', ParseIntPipe) _timestamp?: number,
+  ): Promise<AccountDelegationLegacy> {
     return await this.delegationLegacyService.getDelegationForAddress(address);
   }
 

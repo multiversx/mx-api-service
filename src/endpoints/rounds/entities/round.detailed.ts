@@ -9,7 +9,7 @@ export class RoundDetailed extends Round {
     Object.assign(this, init);
   }
 
-  @Field(() => [String],)
-  @ApiProperty({ isArray: true })
+  @Field(() => [String])
+  @ApiProperty({ type: String, isArray: true })
   signers: string[] = [];
 }

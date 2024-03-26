@@ -22,5 +22,41 @@ export class GlobalStake {
 
   @Field(() => Float, { description: "Total stake amount." })
   @ApiProperty(SwaggerUtils.amountPropertyOptions())
-  totalStaked: number = 0;
+  totalStaked: string = '';
+
+  @Field(() => String, { description: "Minimum Auction Qualified Top Up information.", nullable: true })
+  @ApiProperty({ type: String, nullable: true })
+  minimumAuctionQualifiedTopUp: string | undefined = undefined;
+
+  @Field(() => String, { description: "Minimum Auction Qualified Stake information.", nullable: true })
+  @ApiProperty({ type: String, nullable: true })
+  minimumAuctionQualifiedStake: string | undefined = undefined;
+
+  @Field(() => Float, { description: "Auction Validators." })
+  @ApiProperty({ type: Number, default: 15 })
+  auctionValidators: number = 0;
+
+  @Field(() => Float, { description: "Nakamoto Coefficient." })
+  @ApiProperty({ type: Number, default: 4 })
+  nakamotoCoefficient: number = 0;
+
+  @Field(() => Float, { description: "Danger Zone Validators." })
+  @ApiProperty({ type: Number, default: 15 })
+  dangerZoneValidators: number = 0;
+
+  @Field(() => Float, { description: "Eligible Validators." })
+  @ApiProperty({ type: Number, default: 15 })
+  eligibleValidators: number = 0;
+
+  @Field(() => Float, { description: "Not Eligible Validators." })
+  @ApiProperty({ type: Number, default: 15 })
+  waitingValidators: number = 0;
+
+  @Field(() => Float, { description: "Qualified Auction Validators." })
+  @ApiProperty({ type: Number, default: 10 })
+  qualifiedAuctionValidators: number = 0;
+
+  @Field(() => Float, { description: "All Staked Nodes." })
+  @ApiProperty({ type: Number, default: 27 })
+  allStakedNodes: number = 0;
 }

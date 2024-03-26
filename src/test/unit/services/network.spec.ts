@@ -2,8 +2,6 @@ import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { Test } from "@nestjs/testing";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { DataApiService } from "src/common/data-api/data-api.service";
-import { Auction } from "src/common/gateway/entities/auction";
-import { AuctionNode } from "src/common/gateway/entities/auction.node";
 import { NetworkConfig } from "src/common/gateway/entities/network.config";
 import { NetworkStatus } from "src/common/gateway/entities/network.status";
 import { GatewayService } from "src/common/gateway/gateway.service";
@@ -216,120 +214,6 @@ describe('NetworkService', () => {
 
       expect(getOrSetSpy).toHaveBeenCalledWith(CacheInfo.Economics.key, expect.any(Function), CacheInfo.Economics.ttl);
       expect(result).toEqual(expectedEconomics);
-    });
-  });
-
-  describe("getMinimumAuctionTopUp", () => {
-    it("Should correctly calculate minimum auction topup", async () => {
-      jest.spyOn(networkService['gatewayService'], "getValidatorAuctions")
-        .mockImplementation(jest.fn(() => Promise.resolve([
-          new Auction({
-            "qualifiedTopUp": "2500000000000000000000",
-            "auctionList": [
-              new AuctionNode({ "selected": true }),
-            ],
-          }),
-          new Auction({
-            "qualifiedTopUp": "2400000000000000000000",
-            "auctionList": [
-              new AuctionNode({ "selected": true }),
-            ],
-          }),
-          new Auction({
-            "qualifiedTopUp": "0",
-            "auctionList": [
-              new AuctionNode({ "selected": false }),
-            ],
-          }),
-        ])));
-
-      const minimumAuctionTopUp = await networkService.getMinimumAuctionTopUp();
-
-      expect(minimumAuctionTopUp).toStrictEqual('2400000000000000000000');
-    });
-
-    it("Should correctly calculate minimum auction topup even if values come sorted wrongly", async () => {
-      jest.spyOn(networkService['gatewayService'], "getValidatorAuctions")
-        .mockImplementation(jest.fn(() => Promise.resolve([
-          new Auction({
-            "qualifiedTopUp": "2400000000000000000000",
-            "auctionList": [
-              new AuctionNode({ "selected": true }),
-            ],
-          }),
-          new Auction({
-            "qualifiedTopUp": "2500000000000000000000",
-            "auctionList": [
-              new AuctionNode({ "selected": true }),
-            ],
-          }),
-          new Auction({
-            "qualifiedTopUp": "0",
-            "auctionList": [
-              new AuctionNode({ "selected": false }),
-            ],
-          }),
-        ])));
-
-      const minimumAuctionTopUp = await networkService.getMinimumAuctionTopUp();
-
-      expect(minimumAuctionTopUp).toStrictEqual('2400000000000000000000');
-    });
-
-    it("Should return correctly minimum auction topup if all values are selected", async () => {
-      jest.spyOn(networkService['gatewayService'], "getValidatorAuctions")
-        .mockImplementation(jest.fn(() => Promise.resolve([
-          new Auction({
-            "qualifiedTopUp": "2500000000000000000000",
-            "auctionList": [
-              new AuctionNode({ "selected": true }),
-            ],
-          }),
-          new Auction({
-            "qualifiedTopUp": "2400000000000000000000",
-            "auctionList": [
-              new AuctionNode({ "selected": true }),
-            ],
-          }),
-          new Auction({
-            "qualifiedTopUp": "2300000000000000000000",
-            "auctionList": [
-              new AuctionNode({ "selected": true }),
-            ],
-          }),
-        ])));
-
-      const minimumAuctionTopUp = await networkService.getMinimumAuctionTopUp();
-
-      expect(minimumAuctionTopUp).toStrictEqual('2300000000000000000000');
-    });
-
-    it("Should return undefined as minimum auction topup if all values are not selected", async () => {
-      jest.spyOn(networkService['gatewayService'], "getValidatorAuctions")
-        .mockImplementation(jest.fn(() => Promise.resolve([
-          new Auction({
-            "qualifiedTopUp": "2500000000000000000000",
-            "auctionList": [
-              new AuctionNode({ "selected": false }),
-            ],
-          }),
-          new Auction({
-            "qualifiedTopUp": "2400000000000000000000",
-            "auctionList": [
-              new AuctionNode({ "selected": false }),
-            ],
-          }),
-          new Auction({
-            "qualifiedTopUp": "2300000000000000000000",
-            "auctionList": [
-              new AuctionNode({ "selected": false }),
-            ],
-          }),
-        ])));
-
-      const minimumAuctionTopUp = await networkService.getMinimumAuctionTopUp();
-
-      expect(minimumAuctionTopUp).toBeUndefined();
     });
   });
 

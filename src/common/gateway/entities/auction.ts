@@ -15,5 +15,5 @@ export class Auction {
 
   qualifiedTopUp: string = '0';
 
-  auctionList: AuctionNode[] = [];
+  nodes: AuctionNode[] | null = [];
 }

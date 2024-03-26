@@ -806,7 +806,8 @@ export class ElasticIndexerService implements IndexerInterface {
     const query = ElasticQuery.create()
       .withMustMatchCondition('type', TokenType.FungibleESDT)
       .withFields(["name", "type", "currentOwner", "numDecimals", "properties", "timestamp"])
-      .withMustNotExistCondition('identifier');
+      .withMustNotExistCondition('identifier')
+      .withPagination({ from: 0, size: 1000 });
 
     const allTokens: any[] = [];
 
@@ -860,5 +861,16 @@ export class ElasticIndexerService implements IndexerInterface {
         throw new NotWritableError(collection);
       }
     }
+  }
+
+  async getBlockByTimestampAndShardId(timestamp: number, shardId: number): Promise<Block | undefined> {
+    const elasticQuery = ElasticQuery.create()
+      .withRangeFilter('timestamp', new RangeGreaterThanOrEqual(timestamp))
+      .withCondition(QueryConditionOptions.must, [QueryType.Match('shardId', shardId, QueryOperator.AND)])
+      .withSort([{ name: 'timestamp', order: ElasticSortOrder.ascending }]);
+
+    const blocks: Block[] = await this.elasticService.getList('blocks', '_search', elasticQuery);
+
+    return blocks.at(0);
   }
 }

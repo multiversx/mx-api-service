@@ -35,6 +35,9 @@ export class NodeController {
   @ApiQuery({ name: 'fullHistory', description: 'Whether node is of type \'Full History\' or not', required: false, type: 'boolean' })
   @ApiQuery({ name: 'sort', description: 'Sorting criteria', required: false, enum: SortNodes })
   @ApiQuery({ name: 'order', description: 'Sorting order (asc / desc)', required: false, enum: SortOrder })
+  @ApiQuery({ name: 'isQualified', description: 'Whether node is qualified or not', required: false, type: 'boolean' })
+  @ApiQuery({ name: 'isAuctioned', description: 'Whether node is auctioned or not', required: false, type: 'boolean' })
+  @ApiQuery({ name: 'isAuctionDangerZone', description: 'Whether node is in danger zone or not', required: false, type: 'boolean' })
   async getNodes(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
@@ -52,8 +55,11 @@ export class NodeController {
     @Query('fullHistory', ParseBoolPipe) fullHistory?: boolean,
     @Query('sort', new ParseEnumPipe(NodeSort)) sort?: NodeSort,
     @Query('order', new ParseEnumPipe(SortOrder)) order?: SortOrder,
+    @Query('isQualified', ParseBoolPipe) isQualified?: boolean,
+    @Query('isAuctioned', ParseBoolPipe) isAuctioned?: boolean,
+    @Query('isAuctionDangerZone', ParseBoolPipe) isAuctionDangerZone?: boolean,
   ): Promise<Node[]> {
-    return await this.nodeService.getNodes(new QueryPagination({ from, size }), new NodeFilter({ search, keys, online, type, status, shard, issues, identity, provider, owner, auctioned, fullHistory, sort, order }));
+    return await this.nodeService.getNodes(new QueryPagination({ from, size }), new NodeFilter({ search, keys, online, type, status, shard, issues, identity, provider, owner, auctioned, fullHistory, sort, order, isQualified, isAuctionDangerZone, isAuctioned }));
   }
 
   @Get("/nodes/versions")
@@ -79,6 +85,9 @@ export class NodeController {
   @ApiQuery({ name: 'fullHistory', description: 'Whether node is of type \'Full History\' or not', required: false, type: 'boolean' })
   @ApiQuery({ name: 'sort', description: 'Sorting criteria', required: false, enum: SortNodes })
   @ApiQuery({ name: 'order', description: 'Sorting order (asc / desc)', required: false, enum: SortOrder })
+  @ApiQuery({ name: 'isQualified', description: 'Whether node is qualified or not', required: false, type: 'boolean' })
+  @ApiQuery({ name: 'isAuctioned', description: 'Whether node is auctioned or not', required: false, type: 'boolean' })
+  @ApiQuery({ name: 'isAuctionDangerZone', description: 'Whether node is in danger zone or not', required: false, type: 'boolean' })
   getNodeCount(
     @Query('search') search?: string,
     @Query('online', ParseBoolPipe) online?: boolean,
@@ -93,8 +102,11 @@ export class NodeController {
     @Query('fullHistory', ParseBoolPipe) fullHistory?: boolean,
     @Query('sort', new ParseEnumPipe(NodeSort)) sort?: NodeSort,
     @Query('order', new ParseEnumPipe(SortOrder)) order?: SortOrder,
+    @Query('isQualified', ParseBoolPipe) isQualified?: boolean,
+    @Query('isAuctioned', ParseBoolPipe) isAuctioned?: boolean,
+    @Query('isAuctionDangerZone', ParseBoolPipe) isAuctionDangerZone?: boolean,
   ): Promise<number> {
-    return this.nodeService.getNodeCount(new NodeFilter({ search, online, type, status, shard, issues, identity, provider, owner, auctioned, fullHistory, sort, order }));
+    return this.nodeService.getNodeCount(new NodeFilter({ search, online, type, status, shard, issues, identity, provider, owner, auctioned, fullHistory, sort, order, isQualified, isAuctionDangerZone, isAuctioned }));
   }
 
   @Get("/nodes/c")
@@ -113,8 +125,11 @@ export class NodeController {
     @Query('owner', ParseAddressPipe) owner?: string,
     @Query('sort', new ParseEnumPipe(NodeSort)) sort?: NodeSort,
     @Query('order', new ParseEnumPipe(SortOrder)) order?: SortOrder,
+    @Query('isQualified', ParseBoolPipe) isQualified?: boolean,
+    @Query('isAuctioned', ParseBoolPipe) isAuctioned?: boolean,
+    @Query('isAuctionDangerZone', ParseBoolPipe) isAuctionDangerZone?: boolean,
   ): Promise<number> {
-    return this.nodeService.getNodeCount(new NodeFilter({ search, online, type, status, shard, issues, identity, provider, owner, auctioned, fullHistory, sort, order }));
+    return this.nodeService.getNodeCount(new NodeFilter({ search, online, type, status, shard, issues, identity, provider, owner, auctioned, fullHistory, sort, order, isQualified, isAuctionDangerZone, isAuctioned }));
   }
 
   @Get('/nodes/:bls')

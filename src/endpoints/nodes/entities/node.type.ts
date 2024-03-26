@@ -15,6 +15,5 @@ registerEnumType(NodeType, {
     validator: {
       description: 'Validator type.',
     },
-
   },
 });

@@ -1,6 +1,6 @@
 import { ParseBlsHashPipe } from "@multiversx/sdk-nestjs-common";
 import { Controller, Get, HttpException, HttpStatus, Param } from "@nestjs/common";
-import { ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from "@nestjs/swagger";
+import { ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiParam, ApiTags } from "@nestjs/swagger";
 import { KeyUnbondPeriod } from "./entities/key.unbond.period";
 import { KeysService } from "./keys.service";
 
@@ -11,7 +11,7 @@ export class KeysController {
 
   @Get("/keys/:key/unbond-period")
   @ApiOperation({ summary: 'Unbonding period', description: 'Returns remaining unbonding period for a given bls key' })
-  @ApiQuery({ name: 'key', description: 'The BLS key of the node', required: true })
+  @ApiParam({ name: 'key', description: 'The BLS key of the node', required: true })
   @ApiOkResponse({ type: KeyUnbondPeriod })
   @ApiNotFoundResponse({ description: 'Key not found' })
   async getKeyUnbondPeriod(
@@ -24,3 +24,4 @@ export class KeysController {
     return result;
   }
 }
+

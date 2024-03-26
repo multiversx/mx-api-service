@@ -20,9 +20,11 @@ import { TokenAssets } from "src/common/assets/entities/token.assets";
 import { NftRankAlgorithm } from "src/common/assets/entities/nft.rank.algorithm";
 import { TokenProperties } from "src/endpoints/tokens/entities/token.properties";
 import { EsdtType } from "src/endpoints/esdt/entities/esdt.type";
+import { AccountAssets } from "src/common/assets/entities/account.assets";
+import { TransferService } from "src/endpoints/transfers/transfer.service";
+import { MexPairService } from "src/endpoints/mex/mex.pair.service";
 import * as fs from 'fs';
 import * as path from 'path';
-import { AccountAssets } from "src/common/assets/entities/account.assets";
 
 describe('Token Service', () => {
   let tokenService: TokenService;
@@ -115,6 +117,18 @@ describe('Token Service', () => {
           provide: DataApiService,
           useValue: {
             getEsdtTokenPrice: jest.fn(),
+          },
+        },
+        {
+          provide: TransferService,
+          useValue: {
+            getTransfersCount: jest.fn(),
+          },
+        },
+        {
+          provide: MexPairService,
+          useValue: {
+            getAllMexPairs: jest.fn(),
           },
         },
       ],
