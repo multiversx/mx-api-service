@@ -610,6 +610,13 @@ export class CacheInfo {
     };
   }
 
+  static SmartContractScrCount(address: string): CacheInfo {
+    return {
+      key: `smartContractScrCount:${address}`,
+      ttl: Constants.oneDay(),
+    };
+  }
+
   static DataApiTokenPrice(identifier: string, timestamp?: number): CacheInfo {
     const priceDate = timestamp ? new Date(timestamp * 1000) : new Date();
     const isCurrentDate = priceDate.toISODateString() === new Date().toISODateString();

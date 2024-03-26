@@ -289,6 +289,18 @@ export class CacheWarmerService {
     await this.invalidateKey(CacheInfo.VerifiedAccounts.key, verifiedAccounts, CacheInfo.VerifiedAccounts.ttl);
   }
 
+  @Cron(CronExpression.EVERY_HOUR)
+  @Lock({ name: 'Smart contract result count invalidation' })
+  async handleScrCountForSmartContracts() {
+    const smartContracts = await this.accountService.getAccountsRaw({ from: 0, size: 25 }, new AccountQueryOptions({ isSmartContract: true }));
+
+    for (const contract of smartContracts) {
+      const scrCount = await this.accountService.getAccountScResults(contract.address);
+      const cacheInfo = CacheInfo.SmartContractScrCount(contract.address);
+      await this.cachingService.set(cacheInfo.key, scrCount, cacheInfo.ttl);
+    }
+  }
+
   @Lock({ name: 'Elastic updater: Update collection isVerified, nftCount, holderCount', verbose: true })
   async handleUpdateCollectionExtraDetails() {
     const allAssets = await this.assetsService.getAllTokenAssets();
