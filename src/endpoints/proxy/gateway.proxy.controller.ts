@@ -12,12 +12,13 @@ import { OriginLogger } from "@multiversx/sdk-nestjs-common";
 import { DeepHistoryInterceptor } from "src/interceptors/deep-history.interceptor";
 import { ApiService, DisableFieldsInterceptorOnController } from "@multiversx/sdk-nestjs-http";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
+
 @Controller()
 @ApiTags('proxy')
 @ApiExcludeController()
 @DisableFieldsInterceptorOnController()
-export class ProxyController {
-  private readonly logger = new OriginLogger(ProxyController.name);
+export class GatewayProxyController {
+  private readonly logger = new OriginLogger(GatewayProxyController.name);
 
   constructor(
     private readonly gatewayService: GatewayService,
