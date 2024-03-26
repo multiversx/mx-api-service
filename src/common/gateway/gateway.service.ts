@@ -48,7 +48,11 @@ export class GatewayService {
 
   async getGatewayVersion(): Promise<string | undefined> {
     const result = await this.get('about', GatewayComponentRequest.gatewayVersion);
-    return result.appVersion;
+
+    if (result && result.appVersion) {
+      return result.appVersion;
+    }
+    return undefined;
   }
 
   async getValidatorAuctions(): Promise<Auction[]> {
