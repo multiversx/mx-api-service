@@ -50,6 +50,9 @@ export class PostgresIndexerService implements IndexerInterface {
     private readonly validatorPublicKeysRepository: Repository<ValidatorPublicKeysDb>,
     private readonly indexerHelper: PostgresIndexerHelper,
   ) { }
+  setAccountExtraFields(_address: string, _txCount: number, _transfersCount: number, _scrCount: number, _deployedAt: number | null, _transfersCount24h: number, _transfersCount7d: number, _transfersCount30d: number): Promise<void> {
+    throw new Error("Method not implemented.");
+  }
 
   getAccountHistoryCount(_address: string, _filter?: AccountHistoryFilter | undefined): Promise<number> {
     throw new Error("Method not implemented.");

@@ -18,7 +18,7 @@ import { MexSettingsService } from "src/endpoints/mex/mex.settings.service";
 import { MexPairService } from "src/endpoints/mex/mex.pair.service";
 import { MexFarmService } from "src/endpoints/mex/mex.farm.service";
 import { CacheService, GuestCacheWarmer } from "@multiversx/sdk-nestjs-cache";
-import { Constants, Lock, OriginLogger } from "@multiversx/sdk-nestjs-common";
+import { AddressUtils, Constants, Lock, OriginLogger } from "@multiversx/sdk-nestjs-common";
 import { DelegationLegacyService } from "src/endpoints/delegation.legacy/delegation.legacy.service";
 import { SettingsService } from "src/common/settings/settings.service";
 import { TokenService } from "src/endpoints/tokens/token.service";
@@ -30,6 +30,7 @@ import { TokenDetailed } from "src/endpoints/tokens/entities/token.detailed";
 import { DataApiService } from "src/common/data-api/data-api.service";
 import { BlockService } from "src/endpoints/blocks/block.service";
 import { PoolService } from "src/endpoints/pool/pool.service";
+import { TransactionFilter } from "src/endpoints/transactions/entities/transaction.filter";
 
 @Injectable()
 export class CacheWarmerService {
@@ -311,6 +312,44 @@ export class CacheWarmerService {
     }
   }
 
+  @Cron(CronExpression.EVERY_DAY_AT_1AM)
+  @Lock({ name: 'Elastic updater: Update account extra fields', verbose: true })
+  async handleUpdateAccountExtraFields() {
+    if (!this.apiConfigService.isAccountExtraDetailsFeatureFlagEnabled()) {
+      this.logger.log('Account extra details feature flag is disabled. Skipping update.');
+      return;
+    }
+
+    const allAccountAssets = await this.assetsService.getAllAccountAssets();
+
+    for (const address of Object.keys(allAccountAssets)) {
+      try {
+        let txCount = 0;
+        let scrCount = 0;
+        let transfersCount = 0;
+        let deployedAt: number | null = null;
+        const transferFilter: TransactionFilter = { address };
+
+        if (AddressUtils.isSmartContractAddress(address)) {
+          txCount = await this.accountService.getAccountTxCount(address);
+          scrCount = await this.accountService.getAccountScResults(address);
+          transfersCount = await this.indexerService.getTransfersCount(transferFilter);
+          deployedAt = await this.accountService.getAccountDeployedAt(address);
+          this.logger.log(`Setting txCount: ${txCount}, transferCount: ${transfersCount}, scrCount: ${scrCount}, deployedAt: ${deployedAt} for address ${address}`);
+        }
+
+        const now = new Date();
+        const transfersCount24h = await this.getTransactionCountForInterval(address, now.addHours(-24), now);
+        const transfersCount7d = await this.getTransactionCountForInterval(address, now.addDays(-7), now);
+        const transfersCount30d = await this.getTransactionCountForInterval(address, now.addDays(-30), now);
+
+        await this.indexerService.setAccountExtraFields(address, txCount, transfersCount, scrCount, deployedAt, transfersCount24h, transfersCount7d, transfersCount30d);
+      } catch (error) {
+        this.logger.error(`Failed to setting extra fields for account with address '${address}': ${error}`);
+      }
+    }
+  }
+
   private async invalidateKey(key: string, data: any, ttl: number) {
     await this.cachingService.set(key, data, ttl);
     await this.refreshCacheKey(key, ttl);
@@ -318,5 +357,13 @@ export class CacheWarmerService {
 
   private async refreshCacheKey(key: string, ttl: number) {
     await this.clientProxy.emit('refreshCacheKey', { key, ttl });
+  }
+
+  private async getTransactionCountForInterval(address: string, startDate: Date, endDate: Date): Promise<number> {
+    const after = Math.floor(startDate.getTime() / 1000);
+    const before = Math.floor(endDate.getTime() / 1000);
+    const filter: TransactionFilter = { before, after, address };
+
+    return await this.indexerService.getTransfersCount(filter);
   }
 }

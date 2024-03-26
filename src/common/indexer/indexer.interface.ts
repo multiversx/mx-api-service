@@ -155,5 +155,7 @@ export interface IndexerInterface {
 
   setExtraCollectionFields(identifier: string, isVerified: boolean, holderCount: number, nftCount: number): Promise<void>
 
+  setAccountExtraFields(address: string, txCount: number, transfersCount: number, scrCount: number, deployedAt: number | null, transfersCount24h: number, transfersCount7d: number, transfersCount30d: number): Promise<void>;
+
   getBlockByTimestampAndShardId(timestamp: number, shardId: number): Promise<Block | undefined>
 }
