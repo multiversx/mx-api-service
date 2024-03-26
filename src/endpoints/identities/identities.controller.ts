@@ -1,9 +1,10 @@
-import { ParseArrayPipe } from "@multiversx/sdk-nestjs-common";
+import { ParseArrayPipe, ParseEnumPipe } from "@multiversx/sdk-nestjs-common";
 import { Controller, Get, HttpException, HttpStatus, Param, Query, Res } from "@nestjs/common";
 import { ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { Identity } from "./entities/identity";
 import { IdentitiesService } from "./identities.service";
 import { Response } from "express";
+import { IdentitySortCriteria } from "./entities/identity.sort.criteria";
 
 @Controller()
 @ApiTags('identities')
@@ -14,10 +15,12 @@ export class IdentitiesController {
   @ApiOperation({ summary: 'Identities', description: 'List of all node identities, used to group nodes by the same entity. "Free-floating" nodes that do not belong to any identity will also be returned' })
   @ApiOkResponse({ type: [Identity] })
   @ApiQuery({ name: 'identities', description: 'Filter by comma-separated list of identities', required: false })
+  @ApiQuery({ name: 'sort', description: 'Sort criteria (validators)', required: false, enum: IdentitySortCriteria })
   async getIdentities(
-    @Query('identities', ParseArrayPipe) identities: string[] = []
+    @Query('identities', ParseArrayPipe) identities: string[] = [],
+    @Query('sort', new ParseEnumPipe(IdentitySortCriteria)) sort?: IdentitySortCriteria,
   ): Promise<Identity[]> {
-    return await this.identitiesService.getIdentities(identities);
+    return await this.identitiesService.getIdentities(identities, sort);
   }
 
   @Get('/identities/:identifier')

@@ -689,9 +689,6 @@ type Economics {
   marketCap: Float
 
   """Total Supply general information."""
-  minimumAuctionTopUp: String
-
-  """Total Supply general information."""
   price: Float
 
   """Total Supply general information."""
@@ -1852,6 +1849,30 @@ type GlobalStake {
   """Active validators."""
   activeValidators: Float!
 
+  """All Staked Nodes."""
+  allStakedNodes: Float!
+
+  """Auction Validators."""
+  auctionValidators: Float!
+
+  """Danger Zone Validators."""
+  dangerZoneValidators: Float!
+
+  """Eligible Validators."""
+  eligibleValidators: Float!
+
+  """Minimum Auction Qualified Stake information."""
+  minimumAuctionQualifiedStake: String
+
+  """Minimum Auction Qualified Top Up information."""
+  minimumAuctionQualifiedTopUp: String
+
+  """Nakamoto Coefficient."""
+  nakamotoCoefficient: Float!
+
+  """Qualified Auction Validators."""
+  qualifiedAuctionValidators: Float!
+
   """Validators queue size."""
   queueSize: Float!
 
@@ -1860,6 +1881,9 @@ type GlobalStake {
 
   """Total validators."""
   totalValidators: Float!
+
+  """Not Eligible Validators."""
+  waitingValidators: Float!
 }
 
 """Identity object type."""
@@ -2736,7 +2760,7 @@ type Node {
   auctionPosition: Float
 
   """Auction selected for the given node."""
-  auctionSelected: Boolean
+  auctionQualified: Boolean
 
   """Auction top up for the given node."""
   auctionTopUp: String
@@ -2758,6 +2782,9 @@ type Node {
 
   """Instances for the given node."""
   instances: Float!
+
+  """Nodes in auction danger zone."""
+  isInDangerZone: Boolean
 
   """Issues for the given node."""
   issues: [String!]!
@@ -2872,6 +2899,8 @@ enum NodeSort {
 
 """Node status object type."""
 enum NodeStatus {
+  auction
+
   """Eligible status."""
   eligible
 

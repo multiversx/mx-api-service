@@ -12,6 +12,7 @@ import { IdentityDetailed } from "./entities/identity.detailed";
 import { StakeInfo } from "./entities/stake.info";
 import { NodeType } from "../nodes/entities/node.type";
 import { NodeStatus } from "../nodes/entities/node.status";
+import { IdentitySortCriteria } from "./entities/identity.sort.criteria";
 
 @Injectable()
 export class IdentitiesService {
@@ -33,10 +34,16 @@ export class IdentitiesService {
     return identity ? identity.avatar : undefined;
   }
 
-  async getIdentities(ids: string[]): Promise<Identity[]> {
+  async getIdentities(ids: string[], sort?: IdentitySortCriteria): Promise<Identity[]> {
     let identities = await this.getAllIdentities();
     if (ids.length > 0) {
       identities = identities.filter(x => x.identity && ids.includes(x.identity));
+    }
+
+    switch (sort) {
+      case IdentitySortCriteria.validators:
+        identities = identities.sortedDescending(x => x.validators ?? 0);
+        break;
     }
 
     return identities;

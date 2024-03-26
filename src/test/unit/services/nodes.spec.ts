@@ -71,6 +71,7 @@ describe('NodeService', () => {
           provide: StakeService,
           useValue: {
             getStakes: jest.fn(),
+            getMinimumAuctionStake: jest.fn(),
           },
         },
         {

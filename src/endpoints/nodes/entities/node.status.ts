@@ -8,7 +8,8 @@ export enum NodeStatus {
   jailed = 'jailed',
   queued = 'queued',
   leaving = 'leaving',
-  inactive = 'inactive'
+  inactive = 'inactive',
+  auction = 'auction'
 }
 
 export enum NodeStatusRaw {

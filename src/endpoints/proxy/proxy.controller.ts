@@ -266,6 +266,25 @@ export class ProxyController {
     }
   }
 
+  @Get('/validator/auction')
+  @NoCache()
+  async getValidatorAuction(@Res() res: Response) {
+    try {
+      const validatorAuction = await this.cachingService.getOrSet(
+        'validatorAuction',
+        async () => {
+          const result = await this.gatewayService.getRaw('validator/auction', GatewayComponentRequest.validatorAuction);
+          return result.data;
+        },
+        Constants.oneMinute() * 2,
+      );
+
+      res.type('application/json').send(validatorAuction);
+    } catch (error: any) {
+      throw new BadRequestException(error.response.data);
+    }
+  }
+
   @Get('/block/:shard/by-nonce/:nonce')
   @ApiQuery({ name: 'withTxs', description: 'Include transactions', required: false })
   async getBlockByShardAndNonce(
