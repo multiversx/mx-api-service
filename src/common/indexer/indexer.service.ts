@@ -382,7 +382,7 @@ export class IndexerService implements IndexerInterface {
   }
 
   @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
-  async getIndexerVersion(): Promise<string | undefined> {
-    return await this.indexerInterface.getIndexerVersion();
+  async getVersion(): Promise<string | undefined> {
+    return await this.indexerInterface.getVersion();
   }
 }

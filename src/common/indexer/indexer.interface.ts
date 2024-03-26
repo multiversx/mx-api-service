@@ -157,5 +157,5 @@ export interface IndexerInterface {
 
   getBlockByTimestampAndShardId(timestamp: number, shardId: number): Promise<Block | undefined>
 
-  getIndexerVersion(): Promise<string | undefined>
+  getVersion(): Promise<string | undefined>
 }

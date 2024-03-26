@@ -348,7 +348,7 @@ export class NetworkService {
     let gatewayVersion: string | undefined;
 
     try {
-      indexerVersion = await this.indexerService.getIndexerVersion();
+      indexerVersion = await this.indexerService.getVersion();
     } catch (error) {
       this.logger.error('Failed to fetch indexer version', error);
     }
