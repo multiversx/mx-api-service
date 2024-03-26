@@ -3651,11 +3651,14 @@ type TokenDetailed {
   """Total value captured in liquidity pools."""
   totalLiquidity: Float!
 
+  """Total traded value in the last 24h within the liquidity pools."""
+  totalVolume24h: Float!
+
   """Tokens transactions."""
   transactions: Float
 
   """Tokens transfers."""
-  transfersCount: Float
+  transfers: Float
 
   """Token type."""
   type: TokenType!
@@ -3838,11 +3841,14 @@ type TokenWithBalanceAccountFlat {
   """Total value captured in liquidity pools."""
   totalLiquidity: Float!
 
+  """Total traded value in the last 24h within the liquidity pools."""
+  totalVolume24h: Float!
+
   """Tokens transactions."""
   transactions: Float
 
   """Tokens transfers."""
-  transfersCount: Float
+  transfers: Float
 
   """Token type."""
   type: TokenType!

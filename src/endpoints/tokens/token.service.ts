@@ -829,7 +829,7 @@ export class TokenService {
       tokens,
       token => CacheInfo.TokenTransfers(token.identifier).key,
       async token => await this.getTransfersCount(token),
-      (token, transfersCount) => token.transfersCount = transfersCount,
+      (token, transfers) => token.transfers = transfers,
       CacheInfo.TokenTransfers('').ttl,
     );
   }
