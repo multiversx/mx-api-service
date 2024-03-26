@@ -10,7 +10,8 @@ import { Constants, ParseAddressPipe, ParseBlockHashPipe, ParseIntPipe, ParseTra
 import { CacheService, NoCache } from "@multiversx/sdk-nestjs-cache";
 import { OriginLogger } from "@multiversx/sdk-nestjs-common";
 import { DeepHistoryInterceptor } from "src/interceptors/deep-history.interceptor";
-import { DisableFieldsInterceptorOnController } from "@multiversx/sdk-nestjs-http";
+import { ApiService, DisableFieldsInterceptorOnController } from "@multiversx/sdk-nestjs-http";
+import { ApiConfigService } from "src/common/api-config/api.config.service";
 @Controller()
 @ApiTags('proxy')
 @ApiExcludeController()
@@ -23,6 +24,8 @@ export class ProxyController {
     private readonly vmQueryService: VmQueryService,
     private readonly cachingService: CacheService,
     private readonly pluginService: PluginService,
+    private readonly apiService: ApiService,
+    private readonly apiConfigService: ApiConfigService,
   ) { }
 
   @Get('/address/:address')
@@ -397,5 +400,59 @@ export class ProxyController {
       GatewayComponentRequest.forward,
       queryParams
     );
+  }
+
+  @Get('/index/:collection/_search')
+  async forwardIndexSearchGet(
+    @Param('collection') collection: string,
+    @Req() request: Request,
+  ) {
+    const url = `${this.apiConfigService.getElasticUrl()}/${collection}/_search`;
+    const queryParams = request.query;
+
+    const { data } = await this.apiService.get(url, { params: queryParams });
+
+    return data;
+  }
+
+  @Get('/index/:collection/_count')
+  async forwardIndexCountGet(
+    @Param('collection') collection: string,
+    @Req() request: Request,
+  ) {
+    const url = `${this.apiConfigService.getElasticUrl()}/${collection}/_count`;
+    const queryParams = request.query;
+
+    const { data } = await this.apiService.get(url, { params: queryParams });
+
+    return data;
+  }
+
+  @Post('/index/:collection/_search')
+  async forwardIndexSearchPost(
+    @Param('collection') collection: string,
+    @Body() body: any,
+    @Req() request: Request,
+  ) {
+    const url = `${this.apiConfigService.getElasticUrl()}/${collection}/_search`;
+    const queryParams = request.query;
+
+    const { data } = await this.apiService.post(url, body, { params: queryParams });
+
+    return data;
+  }
+
+  @Post('/index/:collection/_count')
+  async forwardIndexCountPost(
+    @Param('collection') collection: string,
+    @Body() body: any,
+    @Req() request: Request,
+  ) {
+    const url = `${this.apiConfigService.getElasticUrl()}/${collection}/_count`;
+    const queryParams = request.query;
+
+    const { data } = await this.apiService.post(url, body, { params: queryParams });
+
+    return data;
   }
 }
