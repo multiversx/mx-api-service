@@ -195,7 +195,7 @@ export class ElasticIndexerService implements IndexerInterface {
     return await this.elasticService.getItem('tokens', '_id', identifier);
   }
 
-  async getIndexerVersion(): Promise<string> {
+  async getIndexerVersion(): Promise<string | undefined> {
     const query = ElasticQuery.create()
       .withMustMatchCondition('key', 'indexer-version');
 
@@ -204,7 +204,7 @@ export class ElasticIndexerService implements IndexerInterface {
     if (result && result.length > 0) {
       return result[0].value;
     } else {
-      throw new Error('Indexer version not found');
+      return undefined;
     }
   }
 

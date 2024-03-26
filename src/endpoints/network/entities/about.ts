@@ -30,7 +30,7 @@ export class About {
 
   @Field(() => String, { description: "Indexer version.", nullable: true })
   @ApiProperty({ type: String })
-  indexerVersion: string = '';
+  indexerVersion: string | undefined = undefined;
 
   @Field(() => String, { description: "Scam engine version.", nullable: true })
   @ApiProperty({ type: String, nullable: true })

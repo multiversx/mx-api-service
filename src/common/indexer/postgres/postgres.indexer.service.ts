@@ -50,7 +50,7 @@ export class PostgresIndexerService implements IndexerInterface {
     private readonly validatorPublicKeysRepository: Repository<ValidatorPublicKeysDb>,
     private readonly indexerHelper: PostgresIndexerHelper,
   ) { }
-  getIndexerVersion(): Promise<string> {
+  getIndexerVersion(): Promise<string | undefined> {
     throw new Error("Method not implemented.");
   }
 

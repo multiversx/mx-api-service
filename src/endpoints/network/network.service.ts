@@ -343,13 +343,20 @@ export class NetworkService {
       dataApi: this.apiConfigService.isDataApiFeatureEnabled(),
     });
 
+    let indexerVersion: string | undefined;
+    try {
+      indexerVersion = await this.elasticIndexerService.getIndexerVersion();
+    } catch (error) {
+      throw new Error('Failed to fetch indexer version');
+    }
+
     const about = new About({
       appVersion,
       pluginsVersion,
       network: this.apiConfigService.getNetwork(),
       cluster: this.apiConfigService.getCluster(),
       version: apiVersion,
-      indexerVersion: await this.elasticIndexerService.getIndexerVersion(),
+      indexerVersion: indexerVersion,
       features: features,
     });
 
