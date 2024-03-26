@@ -28,6 +28,10 @@ export class About {
   @ApiProperty({ type: String })
   version: string = '';
 
+  @Field(() => String, { description: "Indexer version.", nullable: true })
+  @ApiProperty({ type: String })
+  indexerVersion: string = '';
+
   @Field(() => String, { description: "Scam engine version.", nullable: true })
   @ApiProperty({ type: String, nullable: true })
   scamEngineVersion: string | undefined = undefined;

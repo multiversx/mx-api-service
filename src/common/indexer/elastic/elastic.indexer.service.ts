@@ -195,6 +195,19 @@ export class ElasticIndexerService implements IndexerInterface {
     return await this.elasticService.getItem('tokens', '_id', identifier);
   }
 
+  async getIndexerVersion(): Promise<string> {
+    const query = ElasticQuery.create()
+      .withMustMatchCondition('key', 'indexer-version');
+
+    const result = await this.elasticService.getList('values-000001', '_search', query);
+
+    if (result && result.length > 0) {
+      return result[0].value;
+    } else {
+      throw new Error('Indexer version not found');
+    }
+  }
+
   async getTransaction(txHash: string): Promise<any> {
     const transaction = await this.elasticService.getItem('transactions', 'txHash', txHash);
 

@@ -22,6 +22,7 @@ import { TokenService } from '../tokens/token.service';
 import { AccountQueryOptions } from '../accounts/entities/account.query.options';
 import { DataApiService } from 'src/common/data-api/data-api.service';
 import { FeatureConfigs } from './entities/feature.configs';
+import { ElasticIndexerService } from 'src/common/indexer/elastic/elastic.indexer.service';
 
 @Injectable()
 export class NetworkService {
@@ -43,7 +44,8 @@ export class NetworkService {
     private readonly stakeService: StakeService,
     private readonly pluginService: PluginService,
     @Inject(forwardRef(() => SmartContractResultService))
-    private readonly smartContractResultService: SmartContractResultService
+    private readonly smartContractResultService: SmartContractResultService,
+    private readonly elasticIndexerService: ElasticIndexerService
   ) { }
 
   async getConstants(): Promise<NetworkConstants> {
@@ -347,6 +349,7 @@ export class NetworkService {
       network: this.apiConfigService.getNetwork(),
       cluster: this.apiConfigService.getCluster(),
       version: apiVersion,
+      indexerVersion: await this.elasticIndexerService.getIndexerVersion(),
       features: features,
     });
 
