@@ -893,6 +893,8 @@ export class TokenService {
   }
 
   private async applyMexPrices(tokens: TokenDetailed[]): Promise<void> {
+    const LOW_LIQUIDITY_THRESHOLD = 0.005;
+
     try {
       const indexedTokens = await this.mexTokenService.getMexPricesRaw();
       for (const token of tokens) {
@@ -908,7 +910,7 @@ export class TokenService {
             token.price = price.price;
             token.marketCap = price.price * NumberUtils.denominateString(supply.circulatingSupply, token.decimals);
 
-            if (token.totalLiquidity && token.marketCap && token.totalLiquidity / token.marketCap < 0.01) {
+            if (token.totalLiquidity && token.marketCap && token.totalLiquidity / token.marketCap < LOW_LIQUIDITY_THRESHOLD) {
               token.isLowLiquidity = true;
             }
           }
