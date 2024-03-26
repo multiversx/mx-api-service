@@ -46,8 +46,8 @@ export class GatewayService {
     private readonly apiService: ApiService
   ) { }
 
-  async getGatewayVersion(): Promise<string | undefined> {
-    const result = await this.get('about', GatewayComponentRequest.gatewayVersion);
+  async getVersion(): Promise<string | undefined> {
+    const result = await this.get('about', GatewayComponentRequest.about);
 
     if (result && result.appVersion && result.appVersion !== "undefined") {
       return result.appVersion;

@@ -354,7 +354,7 @@ export class NetworkService {
     }
 
     try {
-      gatewayVersion = await this.gatewayService.getGatewayVersion();
+      gatewayVersion = await this.gatewayService.getVersion();
     } catch (error) {
       this.logger.error('Failed to fetch gateway version', error);
     }
