@@ -58,17 +58,17 @@ export class StakeService {
 
     const totalStaked = BigInt(BigInt(totalBaseStaked) + BigInt(totalTopUp)).toString();
 
-    let minimumAuctionQualifiedTopUp: string | undefined = undefined;
-    let minimumAuctionQualifiedStake: string | undefined = undefined;
-    let auctionValidators: number | undefined = undefined;
-    let qualifiedAuctionValidators: number | undefined = undefined;
-
-    if (this.apiConfigService.isStakingV4Enabled()) {
-      minimumAuctionQualifiedTopUp = await this.getMinimumAuctionTopUp();
-      minimumAuctionQualifiedStake = await this.getMinimumAuctionStake();
-      auctionValidators = await this.nodeService.getNodeCount(new NodeFilter({ auctioned: true }));
-      qualifiedAuctionValidators = await this.nodeService.getNodeCount(new NodeFilter({ isQualified: true }));
+    if (!this.apiConfigService.isStakingV4Enabled()) {
+      return new GlobalStake({
+        ...validators,
+        totalStaked,
+      });
     }
+
+    const minimumAuctionQualifiedTopUp = await this.getMinimumAuctionTopUp();
+    const minimumAuctionQualifiedStake = await this.getMinimumAuctionStake();
+    const auctionValidators = await this.nodeService.getNodeCount(new NodeFilter({ auctioned: true }));
+    const qualifiedAuctionValidators = await this.nodeService.getNodeCount(new NodeFilter({ isQualified: true }));
 
     const nakamotoCoefficient = await this.getNakamotoCoefficient();
     const dangerZoneValidators = await this.nodeService.getNodeCount(new NodeFilter({ isAuctionDangerZone: true, isQualified: true }));
