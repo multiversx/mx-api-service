@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Req } from "@nestjs/common";
+import { Body, Controller, Get, HttpException, Param, Post, Req } from "@nestjs/common";
 import { ApiExcludeController, ApiTags } from "@nestjs/swagger";
 import { Request } from "express";
 import { ApiService, DisableFieldsInterceptorOnController } from "@multiversx/sdk-nestjs-http";
@@ -19,12 +19,7 @@ export class IndexProxyController {
     @Param('collection') collection: string,
     @Req() request: Request,
   ) {
-    const url = `${this.apiConfigService.getElasticUrl()}/${collection}/_search`;
-    const queryParams = request.query;
-
-    const { data } = await this.apiService.get(url, { params: queryParams });
-
-    return data;
+    return await this.performIndexGetRequest(collection, '_search', request.query);
   }
 
   @Get('/:collection/_count')
@@ -32,12 +27,7 @@ export class IndexProxyController {
     @Param('collection') collection: string,
     @Req() request: Request,
   ) {
-    const url = `${this.apiConfigService.getElasticUrl()}/${collection}/_count`;
-    const queryParams = request.query;
-
-    const { data } = await this.apiService.get(url, { params: queryParams });
-
-    return data;
+    return await this.performIndexGetRequest(collection, '_count', request.query);
   }
 
   @Post('/:collection/_search')
@@ -46,12 +36,7 @@ export class IndexProxyController {
     @Body() body: any,
     @Req() request: Request,
   ) {
-    const url = `${this.apiConfigService.getElasticUrl()}/${collection}/_search`;
-    const queryParams = request.query;
-
-    const { data } = await this.apiService.post(url, body, { params: queryParams });
-
-    return data;
+    return await this.performIndexPostRequest(collection, '_search', request.query, body);
   }
 
   @Post('/:collection/_count')
@@ -60,11 +45,32 @@ export class IndexProxyController {
     @Body() body: any,
     @Req() request: Request,
   ) {
-    const url = `${this.apiConfigService.getElasticUrl()}/${collection}/_count`;
-    const queryParams = request.query;
+    return await this.performIndexPostRequest(collection, '_count', request.query, body);
+  }
 
-    const { data } = await this.apiService.post(url, body, { params: queryParams });
+  private async performIndexGetRequest(collection: string, suffix: string, params: any) {
+    const url = `${this.apiConfigService.getElasticUrl()}/${collection}/${suffix}`;
 
-    return data;
+    try {
+      const { data } = await this.apiService.get(url, { params });
+
+      return data;
+    } catch (error) {
+      // @ts-ignore
+      throw new HttpException(error.response, error.status);
+    }
+  }
+
+  private async performIndexPostRequest(collection: string, suffix: string, params: any, body: any) {
+    const url = `${this.apiConfigService.getElasticUrl()}/${collection}/${suffix}`;
+
+    try {
+      const { data } = await this.apiService.post(url, body, { params });
+
+      return data;
+    } catch (error) {
+      // @ts-ignore
+      throw new HttpException(error.response, error.status);
+    }
   }
 }
