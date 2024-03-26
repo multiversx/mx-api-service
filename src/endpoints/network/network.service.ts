@@ -13,7 +13,7 @@ import { NetworkConfig } from './entities/network.config';
 import { StakeService } from '../stake/stake.service';
 import { GatewayService } from 'src/common/gateway/gateway.service';
 import { CacheInfo } from 'src/utils/cache.info';
-import { BinaryUtils, NumberUtils } from '@multiversx/sdk-nestjs-common';
+import { BinaryUtils, NumberUtils, OriginLogger } from '@multiversx/sdk-nestjs-common';
 import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { About } from './entities/about';
 import { PluginService } from 'src/common/plugins/plugin.service';
@@ -22,9 +22,11 @@ import { TokenService } from '../tokens/token.service';
 import { AccountQueryOptions } from '../accounts/entities/account.query.options';
 import { DataApiService } from 'src/common/data-api/data-api.service';
 import { FeatureConfigs } from './entities/feature.configs';
+import { IndexerService } from 'src/common/indexer/indexer.service';
 
 @Injectable()
 export class NetworkService {
+  private readonly logger = new OriginLogger(NetworkService.name);
   constructor(
     @Inject(forwardRef(() => TokenService))
     private readonly tokenService: TokenService,
@@ -43,7 +45,8 @@ export class NetworkService {
     private readonly stakeService: StakeService,
     private readonly pluginService: PluginService,
     @Inject(forwardRef(() => SmartContractResultService))
-    private readonly smartContractResultService: SmartContractResultService
+    private readonly smartContractResultService: SmartContractResultService,
+    private readonly indexerService: IndexerService,
   ) { }
 
   async getConstants(): Promise<NetworkConstants> {
@@ -326,12 +329,29 @@ export class NetworkService {
       dataApi: this.apiConfigService.isDataApiFeatureEnabled(),
     });
 
+    let indexerVersion: string | undefined;
+    let gatewayVersion: string | undefined;
+
+    try {
+      indexerVersion = await this.indexerService.getVersion();
+    } catch (error) {
+      this.logger.error('Failed to fetch indexer version', error);
+    }
+
+    try {
+      gatewayVersion = await this.gatewayService.getVersion();
+    } catch (error) {
+      this.logger.error('Failed to fetch gateway version', error);
+    }
+
     const about = new About({
       appVersion,
       pluginsVersion,
       network: this.apiConfigService.getNetwork(),
       cluster: this.apiConfigService.getCluster(),
       version: apiVersion,
+      indexerVersion: indexerVersion,
+      gatewayVersion: gatewayVersion,
       features: features,
     });
 

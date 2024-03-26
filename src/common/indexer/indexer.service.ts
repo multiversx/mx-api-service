@@ -380,4 +380,9 @@ export class IndexerService implements IndexerInterface {
   async getBlockByTimestampAndShardId(timestamp: number, shardId: number): Promise<Block | undefined> {
     return await this.indexerInterface.getBlockByTimestampAndShardId(timestamp, shardId);
   }
+
+  @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
+  async getVersion(): Promise<string | undefined> {
+    return await this.indexerInterface.getVersion();
+  }
 }
