@@ -8,6 +8,7 @@ import { readdir } from 'fs/promises';
 import { AssetsService } from "../assets/assets.service";
 import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { Constants, OriginLogger, AddressUtils } from "@multiversx/sdk-nestjs-common";
+import { ApiConfigService } from "../api-config/api.config.service";
 
 @Injectable()
 export class KeybaseService {
@@ -20,6 +21,7 @@ export class KeybaseService {
     @Inject(forwardRef(() => ProviderService))
     private readonly providerService: ProviderService,
     private readonly assetsService: AssetsService,
+    private readonly apiConfigService: ApiConfigService,
   ) { }
 
   private async getDistinctIdentities(): Promise<string[]> {
@@ -139,9 +141,12 @@ export class KeybaseService {
       return null;
     }
 
+    const network = this.apiConfigService.getNetwork();
+    const folder = network === 'mainnet' ? '' : `/${network}`;
+
     return new KeybaseIdentity({
       identity,
-      avatar: `https://raw.githubusercontent.com/multiversx/mx-assets/master/identities/${identity}/logo.png`,
+      avatar: `https://raw.githubusercontent.com/multiversx/mx-assets/master${folder}/identities/${identity}/logo.png`,
       ...info,
     });
   }
