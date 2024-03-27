@@ -7,7 +7,7 @@ import fs from 'fs';
 import { readdir } from 'fs/promises';
 import { AssetsService } from "../assets/assets.service";
 import { CacheService } from "@multiversx/sdk-nestjs-cache";
-import { Constants, OriginLogger, AddressUtils } from "@multiversx/sdk-nestjs-common";
+import { AddressUtils, OriginLogger } from "@multiversx/sdk-nestjs-common";
 import { ApiConfigService } from "../api-config/api.config.service";
 
 @Injectable()
@@ -104,15 +104,8 @@ export class KeybaseService {
 
   async confirmIdentityProfiles(): Promise<void> {
     const identities = await this.getDistinctIdentities();
-
-    await this.cachingService.batchProcess(
-      identities,
-      identity => CacheInfo.IdentityProfile(identity).key,
-      // eslint-disable-next-line require-await
-      async identity => this.getProfile(identity),
-      Constants.oneDay(),
-      true
-    );
+    const keybaseIdentities = identities.map(identity => this.getProfile(identity));
+    await this.cachingService.set(CacheInfo.IdentityProfilesKeybases.key, keybaseIdentities, CacheInfo.IdentityProfilesKeybases.ttl);
   }
 
   getProfile(identity: string): KeybaseIdentity | null {

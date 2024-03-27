@@ -163,12 +163,13 @@ export class IdentitiesService {
 
     const identitiesDetailed: IdentityDetailed[] = [];
 
+    const keybaseIdentities = await this.cacheService.get<KeybaseIdentity[]>(CacheInfo.IdentityProfilesKeybases.key);
     for (const identity of distinctIdentities) {
       if (!identity) {
         continue;
       }
 
-      const keybaseIdentity = await this.cacheService.get<KeybaseIdentity>(CacheInfo.IdentityProfile(identity).key);
+      const keybaseIdentity = keybaseIdentities?.find(item => item.identity === identity);
       if (keybaseIdentity && keybaseIdentity.identity) {
         const identityDetailed = new IdentityDetailed();
         identityDetailed.avatar = keybaseIdentity.avatar;
