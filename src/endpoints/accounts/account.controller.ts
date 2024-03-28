@@ -277,6 +277,7 @@ export class AccountController {
   @UseInterceptors(DeepHistoryInterceptor)
   @ApiOkResponse({ type: TokenWithBalance })
   @ApiOperation({ summary: 'Account token details', description: 'Returns details about a specific fungible token from a given address' })
+  @ApiQuery({ name: 'timestamp', description: 'Retrieve entries from timestamp', required: false, type: Number })
   async getAccountToken(
     @Param('address', ParseAddressPipe) address: string,
     @Param('token', ParseTokenOrNftPipe) token: string,
