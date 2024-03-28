@@ -39,10 +39,6 @@ export class Economics {
   @ApiProperty()
   baseApr: number = 0;
 
-  @Field(() => String, { description: "Total Supply general information.", nullable: true })
-  @ApiProperty({ type: String, nullable: true })
-  minimumAuctionTopUp: string | undefined = undefined;
-
   @Field(() => Float, { description: "Total Supply general information.", nullable: true })
   @ApiProperty({ type: Number, nullable: true })
   tokenMarketCap: number | undefined = undefined;

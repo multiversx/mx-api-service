@@ -3,6 +3,7 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { DatabaseConnectionOptions } from '../persistence/entities/connection.options';
 import { LogTopic } from '@elrondnetwork/transaction-processor';
+import { StatusCheckerThresholds } from './entities/status-checker-thresholds';
 
 @Injectable()
 export class ApiConfigService {
@@ -101,6 +102,15 @@ export class ApiConfigService {
 
   getStakingContractAddress(): string | undefined {
     return this.configService.get<string>('contracts.staking');
+  }
+
+  getStakingV4ActivationEpoch(): number {
+    const activationEpoch = this.configService.get<number>('features.stakingV4.activationEpoch');
+    if (activationEpoch === undefined) {
+      throw new Error('No stakingV4 activation epoch present');
+    }
+
+    return activationEpoch;
   }
 
   getDelegationContractAddress(): string | undefined {
@@ -275,7 +285,12 @@ export class ApiConfigService {
   }
 
   getIsApiStatusCheckerActive(): boolean {
-    return this.configService.get<boolean>('cron.statusChecker') ?? false;
+    return this.configService.get<boolean>('features.statusChecker.enabled') ?? this.configService.get<boolean>('cron.statusChecker') ?? false;
+  }
+
+  getStatusCheckerThresholds(): StatusCheckerThresholds {
+    const thresholds = this.configService.get<StatusCheckerThresholds>('features.statusChecker.thresholds');
+    return new StatusCheckerThresholds(thresholds);
   }
 
   getIsElasticUpdaterCronActive(): boolean {
@@ -698,6 +713,10 @@ export class ApiConfigService {
 
   getNftExtendedAttributesNsfwThreshold(): number {
     return this.configService.get<number>('features.nftExtendedAttributes.nsfwThreshold') ?? 0.85;
+  }
+
+  isNodeEpochsLeftEnabled(): boolean {
+    return this.configService.get<boolean>('features.nodeEpochsLeft.enabled') ?? false;
   }
 
   getIndexerSlaveConnections(): DatabaseConnectionOptions[] {

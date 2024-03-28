@@ -10,6 +10,7 @@ export enum GatewayComponentRequest {
   addressEsdtBalance = 'addressEsdtBalance',
   addressNfts = 'addressNfts',
   nodeHeartbeat = 'nodeHeartbeat',
+  getNodeWaitingEpochsLeft = 'getNodeWaitingEpochsLeft',
   validatorStatistics = 'validatorStatistics',
   transactionDetails = 'transactionDetails',
   sendTransaction = 'sendTransaction',
@@ -40,5 +41,6 @@ export enum GatewayComponentRequest {
   transactionPool = 'transactionPool',
   gasConfigs = 'gasConfigs',
   transactionProcessStatus = 'transactionProcessStatus',
-  forward = 'forward'
+  forward = 'forward',
+  about = 'about'
 }

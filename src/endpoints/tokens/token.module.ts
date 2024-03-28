@@ -8,12 +8,14 @@ import { AssetsModule } from "src/common/assets/assets.module";
 import { MexModule } from "../mex/mex.module";
 import { CollectionModule } from "../collections/collection.module";
 import { PluginModule } from "src/plugins/plugin.module";
+import { TransferModule } from "../transfers/transfer.module";
 
 @Module({
   imports: [
     forwardRef(() => EsdtModule),
     forwardRef(() => NftModule),
     forwardRef(() => TransactionModule),
+    forwardRef(() => TransferModule),
     forwardRef(() => AssetsModule),
     forwardRef(() => MexModule.forRoot()),
     forwardRef(() => CollectionModule),

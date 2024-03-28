@@ -289,6 +289,10 @@ export class ElasticIndexerHelper {
       elasticQuery = elasticQuery.withMustMatchCondition('tokens', filter.token, QueryOperator.AND);
     }
 
+    if (filter.tokens && filter.tokens.length > 0) {
+      elasticQuery = elasticQuery.withMustMultiShouldCondition(filter.tokens, token => QueryType.Match('tokens', token, QueryOperator.AND));
+    }
+
     if (filter.functions && filter.functions.length > 0 && this.apiConfigService.getIsIndexerV3FlagActive()) {
       if (filter.functions.length === 1 && filter.functions[0] === '') {
         elasticQuery = elasticQuery.withMustNotExistCondition('function');

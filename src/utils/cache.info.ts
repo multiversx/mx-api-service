@@ -273,6 +273,13 @@ export class CacheInfo {
     };
   }
 
+  static TokenTransfers(identifier: string): CacheInfo {
+    return {
+      key: `tokenTransfers:${identifier}`,
+      ttl: Constants.oneSecond() * 10,
+    };
+  }
+
   static TokenAccounts(identifier: string): CacheInfo {
     return {
       key: `tokenAccounts:${identifier}`,

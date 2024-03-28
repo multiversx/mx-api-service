@@ -13,7 +13,7 @@ import { NetworkConfig } from './entities/network.config';
 import { StakeService } from '../stake/stake.service';
 import { GatewayService } from 'src/common/gateway/gateway.service';
 import { CacheInfo } from 'src/utils/cache.info';
-import { BinaryUtils, NumberUtils } from '@multiversx/sdk-nestjs-common';
+import { BinaryUtils, NumberUtils, OriginLogger } from '@multiversx/sdk-nestjs-common';
 import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { About } from './entities/about';
 import { PluginService } from 'src/common/plugins/plugin.service';
@@ -22,9 +22,11 @@ import { TokenService } from '../tokens/token.service';
 import { AccountQueryOptions } from '../accounts/entities/account.query.options';
 import { DataApiService } from 'src/common/data-api/data-api.service';
 import { FeatureConfigs } from './entities/feature.configs';
+import { IndexerService } from 'src/common/indexer/indexer.service';
 
 @Injectable()
 export class NetworkService {
+  private readonly logger = new OriginLogger(NetworkService.name);
   constructor(
     @Inject(forwardRef(() => TokenService))
     private readonly tokenService: TokenService,
@@ -42,7 +44,9 @@ export class NetworkService {
     @Inject(forwardRef(() => StakeService))
     private readonly stakeService: StakeService,
     private readonly pluginService: PluginService,
-    private readonly smartContractResultService: SmartContractResultService
+    @Inject(forwardRef(() => SmartContractResultService))
+    private readonly smartContractResultService: SmartContractResultService,
+    private readonly indexerService: IndexerService,
   ) { }
 
   async getConstants(): Promise<NetworkConstants> {
@@ -103,31 +107,15 @@ export class NetworkService {
     return new Economics({ ...economics });
   }
 
-  async getMinimumAuctionTopUp(): Promise<string | undefined> {
-    const auctions = await this.gatewayService.getValidatorAuctions();
-
-    if (auctions.length === 0) {
-      return undefined;
-    }
-
-    let minimumAuctionTopUp: string | undefined = undefined;
-
-    for (const auction of auctions) {
-      for (const auctionNode of auction.auctionList) {
-        if (auctionNode.selected === true && (!minimumAuctionTopUp || BigInt(minimumAuctionTopUp) > BigInt(auction.qualifiedTopUp))) {
-          minimumAuctionTopUp = auction.qualifiedTopUp;
-        }
-      }
-    }
-
-    return minimumAuctionTopUp;
-  }
-
   async getEconomicsRaw(): Promise<Economics> {
     const auctionContractBalance = await this.getAuctionContractBalance();
-    const totalWaitingStake = await this.getTotalWaitingStake();
     const egldPrice = await this.dataApiService.getEgldPrice();
     const tokenMarketCap = await this.tokenService.getTokenMarketCapRaw();
+
+    let totalWaitingStake: BigInt = BigInt(0);
+    if (!this.apiConfigService.isStakingV4Enabled()) {
+      totalWaitingStake = await this.getTotalWaitingStake();
+    }
 
     const staked = NumberUtils.denominate(BigInt(auctionContractBalance.toString()) + BigInt(totalWaitingStake.toString())).toRounded();
 
@@ -151,10 +139,6 @@ export class NetworkService {
       baseApr: aprInfo.baseApr ? aprInfo.baseApr.toRounded(6) : 0,
       tokenMarketCap: tokenMarketCap ? Math.round(tokenMarketCap) : undefined,
     });
-
-    if (this.apiConfigService.isStakingV4Enabled()) {
-      economics.minimumAuctionTopUp = await this.getMinimumAuctionTopUp();
-    }
 
     return economics;
   }
@@ -256,7 +240,11 @@ export class NetworkService {
   async getApr(): Promise<{ apr: number; topUpApr: number; baseApr: number }> {
     const stats = await this.getStats();
     const config = await this.getNetworkConfig();
-    const stake = await this.stakeService.getGlobalStake();
+    const stake = await this.stakeService.getValidators();
+    if (!stake) {
+      throw new Error('Global stake not available');
+    }
+
     const stakedBalance = await this.getAuctionContractBalance();
 
     const multiversxConfig = {
@@ -282,8 +270,9 @@ export class NetworkService {
     const rewardsPerEpoch = Math.max(inflation / epochsInYear, feesInEpoch);
 
     const topUpRewardsLimit = 0.5 * rewardsPerEpoch;
-    const networkBaseStake = stake.activeValidators * stakePerNode;
-    const networkTotalStake = NumberUtils.denominateString(stakedBalance.toString()) - (stake.queueSize * stakePerNode);
+
+    const networkBaseStake = stake.totalValidators * stakePerNode;
+    const networkTotalStake = NumberUtils.denominateString(stakedBalance.toString()) - ((stake.inactiveValidators ?? 0) * stakePerNode);
 
     const networkTopUpStake = networkTotalStake - networkBaseStake;
 
@@ -340,12 +329,29 @@ export class NetworkService {
       dataApi: this.apiConfigService.isDataApiFeatureEnabled(),
     });
 
+    let indexerVersion: string | undefined;
+    let gatewayVersion: string | undefined;
+
+    try {
+      indexerVersion = await this.indexerService.getVersion();
+    } catch (error) {
+      this.logger.error('Failed to fetch indexer version', error);
+    }
+
+    try {
+      gatewayVersion = await this.gatewayService.getVersion();
+    } catch (error) {
+      this.logger.error('Failed to fetch gateway version', error);
+    }
+
     const about = new About({
       appVersion,
       pluginsVersion,
       network: this.apiConfigService.getNetwork(),
       cluster: this.apiConfigService.getCluster(),
       version: apiVersion,
+      indexerVersion: indexerVersion,
+      gatewayVersion: gatewayVersion,
       features: features,
     });
 

@@ -1,6 +1,7 @@
 import { SortOrder } from "src/common/entities/sort.order";
 import { TokenType } from "src/common/indexer/entities";
 import { TokenSort } from "./token.sort";
+import { MexPairType } from "src/endpoints/mex/entities/mex.pair.type";
 
 export class TokenFilter {
   constructor(init?: Partial<TokenFilter>) {
@@ -22,4 +23,6 @@ export class TokenFilter {
   sort?: TokenSort;
 
   order?: SortOrder;
+
+  mexPairType?: MexPairType[];
 }

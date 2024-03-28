@@ -1,7 +1,8 @@
 import { Module } from "@nestjs/common";
 import { PluginModule } from "src/plugins/plugin.module";
 import { VmQueryModule } from "../vm.query/vm.query.module";
-import { ProxyController } from "./proxy.controller";
+import { GatewayProxyController } from "./gateway.proxy.controller";
+import { IndexProxyController } from "./index.proxy.controller";
 
 @Module({
   imports: [
@@ -9,7 +10,8 @@ import { ProxyController } from "./proxy.controller";
     PluginModule,
   ],
   controllers: [
-    ProxyController,
+    GatewayProxyController,
+    IndexProxyController,
   ],
 })
 export class ProxyModule { }

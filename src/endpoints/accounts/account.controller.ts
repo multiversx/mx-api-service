@@ -56,6 +56,7 @@ import { NodeStatusRaw } from '../nodes/entities/node.status';
 import { AccountKeyFilter } from './entities/account.key.filter';
 import { ScamType } from 'src/common/entities/scam-type.enum';
 import { DeepHistoryInterceptor } from 'src/interceptors/deep-history.interceptor';
+import { MexPairType } from '../mex/entities/mex.pair.type';
 
 @Controller()
 @ApiTags('accounts')
@@ -191,6 +192,7 @@ export class AccountController {
   @ApiQuery({ name: 'identifiers', description: 'A comma-separated list of identifiers to filter by', required: false, type: String })
   @ApiQuery({ name: 'includeMetaESDT', description: 'Include MetaESDTs in response', required: false, type: Boolean })
   @ApiQuery({ name: 'timestamp', description: 'Retrieve entries from timestamp', required: false, type: Number })
+  @ApiQuery({ name: 'mexPairType', description: 'Token Mex Pair', required: false, enum: MexPairType })
   @ApiOkResponse({ type: [TokenWithBalance] })
   async getAccountTokens(
     @Param('address', ParseAddressPipe) address: string,
@@ -203,9 +205,10 @@ export class AccountController {
     @Query('identifiers', ParseArrayPipe) identifiers?: string[],
     @Query('includeMetaESDT', new ParseBoolPipe) includeMetaESDT?: boolean,
     @Query('timestamp', ParseIntPipe) _timestamp?: number,
+    @Query('mexPairType', new ParseEnumArrayPipe(MexPairType)) mexPairType?: MexPairType[],
   ): Promise<TokenWithBalance[]> {
     try {
-      return await this.tokenService.getTokensForAddress(address, new QueryPagination({ from, size }), new TokenFilter({ type, search, name, identifier, identifiers, includeMetaESDT }));
+      return await this.tokenService.getTokensForAddress(address, new QueryPagination({ from, size }), new TokenFilter({ type, search, name, identifier, identifiers, includeMetaESDT, mexPairType }));
     } catch (error) {
       this.logger.error(`Error in getAccountTokens for address ${address}`);
       this.logger.error(error);
@@ -224,6 +227,7 @@ export class AccountController {
   @ApiQuery({ name: 'identifiers', description: 'A comma-separated list of identifiers to filter by', required: false, type: String })
   @ApiQuery({ name: 'includeMetaESDT', description: 'Include MetaESDTs in response', required: false, type: Boolean })
   @ApiQuery({ name: 'timestamp', description: 'Retrieve entries from timestamp', required: false, type: Number })
+  @ApiQuery({ name: 'mexPairType', description: 'Token Mex Pair', required: false, enum: MexPairType })
   @ApiOkResponse({ type: Number })
   async getTokenCount(
     @Param('address', ParseAddressPipe) address: string,
@@ -234,9 +238,10 @@ export class AccountController {
     @Query('identifiers', ParseArrayPipe) identifiers?: string[],
     @Query('includeMetaESDT', new ParseBoolPipe) includeMetaESDT?: boolean,
     @Query('timestamp', ParseIntPipe) _timestamp?: number,
+    @Query('mexPairType', new ParseEnumArrayPipe(MexPairType)) mexPairType?: MexPairType[],
   ): Promise<number> {
     try {
-      return await this.tokenService.getTokenCountForAddress(address, new TokenFilter({ type, search, name, identifier, identifiers, includeMetaESDT }));
+      return await this.tokenService.getTokenCountForAddress(address, new TokenFilter({ type, search, name, identifier, identifiers, includeMetaESDT, mexPairType }));
     } catch (error) {
       this.logger.error(`Error in getTokenCount for address ${address}`);
       this.logger.error(error);
@@ -257,9 +262,10 @@ export class AccountController {
     @Query('identifiers', ParseArrayPipe) identifiers?: string[],
     @Query('includeMetaESDT', new ParseBoolPipe) includeMetaESDT?: boolean,
     @Query('timestamp', ParseIntPipe) _timestamp?: number,
+    @Query('mexPairType', new ParseEnumArrayPipe(MexPairType)) mexPairType?: MexPairType[],
   ): Promise<number> {
     try {
-      return await this.tokenService.getTokenCountForAddress(address, new TokenFilter({ type, search, name, identifier, identifiers, includeMetaESDT }));
+      return await this.tokenService.getTokenCountForAddress(address, new TokenFilter({ type, search, name, identifier, identifiers, includeMetaESDT, mexPairType }));
     } catch (error) {
       this.logger.error(`Error in getTokenCount for address ${address}`);
       this.logger.error(error);
@@ -676,10 +682,24 @@ export class AccountController {
     return result;
   }
 
-  @Get("/accounts/:address/stake")
-  @ApiOperation({ summary: 'Account stake details', description: 'Summarizes total staked amount for the given provider, as well as when and how much unbond will be performed' })
+  @Get('/accounts/:address/stake')
+  @UseInterceptors(DeepHistoryInterceptor)
+  @ApiOperation({
+    summary: 'Account stake details',
+    description:
+      'Summarizes total staked amount for the given provider, as well as when and how much unbond will be performed',
+  })
+  @ApiQuery({
+    name: 'timestamp',
+    description: 'Retrieve entry from timestamp',
+    required: false,
+    type: Number,
+  })
   @ApiOkResponse({ type: ProviderStake })
-  async getAccountStake(@Param('address', ParseAddressPipe) address: string): Promise<ProviderStake> {
+  async getAccountStake(
+    @Param('address', ParseAddressPipe) address: string,
+    @Query('timestamp', ParseIntPipe) _timestamp?: number,
+  ): Promise<ProviderStake> {
     return await this.stakeService.getStakeForAddress(address);
   }
 
@@ -691,9 +711,14 @@ export class AccountController {
   }
 
   @Get("/accounts/:address/delegation-legacy")
+  @UseInterceptors(DeepHistoryInterceptor)
   @ApiOperation({ summary: 'Account legacy delegation details', description: 'Returns staking information related to the legacy delegation pool' })
   @ApiOkResponse({ type: AccountDelegationLegacy })
-  async getAccountDelegationLegacy(@Param('address', ParseAddressPipe) address: string): Promise<AccountDelegationLegacy> {
+  @ApiQuery({ name: 'timestamp', description: 'Retrieve entry from timestamp', required: false, type: Number })
+  async getAccountDelegationLegacy(
+    @Param('address', ParseAddressPipe) address: string,
+    @Query('timestamp', ParseIntPipe) _timestamp?: number,
+  ): Promise<AccountDelegationLegacy> {
     return await this.delegationLegacyService.getDelegationForAddress(address);
   }
 

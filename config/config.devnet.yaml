@@ -8,7 +8,6 @@ cron:
   fastWarm: true
   queueWorker: true
   elasticUpdater: false
-  statusChecker: false
 flags:
   useRequestCaching: true
   useKeepAliveAgent: true
@@ -54,6 +53,8 @@ features:
     admins:
       - ''
     jwtSecret: ''
+  nodeEpochsLeft:
+    enabled: false
   transactionProcessor:
     enabled: false
     maxLookBehind: 100
@@ -64,6 +65,17 @@ features:
   transactionBatch:
     enabled: true
     maxLookBehind: 100
+  statusChecker:
+    enabled: false
+    thresholds:
+      tokens: 500
+      nodes: 3000
+      providers: 10
+      tokenSupplyCount: 20
+      tokenAssets: 20
+      tokenAccounts: 500
+      tokenTransactions: 500
+      nodeValidators: 300
 image:
   width: 600
   height: 600

@@ -102,12 +102,14 @@ describe('Delegation Service', () => {
         position: 0,
         auctioned: undefined,
         auctionPosition: undefined,
-        auctionSelected: undefined,
+        auctionQualified: undefined,
         auctionTopUp: undefined,
+        isInDangerZone: undefined,
         fullHistory: undefined,
         issues: [],
         syncProgress: undefined,
         remainingUnBondPeriod: undefined,
+        epochsLeft: undefined,
       },
     ];
   });

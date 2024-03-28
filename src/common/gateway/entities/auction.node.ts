@@ -5,5 +5,5 @@ export class AuctionNode {
 
   blsKey: string = '';
 
-  selected: boolean = false;
+  qualified: boolean = false;
 }
