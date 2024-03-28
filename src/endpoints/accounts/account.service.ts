@@ -358,7 +358,15 @@ export class AccountService {
       }
 
       if (options.withScrCount) {
-        account.scrCount = await this.getAccountScResults(account.address);
+        const cacheInfo = CacheInfo.SmartContractScrCount(account.address);
+        let cacheScrCount = await this.cachingService.get<number>(cacheInfo.key);
+
+        if (cacheScrCount === null) {
+          cacheScrCount = await this.getAccountScResults(account.address);
+          await this.cachingService.set(cacheInfo.key, cacheScrCount, cacheInfo.ttl);
+        }
+
+        account.scrCount = cacheScrCount;
       }
 
       if (options.withOwnerAssets && account.ownerAddress) {
@@ -368,8 +376,6 @@ export class AccountService {
       if (verifiedAccounts && verifiedAccounts.includes(account.address)) {
         account.isVerified = true;
       }
-
-
     }
 
     return accounts;
