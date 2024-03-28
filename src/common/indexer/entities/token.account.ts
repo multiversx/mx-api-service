@@ -9,6 +9,8 @@ export interface TokenAccount {
   timestamp: number;
   type: TokenType;
   data: any;
+  nft_scamInfoType: string;
+  nft_scamInfoDescription: string;
 }
 
 export enum TokenType {

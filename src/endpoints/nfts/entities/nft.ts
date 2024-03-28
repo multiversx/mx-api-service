@@ -1,5 +1,4 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { ScamInfo } from "src/common/entities/scam-info.dto";
 import { TokenAssets } from "src/common/assets/entities/token.assets";
 import { NftMedia } from "./nft.media";
 import { NftMetadata } from "./nft.metadata";
@@ -10,6 +9,7 @@ import { NftCollection } from "src/endpoints/collections/entities/nft.collection
 import { Account } from "src/endpoints/accounts/entities/account";
 import { NftRarities } from "./nft.rarities";
 import { UnlockMileStoneModel } from "src/common/locked-asset/entities/unlock.milestone.model";
+import { ScamInfo } from "src/common/entities/scam-info.dto";
 
 @ObjectType("Nft", { description: "NFT object type." })
 export class Nft {
@@ -109,7 +109,6 @@ export class Nft {
 
   @Field(() => ScamInfo, { description: "Scam information for the given NFT. Complexity: 100", nullable: true })
   @ApiProperty({ type: ScamInfo, nullable: true })
-  @ComplexityEstimation({ value: 100, alternatives: ['withScamInfo', 'computeScamInfo'], group: 'extras' })
   scamInfo: ScamInfo | undefined = undefined;
 
   @Field(() => Float, { description: "Score for the given NFT.", nullable: true })
