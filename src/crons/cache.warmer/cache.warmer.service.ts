@@ -30,6 +30,7 @@ import { TokenDetailed } from "src/endpoints/tokens/entities/token.detailed";
 import { DataApiService } from "src/common/data-api/data-api.service";
 import { BlockService } from "src/endpoints/blocks/block.service";
 import { PoolService } from "src/endpoints/pool/pool.service";
+import * as JsonDiff from "json-diff";
 
 @Injectable()
 export class CacheWarmerService {
@@ -86,6 +87,12 @@ export class CacheWarmerService {
       const handleTransactionPoolCacheInvalidation = new CronJob(this.apiConfigService.getTransactionPoolCacheWarmerCronExpression(), async () => await this.handleTxPoolInvalidations());
       this.schedulerRegistry.addCronJob('handleTxPoolInvalidations', handleTransactionPoolCacheInvalidation);
       handleTransactionPoolCacheInvalidation.start();
+    }
+
+    if (this.apiConfigService.isUpdateAccountAssetsFeatureEnabled()) {
+      const handleUpdateAccountAssetsCronJob = new CronJob(CronExpression.EVERY_HOUR, async () => await this.handleUpdateAccountAssets());
+      this.schedulerRegistry.addCronJob('handleUpdateAccountAssets', handleUpdateAccountAssetsCronJob);
+      handleUpdateAccountAssetsCronJob.start();
     }
   }
 
@@ -308,6 +315,28 @@ export class CacheWarmerService {
 
       this.logger.log(`Setting isVerified to true, holderCount to ${holderCount}, nftCount to ${nftCount} for collection with identifier '${key}'`);
       await this.indexerService.setExtraCollectionFields(key, true, holderCount, nftCount);
+    }
+  }
+
+  @Lock({ name: 'Elastic updater: Update account assets', verbose: true })
+  async handleUpdateAccountAssets() {
+    const allAccountAssets = await this.assetsService.getAllAccountAssets();
+
+    for (const address of Object.keys(allAccountAssets)) {
+      try {
+        const assets = allAccountAssets[address];
+        const account = await this.indexerService.getAccount(address);
+        if (!account) {
+          continue;
+        }
+
+        if (JsonDiff.diff(account.api_assets, assets)) {
+          this.logger.log(`Updating assets for account with address '${address}'`);
+          await this.indexerService.setAccountAssetsFields(address, assets);
+        }
+      } catch (error) {
+        this.logger.error(`Failed to update assets for account with address '${address}': ${error}`);
+      }
     }
   }
 

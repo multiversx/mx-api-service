@@ -18,6 +18,7 @@ import { Collection, ScResult, Account, MiniBlock, Tag, TokenType, Block } from 
 import { IndexerInterface } from "../indexer.interface";
 import { AccountDb, AccountsEsdtDb, BlockDb, LogDb, MiniBlockDb, ReceiptDb, RoundInfoDb, ScDeployInfoDb, ScResultDb, TagDb, TokenInfoDb, TransactionDb, ValidatorPublicKeysDb } from "./entities";
 import { PostgresIndexerHelper } from "./postgres.indexer.helper";
+import { AccountAssets } from "src/common/assets/entities/account.assets";
 
 @Injectable()
 export class PostgresIndexerService implements IndexerInterface {
@@ -51,6 +52,18 @@ export class PostgresIndexerService implements IndexerInterface {
     private readonly indexerHelper: PostgresIndexerHelper,
   ) { }
   getVersion(): Promise<string | undefined> {
+    throw new Error("Method not implemented.");
+  }
+
+  ensureAccountsWritable(): Promise<void> {
+    throw new Error("Method not implemented.");
+  }
+
+  ensureTokensWritable(): Promise<void> {
+    throw new Error("Method not implemented.");
+  }
+
+  setAccountAssetsFields(_address: string, _assets: AccountAssets): Promise<void> {
     throw new Error("Method not implemented.");
   }
 

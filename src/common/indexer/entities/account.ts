@@ -7,4 +7,5 @@ export interface Account {
   totalBalanceWithStake: string;
   totalBalanceWithStakeNum: number;
   currentOwner?: string;
+  api_assets?: any;
 }
