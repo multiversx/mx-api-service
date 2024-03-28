@@ -718,8 +718,12 @@ export class TokenService {
   }
 
   async getAllTokensRaw(): Promise<TokenDetailed[]> {
+    this.logger.log(`Starting to fetch all tokens`);
+
     const tokensProperties = await this.esdtService.getAllFungibleTokenProperties();
     let tokens = tokensProperties.map(properties => ApiUtils.mergeObjects(new TokenDetailed(), properties));
+
+    this.logger.log(`Fetched ${tokens.length} fungible tokens`);
 
     for (const token of tokens) {
       const assets = await this.assetsService.getTokenAssets(token.identifier);
@@ -731,7 +735,11 @@ export class TokenService {
       token.type = TokenType.FungibleESDT;
     }
 
+    this.logger.log(`Starting to fetch all meta tokens`);
+
     const collections = await this.collectionService.getNftCollections(new QueryPagination({ from: 0, size: 10000 }), { type: [NftType.MetaESDT] });
+
+    this.logger.log(`Fetched ${collections.length} meta tokens`);
 
     for (const collection of collections) {
       tokens.push(new TokenDetailed({
@@ -751,11 +759,17 @@ export class TokenService {
       }));
     }
 
+    this.logger.log(`Starting to batch process tokens`);
     await this.batchProcessTokens(tokens);
+    this.logger.log(`Finished batch processing tokens`);
 
+    this.logger.log(`Applying mex liquidity`);
     await this.applyMexLiquidity(tokens.filter(x => x.type !== TokenType.MetaESDT));
+    this.logger.log(`Finished applying mex liquidity`);
     await this.applyMexPrices(tokens.filter(x => x.type !== TokenType.MetaESDT));
+    this.logger.log(`Finished applying mex prices`);
     await this.applyMexPairType(tokens.filter(x => x.type !== TokenType.MetaESDT));
+    this.logger.log(`Finished applying mex pair type`);
 
     await this.cachingService.batchApplyAll(
       tokens,
@@ -764,6 +778,7 @@ export class TokenService {
       (token, assets) => token.assets = assets,
       CacheInfo.EsdtAssets('').ttl,
     );
+    this.logger.log(`Finished applying assets`);
 
     for (const token of tokens) {
       if (token.assets?.priceSource?.type === TokenAssetsPriceSourceType.dataApi) {
@@ -778,6 +793,8 @@ export class TokenService {
         }
       }
     }
+
+    this.logger.log(`Finished applying supply`);
 
     tokens = tokens.sortedDescending(
       token => token.assets ? 1 : 0,
