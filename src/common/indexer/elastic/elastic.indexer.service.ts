@@ -25,6 +25,7 @@ import { AccountQueryOptions } from "src/endpoints/accounts/entities/account.que
 import { AccountSort } from "src/endpoints/accounts/entities/account.sort";
 import { MiniBlockFilter } from "src/endpoints/miniblocks/entities/mini.block.filter";
 import { AccountHistoryFilter } from "src/endpoints/accounts/entities/account.history.filter";
+import { SortBlocks } from "src/endpoints/blocks/entities/sort.blocks";
 
 
 @Injectable()
@@ -61,13 +62,25 @@ export class ElasticIndexerService implements IndexerInterface {
   }
 
   async getBlocks(filter: BlockFilter, queryPagination: QueryPagination): Promise<Block[]> {
-    const elasticQuery = ElasticQuery.create()
+    const sort = filter.sort ?? SortBlocks.timestamp;
+    const order = filter.order === SortOrder.asc ? ElasticSortOrder.ascending : ElasticSortOrder.descending;
+
+    let elasticQuery = ElasticQuery.create()
       .withPagination(queryPagination)
       .withSort([
         { name: 'timestamp', order: ElasticSortOrder.descending },
         { name: 'shardId', order: ElasticSortOrder.ascending },
       ])
       .withCondition(QueryConditionOptions.must, await this.indexerHelper.buildElasticBlocksFilter(filter));
+
+    switch (sort) {
+      case SortBlocks.timestamp:
+        elasticQuery = elasticQuery.withSort([{ name: "timestamp", order: order }]);
+        break;
+      default:
+        elasticQuery = elasticQuery.withSort([{ name: "timestamp", order: ElasticSortOrder.descending }]);
+        break;
+    }
 
     const result = await this.elasticService.getList('blocks', 'hash', elasticQuery);
     return result;
