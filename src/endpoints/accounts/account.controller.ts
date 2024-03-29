@@ -1072,43 +1072,6 @@ export class AccountController {
     return scResult;
   }
 
-  @Get("/accounts/:address/sc-results")
-  @ApiOperation({ summary: 'Account smart contract results', description: 'Returns smart contract results where the account is sender or receiver', deprecated: true })
-  @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
-  @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
-  @ApiOkResponse({ type: [SmartContractResult] })
-  getAccountScResultsDeprecated(
-    @Param('address', ParseAddressPipe) address: string,
-    @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
-    @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
-  ): Promise<SmartContractResult[]> {
-    return this.scResultService.getAccountScResults(address, new QueryPagination({ from, size }));
-  }
-
-  @Get("/accounts/:address/sc-results/count")
-  @ApiOperation({ summary: 'Account smart contracts results count', description: 'Returns number of smart contract results where the account is sender or receiver', deprecated: true })
-  @ApiOkResponse({ type: Number })
-  getAccountScResultsCountDeprecated(
-    @Param('address', ParseAddressPipe) address: string,
-  ): Promise<number> {
-    return this.scResultService.getAccountScResultsCount(address);
-  }
-
-  @Get("/accounts/:address/sc-results/:scHash")
-  @ApiOperation({ summary: 'Account smart contract result', description: 'Returns details of a smart contract result where the account is sender or receiver', deprecated: true })
-  @ApiOkResponse({ type: SmartContractResult })
-  async getAccountScResultDeprecated(
-    @Param('address', ParseAddressPipe) address: string,
-    @Param('scHash', ParseTransactionHashPipe) scHash: string,
-  ): Promise<SmartContractResult> {
-    const scResult = await this.scResultService.getScResult(scHash);
-    if (!scResult || (scResult.sender !== address && scResult.receiver !== address)) {
-      throw new NotFoundException('Smart contract result not found');
-    }
-
-    return scResult;
-  }
-
   @Get("/accounts/:address/history")
   @ApiOperation({ summary: 'Account history', description: 'Return account EGLD balance history' })
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
