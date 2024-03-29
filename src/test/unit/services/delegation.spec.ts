@@ -144,6 +144,7 @@ describe('Delegation Service', () => {
 
       jest.spyOn(delegationService['vmQueryService'], 'vmQuery').mockResolvedValueOnce(['someBase64Config']);
       jest.spyOn(delegationService['nodeService'], 'getAllNodes').mockResolvedValueOnce(mockNodes);
+      jest.spyOn(delegationService['apiConfigService'], 'getDelegationManagerContractAddress').mockReturnValue('erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqylllslmq6y6');
 
       const result = await delegationService.getDelegationRaw();
 
@@ -160,6 +161,7 @@ describe('Delegation Service', () => {
 
       jest.spyOn(delegationService['vmQueryService'], 'vmQuery').mockResolvedValueOnce(['someBase64Config']);
       jest.spyOn(delegationService['nodeService'], 'getAllNodes').mockResolvedValueOnce([]);
+      jest.spyOn(delegationService['apiConfigService'], 'getDelegationManagerContractAddress').mockReturnValue('erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqylllslmq6y6');
 
       const result = await delegationService.getDelegationRaw();
 
