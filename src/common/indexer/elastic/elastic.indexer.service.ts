@@ -350,25 +350,10 @@ export class ElasticIndexerService implements IndexerInterface {
   }
 
   async getScResults(pagination: QueryPagination, filter: SmartContractResultFilter): Promise<any[]> {
-    let query = ElasticQuery.create().withPagination(pagination);
+    const elasticQuery: ElasticQuery = this.indexerHelper.builResultsFilerQuery(filter)
+      .withPagination(pagination);
 
-    if (filter.miniBlockHash) {
-      query = query.withCondition(QueryConditionOptions.must, [QueryType.Match('miniBlockHash', filter.miniBlockHash)]);
-    }
-
-    if (filter.originalTxHashes) {
-      query = query.withShouldCondition(filter.originalTxHashes.map(originalTxHash => QueryType.Match('originalTxHash', originalTxHash)));
-    }
-
-    if (filter.sender) {
-      query = query.withShouldCondition(QueryType.Match('sender', filter.sender));
-    }
-
-    if (filter.receiver) {
-      query = query.withShouldCondition(QueryType.Match('receiver', filter.receiver));
-    }
-
-    const results = await this.elasticService.getList('scresults', 'hash', query);
+    const results = await this.elasticService.getList('scresults', 'hash', elasticQuery);
 
     for (const result of results) {
       this.processTransaction(result);

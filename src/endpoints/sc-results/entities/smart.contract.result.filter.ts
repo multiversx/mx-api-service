@@ -7,5 +7,5 @@ export class SmartContractResultFilter {
   originalTxHashes?: string[];
   sender?: string;
   receiver?: string;
-  function?: string[];
+  functions?: string[];
 }

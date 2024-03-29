@@ -5,6 +5,7 @@ import { SmartContractResult } from "./entities/smart.contract.result";
 import { SmartContractResultService } from "./scresult.service";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { SmartContractResultFilter } from "./entities/smart.contract.result.filter";
+import { ParseArrayPipeOptions } from "@multiversx/sdk-nestjs-common/lib/pipes/entities/parse.array.options";
 
 @Controller()
 @ApiTags('results')
@@ -19,6 +20,7 @@ export class SmartContractResultController {
   @ApiQuery({ name: 'originalTxHashes', description: 'Original transaction hashes', required: false })
   @ApiQuery({ name: 'sender', description: 'Sender address', required: false })
   @ApiQuery({ name: 'receiver', description: 'Receiver address', required: false })
+  @ApiQuery({ name: 'function', description: 'Filter results by function name', required: false })
   @ApiOkResponse({ type: [SmartContractResult] })
   getScResults(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
@@ -27,10 +29,11 @@ export class SmartContractResultController {
     @Query('originalTxHashes', ParseArrayPipe, ParseTransactionHashPipe) originalTxHashes?: string[],
     @Query('sender', ParseAddressPipe) sender?: string,
     @Query('receiver', ParseAddressPipe) receiver?: string,
+    @Query('function', new ParseArrayPipe(new ParseArrayPipeOptions({ allowEmptyString: true }))) functions?: string[],
   ): Promise<SmartContractResult[]> {
     return this.scResultService.getScResults(
       new QueryPagination({ from, size }),
-      new SmartContractResultFilter({ miniBlockHash, originalTxHashes, sender, receiver }));
+      new SmartContractResultFilter({ miniBlockHash, originalTxHashes, sender, receiver, functions }));
   }
 
   @Get("/results/count")
