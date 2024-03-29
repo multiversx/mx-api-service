@@ -39,8 +39,15 @@ export class SmartContractResultController {
   @Get("/results/count")
   @ApiOperation({ summary: 'Smart contracts count', description: 'Returns total number of smart contracts results' })
   @ApiOkResponse({ type: Number })
-  getScResultsCount(): Promise<number> {
-    return this.scResultService.getScResultsCount();
+  @ApiQuery({ name: 'sender', description: 'Sender address', required: false })
+  @ApiQuery({ name: 'receiver', description: 'Receiver address', required: false })
+  @ApiQuery({ name: 'function', description: 'Filter results by function name', required: false })
+  getScResultsCount(
+    @Query('sender', ParseAddressPipe) sender?: string,
+    @Query('receiver', ParseAddressPipe) receiver?: string,
+    @Query('function', new ParseArrayPipe(new ParseArrayPipeOptions({ allowEmptyString: true }))) functions?: string[],
+  ): Promise<number> {
+    return this.scResultService.getScResultsCount(new SmartContractResultFilter({ sender, receiver, functions }));
   }
 
   @Get("/results/:scHash")

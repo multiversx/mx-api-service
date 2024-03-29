@@ -42,8 +42,9 @@ export class ElasticIndexerService implements IndexerInterface {
     return await this.elasticService.getCount('accounts', query);
   }
 
-  async getScResultsCount(): Promise<number> {
-    return await this.elasticService.getCount('scresults');
+  async getScResultsCount(filter: SmartContractResultFilter): Promise<number> {
+    const query = this.indexerHelper.builResultsFilerQuery(filter);
+    return await this.elasticService.getCount('scresults', query);
   }
 
   async getAccountContractsCount(address: string): Promise<number> {

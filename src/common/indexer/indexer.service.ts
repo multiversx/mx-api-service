@@ -31,8 +31,8 @@ export class IndexerService implements IndexerInterface {
   }
 
   @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
-  async getScResultsCount(): Promise<number> {
-    return await this.indexerInterface.getScResultsCount();
+  async getScResultsCount(filter: SmartContractResultFilter): Promise<number> {
+    return await this.indexerInterface.getScResultsCount(filter);
   }
 
   @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)

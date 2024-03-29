@@ -52,8 +52,8 @@ export class SmartContractResultService {
     return smartContractResult;
   }
 
-  async getScResultsCount(): Promise<number> {
-    return await this.indexerService.getScResultsCount();
+  async getScResultsCount(filter: SmartContractResultFilter): Promise<number> {
+    return await this.indexerService.getScResultsCount(filter);
   }
 
   async getAccountScResults(address: string, pagination: QueryPagination): Promise<SmartContractResult[]> {

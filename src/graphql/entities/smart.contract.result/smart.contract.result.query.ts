@@ -26,7 +26,7 @@ export class SmartContractResultQuery {
 
   @Query(() => Float, { name: "resultsCount", description: "Returns total number of smart contracts." })
   public async getScResultsCount(): Promise<number> {
-    return await this.smartContractResultService.getScResultsCount();
+    return await this.smartContractResultService.getScResultsCount(new SmartContractResultFilter());
   }
 
   @Query(() => SmartContractResult, { name: "result", description: "Retrieve the smart contract details for the given input.", nullable: true })
