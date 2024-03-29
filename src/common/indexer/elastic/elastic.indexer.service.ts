@@ -360,6 +360,14 @@ export class ElasticIndexerService implements IndexerInterface {
       query = query.withShouldCondition(filter.originalTxHashes.map(originalTxHash => QueryType.Match('originalTxHash', originalTxHash)));
     }
 
+    if (filter.sender) {
+      query = query.withShouldCondition(QueryType.Match('sender', filter.sender));
+    }
+
+    if (filter.receiver) {
+      query = query.withShouldCondition(QueryType.Match('receiver', filter.receiver));
+    }
+
     const results = await this.elasticService.getList('scresults', 'hash', query);
 
     for (const result of results) {

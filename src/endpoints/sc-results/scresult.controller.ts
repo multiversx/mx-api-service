@@ -1,4 +1,4 @@
-import { ParseArrayPipe, ParseIntPipe, ParseBlockHashPipe, ParseTransactionHashPipe } from "@multiversx/sdk-nestjs-common";
+import { ParseArrayPipe, ParseIntPipe, ParseBlockHashPipe, ParseTransactionHashPipe, ParseAddressPipe } from "@multiversx/sdk-nestjs-common";
 import { Controller, DefaultValuePipe, Get, NotFoundException, Param, Query } from "@nestjs/common";
 import { ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { SmartContractResult } from "./entities/smart.contract.result";
@@ -17,16 +17,20 @@ export class SmartContractResultController {
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   @ApiQuery({ name: 'miniBlockHash', description: 'The hash of the parent miniBlock', required: false })
   @ApiQuery({ name: 'originalTxHashes', description: 'Original transaction hashes', required: false })
+  @ApiQuery({ name: 'sender', description: 'Sender address', required: false })
+  @ApiQuery({ name: 'receiver', description: 'Receiver address', required: false })
   @ApiOkResponse({ type: [SmartContractResult] })
   getScResults(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
     @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash?: string,
     @Query('originalTxHashes', ParseArrayPipe, ParseTransactionHashPipe) originalTxHashes?: string[],
+    @Query('sender', ParseAddressPipe) sender?: string,
+    @Query('receiver', ParseAddressPipe) receiver?: string,
   ): Promise<SmartContractResult[]> {
     return this.scResultService.getScResults(
       new QueryPagination({ from, size }),
-      new SmartContractResultFilter({ miniBlockHash, originalTxHashes }));
+      new SmartContractResultFilter({ miniBlockHash, originalTxHashes, sender, receiver }));
   }
 
   @Get("/results/count")
