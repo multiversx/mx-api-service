@@ -302,27 +302,18 @@ export class NetworkService {
 
     let apiVersion = process.env['API_VERSION'];
     if (!apiVersion) {
-      apiVersion = require('child_process')
-        .execSync('git tag --points-at HEAD')
-        .toString().trim();
+      apiVersion = this.tryGetCurrentTag();
 
       if (!apiVersion) {
-        apiVersion = require('child_process')
-          .execSync('git describe --tags --abbrev=0')
-          .toString().trim();
+        apiVersion = this.tryGetPreviousTag();
 
         if (apiVersion) {
           apiVersion = apiVersion + '-next';
         }
       }
 
-      appVersion = require('child_process')
-        .execSync('git rev-parse HEAD')
-        .toString().trim();
-
-      pluginsVersion = require('child_process')
-        .execSync('git rev-parse HEAD', { cwd: 'src/plugins' })
-        .toString().trim();
+      appVersion = this.tryGetAppCommitHash();
+      pluginsVersion = this.tryGetPluginsCommitHash();
     }
 
     if (pluginsVersion === appVersion) {
@@ -370,5 +361,53 @@ export class NetworkService {
   numberDecode(encoded: string): string {
     const hex = Buffer.from(encoded, 'base64').toString('hex');
     return BigInt(hex ? '0x' + hex : hex).toString();
+  }
+
+  private tryGetCurrentTag(): string | undefined {
+    try {
+      return require('child_process')
+        .execSync('git tag --points-at HEAD')
+        .toString().trim();
+    } catch (error) {
+      this.logger.error('An unhandled error occurred when fetching current tag');
+      this.logger.error(error);
+      return undefined;
+    }
+  }
+
+  private tryGetPreviousTag(): string | undefined {
+    try {
+      return require('child_process')
+        .execSync('git describe --tags --abbrev=0')
+        .toString().trim();
+    } catch (error) {
+      this.logger.error('An unhandled error occurred when fetching previous tag');
+      this.logger.error(error);
+      return undefined;
+    }
+  }
+
+  private tryGetAppCommitHash(): string | undefined {
+    try {
+      return require('child_process')
+        .execSync('git rev-parse HEAD')
+        .toString().trim();
+    } catch (error) {
+      this.logger.error('An unhandled error occurred when fetching app commit hash');
+      this.logger.error(error);
+      return undefined;
+    }
+  }
+
+  private tryGetPluginsCommitHash(): string | undefined {
+    try {
+      return require('child_process')
+        .execSync('git rev-parse HEAD', { cwd: 'src/plugins' })
+        .toString().trim();
+    } catch (error) {
+      this.logger.error('An unhandled error occurred when fetching plugins commit hash');
+      this.logger.error(error);
+      return undefined;
+    }
   }
 }
