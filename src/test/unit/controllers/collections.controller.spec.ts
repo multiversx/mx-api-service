@@ -1118,6 +1118,119 @@ describe('CollectionController', () => {
       );
     });
   });
+
+  describe('GET /collections/:collection/transfers/count', () => {
+    it('should return total transfers count for given collection', async () => {
+      collectionServiceMocks.isCollection.mockResolvedValue(true);
+      transferServiceMocks.getTransfersCount.mockResolvedValue(1000);
+      const collection = 'TEST-5409d3';
+
+      await request(app.getHttpServer())
+        .get(`${path}/${collection}/transfers/count`)
+        .expect(200);
+      expect(transferServiceMocks.getTransfersCount).toHaveBeenCalledWith(
+        createTransactionFilter({ token: collection })
+      );
+    });
+
+    it('should return collection NFTs transfers count filtered by sender', async () => {
+      collectionServiceMocks.isCollection.mockResolvedValue(true);
+      transferServiceMocks.getTransfersCount.mockResolvedValue(1000);
+      const collection = 'TEST-5409d3';
+      const sender = 'erd1qga7ze0l03chfgru0a32wxqf2226nzrxnyhzer9lmudqhjgy7ycqjjyknz';
+
+      await request(app.getHttpServer())
+        .get(`${path}/${collection}/transfers/count?sender=${sender}`)
+        .expect(200);
+      expect(transferServiceMocks.getTransfersCount).toHaveBeenCalledWith(
+        createTransactionFilter({ token: collection, sender: sender })
+      );
+    });
+
+    it('should return collection NFTs transfers count filtered by senderShard', async () => {
+      collectionServiceMocks.isCollection.mockResolvedValue(true);
+      transferServiceMocks.getTransfersCount.mockResolvedValue(500);
+      const collection = 'TEST-5409d3';
+      const senderShard = 1;
+
+      await request(app.getHttpServer())
+        .get(`${path}/${collection}/transfers/count?senderShard=${senderShard}`)
+        .expect(200);
+      expect(transferServiceMocks.getTransfersCount).toHaveBeenCalledWith(
+        createTransactionFilter({ token: collection, senderShard: senderShard })
+      );
+    });
+
+    it('should return collection NFTs transfers count filtered by receiverShard', async () => {
+      collectionServiceMocks.isCollection.mockResolvedValue(true);
+      transferServiceMocks.getTransfersCount.mockResolvedValue(500);
+      const collection = 'TEST-5409d3';
+      const receiverShard = 0;
+
+      await request(app.getHttpServer())
+        .get(`${path}/${collection}/transfers/count?receiverShard=${receiverShard}`)
+        .expect(200);
+      expect(transferServiceMocks.getTransfersCount).toHaveBeenCalledWith(
+        createTransactionFilter({ token: collection, receiverShard: receiverShard })
+      );
+    });
+
+    it('should return collection NFTs transfers count filtered by miniBlockHash', async () => {
+      collectionServiceMocks.isCollection.mockResolvedValue(true);
+      transferServiceMocks.getTransfersCount.mockResolvedValue(10);
+      const collection = 'TEST-5409d3';
+      const miniBlockHash = 'a0ec9786e3879daed306c895841b69e1ae6d5b3801cc0ac6830eee09c312b993';
+
+      await request(app.getHttpServer())
+        .get(`${path}/${collection}/transfers/count?miniBlockHash=${miniBlockHash}`)
+        .expect(200);
+      expect(transferServiceMocks.getTransfersCount).toHaveBeenCalledWith(
+        createTransactionFilter({ token: collection, miniBlockHash: miniBlockHash })
+      );
+    });
+
+    it('should return collection NFTs transfers count filtered by transactions status', async () => {
+      collectionServiceMocks.isCollection.mockResolvedValue(true);
+      transferServiceMocks.getTransfersCount.mockResolvedValue(10);
+      const collection = 'TEST-5409d3';
+      const status = TransactionStatus.success;
+
+      await request(app.getHttpServer())
+        .get(`${path}/${collection}/transfers/count?status=${status}`)
+        .expect(200);
+      expect(transferServiceMocks.getTransfersCount).toHaveBeenCalledWith(
+        createTransactionFilter({ token: collection, status: status })
+      );
+    });
+
+    it('should return collection NFTs transfers count filtered by before timestamp', async () => {
+      collectionServiceMocks.isCollection.mockResolvedValue(true);
+      transferServiceMocks.getTransfersCount.mockResolvedValue(10);
+      const collection = 'TEST-5409d3';
+      const before = 1609630444;
+
+      await request(app.getHttpServer())
+        .get(`${path}/${collection}/transfers/count?before=${before}`)
+        .expect(200);
+      expect(transferServiceMocks.getTransfersCount).toHaveBeenCalledWith(
+        createTransactionFilter({ token: collection, before: before })
+      );
+    });
+
+    it('should return collection NFTs transfers count filtered by after timestamp', async () => {
+      collectionServiceMocks.isCollection.mockResolvedValue(true);
+      transferServiceMocks.getTransfersCount.mockResolvedValue(10);
+      const collection = 'TEST-5409d3';
+      const after = 1709630444;
+
+      await request(app.getHttpServer())
+        .get(`${path}/${collection}/transfers/count?after=${after}`)
+        .expect(200);
+      expect(transferServiceMocks.getTransfersCount).toHaveBeenCalledWith(
+        createTransactionFilter({ token: collection, after: after })
+      );
+    });
+  });
 });
 
 
