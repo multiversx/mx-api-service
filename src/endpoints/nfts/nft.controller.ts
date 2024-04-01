@@ -18,6 +18,7 @@ import { TransactionService } from '../transactions/transaction.service';
 import { TransactionFilter } from '../transactions/entities/transaction.filter';
 import { Transaction } from '../transactions/entities/transaction';
 import { ScamType } from 'src/common/entities/scam-type.enum';
+import { TransferService } from '../transfers/transfer.service';
 
 @Controller()
 @ApiTags('nfts')
@@ -26,6 +27,7 @@ export class NftController {
     private readonly nftService: NftService,
     private readonly nftMediaService: NftMediaService,
     private readonly transactionService: TransactionService,
+    private readonly transferService: TransferService,
   ) { }
 
   @Get("/nfts")
@@ -353,6 +355,108 @@ export class NftController {
   ) {
 
     return await this.transactionService.getTransactionCount(new TransactionFilter({
+      sender,
+      receivers: receiver,
+      token: identifier,
+      senderShard,
+      receiverShard,
+      miniBlockHash,
+      hashes,
+      status,
+      before,
+      after,
+    }));
+  }
+
+  @Get("/nfts/:identifier/transfers")
+  @ApiOperation({ summary: 'NFT transfers', description: `Returns a list of transfers for a NonFungibleESDT or SemiFungibleESDT.` })
+  @ApplyComplexity({ target: TransactionDetailed })
+  @ApiOkResponse({ type: [Transaction] })
+  @ApiNotFoundResponse({ description: 'Token not found' })
+  @ApiQuery({ name: 'sender', description: 'Address of the transfer sender', required: false })
+  @ApiQuery({ name: 'receiver', description: 'Search by multiple receiver addresses, comma-separated', required: false })
+  @ApiQuery({ name: 'senderShard', description: 'Id of the shard the sender address belongs to', required: false })
+  @ApiQuery({ name: 'receiverShard', description: 'Id of the shard the receiver address belongs to', required: false })
+  @ApiQuery({ name: 'miniBlockHash', description: 'Filter by miniblock hash', required: false })
+  @ApiQuery({ name: 'hashes', description: 'Filter by a comma-separated list of transfer hashes', required: false })
+  @ApiQuery({ name: 'status', description: 'Status of the transfer (success / pending / invalid / fail)', required: false, enum: TransactionStatus })
+  @ApiQuery({ name: 'function', description: 'Filter transfers by function name', required: false })
+  @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
+  @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
+  @ApiQuery({ name: 'order', description: 'Sort order (asc/desc)', required: false, enum: SortOrder })
+  @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
+  @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
+  @ApiQuery({ name: 'withScResults', description: 'Return scResults for transfers', required: false, type: Boolean })
+  @ApiQuery({ name: 'withOperations', description: 'Return operations for transfers', required: false, type: Boolean })
+  @ApiQuery({ name: 'withLogs', description: 'Return logs for transfers', required: false, type: Boolean })
+  @ApiQuery({ name: 'withScamInfo', description: 'Returns scam information', required: false, type: Boolean })
+  @ApiQuery({ name: 'withUsername', description: 'Integrates username in assets for all addresses present in the transfers', required: false, type: Boolean })
+  async getNftTransfers(
+    @Param('identifier', ParseNftPipe) identifier: string,
+    @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
+    @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
+    @Query('sender', ParseAddressPipe) sender?: string,
+    @Query('receiver', ParseAddressArrayPipe) receiver?: string[],
+    @Query('senderShard', ParseIntPipe) senderShard?: number,
+    @Query('receiverShard', ParseIntPipe) receiverShard?: number,
+    @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash?: string,
+    @Query('hashes', ParseArrayPipe) hashes?: string[],
+    @Query('status', new ParseEnumPipe(TransactionStatus)) status?: TransactionStatus,
+    @Query('function', ParseArrayPipe) functions?: string[],
+    @Query('before', ParseIntPipe) before?: number,
+    @Query('after', ParseIntPipe) after?: number,
+    @Query('order', new ParseEnumPipe(SortOrder)) order?: SortOrder,
+    @Query('withScResults', new ParseBoolPipe) withScResults?: boolean,
+    @Query('withOperations', new ParseBoolPipe) withOperations?: boolean,
+    @Query('withLogs', new ParseBoolPipe) withLogs?: boolean,
+    @Query('withScamInfo', new ParseBoolPipe) withScamInfo?: boolean,
+    @Query('withUsername', new ParseBoolPipe) withUsername?: boolean,
+  ) {
+    const options = TransactionQueryOptions.applyDefaultOptions(size, { withScResults, withOperations, withLogs, withScamInfo, withUsername });
+
+    return await this.transferService.getTransfers(new TransactionFilter({
+      sender,
+      receivers: receiver,
+      token: identifier,
+      functions,
+      senderShard,
+      receiverShard,
+      miniBlockHash,
+      hashes,
+      status,
+      before,
+      after,
+      order,
+    }), new QueryPagination({ from, size }), options);
+  }
+
+  @Get("/nfts/:identifier/transfers/count")
+  @ApiOperation({ summary: 'NFT transfers count', description: 'Returns the total number of transfers for a specific NonFungibleESDT or SemiFungibleESDT' })
+  @ApiOkResponse({ type: Number })
+  @ApiNotFoundResponse({ description: 'Token not found' })
+  @ApiQuery({ name: 'sender', description: 'Address of the transfers sender', required: false })
+  @ApiQuery({ name: 'receiver', description: 'Search by multiple receiver addresses, comma-separated', required: false })
+  @ApiQuery({ name: 'senderShard', description: 'Id of the shard the sender address belongs to', required: false })
+  @ApiQuery({ name: 'receiverShard', description: 'Id of the shard the receiver address belongs to', required: false })
+  @ApiQuery({ name: 'miniBlockHash', description: 'Filter by miniblock hash', required: false })
+  @ApiQuery({ name: 'hashes', description: 'Filter by a comma-separated list of transfers hashes', required: false })
+  @ApiQuery({ name: 'status', description: 'Status of the transfers (success / pending / invalid / fail)', required: false, enum: TransactionStatus })
+  @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
+  @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
+  async getNftTransfersCount(
+    @Param('identifier', ParseNftPipe) identifier: string,
+    @Query('sender', ParseAddressPipe) sender?: string,
+    @Query('receiver', ParseAddressArrayPipe) receiver?: string[],
+    @Query('senderShard', ParseIntPipe) senderShard?: number,
+    @Query('receiverShard', ParseIntPipe) receiverShard?: number,
+    @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash?: string,
+    @Query('hashes', ParseArrayPipe) hashes?: string[],
+    @Query('status', new ParseEnumPipe(TransactionStatus)) status?: TransactionStatus,
+    @Query('before', ParseIntPipe) before?: number,
+    @Query('after', ParseIntPipe) after?: number,
+  ) {
+
+    return await this.transferService.getTransfersCount(new TransactionFilter({
       sender,
       receivers: receiver,
       token: identifier,
