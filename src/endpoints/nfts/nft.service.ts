@@ -551,7 +551,7 @@ export class NftService {
       return undefined;
     }
 
-    const nfts = await this.getNftsForAddress(address, new QueryPagination({ from: 0, size: 1 }), filter, fields, new NftQueryOptions({ withScamInfo: true, computeScamInfo: true }));
+    const nfts = await this.getNftsForAddress(address, new QueryPagination({ from: 0, size: 1 }), filter, fields);
     if (nfts.length === 0) {
       return undefined;
     }
