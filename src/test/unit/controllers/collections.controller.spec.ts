@@ -20,6 +20,9 @@ import { NftQueryOptions } from "src/endpoints/nfts/entities/nft.query.options";
 import { SortCollectionNfts } from "src/endpoints/collections/entities/sort.collection.nfts";
 import { TransactionFilter } from "src/endpoints/transactions/entities/transaction.filter";
 import { TransactionStatus } from "src/endpoints/transactions/entities/transaction.status";
+import { mockTransferService } from "./services.mock/transfer.services.mock";
+import { TransferService } from "src/endpoints/transfers/transfer.service";
+import { TransferModule } from "src/endpoints/transfers/transfer.module";
 
 describe('CollectionController', () => {
   let app: INestApplication;
@@ -28,6 +31,7 @@ describe('CollectionController', () => {
   const collectionServiceMocks = mockCollectionService();
   const nftServiceMocks = mockNftService();
   const transactionServiceMocks = mockTransactionService();
+  const transferServiceMocks = mockTransferService();
 
   beforeEach(async () => {
     jest.resetAllMocks();
@@ -37,12 +41,14 @@ describe('CollectionController', () => {
         CollectionModule,
         NftModule,
         TransactionModule,
+        TransferModule,
         ConfigModule.forRoot({}),
       ],
     })
       .overrideProvider(CollectionService).useValue(collectionServiceMocks)
       .overrideProvider(NftService).useValue(nftServiceMocks)
       .overrideProvider(TransactionService).useValue(transactionServiceMocks)
+      .overrideProvider(TransferService).useValue(transferServiceMocks)
       .compile();
 
     app = moduleFixture.createNestApplication();

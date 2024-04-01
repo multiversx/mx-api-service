@@ -514,7 +514,7 @@ export class CollectionController {
       throw new HttpException('Collection not found', HttpStatus.NOT_FOUND);
     }
 
-    return await this.transactionService.getTransactionCount(new TransactionFilter({
+    return await this.transferService.getTransfersCount(new TransactionFilter({
       sender,
       receivers: receiver,
       token: identifier,
