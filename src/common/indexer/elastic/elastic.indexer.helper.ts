@@ -188,6 +188,20 @@ export class ElasticIndexerHelper {
       elasticQuery = elasticQuery.withMustCondition(QueryType.Nested("data", [new MatchQuery("data.whiteListedStorage", filter.isWhitelistedStorage)]));
     }
 
+    if (this.apiConfigService.getIsNftScamInfoEnabled() && filter.isScam) {
+      elasticQuery = elasticQuery.withCondition(
+        QueryConditionOptions.must,
+        QueryType.Should([
+          QueryType.Match('nft_scamInfoType', 'scam'),
+          QueryType.Match('nft_scamInfoType', 'potentialScam'),
+        ])
+      );
+    }
+
+    if (filter.scamType) {
+      elasticQuery = elasticQuery.withMustCondition(QueryType.Match('nft_scamInfoType', filter.scamType));
+    }
+
     if (filter.traits !== undefined) {
       for (const [key, value] of Object.entries(filter.traits)) {
         elasticQuery = elasticQuery.withMustMatchCondition('nft_traitValues', BinaryUtils.base64Encode(`${key}_${value}`));

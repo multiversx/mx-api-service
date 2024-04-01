@@ -216,8 +216,6 @@ export class CollectionController {
   @ApiQuery({ name: 'nonceAfter', description: 'Return all NFTs with given nonce after the given number', required: false, type: Number })
   @ApiQuery({ name: 'withOwner', description: 'Return owner where type = NonFungibleESDT', required: false, type: Boolean })
   @ApiQuery({ name: 'withSupply', description: 'Return supply where type = SemiFungibleESDT', required: false, type: Boolean })
-  @ApiQuery({ name: 'withScamInfo', required: false, type: Boolean })
-  @ApiQuery({ name: 'computeScamInfo', required: false, type: Boolean })
   @ApiQuery({ name: 'sort', description: 'Sorting criteria', required: false, enum: SortCollectionNfts })
   @ApiQuery({ name: 'order', description: 'Sorting order (asc / desc)', required: false, enum: SortOrder })
   async getNfts(
@@ -237,8 +235,6 @@ export class CollectionController {
     @Query('nonceAfter', new ParseIntPipe) nonceAfter?: number,
     @Query('withOwner', new ParseBoolPipe) withOwner?: boolean,
     @Query('withSupply', new ParseBoolPipe) withSupply?: boolean,
-    @Query('withScamInfo', new ParseBoolPipe) withScamInfo?: boolean,
-    @Query('computeScamInfo', new ParseBoolPipe) computeScamInfo?: boolean,
     @Query('sort', new ParseEnumPipe(SortCollectionNfts)) sort?: SortCollectionNfts,
     @Query('order', new ParseEnumPipe(SortOrder)) order?: SortOrder,
   ): Promise<Nft[]> {
@@ -247,12 +243,10 @@ export class CollectionController {
       throw new HttpException('Collection not found', HttpStatus.NOT_FOUND);
     }
 
-    const options = NftQueryOptions.enforceScamInfoFlag(size, new NftQueryOptions({ withOwner, withSupply, withScamInfo, computeScamInfo }));
-
     return await this.nftService.getNfts(
       new QueryPagination({ from, size }),
       new NftFilter({ search, identifiers, collection, name, tags, creator, hasUris, isWhitelistedStorage, isNsfw, traits, nonceBefore, nonceAfter, sort, order }),
-      options
+      new NftQueryOptions({ withOwner, withSupply }),
     );
   }
 

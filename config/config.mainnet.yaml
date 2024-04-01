@@ -79,6 +79,8 @@ features:
       tokenAccounts: 1000
       tokenTransactions: 1000
       nodeValidators: 3260
+  nftScamInfo:
+    enabled: false
 image:
   width: 600
   height: 600

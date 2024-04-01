@@ -54,6 +54,7 @@ import { AccountHistoryFilter } from './entities/account.history.filter';
 import { ParseArrayPipeOptions } from '@multiversx/sdk-nestjs-common/lib/pipes/entities/parse.array.options';
 import { NodeStatusRaw } from '../nodes/entities/node.status';
 import { AccountKeyFilter } from './entities/account.key.filter';
+import { ScamType } from 'src/common/entities/scam-type.enum';
 import { DeepHistoryInterceptor } from 'src/interceptors/deep-history.interceptor';
 import { MexPairType } from '../mex/entities/mex.pair.type';
 
@@ -531,6 +532,8 @@ export class AccountController {
   @ApiQuery({ name: 'computeScamInfo', description: 'Compute scam info in the response', required: false, type: Boolean })
   @ApiQuery({ name: 'excludeMetaESDT', description: 'Exclude NFTs of type "MetaESDT" in the response', required: false, type: Boolean })
   @ApiQuery({ name: 'fields', description: 'List of fields to filter by', required: false })
+  @ApiQuery({ name: 'isScam', description: 'Filter by scam status', required: false, type: Boolean })
+  @ApiQuery({ name: 'scamType', description: 'Filter by type (scam/potentialScam)', required: false })
   @ApiQuery({ name: 'timestamp', description: 'Retrieve entry from timestamp', required: false, type: Number })
   async getAccountNfts(
     @Param('address', ParseAddressPipe) address: string,
@@ -547,21 +550,33 @@ export class AccountController {
     @Query('hasUris', new ParseBoolPipe) hasUris?: boolean,
     @Query('includeFlagged', new ParseBoolPipe) includeFlagged?: boolean,
     @Query('withSupply', new ParseBoolPipe) withSupply?: boolean,
-    @Query('withScamInfo', new ParseBoolPipe) withScamInfo?: boolean,
-    @Query('computeScamInfo', new ParseBoolPipe) computeScamInfo?: boolean,
     @Query('source', new ParseEnumPipe(EsdtDataSource)) source?: EsdtDataSource,
     @Query('excludeMetaESDT', new ParseBoolPipe) excludeMetaESDT?: boolean,
     @Query('fields', ParseArrayPipe) fields?: string[],
+    @Query('isScam', new ParseBoolPipe) isScam?: boolean,
+    @Query('scamType', new ParseEnumPipe(ScamType)) scamType?: ScamType,
     @Query('timestamp', ParseIntPipe) _timestamp?: number,
   ): Promise<NftAccount[]> {
-    const options = NftQueryOptions.enforceScamInfoFlag(size, new NftQueryOptions({ withSupply, withScamInfo, computeScamInfo }));
-
     return await this.nftService.getNftsForAddress(
       address,
       new QueryPagination({ from, size }),
-      new NftFilter({ search, identifiers, type, collection, name, collections, tags, creator, hasUris, includeFlagged, excludeMetaESDT }),
+      new NftFilter({
+        search,
+        identifiers,
+        type,
+        collection,
+        name,
+        collections,
+        tags,
+        creator,
+        hasUris,
+        includeFlagged,
+        excludeMetaESDT,
+        isScam,
+        scamType,
+      }),
       fields,
-      options,
+      new NftQueryOptions({ withSupply }),
       source
     );
   }
@@ -580,6 +595,8 @@ export class AccountController {
   @ApiQuery({ name: 'hasUris', description: 'Return all NFTs that have one or more uris', required: false })
   @ApiQuery({ name: 'includeFlagged', description: 'Include NFTs that are flagged or not', required: false })
   @ApiQuery({ name: 'excludeMetaESDT', description: 'Exclude NFTs of type "MetaESDT" in the response', required: false, type: Boolean })
+  @ApiQuery({ name: 'isScam', description: 'Filter by scam status', required: false, type: Boolean })
+  @ApiQuery({ name: 'scamType', description: 'Filter by type (scam/potentialScam)', required: false })
   @ApiQuery({ name: 'timestamp', description: 'Retrieve entry from timestamp', required: false, type: Number })
   @ApiOkResponse({ type: Number })
   async getNftCount(
@@ -595,9 +612,25 @@ export class AccountController {
     @Query('hasUris', new ParseBoolPipe) hasUris?: boolean,
     @Query('includeFlagged', new ParseBoolPipe) includeFlagged?: boolean,
     @Query('excludeMetaESDT', new ParseBoolPipe) excludeMetaESDT?: boolean,
+    @Query('isScam', new ParseBoolPipe) isScam?: boolean,
+    @Query('scamType', new ParseEnumPipe(ScamType)) scamType?: ScamType,
     @Query('timestamp', ParseIntPipe) _timestamp?: number,
   ): Promise<number> {
-    return await this.nftService.getNftCountForAddress(address, new NftFilter({ search, identifiers, type, collection, collections, name, tags, creator, hasUris, includeFlagged, excludeMetaESDT }));
+    return await this.nftService.getNftCountForAddress(address, new NftFilter({
+      search,
+      identifiers,
+      type,
+      collection,
+      collections,
+      name,
+      tags,
+      creator,
+      hasUris,
+      includeFlagged,
+      excludeMetaESDT,
+      isScam,
+      scamType,
+    }));
   }
 
   @Get("/accounts/:address/nfts/c")
@@ -616,9 +649,11 @@ export class AccountController {
     @Query('hasUris', new ParseBoolPipe) hasUris?: boolean,
     @Query('includeFlagged', new ParseBoolPipe) includeFlagged?: boolean,
     @Query('excludeMetaESDT', new ParseBoolPipe) excludeMetaESDT?: boolean,
+    @Query('isScam', new ParseBoolPipe) isScam?: boolean,
+    @Query('scamType', new ParseEnumPipe(ScamType)) scamType?: ScamType,
     @Query('timestamp', ParseIntPipe) _timestamp?: number,
   ): Promise<number> {
-    return await this.nftService.getNftCountForAddress(address, new NftFilter({ search, identifiers, type, collection, collections, name, tags, creator, hasUris, includeFlagged, excludeMetaESDT }));
+    return await this.nftService.getNftCountForAddress(address, new NftFilter({ search, identifiers, type, collection, collections, name, tags, creator, hasUris, includeFlagged, excludeMetaESDT, isScam, scamType }));
   }
 
   @Get("/accounts/:address/nfts/:nft")
