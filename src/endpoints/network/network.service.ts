@@ -23,6 +23,7 @@ import { AccountQueryOptions } from '../accounts/entities/account.query.options'
 import { DataApiService } from 'src/common/data-api/data-api.service';
 import { FeatureConfigs } from './entities/feature.configs';
 import { IndexerService } from 'src/common/indexer/indexer.service';
+import { SmartContractResultFilter } from '../sc-results/entities/smart.contract.result.filter';
 
 @Injectable()
 export class NetworkService {
@@ -218,7 +219,7 @@ export class NetworkService {
       this.blockService.getBlocksCount(new BlockFilter()),
       this.accountService.getAccountsCount(new AccountQueryOptions()),
       this.transactionService.getTransactionCount(new TransactionFilter()),
-      this.smartContractResultService.getScResultsCount(),
+      this.smartContractResultService.getScResultsCount(new SmartContractResultFilter()),
     ]);
 
     const { erd_num_shards_without_meta: shards, erd_round_duration: refreshRate } = networkConfig;

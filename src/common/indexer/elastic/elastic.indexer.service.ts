@@ -42,8 +42,9 @@ export class ElasticIndexerService implements IndexerInterface {
     return await this.elasticService.getCount('accounts', query);
   }
 
-  async getScResultsCount(): Promise<number> {
-    return await this.elasticService.getCount('scresults');
+  async getScResultsCount(filter: SmartContractResultFilter): Promise<number> {
+    const query = this.indexerHelper.builResultsFilterQuery(filter);
+    return await this.elasticService.getCount('scresults', query);
   }
 
   async getAccountContractsCount(address: string): Promise<number> {
@@ -61,13 +62,16 @@ export class ElasticIndexerService implements IndexerInterface {
   }
 
   async getBlocks(filter: BlockFilter, queryPagination: QueryPagination): Promise<Block[]> {
-    const elasticQuery = ElasticQuery.create()
+    const order = filter.order === SortOrder.asc ? ElasticSortOrder.ascending : ElasticSortOrder.descending;
+
+    let elasticQuery = ElasticQuery.create()
       .withPagination(queryPagination)
-      .withSort([
-        { name: 'timestamp', order: ElasticSortOrder.descending },
-        { name: 'shardId', order: ElasticSortOrder.ascending },
-      ])
       .withCondition(QueryConditionOptions.must, await this.indexerHelper.buildElasticBlocksFilter(filter));
+
+    elasticQuery = elasticQuery.withSort([
+      { name: "timestamp", order: order },
+      { name: "shardId", order: ElasticSortOrder.ascending },
+    ]);
 
     const result = await this.elasticService.getList('blocks', 'hash', elasticQuery);
     return result;
@@ -350,17 +354,10 @@ export class ElasticIndexerService implements IndexerInterface {
   }
 
   async getScResults(pagination: QueryPagination, filter: SmartContractResultFilter): Promise<any[]> {
-    let query = ElasticQuery.create().withPagination(pagination);
+    const elasticQuery: ElasticQuery = this.indexerHelper.builResultsFilterQuery(filter)
+      .withPagination(pagination);
 
-    if (filter.miniBlockHash) {
-      query = query.withCondition(QueryConditionOptions.must, [QueryType.Match('miniBlockHash', filter.miniBlockHash)]);
-    }
-
-    if (filter.originalTxHashes) {
-      query = query.withShouldCondition(filter.originalTxHashes.map(originalTxHash => QueryType.Match('originalTxHash', originalTxHash)));
-    }
-
-    const results = await this.elasticService.getList('scresults', 'hash', query);
+    const results = await this.elasticService.getList('scresults', 'hash', elasticQuery);
 
     for (const result of results) {
       this.processTransaction(result);
