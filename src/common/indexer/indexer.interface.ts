@@ -17,7 +17,7 @@ import { Account, AccountHistory, AccountTokenHistory, Block, Collection, MiniBl
 export interface IndexerInterface {
   getAccountsCount(filter: AccountQueryOptions): Promise<number>
 
-  getScResultsCount(): Promise<number>
+  getScResultsCount(filter: SmartContractResultFilter): Promise<number>
 
   getAccountContractsCount(address: string): Promise<number>
 

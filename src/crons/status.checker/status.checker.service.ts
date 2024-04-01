@@ -23,6 +23,7 @@ import { NodeType } from "src/endpoints/nodes/entities/node.type";
 import { AccountQueryOptions } from "src/endpoints/accounts/entities/account.query.options";
 import { ApiConfigService } from 'src/common/api-config/api.config.service';
 import { StatusCheckerThresholds } from 'src/common/api-config/entities/status-checker-thresholds';
+import { SmartContractResultFilter } from 'src/endpoints/sc-results/entities/smart.contract.result.filter';
 
 @Injectable()
 export class StatusCheckerService {
@@ -96,7 +97,7 @@ export class StatusCheckerService {
   @Cron(CronExpression.EVERY_MINUTE)
   async handleResultsCount() {
     await Locker.lock('Status Checker: Results Count', async () => {
-      const count = await this.elasticIndexerService.getScResultsCount();
+      const count = await this.elasticIndexerService.getScResultsCount(new SmartContractResultFilter());
       MetricsService.setClusterComparisonValue('total_results', count);
     }, true);
   }

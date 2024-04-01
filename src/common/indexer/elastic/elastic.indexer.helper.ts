@@ -15,6 +15,7 @@ import { TransactionFilter } from "src/endpoints/transactions/entities/transacti
 import { TransactionType } from "src/endpoints/transactions/entities/transaction.type";
 import { AccountQueryOptions } from "src/endpoints/accounts/entities/account.query.options";
 import { AccountHistoryFilter } from "src/endpoints/accounts/entities/account.history.filter";
+import { SmartContractResultFilter } from "src/endpoints/sc-results/entities/smart.contract.result.filter";
 
 @Injectable()
 export class ElasticIndexerHelper {
@@ -548,6 +549,37 @@ export class ElasticIndexerHelper {
 
     return elasticQuery;
   }
+
+  public builResultsFilterQuery(filter: SmartContractResultFilter): ElasticQuery {
+    let elasticQuery = ElasticQuery.create();
+
+    if (filter.miniBlockHash) {
+      elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, [QueryType.Match('miniBlockHash', filter.miniBlockHash)]);
+    }
+
+    if (filter.originalTxHashes) {
+      elasticQuery = elasticQuery.withShouldCondition(filter.originalTxHashes.map(originalTxHash => QueryType.Match('originalTxHash', originalTxHash)));
+    }
+
+    if (filter.sender) {
+      elasticQuery = elasticQuery.withShouldCondition(QueryType.Match('sender', filter.sender));
+    }
+
+    if (filter.receiver) {
+      elasticQuery = elasticQuery.withShouldCondition(QueryType.Match('receiver', filter.receiver));
+    }
+
+    if (filter.functions && filter.functions.length > 0 && this.apiConfigService.getIsIndexerV3FlagActive()) {
+      if (filter.functions.length === 1 && filter.functions[0] === '') {
+        elasticQuery = elasticQuery.withMustNotExistCondition('function');
+      } else {
+        elasticQuery = this.applyFunctionFilter(elasticQuery, filter.functions);
+      }
+    }
+
+    return elasticQuery;
+  }
+
 
   public applyFunctionFilter(elasticQuery: ElasticQuery, functions: string[]) {
     const functionConditions = [];

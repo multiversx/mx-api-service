@@ -42,8 +42,9 @@ export class ElasticIndexerService implements IndexerInterface {
     return await this.elasticService.getCount('accounts', query);
   }
 
-  async getScResultsCount(): Promise<number> {
-    return await this.elasticService.getCount('scresults');
+  async getScResultsCount(filter: SmartContractResultFilter): Promise<number> {
+    const query = this.indexerHelper.builResultsFilterQuery(filter);
+    return await this.elasticService.getCount('scresults', query);
   }
 
   async getAccountContractsCount(address: string): Promise<number> {
@@ -353,17 +354,10 @@ export class ElasticIndexerService implements IndexerInterface {
   }
 
   async getScResults(pagination: QueryPagination, filter: SmartContractResultFilter): Promise<any[]> {
-    let query = ElasticQuery.create().withPagination(pagination);
+    const elasticQuery: ElasticQuery = this.indexerHelper.builResultsFilterQuery(filter)
+      .withPagination(pagination);
 
-    if (filter.miniBlockHash) {
-      query = query.withCondition(QueryConditionOptions.must, [QueryType.Match('miniBlockHash', filter.miniBlockHash)]);
-    }
-
-    if (filter.originalTxHashes) {
-      query = query.withShouldCondition(filter.originalTxHashes.map(originalTxHash => QueryType.Match('originalTxHash', originalTxHash)));
-    }
-
-    const results = await this.elasticService.getList('scresults', 'hash', query);
+    const results = await this.elasticService.getList('scresults', 'hash', elasticQuery);
 
     for (const result of results) {
       this.processTransaction(result);
