@@ -297,8 +297,8 @@ export class ApiConfigService {
     return this.configService.get<boolean>('cron.elasticUpdater') ?? false;
   }
 
-  getIsScamInfoEnabled(): boolean {
-    return this.configService.get<boolean>('features.scamInfo.enabled') ?? false;
+  getIsNftScamInfoEnabled(): boolean {
+    return this.configService.get<boolean>('features.nftScamInfo.enabled') ?? false;
   }
 
   getIsQueueWorkerCronActive(): boolean {

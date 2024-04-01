@@ -188,7 +188,7 @@ export class ElasticIndexerHelper {
       elasticQuery = elasticQuery.withMustCondition(QueryType.Nested("data", [new MatchQuery("data.whiteListedStorage", filter.isWhitelistedStorage)]));
     }
 
-    if (this.apiConfigService.getIsScamInfoEnabled() && filter.isScam) {
+    if (this.apiConfigService.getIsNftScamInfoEnabled() && filter.isScam) {
       elasticQuery = elasticQuery.withCondition(
         QueryConditionOptions.must,
         QueryType.Should([
