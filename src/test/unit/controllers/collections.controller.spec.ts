@@ -496,7 +496,7 @@ describe('CollectionController', () => {
       nftServiceMocks.getNfts.mockResolvedValue([]);
       collectionServiceMocks.isCollection.mockResolvedValue(true);
       const collection = 'TEST-5409d3';
-      const options = NftQueryOptions.enforceScamInfoFlag(25, new NftQueryOptions({}));
+      const options = new NftQueryOptions({});
 
       await request(app.getHttpServer())
         .get(`${path}/${collection}/nfts`)
@@ -513,7 +513,7 @@ describe('CollectionController', () => {
       collectionServiceMocks.isCollection.mockResolvedValue(true);
       const collection = 'TEST-5409d3';
       const search = "unique";
-      const options = NftQueryOptions.enforceScamInfoFlag(25, new NftQueryOptions({}));
+      const options = new NftQueryOptions({});
 
       await request(app.getHttpServer())
         .get(`${path}/${collection}/nfts?search=${search}`)
@@ -532,7 +532,7 @@ describe('CollectionController', () => {
       collectionServiceMocks.isCollection.mockResolvedValue(true);
       const collection = 'TEST-5409d3';
       const tags = "tag1,tag2";
-      const options = NftQueryOptions.enforceScamInfoFlag(25, new NftQueryOptions({}));
+      const options = new NftQueryOptions({});
 
       await request(app.getHttpServer())
         .get(`${path}/${collection}/nfts?tags=${tags}`)
@@ -550,7 +550,7 @@ describe('CollectionController', () => {
       collectionServiceMocks.isCollection.mockResolvedValue(true);
       const collection = 'TEST-5409d3';
       const creator = 'erd1qga7ze0l03chfgru0a32wxqf2226nzrxnyhzer9lmudqhjgy7ycqjjyknz';
-      const options = NftQueryOptions.enforceScamInfoFlag(25, new NftQueryOptions({}));
+      const options = new NftQueryOptions({});
 
       await request(app.getHttpServer())
         .get(`${path}/${collection}/nfts?creator=${creator}`)
@@ -568,7 +568,7 @@ describe('CollectionController', () => {
       collectionServiceMocks.isCollection.mockResolvedValue(true);
       const collection = 'TEST-5409d3';
       const isWhitelistedStorage = true;
-      const options = NftQueryOptions.enforceScamInfoFlag(25, new NftQueryOptions({}));
+      const options = new NftQueryOptions({});
 
       await request(app.getHttpServer())
         .get(`${path}/${collection}/nfts?isWhitelistedStorage=${isWhitelistedStorage}`)
@@ -586,7 +586,7 @@ describe('CollectionController', () => {
       collectionServiceMocks.isCollection.mockResolvedValue(true);
       const collection = 'TEST-5409d3';
       const isWhitelistedStorage = false;
-      const options = NftQueryOptions.enforceScamInfoFlag(25, new NftQueryOptions({}));
+      const options = new NftQueryOptions({});
 
       await request(app.getHttpServer())
         .get(`${path}/${collection}/nfts?isWhitelistedStorage=${isWhitelistedStorage}`)
@@ -604,7 +604,7 @@ describe('CollectionController', () => {
       collectionServiceMocks.isCollection.mockResolvedValue(true);
       const collection = 'TEST-5409d3';
       const hasUris = true;
-      const options = NftQueryOptions.enforceScamInfoFlag(25, new NftQueryOptions({}));
+      const options = new NftQueryOptions({});
 
       await request(app.getHttpServer())
         .get(`${path}/${collection}/nfts?hasUris=${hasUris}`)
@@ -622,7 +622,7 @@ describe('CollectionController', () => {
       collectionServiceMocks.isCollection.mockResolvedValue(true);
       const collection = 'TEST-5409d3';
       const hasUris = false;
-      const options = NftQueryOptions.enforceScamInfoFlag(25, new NftQueryOptions({}));
+      const options = new NftQueryOptions({});
 
       await request(app.getHttpServer())
         .get(`${path}/${collection}/nfts?hasUris=${hasUris}`)
@@ -640,7 +640,7 @@ describe('CollectionController', () => {
       collectionServiceMocks.isCollection.mockResolvedValue(true);
       const collection = 'TEST-5409d3';
       const isNsfw = true;
-      const options = NftQueryOptions.enforceScamInfoFlag(25, new NftQueryOptions({}));
+      const options = new NftQueryOptions({});
 
       await request(app.getHttpServer())
         .get(`${path}/${collection}/nfts?isNsfw=${isNsfw}`)
@@ -658,7 +658,7 @@ describe('CollectionController', () => {
       collectionServiceMocks.isCollection.mockResolvedValue(true);
       const collection = 'TEST-5409d3';
       const nonceBefore = 10;
-      const options = NftQueryOptions.enforceScamInfoFlag(25, new NftQueryOptions({}));
+      const options = new NftQueryOptions({});
 
       await request(app.getHttpServer())
         .get(`${path}/${collection}/nfts?nonceBefore=${nonceBefore}`)
@@ -676,7 +676,7 @@ describe('CollectionController', () => {
       collectionServiceMocks.isCollection.mockResolvedValue(true);
       const collection = 'TEST-5409d3';
       const nonceAfter = 5;
-      const options = NftQueryOptions.enforceScamInfoFlag(25, new NftQueryOptions({}));
+      const options = new NftQueryOptions({});
 
       await request(app.getHttpServer())
         .get(`${path}/${collection}/nfts?nonceAfter=${nonceAfter}`)
@@ -694,7 +694,7 @@ describe('CollectionController', () => {
       collectionServiceMocks.isCollection.mockResolvedValue(true);
       const collection = 'TEST-5409d3';
       const withOwner = true;
-      const options = NftQueryOptions.enforceScamInfoFlag(25, new NftQueryOptions({ withOwner: withOwner }));
+      const options = new NftQueryOptions({ withOwner: withOwner });
 
       await request(app.getHttpServer())
         .get(`${path}/${collection}/nfts?withOwner=${withOwner}`)
@@ -712,46 +712,10 @@ describe('CollectionController', () => {
       collectionServiceMocks.isCollection.mockResolvedValue(true);
       const collection = 'TEST-5409d3';
       const withSupply = true;
-      const options = NftQueryOptions.enforceScamInfoFlag(25, new NftQueryOptions({ withSupply: withSupply }));
+      const options = new NftQueryOptions({ withSupply: withSupply });
 
       await request(app.getHttpServer())
         .get(`${path}/${collection}/nfts?withSupply=${withSupply}`)
-        .expect(200);
-
-      expect(nftServiceMocks.getNfts).toHaveBeenCalledWith(
-        new QueryPagination({ from: 0, size: 25 }),
-        createNftFilter({ collection }),
-        options
-      );
-    });
-
-    it('should return NFTs filtered by withScamInfo', async () => {
-      nftServiceMocks.getNfts.mockResolvedValue([]);
-      collectionServiceMocks.isCollection.mockResolvedValue(true);
-      const collection = 'TEST-5409d3';
-      const withScamInfo = true;
-      const options = NftQueryOptions.enforceScamInfoFlag(25, new NftQueryOptions({ withScamInfo: withScamInfo }));
-
-      await request(app.getHttpServer())
-        .get(`${path}/${collection}/nfts?withScamInfo=${withScamInfo}`)
-        .expect(200);
-
-      expect(nftServiceMocks.getNfts).toHaveBeenCalledWith(
-        new QueryPagination({ from: 0, size: 25 }),
-        createNftFilter({ collection }),
-        options
-      );
-    });
-
-    it('should return NFTs filtered by computeScamInfo', async () => {
-      nftServiceMocks.getNfts.mockResolvedValue([]);
-      collectionServiceMocks.isCollection.mockResolvedValue(true);
-      const collection = 'TEST-5409d3';
-      const computeScamInfo = true;
-      const options = NftQueryOptions.enforceScamInfoFlag(25, new NftQueryOptions({ computeScamInfo: computeScamInfo }));
-
-      await request(app.getHttpServer())
-        .get(`${path}/${collection}/nfts?computeScamInfo=${computeScamInfo}`)
         .expect(200);
 
       expect(nftServiceMocks.getNfts).toHaveBeenCalledWith(
@@ -767,7 +731,7 @@ describe('CollectionController', () => {
       const collection = 'TEST-5409d3';
       const sort = SortCollectionNfts.timestamp;
       const order = SortOrder.asc;
-      const options = NftQueryOptions.enforceScamInfoFlag(25, new NftQueryOptions({}));
+      const options = new NftQueryOptions({});
 
       await request(app.getHttpServer())
         .get(`${path}/${collection}/nfts?sort=${sort}&order=${order}`)
