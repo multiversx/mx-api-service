@@ -830,24 +830,36 @@ export class TokenService {
       tokens,
       token => CacheInfo.TokenTransactions(token.identifier).key,
       async token => await this.getTransactionCount(token),
-      (token, transactions) => token.transactions = transactions,
+      (token, transactions) => {
+        token.transactions = transactions;
+        token.transactionsLastUpdatedAt = Math.round(new Date().getTime() / 1000);
+      },
       CacheInfo.TokenTransactions('').ttl,
+      10,
     );
 
     await this.cachingService.batchApplyAll(
       tokens,
       token => CacheInfo.TokenAccounts(token.identifier).key,
       async token => await this.getAccountsCount(token),
-      (token, accounts) => token.accounts = accounts,
+      (token, accounts) => {
+        token.accounts = accounts;
+        token.accountsLastUpdatedAt = Math.round(new Date().getTime() / 1000);
+      },
       CacheInfo.TokenAccounts('').ttl,
+      10,
     );
 
     await this.cachingService.batchApplyAll(
       tokens,
       token => CacheInfo.TokenTransfers(token.identifier).key,
       async token => await this.getTransfersCount(token),
-      (token, transfers) => token.transfers = transfers,
+      (token, transfers) => {
+        token.transfers = transfers;
+        token.transfersLastUpdatedAt = Math.round(new Date().getTime() / 1000);
+      },
       CacheInfo.TokenTransfers('').ttl,
+      10,
     );
   }
 
