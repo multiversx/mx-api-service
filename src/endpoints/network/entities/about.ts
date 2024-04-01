@@ -9,8 +9,8 @@ export class About {
   }
 
   @Field(() => String, { description: "Application Version details." })
-  @ApiProperty({ type: String })
-  appVersion: string = '';
+  @ApiProperty({ type: String, nullable: true })
+  appVersion: string | undefined = undefined;
 
   @Field(() => String, { description: "Plugins Version details." })
   @ApiProperty({ type: String, nullable: true })

@@ -297,30 +297,36 @@ export class NetworkService {
   }
 
   async getAboutRaw(): Promise<About> {
-    const appVersion = require('child_process')
-      .execSync('git rev-parse HEAD')
-      .toString().trim();
+    let appVersion: string | undefined = undefined;
+    let pluginsVersion: string | undefined = undefined;
 
-    let pluginsVersion = require('child_process')
-      .execSync('git rev-parse HEAD', { cwd: 'src/plugins' })
-      .toString().trim();
+    let apiVersion = process.env['API_VERSION'];
+    if (!apiVersion) {
+      apiVersion = require('child_process')
+        .execSync('git tag --points-at HEAD')
+        .toString().trim();
 
-    let apiVersion = require('child_process')
-      .execSync('git tag --points-at HEAD')
-      .toString().trim();
+      if (!apiVersion) {
+        apiVersion = require('child_process')
+          .execSync('git describe --tags --abbrev=0')
+          .toString().trim();
+
+        if (apiVersion) {
+          apiVersion = apiVersion + '-next';
+        }
+      }
+
+      appVersion = require('child_process')
+        .execSync('git rev-parse HEAD')
+        .toString().trim();
+
+      pluginsVersion = require('child_process')
+        .execSync('git rev-parse HEAD', { cwd: 'src/plugins' })
+        .toString().trim();
+    }
 
     if (pluginsVersion === appVersion) {
       pluginsVersion = undefined;
-    }
-
-    if (!apiVersion) {
-      apiVersion = require('child_process')
-        .execSync('git describe --tags --abbrev=0')
-        .toString().trim();
-
-      if (apiVersion) {
-        apiVersion = apiVersion + '-next';
-      }
     }
 
     const features = new FeatureConfigs({
