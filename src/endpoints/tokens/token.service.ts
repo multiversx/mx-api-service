@@ -829,11 +829,13 @@ export class TokenService {
     await this.cachingService.batchApplyAll(
       tokens,
       token => CacheInfo.TokenTransactions(token.identifier).key,
-      async token => await this.getTransactionCount(token),
-      (token, transactions) => {
-        token.transactions = transactions;
+      async token => {
+        const transactions = await this.getTotalTransactions(token);
         token.transactionsLastUpdatedAt = Math.round(new Date().getTime() / 1000);
+
+        return transactions;
       },
+      (token, transactions) => token.transactions = transactions,
       CacheInfo.TokenTransactions('').ttl,
       10,
     );
@@ -841,11 +843,13 @@ export class TokenService {
     await this.cachingService.batchApplyAll(
       tokens,
       token => CacheInfo.TokenAccounts(token.identifier).key,
-      async token => await this.getAccountsCount(token),
-      (token, accounts) => {
-        token.accounts = accounts;
+      async token => {
+        const accounts = await this.getTotalAccounts(token);
         token.accountsLastUpdatedAt = Math.round(new Date().getTime() / 1000);
+
+        return accounts;
       },
+      (token, accounts) => token.accounts = accounts,
       CacheInfo.TokenAccounts('').ttl,
       10,
     );
@@ -853,17 +857,19 @@ export class TokenService {
     await this.cachingService.batchApplyAll(
       tokens,
       token => CacheInfo.TokenTransfers(token.identifier).key,
-      async token => await this.getTransfersCount(token),
-      (token, transfers) => {
-        token.transfers = transfers;
+      async token => {
+        const transfers = await this.getTotalTransfers(token);
         token.transfersLastUpdatedAt = Math.round(new Date().getTime() / 1000);
+
+        return transfers;
       },
+      (token, transfers) => token.transfers = transfers,
       CacheInfo.TokenTransfers('').ttl,
       10,
     );
   }
 
-  private async getTransactionCount(token: TokenDetailed): Promise<number | undefined> {
+  private async getTotalTransactions(token: TokenDetailed): Promise<number | undefined> {
     try {
       return await this.transactionService.getTransactionCount(new TransactionFilter({ tokens: [token.identifier, ...token.assets?.extraTokens ?? []] }));
     } catch (error) {
@@ -873,7 +879,7 @@ export class TokenService {
     }
   }
 
-  private async getTransfersCount(token: TokenDetailed): Promise<number | undefined> {
+  private async getTotalTransfers(token: TokenDetailed): Promise<number | undefined> {
     try {
       const filter = new TransactionFilter({ tokens: [token.identifier, ...token.assets?.extraTokens ?? []] });
       return await this.transferService.getTransfersCount(filter);
@@ -884,7 +890,7 @@ export class TokenService {
     }
   }
 
-  private async getAccountsCount(token: TokenDetailed): Promise<number | undefined> {
+  private async getTotalAccounts(token: TokenDetailed): Promise<number | undefined> {
     let accounts = await this.cachingService.getRemote<number>(CacheInfo.TokenAccountsExtra(token.identifier).key);
     if (!accounts) {
       accounts = await this.getEsdtAccountsCount(token.identifier);
