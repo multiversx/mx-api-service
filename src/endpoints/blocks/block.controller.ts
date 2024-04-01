@@ -6,7 +6,6 @@ import { BlockService } from "./block.service";
 import { Block } from "./entities/block";
 import { BlockDetailed } from "./entities/block.detailed";
 import { BlockFilter } from "./entities/block.filter";
-import { SortBlocks } from "./entities/sort.blocks";
 import { SortOrder } from "src/common/entities/sort.order";
 
 @Controller()
@@ -25,8 +24,7 @@ export class BlockController {
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   @ApiQuery({ name: 'nonce', description: 'Filter by nonce', required: false })
   @ApiQuery({ name: 'hashes', description: 'Search by blocks hashes, comma-separated', required: false })
-  @ApiQuery({ name: 'sort', description: 'Sort criteria (timestamp)', required: false, enum: SortBlocks })
-  @ApiQuery({ name: 'order', description: 'Sort order (asc/desc)', required: false, enum: SortBlocks })
+  @ApiQuery({ name: 'order', description: 'Order blocks (asc/desc) by timestamp', required: false, enum: SortOrder })
   @ApiQuery({ name: 'withProposerIdentity', description: 'Provide identity information for proposer node', required: false })
   getBlocks(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
@@ -37,13 +35,12 @@ export class BlockController {
     @Query('epoch', ParseIntPipe) epoch?: number,
     @Query('nonce', ParseIntPipe) nonce?: number,
     @Query('hashes', ParseArrayPipe) hashes?: string[],
-    @Query('sort', new ParseEnumPipe(SortBlocks)) sort?: SortBlocks,
     @Query('order', new ParseEnumPipe(SortOrder)) order?: SortOrder,
     @Query('withProposerIdentity', ParseBoolPipe) withProposerIdentity?: boolean,
   ): Promise<Block[]> {
     return this.blockService.getBlocks(
       new BlockFilter(
-        { shard, proposer, validator, epoch, nonce, hashes, sort, order }),
+        { shard, proposer, validator, epoch, nonce, hashes, order }),
       new QueryPagination(
         { from, size }), withProposerIdentity);
   }
