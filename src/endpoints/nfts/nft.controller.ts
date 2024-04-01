@@ -192,39 +192,6 @@ export class NftController {
     return { supply: totalSupply };
   }
 
-  @Get('/nfts/:identifier/owners')
-  @ApiOperation({ deprecated: true })
-  @ApiResponse({ status: 200, description: 'Non-fungible / semi-fungible token owners', type: NftOwner })
-  @ApiResponse({ status: 404, description: 'Token not found' })
-  @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
-  @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
-  async getNftOwners(
-    @Param('identifier', ParseNftPipe) identifier: string,
-    @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
-    @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
-  ): Promise<NftOwner[]> {
-    const owners = await this.nftService.getNftOwners(identifier, new QueryPagination({ from, size }));
-    if (owners === undefined) {
-      throw new HttpException('NFT not found', HttpStatus.NOT_FOUND);
-    }
-
-    return owners;
-  }
-
-  @Get('/nfts/:identifier/owners/count')
-  @ApiOperation({ deprecated: true })
-  @ApiResponse({ status: 200, description: 'Non-fungible / semi-fungible token owners count', type: Number })
-  async getNftOwnersCount(
-    @Param('identifier', ParseNftPipe) identifier: string
-  ): Promise<number> {
-    const ownersCount = await this.nftService.getNftOwnersCount(identifier);
-    if (ownersCount === undefined) {
-      throw new HttpException('NFT not found', HttpStatus.NOT_FOUND);
-    }
-
-    return ownersCount;
-  }
-
   @Get('/nfts/:identifier/accounts')
   @ApiOperation({ summary: 'NFT accounts', description: 'Returns a list of addresses that hold balances for a specific Non-Fungible / Semi-Fungible / MetaESDT token' })
   @ApiOkResponse({ type: [NftOwner] })
