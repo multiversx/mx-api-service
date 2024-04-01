@@ -61,13 +61,16 @@ export class ElasticIndexerService implements IndexerInterface {
   }
 
   async getBlocks(filter: BlockFilter, queryPagination: QueryPagination): Promise<Block[]> {
-    const elasticQuery = ElasticQuery.create()
+    const order = filter.order === SortOrder.asc ? ElasticSortOrder.ascending : ElasticSortOrder.descending;
+
+    let elasticQuery = ElasticQuery.create()
       .withPagination(queryPagination)
-      .withSort([
-        { name: 'timestamp', order: ElasticSortOrder.descending },
-        { name: 'shardId', order: ElasticSortOrder.ascending },
-      ])
       .withCondition(QueryConditionOptions.must, await this.indexerHelper.buildElasticBlocksFilter(filter));
+
+    elasticQuery = elasticQuery.withSort([
+      { name: "timestamp", order: order },
+      { name: "shardId", order: ElasticSortOrder.ascending },
+    ]);
 
     const result = await this.elasticService.getList('blocks', 'hash', elasticQuery);
     return result;

@@ -1,4 +1,4 @@
-import { ParseArrayPipe, ParseBlockHashPipe, ParseBlsHashPipe, ParseBoolPipe, ParseIntPipe } from "@multiversx/sdk-nestjs-common";
+import { ParseArrayPipe, ParseBlockHashPipe, ParseBlsHashPipe, ParseBoolPipe, ParseEnumPipe, ParseIntPipe } from "@multiversx/sdk-nestjs-common";
 import { Controller, DefaultValuePipe, Get, HttpException, NotFoundException, HttpStatus, Param, Query } from "@nestjs/common";
 import { ApiExcludeEndpoint, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { QueryPagination } from "src/common/entities/query.pagination";
@@ -6,6 +6,7 @@ import { BlockService } from "./block.service";
 import { Block } from "./entities/block";
 import { BlockDetailed } from "./entities/block.detailed";
 import { BlockFilter } from "./entities/block.filter";
+import { SortOrder } from "src/common/entities/sort.order";
 
 @Controller()
 @ApiTags('blocks')
@@ -23,6 +24,7 @@ export class BlockController {
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   @ApiQuery({ name: 'nonce', description: 'Filter by nonce', required: false })
   @ApiQuery({ name: 'hashes', description: 'Search by blocks hashes, comma-separated', required: false })
+  @ApiQuery({ name: 'order', description: 'Order blocks (asc/desc) by timestamp', required: false, enum: SortOrder })
   @ApiQuery({ name: 'withProposerIdentity', description: 'Provide identity information for proposer node', required: false })
   getBlocks(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
@@ -33,9 +35,14 @@ export class BlockController {
     @Query('epoch', ParseIntPipe) epoch?: number,
     @Query('nonce', ParseIntPipe) nonce?: number,
     @Query('hashes', ParseArrayPipe) hashes?: string[],
+    @Query('order', new ParseEnumPipe(SortOrder)) order?: SortOrder,
     @Query('withProposerIdentity', ParseBoolPipe) withProposerIdentity?: boolean,
   ): Promise<Block[]> {
-    return this.blockService.getBlocks(new BlockFilter({ shard, proposer, validator, epoch, nonce, hashes }), new QueryPagination({ from, size }), withProposerIdentity);
+    return this.blockService.getBlocks(
+      new BlockFilter(
+        { shard, proposer, validator, epoch, nonce, hashes, order }),
+      new QueryPagination(
+        { from, size }), withProposerIdentity);
   }
 
   @Get("/blocks/count")
