@@ -550,7 +550,7 @@ export class ElasticIndexerHelper {
     return elasticQuery;
   }
 
-  public builResultsFilerQuery(filter: SmartContractResultFilter): ElasticQuery {
+  public builResultsFilterQuery(filter: SmartContractResultFilter): ElasticQuery {
     let elasticQuery = ElasticQuery.create();
 
     if (filter.miniBlockHash) {
