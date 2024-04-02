@@ -13,7 +13,9 @@ export class GraphQlService {
 
   async getData(query: string, variables?: any): Promise<any> {
     const MAIAR_EXCHANGE_URL = this.apiConfigService.getExchangeServiceUrlMandatory();
-    const graphqlClient = new GraphQLClient(MAIAR_EXCHANGE_URL);
+    const graphqlClient = new GraphQLClient(MAIAR_EXCHANGE_URL, {
+      fetch: this.createFetchWithTimeout(60_000),
+    });
 
     try {
       const data = variables
@@ -36,7 +38,9 @@ export class GraphQlService {
   async getNftServiceData(query: string, variables: any): Promise<any> {
     const NFT_MARKETPLACE_URL = this.apiConfigService.getMarketplaceServiceUrl();
 
-    const graphqlClient = new GraphQLClient(NFT_MARKETPLACE_URL);
+    const graphqlClient = new GraphQLClient(NFT_MARKETPLACE_URL, {
+      fetch: this.createFetchWithTimeout(60_0000),
+    });
 
     try {
       const data = await graphqlClient.request(query, variables);
@@ -52,5 +56,15 @@ export class GraphQlService {
 
       return null;
     }
+  }
+
+  private createFetchWithTimeout(timeout: number) {
+    return (url: string, init?: RequestInit) => {
+      const controller = new AbortController();
+      const id = setTimeout(() => controller.abort(), timeout);
+      const initWithSignal = { ...init, signal: controller.signal };
+
+      return fetch(url, initWithSignal).finally(() => clearTimeout(id));
+    };
   }
 }
