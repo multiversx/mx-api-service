@@ -36,7 +36,7 @@ describe('GraphQlService', () => {
     it('should return data if the request is successful', async () => {
       const mockData = { key: 'value' };
       jest.spyOn(mockGraphQLClient, 'request').mockResolvedValueOnce(mockData);
-      const result = await service.getData('query', {});
+      const result = await service.getExchangeServiceData('query', {});
       expect(result).toStrictEqual(mockData);
     });
 
@@ -45,7 +45,7 @@ describe('GraphQlService', () => {
       jest.spyOn(service['logger'], 'error').mockImplementation(() =>
         "Unexpected error when running graphql query");
 
-      const result = await service.getData('query', {});
+      const result = await service.getExchangeServiceData('query', {});
       expect(result).toBeNull();
     });
   });
