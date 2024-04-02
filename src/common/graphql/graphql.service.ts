@@ -2,6 +2,7 @@ import { Injectable } from "@nestjs/common";
 import { ApiConfigService } from "../api-config/api.config.service";
 import { GraphQLClient } from 'graphql-request';
 import { OriginLogger } from "@multiversx/sdk-nestjs-common";
+import fetch, { RequestInit } from 'node-fetch';
 
 @Injectable()
 export class GraphQlService {
@@ -11,9 +12,9 @@ export class GraphQlService {
     private readonly apiConfigService: ApiConfigService
   ) { }
 
-  async getData(query: string, variables?: any): Promise<any> {
-    const MAIAR_EXCHANGE_URL = this.apiConfigService.getExchangeServiceUrlMandatory();
-    const graphqlClient = new GraphQLClient(MAIAR_EXCHANGE_URL, {
+  async getExchangeServiceData(query: string, variables?: any): Promise<any> {
+    const exchangeServiceUrl = this.apiConfigService.getExchangeServiceUrlMandatory();
+    const graphqlClient = new GraphQLClient(exchangeServiceUrl, {
       fetch: this.createFetchWithTimeout(60_000),
     });
 
@@ -36,9 +37,8 @@ export class GraphQlService {
   }
 
   async getNftServiceData(query: string, variables: any): Promise<any> {
-    const NFT_MARKETPLACE_URL = this.apiConfigService.getMarketplaceServiceUrl();
-
-    const graphqlClient = new GraphQLClient(NFT_MARKETPLACE_URL, {
+    const nftMarketplaceUrl = this.apiConfigService.getMarketplaceServiceUrl();
+    const graphqlClient = new GraphQLClient(nftMarketplaceUrl, {
       fetch: this.createFetchWithTimeout(60_0000),
     });
 

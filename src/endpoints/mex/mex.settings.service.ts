@@ -154,7 +154,7 @@ export class MexSettingsService {
     }
     `;
 
-    const response = await this.graphQlService.getData(query, variables);
+    const response = await this.graphQlService.getExchangeServiceData(query, variables);
     if (!response) {
       return null;
     }
