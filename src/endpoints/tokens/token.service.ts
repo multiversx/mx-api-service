@@ -829,13 +829,14 @@ export class TokenService {
     await this.cachingService.batchApplyAll(
       tokens,
       token => CacheInfo.TokenTransactions(token.identifier).key,
-      async token => {
-        const transactions = await this.getTotalTransactions(token);
-        token.transactionsLastUpdatedAt = Math.round(new Date().getTime() / 1000);
+      async token => await this.getTotalTransactions(token),
+      (token, transactions, fromGetter) => {
+        token.transactions = transactions;
 
-        return transactions;
+        if (fromGetter) {
+          token.transactionsLastUpdatedAt = new Date().getTimeInSeconds();
+        }
       },
-      (token, transactions) => token.transactions = transactions,
       CacheInfo.TokenTransactions('').ttl,
       10,
     );
@@ -843,13 +844,14 @@ export class TokenService {
     await this.cachingService.batchApplyAll(
       tokens,
       token => CacheInfo.TokenAccounts(token.identifier).key,
-      async token => {
-        const accounts = await this.getTotalAccounts(token);
-        token.accountsLastUpdatedAt = Math.round(new Date().getTime() / 1000);
+      async token => await this.getTotalAccounts(token),
+      (token, accounts, fromGetter) => {
+        token.accounts = accounts;
 
-        return accounts;
+        if (fromGetter) {
+          token.accountsLastUpdatedAt = new Date().getTimeInSeconds();
+        }
       },
-      (token, accounts) => token.accounts = accounts,
       CacheInfo.TokenAccounts('').ttl,
       10,
     );
@@ -857,13 +859,14 @@ export class TokenService {
     await this.cachingService.batchApplyAll(
       tokens,
       token => CacheInfo.TokenTransfers(token.identifier).key,
-      async token => {
-        const transfers = await this.getTotalTransfers(token);
-        token.transfersLastUpdatedAt = Math.round(new Date().getTime() / 1000);
+      async token => await this.getTotalTransfers(token),
+      (token, transfers, fromGetter) => {
+        token.transfers = transfers;
 
-        return transfers;
+        if (fromGetter) {
+          token.transfersLastUpdatedAt = new Date().getTimeInSeconds();
+        }
       },
-      (token, transfers) => token.transfers = transfers,
       CacheInfo.TokenTransfers('').ttl,
       10,
     );
