@@ -50,7 +50,7 @@ export class MexEconomicsService {
       }
     `;
 
-    const response: any = await this.graphQlService.getData(query, variables);
+    const response: any = await this.graphQlService.getExchangeServiceData(query, variables);
     if (!response) {
       throw new BadRequestException('Could not fetch MEX economics data from MEX microservice');
     }

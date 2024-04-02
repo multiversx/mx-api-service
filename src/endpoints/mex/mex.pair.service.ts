@@ -77,7 +77,7 @@ export class MexPairService {
         }
       }`;
 
-      const pairsLimitResult: any = await this.graphQlService.getData(pairsLimit);
+      const pairsLimitResult: any = await this.graphQlService.getExchangeServiceData(pairsLimit);
       const totalPairs = pairsLimitResult?.factory?.pairCount;
 
       const variables = {
@@ -128,7 +128,7 @@ export class MexPairService {
         }
       `;
 
-      const result: any = await this.graphQlService.getData(query, variables);
+      const result: any = await this.graphQlService.getExchangeServiceData(query, variables);
       if (!result) {
         return [];
       }
