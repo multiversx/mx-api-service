@@ -3586,8 +3586,11 @@ type TokenAssetsPriceSource {
 
 """TokenDetailed object type."""
 type TokenDetailed {
-  """Token accounts list."""
+  """Token accounts."""
   accounts: Float!
+
+  """Token accounts last updated timestamp."""
+  accountsLastUpdatedAt: Float
 
   """Token assests details."""
   assets: TokenAssets
@@ -3689,11 +3692,17 @@ type TokenDetailed {
   """Total traded value in the last 24h within the liquidity pools."""
   totalVolume24h: Float!
 
-  """Tokens transactions."""
+  """Token transactions."""
   transactions: Float
 
-  """Tokens transfers."""
+  """Token transactions last updated timestamp."""
+  transactionsLastUpdatedAt: Float
+
+  """Token transfers."""
   transfers: Float
+
+  """Token transfers last updated timestamp."""
+  transfersLastUpdatedAt: Float
 
   """Token type."""
   type: TokenType!
@@ -3784,8 +3793,11 @@ enum TokenType {
 }
 
 type TokenWithBalanceAccountFlat {
-  """Token accounts list."""
+  """Token accounts."""
   accounts: Float!
+
+  """Token accounts last updated timestamp."""
+  accountsLastUpdatedAt: Float
 
   """Token assests details."""
   assets: TokenAssets
@@ -3879,11 +3891,17 @@ type TokenWithBalanceAccountFlat {
   """Total traded value in the last 24h within the liquidity pools."""
   totalVolume24h: Float!
 
-  """Tokens transactions."""
+  """Token transactions."""
   transactions: Float
 
-  """Tokens transfers."""
+  """Token transactions last updated timestamp."""
+  transactionsLastUpdatedAt: Float
+
+  """Token transfers."""
   transfers: Float
+
+  """Token transfers last updated timestamp."""
+  transfersLastUpdatedAt: Float
 
   """Token type."""
   type: TokenType!
