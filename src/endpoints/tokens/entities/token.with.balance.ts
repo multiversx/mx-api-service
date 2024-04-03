@@ -2,6 +2,7 @@ import { SwaggerUtils } from "@multiversx/sdk-nestjs-common";
 import { Field, Float, ObjectType } from "@nestjs/graphql";
 import { ApiProperty } from "@nestjs/swagger";
 import { Token } from "./token";
+import { MexPairType } from "src/endpoints/mex/entities/mex.pair.type";
 
 @ObjectType("TokenWithBalance", { description: "NFT collection account object type." })
 export class TokenWithBalance extends Token {
@@ -20,4 +21,8 @@ export class TokenWithBalance extends Token {
 
   @ApiProperty({ type: String, nullable: true })
   attributes: string | undefined = undefined;
+
+  @Field(() => MexPairType, { description: "Mex pair type details." })
+  @ApiProperty({ enum: MexPairType })
+  mexPairType: MexPairType = MexPairType.experimental;
 }

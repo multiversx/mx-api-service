@@ -10,7 +10,6 @@ import { NftType } from "./entities/nft.type";
 import { NftQueryOptions } from "./entities/nft.query.options";
 import { EsdtService } from "../esdt/esdt.service";
 import { AssetsService } from "../../common/assets/assets.service";
-import { PluginService } from "src/common/plugins/plugin.service";
 import { NftMetadataService } from "src/queue.worker/nft.worker/queue/job-services/metadata/nft.metadata.service";
 import { NftMediaService } from "src/queue.worker/nft.worker/queue/job-services/media/nft.media.service";
 import { NftMedia } from "./entities/nft.media";
@@ -31,6 +30,7 @@ import { NftRarity } from "./entities/nft.rarity";
 import { NftRarities } from "./entities/nft.rarities";
 import { SortCollectionNfts } from "../collections/entities/sort.collection.nfts";
 import { TokenAssets } from "src/common/assets/entities/token.assets";
+import { ScamInfo } from "src/common/entities/scam-info.dto";
 
 @Injectable()
 export class NftService {
@@ -44,8 +44,6 @@ export class NftService {
     private readonly esdtService: EsdtService,
     private readonly assetsService: AssetsService,
     private readonly cachingService: CacheService,
-    @Inject(forwardRef(() => PluginService))
-    private readonly pluginService: PluginService,
     private readonly nftMetadataService: NftMetadataService,
     private readonly nftMediaService: NftMediaService,
     private readonly persistenceService: PersistenceService,
@@ -100,8 +98,6 @@ export class NftService {
     for (const nft of nfts) {
       await this.applyUnlockFields(nft);
     }
-
-    await this.pluginService.processNfts(nfts, queryOptions?.withScamInfo || queryOptions?.computeScamInfo);
 
     return nfts;
   }
@@ -182,7 +178,6 @@ export class NftService {
     await Promise.all([
       this.applyMedia(nft),
       this.applyMetadata(nft),
-      this.pluginService.processNfts([nft], true),
     ]);
 
     if (TokenHelpers.needsDefaultMedia(nft)) {
@@ -338,6 +333,13 @@ export class NftService {
       nft.nonce = parseInt('0x' + nft.identifier.split('-')[2]);
       nft.timestamp = elasticNft.timestamp;
 
+      if (elasticNft.nft_scamInfoType && elasticNft.nft_scamInfoType !== 'none') {
+        nft.scamInfo = new ScamInfo({
+          type: elasticNft.nft_scamInfoType,
+          info: elasticNft.nft_scamInfoDescription,
+        });
+      }
+
       await this.applyExtendedAttributes(nft, elasticNft);
 
       const elasticNftData = elasticNft.data;
@@ -442,7 +444,7 @@ export class NftService {
   }
 
   async getNftsForAddress(address: string, queryPagination: QueryPagination, filter: NftFilter, fields?: string[], queryOptions?: NftQueryOptions, source?: EsdtDataSource): Promise<NftAccount[]> {
-    const nfts = await this.esdtAddressService.getNftsForAddress(address, filter, queryPagination, source);
+    let nfts = await this.esdtAddressService.getNftsForAddress(address, filter, queryPagination, source);
 
     for (const nft of nfts) {
       await this.applyAssetsAndTicker(nft, fields);
@@ -456,9 +458,8 @@ export class NftService {
 
     await this.batchProcessNfts(nfts, fields);
 
-    if (this.apiConfigService.isNftExtendedAttributesEnabled() && (!fields || fields.includesSome(['score', 'rank', 'isNsfw']))) {
+    if (this.apiConfigService.isNftExtendedAttributesEnabled() && (!fields || fields.includesSome(['score', 'rank', 'isNsfw', 'scamInfo']))) {
       const internalNfts = await this.getNftsInternalByIdentifiers(nfts.map(x => x.identifier));
-
       const indexedInternalNfts = internalNfts.toRecord<Nft>(x => x.identifier);
       for (const nft of nfts) {
         const indexedNft = indexedInternalNfts[nft.identifier];
@@ -466,17 +467,23 @@ export class NftService {
           nft.score = indexedNft.score;
           nft.rank = indexedNft.rank;
           nft.isNsfw = indexedNft.isNsfw;
+
+          const scamInfo = indexedNft.scamInfo;
+          if (scamInfo) {
+            nft.scamInfo = new ScamInfo({
+              type: scamInfo.type,
+              info: scamInfo.info,
+            });
+          }
         }
       }
     }
 
+    nfts = this.applyScamFilter(nfts, filter);
+
     for (const nft of nfts) {
       await this.applyUnlockFields(nft, fields);
     }
-
-    const withScamInfo = (queryOptions?.withScamInfo || queryOptions?.computeScamInfo) && (!fields || fields.includes('scamInfo'));
-
-    await this.pluginService.processNfts(nfts, withScamInfo);
 
     return nfts;
   }
@@ -516,6 +523,22 @@ export class NftService {
     }
   }
 
+  private applyScamFilter(nfts: NftAccount[], filter: NftFilter): NftAccount[] {
+    if (filter.scamType) {
+      nfts = nfts.filter(nft => nft.scamInfo?.type === filter.scamType);
+    }
+
+    if (filter.isScam !== undefined) {
+      if (filter.isScam) {
+        nfts = nfts.filter(nft => nft.scamInfo && nft.scamInfo.type);
+      } else {
+        nfts = nfts.filter(nft => !nft.scamInfo || !nft.scamInfo.type);
+      }
+    }
+
+    return nfts;
+  }
+
   async getNftCountForAddress(address: string, filter: NftFilter): Promise<number> {
     return await this.esdtAddressService.getNftCountForAddressFromElastic(address, filter);
   }
@@ -528,7 +551,7 @@ export class NftService {
       return undefined;
     }
 
-    const nfts = await this.getNftsForAddress(address, new QueryPagination({ from: 0, size: 1 }), filter, fields, new NftQueryOptions({ withScamInfo: true, computeScamInfo: true }));
+    const nfts = await this.getNftsForAddress(address, new QueryPagination({ from: 0, size: 1 }), filter, fields);
     if (nfts.length === 0) {
       return undefined;
     }

@@ -13,6 +13,9 @@ features:
     maxExpirySeconds: 86400
     acceptedOrigins:
       - ''
+  deepHistory:
+    enabled: false
+    url: ''
 cron:
   transactionProcessor: false
   transactionProcessorMaxLookBehind: 1000

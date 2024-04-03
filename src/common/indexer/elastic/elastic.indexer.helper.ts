@@ -13,8 +13,9 @@ import { EsdtType } from "src/endpoints/esdt/entities/esdt.type";
 import { TokenWithRolesFilter } from "src/endpoints/tokens/entities/token.with.roles.filter";
 import { TransactionFilter } from "src/endpoints/transactions/entities/transaction.filter";
 import { TransactionType } from "src/endpoints/transactions/entities/transaction.type";
-import { AccountFilter } from "src/endpoints/accounts/entities/account.filter";
+import { AccountQueryOptions } from "src/endpoints/accounts/entities/account.query.options";
 import { AccountHistoryFilter } from "src/endpoints/accounts/entities/account.history.filter";
+import { SmartContractResultFilter } from "src/endpoints/sc-results/entities/smart.contract.result.filter";
 
 @Injectable()
 export class ElasticIndexerHelper {
@@ -187,6 +188,20 @@ export class ElasticIndexerHelper {
       elasticQuery = elasticQuery.withMustCondition(QueryType.Nested("data", [new MatchQuery("data.whiteListedStorage", filter.isWhitelistedStorage)]));
     }
 
+    if (this.apiConfigService.getIsNftScamInfoEnabled() && filter.isScam) {
+      elasticQuery = elasticQuery.withCondition(
+        QueryConditionOptions.must,
+        QueryType.Should([
+          QueryType.Match('nft_scamInfoType', 'scam'),
+          QueryType.Match('nft_scamInfoType', 'potentialScam'),
+        ])
+      );
+    }
+
+    if (filter.scamType) {
+      elasticQuery = elasticQuery.withMustCondition(QueryType.Match('nft_scamInfoType', filter.scamType));
+    }
+
     if (filter.traits !== undefined) {
       for (const [key, value] of Object.entries(filter.traits)) {
         elasticQuery = elasticQuery.withMustMatchCondition('nft_traitValues', BinaryUtils.base64Encode(`${key}_${value}`));
@@ -273,6 +288,10 @@ export class ElasticIndexerHelper {
       elasticQuery = elasticQuery.withMustNotCondition(QueryType.Match('value', '0'));
     } else {
       elasticQuery = elasticQuery.withMustMatchCondition('tokens', filter.token, QueryOperator.AND);
+    }
+
+    if (filter.tokens && filter.tokens.length > 0) {
+      elasticQuery = elasticQuery.withMustMultiShouldCondition(filter.tokens, token => QueryType.Match('tokens', token, QueryOperator.AND));
     }
 
     if (filter.functions && filter.functions.length > 0 && this.apiConfigService.getIsIndexerV3FlagActive()) {
@@ -517,7 +536,7 @@ export class ElasticIndexerHelper {
     return elasticQuery;
   }
 
-  public buildAccountFilterQuery(filter: AccountFilter): ElasticQuery {
+  public buildAccountFilterQuery(filter: AccountQueryOptions): ElasticQuery {
     let elasticQuery = ElasticQuery.create();
 
     if (filter.ownerAddress) {
@@ -534,6 +553,37 @@ export class ElasticIndexerHelper {
 
     return elasticQuery;
   }
+
+  public builResultsFilterQuery(filter: SmartContractResultFilter): ElasticQuery {
+    let elasticQuery = ElasticQuery.create();
+
+    if (filter.miniBlockHash) {
+      elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, [QueryType.Match('miniBlockHash', filter.miniBlockHash)]);
+    }
+
+    if (filter.originalTxHashes) {
+      elasticQuery = elasticQuery.withShouldCondition(filter.originalTxHashes.map(originalTxHash => QueryType.Match('originalTxHash', originalTxHash)));
+    }
+
+    if (filter.sender) {
+      elasticQuery = elasticQuery.withShouldCondition(QueryType.Match('sender', filter.sender));
+    }
+
+    if (filter.receiver) {
+      elasticQuery = elasticQuery.withShouldCondition(QueryType.Match('receiver', filter.receiver));
+    }
+
+    if (filter.functions && filter.functions.length > 0 && this.apiConfigService.getIsIndexerV3FlagActive()) {
+      if (filter.functions.length === 1 && filter.functions[0] === '') {
+        elasticQuery = elasticQuery.withMustNotExistCondition('function');
+      } else {
+        elasticQuery = this.applyFunctionFilter(elasticQuery, filter.functions);
+      }
+    }
+
+    return elasticQuery;
+  }
+
 
   public applyFunctionFilter(elasticQuery: ElasticQuery, functions: string[]) {
     const functionConditions = [];

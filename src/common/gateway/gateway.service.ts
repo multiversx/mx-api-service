@@ -15,7 +15,7 @@ import { TokenData } from "./entities/token.data";
 import { Transaction } from "./entities/transaction";
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { ApiConfigService } from "../api-config/api.config.service";
-import { BinaryUtils } from "@multiversx/sdk-nestjs-common";
+import { BinaryUtils, ContextTracker } from "@multiversx/sdk-nestjs-common";
 import { ApiService, ApiSettings } from "@multiversx/sdk-nestjs-http";
 import { GuardianResult } from "./entities/guardian.result";
 import { TransactionProcessStatus } from "./entities/transaction.process.status";
@@ -31,16 +31,34 @@ export class GatewayService {
     GatewayComponentRequest.vmQuery,
     GatewayComponentRequest.transactionPool,
   ]);
+
+  private readonly deepHistoryRequestsSet: Set<String> = new Set([
+    GatewayComponentRequest.addressDetails,
+    GatewayComponentRequest.addressEsdt,
+    GatewayComponentRequest.addressEsdtBalance,
+    GatewayComponentRequest.addressNftByNonce,
+    GatewayComponentRequest.vmQuery,
+  ]);
+
   constructor(
     private readonly apiConfigService: ApiConfigService,
     @Inject(forwardRef(() => ApiService))
     private readonly apiService: ApiService
   ) { }
 
+  async getVersion(): Promise<string | undefined> {
+    const result = await this.get('about', GatewayComponentRequest.about);
+
+    if (result && result.appVersion && result.appVersion !== "undefined") {
+      return result.appVersion;
+    }
+
+    return undefined;
+  }
+
   async getValidatorAuctions(): Promise<Auction[]> {
     const result = await this.get('validator/auction', GatewayComponentRequest.validatorAuction);
-
-    return result.auction;
+    return result.auctionList;
   }
 
   async getNetworkStatus(metaChainShardId: number | string): Promise<NetworkStatus> {
@@ -94,6 +112,11 @@ export class GatewayService {
   async getGuardianData(address: string): Promise<GuardianResult> {
     const result = await this.get(`address/${address}/guardian-data`, GatewayComponentRequest.guardianData);
     return result;
+  }
+
+  async getNodeWaitingEpochsLeft(bls: string): Promise<number> {
+    const result = await this.get(`node/waiting-epochs-left/${bls}`, GatewayComponentRequest.getNodeWaitingEpochsLeft);
+    return result.epochsLeft;
   }
 
   async getTransactionProcessStatus(txHash: string): Promise<TransactionProcessStatus> {
@@ -162,28 +185,68 @@ export class GatewayService {
   @LogPerformanceAsync(MetricsEvents.SetGatewayDuration, { argIndex: 1 })
   async get(url: string, component: GatewayComponentRequest, errorHandler?: (error: any) => Promise<boolean>): Promise<any> {
     const result = await this.getRaw(url, component, errorHandler);
+
+    this.applyDeepHistoryBlockInfoIfRequired(component, result);
+
     return result?.data?.data;
   }
 
   @LogPerformanceAsync(MetricsEvents.SetGatewayDuration, { argIndex: 1 })
   async getRaw(url: string, component: GatewayComponentRequest, errorHandler?: (error: any) => Promise<boolean>): Promise<any> {
-    return await this.apiService.get(`${this.getUrl(component)}/${url}`, new ApiSettings(), errorHandler);
-  }
+    const fullUrl = this.getFullUrl(component, url);
 
-  private getUrl(component: GatewayComponentRequest): string {
-    return this.snapshotlessRequestsSet.has(component)
-      ? this.apiConfigService.getSnapshotlessGatewayUrl() ?? this.apiConfigService.getGatewayUrl()
-      : this.apiConfigService.getGatewayUrl();
+    return await this.apiService.get(fullUrl, new ApiSettings(), errorHandler);
   }
 
   @LogPerformanceAsync(MetricsEvents.SetGatewayDuration, { argIndex: 1 })
   async create(url: string, component: GatewayComponentRequest, data: any, errorHandler?: (error: any) => Promise<boolean>): Promise<any> {
     const result = await this.createRaw(url, component, data, errorHandler);
+
+    this.applyDeepHistoryBlockInfoIfRequired(component, result);
+
     return result?.data?.data;
   }
 
   @LogPerformanceAsync(MetricsEvents.SetGatewayDuration, { argIndex: 1 })
   async createRaw(url: string, component: GatewayComponentRequest, data: any, errorHandler?: (error: any) => Promise<boolean>): Promise<any> {
-    return await this.apiService.post(`${this.getUrl(component)}/${url}`, data, new ApiSettings(), errorHandler);
+    const fullUrl = this.getFullUrl(component, url);
+
+    return await this.apiService.post(fullUrl, data, new ApiSettings(), errorHandler);
+  }
+
+  private getFullUrl(component: GatewayComponentRequest, suffix: string) {
+    const url = new URL(`${this.getGatewayUrl(component)}/${suffix}`);
+
+    const context = ContextTracker.get();
+    if (context && context.deepHistoryBlockNonce && this.deepHistoryRequestsSet.has(component)) {
+      url.searchParams.set('blockNonce', context.deepHistoryBlockNonce);
+    }
+
+    return url.href;
+  }
+
+  private getGatewayUrl(component: GatewayComponentRequest): string {
+    const context = ContextTracker.get();
+    if (context && context.deepHistoryBlockNonce && this.deepHistoryRequestsSet.has(component)) {
+      return this.apiConfigService.getDeepHistoryGatewayUrl();
+    }
+
+    if (this.snapshotlessRequestsSet.has(component)) {
+      return this.apiConfigService.getSnapshotlessGatewayUrl() ?? this.apiConfigService.getGatewayUrl();
+    }
+
+    return this.apiConfigService.getGatewayUrl();
+  }
+
+  private applyDeepHistoryBlockInfoIfRequired(component: GatewayComponentRequest, result: any) {
+    const context = ContextTracker.get();
+    if (context && context.deepHistoryBlockNonce && this.deepHistoryRequestsSet.has(component)) {
+      const blockInfo = result?.data?.data?.blockInfo;
+      if (blockInfo) {
+        ContextTracker.assign({
+          deepHistoryBlockInfo: blockInfo,
+        });
+      }
+    }
   }
 }

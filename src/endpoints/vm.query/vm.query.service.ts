@@ -35,7 +35,7 @@ export class VmQueryService {
     };
   }
 
-  async vmQueryFullResult(contract: string, func: string, caller: string | undefined = undefined, args: string[] = [], value: string | undefined = undefined): Promise<any> {
+  async vmQueryFullResult(contract: string, func: string, caller: string | undefined = undefined, args: string[] = [], value: string | undefined = undefined, timestamp: number | undefined): Promise<any> {
     let key = `vm-query:${contract}:${func}`;
     if (caller) {
       key += `:${caller}`;
@@ -43,6 +43,10 @@ export class VmQueryService {
 
     if (args.length > 0) {
       key += `@${args.join('@')}`;
+    }
+
+    if (timestamp) {
+      key += `{${timestamp}}`;
     }
 
     const { localTtl, remoteTtl } = await this.computeTtls();

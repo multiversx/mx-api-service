@@ -14,7 +14,7 @@ import { TokenFilter } from "src/endpoints/tokens/entities/token.filter";
 import { TokenWithRolesFilter } from "src/endpoints/tokens/entities/token.with.roles.filter";
 import { TransactionFilter } from "src/endpoints/transactions/entities/transaction.filter";
 import { Repository } from "typeorm";
-import { Collection, ScResult, Account, MiniBlock, Tag, TokenType } from "../entities";
+import { Collection, ScResult, Account, MiniBlock, Tag, TokenType, Block } from "../entities";
 import { IndexerInterface } from "../indexer.interface";
 import { AccountDb, AccountsEsdtDb, BlockDb, LogDb, MiniBlockDb, ReceiptDb, RoundInfoDb, ScDeployInfoDb, ScResultDb, TagDb, TokenInfoDb, TransactionDb, ValidatorPublicKeysDb } from "./entities";
 import { PostgresIndexerHelper } from "./postgres.indexer.helper";
@@ -50,6 +50,9 @@ export class PostgresIndexerService implements IndexerInterface {
     private readonly validatorPublicKeysRepository: Repository<ValidatorPublicKeysDb>,
     private readonly indexerHelper: PostgresIndexerHelper,
   ) { }
+  getVersion(): Promise<string | undefined> {
+    throw new Error("Method not implemented.");
+  }
 
   getAccountHistoryCount(_address: string, _filter?: AccountHistoryFilter | undefined): Promise<number> {
     throw new Error("Method not implemented.");
@@ -75,7 +78,7 @@ export class PostgresIndexerService implements IndexerInterface {
     throw new Error("Method not implemented.");
   }
 
-  async getScResultsCount(): Promise<number> {
+  async getScResultsCount(_filter: SmartContractResultFilter): Promise<number> {
     return await this.scResultsRepository.count();
   }
 
@@ -611,6 +614,12 @@ export class PostgresIndexerService implements IndexerInterface {
   async getCollectionsForAddress(_address: string, _filter: CollectionFilter, _pagination: QueryPagination): Promise<{ collection: string; count: number; balance: number; }[]> {
     // TODO not implemented
     return [];
+  }
+
+  // eslint-disable-next-line require-await
+  async getBlockByTimestampAndShardId(_timestamp: number, _shardId: number): Promise<Block | undefined> {
+    // TODO not implemented
+    return undefined;
   }
 
   // eslint-disable-next-line require-await

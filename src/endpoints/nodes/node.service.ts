@@ -54,7 +54,14 @@ export class NodeService {
 
   async getNode(bls: string): Promise<Node | undefined> {
     const allNodes = await this.getAllNodes();
-    return allNodes.find(x => x.bls === bls);
+    const node = allNodes.find(x => x.bls === bls);
+
+    if (this.apiConfigService.isNodeEpochsLeftEnabled()) {
+      if (node && node.status === NodeStatus.waiting) {
+        node.epochsLeft = await this.gatewayService.getNodeWaitingEpochsLeft(bls);
+      }
+    }
+    return node;
   }
 
   async getNodeCount(query: NodeFilter): Promise<number> {
@@ -111,6 +118,7 @@ export class NodeService {
 
   private async getFilteredNodes(query: NodeFilter): Promise<Node[]> {
     const allNodes = await this.getAllNodes();
+
 
     const filteredNodes = allNodes.filter(node => {
       if (query.search !== undefined) {
@@ -173,7 +181,21 @@ export class NodeService {
         }
       }
 
+      if (query.isAuctionDangerZone !== undefined) {
+        if (query.isAuctionDangerZone === true && !node.isInDangerZone) {
+          return false;
+        }
+      }
+
       if (query.keys !== undefined && !query.keys.includes(node.bls)) {
+        return false;
+      }
+
+      if (query.isQualified !== undefined && node.auctionQualified !== query.isQualified) {
+        return false;
+      }
+
+      if (query.isAuctioned !== undefined && node.auctioned !== query.isAuctioned) {
         return false;
       }
 
@@ -337,7 +359,7 @@ export class NodeService {
 
     if (this.apiConfigService.isStakingV4Enabled()) {
       const auctions = await this.gatewayService.getValidatorAuctions();
-      this.processAuctions(nodes, auctions);
+      await this.processAuctions(nodes, auctions);
     }
 
     await this.applyNodeUnbondingPeriods(nodes);
@@ -345,19 +367,31 @@ export class NodeService {
     return nodes;
   }
 
-  processAuctions(nodes: Node[], auctions: Auction[]) {
+  async processAuctions(nodes: Node[], auctions: Auction[]) {
+    const minimumAuctionStake = await this.stakeService.getMinimumAuctionStake();
+    const dangerZoneThreshold = BigInt(minimumAuctionStake) * BigInt(105) / BigInt(100);
     for (const node of nodes) {
       let position = 1;
       for (const auction of auctions) {
-        for (const auctionNode of auction.auctionList) {
-          if (node.bls === auctionNode.blsKey) {
-            node.auctioned = true;
-            node.auctionPosition = position;
-            node.auctionTopUp = auction.qualifiedTopUp;
-            node.auctionSelected = auctionNode.selected;
-          }
+        if (auction.nodes) {
+          for (const auctionNode of auction.nodes) {
+            if (node.bls === auctionNode.blsKey) {
+              node.auctioned = true;
+              node.auctionPosition = position;
+              node.auctionTopUp = auction.qualifiedTopUp;
+              node.auctionQualified = auctionNode.qualified;
+            }
 
-          position++;
+            const nodeStake = node.stake || "0";
+            const nodeAuctionTopUp = node.auctionTopUp || "0";
+
+            const totalStake = BigInt(nodeStake) + BigInt(nodeAuctionTopUp);
+            if (node.status === NodeStatus.auction && node.auctionQualified && totalStake < dangerZoneThreshold) {
+              node.isInDangerZone = true;
+            }
+
+            position++;
+          }
         }
       }
     }
@@ -576,7 +610,12 @@ export class NodeService {
       if (validatorStatus === 'new') {
         nodeType = NodeType.validator;
         nodeStatus = NodeStatus.new;
-      } else if (validatorStatus === 'jailed') {
+      }
+      else if (validatorStatus === 'auction') {
+        nodeType = NodeType.validator;
+        nodeStatus = NodeStatus.auction;
+      }
+      else if (validatorStatus === 'jailed') {
         nodeType = NodeType.validator;
         nodeStatus = NodeStatus.jailed;
       } else if (validatorStatus && validatorStatus.includes('leaving')) {
@@ -623,7 +662,7 @@ export class NodeService {
         auctioned: undefined,
         auctionPosition: undefined,
         auctionTopUp: undefined,
-        auctionSelected: undefined,
+        auctionQualified: undefined,
       });
 
       if (['queued', 'jailed'].includes(peerType)) {

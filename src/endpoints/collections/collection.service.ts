@@ -15,7 +15,6 @@ import { EsdtAddressService } from "../esdt/esdt.address.service";
 import { CollectionRoles } from "../tokens/entities/collection.roles";
 import { TokenHelpers } from "src/utils/token.helpers";
 import { NftCollectionAccount } from "./entities/nft.collection.account";
-import { PluginService } from "src/common/plugins/plugin.service";
 import { BinaryUtils, TokenUtils } from "@multiversx/sdk-nestjs-common";
 import { ApiUtils } from "@multiversx/sdk-nestjs-http";
 import { CacheService } from "@multiversx/sdk-nestjs-cache";
@@ -27,6 +26,7 @@ import { NftRank } from "src/common/assets/entities/nft.rank";
 import { TokenDetailed } from "../tokens/entities/token.detailed";
 import { NftCollectionDetailed } from "./entities/nft.collection.detailed";
 import { CollectionLogo } from "./entities/collection.logo";
+import { ScamInfo } from "src/common/entities/scam-info.dto";
 
 @Injectable()
 export class CollectionService {
@@ -39,7 +39,6 @@ export class CollectionService {
     private readonly cachingService: CacheService,
     @Inject(forwardRef(() => EsdtAddressService))
     private readonly esdtAddressService: EsdtAddressService,
-    private readonly pluginService: PluginService,
     private readonly persistenceService: PersistenceService,
   ) { }
 
@@ -77,8 +76,6 @@ export class CollectionService {
       this.applyPropertiesToCollectionFromElasticSearch(nftCollection, indexedCollection);
     }
 
-    await this.pluginService.processCollections(nftCollections);
-
     return nftCollections;
   }
 
@@ -90,6 +87,13 @@ export class CollectionService {
       nftCollection.isVerified = indexedCollection.api_isVerified;
       nftCollection.nftCount = indexedCollection.api_nftCount;
       nftCollection.holderCount = indexedCollection.api_holderCount;
+
+      if (indexedCollection.nft_scamInfoType && indexedCollection.nft_scamInfoType !== 'none') {
+        nftCollection.scamInfo = new ScamInfo({
+          type: indexedCollection.nft_scamInfoType,
+          info: indexedCollection.nft_scamInfoDescription,
+        });
+      }
     }
   }
 
@@ -205,7 +209,6 @@ export class CollectionService {
 
     collectionDetailed.traits = await this.persistenceService.getCollectionTraits(identifier) ?? [];
 
-    await this.pluginService.processCollections([collectionDetailed]);
     await this.applyCollectionRoles(collectionDetailed, elasticCollection);
 
     return collectionDetailed;
@@ -325,8 +328,6 @@ export class CollectionService {
       return undefined;
     }
 
-    await this.pluginService.processCollections([collection]);
-
     return collection;
   }
 
@@ -345,8 +346,6 @@ export class CollectionService {
         collection.count = item.count;
       }
     }
-
-    await this.pluginService.processCollections(accountCollections);
 
     return accountCollections;
   }

@@ -38,6 +38,9 @@ import { TokenAssetsPriceSourceType } from "src/common/assets/entities/token.ass
 import { DataApiService } from "src/common/data-api/data-api.service";
 import { TrieOperationsTimeoutError } from "../esdt/exceptions/trie.operations.timeout.error";
 import { TokenSupplyOptions } from "./entities/token.supply.options";
+import { TransferService } from "../transfers/transfer.service";
+import { MexPairService } from "../mex/mex.pair.service";
+import { MexPairState } from "../mex/entities/mex.pair.state";
 
 @Injectable()
 export class TokenService {
@@ -52,10 +55,13 @@ export class TokenService {
     private readonly cachingService: CacheService,
     @Inject(forwardRef(() => TransactionService))
     private readonly transactionService: TransactionService,
+    @Inject(forwardRef(() => TransferService))
+    private readonly transferService: TransferService,
     @Inject(forwardRef(() => MexTokenService))
     private readonly mexTokenService: MexTokenService,
     private readonly collectionService: CollectionService,
     private readonly dataApiService: DataApiService,
+    private readonly mexPairService: MexPairService,
   ) { }
 
   async isToken(identifier: string): Promise<boolean> {
@@ -154,11 +160,16 @@ export class TokenService {
       tokens = this.sortTokens(tokens, filter.sort, filter.order ?? SortOrder.desc);
     }
 
+    const mexPairTypes = filter.mexPairType ?? [];
+    if (mexPairTypes.length > 0) {
+      tokens = tokens.filter(token => mexPairTypes.includes(token.mexPairType));
+    }
+
     return tokens;
   }
 
   private sortTokens(tokens: TokenDetailed[], sort: TokenSort, order: SortOrder): TokenDetailed[] {
-    let criteria: (token: Token) => number;
+    let criteria: (token: TokenDetailed) => number;
 
     switch (sort) {
       case TokenSort.accounts:
@@ -171,7 +182,7 @@ export class TokenService {
         criteria = token => token.price ?? 0;
         break;
       case TokenSort.marketCap:
-        criteria = token => token.marketCap ?? 0;
+        criteria = token => token.isLowLiquidity ? 0 : (token.marketCap ?? 0);
         break;
       default:
         throw new Error(`Unsupported sorting criteria '${sort}'`);
@@ -690,7 +701,7 @@ export class TokenService {
 
     const tokens = await this.getAllTokens();
     for (const token of tokens) {
-      if (token.price && token.marketCap) {
+      if (token.price && token.marketCap && !token.isLowLiquidity) {
         totalMarketCap += token.marketCap;
       }
     }
@@ -707,8 +718,12 @@ export class TokenService {
   }
 
   async getAllTokensRaw(): Promise<TokenDetailed[]> {
+    this.logger.log(`Starting to fetch all tokens`);
+
     const tokensProperties = await this.esdtService.getAllFungibleTokenProperties();
     let tokens = tokensProperties.map(properties => ApiUtils.mergeObjects(new TokenDetailed(), properties));
+
+    this.logger.log(`Fetched ${tokens.length} fungible tokens`);
 
     for (const token of tokens) {
       const assets = await this.assetsService.getTokenAssets(token.identifier);
@@ -720,7 +735,11 @@ export class TokenService {
       token.type = TokenType.FungibleESDT;
     }
 
+    this.logger.log(`Starting to fetch all meta tokens`);
+
     const collections = await this.collectionService.getNftCollections(new QueryPagination({ from: 0, size: 10000 }), { type: [NftType.MetaESDT] });
+
+    this.logger.log(`Fetched ${collections.length} meta tokens`);
 
     for (const collection of collections) {
       tokens.push(new TokenDetailed({
@@ -740,9 +759,17 @@ export class TokenService {
       }));
     }
 
+    this.logger.log(`Starting to batch process tokens`);
     await this.batchProcessTokens(tokens);
+    this.logger.log(`Finished batch processing tokens`);
 
+    this.logger.log(`Applying mex liquidity`);
+    await this.applyMexLiquidity(tokens.filter(x => x.type !== TokenType.MetaESDT));
+    this.logger.log(`Finished applying mex liquidity`);
     await this.applyMexPrices(tokens.filter(x => x.type !== TokenType.MetaESDT));
+    this.logger.log(`Finished applying mex prices`);
+    await this.applyMexPairType(tokens.filter(x => x.type !== TokenType.MetaESDT));
+    this.logger.log(`Finished applying mex pair type`);
 
     await this.cachingService.batchApplyAll(
       tokens,
@@ -751,6 +778,7 @@ export class TokenService {
       (token, assets) => token.assets = assets,
       CacheInfo.EsdtAssets('').ttl,
     );
+    this.logger.log(`Finished applying assets`);
 
     for (const token of tokens) {
       if (token.assets?.priceSource?.type === TokenAssetsPriceSourceType.dataApi) {
@@ -766,7 +794,13 @@ export class TokenService {
       }
     }
 
-    tokens = tokens.sortedDescending(token => token.assets ? 1 : 0, token => token.marketCap ?? 0, token => token.transactions ?? 0);
+    this.logger.log(`Finished applying supply`);
+
+    tokens = tokens.sortedDescending(
+      token => token.assets ? 1 : 0,
+      token => token.isLowLiquidity ? 0 : (token.marketCap ?? 0),
+      token => token.transactions ?? 0,
+    );
 
     return tokens;
   }
@@ -775,11 +809,27 @@ export class TokenService {
     return await this.assetsService.getTokenAssets(identifier);
   }
 
+  private async applyMexPairType(tokens: TokenDetailed[]): Promise<void> {
+    try {
+      const mexPairs = await this.mexPairService.getAllMexPairs();
+      const mexPairsMap = new Map(mexPairs.map(pair => [pair.baseId, pair.type]));
+
+      for (const token of tokens) {
+        const mexPairType = mexPairsMap.get(token.identifier);
+        if (mexPairType) {
+          token.mexPairType = mexPairType;
+        }
+      }
+    } catch (error) {
+      this.logger.error('Could not apply mex pair types', error);
+    }
+  }
+
   private async batchProcessTokens(tokens: TokenDetailed[]) {
     await this.cachingService.batchApplyAll(
       tokens,
       token => CacheInfo.TokenTransactions(token.identifier).key,
-      token => this.getTransactionCount(token),
+      async token => await this.getTransactionCount(token),
       (token, transactions) => token.transactions = transactions,
       CacheInfo.TokenTransactions('').ttl,
     );
@@ -787,17 +837,42 @@ export class TokenService {
     await this.cachingService.batchApplyAll(
       tokens,
       token => CacheInfo.TokenAccounts(token.identifier).key,
-      token => this.getAccountsCount(token),
+      async token => await this.getAccountsCount(token),
       (token, accounts) => token.accounts = accounts,
       CacheInfo.TokenAccounts('').ttl,
     );
+
+    await this.cachingService.batchApplyAll(
+      tokens,
+      token => CacheInfo.TokenTransfers(token.identifier).key,
+      async token => await this.getTransfersCount(token),
+      (token, transfers) => token.transfers = transfers,
+      CacheInfo.TokenTransfers('').ttl,
+    );
   }
 
-  private async getTransactionCount(token: TokenDetailed): Promise<number> {
-    return await this.transactionService.getTransactionCount(new TransactionFilter({ tokens: [token.identifier, ...token.assets?.extraTokens ?? []] }));
+  private async getTransactionCount(token: TokenDetailed): Promise<number | undefined> {
+    try {
+      return await this.transactionService.getTransactionCount(new TransactionFilter({ tokens: [token.identifier, ...token.assets?.extraTokens ?? []] }));
+    } catch (error) {
+      this.logger.error(`An unhandled error occurred when getting transaction count for token '${token.identifier}'`);
+      this.logger.error(error);
+      return undefined;
+    }
   }
 
-  private async getAccountsCount(token: TokenDetailed): Promise<number> {
+  private async getTransfersCount(token: TokenDetailed): Promise<number | undefined> {
+    try {
+      const filter = new TransactionFilter({ tokens: [token.identifier, ...token.assets?.extraTokens ?? []] });
+      return await this.transferService.getTransfersCount(filter);
+    } catch (error) {
+      this.logger.error(`An unhandled error occurred when getting transfers count for token '${token.identifier}'`);
+      this.logger.error(error);
+      return undefined;
+    }
+  }
+
+  private async getAccountsCount(token: TokenDetailed): Promise<number | undefined> {
     let accounts = await this.cachingService.getRemote<number>(CacheInfo.TokenAccountsExtra(token.identifier).key);
     if (!accounts) {
       accounts = await this.getEsdtAccountsCount(token.identifier);
@@ -806,11 +881,37 @@ export class TokenService {
     return accounts;
   }
 
-  private async getEsdtAccountsCount(identifier: string): Promise<number> {
-    return await this.indexerService.getEsdtAccountsCount(identifier);
+  private async getEsdtAccountsCount(identifier: string): Promise<number | undefined> {
+    try {
+      return await this.indexerService.getEsdtAccountsCount(identifier);
+    } catch (error) {
+      this.logger.error(`An unhandled error occurred when getting account count for token '${identifier}'`);
+      this.logger.error(error);
+      return undefined;
+    }
+  }
+
+  private async applyMexLiquidity(tokens: TokenDetailed[]): Promise<void> {
+    try {
+      const pairs = await this.mexPairService.getAllMexPairs();
+      const filteredPairs = pairs.filter(x => x.state === MexPairState.active);
+
+      for (const token of tokens) {
+        const pairs = filteredPairs.filter(x => x.baseId === token.identifier || x.quoteId === token.identifier);
+        if (pairs.length > 0) {
+          token.totalLiquidity = pairs.sum(x => x.totalValue / 2);
+          token.totalVolume24h = pairs.sum(x => x.volume24h ?? 0);
+        }
+      }
+    } catch (error) {
+      this.logger.error('Could not apply mex liquidity');
+      this.logger.error(error);
+    }
   }
 
   private async applyMexPrices(tokens: TokenDetailed[]): Promise<void> {
+    const LOW_LIQUIDITY_THRESHOLD = 0.005;
+
     try {
       const indexedTokens = await this.mexTokenService.getMexPricesRaw();
       for (const token of tokens) {
@@ -825,6 +926,10 @@ export class TokenService {
           if (price.isToken) {
             token.price = price.price;
             token.marketCap = price.price * NumberUtils.denominateString(supply.circulatingSupply, token.decimals);
+
+            if (token.totalLiquidity && token.marketCap && token.totalLiquidity / token.marketCap < LOW_LIQUIDITY_THRESHOLD) {
+              token.isLowLiquidity = true;
+            }
           }
 
           token.supply = supply.totalSupply;

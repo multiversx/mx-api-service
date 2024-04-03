@@ -16,7 +16,9 @@ export class Transaction {
   epoch: number = 0;
   value: string = '';
   receiver: string = '';
+  receiverUsername: string = '';
   sender: string = '';
+  senderUsername: string = '';
   gasPrice: number = 0;
   gasLimit: number = 0;
   gasUsed: number = 0;

@@ -1,5 +1,4 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { ScamInfo } from "src/common/entities/scam-info.dto";
 import { TokenAssets } from "src/common/assets/entities/token.assets";
 import { NftMedia } from "./nft.media";
 import { NftMetadata } from "./nft.metadata";
@@ -10,6 +9,7 @@ import { NftCollection } from "src/endpoints/collections/entities/nft.collection
 import { Account } from "src/endpoints/accounts/entities/account";
 import { NftRarities } from "./nft.rarities";
 import { UnlockMileStoneModel } from "src/common/locked-asset/entities/unlock.milestone.model";
+import { ScamInfo } from "src/common/entities/scam-info.dto";
 
 @ObjectType("Nft", { description: "NFT object type." })
 export class Nft {
@@ -54,7 +54,7 @@ export class Nft {
   royalties: number | undefined = undefined;
 
   @Field(() => [String], { description: "URIs for the given NFT." })
-  @ApiProperty({ isArray: true })
+  @ApiProperty({ type: String, isArray: true })
   uris: string[] = [];
 
   @Field(() => String, { description: "URL for the given NFT." })
@@ -74,7 +74,7 @@ export class Nft {
   thumbnailUrl: string = '';
 
   @Field(() => [String], { description: "Tags for the given NFT." })
-  @ApiProperty({ isArray: true })
+  @ApiProperty({ type: String, isArray: true })
   tags: string[] = [];
 
   @Field(() => NftMetadata, { description: "Metadata for the given NFT.", nullable: true })
@@ -100,7 +100,7 @@ export class Nft {
   decimals: number | undefined = undefined;
 
   @Field(() => TokenAssets, { description: "Assets for the given NFT.", nullable: true })
-  @ApiProperty()
+  @ApiProperty({ type: TokenAssets })
   assets?: TokenAssets;
 
   @Field(() => String, { description: "Ticker for the given NFT." })
@@ -109,7 +109,6 @@ export class Nft {
 
   @Field(() => ScamInfo, { description: "Scam information for the given NFT. Complexity: 100", nullable: true })
   @ApiProperty({ type: ScamInfo, nullable: true })
-  @ComplexityEstimation({ value: 100, alternatives: ['withScamInfo', 'computeScamInfo'], group: 'extras' })
   scamInfo: ScamInfo | undefined = undefined;
 
   @Field(() => Float, { description: "Score for the given NFT.", nullable: true })
