@@ -104,13 +104,6 @@ export class CacheInfo {
     ttl: Constants.oneHour(),
   };
 
-  static IdentityProfile(key: string): CacheInfo {
-    return {
-      key: `identityProfile:${key}`,
-      ttl: Constants.oneMonth() * 6,
-    };
-  }
-
   static CurrentPrice: CacheInfo = {
     key: 'currentPrice',
     ttl: Constants.oneHour(),
