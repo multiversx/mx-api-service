@@ -268,21 +268,21 @@ export class CacheInfo {
 
   static TokenTransactions(identifier: string): CacheInfo {
     return {
-      key: `tokenTransactions:${identifier}`,
+      key: `tokenTransactionsv2:${identifier}`,
       ttl: Constants.oneHour(),
     };
   }
 
   static TokenTransfers(identifier: string): CacheInfo {
     return {
-      key: `tokenTransfers:${identifier}`,
+      key: `tokenTransfersv2:${identifier}`,
       ttl: Constants.oneHour(),
     };
   }
 
   static TokenAccounts(identifier: string): CacheInfo {
     return {
-      key: `tokenAccounts:${identifier}`,
+      key: `tokenAccountsv2:${identifier}`,
       ttl: Constants.oneHour(),
     };
   }

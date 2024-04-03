@@ -830,12 +830,9 @@ export class TokenService {
       tokens,
       token => CacheInfo.TokenTransactions(token.identifier).key,
       async token => await this.getTotalTransactions(token),
-      (token, transactions, fromGetter) => {
-        token.transactions = transactions;
-
-        if (fromGetter) {
-          token.transactionsLastUpdatedAt = new Date().getTimeInSeconds();
-        }
+      (token, result) => {
+        token.transactions = result?.count;
+        token.transactionsLastUpdatedAt = result?.lastUpdatedAt;
       },
       CacheInfo.TokenTransactions('').ttl,
       10,
@@ -845,12 +842,9 @@ export class TokenService {
       tokens,
       token => CacheInfo.TokenAccounts(token.identifier).key,
       async token => await this.getTotalAccounts(token),
-      (token, accounts, fromGetter) => {
-        token.accounts = accounts;
-
-        if (fromGetter) {
-          token.accountsLastUpdatedAt = new Date().getTimeInSeconds();
-        }
+      (token, result) => {
+        token.accounts = result?.count;
+        token.accountsLastUpdatedAt = result?.lastUpdatedAt;
       },
       CacheInfo.TokenAccounts('').ttl,
       10,
@@ -860,21 +854,20 @@ export class TokenService {
       tokens,
       token => CacheInfo.TokenTransfers(token.identifier).key,
       async token => await this.getTotalTransfers(token),
-      (token, transfers, fromGetter) => {
-        token.transfers = transfers;
-
-        if (fromGetter) {
-          token.transfersLastUpdatedAt = new Date().getTimeInSeconds();
-        }
+      (token, result) => {
+        token.transfers = result?.count;
+        token.transfersLastUpdatedAt = result?.lastUpdatedAt;
       },
       CacheInfo.TokenTransfers('').ttl,
       10,
     );
   }
 
-  private async getTotalTransactions(token: TokenDetailed): Promise<number | undefined> {
+  private async getTotalTransactions(token: TokenDetailed): Promise<{ count: number, lastUpdatedAt: number } | undefined> {
     try {
-      return await this.transactionService.getTransactionCount(new TransactionFilter({ tokens: [token.identifier, ...token.assets?.extraTokens ?? []] }));
+      const count = await this.transactionService.getTransactionCount(new TransactionFilter({ tokens: [token.identifier, ...token.assets?.extraTokens ?? []] }));
+
+      return { count, lastUpdatedAt: new Date().getTimeInSeconds() };
     } catch (error) {
       this.logger.error(`An unhandled error occurred when getting transaction count for token '${token.identifier}'`);
       this.logger.error(error);
@@ -882,10 +875,12 @@ export class TokenService {
     }
   }
 
-  private async getTotalTransfers(token: TokenDetailed): Promise<number | undefined> {
+  private async getTotalTransfers(token: TokenDetailed): Promise<{ count: number, lastUpdatedAt: number } | undefined> {
     try {
       const filter = new TransactionFilter({ tokens: [token.identifier, ...token.assets?.extraTokens ?? []] });
-      return await this.transferService.getTransfersCount(filter);
+      const count = await this.transferService.getTransfersCount(filter);
+
+      return { count, lastUpdatedAt: new Date().getTimeInSeconds() };
     } catch (error) {
       this.logger.error(`An unhandled error occurred when getting transfers count for token '${token.identifier}'`);
       this.logger.error(error);
@@ -893,13 +888,17 @@ export class TokenService {
     }
   }
 
-  private async getTotalAccounts(token: TokenDetailed): Promise<number | undefined> {
+  private async getTotalAccounts(token: TokenDetailed): Promise<{ count: number, lastUpdatedAt: number } | undefined> {
     let accounts = await this.cachingService.getRemote<number>(CacheInfo.TokenAccountsExtra(token.identifier).key);
     if (!accounts) {
       accounts = await this.getEsdtAccountsCount(token.identifier);
     }
 
-    return accounts;
+    if (!accounts) {
+      return undefined;
+    }
+
+    return { count: accounts, lastUpdatedAt: new Date().getTimeInSeconds() };
   }
 
   private async getEsdtAccountsCount(identifier: string): Promise<number | undefined> {
