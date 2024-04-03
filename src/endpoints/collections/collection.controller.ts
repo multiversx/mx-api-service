@@ -24,6 +24,7 @@ import { NftCollectionDetailed } from "./entities/nft.collection.detailed";
 import { Response } from "express";
 import { SortCollections } from "./entities/sort.collections";
 import { ParseArrayPipeOptions } from "@multiversx/sdk-nestjs-common/lib/pipes/entities/parse.array.options";
+import { TransferService } from "../transfers/transfer.service";
 
 @Controller()
 @ApiTags('collections')
@@ -32,6 +33,7 @@ export class CollectionController {
     private readonly collectionService: CollectionService,
     private readonly nftService: NftService,
     private readonly transactionService: TransactionService,
+    private readonly transferService: TransferService
   ) { }
 
   @Get("/collections")
@@ -402,6 +404,117 @@ export class CollectionController {
     }
 
     return await this.transactionService.getTransactionCount(new TransactionFilter({
+      sender,
+      receivers: receiver,
+      token: identifier,
+      senderShard,
+      receiverShard,
+      miniBlockHash,
+      hashes,
+      status,
+      before,
+      after,
+    }));
+  }
+
+  @Get("/collections/:collection/transfers")
+  @ApiOperation({ summary: 'Collection transactions', description: `Returns a list of transactions for a specific collection.` })
+  @ApplyComplexity({ target: TransactionDetailed })
+  @ApiOkResponse({ type: [Transaction] })
+  @ApiNotFoundResponse({ description: 'Collection not found' })
+  @ApiQuery({ name: 'sender', description: 'Address of the transfer sender', required: false })
+  @ApiQuery({ name: 'receiver', description: 'Search by multiple receiver addresses, comma-separated', required: false })
+  @ApiQuery({ name: 'senderShard', description: 'Id of the shard the sender address belongs to', required: false })
+  @ApiQuery({ name: 'receiverShard', description: 'Id of the shard the receiver address belongs to', required: false })
+  @ApiQuery({ name: 'miniBlockHash', description: 'Filter by miniblock hash', required: false })
+  @ApiQuery({ name: 'hashes', description: 'Filter by a comma-separated list of transaction hashes', required: false })
+  @ApiQuery({ name: 'status', description: 'Status of the transaction (success / pending / invalid / fail)', required: false, enum: TransactionStatus })
+  @ApiQuery({ name: 'function', description: 'Filter transactions by function name', required: false })
+  @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
+  @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
+  @ApiQuery({ name: 'order', description: 'Sort order (asc/desc)', required: false, enum: SortOrder })
+  @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
+  @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
+  @ApiQuery({ name: 'withScResults', description: 'Return scResults for transactions', required: false, type: Boolean })
+  @ApiQuery({ name: 'withOperations', description: 'Return operations for transactions', required: false, type: Boolean })
+  @ApiQuery({ name: 'withLogs', description: 'Return logs for transactions', required: false, type: Boolean })
+  @ApiQuery({ name: 'withScamInfo', description: 'Returns scam information', required: false, type: Boolean })
+  @ApiQuery({ name: 'withUsername', description: 'Integrates username in assets for all addresses present in the transactions', required: false, type: Boolean })
+  async getCollectionTransfers(
+    @Param('collection', ParseCollectionPipe) identifier: string,
+    @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
+    @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
+    @Query('sender', ParseAddressPipe) sender?: string,
+    @Query('receiver', ParseAddressArrayPipe) receiver?: string[],
+    @Query('senderShard', ParseIntPipe) senderShard?: number,
+    @Query('receiverShard', ParseIntPipe) receiverShard?: number,
+    @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash?: string,
+    @Query('hashes', ParseArrayPipe) hashes?: string[],
+    @Query('status', new ParseEnumPipe(TransactionStatus)) status?: TransactionStatus,
+    @Query('function', new ParseArrayPipe(new ParseArrayPipeOptions({ allowEmptyString: true }))) functions?: string[],
+    @Query('before', ParseIntPipe) before?: number,
+    @Query('after', ParseIntPipe) after?: number,
+    @Query('order', new ParseEnumPipe(SortOrder)) order?: SortOrder,
+    @Query('withScResults', new ParseBoolPipe) withScResults?: boolean,
+    @Query('withOperations', new ParseBoolPipe) withOperations?: boolean,
+    @Query('withLogs', new ParseBoolPipe) withLogs?: boolean,
+    @Query('withScamInfo', new ParseBoolPipe) withScamInfo?: boolean,
+    @Query('withUsername', new ParseBoolPipe) withUsername?: boolean,
+  ) {
+    const options = TransactionQueryOptions.applyDefaultOptions(size, { withScResults, withOperations, withLogs, withScamInfo, withUsername });
+
+    const isCollection = await this.collectionService.isCollection(identifier);
+    if (!isCollection) {
+      throw new HttpException('Collection not found', HttpStatus.NOT_FOUND);
+    }
+
+    return await this.transferService.getTransfers(new TransactionFilter({
+      sender,
+      receivers: receiver,
+      token: identifier,
+      functions,
+      senderShard,
+      receiverShard,
+      miniBlockHash,
+      hashes,
+      status,
+      before,
+      after,
+      order,
+    }), new QueryPagination({ from, size }), options);
+  }
+
+  @Get("/collections/:collection/transfers/count")
+  @ApiOperation({ summary: 'NFT transfers count', description: 'Returns the total number of transfers for a specific collection' })
+  @ApiOkResponse({ type: Number })
+  @ApiNotFoundResponse({ description: 'Collection not found' })
+  @ApiQuery({ name: 'sender', description: 'Address of the transfer sender', required: false })
+  @ApiQuery({ name: 'receiver', description: 'Search by multiple receiver addresses, comma-separated', required: false })
+  @ApiQuery({ name: 'senderShard', description: 'Id of the shard the sender address belongs to', required: false })
+  @ApiQuery({ name: 'receiverShard', description: 'Id of the shard the receiver address belongs to', required: false })
+  @ApiQuery({ name: 'miniBlockHash', description: 'Filter by miniblock hash', required: false })
+  @ApiQuery({ name: 'hashes', description: 'Filter by a comma-separated list of transfer hashes', required: false })
+  @ApiQuery({ name: 'status', description: 'Status of the transfer (success / pending / invalid / fail)', required: false, enum: TransactionStatus })
+  @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
+  @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
+  async getCollectionTransfersCount(
+    @Param('collection', ParseCollectionPipe) identifier: string,
+    @Query('sender', ParseAddressPipe) sender?: string,
+    @Query('receiver', ParseAddressArrayPipe) receiver?: string[],
+    @Query('senderShard', ParseIntPipe) senderShard?: number,
+    @Query('receiverShard', ParseIntPipe) receiverShard?: number,
+    @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash?: string,
+    @Query('hashes', ParseArrayPipe) hashes?: string[],
+    @Query('status', new ParseEnumPipe(TransactionStatus)) status?: TransactionStatus,
+    @Query('before', ParseIntPipe) before?: number,
+    @Query('after', ParseIntPipe) after?: number,
+  ) {
+    const isCollection = await this.collectionService.isCollection(identifier);
+    if (!isCollection) {
+      throw new HttpException('Collection not found', HttpStatus.NOT_FOUND);
+    }
+
+    return await this.transferService.getTransfersCount(new TransactionFilter({
       sender,
       receivers: receiver,
       token: identifier,
