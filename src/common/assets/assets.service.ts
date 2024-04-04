@@ -16,6 +16,7 @@ import { NftRankAlgorithm } from "./entities/nft.rank.algorithm";
 import { NftRank } from "./entities/nft.rank";
 import { MexStakingProxy } from "src/endpoints/mex/entities/mex.staking.proxy";
 import { Provider } from "src/endpoints/providers/entities/provider";
+
 const rimraf = require("rimraf");
 const path = require('path');
 const fs = require('fs');
@@ -26,7 +27,7 @@ export class AssetsService {
 
   constructor(
     private readonly cachingService: CacheService,
-    private readonly apiConfigService: ApiConfigService
+    private readonly apiConfigService: ApiConfigService,
   ) { }
 
   checkout(): Promise<void> {
@@ -129,7 +130,7 @@ export class AssetsService {
     return await this.cachingService.getOrSet(
       CacheInfo.TokenAssets.key,
       async () => await this.getAllTokenAssetsRaw(),
-      CacheInfo.TokenAssets.ttl
+      CacheInfo.TokenAssets.ttl,
     );
   }
 
@@ -166,7 +167,7 @@ export class AssetsService {
     return await this.cachingService.getOrSet(
       CacheInfo.CollectionRanks.key,
       async () => await this.getAllCollectionRanksRaw(),
-      CacheInfo.CollectionRanks.ttl
+      CacheInfo.CollectionRanks.ttl,
     );
   }
 
@@ -194,7 +195,7 @@ export class AssetsService {
     return await this.cachingService.getOrSet(
       CacheInfo.AccountAssets.key,
       async () => await this.getAllAccountAssetsRaw(),
-      CacheInfo.AccountAssets.ttl
+      CacheInfo.AccountAssets.ttl,
     );
   }
 
@@ -207,6 +208,9 @@ export class AssetsService {
 
     const allAssets: { [key: string]: AccountAssets } = {};
     for (const fileName of fileNames) {
+      if (fileName.includes(".gitkeep")) {
+        continue;
+      }
       const assetsPath = path.join(accountAssetsPath, fileName);
       const address = fileName.removeSuffix('.json');
       try {

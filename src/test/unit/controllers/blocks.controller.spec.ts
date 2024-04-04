@@ -6,6 +6,7 @@ import { BlockService } from "src/endpoints/blocks/block.service";
 import request = require('supertest');
 import { PublicAppModule } from "src/public.app.module";
 import { QueryPagination } from "src/common/entities/query.pagination";
+import { SortOrder } from "src/common/entities/sort.order";
 
 describe("BlockController", () => {
   let app: INestApplication;
@@ -51,6 +52,38 @@ describe("BlockController", () => {
 
       expect(blockServiceMock.getBlocks).toHaveBeenCalledWith(
         expect.objectContaining({ shard: 1 }),
+        expect.objectContaining({ from: 0, size: 25 }),
+        undefined
+      );
+    });
+
+    it('should filter blocks by timestamp and ordered desc', async () => {
+      const orderBlock = SortOrder.desc;
+      const filteredBlocksList = createMockBlocksList(5);
+      blockServiceMock.getBlocks.mockResolvedValue(filteredBlocksList);
+
+      await request(app.getHttpServer())
+        .get(`${path}?order=${orderBlock}`)
+        .expect(200);
+
+      expect(blockServiceMock.getBlocks).toHaveBeenCalledWith(
+        expect.objectContaining({ order: orderBlock }),
+        expect.objectContaining({ from: 0, size: 25 }),
+        undefined
+      );
+    });
+
+    it('should filter blocks by timestamp and ordered asc', async () => {
+      const orderBlock = SortOrder.asc;
+      const filteredBlocksList = createMockBlocksList(5);
+      blockServiceMock.getBlocks.mockResolvedValue(filteredBlocksList);
+
+      await request(app.getHttpServer())
+        .get(`${path}?order=${orderBlock}`)
+        .expect(200);
+
+      expect(blockServiceMock.getBlocks).toHaveBeenCalledWith(
+        expect.objectContaining({ order: orderBlock }),
         expect.objectContaining({ from: 0, size: 25 }),
         undefined
       );

@@ -78,7 +78,7 @@ export class PostgresIndexerService implements IndexerInterface {
     throw new Error("Method not implemented.");
   }
 
-  async getScResultsCount(): Promise<number> {
+  async getScResultsCount(_filter: SmartContractResultFilter): Promise<number> {
     return await this.scResultsRepository.count();
   }
 

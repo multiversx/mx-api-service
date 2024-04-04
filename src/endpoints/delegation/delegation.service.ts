@@ -30,34 +30,35 @@ export class DelegationService {
   }
 
   async getDelegationRaw(): Promise<Delegation> {
-    const configsBase64 = await this.vmQueryService.vmQuery(
-      this.apiConfigService.getDelegationManagerContractAddress(),
-      'getContractConfig',
-    );
+    let minDelegation = "0";
+
+    const delegationManagerAddress = this.apiConfigService.getDelegationManagerContractAddress();
+
+    if (delegationManagerAddress) {
+      const configsBase64 = await this.vmQueryService.vmQuery(
+        delegationManagerAddress,
+        'getContractConfig',
+      );
+
+      //@ts-ignore
+      const minDelegationHex = Buffer.from(configsBase64.pop(), 'base64').toString('hex');
+      minDelegation = BigInt(minDelegationHex ? '0x' + minDelegationHex : '0').toString();
+    }
 
     const nodes = await this.nodeService.getAllNodes();
     let providerAddresses = nodes.map(node => node.provider ? node.provider : node.owner);
 
     providerAddresses = providerAddresses.distinct();
 
-    // @ts-ignore
-    const minDelegationHex = Buffer.from(configsBase64.pop(), 'base64').toString('hex');
-    const minDelegation = BigInt(
-      minDelegationHex ? '0x' + minDelegationHex : minDelegationHex
-    ).toString();
-
-    const { stake, topUp } = nodes.reduce(
-      (accumulator, { stake, topUp }) => {
-        accumulator.stake += stake ? BigInt(stake) : BigInt(0);
-        accumulator.topUp += topUp ? BigInt(topUp) : BigInt(0);
-
-        return accumulator;
-      },
+    const { stake, topUp } = nodes.reduce((accumulator, { stake, topUp }) => {
+      accumulator.stake += stake ? BigInt(stake) : BigInt(0);
+      accumulator.topUp += topUp ? BigInt(topUp) : BigInt(0);
+      return accumulator;
+    },
       {
         stake: BigInt(0),
         topUp: BigInt(0),
-      }
-    );
+      });
 
     return {
       stake: stake.toString(),
