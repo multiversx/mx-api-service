@@ -57,10 +57,10 @@ export class StakeService {
     const totalTopUp = economics.erd_total_top_up_value;
 
     const totalStaked = BigInt(BigInt(totalBaseStaked) + BigInt(totalTopUp)).toString();
+    const totalObservers = await this.nodeService.getNodeCount(new NodeFilter({ type: NodeType.observer }));
 
     if (!this.apiConfigService.isStakingV4Enabled()) {
       const queueSize = await this.nodeService.getNodeCount(new NodeFilter({ status: NodeStatus.queued }));
-
       return new GlobalStake({
         totalValidators: validators.totalValidators,
         activeValidators: validators.activeValidators,
@@ -85,6 +85,7 @@ export class StakeService {
         ...validators,
         allStakedNodes,
         totalStaked,
+        totalObservers,
         minimumAuctionQualifiedTopUp,
         minimumAuctionQualifiedStake,
         auctionValidators,
