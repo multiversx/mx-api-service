@@ -20,6 +20,7 @@ import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { NodeSort } from "./entities/node.sort";
 import { ProtocolService } from "src/common/protocol/protocol.service";
 import { KeysService } from "../keys/keys.service";
+import { IdentitiesService } from "../identities/identities.service";
 
 @Injectable()
 export class NodeService {
@@ -35,7 +36,9 @@ export class NodeService {
     @Inject(forwardRef(() => BlockService))
     private readonly blockService: BlockService,
     private readonly protocolService: ProtocolService,
-    private readonly keysService: KeysService
+    private readonly keysService: KeysService,
+    @Inject(forwardRef(() => IdentitiesService))
+    private readonly identitiesService: IdentitiesService
   ) { }
 
   private getIssues(node: Node, version: string | undefined): string[] {
@@ -119,8 +122,7 @@ export class NodeService {
   private async getFilteredNodes(query: NodeFilter): Promise<Node[]> {
     const allNodes = await this.getAllNodes();
 
-
-    const filteredNodes = allNodes.filter(node => {
+    let filteredNodes = allNodes.filter(node => {
       if (query.search !== undefined) {
         const nodeMatches = node.bls && node.bls.toLowerCase().includes(query.search.toLowerCase());
         const nameMatches = node.name && node.name.toLowerCase().includes(query.search.toLowerCase());
@@ -201,6 +203,20 @@ export class NodeService {
 
       return true;
     });
+
+    if (query.withIdentityInfo) {
+      filteredNodes = await Promise.all(filteredNodes.map(async node => {
+        if (node.identity) {
+          node.identityInfo = await this.identitiesService.getIdentity(node.identity);
+        }
+        return node;
+      }));
+    } else {
+      filteredNodes = filteredNodes.map(node => {
+        const { identityInfo, ...rest } = node;
+        return rest;
+      });
+    }
 
     const sort = query.sort;
     if (sort) {
@@ -380,6 +396,12 @@ export class NodeService {
               node.auctionPosition = position;
               node.auctionTopUp = auction.qualifiedTopUp;
               node.auctionQualified = auctionNode.qualified;
+
+              const stakeBigInt = BigInt(node.stake);
+              const auctionTopUpBigInt = BigInt(node.auctionTopUp);
+              const qualifiedStakeBigInt = stakeBigInt + auctionTopUpBigInt;
+
+              node.qualifiedStake = qualifiedStakeBigInt.toString();
             }
 
             const nodeStake = node.stake || "0";

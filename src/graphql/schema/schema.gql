@@ -2786,6 +2786,9 @@ type Node {
   """Identity for the given node."""
   identity: String
 
+  """Identity details for given nodes"""
+  identityInfo: Identity
+
   """Instances for the given node."""
   instances: Float!
 
@@ -2821,6 +2824,9 @@ type Node {
 
   """Provider for the given node."""
   provider: String!
+
+  """Qualified stake amout for a given node."""
+  qualifiedStake: String!
 
   """Rating for the given node."""
   rating: Float!

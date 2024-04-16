@@ -3,6 +3,7 @@ import { Field, Float, ObjectType } from "@nestjs/graphql";
 import { ApiProperty } from "@nestjs/swagger";
 import { NodeStatus } from "./node.status";
 import { NodeType } from "./node.type";
+import { Identity } from "src/endpoints/identities/entities/identity";
 
 @ObjectType("Node", { description: "Node object type." })
 export class Node {
@@ -145,4 +146,12 @@ export class Node {
   @Field(() => Number, { description: "Number of epochs left for a node in waiting state.", nullable: true })
   @ApiProperty({ type: Number, example: 15 })
   epochsLeft: number | undefined = undefined;
+
+  @Field(() => Identity, { description: "Identity details for given nodes", nullable: true })
+  @ApiProperty({ type: Identity, nullable: true })
+  identityInfo?: Identity;
+
+  @Field(() => String, { description: "Qualified stake amout for a given node." })
+  @ApiProperty({ type: String, default: 0 })
+  qualifiedStake: string = '';
 }

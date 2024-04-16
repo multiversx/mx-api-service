@@ -17,6 +17,7 @@ import { NodeSort } from "src/endpoints/nodes/entities/node.sort";
 import { KeysService } from "src/endpoints/keys/keys.service";
 import * as fs from 'fs';
 import * as path from 'path';
+import { IdentitiesService } from "src/endpoints/identities/identities.service";
 
 describe('NodeService', () => {
   let nodeService: NodeService;
@@ -24,6 +25,7 @@ describe('NodeService', () => {
   let vmQueryService: VmQueryService;
   let apiConfigService: ApiConfigService;
   let gatewayService: GatewayService;
+  let identitiesService: IdentitiesService;
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
@@ -98,7 +100,12 @@ describe('NodeService', () => {
             getKeyUnbondPeriod: jest.fn(),
           },
         },
-
+        {
+          provide: IdentitiesService,
+          useValue: {
+            getIdentity: jest.fn(),
+          },
+        },
       ],
     }).compile();
 
@@ -107,6 +114,7 @@ describe('NodeService', () => {
     vmQueryService = moduleRef.get<VmQueryService>(VmQueryService);
     apiConfigService = moduleRef.get<ApiConfigService>(ApiConfigService);
     gatewayService = moduleRef.get<GatewayService>(GatewayService);
+    identitiesService = moduleRef.get<IdentitiesService>(IdentitiesService);
   });
 
   beforeEach(() => { jest.restoreAllMocks(); });
@@ -377,6 +385,50 @@ describe('NodeService', () => {
 
         for (const result of results) {
           expect(result.locked).toStrictEqual('2500000000000000000000');
+        }
+        expect(allNodesSpy).toHaveBeenCalled();
+      });
+
+      it('should include identity information when withIdentityInfo is true', async () => {
+        // eslint-disable-next-line require-await
+        jest.spyOn(identitiesService, 'getIdentity').mockImplementation(async (identity) => {
+          return {
+            identity: identity,
+            name: "MultiversX Community Delegation 🎖",
+            avatar: "https://example.com/avatar.png",
+            additionalInfo: "Some details about the identity",
+            locked: '708201480104683427688452',
+          };
+        });
+        const allNodesSpy = jest.spyOn(nodeService, 'getAllNodes').mockResolvedValueOnce(Promise.resolve(mockNodes));
+        const results = await nodeService.getNodes(new QueryPagination({ size: 1 }), new NodeFilter({ withIdentityInfo: true }));
+
+        for (const result of results) {
+          expect(result.identityInfo).toBeDefined();
+          expect(result.identityInfo?.name).toEqual("MultiversX Community Delegation 🎖");
+          expect(result.identityInfo?.avatar).toEqual("https://example.com/avatar.png");
+        }
+        expect(allNodesSpy).toHaveBeenCalled();
+      });
+
+      it('should not include identity information when withIdentityInfo is false', async () => {
+        // eslint-disable-next-line require-await
+        jest.spyOn(identitiesService, 'getIdentity').mockImplementation(async (identity) => {
+          return {
+            identity: identity,
+            name: "MultiversX Community Delegation 🎖",
+            avatar: "https://example.com/avatar.png",
+            additionalInfo: "Some details about the identity",
+            locked: '708201480104683427688452',
+          };
+        });
+        const allNodesSpy = jest.spyOn(nodeService, 'getAllNodes').mockResolvedValueOnce(Promise.resolve(mockNodes));
+        const results = await nodeService.getNodes(new QueryPagination({ size: 1 }), new NodeFilter({ withIdentityInfo: false }));
+
+        for (const result of results) {
+          expect(result.identityInfo).not.toBeDefined();
+          expect(result.identityInfo?.name).not.toEqual("MultiversX Community Delegation 🎖");
+          expect(result.identityInfo?.avatar).not.toEqual("https://example.com/avatar.png");
         }
         expect(allNodesSpy).toHaveBeenCalled();
       });
