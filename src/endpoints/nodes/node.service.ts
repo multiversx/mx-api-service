@@ -21,6 +21,7 @@ import { NodeSort } from "./entities/node.sort";
 import { ProtocolService } from "src/common/protocol/protocol.service";
 import { KeysService } from "../keys/keys.service";
 import { IdentitiesService } from "../identities/identities.service";
+import { NodeAuction } from "./entities/node.auction";
 
 @Injectable()
 export class NodeService {
@@ -711,6 +712,71 @@ export class NodeService {
 
     return nodes;
   }
+
+  async getNodesAuctions(): Promise<NodeAuction[]> {
+    const allNodes = await this.getNodes(new QueryPagination({ size: 10000 }), new NodeFilter({ status: NodeStatus.auction }));
+    const auctionValidators = await this.getNodeCount(new NodeFilter({ auctioned: true }));
+    const qualifiedAuctionValidators = await this.getNodeCount(new NodeFilter({ isQualified: true }));
+    const dangerZoneValidators = await this.getNodeCount(new NodeFilter({ isAuctionDangerZone: true, isQualified: true }));
+
+    const auctions = await this.gatewayService.getValidatorAuctions();
+    const auctionNodesMap = new Map();
+
+    for (const auction of auctions) {
+      if (auction.nodes) {
+        for (const auctionNode of auction.nodes) {
+          auctionNodesMap.set(auctionNode.blsKey, {
+            auctionTopUp: auction.qualifiedTopUp,
+            qualified: auctionNode.qualified,
+          });
+        }
+      }
+    }
+
+    const nodesWithAuctionData = await Promise.all(allNodes.map(async node => {
+      const auctionData = auctionNodesMap.get(node.bls) || {};
+      const qualifiedStake = BigInt(node.stake || '0') + BigInt(auctionData.auctionTopUp || '0');
+
+      let identityInfo;
+      if (node.identity) {
+        identityInfo = await this.identitiesService.getIdentity(node.identity);
+      }
+
+      return new NodeAuction({
+        identity: identityInfo?.identity,
+        name: identityInfo?.name,
+        description: identityInfo?.description,
+        avatar: identityInfo?.avatar,
+        stake: node.stake || '0',
+        owner: node.owner,
+        auctionTopUp: auctionData.auctionTopUp || '0',
+        qualifiedStake: qualifiedStake.toString(),
+        auctionValidators: auctionValidators,
+        qualifiedAuctionValidators: qualifiedAuctionValidators,
+        dangerZoneValidators: dangerZoneValidators,
+      });
+    }));
+
+    nodesWithAuctionData.sort((a, b) => {
+      const identityA = a.identity || '';
+      const identityB = b.identity || '';
+      const ownerA = a.owner || '';
+      const ownerB = b.owner || '';
+
+      if (identityA && identityB) {
+        return identityA.localeCompare(identityB);
+      } else if (identityA && !identityB) {
+        return -1;
+      } else if (!identityA && identityB) {
+        return 1;
+      } else {
+        return ownerA.localeCompare(ownerB);
+      }
+    });
+
+    return nodesWithAuctionData;
+  }
+
 
   async deleteOwnersForAddressInCache(address: string): Promise<string[]> {
     const nodes = await this.getAllNodes();

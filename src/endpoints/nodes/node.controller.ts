@@ -10,6 +10,7 @@ import { SortNodes } from "src/common/entities/sort.nodes";
 import { NodeFilter } from "./entities/node.filter";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { ParseAddressPipe, ParseBlsHashPipe, ParseBoolPipe, ParseEnumPipe, ParseIntPipe } from "@multiversx/sdk-nestjs-common";
+import { NodeAuction } from "./entities/node.auction";
 
 @Controller()
 @ApiTags('nodes')
@@ -133,6 +134,15 @@ export class NodeController {
   ): Promise<number> {
     return this.nodeService.getNodeCount(new NodeFilter({ search, online, type, status, shard, issues, identity, provider, owner, auctioned, fullHistory, sort, order, isQualified, isAuctionDangerZone, isAuctioned }));
   }
+
+  @Get("nodes/auctions")
+  @ApiOperation({ summary: 'Nodes Auctions', description: 'Returns a list of nodes in auction' })
+  @ApiOkResponse({ type: [Node] })
+  async getNodesAuctions(
+  ): Promise<NodeAuction[]> {
+    return await this.nodeService.getNodesAuctions();
+  }
+
 
   @Get('/nodes/:bls')
   @ApiOperation({ summary: 'Node', description: 'Returns details about a specific node for a given bls key' })

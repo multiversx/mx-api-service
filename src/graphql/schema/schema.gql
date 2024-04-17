@@ -1882,6 +1882,9 @@ type GlobalStake {
   """Validators queue size."""
   queueSize: Float!
 
+  """Total observers."""
+  totalObservers: Float!
+
   """Total stake amount."""
   totalStaked: Float!
 
@@ -2892,6 +2895,9 @@ enum NodeSort {
 
   """Node position."""
   position
+
+  """Node qualified stake."""
+  qualifiedStake
 
   """Node temp rating."""
   tempRating
