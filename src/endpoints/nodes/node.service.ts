@@ -733,7 +733,7 @@ export class NodeService {
       }
     }
 
-    const nodesWithAuctionData = await Promise.all(allNodes.map(async node => {
+    let nodesWithAuctionData = await Promise.all(allNodes.map(async node => {
       const auctionData = auctionNodesMap.get(node.bls) || {};
       const qualifiedStake = BigInt(node.stake || '0') + BigInt(auctionData.auctionTopUp || '0');
 
@@ -757,26 +757,12 @@ export class NodeService {
       });
     }));
 
-    nodesWithAuctionData.sort((a, b) => {
-      const identityA = a.identity || '';
-      const identityB = b.identity || '';
-      const ownerA = a.owner || '';
-      const ownerB = b.owner || '';
+    const groupedNodes = nodesWithAuctionData.groupBy(node => node.identity);
+    nodesWithAuctionData = Object.values(groupedNodes).flat() as NodeAuction[];
 
-      if (identityA && identityB) {
-        return identityA.localeCompare(identityB);
-      } else if (identityA && !identityB) {
-        return -1;
-      } else if (!identityA && identityB) {
-        return 1;
-      } else {
-        return ownerA.localeCompare(ownerB);
-      }
-    });
-
+    nodesWithAuctionData = nodesWithAuctionData.sortedDescending(node => Number(node.qualifiedStake));
     return nodesWithAuctionData;
   }
-
 
   async deleteOwnersForAddressInCache(address: string): Promise<string[]> {
     const nodes = await this.getAllNodes();
