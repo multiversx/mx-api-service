@@ -757,7 +757,7 @@ export class NodeService {
       });
     }));
 
-    const groupedNodes = nodesWithAuctionData.groupBy(node => node.identity);
+    const groupedNodes = nodesWithAuctionData.groupBy(node => node.identity || node.owner);
     nodesWithAuctionData = Object.values(groupedNodes).flat() as NodeAuction[];
 
     nodesWithAuctionData = nodesWithAuctionData.sortedDescending(node => Number(node.qualifiedStake));
