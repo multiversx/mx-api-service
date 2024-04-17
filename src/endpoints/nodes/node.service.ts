@@ -759,12 +759,11 @@ export class NodeService {
       });
     }));
 
-    const groupedNodes = nodesWithAuctionData.filter(node => node.identity)
-      .groupBy(node => `${node.identity}:${node.owner}`);
-    const ungroupedNodes = nodesWithAuctionData.filter(node => !node.identity);
+    const groupedNodes = nodesWithAuctionData.groupBy(node =>
+      node.identity ? `${node.identity}:${node.provider || node.owner}` : node.bls
+    );
 
-    nodesWithAuctionData = [...Object.values(groupedNodes).flat(), ...ungroupedNodes] as NodeAuction[];
-    nodesWithAuctionData = nodesWithAuctionData.sortedDescending(node => Number(node.qualifiedStake));
+    nodesWithAuctionData = Object.values(groupedNodes).flat() as NodeAuction[];
 
     if (filter && filter.sort) {
       nodesWithAuctionData.sort((a: any, b: any) => {

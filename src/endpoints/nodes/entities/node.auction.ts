@@ -18,6 +18,12 @@ export class NodeAuction {
   avatar: string = '';
 
   @ApiProperty({ type: String })
+  provider?: string = '';
+
+  @ApiProperty({ type: String })
+  bls?: string = '';
+
+  @ApiProperty({ type: String })
   stake: string = '';
 
   @ApiProperty({ type: String })
