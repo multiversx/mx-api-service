@@ -22,6 +22,7 @@ import { ProtocolService } from "src/common/protocol/protocol.service";
 import { KeysService } from "../keys/keys.service";
 import { IdentitiesService } from "../identities/identities.service";
 import { NodeAuction } from "./entities/node.auction";
+import { NodeAuctionFilter } from "./entities/node.auction.filter";
 
 @Injectable()
 export class NodeService {
@@ -713,7 +714,7 @@ export class NodeService {
     return nodes;
   }
 
-  async getNodesAuctions(pagination: QueryPagination): Promise<NodeAuction[]> {
+  async getNodesAuctions(pagination: QueryPagination, filter: NodeAuctionFilter): Promise<NodeAuction[]> {
     const allNodes = await this.getNodes(new QueryPagination({ size: 10000 }), new NodeFilter({ status: NodeStatus.auction }));
     const auctionValidators = await this.getNodeCount(new NodeFilter({ auctioned: true }));
     const qualifiedAuctionValidators = await this.getNodeCount(new NodeFilter({ isQualified: true }));
@@ -764,6 +765,29 @@ export class NodeService {
 
     nodesWithAuctionData = [...Object.values(groupedNodes).flat(), ...ungroupedNodes] as NodeAuction[];
     nodesWithAuctionData = nodesWithAuctionData.sortedDescending(node => Number(node.qualifiedStake));
+
+    if (filter && filter.sort) {
+      nodesWithAuctionData.sort((a: any, b: any) => {
+        let asort = a[filter.sort ?? ''];
+        let bsort = b[filter.sort ?? ''];
+
+        if (asort && typeof asort === 'string') {
+          asort = asort.toLowerCase();
+        }
+
+        if (bsort && typeof bsort === 'string') {
+          bsort = bsort.toLowerCase();
+        }
+
+        return asort > bsort ? 1 : bsort > asort ? -1 : 0;
+      });
+
+      if (filter.order === SortOrder.desc) {
+        nodesWithAuctionData.reverse();
+      }
+    } else {
+      nodesWithAuctionData = nodesWithAuctionData.sortedDescending(node => Number(node.qualifiedStake));
+    }
 
     return nodesWithAuctionData.slice(from, size);
   }

@@ -11,6 +11,8 @@ import { NodeFilter } from "./entities/node.filter";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { ParseAddressPipe, ParseBlsHashPipe, ParseBoolPipe, ParseEnumPipe, ParseIntPipe } from "@multiversx/sdk-nestjs-common";
 import { NodeAuction } from "./entities/node.auction";
+import { NodeSortAuction } from "./entities/node.sort.auction";
+import { NodeAuctionFilter } from "./entities/node.auction.filter";
 
 @Controller()
 @ApiTags('nodes')
@@ -140,11 +142,18 @@ export class NodeController {
   @ApiOkResponse({ type: [NodeAuction] })
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
+  @ApiQuery({ name: 'sort', description: 'Sorting criteria', required: false, enum: NodeSortAuction })
+  @ApiQuery({ name: 'order', description: 'Sorting order (asc / desc)', required: false, enum: SortOrder })
   async getNodesAuctions(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
+    @Query('sort', new ParseEnumPipe(NodeSortAuction)) sort?: NodeSortAuction,
+    @Query('order', new ParseEnumPipe(SortOrder)) order?: SortOrder,
   ): Promise<NodeAuction[]> {
-    return await this.nodeService.getNodesAuctions(new QueryPagination({ from, size }));
+    return await this.nodeService.getNodesAuctions(
+      new QueryPagination({ from, size }),
+      new NodeAuctionFilter({ sort, order })
+    );
   }
 
   @Get('/nodes/:bls')
