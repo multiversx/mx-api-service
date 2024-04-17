@@ -757,11 +757,13 @@ export class NodeService {
       });
     }));
 
-    const groupedNodes = nodesWithAuctionData.groupBy(node => node.identity || node.owner);
-    nodesWithAuctionData = Object.values(groupedNodes).flat() as NodeAuction[];
+    const groupedNodes = nodesWithAuctionData.filter(node => node.identity)
+      .groupBy(node => `${node.identity}:${node.owner}`);
+    const ungroupedNodes = nodesWithAuctionData.filter(node => !node.identity);
 
-    nodesWithAuctionData = nodesWithAuctionData.sortedDescending(node => Number(node.qualifiedStake));
-    return nodesWithAuctionData;
+    nodesWithAuctionData = [...Object.values(groupedNodes).flat(), ...ungroupedNodes] as NodeAuction[];
+
+    return nodesWithAuctionData.sortedDescending(node => Number(node.qualifiedStake));
   }
 
   async deleteOwnersForAddressInCache(address: string): Promise<string[]> {
