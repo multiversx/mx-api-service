@@ -137,12 +137,15 @@ export class NodeController {
 
   @Get("nodes/auctions")
   @ApiOperation({ summary: 'Nodes Auctions', description: 'Returns a list of nodes in auction' })
-  @ApiOkResponse({ type: [Node] })
+  @ApiOkResponse({ type: [NodeAuction] })
+  @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
+  @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   async getNodesAuctions(
+    @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
+    @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
   ): Promise<NodeAuction[]> {
-    return await this.nodeService.getNodesAuctions();
+    return await this.nodeService.getNodesAuctions(new QueryPagination({ from, size }));
   }
-
 
   @Get('/nodes/:bls')
   @ApiOperation({ summary: 'Node', description: 'Returns details about a specific node for a given bls key' })

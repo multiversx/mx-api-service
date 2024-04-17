@@ -713,7 +713,7 @@ export class NodeService {
     return nodes;
   }
 
-  async getNodesAuctions(): Promise<NodeAuction[]> {
+  async getNodesAuctions(pagination: QueryPagination): Promise<NodeAuction[]> {
     const allNodes = await this.getNodes(new QueryPagination({ size: 10000 }), new NodeFilter({ status: NodeStatus.auction }));
     const auctionValidators = await this.getNodeCount(new NodeFilter({ auctioned: true }));
     const qualifiedAuctionValidators = await this.getNodeCount(new NodeFilter({ isQualified: true }));
@@ -721,6 +721,7 @@ export class NodeService {
 
     const auctions = await this.gatewayService.getValidatorAuctions();
     const auctionNodesMap = new Map();
+    const { from, size } = pagination;
 
     for (const auction of auctions) {
       if (auction.nodes) {
@@ -762,8 +763,9 @@ export class NodeService {
     const ungroupedNodes = nodesWithAuctionData.filter(node => !node.identity);
 
     nodesWithAuctionData = [...Object.values(groupedNodes).flat(), ...ungroupedNodes] as NodeAuction[];
+    nodesWithAuctionData = nodesWithAuctionData.sortedDescending(node => Number(node.qualifiedStake));
 
-    return nodesWithAuctionData.sortedDescending(node => Number(node.qualifiedStake));
+    return nodesWithAuctionData.slice(from, size);
   }
 
   async deleteOwnersForAddressInCache(address: string): Promise<string[]> {
