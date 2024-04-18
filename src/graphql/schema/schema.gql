@@ -3653,6 +3653,11 @@ type TokenDetailed {
   """Token isPause property."""
   isPaused: Boolean!
 
+  """
+  If the liquidity to market cap ratio is less than 1%, we consider it as low liquidity and display threshold percent .
+  """
+  lowLiquidityThresholdPercent: Float
+
   """Current market cap details."""
   marketCap: Float
 
@@ -3857,6 +3862,11 @@ type TokenWithBalanceAccountFlat {
 
   """Token isPause property."""
   isPaused: Boolean!
+
+  """
+  If the liquidity to market cap ratio is less than 1%, we consider it as low liquidity and display threshold percent .
+  """
+  lowLiquidityThresholdPercent: Float
 
   """Current market cap details."""
   marketCap: Float
