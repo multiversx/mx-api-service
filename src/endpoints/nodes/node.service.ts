@@ -749,6 +749,7 @@ export class NodeService {
         name: identityInfo?.name,
         description: identityInfo?.description,
         avatar: identityInfo?.avatar,
+        distribution: identityInfo?.distribution,
         stake: node.stake || '0',
         owner: node.owner,
         auctionTopUp: auctionData.auctionTopUp || '0',

@@ -29,6 +29,9 @@ export class NodeAuction {
   @ApiProperty({ type: String })
   owner: string = '';
 
+  @ApiProperty()
+  distribution?: { [index: string]: number | undefined } = {};
+
   @ApiProperty({ type: String })
   auctionTopUp: string = '';
 
