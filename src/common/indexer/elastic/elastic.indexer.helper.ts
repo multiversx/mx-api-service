@@ -567,6 +567,15 @@ export class ElasticIndexerHelper {
   public applyGenericArrayFilter(elasticQuery: ElasticQuery, fields: string[], values: string[]) {
     const conditions: any[] = [];
 
+    for (const value of values) {
+      fields.forEach(field => {
+        conditions.push(QueryType.Match(field, value));
+      });
+    }
+
+    return elasticQuery.withMustCondition(QueryType.Should(conditions));
+  }
+
   public builResultsFilterQuery(filter: SmartContractResultFilter): ElasticQuery {
     let elasticQuery = ElasticQuery.create();
 
@@ -590,23 +599,11 @@ export class ElasticIndexerHelper {
       if (filter.functions.length === 1 && filter.functions[0] === '') {
         elasticQuery = elasticQuery.withMustNotExistCondition('function');
       } else {
-        elasticQuery = this.applyFunctionFilter(elasticQuery, filter.functions);
+        elasticQuery = this.applyGenericArrayFilter(elasticQuery, ['function', 'operation'], filter.functions);
       }
     }
 
     return elasticQuery;
   }
 
-
-  public applyFunctionFilter(elasticQuery: ElasticQuery, functions: string[]) {
-    const functionConditions = [];
-
-    for (const value of values) {
-      fields.forEach(field => {
-        conditions.push(QueryType.Match(field, value));
-      });
-    }
-
-    return elasticQuery.withMustCondition(QueryType.Should(conditions));
-  }
 }
