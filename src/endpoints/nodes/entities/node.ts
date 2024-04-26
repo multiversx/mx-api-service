@@ -124,7 +124,7 @@ export class Node {
 
   @Field(() => Boolean, { description: "Auction selected for the given node.", nullable: true })
   @ApiProperty({ type: Boolean, nullable: true })
-  auctionSelected: boolean | undefined = undefined;
+  auctionQualified: boolean | undefined = undefined;
 
   @Field(() => Boolean, { description: "Full history details for the given node.", nullable: true })
   @ApiProperty({ type: Boolean, nullable: true })
@@ -137,6 +137,10 @@ export class Node {
   @Field(() => Number, { description: "Remaining UnBond Period for node with status leaving.", nullable: true })
   @ApiProperty({ type: Number, example: 10 })
   remainingUnBondPeriod: number | undefined = undefined;
+
+  @Field(() => Boolean, { description: "Nodes in auction danger zone.", nullable: true })
+  @ApiProperty({ type: Boolean, example: false })
+  isInDangerZone: boolean | undefined = undefined;
 
   @Field(() => Number, { description: "Number of epochs left for a node in waiting state.", nullable: true })
   @ApiProperty({ type: Number, example: 15 })

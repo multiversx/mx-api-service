@@ -58,15 +58,6 @@ describe('MexController', () => {
 
       expect(mexEconomicsServiceMocks.getMexEconomics).toHaveBeenCalled();
     });
-
-    it('should return mex economics details', async () => {
-      mexEconomicsServiceMocks.getMexEconomics.mockReturnValue({});
-      await request(app.getHttpServer())
-        .get(`/mex-economics`)
-        .expect(200);
-
-      expect(mexEconomicsServiceMocks.getMexEconomics).toHaveBeenCalled();
-    });
   });
 
   describe('GET /mex/pairs', () => {

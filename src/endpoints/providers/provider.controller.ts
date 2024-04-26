@@ -19,6 +19,7 @@ export class ProviderController {
   @ApiQuery({ name: 'owner', description: 'Search by owner', required: false })
   @ApiQuery({ name: 'providers', description: 'Search by multiple providers address', required: false })
   @ApiQuery({ name: 'withIdentityInfo', description: 'Returns identity data for providers', required: false })
+  @ApiQuery({ name: 'withLatestInfo', description: 'Returns providers details with latest info', required: false })
   async getProviders(
     @Query('identity') identity?: string,
     @Query('owner', ParseAddressPipe) owner?: string,

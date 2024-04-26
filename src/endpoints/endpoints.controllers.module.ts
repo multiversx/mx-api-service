@@ -21,7 +21,7 @@ import { TagController } from "./nfttags/tag.controller";
 import { NodeController } from "./nodes/node.controller";
 import { ProcessNftsPublicController } from "./process-nfts/process.nfts.public.controller";
 import { ProviderController } from "./providers/provider.controller";
-import { ProxyController } from "./proxy/proxy.controller";
+import { GatewayProxyController } from "./proxy/gateway.proxy.controller";
 import { ProxyModule } from "./proxy/proxy.module";
 import { RoundController } from "./rounds/round.controller";
 import { SmartContractResultController } from "./sc-results/scresult.controller";
@@ -43,7 +43,7 @@ export class EndpointsControllersModule {
     const controllers: Type<any>[] = [
       AccountController, BlockController, CollectionController, DelegationController, DelegationLegacyController, IdentitiesController,
       KeysController, MiniBlockController, NetworkController, NftController, TagController, NodeController,
-      ProviderController, ProxyController, RoundController, SmartContractResultController, ShardController, StakeController, StakeController,
+      ProviderController, GatewayProxyController, RoundController, SmartContractResultController, ShardController, StakeController, StakeController,
       TokenController, TransactionController, UsernameController, VmQueryController, WaitingListController,
       HealthCheckController, DappConfigController, WebsocketController, TransferController,
       ProcessNftsPublicController, TransactionsBatchController,

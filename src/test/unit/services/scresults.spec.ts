@@ -3,6 +3,7 @@ import { AssetsService } from "src/common/assets/assets.service";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { SmartContractResult } from "src/endpoints/sc-results/entities/smart.contract.result";
+import { SmartContractResultFilter } from "src/endpoints/sc-results/entities/smart.contract.result.filter";
 import { SmartContractResultService } from "src/endpoints/sc-results/scresult.service";
 import { TransactionActionService } from "src/endpoints/transactions/transaction-action/transaction.action.service";
 
@@ -66,7 +67,7 @@ describe('TagService', () => {
     it('should return total smart contracts count', async () => {
       jest.spyOn(indexerService, 'getScResultsCount').mockResolvedValue(10000);
 
-      const result = await service.getScResultsCount();
+      const result = await service.getScResultsCount(new SmartContractResultFilter);
 
       expect(result).toStrictEqual(10000);
       expect(indexerService.getScResultsCount).toHaveBeenCalledTimes(1);

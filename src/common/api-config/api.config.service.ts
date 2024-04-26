@@ -104,6 +104,15 @@ export class ApiConfigService {
     return this.configService.get<string>('contracts.staking');
   }
 
+  getStakingV4ActivationEpoch(): number {
+    const activationEpoch = this.configService.get<number>('features.stakingV4.activationEpoch');
+    if (activationEpoch === undefined) {
+      throw new Error('No stakingV4 activation epoch present');
+    }
+
+    return activationEpoch;
+  }
+
   getDelegationContractAddress(): string | undefined {
     return this.configService.get<string>('contracts.delegation');
   }
@@ -286,6 +295,10 @@ export class ApiConfigService {
 
   getIsElasticUpdaterCronActive(): boolean {
     return this.configService.get<boolean>('cron.elasticUpdater') ?? false;
+  }
+
+  getIsNftScamInfoEnabled(): boolean {
+    return this.configService.get<boolean>('features.nftScamInfo.enabled') ?? false;
   }
 
   getIsQueueWorkerCronActive(): boolean {

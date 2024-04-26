@@ -46,10 +46,19 @@ export class GatewayService {
     private readonly apiService: ApiService
   ) { }
 
+  async getVersion(): Promise<string | undefined> {
+    const result = await this.get('about', GatewayComponentRequest.about);
+
+    if (result && result.appVersion && result.appVersion !== "undefined") {
+      return result.appVersion;
+    }
+
+    return undefined;
+  }
+
   async getValidatorAuctions(): Promise<Auction[]> {
     const result = await this.get('validator/auction', GatewayComponentRequest.validatorAuction);
-
-    return result.auction;
+    return result.auctionList;
   }
 
   async getNetworkStatus(metaChainShardId: number | string): Promise<NetworkStatus> {

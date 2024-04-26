@@ -11,12 +11,13 @@ import { CacheService, NoCache } from "@multiversx/sdk-nestjs-cache";
 import { OriginLogger } from "@multiversx/sdk-nestjs-common";
 import { DeepHistoryInterceptor } from "src/interceptors/deep-history.interceptor";
 import { DisableFieldsInterceptorOnController } from "@multiversx/sdk-nestjs-http";
+
 @Controller()
 @ApiTags('proxy')
 @ApiExcludeController()
 @DisableFieldsInterceptorOnController()
-export class ProxyController {
-  private readonly logger = new OriginLogger(ProxyController.name);
+export class GatewayProxyController {
+  private readonly logger = new OriginLogger(GatewayProxyController.name);
 
   constructor(
     private readonly gatewayService: GatewayService,
@@ -261,6 +262,25 @@ export class ProxyController {
       );
 
       res.type('application/json').send(validatorStatistics);
+    } catch (error: any) {
+      throw new BadRequestException(error.response.data);
+    }
+  }
+
+  @Get('/validator/auction')
+  @NoCache()
+  async getValidatorAuction(@Res() res: Response) {
+    try {
+      const validatorAuction = await this.cachingService.getOrSet(
+        'validatorAuction',
+        async () => {
+          const result = await this.gatewayService.getRaw('validator/auction', GatewayComponentRequest.validatorAuction);
+          return result.data;
+        },
+        Constants.oneMinute() * 2,
+      );
+
+      res.type('application/json').send(validatorAuction);
     } catch (error: any) {
       throw new BadRequestException(error.response.data);
     }

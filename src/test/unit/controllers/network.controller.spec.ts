@@ -58,7 +58,6 @@ describe("NetworkController", () => {
         topUpApr: 0.052561,
         baseApr: 0.104972,
         tokenMarketCap: 552829990,
-        minimumAuctionTopUp: undefined,
       };
       networkServiceMocks.getEconomics.mockResolvedValue(mockEconomics);
 
@@ -99,6 +98,8 @@ describe("NetworkController", () => {
         network: "mainnet",
         cluster: "mainnet-aws-fra",
         version: "v1.3.0-hotfix2-next",
+        indexerVersion: "v1.4.19",
+        gatewayVersion: "v1.1.44-0-g5282fa5",
         scamEngineVersion: "1.0.0",
         features: {
           updateCollectionExtraDetails: true,

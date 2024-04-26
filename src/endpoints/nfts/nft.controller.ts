@@ -1,6 +1,6 @@
 import { NftSupply } from './entities/nft.supply';
 import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, NotFoundException, Param, Query, Res, Response } from "@nestjs/common";
-import { ApiExcludeEndpoint, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
+import { ApiExcludeEndpoint, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { NftMediaService } from "src/queue.worker/nft.worker/queue/job-services/media/nft.media.service";
 import { Nft } from "./entities/nft";
 import { NftFilter } from "./entities/nft.filter";
@@ -17,6 +17,8 @@ import { TransactionQueryOptions } from '../transactions/entities/transactions.q
 import { TransactionService } from '../transactions/transaction.service';
 import { TransactionFilter } from '../transactions/entities/transaction.filter';
 import { Transaction } from '../transactions/entities/transaction';
+import { ScamType } from 'src/common/entities/scam-type.enum';
+import { TransferService } from '../transfers/transfer.service';
 
 @Controller()
 @ApiTags('nfts')
@@ -25,6 +27,7 @@ export class NftController {
     private readonly nftService: NftService,
     private readonly nftMediaService: NftMediaService,
     private readonly transactionService: TransactionService,
+    private readonly transferService: TransferService,
   ) { }
 
   @Get("/nfts")
@@ -44,13 +47,13 @@ export class NftController {
   @ApiQuery({ name: 'isWhitelistedStorage', description: 'Return all NFTs that are whitelisted in storage', required: false, type: Boolean })
   @ApiQuery({ name: 'hasUris', description: 'Return all NFTs that have one or more uris', required: false, type: Boolean })
   @ApiQuery({ name: 'isNsfw', description: 'Filter by NSFW status', required: false, type: Boolean })
+  @ApiQuery({ name: 'isScam', description: 'Filter by scam status', required: false, type: Boolean })
+  @ApiQuery({ name: 'scamType', description: 'Filter by type (scam/potentialScam)', required: false })
   @ApiQuery({ name: 'traits', description: 'Filter NFTs by traits. Key-value format (<key1>:<value1>;<key2>:<value2>)', required: false, type: Boolean })
   @ApiQuery({ name: 'before', description: 'Return all NFTs before given timestamp', required: false, type: Number })
   @ApiQuery({ name: 'after', description: 'Return all NFTs after given timestamp', required: false, type: Number })
   @ApiQuery({ name: 'withOwner', description: 'Return owner where type = NonFungibleESDT', required: false, type: Boolean })
   @ApiQuery({ name: 'withSupply', description: 'Return supply where type = SemiFungibleESDT', required: false, type: Boolean })
-  @ApiQuery({ name: 'withScamInfo', required: false, type: Boolean })
-  @ApiQuery({ name: 'computeScamInfo', required: false, type: Boolean })
   async getNfts(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
@@ -65,20 +68,35 @@ export class NftController {
     @Query('isWhitelistedStorage', new ParseBoolPipe) isWhitelistedStorage?: boolean,
     @Query('hasUris', new ParseBoolPipe) hasUris?: boolean,
     @Query('isNsfw', new ParseBoolPipe) isNsfw?: boolean,
+    @Query('isScam', new ParseBoolPipe) isScam?: boolean,
+    @Query('scamType', new ParseEnumPipe(ScamType)) scamType?: ScamType,
     @Query('traits', new ParseRecordPipe) traits?: Record<string, string>,
     @Query('before', new ParseIntPipe) before?: number,
     @Query('after', new ParseIntPipe) after?: number,
     @Query('withOwner', new ParseBoolPipe) withOwner?: boolean,
     @Query('withSupply', new ParseBoolPipe) withSupply?: boolean,
-    @Query('withScamInfo', new ParseBoolPipe) withScamInfo?: boolean,
-    @Query('computeScamInfo', new ParseBoolPipe) computeScamInfo?: boolean,
   ): Promise<Nft[]> {
-    const options = NftQueryOptions.enforceScamInfoFlag(size, new NftQueryOptions({ withOwner, withSupply, withScamInfo, computeScamInfo }));
-
     return await this.nftService.getNfts(
       new QueryPagination({ from, size }),
-      new NftFilter({ search, identifiers, type, collection, collections, name, tags, creator, hasUris, isWhitelistedStorage, isNsfw, traits, before, after }),
-      options
+      new NftFilter({
+        search,
+        identifiers,
+        type,
+        collection,
+        collections,
+        name,
+        tags,
+        creator,
+        hasUris,
+        isWhitelistedStorage,
+        isNsfw,
+        isScam,
+        scamType,
+        traits,
+        before,
+        after,
+      }),
+      new NftQueryOptions({ withOwner, withSupply }),
     );
   }
 
@@ -99,6 +117,8 @@ export class NftController {
   @ApiQuery({ name: 'traits', description: 'Filter NFTs by traits. Key-value format (<key1>:<value1>;<key2>:<value2>)', required: false, type: Boolean })
   @ApiQuery({ name: 'before', description: 'Return all NFTs before given timestamp', required: false, type: Number })
   @ApiQuery({ name: 'after', description: 'Return all NFTs after given timestamp', required: false, type: Number })
+  @ApiQuery({ name: 'isScam', description: 'Filter by scam status', required: false, type: Boolean })
+  @ApiQuery({ name: 'scamType', description: 'Filter by type (scam/potentialScam)', required: false })
   async getNftCount(
     @Query('search') search?: string,
     @Query('identifiers', ParseNftArrayPipe) identifiers?: string[],
@@ -114,8 +134,28 @@ export class NftController {
     @Query('traits', new ParseRecordPipe) traits?: Record<string, string>,
     @Query('before', new ParseIntPipe) before?: number,
     @Query('after', new ParseIntPipe) after?: number,
+    @Query('isScam', new ParseBoolPipe) isScam?: boolean,
+    @Query('scamType', new ParseEnumPipe(ScamType)) scamType?: ScamType,
   ): Promise<number> {
-    return await this.nftService.getNftCount(new NftFilter({ search, identifiers, type, collection, collections, name, tags, creator, isWhitelistedStorage, hasUris, isNsfw, traits, before, after }));
+    return await this.nftService.getNftCount(
+      new NftFilter({
+        search,
+        identifiers,
+        type,
+        collection,
+        collections,
+        name,
+        tags,
+        creator,
+        isWhitelistedStorage,
+        hasUris,
+        isNsfw,
+        traits,
+        before,
+        after,
+        isScam,
+        scamType,
+      }));
   }
 
   @Get("/nfts/c")
@@ -135,8 +175,10 @@ export class NftController {
     @Query('traits', new ParseRecordPipe) traits?: Record<string, string>,
     @Query('before', new ParseIntPipe) before?: number,
     @Query('after', new ParseIntPipe) after?: number,
+    @Query('isScam', new ParseBoolPipe) isScam?: boolean,
+    @Query('scamType', new ParseEnumPipe(ScamType)) scamType?: ScamType,
   ): Promise<number> {
-    return await this.nftService.getNftCount(new NftFilter({ search, identifiers, type, collection, collections, name, tags, creator, isWhitelistedStorage, hasUris, isNsfw, traits, before, after }));
+    return await this.nftService.getNftCount(new NftFilter({ search, identifiers, type, collection, collections, name, tags, creator, isWhitelistedStorage, hasUris, isNsfw, traits, before, after, isScam, scamType }));
   }
 
   @Get('/nfts/:identifier')
@@ -190,39 +232,6 @@ export class NftController {
     }
 
     return { supply: totalSupply };
-  }
-
-  @Get('/nfts/:identifier/owners')
-  @ApiOperation({ deprecated: true })
-  @ApiResponse({ status: 200, description: 'Non-fungible / semi-fungible token owners', type: NftOwner })
-  @ApiResponse({ status: 404, description: 'Token not found' })
-  @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
-  @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
-  async getNftOwners(
-    @Param('identifier', ParseNftPipe) identifier: string,
-    @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
-    @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
-  ): Promise<NftOwner[]> {
-    const owners = await this.nftService.getNftOwners(identifier, new QueryPagination({ from, size }));
-    if (owners === undefined) {
-      throw new HttpException('NFT not found', HttpStatus.NOT_FOUND);
-    }
-
-    return owners;
-  }
-
-  @Get('/nfts/:identifier/owners/count')
-  @ApiOperation({ deprecated: true })
-  @ApiResponse({ status: 200, description: 'Non-fungible / semi-fungible token owners count', type: Number })
-  async getNftOwnersCount(
-    @Param('identifier', ParseNftPipe) identifier: string
-  ): Promise<number> {
-    const ownersCount = await this.nftService.getNftOwnersCount(identifier);
-    if (ownersCount === undefined) {
-      throw new HttpException('NFT not found', HttpStatus.NOT_FOUND);
-    }
-
-    return ownersCount;
   }
 
   @Get('/nfts/:identifier/accounts')
@@ -346,6 +355,108 @@ export class NftController {
   ) {
 
     return await this.transactionService.getTransactionCount(new TransactionFilter({
+      sender,
+      receivers: receiver,
+      token: identifier,
+      senderShard,
+      receiverShard,
+      miniBlockHash,
+      hashes,
+      status,
+      before,
+      after,
+    }));
+  }
+
+  @Get("/nfts/:identifier/transfers")
+  @ApiOperation({ summary: 'NFT transfers', description: `Returns a list of transfers for a NonFungibleESDT or SemiFungibleESDT.` })
+  @ApplyComplexity({ target: TransactionDetailed })
+  @ApiOkResponse({ type: [Transaction] })
+  @ApiNotFoundResponse({ description: 'Token not found' })
+  @ApiQuery({ name: 'sender', description: 'Address of the transfer sender', required: false })
+  @ApiQuery({ name: 'receiver', description: 'Search by multiple receiver addresses, comma-separated', required: false })
+  @ApiQuery({ name: 'senderShard', description: 'Id of the shard the sender address belongs to', required: false })
+  @ApiQuery({ name: 'receiverShard', description: 'Id of the shard the receiver address belongs to', required: false })
+  @ApiQuery({ name: 'miniBlockHash', description: 'Filter by miniblock hash', required: false })
+  @ApiQuery({ name: 'hashes', description: 'Filter by a comma-separated list of transfer hashes', required: false })
+  @ApiQuery({ name: 'status', description: 'Status of the transfer (success / pending / invalid / fail)', required: false, enum: TransactionStatus })
+  @ApiQuery({ name: 'function', description: 'Filter transfers by function name', required: false })
+  @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
+  @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
+  @ApiQuery({ name: 'order', description: 'Sort order (asc/desc)', required: false, enum: SortOrder })
+  @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
+  @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
+  @ApiQuery({ name: 'withScResults', description: 'Return scResults for transfers', required: false, type: Boolean })
+  @ApiQuery({ name: 'withOperations', description: 'Return operations for transfers', required: false, type: Boolean })
+  @ApiQuery({ name: 'withLogs', description: 'Return logs for transfers', required: false, type: Boolean })
+  @ApiQuery({ name: 'withScamInfo', description: 'Returns scam information', required: false, type: Boolean })
+  @ApiQuery({ name: 'withUsername', description: 'Integrates username in assets for all addresses present in the transfers', required: false, type: Boolean })
+  async getNftTransfers(
+    @Param('identifier', ParseNftPipe) identifier: string,
+    @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
+    @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
+    @Query('sender', ParseAddressPipe) sender?: string,
+    @Query('receiver', ParseAddressArrayPipe) receiver?: string[],
+    @Query('senderShard', ParseIntPipe) senderShard?: number,
+    @Query('receiverShard', ParseIntPipe) receiverShard?: number,
+    @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash?: string,
+    @Query('hashes', ParseArrayPipe) hashes?: string[],
+    @Query('status', new ParseEnumPipe(TransactionStatus)) status?: TransactionStatus,
+    @Query('function', ParseArrayPipe) functions?: string[],
+    @Query('before', ParseIntPipe) before?: number,
+    @Query('after', ParseIntPipe) after?: number,
+    @Query('order', new ParseEnumPipe(SortOrder)) order?: SortOrder,
+    @Query('withScResults', new ParseBoolPipe) withScResults?: boolean,
+    @Query('withOperations', new ParseBoolPipe) withOperations?: boolean,
+    @Query('withLogs', new ParseBoolPipe) withLogs?: boolean,
+    @Query('withScamInfo', new ParseBoolPipe) withScamInfo?: boolean,
+    @Query('withUsername', new ParseBoolPipe) withUsername?: boolean,
+  ) {
+    const options = TransactionQueryOptions.applyDefaultOptions(size, { withScResults, withOperations, withLogs, withScamInfo, withUsername });
+
+    return await this.transferService.getTransfers(new TransactionFilter({
+      sender,
+      receivers: receiver,
+      token: identifier,
+      functions,
+      senderShard,
+      receiverShard,
+      miniBlockHash,
+      hashes,
+      status,
+      before,
+      after,
+      order,
+    }), new QueryPagination({ from, size }), options);
+  }
+
+  @Get("/nfts/:identifier/transfers/count")
+  @ApiOperation({ summary: 'NFT transfers count', description: 'Returns the total number of transfers for a specific NonFungibleESDT or SemiFungibleESDT' })
+  @ApiOkResponse({ type: Number })
+  @ApiNotFoundResponse({ description: 'Token not found' })
+  @ApiQuery({ name: 'sender', description: 'Address of the transfers sender', required: false })
+  @ApiQuery({ name: 'receiver', description: 'Search by multiple receiver addresses, comma-separated', required: false })
+  @ApiQuery({ name: 'senderShard', description: 'Id of the shard the sender address belongs to', required: false })
+  @ApiQuery({ name: 'receiverShard', description: 'Id of the shard the receiver address belongs to', required: false })
+  @ApiQuery({ name: 'miniBlockHash', description: 'Filter by miniblock hash', required: false })
+  @ApiQuery({ name: 'hashes', description: 'Filter by a comma-separated list of transfers hashes', required: false })
+  @ApiQuery({ name: 'status', description: 'Status of the transfers (success / pending / invalid / fail)', required: false, enum: TransactionStatus })
+  @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
+  @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
+  async getNftTransfersCount(
+    @Param('identifier', ParseNftPipe) identifier: string,
+    @Query('sender', ParseAddressPipe) sender?: string,
+    @Query('receiver', ParseAddressArrayPipe) receiver?: string[],
+    @Query('senderShard', ParseIntPipe) senderShard?: number,
+    @Query('receiverShard', ParseIntPipe) receiverShard?: number,
+    @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash?: string,
+    @Query('hashes', ParseArrayPipe) hashes?: string[],
+    @Query('status', new ParseEnumPipe(TransactionStatus)) status?: TransactionStatus,
+    @Query('before', ParseIntPipe) before?: number,
+    @Query('after', ParseIntPipe) after?: number,
+  ) {
+
+    return await this.transferService.getTransfersCount(new TransactionFilter({
       sender,
       receivers: receiver,
       token: identifier,

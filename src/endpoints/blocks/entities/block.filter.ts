@@ -1,3 +1,5 @@
+import { SortOrder } from "src/common/entities/sort.order";
+
 export class BlockFilter {
   constructor(init?: Partial<BlockFilter>) {
     Object.assign(this, init);
@@ -9,4 +11,5 @@ export class BlockFilter {
   epoch?: number;
   nonce?: number;
   hashes?: string[];
+  order?: SortOrder;
 }

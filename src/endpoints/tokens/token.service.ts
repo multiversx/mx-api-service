@@ -718,8 +718,12 @@ export class TokenService {
   }
 
   async getAllTokensRaw(): Promise<TokenDetailed[]> {
+    this.logger.log(`Starting to fetch all tokens`);
+
     const tokensProperties = await this.esdtService.getAllFungibleTokenProperties();
     let tokens = tokensProperties.map(properties => ApiUtils.mergeObjects(new TokenDetailed(), properties));
+
+    this.logger.log(`Fetched ${tokens.length} fungible tokens`);
 
     for (const token of tokens) {
       const assets = await this.assetsService.getTokenAssets(token.identifier);
@@ -731,7 +735,11 @@ export class TokenService {
       token.type = TokenType.FungibleESDT;
     }
 
+    this.logger.log(`Starting to fetch all meta tokens`);
+
     const collections = await this.collectionService.getNftCollections(new QueryPagination({ from: 0, size: 10000 }), { type: [NftType.MetaESDT] });
+
+    this.logger.log(`Fetched ${collections.length} meta tokens`);
 
     for (const collection of collections) {
       tokens.push(new TokenDetailed({
@@ -751,11 +759,17 @@ export class TokenService {
       }));
     }
 
+    this.logger.log(`Starting to batch process tokens`);
     await this.batchProcessTokens(tokens);
+    this.logger.log(`Finished batch processing tokens`);
 
+    this.logger.log(`Applying mex liquidity`);
     await this.applyMexLiquidity(tokens.filter(x => x.type !== TokenType.MetaESDT));
+    this.logger.log(`Finished applying mex liquidity`);
     await this.applyMexPrices(tokens.filter(x => x.type !== TokenType.MetaESDT));
+    this.logger.log(`Finished applying mex prices`);
     await this.applyMexPairType(tokens.filter(x => x.type !== TokenType.MetaESDT));
+    this.logger.log(`Finished applying mex pair type`);
 
     await this.cachingService.batchApplyAll(
       tokens,
@@ -764,6 +778,7 @@ export class TokenService {
       (token, assets) => token.assets = assets,
       CacheInfo.EsdtAssets('').ttl,
     );
+    this.logger.log(`Finished applying assets`);
 
     for (const token of tokens) {
       if (token.assets?.priceSource?.type === TokenAssetsPriceSourceType.dataApi) {
@@ -778,6 +793,8 @@ export class TokenService {
         }
       }
     }
+
+    this.logger.log(`Finished applying supply`);
 
     tokens = tokens.sortedDescending(
       token => token.assets ? 1 : 0,
@@ -812,31 +829,45 @@ export class TokenService {
     await this.cachingService.batchApplyAll(
       tokens,
       token => CacheInfo.TokenTransactions(token.identifier).key,
-      async token => await this.getTransactionCount(token),
-      (token, transactions) => token.transactions = transactions,
+      async token => await this.getTotalTransactions(token),
+      (token, result) => {
+        token.transactions = result?.count;
+        token.transactionsLastUpdatedAt = result?.lastUpdatedAt;
+      },
       CacheInfo.TokenTransactions('').ttl,
+      10,
     );
 
     await this.cachingService.batchApplyAll(
       tokens,
       token => CacheInfo.TokenAccounts(token.identifier).key,
-      async token => await this.getAccountsCount(token),
-      (token, accounts) => token.accounts = accounts,
+      async token => await this.getTotalAccounts(token),
+      (token, result) => {
+        token.accounts = result?.count;
+        token.accountsLastUpdatedAt = result?.lastUpdatedAt;
+      },
       CacheInfo.TokenAccounts('').ttl,
+      10,
     );
 
     await this.cachingService.batchApplyAll(
       tokens,
       token => CacheInfo.TokenTransfers(token.identifier).key,
-      async token => await this.getTransfersCount(token),
-      (token, transfersCount) => token.transfersCount = transfersCount,
+      async token => await this.getTotalTransfers(token),
+      (token, result) => {
+        token.transfers = result?.count;
+        token.transfersLastUpdatedAt = result?.lastUpdatedAt;
+      },
       CacheInfo.TokenTransfers('').ttl,
+      10,
     );
   }
 
-  private async getTransactionCount(token: TokenDetailed): Promise<number | undefined> {
+  private async getTotalTransactions(token: TokenDetailed): Promise<{ count: number, lastUpdatedAt: number } | undefined> {
     try {
-      return await this.transactionService.getTransactionCount(new TransactionFilter({ tokens: [token.identifier, ...token.assets?.extraTokens ?? []] }));
+      const count = await this.transactionService.getTransactionCount(new TransactionFilter({ tokens: [token.identifier, ...token.assets?.extraTokens ?? []] }));
+
+      return { count, lastUpdatedAt: new Date().getTimeInSeconds() };
     } catch (error) {
       this.logger.error(`An unhandled error occurred when getting transaction count for token '${token.identifier}'`);
       this.logger.error(error);
@@ -844,10 +875,12 @@ export class TokenService {
     }
   }
 
-  private async getTransfersCount(token: TokenDetailed): Promise<number | undefined> {
+  private async getTotalTransfers(token: TokenDetailed): Promise<{ count: number, lastUpdatedAt: number } | undefined> {
     try {
       const filter = new TransactionFilter({ tokens: [token.identifier, ...token.assets?.extraTokens ?? []] });
-      return await this.transferService.getTransfersCount(filter);
+      const count = await this.transferService.getTransfersCount(filter);
+
+      return { count, lastUpdatedAt: new Date().getTimeInSeconds() };
     } catch (error) {
       this.logger.error(`An unhandled error occurred when getting transfers count for token '${token.identifier}'`);
       this.logger.error(error);
@@ -855,13 +888,17 @@ export class TokenService {
     }
   }
 
-  private async getAccountsCount(token: TokenDetailed): Promise<number | undefined> {
+  private async getTotalAccounts(token: TokenDetailed): Promise<{ count: number, lastUpdatedAt: number } | undefined> {
     let accounts = await this.cachingService.getRemote<number>(CacheInfo.TokenAccountsExtra(token.identifier).key);
     if (!accounts) {
       accounts = await this.getEsdtAccountsCount(token.identifier);
     }
 
-    return accounts;
+    if (!accounts) {
+      return undefined;
+    }
+
+    return { count: accounts, lastUpdatedAt: new Date().getTimeInSeconds() };
   }
 
   private async getEsdtAccountsCount(identifier: string): Promise<number | undefined> {
@@ -893,6 +930,8 @@ export class TokenService {
   }
 
   private async applyMexPrices(tokens: TokenDetailed[]): Promise<void> {
+    const LOW_LIQUIDITY_THRESHOLD = 0.005;
+
     try {
       const indexedTokens = await this.mexTokenService.getMexPricesRaw();
       for (const token of tokens) {
@@ -908,7 +947,7 @@ export class TokenService {
             token.price = price.price;
             token.marketCap = price.price * NumberUtils.denominateString(supply.circulatingSupply, token.decimals);
 
-            if (token.totalLiquidity && token.marketCap && token.totalLiquidity / token.marketCap < 0.01) {
+            if (token.totalLiquidity && token.marketCap && token.totalLiquidity / token.marketCap < LOW_LIQUIDITY_THRESHOLD) {
               token.isLowLiquidity = true;
             }
           }

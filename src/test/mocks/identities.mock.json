@@ -1,0 +1,1618 @@
+[
+    {
+        "identity": "multiversx",
+        "locked": "3034999999999999983222645",
+        "distribution": {
+            "direct": 1
+        },
+        "avatar": "https://raw.githubusercontent.com/multiversx/mx-assets/master/identities/multiversx/logo.png",
+        "name": "MultiversX Community Delegation 🎖",
+        "website": "http://multiversx.com",
+        "score": 666.0000000000024,
+        "validators": 555,
+        "stake": "1387500000000000000000000",
+        "topUp": "1647499999999999983222645",
+        "stakePercent": 17.82,
+        "apr": 7.67,
+        "rank": 1
+    },
+    {
+        "identity": "meria",
+        "locked": "876851146681104087281152",
+        "distribution": {
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq8hlllls7a6h85": 1
+        },
+        "avatar": "https://raw.githubusercontent.com/multiversx/mx-assets/master/identities/meria/logo.png",
+        "description": "French Crypto Investment Provider\nwww.meria.com",
+        "name": "Meria",
+        "website": "http://meria.com",
+        "location": "France",
+        "score": 268.7999999999989,
+        "validators": 224,
+        "stake": "560000000000000000000000",
+        "topUp": "316851146681104087281152",
+        "providers": [
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq8hlllls7a6h85"
+        ],
+        "stakePercent": 5.15,
+        "apr": 8.62,
+        "rank": 2
+    },
+    {
+        "identity": "stakingagency",
+        "locked": "752930697648429940308144",
+        "distribution": {
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqhllllsajxzat": 1
+        },
+        "avatar": "https://raw.githubusercontent.com/multiversx/mx-assets/master/identities/stakingagency/logo.png",
+        "description": "The smart way to manage your stakes",
+        "name": "Staking Agency",
+        "website": "https://staking.agency",
+        "twitter": "staking_agency",
+        "location": "Craiova",
+        "score": 219.59999999999934,
+        "validators": 183,
+        "stake": "457500000000000000000000",
+        "topUp": "295430697648429940308144",
+        "providers": [
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqhllllsajxzat"
+        ],
+        "stakePercent": 4.42,
+        "apr": 8.46,
+        "rank": 3
+    },
+    {
+        "identity": "istariv",
+        "locked": "760623967706268005898222",
+        "distribution": {
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqrhlllls062tu4": 1
+        },
+        "avatar": "https://raw.githubusercontent.com/multiversx/mx-assets/master/identities/istariv/logo.png",
+        "description": "Next generation Blockchain projects https://t.me/iVerse_Vision_Official",
+        "name": "iVerse Vision",
+        "website": "https://iverse.vision",
+        "twitter": "iVerseVision",
+        "location": "Switzerland",
+        "score": 164.39999999999986,
+        "validators": 137,
+        "stake": "342500000000000000000000",
+        "topUp": "418123967706268005898222",
+        "providers": [
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqrhlllls062tu4"
+        ],
+        "stakePercent": 4.46,
+        "apr": 7.64,
+        "rank": 4
+    },
+    {
+        "identity": "partnerstaking",
+        "locked": "408429855887321356229680",
+        "distribution": {
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq9hllllsz2je7q": 1
+        },
+        "avatar": "https://raw.githubusercontent.com/multiversx/mx-assets/master/identities/partnerstaking/logo.png",
+        "description": "Easiest way to manage your stake using the Partner Staking mobile app: https://partnerstaking.com/mobile",
+        "name": "PartnerStaking",
+        "website": "https://partnerstaking.com",
+        "twitter": "PartnerStaking",
+        "score": 127.20000000000022,
+        "validators": 106,
+        "stake": "265000000000000000000000",
+        "topUp": "143429855887321356229680",
+        "providers": [
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq9hllllsz2je7q"
+        ],
+        "stakePercent": 2.39,
+        "apr": 8.67,
+        "rank": 5
+    },
+    {
+        "identity": "thepalmtreenw",
+        "locked": "418199224393710113965644",
+        "distribution": {
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqy8lllls62y8s5": 1
+        },
+        "avatar": "https://raw.githubusercontent.com/multiversx/mx-assets/master/identities/thepalmtreenw/logo.png",
+        "description": "MultiversX Stake Operator, we work with the more secure datacenters to help you get always the max. rewards of your eGLD staked.",
+        "name": "The Palm Tree Network",
+        "website": "https://thepalmtree.network/",
+        "twitter": "thepalmtreenw",
+        "location": "Spain",
+        "score": 91.20000000000013,
+        "validators": 76,
+        "stake": "190000000000000000000000",
+        "topUp": "228199224393710113965644",
+        "providers": [
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqy8lllls62y8s5"
+        ],
+        "stakePercent": 2.45,
+        "apr": 7.66,
+        "rank": 6
+    },
+    {
+        "identity": "truststaking",
+        "locked": "426064221292766875570633",
+        "distribution": {
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzhllllsp9wvyl": 1
+        },
+        "avatar": "https://raw.githubusercontent.com/multiversx/mx-assets/master/identities/truststaking/logo.png",
+        "description": "We are running nodes for PoS on @multiversx ",
+        "name": "Trust Staking",
+        "website": "https://truststaking.com",
+        "twitter": "truststaking",
+        "location": "Romania",
+        "score": 84.00000000000011,
+        "validators": 70,
+        "stake": "175000000000000000000000",
+        "topUp": "251064221292766875570633",
+        "providers": [
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzhllllsp9wvyl"
+        ],
+        "stakePercent": 2.5,
+        "apr": 7.43,
+        "rank": 7
+    },
+    {
+        "identity": "primal-block-one",
+        "locked": "234999999999999999999968",
+        "distribution": {
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqx8llllsxavffq": 1
+        },
+        "avatar": "https://raw.githubusercontent.com/multiversx/mx-assets/master/identities/primal-block-one/logo.png",
+        "description": "We focus on technology-induced black swans and investing in and supporting the companies and founders that are creating them.\r\nMatrix",
+        "name": "Primal Block One",
+        "website": "https://primalblock.com/",
+        "twitter": "primalblock",
+        "score": 80.4000000000001,
+        "validators": 67,
+        "stake": "167500000000000000000000",
+        "topUp": "67499999999999999999968",
+        "providers": [
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqx8llllsxavffq"
+        ],
+        "stakePercent": 1.38,
+        "apr": 9,
+        "rank": 8
+    },
+    {
+        "identity": "everstake",
+        "locked": "233074787235328434003366",
+        "distribution": {
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq28llllsu54ydr": 1
+        },
+        "avatar": "https://raw.githubusercontent.com/multiversx/mx-assets/master/identities/everstake/logo.png",
+        "description": "Everstake is a responsible validator trusted by 625k+ users across 70+ blockchain networks.",
+        "name": "Everstake",
+        "website": "https://everstake.one",
+        "twitter": "everstake_pool",
+        "location": "Ukraine",
+        "score": 74.40000000000009,
+        "validators": 66,
+        "stake": "165000000000000000000000",
+        "topUp": "68074787235328434003366",
+        "providers": [
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq28llllsu54ydr"
+        ],
+        "stakePercent": 1.36,
+        "apr": 8.43,
+        "rank": 9
+    },
+    {
+        "identity": "unitedgroupcapital",
+        "locked": "210434476046011156209453",
+        "distribution": {
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllllls27850s": 1
+        },
+        "avatar": "https://raw.githubusercontent.com/multiversx/mx-assets/master/identities/unitedgroupcapital/logo.png",
+        "description": "UnitedGroupCapital provides Staking Services, Secured Network and the smart way to invest your EGLD !",
+        "name": "UnitedGroupCapital",
+        "website": "https://unitedgroup.capital/",
+        "twitter": "unitedstaking",
+        "score": 63.600000000000065,
+        "validators": 53,
+        "stake": "132500000000000000000000",
+        "topUp": "77934476046011156209453",
+        "providers": [
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllllls27850s"
+        ],
+        "stakePercent": 1.23,
+        "apr": 8.57,
+        "rank": 10
+    },
+    {
+        "identity": "procryptostaking",
+        "locked": "209480122153409642671900",
+        "distribution": {
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqxlllllsmehg53": 1
+        },
+        "avatar": "https://raw.githubusercontent.com/multiversx/mx-assets/master/identities/procryptostaking/logo.png",
+        "description": "🌍 Global distributed infrastructure 💨 High automatization & availability 📈 Redelegation activated 🔐 Sophisticated security concept 🤑 Nice APR 🇺🇸🇩🇪🇷🇴 ",
+        "name": "ProCrypto Distributed Staking",
+        "website": "https://pc.io",
+        "twitter": "ProStaking",
+        "score": 60.00000000000006,
+        "validators": 50,
+        "stake": "125000000000000000000000",
+        "topUp": "84480122153409642671900",
+        "providers": [
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqxlllllsmehg53"
+        ],
+        "stakePercent": 1.23,
+        "apr": 8.4,
+        "rank": 11
+    },
+    {
+        "identity": "cslabsio",
+        "locked": "265028204164244794973400",
+        "distribution": {
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqphllllsndz99p": 1
+        },
+        "avatar": "https://raw.githubusercontent.com/multiversx/mx-assets/master/identities/cslabsio/logo.png",
+        "description": "Secure staking, simplified.\nFor everyone.",
+        "name": "Chain State Labs",
+        "website": "http://cslabs.io",
+        "twitter": "https://twitter.com/chainstatelabs",
+        "score": 60.00000000000006,
+        "validators": 50,
+        "stake": "125000000000000000000000",
+        "topUp": "140028204164244794973400",
+        "providers": [
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqphllllsndz99p"
+        ],
+        "stakePercent": 1.55,
+        "apr": 7.75,
+        "rank": 12
+    },
+    {
+        "identity": "arcstake",
+        "locked": "294759882514488689869350",
+        "distribution": {
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqz8llllsh6u4jp": 1
+        },
+        "avatar": "https://raw.githubusercontent.com/multiversx/mx-assets/master/identities/arcstake/logo.png",
+        "description": "ARC Stake provides staking services for the most advanced blockchain in the world: MultiversX",
+        "name": "ARC Stake",
+        "website": "arcstake.com",
+        "twitter": "arcstake",
+        "location": "Sibiu, Romania",
+        "score": 58.40000000000004,
+        "validators": 50,
+        "stake": "125000000000000000000000",
+        "topUp": "169759882514488689869350",
+        "providers": [
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqz8llllsh6u4jp"
+        ],
+        "stakePercent": 1.73,
+        "apr": 6.45,
+        "rank": 13
+    },
+    {
+        "identity": "validblocks",
+        "locked": "316363761493511585599840",
+        "distribution": {
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq90llllslwfcr3": 0.96,
+            "direct": 0.04
+        },
+        "avatar": "https://raw.githubusercontent.com/multiversx/mx-assets/master/identities/validblocks/logo.png",
+        "description": "Valid Blocks helps you increase your cryptocurrency assets by participating in staking. \"Non-Custodial\" means you are always in control of your funds!",
+        "name": "Valid Blocks",
+        "website": "https://validblocks.com",
+        "twitter": "validblocks",
+        "location": "Romania",
+        "score": 55.200000000000045,
+        "validators": 46,
+        "stake": "115000000000000000000000",
+        "topUp": "201363761493511585599840",
+        "providers": [
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq90llllslwfcr3"
+        ],
+        "stakePercent": 1.85,
+        "apr": 7.19,
+        "rank": 14
+    },
+    {
+        "identity": "mgstaking",
+        "locked": "272715313186251705975892",
+        "distribution": {
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq9lllllsf3mp40": 1
+        },
+        "avatar": "https://raw.githubusercontent.com/multiversx/mx-assets/master/identities/mgstaking/logo.png",
+        "description": "Secure staking for a blockchain world!",
+        "name": "MGStaking",
+        "website": "https://MGStaking.com/",
+        "twitter": "mgstaking",
+        "location": "Romania",
+        "score": 55.200000000000045,
+        "validators": 46,
+        "stake": "115000000000000000000000",
+        "topUp": "157715313186251705975892",
+        "providers": [
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq9lllllsf3mp40"
+        ],
+        "stakePercent": 1.6,
+        "apr": 7.49,
+        "rank": 15
+    },
+    {
+        "identity": "heliosstaking",
+        "locked": "231586037257133580516310",
+        "distribution": {
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqx0llllsdx93z0": 1
+        },
+        "avatar": "https://raw.githubusercontent.com/multiversx/mx-assets/master/identities/heliosstaking/logo.png",
+        "description": "Professional Staking as a Service Provider",
+        "name": "Helios Staking ⚡ ",
+        "website": "https://heliosstaking.com",
+        "twitter": "heliosstaking",
+        "location": "Amsterdam, the Neterlands",
+        "score": 45.60000000000002,
+        "validators": 38,
+        "stake": "95000000000000000000000",
+        "topUp": "136586037257133580516310",
+        "providers": [
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqx0llllsdx93z0"
+        ],
+        "stakePercent": 1.36,
+        "apr": 7.43,
+        "rank": 16
+    },
+    {
+        "identity": "alchemiststakexyz",
+        "locked": "199782159863848858429574",
+        "distribution": {
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqfhllllscrt56r": 1
+        },
+        "avatar": "https://raw.githubusercontent.com/multiversx/mx-assets/master/identities/alchemiststakexyz/logo.png",
+        "description": "Alchemist Stake provides an enterprise-level PoS infrastructure that that aims to create a bridge between investors and the best blockchain-based projects.",
+        "name": "Alchemist Stake",
+        "website": "https://alchemiststake.xyz/",
+        "location": "Web3",
+        "score": 45.60000000000002,
+        "validators": 38,
+        "stake": "95000000000000000000000",
+        "topUp": "104782159863848858429574",
+        "providers": [
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqfhllllscrt56r"
+        ],
+        "stakePercent": 1.17,
+        "apr": 7.77,
+        "rank": 17
+    },
+    {
+        "identity": "xoxno",
+        "locked": "229299921830391787650600",
+        "distribution": {
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqg8llllsqra25h": 1
+        },
+        "avatar": "https://raw.githubusercontent.com/multiversx/mx-assets/master/identities/xoxno/logo.png",
+        "description": "The largest NFT Marketplace Aggregator on @multiversx",
+        "name": "XOXNO",
+        "website": "https://xoxno.com",
+        "twitter": "xoxnoNFTs",
+        "location": "Romania",
+        "score": 43.20000000000002,
+        "validators": 36,
+        "stake": "90000000000000000000000",
+        "topUp": "139299921830391787650600",
+        "providers": [
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqg8llllsqra25h"
+        ],
+        "stakePercent": 1.34,
+        "apr": 7.34,
+        "rank": 18
+    },
+    {
+        "identity": "middlestaking",
+        "locked": "126377192428787704857322",
+        "distribution": {
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqyhllllsv4k7x2": 1
+        },
+        "avatar": "https://raw.githubusercontent.com/multiversx/mx-assets/master/identities/middlestaking/logo.png",
+        "description": "Middle Staking",
+        "name": "Middle Staking",
+        "website": "https://www.middlestaking.fr/",
+        "twitter": "MiddleStaking",
+        "location": "France",
+        "score": 37.2,
+        "validators": 31,
+        "stake": "77500000000000000000000",
+        "topUp": "48877192428787704857322",
+        "providers": [
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqyhllllsv4k7x2"
+        ],
+        "stakePercent": 0.74,
+        "apr": 8.48,
+        "rank": 19
+    },
+    {
+        "identity": "binance_staking",
+        "locked": "956993961499995740632350",
+        "distribution": {
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqc0llllsayxegu": 1
+        },
+        "avatar": "https://raw.githubusercontent.com/multiversx/mx-assets/master/identities/binance_staking/logo.png",
+        "name": "Binance Staking",
+        "score": 36,
+        "validators": 30,
+        "stake": "75000000000000000000000",
+        "topUp": "881993961499995740632350",
+        "providers": [
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqc0llllsayxegu"
+        ],
+        "stakePercent": 5.62,
+        "apr": 5.7,
+        "rank": 20
+    },
+    {
+        "identity": "carpathianstake",
+        "locked": "119802181454836926170387",
+        "distribution": {
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqy0lllls33dlmm": 1
+        },
+        "avatar": "https://raw.githubusercontent.com/multiversx/mx-assets/master/identities/carpathianstake/logo.png",
+        "name": "Carpathian Stake",
+        "website": "http://carpathianstake.com",
+        "twitter": "https://twitter.com/carpathianstake",
+        "location": "Sibiu in the ♥ of the Carpathian mountains",
+        "score": 34.8,
+        "validators": 29,
+        "stake": "72500000000000000000000",
+        "topUp": "47302181454836926170387",
+        "providers": [
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqy0lllls33dlmm"
+        ],
+        "stakePercent": 0.7,
+        "apr": 8.44,
+        "rank": 21
+    },
+    {
+        "identity": "star_staking",
+        "locked": "130726452154605225782382",
+        "distribution": {
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqprhllllsj9265l": 1
+        },
+        "avatar": "https://raw.githubusercontent.com/multiversx/mx-assets/master/identities/star_staking/logo.png",
+        "name": "Star Staking",
+        "score": 32.39999999999999,
+        "validators": 27,
+        "stake": "67500000000000000000000",
+        "topUp": "63226452154605225782382",
+        "providers": [
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqprhllllsj9265l"
+        ],
+        "stakePercent": 0.76,
+        "apr": 7.98,
+        "rank": 22
+    },
+    {
+        "identity": "equinoxecapital",
+        "locked": "244985839247332057019925",
+        "distribution": {
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqh0lllls49nadp": 1
+        },
+        "avatar": "https://raw.githubusercontent.com/multiversx/mx-assets/master/identities/equinoxecapital/logo.png",
+        "description": "Staking company situated in Romania operating on MultiversX blockchain.",
+        "name": "Equinoxe Capital",
+        "location": "Romania",
+        "score": 29.99999999999999,
+        "validators": 25,
+        "stake": "62500000000000000000000",
+        "topUp": "182485839247332057019925",
+        "providers": [
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqh0lllls49nadp"
+        ],
+        "stakePercent": 1.43,
+        "apr": 6.62,
+        "rank": 23
+    },
+    {
+        "identity": "primal-block-two",
+        "locked": "82499999999999999999998",
+        "distribution": {
+            "direct": 1
+        },
+        "avatar": "https://raw.githubusercontent.com/multiversx/mx-assets/master/identities/primal-block-two/logo.png",
+        "description": "We focus on technology-induced black swans and investing in and supporting the companies and founders that are creating them.\r\nMatrix",
+        "name": "Primal Block Two",
+        "website": "https://primalblock.com/",
+        "twitter": "primalblock",
+        "score": 29.99999999999999,
+        "validators": 25,
+        "stake": "62500000000000000000000",
+        "topUp": "19999999999999999999998",
+        "stakePercent": 0.48,
+        "apr": 9.24,
+        "rank": 24
+    },
+    {
+        "identity": "star-stake",
+        "locked": "94000000000710314963664",
+        "distribution": {
+            "direct": 1
+        },
+        "avatar": "https://raw.githubusercontent.com/multiversx/mx-assets/master/identities/star-stake/logo.png",
+        "description": "Star Stake",
+        "name": "Star Stake",
+        "score": 28.79999999999999,
+        "validators": 24,
+        "stake": "60000000000000000000000",
+        "topUp": "34000000000710314963664",
+        "stakePercent": 0.55,
+        "apr": 8.61,
+        "rank": 25
+    },
+    {
+        "identity": "christstake",
+        "locked": "99013742772493184834256",
+        "distribution": {
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq98lllls54qqg7": 1
+        },
+        "avatar": "https://raw.githubusercontent.com/multiversx/mx-assets/master/identities/christstake/logo.png",
+        "description": "Jesus Christ is Lord and Savior for all Eternity. \"...whoever believes in Him shall not perish but have everlasting life\"",
+        "name": "Christstake",
+        "website": "https://christstake.com",
+        "location": "Batumi, Georgia",
+        "score": 28.79999999999999,
+        "validators": 24,
+        "stake": "60000000000000000000000",
+        "topUp": "39013742772493184834256",
+        "providers": [
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq98lllls54qqg7"
+        ],
+        "stakePercent": 0.58,
+        "apr": 8.45,
+        "rank": 26
+    },
+    {
+        "identity": "incalng",
+        "locked": "108974811572987705116320",
+        "distribution": {
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqd8llllslmf3hu": 0.7,
+            "direct": 0.3
+        },
+        "avatar": "https://raw.githubusercontent.com/multiversx/mx-assets/master/identities/incalng/logo.png",
+        "description": "Incal",
+        "name": "Incal (phase-4 ready ☑️)",
+        "website": "incal.noweb",
+        "location": "decentralized",
+        "score": 28.79999999999999,
+        "validators": 24,
+        "stake": "60000000000000000000000",
+        "topUp": "48974811572987705116320",
+        "providers": [
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqd8llllslmf3hu"
+        ],
+        "stakePercent": 0.64,
+        "apr": 8.16,
+        "rank": 27
+    },
+    {
+        "identity": "figment-networks",
+        "locked": "313863217734623442441534",
+        "distribution": {
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqlhllllsr0pd0j": 1
+        },
+        "avatar": "https://raw.githubusercontent.com/multiversx/mx-assets/master/identities/figment-networks/logo.png",
+        "description": "Figment is the world's leading provider of blockchain infrastructure.",
+        "name": "Figment",
+        "website": "https://figment.io",
+        "twitter": "Figment_io",
+        "score": 26.39999999999999,
+        "validators": 22,
+        "stake": "55000000000000000000000",
+        "topUp": "258863217734623442441534",
+        "providers": [
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqlhllllsr0pd0j"
+        ],
+        "stakePercent": 1.84,
+        "apr": 6.21,
+        "rank": 28
+    },
+    {
+        "identity": "web3water",
+        "locked": "154225642092325833254742",
+        "distribution": {
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqql8lllls4sn5ev": 1
+        },
+        "avatar": "https://raw.githubusercontent.com/multiversx/mx-assets/master/identities/web3water/logo.png",
+        "description": "Liquidity for web3",
+        "name": "$WATER Works",
+        "website": "https://twitter.com/Web3Water",
+        "twitter": "Web3Water",
+        "score": 26.39999999999999,
+        "validators": 22,
+        "stake": "55000000000000000000000",
+        "topUp": "99225642092325833254742",
+        "providers": [
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqql8lllls4sn5ev"
+        ],
+        "stakePercent": 0.9,
+        "apr": 7.15,
+        "rank": 29
+    },
+    {
+        "identity": "stakegen",
+        "locked": "57123887815844053053381",
+        "distribution": {
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqk0llllsm6h64t": 1
+        },
+        "avatar": "https://raw.githubusercontent.com/multiversx/mx-assets/master/identities/stakegen/logo.png",
+        "name": "stakeGEN",
+        "location": "United Kingdom, London",
+        "score": 19.199999999999996,
+        "validators": 21,
+        "stake": "52500000000000000000000",
+        "topUp": "4623887815844053053381",
+        "providers": [
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqk0llllsm6h64t"
+        ],
+        "stakePercent": 0.33,
+        "apr": 7.68,
+        "rank": 30
+    },
+    {
+        "identity": "aurentum",
+        "locked": "97942190269587295919112",
+        "distribution": {
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqmhllllsjg335n": 1
+        },
+        "avatar": "https://raw.githubusercontent.com/multiversx/mx-assets/master/identities/aurentum/logo.png",
+        "description": "Staking made in Germany! https://t.me/aurentum_de",
+        "name": "Aurentum GmbH",
+        "website": "www.aurentum-finance.de",
+        "twitter": "aurentum_de",
+        "location": "Regensburg",
+        "score": 21.599999999999994,
+        "validators": 21,
+        "stake": "52500000000000000000000",
+        "topUp": "45442190269587295919112",
+        "providers": [
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqmhllllsjg335n"
+        ],
+        "stakePercent": 0.57,
+        "apr": 6.93,
+        "rank": 31
+    },
+    {
+        "identity": "oxsyai",
+        "locked": "80006817586065921357280",
+        "distribution": {
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqp8lllls9jsunl": 1
+        },
+        "avatar": "https://raw.githubusercontent.com/multiversx/mx-assets/master/identities/oxsyai/logo.png",
+        "description": "Oxsy is the fuel which powers the implementation of robotics and AI research, into a team of fully autonomous robot soccer players.",
+        "name": "Oxsy AI",
+        "website": "https://oxsy.ai",
+        "twitter": "Oxsy_Sibiu",
+        "location": "Sibiu, Romania",
+        "score": 23.999999999999993,
+        "validators": 20,
+        "stake": "50000000000000000000000",
+        "topUp": "30006817586065921357280",
+        "providers": [
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqp8lllls9jsunl"
+        ],
+        "stakePercent": 0.46,
+        "apr": 8.55,
+        "rank": 32
+    },
+    {
+        "identity": "foundation-nodes",
+        "locked": "84467907261764398199620",
+        "distribution": {
+            "direct": 1
+        },
+        "avatar": "https://raw.githubusercontent.com/multiversx/mx-assets/master/identities/foundation-nodes/logo.png",
+        "name": "059b622339337db7172e99e9e26dc241dbc46c32242da147bfce3e074b2969cabf3fb72f3dece0eb45d58a2efbbdc00ec43ea66a53d1c88defd4b1953dc73da6bd7f71bcdf7f1a91b18ac31c30a89fe8080747cce3e98d7f3a21cd2e8e831983",
+        "score": 23.999999999999993,
+        "validators": 20,
+        "stake": "50000000000000000000000",
+        "topUp": "34467907261764398199620",
+        "stakePercent": 0.49,
+        "apr": 8.37,
+        "rank": 33
+    },
+    {
+        "identity": "titanstake",
+        "locked": "134560767526662734635740",
+        "distribution": {
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqr8llllse9cj2t": 1
+        },
+        "avatar": "https://raw.githubusercontent.com/multiversx/mx-assets/master/identities/titanstake/logo.png",
+        "description": "Stake, support and join the titans on a revolutionary journey enabling MultiversX, the network of tomorrow.",
+        "name": "TitanStake",
+        "website": "https://www.titanstake.com/",
+        "twitter": "TitanStake",
+        "location": "Romania",
+        "score": 23.999999999999993,
+        "validators": 20,
+        "stake": "50000000000000000000000",
+        "topUp": "84560767526662734635740",
+        "providers": [
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqr8llllse9cj2t"
+        ],
+        "stakePercent": 0.79,
+        "apr": 7.23,
+        "rank": 34
+    },
+    {
+        "identity": "sikka_tech",
+        "locked": "55590027040231087055280",
+        "distribution": {
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqf8llllswuedva": 1
+        },
+        "avatar": "https://raw.githubusercontent.com/multiversx/mx-assets/master/identities/sikka_tech/logo.png",
+        "description": "Infrastructure for the Decentralized Future",
+        "name": "Sikka",
+        "website": "https://sikka.tech",
+        "twitter": "https://twitter.com/sikkatech",
+        "location": "Berkeley, CA",
+        "score": 19.799999999999997,
+        "validators": 20,
+        "stake": "50000000000000000000000",
+        "topUp": "5590027040231087055280",
+        "providers": [
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqf8llllswuedva"
+        ],
+        "stakePercent": 0.32,
+        "apr": 6.98,
+        "rank": 35
+    },
+    {
+        "identity": "atreides-capital",
+        "locked": "83972043860489712025840",
+        "distribution": {
+            "direct": 1
+        },
+        "avatar": "https://raw.githubusercontent.com/multiversx/mx-assets/master/identities/atreides-capital/logo.png",
+        "name": "1baed8e295ef0ddb519db506239b40aa653caa390d874717b60ee3a686e814d56b39dd5df7649337d137bf83ce6fb316e751bde80b772cce14c868b8ef8f20bf2fa4c1c94693491ee23fe49a7115bbd5040da1c518c960cdf3875c2c5eb21c09",
+        "score": 23.999999999999993,
+        "validators": 20,
+        "stake": "50000000000000000000000",
+        "topUp": "33972043860489712025840",
+        "stakePercent": 0.49,
+        "apr": 8.39,
+        "rank": 36
+    },
+    {
+        "identity": "rosettastake",
+        "locked": "64000751045943550192560",
+        "distribution": {
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqrlllllsyprnh6": 1
+        },
+        "avatar": "https://raw.githubusercontent.com/multiversx/mx-assets/master/identities/rosettastake/logo.png",
+        "description": "The Unknown Journey is ongoing",
+        "name": "RosettaStake",
+        "website": "https://rosettastake.com",
+        "twitter": "RosettaStake",
+        "score": 21.599999999999994,
+        "validators": 18,
+        "stake": "45000000000000000000000",
+        "topUp": "19000751045943550192560",
+        "providers": [
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqrlllllsyprnh6"
+        ],
+        "stakePercent": 0.37,
+        "apr": 8.95,
+        "rank": 37
+    },
+    {
+        "identity": "p2p_org_",
+        "locked": "115622567841184494248664",
+        "distribution": {
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqm8llllsyhrgzd": 1
+        },
+        "avatar": "https://raw.githubusercontent.com/multiversx/mx-assets/master/identities/p2p_org_/logo.png",
+        "description": "P2P Validator is a world-leading non-custodial staking provider securing $5+ billion in staked assets by 24,000+ delegators across 20+ top-notch networks. P2P has been participating in Cosmos, Solana, Polkadot and other novel blockchains from day one.",
+        "name": "P2P Validator",
+        "website": "http://p2p.org",
+        "location": "Milky Way",
+        "score": 21.599999999999994,
+        "validators": 18,
+        "stake": "45000000000000000000000",
+        "topUp": "70622567841184494248664",
+        "providers": [
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqm8llllsyhrgzd"
+        ],
+        "stakePercent": 0.67,
+        "apr": 7.32,
+        "rank": 38
+    },
+    {
+        "identity": "alchemycapital",
+        "locked": "99997271854920784946106",
+        "distribution": {
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqlllllskf06ky": 1
+        },
+        "avatar": "https://raw.githubusercontent.com/multiversx/mx-assets/master/identities/alchemycapital/logo.png",
+        "description": "🤩 Visit our website to get to know us!",
+        "name": "Alchemy Capital",
+        "website": "https://alchemy.capital",
+        "twitter": "https://twitter.com/alchemycapital",
+        "location": "Planet Earth",
+        "score": 21.599999999999994,
+        "validators": 18,
+        "stake": "45000000000000000000000",
+        "topUp": "54997271854920784946106",
+        "providers": [
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqlllllskf06ky"
+        ],
+        "stakePercent": 0.58,
+        "apr": 7.64,
+        "rank": 39
+    },
+    {
+        "identity": "skysoft",
+        "locked": "66005544242313301062791",
+        "distribution": {
+            "direct": 1
+        },
+        "avatar": "https://raw.githubusercontent.com/multiversx/mx-assets/master/identities/skysoft/logo.png",
+        "name": "Sky Soft Staking",
+        "score": 20.399999999999995,
+        "validators": 17,
+        "stake": "42500000000000000000000",
+        "topUp": "23505544242313301062791",
+        "stakePercent": 0.38,
+        "apr": 8.64,
+        "rank": 40
+    },
+    {
+        "identity": "stake_x",
+        "locked": "58000000000000000000000",
+        "distribution": {
+            "direct": 1
+        },
+        "avatar": "https://raw.githubusercontent.com/multiversx/mx-assets/master/identities/stake_x/logo.png",
+        "name": "Stake X",
+        "score": 19.199999999999996,
+        "validators": 16,
+        "stake": "40000000000000000000000",
+        "topUp": "18000000000000000000000",
+        "stakePercent": 0.34,
+        "apr": 8.88,
+        "rank": 41
+    },
+    {
+        "identity": "owlhero",
+        "locked": "81576676803663307065456",
+        "distribution": {
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqpr0lllls0p3mfw": 1
+        },
+        "avatar": "https://raw.githubusercontent.com/multiversx/mx-assets/master/identities/owlhero/logo.png",
+        "name": "OwlHero",
+        "score": 19.199999999999996,
+        "validators": 16,
+        "stake": "40000000000000000000000",
+        "topUp": "41576676803663307065456",
+        "providers": [
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqpr0lllls0p3mfw"
+        ],
+        "stakePercent": 0.47,
+        "apr": 7.85,
+        "rank": 42
+    },
+    {
+        "identity": "phidelta",
+        "locked": "45869634767894482946416",
+        "distribution": {
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqpzhllllsu6wav4": 0.79,
+            "direct": 0.21
+        },
+        "avatar": "https://raw.githubusercontent.com/multiversx/mx-assets/master/identities/phidelta/logo.png",
+        "description": "Become who you were born to be - Elrond",
+        "name": "PhiDelta Staking",
+        "score": 13.199999999999998,
+        "validators": 16,
+        "stake": "40000000000000000000000",
+        "topUp": "5869634767894482946416",
+        "providers": [
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqpzhllllsu6wav4"
+        ],
+        "stakePercent": 0.26,
+        "apr": 6.76,
+        "rank": 43
+    },
+    {
+        "identity": "vaporrepublic",
+        "locked": "79621389453151537553745",
+        "distribution": {
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqehllllswleld8": 1
+        },
+        "avatar": "https://raw.githubusercontent.com/multiversx/mx-assets/master/identities/vaporrepublic/logo.png",
+        "description": "Premium staking provider built for the community by the community.",
+        "name": "Vapor Republic ",
+        "website": "https://www.vaporrepublic.com/",
+        "twitter": "VaporRepublic",
+        "location": "Netherlands",
+        "score": 17.999999999999996,
+        "validators": 15,
+        "stake": "37500000000000000000000",
+        "topUp": "42121389453151537553745",
+        "providers": [
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqehllllswleld8"
+        ],
+        "stakePercent": 0.46,
+        "apr": 7.74,
+        "rank": 44
+    },
+    {
+        "identity": "stakedao-devops",
+        "locked": "73566136964292481292655",
+        "distribution": {
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq20llllsh0uuxv": 1
+        },
+        "avatar": "https://raw.githubusercontent.com/multiversx/mx-assets/master/identities/stakedao-devops/logo.png",
+        "description": "Stake Capital is a group run by Blockchain and DeFi pioneers standing at the intersection of traditional industries and blockchain technology.",
+        "name": "Stake Capital Group (validators)",
+        "website": "https://www.stake.capital/ ",
+        "twitter": "StakeCapital",
+        "location": "Luxembourg",
+        "score": 17.799999999999997,
+        "validators": 15,
+        "stake": "37500000000000000000000",
+        "topUp": "36066136964292481292655",
+        "providers": [
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq20llllsh0uuxv"
+        ],
+        "stakePercent": 0.43,
+        "apr": 7.42,
+        "rank": 45
+    },
+    {
+        "identity": "truststakingus",
+        "locked": "92565583499927168953830",
+        "distribution": {
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq08llllsrvplwg": 1
+        },
+        "avatar": "https://raw.githubusercontent.com/multiversx/mx-assets/master/identities/truststakingus/logo.png",
+        "description": "Member of the parent company Trust Staking S.R.L",
+        "name": "Trust Staking US",
+        "website": "http://truststaking.com",
+        "twitter": "https://twitter.com/truststaking",
+        "location": "United States",
+        "score": 17.999999999999996,
+        "validators": 15,
+        "stake": "37500000000000000000000",
+        "topUp": "55065583499927168953830",
+        "providers": [
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq08llllsrvplwg"
+        ],
+        "stakePercent": 0.54,
+        "apr": 7.4,
+        "rank": 46
+    },
+    {
+        "identity": "forbole",
+        "locked": "79289937875965873236930",
+        "distribution": {
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq40llllsfjmn54": 1
+        },
+        "avatar": "https://raw.githubusercontent.com/multiversx/mx-assets/master/identities/forbole/logo.png",
+        "description": "Empower Web3 Future with Reliable Infrastructure",
+        "name": "Forbole",
+        "website": "https://forbole.com",
+        "twitter": "forbole",
+        "location": "Between time and space",
+        "score": 17.999999999999996,
+        "validators": 15,
+        "stake": "37500000000000000000000",
+        "topUp": "41789937875965873236930",
+        "providers": [
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq40llllsfjmn54"
+        ],
+        "stakePercent": 0.46,
+        "apr": 7.76,
+        "rank": 47
+    },
+    {
+        "identity": "stakecamp",
+        "locked": "41501377087894742157375",
+        "distribution": {
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqv8lllls3ydk0k": 1
+        },
+        "avatar": "https://raw.githubusercontent.com/multiversx/mx-assets/master/identities/stakecamp/logo.png",
+        "name": "stakecamp",
+        "location": "Czech Republic, Prague",
+        "score": 13.199999999999998,
+        "validators": 15,
+        "stake": "37500000000000000000000",
+        "topUp": "4001377087894742157375",
+        "providers": [
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqv8lllls3ydk0k"
+        ],
+        "stakePercent": 0.24,
+        "apr": 7.33,
+        "rank": 48
+    },
+    {
+        "identity": "easy2stake",
+        "locked": "51999999999999999999990",
+        "distribution": {
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqghllllsku0nzf": 1
+        },
+        "avatar": "https://raw.githubusercontent.com/multiversx/mx-assets/master/identities/easy2stake/logo.png",
+        "description": "Easy.Stake.Trust. as easy and as simple as you would click next. Complete transparency and trust with a secure and stable validator.",
+        "name": "Easy 2 Stake",
+        "website": "http://easy2stake.com",
+        "twitter": "https://twitter.com/easy2stake",
+        "score": 16.799999999999997,
+        "validators": 15,
+        "stake": "37500000000000000000000",
+        "topUp": "14499999999999999999990",
+        "providers": [
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqghllllsku0nzf"
+        ],
+        "stakePercent": 0.3,
+        "apr": 8.44,
+        "rank": 49
+    },
+    {
+        "identity": "moonlorianstake",
+        "locked": "85183354575147192984060",
+        "distribution": {
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqj0lllls2a8xw2": 1
+        },
+        "avatar": "https://raw.githubusercontent.com/multiversx/mx-assets/master/identities/moonlorianstake/logo.png",
+        "description": "MultiversX partner: 360º Full project lifecycle + Staking Pool",
+        "name": "Moonlorian Stake",
+        "website": "https://t.me/moonlorian",
+        "twitter": "moonlorian",
+        "score": 16.799999999999997,
+        "validators": 14,
+        "stake": "35000000000000000000000",
+        "topUp": "50183354575147192984060",
+        "providers": [
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqj0lllls2a8xw2"
+        ],
+        "stakePercent": 0.5,
+        "apr": 7.43,
+        "rank": 50
+    },
+    {
+        "identity": "disruptivedigital",
+        "locked": "66332517982214444928410",
+        "distribution": {
+            "direct": 0.16,
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqyllllls8wlxd9": 0.84
+        },
+        "avatar": "https://raw.githubusercontent.com/multiversx/mx-assets/master/identities/disruptivedigital/logo.png",
+        "description": "The ultimate goal of innovation should be the creation of a better future. Telegram: @disruptivedigital_eu",
+        "name": "⚡️Disruptive Digital⚡️",
+        "website": "disruptivedigital.eu",
+        "twitter": "DisrDigital",
+        "location": "Romania",
+        "score": 16.799999999999997,
+        "validators": 14,
+        "stake": "35000000000000000000000",
+        "topUp": "31332517982214444928410",
+        "providers": [
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqyllllls8wlxd9"
+        ],
+        "stakePercent": 0.38,
+        "apr": 8.04,
+        "rank": 51
+    },
+    {
+        "identity": "exceptionlabs",
+        "locked": "66976976024922523642544",
+        "distribution": {
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqpphllllswjz5dt": 1
+        },
+        "avatar": "https://raw.githubusercontent.com/multiversx/mx-assets/master/identities/exceptionlabs/logo.png",
+        "name": "ExceptionLabs",
+        "score": 16.799999999999997,
+        "validators": 14,
+        "stake": "35000000000000000000000",
+        "topUp": "31976976024922523642544",
+        "providers": [
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqpphllllswjz5dt"
+        ],
+        "stakePercent": 0.39,
+        "apr": 8.01,
+        "rank": 52
+    },
+    {
+        "identity": "cyberpunkstake",
+        "locked": "88351655460573479912896",
+        "distribution": {
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqpzlllllshp8986": 1
+        },
+        "avatar": "https://raw.githubusercontent.com/multiversx/mx-assets/master/identities/cyberpunkstake/logo.png",
+        "description": "Visionary staking provider on #MultiversX ⚡️",
+        "name": "Cyberpunk Stake",
+        "website": "https://cyberpunkstake.com/",
+        "twitter": "CyberpunkStake",
+        "location": "Türkiye",
+        "score": 16.799999999999997,
+        "validators": 14,
+        "stake": "35000000000000000000000",
+        "topUp": "53351655460573479912896",
+        "providers": [
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqpzlllllshp8986"
+        ],
+        "stakePercent": 0.51,
+        "apr": 7.36,
+        "rank": 53
+    },
+    {
+        "identity": "rvstaking",
+        "locked": "106339748246895871445164",
+        "distribution": {
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqpqhllllsqdxn4p": 1
+        },
+        "avatar": "https://raw.githubusercontent.com/multiversx/mx-assets/master/identities/rvstaking/logo.png",
+        "description": "Formal Verification for Blockchain",
+        "name": "Runtime Verification",
+        "website": "https://runtimeverification.com",
+        "twitter": "https://twitter.com/rv_inc",
+        "location": "USA",
+        "score": 16.799999999999997,
+        "validators": 14,
+        "stake": "35000000000000000000000",
+        "topUp": "71339748246895871445164",
+        "providers": [
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqpqhllllsqdxn4p"
+        ],
+        "stakePercent": 0.62,
+        "apr": 7.01,
+        "rank": 54
+    },
+    {
+        "identity": "bharvest",
+        "locked": "50021361243265861820812",
+        "distribution": {
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq58llllsvkkv8s": 1
+        },
+        "avatar": "https://raw.githubusercontent.com/multiversx/mx-assets/master/identities/bharvest/logo.png",
+        "description": "Provides secure validation services for dPoS networks",
+        "name": "B-Harvest",
+        "website": "https://bharvest.io",
+        "twitter": "https://twitter.com/B__Harvest",
+        "location": "South Korea",
+        "score": 16.799999999999997,
+        "validators": 14,
+        "stake": "35000000000000000000000",
+        "topUp": "15021361243265861820812",
+        "providers": [
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq58llllsvkkv8s"
+        ],
+        "stakePercent": 0.29,
+        "apr": 8.93,
+        "rank": 55
+    },
+    {
+        "identity": "westake",
+        "locked": "63183646048085766336252",
+        "distribution": {
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq68lllls2g8068": 1
+        },
+        "avatar": "https://raw.githubusercontent.com/multiversx/mx-assets/master/identities/westake/logo.png",
+        "name": "WeStake",
+        "twitter": "https://twitter.com/westakeit",
+        "location": "Europe",
+        "score": 16.799999999999997,
+        "validators": 14,
+        "stake": "35000000000000000000000",
+        "topUp": "28183646048085766336252",
+        "providers": [
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq68lllls2g8068"
+        ],
+        "stakePercent": 0.37,
+        "apr": 8.18,
+        "rank": 56
+    },
+    {
+        "identity": "smartchainconnection",
+        "locked": "55635115622771878444524",
+        "distribution": {
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqc8llllskl0prn": 1
+        },
+        "avatar": "https://raw.githubusercontent.com/multiversx/mx-assets/master/identities/smartchainconnection/logo.png",
+        "description": "We're builders on MultiversX Blockchain.",
+        "name": "SmartChainConnection",
+        "website": "https://smartchainconnection.com",
+        "twitter": "smartchaincnx",
+        "location": "Oregon, USA",
+        "score": 11.999999999999998,
+        "validators": 12,
+        "stake": "30000000000000000000000",
+        "topUp": "25635115622771878444524",
+        "providers": [
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqc8llllskl0prn"
+        ],
+        "stakePercent": 0.32,
+        "apr": 6.75,
+        "rank": 57
+    },
+    {
+        "identity": "anon-multiversx",
+        "locked": "31999999999999999999992",
+        "distribution": {
+            "direct": 1
+        },
+        "avatar": "https://raw.githubusercontent.com/multiversx/mx-assets/master/identities/anon-multiversx/logo.png",
+        "name": "07c071b7c4b6d2e2198ccd8683534884b029ed4552fdb97dff6e3d08d9ca93278ca5cf48df933cd7b0f753b130877d0f6d3331f677164ae99966a198088583518495ac55e3725e06d0511cf9dc0c3919e1b45538a38113a082711e57f3a58986",
+        "score": 14.399999999999997,
+        "validators": 12,
+        "stake": "30000000000000000000000",
+        "topUp": "1999999999999999999992",
+        "stakePercent": 0.18,
+        "apr": 10.17,
+        "rank": 58
+    },
+    {
+        "identity": "mempoolcapital",
+        "locked": "78556522180831563170832",
+        "distribution": {
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqklllllsd99rr4": 0.88,
+            "direct": 0.12
+        },
+        "avatar": "https://raw.githubusercontent.com/multiversx/mx-assets/master/identities/mempoolcapital/logo.png",
+        "description": "MemPool Capital is backing leading teams & protocols in the Web3 Industry",
+        "name": "MemPool Capital",
+        "score": 14.399999999999997,
+        "validators": 12,
+        "stake": "30000000000000000000000",
+        "topUp": "48556522180831563170832",
+        "providers": [
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqklllllsd99rr4"
+        ],
+        "stakePercent": 0.46,
+        "apr": 7.28,
+        "rank": 59
+    },
+    {
+        "identity": "rafstakeagency",
+        "locked": "51497719437321252499236",
+        "distribution": {
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq5hlllls6fy43w": 1
+        },
+        "avatar": "https://raw.githubusercontent.com/multiversx/mx-assets/master/identities/rafstakeagency/logo.png",
+        "description": "As a MultiversX staking provider, we want to share our passion for blockchains and MultiversX especially.",
+        "name": "Raf Staking",
+        "website": "www.rafstaking.com",
+        "twitter": "RafStake",
+        "score": 14.199999999999998,
+        "validators": 12,
+        "stake": "30000000000000000000000",
+        "topUp": "21497719437321252499236",
+        "providers": [
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq5hlllls6fy43w"
+        ],
+        "stakePercent": 0.3,
+        "apr": 7.63,
+        "rank": 60
+    },
+    {
+        "identity": "open-stake",
+        "locked": "33760116612346101475330",
+        "distribution": {
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq0llllls7g67ne": 1
+        },
+        "avatar": "https://raw.githubusercontent.com/multiversx/mx-assets/master/identities/open-stake/logo.png",
+        "description": "OpenStake.io allows you to stake the most promising crypto assets out there. Delegate with us!",
+        "name": "Open Stake",
+        "website": "https://openstake.io",
+        "twitter": "open_stake",
+        "score": 9.6,
+        "validators": 10,
+        "stake": "25000000000000000000000",
+        "topUp": "8760116612346101475330",
+        "providers": [
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq0llllls7g67ne"
+        ],
+        "stakePercent": 0.19,
+        "apr": 7.32,
+        "rank": 61
+    },
+    {
+        "identity": "stakedinc",
+        "locked": "48303166106389361641960",
+        "distribution": {
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqkhllllsx7vmg6": 1
+        },
+        "avatar": "https://raw.githubusercontent.com/multiversx/mx-assets/master/identities/stakedinc/logo.png",
+        "description": "Staked operates highly available and highly secure, institutional grade staking infrastructure for leading proof-of-stake (PoS) protocols.",
+        "name": "Staked",
+        "location": "http://staked.us",
+        "score": 11.999999999999998,
+        "validators": 10,
+        "stake": "25000000000000000000000",
+        "topUp": "23303166106389361641960",
+        "providers": [
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqkhllllsx7vmg6"
+        ],
+        "stakePercent": 0.28,
+        "apr": 7.99,
+        "rank": 62
+    },
+    {
+        "identity": "stake24",
+        "locked": "50921157532548015211790",
+        "distribution": {
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqprlllllse7rzls": 1
+        },
+        "avatar": "https://raw.githubusercontent.com/multiversx/mx-assets/master/identities/stake24/logo.png",
+        "name": "Stake24",
+        "score": 11.999999999999998,
+        "validators": 10,
+        "stake": "25000000000000000000000",
+        "topUp": "25921157532548015211790",
+        "providers": [
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqprlllllse7rzls"
+        ],
+        "stakePercent": 0.29,
+        "apr": 7.85,
+        "rank": 63
+    },
+    {
+        "identity": "parasco1",
+        "locked": "59951264768353992833780",
+        "distribution": {
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq50lllls8dl5vl": 1
+        },
+        "avatar": "https://raw.githubusercontent.com/multiversx/mx-assets/master/identities/parasco1/logo.png",
+        "description": "You can find us on twitter.com/ParascoStaking, parasco.ro and https://t.me/ParascoStaking !",
+        "name": "Parasco Staking",
+        "website": "stake.parasco.ro",
+        "twitter": "ParascoStaking",
+        "location": "Romania",
+        "score": 11.999999999999998,
+        "validators": 10,
+        "stake": "25000000000000000000000",
+        "topUp": "34951264768353992833780",
+        "providers": [
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq50lllls8dl5vl"
+        ],
+        "stakePercent": 0.35,
+        "apr": 7.46,
+        "rank": 64
+    },
+    {
+        "identity": "orangestaking",
+        "locked": "42457572618689878877310",
+        "distribution": {
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqxhllllssz7sl7": 1
+        },
+        "avatar": "https://raw.githubusercontent.com/multiversx/mx-assets/master/identities/orangestaking/logo.png",
+        "description": "Orange Staking is a staking provider on the MultiversX blockchain",
+        "name": "Orange Staking",
+        "website": "www.orangestaking.com",
+        "twitter": "orangestaking",
+        "location": "Netherlands",
+        "score": 11.999999999999998,
+        "validators": 10,
+        "stake": "25000000000000000000000",
+        "topUp": "17457572618689878877310",
+        "providers": [
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqxhllllssz7sl7"
+        ],
+        "stakePercent": 0.24,
+        "apr": 8.36,
+        "rank": 65
+    },
+    {
+        "identity": "ieleman",
+        "locked": "36306553065823934991190",
+        "distribution": {
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqplllllscktaww": 1
+        },
+        "avatar": "https://raw.githubusercontent.com/multiversx/mx-assets/master/identities/ieleman/logo.png",
+        "description": "Small MultiversX delegation pool for friends and family.",
+        "name": "Ieleman",
+        "website": "https://ieleman.ro/",
+        "twitter": "andreimmarinica",
+        "score": 11.999999999999998,
+        "validators": 10,
+        "stake": "25000000000000000000000",
+        "topUp": "11306553065823934991190",
+        "providers": [
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqplllllscktaww"
+        ],
+        "stakePercent": 0.21,
+        "apr": 8.88,
+        "rank": 66
+    },
+    {
+        "identity": "galaxyone",
+        "locked": "35179191827019413867619",
+        "distribution": {
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqj8llllspxw799": 1
+        },
+        "avatar": "https://raw.githubusercontent.com/multiversx/mx-assets/master/identities/galaxyone/logo.png",
+        "name": "Buidly Staking",
+        "location": "Romania",
+        "score": 10.799999999999999,
+        "validators": 9,
+        "stake": "22500000000000000000000",
+        "topUp": "12679191827019413867619",
+        "providers": [
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqj8llllspxw799"
+        ],
+        "stakePercent": 0.2,
+        "apr": 8.62,
+        "rank": 67
+    },
+    {
+        "identity": "inceptionnetwork",
+        "locked": "46084357663171136304624",
+        "distribution": {
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq00llllsghg898": 1
+        },
+        "avatar": "https://raw.githubusercontent.com/multiversx/mx-assets/master/identities/inceptionnetwork/logo.png",
+        "name": "Inception Network",
+        "website": "https://inception-network.com",
+        "twitter": "https://twitter.com/inceptionetwork",
+        "score": 9.6,
+        "validators": 9,
+        "stake": "22500000000000000000000",
+        "topUp": "23584357663171136304624",
+        "providers": [
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq00llllsghg898"
+        ],
+        "stakePercent": 0.27,
+        "apr": 6.96,
+        "rank": 68
+    },
+    {
+        "identity": "d1fferentcapital",
+        "locked": "55142826604241190923502",
+        "distribution": {
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqm0lllls0v2sfz": 1
+        },
+        "avatar": "https://raw.githubusercontent.com/multiversx/mx-assets/master/identities/d1fferentcapital/logo.png",
+        "description": "Bridging the analog & digital worlds.",
+        "name": "D1fferent Capital",
+        "website": "https://d1fferent.capital/",
+        "score": 10.799999999999999,
+        "validators": 9,
+        "stake": "22500000000000000000000",
+        "topUp": "32642826604241190923502",
+        "providers": [
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqm0lllls0v2sfz"
+        ],
+        "stakePercent": 0.32,
+        "apr": 7.42,
+        "rank": 69
+    },
+    {
+        "identity": "octopos",
+        "locked": "22500000000000000000000",
+        "distribution": {
+            "direct": 1
+        },
+        "avatar": "https://raw.githubusercontent.com/multiversx/mx-assets/master/identities/octopos/logo.png",
+        "name": "Octopos",
+        "score": 10.799999999999999,
+        "validators": 9,
+        "stake": "22500000000000000000000",
+        "topUp": "0",
+        "stakePercent": 0.13,
+        "apr": 10.5,
+        "rank": 70
+    },
+    {
+        "identity": "astrarizon",
+        "locked": "48157838743750784509616",
+        "distribution": {
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqpq8llllskj52rl": 1
+        },
+        "avatar": "https://raw.githubusercontent.com/multiversx/mx-assets/master/identities/astrarizon/logo.png",
+        "description": "Staking provider bridging horizon boundaries.",
+        "name": "Astrarizon",
+        "website": "https://www.astrarizon.com/",
+        "twitter": "Astrarizon",
+        "score": 9.6,
+        "validators": 8,
+        "stake": "20000000000000000000000",
+        "topUp": "28157838743750784509616",
+        "providers": [
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqpq8llllskj52rl"
+        ],
+        "stakePercent": 0.28,
+        "apr": 7.46,
+        "rank": 71
+    },
+    {
+        "identity": "wehaveservers",
+        "locked": "56088119867172621955376",
+        "distribution": {
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqnhllllsexcqt3": 1
+        },
+        "avatar": "https://raw.githubusercontent.com/multiversx/mx-assets/master/identities/wehaveservers/logo.png",
+        "description": "https://www.WeHaveServers.com",
+        "name": "WeHaveServers.com",
+        "score": 9.6,
+        "validators": 8,
+        "stake": "20000000000000000000000",
+        "topUp": "36088119867172621955376",
+        "providers": [
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqnhllllsexcqt3"
+        ],
+        "stakePercent": 0.32,
+        "apr": 7.15,
+        "rank": 72
+    },
+    {
+        "identity": "marbaldur",
+        "locked": "24504135190211486580305",
+        "distribution": {
+            "direct": 1
+        },
+        "avatar": "https://raw.githubusercontent.com/multiversx/mx-assets/master/identities/marbaldur/logo.png",
+        "name": "Mash",
+        "score": 9.6,
+        "validators": 8,
+        "stake": "20000000000000000000000",
+        "topUp": "4504135190211486580305",
+        "stakePercent": 0.14,
+        "apr": 9.54,
+        "rank": 73
+    },
+    {
+        "identity": "ninjastaking",
+        "locked": "37065865385091079821680",
+        "distribution": {
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq48llllszfjtl6": 1
+        },
+        "avatar": "https://raw.githubusercontent.com/multiversx/mx-assets/master/identities/ninjastaking/logo.png",
+        "description": "EGLD staking with X Ninjas. Part of MultiversDAO.",
+        "name": "Ninja Staking ",
+        "twitter": "XNinjasNFT",
+        "location": "xWorlds",
+        "score": 9.6,
+        "validators": 8,
+        "stake": "20000000000000000000000",
+        "topUp": "17065865385091079821680",
+        "providers": [
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq48llllszfjtl6"
+        ],
+        "stakePercent": 0.21,
+        "apr": 8.1,
+        "rank": 74
+    },
+    {
+        "identity": "cryptobayspace",
+        "locked": "32445667875887838249632",
+        "distribution": {
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq8llllls4xn0vm": 1
+        },
+        "avatar": "https://raw.githubusercontent.com/multiversx/mx-assets/master/identities/cryptobayspace/logo.png",
+        "description": "Service Stacking Provider",
+        "name": "CryptoBay",
+        "twitter": "https://twitter.com/cryptobayspace",
+        "location": "Earth",
+        "score": 9.6,
+        "validators": 8,
+        "stake": "20000000000000000000000",
+        "topUp": "12445667875887838249632",
+        "providers": [
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq8llllls4xn0vm"
+        ],
+        "stakePercent": 0.19,
+        "apr": 8.5,
+        "rank": 75
+    },
+    {
+        "identity": "hyperblockspro",
+        "locked": "38926564248139136030768",
+        "distribution": {
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3lllllsw2eke2": 1
+        },
+        "avatar": "https://raw.githubusercontent.com/multiversx/mx-assets/master/identities/hyperblockspro/logo.png",
+        "description": "Professional Proof-of-Stake Services",
+        "name": "Hyperblocks Pro",
+        "website": "https://hyperblocks.pro/",
+        "score": 9.6,
+        "validators": 8,
+        "stake": "20000000000000000000000",
+        "topUp": "18926564248139136030768",
+        "providers": [
+            "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqq3lllllsw2eke2"
+        ],
+        "stakePercent": 0.22,
+        "apr": 7.97,
+        "rank": 76
+    }
+]

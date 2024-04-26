@@ -17,7 +17,7 @@ import { Account, AccountHistory, AccountTokenHistory, Block, Collection, MiniBl
 export interface IndexerInterface {
   getAccountsCount(filter: AccountQueryOptions): Promise<number>
 
-  getScResultsCount(): Promise<number>
+  getScResultsCount(filter: SmartContractResultFilter): Promise<number>
 
   getAccountContractsCount(address: string): Promise<number>
 
@@ -158,4 +158,6 @@ export interface IndexerInterface {
   setAccountExtraFields(address: string, txCount: number, transfersCount: number, scrCount: number, deployedAt: number | null, transfersCount24h: number, transfersCount7d: number, transfersCount30d: number): Promise<void>;
 
   getBlockByTimestampAndShardId(timestamp: number, shardId: number): Promise<Block | undefined>
+
+  getVersion(): Promise<string | undefined>
 }

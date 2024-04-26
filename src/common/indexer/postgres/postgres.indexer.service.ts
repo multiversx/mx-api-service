@@ -50,7 +50,20 @@ export class PostgresIndexerService implements IndexerInterface {
     private readonly validatorPublicKeysRepository: Repository<ValidatorPublicKeysDb>,
     private readonly indexerHelper: PostgresIndexerHelper,
   ) { }
-  setAccountExtraFields(_address: string, _txCount: number, _transfersCount: number, _scrCount: number, _deployedAt: number | null, _transfersCount24h: number, _transfersCount7d: number, _transfersCount30d: number): Promise<void> {
+
+  setAccountExtraFields(
+    _address: string,
+    _txCount: number,
+    _transfersCount: number,
+    _scrCount: number,
+    _deployedAt: number | null,
+    _transfersCount24h: number,
+    _transfersCount7d: number,
+    _transfersCount30d: number): Promise<void> {
+    throw new Error("Method not implemented.");
+}
+
+  getVersion(): Promise<string | undefined> {
     throw new Error("Method not implemented.");
   }
 
@@ -78,7 +91,7 @@ export class PostgresIndexerService implements IndexerInterface {
     throw new Error("Method not implemented.");
   }
 
-  async getScResultsCount(): Promise<number> {
+  async getScResultsCount(_filter: SmartContractResultFilter): Promise<number> {
     return await this.scResultsRepository.count();
   }
 

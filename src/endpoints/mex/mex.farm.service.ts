@@ -150,7 +150,7 @@ export class MexFarmService {
       }
     `;
 
-    const response: any = await this.graphQlService.getData(query, {});
+    const response: any = await this.graphQlService.getExchangeServiceData(query, {});
     if (!response) {
       return [];
     }
@@ -189,7 +189,7 @@ export class MexFarmService {
         }
       }`;
 
-    const response: any = await this.graphQlService.getData(query, {});
+    const response: any = await this.graphQlService.getExchangeServiceData(query, {});
     if (!response) {
       return [];
     }

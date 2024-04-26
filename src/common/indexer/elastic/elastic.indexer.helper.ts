@@ -15,6 +15,7 @@ import { TransactionFilter } from "src/endpoints/transactions/entities/transacti
 import { TransactionType } from "src/endpoints/transactions/entities/transaction.type";
 import { AccountQueryOptions } from "src/endpoints/accounts/entities/account.query.options";
 import { AccountHistoryFilter } from "src/endpoints/accounts/entities/account.history.filter";
+import { SmartContractResultFilter } from "src/endpoints/sc-results/entities/smart.contract.result.filter";
 
 @Injectable()
 export class ElasticIndexerHelper {
@@ -185,6 +186,20 @@ export class ElasticIndexerHelper {
 
     if (filter.isWhitelistedStorage !== undefined && this.apiConfigService.getIsIndexerV3FlagActive()) {
       elasticQuery = elasticQuery.withMustCondition(QueryType.Nested("data", [new MatchQuery("data.whiteListedStorage", filter.isWhitelistedStorage)]));
+    }
+
+    if (this.apiConfigService.getIsNftScamInfoEnabled() && filter.isScam) {
+      elasticQuery = elasticQuery.withCondition(
+        QueryConditionOptions.must,
+        QueryType.Should([
+          QueryType.Match('nft_scamInfoType', 'scam'),
+          QueryType.Match('nft_scamInfoType', 'potentialScam'),
+        ])
+      );
+    }
+
+    if (filter.scamType) {
+      elasticQuery = elasticQuery.withMustCondition(QueryType.Match('nft_scamInfoType', filter.scamType));
     }
 
     if (filter.traits !== undefined) {
@@ -551,6 +566,40 @@ export class ElasticIndexerHelper {
 
   public applyGenericArrayFilter(elasticQuery: ElasticQuery, fields: string[], values: string[]) {
     const conditions: any[] = [];
+
+  public builResultsFilterQuery(filter: SmartContractResultFilter): ElasticQuery {
+    let elasticQuery = ElasticQuery.create();
+
+    if (filter.miniBlockHash) {
+      elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, [QueryType.Match('miniBlockHash', filter.miniBlockHash)]);
+    }
+
+    if (filter.originalTxHashes) {
+      elasticQuery = elasticQuery.withShouldCondition(filter.originalTxHashes.map(originalTxHash => QueryType.Match('originalTxHash', originalTxHash)));
+    }
+
+    if (filter.sender) {
+      elasticQuery = elasticQuery.withShouldCondition(QueryType.Match('sender', filter.sender));
+    }
+
+    if (filter.receiver) {
+      elasticQuery = elasticQuery.withShouldCondition(QueryType.Match('receiver', filter.receiver));
+    }
+
+    if (filter.functions && filter.functions.length > 0 && this.apiConfigService.getIsIndexerV3FlagActive()) {
+      if (filter.functions.length === 1 && filter.functions[0] === '') {
+        elasticQuery = elasticQuery.withMustNotExistCondition('function');
+      } else {
+        elasticQuery = this.applyFunctionFilter(elasticQuery, filter.functions);
+      }
+    }
+
+    return elasticQuery;
+  }
+
+
+  public applyFunctionFilter(elasticQuery: ElasticQuery, functions: string[]) {
+    const functionConditions = [];
 
     for (const value of values) {
       fields.forEach(field => {

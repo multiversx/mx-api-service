@@ -31,8 +31,8 @@ export class IndexerService implements IndexerInterface {
   }
 
   @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
-  async getScResultsCount(): Promise<number> {
-    return await this.indexerInterface.getScResultsCount();
+  async getScResultsCount(filter: SmartContractResultFilter): Promise<number> {
+    return await this.indexerInterface.getScResultsCount(filter);
   }
 
   @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
@@ -383,5 +383,10 @@ export class IndexerService implements IndexerInterface {
 
   async getBlockByTimestampAndShardId(timestamp: number, shardId: number): Promise<Block | undefined> {
     return await this.indexerInterface.getBlockByTimestampAndShardId(timestamp, shardId);
+  }
+
+  @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
+  async getVersion(): Promise<string | undefined> {
+    return await this.indexerInterface.getVersion();
   }
 }

@@ -9,8 +9,8 @@ export class About {
   }
 
   @Field(() => String, { description: "Application Version details." })
-  @ApiProperty({ type: String })
-  appVersion: string = '';
+  @ApiProperty({ type: String, nullable: true })
+  appVersion: string | undefined = undefined;
 
   @Field(() => String, { description: "Plugins Version details." })
   @ApiProperty({ type: String, nullable: true })
@@ -27,6 +27,14 @@ export class About {
   @Field(() => String, { description: "API deployment version." })
   @ApiProperty({ type: String })
   version: string = '';
+
+  @Field(() => String, { description: "Indexer version.", nullable: true })
+  @ApiProperty({ type: String })
+  indexerVersion: string | undefined = undefined;
+
+  @Field(() => String, { description: "Gateway version.", nullable: true })
+  @ApiProperty({ type: String })
+  gatewayVersion: string | undefined = undefined;
 
   @Field(() => String, { description: "Scam engine version.", nullable: true })
   @ApiProperty({ type: String, nullable: true })

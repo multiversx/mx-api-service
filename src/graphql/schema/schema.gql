@@ -13,6 +13,12 @@ type About {
   """Feature Flags."""
   features: FeatureConfigs
 
+  """Gateway version."""
+  gatewayVersion: String
+
+  """Indexer version."""
+  indexerVersion: String
+
   """Current network details."""
   network: String!
 
@@ -687,9 +693,6 @@ type Economics {
 
   """Total Supply general information."""
   marketCap: Float
-
-  """Total Supply general information."""
-  minimumAuctionTopUp: String
 
   """Total Supply general information."""
   price: Float
@@ -1852,6 +1855,30 @@ type GlobalStake {
   """Active validators."""
   activeValidators: Float!
 
+  """All Staked Nodes."""
+  allStakedNodes: Float!
+
+  """Auction Validators."""
+  auctionValidators: Float!
+
+  """Danger Zone Validators."""
+  dangerZoneValidators: Float!
+
+  """Eligible Validators."""
+  eligibleValidators: Float!
+
+  """Minimum Auction Qualified Stake information."""
+  minimumAuctionQualifiedStake: String
+
+  """Minimum Auction Qualified Top Up information."""
+  minimumAuctionQualifiedTopUp: String
+
+  """Nakamoto Coefficient."""
+  nakamotoCoefficient: Float!
+
+  """Qualified Auction Validators."""
+  qualifiedAuctionValidators: Float!
+
   """Validators queue size."""
   queueSize: Float!
 
@@ -1860,6 +1887,9 @@ type GlobalStake {
 
   """Total validators."""
   totalValidators: Float!
+
+  """Not Eligible Validators."""
+  waitingValidators: Float!
 }
 
 """Identity object type."""
@@ -2736,7 +2766,7 @@ type Node {
   auctionPosition: Float
 
   """Auction selected for the given node."""
-  auctionSelected: Boolean
+  auctionQualified: Boolean
 
   """Auction top up for the given node."""
   auctionTopUp: String
@@ -2758,6 +2788,9 @@ type Node {
 
   """Instances for the given node."""
   instances: Float!
+
+  """Nodes in auction danger zone."""
+  isInDangerZone: Boolean
 
   """Issues for the given node."""
   issues: [String!]!
@@ -2872,6 +2905,8 @@ enum NodeSort {
 
 """Node status object type."""
 enum NodeStatus {
+  auction
+
   """Eligible status."""
   eligible
 
@@ -3551,8 +3586,11 @@ type TokenAssetsPriceSource {
 
 """TokenDetailed object type."""
 type TokenDetailed {
-  """Token accounts list."""
+  """Token accounts."""
   accounts: Float!
+
+  """Token accounts last updated timestamp."""
+  accountsLastUpdatedAt: Float
 
   """Token assests details."""
   assets: TokenAssets
@@ -3655,10 +3693,17 @@ type TokenDetailed {
   totalVolume24h: Float!
 
   """Tokens transactions."""
+
   transactions: Float
 
-  """Tokens transfers."""
-  transfersCount: Float
+  """Token transactions last updated timestamp."""
+  transactionsLastUpdatedAt: Float
+
+  """Token transfers."""
+  transfers: Float
+
+  """Token transfers last updated timestamp."""
+  transfersLastUpdatedAt: Float
 
   """Token type."""
   type: TokenType!
@@ -3749,8 +3794,11 @@ enum TokenType {
 }
 
 type TokenWithBalanceAccountFlat {
-  """Token accounts list."""
+  """Token accounts."""
   accounts: Float!
+
+  """Token accounts last updated timestamp."""
+  accountsLastUpdatedAt: Float
 
   """Token assests details."""
   assets: TokenAssets
@@ -3847,8 +3895,14 @@ type TokenWithBalanceAccountFlat {
   """Tokens transactions."""
   transactions: Float
 
-  """Tokens transfers."""
-  transfersCount: Float
+  """Token transactions last updated timestamp."""
+  transactionsLastUpdatedAt: Float
+
+  """Token transfers."""
+  transfers: Float
+
+  """Token transfers last updated timestamp."""
+  transfersLastUpdatedAt: Float
 
   """Token type."""
   type: TokenType!

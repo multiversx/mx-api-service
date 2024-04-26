@@ -102,8 +102,9 @@ describe('Delegation Service', () => {
         position: 0,
         auctioned: undefined,
         auctionPosition: undefined,
-        auctionSelected: undefined,
+        auctionQualified: undefined,
         auctionTopUp: undefined,
+        isInDangerZone: undefined,
         fullHistory: undefined,
         issues: [],
         syncProgress: undefined,
@@ -143,6 +144,23 @@ describe('Delegation Service', () => {
 
       jest.spyOn(delegationService['vmQueryService'], 'vmQuery').mockResolvedValueOnce(['someBase64Config']);
       jest.spyOn(delegationService['nodeService'], 'getAllNodes').mockResolvedValueOnce(mockNodes);
+      jest.spyOn(delegationService['apiConfigService'], 'getDelegationManagerContractAddress').mockReturnValue('erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqylllslmq6y6');
+
+      const result = await delegationService.getDelegationRaw();
+
+      expect(result).toEqual(expectedDelegation);
+    });
+
+    it('should return the correct delegation with minDelegation: 0 because test simulate that the delegation contract manager is not defined', async () => {
+      const expectedDelegation = {
+        stake: '1000',
+        topUp: '1000',
+        locked: '2000',
+        minDelegation: '0',
+      };
+
+      jest.spyOn(delegationService['vmQueryService'], 'vmQuery').mockResolvedValueOnce(['someBase64Config']);
+      jest.spyOn(delegationService['nodeService'], 'getAllNodes').mockResolvedValueOnce(mockNodes);
 
       const result = await delegationService.getDelegationRaw();
 
@@ -159,6 +177,7 @@ describe('Delegation Service', () => {
 
       jest.spyOn(delegationService['vmQueryService'], 'vmQuery').mockResolvedValueOnce(['someBase64Config']);
       jest.spyOn(delegationService['nodeService'], 'getAllNodes').mockResolvedValueOnce([]);
+      jest.spyOn(delegationService['apiConfigService'], 'getDelegationManagerContractAddress').mockReturnValue('erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqylllslmq6y6');
 
       const result = await delegationService.getDelegationRaw();
 
