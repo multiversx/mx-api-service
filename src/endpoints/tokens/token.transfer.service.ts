@@ -18,6 +18,7 @@ import { QueryPagination } from "src/common/entities/query.pagination";
 import { NftFilter } from "../nfts/entities/nft.filter";
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { TokenAccount } from "src/common/indexer/entities";
+import { DataApiService } from "src/common/data-api/data-api.service";
 
 @Injectable()
 export class TokenTransferService {
@@ -29,6 +30,7 @@ export class TokenTransferService {
     private readonly esdtService: EsdtService,
     private readonly assetsService: AssetsService,
     private readonly indexerService: IndexerService,
+    private readonly dataApiService: DataApiService
   ) { }
 
   getTokenTransfer(elasticTransaction: any): { tokenIdentifier: string, tokenAmount: string } | undefined {
@@ -336,6 +338,7 @@ export class TokenTransferService {
     }
 
     const assets = await this.assetsService.getTokenAssets(identifier);
+    const price = await this.dataApiService.getEsdtTokenPrice(identifier);
 
     const result: TokenTransferProperties = {
       type: properties.type,
@@ -346,6 +349,7 @@ export class TokenTransferService {
 
     if (properties.type === 'FungibleESDT') {
       result.token = identifier;
+      result.price = price;
     } else {
       result.collection = identifier;
     }
