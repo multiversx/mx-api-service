@@ -690,7 +690,7 @@ export class ApiConfigService {
     return this.configService.get<boolean>('features.updateAccountExtraDetails.enabled') ?? true;
   }
 
-  getApplicationMostUsedUrl(): string {
+  getMostUsedApplicationsUrl(): string {
     return this.configService.get<string>('features.updateAccountExtraDetails.mostUsedApplicationsUrl') ?? 'https://tools.multiversx.com/growth-api/explorer/widgets/most-used/applications';
   }
 

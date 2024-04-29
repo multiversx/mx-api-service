@@ -697,7 +697,7 @@ export class AccountService {
   }
 
   async getApplicationMostUsedRaw(): Promise<ApplicationMostUsed[]> {
-    const { data: mostUsedApplications } = await this.apiService.get(this.apiConfigService.getApplicationMostUsedUrl());
+    const { data: mostUsedApplications } = await this.apiService.get(this.apiConfigService.getMostUsedApplicationsUrl());
     return mostUsedApplications.map((item: any) => new ApplicationMostUsed({
       address: item.key,
       transfers24H: item.value,
