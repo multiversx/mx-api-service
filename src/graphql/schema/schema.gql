@@ -70,6 +70,9 @@ type Account {
   """Timestamp of the block where the account was first indexed."""
   timestamp: Float!
 
+  """Transfers in the last 24 hours."""
+  transfersLast24h: Float!
+
   """Transactions count for the given detailed account."""
   txCount: Float!
 }
@@ -295,6 +298,9 @@ type AccountDetailed {
     """Input to retrieve the given transfers for."""
     input: GetTransfersAccountInput!
   ): [Transaction!]
+
+  """Transfers in the last 24 hours."""
+  transfersLast24h: Float!
 
   """Transactions count for the given detailed account."""
   txCount: Float!

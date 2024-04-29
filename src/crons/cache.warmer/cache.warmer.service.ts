@@ -87,6 +87,12 @@ export class CacheWarmerService {
       this.schedulerRegistry.addCronJob('handleTxPoolInvalidations', handleTransactionPoolCacheInvalidation);
       handleTransactionPoolCacheInvalidation.start();
     }
+
+    if (this.apiConfigService.isApplicationMostUsedEnabled()) {
+      const handleApplicationMostUsed = new CronJob(this.apiConfigService.getApplicationMostUsedCronExpression(), async () => await this.handleApplicationMostUsed());
+      this.schedulerRegistry.addCronJob('handleApplicationMostUsed', handleApplicationMostUsed);
+      handleApplicationMostUsed.start();
+    }
   }
 
   private configCronJob(name: string, fastExpression: string, normalExpression: string, callback: () => Promise<void>) {
@@ -132,6 +138,12 @@ export class CacheWarmerService {
     const pool = await this.poolService.getTxPoolRaw();
 
     await this.invalidateKey(CacheInfo.TransactionPool.key, pool, this.apiConfigService.getTransactionPoolCacheWarmerTtlInSeconds());
+  }
+
+  @Lock({ name: 'Application most used invalidation', verbose: true })
+  async handleApplicationMostUsed() {
+    const mostUsed = await this.accountService.getApplicationMostUsed();
+    await this.invalidateKey(CacheInfo.ApplicationMostUsed.key, mostUsed, CacheInfo.ApplicationMostUsed.ttl);
   }
 
   @Cron(CronExpression.EVERY_MINUTE)

@@ -393,16 +393,18 @@ export class ElasticIndexerService implements IndexerInterface {
   async getAccounts(queryPagination: QueryPagination, filter: AccountQueryOptions): Promise<any[]> {
     let elasticQuery = this.indexerHelper.buildAccountFilterQuery(filter);
 
-    const sortOrder: ElasticSortOrder = !filter.order || filter.order === SortOrder.desc ? ElasticSortOrder.descending : ElasticSortOrder.ascending;
-    const sort: AccountSort = filter.sort ?? AccountSort.balance;
+    if (filter.sort !== AccountSort.transfersLast24h) {
+      const sortOrder: ElasticSortOrder = !filter.order || filter.order === SortOrder.desc ? ElasticSortOrder.descending : ElasticSortOrder.ascending;
+      const sort: AccountSort = filter.sort ?? AccountSort.balance;
 
-    switch (sort) {
-      case AccountSort.balance:
-        elasticQuery = elasticQuery.withSort([{ name: 'balanceNum', order: sortOrder }]);
-        break;
-      default:
-        elasticQuery = elasticQuery.withSort([{ name: sort.toString(), order: sortOrder }]);
-        break;
+      switch (sort) {
+        case AccountSort.balance:
+          elasticQuery = elasticQuery.withSort([{ name: 'balanceNum', order: sortOrder }]);
+          break;
+        default:
+          elasticQuery = elasticQuery.withSort([{ name: sort.toString(), order: sortOrder }]);
+          break;
+      }
     }
 
     elasticQuery = elasticQuery.withPagination(queryPagination);

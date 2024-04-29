@@ -7,6 +7,7 @@ export class AccountQueryOptions {
     Object.assign(this, init);
   }
 
+  addresses?: string[];
   ownerAddress?: string;
 
   sort?: AccountSort;

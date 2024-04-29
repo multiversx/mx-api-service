@@ -36,6 +36,8 @@ import { KeysService } from '../keys/keys.service';
 import { NodeStatusRaw } from '../nodes/entities/node.status';
 import { AccountKeyFilter } from './entities/account.key.filter';
 import { Provider } from '../providers/entities/provider';
+import { ApplicationMostUsed } from './entities/application.most.used';
+import { AccountSort } from './entities/account.sort';
 
 @Injectable()
 export class AccountService {
@@ -326,14 +328,32 @@ export class AccountService {
   }
 
   async getAccountsRaw(queryPagination: QueryPagination, options: AccountQueryOptions): Promise<Account[]> {
+    const mostUsedApplicationsDictionary: { [key: string]: number } = {};
+    if (options.sort === AccountSort.transfersLast24h) {
+      const mostUsedApplications = await this.getApplicationMostUsed();
+      const mostUsedApplicationsPage = mostUsedApplications.slice(queryPagination.from, queryPagination.from + queryPagination.size);
+
+      for (const item of mostUsedApplicationsPage) {
+        mostUsedApplicationsDictionary[item.address] = item.transfers24H;
+      }
+
+      queryPagination.from = 0;
+      options.addresses = mostUsedApplicationsPage.map(item => item.address);
+    }
+
     const result = await this.indexerService.getAccounts(queryPagination, options);
     const assets = await this.assetsService.getAllAccountAssets();
-    const accounts: Account[] = result.map(item => {
+    let accounts: Account[] = result.map(item => {
       const account = ApiUtils.mergeObjects(new Account(), item);
       account.ownerAddress = item.currentOwner;
+      account.transfersLast24h = mostUsedApplicationsDictionary[account.address];
 
       return account;
     });
+
+    if (options.sort === AccountSort.transfersLast24h) {
+      accounts = accounts.sortedDescending(account => mostUsedApplicationsDictionary[account.address]);
+    }
 
     const shardCount = await this.protocolService.getShardCount();
 
@@ -683,6 +703,22 @@ export class AccountService {
     await Promise.all(leavingNodes.map(async node => {
       const keyUnbondPeriod = await this.keysService.getKeyUnbondPeriod(node.blsKey);
       node.remainingUnBondPeriod = keyUnbondPeriod?.remainingUnBondPeriod;
+    }));
+  }
+
+  async getApplicationMostUsed(): Promise<ApplicationMostUsed[]> {
+    return await this.cachingService.getOrSet(
+      CacheInfo.ApplicationMostUsed.key,
+      async () => await this.getApplicationMostUsedRaw(),
+      CacheInfo.ApplicationMostUsed.ttl
+    );
+  }
+
+  async getApplicationMostUsedRaw(): Promise<ApplicationMostUsed[]> {
+    const { data: mostUsedApplications } = await this.apiService.get(this.apiConfigService.getApplicationMostUsedUrl());
+    return mostUsedApplications.map((item: any) => new ApplicationMostUsed({
+      address: item.key,
+      transfers24H: item.value,
     }));
   }
 }
