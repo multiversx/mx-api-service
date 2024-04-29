@@ -691,7 +691,12 @@ export class ApiConfigService {
   }
 
   getMostUsedApplicationsUrl(): string {
-    return this.configService.get<string>('features.updateAccountExtraDetails.mostUsedApplicationsUrl') ?? 'https://tools.multiversx.com/growth-api/explorer/widgets/most-used/applications';
+    const mostUsedApplicationsUrl = this.configService.get<string>('features.updateAccountExtraDetails.mostUsedApplicationsUrl');
+    if (!mostUsedApplicationsUrl) {
+      throw new Error('No most used applications url present');
+    }
+
+    return mostUsedApplicationsUrl;
   }
 
   getTransactionPoolCacheWarmerCronExpression(): string {
