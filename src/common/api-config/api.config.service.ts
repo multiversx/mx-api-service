@@ -687,7 +687,7 @@ export class ApiConfigService {
   }
 
   isUpdateAccountExtraDetailsEnabled(): boolean {
-    return this.configService.get<boolean>('features.updateAccountExtraDetails.enabled') ?? true;
+    return this.configService.get<boolean>('features.updateAccountExtraDetails.enabled') ?? false;
   }
 
   getMostUsedApplicationsUrl(): string {
