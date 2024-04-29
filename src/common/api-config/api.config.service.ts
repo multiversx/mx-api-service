@@ -4,7 +4,6 @@ import { ConfigService } from '@nestjs/config';
 import { DatabaseConnectionOptions } from '../persistence/entities/connection.options';
 import { LogTopic } from '@elrondnetwork/transaction-processor';
 import { StatusCheckerThresholds } from './entities/status-checker-thresholds';
-import { CronExpression } from '@nestjs/schedule';
 
 @Injectable()
 export class ApiConfigService {
@@ -687,16 +686,12 @@ export class ApiConfigService {
     return this.configService.get<boolean>('features.transactionPoolWarmer.enabled') ?? false;
   }
 
-  isApplicationMostUsedEnabled(): boolean {
-    return this.configService.get<boolean>('features.applicationMostUsed.enabled') ?? true;
+  isUpdateAccountExtraDetailsEnabled(): boolean {
+    return this.configService.get<boolean>('features.updateAccountExtraDetails.enabled') ?? true;
   }
 
   getApplicationMostUsedUrl(): string {
-    return this.configService.get<string>('features.applicationMostUsed.url') ?? 'https://tools.multiversx.com/growth-api/explorer/widgets/most-used/applications';
-  }
-
-  getApplicationMostUsedCronExpression(): string {
-    return this.configService.get<string>('features.applicationMostUsed.cronExpression') ?? CronExpression.EVERY_MINUTE;
+    return this.configService.get<string>('features.updateAccountExtraDetails.mostUsedApplicationsUrl') ?? 'https://tools.multiversx.com/growth-api/explorer/widgets/most-used/applications';
   }
 
   getTransactionPoolCacheWarmerCronExpression(): string {

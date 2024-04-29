@@ -18,18 +18,19 @@ import { MexSettingsService } from "src/endpoints/mex/mex.settings.service";
 import { MexPairService } from "src/endpoints/mex/mex.pair.service";
 import { MexFarmService } from "src/endpoints/mex/mex.farm.service";
 import { CacheService, GuestCacheWarmer } from "@multiversx/sdk-nestjs-cache";
-import { Constants, Lock, OriginLogger } from "@multiversx/sdk-nestjs-common";
+import { BatchUtils, Constants, Lock, OriginLogger } from "@multiversx/sdk-nestjs-common";
 import { DelegationLegacyService } from "src/endpoints/delegation.legacy/delegation.legacy.service";
 import { SettingsService } from "src/common/settings/settings.service";
 import { TokenService } from "src/endpoints/tokens/token.service";
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { NftService } from "src/endpoints/nfts/nft.service";
 import { AccountQueryOptions } from "src/endpoints/accounts/entities/account.query.options";
-import { TokenType } from "src/common/indexer/entities";
+import { Account, TokenType } from "src/common/indexer/entities";
 import { TokenDetailed } from "src/endpoints/tokens/entities/token.detailed";
 import { DataApiService } from "src/common/data-api/data-api.service";
 import { BlockService } from "src/endpoints/blocks/block.service";
 import { PoolService } from "src/endpoints/pool/pool.service";
+import { QueryPagination } from "src/common/entities/query.pagination";
 
 @Injectable()
 export class CacheWarmerService {
@@ -88,10 +89,10 @@ export class CacheWarmerService {
       handleTransactionPoolCacheInvalidation.start();
     }
 
-    if (this.apiConfigService.isApplicationMostUsedEnabled()) {
-      const handleApplicationMostUsed = new CronJob(this.apiConfigService.getApplicationMostUsedCronExpression(), async () => await this.handleApplicationMostUsed());
-      this.schedulerRegistry.addCronJob('handleApplicationMostUsed', handleApplicationMostUsed);
-      handleApplicationMostUsed.start();
+    if (this.apiConfigService.isUpdateAccountExtraDetailsEnabled()) {
+      const handleUpdateAccountExtraDetails = new CronJob(CronExpression.EVERY_10_MINUTES, async () => await this.handleUpdateAccountExtraDetails());
+      this.schedulerRegistry.addCronJob('handleUpdateAccountExtraDetails', handleUpdateAccountExtraDetails);
+      handleUpdateAccountExtraDetails.start();
     }
   }
 
@@ -138,12 +139,6 @@ export class CacheWarmerService {
     const pool = await this.poolService.getTxPoolRaw();
 
     await this.invalidateKey(CacheInfo.TransactionPool.key, pool, this.apiConfigService.getTransactionPoolCacheWarmerTtlInSeconds());
-  }
-
-  @Lock({ name: 'Application most used invalidation', verbose: true })
-  async handleApplicationMostUsed() {
-    const mostUsed = await this.accountService.getApplicationMostUsed();
-    await this.invalidateKey(CacheInfo.ApplicationMostUsed.key, mostUsed, CacheInfo.ApplicationMostUsed.ttl);
   }
 
   @Cron(CronExpression.EVERY_MINUTE)
@@ -299,6 +294,30 @@ export class CacheWarmerService {
   async handleVerifiedAccountsInvalidation() {
     const verifiedAccounts = await this.accountService.getVerifiedAccounts();
     await this.invalidateKey(CacheInfo.VerifiedAccounts.key, verifiedAccounts, CacheInfo.VerifiedAccounts.ttl);
+  }
+
+  @Lock({ name: 'Elastic updater: Update account transfersLast24h', verbose: true })
+  async handleUpdateAccountExtraDetails() {
+    const batchSize = 100;
+    const mostUsed = await this.accountService.getApplicationMostUsedRaw();
+
+    const batches = BatchUtils.splitArrayIntoChunks(mostUsed, batchSize);
+    for (const batch of batches) {
+      const accounts = await this.indexerService.getAccounts(
+        new QueryPagination({ from: 0, size: batchSize }),
+        new AccountQueryOptions({ addresses: batch.map(item => item.address) }),
+      );
+
+      const accountsDictionary = accounts.toRecord<Account>(account => account.address);
+
+      for (const item of batch) {
+        const account = accountsDictionary[item.address];
+        if (account && account.api_transfersLast24h !== item.transfers24H) {
+          this.logger.log(`Setting transferLast24h to ${item.transfers24H} for account with address '${item.address}'`);
+          await this.indexerService.setExtraAccountFields(item.address, item.transfers24H);
+        }
+      }
+    }
   }
 
   @Lock({ name: 'Elastic updater: Update collection isVerified, nftCount, holderCount', verbose: true })
