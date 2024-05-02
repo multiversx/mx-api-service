@@ -691,12 +691,13 @@ export class ApiConfigService {
   }
 
   getMostUsedApplicationsUrl(): string {
-    const mostUsedApplicationsUrl = this.configService.get<string>('features.updateAccountExtraDetails.mostUsedApplicationsUrl');
-    if (!mostUsedApplicationsUrl) {
-      throw new Error('No most used applications url present');
-    }
+    return 'https://tools.multiversx.com/growth-api/explorer/widgets/most-used/applications';
+    // const mostUsedApplicationsUrl = this.configService.get<string>('features.updateAccountExtraDetails.mostUsedApplicationsUrl');
+    // if (!mostUsedApplicationsUrl) {
+    //   throw new Error('No most used applications url present');
+    // }
 
-    return mostUsedApplicationsUrl;
+    // return mostUsedApplicationsUrl;
   }
 
   getTransactionPoolCacheWarmerCronExpression(): string {
