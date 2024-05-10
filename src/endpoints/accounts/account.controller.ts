@@ -94,7 +94,7 @@ export class AccountController {
   @ApiQuery({ name: 'name', description: 'Filter accounts by assets name', required: false })
   @ApiQuery({ name: 'tags', description: 'Filter accounts by assets tags', required: false })
   @ApiQuery({ name: 'excludeTags', description: 'Exclude specific tags from result', required: false })
-  @ApiQuery({ name: 'hasAssets', description: 'Return a list accounts with assets', required: false })
+  @ApiQuery({ name: 'hasAssets', description: 'Returns a list of accounts that have assets', required: false })
 
   getAccounts(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
@@ -142,7 +142,7 @@ export class AccountController {
   @ApiQuery({ name: 'name', description: 'Filter accounts by assets name', required: false })
   @ApiQuery({ name: 'tags', description: 'Filter accounts by assets tags', required: false })
   @ApiQuery({ name: 'excludeTags', description: 'Exclude specific tags from result', required: false })
-  @ApiQuery({ name: 'hasAssets', description: 'Return a list accounts with assets', required: false })
+  @ApiQuery({ name: 'hasAssets', description: 'Returns a list of accounts that have assets', required: false })
   async getAccountsCount(
     @Query("ownerAddress", ParseAddressPipe) ownerAddress?: string,
     @Query("isSmartContract", new ParseBoolPipe) isSmartContract?: boolean,
