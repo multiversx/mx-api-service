@@ -167,6 +167,8 @@ export interface IndexerInterface {
 
   ensureTokensWritable(): Promise<void>
 
+  setExtraAccountFields(address: string, transfersLast24h: number): Promise<void>
+
   getBlockByTimestampAndShardId(timestamp: number, shardId: number): Promise<Block | undefined>
 
   getVersion(): Promise<string | undefined>

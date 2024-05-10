@@ -36,6 +36,9 @@ features:
     ttlInSeconds: 60 
   updateCollectionExtraDetails:
     enabled: false
+  updateAccountExtraDetails:
+    enabled: false
+    mostUsedApplicationsUrl: 'https://tools.multiversx.com/growth-api/explorer/widgets/most-used/applications'
   marketplace:
     enabled: false
     serviceUrl: 'https://nfts-graph.multiversx.com/graphql'

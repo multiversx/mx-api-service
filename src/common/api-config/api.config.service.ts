@@ -686,6 +686,19 @@ export class ApiConfigService {
     return this.configService.get<boolean>('features.transactionPoolWarmer.enabled') ?? false;
   }
 
+  isUpdateAccountExtraDetailsEnabled(): boolean {
+    return this.configService.get<boolean>('features.updateAccountExtraDetails.enabled') ?? false;
+  }
+
+  getMostUsedApplicationsUrl(): string {
+    const mostUsedApplicationsUrl = this.configService.get<string>('features.updateAccountExtraDetails.mostUsedApplicationsUrl');
+    if (!mostUsedApplicationsUrl) {
+      throw new Error('No most used applications url present');
+    }
+
+    return mostUsedApplicationsUrl;
+  }
+
   getTransactionPoolCacheWarmerCronExpression(): string {
     const cronExpression = this.configService.get<string>('features.transactionPoolWarmer.cronExpression');
     if (!cronExpression) {

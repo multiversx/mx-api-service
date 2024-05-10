@@ -577,6 +577,10 @@ export class ElasticIndexerHelper {
       elasticQuery = elasticQuery.withMustExistCondition('api_assets');
     }
 
+    if (filter.addresses !== undefined && filter.addresses.length > 0) {
+      elasticQuery = elasticQuery.withMustMultiShouldCondition(filter.addresses, address => QueryType.Match('address', address));
+    }
+
     return elasticQuery;
   }
 
