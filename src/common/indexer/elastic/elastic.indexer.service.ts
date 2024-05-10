@@ -400,6 +400,9 @@ export class ElasticIndexerService implements IndexerInterface {
       case AccountSort.balance:
         elasticQuery = elasticQuery.withSort([{ name: 'balanceNum', order: sortOrder }]);
         break;
+      case AccountSort.transfersLast24h:
+        elasticQuery = elasticQuery.withSort([{ name: 'api_transfersLast24h', order: sortOrder }]);
+        break;
       default:
         elasticQuery = elasticQuery.withSort([{ name: sort.toString(), order: sortOrder }]);
         break;
@@ -852,6 +855,12 @@ export class ElasticIndexerService implements IndexerInterface {
       isVerified,
       holderCount,
       nftCount,
+    });
+  }
+
+  async setExtraAccountFields(address: string, transfersLast24h: number): Promise<void> {
+    return await this.elasticService.setCustomValues('accounts', address, {
+      transfersLast24h,
     });
   }
 

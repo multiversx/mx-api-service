@@ -160,6 +160,8 @@ export interface IndexerInterface {
 
   setExtraCollectionFields(identifier: string, isVerified: boolean, holderCount: number, nftCount: number): Promise<void>
 
+  setExtraAccountFields(address: string, transfersLast24h: number): Promise<void>
+
   getBlockByTimestampAndShardId(timestamp: number, shardId: number): Promise<Block | undefined>
 
   getVersion(): Promise<string | undefined>

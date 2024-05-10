@@ -36,6 +36,8 @@ features:
     ttlInSeconds: 60
   updateCollectionExtraDetails:
     enabled: false
+  updateAccountExtraDetails:
+    enabled: false
   marketplace:
     enabled: false
     serviceUrl: 'https://testnet-nfts-graph.multiversx.com/graphql'

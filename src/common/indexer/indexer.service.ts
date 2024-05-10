@@ -373,6 +373,11 @@ export class IndexerService implements IndexerInterface {
   }
 
   @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
+  async setExtraAccountFields(address: string, transfersLast24h: number): Promise<void> {
+    return await this.indexerInterface.setExtraAccountFields(address, transfersLast24h);
+  }
+
+  @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
   async getNftCollectionsByIds(identifiers: string[]): Promise<Collection[]> {
     return await this.indexerInterface.getNftCollectionsByIds(identifiers);
   }

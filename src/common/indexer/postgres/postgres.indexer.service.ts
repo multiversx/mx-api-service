@@ -655,4 +655,8 @@ export class PostgresIndexerService implements IndexerInterface {
   async setExtraCollectionFields(_identifier: string, _isVerified: boolean, _holderCount: number, _nftCount: number): Promise<void> {
     // TODO custom columns cannot be added
   }
+
+  async setExtraAccountFields(_address: string, _transfersLast24h: number): Promise<void> {
+    // TODO custom columns cannot be added
+  }
 }
