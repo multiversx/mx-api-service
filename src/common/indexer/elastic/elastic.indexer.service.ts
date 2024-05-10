@@ -45,7 +45,7 @@ export class ElasticIndexerService implements IndexerInterface {
   }
 
   async getScResultsCount(filter: SmartContractResultFilter): Promise<number> {
-    const query = this.indexerHelper.builResultsFilterQuery(filter);
+    const query = this.indexerHelper.buildResultsFilterQuery(filter);
     return await this.elasticService.getCount('scresults', query);
   }
 
@@ -356,7 +356,7 @@ export class ElasticIndexerService implements IndexerInterface {
   }
 
   async getScResults(pagination: QueryPagination, filter: SmartContractResultFilter): Promise<any[]> {
-    const elasticQuery: ElasticQuery = this.indexerHelper.builResultsFilterQuery(filter)
+    const elasticQuery: ElasticQuery = this.indexerHelper.buildResultsFilterQuery(filter)
       .withPagination(pagination);
 
     const results = await this.elasticService.getList('scresults', 'hash', elasticQuery);
