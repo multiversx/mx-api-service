@@ -56,6 +56,11 @@ export class CacheInfo {
     ttl: Constants.oneSecond() * 6,
   };
 
+  static ApplicationMostUsed: CacheInfo = {
+    key: 'applicationMostUsed',
+    ttl: Constants.oneHour(),
+  };
+
   static Identities: CacheInfo = {
     key: 'identities',
     ttl: Constants.oneMinute() * 15,
@@ -261,22 +266,22 @@ export class CacheInfo {
 
   static TokenTransactions(identifier: string): CacheInfo {
     return {
-      key: `tokenTransactions:${identifier}`,
-      ttl: Constants.oneMinute() * 10,
+      key: `tokenTransactionsv2:${identifier}`,
+      ttl: Constants.oneHour(),
     };
   }
 
   static TokenTransfers(identifier: string): CacheInfo {
     return {
-      key: `tokenTransfers:${identifier}`,
-      ttl: Constants.oneSecond() * 10,
+      key: `tokenTransfersv2:${identifier}`,
+      ttl: Constants.oneHour(),
     };
   }
 
   static TokenAccounts(identifier: string): CacheInfo {
     return {
-      key: `tokenAccounts:${identifier}`,
-      ttl: Constants.oneMinute() * 10,
+      key: `tokenAccountsv2:${identifier}`,
+      ttl: Constants.oneHour(),
     };
   }
 
