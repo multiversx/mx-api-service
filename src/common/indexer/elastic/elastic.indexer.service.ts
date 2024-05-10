@@ -402,7 +402,13 @@ export class ElasticIndexerService implements IndexerInterface {
         elasticQuery = elasticQuery.withSort([{ name: 'balanceNum', order: sortOrder }]);
         break;
       case AccountSort.transfersLast24h:
-        elasticQuery = elasticQuery.withSort([{ name: 'api_transfersLast24h', order: sortOrder }]);
+        if (this.apiConfigService.getAccountExtraDetailsTransfersLast24hUrl()) {
+          elasticQuery = elasticQuery.withSort([{ name: 'api_transfersLast24h', order: sortOrder }]);
+        } else {
+          elasticQuery = elasticQuery
+            .withSort([{ name: 'timestamp', order: sortOrder }])
+            .withMustExistCondition('currentOwner');
+        }
         break;
       default:
         elasticQuery = elasticQuery.withSort([{ name: sort.toString(), order: sortOrder }]);
