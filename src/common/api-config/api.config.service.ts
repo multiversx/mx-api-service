@@ -686,6 +686,14 @@ export class ApiConfigService {
     return this.configService.get<boolean>('features.transactionPoolWarmer.enabled') ?? false;
   }
 
+  isUpdateAccountExtraDetailsEnabled(): boolean {
+    return this.configService.get<boolean>('features.updateAccountExtraDetails.enabled') ?? false;
+  }
+
+  getAccountExtraDetailsTransfersLast24hUrl(): string | undefined {
+    return this.configService.get<string>('features.updateAccountExtraDetails.transfersLast24hUrl');
+  }
+
   getTransactionPoolCacheWarmerCronExpression(): string {
     const cronExpression = this.configService.get<string>('features.transactionPoolWarmer.cronExpression');
     if (!cronExpression) {

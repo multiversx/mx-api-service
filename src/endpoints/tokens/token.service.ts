@@ -947,8 +947,9 @@ export class TokenService {
             token.price = price.price;
             token.marketCap = price.price * NumberUtils.denominateString(supply.circulatingSupply, token.decimals);
 
-            if (token.totalLiquidity && token.marketCap && token.totalLiquidity / token.marketCap < LOW_LIQUIDITY_THRESHOLD) {
+            if (token.totalLiquidity && token.marketCap && (token.totalLiquidity / token.marketCap < LOW_LIQUIDITY_THRESHOLD)) {
               token.isLowLiquidity = true;
+              token.lowLiquidityThresholdPercent = LOW_LIQUIDITY_THRESHOLD * 100;
             }
           }
 

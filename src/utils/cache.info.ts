@@ -56,6 +56,11 @@ export class CacheInfo {
     ttl: Constants.oneSecond() * 6,
   };
 
+  static ApplicationMostUsed: CacheInfo = {
+    key: 'applicationMostUsed',
+    ttl: Constants.oneHour(),
+  };
+
   static Identities: CacheInfo = {
     key: 'identities',
     ttl: Constants.oneMinute() * 15,
