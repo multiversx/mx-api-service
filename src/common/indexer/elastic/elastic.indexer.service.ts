@@ -427,6 +427,14 @@ export class ElasticIndexerService implements IndexerInterface {
     return await this.elasticService.getList('scdeploys', "contract", elasticQuery);
   }
 
+  async getProviderDelegators(address: string, pagination: QueryPagination): Promise<any[]> {
+    const elasticQuery: ElasticQuery = ElasticQuery.create()
+      .withPagination(pagination)
+      .withCondition(QueryConditionOptions.must, [QueryType.Match("contract", address)])
+      .withSort([{ name: 'activeStake', order: ElasticSortOrder.descending }]);
+
+    return await this.elasticService.getList('delegators', "contract", elasticQuery);
+  }
   async getAccountHistory(address: string, pagination: QueryPagination, filter?: AccountHistoryFilter): Promise<any[]> {
     const elasticQuery: ElasticQuery = this.indexerHelper.buildAccountHistoryFilterQuery(address, undefined, filter)
       .withPagination(pagination)

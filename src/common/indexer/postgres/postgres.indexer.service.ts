@@ -18,6 +18,7 @@ import { Collection, ScResult, Account, MiniBlock, Tag, TokenType, Block } from 
 import { IndexerInterface } from "../indexer.interface";
 import { AccountDb, AccountsEsdtDb, BlockDb, LogDb, MiniBlockDb, ReceiptDb, RoundInfoDb, ScDeployInfoDb, ScResultDb, TagDb, TokenInfoDb, TransactionDb, ValidatorPublicKeysDb } from "./entities";
 import { PostgresIndexerHelper } from "./postgres.indexer.helper";
+import { ProviderDelegators } from "../entities/provider.delegators";
 
 @Injectable()
 export class PostgresIndexerService implements IndexerInterface {
@@ -50,6 +51,10 @@ export class PostgresIndexerService implements IndexerInterface {
     private readonly validatorPublicKeysRepository: Repository<ValidatorPublicKeysDb>,
     private readonly indexerHelper: PostgresIndexerHelper,
   ) { }
+
+  getProviderDelegators(_address: string, _pagination: QueryPagination): Promise<ProviderDelegators[]> {
+    throw new Error("Method not implemented.");
+  }
   getVersion(): Promise<string | undefined> {
     throw new Error("Method not implemented.");
   }
