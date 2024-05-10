@@ -433,7 +433,7 @@ export class ElasticIndexerService implements IndexerInterface {
       .withCondition(QueryConditionOptions.must, [QueryType.Match("contract", address)])
       .withSort([{ name: 'activeStake', order: ElasticSortOrder.descending }]);
 
-    return await this.elasticService.getList('delegators', "contract", elasticQuery);
+    return await this.elasticService.getList("delegators", "contract", elasticQuery);
   }
 
   async getProviderDelegatorsCount(address: string): Promise<number> {
