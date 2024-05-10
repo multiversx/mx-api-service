@@ -2,6 +2,8 @@ import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { ApiService } from "@multiversx/sdk-nestjs-http";
 import { Test } from "@nestjs/testing";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
+import { QueryPagination } from "src/common/entities/query.pagination";
+import { ElasticIndexerService } from "src/common/indexer/elastic/elastic.indexer.service";
 import { IdentitiesService } from "src/endpoints/identities/identities.service";
 import { NodeService } from "src/endpoints/nodes/node.service";
 import { ProviderService } from "src/endpoints/providers/provider.service";
@@ -11,6 +13,7 @@ describe('ProviderService', () => {
   let service: ProviderService;
   let vmQuery: VmQueryService;
   let apiService: ApiService;
+  let elasticIndexerService: ElasticIndexerService;
 
   beforeEach(async () => {
     const moduleRef = await Test.createTestingModule({
@@ -58,12 +61,20 @@ describe('ProviderService', () => {
             getIdentity: jest.fn(),
           },
         },
+        {
+          provide: ElasticIndexerService,
+          useValue: {
+            getProviderDelegators: jest.fn(),
+            getProviderDelegatorsCount: jest.fn(),
+          },
+        },
       ],
     }).compile();
 
     service = moduleRef.get<ProviderService>(ProviderService);
     vmQuery = moduleRef.get<VmQueryService>(VmQueryService);
     apiService = moduleRef.get<ApiService>(ApiService);
+    elasticIndexerService = moduleRef.get<ElasticIndexerService>(ElasticIndexerService);
   });
 
   it('service should be defined', () => {
@@ -207,4 +218,70 @@ describe('ProviderService', () => {
       expect(results).toEqual([]);
     });
   });
+
+  describe('getProviderAccounts', () => {
+    it('should return a list of delegators for a given provider', async () => {
+      const contract = 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqc0llllsayxegu';
+      const elasticProviderDelegatorsMock = createElasticMockDelegators(25, contract);
+      jest.spyOn(elasticIndexerService, 'getProviderDelegators').mockResolvedValue(elasticProviderDelegatorsMock);
+
+      const results = await service.getProviderAccounts(contract, new QueryPagination({}));
+      expect(elasticIndexerService.getProviderDelegators).toHaveBeenCalled();
+
+      for (const result of results) {
+        expect(result.address).toBeDefined();
+        expect(result.stake).toBeDefined();
+      }
+    });
+
+    it('should return [] if no delegators are available from elastic from given contract address', async () => {
+      const contract = 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqrhlllls062tu4';
+      jest.spyOn(elasticIndexerService, 'getProviderDelegators').mockResolvedValue([]);
+
+      const results = await service.getProviderAccounts(contract, new QueryPagination());
+
+      expect(elasticIndexerService.getProviderDelegators).toHaveBeenCalled();
+      expect(results).toStrictEqual([]);
+    });
+  });
+
+  describe('getProviderAccountsCount', () => {
+    it('should return total delegators count for a given provider', async () => {
+      const contract = 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqc0llllsayxegu';
+      jest.spyOn(elasticIndexerService, 'getProviderDelegatorsCount').mockResolvedValue(100);
+
+      const results = await service.getProviderAccountsCount(contract);
+
+      expect(elasticIndexerService.getProviderDelegatorsCount).toHaveBeenCalled();
+      expect(results).toStrictEqual(100);
+    });
+  });
 });
+
+function createElasticMockDelegators(numberOfAccounts: number, contract: string | null) {
+  return Array.from({ length: numberOfAccounts }, (_, index) => {
+
+    return {
+      contract: contract || generateMockAddress(),
+      address: generateMockAddress(),
+      activeStake: generateRandomBalance(),
+      activeStakeNum: generateRandomBalance(),
+      timestamp: Math.floor(Date.now() / 1000) - index * 1000,
+    };
+  });
+}
+
+function generateRandomBalance() {
+  return (Math.floor(Math.random() * 1000000) + 100000).toString();
+}
+
+function generateMockAddress() {
+  const desiredLength = 62 - 'erd1'.length;
+  let address = 'erd1';
+
+  while (address.length < desiredLength + 'erd1'.length) {
+    address += Math.random().toString(36).substring(2);
+  }
+
+  return address.substring(0, desiredLength + 'erd1'.length);
+}
