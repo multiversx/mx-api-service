@@ -374,8 +374,8 @@ export class IndexerService implements IndexerInterface {
   }
 
   @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
-  async setExtraAccountFields(address: string, transfersLast24h: number): Promise<void> {
-    return await this.indexerInterface.setExtraAccountFields(address, transfersLast24h);
+  async setAccountTransfersLast24h(address: string, transfersLast24h: number): Promise<void> {
+    return await this.indexerInterface.setAccountTransfersLast24h(address, transfersLast24h);
   }
 
   @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)

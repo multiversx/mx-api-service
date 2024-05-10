@@ -669,7 +669,7 @@ export class PostgresIndexerService implements IndexerInterface {
     // TODO custom columns cannot be added
   }
 
-  async setExtraAccountFields(_address: string, _transfersLast24h: number): Promise<void> {
+  async setAccountTransfersLast24h(_address: string, _transfersLast24h: number): Promise<void> {
     // TODO custom columns cannot be added
   }
 }

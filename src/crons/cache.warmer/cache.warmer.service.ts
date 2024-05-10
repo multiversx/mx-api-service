@@ -90,16 +90,14 @@ export class CacheWarmerService {
       handleTransactionPoolCacheInvalidation.start();
     }
 
-    if (this.apiConfigService.isUpdateAccountAssetsFeatureEnabled()) {
+    if (this.apiConfigService.isUpdateAccountExtraDetailsEnabled()) {
+      const handleUpdateAccountExtraDetails = new CronJob(CronExpression.EVERY_MINUTE, async () => await this.handleUpdateAccountTransfersLast24h());
+      this.schedulerRegistry.addCronJob('handleUpdateAccountTransfersLast24h', handleUpdateAccountExtraDetails);
+      handleUpdateAccountExtraDetails.start();
+
       const handleUpdateAccountAssetsCronJob = new CronJob(CronExpression.EVERY_HOUR, async () => await this.handleUpdateAccountAssets());
       this.schedulerRegistry.addCronJob('handleUpdateAccountAssets', handleUpdateAccountAssetsCronJob);
       handleUpdateAccountAssetsCronJob.start();
-    }
-
-    if (this.apiConfigService.isUpdateAccountExtraDetailsEnabled()) {
-      const handleUpdateAccountExtraDetails = new CronJob(CronExpression.EVERY_MINUTE, async () => await this.handleUpdateAccountExtraDetails());
-      this.schedulerRegistry.addCronJob('handleUpdateAccountExtraDetails', handleUpdateAccountExtraDetails);
-      handleUpdateAccountExtraDetails.start();
     }
   }
 
@@ -304,7 +302,7 @@ export class CacheWarmerService {
   }
 
   @Lock({ name: 'Elastic updater: Update account transfersLast24h', verbose: true })
-  async handleUpdateAccountExtraDetails() {
+  async handleUpdateAccountTransfersLast24h() {
     const batchSize = 100;
     const mostUsed = await this.accountService.getApplicationMostUsedRaw();
 
@@ -321,7 +319,7 @@ export class CacheWarmerService {
         const account = accountsDictionary[item.address];
         if (account && account.api_transfersLast24h !== item.transfers24H) {
           this.logger.log(`Setting transferLast24h to ${item.transfers24H} for account with address '${item.address}'`);
-          await this.indexerService.setExtraAccountFields(item.address, item.transfers24H);
+          await this.indexerService.setAccountTransfersLast24h(item.address, item.transfers24H);
         }
       }
     }

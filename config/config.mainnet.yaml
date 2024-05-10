@@ -48,8 +48,6 @@ features:
   dataApi:
     enabled: false
     serviceUrl: 'https://data-api.multiversx.com'
-  updateAccountAssets:
-    enabled: false
   auth:
     enabled: false
     maxExpirySeconds: 86400

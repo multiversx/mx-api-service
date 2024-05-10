@@ -307,7 +307,7 @@ async function configureCacheWarmerApp(cacheWarmerApp: INestApplication<any>, ap
   const logger = new Logger('Cache warmer initializer');
 
   try {
-    if (apiConfigService.isUpdateAccountAssetsFeatureEnabled()) {
+    if (apiConfigService.isUpdateAccountExtraDetailsEnabled()) {
       await indexerService.ensureAccountsWritable();
     }
 
@@ -325,7 +325,7 @@ async function configureCacheWarmerApp(cacheWarmerApp: INestApplication<any>, ap
     process.kill(process.pid, 'SIGTERM');
   }
 
-  logger.log(`Update account assets: ${apiConfigService.isUpdateAccountAssetsFeatureEnabled()}`);
+  logger.log(`Update account extra details: ${apiConfigService.isUpdateAccountExtraDetailsEnabled()}`);
   logger.log(`Update collection extra details: ${apiConfigService.isUpdateCollectionExtraDetailsEnabled()}`);
 }
 

@@ -891,7 +891,7 @@ export class ElasticIndexerService implements IndexerInterface {
     }
   }
 
-  async setExtraAccountFields(address: string, transfersLast24h: number): Promise<void> {
+  async setAccountTransfersLast24h(address: string, transfersLast24h: number): Promise<void> {
     return await this.elasticService.setCustomValues('accounts', address, {
       transfersLast24h,
     });
