@@ -36,7 +36,7 @@ export class ProviderController {
   }
 
   @Get('/providers/:address/accounts')
-  @ApiOperation({ summary: 'Provider', description: 'Returns provider delegators for a given address' })
+  @ApiOperation({ summary: 'Provider', description: 'Returns provider delegators accounts for a given provider address' })
   @ApiOkResponse({ type: Provider })
   @ApiNotFoundResponse({ description: 'Provider not found' })
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
@@ -55,7 +55,7 @@ export class ProviderController {
   }
 
   @Get('/providers/:address/accounts/count')
-  @ApiOperation({ summary: 'Provider', description: 'Returns provider total delegators' })
+  @ApiOperation({ summary: 'Provider', description: 'Returns provider total number of delegators' })
   @ApiOkResponse({ type: Provider })
   @ApiNotFoundResponse({ description: 'Provider not found' })
   async getProviderAccountsCount(@Param('address', ParseAddressPipe) address: string): Promise<number> {
