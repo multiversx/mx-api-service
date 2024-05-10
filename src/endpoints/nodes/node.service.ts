@@ -23,6 +23,7 @@ import { KeysService } from "../keys/keys.service";
 import { IdentitiesService } from "../identities/identities.service";
 import { NodeAuction } from "./entities/node.auction";
 import { NodeAuctionFilter } from "./entities/node.auction.filter";
+import { Identity } from "../identities/entities/identity";
 
 @Injectable()
 export class NodeService {
@@ -124,7 +125,7 @@ export class NodeService {
   private async getFilteredNodes(query: NodeFilter): Promise<Node[]> {
     const allNodes = await this.getAllNodes();
 
-    let filteredNodes = allNodes.filter(node => {
+    const filteredNodes = allNodes.filter(node => {
       if (query.search !== undefined) {
         const nodeMatches = node.bls && node.bls.toLowerCase().includes(query.search.toLowerCase());
         const nameMatches = node.name && node.name.toLowerCase().includes(query.search.toLowerCase());
@@ -206,20 +207,6 @@ export class NodeService {
       return true;
     });
 
-    if (query.withIdentityInfo) {
-      filteredNodes = await Promise.all(filteredNodes.map(async node => {
-        if (node.identity) {
-          node.identityInfo = await this.identitiesService.getIdentity(node.identity);
-        }
-        return node;
-      }));
-    } else {
-      filteredNodes = filteredNodes.map(node => {
-        const { identityInfo, ...rest } = node;
-        return rest;
-      });
-    }
-
     const sort = query.sort;
     if (sort) {
       filteredNodes.sort((a: any, b: any) => {
@@ -255,7 +242,26 @@ export class NodeService {
 
     const filteredNodes = await this.getFilteredNodes(query);
 
-    return filteredNodes.slice(from, from + size);
+    const resultNodes = filteredNodes.slice(from, from + size);
+
+    if (query.withIdentityInfo) {
+      const allIdentities = await this.identitiesService.getAllIdentities();
+      const allIdentitiesDict = allIdentities.toRecord<Identity>(x => x.identity ?? '');
+
+      for (const [index, node] of resultNodes.entries()) {
+        if (node.identity) {
+          const identity = allIdentitiesDict[node.identity];
+          if (identity) {
+            resultNodes[index] = new Node({
+              ...node,
+              identityInfo: identity,
+            });
+          }
+        }
+      }
+    }
+
+    return resultNodes;
   }
 
   async getAllNodes(): Promise<Node[]> {
