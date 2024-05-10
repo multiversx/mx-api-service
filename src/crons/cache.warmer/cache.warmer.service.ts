@@ -95,7 +95,7 @@ export class CacheWarmerService {
       this.schedulerRegistry.addCronJob('handleUpdateAccountTransfersLast24h', handleUpdateAccountExtraDetails);
       handleUpdateAccountExtraDetails.start();
 
-      const handleUpdateAccountAssetsCronJob = new CronJob(CronExpression.EVERY_HOUR, async () => await this.handleUpdateAccountAssets());
+      const handleUpdateAccountAssetsCronJob = new CronJob(CronExpression.EVERY_MINUTE, async () => await this.handleUpdateAccountAssets());
       this.schedulerRegistry.addCronJob('handleUpdateAccountAssets', handleUpdateAccountAssetsCronJob);
       handleUpdateAccountAssetsCronJob.start();
     }
@@ -301,30 +301,6 @@ export class CacheWarmerService {
     await this.invalidateKey(CacheInfo.VerifiedAccounts.key, verifiedAccounts, CacheInfo.VerifiedAccounts.ttl);
   }
 
-  @Lock({ name: 'Elastic updater: Update account transfersLast24h', verbose: true })
-  async handleUpdateAccountTransfersLast24h() {
-    const batchSize = 100;
-    const mostUsed = await this.accountService.getApplicationMostUsedRaw();
-
-    const batches = BatchUtils.splitArrayIntoChunks(mostUsed, batchSize);
-    for (const batch of batches) {
-      const accounts = await this.indexerService.getAccounts(
-        new QueryPagination({ from: 0, size: batchSize }),
-        new AccountQueryOptions({ addresses: batch.map(item => item.address) }),
-      );
-
-      const accountsDictionary = accounts.toRecord<Account>(account => account.address);
-
-      for (const item of batch) {
-        const account = accountsDictionary[item.address];
-        if (account && account.api_transfersLast24h !== item.transfers24H) {
-          this.logger.log(`Setting transferLast24h to ${item.transfers24H} for account with address '${item.address}'`);
-          await this.indexerService.setAccountTransfersLast24h(item.address, item.transfers24H);
-        }
-      }
-    }
-  }
-
   @Lock({ name: 'Elastic updater: Update collection isVerified, nftCount, holderCount', verbose: true })
   async handleUpdateCollectionExtraDetails() {
     const allAssets = await this.assetsService.getAllTokenAssets();
@@ -349,22 +325,59 @@ export class CacheWarmerService {
 
   @Lock({ name: 'Elastic updater: Update account assets', verbose: true })
   async handleUpdateAccountAssets() {
+    const batchSize = 100;
     const allAccountAssets = await this.assetsService.getAllAccountAssets();
 
-    for (const address of Object.keys(allAccountAssets)) {
-      try {
-        const assets = allAccountAssets[address];
-        const account = await this.indexerService.getAccount(address);
-        if (!account) {
-          continue;
-        }
+    const addresses = Object.keys(allAccountAssets);
+    const batches = BatchUtils.splitArrayIntoChunks(addresses, batchSize);
 
-        if (JsonDiff.diff(account.api_assets, assets)) {
-          this.logger.log(`Updating assets for account with address '${address}'`);
-          await this.indexerService.setAccountAssetsFields(address, assets);
+    for (const batch of batches) {
+      const accounts = await this.indexerService.getAccounts(
+        new QueryPagination({ from: 0, size: batchSize }),
+        new AccountQueryOptions({ addresses: batch }),
+      );
+
+      const accountsDictionary = accounts.toRecord<Account>(account => account.address);
+
+      for (const address of Object.keys(allAccountAssets)) {
+        try {
+          const assets = allAccountAssets[address];
+          const account = accountsDictionary[address];
+          if (!account) {
+            continue;
+          }
+
+          if (JsonDiff.diff(account.api_assets, assets)) {
+            this.logger.log(`Updating assets for account with address '${address}'`);
+            await this.indexerService.setAccountAssetsFields(address, assets);
+          }
+        } catch (error) {
+          this.logger.error(`Failed to update assets for account with address '${address}': ${error}`);
         }
-      } catch (error) {
-        this.logger.error(`Failed to update assets for account with address '${address}': ${error}`);
+      }
+    }
+  }
+
+  @Lock({ name: 'Elastic updater: Update account transfersLast24h', verbose: true })
+  async handleUpdateAccountTransfersLast24h() {
+    const batchSize = 100;
+    const mostUsed = await this.accountService.getApplicationMostUsedRaw();
+
+    const batches = BatchUtils.splitArrayIntoChunks(mostUsed, batchSize);
+    for (const batch of batches) {
+      const accounts = await this.indexerService.getAccounts(
+        new QueryPagination({ from: 0, size: batchSize }),
+        new AccountQueryOptions({ addresses: batch.map(item => item.address) }),
+      );
+
+      const accountsDictionary = accounts.toRecord<Account>(account => account.address);
+
+      for (const item of batch) {
+        const account = accountsDictionary[item.address];
+        if (account && account.api_transfersLast24h !== item.transfers24H) {
+          this.logger.log(`Setting transferLast24h to ${item.transfers24H} for account with address '${item.address}'`);
+          await this.indexerService.setAccountTransfersLast24h(item.address, item.transfers24H);
+        }
       }
     }
   }
