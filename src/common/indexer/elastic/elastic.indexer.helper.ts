@@ -573,8 +573,12 @@ export class ElasticIndexerHelper {
       return elasticQuery.withMustNotCondition(QueryType.Should(filter.excludeTags.map(tag => QueryType.Match('api_assets.tags', tag))));
     }
 
-    if (filter.hasAssets) {
-      elasticQuery = elasticQuery.withMustExistCondition('api_assets');
+    if (filter.hasAssets !== undefined) {
+      if (filter.hasAssets) {
+        elasticQuery = elasticQuery.withMustExistCondition('api_assets');
+      } else {
+        elasticQuery = elasticQuery.withMustNotExistCondition('api_assets');
+      }
     }
 
     if (filter.addresses !== undefined && filter.addresses.length > 0) {
