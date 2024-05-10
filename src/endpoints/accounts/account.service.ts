@@ -68,7 +68,7 @@ export class AccountService {
   ) { }
 
   async getAccountsCount(filter: AccountQueryOptions): Promise<number> {
-    if (!filter.ownerAddress && filter.isSmartContract === undefined) {
+    if (!filter.isSet()) {
       return await this.cachingService.getOrSet(
         CacheInfo.AccountsCount.key,
         async () => await this.indexerService.getAccountsCount(filter),
@@ -697,7 +697,12 @@ export class AccountService {
   }
 
   async getApplicationMostUsedRaw(): Promise<ApplicationMostUsed[]> {
-    const { data: mostUsedApplications } = await this.apiService.get(this.apiConfigService.getMostUsedApplicationsUrl());
+    const transfersLast24hUrl = this.apiConfigService.getAccountExtraDetailsTransfersLast24hUrl();
+    if (!transfersLast24hUrl) {
+      throw new Error('Transfers last 24h URL is not set');
+    }
+
+    const { data: mostUsedApplications } = await this.apiService.get(transfersLast24hUrl);
     return mostUsedApplications.map((item: any) => new ApplicationMostUsed({
       address: item.key,
       transfers24H: item.value,

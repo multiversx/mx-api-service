@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { HttpStatus, Injectable } from "@nestjs/common";
 import { BinaryUtils } from "@multiversx/sdk-nestjs-common";
 import { ApiService } from "@multiversx/sdk-nestjs-http";
 import { ElasticService, ElasticQuery, QueryOperator, QueryType, QueryConditionOptions, ElasticSortOrder, ElasticSortProperty, TermsQuery, RangeGreaterThanOrEqual, MatchQuery } from "@multiversx/sdk-nestjs-elastic";
@@ -25,6 +25,8 @@ import { AccountQueryOptions } from "src/endpoints/accounts/entities/account.que
 import { AccountSort } from "src/endpoints/accounts/entities/account.sort";
 import { MiniBlockFilter } from "src/endpoints/miniblocks/entities/mini.block.filter";
 import { AccountHistoryFilter } from "src/endpoints/accounts/entities/account.history.filter";
+import { AccountAssets } from "src/common/assets/entities/account.assets";
+import { NotWritableError } from "../entities/not.writable.error";
 
 
 @Injectable()
@@ -43,7 +45,7 @@ export class ElasticIndexerService implements IndexerInterface {
   }
 
   async getScResultsCount(filter: SmartContractResultFilter): Promise<number> {
-    const query = this.indexerHelper.builResultsFilterQuery(filter);
+    const query = this.indexerHelper.buildResultsFilterQuery(filter);
     return await this.elasticService.getCount('scresults', query);
   }
 
@@ -354,7 +356,7 @@ export class ElasticIndexerService implements IndexerInterface {
   }
 
   async getScResults(pagination: QueryPagination, filter: SmartContractResultFilter): Promise<any[]> {
-    const elasticQuery: ElasticQuery = this.indexerHelper.builResultsFilterQuery(filter)
+    const elasticQuery: ElasticQuery = this.indexerHelper.buildResultsFilterQuery(filter)
       .withPagination(pagination);
 
     const results = await this.elasticService.getList('scresults', 'hash', elasticQuery);
@@ -392,7 +394,6 @@ export class ElasticIndexerService implements IndexerInterface {
 
   async getAccounts(queryPagination: QueryPagination, filter: AccountQueryOptions): Promise<any[]> {
     let elasticQuery = this.indexerHelper.buildAccountFilterQuery(filter);
-
     const sortOrder: ElasticSortOrder = !filter.order || filter.order === SortOrder.desc ? ElasticSortOrder.descending : ElasticSortOrder.ascending;
     const sort: AccountSort = filter.sort ?? AccountSort.balance;
 
@@ -401,7 +402,13 @@ export class ElasticIndexerService implements IndexerInterface {
         elasticQuery = elasticQuery.withSort([{ name: 'balanceNum', order: sortOrder }]);
         break;
       case AccountSort.transfersLast24h:
-        elasticQuery = elasticQuery.withSort([{ name: 'api_transfersLast24h', order: sortOrder }]);
+        if (this.apiConfigService.getAccountExtraDetailsTransfersLast24hUrl()) {
+          elasticQuery = elasticQuery.withSort([{ name: 'api_transfersLast24h', order: sortOrder }]);
+        } else {
+          elasticQuery = elasticQuery
+            .withSort([{ name: 'timestamp', order: sortOrder }])
+            .withMustExistCondition('currentOwner');
+        }
         break;
       default:
         elasticQuery = elasticQuery.withSort([{ name: sort.toString(), order: sortOrder }]);
@@ -858,7 +865,39 @@ export class ElasticIndexerService implements IndexerInterface {
     });
   }
 
-  async setExtraAccountFields(address: string, transfersLast24h: number): Promise<void> {
+  async setAccountAssetsFields(address: string, assets: AccountAssets): Promise<void> {
+    return await this.elasticService.setCustomValues('accounts', address, { assets });
+  }
+
+  async ensureAccountsWritable(): Promise<void> {
+    await this.ensureCollectionWritable('accounts');
+  }
+
+  async ensureTokensWritable(): Promise<void> {
+    await this.ensureCollectionWritable('tokens');
+  }
+
+  private async ensureCollectionWritable(collection: string) {
+    const query = new ElasticQuery().withPagination({ from: 0, size: 1 });
+    const items = await this.elasticService.getList(collection, 'id', query);
+
+    if (items.length === 0) {
+      throw new Error(`No entries available in the '${collection}' collection`);
+    }
+
+    const item = items[0];
+
+    try {
+      await this.elasticService.setCustomValue(collection, item.id, 'ensureWritable', undefined);
+    } catch (error) {
+      // @ts-ignore
+      if (error.status === HttpStatus.FORBIDDEN) {
+        throw new NotWritableError(collection);
+      }
+    }
+  }
+
+  async setAccountTransfersLast24h(address: string, transfersLast24h: number): Promise<void> {
     return await this.elasticService.setCustomValues('accounts', address, {
       transfersLast24h,
     });

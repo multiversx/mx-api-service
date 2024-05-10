@@ -561,6 +561,26 @@ export class ElasticIndexerHelper {
       }
     }
 
+    if (filter.name) {
+      elasticQuery = elasticQuery.withMustWildcardCondition('api_assets.name', filter.name);
+    }
+
+    if (filter.tags && filter.tags.length > 0) {
+      return elasticQuery.withMustCondition(QueryType.Should(filter.tags.map(tag => QueryType.Match('api_assets.tags', tag))));
+    }
+
+    if (filter.excludeTags && filter.excludeTags.length > 0) {
+      return elasticQuery.withMustNotCondition(QueryType.Should(filter.excludeTags.map(tag => QueryType.Match('api_assets.tags', tag))));
+    }
+
+    if (filter.hasAssets !== undefined) {
+      if (filter.hasAssets) {
+        elasticQuery = elasticQuery.withMustExistCondition('api_assets');
+      } else {
+        elasticQuery = elasticQuery.withMustNotExistCondition('api_assets');
+      }
+    }
+
     if (filter.addresses !== undefined && filter.addresses.length > 0) {
       elasticQuery = elasticQuery.withMustMultiShouldCondition(filter.addresses, address => QueryType.Match('address', address));
     }
@@ -568,7 +588,8 @@ export class ElasticIndexerHelper {
     return elasticQuery;
   }
 
-  public builResultsFilterQuery(filter: SmartContractResultFilter): ElasticQuery {
+
+  public buildResultsFilterQuery(filter: SmartContractResultFilter): ElasticQuery {
     let elasticQuery = ElasticQuery.create();
 
     if (filter.miniBlockHash) {
@@ -598,15 +619,12 @@ export class ElasticIndexerHelper {
     return elasticQuery;
   }
 
-
   public applyFunctionFilter(elasticQuery: ElasticQuery, functions: string[]) {
     const functionConditions = [];
-
     for (const field of functions) {
       functionConditions.push(QueryType.Match('function', field));
       functionConditions.push(QueryType.Match('operation', field));
     }
-
     return elasticQuery.withMustCondition(QueryType.Should(functionConditions));
   }
 }

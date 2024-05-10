@@ -18,6 +18,7 @@ import { Collection, ScResult, Account, MiniBlock, Tag, TokenType, Block } from 
 import { IndexerInterface } from "../indexer.interface";
 import { AccountDb, AccountsEsdtDb, BlockDb, LogDb, MiniBlockDb, ReceiptDb, RoundInfoDb, ScDeployInfoDb, ScResultDb, TagDb, TokenInfoDb, TransactionDb, ValidatorPublicKeysDb } from "./entities";
 import { PostgresIndexerHelper } from "./postgres.indexer.helper";
+import { AccountAssets } from "src/common/assets/entities/account.assets";
 import { ProviderDelegators } from "../entities/provider.delegators";
 
 @Injectable()
@@ -59,6 +60,18 @@ export class PostgresIndexerService implements IndexerInterface {
     throw new Error("Method not implemented.");
   }
   getVersion(): Promise<string | undefined> {
+    throw new Error("Method not implemented.");
+  }
+
+  ensureAccountsWritable(): Promise<void> {
+    throw new Error("Method not implemented.");
+  }
+
+  ensureTokensWritable(): Promise<void> {
+    throw new Error("Method not implemented.");
+  }
+
+  setAccountAssetsFields(_address: string, _assets: AccountAssets): Promise<void> {
     throw new Error("Method not implemented.");
   }
 
@@ -656,7 +669,7 @@ export class PostgresIndexerService implements IndexerInterface {
     // TODO custom columns cannot be added
   }
 
-  async setExtraAccountFields(_address: string, _transfersLast24h: number): Promise<void> {
+  async setAccountTransfersLast24h(_address: string, _transfersLast24h: number): Promise<void> {
     // TODO custom columns cannot be added
   }
 }

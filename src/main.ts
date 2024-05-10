@@ -7,7 +7,7 @@ import { ApiConfigService } from './common/api-config/api.config.service';
 import { PrivateAppModule } from './private.app.module';
 import { CacheWarmerModule } from './crons/cache.warmer/cache.warmer.module';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
-import { Logger, NestInterceptor } from '@nestjs/common';
+import { INestApplication, Logger, NestInterceptor } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import * as bodyParser from 'body-parser';
 import * as requestIp from 'request-ip';
@@ -36,6 +36,8 @@ import { SettingsService } from './common/settings/settings.service';
 import { StatusCheckerModule } from './crons/status.checker/status.checker.module';
 import { JwtOrNativeAuthGuard } from '@multiversx/sdk-nestjs-auth';
 import { WebSocketPublisherModule } from './common/websockets/web-socket-publisher-module';
+import { IndexerService } from './common/indexer/indexer.service';
+import { NotWritableError } from './common/indexer/entities/not.writable.error';
 
 async function bootstrap() {
   const logger = new Logger('Bootstrapper');
@@ -87,6 +89,7 @@ async function bootstrap() {
 
   if (apiConfigService.getIsCacheWarmerCronActive()) {
     const cacheWarmerApp = await NestFactory.create(CacheWarmerModule);
+    await configureCacheWarmerApp(cacheWarmerApp, apiConfigService);
     await cacheWarmerApp.listen(6001);
   }
 
@@ -191,7 +194,6 @@ async function configurePublicApp(publicApp: NestExpressApplication, apiConfigSe
   const httpAdapterHostService = publicApp.get<HttpAdapterHost>(HttpAdapterHost);
   const cachingService = publicApp.get<CacheService>(CacheService);
   const settingsService = publicApp.get<SettingsService>(SettingsService);
-
 
   if (apiConfigService.getIsAuthActive()) {
     publicApp.useGlobalGuards(new JwtOrNativeAuthGuard(new ErdnestConfigServiceImpl(apiConfigService), cachingService));
@@ -300,6 +302,33 @@ async function configurePublicApp(publicApp: NestExpressApplication, apiConfigSe
   logger.log(`Use vm query tracing: ${await settingsService.getUseVmQueryTracingFlag()}`);
 }
 
+async function configureCacheWarmerApp(cacheWarmerApp: INestApplication<any>, apiConfigService: ApiConfigService): Promise<void> {
+  const indexerService = cacheWarmerApp.get<IndexerService>(IndexerService);
+  const logger = new Logger('Cache warmer initializer');
+
+  try {
+    if (apiConfigService.isUpdateAccountExtraDetailsEnabled()) {
+      await indexerService.ensureAccountsWritable();
+    }
+
+    if (apiConfigService.isUpdateCollectionExtraDetailsEnabled()) {
+      await indexerService.ensureTokensWritable();
+    }
+  } catch (error) {
+    if (error instanceof NotWritableError) {
+      logger.error(error.message);
+    } else {
+      logger.error(`An unhandled error occurred while ensuring database schema is writable`);
+      logger.error(error);
+    }
+
+    process.kill(process.pid, 'SIGTERM');
+  }
+
+  logger.log(`Update account extra details: ${apiConfigService.isUpdateAccountExtraDetailsEnabled()}`);
+  logger.log(`Update collection extra details: ${apiConfigService.isUpdateCollectionExtraDetailsEnabled()}`);
+}
+
 // eslint-disable-next-line @typescript-eslint/no-floating-promises
 bootstrap();
 
@@ -322,3 +351,4 @@ RedisClient.prototype.on_error = function (err: any) {
   // then we should try to reconnect.
   this.connection_gone('error', err);
 };
+

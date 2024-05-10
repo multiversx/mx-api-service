@@ -7,5 +7,6 @@ export interface Account {
   totalBalanceWithStake: string;
   totalBalanceWithStakeNum: number;
   currentOwner?: string;
+  api_assets?: any;
   api_transfersLast24h?: number;
 }

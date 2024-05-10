@@ -13,6 +13,7 @@ import { TransactionFilter } from "src/endpoints/transactions/entities/transacti
 import { TokenAssets } from "../assets/entities/token.assets";
 import { QueryPagination } from "../entities/query.pagination";
 import { Account, AccountHistory, AccountTokenHistory, Block, Collection, MiniBlock, Operation, Round, ScDeploy, ScResult, Tag, Token, TokenAccount, Transaction, TransactionLog, TransactionReceipt } from "./entities";
+import { AccountAssets } from "../assets/entities/account.assets";
 import { ProviderDelegators } from "./entities/provider.delegators";
 
 export interface IndexerInterface {
@@ -160,7 +161,13 @@ export interface IndexerInterface {
 
   setExtraCollectionFields(identifier: string, isVerified: boolean, holderCount: number, nftCount: number): Promise<void>
 
-  setExtraAccountFields(address: string, transfersLast24h: number): Promise<void>
+  setAccountAssetsFields(address: string, assets: AccountAssets): Promise<void>
+
+  ensureAccountsWritable(): Promise<void>
+
+  ensureTokensWritable(): Promise<void>
+
+  setAccountTransfersLast24h(address: string, transfersLast24h: number): Promise<void>
 
   getBlockByTimestampAndShardId(timestamp: number, shardId: number): Promise<Block | undefined>
 
