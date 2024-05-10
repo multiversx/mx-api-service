@@ -91,9 +91,11 @@ export class CacheWarmerService {
     }
 
     if (this.apiConfigService.isUpdateAccountExtraDetailsEnabled()) {
-      const handleUpdateAccountExtraDetails = new CronJob(CronExpression.EVERY_MINUTE, async () => await this.handleUpdateAccountTransfersLast24h());
-      this.schedulerRegistry.addCronJob('handleUpdateAccountTransfersLast24h', handleUpdateAccountExtraDetails);
-      handleUpdateAccountExtraDetails.start();
+      if (this.apiConfigService.getAccountExtraDetailsTransfersLast24hUrl()) {
+        const handleUpdateAccountExtraDetails = new CronJob(CronExpression.EVERY_MINUTE, async () => await this.handleUpdateAccountTransfersLast24h());
+        this.schedulerRegistry.addCronJob('handleUpdateAccountTransfersLast24h', handleUpdateAccountExtraDetails);
+        handleUpdateAccountExtraDetails.start();
+      }
 
       const handleUpdateAccountAssetsCronJob = new CronJob(CronExpression.EVERY_MINUTE, async () => await this.handleUpdateAccountAssets());
       this.schedulerRegistry.addCronJob('handleUpdateAccountAssets', handleUpdateAccountAssetsCronJob);

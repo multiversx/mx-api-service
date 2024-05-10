@@ -690,13 +690,8 @@ export class ApiConfigService {
     return this.configService.get<boolean>('features.updateAccountExtraDetails.enabled') ?? false;
   }
 
-  getMostUsedApplicationsUrl(): string {
-    const mostUsedApplicationsUrl = this.configService.get<string>('features.updateAccountExtraDetails.mostUsedApplicationsUrl');
-    if (!mostUsedApplicationsUrl) {
-      throw new Error('No most used applications url present');
-    }
-
-    return mostUsedApplicationsUrl;
+  getAccountExtraDetailsTransfersLast24hUrl(): string | undefined {
+    return this.configService.get<string>('features.updateAccountExtraDetails.transfersLast24hUrl');
   }
 
   getTransactionPoolCacheWarmerCronExpression(): string {

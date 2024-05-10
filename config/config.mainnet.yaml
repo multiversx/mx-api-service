@@ -38,7 +38,7 @@ features:
     enabled: false
   updateAccountExtraDetails:
     enabled: false
-    mostUsedApplicationsUrl: 'https://tools.multiversx.com/growth-api/explorer/widgets/most-used/applications'
+    transfersLast24hUrl: 'https://tools.multiversx.com/growth-api/explorer/widgets/most-used/applications'
   marketplace:
     enabled: false
     serviceUrl: 'https://nfts-graph.multiversx.com/graphql'
