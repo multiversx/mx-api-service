@@ -14,11 +14,12 @@ import { TokenAssets } from "../assets/entities/token.assets";
 import { QueryPagination } from "../entities/query.pagination";
 import { Account, AccountHistory, AccountTokenHistory, Block, Collection, MiniBlock, Operation, Round, ScDeploy, ScResult, Tag, Token, TokenAccount, Transaction, TransactionLog, TransactionReceipt } from "./entities";
 import { AccountAssets } from "../assets/entities/account.assets";
+import { ProviderDelegators } from "./entities/provider.delegators";
 
 export interface IndexerInterface {
   getAccountsCount(filter: AccountQueryOptions): Promise<number>
 
-  getScResultsCount(): Promise<number>
+  getScResultsCount(filter: SmartContractResultFilter): Promise<number>
 
   getAccountContractsCount(address: string): Promise<number>
 
@@ -106,6 +107,10 @@ export interface IndexerInterface {
 
   getAccountHistory(address: string, pagination: QueryPagination, filter: AccountHistoryFilter): Promise<AccountHistory[]>
 
+  getProviderDelegators(address: string, pagination: QueryPagination): Promise<ProviderDelegators[]>
+
+  getProviderDelegatorsCount(address: string): Promise<number>
+
   getAccountHistoryCount(address: string, filter?: AccountHistoryFilter): Promise<number>
 
   getAccountTokenHistoryCount(address: string, tokenIdentifier: string, filter?: AccountHistoryFilter): Promise<number>
@@ -163,4 +168,6 @@ export interface IndexerInterface {
   ensureTokensWritable(): Promise<void>
 
   getBlockByTimestampAndShardId(timestamp: number, shardId: number): Promise<Block | undefined>
+
+  getVersion(): Promise<string | undefined>
 }

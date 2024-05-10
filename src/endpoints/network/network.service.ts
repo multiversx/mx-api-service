@@ -13,7 +13,7 @@ import { NetworkConfig } from './entities/network.config';
 import { StakeService } from '../stake/stake.service';
 import { GatewayService } from 'src/common/gateway/gateway.service';
 import { CacheInfo } from 'src/utils/cache.info';
-import { BinaryUtils, NumberUtils } from '@multiversx/sdk-nestjs-common';
+import { BinaryUtils, NumberUtils, OriginLogger } from '@multiversx/sdk-nestjs-common';
 import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { About } from './entities/about';
 import { PluginService } from 'src/common/plugins/plugin.service';
@@ -22,9 +22,12 @@ import { TokenService } from '../tokens/token.service';
 import { AccountQueryOptions } from '../accounts/entities/account.query.options';
 import { DataApiService } from 'src/common/data-api/data-api.service';
 import { FeatureConfigs } from './entities/feature.configs';
+import { IndexerService } from 'src/common/indexer/indexer.service';
+import { SmartContractResultFilter } from '../sc-results/entities/smart.contract.result.filter';
 
 @Injectable()
 export class NetworkService {
+  private readonly logger = new OriginLogger(NetworkService.name);
   constructor(
     @Inject(forwardRef(() => TokenService))
     private readonly tokenService: TokenService,
@@ -43,7 +46,8 @@ export class NetworkService {
     private readonly stakeService: StakeService,
     private readonly pluginService: PluginService,
     @Inject(forwardRef(() => SmartContractResultService))
-    private readonly smartContractResultService: SmartContractResultService
+    private readonly smartContractResultService: SmartContractResultService,
+    private readonly indexerService: IndexerService,
   ) { }
 
   async getConstants(): Promise<NetworkConstants> {
@@ -215,7 +219,7 @@ export class NetworkService {
       this.blockService.getBlocksCount(new BlockFilter()),
       this.accountService.getAccountsCount(new AccountQueryOptions()),
       this.transactionService.getTransactionCount(new TransactionFilter()),
-      this.smartContractResultService.getScResultsCount(),
+      this.smartContractResultService.getScResultsCount(new SmartContractResultFilter()),
     ]);
 
     const { erd_num_shards_without_meta: shards, erd_round_duration: refreshRate } = networkConfig;
@@ -293,30 +297,27 @@ export class NetworkService {
   }
 
   async getAboutRaw(): Promise<About> {
-    const appVersion = require('child_process')
-      .execSync('git rev-parse HEAD')
-      .toString().trim();
+    let appVersion: string | undefined = undefined;
+    let pluginsVersion: string | undefined = undefined;
 
-    let pluginsVersion = require('child_process')
-      .execSync('git rev-parse HEAD', { cwd: 'src/plugins' })
-      .toString().trim();
+    let apiVersion = process.env['API_VERSION'];
+    if (!apiVersion) {
+      apiVersion = this.tryGetCurrentTag();
 
-    let apiVersion = require('child_process')
-      .execSync('git tag --points-at HEAD')
-      .toString().trim();
+      if (!apiVersion) {
+        apiVersion = this.tryGetPreviousTag();
+
+        if (apiVersion) {
+          apiVersion = apiVersion + '-next';
+        }
+      }
+
+      appVersion = this.tryGetAppCommitHash();
+      pluginsVersion = this.tryGetPluginsCommitHash();
+    }
 
     if (pluginsVersion === appVersion) {
       pluginsVersion = undefined;
-    }
-
-    if (!apiVersion) {
-      apiVersion = require('child_process')
-        .execSync('git describe --tags --abbrev=0')
-        .toString().trim();
-
-      if (apiVersion) {
-        apiVersion = apiVersion + '-next';
-      }
     }
 
     const features = new FeatureConfigs({
@@ -326,12 +327,29 @@ export class NetworkService {
       dataApi: this.apiConfigService.isDataApiFeatureEnabled(),
     });
 
+    let indexerVersion: string | undefined;
+    let gatewayVersion: string | undefined;
+
+    try {
+      indexerVersion = await this.indexerService.getVersion();
+    } catch (error) {
+      this.logger.error('Failed to fetch indexer version', error);
+    }
+
+    try {
+      gatewayVersion = await this.gatewayService.getVersion();
+    } catch (error) {
+      this.logger.error('Failed to fetch gateway version', error);
+    }
+
     const about = new About({
       appVersion,
       pluginsVersion,
       network: this.apiConfigService.getNetwork(),
       cluster: this.apiConfigService.getCluster(),
       version: apiVersion,
+      indexerVersion: indexerVersion,
+      gatewayVersion: gatewayVersion,
       features: features,
     });
 
@@ -343,5 +361,53 @@ export class NetworkService {
   numberDecode(encoded: string): string {
     const hex = Buffer.from(encoded, 'base64').toString('hex');
     return BigInt(hex ? '0x' + hex : hex).toString();
+  }
+
+  private tryGetCurrentTag(): string | undefined {
+    try {
+      return require('child_process')
+        .execSync('git tag --points-at HEAD')
+        .toString().trim();
+    } catch (error) {
+      this.logger.error('An unhandled error occurred when fetching current tag');
+      this.logger.error(error);
+      return undefined;
+    }
+  }
+
+  private tryGetPreviousTag(): string | undefined {
+    try {
+      return require('child_process')
+        .execSync('git describe --tags --abbrev=0')
+        .toString().trim();
+    } catch (error) {
+      this.logger.error('An unhandled error occurred when fetching previous tag');
+      this.logger.error(error);
+      return undefined;
+    }
+  }
+
+  private tryGetAppCommitHash(): string | undefined {
+    try {
+      return require('child_process')
+        .execSync('git rev-parse HEAD')
+        .toString().trim();
+    } catch (error) {
+      this.logger.error('An unhandled error occurred when fetching app commit hash');
+      this.logger.error(error);
+      return undefined;
+    }
+  }
+
+  private tryGetPluginsCommitHash(): string | undefined {
+    try {
+      return require('child_process')
+        .execSync('git rev-parse HEAD', { cwd: 'src/plugins' })
+        .toString().trim();
+    } catch (error) {
+      this.logger.error('An unhandled error occurred when fetching plugins commit hash');
+      this.logger.error(error);
+      return undefined;
+    }
   }
 }

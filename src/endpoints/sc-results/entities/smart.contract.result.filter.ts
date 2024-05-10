@@ -5,4 +5,7 @@ export class SmartContractResultFilter {
 
   miniBlockHash?: string;
   originalTxHashes?: string[];
+  sender?: string;
+  receiver?: string;
+  functions?: string[];
 }

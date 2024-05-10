@@ -1,6 +1,7 @@
 import { SortOrder } from "src/common/entities/sort.order";
 import { SortCollectionNfts } from "src/endpoints/collections/entities/sort.collection.nfts";
 import { NftType } from "./nft.type";
+import { ScamType } from "src/common/entities/scam-type.enum";
 
 export class NftFilter {
   constructor(init?: Partial<NftFilter>) {
@@ -23,6 +24,8 @@ export class NftFilter {
   nonceAfter?: number;
   isWhitelistedStorage?: boolean;
   isNsfw?: boolean;
+  isScam?: boolean;
+  scamType?: ScamType;
   traits?: Record<string, string>;
   excludeMetaESDT?: boolean;
 

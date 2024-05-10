@@ -1,7 +1,7 @@
 import { OriginLogger } from "@multiversx/sdk-nestjs-common";
 import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from "@nestjs/common";
 import { Observable } from "rxjs";
-import { ProxyController } from "src/endpoints/proxy/proxy.controller";
+import { GatewayProxyController } from "src/endpoints/proxy/gateway.proxy.controller";
 import { TransactionController } from "src/endpoints/transactions/transaction.controller";
 import winston from "winston";
 import DailyRotateFile from "winston-daily-rotate-file";
@@ -52,7 +52,7 @@ export class TransactionLoggingInterceptor implements NestInterceptor {
     const request = context.getArgByIndex(0);
 
     const isCreateTransactionCall = context.getClass().name === TransactionController.name && context.getHandler().name === 'createTransaction';
-    const isSendTransactionCall = context.getClass().name === ProxyController.name && context.getHandler().name === 'transactionSend';
+    const isSendTransactionCall = context.getClass().name === GatewayProxyController.name && context.getHandler().name === 'transactionSend';
 
     if (isCreateTransactionCall || isSendTransactionCall) {
       const logBody = {

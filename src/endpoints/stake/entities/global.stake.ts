@@ -33,30 +33,30 @@ export class GlobalStake {
   minimumAuctionQualifiedStake: string | undefined = undefined;
 
   @Field(() => Float, { description: "Auction Validators." })
-  @ApiProperty({ type: Number, default: 15 })
-  auctionValidators: number = 0;
+  @ApiProperty({ type: Number, nullable: true })
+  auctionValidators: number | undefined = undefined;
 
   @Field(() => Float, { description: "Nakamoto Coefficient." })
-  @ApiProperty({ type: Number, default: 4 })
-  nakamotoCoefficient: number = 0;
+  @ApiProperty({ type: Number, nullable: true })
+  nakamotoCoefficient: number | undefined = undefined;
 
   @Field(() => Float, { description: "Danger Zone Validators." })
-  @ApiProperty({ type: Number, default: 15 })
-  dangerZoneValidators: number = 0;
+  @ApiProperty({ type: Number, nullable: true })
+  dangerZoneValidators: number | undefined = undefined;
 
   @Field(() => Float, { description: "Eligible Validators." })
-  @ApiProperty({ type: Number, default: 15 })
-  eligibleValidators: number = 0;
+  @ApiProperty({ type: Number, nullable: true })
+  eligibleValidators: number | undefined = undefined;
 
   @Field(() => Float, { description: "Not Eligible Validators." })
-  @ApiProperty({ type: Number, default: 15 })
-  waitingValidators: number = 0;
+  @ApiProperty({ type: Number, nullable: true })
+  waitingValidators: number | undefined = undefined;
 
   @Field(() => Float, { description: "Qualified Auction Validators." })
-  @ApiProperty({ type: Number, default: 10 })
-  qualifiedAuctionValidators: number = 0;
+  @ApiProperty({ type: Number, nullable: true })
+  qualifiedAuctionValidators: number | undefined = undefined;
 
   @Field(() => Float, { description: "All Staked Nodes." })
-  @ApiProperty({ type: Number, default: 27 })
-  allStakedNodes: number = 0;
+  @ApiProperty({ type: Number, nullable: true })
+  allStakedNodes: number | undefined = undefined;
 }

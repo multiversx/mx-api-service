@@ -5,6 +5,7 @@ import { DataApiService } from "src/common/data-api/data-api.service";
 import { NetworkConfig } from "src/common/gateway/entities/network.config";
 import { NetworkStatus } from "src/common/gateway/entities/network.status";
 import { GatewayService } from "src/common/gateway/gateway.service";
+import { IndexerService } from "src/common/indexer/indexer.service";
 import { PluginService } from "src/common/plugins/plugin.service";
 import { AccountService } from "src/endpoints/accounts/account.service";
 import { BlockService } from "src/endpoints/blocks/block.service";
@@ -122,6 +123,12 @@ describe('NetworkService', () => {
           provide: TokenService,
           useValue: {
             getTokenMarketCapRaw: jest.fn(),
+          },
+        },
+        {
+          provide: IndexerService,
+          useValue: {
+            getIndexerVersion: jest.fn(),
           },
         },
       ],

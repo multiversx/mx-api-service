@@ -63,17 +63,29 @@ export class Token {
   @ApiProperty({ type: TokenAssets, nullable: true })
   assets: TokenAssets | undefined = undefined;
 
-  @Field(() => Float, { description: "Tokens transactions.", nullable: true })
+  @Field(() => Float, { description: "Token transactions.", nullable: true })
   @ApiProperty({ type: Number, nullable: true })
   transactions: number | undefined = undefined;
 
-  @Field(() => Float, { description: "Tokens transfers.", nullable: true })
+  @Field(() => Number, { description: "Token transactions last updated timestamp.", nullable: true })
+  @ApiProperty({ type: Number, nullable: true })
+  transactionsLastUpdatedAt: number | undefined = undefined;
+
+  @Field(() => Number, { description: "Token transfers.", nullable: true })
   @ApiProperty({ type: Number, nullable: true })
   transfers: number | undefined = undefined;
 
-  @Field(() => Float, { description: "Token accounts list." })
+  @Field(() => Number, { description: "Token transfers last updated timestamp.", nullable: true })
+  @ApiProperty({ type: Number, nullable: true })
+  transfersLastUpdatedAt: number | undefined = undefined;
+
+  @Field(() => Number, { description: "Token accounts." })
   @ApiProperty({ type: Number, nullable: true })
   accounts: number | undefined = undefined;
+
+  @Field(() => Number, { description: "Token accounts last updated timestamp.", nullable: true })
+  @ApiProperty({ type: Number, nullable: true })
+  accountsLastUpdatedAt: number | undefined = undefined;
 
   @Field(() => Boolean, { description: "Token canUpgrade property." })
   @ApiProperty({ type: Boolean, default: false })
@@ -143,7 +155,11 @@ export class Token {
   @ApiProperty({ type: Number, nullable: true })
   totalVolume24h: number | undefined = undefined;
 
-  @Field(() => Boolean, { description: 'If the liquidity to market cap ratio is less than 1%, we consider it as low liquidity.', nullable: true })
+  @Field(() => Boolean, { description: 'If the liquidity to market cap ratio is less than 0.5%, we consider it as low liquidity.', nullable: true })
   @ApiProperty({ type: Boolean, nullable: true })
   isLowLiquidity: boolean | undefined = undefined;
+
+  @Field(() => Number, { description: 'If the liquidity to market cap ratio is less than 0.5%, we consider it as low liquidity and display threshold percent .', nullable: true })
+  @ApiProperty({ type: Number, nullable: true })
+  lowLiquidityThresholdPercent: number | undefined = undefined;
 }

@@ -13,6 +13,12 @@ type About {
   """Feature Flags."""
   features: FeatureConfigs
 
+  """Gateway version."""
+  gatewayVersion: String
+
+  """Indexer version."""
+  indexerVersion: String
+
   """Current network details."""
   network: String!
 
@@ -3580,8 +3586,11 @@ type TokenAssetsPriceSource {
 
 """TokenDetailed object type."""
 type TokenDetailed {
-  """Token accounts list."""
+  """Token accounts."""
   accounts: Float!
+
+  """Token accounts last updated timestamp."""
+  accountsLastUpdatedAt: Float
 
   """Token assests details."""
   assets: TokenAssets
@@ -3637,12 +3646,17 @@ type TokenDetailed {
   initialMinted: String!
 
   """
-  If the liquidity to market cap ratio is less than 1%, we consider it as low liquidity.
+  If the liquidity to market cap ratio is less than 0.5%, we consider it as low liquidity.
   """
   isLowLiquidity: Boolean
 
   """Token isPause property."""
   isPaused: Boolean!
+
+  """
+  If the liquidity to market cap ratio is less than 0.5%, we consider it as low liquidity and display threshold percent .
+  """
+  lowLiquidityThresholdPercent: Float
 
   """Current market cap details."""
   marketCap: Float
@@ -3683,11 +3697,17 @@ type TokenDetailed {
   """Total traded value in the last 24h within the liquidity pools."""
   totalVolume24h: Float!
 
-  """Tokens transactions."""
+  """Token transactions."""
   transactions: Float
 
-  """Tokens transfers."""
+  """Token transactions last updated timestamp."""
+  transactionsLastUpdatedAt: Float
+
+  """Token transfers."""
   transfers: Float
+
+  """Token transfers last updated timestamp."""
+  transfersLastUpdatedAt: Float
 
   """Token type."""
   type: TokenType!
@@ -3778,8 +3798,11 @@ enum TokenType {
 }
 
 type TokenWithBalanceAccountFlat {
-  """Token accounts list."""
+  """Token accounts."""
   accounts: Float!
+
+  """Token accounts last updated timestamp."""
+  accountsLastUpdatedAt: Float
 
   """Token assests details."""
   assets: TokenAssets
@@ -3833,12 +3856,17 @@ type TokenWithBalanceAccountFlat {
   initialMinted: String!
 
   """
-  If the liquidity to market cap ratio is less than 1%, we consider it as low liquidity.
+  If the liquidity to market cap ratio is less than 0.5%, we consider it as low liquidity.
   """
   isLowLiquidity: Boolean
 
   """Token isPause property."""
   isPaused: Boolean!
+
+  """
+  If the liquidity to market cap ratio is less than 0.5%, we consider it as low liquidity and display threshold percent .
+  """
+  lowLiquidityThresholdPercent: Float
 
   """Current market cap details."""
   marketCap: Float
@@ -3873,11 +3901,17 @@ type TokenWithBalanceAccountFlat {
   """Total traded value in the last 24h within the liquidity pools."""
   totalVolume24h: Float!
 
-  """Tokens transactions."""
+  """Token transactions."""
   transactions: Float
 
-  """Tokens transfers."""
+  """Token transactions last updated timestamp."""
+  transactionsLastUpdatedAt: Float
+
+  """Token transfers."""
   transfers: Float
+
+  """Token transfers last updated timestamp."""
+  transfersLastUpdatedAt: Float
 
   """Token type."""
   type: TokenType!
