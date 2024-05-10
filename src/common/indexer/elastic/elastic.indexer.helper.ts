@@ -298,7 +298,7 @@ export class ElasticIndexerHelper {
       if (filter.functions.length === 1 && filter.functions[0] === '') {
         elasticQuery = elasticQuery.withMustNotExistCondition('function');
       } else {
-        elasticQuery = this.applyArrayFilter(elasticQuery, ['function', 'operation'], filter.functions);
+        elasticQuery = this.applyFunctionFilter(elasticQuery, filter.functions);
       }
     }
 
@@ -451,7 +451,7 @@ export class ElasticIndexerHelper {
       if (filter.functions.length === 1 && filter.functions[0] === '') {
         elasticQuery = elasticQuery.withMustNotExistCondition('function');
       } else {
-        elasticQuery = this.applyArrayFilter(elasticQuery, ['function', 'operation'], filter.functions);
+        elasticQuery = this.applyFunctionFilter(elasticQuery, filter.functions);
       }
     }
 
@@ -566,11 +566,11 @@ export class ElasticIndexerHelper {
     }
 
     if (filter.tags && filter.tags.length > 0) {
-      elasticQuery = this.applyArrayFilter(elasticQuery, ['api_assets.tags'], filter.tags);
+      return elasticQuery.withMustCondition(QueryType.Should(filter.tags.map(tag => QueryType.Match('api_assets.tags', tag))));
     }
 
     if (filter.excludeTags && filter.excludeTags.length > 0) {
-      elasticQuery = this.applyExcludeTags(elasticQuery, filter.excludeTags);
+      return elasticQuery.withMustNotCondition(QueryType.Should(filter.excludeTags.map(tag => QueryType.Match('api_assets.tags', tag))));
     }
 
     if (filter.hasAssets) {
@@ -618,15 +618,5 @@ export class ElasticIndexerHelper {
       functionConditions.push(QueryType.Match('operation', field));
     }
     return elasticQuery.withMustCondition(QueryType.Should(functionConditions));
-  }
-
-  public applyExcludeTags(elasticQuery: ElasticQuery, tags: string[]) {
-    const tagsConditions: any[] = [];
-
-    for (const field of tags) {
-      tagsConditions.push(QueryType.Match('api_assets.tags', field));
-    }
-
-    return elasticQuery.withMustNotCondition(QueryType.Should(tagsConditions));
   }
 }
