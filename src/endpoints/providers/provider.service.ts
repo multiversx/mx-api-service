@@ -9,11 +9,14 @@ import { CacheInfo } from "src/utils/cache.info";
 import { ProviderFilter } from "./entities/provider.filter";
 import { Provider } from "./entities/provider";
 import { AddressUtils, BinaryUtils, Constants } from "@multiversx/sdk-nestjs-common";
-import { ApiService } from "@multiversx/sdk-nestjs-http";
+import { ApiService, ApiUtils } from "@multiversx/sdk-nestjs-http";
 import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { OriginLogger } from "@multiversx/sdk-nestjs-common";
 import { IdentitiesService } from "../identities/identities.service";
 import { ProviderQueryOptions } from "./entities/provider.query.options";
+import { QueryPagination } from "src/common/entities/query.pagination";
+import { ElasticIndexerService } from "src/common/indexer/elastic/elastic.indexer.service";
+import { ProviderAccounts } from "./entities/provider.accounts";
 
 @Injectable()
 export class ProviderService {
@@ -27,7 +30,8 @@ export class ProviderService {
     private readonly nodeService: NodeService,
     private readonly apiService: ApiService,
     @Inject(forwardRef(() => IdentitiesService))
-    private readonly identitiesService: IdentitiesService
+    private readonly identitiesService: IdentitiesService,
+    private readonly elasticIndexerService: ElasticIndexerService
   ) { }
 
   async getProvider(address: string): Promise<Provider | undefined> {
@@ -454,6 +458,22 @@ export class ProviderService {
     }
 
     return null;
+  }
+
+  async getProviderAccounts(address: string, queryPagination: QueryPagination): Promise<ProviderAccounts[]> {
+    const elasticResults = await this.elasticIndexerService.getProviderDelegators(address, queryPagination);
+    if (!elasticResults) {
+      return [];
+    }
+
+    return elasticResults.map(account => ApiUtils.mergeObjects(new ProviderAccounts(), {
+      address: account.address,
+      stake: account.activeStake,
+    }));
+  }
+
+  async getProviderAccountsCount(address: string): Promise<number> {
+    return await this.elasticIndexerService.getProviderDelegatorsCount(address);
   }
 
   async getFilteredProviders(filter: ProviderFilter): Promise<Provider[]> {
