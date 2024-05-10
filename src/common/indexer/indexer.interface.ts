@@ -108,6 +108,8 @@ export interface IndexerInterface {
 
   getProviderDelegators(address: string, pagination: QueryPagination): Promise<ProviderDelegators[]>
 
+  getProviderDelegatorsCount(address: string): Promise<number>
+
   getAccountHistoryCount(address: string, filter?: AccountHistoryFilter): Promise<number>
 
   getAccountTokenHistoryCount(address: string, tokenIdentifier: string, filter?: AccountHistoryFilter): Promise<number>

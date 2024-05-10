@@ -54,6 +54,19 @@ export class ProviderController {
     return provider;
   }
 
+  @Get('/providers/:address/accounts/count')
+  @ApiOperation({ summary: 'Provider', description: 'Returns provider total delegators' })
+  @ApiOkResponse({ type: Provider })
+  @ApiNotFoundResponse({ description: 'Provider not found' })
+  async getProviderAccountsCount(@Param('address', ParseAddressPipe) address: string): Promise<number> {
+    const provider = await this.providerService.getProviderAccountsCount(address);
+    if (provider === undefined) {
+      throw new HttpException(`Provider '${address}' not found`, HttpStatus.NOT_FOUND);
+    }
+
+    return provider;
+  }
+
   @Get('/providers/:address')
   @ApiOperation({ summary: 'Provider', description: 'Returns provider details for a given address' })
   @ApiOkResponse({ type: Provider })

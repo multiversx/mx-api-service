@@ -472,6 +472,10 @@ export class ProviderService {
     }));
   }
 
+  async getProviderAccountsCount(address: string): Promise<number> {
+    return await this.elasticIndexerService.getProviderDelegatorsCount(address);
+  }
+
   async getFilteredProviders(filter: ProviderFilter): Promise<Provider[]> {
     let providers = await this.getProvidersWithStakeInformation();
 

@@ -65,6 +65,7 @@ describe('ProviderService', () => {
           provide: ElasticIndexerService,
           useValue: {
             getProviderDelegators: jest.fn(),
+            getProviderDelegatorsCount: jest.fn(),
           },
         },
       ],
@@ -241,6 +242,18 @@ describe('ProviderService', () => {
 
       expect(elasticIndexerService.getProviderDelegators).toHaveBeenCalled();
       expect(results).toStrictEqual([]);
+    });
+  });
+
+  describe('getProviderAccountsCount', () => {
+    it('should return total delegators count for a given provider', async () => {
+      const contract = 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqc0llllsayxegu';
+      jest.spyOn(elasticIndexerService, 'getProviderDelegatorsCount').mockResolvedValue(100);
+
+      const results = await service.getProviderAccountsCount(contract);
+
+      expect(elasticIndexerService.getProviderDelegatorsCount).toHaveBeenCalled();
+      expect(results).toStrictEqual(100);
     });
   });
 });

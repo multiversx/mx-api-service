@@ -51,6 +51,9 @@ export class PostgresIndexerService implements IndexerInterface {
     private readonly validatorPublicKeysRepository: Repository<ValidatorPublicKeysDb>,
     private readonly indexerHelper: PostgresIndexerHelper,
   ) { }
+  getProviderDelegatorsCount(_address: string): Promise<number> {
+    throw new Error("Method not implemented.");
+  }
 
   getProviderDelegators(_address: string, _pagination: QueryPagination): Promise<ProviderDelegators[]> {
     throw new Error("Method not implemented.");

@@ -243,6 +243,11 @@ export class IndexerService implements IndexerInterface {
   }
 
   @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
+  async getProviderDelegatorsCount(address: string): Promise<number> {
+    return await this.indexerInterface.getProviderDelegatorsCount(address);
+  }
+
+  @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
   async getAccountHistoryCount(address: string, filter?: AccountHistoryFilter): Promise<number> {
     return await this.indexerInterface.getAccountHistoryCount(address, filter);
   }
