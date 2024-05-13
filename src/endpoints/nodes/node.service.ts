@@ -748,7 +748,7 @@ export class NodeService {
 
       const identity = node.identity ? await this.identitiesService.getIdentity(node.identity) : undefined;
 
-      nodesWithAuctionData.push(new NodeAuction({
+      const nodeAuction = new NodeAuction({
         identity: identity?.identity,
         name: identity?.name,
         description: identity?.description,
@@ -756,13 +756,20 @@ export class NodeService {
         distribution: identity?.distribution,
         stake: node.stake || '0',
         owner: node.owner,
+        provider: node.provider,
         auctionTopUp: node.auctionTopUp || '0',
         qualifiedStake: node.qualifiedStake || '0',
         auctionValidators: group.values.filter((node: Node) => node.auctioned).length,
         qualifiedAuctionValidators: group.values.filter((node: Node) => node.auctionQualified === true).length,
         droppedValidators: group.values.filter((node: Node) => node.auctionQualified === false).length,
         dangerZoneValidators: group.values.filter((node: Node) => node.isInDangerZone).length,
-      }));
+      });
+
+      if (group.values.length === 1 && !node.provider && !node.identity) {
+        nodeAuction.bls = node.bls;
+      }
+
+      nodesWithAuctionData.push(nodeAuction);
     }
 
     const sort = filter?.sort ?? NodeSortAuction.qualifiedStake;
