@@ -24,6 +24,7 @@ import { IdentitiesService } from "../identities/identities.service";
 import { NodeAuction } from "./entities/node.auction";
 import { NodeAuctionFilter } from "./entities/node.auction.filter";
 import { Identity } from "../identities/entities/identity";
+import { NodeSortAuction } from "./entities/node.sort.auction";
 
 @Injectable()
 export class NodeService {
@@ -722,9 +723,6 @@ export class NodeService {
 
   async getNodesAuctions(pagination: QueryPagination, filter: NodeAuctionFilter): Promise<NodeAuction[]> {
     const allNodes = await this.getNodes(new QueryPagination({ size: 10000 }), new NodeFilter({ status: NodeStatus.auction }));
-    const auctionValidators = await this.getNodeCount(new NodeFilter({ auctioned: true }));
-    const qualifiedAuctionValidators = await this.getNodeCount(new NodeFilter({ isQualified: true }));
-    const dangerZoneValidators = await this.getNodeCount(new NodeFilter({ isAuctionDangerZone: true, isQualified: true }));
 
     const auctions = await this.gatewayService.getValidatorAuctions();
     const auctionNodesMap = new Map();
@@ -741,58 +739,37 @@ export class NodeService {
       }
     }
 
-    let nodesWithAuctionData = await Promise.all(allNodes.map(async node => {
-      const auctionData = auctionNodesMap.get(node.bls) || {};
-      const qualifiedStake = BigInt(node.stake || '0') + BigInt(auctionData.auctionTopUp || '0');
+    const groupedNodes = allNodes.groupBy(node => (node.provider || node.owner) + ':' + (BigInt(node.stake).toString()) + (BigInt(node.topUp).toString()), true);
 
-      let identityInfo;
-      if (node.identity) {
-        identityInfo = await this.identitiesService.getIdentity(node.identity);
-      }
+    let nodesWithAuctionData: NodeAuction[] = [];
 
-      return new NodeAuction({
-        identity: identityInfo?.identity,
-        name: identityInfo?.name,
-        description: identityInfo?.description,
-        avatar: identityInfo?.avatar,
-        distribution: identityInfo?.distribution,
+    for (const group of groupedNodes) {
+      const node: Node = group.values[0];
+
+      const identity = node.identity ? await this.identitiesService.getIdentity(node.identity) : undefined;
+
+      nodesWithAuctionData.push(new NodeAuction({
+        identity: identity?.identity,
+        name: identity?.name,
+        description: identity?.description,
+        avatar: identity?.avatar,
+        distribution: identity?.distribution,
         stake: node.stake || '0',
         owner: node.owner,
-        auctionTopUp: auctionData.auctionTopUp || '0',
-        qualifiedStake: qualifiedStake.toString(),
-        auctionValidators: auctionValidators,
-        qualifiedAuctionValidators: qualifiedAuctionValidators,
-        dangerZoneValidators: dangerZoneValidators,
-      });
-    }));
+        auctionTopUp: node.auctionTopUp || '0',
+        qualifiedStake: node.qualifiedStake || '0',
+        auctionValidators: group.values.filter((node: Node) => node.auctioned).length,
+        qualifiedAuctionValidators: group.values.filter((node: Node) => node.auctionQualified === true).length,
+        droppedValidators: group.values.filter((node: Node) => node.auctionQualified === false).length,
+        dangerZoneValidators: group.values.filter((node: Node) => node.isInDangerZone).length,
+      }));
+    }
 
-    const groupedNodes = nodesWithAuctionData.groupBy(node =>
-      node.identity ? `${node.identity}:${node.provider || node.owner}` : node.bls
-    );
+    const sort = filter?.sort ?? NodeSortAuction.qualifiedStake;
+    nodesWithAuctionData = nodesWithAuctionData.sorted(node => Number(node[sort]));
 
-    nodesWithAuctionData = Object.values(groupedNodes).flat() as NodeAuction[];
-
-    if (filter && filter.sort) {
-      nodesWithAuctionData.sort((a: any, b: any) => {
-        let asort = a[filter.sort ?? ''];
-        let bsort = b[filter.sort ?? ''];
-
-        if (asort && typeof asort === 'string') {
-          asort = asort.toLowerCase();
-        }
-
-        if (bsort && typeof bsort === 'string') {
-          bsort = bsort.toLowerCase();
-        }
-
-        return asort > bsort ? 1 : bsort > asort ? -1 : 0;
-      });
-
-      if (filter.order === SortOrder.desc) {
-        nodesWithAuctionData.reverse();
-      }
-    } else {
-      nodesWithAuctionData = nodesWithAuctionData.sortedDescending(node => Number(node.qualifiedStake));
+    if (filter?.order === SortOrder.desc) {
+      nodesWithAuctionData.reverse();
     }
 
     return nodesWithAuctionData.slice(from, size);

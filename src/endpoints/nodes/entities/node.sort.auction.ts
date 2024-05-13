@@ -5,6 +5,7 @@ export enum NodeSortAuction {
   droppedValidators = 'droppedValidators',
   qualifiedAuctionValidators = 'qualifiedAuctionValidators',
   qualifiedStake = 'qualifiedStake',
+  dangerZoneValidators = 'dangerZoneValidators',
 }
 
 registerEnumType(NodeSortAuction, {
@@ -22,6 +23,9 @@ registerEnumType(NodeSortAuction, {
     },
     qualifiedStake: {
       description: 'Node qualified stake.',
+    },
+    dangerZoneValidators: {
+      description: 'Danger Zone Validators.',
     },
   },
 });

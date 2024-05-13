@@ -45,5 +45,8 @@ export class NodeAuction {
   qualifiedAuctionValidators: number = 0;
 
   @ApiProperty({ type: Number })
+  droppedValidators: number = 0;
+
+  @ApiProperty({ type: Number })
   dangerZoneValidators: number = 0;
 }
