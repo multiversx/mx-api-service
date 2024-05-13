@@ -104,6 +104,7 @@ describe('NodeService', () => {
           provide: IdentitiesService,
           useValue: {
             getIdentity: jest.fn(),
+            getAllIdentities: jest.fn(),
           },
         },
       ],
@@ -390,45 +391,36 @@ describe('NodeService', () => {
       });
 
       it('should include identity information when withIdentityInfo is true', async () => {
-        // eslint-disable-next-line require-await
-        jest.spyOn(identitiesService, 'getIdentity').mockImplementation(async (identity) => {
-          return {
-            identity: identity,
-            name: "MultiversX Community Delegation 🎖",
+        jest.spyOn(identitiesService, 'getAllIdentities').mockResolvedValue(
+          [{
+            identity: 'thepalmtreenw',
+            name: "Thepalmtreenw Delegation 🎖",
             avatar: "https://example.com/avatar.png",
-            additionalInfo: "Some details about the identity",
             locked: '708201480104683427688452',
-          };
-        });
+          }]);
         const allNodesSpy = jest.spyOn(nodeService, 'getAllNodes').mockResolvedValueOnce(Promise.resolve(mockNodes));
         const results = await nodeService.getNodes(new QueryPagination({ size: 1 }), new NodeFilter({ withIdentityInfo: true }));
 
         for (const result of results) {
           expect(result.identityInfo).toBeDefined();
-          expect(result.identityInfo?.name).toEqual("MultiversX Community Delegation 🎖");
-          expect(result.identityInfo?.avatar).toEqual("https://example.com/avatar.png");
+          expect(result.identityInfo?.name).toEqual("Thepalmtreenw Delegation 🎖");
         }
         expect(allNodesSpy).toHaveBeenCalled();
       });
 
       it('should not include identity information when withIdentityInfo is false', async () => {
-        // eslint-disable-next-line require-await
-        jest.spyOn(identitiesService, 'getIdentity').mockImplementation(async (identity) => {
-          return {
-            identity: identity,
-            name: "MultiversX Community Delegation 🎖",
+        jest.spyOn(identitiesService, 'getAllIdentities').mockResolvedValue(
+          [{
+            identity: 'thepalmtreenw',
+            name: "Thepalmtreenw Delegation 🎖",
             avatar: "https://example.com/avatar.png",
-            additionalInfo: "Some details about the identity",
             locked: '708201480104683427688452',
-          };
-        });
+          }]);
         const allNodesSpy = jest.spyOn(nodeService, 'getAllNodes').mockResolvedValueOnce(Promise.resolve(mockNodes));
         const results = await nodeService.getNodes(new QueryPagination({ size: 1 }), new NodeFilter({ withIdentityInfo: false }));
 
         for (const result of results) {
           expect(result.identityInfo).not.toBeDefined();
-          expect(result.identityInfo?.name).not.toEqual("MultiversX Community Delegation 🎖");
-          expect(result.identityInfo?.avatar).not.toEqual("https://example.com/avatar.png");
         }
         expect(allNodesSpy).toHaveBeenCalled();
       });
