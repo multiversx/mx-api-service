@@ -298,6 +298,7 @@ describe('Account Service', () => {
         scamInfo: undefined,
         nftCollections: undefined,
         nfts: undefined,
+        transfersLast24h: undefined,
       };
 
       jest.spyOn(AddressUtils, 'isAddressValid').mockReturnValue(true);
