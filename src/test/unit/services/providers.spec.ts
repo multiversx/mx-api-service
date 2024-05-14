@@ -243,6 +243,18 @@ describe('ProviderService', () => {
       expect(elasticIndexerService.getProviderDelegators).toHaveBeenCalled();
       expect(results).toStrictEqual([]);
     });
+
+    it('should return paginated delegators for a given provider', async () => {
+      const contract = 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqc0llllsayxegu';
+      const pagination = new QueryPagination({ from: 0, size: 10 });
+      const elasticProviderDelegatorsMock = createElasticMockDelegators(10, contract);
+      jest.spyOn(elasticIndexerService, 'getProviderDelegators').mockResolvedValue(elasticProviderDelegatorsMock);
+
+      const results = await service.getProviderAccounts(contract, pagination);
+
+      expect(elasticIndexerService.getProviderDelegators).toHaveBeenCalledWith(contract, pagination);
+      expect(results.length).toStrictEqual(10);
+    });
   });
 
   describe('getProviderAccountsCount', () => {
