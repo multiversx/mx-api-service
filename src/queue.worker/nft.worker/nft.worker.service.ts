@@ -9,6 +9,7 @@ import { NftMessage } from "./queue/entities/nft.message";
 import { NftType } from "src/endpoints/nfts/entities/nft.type";
 import { NftAssetService } from "./queue/job-services/assets/nft.asset.service";
 import { PersistenceService } from "src/common/persistence/persistence.service";
+import { ApiConfigService } from "src/common/api-config/api.config.service";
 
 @Injectable()
 export class NftWorkerService {
@@ -19,6 +20,7 @@ export class NftWorkerService {
     private readonly nftAssetService: NftAssetService,
     @Inject('QUEUE_SERVICE') private readonly client: ClientProxy,
     private readonly persistenceService: PersistenceService,
+    private readonly apiConfigService: ApiConfigService
   ) { }
 
   async addProcessNftQueueJob(nft: Nft, settings: ProcessNftSettings): Promise<boolean> {
@@ -34,7 +36,7 @@ export class NftWorkerService {
     message.identifier = nft.identifier;
     message.settings = settings;
 
-    this.client.send({ cmd: 'api-process-nfts' }, message).subscribe();
+    this.client.send({ cmd: this.apiConfigService.getNftQueueName() }, message).subscribe();
 
     return true;
   }

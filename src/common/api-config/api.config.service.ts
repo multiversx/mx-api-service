@@ -154,6 +154,10 @@ export class ApiConfigService {
     return rabbitmqUrl;
   }
 
+  getNftQueueName(): string {
+    return this.configService.get<string>('nftQueueName', 'api-process-nfts');
+  }
+
   getCacheTtl(): number {
     return this.configService.get<number>('caching.cacheTtl') ?? 6;
   }

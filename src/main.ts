@@ -118,7 +118,7 @@ async function bootstrap() {
       transport: Transport.RMQ,
       options: {
         urls: [apiConfigService.getRabbitmqUrl()],
-        queue: 'api-process-nfts',
+        queue: apiConfigService.getNftQueueName(),
         noAck: false,
         prefetchCount: apiConfigService.getNftProcessParallelism(),
         queueOptions: {

@@ -87,6 +87,7 @@ features:
       nodeValidators: 3500
   nftScamInfo:
     enabled: false
+nftQueueName: 'api-process-nfts'
 image:
   width: 600
   height: 600
