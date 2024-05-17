@@ -68,7 +68,7 @@ describe('MexController', () => {
         .expect(200);
 
       expect(mexPairServiceMocks.getMexPairs).toHaveBeenCalledWith(
-        0, 25, { "exchange": undefined }
+        new QueryPagination({ from: 0, size: 25 }), { "exchange": undefined, "hasFarms": undefined, "hasDualFarms": undefined }
       );
     });
 
@@ -81,7 +81,7 @@ describe('MexController', () => {
         .expect(200);
 
       expect(mexPairServiceMocks.getMexPairs).toHaveBeenCalledWith(
-        0, 5, { "exchange": undefined }
+        new QueryPagination({ from: 0, size: 5 }), { "exchange": undefined, "hasFarms": undefined, "hasDualFarms": undefined }
       );
     });
 
@@ -94,7 +94,7 @@ describe('MexController', () => {
         .expect(200);
 
       expect(mexPairServiceMocks.getMexPairs).toHaveBeenCalledWith(
-        0, 5, { "exchange": MexPairExchange.xexchange }
+        new QueryPagination({ from: 0, size: 5 }), { "exchange": MexPairExchange.xexchange }
       );
     });
 
@@ -107,7 +107,7 @@ describe('MexController', () => {
         .expect(200);
 
       expect(mexPairServiceMocks.getMexPairs).toHaveBeenCalledWith(
-        0, 5, { "exchange": MexPairExchange.unknown }
+        new QueryPagination({ from: 0, size: 5 }), { "exchange": MexPairExchange.unknown, "hasFarms": undefined, "hasDualFarms": undefined }
       );
     });
 
