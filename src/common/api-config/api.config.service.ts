@@ -719,6 +719,14 @@ export class ApiConfigService {
     return cronExpression;
   }
 
+  isTpsEnabled(): boolean {
+    return this.configService.get<boolean>('features.tps.enabled') ?? false;
+  }
+
+  getTpsMaxLookBehind(): number {
+    return this.configService.get<number>('features.tps.maxLookBehind') ?? 100;
+  }
+
   isNftExtendedAttributesEnabled(): boolean {
     return this.configService.get<boolean>('features.nftExtendedAttributes.enabled') ?? false;
   }
