@@ -64,6 +64,7 @@ export class StakeService {
       return new GlobalStake({
         totalValidators: validators.totalValidators,
         activeValidators: validators.activeValidators,
+        totalObservers,
         queueSize,
         totalStaked,
       });
