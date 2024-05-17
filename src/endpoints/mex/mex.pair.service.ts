@@ -270,6 +270,14 @@ export class MexPairService {
       filteredPairs = filteredPairs.filter(pair => pair.exchange === filter.exchange);
     }
 
+    if (typeof filter.hasFarms === 'boolean') {
+      filteredPairs = filteredPairs.filter(pair => pair.hasFarms === filter.hasFarms);
+    }
+
+    if (typeof filter.hasDualFarms === 'boolean') {
+      filteredPairs = filteredPairs.filter(pair => pair.hasDualFarms === filter.hasDualFarms);
+    }
+
     return filteredPairs;
   }
 }
