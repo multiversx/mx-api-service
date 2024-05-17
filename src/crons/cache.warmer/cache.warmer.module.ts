@@ -9,6 +9,8 @@ import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 import { NftCronModule } from '../nft/nft.cron.module';
 import { GuestCacheWarmer } from '@multiversx/sdk-nestjs-cache';
 import { PluginModule } from 'src/plugins/plugin.module';
+import { TpsWarmerService } from '../tps/tps-warmer.service';
+import { TpsModule } from 'src/endpoints/tps/tps.module';
 
 @Module({
   imports: [
@@ -20,11 +22,13 @@ import { PluginModule } from 'src/plugins/plugin.module';
     AssetsModule,
     NftCronModule,
     PluginModule,
+    TpsModule,
   ],
   providers: [
     DynamicModuleUtils.getPubSubService(),
     GuestCacheWarmer,
     CacheWarmerService,
+    TpsWarmerService,
   ],
 })
 export class CacheWarmerModule { }

@@ -61,8 +61,8 @@ export class GatewayService {
     return result.auctionList;
   }
 
-  async getNetworkStatus(metaChainShardId: number | string): Promise<NetworkStatus> {
-    const result = await this.get(`network/status/${metaChainShardId}`, GatewayComponentRequest.networkStatus);
+  async getNetworkStatus(shardId: number | string): Promise<NetworkStatus> {
+    const result = await this.get(`network/status/${shardId}`, GatewayComponentRequest.networkStatus);
     return result.status;
   }
 
@@ -182,6 +182,12 @@ export class GatewayService {
     return result?.transaction;
   }
 
+  async getBlockByShardAndNonce(shard: number, nonce: number, withTxs?: boolean): Promise<any> {
+    const result = await this.get(`block/${shard}/by-nonce/${nonce}?withTxs=${withTxs ?? false}`, GatewayComponentRequest.blockByNonce);
+
+    return result.block;
+  }
+
   @LogPerformanceAsync(MetricsEvents.SetGatewayDuration, { argIndex: 1 })
   async get(url: string, component: GatewayComponentRequest, errorHandler?: (error: any) => Promise<boolean>): Promise<any> {
     const result = await this.getRaw(url, component, errorHandler);
@@ -213,6 +219,7 @@ export class GatewayService {
 
     return await this.apiService.post(fullUrl, data, new ApiSettings(), errorHandler);
   }
+
 
   private getFullUrl(component: GatewayComponentRequest, suffix: string) {
     const url = new URL(`${this.getGatewayUrl(component)}/${suffix}`);
