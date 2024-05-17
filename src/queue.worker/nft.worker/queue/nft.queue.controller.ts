@@ -18,6 +18,7 @@ import { ProcessNftSettings } from "src/endpoints/process-nfts/entities/process.
 export class NftQueueController {
   private readonly logger = new OriginLogger(NftQueueController.name);
   private readonly RETRY_LIMIT: Number;
+  private static queueName: string;
 
   constructor(
     private readonly nftMetadataService: NftMetadataService,
@@ -29,6 +30,7 @@ export class NftQueueController {
     apiConfigService: ApiConfigService,
   ) {
     this.RETRY_LIMIT = apiConfigService.getNftProcessMaxRetries();
+    NftQueueController.queueName = apiConfigService.getNftQueueName();
   }
 
   private getAttempt(msg: any): number {
@@ -71,7 +73,7 @@ export class NftQueueController {
     return result;
   }
 
-  @MessagePattern({ cmd: 'api-process-nfts' })
+  @MessagePattern({ cmd: NftQueueController.queueName })
   async onNftCreated(@Payload() data: NftMessage, @Ctx() context: RmqContext) {
     const channel = context.getChannelRef();
     const message = context.getMessage();
