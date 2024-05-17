@@ -123,6 +123,9 @@ export class MexPairService {
             type
             lockedValueUSD
             volumeUSD24h
+            hasFarms
+            hasDualFarms
+            tradesCount
             __typename
           }
         }
@@ -188,6 +191,9 @@ export class MexPairService {
         state,
         type,
         exchange,
+        hasFarms: pair.hasFarms,
+        hasDualFarms: pair.hasDualFarms,
+        tradesCount: pair.tradesCount,
       };
     }
 
@@ -212,6 +218,9 @@ export class MexPairService {
       state,
       type,
       exchange,
+      hasFarms: pair.hasFarms,
+      hasDualFarms: pair.hasDualFarms,
+      tradesCount: pair.tradesCount,
     };
   }
 
