@@ -69,7 +69,7 @@ export class EndpointsControllersModule {
       controllers.push(PoolController);
     }
 
-    const isTpsEnabled = configuration().features?.tps?.enabled;
+    const isTpsEnabled = configuration().features?.tps?.enabled ?? true;
     if (isTpsEnabled) {
       controllers.push(TpsController);
     }
