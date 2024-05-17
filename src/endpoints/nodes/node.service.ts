@@ -20,6 +20,11 @@ import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { NodeSort } from "./entities/node.sort";
 import { ProtocolService } from "src/common/protocol/protocol.service";
 import { KeysService } from "../keys/keys.service";
+import { IdentitiesService } from "../identities/identities.service";
+import { NodeAuction } from "./entities/node.auction";
+import { NodeAuctionFilter } from "./entities/node.auction.filter";
+import { Identity } from "../identities/entities/identity";
+import { NodeSortAuction } from "./entities/node.sort.auction";
 
 @Injectable()
 export class NodeService {
@@ -35,7 +40,9 @@ export class NodeService {
     @Inject(forwardRef(() => BlockService))
     private readonly blockService: BlockService,
     private readonly protocolService: ProtocolService,
-    private readonly keysService: KeysService
+    private readonly keysService: KeysService,
+    @Inject(forwardRef(() => IdentitiesService))
+    private readonly identitiesService: IdentitiesService
   ) { }
 
   private getIssues(node: Node, version: string | undefined): string[] {
@@ -118,7 +125,6 @@ export class NodeService {
 
   private async getFilteredNodes(query: NodeFilter): Promise<Node[]> {
     const allNodes = await this.getAllNodes();
-
 
     const filteredNodes = allNodes.filter(node => {
       if (query.search !== undefined) {
@@ -237,7 +243,26 @@ export class NodeService {
 
     const filteredNodes = await this.getFilteredNodes(query);
 
-    return filteredNodes.slice(from, from + size);
+    const resultNodes = filteredNodes.slice(from, from + size);
+
+    if (query.withIdentityInfo) {
+      const allIdentities = await this.identitiesService.getAllIdentities();
+      const allIdentitiesDict = allIdentities.toRecord<Identity>(x => x.identity ?? '');
+
+      for (const [index, node] of resultNodes.entries()) {
+        if (node.identity) {
+          const identity = allIdentitiesDict[node.identity];
+          if (identity) {
+            resultNodes[index] = new Node({
+              ...node,
+              identityInfo: identity,
+            });
+          }
+        }
+      }
+    }
+
+    return resultNodes;
   }
 
   async getAllNodes(): Promise<Node[]> {
@@ -380,6 +405,12 @@ export class NodeService {
               node.auctionPosition = position;
               node.auctionTopUp = auction.qualifiedTopUp;
               node.auctionQualified = auctionNode.qualified;
+
+              const stakeBigInt = BigInt(node.stake);
+              const auctionTopUpBigInt = BigInt(node.auctionTopUp);
+              const qualifiedStakeBigInt = stakeBigInt + auctionTopUpBigInt;
+
+              node.qualifiedStake = qualifiedStakeBigInt.toString();
             }
 
             const nodeStake = node.stake || "0";
@@ -688,6 +719,68 @@ export class NodeService {
     }
 
     return nodes;
+  }
+
+  async getNodesAuctions(pagination: QueryPagination, filter: NodeAuctionFilter): Promise<NodeAuction[]> {
+    const allNodes = await this.getNodes(new QueryPagination({ size: 10000 }), new NodeFilter({ status: NodeStatus.auction }));
+
+    const auctions = await this.gatewayService.getValidatorAuctions();
+    const auctionNodesMap = new Map();
+    const { from, size } = pagination;
+
+    for (const auction of auctions) {
+      if (auction.nodes) {
+        for (const auctionNode of auction.nodes) {
+          auctionNodesMap.set(auctionNode.blsKey, {
+            auctionTopUp: auction.qualifiedTopUp,
+            qualified: auctionNode.qualified,
+          });
+        }
+      }
+    }
+
+    const groupedNodes = allNodes.groupBy(node => (node.provider || node.owner) + ':' + (BigInt(node.stake).toString()) + (BigInt(node.topUp).toString()), true);
+
+    let nodesWithAuctionData: NodeAuction[] = [];
+
+    for (const group of groupedNodes) {
+      const node: Node = group.values[0];
+
+      const identity = node.identity ? await this.identitiesService.getIdentity(node.identity) : undefined;
+
+      const nodeAuction = new NodeAuction({
+        identity: identity?.identity,
+        name: identity?.name,
+        description: identity?.description,
+        avatar: identity?.avatar,
+        distribution: identity?.distribution,
+        stake: node.stake || '0',
+        owner: node.owner,
+        provider: node.provider,
+        auctionTopUp: node.auctionTopUp || '0',
+        qualifiedStake: node.qualifiedStake || '0',
+        auctionValidators: group.values.filter((node: Node) => node.auctioned).length,
+        qualifiedAuctionValidators: group.values.filter((node: Node) => node.auctionQualified === true).length,
+        droppedValidators: group.values.filter((node: Node) => node.auctionQualified === false).length,
+        dangerZoneValidators: group.values.filter((node: Node) => node.isInDangerZone).length,
+      });
+
+      if (group.values.length === 1 && !node.provider && !node.identity) {
+        nodeAuction.bls = node.bls;
+      }
+
+      nodesWithAuctionData.push(nodeAuction);
+    }
+
+    const sort = filter?.sort ?? NodeSortAuction.qualifiedStake;
+    const order = !filter?.sort && !filter?.order ? SortOrder.desc : filter?.order;
+    nodesWithAuctionData = nodesWithAuctionData.sorted(node => Number(node[sort]));
+
+    if (order === SortOrder.desc) {
+      nodesWithAuctionData.reverse();
+    }
+
+    return nodesWithAuctionData.slice(from, size);
   }
 
   async deleteOwnersForAddressInCache(address: string): Promise<string[]> {

@@ -110,6 +110,7 @@ describe('Delegation Service', () => {
         syncProgress: undefined,
         remainingUnBondPeriod: undefined,
         epochsLeft: undefined,
+        qualifiedStake: '',
       },
     ];
   });

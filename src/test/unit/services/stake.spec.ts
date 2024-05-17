@@ -20,6 +20,7 @@ describe('Stake Service', () => {
   let apiConfigService: ApiConfigService;
   let gatewayService: GatewayService;
   let identitiesService: IdentitiesService;
+  let nodeService: NodeService;
 
   beforeEach(async () => {
     const moduleRef = await Test.createTestingModule({
@@ -88,6 +89,7 @@ describe('Stake Service', () => {
     apiConfigService = moduleRef.get<ApiConfigService>(ApiConfigService);
     gatewayService = moduleRef.get<GatewayService>(GatewayService);
     identitiesService = moduleRef.get<IdentitiesService>(IdentitiesService);
+    nodeService = moduleRef.get<NodeService>(NodeService);
   });
 
   describe('getGlobalStake', () => {
@@ -166,6 +168,7 @@ describe('Stake Service', () => {
       jest.spyOn(stakeService, 'getMinimumAuctionTopUp').mockResolvedValue(expectedMinimumAuctionQualifiedTopUp);
       jest.spyOn(stakeService, 'getNakamotoCoefficient').mockResolvedValue(expectedNakamotoCoefficient);
       jest.spyOn(apiConfigService, 'isStakingV4Enabled').mockReturnValue(true);
+      jest.spyOn(nodeService, 'getNodeCount').mockResolvedValue(100);
 
       const result = await stakeService.getGlobalStakeRaw();
 
@@ -175,6 +178,7 @@ describe('Stake Service', () => {
       expect(result.totalStaked).toEqual(expectedTotalStaked);
       expect(result.minimumAuctionQualifiedTopUp).toEqual(expectedMinimumAuctionQualifiedTopUp);
       expect(result.nakamotoCoefficient).toEqual(expectedNakamotoCoefficient);
+      expect(result.totalObservers).toEqual(100);
     });
   });
 

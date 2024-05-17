@@ -12,6 +12,7 @@ export enum NodeSort {
   position = 'position',
   auctionPosition = 'auctionPosition',
   locked = 'locked',
+  qualifiedStake = 'qualifiedStake',
 }
 
 registerEnumType(NodeSort, {
@@ -50,6 +51,9 @@ registerEnumType(NodeSort, {
     },
     locked: {
       description: 'Node locked.',
+    },
+    qualifiedStake: {
+      description: 'Node qualified stake.',
     },
   },
 });
