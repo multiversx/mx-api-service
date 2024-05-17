@@ -59,7 +59,7 @@ export class MexController {
     @Query('exchange', new ParseEnumPipe(MexPairExchange)) exchange?: MexPairExchange,
   ): Promise<MexPair[]> {
     const filter = new MexPairsFilter({ exchange });
-    return await this.mexPairsService.getMexPairs(from, size, filter);
+    return await this.mexPairsService.getMexPairs(new QueryPagination({ from, size }), filter);
   }
 
   @Get("/mex/pairs/count")

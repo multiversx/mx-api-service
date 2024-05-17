@@ -12,6 +12,7 @@ import { OriginLogger } from "@multiversx/sdk-nestjs-common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { MexPairExchange } from "./entities/mex.pair.exchange";
 import { MexPairsFilter } from "./entities/mex.pairs..filter";
+import { QueryPagination } from "src/common/entities/query.pagination";
 
 @Injectable()
 export class MexPairService {
@@ -30,9 +31,10 @@ export class MexPairService {
     await this.cachingService.setLocal(CacheInfo.MexPairs.key, pairs, Constants.oneSecond() * 30);
   }
 
-  async getMexPairs(from: number, size: number, filter?: MexPairsFilter): Promise<any> {
+  async getMexPairs(pagination: QueryPagination, filter?: MexPairsFilter): Promise<any> {
     let allMexPairs = await this.getAllMexPairs();
     allMexPairs = this.applyFilters(allMexPairs, filter);
+    const { from, size } = pagination;
 
     return allMexPairs.slice(from, from + size);
   }
