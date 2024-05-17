@@ -60,4 +60,7 @@ export class NodeFilter {
 
   @Field(() => Boolean, { description: "Node auction filter for the given nodes.", nullable: true })
   isAuctioned: boolean | undefined;
+
+  @Field(() => Boolean, { description: "Identity info for the given nodes.", nullable: true })
+  withIdentityInfo: boolean | undefined;
 } 

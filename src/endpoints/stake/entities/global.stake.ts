@@ -16,6 +16,10 @@ export class GlobalStake {
   @ApiProperty({ type: Number, default: 3199 })
   activeValidators: number = 0;
 
+  @Field(() => Float, { description: "Total observers." })
+  @ApiProperty({ type: Number, default: 3199 })
+  totalObservers: number = 0;
+
   @Field(() => Float, { description: "Validators queue size." })
   @ApiProperty({ type: Number, default: 2 })
   queueSize: number = 0;
