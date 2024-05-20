@@ -90,22 +90,22 @@ export class TpsWarmerService {
 
   private async processTpsForShardAndNonce(shardId: number, nonce: number) {
     const block = await this.gatewayService.getBlockByShardAndNonce(shardId, nonce);
-    const transactions: number = block.numTxs;
+    const transactionCount: number = block.numTxs;
     const timestamp: number = block.timestamp;
-    this.logger.log(`Processing TPS for shard ${shardId} and nonce ${nonce}. Transactions: ${transactions} Timestamp: ${timestamp}`);
+    this.logger.log(`Processing TPS for shard ${shardId} and nonce ${nonce}. Transactions: ${transactionCount} Timestamp: ${timestamp}`);
 
     for (const frequency of TpsUtils.Frequencies) {
-      await this.saveTps(timestamp, frequency, transactions);
+      await this.saveTps(timestamp, frequency, transactionCount);
     }
   }
 
-  private async saveTps(timestamp: number, frequency: number, transactions: number) {
+  private async saveTps(timestamp: number, frequency: number, transactionCount: number) {
     const timestampByFrequency = TpsUtils.getTimestampByFrequency(timestamp, frequency);
 
     const key = CacheInfo.TpsByTimestampAndFrequency(timestampByFrequency, frequency).key;
 
-    const totalTransactions = await this.redisCacheService.incrby(key, transactions);
-    if (totalTransactions === transactions) {
+    const transactionCountAfterIncrement = await this.redisCacheService.incrby(key, transactionCount);
+    if (transactionCountAfterIncrement === transactionCount) {
       await this.redisCacheService.expire(key, CacheInfo.TpsByTimestampAndFrequency(timestampByFrequency, frequency).ttl);
     }
   }
