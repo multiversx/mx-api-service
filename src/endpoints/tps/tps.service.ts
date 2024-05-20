@@ -16,9 +16,9 @@ export class TpsService {
     const frequencySeconds = TpsUtils.getFrequencyByEnum(frequency);
     const timestamp = TpsUtils.getTimestampByFrequency(new Date().getTimeInSeconds() - frequencySeconds, frequencySeconds);
 
-    const transactions = (await this.cacheService.getRemote<number>(CacheInfo.TpsByTimestampAndFrequency(timestamp, frequencySeconds).key)) ?? 0;
+    const transactionCount = (await this.cacheService.getRemote<number>(CacheInfo.TpsByTimestampAndFrequency(timestamp, frequencySeconds).key)) ?? 0;
 
-    const tps = transactions / frequencySeconds;
+    const tps = transactionCount / frequencySeconds;
 
     return new Tps({ timestamp, tps });
   }
