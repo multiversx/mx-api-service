@@ -120,7 +120,7 @@ describe('TpsService', () => {
     it('should retrieve a history of TPS based on the specified interval', async () => {
       const interval = TpsInterval._1h;
       const frequencySeconds = TpsUtils.getFrequencyByInterval(interval);
-      const endTimestamp = TpsUtils.getTimestampByFrequency(Date.now() / 1000 - frequencySeconds, frequencySeconds);
+      const endTimestamp = TpsUtils.getTimestampByFrequency(Date.now() / 1000, frequencySeconds);
       const startTimestamp = endTimestamp - TpsUtils.getIntervalByEnum(interval);
 
       const timestamps = Array.from({ length: (endTimestamp - startTimestamp) / frequencySeconds + 1 }, (_, i) => startTimestamp + i * frequencySeconds);
