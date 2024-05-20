@@ -13,19 +13,33 @@ export class TpsController {
     private readonly tpsService: TpsService,
   ) { }
 
+  @Get('/latest')
+  @ApiOperation({ summary: 'TPS live info', description: 'Return TPS live info' })
+  @ApiOkResponse({ type: Tps })
+  async getTpsLatest(): Promise<Tps> {
+    return await this.tpsService.getTpsLive(TpsFrequency._30s);
+  }
+
   @Get('/latest/:frequency')
   @ApiOperation({ summary: 'TPS live info', description: 'Return TPS live info' })
   @ApiOkResponse({ type: Tps })
-  async getTpsLive(
+  async getTpsLatestByFrequency(
     @Param('frequency', new ParseEnumPipe(TpsFrequency)) frequency: TpsFrequency,
   ): Promise<Tps> {
     return await this.tpsService.getTpsLive(frequency);
   }
 
+  @Get('/history')
+  @ApiOperation({ summary: 'TPS history info', description: 'Return TPS history info' })
+  @ApiOkResponse({ type: Tps, isArray: true })
+  async getTpsHistory(): Promise<Tps[]> {
+    return await this.tpsService.getTpsHistory(TpsInterval._1h);
+  }
+
   @Get('/history/:interval')
   @ApiOperation({ summary: 'TPS history info', description: 'Return TPS history info' })
   @ApiOkResponse({ type: Tps, isArray: true })
-  async getTpsHistory(
+  async getTpsHistoryByInterval(
     @Param('interval', new ParseEnumPipe(TpsInterval)) interval: TpsInterval,
   ): Promise<Tps[]> {
     return await this.tpsService.getTpsHistory(interval);
