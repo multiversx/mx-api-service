@@ -1,6 +1,7 @@
 import { Constants } from "@multiversx/sdk-nestjs-common";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { BlockFilter } from "src/endpoints/blocks/entities/block.filter";
+import { TpsInterval } from "src/endpoints/tps/entities/tps.interval";
 
 export class CacheInfo {
   key: string = "";
@@ -616,6 +617,27 @@ export class CacheInfo {
     return {
       key: `data-api:price:${identifier}:${priceDate.toISODateString()}`,
       ttl,
+    };
+  }
+
+  static TpsNonceByShard(shardId: number): CacheInfo {
+    return {
+      key: `tpsCurrentNonce:${shardId}`,
+      ttl: Constants.oneDay(),
+    };
+  }
+
+  static TpsByTimestampAndFrequency(timestamp: number, frequency: number): CacheInfo {
+    return {
+      key: `tpsTransactions:${timestamp}:${frequency}`,
+      ttl: frequency * 300,
+    };
+  }
+
+  static TpsHistoryByInterval(interval: TpsInterval): CacheInfo {
+    return {
+      key: `tpsHistory:${interval}`,
+      ttl: Constants.oneMinute(),
     };
   }
 }

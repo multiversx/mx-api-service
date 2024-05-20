@@ -87,6 +87,9 @@ features:
       nodeValidators: 3500
   nftScamInfo:
     enabled: false
+  tps:
+    enabled: true
+    maxLookBehindNonces: 100
 image:
   width: 600
   height: 600

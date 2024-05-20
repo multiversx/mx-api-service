@@ -36,6 +36,7 @@ import { VmQueryController } from "./vm.query/vm.query.controller";
 import { WaitingListController } from "./waiting-list/waiting.list.controller";
 import { WebsocketController } from "./websocket/websocket.controller";
 import { PoolController } from "./pool/pool.controller";
+import { TpsController } from "./tps/tps.controller";
 
 @Module({})
 export class EndpointsControllersModule {
@@ -66,6 +67,11 @@ export class EndpointsControllersModule {
     const isTxPoolEnabled = configuration().features?.transactionPool?.enabled;
     if (isTxPoolEnabled) {
       controllers.push(PoolController);
+    }
+
+    const isTpsEnabled = configuration().features?.tps?.enabled;
+    if (isTpsEnabled) {
+      controllers.push(TpsController);
     }
 
     return {
