@@ -12,7 +12,7 @@ export class TpsService {
     private readonly cacheService: CacheService,
   ) { }
 
-  async getTpsLive(frequency: TpsFrequency): Promise<Tps> {
+  async getTpsLatest(frequency: TpsFrequency): Promise<Tps> {
     const frequencySeconds = TpsUtils.getFrequencyByEnum(frequency);
     const timestamp = TpsUtils.getTimestampByFrequency(new Date().getTimeInSeconds() - frequencySeconds, frequencySeconds);
 
@@ -33,7 +33,7 @@ export class TpsService {
 
   async getTpsHistoryRaw(interval: TpsInterval): Promise<Tps[]> {
     const frequencySeconds = TpsUtils.getFrequencyByInterval(interval);
-    const endTimestamp = TpsUtils.getTimestampByFrequency(new Date().getTimeInSeconds() - frequencySeconds, frequencySeconds);
+    const endTimestamp = TpsUtils.getTimestampByFrequency(new Date().getTimeInSeconds(), frequencySeconds);
     const startTimestamp = endTimestamp - TpsUtils.getIntervalByEnum(interval);
 
     const timestamps = [];

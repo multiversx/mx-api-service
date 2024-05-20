@@ -17,7 +17,7 @@ export class TpsController {
   @ApiOperation({ summary: 'TPS live info', description: 'Return TPS live info' })
   @ApiOkResponse({ type: Tps })
   async getTpsLatest(): Promise<Tps> {
-    return await this.tpsService.getTpsLive(TpsFrequency._30s);
+    return await this.tpsService.getTpsLatest(TpsFrequency._30s);
   }
 
   @Get('/latest/:frequency')
@@ -26,7 +26,7 @@ export class TpsController {
   async getTpsLatestByFrequency(
     @Param('frequency', new ParseEnumPipe(TpsFrequency)) frequency: TpsFrequency,
   ): Promise<Tps> {
-    return await this.tpsService.getTpsLive(frequency);
+    return await this.tpsService.getTpsLatest(frequency);
   }
 
   @Get('/history')

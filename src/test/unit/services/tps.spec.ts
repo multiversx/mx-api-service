@@ -45,7 +45,7 @@ describe('TpsService', () => {
       jest.spyOn(cacheService, 'getRemote').mockResolvedValue(transactions);
 
       const expectedTps = transactions / frequencySeconds;
-      const result = await tpsService.getTpsLive(frequency);
+      const result = await tpsService.getTpsLatest(frequency);
       expect(result.tps).toBe(expectedTps);
       expect(result.timestamp).toBe(timestamp);
       expect(cacheService.getRemote).toHaveBeenCalledWith(CacheInfo.TpsByTimestampAndFrequency(timestamp, frequencySeconds).key);
@@ -55,7 +55,7 @@ describe('TpsService', () => {
       const frequency = TpsFrequency._30s;
       jest.spyOn(cacheService, 'getRemote').mockRejectedValue(new Error("Failed to fetch data"));
 
-      await expect(tpsService.getTpsLive(frequency)).rejects.toThrow("Failed to fetch data");
+      await expect(tpsService.getTpsLatest(frequency)).rejects.toThrow("Failed to fetch data");
     });
 
     it('should accurately calculate TPS for a 10-minute frequency', async () => {
@@ -67,7 +67,7 @@ describe('TpsService', () => {
       jest.spyOn(cacheService, 'getRemote').mockResolvedValue(transactions);
 
       const expectedTps = transactions / frequencySeconds;
-      const result = await tpsService.getTpsLive(frequency);
+      const result = await tpsService.getTpsLatest(frequency);
 
       expect(result.tps).toBeCloseTo(expectedTps, 2);
       expect(result.timestamp).toBe(timestamp);
@@ -83,7 +83,7 @@ describe('TpsService', () => {
       jest.spyOn(cacheService, 'getRemote').mockResolvedValue(veryHighTransactions);
 
       const startTime = performance.now();
-      const result = await tpsService.getTpsLive(frequency);
+      const result = await tpsService.getTpsLatest(frequency);
       const endTime = performance.now();
       const expectedTps = veryHighTransactions / frequencySeconds;
 
@@ -100,7 +100,7 @@ describe('TpsService', () => {
 
       jest.spyOn(cacheService, 'getRemote').mockResolvedValue(extremeTransactions);
 
-      await expect(tpsService.getTpsLive(frequency)).resolves.toEqual(expect.objectContaining({
+      await expect(tpsService.getTpsLatest(frequency)).resolves.toEqual(expect.objectContaining({
         tps: extremeTransactions / frequencySeconds,
         timestamp: timestamp,
       }));
@@ -110,7 +110,7 @@ describe('TpsService', () => {
       const frequency = TpsFrequency._10m;
       jest.spyOn(cacheService, 'getRemote').mockResolvedValue(null);
 
-      const result = await tpsService.getTpsLive(frequency);
+      const result = await tpsService.getTpsLatest(frequency);
 
       expect(result.tps).toBe(0);
     });
