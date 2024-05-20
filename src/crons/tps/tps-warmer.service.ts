@@ -5,7 +5,7 @@ import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { GatewayService } from "src/common/gateway/gateway.service";
 import { ProtocolService } from "src/common/protocol/protocol.service";
 import { CacheInfo } from "src/utils/cache.info";
-import { Lock } from "@multiversx/sdk-nestjs-common";
+import { Lock, OriginLogger } from "@multiversx/sdk-nestjs-common";
 import { CronJob } from "cron";
 import { TpsUtils } from "src/utils/tps.utils";
 import { TpsService } from "src/endpoints/tps/tps.service";
@@ -13,6 +13,8 @@ import { TpsInterval } from "src/endpoints/tps/entities/tps.interval";
 
 @Injectable()
 export class TpsWarmerService {
+  private readonly logger = new OriginLogger(TpsWarmerService.name);
+
   constructor(
     private readonly cachingService: CacheService,
     private readonly redisCacheService: RedisCacheService,
@@ -59,7 +61,7 @@ export class TpsWarmerService {
     const startNonce = await this.getStartNonce(shardId, endNonce);
 
     for (let nonce = startNonce + 1; nonce <= endNonce; nonce++) {
-      console.log(`Processing TPS for shard ${shardId} and nonce ${nonce}. Nonces to process: ${endNonce - nonce}`);
+      this.logger.log(`Processing TPS for shard ${shardId} and nonce ${nonce}. Nonces to process: ${endNonce - nonce}`);
       await this.processTpsForShardAndNonce(shardId, nonce);
 
       await this.cachingService.setRemote(CacheInfo.TpsNonceByShard(shardId).key, nonce);
@@ -88,7 +90,7 @@ export class TpsWarmerService {
     const block = await this.gatewayService.getBlockByShardAndNonce(shardId, nonce);
     const transactions: number = block.numTxs;
     const timestamp: number = block.timestamp;
-    console.log(`Processing TPS for shard ${shardId} and nonce ${nonce}. Transactions: ${transactions} Timestamp: ${timestamp}`);
+    this.logger.log(`Processing TPS for shard ${shardId} and nonce ${nonce}. Transactions: ${transactions} Timestamp: ${timestamp}`);
 
     for (const frequency of TpsUtils.Frequencies) {
       await this.saveTps(timestamp, frequency, transactions);
