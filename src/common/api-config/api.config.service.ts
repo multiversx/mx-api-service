@@ -720,7 +720,7 @@ export class ApiConfigService {
   }
 
   isTpsEnabled(): boolean {
-    return this.configService.get<boolean>('features.tps.enabled') ?? true;
+    return this.configService.get<boolean>('features.tps.enabled') ?? false;
   }
 
   getTpsMaxLookBehindNonces(): number {
