@@ -24,15 +24,17 @@ export class TpsWarmerService {
     private readonly schedulerRegistry: SchedulerRegistry,
     private readonly tpsService: TpsService,
   ) {
-    if (this.apiConfigService.isTpsEnabled()) {
-      const handleBlockProcessorCronJob = new CronJob(CronExpression.EVERY_SECOND, async () => await this.handleBlockProcessor());
-      this.schedulerRegistry.addCronJob('handleBlockProcessor', handleBlockProcessorCronJob);
-      handleBlockProcessorCronJob.start();
-
-      const refreshTpsHistoryCronJob = new CronJob(CronExpression.EVERY_10_SECONDS, async () => await this.refreshTpsHistory());
-      this.schedulerRegistry.addCronJob('refreshTpsHistory', refreshTpsHistoryCronJob);
-      refreshTpsHistoryCronJob.start();
+    if (!this.apiConfigService.isTpsEnabled()) {
+      return;
     }
+
+    const handleBlockProcessorCronJob = new CronJob(CronExpression.EVERY_SECOND, async () => await this.handleBlockProcessor());
+    this.schedulerRegistry.addCronJob('handleBlockProcessor', handleBlockProcessorCronJob);
+    handleBlockProcessorCronJob.start();
+
+    const refreshTpsHistoryCronJob = new CronJob(CronExpression.EVERY_10_SECONDS, async () => await this.refreshTpsHistory());
+    this.schedulerRegistry.addCronJob('refreshTpsHistory', refreshTpsHistoryCronJob);
+    refreshTpsHistoryCronJob.start();
   }
 
   @Lock({ name: 'Block Processor', verbose: true })
