@@ -220,7 +220,6 @@ export class GatewayService {
     return await this.apiService.post(fullUrl, data, new ApiSettings(), errorHandler);
   }
 
-
   private getFullUrl(component: GatewayComponentRequest, suffix: string) {
     const url = new URL(`${this.getGatewayUrl(component)}/${suffix}`);
 
