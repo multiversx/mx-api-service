@@ -723,8 +723,8 @@ export class ApiConfigService {
     return this.configService.get<boolean>('features.tps.enabled') ?? true;
   }
 
-  getTpsMaxLookBehind(): number {
-    return this.configService.get<number>('features.tps.maxLookBehind') ?? 100;
+  getTpsMaxLookBehindNonces(): number {
+    return this.configService.get<number>('features.tps.maxLookBehindNonces') ?? 100;
   }
 
   isNftExtendedAttributesEnabled(): boolean {

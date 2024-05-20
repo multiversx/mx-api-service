@@ -73,11 +73,11 @@ export class TpsWarmerService {
   private async getStartNonce(shardId: number, endNonce: number): Promise<number> {
     const startNonce = await this.cachingService.getRemote<number>(CacheInfo.TpsNonceByShard(shardId).key);
     if (!startNonce) {
-      return endNonce - this.apiConfigService.getTpsMaxLookBehind();
+      return endNonce - this.apiConfigService.getTpsMaxLookBehindNonces();
     }
 
-    if (startNonce < endNonce - this.apiConfigService.getTpsMaxLookBehind()) {
-      return endNonce - this.apiConfigService.getTpsMaxLookBehind();
+    if (startNonce < endNonce - this.apiConfigService.getTpsMaxLookBehindNonces()) {
+      return endNonce - this.apiConfigService.getTpsMaxLookBehindNonces();
     }
 
     return startNonce;

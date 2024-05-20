@@ -86,7 +86,7 @@ features:
     enabled: false
   tps:
     enabled: true
-    maxLookBehind: 100  
+    maxLookBehindNonces: 100  
 image:
   width: 600
   height: 600
