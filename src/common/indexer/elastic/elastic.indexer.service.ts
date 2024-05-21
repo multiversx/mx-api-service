@@ -178,15 +178,17 @@ export class ElasticIndexerService implements IndexerInterface {
       QueryType.Match('sender', address),
       QueryType.Match('receiver', address),
     ];
+
     const elasticQuery: ElasticQuery = ElasticQuery.create()
+      .withMustMatchCondition('type', 'normal')
       .withCondition(QueryConditionOptions.should, queries);
 
-    return await this.elasticService.getCount('transactions', elasticQuery);
+    return await this.elasticService.getCount('operations', elasticQuery);
   }
 
   async getTransactionCount(filter: TransactionFilter, address?: string): Promise<number> {
     const elasticQuery = this.indexerHelper.buildTransactionFilterQuery(filter, address);
-    return await this.elasticService.getCount('transactions', elasticQuery);
+    return await this.elasticService.getCount('operations', elasticQuery);
   }
 
   async getRound(shard: number, round: number): Promise<any> {
@@ -215,7 +217,7 @@ export class ElasticIndexerService implements IndexerInterface {
   }
 
   async getTransaction(txHash: string): Promise<any> {
-    const transaction = await this.elasticService.getItem('transactions', 'txHash', txHash);
+    const transaction = await this.elasticService.getItem('operations', 'txHash', txHash);
 
     this.processTransaction(transaction);
 
@@ -490,7 +492,7 @@ export class ElasticIndexerService implements IndexerInterface {
       .withPagination({ from: pagination.from, size: pagination.size })
       .withSort([timestamp, nonce]);
 
-    const transactions = await this.elasticService.getList('transactions', 'txHash', elasticQuery);
+    const transactions = await this.elasticService.getList('operations', 'txHash', elasticQuery);
 
     for (const transaction of transactions) {
       this.processTransaction(transaction);
@@ -500,6 +502,8 @@ export class ElasticIndexerService implements IndexerInterface {
   }
 
   private processTransaction(transaction: any) {
+    delete transaction.type;
+
     if (transaction && !transaction.function) {
       transaction.function = transaction.operation;
     }
@@ -672,7 +676,7 @@ export class ElasticIndexerService implements IndexerInterface {
       .withPagination({ from: 0, size: 1 })
       .withCondition(QueryConditionOptions.must, queries);
 
-    return await this.elasticService.getList('transactions', 'txHash', elasticQuery);
+    return await this.elasticService.getList('operations', 'txHash', elasticQuery);
   }
 
   async getTransactionReceipts(txHash: string): Promise<any[]> {
