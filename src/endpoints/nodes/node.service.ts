@@ -737,29 +737,12 @@ export class NodeService {
 
   async getAllNodesAuctionsRaw(): Promise<NodeAuction[]> {
     this.logger.log('Fetching nodes with auction status...');
-    const allNodes = await this.getNodes(new QueryPagination({ size: 10000 }), new NodeFilter({ status: NodeStatus.auction }));
-    this.logger.log('Nodes with auction status:', allNodes);
+    // const allNodes = await this.getNodes(new QueryPagination({ size: 10000 }), new NodeFilter({ status: NodeStatus.auction }));
+    const allNodes = await this.getAllNodes();
+    const auctionNodes = allNodes.filter(node => node.status === NodeStatus.auction);
+    this.logger.log('Nodes with auction status:', auctionNodes);
 
-    this.logger.log('Fetching validator auctions...');
-    const auctions = await this.gatewayService.getValidatorAuctions();
-    this.logger.log('Validator auctions:', auctions);
-
-    const auctionNodesMap = new Map();
-
-    for (const auction of auctions) {
-      if (auction.nodes) {
-        for (const auctionNode of auction.nodes) {
-          auctionNodesMap.set(auctionNode.blsKey, {
-            auctionTopUp: auction.qualifiedTopUp,
-            qualified: auctionNode.qualified,
-          });
-        }
-      }
-    }
-
-    this.logger.log('Auction nodes map:', auctionNodesMap);
-
-    const groupedNodes = allNodes.groupBy(node => (node.provider || node.owner) + ':' + (BigInt(node.stake).toString()) + (BigInt(node.topUp).toString()), true);
+    const groupedNodes = auctionNodes.groupBy(node => (node.provider || node.owner) + ':' + (BigInt(node.stake).toString()) + (BigInt(node.topUp).toString()), true);
     this.logger.log('Grouped nodes:', groupedNodes);
 
     const nodesWithAuctionData: NodeAuction[] = [];

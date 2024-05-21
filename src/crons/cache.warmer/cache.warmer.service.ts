@@ -123,13 +123,6 @@ export class CacheWarmerService {
   @Lock({ name: 'Node invalidations', verbose: true })
   async handleNodeInvalidations() {
     const nodes = await this.nodeService.getAllNodesRaw();
-
-    if (this.apiConfigService.isStakingV4Enabled()) {
-      const auctions = await this.gatewayService.getValidatorAuctions();
-
-      await this.nodeService.processAuctions(nodes, auctions);
-    }
-
     await this.invalidateKey(CacheInfo.Nodes.key, nodes, CacheInfo.Nodes.ttl);
   }
 
