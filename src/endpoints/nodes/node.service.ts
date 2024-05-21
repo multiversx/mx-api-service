@@ -721,12 +721,19 @@ export class NodeService {
     return nodes;
   }
 
-  async getNodesAuctions(pagination: QueryPagination, filter: NodeAuctionFilter): Promise<NodeAuction[]> {
+  async getAllNodesAuctions(): Promise<NodeAuction[]> {
+    return await this.cacheService.getOrSet(
+      CacheInfo.NodesAuctions.key,
+      async () => await this.getAllNodesAuctionsRaw(),
+      CacheInfo.NodesAuctions.ttl
+    );
+  }
+
+  async getAllNodesAuctionsRaw(): Promise<NodeAuction[]> {
     const allNodes = await this.getNodes(new QueryPagination({ size: 10000 }), new NodeFilter({ status: NodeStatus.auction }));
 
     const auctions = await this.gatewayService.getValidatorAuctions();
     const auctionNodesMap = new Map();
-    const { from, size } = pagination;
 
     for (const auction of auctions) {
       if (auction.nodes) {
@@ -741,7 +748,7 @@ export class NodeService {
 
     const groupedNodes = allNodes.groupBy(node => (node.provider || node.owner) + ':' + (BigInt(node.stake).toString()) + (BigInt(node.topUp).toString()), true);
 
-    let nodesWithAuctionData: NodeAuction[] = [];
+    const nodesWithAuctionData: NodeAuction[] = [];
 
     for (const group of groupedNodes) {
       const node: Node = group.values[0];
@@ -772,15 +779,21 @@ export class NodeService {
       nodesWithAuctionData.push(nodeAuction);
     }
 
+    return nodesWithAuctionData;
+  }
+
+  async getNodesAuctions(pagination: QueryPagination, filter: NodeAuctionFilter): Promise<NodeAuction[]> {
+    let nodesWithAuctionData = await this.getAllNodesAuctions();
+
     const sort = filter?.sort ?? NodeSortAuction.qualifiedStake;
     const order = !filter?.sort && !filter?.order ? SortOrder.desc : filter?.order;
-    nodesWithAuctionData = nodesWithAuctionData.sorted(node => Number(node[sort]));
+    nodesWithAuctionData = nodesWithAuctionData.sorted(node => Number(node[sort]), node => node.qualifiedAuctionValidators === 0 ? 0 : 1, node => 0 - node.droppedValidators);
 
     if (order === SortOrder.desc) {
       nodesWithAuctionData.reverse();
     }
 
-    return nodesWithAuctionData.slice(from, size);
+    return nodesWithAuctionData.slice(pagination.from, pagination.size);
   }
 
   async deleteOwnersForAddressInCache(address: string): Promise<string[]> {

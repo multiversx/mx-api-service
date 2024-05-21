@@ -59,7 +59,9 @@ export class StakeService {
     const totalStaked = BigInt(BigInt(totalBaseStaked) + BigInt(totalTopUp)).toString();
     const totalObservers = await this.nodeService.getNodeCount(new NodeFilter({ type: NodeType.observer }));
 
-    if (!this.apiConfigService.isStakingV4Enabled()) {
+    const currentEpoch = await this.blockService.getCurrentEpoch();
+
+    if (!this.apiConfigService.isStakingV4Enabled() || currentEpoch < this.apiConfigService.getStakingV4ActivationEpoch()) {
       const queueSize = await this.nodeService.getNodeCount(new NodeFilter({ status: NodeStatus.queued }));
       return new GlobalStake({
         totalValidators: validators.totalValidators,

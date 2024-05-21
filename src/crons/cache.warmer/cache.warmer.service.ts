@@ -32,6 +32,7 @@ import { BlockService } from "src/endpoints/blocks/block.service";
 import { PoolService } from "src/endpoints/pool/pool.service";
 import * as JsonDiff from "json-diff";
 import { QueryPagination } from "src/common/entities/query.pagination";
+import { StakeService } from "src/endpoints/stake/stake.service";
 
 @Injectable()
 export class CacheWarmerService {
@@ -64,6 +65,7 @@ export class CacheWarmerService {
     private readonly dataApiService: DataApiService,
     private readonly blockService: BlockService,
     private readonly poolService: PoolService,
+    private readonly stakeService: StakeService,
   ) {
     this.configCronJob(
       'handleTokenAssetsInvalidations',
@@ -137,8 +139,10 @@ export class CacheWarmerService {
     const auctions = await this.gatewayService.getValidatorAuctions();
 
     await this.nodeService.processAuctions(nodes, auctions);
-
     await this.invalidateKey(CacheInfo.Nodes.key, nodes, CacheInfo.Nodes.ttl);
+
+    const nodesAuctions = await this.nodeService.getAllNodesAuctionsRaw();
+    await this.invalidateKey(CacheInfo.NodesAuctions.key, nodesAuctions, CacheInfo.NodesAuctions.ttl);
   }
 
   @Lock({ name: 'Transaction pool invalidation', verbose: true })
@@ -204,6 +208,13 @@ export class CacheWarmerService {
   async handleEconomicsInvalidations() {
     const economics = await this.networkService.getEconomicsRaw();
     await this.invalidateKey(CacheInfo.Economics.key, economics, CacheInfo.Economics.ttl);
+  }
+
+  @Cron(CronExpression.EVERY_30_SECONDS)
+  @Lock({ name: 'Stake invalidations', verbose: true })
+  async handleStakeInvalidations() {
+    const stake = await this.stakeService.getGlobalStakeRaw();
+    await this.invalidateKey(CacheInfo.GlobalStake.key, stake, CacheInfo.GlobalStake.ttl);
   }
 
   @Cron(CronExpression.EVERY_MINUTE)
