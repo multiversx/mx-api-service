@@ -46,7 +46,7 @@ export class ElasticIndexerService implements IndexerInterface {
 
   async getScResultsCount(filter: SmartContractResultFilter): Promise<number> {
     const query = this.indexerHelper.buildResultsFilterQuery(filter);
-    return await this.elasticService.getCount('scresults', query);
+    return await this.elasticService.getCount('operations', query);
   }
 
   async getAccountContractsCount(address: string): Promise<number> {
@@ -170,7 +170,7 @@ export class ElasticIndexerService implements IndexerInterface {
 
   async getAccountScResultsCount(address: string): Promise<number> {
     const elasticQuery: ElasticQuery = this.indexerHelper.buildSmartContractResultFilterQuery(address);
-    return await this.elasticService.getCount('scresults', elasticQuery);
+    return await this.elasticService.getCount('operations', elasticQuery);
   }
 
   async getTransactionCountForAddress(address: string): Promise<number> {
@@ -181,12 +181,12 @@ export class ElasticIndexerService implements IndexerInterface {
     const elasticQuery: ElasticQuery = ElasticQuery.create()
       .withCondition(QueryConditionOptions.should, queries);
 
-    return await this.elasticService.getCount('transactions', elasticQuery);
+    return await this.elasticService.getCount('operations', elasticQuery);
   }
 
   async getTransactionCount(filter: TransactionFilter, address?: string): Promise<number> {
     const elasticQuery = this.indexerHelper.buildTransactionFilterQuery(filter, address);
-    return await this.elasticService.getCount('transactions', elasticQuery);
+    return await this.elasticService.getCount('operations', elasticQuery);
   }
 
   async getRound(shard: number, round: number): Promise<any> {
@@ -215,7 +215,7 @@ export class ElasticIndexerService implements IndexerInterface {
   }
 
   async getTransaction(txHash: string): Promise<any> {
-    const transaction = await this.elasticService.getItem('transactions', 'txHash', txHash);
+    const transaction = await this.elasticService.getItem('operations', 'txHash', txHash);
 
     this.processTransaction(transaction);
 
@@ -227,7 +227,7 @@ export class ElasticIndexerService implements IndexerInterface {
   }
 
   async getScResult(scHash: string): Promise<any> {
-    const result = await this.elasticService.getItem('scresults', 'hash', scHash);
+    const result = await this.elasticService.getItem('operations', 'hash', scHash);
 
     this.processTransaction(result);
 
@@ -318,7 +318,7 @@ export class ElasticIndexerService implements IndexerInterface {
       .withSort([{ name: 'timestamp', order: ElasticSortOrder.ascending }])
       .withTerms(new TermsQuery('originalTxHash', transactionHashes));
 
-    return await this.elasticService.getList('scresults', 'scHash', elasticQuery);
+    return await this.elasticService.getList('operations', 'scHash', elasticQuery);
   }
 
   async getAccountsForAddresses(addresses: string[]): Promise<any[]> {
@@ -359,7 +359,7 @@ export class ElasticIndexerService implements IndexerInterface {
     const elasticQuery: ElasticQuery = this.indexerHelper.buildResultsFilterQuery(filter)
       .withPagination(pagination);
 
-    const results = await this.elasticService.getList('scresults', 'hash', elasticQuery);
+    const results = await this.elasticService.getList('operations', 'hash', elasticQuery);
 
     for (const result of results) {
       this.processTransaction(result);
@@ -389,7 +389,7 @@ export class ElasticIndexerService implements IndexerInterface {
       .withPagination(pagination)
       .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }]);
 
-    return await this.elasticService.getList('scresults', 'hash', elasticQuery);
+    return await this.elasticService.getList('operations', 'hash', elasticQuery);
   }
 
   async getAccounts(queryPagination: QueryPagination, filter: AccountQueryOptions): Promise<any[]> {
@@ -490,7 +490,7 @@ export class ElasticIndexerService implements IndexerInterface {
       .withPagination({ from: pagination.from, size: pagination.size })
       .withSort([timestamp, nonce]);
 
-    const transactions = await this.elasticService.getList('transactions', 'txHash', elasticQuery);
+    const transactions = await this.elasticService.getList('operations', 'txHash', elasticQuery);
 
     for (const transaction of transactions) {
       this.processTransaction(transaction);
@@ -557,7 +557,7 @@ export class ElasticIndexerService implements IndexerInterface {
       .withSort([timestamp])
       .withCondition(QueryConditionOptions.must, [originalTxHashQuery]);
 
-    const results = await this.elasticService.getList('scresults', 'hash', elasticQuerySc);
+    const results = await this.elasticService.getList('operations', 'hash', elasticQuerySc);
 
     for (const result of results) {
       this.processTransaction(result);
@@ -577,7 +577,7 @@ export class ElasticIndexerService implements IndexerInterface {
       .withSort([{ name: 'timestamp', order: ElasticSortOrder.ascending }])
       .withTerms(new TermsQuery('originalTxHash', hashes));
 
-    return await this.elasticService.getList('scresults', 'scHash', elasticQuery);
+    return await this.elasticService.getList('operations', 'scHash', elasticQuery);
   }
 
   async getAccountEsdtByIdentifiers(identifiers: string[], pagination?: QueryPagination) {
@@ -672,7 +672,7 @@ export class ElasticIndexerService implements IndexerInterface {
       .withPagination({ from: 0, size: 1 })
       .withCondition(QueryConditionOptions.must, queries);
 
-    return await this.elasticService.getList('transactions', 'txHash', elasticQuery);
+    return await this.elasticService.getList('operations', 'txHash', elasticQuery);
   }
 
   async getTransactionReceipts(txHash: string): Promise<any[]> {
