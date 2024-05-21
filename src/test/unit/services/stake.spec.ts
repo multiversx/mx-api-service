@@ -45,6 +45,7 @@ describe('Stake Service', () => {
             getStakingContractAddress: jest.fn(),
             getAuctionContractAddress: jest.fn(),
             isStakingV4Enabled: jest.fn(),
+            getStakingV4ActivationEpoch: jest.fn(),
           },
         },
         {
@@ -168,6 +169,7 @@ describe('Stake Service', () => {
       jest.spyOn(stakeService, 'getMinimumAuctionTopUp').mockResolvedValue(expectedMinimumAuctionQualifiedTopUp);
       jest.spyOn(stakeService, 'getNakamotoCoefficient').mockResolvedValue(expectedNakamotoCoefficient);
       jest.spyOn(apiConfigService, 'isStakingV4Enabled').mockReturnValue(true);
+      jest.spyOn(apiConfigService, 'getStakingV4ActivationEpoch').mockReturnValue(1395);
       jest.spyOn(nodeService, 'getNodeCount').mockResolvedValue(100);
 
       const result = await stakeService.getGlobalStakeRaw();
