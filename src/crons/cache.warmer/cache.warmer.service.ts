@@ -208,7 +208,7 @@ export class CacheWarmerService {
     await this.invalidateKey(CacheInfo.Economics.key, economics, CacheInfo.Economics.ttl);
   }
 
-  @Cron(CronExpression.EVERY_MINUTE)
+  @Cron(CronExpression.EVERY_30_SECONDS)
   @Lock({ name: 'Stake invalidations', verbose: true })
   async handleStakeInvalidations() {
     const stake = await this.stakeService.getGlobalStakeRaw();
