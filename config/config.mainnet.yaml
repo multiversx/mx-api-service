@@ -59,7 +59,7 @@ features:
   stakingV4:
     enabled: false
     cronExpression: '*/5 * * * * *'
-    activationEpoch: 1395
+    activationEpoch: 1391
   nodeEpochsLeft:
     enabled: false
   transactionProcessor:
