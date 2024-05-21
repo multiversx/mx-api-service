@@ -58,6 +58,7 @@ export class GatewayService {
 
   async getValidatorAuctions(): Promise<Auction[]> {
     const result = await this.get('validator/auction', GatewayComponentRequest.validatorAuction);
+    console.log('auctionList: ', result.auctionList);
     return result.auctionList;
   }
 
