@@ -139,8 +139,10 @@ export class CacheWarmerService {
     const auctions = await this.gatewayService.getValidatorAuctions();
 
     await this.nodeService.processAuctions(nodes, auctions);
-
     await this.invalidateKey(CacheInfo.Nodes.key, nodes, CacheInfo.Nodes.ttl);
+
+    const nodesAuctions = await this.nodeService.getAllNodesAuctionsRaw();
+    await this.invalidateKey(CacheInfo.NodesAuctions.key, nodesAuctions, CacheInfo.NodesAuctions.ttl);
   }
 
   @Lock({ name: 'Transaction pool invalidation', verbose: true })

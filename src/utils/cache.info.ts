@@ -640,4 +640,9 @@ export class CacheInfo {
       ttl: Constants.oneMinute(),
     };
   }
+
+  static NodesAuctions: CacheInfo = {
+    key: 'nodesAuctions',
+    ttl: Constants.oneMinute(),
+  };
 }
