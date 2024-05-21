@@ -32,6 +32,7 @@ import { BlockService } from "src/endpoints/blocks/block.service";
 import { PoolService } from "src/endpoints/pool/pool.service";
 import * as JsonDiff from "json-diff";
 import { QueryPagination } from "src/common/entities/query.pagination";
+import { StakeService } from "src/endpoints/stake/stake.service";
 
 @Injectable()
 export class CacheWarmerService {
@@ -64,6 +65,7 @@ export class CacheWarmerService {
     private readonly dataApiService: DataApiService,
     private readonly blockService: BlockService,
     private readonly poolService: PoolService,
+    private readonly stakeService: StakeService,
   ) {
     this.configCronJob(
       'handleTokenAssetsInvalidations',
@@ -204,6 +206,13 @@ export class CacheWarmerService {
   async handleEconomicsInvalidations() {
     const economics = await this.networkService.getEconomicsRaw();
     await this.invalidateKey(CacheInfo.Economics.key, economics, CacheInfo.Economics.ttl);
+  }
+
+  @Cron(CronExpression.EVERY_MINUTE)
+  @Lock({ name: 'Stake invalidations', verbose: true })
+  async handleStakeInvalidations() {
+    const stake = await this.stakeService.getGlobalStakeRaw();
+    await this.invalidateKey(CacheInfo.GlobalStake.key, stake, CacheInfo.GlobalStake.ttl);
   }
 
   @Cron(CronExpression.EVERY_MINUTE)
