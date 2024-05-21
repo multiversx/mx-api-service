@@ -722,17 +722,28 @@ export class NodeService {
   }
 
   async getAllNodesAuctions(): Promise<NodeAuction[]> {
+    this.logger.log('Fetching all nodes auctions from cache...');
     return await this.cacheService.getOrSet(
       CacheInfo.NodesAuctions.key,
-      async () => await this.getAllNodesAuctionsRaw(),
+      async () => {
+        this.logger.log('Cache miss. Fetching all nodes auctions from source...');
+        const nodesAuctions = await this.getAllNodesAuctionsRaw();
+        this.logger.log('Fetched all nodes auctions from source:', nodesAuctions);
+        return nodesAuctions;
+      },
       CacheInfo.NodesAuctions.ttl
     );
   }
 
   async getAllNodesAuctionsRaw(): Promise<NodeAuction[]> {
+    this.logger.log('Fetching nodes with auction status...');
     const allNodes = await this.getNodes(new QueryPagination({ size: 10000 }), new NodeFilter({ status: NodeStatus.auction }));
+    this.logger.log('Nodes with auction status:', allNodes);
 
+    this.logger.log('Fetching validator auctions...');
     const auctions = await this.gatewayService.getValidatorAuctions();
+    this.logger.log('Validator auctions:', auctions);
+
     const auctionNodesMap = new Map();
 
     for (const auction of auctions) {
@@ -746,7 +757,10 @@ export class NodeService {
       }
     }
 
+    this.logger.log('Auction nodes map:', auctionNodesMap);
+
     const groupedNodes = allNodes.groupBy(node => (node.provider || node.owner) + ':' + (BigInt(node.stake).toString()) + (BigInt(node.topUp).toString()), true);
+    this.logger.log('Grouped nodes:', groupedNodes);
 
     const nodesWithAuctionData: NodeAuction[] = [];
 
@@ -778,6 +792,8 @@ export class NodeService {
 
       nodesWithAuctionData.push(nodeAuction);
     }
+
+    this.logger.log('Nodes with auction data:', nodesWithAuctionData);
 
     return nodesWithAuctionData;
   }

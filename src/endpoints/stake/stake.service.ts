@@ -42,27 +42,41 @@ export class StakeService {
   ) { }
 
   async getGlobalStake(): Promise<GlobalStake | undefined> {
+    this.logger.log('Fetching global stake from cache...');
     return await this.cachingService.getOrSet(
       CacheInfo.GlobalStake.key,
-      async () => await this.getGlobalStakeRaw(),
+      async () => {
+        this.logger.log('Cache miss. Fetching global stake from source...');
+        const globalStake = await this.getGlobalStakeRaw();
+        this.logger.log('Fetched global stake from source:', globalStake);
+        return globalStake;
+      },
       CacheInfo.GlobalStake.ttl
     );
   }
 
   async getGlobalStakeRaw(): Promise<GlobalStake> {
+    this.logger.log('Fetching validators...');
     const validators = await this.getValidators();
+    this.logger.log('Validators:', validators);
 
+    this.logger.log('Fetching network economics...');
     const economics = await this.gatewayService.getNetworkEconomics();
     const totalBaseStaked = economics.erd_total_base_staked_value;
     const totalTopUp = economics.erd_total_top_up_value;
 
     const totalStaked = BigInt(BigInt(totalBaseStaked) + BigInt(totalTopUp)).toString();
+    this.logger.log('Total staked:', totalStaked);
+
     const totalObservers = await this.nodeService.getNodeCount(new NodeFilter({ type: NodeType.observer }));
+    this.logger.log('Total observers:', totalObservers);
 
     const currentEpoch = await this.blockService.getCurrentEpoch();
+    this.logger.log('Current epoch:', currentEpoch);
 
     if (!this.apiConfigService.isStakingV4Enabled() || currentEpoch < this.apiConfigService.getStakingV4ActivationEpoch()) {
       const queueSize = await this.nodeService.getNodeCount(new NodeFilter({ status: NodeStatus.queued }));
+      this.logger.log('Queue size:', queueSize);
       return new GlobalStake({
         totalValidators: validators.totalValidators,
         activeValidators: validators.activeValidators,
@@ -72,16 +86,18 @@ export class StakeService {
       });
     }
 
+    this.logger.log('Fetching additional staking data...');
     const minimumAuctionQualifiedTopUp = await this.getMinimumAuctionTopUp();
     const minimumAuctionQualifiedStake = await this.getMinimumAuctionStake();
     const auctionValidators = await this.nodeService.getNodeCount(new NodeFilter({ auctioned: true }));
     const qualifiedAuctionValidators = await this.nodeService.getNodeCount(new NodeFilter({ isQualified: true }));
-
     const nakamotoCoefficient = await this.getNakamotoCoefficient();
     const dangerZoneValidators = await this.nodeService.getNodeCount(new NodeFilter({ isAuctionDangerZone: true, isQualified: true }));
     const eligibleValidators = await this.nodeService.getNodeCount(new NodeFilter({ status: NodeStatus.eligible }));
     const waitingValidators = await this.nodeService.getNodeCount(new NodeFilter({ status: NodeStatus.waiting }));
     const allStakedNodes = validators.totalValidators + validators.inactiveValidators;
+
+    this.logger.log('Global stake data.');
 
     return new GlobalStake(
       {
