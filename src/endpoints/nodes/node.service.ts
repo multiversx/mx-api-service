@@ -774,7 +774,7 @@ export class NodeService {
 
     const sort = filter?.sort ?? NodeSortAuction.qualifiedStake;
     const order = !filter?.sort && !filter?.order ? SortOrder.desc : filter?.order;
-    nodesWithAuctionData = nodesWithAuctionData.sorted(node => Number(node[sort]));
+    nodesWithAuctionData = nodesWithAuctionData.sorted(node => Number(node[sort]), node => node.qualifiedAuctionValidators === 0 ? 1 : 0, node => node.droppedValidators);
 
     if (order === SortOrder.desc) {
       nodesWithAuctionData.reverse();
