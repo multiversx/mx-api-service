@@ -30,6 +30,7 @@ export class GatewayService {
     GatewayComponentRequest.addressNftByNonce,
     GatewayComponentRequest.vmQuery,
     GatewayComponentRequest.transactionPool,
+    GatewayComponentRequest.validatorAuction,
   ]);
 
   private readonly deepHistoryRequestsSet: Set<String> = new Set([
