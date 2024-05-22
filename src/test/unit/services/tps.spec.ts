@@ -5,6 +5,8 @@ import { CacheInfo } from "src/utils/cache.info";
 import { TpsFrequency } from "src/endpoints/tps/entities/tps.frequency";
 import { TpsInterval } from "src/endpoints/tps/entities/tps.interval";
 import { TpsService } from "src/endpoints/tps/tps.service";
+import { ProtocolService } from "src/common/protocol/protocol.service";
+import { ApiConfigService } from "src/common/api-config/api.config.service";
 
 beforeAll(() => {
   Date.prototype.getTimeInSeconds = function () {
@@ -26,6 +28,18 @@ describe('TpsService', () => {
             getRemote: jest.fn(),
             getOrSet: jest.fn(),
             getManyRemote: jest.fn(),
+          },
+        },
+        {
+          provide: ApiConfigService,
+          useValue: {
+            getMetaChainShardId: jest.fn(),
+          },
+        },
+        {
+          provide: ProtocolService,
+          useValue: {
+            getShardCount: jest.fn(),
           },
         },
       ],
