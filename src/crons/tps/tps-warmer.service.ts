@@ -10,6 +10,7 @@ import { CronJob } from "cron";
 import { TpsUtils } from "src/utils/tps.utils";
 import { TpsService } from "src/endpoints/tps/tps.service";
 import { TpsInterval } from "src/endpoints/tps/entities/tps.interval";
+import { Tps } from "src/endpoints/tps/entities/tps";
 
 @Injectable()
 export class TpsWarmerService {
@@ -54,8 +55,26 @@ export class TpsWarmerService {
     for (const interval of intervals) {
       const tpsHistory = await this.tpsService.getTpsHistoryRaw(interval);
 
+      if (tpsHistory.length > 0) {
+        const calculatedMaxTps = this.getMaxTps(tpsHistory);
+        const retrievedMaxTps = await this.cachingService.getRemote<Tps>(CacheInfo.TpsMaxByInterval(interval).key);
+        if (!retrievedMaxTps || calculatedMaxTps.tps > retrievedMaxTps.tps) {
+          await this.cachingService.setRemote(CacheInfo.TpsMaxByInterval(interval).key, calculatedMaxTps, CacheInfo.TpsMaxByInterval(interval).ttl);
+        }
+      }
+
       await this.cachingService.setRemote(CacheInfo.TpsHistoryByInterval(interval).key, tpsHistory);
     }
+  }
+
+  private getMaxTps(tpsHistory: Tps[]): Tps {
+    if (tpsHistory.length === 0) {
+      throw new Error('TPS history is empty');
+    }
+
+    return tpsHistory.reduce((prev, current) => {
+      return prev.tps > current.tps ? prev : current;
+    });
   }
 
   private async processTpsForShard(shardId: number) {

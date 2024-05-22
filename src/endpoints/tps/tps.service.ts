@@ -23,6 +23,10 @@ export class TpsService {
     return new Tps({ timestamp, tps });
   }
 
+  async getTpsMax(interval: TpsInterval): Promise<Tps | undefined> {
+    return await this.cacheService.getRemote<Tps>(CacheInfo.TpsMaxByInterval(interval).key);
+  }
+
   async getTpsHistory(interval: TpsInterval): Promise<Tps[]> {
     return await this.cacheService.getOrSet<Tps[]>(
       CacheInfo.TpsHistoryByInterval(interval).key,
