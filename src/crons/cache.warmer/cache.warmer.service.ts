@@ -135,6 +135,9 @@ export class CacheWarmerService {
 
   @Lock({ name: 'Node auction invalidations', verbose: true })
   async handleNodeAuctionInvalidations() {
+    // wait randomly between 1 and 2 seconds to avoid all nodes refreshing at the same time
+    await new Promise(resolve => setTimeout(resolve, 1000 + 1000 * Math.random()));
+
     const nodesAuctions = await this.nodeService.getAllNodesAuctionsRaw();
     await this.invalidateKey(CacheInfo.NodesAuctions.key, nodesAuctions, CacheInfo.NodesAuctions.ttl);
   }
