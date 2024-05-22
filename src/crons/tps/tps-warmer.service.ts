@@ -12,7 +12,7 @@ import { TpsService } from "src/endpoints/tps/tps.service";
 import { TpsInterval } from "src/endpoints/tps/entities/tps.interval";
 import { Tps } from "src/endpoints/tps/entities/tps";
 import { BlockService } from "src/endpoints/blocks/block.service";
-import { TransactionService } from "src/endpoints/transactions/transaction.service";
+import { TransferService } from "src/endpoints/transfers/transfer.service";
 
 @Injectable()
 export class TpsWarmerService {
@@ -27,7 +27,7 @@ export class TpsWarmerService {
     private readonly schedulerRegistry: SchedulerRegistry,
     private readonly tpsService: TpsService,
     private readonly blockService: BlockService,
-    private readonly transactionService: TransactionService,
+    private readonly transferService: TransferService,
   ) {
     if (!this.apiConfigService.isTpsEnabled()) {
       return;
@@ -84,7 +84,7 @@ export class TpsWarmerService {
       }
 
       const block = blocks[0];
-      const transactionsUntilStartNonce = await this.transactionService.getTransactionCount({ senderShard: shardId, before: block.timestamp });
+      const transactionsUntilStartNonce = await this.transferService.getTransfersCount({ senderShard: shardId, before: block.timestamp });
       await this.redisCacheService.incrby(CacheInfo.TransactionCountByShard(shardId).key, transactionsUntilStartNonce);
       await this.redisCacheService.incrby(CacheInfo.TransactionCount.key, transactionsUntilStartNonce);
     }
