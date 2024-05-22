@@ -254,6 +254,7 @@ export class ElasticIndexerService implements IndexerInterface {
     const nonce: ElasticSortProperty = { name: 'nonce', order: sortOrder };
 
     const elasticQuery = this.indexerHelper.buildTransferFilterQuery(filter)
+      .withMustMatchCondition('type', 'normal')
       .withPagination({ from: pagination.from, size: pagination.size })
       .withSort([timestamp, nonce]);
 
@@ -315,6 +316,7 @@ export class ElasticIndexerService implements IndexerInterface {
 
   async getSmartContractResults(transactionHashes: string[]): Promise<any[]> {
     const elasticQuery = ElasticQuery.create()
+      .withMustMatchCondition('type', 'normal')
       .withPagination({ from: 0, size: transactionHashes.length + 1 })
       .withSort([{ name: 'timestamp', order: ElasticSortOrder.ascending }])
       .withTerms(new TermsQuery('originalTxHash', transactionHashes));
@@ -358,6 +360,7 @@ export class ElasticIndexerService implements IndexerInterface {
 
   async getScResults(pagination: QueryPagination, filter: SmartContractResultFilter): Promise<any[]> {
     const elasticQuery: ElasticQuery = this.indexerHelper.buildResultsFilterQuery(filter)
+      .withMustMatchCondition('type', 'normal')
       .withPagination(pagination);
 
     const results = await this.elasticService.getList('operations', 'hash', elasticQuery);
@@ -387,6 +390,7 @@ export class ElasticIndexerService implements IndexerInterface {
 
   async getAccountScResults(address: string, pagination: QueryPagination): Promise<any[]> {
     const elasticQuery: ElasticQuery = this.indexerHelper.buildSmartContractResultFilterQuery(address)
+      .withMustMatchCondition('type', 'normal')
       .withPagination(pagination)
       .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }]);
 
@@ -488,6 +492,7 @@ export class ElasticIndexerService implements IndexerInterface {
     const nonce: ElasticSortProperty = { name: 'nonce', order: sortOrder };
 
     const elasticQuery = this.indexerHelper.buildTransactionFilterQuery(filter, address)
+      .withMustMatchCondition('type', 'normal')
       .withPagination({ from: pagination.from, size: pagination.size })
       .withSort([timestamp, nonce]);
 
@@ -555,6 +560,7 @@ export class ElasticIndexerService implements IndexerInterface {
     const timestamp: ElasticSortProperty = { name: 'timestamp', order: ElasticSortOrder.ascending };
 
     const elasticQuerySc = ElasticQuery.create()
+      .withMustMatchCondition('type', 'normal')
       .withPagination({ from: 0, size: 100 })
       .withSort([timestamp])
       .withCondition(QueryConditionOptions.must, [originalTxHashQuery]);
@@ -575,6 +581,7 @@ export class ElasticIndexerService implements IndexerInterface {
     }
 
     const elasticQuery = ElasticQuery.create()
+      .withMustMatchCondition('type', 'normal')
       .withPagination({ from: 0, size: 10000 })
       .withSort([{ name: 'timestamp', order: ElasticSortOrder.ascending }])
       .withTerms(new TermsQuery('originalTxHash', hashes));
@@ -671,6 +678,7 @@ export class ElasticIndexerService implements IndexerInterface {
     ];
 
     const elasticQuery = ElasticQuery.create()
+      .withMustMatchCondition('type', 'normal')
       .withPagination({ from: 0, size: 1 })
       .withCondition(QueryConditionOptions.must, queries);
 
