@@ -11,7 +11,7 @@ import { MexTokenService } from "./mex.token.service";
 import { MexFarmService } from './mex.farm.service';
 import { MexFarm } from './entities/mex.farm';
 import { QueryPagination } from 'src/common/entities/query.pagination';
-import { ParseIntPipe, ParseTokenPipe, ParseEnumPipe } from '@multiversx/sdk-nestjs-common';
+import { ParseIntPipe, ParseTokenPipe, ParseEnumPipe, ParseBoolPipe } from '@multiversx/sdk-nestjs-common';
 import { MexPairExchange } from './entities/mex.pair.exchange';
 import { MexPairsFilter } from './entities/mex.pairs..filter';
 
@@ -57,9 +57,11 @@ export class MexController {
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number,
     @Query('exchange', new ParseEnumPipe(MexPairExchange)) exchange?: MexPairExchange,
+    @Query('hasFarms', new ParseBoolPipe()) hasFarms?: boolean,
+    @Query('hasDualFarms', new ParseBoolPipe()) hasDualFarms?: boolean,
   ): Promise<MexPair[]> {
-    const filter = new MexPairsFilter({ exchange });
-    return await this.mexPairsService.getMexPairs(from, size, filter);
+    const filter = new MexPairsFilter({ exchange, hasFarms, hasDualFarms });
+    return await this.mexPairsService.getMexPairs(new QueryPagination({ from, size }), filter);
   }
 
   @Get("/mex/pairs/count")
