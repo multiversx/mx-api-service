@@ -46,7 +46,7 @@ export class ElasticIndexerService implements IndexerInterface {
 
   async getScResultsCount(filter: SmartContractResultFilter): Promise<number> {
     const query = this.indexerHelper.buildResultsFilterQuery(filter);
-    return await this.elasticService.getCount('scresults', query);
+    return await this.elasticService.getCount('operations', query);
   }
 
   async getAccountContractsCount(address: string): Promise<number> {
@@ -227,7 +227,7 @@ export class ElasticIndexerService implements IndexerInterface {
   }
 
   async getScResult(scHash: string): Promise<any> {
-    const result = await this.elasticService.getItem('scresults', 'hash', scHash);
+    const result = await this.elasticService.getItem('operations', 'hash', scHash);
 
     this.processTransaction(result);
 
@@ -359,7 +359,7 @@ export class ElasticIndexerService implements IndexerInterface {
     const elasticQuery: ElasticQuery = this.indexerHelper.buildResultsFilterQuery(filter)
       .withPagination(pagination);
 
-    const results = await this.elasticService.getList('scresults', 'hash', elasticQuery);
+    const results = await this.elasticService.getList('operations', 'hash', elasticQuery);
 
     for (const result of results) {
       this.processTransaction(result);
@@ -490,7 +490,7 @@ export class ElasticIndexerService implements IndexerInterface {
       .withPagination({ from: pagination.from, size: pagination.size })
       .withSort([timestamp, nonce]);
 
-    const transactions = await this.elasticService.getList('transactions', 'txHash', elasticQuery);
+    const transactions = await this.elasticService.getList('operations', 'txHash', elasticQuery);
 
     for (const transaction of transactions) {
       this.processTransaction(transaction);
@@ -577,7 +577,7 @@ export class ElasticIndexerService implements IndexerInterface {
       .withSort([{ name: 'timestamp', order: ElasticSortOrder.ascending }])
       .withTerms(new TermsQuery('originalTxHash', hashes));
 
-    return await this.elasticService.getList('scresults', 'scHash', elasticQuery);
+    return await this.elasticService.getList('operations', 'scHash', elasticQuery);
   }
 
   async getAccountEsdtByIdentifiers(identifiers: string[], pagination?: QueryPagination) {
