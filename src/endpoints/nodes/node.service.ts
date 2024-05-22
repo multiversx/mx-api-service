@@ -393,7 +393,7 @@ export class NodeService {
   }
 
   async processAuctions(nodes: Node[], auctions: Auction[]) {
-    const minimumAuctionStake = await this.stakeService.getMinimumAuctionStake();
+    const minimumAuctionStake = await this.stakeService.getMinimumAuctionStake(auctions);
     const dangerZoneThreshold = BigInt(minimumAuctionStake) * BigInt(105) / BigInt(100);
     for (const node of nodes) {
       let position = 1;
@@ -731,20 +731,6 @@ export class NodeService {
 
   async getAllNodesAuctionsRaw(): Promise<NodeAuction[]> {
     const allNodes = await this.getNodes(new QueryPagination({ size: 10000 }), new NodeFilter({ status: NodeStatus.auction }));
-
-    const auctions = await this.gatewayService.getValidatorAuctions();
-    const auctionNodesMap = new Map();
-
-    for (const auction of auctions) {
-      if (auction.nodes) {
-        for (const auctionNode of auction.nodes) {
-          auctionNodesMap.set(auctionNode.blsKey, {
-            auctionTopUp: auction.qualifiedTopUp,
-            qualified: auctionNode.qualified,
-          });
-        }
-      }
-    }
 
     const groupedNodes = allNodes.groupBy(node => (node.provider || node.owner) + ':' + (BigInt(node.stake).toString()) + (BigInt(node.topUp).toString()), true);
 
