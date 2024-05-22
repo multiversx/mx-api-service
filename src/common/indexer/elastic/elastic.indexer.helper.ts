@@ -439,6 +439,7 @@ export class ElasticIndexerHelper {
 
   public buildTransactionFilterQuery(filter: TransactionFilter, address?: string): ElasticQuery {
     let elasticQuery = ElasticQuery.create()
+      .withMustMatchCondition('type', 'normal')
       .withMustMatchCondition('senderShard', filter.senderShard)
       .withMustMatchCondition('receiverShard', filter.receiverShard)
       .withMustMatchCondition('miniBlockHash', filter.miniBlockHash)
