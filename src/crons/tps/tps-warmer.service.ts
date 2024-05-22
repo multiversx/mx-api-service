@@ -105,7 +105,6 @@ export class TpsWarmerService {
     const startNonce = await this.getStartNonce(shardId, endNonce);
 
     for (let nonce = startNonce + 1; nonce <= endNonce; nonce++) {
-      this.logger.log(`Processing TPS for shard ${shardId} and nonce ${nonce}. Nonces to process: ${endNonce - nonce}`);
       const transactionCount = await this.processTpsForShardAndNonce(shardId, nonce);
 
       await this.cachingService.setRemote(CacheInfo.TpsNonceByShard(shardId).key, nonce);
@@ -135,7 +134,6 @@ export class TpsWarmerService {
     const block = await this.gatewayService.getBlockByShardAndNonce(shardId, nonce);
     const transactionCount: number = block.numTxs;
     const timestamp: number = block.timestamp;
-    this.logger.log(`Processing TPS for shard ${shardId} and nonce ${nonce}. Transactions: ${transactionCount} Timestamp: ${timestamp}`);
 
     for (const frequency of TpsUtils.Frequencies) {
       await this.saveTps(timestamp, frequency, transactionCount);
