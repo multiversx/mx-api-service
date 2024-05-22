@@ -6,6 +6,7 @@ export class StakeInfo {
   score?: number;
   validators?: number;
   queued?: number;
+  auctioned?: number;
   stake?: string;
   topUp?: string;
   locked: string = '0';
