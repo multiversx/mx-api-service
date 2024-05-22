@@ -11,6 +11,8 @@ import { TpsUtils } from "src/utils/tps.utils";
 import { TpsService } from "src/endpoints/tps/tps.service";
 import { TpsInterval } from "src/endpoints/tps/entities/tps.interval";
 import { Tps } from "src/endpoints/tps/entities/tps";
+import { BlockService } from "src/endpoints/blocks/block.service";
+import { TransactionService } from "src/endpoints/transactions/transaction.service";
 
 @Injectable()
 export class TpsWarmerService {
@@ -24,6 +26,8 @@ export class TpsWarmerService {
     private readonly gatewayService: GatewayService,
     private readonly schedulerRegistry: SchedulerRegistry,
     private readonly tpsService: TpsService,
+    private readonly blockService: BlockService,
+    private readonly transactionService: TransactionService,
   ) {
     if (!this.apiConfigService.isTpsEnabled()) {
       return;
@@ -67,6 +71,25 @@ export class TpsWarmerService {
     }
   }
 
+  private async incrementTotalTransactions(shardId: number, totalTransactions: number, startNonce: number) {
+    await this.redisCacheService.incrby(CacheInfo.TransactionCount.key, totalTransactions);
+    const incrementResult = await this.redisCacheService.incrby(CacheInfo.TransactionCountByShard(shardId).key, totalTransactions);
+    if (incrementResult === totalTransactions) {
+      await this.redisCacheService.expire(CacheInfo.TransactionCountByShard(shardId).key, CacheInfo.TransactionCountByShard(shardId).ttl);
+
+      const blocks = await this.blockService.getBlocks({ shard: shardId, beforeNonce: startNonce - 1 }, { from: 0, size: 1 });
+      if (blocks.length === 0) {
+        this.logger.error(`No block found for shard ${shardId} and nonce ${startNonce - 1}`);
+        return;
+      }
+
+      const block = blocks[0];
+      const transactionsUntilStartNonce = await this.transactionService.getTransactionCount({ senderShard: shardId, before: block.timestamp });
+      await this.redisCacheService.incrby(CacheInfo.TransactionCountByShard(shardId).key, transactionsUntilStartNonce);
+      await this.redisCacheService.incrby(CacheInfo.TransactionCount.key, transactionsUntilStartNonce);
+    }
+  }
+
   private getMaxTps(tpsHistory: Tps[]): Tps {
     if (tpsHistory.length === 0) {
       throw new Error('TPS history is empty');
@@ -83,9 +106,10 @@ export class TpsWarmerService {
 
     for (let nonce = startNonce + 1; nonce <= endNonce; nonce++) {
       this.logger.log(`Processing TPS for shard ${shardId} and nonce ${nonce}. Nonces to process: ${endNonce - nonce}`);
-      await this.processTpsForShardAndNonce(shardId, nonce);
+      const transactionCount = await this.processTpsForShardAndNonce(shardId, nonce);
 
       await this.cachingService.setRemote(CacheInfo.TpsNonceByShard(shardId).key, nonce);
+      await this.incrementTotalTransactions(shardId, transactionCount, nonce);
     }
   }
 
@@ -107,7 +131,7 @@ export class TpsWarmerService {
     return networkStatus.erd_nonce;
   }
 
-  private async processTpsForShardAndNonce(shardId: number, nonce: number) {
+  private async processTpsForShardAndNonce(shardId: number, nonce: number): Promise<number> {
     const block = await this.gatewayService.getBlockByShardAndNonce(shardId, nonce);
     const transactionCount: number = block.numTxs;
     const timestamp: number = block.timestamp;
@@ -116,6 +140,8 @@ export class TpsWarmerService {
     for (const frequency of TpsUtils.Frequencies) {
       await this.saveTps(timestamp, frequency, transactionCount);
     }
+
+    return transactionCount;
   }
 
   private async saveTps(timestamp: number, frequency: number, transactionCount: number) {

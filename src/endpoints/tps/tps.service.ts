@@ -23,8 +23,13 @@ export class TpsService {
     return new Tps({ timestamp, tps });
   }
 
-  async getTpsMax(interval: TpsInterval): Promise<Tps | undefined> {
-    return await this.cacheService.getRemote<Tps>(CacheInfo.TpsMaxByInterval(interval).key);
+  async getTpsMax(interval: TpsInterval): Promise<Tps> {
+    const result = await this.cacheService.getRemote<Tps>(CacheInfo.TpsMaxByInterval(interval).key);
+    if (!result) {
+      return new Tps({ timestamp: 0, tps: 0 });
+    }
+
+    return result;
   }
 
   async getTpsHistory(interval: TpsInterval): Promise<Tps[]> {
@@ -52,5 +57,7 @@ export class TpsService {
     return timestamps.zip(transactionResults, (timestamp, transactions) => new Tps({ timestamp, tps: (transactions ?? 0) / frequencySeconds }));
   }
 
-
+  async getTransactionCount(): Promise<number> {
+    return await this.cacheService.getRemote<number>(CacheInfo.TransactionCount.key) ?? 0;
+  }
 }
