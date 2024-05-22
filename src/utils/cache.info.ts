@@ -640,4 +640,23 @@ export class CacheInfo {
       ttl: Constants.oneMinute(),
     };
   }
+
+  static TpsMaxByInterval(interval: TpsInterval): CacheInfo {
+    return {
+      key: `tpsMax:${interval}`,
+      ttl: Constants.oneMinute(),
+    };
+  }
+
+  static TransactionCountByShard(shardId: number): CacheInfo {
+    return {
+      key: `transactionCount:${shardId}`,
+      ttl: Constants.oneMinute(),
+    };
+  }
+
+  static NodesAuctions: CacheInfo = {
+    key: 'nodesAuctions',
+    ttl: Constants.oneMinute(),
+  };
 }

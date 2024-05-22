@@ -55,6 +55,10 @@ features:
     admins:
       - ''
     jwtSecret: ''
+  stakingV4:
+    enabled: false
+    cronExpression: '*/5 * * * * *'
+    activationEpoch: 1043
   nodeEpochsLeft:
     enabled: false
   transactionProcessor:

@@ -25,31 +25,40 @@ export class ElasticIndexerHelper {
   ) { }
 
   public async buildElasticBlocksFilter(filter: BlockFilter): Promise<AbstractQuery[]> {
-    const { shard, proposer, validator, epoch, nonce } = filter;
-
     const queries: AbstractQuery[] = [];
-    if (nonce !== undefined) {
-      const nonceQuery = QueryType.Match("nonce", nonce);
+    if (filter.nonce !== undefined) {
+      const nonceQuery = QueryType.Match("nonce", filter.nonce);
       queries.push(nonceQuery);
     }
-    if (shard !== undefined) {
-      const shardIdQuery = QueryType.Match('shardId', shard);
+
+    if (filter.beforeNonce !== undefined) {
+      const beforeNonceQuery = QueryType.Range('nonce', new RangeLowerThanOrEqual(filter.beforeNonce));
+      queries.push(beforeNonceQuery);
+    }
+
+    if (filter.afterNonce !== undefined) {
+      const afterNonceQuery = QueryType.Range('nonce', new RangeGreaterThanOrEqual(filter.afterNonce));
+      queries.push(afterNonceQuery);
+    }
+
+    if (filter.shard !== undefined) {
+      const shardIdQuery = QueryType.Match('shardId', filter.shard);
       queries.push(shardIdQuery);
     }
 
-    if (epoch !== undefined) {
-      const epochQuery = QueryType.Match('epoch', epoch);
+    if (filter.epoch !== undefined) {
+      const epochQuery = QueryType.Match('epoch', filter.epoch);
       queries.push(epochQuery);
     }
 
-    if (proposer && shard !== undefined && epoch !== undefined) {
-      const index = await this.blsService.getBlsIndex(proposer, shard, epoch);
+    if (filter.proposer && filter.shard !== undefined && filter.epoch !== undefined) {
+      const index = await this.blsService.getBlsIndex(filter.proposer, filter.shard, filter.epoch);
       const proposerQuery = QueryType.Match('proposer', index);
       queries.push(proposerQuery);
     }
 
-    if (validator && shard !== undefined && epoch !== undefined) {
-      const index = await this.blsService.getBlsIndex(validator, shard, epoch);
+    if (filter.validator && filter.shard !== undefined && filter.epoch !== undefined) {
+      const index = await this.blsService.getBlsIndex(filter.validator, filter.shard, filter.epoch);
       const validatorsQuery = QueryType.Match('validators', index);
       queries.push(validatorsQuery);
     }
