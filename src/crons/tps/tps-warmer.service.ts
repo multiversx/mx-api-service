@@ -72,7 +72,6 @@ export class TpsWarmerService {
   }
 
   private async incrementTotalTransactions(shardId: number, totalTransactions: number, startNonce: number) {
-    await this.redisCacheService.incrby(CacheInfo.TransactionCount.key, totalTransactions);
     const incrementResult = await this.redisCacheService.incrby(CacheInfo.TransactionCountByShard(shardId).key, totalTransactions);
     if (incrementResult === totalTransactions) {
       await this.redisCacheService.expire(CacheInfo.TransactionCountByShard(shardId).key, CacheInfo.TransactionCountByShard(shardId).ttl);
@@ -86,7 +85,6 @@ export class TpsWarmerService {
       const block = blocks[0];
       const transactionsUntilStartNonce = await this.transferService.getTransfersCount({ senderShard: shardId, before: block.timestamp });
       await this.redisCacheService.incrby(CacheInfo.TransactionCountByShard(shardId).key, transactionsUntilStartNonce);
-      await this.redisCacheService.incrby(CacheInfo.TransactionCount.key, transactionsUntilStartNonce);
     }
   }
 

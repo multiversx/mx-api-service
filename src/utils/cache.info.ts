@@ -655,11 +655,6 @@ export class CacheInfo {
     };
   }
 
-  static TransactionCount: CacheInfo = {
-    key: 'transactionCount',
-    ttl: Constants.oneMinute(),
-  };
-
   static NodesAuctions: CacheInfo = {
     key: 'nodesAuctions',
     ttl: Constants.oneMinute(),
