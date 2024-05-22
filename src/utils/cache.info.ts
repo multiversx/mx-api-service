@@ -645,4 +645,9 @@ export class CacheInfo {
     key: 'nodesAuctions',
     ttl: Constants.oneMinute(),
   };
+
+  static ValidatorAuctions: CacheInfo = {
+    key: 'validatorAuctions',
+    ttl: Constants.oneHour(),
+  };
 }
