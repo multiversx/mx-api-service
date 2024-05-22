@@ -109,7 +109,8 @@ export class ElasticIndexerService implements IndexerInterface {
   }
 
   async getTransfersCount(filter: TransactionFilter): Promise<number> {
-    const elasticQuery = this.indexerHelper.buildTransferFilterQuery(filter);
+    const elasticQuery = this.indexerHelper.buildTransferFilterQuery(filter)
+      .withMustMatchCondition('type', 'normal');
     return await this.elasticService.getCount('operations', elasticQuery);
   }
 
@@ -170,7 +171,9 @@ export class ElasticIndexerService implements IndexerInterface {
   }
 
   async getAccountScResultsCount(address: string): Promise<number> {
-    const elasticQuery: ElasticQuery = this.indexerHelper.buildSmartContractResultFilterQuery(address);
+    const elasticQuery: ElasticQuery =
+      this.indexerHelper.buildSmartContractResultFilterQuery(address)
+        .withMustMatchCondition('type', 'normal');
     return await this.elasticService.getCount('operations', elasticQuery);
   }
 
