@@ -644,14 +644,14 @@ export class CacheInfo {
   static TpsMaxByInterval(interval: TpsInterval): CacheInfo {
     return {
       key: `tpsMax:${interval}`,
-      ttl: Constants.oneMinute(),
+      ttl: Constants.oneDay(),
     };
   }
 
   static TransactionCountByShard(shardId: number): CacheInfo {
     return {
       key: `transactionCount:${shardId}`,
-      ttl: Constants.oneMinute(),
+      ttl: Constants.oneHour(),
     };
   }
 
