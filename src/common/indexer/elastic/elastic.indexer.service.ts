@@ -45,7 +45,8 @@ export class ElasticIndexerService implements IndexerInterface {
   }
 
   async getScResultsCount(filter: SmartContractResultFilter): Promise<number> {
-    const query = this.indexerHelper.buildResultsFilterQuery(filter);
+    const query = this.indexerHelper.buildResultsFilterQuery(filter)
+      .withMustMatchCondition('type', 'normal');
     return await this.elasticService.getCount('operations', query);
   }
 
