@@ -1,4 +1,4 @@
-import { Field, ObjectType } from "@nestjs/graphql";
+import { Field, Float, ObjectType } from "@nestjs/graphql";
 import { ApiProperty } from "@nestjs/swagger";
 import { MexPairState } from "./mex.pair.state";
 import { MexPairType } from "./mex.pair.type";
@@ -89,4 +89,16 @@ export class MexPair {
   @Field(() => String, { description: "Mex pair exchange details.", nullable: true })
   @ApiProperty({ type: String, example: 'jungledex' })
   exchange: MexPairExchange | undefined;
+
+  @Field(() => Boolean, { description: "Has farm pair details.", nullable: true })
+  @ApiProperty({ type: Boolean, example: false })
+  hasFarms: boolean | undefined;
+
+  @Field(() => Boolean, { description: "Has dual farm pair details.", nullable: true })
+  @ApiProperty({ type: Boolean, example: false })
+  hasDualFarms: boolean | undefined;
+
+  @Field(() => Float, { description: "Pair trades count details.", nullable: true })
+  @ApiProperty({ type: Number, example: 100 })
+  tradesCount: number | undefined;
 }

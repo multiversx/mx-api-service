@@ -3,6 +3,7 @@ import { Args, Resolver, Query } from "@nestjs/graphql";
 import { MexPair } from "src/endpoints/mex/entities/mex.pair";
 import { MexPairService } from "src/endpoints/mex/mex.pair.service";
 import { GetMexTokenPairsByQuotePairIdInput, GetMexTokenPairsInput } from "./mex.pairs.input";
+import { QueryPagination } from "src/common/entities/query.pagination";
 
 @Resolver()
 export class MexTokenPairsQuery {
@@ -10,7 +11,7 @@ export class MexTokenPairsQuery {
 
   @Query(() => [MexPair], { name: "mexPairs", description: "Retrieve all mex token pairs listed on xExchange for the given input." })
   public async getMexPairs(@Args("input", { description: "Input to retrieve the given tokens for." }) input: GetMexTokenPairsInput): Promise<MexPair[]> {
-    return await this.mexTokenPairService.getMexPairs(input.from, input.size);
+    return await this.mexTokenPairService.getMexPairs(new QueryPagination({ from: input.from, size: input.size }));
   }
 
   @Query(() => MexPair, { name: "mexPair", description: "Retrieve one mex pair listed on xExchange for the given input." })
