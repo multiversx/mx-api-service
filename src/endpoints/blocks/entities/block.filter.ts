@@ -10,6 +10,8 @@ export class BlockFilter {
   validator?: string;
   epoch?: number;
   nonce?: number;
+  beforeNonce?: number;
+  afterNonce?: number;
   hashes?: string[];
   order?: SortOrder;
 }
