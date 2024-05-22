@@ -19,6 +19,7 @@ import { MiniBlockFilter } from "src/endpoints/miniblocks/entities/mini.block.fi
 import { AccountHistoryFilter } from "src/endpoints/accounts/entities/account.history.filter";
 import { AccountAssets } from "../assets/entities/account.assets";
 import { ProviderDelegators } from "./entities/provider.delegators";
+import { ApplicationFilter } from "src/endpoints/applications/entities/application.filter";
 
 @Injectable()
 export class IndexerService implements IndexerInterface {
@@ -416,5 +417,15 @@ export class IndexerService implements IndexerInterface {
   @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
   async getVersion(): Promise<string | undefined> {
     return await this.indexerInterface.getVersion();
+  }
+
+  @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
+  async getAllScDeploysContracts(filter: ApplicationFilter): Promise<any[]> {
+    return await this.indexerInterface.getAllScDeploysContracts(filter);
+  }
+
+  @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
+  async getAllScDeploysContractsCount(): Promise<number> {
+    return await this.indexerInterface.getAllScDeploysContractsCount();
   }
 }

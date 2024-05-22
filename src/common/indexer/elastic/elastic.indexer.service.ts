@@ -27,6 +27,7 @@ import { MiniBlockFilter } from "src/endpoints/miniblocks/entities/mini.block.fi
 import { AccountHistoryFilter } from "src/endpoints/accounts/entities/account.history.filter";
 import { AccountAssets } from "src/common/assets/entities/account.assets";
 import { NotWritableError } from "../entities/not.writable.error";
+import { ApplicationFilter } from "src/endpoints/applications/entities/application.filter";
 
 
 @Injectable()
@@ -912,5 +913,26 @@ export class ElasticIndexerService implements IndexerInterface {
     const blocks: Block[] = await this.elasticService.getList('blocks', '_search', elasticQuery);
 
     return blocks.at(0);
+  }
+
+  async getAllScDeploysContracts(filter: ApplicationFilter): Promise<any[]> {
+    const elasticQuery = this.indexerHelper.buildScDeploysContracts(filter)
+      .withPagination({ from: 0, size: 1000 })
+      .withFields(['address', 'deployer', 'currentOwner', 'initialCodeHash', 'timestamp'])
+      .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }]);
+
+    const contracts: any[] = [];
+
+    // eslint-disable-next-line require-await
+    const scrollHandler = async (items: any[]) => {
+      contracts.push(...items);
+    };
+    await this.elasticService.getScrollableList('scdeploys', 'address', elasticQuery, scrollHandler);
+
+    return contracts;
+  }
+  async getAllScDeploysContractsCount(): Promise<number> {
+    const elasticQuery = ElasticQuery.create();
+    return await this.elasticService.getCount('scdeploys', elasticQuery);
   }
 }

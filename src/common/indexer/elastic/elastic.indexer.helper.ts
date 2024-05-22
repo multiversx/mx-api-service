@@ -16,6 +16,7 @@ import { TransactionType } from "src/endpoints/transactions/entities/transaction
 import { AccountQueryOptions } from "src/endpoints/accounts/entities/account.query.options";
 import { AccountHistoryFilter } from "src/endpoints/accounts/entities/account.history.filter";
 import { SmartContractResultFilter } from "src/endpoints/sc-results/entities/smart.contract.result.filter";
+import { ApplicationFilter } from "src/endpoints/applications/entities/application.filter";
 
 @Injectable()
 export class ElasticIndexerHelper {
@@ -625,6 +626,15 @@ export class ElasticIndexerHelper {
       }
     }
 
+    return elasticQuery;
+  }
+
+  public buildScDeploysContracts(filter: ApplicationFilter): ElasticQuery {
+    let elasticQuery = ElasticQuery.create();
+
+    if (filter.before || filter.after) {
+      elasticQuery = elasticQuery.withDateRangeFilter('timestamp', filter.before, filter.after);
+    }
     return elasticQuery;
   }
 
