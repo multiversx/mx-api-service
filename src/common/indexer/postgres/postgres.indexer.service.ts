@@ -20,6 +20,7 @@ import { AccountDb, AccountsEsdtDb, BlockDb, LogDb, MiniBlockDb, ReceiptDb, Roun
 import { PostgresIndexerHelper } from "./postgres.indexer.helper";
 import { AccountAssets } from "src/common/assets/entities/account.assets";
 import { ProviderDelegators } from "../entities/provider.delegators";
+import { ApplicationFilter } from "src/endpoints/applications/entities/application.filter";
 
 @Injectable()
 export class PostgresIndexerService implements IndexerInterface {
@@ -52,6 +53,12 @@ export class PostgresIndexerService implements IndexerInterface {
     private readonly validatorPublicKeysRepository: Repository<ValidatorPublicKeysDb>,
     private readonly indexerHelper: PostgresIndexerHelper,
   ) { }
+  getApplicationCount(): Promise<number> {
+    throw new Error("Method not implemented.");
+  }
+  getApplications(_filter: ApplicationFilter): Promise<any[]> {
+    throw new Error("Method not implemented.");
+  }
   getProviderDelegatorsCount(_address: string): Promise<number> {
     throw new Error("Method not implemented.");
   }

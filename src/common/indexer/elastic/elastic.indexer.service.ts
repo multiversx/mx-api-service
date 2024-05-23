@@ -27,6 +27,7 @@ import { MiniBlockFilter } from "src/endpoints/miniblocks/entities/mini.block.fi
 import { AccountHistoryFilter } from "src/endpoints/accounts/entities/account.history.filter";
 import { AccountAssets } from "src/common/assets/entities/account.assets";
 import { NotWritableError } from "../entities/not.writable.error";
+import { ApplicationFilter } from "src/endpoints/applications/entities/application.filter";
 
 
 @Injectable()
@@ -912,5 +913,20 @@ export class ElasticIndexerService implements IndexerInterface {
     const blocks: Block[] = await this.elasticService.getList('blocks', '_search', elasticQuery);
 
     return blocks.at(0);
+  }
+
+  async getApplications(filter: ApplicationFilter, pagination: QueryPagination): Promise<any[]> {
+    const elasticQuery = this.indexerHelper.buildApplicationFilter(filter)
+      .withPagination(pagination)
+      .withFields(['address', 'deployer', 'currentOwner', 'initialCodeHash', 'timestamp'])
+      .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }]);
+
+    return await this.elasticService.getList('scdeploys', 'address', elasticQuery);
+  }
+
+  async getApplicationCount(filter: ApplicationFilter): Promise<number> {
+    const elasticQuery = this.indexerHelper.buildApplicationFilter(filter);
+
+    return await this.elasticService.getCount('scdeploys', elasticQuery);
   }
 }

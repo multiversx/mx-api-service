@@ -16,6 +16,7 @@ import { TransactionType } from "src/endpoints/transactions/entities/transaction
 import { AccountQueryOptions } from "src/endpoints/accounts/entities/account.query.options";
 import { AccountHistoryFilter } from "src/endpoints/accounts/entities/account.history.filter";
 import { SmartContractResultFilter } from "src/endpoints/sc-results/entities/smart.contract.result.filter";
+import { ApplicationFilter } from "src/endpoints/applications/entities/application.filter";
 
 @Injectable()
 export class ElasticIndexerHelper {
@@ -623,6 +624,20 @@ export class ElasticIndexerHelper {
       } else {
         elasticQuery = this.applyFunctionFilter(elasticQuery, filter.functions);
       }
+    }
+
+    return elasticQuery;
+  }
+
+  buildApplicationFilter(filter: ApplicationFilter): ElasticQuery {
+    let elasticQuery = ElasticQuery.create();
+
+    if (filter.after) {
+      elasticQuery = elasticQuery.withRangeFilter('timestamp', new RangeGreaterThanOrEqual(filter.after));
+    }
+
+    if (filter.before) {
+      elasticQuery = elasticQuery.withRangeFilter('timestamp', new RangeLowerThanOrEqual(filter.before));
     }
 
     return elasticQuery;
