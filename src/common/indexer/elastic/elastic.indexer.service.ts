@@ -221,7 +221,7 @@ export class ElasticIndexerService implements IndexerInterface {
 
   async getTransaction(txHash: string): Promise<any> {
     const transaction = await this.elasticService.getItem('operations', 'txHash', txHash);
-    if (transaction.type !== 'normal') {
+    if (transaction?.type !== 'normal') {
       return undefined;
     }
 
@@ -236,7 +236,7 @@ export class ElasticIndexerService implements IndexerInterface {
 
   async getScResult(scHash: string): Promise<any> {
     const result = await this.elasticService.getItem('operations', 'hash', scHash);
-    if (result.type !== 'unsigned') {
+    if (result?.type !== 'unsigned') {
       return undefined;
     }
 
