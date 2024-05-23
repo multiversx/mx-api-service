@@ -13,6 +13,12 @@ type About {
   """Feature Flags."""
   features: FeatureConfigs
 
+  """Gateway version."""
+  gatewayVersion: String
+
+  """Indexer version."""
+  indexerVersion: String
+
   """Current network details."""
   network: String!
 
@@ -63,6 +69,9 @@ type Account {
 
   """Timestamp of the block where the account was first indexed."""
   timestamp: Float!
+
+  """Transfers in the last 24 hours."""
+  transfersLast24h: Float!
 
   """Transactions count for the given detailed account."""
   txCount: Float!
@@ -289,6 +298,9 @@ type AccountDetailed {
     """Input to retrieve the given transfers for."""
     input: GetTransfersAccountInput!
   ): [Transaction!]
+
+  """Transfers in the last 24 hours."""
+  transfersLast24h: Float!
 
   """Transactions count for the given detailed account."""
   txCount: Float!
@@ -687,9 +699,6 @@ type Economics {
 
   """Total Supply general information."""
   marketCap: Float
-
-  """Total Supply general information."""
-  minimumAuctionTopUp: String
 
   """Total Supply general information."""
   price: Float
@@ -1852,14 +1861,44 @@ type GlobalStake {
   """Active validators."""
   activeValidators: Float!
 
+  """All Staked Nodes."""
+  allStakedNodes: Float!
+
+  """Auction Validators."""
+  auctionValidators: Float!
+
+  """Danger Zone Validators."""
+  dangerZoneValidators: Float!
+
+  """Eligible Validators."""
+  eligibleValidators: Float!
+
+  """Minimum Auction Qualified Stake information."""
+  minimumAuctionQualifiedStake: String
+
+  """Minimum Auction Qualified Top Up information."""
+  minimumAuctionQualifiedTopUp: String
+
+  """Nakamoto Coefficient."""
+  nakamotoCoefficient: Float!
+
+  """Qualified Auction Validators."""
+  qualifiedAuctionValidators: Float!
+
   """Validators queue size."""
   queueSize: Float!
+
+  """Total observers."""
+  totalObservers: Float!
 
   """Total stake amount."""
   totalStaked: Float!
 
   """Total validators."""
   totalValidators: Float!
+
+  """Not Eligible Validators."""
+  waitingValidators: Float!
 }
 
 """Identity object type."""
@@ -2022,6 +2061,12 @@ type MexPair {
   """Mex pair exchange details."""
   exchange: String
 
+  """Has dual farm pair details."""
+  hasDualFarms: Boolean
+
+  """Has farm pair details."""
+  hasFarms: Boolean
+
   """Id details."""
   id: String!
 
@@ -2054,6 +2099,9 @@ type MexPair {
 
   """Total value details."""
   totalValue: String!
+
+  """Pair trades count details."""
+  tradesCount: Float
 
   """Mex pair type details."""
   type: MexPairType!
@@ -2736,7 +2784,7 @@ type Node {
   auctionPosition: Float
 
   """Auction selected for the given node."""
-  auctionSelected: Boolean
+  auctionQualified: Boolean
 
   """Auction top up for the given node."""
   auctionTopUp: String
@@ -2747,14 +2795,23 @@ type Node {
   """Bls address for the given node."""
   bls: String!
 
+  """Number of epochs left for a node in waiting state."""
+  epochsLeft: Float
+
   """Full history details for the given node."""
   fullHistory: Boolean
 
   """Identity for the given node."""
   identity: String
 
+  """Identity details for given nodes"""
+  identityInfo: Identity
+
   """Instances for the given node."""
   instances: Float!
+
+  """Nodes in auction danger zone."""
+  isInDangerZone: Boolean
 
   """Issues for the given node."""
   issues: [String!]!
@@ -2785,6 +2842,9 @@ type Node {
 
   """Provider for the given node."""
   provider: String!
+
+  """Qualified stake amout for a given node."""
+  qualifiedStake: String!
 
   """Rating for the given node."""
   rating: Float!
@@ -2851,6 +2911,9 @@ enum NodeSort {
   """Node position."""
   position
 
+  """Node qualified stake."""
+  qualifiedStake
+
   """Node temp rating."""
   tempRating
 
@@ -2869,6 +2932,8 @@ enum NodeSort {
 
 """Node status object type."""
 enum NodeStatus {
+  auction
+
   """Eligible status."""
   eligible
 
@@ -3548,8 +3613,11 @@ type TokenAssetsPriceSource {
 
 """TokenDetailed object type."""
 type TokenDetailed {
-  """Token accounts list."""
+  """Token accounts."""
   accounts: Float!
+
+  """Token accounts last updated timestamp."""
+  accountsLastUpdatedAt: Float
 
   """Token assests details."""
   assets: TokenAssets
@@ -3604,11 +3672,24 @@ type TokenDetailed {
   """Token initial minted amount details."""
   initialMinted: String!
 
+  """
+  If the liquidity to market cap ratio is less than 0.5%, we consider it as low liquidity.
+  """
+  isLowLiquidity: Boolean
+
   """Token isPause property."""
   isPaused: Boolean!
 
+  """
+  If the liquidity to market cap ratio is less than 0.5%, we consider it as low liquidity and display threshold percent .
+  """
+  lowLiquidityThresholdPercent: Float
+
   """Current market cap details."""
   marketCap: Float
+
+  """Mex pair type details."""
+  mexPairType: MexPairType!
 
   """Token minted amount details."""
   minted: String!
@@ -3637,8 +3718,23 @@ type TokenDetailed {
   """Creation timestamp."""
   timestamp: Float!
 
-  """Tokens transactions."""
+  """Total value captured in liquidity pools."""
+  totalLiquidity: Float!
+
+  """Total traded value in the last 24h within the liquidity pools."""
+  totalVolume24h: Float!
+
+  """Token transactions."""
   transactions: Float
+
+  """Token transactions last updated timestamp."""
+  transactionsLastUpdatedAt: Float
+
+  """Token transfers."""
+  transfers: Float
+
+  """Token transfers last updated timestamp."""
+  transfersLastUpdatedAt: Float
 
   """Token type."""
   type: TokenType!
@@ -3729,8 +3825,11 @@ enum TokenType {
 }
 
 type TokenWithBalanceAccountFlat {
-  """Token accounts list."""
+  """Token accounts."""
   accounts: Float!
+
+  """Token accounts last updated timestamp."""
+  accountsLastUpdatedAt: Float
 
   """Token assests details."""
   assets: TokenAssets
@@ -3783,11 +3882,24 @@ type TokenWithBalanceAccountFlat {
   """Token initial minting details."""
   initialMinted: String!
 
+  """
+  If the liquidity to market cap ratio is less than 0.5%, we consider it as low liquidity.
+  """
+  isLowLiquidity: Boolean
+
   """Token isPause property."""
   isPaused: Boolean!
 
+  """
+  If the liquidity to market cap ratio is less than 0.5%, we consider it as low liquidity and display threshold percent .
+  """
+  lowLiquidityThresholdPercent: Float
+
   """Current market cap details."""
   marketCap: Float
+
+  """Mex pair type details."""
+  mexPairType: MexPairType!
 
   """Token minted details."""
   minted: String!
@@ -3810,8 +3922,23 @@ type TokenWithBalanceAccountFlat {
   """Creation timestamp."""
   timestamp: Float!
 
-  """Tokens transactions."""
+  """Total value captured in liquidity pools."""
+  totalLiquidity: Float!
+
+  """Total traded value in the last 24h within the liquidity pools."""
+  totalVolume24h: Float!
+
+  """Token transactions."""
   transactions: Float
+
+  """Token transactions last updated timestamp."""
+  transactionsLastUpdatedAt: Float
+
+  """Token transfers."""
+  transfers: Float
+
+  """Token transfers last updated timestamp."""
+  transfersLastUpdatedAt: Float
 
   """Token type."""
   type: TokenType!

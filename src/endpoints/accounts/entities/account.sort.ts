@@ -3,6 +3,7 @@ import { registerEnumType } from "@nestjs/graphql";
 export enum AccountSort {
   balance = 'balance',
   timestamp = 'timestamp',
+  transfersLast24h = 'transfersLast24h',
 }
 
 registerEnumType(AccountSort, {
@@ -14,6 +15,9 @@ registerEnumType(AccountSort, {
     },
     timestamp: {
       description: 'Sort by timestamp.',
+    },
+    transfersLast24h: {
+      description: 'Sort by transfersLast24h.',
     },
   },
 });

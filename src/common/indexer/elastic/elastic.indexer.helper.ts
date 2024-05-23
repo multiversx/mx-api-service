@@ -15,6 +15,8 @@ import { TransactionFilter } from "src/endpoints/transactions/entities/transacti
 import { TransactionType } from "src/endpoints/transactions/entities/transaction.type";
 import { AccountQueryOptions } from "src/endpoints/accounts/entities/account.query.options";
 import { AccountHistoryFilter } from "src/endpoints/accounts/entities/account.history.filter";
+import { SmartContractResultFilter } from "src/endpoints/sc-results/entities/smart.contract.result.filter";
+import { ApplicationFilter } from "src/endpoints/applications/entities/application.filter";
 
 @Injectable()
 export class ElasticIndexerHelper {
@@ -24,31 +26,40 @@ export class ElasticIndexerHelper {
   ) { }
 
   public async buildElasticBlocksFilter(filter: BlockFilter): Promise<AbstractQuery[]> {
-    const { shard, proposer, validator, epoch, nonce } = filter;
-
     const queries: AbstractQuery[] = [];
-    if (nonce !== undefined) {
-      const nonceQuery = QueryType.Match("nonce", nonce);
+    if (filter.nonce !== undefined) {
+      const nonceQuery = QueryType.Match("nonce", filter.nonce);
       queries.push(nonceQuery);
     }
-    if (shard !== undefined) {
-      const shardIdQuery = QueryType.Match('shardId', shard);
+
+    if (filter.beforeNonce !== undefined) {
+      const beforeNonceQuery = QueryType.Range('nonce', new RangeLowerThanOrEqual(filter.beforeNonce));
+      queries.push(beforeNonceQuery);
+    }
+
+    if (filter.afterNonce !== undefined) {
+      const afterNonceQuery = QueryType.Range('nonce', new RangeGreaterThanOrEqual(filter.afterNonce));
+      queries.push(afterNonceQuery);
+    }
+
+    if (filter.shard !== undefined) {
+      const shardIdQuery = QueryType.Match('shardId', filter.shard);
       queries.push(shardIdQuery);
     }
 
-    if (epoch !== undefined) {
-      const epochQuery = QueryType.Match('epoch', epoch);
+    if (filter.epoch !== undefined) {
+      const epochQuery = QueryType.Match('epoch', filter.epoch);
       queries.push(epochQuery);
     }
 
-    if (proposer && shard !== undefined && epoch !== undefined) {
-      const index = await this.blsService.getBlsIndex(proposer, shard, epoch);
+    if (filter.proposer && filter.shard !== undefined && filter.epoch !== undefined) {
+      const index = await this.blsService.getBlsIndex(filter.proposer, filter.shard, filter.epoch);
       const proposerQuery = QueryType.Match('proposer', index);
       queries.push(proposerQuery);
     }
 
-    if (validator && shard !== undefined && epoch !== undefined) {
-      const index = await this.blsService.getBlsIndex(validator, shard, epoch);
+    if (filter.validator && filter.shard !== undefined && filter.epoch !== undefined) {
+      const index = await this.blsService.getBlsIndex(filter.validator, filter.shard, filter.epoch);
       const validatorsQuery = QueryType.Match('validators', index);
       queries.push(validatorsQuery);
     }
@@ -187,6 +198,20 @@ export class ElasticIndexerHelper {
       elasticQuery = elasticQuery.withMustCondition(QueryType.Nested("data", [new MatchQuery("data.whiteListedStorage", filter.isWhitelistedStorage)]));
     }
 
+    if (this.apiConfigService.getIsNftScamInfoEnabled() && filter.isScam) {
+      elasticQuery = elasticQuery.withCondition(
+        QueryConditionOptions.must,
+        QueryType.Should([
+          QueryType.Match('nft_scamInfoType', 'scam'),
+          QueryType.Match('nft_scamInfoType', 'potentialScam'),
+        ])
+      );
+    }
+
+    if (filter.scamType) {
+      elasticQuery = elasticQuery.withMustCondition(QueryType.Match('nft_scamInfoType', filter.scamType));
+    }
+
     if (filter.traits !== undefined) {
       for (const [key, value] of Object.entries(filter.traits)) {
         elasticQuery = elasticQuery.withMustMatchCondition('nft_traitValues', BinaryUtils.base64Encode(`${key}_${value}`));
@@ -273,6 +298,10 @@ export class ElasticIndexerHelper {
       elasticQuery = elasticQuery.withMustNotCondition(QueryType.Match('value', '0'));
     } else {
       elasticQuery = elasticQuery.withMustMatchCondition('tokens', filter.token, QueryOperator.AND);
+    }
+
+    if (filter.tokens && filter.tokens.length > 0) {
+      elasticQuery = elasticQuery.withMustMultiShouldCondition(filter.tokens, token => QueryType.Match('tokens', token, QueryOperator.AND));
     }
 
     if (filter.functions && filter.functions.length > 0 && this.apiConfigService.getIsIndexerV3FlagActive()) {
@@ -412,6 +441,7 @@ export class ElasticIndexerHelper {
     }
 
     const elasticQuery = ElasticQuery.create()
+      .withMustMatchCondition('type', 'unsigned')
       .withCondition(QueryConditionOptions.should, shouldQueries)
       .withCondition(QueryConditionOptions.must, mustQueries);
 
@@ -420,6 +450,7 @@ export class ElasticIndexerHelper {
 
   public buildTransactionFilterQuery(filter: TransactionFilter, address?: string): ElasticQuery {
     let elasticQuery = ElasticQuery.create()
+      .withMustMatchCondition('type', 'normal')
       .withMustMatchCondition('senderShard', filter.senderShard)
       .withMustMatchCondition('receiverShard', filter.receiverShard)
       .withMustMatchCondition('miniBlockHash', filter.miniBlockHash)
@@ -542,17 +573,85 @@ export class ElasticIndexerHelper {
       }
     }
 
+    if (filter.name) {
+      elasticQuery = elasticQuery.withMustWildcardCondition('api_assets.name', filter.name);
+    }
+
+    if (filter.tags && filter.tags.length > 0) {
+      return elasticQuery.withMustCondition(QueryType.Should(filter.tags.map(tag => QueryType.Match('api_assets.tags', tag))));
+    }
+
+    if (filter.excludeTags && filter.excludeTags.length > 0) {
+      return elasticQuery.withMustNotCondition(QueryType.Should(filter.excludeTags.map(tag => QueryType.Match('api_assets.tags', tag))));
+    }
+
+    if (filter.hasAssets !== undefined) {
+      if (filter.hasAssets) {
+        elasticQuery = elasticQuery.withMustExistCondition('api_assets');
+      } else {
+        elasticQuery = elasticQuery.withMustNotExistCondition('api_assets');
+      }
+    }
+
+    if (filter.addresses !== undefined && filter.addresses.length > 0) {
+      elasticQuery = elasticQuery.withMustMultiShouldCondition(filter.addresses, address => QueryType.Match('address', address));
+    }
+
+    return elasticQuery;
+  }
+
+
+  public buildResultsFilterQuery(filter: SmartContractResultFilter): ElasticQuery {
+    let elasticQuery = ElasticQuery.create()
+      .withMustMatchCondition('type', 'unsigned');
+
+    if (filter.miniBlockHash) {
+      elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, [QueryType.Match('miniBlockHash', filter.miniBlockHash)]);
+    }
+
+    if (filter.originalTxHashes) {
+      elasticQuery = elasticQuery.withShouldCondition(filter.originalTxHashes.map(originalTxHash => QueryType.Match('originalTxHash', originalTxHash)));
+    }
+
+    if (filter.sender) {
+      elasticQuery = elasticQuery.withShouldCondition(QueryType.Match('sender', filter.sender));
+    }
+
+    if (filter.receiver) {
+      elasticQuery = elasticQuery.withShouldCondition(QueryType.Match('receiver', filter.receiver));
+    }
+
+    if (filter.functions && filter.functions.length > 0 && this.apiConfigService.getIsIndexerV3FlagActive()) {
+      if (filter.functions.length === 1 && filter.functions[0] === '') {
+        elasticQuery = elasticQuery.withMustNotExistCondition('function');
+      } else {
+        elasticQuery = this.applyFunctionFilter(elasticQuery, filter.functions);
+      }
+    }
+
+    return elasticQuery;
+  }
+
+  buildApplicationFilter(filter: ApplicationFilter): ElasticQuery {
+    let elasticQuery = ElasticQuery.create();
+
+    if (filter.after) {
+      elasticQuery = elasticQuery.withRangeFilter('timestamp', new RangeGreaterThanOrEqual(filter.after));
+    }
+
+    if (filter.before) {
+      elasticQuery = elasticQuery.withRangeFilter('timestamp', new RangeLowerThanOrEqual(filter.before));
+    }
+
     return elasticQuery;
   }
 
   public applyFunctionFilter(elasticQuery: ElasticQuery, functions: string[]) {
     const functionConditions = [];
-
     for (const field of functions) {
       functionConditions.push(QueryType.Match('function', field));
       functionConditions.push(QueryType.Match('operation', field));
     }
-
     return elasticQuery.withMustCondition(QueryType.Should(functionConditions));
   }
 }

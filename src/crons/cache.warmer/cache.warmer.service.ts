@@ -18,18 +18,21 @@ import { MexSettingsService } from "src/endpoints/mex/mex.settings.service";
 import { MexPairService } from "src/endpoints/mex/mex.pair.service";
 import { MexFarmService } from "src/endpoints/mex/mex.farm.service";
 import { CacheService, GuestCacheWarmer } from "@multiversx/sdk-nestjs-cache";
-import { Constants, Lock, OriginLogger } from "@multiversx/sdk-nestjs-common";
+import { BatchUtils, Constants, Lock, OriginLogger } from "@multiversx/sdk-nestjs-common";
 import { DelegationLegacyService } from "src/endpoints/delegation.legacy/delegation.legacy.service";
 import { SettingsService } from "src/common/settings/settings.service";
 import { TokenService } from "src/endpoints/tokens/token.service";
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { NftService } from "src/endpoints/nfts/nft.service";
 import { AccountQueryOptions } from "src/endpoints/accounts/entities/account.query.options";
-import { TokenType } from "src/common/indexer/entities";
+import { Account, TokenType } from "src/common/indexer/entities";
 import { TokenDetailed } from "src/endpoints/tokens/entities/token.detailed";
 import { DataApiService } from "src/common/data-api/data-api.service";
 import { BlockService } from "src/endpoints/blocks/block.service";
 import { PoolService } from "src/endpoints/pool/pool.service";
+import * as JsonDiff from "json-diff";
+import { QueryPagination } from "src/common/entities/query.pagination";
+import { StakeService } from "src/endpoints/stake/stake.service";
 
 @Injectable()
 export class CacheWarmerService {
@@ -62,6 +65,7 @@ export class CacheWarmerService {
     private readonly dataApiService: DataApiService,
     private readonly blockService: BlockService,
     private readonly poolService: PoolService,
+    private readonly stakeService: StakeService,
   ) {
     this.configCronJob(
       'handleTokenAssetsInvalidations',
@@ -86,6 +90,18 @@ export class CacheWarmerService {
       const handleTransactionPoolCacheInvalidation = new CronJob(this.apiConfigService.getTransactionPoolCacheWarmerCronExpression(), async () => await this.handleTxPoolInvalidations());
       this.schedulerRegistry.addCronJob('handleTxPoolInvalidations', handleTransactionPoolCacheInvalidation);
       handleTransactionPoolCacheInvalidation.start();
+    }
+
+    if (this.apiConfigService.isUpdateAccountExtraDetailsEnabled()) {
+      if (this.apiConfigService.getAccountExtraDetailsTransfersLast24hUrl()) {
+        const handleUpdateAccountExtraDetails = new CronJob(CronExpression.EVERY_MINUTE, async () => await this.handleUpdateAccountTransfersLast24h());
+        this.schedulerRegistry.addCronJob('handleUpdateAccountTransfersLast24h', handleUpdateAccountExtraDetails);
+        handleUpdateAccountExtraDetails.start();
+      }
+
+      const handleUpdateAccountAssetsCronJob = new CronJob(CronExpression.EVERY_MINUTE, async () => await this.handleUpdateAccountAssets());
+      this.schedulerRegistry.addCronJob('handleUpdateAccountAssets', handleUpdateAccountAssetsCronJob);
+      handleUpdateAccountAssetsCronJob.start();
     }
   }
 
@@ -119,12 +135,11 @@ export class CacheWarmerService {
 
   @Lock({ name: 'Node auction invalidations', verbose: true })
   async handleNodeAuctionInvalidations() {
-    const nodes = await this.nodeService.getAllNodes();
-    const auctions = await this.gatewayService.getValidatorAuctions();
+    // wait randomly between 1 and 2 seconds to avoid all nodes refreshing at the same time
+    await new Promise(resolve => setTimeout(resolve, 1000 + 1000 * Math.random()));
 
-    this.nodeService.processAuctions(nodes, auctions);
-
-    await this.invalidateKey(CacheInfo.Nodes.key, nodes, CacheInfo.Nodes.ttl);
+    const nodesAuctions = await this.nodeService.getAllNodesAuctionsRaw();
+    await this.invalidateKey(CacheInfo.NodesAuctions.key, nodesAuctions, CacheInfo.NodesAuctions.ttl);
   }
 
   @Lock({ name: 'Transaction pool invalidation', verbose: true })
@@ -190,6 +205,13 @@ export class CacheWarmerService {
   async handleEconomicsInvalidations() {
     const economics = await this.networkService.getEconomicsRaw();
     await this.invalidateKey(CacheInfo.Economics.key, economics, CacheInfo.Economics.ttl);
+  }
+
+  @Cron(CronExpression.EVERY_30_SECONDS)
+  @Lock({ name: 'Stake invalidations', verbose: true })
+  async handleStakeInvalidations() {
+    const stake = await this.stakeService.getGlobalStakeRaw();
+    await this.invalidateKey(CacheInfo.GlobalStake.key, stake, CacheInfo.GlobalStake.ttl);
   }
 
   @Cron(CronExpression.EVERY_MINUTE)
@@ -308,6 +330,65 @@ export class CacheWarmerService {
 
       this.logger.log(`Setting isVerified to true, holderCount to ${holderCount}, nftCount to ${nftCount} for collection with identifier '${key}'`);
       await this.indexerService.setExtraCollectionFields(key, true, holderCount, nftCount);
+    }
+  }
+
+  @Lock({ name: 'Elastic updater: Update account assets', verbose: true })
+  async handleUpdateAccountAssets() {
+    const batchSize = 100;
+    const allAccountAssets = await this.assetsService.getAllAccountAssets();
+
+    const addresses = Object.keys(allAccountAssets);
+    const batches = BatchUtils.splitArrayIntoChunks(addresses, batchSize);
+
+    for (const batch of batches) {
+      const accounts = await this.indexerService.getAccounts(
+        new QueryPagination({ from: 0, size: batchSize }),
+        new AccountQueryOptions({ addresses: batch }),
+      );
+
+      const accountsDictionary = accounts.toRecord<Account>(account => account.address);
+
+      for (const address of Object.keys(allAccountAssets)) {
+        try {
+          const assets = allAccountAssets[address];
+          const account = accountsDictionary[address];
+          if (!account) {
+            continue;
+          }
+
+          if (JsonDiff.diff(account.api_assets, assets)) {
+            this.logger.log(`Updating assets for account with address '${address}'`);
+            await this.indexerService.setAccountAssetsFields(address, assets);
+          }
+        } catch (error) {
+          this.logger.error(`Failed to update assets for account with address '${address}': ${error}`);
+        }
+      }
+    }
+  }
+
+  @Lock({ name: 'Elastic updater: Update account transfersLast24h', verbose: true })
+  async handleUpdateAccountTransfersLast24h() {
+    const batchSize = 100;
+    const mostUsed = await this.accountService.getApplicationMostUsedRaw();
+
+    const batches = BatchUtils.splitArrayIntoChunks(mostUsed, batchSize);
+    for (const batch of batches) {
+      const accounts = await this.indexerService.getAccounts(
+        new QueryPagination({ from: 0, size: batchSize }),
+        new AccountQueryOptions({ addresses: batch.map(item => item.address) }),
+      );
+
+      const accountsDictionary = accounts.toRecord<Account>(account => account.address);
+
+      for (const item of batch) {
+        const account = accountsDictionary[item.address];
+        if (account && account.api_transfersLast24h !== item.transfers24H) {
+          this.logger.log(`Setting transferLast24h to ${item.transfers24H} for account with address '${item.address}'`);
+          await this.indexerService.setAccountTransfersLast24h(item.address, item.transfers24H);
+        }
+      }
     }
   }
 

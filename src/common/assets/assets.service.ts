@@ -16,6 +16,7 @@ import { NftRankAlgorithm } from "./entities/nft.rank.algorithm";
 import { NftRank } from "./entities/nft.rank";
 import { MexStakingProxy } from "src/endpoints/mex/entities/mex.staking.proxy";
 import { Provider } from "src/endpoints/providers/entities/provider";
+
 const rimraf = require("rimraf");
 const path = require('path');
 const fs = require('fs');
@@ -26,7 +27,7 @@ export class AssetsService {
 
   constructor(
     private readonly cachingService: CacheService,
-    private readonly apiConfigService: ApiConfigService
+    private readonly apiConfigService: ApiConfigService,
   ) { }
 
   checkout(): Promise<void> {
@@ -129,7 +130,7 @@ export class AssetsService {
     return await this.cachingService.getOrSet(
       CacheInfo.TokenAssets.key,
       async () => await this.getAllTokenAssetsRaw(),
-      CacheInfo.TokenAssets.ttl
+      CacheInfo.TokenAssets.ttl,
     );
   }
 
@@ -166,7 +167,7 @@ export class AssetsService {
     return await this.cachingService.getOrSet(
       CacheInfo.CollectionRanks.key,
       async () => await this.getAllCollectionRanksRaw(),
-      CacheInfo.CollectionRanks.ttl
+      CacheInfo.CollectionRanks.ttl,
     );
   }
 
@@ -194,7 +195,7 @@ export class AssetsService {
     return await this.cachingService.getOrSet(
       CacheInfo.AccountAssets.key,
       async () => await this.getAllAccountAssetsRaw(),
-      CacheInfo.AccountAssets.ttl
+      CacheInfo.AccountAssets.ttl,
     );
   }
 
@@ -207,6 +208,9 @@ export class AssetsService {
 
     const allAssets: { [key: string]: AccountAssets } = {};
     for (const fileName of fileNames) {
+      if (fileName.includes(".gitkeep")) {
+        continue;
+      }
       const assetsPath = path.join(accountAssetsPath, fileName);
       const address = fileName.removeSuffix('.json');
       try {
@@ -244,47 +248,47 @@ export class AssetsService {
 
     if (pairs) {
       for (const pair of pairs) {
-        allAssets[pair.address] = new AccountAssets({
-          name: `xExchange: ${pair.baseSymbol}/${pair.quoteSymbol} Liquidity Pool`,
-          tags: ['xexchange', 'liquiditypool'],
-        });
+        allAssets[pair.address] = this.createAccountAsset(
+          `xExchange: ${pair.baseSymbol}/${pair.quoteSymbol} Liquidity Pool`,
+          ['xexchange', 'liquiditypool']
+        );
       }
     }
 
     if (farms) {
       for (const farm of farms) {
-        allAssets[farm.address] = new AccountAssets({
-          name: `xExchange: ${farm.name} Farm`,
-          tags: ['xexchange', 'farm'],
-        });
+        allAssets[farm.address] = this.createAccountAsset(
+          `xExchange: ${farm.name} Farm`,
+          ['xexchange', 'farm']
+        );
       }
     }
 
     if (mexSettings) {
       for (const [index, wrapContract] of mexSettings.wrapContracts.entries()) {
-        allAssets[wrapContract] = new AccountAssets({
-          name: `ESDT: WrappedEGLD Contract Shard ${index}`,
-          tags: ['xexchange', 'wegld'],
-        });
+        allAssets[wrapContract] = this.createAccountAsset(
+          `ESDT: WrappedEGLD Contract Shard ${index}`,
+          ['xexchange', 'wegld']
+        );
       }
 
-      allAssets[mexSettings.lockedAssetContract] = new AccountAssets({
-        name: `xExchange: Locked asset Contract`,
-        tags: ['xexchange', 'lockedasset'],
-      });
+      allAssets[mexSettings.lockedAssetContract] = this.createAccountAsset(
+        `xExchange: Locked asset Contract`,
+        ['xexchange', 'lockedasset']
+      );
 
-      allAssets[mexSettings.distributionContract] = new AccountAssets({
-        name: `xExchange: Distribution Contract`,
-        tags: ['xexchange', 'lockedasset'],
-      });
+      allAssets[mexSettings.distributionContract] = this.createAccountAsset(
+        `xExchange: Distribution Contract`,
+        ['xexchange', 'lockedasset']
+      );
     }
 
     if (stakingProxies) {
       for (const stakingProxy of stakingProxies) {
-        allAssets[stakingProxy.address] = new AccountAssets({
-          name: `xExchange: ${stakingProxy.dualYieldTokenName} Contract`,
-          tags: ['xexchange', 'metastaking'],
-        });
+        allAssets[stakingProxy.address] = this.createAccountAsset(
+          `xExchange: ${stakingProxy.dualYieldTokenName} Contract`,
+          ['xexchange', 'metastaking']
+        );
       }
     }
 
@@ -305,5 +309,14 @@ export class AssetsService {
 
     // if the tokenIdentifier key exists in the dictionary, return the associated value, else undefined
     return assets[tokenIdentifier];
+  }
+
+  createAccountAsset(name: string, tags: string[]): AccountAssets {
+    return new AccountAssets({
+      name: name,
+      tags: tags,
+      iconSvg: 'https://raw.githubusercontent.com/multiversx/mx-assets/master/accounts/icons/xexchange.svg',
+      iconPng: 'https://raw.githubusercontent.com/multiversx/mx-assets/master/accounts/icons/xexchange.png',
+    });
   }
 }

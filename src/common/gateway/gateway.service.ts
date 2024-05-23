@@ -46,14 +46,23 @@ export class GatewayService {
     private readonly apiService: ApiService
   ) { }
 
-  async getValidatorAuctions(): Promise<Auction[]> {
-    const result = await this.get('validator/auction', GatewayComponentRequest.validatorAuction);
+  async getVersion(): Promise<string | undefined> {
+    const result = await this.get('about', GatewayComponentRequest.about);
 
-    return result.auction;
+    if (result && result.appVersion && result.appVersion !== "undefined") {
+      return result.appVersion;
+    }
+
+    return undefined;
   }
 
-  async getNetworkStatus(metaChainShardId: number | string): Promise<NetworkStatus> {
-    const result = await this.get(`network/status/${metaChainShardId}`, GatewayComponentRequest.networkStatus);
+  async getValidatorAuctions(): Promise<Auction[]> {
+    const result = await this.get('validator/auction', GatewayComponentRequest.validatorAuction);
+    return result.auctionList;
+  }
+
+  async getNetworkStatus(shardId: number | string): Promise<NetworkStatus> {
+    const result = await this.get(`network/status/${shardId}`, GatewayComponentRequest.networkStatus);
     return result.status;
   }
 
@@ -103,6 +112,11 @@ export class GatewayService {
   async getGuardianData(address: string): Promise<GuardianResult> {
     const result = await this.get(`address/${address}/guardian-data`, GatewayComponentRequest.guardianData);
     return result;
+  }
+
+  async getNodeWaitingEpochsLeft(bls: string): Promise<number> {
+    const result = await this.get(`node/waiting-epochs-left/${bls}`, GatewayComponentRequest.getNodeWaitingEpochsLeft);
+    return result.epochsLeft;
   }
 
   async getTransactionProcessStatus(txHash: string): Promise<TransactionProcessStatus> {
@@ -166,6 +180,12 @@ export class GatewayService {
     });
 
     return result?.transaction;
+  }
+
+  async getBlockByShardAndNonce(shard: number, nonce: number, withTxs?: boolean): Promise<any> {
+    const result = await this.get(`block/${shard}/by-nonce/${nonce}?withTxs=${withTxs ?? false}`, GatewayComponentRequest.blockByNonce);
+
+    return result.block;
   }
 
   @LogPerformanceAsync(MetricsEvents.SetGatewayDuration, { argIndex: 1 })

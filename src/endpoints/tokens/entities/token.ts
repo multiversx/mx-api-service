@@ -3,6 +3,7 @@ import { Field, Float, ObjectType } from "@nestjs/graphql";
 import { ApiProperty } from "@nestjs/swagger";
 import { TokenType } from "src/common/indexer/entities";
 import { TokenAssets } from "../../../common/assets/entities/token.assets";
+import { MexPairType } from "src/endpoints/mex/entities/mex.pair.type";
 
 @ObjectType("Token", { description: "Token object type." })
 export class Token {
@@ -62,13 +63,29 @@ export class Token {
   @ApiProperty({ type: TokenAssets, nullable: true })
   assets: TokenAssets | undefined = undefined;
 
-  @Field(() => Float, { description: "Tokens transactions.", nullable: true })
+  @Field(() => Float, { description: "Token transactions.", nullable: true })
   @ApiProperty({ type: Number, nullable: true })
   transactions: number | undefined = undefined;
 
-  @Field(() => Float, { description: "Token accounts list." })
+  @Field(() => Number, { description: "Token transactions last updated timestamp.", nullable: true })
+  @ApiProperty({ type: Number, nullable: true })
+  transactionsLastUpdatedAt: number | undefined = undefined;
+
+  @Field(() => Number, { description: "Token transfers.", nullable: true })
+  @ApiProperty({ type: Number, nullable: true })
+  transfers: number | undefined = undefined;
+
+  @Field(() => Number, { description: "Token transfers last updated timestamp.", nullable: true })
+  @ApiProperty({ type: Number, nullable: true })
+  transfersLastUpdatedAt: number | undefined = undefined;
+
+  @Field(() => Number, { description: "Token accounts." })
   @ApiProperty({ type: Number, nullable: true })
   accounts: number | undefined = undefined;
+
+  @Field(() => Number, { description: "Token accounts last updated timestamp.", nullable: true })
+  @ApiProperty({ type: Number, nullable: true })
+  accountsLastUpdatedAt: number | undefined = undefined;
 
   @Field(() => Boolean, { description: "Token canUpgrade property." })
   @ApiProperty({ type: Boolean, default: false })
@@ -125,4 +142,24 @@ export class Token {
   @Field(() => Number, { description: "Creation timestamp." })
   @ApiProperty({ type: Number, description: 'Creation timestamp' })
   timestamp: number | undefined = undefined;
+
+  @Field(() => MexPairType, { description: "Mex pair type details." })
+  @ApiProperty({ enum: MexPairType })
+  mexPairType: MexPairType = MexPairType.experimental;
+
+  @Field(() => Number, { description: "Total value captured in liquidity pools." })
+  @ApiProperty({ type: Number, nullable: true })
+  totalLiquidity: number | undefined = undefined;
+
+  @Field(() => Number, { description: "Total traded value in the last 24h within the liquidity pools." })
+  @ApiProperty({ type: Number, nullable: true })
+  totalVolume24h: number | undefined = undefined;
+
+  @Field(() => Boolean, { description: 'If the liquidity to market cap ratio is less than 0.5%, we consider it as low liquidity.', nullable: true })
+  @ApiProperty({ type: Boolean, nullable: true })
+  isLowLiquidity: boolean | undefined = undefined;
+
+  @Field(() => Number, { description: 'If the liquidity to market cap ratio is less than 0.5%, we consider it as low liquidity and display threshold percent .', nullable: true })
+  @ApiProperty({ type: Number, nullable: true })
+  lowLiquidityThresholdPercent: number | undefined = undefined;
 }

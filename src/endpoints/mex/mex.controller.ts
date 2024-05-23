@@ -11,7 +11,7 @@ import { MexTokenService } from "./mex.token.service";
 import { MexFarmService } from './mex.farm.service';
 import { MexFarm } from './entities/mex.farm';
 import { QueryPagination } from 'src/common/entities/query.pagination';
-import { ParseIntPipe, ParseTokenPipe, ParseEnumPipe } from '@multiversx/sdk-nestjs-common';
+import { ParseIntPipe, ParseTokenPipe, ParseEnumPipe, ParseBoolPipe } from '@multiversx/sdk-nestjs-common';
 import { MexPairExchange } from './entities/mex.pair.exchange';
 import { MexPairsFilter } from './entities/mex.pairs..filter';
 
@@ -57,9 +57,11 @@ export class MexController {
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number,
     @Query('exchange', new ParseEnumPipe(MexPairExchange)) exchange?: MexPairExchange,
+    @Query('hasFarms', new ParseBoolPipe()) hasFarms?: boolean,
+    @Query('hasDualFarms', new ParseBoolPipe()) hasDualFarms?: boolean,
   ): Promise<MexPair[]> {
-    const filter = new MexPairsFilter({ exchange });
-    return await this.mexPairsService.getMexPairs(from, size, filter);
+    const filter = new MexPairsFilter({ exchange, hasFarms, hasDualFarms });
+    return await this.mexPairsService.getMexPairs(new QueryPagination({ from, size }), filter);
   }
 
   @Get("/mex/pairs/count")
@@ -129,91 +131,6 @@ export class MexController {
   @ApiOperation({ summary: 'xExchange pairs details', description: 'Returns liquidity pool details by providing a combination of two tokens' })
   @ApiOkResponse({ type: MexPair })
   async getMexPair(
-    @Param('baseId') baseId: string,
-    @Param('quoteId') quoteId: string,
-  ): Promise<MexPair> {
-    const pair = await this.mexPairsService.getMexPair(baseId, quoteId);
-    if (!pair) {
-      throw new NotFoundException();
-    }
-
-    return pair;
-  }
-
-  @Get("/mex-economics")
-  @ApiOperation({ deprecated: true, summary: 'xExchange economics', description: 'Returns economics details of xExchange' })
-  @ApiOkResponse({ type: MexEconomics })
-  async getMexEconomicsLegacy(): Promise<any> {
-    return await this.mexEconomicsService.getMexEconomics();
-  }
-
-  @Get("/mex-settings")
-  @ApiOperation({ deprecated: true })
-  @ApiExcludeEndpoint()
-  @ApiResponse({
-    status: 200,
-    description: 'The settings of the xExchange',
-  })
-  async getMexSettingsLegacy(): Promise<MexSettings> {
-    const settings = await this.mexSettingsService.getSettings();
-    if (!settings) {
-      throw new NotFoundException('MEX settings not found');
-    }
-
-    return settings;
-  }
-
-  @Get("/mex-pairs")
-  @ApiOperation({
-    deprecated: true,
-    summary: 'xExchange pairs',
-    description: 'Returns active liquidity pools available on xExchange',
-  })
-  @ApiResponse({
-    status: 200,
-    isArray: true,
-    type: MexPair,
-  })
-  @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
-  @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
-  async getMexPairsLegacy(
-    @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
-    @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number
-  ): Promise<any> {
-    return await this.mexPairsService.getMexPairs(from, size);
-  }
-
-  @Get("/mex-tokens")
-  @ApiOperation({
-    deprecated: true,
-    summary: 'xExchange tokens details',
-    description: 'Returns a list of tokens listed on xExchange',
-  })
-  @ApiResponse({
-    status: 200,
-    isArray: true,
-    type: MexToken,
-  })
-  @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
-  @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
-  async getMexTokensLegacy(
-    @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
-    @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number,
-  ): Promise<any> {
-    return await this.mexTokensService.getMexTokens(new QueryPagination({ from, size }));
-  }
-
-  @Get("/mex-pairs/:baseId/:quoteId")
-  @ApiOperation({
-    deprecated: true,
-    summary: 'xExchange pairs details',
-    description: 'Returns liquidity pool details by providing a combination of two tokens',
-  })
-  @ApiResponse({
-    status: 200,
-    type: MexPair,
-  })
-  async getMexPairLegacy(
     @Param('baseId') baseId: string,
     @Param('quoteId') quoteId: string,
   ): Promise<MexPair> {

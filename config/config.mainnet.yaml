@@ -8,7 +8,6 @@ cron:
   fastWarm: false
   queueWorker: true
   elasticUpdater: false
-  statusChecker: false
 flags:
   useRequestCaching: true
   useKeepAliveAgent: true
@@ -37,6 +36,9 @@ features:
     ttlInSeconds: 60 
   updateCollectionExtraDetails:
     enabled: false
+  updateAccountExtraDetails:
+    enabled: false
+    transfersLast24hUrl: 'https://tools.multiversx.com/growth-api/explorer/widgets/most-used/applications'
   marketplace:
     enabled: false
     serviceUrl: 'https://nfts-graph.multiversx.com/graphql'
@@ -54,6 +56,12 @@ features:
     admins:
       - ''
     jwtSecret: ''
+  stakingV4:
+    enabled: false
+    cronExpression: '*/5 * * * * *'
+    activationEpoch: 1391
+  nodeEpochsLeft:
+    enabled: false
   transactionProcessor:
     enabled: false
     maxLookBehind: 1000
@@ -67,6 +75,22 @@ features:
   deepHistory:
     enabled: false
     url: ''
+  statusChecker:
+    enabled: false
+    thresholds:
+      tokens: 1000
+      nodes: 5000
+      providers: 150
+      tokenSupplyCount: 100
+      tokenAssets: 100
+      tokenAccounts: 1000
+      tokenTransactions: 1000
+      nodeValidators: 3260
+  nftScamInfo:
+    enabled: false
+  tps:
+    enabled: true
+    maxLookBehindNonces: 100  
 image:
   width: 600
   height: 600

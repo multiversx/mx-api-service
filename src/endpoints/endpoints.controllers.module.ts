@@ -21,7 +21,7 @@ import { TagController } from "./nfttags/tag.controller";
 import { NodeController } from "./nodes/node.controller";
 import { ProcessNftsPublicController } from "./process-nfts/process.nfts.public.controller";
 import { ProviderController } from "./providers/provider.controller";
-import { ProxyController } from "./proxy/proxy.controller";
+import { GatewayProxyController } from "./proxy/gateway.proxy.controller";
 import { ProxyModule } from "./proxy/proxy.module";
 import { RoundController } from "./rounds/round.controller";
 import { SmartContractResultController } from "./sc-results/scresult.controller";
@@ -36,6 +36,8 @@ import { VmQueryController } from "./vm.query/vm.query.controller";
 import { WaitingListController } from "./waiting-list/waiting.list.controller";
 import { WebsocketController } from "./websocket/websocket.controller";
 import { PoolController } from "./pool/pool.controller";
+import { TpsController } from "./tps/tps.controller";
+import { ApplicationController } from "./applications/application.controller";
 
 @Module({})
 export class EndpointsControllersModule {
@@ -43,10 +45,10 @@ export class EndpointsControllersModule {
     const controllers: Type<any>[] = [
       AccountController, BlockController, CollectionController, DelegationController, DelegationLegacyController, IdentitiesController,
       KeysController, MiniBlockController, NetworkController, NftController, TagController, NodeController,
-      ProviderController, ProxyController, RoundController, SmartContractResultController, ShardController, StakeController, StakeController,
+      ProviderController, GatewayProxyController, RoundController, SmartContractResultController, ShardController, StakeController, StakeController,
       TokenController, TransactionController, UsernameController, VmQueryController, WaitingListController,
       HealthCheckController, DappConfigController, WebsocketController, TransferController,
-      ProcessNftsPublicController, TransactionsBatchController,
+      ProcessNftsPublicController, TransactionsBatchController, ApplicationController,
     ];
 
     const isMarketplaceFeatureEnabled = configuration().features?.marketplace?.enabled ?? false;
@@ -66,6 +68,11 @@ export class EndpointsControllersModule {
     const isTxPoolEnabled = configuration().features?.transactionPool?.enabled;
     if (isTxPoolEnabled) {
       controllers.push(PoolController);
+    }
+
+    const isTpsEnabled = configuration().features?.tps?.enabled;
+    if (isTpsEnabled) {
+      controllers.push(TpsController);
     }
 
     return {

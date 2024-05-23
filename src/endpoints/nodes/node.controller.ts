@@ -10,6 +10,9 @@ import { SortNodes } from "src/common/entities/sort.nodes";
 import { NodeFilter } from "./entities/node.filter";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { ParseAddressPipe, ParseBlsHashPipe, ParseBoolPipe, ParseEnumPipe, ParseIntPipe } from "@multiversx/sdk-nestjs-common";
+import { NodeAuction } from "./entities/node.auction";
+import { NodeSortAuction } from "./entities/node.sort.auction";
+import { NodeAuctionFilter } from "./entities/node.auction.filter";
 
 @Controller()
 @ApiTags('nodes')
@@ -35,6 +38,10 @@ export class NodeController {
   @ApiQuery({ name: 'fullHistory', description: 'Whether node is of type \'Full History\' or not', required: false, type: 'boolean' })
   @ApiQuery({ name: 'sort', description: 'Sorting criteria', required: false, enum: SortNodes })
   @ApiQuery({ name: 'order', description: 'Sorting order (asc / desc)', required: false, enum: SortOrder })
+  @ApiQuery({ name: 'isQualified', description: 'Whether node is qualified or not', required: false, type: 'boolean' })
+  @ApiQuery({ name: 'isAuctioned', description: 'Whether node is auctioned or not', required: false, type: 'boolean' })
+  @ApiQuery({ name: 'isAuctionDangerZone', description: 'Whether node is in danger zone or not', required: false, type: 'boolean' })
+  @ApiQuery({ name: 'withIdentityInfo', description: 'Returns identity data for nodes', required: false })
   async getNodes(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
@@ -52,8 +59,12 @@ export class NodeController {
     @Query('fullHistory', ParseBoolPipe) fullHistory?: boolean,
     @Query('sort', new ParseEnumPipe(NodeSort)) sort?: NodeSort,
     @Query('order', new ParseEnumPipe(SortOrder)) order?: SortOrder,
+    @Query('withIdentityInfo', new ParseBoolPipe) withIdentityInfo?: boolean,
+    @Query('isQualified', ParseBoolPipe) isQualified?: boolean,
+    @Query('isAuctioned', ParseBoolPipe) isAuctioned?: boolean,
+    @Query('isAuctionDangerZone', ParseBoolPipe) isAuctionDangerZone?: boolean,
   ): Promise<Node[]> {
-    return await this.nodeService.getNodes(new QueryPagination({ from, size }), new NodeFilter({ search, keys, online, type, status, shard, issues, identity, provider, owner, auctioned, fullHistory, sort, order }));
+    return await this.nodeService.getNodes(new QueryPagination({ from, size }), new NodeFilter({ search, keys, online, type, status, shard, issues, identity, provider, owner, auctioned, fullHistory, sort, order, isQualified, isAuctionDangerZone, isAuctioned, withIdentityInfo }));
   }
 
   @Get("/nodes/versions")
@@ -79,6 +90,9 @@ export class NodeController {
   @ApiQuery({ name: 'fullHistory', description: 'Whether node is of type \'Full History\' or not', required: false, type: 'boolean' })
   @ApiQuery({ name: 'sort', description: 'Sorting criteria', required: false, enum: SortNodes })
   @ApiQuery({ name: 'order', description: 'Sorting order (asc / desc)', required: false, enum: SortOrder })
+  @ApiQuery({ name: 'isQualified', description: 'Whether node is qualified or not', required: false, type: 'boolean' })
+  @ApiQuery({ name: 'isAuctioned', description: 'Whether node is auctioned or not', required: false, type: 'boolean' })
+  @ApiQuery({ name: 'isAuctionDangerZone', description: 'Whether node is in danger zone or not', required: false, type: 'boolean' })
   getNodeCount(
     @Query('search') search?: string,
     @Query('online', ParseBoolPipe) online?: boolean,
@@ -93,8 +107,11 @@ export class NodeController {
     @Query('fullHistory', ParseBoolPipe) fullHistory?: boolean,
     @Query('sort', new ParseEnumPipe(NodeSort)) sort?: NodeSort,
     @Query('order', new ParseEnumPipe(SortOrder)) order?: SortOrder,
+    @Query('isQualified', ParseBoolPipe) isQualified?: boolean,
+    @Query('isAuctioned', ParseBoolPipe) isAuctioned?: boolean,
+    @Query('isAuctionDangerZone', ParseBoolPipe) isAuctionDangerZone?: boolean,
   ): Promise<number> {
-    return this.nodeService.getNodeCount(new NodeFilter({ search, online, type, status, shard, issues, identity, provider, owner, auctioned, fullHistory, sort, order }));
+    return this.nodeService.getNodeCount(new NodeFilter({ search, online, type, status, shard, issues, identity, provider, owner, auctioned, fullHistory, sort, order, isQualified, isAuctionDangerZone, isAuctioned }));
   }
 
   @Get("/nodes/c")
@@ -113,8 +130,30 @@ export class NodeController {
     @Query('owner', ParseAddressPipe) owner?: string,
     @Query('sort', new ParseEnumPipe(NodeSort)) sort?: NodeSort,
     @Query('order', new ParseEnumPipe(SortOrder)) order?: SortOrder,
+    @Query('isQualified', ParseBoolPipe) isQualified?: boolean,
+    @Query('isAuctioned', ParseBoolPipe) isAuctioned?: boolean,
+    @Query('isAuctionDangerZone', ParseBoolPipe) isAuctionDangerZone?: boolean,
   ): Promise<number> {
-    return this.nodeService.getNodeCount(new NodeFilter({ search, online, type, status, shard, issues, identity, provider, owner, auctioned, fullHistory, sort, order }));
+    return this.nodeService.getNodeCount(new NodeFilter({ search, online, type, status, shard, issues, identity, provider, owner, auctioned, fullHistory, sort, order, isQualified, isAuctionDangerZone, isAuctioned }));
+  }
+
+  @Get("nodes/auctions")
+  @ApiOperation({ summary: 'Nodes Auctions', description: 'Returns a list of nodes in auction' })
+  @ApiOkResponse({ type: [NodeAuction] })
+  @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
+  @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
+  @ApiQuery({ name: 'sort', description: 'Sorting criteria', required: false, enum: NodeSortAuction })
+  @ApiQuery({ name: 'order', description: 'Sorting order (asc / desc)', required: false, enum: SortOrder })
+  async getNodesAuctions(
+    @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
+    @Query('size', new DefaultValuePipe(10000), ParseIntPipe) size: number,
+    @Query('sort', new ParseEnumPipe(NodeSortAuction)) sort?: NodeSortAuction,
+    @Query('order', new ParseEnumPipe(SortOrder)) order?: SortOrder,
+  ): Promise<NodeAuction[]> {
+    return await this.nodeService.getNodesAuctions(
+      new QueryPagination({ from, size }),
+      new NodeAuctionFilter({ sort, order })
+    );
   }
 
   @Get('/nodes/:bls')

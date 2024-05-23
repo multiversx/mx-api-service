@@ -36,6 +36,7 @@ import { KeysService } from '../keys/keys.service';
 import { NodeStatusRaw } from '../nodes/entities/node.status';
 import { AccountKeyFilter } from './entities/account.key.filter';
 import { Provider } from '../providers/entities/provider';
+import { ApplicationMostUsed } from './entities/application.most.used';
 
 @Injectable()
 export class AccountService {
@@ -67,7 +68,7 @@ export class AccountService {
   ) { }
 
   async getAccountsCount(filter: AccountQueryOptions): Promise<number> {
-    if (!filter.ownerAddress && filter.isSmartContract === undefined) {
+    if (!filter.isSet()) {
       return await this.cachingService.getOrSet(
         CacheInfo.AccountsCount.key,
         async () => await this.indexerService.getAccountsCount(filter),
@@ -331,6 +332,7 @@ export class AccountService {
     const accounts: Account[] = result.map(item => {
       const account = ApiUtils.mergeObjects(new Account(), item);
       account.ownerAddress = item.currentOwner;
+      account.transfersLast24h = item.api_transfersLast24h;
 
       return account;
     });
@@ -683,6 +685,27 @@ export class AccountService {
     await Promise.all(leavingNodes.map(async node => {
       const keyUnbondPeriod = await this.keysService.getKeyUnbondPeriod(node.blsKey);
       node.remainingUnBondPeriod = keyUnbondPeriod?.remainingUnBondPeriod;
+    }));
+  }
+
+  async getApplicationMostUsed(): Promise<ApplicationMostUsed[]> {
+    return await this.cachingService.getOrSet(
+      CacheInfo.ApplicationMostUsed.key,
+      async () => await this.getApplicationMostUsedRaw(),
+      CacheInfo.ApplicationMostUsed.ttl
+    );
+  }
+
+  async getApplicationMostUsedRaw(): Promise<ApplicationMostUsed[]> {
+    const transfersLast24hUrl = this.apiConfigService.getAccountExtraDetailsTransfersLast24hUrl();
+    if (!transfersLast24hUrl) {
+      throw new Error('Transfers last 24h URL is not set');
+    }
+
+    const { data: mostUsedApplications } = await this.apiService.get(transfersLast24hUrl);
+    return mostUsedApplications.map((item: any) => new ApplicationMostUsed({
+      address: item.key,
+      transfers24H: item.value,
     }));
   }
 }

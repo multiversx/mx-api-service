@@ -60,4 +60,8 @@ export class Account {
   @Field(() => Float, { description: 'Smart contract results count for the given detailed account.' })
   @ApiProperty({ description: 'The number of smart contract results of this account' })
   scrCount?: number;
+
+  @Field(() => Number, { description: 'Transfers in the last 24 hours.' })
+  @ApiProperty({ type: Number, description: 'Transfers in the last 24 hours' })
+  transfersLast24h: number | undefined = undefined;
 }

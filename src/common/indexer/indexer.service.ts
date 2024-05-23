@@ -17,6 +17,9 @@ import { LogPerformanceAsync } from "src/utils/log.performance.decorator";
 import { AccountQueryOptions } from "src/endpoints/accounts/entities/account.query.options";
 import { MiniBlockFilter } from "src/endpoints/miniblocks/entities/mini.block.filter";
 import { AccountHistoryFilter } from "src/endpoints/accounts/entities/account.history.filter";
+import { AccountAssets } from "../assets/entities/account.assets";
+import { ProviderDelegators } from "./entities/provider.delegators";
+import { ApplicationFilter } from "src/endpoints/applications/entities/application.filter";
 
 @Injectable()
 export class IndexerService implements IndexerInterface {
@@ -31,8 +34,8 @@ export class IndexerService implements IndexerInterface {
   }
 
   @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
-  async getScResultsCount(): Promise<number> {
-    return await this.indexerInterface.getScResultsCount();
+  async getScResultsCount(filter: SmartContractResultFilter): Promise<number> {
+    return await this.indexerInterface.getScResultsCount(filter);
   }
 
   @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
@@ -237,6 +240,16 @@ export class IndexerService implements IndexerInterface {
   }
 
   @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
+  async getProviderDelegators(address: string, pagination: QueryPagination): Promise<ProviderDelegators[]> {
+    return await this.indexerInterface.getProviderDelegators(address, pagination);
+  }
+
+  @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
+  async getProviderDelegatorsCount(address: string): Promise<number> {
+    return await this.indexerInterface.getProviderDelegatorsCount(address);
+  }
+
+  @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
   async getAccountHistoryCount(address: string, filter?: AccountHistoryFilter): Promise<number> {
     return await this.indexerInterface.getAccountHistoryCount(address, filter);
   }
@@ -362,6 +375,11 @@ export class IndexerService implements IndexerInterface {
   }
 
   @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
+  async setAccountTransfersLast24h(address: string, transfersLast24h: number): Promise<void> {
+    return await this.indexerInterface.setAccountTransfersLast24h(address, transfersLast24h);
+  }
+
+  @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
   async getNftCollectionsByIds(identifiers: string[]): Promise<Collection[]> {
     return await this.indexerInterface.getNftCollectionsByIds(identifiers);
   }
@@ -377,7 +395,37 @@ export class IndexerService implements IndexerInterface {
   }
 
   @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
+  async setAccountAssetsFields(address: string, assets: AccountAssets): Promise<void> {
+    return await this.indexerInterface.setAccountAssetsFields(address, assets);
+  }
+
+  @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
+  async ensureAccountsWritable(): Promise<void> {
+    return await this.indexerInterface.ensureAccountsWritable();
+  }
+
+  @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
+  async ensureTokensWritable(): Promise<void> {
+    return await this.indexerInterface.ensureTokensWritable();
+  }
+
+  @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
   async getBlockByTimestampAndShardId(timestamp: number, shardId: number): Promise<Block | undefined> {
     return await this.indexerInterface.getBlockByTimestampAndShardId(timestamp, shardId);
+  }
+
+  @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
+  async getVersion(): Promise<string | undefined> {
+    return await this.indexerInterface.getVersion();
+  }
+
+  @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
+  async getApplications(filter: ApplicationFilter, pagination: QueryPagination): Promise<any[]> {
+    return await this.indexerInterface.getApplications(filter, pagination);
+  }
+
+  @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
+  async getApplicationCount(filter: ApplicationFilter): Promise<number> {
+    return await this.indexerInterface.getApplicationCount(filter);
   }
 }
