@@ -54,7 +54,7 @@ export class TpsWarmerService {
 
   @Lock({ name: 'Refresh TPS History', verbose: true })
   async refreshTpsHistory() {
-    const intervals = [TpsInterval._1h, TpsInterval._1d];
+    const intervals = [TpsInterval._10m, TpsInterval._1h, TpsInterval._1d];
 
     for (const interval of intervals) {
       const tpsHistory = await this.tpsService.getTpsHistoryRaw(interval);
