@@ -2061,12 +2061,6 @@ type MexPair {
   """Mex pair exchange details."""
   exchange: String
 
-  """Has dual farm pair details."""
-  hasDualFarms: Boolean
-
-  """Has farm pair details."""
-  hasFarms: Boolean
-
   """Id details."""
   id: String!
 
@@ -2099,9 +2093,6 @@ type MexPair {
 
   """Total value details."""
   totalValue: String!
-
-  """Pair trades count details."""
-  tradesCount: Float
 
   """Mex pair type details."""
   type: MexPairType!
