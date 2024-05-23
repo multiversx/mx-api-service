@@ -54,6 +54,7 @@ describe('Stake Service', () => {
             getAllNodes: jest.fn(),
             getNodeCount: jest.fn(),
             getNodesWithAuctionDangerZoneCount: jest.fn(),
+            getValidatorAuctions: jest.fn(),
           },
         },
         {
