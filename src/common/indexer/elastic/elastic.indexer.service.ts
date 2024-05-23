@@ -221,9 +221,9 @@ export class ElasticIndexerService implements IndexerInterface {
 
   async getTransaction(txHash: string): Promise<any> {
     const transaction = await this.elasticService.getItem('operations', 'txHash', txHash);
-    if (transaction?.type !== 'normal') {
-      return undefined;
-    }
+    // if (transaction?.type !== 'normal') {
+    //   return undefined;
+    // }
 
     this.processTransaction(transaction);
 
