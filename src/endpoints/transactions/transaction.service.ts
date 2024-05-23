@@ -177,9 +177,9 @@ export class TransactionService {
     }
 
     for (const transaction of transactions) {
+      transaction.type = undefined;
       transaction.relayedVersion = this.extractRelayedVersion(transaction);
     }
-
 
     await this.processTransactions(transactions, {
       withScamInfo: queryOptions?.withScamInfo ?? false,

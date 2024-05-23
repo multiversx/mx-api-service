@@ -513,8 +513,6 @@ export class ElasticIndexerService implements IndexerInterface {
   }
 
   private processTransaction(transaction: any) {
-    delete transaction.type;
-
     if (transaction && !transaction.function) {
       transaction.function = transaction.operation;
     }
