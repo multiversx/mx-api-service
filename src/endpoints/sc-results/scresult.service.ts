@@ -8,9 +8,12 @@ import { TransactionType } from "../transactions/entities/transaction.type";
 import { TransactionActionService } from "../transactions/transaction-action/transaction.action.service";
 import { SmartContractResult } from "./entities/smart.contract.result";
 import { SmartContractResultFilter } from "./entities/smart.contract.result.filter";
+import { OriginLogger } from "@multiversx/sdk-nestjs-common";
 
 @Injectable()
 export class SmartContractResultService {
+  private readonly logger = new OriginLogger(SmartContractResultService.name);
+
   constructor(
     private readonly indexerService: IndexerService,
     @Inject(forwardRef(() => TransactionActionService))
@@ -28,7 +31,12 @@ export class SmartContractResultService {
       const transaction = ApiUtils.mergeObjects(new Transaction(), smartContractResult);
       transaction.type = TransactionType.SmartContractResult;
 
-      smartContractResult.action = await this.transactionActionService.getTransactionAction(transaction);
+      try {
+        smartContractResult.action = await this.transactionActionService.getTransactionAction(transaction);
+      } catch (error) {
+        this.logger.error(`Failed to get transaction action for smart contract result with hash '${smartContractResult.hash}'`);
+        this.logger.error(error);
+      }
 
       smartContractResult.senderAssets = accountAssets[smartContractResult.sender];
       smartContractResult.receiverAssets = accountAssets[smartContractResult.receiver];
@@ -47,7 +55,12 @@ export class SmartContractResultService {
     const transaction = ApiUtils.mergeObjects(new Transaction(), smartContractResult);
     transaction.type = TransactionType.SmartContractResult;
 
-    smartContractResult.action = await this.transactionActionService.getTransactionAction(transaction);
+    try {
+      smartContractResult.action = await this.transactionActionService.getTransactionAction(transaction);
+    } catch (error) {
+      this.logger.error(`Failed to get transaction action for smart contract result with hash '${smartContractResult.hash}'`);
+      this.logger.error(error);
+    }
 
     return smartContractResult;
   }
@@ -65,7 +78,12 @@ export class SmartContractResultService {
       const transaction = ApiUtils.mergeObjects(new Transaction(), smartContractResult);
       transaction.type = TransactionType.SmartContractResult;
 
-      smartContractResult.action = await this.transactionActionService.getTransactionAction(transaction);
+      try {
+        smartContractResult.action = await this.transactionActionService.getTransactionAction(transaction);
+      } catch (error) {
+        this.logger.error(`Failed to get transaction action for smart contract result with hash '${smartContractResult.hash}'`);
+        this.logger.error(error);
+      }
     }
 
     return smartContractResults;
