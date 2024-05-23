@@ -25,6 +25,7 @@ export class IdentitiesService {
     @Inject(forwardRef(() => NetworkService))
     private readonly networkService: NetworkService,
     private readonly apiConfigService: ApiConfigService,
+    @Inject(forwardRef(() => BlockService))
     private readonly blockService: BlockService,
   ) { }
 
