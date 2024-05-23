@@ -496,7 +496,6 @@ export class ElasticIndexerService implements IndexerInterface {
     const nonce: ElasticSortProperty = { name: 'nonce', order: sortOrder };
 
     const elasticQuery = this.indexerHelper.buildTransactionFilterQuery(filter, address)
-      .withMustMatchCondition('type', 'normal')
       .withPagination({ from: pagination.from, size: pagination.size })
       .withSort([timestamp, nonce]);
 
@@ -587,7 +586,7 @@ export class ElasticIndexerService implements IndexerInterface {
       .withMustMatchCondition('type', 'unsigned')
       .withPagination({ from: 0, size: 10000 })
       .withSort([{ name: 'timestamp', order: ElasticSortOrder.ascending }])
-      .withTerms(new TermsQuery('originalTxHash', hashes));
+      .withMustMultiShouldCondition(hashes, hash => QueryType.Match('originalTxHash', hash));
 
     return await this.elasticService.getList('operations', 'scHash', elasticQuery);
   }
