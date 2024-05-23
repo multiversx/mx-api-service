@@ -32,18 +32,24 @@ export class EsdtService {
   ) { }
 
   async getEsdtTokenProperties(identifier: string): Promise<TokenProperties | undefined> {
-    const properties = await this.cachingService.getOrSet(
-      CacheInfo.EsdtProperties(identifier).key,
-      async () => await this.getEsdtTokenPropertiesRaw(identifier),
-      Constants.oneWeek(),
-      CacheInfo.EsdtProperties(identifier).ttl
-    );
+    try {
+      const properties = await this.cachingService.getOrSet(
+        CacheInfo.EsdtProperties(identifier).key,
+        async () => await this.getEsdtTokenPropertiesRaw(identifier),
+        Constants.oneWeek(),
+        CacheInfo.EsdtProperties(identifier).ttl
+      );
 
-    if (!properties) {
+      if (!properties) {
+        return undefined;
+      }
+
+      return properties;
+    } catch (error) {
+      this.logger.error(`Error when getting esdt token properties for identifier: ${identifier}`);
+      this.logger.error(error);
       return undefined;
     }
-
-    return properties;
   }
 
   async getCollectionProperties(identifier: string): Promise<TokenProperties | undefined> {
