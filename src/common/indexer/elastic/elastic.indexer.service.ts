@@ -46,8 +46,8 @@ export class ElasticIndexerService implements IndexerInterface {
   }
 
   async getScResultsCount(filter: SmartContractResultFilter): Promise<number> {
-    const query = this.indexerHelper.buildResultsFilterQuery(filter)
-      .withMustMatchCondition('type', 'normal');
+    const query = this.indexerHelper.buildResultsFilterQuery(filter);
+
     return await this.elasticService.getCount('operations', query);
   }
 
@@ -110,8 +110,8 @@ export class ElasticIndexerService implements IndexerInterface {
   }
 
   async getTransfersCount(filter: TransactionFilter): Promise<number> {
-    const elasticQuery = this.indexerHelper.buildTransferFilterQuery(filter)
-      .withMustMatchCondition('type', 'normal');
+    const elasticQuery = this.indexerHelper.buildTransferFilterQuery(filter);
+
     return await this.elasticService.getCount('operations', elasticQuery);
   }
 
@@ -172,10 +172,9 @@ export class ElasticIndexerService implements IndexerInterface {
   }
 
   async getAccountScResultsCount(address: string): Promise<number> {
-    const elasticQuery: ElasticQuery =
-      this.indexerHelper.buildSmartContractResultFilterQuery(address)
-        .withMustMatchCondition('type', 'normal');
-    return await this.elasticService.getCount('operations', elasticQuery);
+    const query = this.indexerHelper.buildSmartContractResultFilterQuery(address);
+
+    return await this.elasticService.getCount('operations', query);
   }
 
   async getTransactionCountForAddress(address: string): Promise<number> {
@@ -222,6 +221,9 @@ export class ElasticIndexerService implements IndexerInterface {
 
   async getTransaction(txHash: string): Promise<any> {
     const transaction = await this.elasticService.getItem('operations', 'txHash', txHash);
+    if (transaction.type !== 'normal') {
+      return undefined;
+    }
 
     this.processTransaction(transaction);
 
@@ -234,6 +236,9 @@ export class ElasticIndexerService implements IndexerInterface {
 
   async getScResult(scHash: string): Promise<any> {
     const result = await this.elasticService.getItem('operations', 'hash', scHash);
+    if (result.type !== 'unsigned') {
+      return undefined;
+    }
 
     this.processTransaction(result);
 
@@ -259,7 +264,6 @@ export class ElasticIndexerService implements IndexerInterface {
     const nonce: ElasticSortProperty = { name: 'nonce', order: sortOrder };
 
     const elasticQuery = this.indexerHelper.buildTransferFilterQuery(filter)
-      .withMustMatchCondition('type', 'normal')
       .withPagination({ from: pagination.from, size: pagination.size })
       .withSort([timestamp, nonce]);
 
@@ -321,7 +325,7 @@ export class ElasticIndexerService implements IndexerInterface {
 
   async getSmartContractResults(transactionHashes: string[]): Promise<any[]> {
     const elasticQuery = ElasticQuery.create()
-      .withMustMatchCondition('type', 'normal')
+      .withMustMatchCondition('type', 'unsigned')
       .withPagination({ from: 0, size: transactionHashes.length + 1 })
       .withSort([{ name: 'timestamp', order: ElasticSortOrder.ascending }])
       .withTerms(new TermsQuery('originalTxHash', transactionHashes));
@@ -365,7 +369,6 @@ export class ElasticIndexerService implements IndexerInterface {
 
   async getScResults(pagination: QueryPagination, filter: SmartContractResultFilter): Promise<any[]> {
     const elasticQuery: ElasticQuery = this.indexerHelper.buildResultsFilterQuery(filter)
-      .withMustMatchCondition('type', 'normal')
       .withPagination(pagination);
 
     const results = await this.elasticService.getList('operations', 'hash', elasticQuery);
@@ -395,7 +398,6 @@ export class ElasticIndexerService implements IndexerInterface {
 
   async getAccountScResults(address: string, pagination: QueryPagination): Promise<any[]> {
     const elasticQuery: ElasticQuery = this.indexerHelper.buildSmartContractResultFilterQuery(address)
-      .withMustMatchCondition('type', 'normal')
       .withPagination(pagination)
       .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }]);
 
@@ -565,7 +567,7 @@ export class ElasticIndexerService implements IndexerInterface {
     const timestamp: ElasticSortProperty = { name: 'timestamp', order: ElasticSortOrder.ascending };
 
     const elasticQuerySc = ElasticQuery.create()
-      .withMustMatchCondition('type', 'normal')
+      .withMustMatchCondition('type', 'unsigned')
       .withPagination({ from: 0, size: 100 })
       .withSort([timestamp])
       .withCondition(QueryConditionOptions.must, [originalTxHashQuery]);
@@ -586,7 +588,7 @@ export class ElasticIndexerService implements IndexerInterface {
     }
 
     const elasticQuery = ElasticQuery.create()
-      .withMustMatchCondition('type', 'normal')
+      .withMustMatchCondition('type', 'unsigned')
       .withPagination({ from: 0, size: 10000 })
       .withSort([{ name: 'timestamp', order: ElasticSortOrder.ascending }])
       .withTerms(new TermsQuery('originalTxHash', hashes));

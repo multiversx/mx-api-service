@@ -441,6 +441,7 @@ export class ElasticIndexerHelper {
     }
 
     const elasticQuery = ElasticQuery.create()
+      .withMustMatchCondition('type', 'unsigned')
       .withCondition(QueryConditionOptions.should, shouldQueries)
       .withCondition(QueryConditionOptions.must, mustQueries);
 
@@ -601,7 +602,8 @@ export class ElasticIndexerHelper {
 
 
   public buildResultsFilterQuery(filter: SmartContractResultFilter): ElasticQuery {
-    let elasticQuery = ElasticQuery.create();
+    let elasticQuery = ElasticQuery.create()
+      .withMustMatchCondition('type', 'unsigned');
 
     if (filter.miniBlockHash) {
       elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, [QueryType.Match('miniBlockHash', filter.miniBlockHash)]);
