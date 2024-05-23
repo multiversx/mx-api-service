@@ -9,7 +9,6 @@ import { BatchUtils, Lock, OriginLogger } from "@multiversx/sdk-nestjs-common";
 import { NftMedia } from "src/endpoints/nfts/entities/nft.media";
 import { IndexerService } from "src/common/indexer/indexer.service";
 
-
 @Injectable()
 export class ElasticUpdaterService {
   private readonly logger = new OriginLogger(ElasticUpdaterService.name);

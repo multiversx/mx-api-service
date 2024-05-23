@@ -15,6 +15,7 @@ import { QueryPagination } from "../entities/query.pagination";
 import { Account, AccountHistory, AccountTokenHistory, Block, Collection, MiniBlock, Operation, Round, ScDeploy, ScResult, Tag, Token, TokenAccount, Transaction, TransactionLog, TransactionReceipt } from "./entities";
 import { AccountAssets } from "../assets/entities/account.assets";
 import { ProviderDelegators } from "./entities/provider.delegators";
+import { ApplicationFilter } from "src/endpoints/applications/entities/application.filter";
 
 export interface IndexerInterface {
   getAccountsCount(filter: AccountQueryOptions): Promise<number>
@@ -172,4 +173,8 @@ export interface IndexerInterface {
   getBlockByTimestampAndShardId(timestamp: number, shardId: number): Promise<Block | undefined>
 
   getVersion(): Promise<string | undefined>
+
+  getApplications(filter: ApplicationFilter, pagination: QueryPagination): Promise<any[]>
+
+  getApplicationCount(filter: ApplicationFilter): Promise<number>
 }

@@ -664,4 +664,11 @@ export class CacheInfo {
     key: 'validatorAuctions',
     ttl: Constants.oneHour(),
   };
+
+  static Applications(queryPagination: QueryPagination): CacheInfo {
+    return {
+      key: `applications:${queryPagination.from}:${queryPagination.size}`,
+      ttl: Constants.oneHour(),
+    };
+  }
 }
