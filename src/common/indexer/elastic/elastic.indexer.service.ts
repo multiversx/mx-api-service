@@ -915,24 +915,18 @@ export class ElasticIndexerService implements IndexerInterface {
     return blocks.at(0);
   }
 
-  async getAllScDeploysContracts(filter: ApplicationFilter): Promise<any[]> {
-    const elasticQuery = this.indexerHelper.buildScDeploysContracts(filter)
-      .withPagination({ from: 0, size: 1000 })
+  async getApplications(filter: ApplicationFilter, pagination: QueryPagination): Promise<any[]> {
+    const elasticQuery = this.indexerHelper.buildApplicationFilter(filter)
+      .withPagination(pagination)
       .withFields(['address', 'deployer', 'currentOwner', 'initialCodeHash', 'timestamp'])
       .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }]);
 
-    const contracts: any[] = [];
-
-    // eslint-disable-next-line require-await
-    const scrollHandler = async (items: any[]) => {
-      contracts.push(...items);
-    };
-    await this.elasticService.getScrollableList('scdeploys', 'address', elasticQuery, scrollHandler);
-
-    return contracts;
+    return await this.elasticService.getList('scdeploys', 'address', elasticQuery);
   }
-  async getAllScDeploysContractsCount(): Promise<number> {
-    const elasticQuery = ElasticQuery.create();
+
+  async getApplicationCount(filter: ApplicationFilter): Promise<number> {
+    const elasticQuery = this.indexerHelper.buildApplicationFilter(filter);
+
     return await this.elasticService.getCount('scdeploys', elasticQuery);
   }
 }

@@ -629,12 +629,17 @@ export class ElasticIndexerHelper {
     return elasticQuery;
   }
 
-  public buildScDeploysContracts(filter: ApplicationFilter): ElasticQuery {
+  buildApplicationFilter(filter: ApplicationFilter): ElasticQuery {
     let elasticQuery = ElasticQuery.create();
 
-    if (filter.before || filter.after) {
-      elasticQuery = elasticQuery.withDateRangeFilter('timestamp', filter.before, filter.after);
+    if (filter.after) {
+      elasticQuery = elasticQuery.withRangeFilter('timestamp', new RangeGreaterThanOrEqual(filter.after));
     }
+
+    if (filter.before) {
+      elasticQuery = elasticQuery.withRangeFilter('timestamp', new RangeLowerThanOrEqual(filter.before));
+    }
+
     return elasticQuery;
   }
 

@@ -174,7 +174,7 @@ export interface IndexerInterface {
 
   getVersion(): Promise<string | undefined>
 
-  getAllScDeploysContracts(filter: ApplicationFilter): Promise<any[]>
+  getApplications(filter: ApplicationFilter, pagination: QueryPagination): Promise<any[]>
 
-  getAllScDeploysContractsCount(): Promise<number>
+  getApplicationCount(filter: ApplicationFilter): Promise<number>
 }

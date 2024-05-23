@@ -53,10 +53,10 @@ export class PostgresIndexerService implements IndexerInterface {
     private readonly validatorPublicKeysRepository: Repository<ValidatorPublicKeysDb>,
     private readonly indexerHelper: PostgresIndexerHelper,
   ) { }
-  getAllScDeploysContractsCount(): Promise<number> {
+  getApplicationCount(): Promise<number> {
     throw new Error("Method not implemented.");
   }
-  getAllScDeploysContracts(_filter: ApplicationFilter): Promise<any[]> {
+  getApplications(_filter: ApplicationFilter): Promise<any[]> {
     throw new Error("Method not implemented.");
   }
   getProviderDelegatorsCount(_address: string): Promise<number> {

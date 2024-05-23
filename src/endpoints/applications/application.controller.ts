@@ -35,7 +35,14 @@ export class ApplicationController {
   @Get("applications/count")
   @ApiOperation({ summary: 'Applications count', description: 'Returns total number of smart contracts' })
   @ApiOkResponse({ type: Number })
-  async getApplicationsCount(): Promise<number> {
-    return await this.applicationService.getApplicationsCount();
+  @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
+  @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
+  async getApplicationsCount(
+    @Query('before', ParseIntPipe) before?: number,
+    @Query('after', ParseIntPipe) after?: number,
+  ): Promise<number> {
+    const filter = new ApplicationFilter({ before, after });
+
+    return await this.applicationService.getApplicationsCount(filter);
   }
 }

@@ -33,8 +33,6 @@ import { PoolService } from "src/endpoints/pool/pool.service";
 import * as JsonDiff from "json-diff";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { StakeService } from "src/endpoints/stake/stake.service";
-import { ApplicationFilter } from "src/endpoints/applications/entities/application.filter";
-import { ApplicationService } from "src/endpoints/applications/application.service";
 
 @Injectable()
 export class CacheWarmerService {
@@ -68,7 +66,6 @@ export class CacheWarmerService {
     private readonly blockService: BlockService,
     private readonly poolService: PoolService,
     private readonly stakeService: StakeService,
-    private readonly applicationService: ApplicationService
   ) {
     this.configCronJob(
       'handleTokenAssetsInvalidations',
@@ -393,14 +390,6 @@ export class CacheWarmerService {
         }
       }
     }
-  }
-
-  @Cron(CronExpression.EVERY_10_MINUTES)
-  @Lock({ name: 'Applications invalidations', verbose: true })
-  async handleApplicationInvalidations() {
-    const applications = await this.applicationService.getApplicationsRaw({ from: 0, size: 25 }, new ApplicationFilter);
-    const applicationsCacheInfo = CacheInfo.Applications({ from: 0, size: 25 });
-    await this.invalidateKey(applicationsCacheInfo.key, applications, applicationsCacheInfo.ttl);
   }
 
   private async invalidateKey(key: string, data: any, ttl: number) {

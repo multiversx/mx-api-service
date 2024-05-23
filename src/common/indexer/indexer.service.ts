@@ -420,12 +420,12 @@ export class IndexerService implements IndexerInterface {
   }
 
   @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
-  async getAllScDeploysContracts(filter: ApplicationFilter): Promise<any[]> {
-    return await this.indexerInterface.getAllScDeploysContracts(filter);
+  async getApplications(filter: ApplicationFilter, pagination: QueryPagination): Promise<any[]> {
+    return await this.indexerInterface.getApplications(filter, pagination);
   }
 
   @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
-  async getAllScDeploysContractsCount(): Promise<number> {
-    return await this.indexerInterface.getAllScDeploysContractsCount();
+  async getApplicationCount(filter: ApplicationFilter): Promise<number> {
+    return await this.indexerInterface.getApplicationCount(filter);
   }
 }
