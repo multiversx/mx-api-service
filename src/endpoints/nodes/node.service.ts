@@ -393,13 +393,15 @@ export class NodeService {
   }
 
   async getValidatorAuctions(): Promise<Auction[]> {
+    const auctionsFromCache = await this.cacheService.getRemote<Auction[]>(CacheInfo.ValidatorAuctions.key) ?? [];
+
     const auctions = await this.gatewayService.getValidatorAuctions();
-    if (auctions.length === 0) {
-      this.logger.log(`Auctions empty array returned. Using cache.`);
-      return await this.cacheService.getRemote<Auction[]>(CacheInfo.ValidatorAuctions.key) ?? [];
+    if (auctions.length === 0 || auctions.length < auctionsFromCache.length * 0.8) {
+      this.logger.log(`Auctions array of ${auctions.length} returned. Using cache.`);
+      return auctionsFromCache;
     }
 
-    this.logger.log(`Auctions array of ${auctions.length} returned. Updating cache.`);
+    this.logger.log(`Auctions array of ${auctions.length} returned. Using remote.`);
     await this.cacheService.setRemote(CacheInfo.ValidatorAuctions.key, auctions, CacheInfo.ValidatorAuctions.ttl);
 
     return auctions;
