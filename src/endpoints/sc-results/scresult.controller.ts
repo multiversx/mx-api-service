@@ -33,7 +33,8 @@ export class SmartContractResultController {
   ): Promise<SmartContractResult[]> {
     return this.scResultService.getScResults(
       new QueryPagination({ from, size }),
-      new SmartContractResultFilter({ miniBlockHash, originalTxHashes, sender, receiver, functions }));
+      new SmartContractResultFilter({ miniBlockHash, originalTxHashes, sender, receiver, functions })
+    );
   }
 
   @Get("/results/count")
