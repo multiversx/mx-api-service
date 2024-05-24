@@ -62,6 +62,21 @@ export class MexController {
     return await this.mexPairsService.getMexPairs(from, size, filter);
   }
 
+  @Get("/mex-pairs")
+  @ApiOperation({ summary: 'xExchange pairs', description: 'Returns active liquidity pools available on xExchange', deprecated: true })
+  @ApiOkResponse({ type: [MexPair] })
+  @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
+  @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
+  @ApiQuery({ name: 'exchange', description: 'Filter by exchange', required: false, enum: MexPairExchange })
+  async getMexPairsTemp(
+    @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
+    @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number,
+    @Query('exchange', new ParseEnumPipe(MexPairExchange)) exchange?: MexPairExchange,
+  ): Promise<MexPair[]> {
+    const filter = new MexPairsFilter({ exchange });
+    return await this.mexPairsService.getMexPairs(from, size, filter);
+  }
+
   @Get("/mex/pairs/count")
   @ApiOperation({ summary: 'Maiar Exchange pairs count', description: 'Returns active liquidity pools count available on Maiar Exchange' })
   @ApiQuery({ name: 'exchange', description: 'Filter by exchange', required: false, enum: MexPairExchange })
