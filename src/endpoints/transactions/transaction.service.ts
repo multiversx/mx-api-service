@@ -521,7 +521,7 @@ export class TransactionService {
 
       const senderBlockHashes: string[] = miniBlocks.map(x => x.senderBlockHash);
       const receiverBlockHashes: string[] = miniBlocks.map(x => x.receiverBlockHash);
-      const blockHashes = [...senderBlockHashes, ...receiverBlockHashes].distinct();
+      const blockHashes = [...senderBlockHashes, ...receiverBlockHashes].distinct().filter(x => x);
 
       const blocks = await this.indexerService.getBlocks({ hashes: blockHashes }, { from: 0, size: blockHashes.length });
       const indexedBlocks = blocks.toRecord<Block>(x => x.hash);
