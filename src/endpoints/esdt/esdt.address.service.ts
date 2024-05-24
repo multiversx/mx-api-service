@@ -336,8 +336,6 @@ export class EsdtAddressService {
         }
       }
 
-
-
       return false;
     });
 
