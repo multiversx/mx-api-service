@@ -7,10 +7,12 @@ export class TpsUtils {
     return Math.floor(timestamp / frequency) * frequency;
   }
 
-  static Frequencies = [30, 600];
+  static Frequencies = [5, 30, 600];
 
   static getFrequencyByEnum(frequency: TpsFrequency): number {
     switch (frequency) {
+      case TpsFrequency._5s:
+        return 5;
       case TpsFrequency._30s:
         return 30;
       case TpsFrequency._10m:
@@ -22,6 +24,8 @@ export class TpsUtils {
 
   static getFrequencyByInterval(interval: TpsInterval): number {
     switch (interval) {
+      case TpsInterval._10m:
+        return 5;
       case TpsInterval._1h:
         return 30;
       case TpsInterval._1d:
@@ -33,6 +37,8 @@ export class TpsUtils {
 
   static getIntervalByEnum(interval: TpsInterval): number {
     switch (interval) {
+      case TpsInterval._10m:
+        return Constants.oneMinute() * 10;
       case TpsInterval._1h:
         return Constants.oneHour();
       case TpsInterval._1d:

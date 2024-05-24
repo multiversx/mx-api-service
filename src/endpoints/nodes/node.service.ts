@@ -383,7 +383,7 @@ export class NodeService {
     await this.applyNodeStakeInfo(nodes);
 
     if (this.apiConfigService.isStakingV4Enabled()) {
-      const auctions = await this.gatewayService.getValidatorAuctions();
+      const auctions = await this.getValidatorAuctions();
       await this.processAuctions(nodes, auctions);
     }
 
@@ -392,8 +392,23 @@ export class NodeService {
     return nodes;
   }
 
+  async getValidatorAuctions(): Promise<Auction[]> {
+    const auctionsFromCache = await this.cacheService.getRemote<Auction[]>(CacheInfo.ValidatorAuctions.key) ?? [];
+
+    const auctions = await this.gatewayService.getValidatorAuctions();
+    if (auctions.length === 0 || auctions.length < auctionsFromCache.length * 0.8) {
+      this.logger.log(`Auctions array of ${auctions.length} returned. Using cache.`);
+      return auctionsFromCache;
+    }
+
+    this.logger.log(`Auctions array of ${auctions.length} returned. Using remote.`);
+    await this.cacheService.setRemote(CacheInfo.ValidatorAuctions.key, auctions, CacheInfo.ValidatorAuctions.ttl);
+
+    return auctions;
+  }
+
   async processAuctions(nodes: Node[], auctions: Auction[]) {
-    const minimumAuctionStake = await this.stakeService.getMinimumAuctionStake();
+    const minimumAuctionStake = await this.stakeService.getMinimumAuctionStake(auctions);
     const dangerZoneThreshold = BigInt(minimumAuctionStake) * BigInt(105) / BigInt(100);
     for (const node of nodes) {
       let position = 1;
@@ -731,20 +746,6 @@ export class NodeService {
 
   async getAllNodesAuctionsRaw(): Promise<NodeAuction[]> {
     const allNodes = await this.getNodes(new QueryPagination({ size: 10000 }), new NodeFilter({ status: NodeStatus.auction }));
-
-    const auctions = await this.gatewayService.getValidatorAuctions();
-    const auctionNodesMap = new Map();
-
-    for (const auction of auctions) {
-      if (auction.nodes) {
-        for (const auctionNode of auction.nodes) {
-          auctionNodesMap.set(auctionNode.blsKey, {
-            auctionTopUp: auction.qualifiedTopUp,
-            qualified: auctionNode.qualified,
-          });
-        }
-      }
-    }
 
     const groupedNodes = allNodes.groupBy(node => (node.provider || node.owner) + ':' + (BigInt(node.stake).toString()) + (BigInt(node.topUp).toString()), true);
 

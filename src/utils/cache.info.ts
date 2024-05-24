@@ -641,8 +641,34 @@ export class CacheInfo {
     };
   }
 
+  static TpsMaxByInterval(interval: TpsInterval): CacheInfo {
+    return {
+      key: `tpsMax:${interval}`,
+      ttl: Constants.oneDay(),
+    };
+  }
+
+  static TransactionCountByShard(shardId: number): CacheInfo {
+    return {
+      key: `transactionCount:${shardId}`,
+      ttl: Constants.oneHour(),
+    };
+  }
+
   static NodesAuctions: CacheInfo = {
     key: 'nodesAuctions',
     ttl: Constants.oneMinute(),
   };
+
+  static ValidatorAuctions: CacheInfo = {
+    key: 'validatorAuctions',
+    ttl: Constants.oneHour(),
+  };
+
+  static Applications(queryPagination: QueryPagination): CacheInfo {
+    return {
+      key: `applications:${queryPagination.from}:${queryPagination.size}`,
+      ttl: Constants.oneHour(),
+    };
+  }
 }
