@@ -23,6 +23,7 @@ import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { TrieOperationsTimeoutError } from "./exceptions/trie.operations.timeout.error";
 import { CacheInfo } from "src/utils/cache.info";
+import { AssetsService } from "src/common/assets/assets.service";
 
 @Injectable()
 export class EsdtAddressService {
@@ -40,6 +41,7 @@ export class EsdtAddressService {
     private readonly nftExtendedAttributesService: NftExtendedAttributesService,
     @Inject(forwardRef(() => CollectionService))
     private readonly collectionService: CollectionService,
+    private readonly assetsService: AssetsService
   ) {
     this.NFT_THUMBNAIL_PREFIX = this.apiConfigService.getExternalMediaUrl() + '/nfts/asset';
   }
@@ -292,7 +294,13 @@ export class EsdtAddressService {
         nft.type = collectionDetails.type;
 
         if (nft.type === NftType.MetaESDT) {
+          const assets = await this.assetsService.getTokenAssets(nft.collection);
+          if (assets && assets.name) {
+            nft.name = assets.name;
+          }
+
           nft.decimals = collectionDetails.decimals;
+
           // @ts-ignore
           delete nft.royalties;
           // @ts-ignore
