@@ -73,7 +73,7 @@ export class StakeService {
       });
     }
 
-    const auctions = await this.nodeService.getValidatorAuctions();
+    const auctions = await this.gatewayService.getValidatorAuctions();
     const minimumAuctionQualifiedTopUp = this.getMinimumAuctionTopUp(auctions);
     const minimumAuctionQualifiedStake = this.getMinimumAuctionStake(auctions);
     const auctionValidators = await this.nodeService.getNodeCount(new NodeFilter({ auctioned: true }));

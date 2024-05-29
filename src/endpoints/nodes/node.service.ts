@@ -383,28 +383,13 @@ export class NodeService {
     await this.applyNodeStakeInfo(nodes);
 
     if (this.apiConfigService.isStakingV4Enabled()) {
-      const auctions = await this.getValidatorAuctions();
+      const auctions = await this.gatewayService.getValidatorAuctions();
       await this.processAuctions(nodes, auctions);
     }
 
     await this.applyNodeUnbondingPeriods(nodes);
 
     return nodes;
-  }
-
-  async getValidatorAuctions(): Promise<Auction[]> {
-    const auctionsFromCache = await this.cacheService.getRemote<Auction[]>(CacheInfo.ValidatorAuctions.key) ?? [];
-
-    const auctions = await this.gatewayService.getValidatorAuctions();
-    if (auctions.length === 0 || auctions.length < auctionsFromCache.length * 0.8) {
-      this.logger.log(`Auctions array of ${auctions.length} returned. Using cache.`);
-      return auctionsFromCache;
-    }
-
-    this.logger.log(`Auctions array of ${auctions.length} returned. Using remote.`);
-    await this.cacheService.setRemote(CacheInfo.ValidatorAuctions.key, auctions, CacheInfo.ValidatorAuctions.ttl);
-
-    return auctions;
   }
 
   async processAuctions(nodes: Node[], auctions: Auction[]) {

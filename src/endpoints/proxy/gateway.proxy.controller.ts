@@ -280,16 +280,6 @@ export class GatewayProxyController {
   @NoCache()
   async getValidatorAuction(@Res() res: Response) {
     try {
-      const auctions = await this.cachingService.getRemote<Auction[]>(CacheInfo.ValidatorAuctions.key);
-      if (auctions) {
-        res.type('application/json').send({
-          data: {
-            auctionList: auctions,
-          },
-        });
-        return;
-      }
-
       const result = await this.gatewayService.getRaw('validator/auction', GatewayComponentRequest.validatorAuction);
 
       res.type('application/json').send(result.data);
