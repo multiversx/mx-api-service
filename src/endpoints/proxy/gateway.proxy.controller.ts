@@ -11,8 +11,6 @@ import { CacheService, NoCache } from "@multiversx/sdk-nestjs-cache";
 import { OriginLogger } from "@multiversx/sdk-nestjs-common";
 import { DeepHistoryInterceptor } from "src/interceptors/deep-history.interceptor";
 import { DisableFieldsInterceptorOnController } from "@multiversx/sdk-nestjs-http";
-import { CacheInfo } from "src/utils/cache.info";
-import { Auction } from "src/common/gateway/entities/auction";
 
 @Controller()
 @ApiTags('proxy')
