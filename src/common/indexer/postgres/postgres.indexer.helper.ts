@@ -302,18 +302,6 @@ export class PostgresIndexerHelper {
       query = query.andWhere('(token like :search OR name like :search)', { search: `%${filter.search}%` });
     }
 
-    if (filter.canMint !== undefined) {
-      // TODO the "roles" column does not exist in "token_infos" table
-      // const condition = filter.canMint === true ? QueryConditionOptions.must : QueryConditionOptions.mustNot;
-      // elasticQuery = elasticQuery.withCondition(condition, QueryType.Nested('roles', { 'roles.ESDTRoleLocalMint': address }));
-    }
-
-    if (filter.canBurn !== undefined) {
-      // TODO the "roles" column does not exist in "token_infos" table
-      // const condition = filter.canBurn === true ? QueryConditionOptions.must : QueryConditionOptions.mustNot;
-      // elasticQuery = elasticQuery.withCondition(condition, QueryType.Nested('roles', { 'roles.ESDTRoleLocalBurn': address }));
-    }
-
     if (pagination) {
       query = query.skip(pagination.from).take(pagination.size);
     }

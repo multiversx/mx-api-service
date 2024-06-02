@@ -9,9 +9,5 @@ export class TokenWithRolesFilter {
 
   owner?: string;
 
-  canMint?: boolean;
-
-  canBurn?: boolean;
-
   includeMetaESDT?: boolean;
 }

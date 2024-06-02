@@ -40,8 +40,6 @@ describe('CollectionService', () => {
       },
     ],
     properties: {
-      canMint: false,
-      canBurn: false,
       canUpgrade: true,
       canTransferNFTCreateRole: true,
       canAddSpecialRoles: true,
