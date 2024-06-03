@@ -1,4 +1,4 @@
-import { Field, ObjectType } from "@nestjs/graphql";
+import { Field, Float, ObjectType } from "@nestjs/graphql";
 import { ApiProperty } from "@nestjs/swagger";
 import { MexPairState } from "./mex.pair.state";
 import { MexPairType } from "./mex.pair.type";
@@ -37,6 +37,14 @@ export class MexPair {
   @Field(() => Number, { description: "Mex token quotePrevious24hPrice equivalent" })
   @ApiProperty()
   quotePrevious24hPrice: number = 0;
+
+  @Field(() => Number, { description: "Mex token basePrevious24hVolume equivalent" })
+  @ApiProperty()
+  basePrevious24hVolume: number = 0;
+
+  @Field(() => Number, { description: "Mex token quotePrevious24hVolume equivalent" })
+  @ApiProperty()
+  quotePrevious24hVolume: number = 0;
 
   @Field(() => String, { description: "Base id details." })
   @ApiProperty({ type: String, example: 'MEX-455c57' })
@@ -89,4 +97,20 @@ export class MexPair {
   @Field(() => String, { description: "Mex pair exchange details.", nullable: true })
   @ApiProperty({ type: String, example: 'jungledex' })
   exchange: MexPairExchange | undefined;
+
+  @Field(() => Boolean, { description: "Mex pair has farm details.", nullable: true })
+  @ApiProperty({ type: Boolean, example: false })
+  hasFarms: boolean | undefined;
+
+  @Field(() => Boolean, { description: "Mex pair has dual farm details.", nullable: true })
+  @ApiProperty({ type: Boolean, example: false })
+  hasDualFarms: boolean | undefined;
+
+  @Field(() => Float, { description: "Mex pair total trades count.", nullable: true })
+  @ApiProperty({ type: Number, example: 10000 })
+  tradesCount: number | undefined;
+
+  @Field(() => Float, { description: "Mex pair deployed at details.", nullable: true })
+  @ApiProperty({ type: Number, example: 1695041576 })
+  deployedAt: number | undefined;
 }
