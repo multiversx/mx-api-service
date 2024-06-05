@@ -279,7 +279,11 @@ export class MexTokenService {
       }
 
       this.logger.log('getAllMexTokensTypeRaw - Tokens fetched successfully', { tokens: result.tokens });
-      return result.tokens;
+      return result.tokens.map((token: MexTokenType) => ({
+        identifier: token.identifier,
+        type: token.type.toLowerCase(),
+      }));
+
     } catch (error) {
       this.logger.error('getAllMexTokensTypeRaw - An error occurred while getting all mex tokens', error);
       return [];
