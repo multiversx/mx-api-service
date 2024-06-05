@@ -283,7 +283,6 @@ export class MexTokenService {
         identifier: token.identifier,
         type: token.type.toLowerCase(),
       }));
-
     } catch (error) {
       this.logger.error('getAllMexTokensTypeRaw - An error occurred while getting all mex tokens', error);
       return [];
