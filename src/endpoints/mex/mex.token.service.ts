@@ -34,6 +34,10 @@ export class MexTokenService {
     await this.cachingService.setRemote(CacheInfo.MexTokens.key, tokens, CacheInfo.MexTokens.ttl);
     await this.cachingService.setLocal(CacheInfo.MexTokens.key, tokens, Constants.oneSecond() * 30);
 
+    const tokensType = await this.getAllMexTokensTypeRaw();
+    await this.cachingService.setRemote(CacheInfo.MexTokensType.key, tokensType, CacheInfo.MexTokensType.ttl);
+    await this.cachingService.setLocal(CacheInfo.MexTokensType.key, tokensType, Constants.oneSecond() * 30);
+
     const indexedTokens = await this.getIndexedMexTokensRaw();
     await this.cachingService.setRemote(CacheInfo.MexTokensIndexed.key, indexedTokens, CacheInfo.MexTokensIndexed.ttl);
     await this.cachingService.setLocal(CacheInfo.MexTokensIndexed.key, indexedTokens, Constants.oneSecond() * 30);
