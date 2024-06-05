@@ -329,6 +329,11 @@ export class CacheInfo {
     ttl: Constants.oneMinute() * 10,
   };
 
+  static MexTokensType: CacheInfo = {
+    key: "mexTokensType",
+    ttl: Constants.oneMinute() * 10,
+  };
+
   static MexFarms: CacheInfo = {
     key: "mexFarms",
     ttl: Constants.oneMinute() * 10,

@@ -1,4 +1,4 @@
-import { forwardRef, Inject, Injectable } from "@nestjs/common";
+import { BadRequestException, forwardRef, Inject, Injectable } from "@nestjs/common";
 import { CacheInfo } from "src/utils/cache.info";
 import { MexToken } from "./entities/mex.token";
 import { MexPairService } from "./mex.pair.service";
@@ -11,6 +11,9 @@ import { Constants } from "@multiversx/sdk-nestjs-common";
 import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { OriginLogger } from "@multiversx/sdk-nestjs-common";
 import { QueryPagination } from "src/common/entities/query.pagination";
+import { MexTokenType } from "./entities/mex.tokens.type";
+import { GraphQlService } from "src/common/graphql/graphql.service";
+import { gql } from "graphql-request";
 
 @Injectable()
 export class MexTokenService {
@@ -23,6 +26,7 @@ export class MexTokenService {
     @Inject(forwardRef(() => MexFarmService))
     private readonly mexFarmService: MexFarmService,
     private readonly mexSettingsService: MexSettingsService,
+    private readonly graphQlService: GraphQlService
   ) { }
 
   async refreshMexTokens(): Promise<void> {
@@ -221,5 +225,48 @@ export class MexTokenService {
     }
 
     return null;
+  }
+
+  async getAllMexTokensType(): Promise<MexTokenType[]> {
+    if (!this.apiConfigService.getExchangeServiceUrl()) {
+      return [];
+    }
+
+    return await this.cachingService.getOrSet(
+      CacheInfo.MexTokensType.key,
+      async () => await this.getAllMexTokensTypeRaw(),
+      CacheInfo.MexTokensType.ttl,
+      Constants.oneSecond() * 30
+    );
+  }
+
+  private async getAllMexTokensTypeRaw(): Promise<MexTokenType[]> {
+    try {
+      const settings = await this.mexSettingsService.getSettings();
+      if (!settings) {
+        throw new BadRequestException('Could not fetch MEX settings');
+      }
+
+      const query = gql`
+      query tokens {
+        tokens {
+          identifier
+          type
+        }
+      }
+    `;
+
+      const result: any = await this.graphQlService.getExchangeServiceData(query);
+      if (!result || !result.tokens) {
+        return [];
+      }
+
+      return result.tokens;
+
+    } catch (error) {
+      this.logger.error('An error occurred while getting all mex tokens');
+      this.logger.error(error);
+      return [];
+    }
   }
 }

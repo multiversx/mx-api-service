@@ -811,13 +811,13 @@ export class TokenService {
 
   private async applyMexPairType(tokens: TokenDetailed[]): Promise<void> {
     try {
-      const mexPairs = await this.mexPairService.getAllMexPairs();
-      const mexPairsMap = new Map(mexPairs.map(pair => [pair.baseId, pair.type]));
-
+      const mexTokens = await this.mexTokenService.getAllMexTokensType();
+      const mexTokensMap = new Map(mexTokens.map(token => [token.identifier, token.type]));
       for (const token of tokens) {
-        const mexPairType = mexPairsMap.get(token.identifier);
-        if (mexPairType) {
-          token.mexPairType = mexPairType;
+        const mexTokenType = mexTokensMap.get(token.identifier);
+        if (mexTokenType) {
+          //TBD if mexPairType should be renamed to mexTokenType
+          token.mexPairType = mexTokenType;
         }
       }
     } catch (error) {
