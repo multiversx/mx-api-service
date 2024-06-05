@@ -811,17 +811,20 @@ export class TokenService {
 
   private async applyMexPairType(tokens: TokenDetailed[]): Promise<void> {
     try {
+      this.logger.log('applyMexPairType - Start fetching MEX token types');
       const mexTokens = await this.mexTokenService.getAllMexTokensType();
+      this.logger.log('applyMexPairType - MEX token types fetched', { mexTokens });
+
       const mexTokensMap = new Map(mexTokens.map(token => [token.identifier, token.type]));
       for (const token of tokens) {
         const mexTokenType = mexTokensMap.get(token.identifier);
         if (mexTokenType) {
-          //TBD if mexPairType should be renamed to mexTokenType
           token.mexPairType = mexTokenType;
         }
       }
+      this.logger.log('applyMexPairType - Tokens after applying MEX types', { tokens });
     } catch (error) {
-      this.logger.error('Could not apply mex pair types', error);
+      this.logger.error('applyMexPairType - Could not apply mex pair types', error);
     }
   }
 

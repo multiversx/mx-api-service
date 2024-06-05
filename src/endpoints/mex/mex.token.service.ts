@@ -228,16 +228,26 @@ export class MexTokenService {
   }
 
   async getAllMexTokensType(): Promise<MexTokenType[]> {
-    if (!this.apiConfigService.getExchangeServiceUrl()) {
+    try {
+      this.logger.log('getAllMexTokensType - Start fetching from cache');
+      if (!this.apiConfigService.getExchangeServiceUrl()) {
+        this.logger.log('getAllMexTokensType - No Exchange Service URL configured');
+        return [];
+      }
+
+      const mexTokens = await this.cachingService.getOrSet(
+        CacheInfo.MexTokensType.key,
+        async () => await this.getAllMexTokensTypeRaw(),
+        CacheInfo.MexTokensType.ttl,
+        Constants.oneSecond() * 30
+      );
+
+      this.logger.log('getAllMexTokensType - Fetched MEX tokens from cache', { mexTokens });
+      return mexTokens;
+    } catch (error) {
+      this.logger.error('getAllMexTokensType - Error fetching MEX tokens from cache', error);
       return [];
     }
-
-    return await this.cachingService.getOrSet(
-      CacheInfo.MexTokensType.key,
-      async () => await this.getAllMexTokensTypeRaw(),
-      CacheInfo.MexTokensType.ttl,
-      Constants.oneSecond() * 30
-    );
   }
 
   private async getAllMexTokensTypeRaw(): Promise<MexTokenType[]> {
@@ -248,24 +258,26 @@ export class MexTokenService {
       }
 
       const query = gql`
-      query tokens {
-        tokens {
-          identifier
-          type
+        query tokens {
+          tokens {
+            identifier
+            type
+          }
         }
-      }
-    `;
+      `;
 
+      this.logger.log('getAllMexTokensTypeRaw - Start fetching tokens', { query });
       const result: any = await this.graphQlService.getExchangeServiceData(query);
+      this.logger.log('getAllMexTokensTypeRaw - result', { result });
+
       if (!result || !result.tokens) {
         return [];
       }
 
+      this.logger.log('getAllMexTokensTypeRaw - Tokens fetched successfully', { tokens: result.tokens });
       return result.tokens;
-
     } catch (error) {
-      this.logger.error('An error occurred while getting all mex tokens');
-      this.logger.error(error);
+      this.logger.error('getAllMexTokensTypeRaw - An error occurred while getting all mex tokens', error);
       return [];
     }
   }
