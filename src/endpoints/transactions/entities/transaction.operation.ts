@@ -75,6 +75,10 @@ export class TransactionOperation {
   @ApiProperty({ type: String, nullable: true })
   data?: string;
 
+  @Field(() => String, { description: 'Additional data for the given transaction operation.', nullable: true })
+  @ApiProperty()
+  additionalData?: string[] = [];
+
   @Field(() => String, { description: 'Message for the transaction operation.', nullable: true })
   @ApiProperty({ type: String, nullable: true })
   message?: string;

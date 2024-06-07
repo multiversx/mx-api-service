@@ -4201,6 +4201,9 @@ type TransactionLog {
 
 """Transaction log event object type."""
 type TransactionLogEvent {
+  """Additional data for the given transaction log event."""
+  additionalData: String
+
   """Address for the given transaction log event."""
   address: String!
 
@@ -4221,6 +4224,9 @@ type TransactionLogEvent {
 type TransactionOperation {
   """Transaction operation action for the transaction operation."""
   action: TransactionOperationAction!
+
+  """Additional data for the given transaction operation."""
+  additionalData: String
 
   """Collection for the transaction operation."""
   collection: String

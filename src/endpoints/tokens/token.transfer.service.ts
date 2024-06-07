@@ -152,6 +152,7 @@ export class TokenTransferService {
         }
 
         if (operation) {
+          operation.additionalData = event.additionalData;
           operations.push(operation);
         }
       }
