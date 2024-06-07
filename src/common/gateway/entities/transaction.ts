@@ -24,6 +24,7 @@ export class Transaction {
   gasUsed: number = 0;
   fee: number = 0;
   data: string = '';
+  additionalData: string[] = [];
   status: string = '';
   signature: string = '';
   sourceShard: number = 0;
