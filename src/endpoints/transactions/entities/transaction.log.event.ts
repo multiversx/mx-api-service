@@ -30,5 +30,5 @@ export class TransactionLogEvent {
 
   @Field(() => String, { description: 'Additional data for the given transaction log event.', nullable: true })
   @ApiProperty()
-  additionalData: string[] = [];
+  additionalData: string[] | undefined = undefined;
 }
