@@ -802,14 +802,19 @@ export class TokenService {
   }
 
   private async applyMexPairType(tokens: TokenDetailed[]): Promise<void> {
-    const mexTokens = await this.mexTokenService.getAllMexTokenTypes();
-    const mexTokensDictionary = mexTokens.toRecord<MexTokenType>(token => token.identifier);
+    try {
+      const mexTokens = await this.mexTokenService.getAllMexTokenTypes();
+      const mexTokensDictionary = mexTokens.toRecord<MexTokenType>(token => token.identifier);
 
-    for (const token of tokens) {
-      const mexTokenType = mexTokensDictionary[token.identifier];
-      if (mexTokenType) {
-        token.mexPairType = mexTokenType.type;
+      for (const token of tokens) {
+        const mexTokenType = mexTokensDictionary[token.identifier];
+        if (mexTokenType) {
+          token.mexPairType = mexTokenType.type;
+        }
       }
+    } catch (error) {
+      this.logger.error('Could not apply mex pair types');
+      this.logger.error(error);
     }
   }
 
