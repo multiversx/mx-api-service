@@ -34,9 +34,9 @@ export class MexTokenService {
     await this.cachingService.setRemote(CacheInfo.MexTokens.key, tokens, CacheInfo.MexTokens.ttl);
     await this.cachingService.setLocal(CacheInfo.MexTokens.key, tokens, Constants.oneSecond() * 30);
 
-    const tokensType = await this.getAllMexTokensTypeRaw();
-    await this.cachingService.setRemote(CacheInfo.MexTokensType.key, tokensType, CacheInfo.MexTokensType.ttl);
-    await this.cachingService.setLocal(CacheInfo.MexTokensType.key, tokensType, Constants.oneSecond() * 30);
+    const tokenTypes = await this.getAllMexTokenTypesRaw();
+    await this.cachingService.setRemote(CacheInfo.MexTokenTypes.key, tokenTypes, CacheInfo.MexTokenTypes.ttl);
+    await this.cachingService.setLocal(CacheInfo.MexTokenTypes.key, tokenTypes, Constants.oneSecond() * 30);
 
     const indexedTokens = await this.getIndexedMexTokensRaw();
     await this.cachingService.setRemote(CacheInfo.MexTokensIndexed.key, indexedTokens, CacheInfo.MexTokensIndexed.ttl);
@@ -231,34 +231,24 @@ export class MexTokenService {
     return null;
   }
 
-  async getAllMexTokensType(): Promise<MexTokenType[]> {
-    try {
-      this.logger.log('getAllMexTokensType - Start fetching from cache');
-      if (!this.apiConfigService.getExchangeServiceUrl()) {
-        this.logger.log('getAllMexTokensType - No Exchange Service URL configured');
-        return [];
-      }
-
-      const mexTokens = await this.cachingService.getOrSet(
-        CacheInfo.MexTokensType.key,
-        async () => await this.getAllMexTokensTypeRaw(),
-        CacheInfo.MexTokensType.ttl,
-        Constants.oneSecond() * 30
-      );
-
-      this.logger.log('getAllMexTokensType - Fetched MEX tokens from cache', { mexTokens });
-      return mexTokens;
-    } catch (error) {
-      this.logger.error('getAllMexTokensType - Error fetching MEX tokens from cache', error);
+  async getAllMexTokenTypes(): Promise<MexTokenType[]> {
+    if (!this.apiConfigService.getExchangeServiceUrl()) {
       return [];
     }
+
+    return await this.cachingService.getOrSet(
+      CacheInfo.MexTokenTypes.key,
+      async () => await this.getAllMexTokenTypesRaw(),
+      CacheInfo.MexTokenTypes.ttl,
+      Constants.oneSecond() * 30
+    );
   }
 
-  private async getAllMexTokensTypeRaw(): Promise<MexTokenType[]> {
+  private async getAllMexTokenTypesRaw(): Promise<MexTokenType[]> {
     try {
       const settings = await this.mexSettingsService.getSettings();
       if (!settings) {
-        throw new BadRequestException('Could not fetch MEX settings');
+        throw new BadRequestException('Could not fetch MEX tokens');
       }
 
       const query = gql`
@@ -270,21 +260,18 @@ export class MexTokenService {
         }
       `;
 
-      this.logger.log('getAllMexTokensTypeRaw - Start fetching tokens', { query });
       const result: any = await this.graphQlService.getExchangeServiceData(query);
-      this.logger.log('getAllMexTokensTypeRaw - result', { result });
-
       if (!result || !result.tokens) {
         return [];
       }
 
-      this.logger.log('getAllMexTokensTypeRaw - Tokens fetched successfully', { tokens: result.tokens });
       return result.tokens.map((token: MexTokenType) => ({
         identifier: token.identifier,
         type: token.type.toLowerCase(),
       }));
     } catch (error) {
-      this.logger.error('getAllMexTokensTypeRaw - An error occurred while getting all mex tokens', error);
+      this.logger.error('An error occurred while fetching all mex token types');
+      this.logger.error(error);
       return [];
     }
   }

@@ -41,6 +41,7 @@ import { TokenSupplyOptions } from "./entities/token.supply.options";
 import { TransferService } from "../transfers/transfer.service";
 import { MexPairService } from "../mex/mex.pair.service";
 import { MexPairState } from "../mex/entities/mex.pair.state";
+import { MexTokenType } from "../mex/entities/mex.token.type";
 
 @Injectable()
 export class TokenService {
@@ -759,17 +760,11 @@ export class TokenService {
       }));
     }
 
-    this.logger.log(`Starting to batch process tokens`);
     await this.batchProcessTokens(tokens);
-    this.logger.log(`Finished batch processing tokens`);
 
-    this.logger.log(`Applying mex liquidity`);
     await this.applyMexLiquidity(tokens.filter(x => x.type !== TokenType.MetaESDT));
-    this.logger.log(`Finished applying mex liquidity`);
     await this.applyMexPrices(tokens.filter(x => x.type !== TokenType.MetaESDT));
-    this.logger.log(`Finished applying mex prices`);
     await this.applyMexPairType(tokens.filter(x => x.type !== TokenType.MetaESDT));
-    this.logger.log(`Finished applying mex pair type`);
 
     await this.cachingService.batchApplyAll(
       tokens,
@@ -778,7 +773,6 @@ export class TokenService {
       (token, assets) => token.assets = assets,
       CacheInfo.EsdtAssets('').ttl,
     );
-    this.logger.log(`Finished applying assets`);
 
     for (const token of tokens) {
       if (token.assets?.priceSource?.type === TokenAssetsPriceSourceType.dataApi) {
@@ -793,8 +787,6 @@ export class TokenService {
         }
       }
     }
-
-    this.logger.log(`Finished applying supply`);
 
     tokens = tokens.sortedDescending(
       token => token.assets ? 1 : 0,
@@ -811,15 +803,13 @@ export class TokenService {
 
   private async applyMexPairType(tokens: TokenDetailed[]): Promise<void> {
     try {
-      this.logger.log('applyMexPairType - Start fetching MEX token types');
-      const mexTokens = await this.mexTokenService.getAllMexTokensType();
-      this.logger.log('applyMexPairType - MEX token types fetched', { mexTokens });
+      const mexTokens = await this.mexTokenService.getAllMexTokenTypes();
+      const mexTokensDictionary = mexTokens.toRecord<MexTokenType>(token => token.identifier);
 
-      const mexTokensMap = new Map(mexTokens.map(token => [token.identifier, token.type]));
       for (const token of tokens) {
-        const mexTokenType = mexTokensMap.get(token.identifier);
+        const mexTokenType = mexTokensDictionary[token.identifier];
         if (mexTokenType) {
-          token.mexPairType = mexTokenType;
+          token.mexPairType = mexTokenType.type;
         }
       }
       this.logger.log('applyMexPairType - Tokens after applying MEX types', { tokens });
