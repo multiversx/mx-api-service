@@ -11,7 +11,7 @@ import { Constants } from "@multiversx/sdk-nestjs-common";
 import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { OriginLogger } from "@multiversx/sdk-nestjs-common";
 import { QueryPagination } from "src/common/entities/query.pagination";
-import { MexTokenType } from "./entities/mex.tokens.type";
+import { MexTokenType } from "./entities/mex.token.type";
 import { GraphQlService } from "src/common/graphql/graphql.service";
 import { gql } from "graphql-request";
 
