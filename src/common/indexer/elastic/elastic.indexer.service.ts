@@ -577,7 +577,10 @@ export class ElasticIndexerService implements IndexerInterface {
   }
 
   async getScResultsForTransactions(elasticTransactions: any[]): Promise<any[]> {
-    const hashes = elasticTransactions.filter(x => x.hasScResults === true).map(x => x.txHash);
+    const hashes = elasticTransactions
+      .filter(x => x.hasOperations === true || x.hasScResults === true)
+      .map(x => x.txHash);
+
     if (hashes.length === 0) {
       return [];
     }

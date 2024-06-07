@@ -81,7 +81,8 @@ export class TransactionGetService {
       hashes.push(txHash);
       const previousHashes: Record<string, string> = {};
 
-      if (transaction.hasScResults === true && (!fields || fields.length === 0 || fields.includes(TransactionOptionalFieldOption.results))) {
+      if (transaction.hasScResults === true || transaction.hasOperations === true &&
+        (!fields || fields.length === 0 || fields.includes(TransactionOptionalFieldOption.results))) {
         transactionDetailed.results = await this.getTransactionScResultsFromElastic(transactionDetailed.txHash);
 
         for (const scResult of transactionDetailed.results) {
