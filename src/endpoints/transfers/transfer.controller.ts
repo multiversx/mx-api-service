@@ -40,6 +40,8 @@ export class TransferController {
   @ApiQuery({ name: 'withScamInfo', description: 'Returns scam information', required: false, type: Boolean })
   @ApiQuery({ name: 'withUsername', description: 'Integrates username in assets for all addresses present in the transactions', required: false, type: Boolean })
   @ApiQuery({ name: 'withBlockInfo', description: 'Returns sender / receiver block details', required: false, type: Boolean })
+  @ApiQuery({ name: 'withScResults', description: 'Return scResults for transfers. When "withScresults" parameter is applied, complexity estimation is 200', required: false })
+  @ApiQuery({ name: 'withLogs', description: 'Return logs for transfers. When "withLogs" parameter is applied, complexity estimation is 200', required: false })
   async getAccountTransfers(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
@@ -59,8 +61,11 @@ export class TransferController {
     @Query('withScamInfo', new ParseBoolPipe) withScamInfo?: boolean,
     @Query('withUsername', new ParseBoolPipe) withUsername?: boolean,
     @Query('withBlockInfo', new ParseBoolPipe) withBlockInfo?: boolean,
+    @Query('withScResults', new ParseBoolPipe) withScResults?: boolean,
+    @Query('withLogs', new ParseBoolPipe) withLogs?: boolean,
   ): Promise<Transaction[]> {
-    const options = TransactionQueryOptions.applyDefaultOptions(size, { withScamInfo, withUsername, withBlockInfo });
+    const options = TransactionQueryOptions.applyDefaultOptions(
+      size, { withScamInfo, withUsername, withBlockInfo, withScResults, withLogs });
 
     return await this.transferService.getTransfers(new TransactionFilter({
       senders: sender,
