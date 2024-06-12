@@ -36,7 +36,7 @@ export class ShardService {
       ({ type, shard, status }) =>
         type === 'validator' &&
         shard !== undefined &&
-        [NodeStatus.eligible, NodeStatus.waiting, NodeStatus.leaving].includes(status ?? NodeStatus.unknown)
+        [NodeStatus.eligible, NodeStatus.waiting].includes(status ?? NodeStatus.unknown)
     );
 
     const shards = validators.map(({ shard }) => shard).filter(shard => shard !== undefined).map(shard => shard ?? 0).distinct();

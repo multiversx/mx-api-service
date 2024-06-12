@@ -27,4 +27,8 @@ export class TransactionLogEvent {
   @Field(() => String, { description: 'Data for the given transaction log event.', nullable: true })
   @ApiProperty()
   data: string = '';
+
+  @Field(() => String, { description: 'Additional data for the given transaction log event.', nullable: true })
+  @ApiProperty()
+  additionalData: string[] | undefined = undefined;
 }

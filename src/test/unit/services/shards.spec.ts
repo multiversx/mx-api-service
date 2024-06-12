@@ -44,7 +44,7 @@ describe('ShardService', () => {
       const result = await service.getShards(new QueryPagination());
       expect(result).toEqual(expect.arrayContaining([
         expect.objectContaining(
-          { shard: 1, validators: 25, activeValidators: 25 },
+          { shard: 1, validators: 24, activeValidators: 24 },
         ),
         expect.objectContaining(
           { shard: 0, validators: 24, activeValidators: 23 },
