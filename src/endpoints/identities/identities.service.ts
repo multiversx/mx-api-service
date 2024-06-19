@@ -15,6 +15,7 @@ import { NodeStatus } from "../nodes/entities/node.status";
 import { IdentitySortCriteria } from "./entities/identity.sort.criteria";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { BlockService } from "../blocks/block.service";
+import { QueryPagination } from "src/common/entities/query.pagination";
 
 @Injectable()
 export class IdentitiesService {
@@ -39,7 +40,8 @@ export class IdentitiesService {
     return identity ? identity.avatar : undefined;
   }
 
-  async getIdentities(ids: string[], sort?: IdentitySortCriteria): Promise<Identity[]> {
+  async getIdentities(queryPagination: QueryPagination, ids: string[], sort?: IdentitySortCriteria): Promise<Identity[]> {
+    const { from, size } = queryPagination;
     let identities = await this.getAllIdentities();
     if (ids.length > 0) {
       identities = identities.filter(x => x.identity && ids.includes(x.identity));
@@ -49,9 +51,11 @@ export class IdentitiesService {
       case IdentitySortCriteria.validators:
         identities = identities.sortedDescending(x => x.validators ?? 0);
         break;
+      case IdentitySortCriteria.stake:
+        identities = identities.sortedDescending(x => Number(x.stake) ?? 0);
     }
 
-    return identities;
+    return identities.slice(from, from + size);
   }
 
   async getAllIdentities(): Promise<Identity[]> {
@@ -253,7 +257,7 @@ export class IdentitiesService {
     identities = identities
       .filter((identity) => identity && (identity.validators ?? 0) > 0);
 
-    identities = identities.sortedDescending(identity => new BigNumber(identity.locked).dividedBy(10 ** 18).toNumber());
+    identities = identities.sortedDescending(identity => identity.validators ?? 0);
 
     for (const [index, identity] of identities.entries()) {
       if (identity) {
