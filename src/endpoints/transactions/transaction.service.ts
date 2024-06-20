@@ -371,11 +371,15 @@ export class TransactionService {
   }
 
   async getExtraDetailsForTransactions(elasticTransactions: any[], transactions: Transaction[], queryOptions: TransactionQueryOptions): Promise<TransactionDetailed[]> {
-    const scResults = await this.indexerService.getScResultsForTransactions(elasticTransactions) as any;
-    for (const scResult of scResults) {
-      scResult.hash = scResult.scHash;
+    let scResults: any[] = [];
 
-      delete scResult.scHash;
+    if (!queryOptions.skipScResults) {
+      scResults = await this.indexerService.getScResultsForTransactions(elasticTransactions) as any;
+      for (const scResult of scResults) {
+        scResult.hash = scResult.scHash;
+
+        delete scResult.scHash;
+      }
     }
 
     const hashes = [...transactions.map((transaction) => transaction.txHash), ...scResults.map((scResult: any) => scResult.hash)];
