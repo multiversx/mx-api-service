@@ -1,10 +1,11 @@
 import { ParseArrayPipe, ParseEnumPipe } from "@multiversx/sdk-nestjs-common";
-import { Controller, Get, HttpException, HttpStatus, Param, Query, Res } from "@nestjs/common";
+import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Param, ParseIntPipe, Query, Res } from "@nestjs/common";
 import { ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { Identity } from "./entities/identity";
 import { IdentitiesService } from "./identities.service";
 import { Response } from "express";
 import { IdentitySortCriteria } from "./entities/identity.sort.criteria";
+import { QueryPagination } from "src/common/entities/query.pagination";
 
 @Controller()
 @ApiTags('identities')
@@ -14,13 +15,17 @@ export class IdentitiesController {
   @Get("/identities")
   @ApiOperation({ summary: 'Identities', description: 'List of all node identities, used to group nodes by the same entity. "Free-floating" nodes that do not belong to any identity will also be returned' })
   @ApiOkResponse({ type: [Identity] })
+  @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
+  @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   @ApiQuery({ name: 'identities', description: 'Filter by comma-separated list of identities', required: false })
   @ApiQuery({ name: 'sort', description: 'Sort criteria (validators)', required: false, enum: IdentitySortCriteria })
   async getIdentities(
+    @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
+    @Query('size', new DefaultValuePipe(10000), ParseIntPipe) size: number,
     @Query('identities', ParseArrayPipe) identities: string[] = [],
     @Query('sort', new ParseEnumPipe(IdentitySortCriteria)) sort?: IdentitySortCriteria,
   ): Promise<Identity[]> {
-    return await this.identitiesService.getIdentities(identities, sort);
+    return await this.identitiesService.getIdentities(new QueryPagination({ from, size }), identities, sort);
   }
 
   @Get('/identities/:identifier')

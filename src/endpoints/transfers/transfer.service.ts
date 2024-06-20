@@ -46,7 +46,7 @@ export class TransferService {
     let elasticOperations = await this.indexerService.getTransfers(filter, pagination);
     elasticOperations = this.sortElasticTransfers(elasticOperations);
 
-    const transactions: TransactionDetailed[] = [];
+    let transactions: TransactionDetailed[] = [];
 
     for (const elasticOperation of elasticOperations) {
       const transaction = ApiUtils.mergeObjects(new TransactionDetailed(), elasticOperation);
@@ -64,6 +64,12 @@ export class TransferService {
 
     if (queryOptions.withBlockInfo || (fields && fields.includesSome(['senderBlockHash', 'receiverBlockHash', 'senderBlockNonce', 'receiverBlockNonce']))) {
       await this.transactionService.applyBlockInfo(transactions);
+    }
+
+    if (queryOptions && (queryOptions.withOperations || queryOptions.withLogs)) {
+      queryOptions.withScResultLogs = queryOptions.withLogs;
+      queryOptions.skipScResults = true;
+      transactions = await this.transactionService.getExtraDetailsForTransactions(elasticOperations, transactions, queryOptions);
     }
 
     await this.transactionService.processTransactions(transactions, {

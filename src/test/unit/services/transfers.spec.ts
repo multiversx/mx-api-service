@@ -4,6 +4,7 @@ import { AccountQueryOptions } from "src/endpoints/accounts/entities/account.que
 import { TransactionFilter } from "src/endpoints/transactions/entities/transaction.filter";
 import { TransactionStatus } from "src/endpoints/transactions/entities/transaction.status";
 import { TransactionType } from "src/endpoints/transactions/entities/transaction.type";
+import { TransactionGetService } from "src/endpoints/transactions/transaction.get.service";
 import { TransactionService } from "src/endpoints/transactions/transaction.service";
 import { TransferService } from "src/endpoints/transfers/transfer.service";
 
@@ -26,6 +27,12 @@ describe('Transfers Service', () => {
           useValue: {
             applyBlockInfo: jest.fn(),
             processTransactions: jest.fn(),
+          },
+        },
+        {
+          provide: TransactionGetService,
+          useValue: {
+            getTransactionLogsFromElastic: jest.fn(),
           },
         },
       ],
