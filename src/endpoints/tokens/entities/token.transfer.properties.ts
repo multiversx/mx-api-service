@@ -14,4 +14,6 @@ export class TokenTransferProperties {
   name: string = '';
   svgUrl: string = '';
   price?: number = 0;
+  valueUsd?: number;
+  valueEgld?: number;
 }

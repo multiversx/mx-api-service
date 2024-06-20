@@ -57,7 +57,7 @@ export class MexPairActionRecognizerService {
     const destinationTokenIdentifier = BinaryUtils.hexToString(metadata.functionArgs[0]);
     const destinationValue = BinaryUtils.hexToBigInt(metadata.functionArgs[1]);
 
-    const pair2Properties = await this.tokenTransferService.getTokenTransferProperties(destinationTokenIdentifier);
+    const pair2Properties = await this.tokenTransferService.getTokenTransferProperties({ identifier: destinationTokenIdentifier });
     if (!pair2Properties) {
       return undefined;
     }
@@ -104,7 +104,7 @@ export class MexPairActionRecognizerService {
       const tokenIdentifier = BinaryUtils.hexToString(metadata.functionArgs[i * numberOrArgumentsForOneSwap + 2]);
       const value = BinaryUtils.hexToBigInt(metadata.functionArgs[i * numberOrArgumentsForOneSwap + 3]);
 
-      const pairProperties = await this.tokenTransferService.getTokenTransferProperties(tokenIdentifier);
+      const pairProperties = await this.tokenTransferService.getTokenTransferProperties({ identifier: tokenIdentifier });
       if (!pairProperties) {
         return undefined;
       }

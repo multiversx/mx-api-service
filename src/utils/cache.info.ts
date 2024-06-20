@@ -619,8 +619,13 @@ export class CacheInfo {
     const isCurrentDate = priceDate.toISODateString() === new Date().toISODateString();
     const ttl = isCurrentDate ? Constants.oneMinute() * 5 : Constants.oneWeek();
 
+    let key = priceDate.toISODateString();
+    if (!isCurrentDate) {
+      key = priceDate.startOfDay().addDays(1).toISODateString();
+    }
+
     return {
-      key: `data-api:price:${identifier}:${priceDate.toISODateString()}`,
+      key: `data-api:price:${identifier}:${key}`,
       ttl,
     };
   }

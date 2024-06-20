@@ -5,6 +5,7 @@ import { GetSmartContractHashInput, GetSmartContractResultInput } from "./smart.
 import { SmartContractResultFilter } from "src/endpoints/sc-results/entities/smart.contract.result.filter";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { NotFoundException } from "@nestjs/common";
+import { SmartContractResultOptions } from "src/endpoints/sc-results/entities/smart.contract.result.options";
 
 @Resolver()
 export class SmartContractResultQuery {
@@ -20,7 +21,8 @@ export class SmartContractResultQuery {
       new SmartContractResultFilter({
         miniBlockHash: input.miniBlockHash,
         originalTxHashes: input.originalTxHashes,
-      })
+      }),
+      new SmartContractResultOptions(),
     );
   }
 
