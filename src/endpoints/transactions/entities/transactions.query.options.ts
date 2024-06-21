@@ -16,7 +16,6 @@ export class TransactionQueryOptions {
   withScamInfo?: boolean;
   withUsername?: boolean;
   withBlockInfo?: boolean;
-  skipScResults?: boolean;
   withActionTransferValue?: boolean;
 
   static applyDefaultOptions(size: number, options: TransactionQueryOptions): TransactionQueryOptions {
