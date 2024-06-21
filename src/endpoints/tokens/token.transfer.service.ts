@@ -352,7 +352,6 @@ export class TokenTransferService {
     }
 
     const assets = await this.assetsService.getTokenAssets(identifier);
-    const price = await this.dataApiService.getEsdtTokenPrice(identifier);
 
     const result: TokenTransferProperties = {
       type: properties.type,
@@ -363,7 +362,6 @@ export class TokenTransferService {
 
     if (properties.type === 'FungibleESDT') {
       result.token = identifier;
-      result.price = price;
     } else {
       result.collection = identifier;
     }
