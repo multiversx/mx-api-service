@@ -201,7 +201,7 @@ export class TransactionService {
     });
   }
 
-  async getTransaction(txHash: string, fields?: string[]): Promise<TransactionDetailed | null> {
+  async getTransaction(txHash: string, fields?: string[], withActionTransferValue: boolean = false): Promise<TransactionDetailed | null> {
     let transaction = await this.transactionGetService.tryGetTransactionFromElastic(txHash, fields);
 
     if (transaction === null) {
@@ -211,7 +211,7 @@ export class TransactionService {
     if (transaction !== null) {
       transaction.price = await this.getTransactionPrice(transaction);
 
-      await this.processTransactions([transaction], { withScamInfo: true, withUsername: true, withActionTransferValue: true });
+      await this.processTransactions([transaction], { withScamInfo: true, withUsername: true, withActionTransferValue });
 
       if (transaction.pendingResults === true && transaction.results) {
         for (const result of transaction.results) {

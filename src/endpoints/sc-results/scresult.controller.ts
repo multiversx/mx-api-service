@@ -22,7 +22,7 @@ export class SmartContractResultController {
   @ApiQuery({ name: 'sender', description: 'Sender address', required: false })
   @ApiQuery({ name: 'receiver', description: 'Receiver address', required: false })
   @ApiQuery({ name: 'function', description: 'Filter results by function name', required: false })
-  @ApiQuery({ name: 'withActionTransferPrice', description: 'Returns action transfer price', required: false })
+  @ApiQuery({ name: 'withActionTransferValue', description: 'Returns value in USD and EGLD for transferred tokens within the action attribute', required: false })
   @ApiOkResponse({ type: [SmartContractResult] })
   getScResults(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
@@ -32,7 +32,7 @@ export class SmartContractResultController {
     @Query('sender', ParseAddressPipe) sender?: string,
     @Query('receiver', ParseAddressPipe) receiver?: string,
     @Query('function', new ParseArrayPipe(new ParseArrayPipeOptions({ allowEmptyString: true }))) functions?: string[],
-    @Query('withActionTransferPrice', ParseBoolPipe) withActionTransferValue?: boolean,
+    @Query('withActionTransferValue', ParseBoolPipe) withActionTransferValue?: boolean,
   ): Promise<SmartContractResult[]> {
     return this.scResultService.getScResults(
       new QueryPagination({ from, size }),
