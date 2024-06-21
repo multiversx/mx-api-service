@@ -32,7 +32,7 @@ export class TransactionActionEsdtNftRecognizerService implements TransactionAct
 
     const tokenIdentifier = BinaryUtils.hexToString(metadata.functionArgs[0]);
 
-    const tokenProperties = await this.tokenTransferService.getTokenTransferProperties(tokenIdentifier);
+    const tokenProperties = await this.tokenTransferService.getTokenTransferProperties({ identifier: tokenIdentifier });
     if (!tokenProperties) {
       return undefined;
     }
@@ -65,7 +65,7 @@ export class TransactionActionEsdtNftRecognizerService implements TransactionAct
     const identifier = BinaryUtils.hexToString(metadata.functionArgs[0]);
     const value = BinaryUtils.hexToNumber(metadata.functionArgs[2]);
     const nonce = metadata.functionArgs[1];
-    const tokenProperties = await this.tokenTransferService.getTokenTransferProperties(identifier);
+    const tokenProperties = await this.tokenTransferService.getTokenTransferProperties({ identifier });
 
     if (!tokenProperties) {
       return undefined;

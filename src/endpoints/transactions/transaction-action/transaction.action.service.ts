@@ -44,8 +44,8 @@ export class TransactionActionService {
     return this.recognizers;
   }
 
-  async getTransactionAction(transaction: Transaction): Promise<TransactionAction | undefined> {
-    const metadata = await this.getTransactionMetadata(transaction);
+  async getTransactionAction(transaction: Transaction, applyValue: boolean = false): Promise<TransactionAction | undefined> {
+    const metadata = await this.getTransactionMetadata(transaction, applyValue);
 
     const recognizers = await this.getRecognizers();
 
@@ -59,10 +59,10 @@ export class TransactionActionService {
     return undefined;
   }
 
-  async getTransactionMetadata(transaction: Transaction): Promise<TransactionMetadata> {
+  async getTransactionMetadata(transaction: Transaction, applyValue: boolean = false): Promise<TransactionMetadata> {
     const metadata = this.getNormalTransactionMetadata(transaction);
 
-    const esdtMetadata = await this.getEsdtTransactionMetadata(metadata);
+    const esdtMetadata = await this.getEsdtTransactionMetadata(metadata, applyValue);
     if (esdtMetadata) {
       return esdtMetadata;
     }
@@ -72,7 +72,7 @@ export class TransactionActionService {
       return nftMetadata;
     }
 
-    const multiMetadata = await this.getMultiTransferMetadata(metadata);
+    const multiMetadata = await this.getMultiTransferMetadata(metadata, applyValue);
     if (multiMetadata) {
       return multiMetadata;
     }
@@ -84,6 +84,7 @@ export class TransactionActionService {
     const metadata = new TransactionMetadata();
     metadata.sender = transaction.sender;
     metadata.receiver = transaction.receiver;
+    metadata.timestamp = transaction.timestamp;
     metadata.value = BigInt(transaction.value);
 
     if (transaction.data) {
@@ -168,7 +169,7 @@ export class TransactionActionService {
     return true;
   }
 
-  private async getMultiTransferMetadata(metadata: TransactionMetadata): Promise<TransactionMetadata | undefined> {
+  private async getMultiTransferMetadata(metadata: TransactionMetadata, applyValue: boolean = false): Promise<TransactionMetadata | undefined> {
     if (metadata.sender !== metadata.receiver) {
       return undefined;
     }
@@ -201,7 +202,7 @@ export class TransactionActionService {
       const value = this.parseValueFromMultiTransferValueArg(args[index++]);
 
       if (nonce) {
-        const properties = await this.tokenTransferService.getTokenTransferProperties(identifier, nonce);
+        const properties = await this.tokenTransferService.getTokenTransferProperties({ identifier, nonce });
         if (properties) {
           result.transfers.push({
             value,
@@ -209,7 +210,7 @@ export class TransactionActionService {
           });
         }
       } else {
-        const properties = await this.tokenTransferService.getTokenTransferProperties(identifier);
+        const properties = await this.tokenTransferService.getTokenTransferProperties({ identifier, timestamp: metadata.timestamp, value: value.toString(), applyValue });
         if (properties) {
           result.transfers.push({
             value,
@@ -268,7 +269,7 @@ export class TransactionActionService {
     const value = BinaryUtils.hexToBigInt(args[2]);
     const receiver = AddressUtils.bech32Encode(args[3]);
 
-    const properties = await this.tokenTransferService.getTokenTransferProperties(collectionIdentifier, nonce);
+    const properties = await this.tokenTransferService.getTokenTransferProperties({ identifier: collectionIdentifier, nonce });
     if (!properties) {
       return undefined;
     }
@@ -291,7 +292,7 @@ export class TransactionActionService {
     return result;
   }
 
-  private async getEsdtTransactionMetadata(metadata: TransactionMetadata): Promise<TransactionMetadata | undefined> {
+  private async getEsdtTransactionMetadata(metadata: TransactionMetadata, applyValue: boolean = false): Promise<TransactionMetadata | undefined> {
     if (metadata.functionName !== 'ESDTTransfer') {
       return undefined;
     }
@@ -304,7 +305,7 @@ export class TransactionActionService {
     const tokenIdentifier = BinaryUtils.hexToString(args[0]);
     const value = BinaryUtils.hexToBigInt(args[1]);
 
-    const properties = await this.tokenTransferService.getTokenTransferProperties(tokenIdentifier);
+    const properties = await this.tokenTransferService.getTokenTransferProperties({ identifier: tokenIdentifier, timestamp: metadata.timestamp, value: value.toString(), applyValue });
     if (!properties) {
       return undefined;
     }

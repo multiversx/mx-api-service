@@ -18,6 +18,8 @@ import { QueryPagination } from "src/common/entities/query.pagination";
 import { NftFilter } from "../nfts/entities/nft.filter";
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { TokenAccount } from "src/common/indexer/entities";
+import { DataApiService } from "src/common/data-api/data-api.service";
+import BigNumber from "bignumber.js";
 
 @Injectable()
 export class TokenTransferService {
@@ -29,6 +31,7 @@ export class TokenTransferService {
     private readonly esdtService: EsdtService,
     private readonly assetsService: AssetsService,
     private readonly indexerService: IndexerService,
+    private readonly dataApiService: DataApiService
   ) { }
 
   getTokenTransfer(elasticTransaction: any): { tokenIdentifier: string, tokenAmount: string } | undefined {
@@ -313,18 +316,30 @@ export class TokenTransferService {
     }
   }
 
-  async getTokenTransferProperties(identifier: string, nonce?: string): Promise<TokenTransferProperties | null> {
+  async getTokenTransferProperties(options: { identifier: string, nonce?: string, timestamp?: number, value?: string, applyValue?: boolean }): Promise<TokenTransferProperties | null> {
     let properties = await this.cachingService.getOrSet(
-      CacheInfo.TokenTransferProperties(identifier).key,
-      async () => await this.getTokenTransferPropertiesRaw(identifier),
-      CacheInfo.TokenTransferProperties(identifier).ttl,
+      CacheInfo.TokenTransferProperties(options.identifier).key,
+      async () => await this.getTokenTransferPropertiesRaw(options.identifier),
+      CacheInfo.TokenTransferProperties(options.identifier).ttl,
     );
 
     // we clone it since we alter the resulting object 
     properties = JSON.parse(JSON.stringify(properties));
 
-    if (properties && nonce) {
-      properties.identifier = `${identifier}-${nonce}`;
+    if (properties && options.nonce) {
+      properties.identifier = `${options.identifier}-${options.nonce}`;
+    }
+
+    if (properties && options.applyValue && options.timestamp && options.value) {
+      const esdtPrice = await this.dataApiService.getEsdtTokenPrice(options.identifier, options.timestamp);
+      if (esdtPrice) {
+        properties.valueUsd = new BigNumber(esdtPrice).multipliedBy(options.value).shiftedBy(-(properties.decimals ?? 0)).toNumber();
+
+        const egldPrice = await this.dataApiService.getEgldPrice(options.timestamp);
+        if (egldPrice) {
+          properties.valueEgld = properties.valueUsd / egldPrice;
+        }
+      }
     }
 
     return properties;

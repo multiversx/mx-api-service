@@ -184,6 +184,7 @@ export class TransactionService {
     await this.processTransactions(transactions, {
       withScamInfo: queryOptions?.withScamInfo ?? false,
       withUsername: queryOptions?.withUsername ?? false,
+      withActionTransferValue: queryOptions?.withActionTransferValue ?? false,
     });
 
     return transactions;
@@ -200,7 +201,7 @@ export class TransactionService {
     });
   }
 
-  async getTransaction(txHash: string, fields?: string[]): Promise<TransactionDetailed | null> {
+  async getTransaction(txHash: string, fields?: string[], withActionTransferValue: boolean = false): Promise<TransactionDetailed | null> {
     let transaction = await this.transactionGetService.tryGetTransactionFromElastic(txHash, fields);
 
     if (transaction === null) {
@@ -210,7 +211,7 @@ export class TransactionService {
     if (transaction !== null) {
       transaction.price = await this.getTransactionPrice(transaction);
 
-      await this.processTransactions([transaction], { withScamInfo: true, withUsername: true });
+      await this.processTransactions([transaction], { withScamInfo: true, withUsername: true, withActionTransferValue });
 
       if (transaction.pendingResults === true && transaction.results) {
         for (const result of transaction.results) {
@@ -330,7 +331,7 @@ export class TransactionService {
     }
   }
 
-  async processTransactions(transactions: Transaction[], options: { withScamInfo: boolean, withUsername: boolean }): Promise<void> {
+  async processTransactions(transactions: Transaction[], options: { withScamInfo: boolean, withUsername: boolean, withActionTransferValue: boolean }): Promise<void> {
     try {
       await this.pluginsService.processTransactions(transactions, options.withScamInfo);
     } catch (error) {
@@ -340,7 +341,7 @@ export class TransactionService {
 
     for (const transaction of transactions) {
       try {
-        transaction.action = await this.transactionActionService.getTransactionAction(transaction);
+        transaction.action = await this.transactionActionService.getTransactionAction(transaction, options.withActionTransferValue);
 
         transaction.pendingResults = await this.getPendingResults(transaction);
         if (transaction.pendingResults === true) {
@@ -371,15 +372,11 @@ export class TransactionService {
   }
 
   async getExtraDetailsForTransactions(elasticTransactions: any[], transactions: Transaction[], queryOptions: TransactionQueryOptions): Promise<TransactionDetailed[]> {
-    let scResults: any[] = [];
+    const scResults = await this.indexerService.getScResultsForTransactions(elasticTransactions) as any;
+    for (const scResult of scResults) {
+      scResult.hash = scResult.scHash;
 
-    if (!queryOptions.skipScResults) {
-      scResults = await this.indexerService.getScResultsForTransactions(elasticTransactions) as any;
-      for (const scResult of scResults) {
-        scResult.hash = scResult.scHash;
-
-        delete scResult.scHash;
-      }
+      delete scResult.scHash;
     }
 
     const hashes = [...transactions.map((transaction) => transaction.txHash), ...scResults.map((scResult: any) => scResult.hash)];

@@ -9,6 +9,7 @@ import { TransactionActionService } from "../transactions/transaction-action/tra
 import { SmartContractResult } from "./entities/smart.contract.result";
 import { SmartContractResultFilter } from "./entities/smart.contract.result.filter";
 import { OriginLogger } from "@multiversx/sdk-nestjs-common";
+import { SmartContractResultOptions } from "./entities/smart.contract.result.options";
 
 @Injectable()
 export class SmartContractResultService {
@@ -21,7 +22,7 @@ export class SmartContractResultService {
     private readonly assetsService: AssetsService,
   ) { }
 
-  async getScResults(pagination: QueryPagination, filter: SmartContractResultFilter): Promise<SmartContractResult[]> {
+  async getScResults(pagination: QueryPagination, filter: SmartContractResultFilter, options: SmartContractResultOptions): Promise<SmartContractResult[]> {
     const elasticResult = await this.indexerService.getScResults(pagination, filter);
 
     const smartContractResults = elasticResult.map(scResult => ApiUtils.mergeObjects(new SmartContractResult(), scResult));
@@ -32,7 +33,7 @@ export class SmartContractResultService {
       transaction.type = TransactionType.SmartContractResult;
 
       try {
-        smartContractResult.action = await this.transactionActionService.getTransactionAction(transaction);
+        smartContractResult.action = await this.transactionActionService.getTransactionAction(transaction, options.withActionTransferValue);
       } catch (error) {
         this.logger.error(`Failed to get transaction action for smart contract result with hash '${smartContractResult.hash}'`);
         this.logger.error(error);

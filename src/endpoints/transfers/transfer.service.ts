@@ -68,13 +68,13 @@ export class TransferService {
 
     if (queryOptions && (queryOptions.withOperations || queryOptions.withLogs)) {
       queryOptions.withScResultLogs = queryOptions.withLogs;
-      queryOptions.skipScResults = true;
       transactions = await this.transactionService.getExtraDetailsForTransactions(elasticOperations, transactions, queryOptions);
     }
 
     await this.transactionService.processTransactions(transactions, {
       withScamInfo: queryOptions.withScamInfo ?? false,
       withUsername: queryOptions.withUsername ?? false,
+      withActionTransferValue: queryOptions.withActionTransferValue ?? false,
     });
 
     return transactions;
