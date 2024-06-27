@@ -3,6 +3,7 @@ import { MetricsService } from "@multiversx/sdk-nestjs-monitoring";
 import { BadRequestException } from "@nestjs/common";
 import { Test } from "@nestjs/testing";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
+import { AssetsService } from "src/common/assets/assets.service";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { GatewayService } from "src/common/gateway/gateway.service";
 import { IndexerService } from "src/common/indexer/indexer.service";
@@ -25,6 +26,7 @@ describe('EsdtAddressService', () => {
   let cacheService: CacheService;
   let metricsService: MetricsService;
   let protocolService: ProtocolService;
+
   beforeEach(async () => {
     const moduleRef = await Test.createTestingModule({
       providers: [
@@ -92,6 +94,12 @@ describe('EsdtAddressService', () => {
           provide: CollectionService,
           useValue: {
             applyPropertiesToCollections: jest.fn(),
+          },
+        },
+        {
+          provide: AssetsService,
+          useValue: {
+            getTokenAssets: jest.fn(),
           },
         },
       ],

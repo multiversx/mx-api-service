@@ -8,6 +8,7 @@ import { QueryPagination } from "src/common/entities/query.pagination";
 import { SmartContractResultFilter } from "src/endpoints/sc-results/entities/smart.contract.result.filter";
 import { ConfigModule } from "@nestjs/config";
 import { PublicAppModule } from "src/public.app.module";
+import { SmartContractResultOptions } from "src/endpoints/sc-results/entities/smart.contract.result.options";
 
 describe('CollectionController', () => {
   let app: INestApplication;
@@ -40,7 +41,8 @@ describe('CollectionController', () => {
       expect(scResultsServiceMocks.getScResults).toHaveBeenCalled();
       expect(scResultsServiceMocks.getScResults).toHaveBeenCalledWith(
         new QueryPagination({ from: 0, size: 25 }),
-        new SmartContractResultFilter({})
+        new SmartContractResultFilter({}),
+        new SmartContractResultOptions({})
       );
     });
 
@@ -56,7 +58,8 @@ describe('CollectionController', () => {
       expect(scResultsServiceMocks.getScResults).toHaveBeenCalled();
       expect(scResultsServiceMocks.getScResults).toHaveBeenCalledWith(
         new QueryPagination({ from: 0, size: 25 }),
-        new SmartContractResultFilter({ miniBlockHash, originalTxHashes })
+        new SmartContractResultFilter({ miniBlockHash, originalTxHashes }),
+        new SmartContractResultOptions({})
       );
     });
   });
