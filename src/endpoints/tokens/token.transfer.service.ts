@@ -14,10 +14,6 @@ import { TransactionDetailed } from "../transactions/entities/transaction.detail
 import { BinaryUtils } from "@multiversx/sdk-nestjs-common";
 import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { OriginLogger } from "@multiversx/sdk-nestjs-common";
-import { QueryPagination } from "src/common/entities/query.pagination";
-import { NftFilter } from "../nfts/entities/nft.filter";
-import { IndexerService } from "src/common/indexer/indexer.service";
-import { TokenAccount } from "src/common/indexer/entities";
 
 @Injectable()
 export class TokenTransferService {
@@ -28,7 +24,6 @@ export class TokenTransferService {
     @Inject(forwardRef(() => EsdtService))
     private readonly esdtService: EsdtService,
     private readonly assetsService: AssetsService,
-    private readonly indexerService: IndexerService,
   ) { }
 
   getTokenTransfer(elasticTransaction: any): { tokenIdentifier: string, tokenAmount: string } | undefined {
@@ -153,18 +148,6 @@ export class TokenTransferService {
 
         if (operation) {
           operations.push(operation);
-        }
-      }
-    }
-
-    const distinctNftIdentifiers = operations.filter(x => x.type === TransactionOperationType.nft).map(x => x.identifier).distinct();
-    if (distinctNftIdentifiers.length > 0) {
-      const elasticNfts = await this.indexerService.getNfts(new QueryPagination({ from: 0, size: distinctNftIdentifiers.length }), new NftFilter({ identifiers: distinctNftIdentifiers }));
-      const elasticNftsDict = elasticNfts.toRecord<TokenAccount>(x => x.identifier);
-
-      for (const operation of operations) {
-        if (elasticNftsDict[operation.identifier]) {
-          operation.name = elasticNftsDict[operation.identifier].data?.name ?? operation.name;
         }
       }
     }
