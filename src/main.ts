@@ -38,6 +38,8 @@ import { JwtOrNativeAuthGuard } from '@multiversx/sdk-nestjs-auth';
 import { WebSocketPublisherModule } from './common/websockets/web-socket-publisher-module';
 import { IndexerService } from './common/indexer/indexer.service';
 import { NotWritableError } from './common/indexer/entities/not.writable.error';
+import { ElasticCallsInterceptor } from './interceptors/elastic-calls.interceptor';
+import { ApiMetricsService } from './common/metrics/api.metrics.service';
 
 async function bootstrap() {
   const logger = new Logger('Bootstrapper');
@@ -189,6 +191,7 @@ async function configurePublicApp(publicApp: NestExpressApplication, apiConfigSe
   publicApp.useStaticAssets(join(__dirname, 'public/assets'));
 
   const metricsService = publicApp.get<MetricsService>(MetricsService);
+  const apiMetricsService = publicApp.get<ApiMetricsService>(ApiMetricsService);
   const eventEmitterService = publicApp.get<EventEmitter2>(EventEmitter2);
   const pluginService = publicApp.get<PluginService>(PluginService);
   const httpAdapterHostService = publicApp.get<HttpAdapterHost>(HttpAdapterHost);
@@ -225,6 +228,10 @@ async function configurePublicApp(publicApp: NestExpressApplication, apiConfigSe
   globalInterceptors.push(new RequestCpuTimeInterceptor(metricsService));
   // @ts-ignore
   globalInterceptors.push(new LoggingInterceptor(metricsService));
+
+  if (apiConfigService.isElasticCallsTracingEnabled()) {
+    globalInterceptors.push(new ElasticCallsInterceptor(apiMetricsService, apiConfigService));
+  }
 
   const getUseRequestCachingFlag = await settingsService.getUseRequestCachingFlag();
   if (getUseRequestCachingFlag) {

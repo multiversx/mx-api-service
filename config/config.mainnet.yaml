@@ -91,6 +91,10 @@ features:
   tps:
     enabled: true
     maxLookBehindNonces: 100  
+  elasticCallsTracing:
+    enabled: false
+    logThreshold: 10
+    verboseLogging: false
 image:
   width: 600
   height: 600

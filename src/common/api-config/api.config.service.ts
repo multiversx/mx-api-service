@@ -849,4 +849,16 @@ export class ApiConfigService {
 
     return deepHistoryUrl;
   }
+
+  isElasticCallsTracingEnabled(): boolean {
+    return this.configService.get<boolean>('features.elasticCallsTracing.enabled') ?? false;
+  }
+
+  isElasticCallsTracingVerboseLoggingEnabled(): boolean {
+    return this.configService.get<boolean>('features.elasticCallsTracing.verboseLogging') ?? false;
+  }
+
+  getElasticCallsTracingLogThreshold(): number | undefined {
+    return this.configService.get<number>('features.elasticCallsTracing.logThreshold');
+  }
 }

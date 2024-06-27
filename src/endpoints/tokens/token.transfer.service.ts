@@ -81,7 +81,7 @@ export class TokenTransferService {
     await this.cachingService.batchApplyAll(
       identifiers,
       identifier => CacheInfo.TokenTransferProperties(identifier).key,
-      identifier => this.getTokenTransferPropertiesRaw(identifier),
+      async identifier => await this.getTokenTransferPropertiesRaw(identifier),
       (identifier, value) => tokenProperties[identifier] = value,
       CacheInfo.TokenTransferProperties('').ttl
     );

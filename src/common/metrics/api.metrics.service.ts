@@ -17,6 +17,7 @@ export class ApiMetricsService {
   private static graphqlDurationHistogram: Histogram<string>;
   private static currentNonceGauge: Gauge<string>;
   private static lastProcessedNonceGauge: Gauge<string>;
+  private static elasticCallsHistogram: Histogram<string>;
 
   constructor(
     private readonly apiConfigService: ApiConfigService,
@@ -87,6 +88,15 @@ export class ApiMetricsService {
         labelNames: ['shardId'],
       });
     }
+
+    if (!ApiMetricsService.elasticCallsHistogram) {
+      ApiMetricsService.elasticCallsHistogram = new Histogram({
+        name: 'elastic_calls',
+        help: 'Elastic Calls',
+        labelNames: ['apiFunction'],
+        buckets: [],
+      });
+    }
   }
 
   @OnEvent(MetricsEvents.SetVmQuery)
@@ -126,6 +136,10 @@ export class ApiMetricsService {
   setLastProcessedNonce(payload: LogMetricsEvent) {
     const [shardId, nonce] = payload.args;
     ApiMetricsService.lastProcessedNonceGauge.set({ shardId }, nonce);
+  }
+
+  setElasticCalls(apiFunction: string, count: number) {
+    ApiMetricsService.elasticCallsHistogram.labels(apiFunction).observe(count);
   }
 
   async getMetrics(): Promise<string> {

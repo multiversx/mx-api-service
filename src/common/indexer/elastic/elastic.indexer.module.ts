@@ -4,6 +4,7 @@ import { BlsModule } from "src/endpoints/bls/bls.module";
 import { DynamicModuleUtils } from "src/utils/dynamic.module.utils";
 import { ElasticIndexerHelper } from "./elastic.indexer.helper";
 import { ElasticIndexerService } from "./elastic.indexer.service";
+import { ApiElasticService } from "./api.elastic.service";
 
 @Global()
 @Module({
@@ -12,7 +13,15 @@ import { ElasticIndexerService } from "./elastic.indexer.service";
     forwardRef(() => BlsModule),
     DynamicModuleUtils.getElasticModule(),
   ],
-  providers: [ElasticIndexerService, ElasticIndexerHelper],
-  exports: [ElasticIndexerService, ElasticIndexerHelper],
+  providers: [
+    ElasticIndexerService,
+    ElasticIndexerHelper,
+    ApiElasticService,
+  ],
+  exports: [
+    ElasticIndexerService,
+    ElasticIndexerHelper,
+    ApiElasticService,
+  ],
 })
 export class ElasticIndexerModule { }

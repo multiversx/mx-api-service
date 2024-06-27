@@ -47,7 +47,7 @@ export class TransactionController {
   @ApiQuery({ name: 'withUsername', description: 'Integrates username in assets for all addresses present in the transactions', required: false, type: Boolean })
   @ApiQuery({ name: 'withBlockInfo', description: 'Returns sender / receiver block details', required: false, type: Boolean })
   @ApiQuery({ name: 'isRelayed', description: 'Returns relayed transactions details', required: false, type: Boolean })
-  getTransactions(
+  async getTransactions(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
     @Query('sender', ParseAddressAndMetachainPipe) sender?: string,
@@ -74,7 +74,7 @@ export class TransactionController {
   ) {
     const options = TransactionQueryOptions.applyDefaultOptions(size, { withScResults, withOperations, withLogs, withScamInfo, withUsername, withBlockInfo });
 
-    return this.transactionService.getTransactions(new TransactionFilter({
+    return await this.transactionService.getTransactions(new TransactionFilter({
       sender,
       receivers: receiver,
       token,
