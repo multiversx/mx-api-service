@@ -201,22 +201,19 @@ export class TransactionActionService {
       const nonce = args[index++];
       const value = this.parseValueFromMultiTransferValueArg(args[index++]);
 
-      if (nonce) {
-        const properties = await this.tokenTransferService.getTokenTransferProperties({ identifier, nonce });
-        if (properties) {
-          result.transfers.push({
-            value,
-            properties,
-          });
-        }
-      } else {
-        const properties = await this.tokenTransferService.getTokenTransferProperties({ identifier, timestamp: metadata.timestamp, value: value.toString(), applyValue });
-        if (properties) {
-          result.transfers.push({
-            value,
-            properties,
-          });
-        }
+      const properties = await this.tokenTransferService.getTokenTransferProperties({
+        identifier,
+        nonce,
+        timestamp: metadata.timestamp,
+        value: value.toString(),
+        applyValue,
+      });
+
+      if (properties) {
+        result.transfers.push({
+          value,
+          properties,
+        });
       }
     }
 
