@@ -183,6 +183,7 @@ export class MexTokenService {
         wegldToken.name = pair.baseName;
         wegldToken.price = pair.basePrice;
         wegldToken.previous24hPrice = pair.basePrevious24hPrice;
+        wegldToken.previous24hVolume = pair.basePrevious24hVolume;
         mexTokens.push(wegldToken);
       }
 
@@ -205,6 +206,7 @@ export class MexTokenService {
         name: pair.quoteName,
         price: pair.quotePrice,
         previous24hPrice: pair.quotePrevious24hPrice,
+        previous24hVolume: pair.quotePrevious24hVolume,
       };
     }
 
@@ -215,6 +217,7 @@ export class MexTokenService {
         name: pair.baseName,
         price: pair.basePrice,
         previous24hPrice: pair.basePrevious24hPrice,
+        previous24hVolume: pair.basePrevious24hVolume,
       };
     }
 
@@ -225,6 +228,7 @@ export class MexTokenService {
         name: pair.quoteName,
         price: pair.quotePrice,
         previous24hPrice: pair.quotePrevious24hPrice,
+        previous24hVolume: pair.quotePrevious24hVolume,
       };
     }
 

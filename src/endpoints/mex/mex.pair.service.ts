@@ -100,6 +100,7 @@ export class MexPairService {
               identifier
               decimals
               previous24hPrice
+              previous24hVolume
               __typename
             }
             secondToken {
@@ -107,6 +108,7 @@ export class MexPairService {
               identifier
               decimals
               previous24hPrice
+              previous24hVolume
               __typename
             }
             firstTokenPrice
@@ -123,6 +125,10 @@ export class MexPairService {
             type
             lockedValueUSD
             volumeUSD24h
+            hasFarms
+            hasDualFarms
+            tradesCount
+            deployedAt
             __typename
           }
         }
@@ -174,7 +180,9 @@ export class MexPairService {
         name: pair.liquidityPoolToken.name,
         price: Number(pair.liquidityPoolTokenPriceUSD),
         basePrevious24hPrice: Number(pair.firstToken.previous24hPrice),
+        basePrevious24hVolume: Number(pair.firstToken.previous24hVolume),
         quotePrevious24hPrice: Number(pair.secondToken.previous24hPrice),
+        quotePrevious24hVolume: Number(pair.secondToken.previous24hVolume),
         baseId: pair.firstToken.identifier,
         basePrice: Number(pair.firstTokenPriceUSD),
         baseSymbol: firstTokenSymbol,
@@ -188,6 +196,10 @@ export class MexPairService {
         state,
         type,
         exchange,
+        hasFarms: pair.hasFarms,
+        hasDualFarms: pair.hasDualFarms,
+        tradesCount: pair.tradesCount,
+        deployedAt: pair.deployedAt,
       };
     }
 
@@ -198,7 +210,9 @@ export class MexPairService {
       name: pair.liquidityPoolToken.name,
       price: Number(pair.liquidityPoolTokenPriceUSD),
       basePrevious24hPrice: Number(pair.secondToken.previous24hPrice),
+      basePrevious24hVolume: Number(pair.firstToken.previous24hVolume),
       quotePrevious24hPrice: Number(pair.firstToken.previous24hPrice),
+      quotePrevious24hVolume: Number(pair.secondToken.previous24hVolume),
       baseId: pair.secondToken.identifier,
       basePrice: Number(pair.secondTokenPriceUSD),
       baseSymbol: secondTokenSymbol,
@@ -212,6 +226,10 @@ export class MexPairService {
       state,
       type,
       exchange,
+      hasFarms: pair.hasFarms,
+      hasDualFarms: pair.hasDualFarms,
+      tradesCount: pair.tradesCount,
+      deployedAt: pair.deployedAt,
     };
   }
 

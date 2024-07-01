@@ -2052,14 +2052,26 @@ type MexPair {
   """Mex token basePrevious24hPrice equivalent"""
   basePrevious24hPrice: Float!
 
+  """Mex token basePrevious24hVolume equivalent"""
+  basePrevious24hVolume: Float!
+
   """Base price details."""
   basePrice: String!
 
   """Base symbol details."""
   baseSymbol: String!
 
+  """Mex pair deployed at details."""
+  deployedAt: Float
+
   """Mex pair exchange details."""
   exchange: String
+
+  """Mex pair has dual farm details."""
+  hasDualFarms: Boolean
+
+  """Mex pair has farm details."""
+  hasFarms: Boolean
 
   """Id details."""
   id: String!
@@ -2079,6 +2091,9 @@ type MexPair {
   """Mex token quotePrevious24hPrice equivalent"""
   quotePrevious24hPrice: Float!
 
+  """Mex token quotePrevious24hVolume equivalent"""
+  quotePrevious24hVolume: Float!
+
   """Quote price details."""
   quotePrice: String!
 
@@ -2093,6 +2108,9 @@ type MexPair {
 
   """Total value details."""
   totalValue: String!
+
+  """Mex pair total trades count."""
+  tradesCount: Float
 
   """Mex pair type details."""
   type: MexPairType!
@@ -2144,6 +2162,9 @@ type MexToken {
 
   """Mex token previous24hPrice."""
   previous24hPrice: Float!
+
+  """Mex token previous24hVolume."""
+  previous24hVolume: Float!
 
   """Mex token current price."""
   price: Float!
