@@ -201,7 +201,7 @@ export class TransactionActionService {
       const nonce = args[index++];
       const value = this.parseValueFromMultiTransferValueArg(args[index++]);
 
-      if (nonce) {
+      if (nonce && nonce !== "00") {
         const properties = await this.tokenTransferService.getTokenTransferProperties({ identifier, nonce });
         if (properties) {
           result.transfers.push({

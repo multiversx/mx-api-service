@@ -20,6 +20,7 @@ import { IndexerService } from "src/common/indexer/indexer.service";
 import { TokenAccount } from "src/common/indexer/entities";
 import { DataApiService } from "src/common/data-api/data-api.service";
 import BigNumber from "bignumber.js";
+import { EsdtType } from "../esdt/entities/esdt.type";
 
 @Injectable()
 export class TokenTransferService {
@@ -326,7 +327,7 @@ export class TokenTransferService {
     // we clone it since we alter the resulting object 
     properties = JSON.parse(JSON.stringify(properties));
 
-    if (properties && options.nonce) {
+    if (properties && properties.type !== EsdtType.FungibleESDT && options.nonce) {
       properties.identifier = `${options.identifier}-${options.nonce}`;
     }
 
