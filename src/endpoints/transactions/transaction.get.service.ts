@@ -16,6 +16,10 @@ import { MiniBlockType } from "../miniblocks/entities/mini.block.type";
 import { TransactionStatus } from "./entities/transaction.status";
 import { UsernameUtils } from "../usernames/username.utils";
 import { TransactionLogEvent } from "./entities/transaction.log.event";
+import { TransactionOperationType } from "./entities/transaction.operation.type";
+import { QueryPagination } from "src/common/entities/query.pagination";
+import { NftFilter } from "../nfts/entities/nft.filter";
+import { TokenAccount } from "src/common/indexer/entities";
 
 @Injectable()
 export class TransactionGetService {
@@ -124,6 +128,7 @@ export class TransactionGetService {
       }
 
       this.applyUsernamesToDetailedTransaction(transaction, transactionDetailed);
+      await this.applyNftNameOnTransactionOperations([transactionDetailed]);
 
       return ApiUtils.mergeObjects(new TransactionDetailed(), transactionDetailed);
     } catch (error) {
@@ -247,6 +252,22 @@ export class TransactionGetService {
     } catch (error) {
       this.logger.error(error);
       return null;
+    }
+  }
+
+  async applyNftNameOnTransactionOperations(transactions: TransactionDetailed[]): Promise<void> {
+    const operations = transactions.selectMany(x => x.operations ?? []);
+
+    const distinctNftIdentifiers = operations.filter(x => x.type === TransactionOperationType.nft).map(x => x.identifier).distinct();
+    if (distinctNftIdentifiers.length > 0) {
+      const elasticNfts = await this.indexerService.getNfts(new QueryPagination({ from: 0, size: distinctNftIdentifiers.length }), new NftFilter({ identifiers: distinctNftIdentifiers }));
+      const elasticNftsDict = elasticNfts.toRecord<TokenAccount>(x => x.identifier);
+
+      for (const operation of operations) {
+        if (elasticNftsDict[operation.identifier]) {
+          operation.name = elasticNftsDict[operation.identifier].data?.name ?? operation.name;
+        }
+      }
     }
   }
 }

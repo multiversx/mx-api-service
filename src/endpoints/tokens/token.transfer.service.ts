@@ -162,18 +162,6 @@ export class TokenTransferService {
       }
     }
 
-    const distinctNftIdentifiers = operations.filter(x => x.type === TransactionOperationType.nft).map(x => x.identifier).distinct();
-    if (distinctNftIdentifiers.length > 0) {
-      const elasticNfts = await this.indexerService.getNfts(new QueryPagination({ from: 0, size: distinctNftIdentifiers.length }), new NftFilter({ identifiers: distinctNftIdentifiers }));
-      const elasticNftsDict = elasticNfts.toRecord<TokenAccount>(x => x.identifier);
-
-      for (const operation of operations) {
-        if (elasticNftsDict[operation.identifier]) {
-          operation.name = elasticNftsDict[operation.identifier].data?.name ?? operation.name;
-        }
-      }
-    }
-
     return operations;
   }
 

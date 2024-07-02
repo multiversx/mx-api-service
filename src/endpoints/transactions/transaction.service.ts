@@ -425,6 +425,8 @@ export class TransactionService {
       detailedTransactions.push(transactionDetailed);
     }
 
+    await this.transactionGetService.applyNftNameOnTransactionOperations(detailedTransactions);
+
     return detailedTransactions;
   }
 
@@ -489,6 +491,8 @@ export class TransactionService {
         operations.push(undefined);
       }
     }
+
+    await this.transactionGetService.applyNftNameOnTransactionOperations(transactions);
 
     return operations;
   }
