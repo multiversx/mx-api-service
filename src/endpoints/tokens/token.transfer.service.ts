@@ -14,10 +14,6 @@ import { TransactionDetailed } from "../transactions/entities/transaction.detail
 import { BinaryUtils } from "@multiversx/sdk-nestjs-common";
 import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { OriginLogger } from "@multiversx/sdk-nestjs-common";
-import { QueryPagination } from "src/common/entities/query.pagination";
-import { NftFilter } from "../nfts/entities/nft.filter";
-import { IndexerService } from "src/common/indexer/indexer.service";
-import { TokenAccount } from "src/common/indexer/entities";
 import { DataApiService } from "src/common/data-api/data-api.service";
 import BigNumber from "bignumber.js";
 import { EsdtType } from "../esdt/entities/esdt.type";
@@ -31,7 +27,6 @@ export class TokenTransferService {
     @Inject(forwardRef(() => EsdtService))
     private readonly esdtService: EsdtService,
     private readonly assetsService: AssetsService,
-    private readonly indexerService: IndexerService,
     private readonly dataApiService: DataApiService
   ) { }
 
