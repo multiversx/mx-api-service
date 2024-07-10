@@ -20,6 +20,7 @@ import { GlobalStake } from "./entities/global.stake";
 import { ValidatorInfoResult } from "./entities/validator.info.result";
 import { NodeFilter } from "../nodes/entities/node.filter";
 import { BlockService } from "../blocks/block.service";
+import { Auction } from "src/common/gateway/entities/auction";
 
 @Injectable()
 export class StakeService {
@@ -57,20 +58,24 @@ export class StakeService {
     const totalTopUp = economics.erd_total_top_up_value;
 
     const totalStaked = BigInt(BigInt(totalBaseStaked) + BigInt(totalTopUp)).toString();
+    const totalObservers = await this.nodeService.getNodeCount(new NodeFilter({ type: NodeType.observer }));
 
-    if (!this.apiConfigService.isStakingV4Enabled()) {
+    const currentEpoch = await this.blockService.getCurrentEpoch();
+
+    if (!this.apiConfigService.isStakingV4Enabled() || currentEpoch < this.apiConfigService.getStakingV4ActivationEpoch()) {
       const queueSize = await this.nodeService.getNodeCount(new NodeFilter({ status: NodeStatus.queued }));
-
       return new GlobalStake({
         totalValidators: validators.totalValidators,
         activeValidators: validators.activeValidators,
+        totalObservers,
         queueSize,
         totalStaked,
       });
     }
 
-    const minimumAuctionQualifiedTopUp = await this.getMinimumAuctionTopUp();
-    const minimumAuctionQualifiedStake = await this.getMinimumAuctionStake();
+    const auctions = await this.gatewayService.getValidatorAuctions();
+    const minimumAuctionQualifiedTopUp = this.getMinimumAuctionTopUp(auctions);
+    const minimumAuctionQualifiedStake = this.getMinimumAuctionStake(auctions);
     const auctionValidators = await this.nodeService.getNodeCount(new NodeFilter({ auctioned: true }));
     const qualifiedAuctionValidators = await this.nodeService.getNodeCount(new NodeFilter({ isQualified: true }));
 
@@ -85,6 +90,7 @@ export class StakeService {
         ...validators,
         allStakedNodes,
         totalStaked,
+        totalObservers,
         minimumAuctionQualifiedTopUp,
         minimumAuctionQualifiedStake,
         auctionValidators,
@@ -356,9 +362,7 @@ export class StakeService {
     return data;
   }
 
-  async getMinimumAuctionTopUp(): Promise<string | undefined> {
-    const auctions = await this.gatewayService.getValidatorAuctions();
-
+  getMinimumAuctionTopUp(auctions: Auction[]): string | undefined {
     if (auctions.length === 0) {
       return undefined;
     }
@@ -378,9 +382,9 @@ export class StakeService {
     return minimumAuctionTopUp;
   }
 
-  async getMinimumAuctionStake(): Promise<string> {
+  getMinimumAuctionStake(auctions: Auction[]): string {
     const MINIMUM_STAKE_AMOUNT = 2500000000000000000000;
-    const minimumAuctionTopUp = await this.getMinimumAuctionTopUp();
+    const minimumAuctionTopUp = this.getMinimumAuctionTopUp(auctions);
     const baseStake = BigInt(MINIMUM_STAKE_AMOUNT);
     const topUp = minimumAuctionTopUp ? BigInt(minimumAuctionTopUp) : BigInt(0);
 

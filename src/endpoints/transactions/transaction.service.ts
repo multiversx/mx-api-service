@@ -177,13 +177,14 @@ export class TransactionService {
     }
 
     for (const transaction of transactions) {
+      transaction.type = undefined;
       transaction.relayedVersion = this.extractRelayedVersion(transaction);
     }
-
 
     await this.processTransactions(transactions, {
       withScamInfo: queryOptions?.withScamInfo ?? false,
       withUsername: queryOptions?.withUsername ?? false,
+      withActionTransferValue: queryOptions?.withActionTransferValue ?? false,
     });
 
     return transactions;
@@ -200,7 +201,7 @@ export class TransactionService {
     });
   }
 
-  async getTransaction(txHash: string, fields?: string[]): Promise<TransactionDetailed | null> {
+  async getTransaction(txHash: string, fields?: string[], withActionTransferValue: boolean = false): Promise<TransactionDetailed | null> {
     let transaction = await this.transactionGetService.tryGetTransactionFromElastic(txHash, fields);
 
     if (transaction === null) {
@@ -210,7 +211,7 @@ export class TransactionService {
     if (transaction !== null) {
       transaction.price = await this.getTransactionPrice(transaction);
 
-      await this.processTransactions([transaction], { withScamInfo: true, withUsername: true });
+      await this.processTransactions([transaction], { withScamInfo: true, withUsername: true, withActionTransferValue });
 
       if (transaction.pendingResults === true && transaction.results) {
         for (const result of transaction.results) {
@@ -330,7 +331,7 @@ export class TransactionService {
     }
   }
 
-  async processTransactions(transactions: Transaction[], options: { withScamInfo: boolean, withUsername: boolean }): Promise<void> {
+  async processTransactions(transactions: Transaction[], options: { withScamInfo: boolean, withUsername: boolean, withActionTransferValue: boolean }): Promise<void> {
     try {
       await this.pluginsService.processTransactions(transactions, options.withScamInfo);
     } catch (error) {
@@ -340,7 +341,7 @@ export class TransactionService {
 
     for (const transaction of transactions) {
       try {
-        transaction.action = await this.transactionActionService.getTransactionAction(transaction);
+        transaction.action = await this.transactionActionService.getTransactionAction(transaction, options.withActionTransferValue);
 
         transaction.pendingResults = await this.getPendingResults(transaction);
         if (transaction.pendingResults === true) {
@@ -370,7 +371,7 @@ export class TransactionService {
     return true;
   }
 
-  private async getExtraDetailsForTransactions(elasticTransactions: any[], transactions: Transaction[], queryOptions: TransactionQueryOptions): Promise<TransactionDetailed[]> {
+  async getExtraDetailsForTransactions(elasticTransactions: any[], transactions: Transaction[], queryOptions: TransactionQueryOptions): Promise<TransactionDetailed[]> {
     const scResults = await this.indexerService.getScResultsForTransactions(elasticTransactions) as any;
     for (const scResult of scResults) {
       scResult.hash = scResult.scHash;
@@ -423,6 +424,8 @@ export class TransactionService {
       }
       detailedTransactions.push(transactionDetailed);
     }
+
+    await this.transactionGetService.applyNftNameOnTransactionOperations(detailedTransactions);
 
     return detailedTransactions;
   }
@@ -489,6 +492,8 @@ export class TransactionService {
       }
     }
 
+    await this.transactionGetService.applyNftNameOnTransactionOperations(transactions);
+
     return operations;
   }
 
@@ -521,7 +526,7 @@ export class TransactionService {
 
       const senderBlockHashes: string[] = miniBlocks.map(x => x.senderBlockHash);
       const receiverBlockHashes: string[] = miniBlocks.map(x => x.receiverBlockHash);
-      const blockHashes = [...senderBlockHashes, ...receiverBlockHashes].distinct();
+      const blockHashes = [...senderBlockHashes, ...receiverBlockHashes].distinct().filter(x => x);
 
       const blocks = await this.indexerService.getBlocks({ hashes: blockHashes }, { from: 0, size: blockHashes.length });
       const indexedBlocks = blocks.toRecord<Block>(x => x.hash);

@@ -1,6 +1,7 @@
 import { Constants } from "@multiversx/sdk-nestjs-common";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { BlockFilter } from "src/endpoints/blocks/entities/block.filter";
+import { TpsInterval } from "src/endpoints/tps/entities/tps.interval";
 
 export class CacheInfo {
   key: string = "";
@@ -328,6 +329,11 @@ export class CacheInfo {
     ttl: Constants.oneMinute() * 10,
   };
 
+  static MexTokenTypes: CacheInfo = {
+    key: "mexTokenTypes",
+    ttl: Constants.oneMinute() * 10,
+  };
+
   static MexFarms: CacheInfo = {
     key: "mexFarms",
     ttl: Constants.oneMinute() * 10,
@@ -613,9 +619,66 @@ export class CacheInfo {
     const isCurrentDate = priceDate.toISODateString() === new Date().toISODateString();
     const ttl = isCurrentDate ? Constants.oneMinute() * 5 : Constants.oneWeek();
 
+    let key = priceDate.toISODateString();
+    if (!isCurrentDate) {
+      key = priceDate.startOfDay().addDays(1).toISODateString();
+    }
+
     return {
-      key: `data-api:price:${identifier}:${priceDate.toISODateString()}`,
+      key: `data-api:price:${identifier}:${key}`,
       ttl,
+    };
+  }
+
+  static TpsNonceByShard(shardId: number): CacheInfo {
+    return {
+      key: `tpsCurrentNonce:${shardId}`,
+      ttl: Constants.oneDay(),
+    };
+  }
+
+  static TpsByTimestampAndFrequency(timestamp: number, frequency: number): CacheInfo {
+    return {
+      key: `tpsTransactions:${timestamp}:${frequency}`,
+      ttl: frequency * 300,
+    };
+  }
+
+  static TpsHistoryByInterval(interval: TpsInterval): CacheInfo {
+    return {
+      key: `tpsHistory:${interval}`,
+      ttl: Constants.oneMinute(),
+    };
+  }
+
+  static TpsMaxByInterval(interval: TpsInterval): CacheInfo {
+    return {
+      key: `tpsMax:${interval}`,
+      ttl: Constants.oneDay(),
+    };
+  }
+
+  static TransactionCountByShard(shardId: number): CacheInfo {
+    return {
+      key: `transactionCount:${shardId}`,
+      ttl: Constants.oneHour(),
+    };
+  }
+
+  static NodesAuctions: CacheInfo = {
+    key: 'nodesAuctions',
+    ttl: Constants.oneMinute(),
+  };
+
+  static ValidatorAuctions: CacheInfo = {
+    key: 'validatorAuctions',
+    ttl: Constants.oneHour(),
+  };
+
+  static Applications(queryPagination: QueryPagination): CacheInfo {
+    return {
+      key: `applications:${queryPagination.from}:${queryPagination.size}`,
+      ttl: Constants.oneHour(),
     };
   }
 }

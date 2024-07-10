@@ -88,6 +88,9 @@ features:
   nftScamInfo:
     enabled: false
 nftQueueName: 'api-process-nfts'
+  tps:
+    enabled: true
+    maxLookBehindNonces: 100
 image:
   width: 600
   height: 600

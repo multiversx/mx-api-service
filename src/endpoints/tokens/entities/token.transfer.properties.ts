@@ -13,4 +13,6 @@ export class TokenTransferProperties {
   decimals?: number = 0;
   name: string = '';
   svgUrl: string = '';
+  valueUsd?: number;
+  valueEgld?: number;
 }

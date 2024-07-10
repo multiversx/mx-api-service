@@ -6,7 +6,7 @@ import { GatewayService } from "src/common/gateway/gateway.service";
 import { Response, Request } from "express";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
 import { PluginService } from "src/common/plugins/plugin.service";
-import { Constants, ParseAddressPipe, ParseBlockHashPipe, ParseIntPipe, ParseTransactionHashPipe } from "@multiversx/sdk-nestjs-common";
+import { Constants, ParseAddressPipe, ParseBlockHashPipe, ParseBlsHashPipe, ParseIntPipe, ParseTransactionHashPipe } from "@multiversx/sdk-nestjs-common";
 import { CacheService, NoCache } from "@multiversx/sdk-nestjs-cache";
 import { OriginLogger } from "@multiversx/sdk-nestjs-common";
 import { DeepHistoryInterceptor } from "src/interceptors/deep-history.interceptor";
@@ -248,6 +248,13 @@ export class GatewayProxyController {
     }
   }
 
+  @Get('/node/waiting-epochs-left/:bls')
+  async getNodeWaitingEpochsLeft(
+    @Param('bls', ParseBlsHashPipe) bls: string,
+  ) {
+    return await this.gatewayGet(`node/waiting-epochs-left/${bls}`, GatewayComponentRequest.getNodeWaitingEpochsLeft);
+  }
+
   @Get('/validator/statistics')
   @NoCache()
   async getValidatorStatistics(@Res() res: Response) {
@@ -271,16 +278,9 @@ export class GatewayProxyController {
   @NoCache()
   async getValidatorAuction(@Res() res: Response) {
     try {
-      const validatorAuction = await this.cachingService.getOrSet(
-        'validatorAuction',
-        async () => {
-          const result = await this.gatewayService.getRaw('validator/auction', GatewayComponentRequest.validatorAuction);
-          return result.data;
-        },
-        Constants.oneMinute() * 2,
-      );
+      const result = await this.gatewayService.getRaw('validator/auction', GatewayComponentRequest.validatorAuction);
 
-      res.type('application/json').send(validatorAuction);
+      res.type('application/json').send(result.data);
     } catch (error: any) {
       throw new BadRequestException(error.response.data);
     }

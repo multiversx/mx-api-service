@@ -55,6 +55,10 @@ features:
     admins:
       - ''
     jwtSecret: ''
+  stakingV4:
+    enabled: false
+    cronExpression: '*/5 * * * * *'
+    activationEpoch: 1043
   nodeEpochsLeft:
     enabled: false
   transactionProcessor:
@@ -81,6 +85,9 @@ features:
   nftScamInfo:
     enabled: false
 nftQueueName: 'api-process-nfts'
+  tps:
+    enabled: true
+    maxLookBehindNonces: 100
 image:
   width: 600
   height: 600

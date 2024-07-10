@@ -12,5 +12,6 @@ export class TransactionMetadata {
   value: BigInt = BigInt(0);
   functionName?: string;
   functionArgs: string[] = [];
+  timestamp: number = 0;
   transfers?: TransactionMetadataTransfer[];
 }

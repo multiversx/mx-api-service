@@ -13,6 +13,9 @@ import { StakeInfo } from "./entities/stake.info";
 import { NodeType } from "../nodes/entities/node.type";
 import { NodeStatus } from "../nodes/entities/node.status";
 import { IdentitySortCriteria } from "./entities/identity.sort.criteria";
+import { ApiConfigService } from "src/common/api-config/api.config.service";
+import { BlockService } from "../blocks/block.service";
+import { QueryPagination } from "src/common/entities/query.pagination";
 
 @Injectable()
 export class IdentitiesService {
@@ -21,7 +24,10 @@ export class IdentitiesService {
     private readonly nodeService: NodeService,
     private readonly cacheService: CacheService,
     @Inject(forwardRef(() => NetworkService))
-    private readonly networkService: NetworkService
+    private readonly networkService: NetworkService,
+    private readonly apiConfigService: ApiConfigService,
+    @Inject(forwardRef(() => BlockService))
+    private readonly blockService: BlockService,
   ) { }
 
   async getIdentity(identifier: string): Promise<Identity | undefined> {
@@ -34,7 +40,8 @@ export class IdentitiesService {
     return identity ? identity.avatar : undefined;
   }
 
-  async getIdentities(ids: string[], sort?: IdentitySortCriteria): Promise<Identity[]> {
+  async getIdentities(queryPagination: QueryPagination, ids: string[], sort?: IdentitySortCriteria): Promise<Identity[]> {
+    const { from, size } = queryPagination;
     let identities = await this.getAllIdentities();
     if (ids.length > 0) {
       identities = identities.filter(x => x.identity && ids.includes(x.identity));
@@ -44,9 +51,11 @@ export class IdentitiesService {
       case IdentitySortCriteria.validators:
         identities = identities.sortedDescending(x => x.validators ?? 0);
         break;
+      case IdentitySortCriteria.stake:
+        identities = identities.sortedDescending(x => Number(x.stake) ?? 0);
     }
 
-    return identities;
+    return identities.slice(from, from + size);
   }
 
   async getAllIdentities(): Promise<Identity[]> {
@@ -131,13 +140,17 @@ export class IdentitiesService {
     return distribution;
   }
 
-  private getStakeInfoForIdentity(identity: IdentityDetailed, totalLocked: bigint): StakeInfo {
+  private getStakeInfoForIdentity(identity: IdentityDetailed, totalLocked: bigint, currentEpoch: number): StakeInfo {
     const nodes = identity.nodes ?? [];
 
     const stake = nodes.sumBigInt(x => BigInt(x.stake ? x.stake : '0'));
     const topUp = nodes.sumBigInt(x => BigInt(x.topUp ? x.topUp : '0'));
     const locked = stake + topUp;
     const stakePercent = totalLocked > 0 ? (locked * BigInt(10000)) / totalLocked : 0;
+
+    const qualifiedAuctionNodes = nodes.filter(x => x.type === NodeType.validator && x.status === NodeStatus.auction && x.auctionQualified === true);
+    const unqualifiedAuctionNodes = nodes.filter(x => x.type === NodeType.validator && x.status === NodeStatus.auction && x.auctionQualified === false);
+    const isStakingV4ActivationEpoch = this.apiConfigService.isStakingV4Enabled() && currentEpoch === this.apiConfigService.getStakingV4ActivationEpoch();
 
     const stakeInfo = new StakeInfo({
       score: nodes.sum(x => x.ratingModifier),
@@ -149,6 +162,7 @@ export class IdentitiesService {
       distribution: this.getStakeDistributionForIdentity(locked, identity),
       validators: nodes.filter(x => x.type === NodeType.validator && x.status !== NodeStatus.inactive).length,
       queued: nodes.filter(x => x.type === NodeType.validator && x.status === NodeStatus.queued).length,
+      auctioned: isStakingV4ActivationEpoch ? qualifiedAuctionNodes.length + unqualifiedAuctionNodes.length : unqualifiedAuctionNodes.length,
     });
 
     stakeInfo.sort = stakeInfo.locked && stakeInfo.locked !== '0' ? parseInt(stakeInfo.locked.slice(0, -18)) : 0;
@@ -206,6 +220,7 @@ export class IdentitiesService {
 
     const { locked: totalLocked } = this.computeTotalStakeAndTopUp(nodes);
     const { baseApr, topUpApr } = await this.networkService.getApr();
+    const currentEpoch = await this.blockService.getCurrentEpoch();
 
     let identities: Identity[] = identitiesDetailed.map((identityDetailed: IdentityDetailed) => {
       if (identityDetailed.nodes && identityDetailed.nodes.length) {
@@ -218,7 +233,7 @@ export class IdentitiesService {
         identity.twitter = identityDetailed.twitter;
         identity.location = identityDetailed.location;
 
-        const stakeInfo = this.getStakeInfoForIdentity(identityDetailed, BigInt(parseInt(totalLocked)));
+        const stakeInfo = this.getStakeInfoForIdentity(identityDetailed, BigInt(parseInt(totalLocked)), currentEpoch);
         identity.score = stakeInfo.score;
         identity.validators = stakeInfo.validators;
         identity.stake = stakeInfo.stake;
@@ -230,7 +245,7 @@ export class IdentitiesService {
         if (identity.stake && identity.topUp) {
           const stakeReturn = new BigNumber(identity.stake.slice(0, -18)).multipliedBy(new BigNumber(baseApr));
           const topUpReturn = identity.topUp !== '0' ? new BigNumber(identity.topUp.slice(0, -18)).multipliedBy(new BigNumber(topUpApr)) : new BigNumber(0);
-          const annualReturn = stakeReturn.plus(topUpReturn).multipliedBy((identity.validators ?? 0) - (stakeInfo.queued ?? 0)).dividedBy(identity.validators ?? 0);
+          const annualReturn = stakeReturn.plus(topUpReturn).multipliedBy((identity.validators ?? 0) - (stakeInfo.queued ?? 0) - (stakeInfo.auctioned ?? 0)).dividedBy(identity.validators ?? 0);
           const aprStr = new BigNumber(annualReturn).multipliedBy(100).div(identity.locked.slice(0, -18)).toString();
           identity.apr = Number(aprStr).toRounded(2);
         }
@@ -242,7 +257,7 @@ export class IdentitiesService {
     identities = identities
       .filter((identity) => identity && (identity.validators ?? 0) > 0);
 
-    identities = identities.sortedDescending(identity => new BigNumber(identity.locked).dividedBy(10 ** 18).toNumber());
+    identities = identities.sortedDescending(identity => identity.validators ?? 0);
 
     for (const [index, identity] of identities.entries()) {
       if (identity) {
