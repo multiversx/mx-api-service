@@ -118,7 +118,7 @@ async function bootstrap() {
       transport: Transport.RMQ,
       options: {
         urls: [apiConfigService.getRabbitmqUrl()],
-        queue: apiConfigService.getNftQueueName(),
+        queue: apiConfigService.isProcessNftsFeatureActive() ? apiConfigService.getNftQueueName() : 'api-process-nfts',
         noAck: false,
         prefetchCount: apiConfigService.getNftProcessParallelism(),
         queueOptions: {
@@ -126,7 +126,7 @@ async function bootstrap() {
           // arguments: {
           //   'x-single-active-consumer': true,
           // },
-          deadLetterExchange: apiConfigService.getNftQueueDlqName(),
+          deadLetterExchange: apiConfigService.isProcessNftsFeatureActive() ? apiConfigService.getNftQueueDlqName() : 'api-process-nfts-dlq',
         },
       },
     });
