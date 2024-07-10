@@ -30,7 +30,7 @@ export class NftQueueController {
     apiConfigService: ApiConfigService,
   ) {
     this.RETRY_LIMIT = apiConfigService.getNftProcessMaxRetries();
-    NftQueueController.queueName = apiConfigService.getNftQueueName();
+    NftQueueController.queueName = apiConfigService.isProcessNftsFeatureActive() ? apiConfigService.getNftQueueName() : 'api-process-nfts';
   }
 
   private getAttempt(msg: any): number {
