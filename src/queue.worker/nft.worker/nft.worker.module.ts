@@ -32,7 +32,7 @@ import { NftThumbnailModule } from './queue/job-services/thumbnails/nft.thumbnai
               // arguments: {
               //   'x-single-active-consumer': true,
               // },
-              deadLetterExchange: configService.getNftQueueName() + '-dlq',
+              deadLetterExchange: configService.getNftQueueDlqName(),
             },
           },
         });

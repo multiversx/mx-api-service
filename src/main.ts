@@ -126,7 +126,7 @@ async function bootstrap() {
           // arguments: {
           //   'x-single-active-consumer': true,
           // },
-          deadLetterExchange: apiConfigService.getNftQueueName() + '-dlq',
+          deadLetterExchange: apiConfigService.getNftQueueDlqName(),
         },
       },
     });
