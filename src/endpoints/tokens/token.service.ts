@@ -785,6 +785,20 @@ export class TokenService {
         if (token.price && token.circulatingSupply) {
           token.marketCap = token.price * NumberUtils.denominateString(token.circulatingSupply, token.decimals);
         }
+      } else if (token.assets?.priceSource?.url) {
+        const tokenData = await this.fetchTokenDataFromUrl(token.assets.priceSource.url);
+
+        if (tokenData) {
+          token.price = tokenData.usdPrice;
+
+          const supply = await this.esdtService.getTokenSupply(token.identifier);
+          token.supply = supply.totalSupply;
+          token.circulatingSupply = supply.circulatingSupply;
+
+          if (token.price && token.circulatingSupply) {
+            token.marketCap = token.price * NumberUtils.denominateString(token.circulatingSupply, token.decimals);
+          }
+        }
       }
     }
 
@@ -795,6 +809,21 @@ export class TokenService {
     );
 
     return tokens;
+  }
+
+  private async fetchTokenDataFromUrl(url: string): Promise<any> {
+    try {
+      const response = await fetch(url);
+      const data = await response.json();
+
+      if (data && Array.isArray(data) && data.length > 0) {
+        return data[0];
+      } else {
+        this.logger.error(`No valid data found at URL: ${url}`);
+      }
+    } catch (error) {
+      this.logger.error(`Failed to fetch token data from URL: ${url}`, error);
+    }
   }
 
   private async getTokenAssetsRaw(identifier: string): Promise<TokenAssets | undefined> {
