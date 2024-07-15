@@ -154,10 +154,6 @@ export class ApiConfigService {
     return rabbitmqUrl;
   }
 
-  isProcessNftsFeatureActive(): boolean {
-    return this.configService.get<boolean>('features.processNfts.enabled') ?? false;
-  }
-
   getNftQueueName(): string {
     return this.configService.get<string>('features.processNfts.nftQueueName', 'api-process-nfts');
   }
@@ -368,7 +364,7 @@ export class ApiConfigService {
   }
 
   getIsProcessNftsFlagActive(): boolean {
-    return this.configService.get<boolean>('flags.processNfts') ?? false;
+    return this.configService.get<boolean>('features.processNfts.enabled') ?? this.configService.get<boolean>('flags.processNfts') ?? false;
   }
 
   getIsIndexerV3FlagActive(): boolean {

@@ -37,7 +37,7 @@ export class NftWorkerService {
     message.settings = settings;
 
     this.client.send({
-      cmd: this.apiConfigService.isProcessNftsFeatureActive() ? this.apiConfigService.getNftQueueName() : 'api-process-nfts',
+      cmd: this.apiConfigService.getNftQueueName(),
     }, message).subscribe();
 
     return true;
