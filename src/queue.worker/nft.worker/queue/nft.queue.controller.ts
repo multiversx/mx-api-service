@@ -1,4 +1,5 @@
 import { Controller, Inject } from "@nestjs/common";
+import configuration from "config/configuration";
 import { ClientProxy, Ctx, MessagePattern, Payload, RmqContext } from "@nestjs/microservices";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { CacheInfo } from "src/utils/cache.info";
@@ -17,8 +18,7 @@ import { ProcessNftSettings } from "src/endpoints/process-nfts/entities/process.
 @Controller()
 export class NftQueueController {
   private readonly logger = new OriginLogger(NftQueueController.name);
-  private readonly RETRY_LIMIT: Number;
-  private static queueName: string;
+  private readonly RETRY_LIMIT: number;
 
   constructor(
     private readonly nftMetadataService: NftMetadataService,
@@ -30,7 +30,6 @@ export class NftQueueController {
     apiConfigService: ApiConfigService,
   ) {
     this.RETRY_LIMIT = apiConfigService.getNftProcessMaxRetries();
-    NftQueueController.queueName = apiConfigService.getNftQueueName();
   }
 
   private getAttempt(msg: any): number {
@@ -73,7 +72,7 @@ export class NftQueueController {
     return result;
   }
 
-  @MessagePattern({ cmd: NftQueueController.queueName })
+  @MessagePattern({ cmd: configuration()?.features?.processNfts?.nftQueueName ?? 'api-process-nfts' })
   async onNftCreated(@Payload() data: NftMessage, @Ctx() context: RmqContext) {
     const channel = context.getChannelRef();
     const message = context.getMessage();
