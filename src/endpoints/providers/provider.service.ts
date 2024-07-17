@@ -51,6 +51,7 @@ export class ProviderService {
       modifiedProvider.checkCapOnRedelegate = delegationData.checkCapOnRedelegate;
       modifiedProvider.totalUnStaked = delegationData.totalUnStaked;
       modifiedProvider.createdNonce = delegationData.createdNonce;
+      modifiedProvider.ownerBelowRequiredBalanceThreshold = delegationData.ownerBelowRequiredBalanceThreshold;
 
       return modifiedProvider;
     }
@@ -131,6 +132,10 @@ export class ProviderService {
 
         if (delegationData.checkCapOnRedelegate) {
           element.checkCapOnRedelegate = delegationData.checkCapOnRedelegate;
+        }
+
+        if (delegationData.ownerBelowRequiredBalanceThreshold) {
+          element.ownerBelowRequiredBalanceThreshold = delegationData.ownerBelowRequiredBalanceThreshold;
         }
       }
 
