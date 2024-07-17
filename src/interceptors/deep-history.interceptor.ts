@@ -64,8 +64,6 @@ export class DeepHistoryInterceptor implements NestInterceptor {
             response.setHeader('X-Deep-History-Block-Hash', blockInfo.hash);
             response.setHeader('X-Deep-History-Block-Nonce', blockInfo.nonce);
             response.setHeader('X-Deep-History-Block-RootHash', blockInfo.rootHash);
-
-            console.log(`Deep history timestamp: ${timestamp}, block nonce: ${blockNonce}, block hash: ${blockInfo.hash}, root hash: ${blockInfo.rootHash}`);
           }
         }),
         catchError((err) => {
