@@ -1,10 +1,11 @@
-import { ContextTracker } from "@multiversx/sdk-nestjs-common";
+import { Constants, ContextTracker } from "@multiversx/sdk-nestjs-common";
 import { BadRequestException, CallHandler, ExecutionContext, Injectable, NestInterceptor } from "@nestjs/common";
 import { Observable, catchError, tap, throwError } from "rxjs";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { ProtocolService } from "src/common/protocol/protocol.service";
 import { Response } from 'express';
+import { CacheService } from "@multiversx/sdk-nestjs-cache";
 
 @Injectable()
 export class DeepHistoryInterceptor implements NestInterceptor {
@@ -12,6 +13,7 @@ export class DeepHistoryInterceptor implements NestInterceptor {
     private readonly indexerService: IndexerService,
     private readonly apiConfigService: ApiConfigService,
     private readonly protocolService: ProtocolService,
+    private readonly cacheService: CacheService,
   ) { }
 
   async intercept(context: ExecutionContext, next: CallHandler): Promise<Observable<any>> {
@@ -38,7 +40,12 @@ export class DeepHistoryInterceptor implements NestInterceptor {
       throw new BadRequestException('Could not determine shard based on the provided address');
     }
 
-    const block = await this.indexerService.getBlockByTimestampAndShardId(timestamp, shardId);
+    const block = await this.cacheService.getOrSet(
+      `deep-history-block-${timestamp}-${shardId}`,
+      async () => await this.indexerService.getBlockByTimestampAndShardId(timestamp, shardId),
+      Constants.oneMinute() * 10,
+    );
+
     if (!block) {
       throw new BadRequestException('Could not determine block nonce based on the provided timestamp and the shardId associated with the given address');
     }
