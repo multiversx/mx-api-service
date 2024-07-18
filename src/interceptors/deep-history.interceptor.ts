@@ -1,4 +1,4 @@
-import { Constants, ContextTracker } from "@multiversx/sdk-nestjs-common";
+import { ContextTracker } from "@multiversx/sdk-nestjs-common";
 import { BadRequestException, CallHandler, ExecutionContext, Injectable, NestInterceptor } from "@nestjs/common";
 import { Observable, catchError, tap, throwError } from "rxjs";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
@@ -6,6 +6,7 @@ import { IndexerService } from "src/common/indexer/indexer.service";
 import { ProtocolService } from "src/common/protocol/protocol.service";
 import { Response } from 'express';
 import { CacheService } from "@multiversx/sdk-nestjs-cache";
+import { CacheInfo } from "src/utils/cache.info";
 
 @Injectable()
 export class DeepHistoryInterceptor implements NestInterceptor {
@@ -41,9 +42,9 @@ export class DeepHistoryInterceptor implements NestInterceptor {
     }
 
     const block = await this.cacheService.getOrSet(
-      `deep-history-block-${timestamp}-${shardId}`,
+      CacheInfo.DeepHistoryBlock(timestamp, shardId).key,
       async () => await this.indexerService.getBlockByTimestampAndShardId(timestamp, shardId),
-      Constants.oneMinute() * 10,
+      CacheInfo.DeepHistoryBlock(timestamp, shardId).ttl,
     );
 
     if (!block) {
