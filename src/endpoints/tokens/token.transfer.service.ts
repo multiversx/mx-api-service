@@ -339,7 +339,7 @@ export class TokenTransferService {
 
     const result: TokenTransferProperties = {
       type: properties.type,
-      name: properties.name,
+      name: assets ? assets.name : properties.name,
       ticker: assets ? identifier.split('-')[0] : identifier,
       svgUrl: assets ? assets.svgUrl : '',
     };
