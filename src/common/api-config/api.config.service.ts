@@ -154,6 +154,14 @@ export class ApiConfigService {
     return rabbitmqUrl;
   }
 
+  getNftQueueName(): string {
+    return this.configService.get<string>('features.processNfts.nftQueueName', 'api-process-nfts');
+  }
+
+  getNftQueueDlqName(): string {
+    return this.configService.get<string>('features.processNfts.deadLetterQueueName', 'api-process-nfts-dlq');
+  }
+
   getCacheTtl(): number {
     return this.configService.get<number>('caching.cacheTtl') ?? 6;
   }
@@ -356,7 +364,7 @@ export class ApiConfigService {
   }
 
   getIsProcessNftsFlagActive(): boolean {
-    return this.configService.get<boolean>('flags.processNfts') ?? false;
+    return this.configService.get<boolean>('features.processNfts.enabled') ?? this.configService.get<boolean>('flags.processNfts') ?? false;
   }
 
   getIsIndexerV3FlagActive(): boolean {

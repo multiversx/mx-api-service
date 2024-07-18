@@ -5,6 +5,8 @@ import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { ProtocolService } from "src/common/protocol/protocol.service";
 import { Response } from 'express';
+import { CacheService } from "@multiversx/sdk-nestjs-cache";
+import { CacheInfo } from "src/utils/cache.info";
 
 @Injectable()
 export class DeepHistoryInterceptor implements NestInterceptor {
@@ -12,6 +14,7 @@ export class DeepHistoryInterceptor implements NestInterceptor {
     private readonly indexerService: IndexerService,
     private readonly apiConfigService: ApiConfigService,
     private readonly protocolService: ProtocolService,
+    private readonly cacheService: CacheService,
   ) { }
 
   async intercept(context: ExecutionContext, next: CallHandler): Promise<Observable<any>> {
@@ -38,7 +41,12 @@ export class DeepHistoryInterceptor implements NestInterceptor {
       throw new BadRequestException('Could not determine shard based on the provided address');
     }
 
-    const block = await this.indexerService.getBlockByTimestampAndShardId(timestamp, shardId);
+    const block = await this.cacheService.getOrSet(
+      CacheInfo.DeepHistoryBlock(timestamp, shardId).key,
+      async () => await this.indexerService.getBlockByTimestampAndShardId(timestamp, shardId),
+      CacheInfo.DeepHistoryBlock(timestamp, shardId).ttl,
+    );
+
     if (!block) {
       throw new BadRequestException('Could not determine block nonce based on the provided timestamp and the shardId associated with the given address');
     }

@@ -681,4 +681,11 @@ export class CacheInfo {
       ttl: Constants.oneHour(),
     };
   }
+
+  static DeepHistoryBlock(timestamp: number, shardId: number): CacheInfo {
+    return {
+      key: `deepHistoryBlock:${timestamp}:${shardId}`,
+      ttl: Constants.oneMinute() * 10,
+    };
+  }
 }
