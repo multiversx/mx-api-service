@@ -495,10 +495,12 @@ export class CollectionController {
   @ApiQuery({ name: 'miniBlockHash', description: 'Filter by miniblock hash', required: false })
   @ApiQuery({ name: 'hashes', description: 'Filter by a comma-separated list of transfer hashes', required: false })
   @ApiQuery({ name: 'status', description: 'Status of the transfer (success / pending / invalid / fail)', required: false, enum: TransactionStatus })
+  @ApiQuery({ name: 'function', description: 'Filter transactions by function name', required: false })
   @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
   async getCollectionTransfersCount(
     @Param('collection', ParseCollectionPipe) identifier: string,
+    @Query('function', new ParseArrayPipe(new ParseArrayPipeOptions({ allowEmptyString: true }))) functions?: string[],
     @Query('sender', ParseAddressPipe) sender?: string,
     @Query('receiver', ParseAddressArrayPipe) receiver?: string[],
     @Query('senderShard', ParseIntPipe) senderShard?: number,
@@ -525,6 +527,7 @@ export class CollectionController {
       status,
       before,
       after,
+      functions,
     }));
   }
 
