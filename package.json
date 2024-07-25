@@ -81,7 +81,7 @@
     "@elrondnetwork/native-auth": "^0.1.19",
     "@elrondnetwork/transaction-processor": "^0.1.26",
     "@golevelup/nestjs-rabbitmq": "^4.0.0",
-    "@multiversx/sdk-core": "^12.2.1",
+    "@multiversx/sdk-core": "^13.2.2",
     "@multiversx/sdk-data-api-client": "^0.7.0",
     "@multiversx/sdk-nestjs-auth": "^3.6.0",
     "@multiversx/sdk-nestjs-cache": "^3.6.0",
