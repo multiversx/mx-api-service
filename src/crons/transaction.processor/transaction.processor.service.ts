@@ -150,6 +150,6 @@ export class TransactionProcessorService {
 
     this.logger.log(`Detected stake topup transaction for address ${transaction.sender} with function '${transactionFuncName}'`);
 
-    return [transaction.receiver];
+    return [CacheInfo.StakeTopup(transaction.receiver).key];
   }
 }
