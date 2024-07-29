@@ -287,8 +287,6 @@ export class StakeService {
       const stake = String(totalStaked / numNodes);
       const locked = String(totalLocked / numNodes);
 
-      this.logger.log(`Computed stake for address ${address}: stake ${stake}, topUp ${topUp}, locked ${locked}, numNodes ${numNodes}`);
-
       return {
         topUp,
         stake,

@@ -148,8 +148,6 @@ export class TransactionProcessorService {
       return [];
     }
 
-    this.logger.log(`Detected stake topup transaction for address ${transaction.receiver} with function '${transactionFuncName}'`);
-
     await this.cachingService.deleteInCache(CacheInfo.StakeTopup(transaction.receiver).key);
 
     return [CacheInfo.StakeTopup(transaction.receiver).key];
