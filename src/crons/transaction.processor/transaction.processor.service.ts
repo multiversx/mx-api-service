@@ -45,7 +45,7 @@ export class TransactionProcessorService {
           const invalidatedTokenProperties = await this.tryInvalidateTokenProperties(transaction);
           const invalidatedOwnerKeys = await this.tryInvalidateOwner(transaction);
           const invalidatedCollectionPropertiesKeys = await this.tryInvalidateCollectionProperties(transaction);
-          const invalidatedStakeTopUpKey = this.tryInvalidateStakeTopup(transaction);
+          const invalidatedStakeTopUpKey = await this.tryInvalidateStakeTopup(transaction);
 
           allInvalidatedKeys.push(
             ...invalidatedTokenProperties,
@@ -134,7 +134,7 @@ export class TransactionProcessorService {
     return [];
   }
 
-  tryInvalidateStakeTopup(transaction: ShardTransaction): string[] {
+  async tryInvalidateStakeTopup(transaction: ShardTransaction): Promise<string[]> {
     if (!transaction.data) {
       return [];
     }
@@ -148,7 +148,9 @@ export class TransactionProcessorService {
       return [];
     }
 
-    this.logger.log(`Detected stake topup transaction for address ${transaction.sender} with function '${transactionFuncName}'`);
+    this.logger.log(`Detected stake topup transaction for address ${transaction.receiver} with function '${transactionFuncName}'`);
+
+    await this.cachingService.deleteInCache(CacheInfo.StakeTopup(transaction.receiver).key);
 
     return [CacheInfo.StakeTopup(transaction.receiver).key];
   }
