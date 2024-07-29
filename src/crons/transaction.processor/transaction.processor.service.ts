@@ -45,11 +45,13 @@ export class TransactionProcessorService {
           const invalidatedTokenProperties = await this.tryInvalidateTokenProperties(transaction);
           const invalidatedOwnerKeys = await this.tryInvalidateOwner(transaction);
           const invalidatedCollectionPropertiesKeys = await this.tryInvalidateCollectionProperties(transaction);
+          const invalidatedStakeTopUpKey = this.tryInvalidateStakeTopup(transaction);
 
           allInvalidatedKeys.push(
             ...invalidatedTokenProperties,
             ...invalidatedOwnerKeys,
-            ...invalidatedCollectionPropertiesKeys
+            ...invalidatedCollectionPropertiesKeys,
+            ...invalidatedStakeTopUpKey,
           );
         }
 
@@ -130,5 +132,22 @@ export class TransactionProcessorService {
     }
 
     return [];
+  }
+
+  tryInvalidateStakeTopup(transaction: ShardTransaction): string[] {
+    if (!transaction.data) {
+      return [];
+    }
+
+    const transactionFuncName = transaction.getDataFunctionName();
+    if (!transactionFuncName) {
+      return [];
+    }
+
+    if (!['delegate', 'unDelegate', 'reDelegateRewards'].includes(transactionFuncName)) {
+      return [];
+    }
+
+    return [transaction.receiver];
   }
 }
