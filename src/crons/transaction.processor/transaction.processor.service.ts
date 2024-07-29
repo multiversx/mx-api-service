@@ -148,6 +148,8 @@ export class TransactionProcessorService {
       return [];
     }
 
+    this.logger.log(`Detected stake topup transaction for address ${transaction.sender} with function '${transactionFuncName}'`);
+
     return [transaction.receiver];
   }
 }
