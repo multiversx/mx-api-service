@@ -156,6 +156,7 @@ export class CacheWarmerService {
     await this.invalidateKey(CacheInfo.AllEsdtTokens.key, tokens, CacheInfo.AllEsdtTokens.ttl);
   }
 
+  @Cron(CronExpression.EVERY_MINUTE)
   @Lock({ name: 'Identities invalidations', verbose: true })
   async handleIdentityInvalidations() {
     const identities = await this.identitiesService.getAllIdentitiesRaw();
