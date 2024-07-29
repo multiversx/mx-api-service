@@ -14,6 +14,7 @@ import { LogMetricsEvent } from "src/common/entities/log.metrics.event";
 import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { BinaryUtils, OriginLogger } from "@multiversx/sdk-nestjs-common";
 import { PerformanceProfiler } from "@multiversx/sdk-nestjs-monitoring";
+import { StakeFunction } from "src/endpoints/transactions/transaction-action/recognizers/staking/entities/stake.function";
 
 
 @Injectable()
@@ -144,7 +145,7 @@ export class TransactionProcessorService {
       return [];
     }
 
-    if (!['delegate', 'unDelegate', 'reDelegateRewards'].includes(transactionFuncName)) {
+    if (!transactionFuncName.in(StakeFunction.delegate, StakeFunction.unDelegate, StakeFunction.reDelegateRewards)) {
       return [];
     }
 
