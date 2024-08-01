@@ -60,6 +60,7 @@ describe('Account Service', () => {
             getAccountTokenHistoryCount: jest.fn(),
             getScDeploy: jest.fn(),
             getTransaction: jest.fn(),
+            getAccountTokensHistory: jest.fn(),
           },
         },
         {
@@ -694,6 +695,57 @@ describe('Account Service', () => {
 
       const expectedResult = elasticResult.map(item => ApiUtils.mergeObjects(new AccountEsdtHistory(), item));
       expect(result).toEqual(expectedResult);
+    });
+  });
+
+  describe('getAccountTokensHistory', () => {
+    const address = 'erd1qga7ze0l03chfgru0a32wxqf2226nzrxnyhzer9lmudqhjgy7ycqjjyknz';
+    const pagination = { from: 0, size: 10 };
+    const filter = new AccountHistoryFilter({});
+
+    const elasticResult = [
+      {
+        address: 'erd1qga7ze0l03chfgru0a32wxqf2226nzrxnyhzer9lmudqhjgy7ycqjjyknz',
+        timestamp: 1640603532,
+        balance: '0',
+        token: 'WEGLD-bd4d79',
+        identifier: 'WEGLD-bd4d79',
+        tokenNonce: 10,
+        isSender: true,
+        shardID: 0,
+        isSmartContract: false,
+      },
+      {
+        address: 'erd1qga7ze0l03chfgru0a32wxqf2226nzrxnyhzer9lmudqhjgy7ycqjjyknz',
+        timestamp: 1640603532,
+        balance: '0',
+        token: 'WEGLD-bd4d79',
+        identifier: 'WEGLD-bd4d79',
+        tokenNonce: 10,
+        isSender: true,
+        shardID: 0,
+        isSmartContract: false,
+      },
+    ];
+
+    it('should return the account tokens history', async () => {
+      jest.spyOn(indexerService, 'getAccountTokensHistory').mockResolvedValue(elasticResult);
+
+      const result = await service.getAccountTokensHistory(address, pagination, filter);
+
+      expect(indexerService.getAccountTokensHistory).toHaveBeenCalledWith(address, pagination, filter);
+
+      const expectedResult = elasticResult.map(item => ApiUtils.mergeObjects(new AccountEsdtHistory(), item));
+      expect(result).toEqual(expectedResult);
+    });
+
+    it('should return an empty array if no token history is found', async () => {
+      jest.spyOn(indexerService, 'getAccountTokensHistory').mockResolvedValue([]);
+
+      const result = await service.getAccountTokensHistory(address, pagination, filter);
+
+      expect(indexerService.getAccountTokensHistory).toHaveBeenCalledWith(address, pagination, filter);
+      expect(result).toEqual([]);
     });
   });
 

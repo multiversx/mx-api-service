@@ -680,6 +680,11 @@ export class AccountService {
     return elasticResult.map(item => ApiUtils.mergeObjects(new AccountEsdtHistory(), item));
   }
 
+  async getAccountTokensHistory(address: string, pagination: QueryPagination, filter: AccountHistoryFilter): Promise<AccountEsdtHistory[]> {
+    const elasticResult = await this.indexerService.getAccountTokensHistory(address, pagination, filter);
+    return elasticResult.map(item => ApiUtils.mergeObjects(new AccountEsdtHistory(), item));
+  }
+
   private async applyNodeUnbondingPeriods(nodes: AccountKey[]): Promise<void> {
     const leavingNodes = nodes.filter(node => node.status === 'unStaked');
     await Promise.all(leavingNodes.map(async node => {
