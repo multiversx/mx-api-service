@@ -121,8 +121,7 @@ export class NetworkService {
     const staked = NumberUtils.denominate(BigInt(auctionContractBalance.toString()) + BigInt(totalWaitingStake.toString())).toRounded();
 
     const totalSupply = await this.getTotalSupply();
-    const locked = await this.getLockedSupply();
-    const circulatingSupply = totalSupply - locked;
+    const circulatingSupply = totalSupply;
 
     const price = egldPrice?.toRounded(2);
     const marketCap = price ? Math.round(price * circulatingSupply) : undefined;
@@ -189,18 +188,6 @@ export class NetworkService {
     const totalWaitingStakeBase64 = vmQueryResult[1];
 
     return BinaryUtils.base64ToBigInt(totalWaitingStakeBase64);
-  }
-
-  private async getLockedSupply(): Promise<number> {
-    let locked: number = 0;
-    if (this.apiConfigService.getNetwork() === 'mainnet') {
-      const account = await this.accountService.getAccountRaw('erd195fe57d7fm5h33585sc7wl8trqhrmy85z3dg6f6mqd0724ymljxq3zjemc');
-      if (account) {
-        locked = NumberUtils.denominate(BigInt(account.balance)).toRounded();
-      }
-    }
-
-    return locked;
   }
 
   async getStats(): Promise<Stats> {
