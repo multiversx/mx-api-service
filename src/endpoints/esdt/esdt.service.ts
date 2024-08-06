@@ -170,6 +170,22 @@ export class EsdtService {
       delete tokenProps.wiped;
     }
 
+    switch (type) {
+      case EsdtSubType.NonFungibleESDTv2:
+      case EsdtSubType.DynamicNonFungibleESDT:
+        tokenProps.type = EsdtType.NonFungibleESDT;
+        tokenProps.subType = type;
+        break;
+      case EsdtSubType.DynamicSemiFungibleESDT:
+        tokenProps.type = EsdtType.SemiFungibleESDT;
+        tokenProps.subType = type;
+        break;
+      case EsdtSubType.DynamicMetaESDT:
+        tokenProps.type = EsdtType.MetaESDT;
+        tokenProps.subType = type;
+        break;
+    }
+
     return tokenProps;
   }
 
