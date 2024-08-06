@@ -144,10 +144,29 @@ export class ElasticIndexerHelper {
       ], type => QueryType.Match('type', type));
     }
 
+    if (filter.type) {
+      const types = [];
+
+      for (const type of filter.type) {
+        switch (type) {
+          case NftType.NonFungibleESDT:
+            types.push(NftType.NonFungibleESDT, NftType.NonFungibleESDTv2, NftType.DynamicNonFungibleESDT);
+            break;
+          case NftType.SemiFungibleESDT:
+            types.push(NftType.SemiFungibleESDT, NftType.DynamicSemiFungibleESDT);
+            break;
+          case NftType.MetaESDT:
+            types.push(NftType.MetaESDT, NftType.DynamicMetaESDT);
+            break;
+        }
+      }
+
+      elasticQuery = elasticQuery.withMustMultiShouldCondition(types, type => QueryType.Match('type', type));
+    }
+
     return elasticQuery.withMustMatchCondition('token', filter.collection, QueryOperator.AND)
       .withMustMultiShouldCondition(filter.identifiers, identifier => QueryType.Match('token', identifier, QueryOperator.AND))
-      .withSearchWildcardCondition(filter.search, ['token', 'name'])
-      .withMustMultiShouldCondition(filter.type, type => QueryType.Match('type', type));
+      .withSearchWildcardCondition(filter.search, ['token', 'name']);
   }
 
   private getRoleCondition(query: ElasticQuery, name: string, address: string | undefined, value: string | boolean) {
