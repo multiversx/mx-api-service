@@ -15,6 +15,7 @@ import { IndexerService } from "src/common/indexer/indexer.service";
 import { EsdtType } from "./entities/esdt.type";
 import { ElasticIndexerService } from "src/common/indexer/elastic/elastic.indexer.service";
 import { randomUUID } from "crypto";
+import { EsdtSubType } from "./entities/esdt.sub.type";
 
 @Injectable()
 export class EsdtService {
@@ -233,6 +234,22 @@ export class EsdtService {
       delete tokenProps.canTransferNFTCreateRole;
       // @ts-ignore
       delete tokenProps.NFTCreateStopped;
+    }
+
+    switch (elasticProperties.type) {
+      case EsdtSubType.NonFungibleESDTv2:
+      case EsdtSubType.DynamicNonFungibleESDT:
+        tokenProps.type = EsdtType.NonFungibleESDT;
+        tokenProps.subType = elasticProperties.type;
+        break;
+      case EsdtSubType.DynamicSemiFungibleESDT:
+        tokenProps.type = EsdtType.SemiFungibleESDT;
+        tokenProps.subType = elasticProperties.type;
+        break;
+      case EsdtSubType.DynamicMetaESDT:
+        tokenProps.type = EsdtType.MetaESDT;
+        tokenProps.subType = elasticProperties.type;
+        break;
     }
 
     return tokenProps;
