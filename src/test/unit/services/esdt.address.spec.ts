@@ -255,6 +255,7 @@ describe('EsdtAddressService', () => {
     const propertiesToCollectionsMock: NftCollection = {
       collection: 'XDAY23TEAM-f7a346',
       type: NftType.NonFungibleESDT,
+      subType: undefined,
       name: 'xPortalAchievements',
       ticker: 'XDAY23TEAM',
       owner: 'erd1lpc6wjh2hav6q50p8y6a44r2lhtnseqksygakjfgep6c9uduchkqphzu6t',
