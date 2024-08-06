@@ -7,7 +7,6 @@ import { BlockFilter } from "src/endpoints/blocks/entities/block.filter";
 import { BlsService } from "src/endpoints/bls/bls.service";
 import { CollectionFilter } from "src/endpoints/collections/entities/collection.filter";
 import { NftFilter } from "src/endpoints/nfts/entities/nft.filter";
-import { NftType } from "src/endpoints/nfts/entities/nft.type";
 import { RoundFilter } from "src/endpoints/rounds/entities/round.filter";
 import { EsdtType } from "src/endpoints/esdt/entities/esdt.type";
 import { TokenWithRolesFilter } from "src/endpoints/tokens/entities/token.with.roles.filter";
@@ -17,6 +16,7 @@ import { AccountQueryOptions } from "src/endpoints/accounts/entities/account.que
 import { AccountHistoryFilter } from "src/endpoints/accounts/entities/account.history.filter";
 import { SmartContractResultFilter } from "src/endpoints/sc-results/entities/smart.contract.result.filter";
 import { ApplicationFilter } from "src/endpoints/applications/entities/application.filter";
+import { NftType } from "../entities/nft.type";
 
 @Injectable()
 export class ElasticIndexerHelper {
@@ -76,7 +76,15 @@ export class ElasticIndexerHelper {
   public buildCollectionRolesFilter(filter: CollectionFilter, address?: string): ElasticQuery {
     let elasticQuery = ElasticQuery.create();
     elasticQuery = elasticQuery.withMustNotExistCondition('identifier')
-      .withMustMultiShouldCondition([NftType.MetaESDT, NftType.NonFungibleESDT, NftType.SemiFungibleESDT], type => QueryType.Match('type', type));
+      .withMustMultiShouldCondition([
+        NftType.MetaESDT,
+        NftType.NonFungibleESDT,
+        NftType.SemiFungibleESDT,
+        NftType.NonFungibleESDTv2,
+        NftType.DynamicNonFungibleESDT,
+        NftType.DynamicSemiFungibleESDT,
+        NftType.DynamicMetaESDT,
+      ], type => QueryType.Match('type', type));
 
     if (address) {
       if (this.apiConfigService.getIsIndexerV3FlagActive()) {
@@ -127,14 +135,19 @@ export class ElasticIndexerHelper {
     }
 
     if (filter.excludeMetaESDT === true) {
-      elasticQuery = elasticQuery.withMustMultiShouldCondition([NftType.NonFungibleESDT, NftType.SemiFungibleESDT], type => QueryType.Match('type', type));
+      elasticQuery = elasticQuery.withMustMultiShouldCondition([
+        NftType.NonFungibleESDT,
+        NftType.SemiFungibleESDT,
+        NftType.NonFungibleESDTv2,
+        NftType.DynamicNonFungibleESDT,
+        NftType.DynamicSemiFungibleESDT,
+      ], type => QueryType.Match('type', type));
     }
 
     return elasticQuery.withMustMatchCondition('token', filter.collection, QueryOperator.AND)
       .withMustMultiShouldCondition(filter.identifiers, identifier => QueryType.Match('token', identifier, QueryOperator.AND))
       .withSearchWildcardCondition(filter.search, ['token', 'name'])
-      .withMustMultiShouldCondition(filter.type, type => QueryType.Match('type', type))
-      .withMustMultiShouldCondition([NftType.SemiFungibleESDT, NftType.NonFungibleESDT, NftType.MetaESDT], type => QueryType.Match('type', type));
+      .withMustMultiShouldCondition(filter.type, type => QueryType.Match('type', type));
   }
 
   private getRoleCondition(query: ElasticQuery, name: string, address: string | undefined, value: string | boolean) {
