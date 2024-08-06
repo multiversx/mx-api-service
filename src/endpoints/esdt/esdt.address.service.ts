@@ -293,6 +293,9 @@ export class EsdtAddressService {
         // @ts-ignore
         nft.type = collectionDetails.type;
 
+        // @ts-ignore
+        nft.subType = collectionDetails.subType;
+
         if (nft.type === NftType.MetaESDT) {
           const assets = await this.assetsService.getTokenAssets(nft.collection);
           if (assets && assets.name) {
