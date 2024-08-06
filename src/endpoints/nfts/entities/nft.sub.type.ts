@@ -8,8 +8,8 @@ export enum NftSubType {
 }
 
 registerEnumType(NftSubType, {
-  name: 'NftType',
-  description: 'NFT type.',
+  name: 'NftSubType',
+  description: 'NFT subtype.',
   valuesMap: {
     NonFungibleESDTv2: {
       description: 'Non-fungible ESDT v2 NFT type.',
