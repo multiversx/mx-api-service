@@ -254,6 +254,7 @@ export class ElasticIndexerHelper {
       const smartContractResultConditions = [
         QueryType.Match('receiver', filter.address),
         QueryType.Match('receivers', filter.address),
+        QueryType.Match('relayerAddr', filter.address),
       ];
 
       if (AddressUtils.isSmartContractAddress(filter.address)) {
@@ -274,6 +275,10 @@ export class ElasticIndexerHelper {
             QueryType.Match('receivers', filter.address),
           ]),
         ]));
+    }
+
+    if (filter.relayer) {
+      elasticQuery = elasticQuery.withMustMatchCondition('relayerAddr', filter.relayer);
     }
 
     if (filter.type) {
@@ -434,6 +439,7 @@ export class ElasticIndexerHelper {
     if (address) {
       shouldQueries.push(QueryType.Match('sender', address));
       shouldQueries.push(QueryType.Match('receiver', address));
+      shouldQueries.push(QueryType.Match('relayerAddr', address));
 
       if (this.apiConfigService.getIsIndexerV3FlagActive()) {
         shouldQueries.push(QueryType.Match('receivers', address));

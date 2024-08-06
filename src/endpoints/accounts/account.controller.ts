@@ -972,6 +972,7 @@ export class AccountController {
     @Query('withLogs', new ParseBoolPipe) withLogs?: boolean,
     @Query('withOperations', new ParseBoolPipe) withOperations?: boolean,
     @Query('withActionTransferValue', ParseBoolPipe) withActionTransferValue?: boolean,
+    @Query('relayer', ParseAddressPipe) relayer?: string,
   ): Promise<Transaction[]> {
     if (!this.apiConfigService.getIsIndexerV3FlagActive()) {
       throw new HttpException('Endpoint not live yet', HttpStatus.NOT_IMPLEMENTED);
@@ -995,6 +996,7 @@ export class AccountController {
       after,
       order,
       senderOrReceiver,
+      relayer,
     }),
       new QueryPagination({ from, size }),
       options,

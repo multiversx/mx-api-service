@@ -29,4 +29,5 @@ export interface Transaction {
   receiversShardIDs: number[];
   operation: string;
   scResults: any[];
+  relayerAddr: string;
 }
