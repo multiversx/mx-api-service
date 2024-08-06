@@ -6,6 +6,7 @@ import { Field, Float, ID, ObjectType } from "@nestjs/graphql";
 import { Account } from "src/endpoints/accounts/entities/account";
 import { CollectionTrait } from "./collection.trait";
 import { CollectionAuctionStats } from "src/endpoints/marketplace/entities/collection.auction.stats";
+import { NftSubType } from "src/endpoints/nfts/entities/nft.sub.type";
 
 @ObjectType("NftCollection", { description: "NFT collection object type." })
 export class NftCollection {
@@ -20,6 +21,10 @@ export class NftCollection {
   @Field(() => NftType, { description: 'NFT type for the given NFT collection.' })
   @ApiProperty({ enum: NftType })
   type: NftType = NftType.NonFungibleESDT;
+
+  @Field(() => NftSubType, { description: 'NFT sub type for the given NFT collection.', nullable: true })
+  @ApiProperty({ enum: NftSubType, nullable: true })
+  subType: NftSubType | undefined = undefined;
 
   @Field(() => String, { description: 'Name for the given NFT collection.' })
   @ApiProperty({ type: String })
