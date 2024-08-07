@@ -254,7 +254,6 @@ export class ElasticIndexerHelper {
       const smartContractResultConditions = [
         QueryType.Match('receiver', filter.address),
         QueryType.Match('receivers', filter.address),
-        QueryType.Match('relayerAddr', filter.address),
       ];
 
       if (AddressUtils.isSmartContractAddress(filter.address)) {
