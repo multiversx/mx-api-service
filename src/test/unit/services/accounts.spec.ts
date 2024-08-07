@@ -698,7 +698,7 @@ describe('Account Service', () => {
     });
   });
 
-  describe('getAccountTokensHistory', () => {
+  describe('getAccountEsdtHistory', () => {
     const address = 'erd1qga7ze0l03chfgru0a32wxqf2226nzrxnyhzer9lmudqhjgy7ycqjjyknz';
     const pagination = { from: 0, size: 10 };
     const filter = new AccountHistoryFilter({});
@@ -729,22 +729,22 @@ describe('Account Service', () => {
     ];
 
     it('should return the account tokens history', async () => {
-      jest.spyOn(indexerService, 'getAccountTokensHistory').mockResolvedValue(elasticResult);
+      jest.spyOn(indexerService, 'getAccountEsdtHistory').mockResolvedValue(elasticResult);
 
-      const result = await service.getAccountTokensHistory(address, pagination, filter);
+      const result = await service.getAccountEsdtHistory(address, pagination, filter);
 
-      expect(indexerService.getAccountTokensHistory).toHaveBeenCalledWith(address, pagination, filter);
+      expect(indexerService.getAccountEsdtHistory).toHaveBeenCalledWith(address, pagination, filter);
 
       const expectedResult = elasticResult.map(item => ApiUtils.mergeObjects(new AccountEsdtHistory(), item));
       expect(result).toEqual(expectedResult);
     });
 
     it('should return an empty array if no token history is found', async () => {
-      jest.spyOn(indexerService, 'getAccountTokensHistory').mockResolvedValue([]);
+      jest.spyOn(indexerService, 'getAccountEsdtHistory').mockResolvedValue([]);
 
-      const result = await service.getAccountTokensHistory(address, pagination, filter);
+      const result = await service.getAccountEsdtHistory(address, pagination, filter);
 
-      expect(indexerService.getAccountTokensHistory).toHaveBeenCalledWith(address, pagination, filter);
+      expect(indexerService.getAccountEsdtHistory).toHaveBeenCalledWith(address, pagination, filter);
       expect(result).toEqual([]);
     });
   });

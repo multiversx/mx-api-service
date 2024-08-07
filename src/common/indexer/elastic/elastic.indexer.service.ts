@@ -489,7 +489,7 @@ export class ElasticIndexerService implements IndexerInterface {
     return await this.elasticService.getCount('accountsesdthistory', elasticQuery);
   }
 
-  async getAccountTokensHistory(address: string, pagination: QueryPagination, filter: AccountHistoryFilter): Promise<any[]> {
+  async getAccountEsdtHistory(address: string, pagination: QueryPagination, filter: AccountHistoryFilter): Promise<any[]> {
     const elasticQuery: ElasticQuery = this.indexerHelper.buildAccountHistoryFilterQuery(address, undefined, filter)
       .withPagination(pagination)
       .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }]);

@@ -118,7 +118,7 @@ export interface IndexerInterface {
 
   getAccountTokenHistory(address: string, tokenIdentifier: string, pagination: QueryPagination, filter: AccountHistoryFilter): Promise<AccountTokenHistory[]>
 
-  getAccountTokensHistory(address: string, pagination: QueryPagination, filter: AccountHistoryFilter): Promise<AccountTokenHistory[]>
+  getAccountEsdtHistory(address: string, pagination: QueryPagination, filter: AccountHistoryFilter): Promise<AccountTokenHistory[]>
 
   getTransactions(filter: TransactionFilter, pagination: QueryPagination, address?: string): Promise<Transaction[]>
 

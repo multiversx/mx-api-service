@@ -680,8 +680,8 @@ export class AccountService {
     return elasticResult.map(item => ApiUtils.mergeObjects(new AccountEsdtHistory(), item));
   }
 
-  async getAccountTokensHistory(address: string, pagination: QueryPagination, filter: AccountHistoryFilter): Promise<AccountEsdtHistory[]> {
-    const elasticResult = await this.indexerService.getAccountTokensHistory(address, pagination, filter);
+  async getAccountEsdtHistory(address: string, pagination: QueryPagination, filter: AccountHistoryFilter): Promise<AccountEsdtHistory[]> {
+    const elasticResult = await this.indexerService.getAccountEsdtHistory(address, pagination, filter);
     return elasticResult.map(item => ApiUtils.mergeObjects(new AccountEsdtHistory(), item));
   }
 

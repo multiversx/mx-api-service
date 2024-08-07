@@ -1223,25 +1223,27 @@ export class AccountController {
       new AccountHistoryFilter({ before, after }));
   }
 
-  @Get("/accounts/:address/tokenhistory")
-  @ApiOperation({ summary: 'Account tokens history', description: 'Returns account tokens balance history' })
+  @Get("/accounts/:address/esdthistory")
+  @ApiOperation({ summary: 'Account esdts history', description: 'Returns account esdts balance history' })
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
-  @ApiQuery({ name: 'identifiers', description: 'Filter by multiple token identifiers, comma-separated', required: false })
-  async getAccountTokensHistory(
+  @ApiQuery({ name: 'identifier', description: 'Filter by multiple token identifiers, comma-separated', required: false })
+  @ApiQuery({ name: 'token', description: 'Token identifier', required: false })
+  async getAccountEsdtHistory(
     @Param('address', ParseAddressPipe) address: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
     @Query('before', ParseIntPipe) before?: number,
     @Query('after', ParseIntPipe) after?: number,
-    @Query('identifiers', ParseArrayPipe) identifiers?: string[],
+    @Query('identifier', ParseArrayPipe) identifier?: string[],
+    @Query('token', ParseTokenPipe) token?: string,
   ): Promise<AccountEsdtHistory[]> {
-    return await this.accountService.getAccountTokensHistory(
+    return await this.accountService.getAccountEsdtHistory(
       address,
       new QueryPagination({ from, size }),
-      new AccountHistoryFilter({ before, after, identifiers }));
+      new AccountHistoryFilter({ before, after, identifiers: identifier, token }));
   }
 
   @Get("/accounts/:address/history/:tokenIdentifier")
