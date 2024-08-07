@@ -60,7 +60,7 @@ describe('Account Service', () => {
             getAccountTokenHistoryCount: jest.fn(),
             getScDeploy: jest.fn(),
             getTransaction: jest.fn(),
-            getAccountTokensHistory: jest.fn(),
+            getAccountEsdtHistory: jest.fn(),
           },
         },
         {
