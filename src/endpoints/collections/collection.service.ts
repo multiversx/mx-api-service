@@ -27,6 +27,8 @@ import { TokenDetailed } from "../tokens/entities/token.detailed";
 import { NftCollectionDetailed } from "./entities/nft.collection.detailed";
 import { CollectionLogo } from "./entities/collection.logo";
 import { ScamInfo } from "src/common/entities/scam-info.dto";
+import { NftType as ElasticNftType } from "src/common/indexer/entities/nft.type";
+import { NftSubType } from "../nfts/entities/nft.sub.type";
 
 @Injectable()
 export class CollectionService {
@@ -80,7 +82,26 @@ export class CollectionService {
   }
 
   applyPropertiesToCollectionFromElasticSearch(nftCollection: NftCollection, indexedCollection: Collection) {
-    nftCollection.type = indexedCollection.type as NftType;
+    switch (indexedCollection.type) {
+      case ElasticNftType.NonFungibleESDT:
+      case ElasticNftType.NonFungibleESDTv2:
+      case ElasticNftType.DynamicNonFungibleESDT:
+        nftCollection.type = NftType.NonFungibleESDT;
+        break;
+      case ElasticNftType.MetaESDT:
+      case ElasticNftType.DynamicMetaESDT:
+        nftCollection.type = NftType.MetaESDT;
+        break;
+      case ElasticNftType.SemiFungibleESDT:
+      case ElasticNftType.DynamicSemiFungibleESDT:
+        nftCollection.type = NftType.SemiFungibleESDT;
+        break;
+    }
+
+    if (nftCollection.type !== indexedCollection.type) {
+      nftCollection.subType = indexedCollection.type as NftSubType;
+    }
+
     nftCollection.timestamp = indexedCollection.timestamp;
 
     if (nftCollection.type.in(NftType.NonFungibleESDT, NftType.SemiFungibleESDT)) {
@@ -191,7 +212,7 @@ export class CollectionService {
       return undefined;
     }
 
-    if (![NftType.MetaESDT, NftType.NonFungibleESDT, NftType.SemiFungibleESDT].includes(elasticCollection.type as NftType)) {
+    if (!Object.values(ElasticNftType).includes(elasticCollection.type as NftType)) {
       return undefined;
     }
 

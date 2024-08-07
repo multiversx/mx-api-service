@@ -386,6 +386,9 @@ export class NftService {
         // @ts-ignore
         nft.type = collectionProperties.type;
 
+        // @ts-ignore
+        nft.subType = collectionProperties.subType;
+
         if (nft.type === NftType.MetaESDT) {
           nft.decimals = collectionProperties.decimals;
           // @ts-ignore

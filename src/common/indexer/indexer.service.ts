@@ -265,6 +265,16 @@ export class IndexerService implements IndexerInterface {
   }
 
   @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
+  async getAccountEsdtHistory(address: string, pagination: QueryPagination, filter: AccountHistoryFilter): Promise<AccountTokenHistory[]> {
+    return await this.indexerInterface.getAccountEsdtHistory(address, pagination, filter);
+  }
+
+  @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
+  async getAccountEsdtHistoryCount(address: string, filter: AccountHistoryFilter): Promise<number> {
+    return await this.indexerInterface.getAccountEsdtHistoryCount(address, filter);
+  }
+
+  @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
   async getTransactions(filter: TransactionFilter, pagination: QueryPagination, address?: string): Promise<Transaction[]> {
     return await this.indexerInterface.getTransactions(filter, pagination, address);
   }
