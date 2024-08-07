@@ -685,6 +685,10 @@ export class AccountService {
     return elasticResult.map(item => ApiUtils.mergeObjects(new AccountEsdtHistory(), item));
   }
 
+  async getAccountEsdtHistoryCount(address: string, filter: AccountHistoryFilter): Promise<number> {
+    return await this.indexerService.getAccountEsdtHistoryCount(address, filter);
+  }
+
   private async applyNodeUnbondingPeriods(nodes: AccountKey[]): Promise<void> {
     const leavingNodes = nodes.filter(node => node.status === 'unStaked');
     await Promise.all(leavingNodes.map(async node => {

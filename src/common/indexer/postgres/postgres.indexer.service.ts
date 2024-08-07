@@ -94,6 +94,10 @@ export class PostgresIndexerService implements IndexerInterface {
     throw new Error("Method not implemented.");
   }
 
+  getAccountEsdtHistoryCount(_address: string, _filter: AccountHistoryFilter): Promise<number> {
+    throw new Error("Method not implemented.");
+  }
+
   getNftCollectionsByIds(_identifiers: string[]): Promise<Collection[]> {
     throw new Error("Method not implemented.");
   }

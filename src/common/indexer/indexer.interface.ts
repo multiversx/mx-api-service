@@ -120,6 +120,8 @@ export interface IndexerInterface {
 
   getAccountEsdtHistory(address: string, pagination: QueryPagination, filter: AccountHistoryFilter): Promise<AccountTokenHistory[]>
 
+  getAccountEsdtHistoryCount(address: string, filter?: AccountHistoryFilter): Promise<number>
+
   getTransactions(filter: TransactionFilter, pagination: QueryPagination, address?: string): Promise<Transaction[]>
 
   getTokensForAddress(address: string, queryPagination: QueryPagination, filter: TokenFilter): Promise<Token[]>

@@ -497,6 +497,12 @@ export class ElasticIndexerService implements IndexerInterface {
     return await this.elasticService.getList('accountsesdthistory', 'address', elasticQuery);
   }
 
+  async getAccountEsdtHistoryCount(address: string, filter?: AccountHistoryFilter): Promise<number> {
+    const elasticQuery: ElasticQuery = this.indexerHelper.buildAccountHistoryFilterQuery(address, undefined, filter);
+
+    return await this.elasticService.getCount('accountsesdthistory', elasticQuery);
+  }
+
   async getTransactions(filter: TransactionFilter, pagination: QueryPagination, address?: string): Promise<any[]> {
     const sortOrder: ElasticSortOrder = !filter.order || filter.order === SortOrder.desc ? ElasticSortOrder.descending : ElasticSortOrder.ascending;
 

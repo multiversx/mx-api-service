@@ -61,6 +61,7 @@ describe('Account Service', () => {
             getScDeploy: jest.fn(),
             getTransaction: jest.fn(),
             getAccountEsdtHistory: jest.fn(),
+            getAccountEsdtHistoryCount: jest.fn(),
           },
         },
         {
@@ -746,6 +747,21 @@ describe('Account Service', () => {
 
       expect(indexerService.getAccountEsdtHistory).toHaveBeenCalledWith(address, pagination, filter);
       expect(result).toEqual([]);
+    });
+  });
+
+  describe('getAccountEsdtHistoryCount', () => {
+    const address = 'erd1qga7ze0l03chfgru0a32wxqf2226nzrxnyhzer9lmudqhjgy7ycqjjyknz';
+    const filter = new AccountHistoryFilter({});
+    const esdtHistoryCount = 5;
+
+    it('should return the account esdt history count', async () => {
+      jest.spyOn(indexerService, 'getAccountEsdtHistoryCount').mockResolvedValue(esdtHistoryCount);
+
+      const result = await service.getAccountEsdtHistoryCount(address, filter);
+
+      expect(indexerService.getAccountEsdtHistoryCount).toHaveBeenCalledWith(address, filter);
+      expect(result).toEqual(esdtHistoryCount);
     });
   });
 

@@ -1229,7 +1229,7 @@ export class AccountController {
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
-  @ApiQuery({ name: 'identifier', description: 'Filter by multiple token identifiers, comma-separated', required: false })
+  @ApiQuery({ name: 'identifier', description: 'Filter by multiple esdt identifiers, comma-separated', required: false })
   @ApiQuery({ name: 'token', description: 'Token identifier', required: false })
   async getAccountEsdtHistory(
     @Param('address', ParseAddressPipe) address: string,
@@ -1243,6 +1243,24 @@ export class AccountController {
     return await this.accountService.getAccountEsdtHistory(
       address,
       new QueryPagination({ from, size }),
+      new AccountHistoryFilter({ before, after, identifiers: identifier, token }));
+  }
+
+  @Get("/accounts/:address/esdthistory/count")
+  @ApiOperation({ summary: 'Account esdts history count', description: 'Returns account esdts balance history count' })
+  @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
+  @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
+  @ApiQuery({ name: 'identifier', description: 'Filter by multiple esdt identifiers, comma-separated', required: false })
+  @ApiQuery({ name: 'token', description: 'Token identifier', required: false })
+  async getAccountEsdtHistoryCount(
+    @Param('address', ParseAddressPipe) address: string,
+    @Query('before', ParseIntPipe) before?: number,
+    @Query('after', ParseIntPipe) after?: number,
+    @Query('identifier', ParseArrayPipe) identifier?: string[],
+    @Query('token', ParseTokenPipe) token?: string,
+  ): Promise<number> {
+    return await this.accountService.getAccountEsdtHistoryCount(
+      address,
       new AccountHistoryFilter({ before, after, identifiers: identifier, token }));
   }
 
