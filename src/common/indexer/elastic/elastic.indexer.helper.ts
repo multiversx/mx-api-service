@@ -556,9 +556,8 @@ export class ElasticIndexerHelper {
     }
 
     if (filter && filter.identifiers) {
-      elasticQuery = elasticQuery.withMustCondition(QueryType.Should([
-        ...filter.identifiers.map(identifier => QueryType.Match('identifier', identifier, QueryOperator.AND)),
-      ]));
+      elasticQuery = elasticQuery.withMustCondition(QueryType.Should(
+        filter.identifiers.map(identifier => QueryType.Match('identifier', identifier, QueryOperator.AND))));
     }
 
     if (filter && filter.token) {
