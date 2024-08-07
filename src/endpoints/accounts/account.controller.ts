@@ -1223,6 +1223,47 @@ export class AccountController {
       new AccountHistoryFilter({ before, after }));
   }
 
+  @Get("/accounts/:address/esdthistory")
+  @ApiOperation({ summary: 'Account esdts history', description: 'Returns account esdts balance history' })
+  @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
+  @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
+  @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
+  @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
+  @ApiQuery({ name: 'identifier', description: 'Filter by multiple esdt identifiers, comma-separated', required: false })
+  @ApiQuery({ name: 'token', description: 'Token identifier', required: false })
+  async getAccountEsdtHistory(
+    @Param('address', ParseAddressPipe) address: string,
+    @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
+    @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
+    @Query('before', ParseIntPipe) before?: number,
+    @Query('after', ParseIntPipe) after?: number,
+    @Query('identifier', ParseArrayPipe) identifier?: string[],
+    @Query('token', ParseTokenPipe) token?: string,
+  ): Promise<AccountEsdtHistory[]> {
+    return await this.accountService.getAccountEsdtHistory(
+      address,
+      new QueryPagination({ from, size }),
+      new AccountHistoryFilter({ before, after, identifiers: identifier, token }));
+  }
+
+  @Get("/accounts/:address/esdthistory/count")
+  @ApiOperation({ summary: 'Account esdts history count', description: 'Returns account esdts balance history count' })
+  @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
+  @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
+  @ApiQuery({ name: 'identifier', description: 'Filter by multiple esdt identifiers, comma-separated', required: false })
+  @ApiQuery({ name: 'token', description: 'Token identifier', required: false })
+  async getAccountEsdtHistoryCount(
+    @Param('address', ParseAddressPipe) address: string,
+    @Query('before', ParseIntPipe) before?: number,
+    @Query('after', ParseIntPipe) after?: number,
+    @Query('identifier', ParseArrayPipe) identifier?: string[],
+    @Query('token', ParseTokenPipe) token?: string,
+  ): Promise<number> {
+    return await this.accountService.getAccountEsdtHistoryCount(
+      address,
+      new AccountHistoryFilter({ before, after, identifiers: identifier, token }));
+  }
+
   @Get("/accounts/:address/history/:tokenIdentifier")
   @ApiOperation({ summary: 'Account token history', description: 'Returns account token balance history' })
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })

@@ -580,6 +580,15 @@ export class ElasticIndexerHelper {
       elasticQuery = elasticQuery.withDateRangeFilter('timestamp', filter.before, filter.after);
     }
 
+    if (filter && filter.identifiers) {
+      elasticQuery = elasticQuery.withMustCondition(QueryType.Should(
+        filter.identifiers.map(identifier => QueryType.Match('identifier', identifier, QueryOperator.AND))));
+    }
+
+    if (filter && filter.token) {
+      elasticQuery = elasticQuery.withMustMatchCondition('token', filter.token);
+    }
+
     return elasticQuery;
   }
 
