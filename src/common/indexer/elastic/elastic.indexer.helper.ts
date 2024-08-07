@@ -463,7 +463,6 @@ export class ElasticIndexerHelper {
     if (address) {
       shouldQueries.push(QueryType.Match('sender', address));
       shouldQueries.push(QueryType.Match('receiver', address));
-      shouldQueries.push(QueryType.Match('relayerAddr', address));
 
       if (this.apiConfigService.getIsIndexerV3FlagActive()) {
         shouldQueries.push(QueryType.Match('receivers', address));
