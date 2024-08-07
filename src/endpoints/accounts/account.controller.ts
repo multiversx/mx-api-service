@@ -1223,7 +1223,7 @@ export class AccountController {
       new AccountHistoryFilter({ before, after }));
   }
 
-  @Get("/accounts/:address/history/tokens")
+  @Get("/accounts/:address/tokenhistory")
   @ApiOperation({ summary: 'Account tokens history', description: 'Returns account tokens balance history' })
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
