@@ -20,6 +20,10 @@ import { NftType } from "../entities/nft.type";
 
 @Injectable()
 export class ElasticIndexerHelper {
+  private nonFungibleEsdtTypes: NftType[] = [NftType.NonFungibleESDT, NftType.NonFungibleESDTv2, NftType.DynamicNonFungibleESDT];
+  private semiFungibleEsdtTypes: NftType[] = [NftType.SemiFungibleESDT, NftType.DynamicSemiFungibleESDT];
+  private metaEsdtTypes: NftType[] = [NftType.MetaESDT, NftType.DynamicMetaESDT];
+
   constructor(
     private readonly apiConfigService: ApiConfigService,
     private readonly blsService: BlsService,
@@ -76,15 +80,7 @@ export class ElasticIndexerHelper {
   public buildCollectionRolesFilter(filter: CollectionFilter, address?: string): ElasticQuery {
     let elasticQuery = ElasticQuery.create();
     elasticQuery = elasticQuery.withMustNotExistCondition('identifier')
-      .withMustMultiShouldCondition([
-        NftType.MetaESDT,
-        NftType.NonFungibleESDT,
-        NftType.SemiFungibleESDT,
-        NftType.NonFungibleESDTv2,
-        NftType.DynamicNonFungibleESDT,
-        NftType.DynamicSemiFungibleESDT,
-        NftType.DynamicMetaESDT,
-      ], type => QueryType.Match('type', type));
+      .withMustMultiShouldCondition(Object.values(NftType), type => QueryType.Match('type', type));
 
     if (address) {
       if (this.apiConfigService.getIsIndexerV3FlagActive()) {
@@ -136,11 +132,8 @@ export class ElasticIndexerHelper {
 
     if (filter.excludeMetaESDT === true) {
       elasticQuery = elasticQuery.withMustMultiShouldCondition([
-        NftType.NonFungibleESDT,
-        NftType.SemiFungibleESDT,
-        NftType.NonFungibleESDTv2,
-        NftType.DynamicNonFungibleESDT,
-        NftType.DynamicSemiFungibleESDT,
+        ...this.nonFungibleEsdtTypes,
+        ...this.semiFungibleEsdtTypes,
       ], type => QueryType.Match('type', type));
     }
 
@@ -150,13 +143,13 @@ export class ElasticIndexerHelper {
       for (const type of filter.type) {
         switch (type) {
           case NftType.NonFungibleESDT:
-            types.push(NftType.NonFungibleESDT, NftType.NonFungibleESDTv2, NftType.DynamicNonFungibleESDT);
+            types.push(...this.nonFungibleEsdtTypes);
             break;
           case NftType.SemiFungibleESDT:
-            types.push(NftType.SemiFungibleESDT, NftType.DynamicSemiFungibleESDT);
+            types.push(...this.semiFungibleEsdtTypes);
             break;
           case NftType.MetaESDT:
-            types.push(NftType.MetaESDT, NftType.DynamicMetaESDT);
+            types.push(...this.metaEsdtTypes);
             break;
         }
       }
