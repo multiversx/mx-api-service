@@ -2253,6 +2253,9 @@ type Nft {
   """Score for the given NFT."""
   score: Float
 
+  """NFT sub type for the given NFT."""
+  subType: NftSubType
+
   """Supply for the given NFT. Complexity: 100"""
   supply: String
 
@@ -2346,6 +2349,9 @@ type NftAccount {
   """Score for the given NFT."""
   score: Float
 
+  """NFT sub type for the given NFT."""
+  subType: NftSubType
+
   """Supply for the given NFT. Complexity: 100"""
   supply: String
 
@@ -2431,6 +2437,9 @@ type NftAccountFlat {
 
   """Score for the given NFT."""
   score: Float
+
+  """NFT sub type for the given NFT."""
+  subType: NftSubType
 
   """Supply for the given NFT. Complexity: 100"""
   supply: String
@@ -2523,6 +2532,9 @@ type NftCollection {
   """Scam information for the underlying collection."""
   scamInfo: ScamInformation
 
+  """NFT sub type for the given NFT collection."""
+  subType: NftSubType
+
   """Ticker for the given NFT collection."""
   ticker: ID!
 
@@ -2596,6 +2608,9 @@ type NftCollectionAccount {
   """Scam information for the underlying collection."""
   scamInfo: ScamInformation
 
+  """NFT sub type for the given NFT collection."""
+  subType: NftSubType
+
   """Ticker for the given NFT collection."""
   ticker: ID!
 
@@ -2664,6 +2679,9 @@ type NftCollectionAccountFlat {
 
   """Scam information for the underlying collection."""
   scamInfo: ScamInformation
+
+  """NFT sub type for the given NFT collection."""
+  subType: NftSubType
 
   """Ticker for the given NFT collection."""
   ticker: ID!
@@ -2755,6 +2773,21 @@ type NftRank {
 
   """NFT rank"""
   rank: Float!
+}
+
+"""NFT subtype."""
+enum NftSubType {
+  """Dynamic meta ESDT NFT type."""
+  DynamicMetaESDT
+
+  """Dynamic non-fungible NFT type."""
+  DynamicNonFungibleESDT
+
+  """Dynamic semi-fungible NFT type."""
+  DynamicSemiFungibleESDT
+
+  """Non-fungible ESDT v2 NFT type."""
+  NonFungibleESDTv2
 }
 
 """NFT type."""

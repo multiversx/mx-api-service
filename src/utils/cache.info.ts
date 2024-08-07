@@ -194,7 +194,7 @@ export class CacheInfo {
 
   static EsdtProperties(identifier: string): CacheInfo {
     return {
-      key: `esdt:${identifier}`,
+      key: `esdt:v2:${identifier}`,
       ttl: Constants.oneDay(),
     };
   }

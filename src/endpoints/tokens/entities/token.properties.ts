@@ -1,5 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { EsdtType } from "../../esdt/entities/esdt.type";
+import { EsdtSubType } from "src/endpoints/esdt/entities/esdt.sub.type";
 
 export class TokenProperties {
   constructor(init?: Partial<TokenProperties>) {
@@ -14,6 +15,9 @@ export class TokenProperties {
 
   @ApiProperty()
   type: EsdtType = EsdtType.NonFungibleESDT;
+
+  @ApiProperty()
+  subType: EsdtSubType | undefined = undefined;
 
   @ApiProperty()
   owner: string = '';
