@@ -57,7 +57,7 @@ async function bootstrap() {
 
     await configurePublicApp(publicApp, apiConfigService);
 
-    await publicApp.listen(3001);
+    await publicApp.listen(apiConfigService.getPublicApiPort());
 
     const websocketPublisherApp = await NestFactory.createMicroservice<MicroserviceOptions>(
       WebSocketPublisherModule,
