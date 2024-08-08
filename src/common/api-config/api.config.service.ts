@@ -397,6 +397,10 @@ export class ApiConfigService {
     return isApiActive;
   }
 
+  getIsWebsocketApiActive(): boolean {
+    return this.configService.get<boolean>('api.websocket') ?? true;
+  }
+
   getPrivateApiPort(): number {
     return this.configService.get<number>('api.privatePort') ?? 4001;
   }
