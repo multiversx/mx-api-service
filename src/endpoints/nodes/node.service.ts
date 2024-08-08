@@ -666,7 +666,7 @@ export class NodeService {
       const node: Node = new Node({
         bls,
         name,
-        version: version ? (version.includes('-rc') ? version.split('-').slice(0, 2).join('-').split('/')[0] : version.split('-')[0].split('/')[0]) : '',
+        version: version ? (version.includes('-rc') || version.includes('-patch') ? version.split('-').slice(0, 2).join('-').split('/')[0] : version.split('-')[0].split('/')[0]) : '',
         identity: identity && identity !== '' ? identity.toLowerCase() : identity,
         rating: parseFloat(parseFloat(rating).toFixed(2)),
         tempRating: parseFloat(parseFloat(tempRating).toFixed(2)),
