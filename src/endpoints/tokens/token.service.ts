@@ -786,10 +786,11 @@ export class TokenService {
           token.marketCap = token.price * NumberUtils.denominateString(token.circulatingSupply, token.decimals);
         }
       } else if (token.assets?.priceSource?.url) {
-        const tokenData = await this.fetchTokenDataFromUrl(token.assets.priceSource.url);
+        const pathToPrice = "0.usdPrice";
+        const tokenData = await this.fetchTokenDataFromUrl(token.assets.priceSource.url, pathToPrice);
 
         if (tokenData) {
-          token.price = tokenData.usdPrice;
+          token.price = tokenData;
 
           const supply = await this.esdtService.getTokenSupply(token.identifier);
           token.supply = supply.totalSupply;
@@ -811,13 +812,27 @@ export class TokenService {
     return tokens;
   }
 
-  private async fetchTokenDataFromUrl(url: string): Promise<any> {
+  private extractData(data: any, path: string): any {
+    const keys = path.split('.');
+    let result: any = data;
+
+    for (const key of keys) {
+      if (result === undefined || result === null) {
+        return undefined;
+      }
+      result = !isNaN(Number(key)) ? result[Number(key)] : result[key];
+    }
+    return result;
+  }
+
+  private async fetchTokenDataFromUrl(url: string, path: string): Promise<any> {
     try {
       const response = await fetch(url);
       const data = await response.json();
+      const extractedValue = this.extractData(data, path);
 
-      if (data && Array.isArray(data) && data.length > 0) {
-        return data[0];
+      if (extractedValue) {
+        return extractedValue;
       } else {
         this.logger.error(`No valid data found at URL: ${url}`);
       }
