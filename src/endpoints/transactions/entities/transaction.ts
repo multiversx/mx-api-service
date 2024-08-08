@@ -138,6 +138,10 @@ export class Transaction {
   @ApiProperty({ type: String, nullable: true })
   isRelayed: boolean | undefined = undefined;
 
+  @Field(() => String, { description: "Relayer address for the given transaction.", nullable: true })
+  @ApiProperty({ type: String, nullable: true })
+  relayer: string | undefined = undefined;
+
   getDate(): Date | undefined {
     if (this.timestamp) {
       return new Date(this.timestamp * 1000);

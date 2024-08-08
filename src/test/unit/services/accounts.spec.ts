@@ -457,6 +457,7 @@ describe('Account Service', () => {
         receiversShardIDs: [],
         operation: '',
         scResults: [],
+        relayerAddr: '',
       });
 
       const result = await service.getAccountDeployedAtRaw(address);
