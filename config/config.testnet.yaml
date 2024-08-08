@@ -4,6 +4,7 @@ api:
   public: true
   publicPort: 3001
   private: true
+  privatePort: 4001
 cron:
   cacheWarmer: true
   fastWarm: true

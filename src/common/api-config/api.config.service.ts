@@ -397,6 +397,10 @@ export class ApiConfigService {
     return isApiActive;
   }
 
+  getPrivateApiPort(): number {
+    return this.configService.get<number>('api.privatePort') ?? 4001;
+  }
+
   getIsAuthActive(): boolean {
     return this.configService.get<boolean>('features.auth.enabled') ?? this.configService.get<boolean>('api.auth') ?? false;
   }

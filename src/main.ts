@@ -79,7 +79,7 @@ async function bootstrap() {
 
   if (apiConfigService.getIsPrivateApiActive()) {
     const privateApp = await NestFactory.create(PrivateAppModule);
-    await privateApp.listen(4001);
+    await privateApp.listen(apiConfigService.getPrivateApiPort());
   }
 
   if (apiConfigService.getIsTransactionProcessorCronActive()) {
