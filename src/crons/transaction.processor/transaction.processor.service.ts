@@ -14,6 +14,7 @@ import { LogMetricsEvent } from "src/common/entities/log.metrics.event";
 import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { BinaryUtils, OriginLogger } from "@multiversx/sdk-nestjs-common";
 import { PerformanceProfiler } from "@multiversx/sdk-nestjs-monitoring";
+import { StakeFunction } from "src/endpoints/transactions/transaction-action/recognizers/staking/entities/stake.function";
 
 
 @Injectable()
@@ -45,11 +46,13 @@ export class TransactionProcessorService {
           const invalidatedTokenProperties = await this.tryInvalidateTokenProperties(transaction);
           const invalidatedOwnerKeys = await this.tryInvalidateOwner(transaction);
           const invalidatedCollectionPropertiesKeys = await this.tryInvalidateCollectionProperties(transaction);
+          const invalidatedStakeTopUpKey = await this.tryInvalidateStakeTopup(transaction);
 
           allInvalidatedKeys.push(
             ...invalidatedTokenProperties,
             ...invalidatedOwnerKeys,
-            ...invalidatedCollectionPropertiesKeys
+            ...invalidatedCollectionPropertiesKeys,
+            ...invalidatedStakeTopUpKey,
           );
         }
 
@@ -130,5 +133,24 @@ export class TransactionProcessorService {
     }
 
     return [];
+  }
+
+  async tryInvalidateStakeTopup(transaction: ShardTransaction): Promise<string[]> {
+    if (!transaction.data) {
+      return [];
+    }
+
+    const transactionFuncName = transaction.getDataFunctionName();
+    if (!transactionFuncName) {
+      return [];
+    }
+
+    if (!transactionFuncName.in(StakeFunction.delegate, StakeFunction.unDelegate, StakeFunction.reDelegateRewards)) {
+      return [];
+    }
+
+    await this.cachingService.deleteInCache(CacheInfo.StakeTopup(transaction.receiver).key);
+
+    return [CacheInfo.StakeTopup(transaction.receiver).key];
   }
 }
