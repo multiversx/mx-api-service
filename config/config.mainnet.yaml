@@ -2,6 +2,7 @@ network: 'mainnet'
 metaChainShardId: 4294967295
 api:
   public: true
+  publicPort: 3001
   private: true
 cron:
   cacheWarmer: true
