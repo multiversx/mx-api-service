@@ -57,29 +57,31 @@ async function bootstrap() {
 
     await configurePublicApp(publicApp, apiConfigService);
 
-    await publicApp.listen(3001);
+    await publicApp.listen(apiConfigService.getPublicApiPort());
 
-    const websocketPublisherApp = await NestFactory.createMicroservice<MicroserviceOptions>(
-      WebSocketPublisherModule,
-      {
-        transport: Transport.REDIS,
-        options: {
-          host: apiConfigService.getRedisUrl(),
-          port: 6379,
-          retryAttempts: 100,
-          retryDelay: 1000,
-          retryStrategy: () => 1000,
+    if (apiConfigService.getIsWebsocketApiActive()) {
+      const websocketPublisherApp = await NestFactory.createMicroservice<MicroserviceOptions>(
+        WebSocketPublisherModule,
+        {
+          transport: Transport.REDIS,
+          options: {
+            host: apiConfigService.getRedisUrl(),
+            port: 6379,
+            retryAttempts: 100,
+            retryDelay: 1000,
+            retryStrategy: () => 1000,
+          },
         },
-      },
-    );
-    websocketPublisherApp.useWebSocketAdapter(new SocketAdapter(websocketPublisherApp));
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    websocketPublisherApp.listen();
+      );
+      websocketPublisherApp.useWebSocketAdapter(new SocketAdapter(websocketPublisherApp));
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      websocketPublisherApp.listen();
+    }
   }
 
   if (apiConfigService.getIsPrivateApiActive()) {
     const privateApp = await NestFactory.create(PrivateAppModule);
-    await privateApp.listen(4001);
+    await privateApp.listen(apiConfigService.getPrivateApiPort());
   }
 
   if (apiConfigService.getIsTransactionProcessorCronActive()) {

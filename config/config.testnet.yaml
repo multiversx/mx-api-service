@@ -2,7 +2,10 @@ network: 'testnet'
 metaChainShardId: 4294967295
 api:
   public: true
+  publicPort: 3001
   private: true
+  privatePort: 4001
+  websocket: true
 cron:
   cacheWarmer: true
   fastWarm: true

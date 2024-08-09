@@ -5,4 +5,6 @@ export class AccountHistoryFilter {
   }
   before?: number;
   after?: number;
+  identifiers?: string[];
+  token?: string;
 }

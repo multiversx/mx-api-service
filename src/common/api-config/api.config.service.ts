@@ -384,6 +384,10 @@ export class ApiConfigService {
     return isApiActive;
   }
 
+  getPublicApiPort(): number {
+    return this.configService.get<number>('api.publicPort') ?? 3001;
+  }
+
   getIsPrivateApiActive(): boolean {
     const isApiActive = this.configService.get<boolean>('api.private');
     if (isApiActive === undefined) {
@@ -391,6 +395,14 @@ export class ApiConfigService {
     }
 
     return isApiActive;
+  }
+
+  getIsWebsocketApiActive(): boolean {
+    return this.configService.get<boolean>('api.websocket') ?? true;
+  }
+
+  getPrivateApiPort(): number {
+    return this.configService.get<number>('api.privatePort') ?? 4001;
   }
 
   getIsAuthActive(): boolean {
