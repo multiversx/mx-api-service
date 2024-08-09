@@ -20,7 +20,7 @@ import { TokenSort } from "./entities/token.sort";
 import { TokenWithRoles } from "./entities/token.with.roles";
 import { TokenWithRolesFilter } from "./entities/token.with.roles.filter";
 import { AddressUtils, BinaryUtils, NumberUtils, TokenUtils } from "@multiversx/sdk-nestjs-common";
-import { ApiUtils } from "@multiversx/sdk-nestjs-http";
+import { ApiService, ApiUtils } from "@multiversx/sdk-nestjs-http";
 import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { OriginLogger } from "@multiversx/sdk-nestjs-common";
@@ -63,6 +63,7 @@ export class TokenService {
     private readonly collectionService: CollectionService,
     private readonly dataApiService: DataApiService,
     private readonly mexPairService: MexPairService,
+    private readonly apiService: ApiService,
   ) { }
 
   async isToken(identifier: string): Promise<boolean> {
@@ -827,19 +828,23 @@ export class TokenService {
 
   private async fetchTokenDataFromUrl(url: string, path: string): Promise<any> {
     try {
-      const response = await fetch(url);
-      const data = await response.json();
-      const extractedValue = this.extractData(data, path);
+      const result = await this.apiService.get(url);
 
-      if (extractedValue) {
-        return extractedValue;
+      if (result && result.data) {
+        const extractedValue = this.extractData(result.data, path);
+        if (extractedValue) {
+          return extractedValue;
+        } else {
+          this.logger.error(`No valid data found at URL: ${url}`);
+        }
       } else {
-        this.logger.error(`No valid data found at URL: ${url}`);
+        this.logger.error(`Invalid response received from URL: ${url}`);
       }
     } catch (error) {
       this.logger.error(`Failed to fetch token data from URL: ${url}`, error);
     }
   }
+
 
   private async getTokenAssetsRaw(identifier: string): Promise<TokenAssets | undefined> {
     return await this.assetsService.getTokenAssets(identifier);
