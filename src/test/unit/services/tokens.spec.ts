@@ -25,6 +25,7 @@ import { TransferService } from "src/endpoints/transfers/transfer.service";
 import { MexPairService } from "src/endpoints/mex/mex.pair.service";
 import * as fs from 'fs';
 import * as path from 'path';
+import { ApiService } from "@multiversx/sdk-nestjs-http";
 
 describe('Token Service', () => {
   let tokenService: TokenService;
@@ -129,6 +130,12 @@ describe('Token Service', () => {
           provide: MexPairService,
           useValue: {
             getAllMexPairs: jest.fn(),
+          },
+        },
+        {
+          provide: ApiService,
+          useValue: {
+            get: jest.fn(),
           },
         },
       ],

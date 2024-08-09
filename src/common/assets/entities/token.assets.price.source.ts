@@ -7,4 +7,8 @@ export class TokenAssetsPriceSource {
   @Field(() => String, { description: 'Type of price source', nullable: true })
   @ApiProperty({ type: TokenAssetsPriceSourceType, nullable: true })
   type: TokenAssetsPriceSourceType | undefined = undefined;
+
+  @Field(() => String, { description: 'URL of price source', nullable: true })
+  @ApiProperty({ type: String, nullable: true })
+  url: string | undefined = undefined;
 }
