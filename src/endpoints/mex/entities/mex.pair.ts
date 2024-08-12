@@ -89,4 +89,20 @@ export class MexPair {
   @Field(() => String, { description: "Mex pair exchange details.", nullable: true })
   @ApiProperty({ type: String, example: 'jungledex' })
   exchange: MexPairExchange | undefined;
+
+  @Field(() => Boolean, { description: '.', nullable: true })
+  @ApiProperty({ type: Boolean, nullable: true })
+  hasFarms: boolean | undefined = undefined;
+
+  @Field(() => Boolean, { description: '.', nullable: true })
+  @ApiProperty({ type: Boolean, nullable: true })
+  hasDualFarms: boolean | undefined = undefined;
+
+  @Field(() => Number, { description: '.', nullable: true })
+  @ApiProperty({ type: Number, nullable: true })
+  tradesCount: number | undefined = undefined;
+
+  @Field(() => Number, { description: '.', nullable: true })
+  @ApiProperty({ type: Number, nullable: true })
+  deployedAt: number | undefined = undefined;
 }

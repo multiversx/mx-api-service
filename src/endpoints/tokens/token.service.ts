@@ -765,6 +765,7 @@ export class TokenService {
     await this.applyMexLiquidity(tokens.filter(x => x.type !== TokenType.MetaESDT));
     await this.applyMexPrices(tokens.filter(x => x.type !== TokenType.MetaESDT));
     await this.applyMexPairType(tokens.filter(x => x.type !== TokenType.MetaESDT));
+    await this.applyMexPairInfo(tokens.filter(x => x.type !== TokenType.MetaESDT));
 
     await this.cachingService.batchApplyAll(
       tokens,
@@ -952,6 +953,28 @@ export class TokenService {
       }
     } catch (error) {
       this.logger.error('Could not apply mex tokens prices');
+      this.logger.error(error);
+    }
+  }
+
+  private async applyMexPairInfo(tokens: TokenDetailed[]): Promise<void> {
+    try {
+      const pairs = await this.mexPairService.getAllMexPairs();
+      const filteredPairs = pairs.filter(x => x.state === MexPairState.active);
+
+      for (const token of tokens) {
+        const pair = filteredPairs.filter(x => x.id === token.identifier);
+
+        if (pair.length > 0) {
+          console.log(pair)
+          token.hasFarms = pair[0].hasFarms;
+          token.hasDualFarms = pair[0].hasDualFarms;
+          token.tradesCount = pair[0].tradesCount;
+          token.deployedAt = pair[0].deployedAt;
+        }
+      }
+    } catch (error) {
+      this.logger.error('Could not apply mex pair info');
       this.logger.error(error);
     }
   }
