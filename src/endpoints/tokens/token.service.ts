@@ -42,7 +42,6 @@ import { TransferService } from "../transfers/transfer.service";
 import { MexPairService } from "../mex/mex.pair.service";
 import { MexPairState } from "../mex/entities/mex.pair.state";
 import { MexTokenType } from "../mex/entities/mex.token.type";
-import assert from "assert";
 
 @Injectable()
 export class TokenService {
