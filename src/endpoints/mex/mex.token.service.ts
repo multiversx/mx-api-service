@@ -210,7 +210,7 @@ export class MexTokenService {
         price: pair.quotePrice,
         previous24hPrice: pair.quotePrevious24hPrice,
         previous24hVolume: pair.volume24h,
-        tradesCount: 0
+        tradesCount: 0,
       };
     }
 
@@ -222,7 +222,7 @@ export class MexTokenService {
         price: pair.basePrice,
         previous24hPrice: pair.basePrevious24hPrice,
         previous24hVolume: pair.volume24h,
-        tradesCount: 0
+        tradesCount: 0,
       };
     }
 
@@ -234,7 +234,7 @@ export class MexTokenService {
         price: pair.quotePrice,
         previous24hPrice: pair.quotePrevious24hPrice,
         previous24hVolume: pair.volume24h,
-        tradesCount: 0
+        tradesCount: 0,
       };
     }
 
@@ -288,7 +288,7 @@ export class MexTokenService {
 
   private computeTradesCountForMexToken(mexToken: MexToken, filteredPairs: MexPair[]): number {
     const pairs = filteredPairs.filter(x => x.baseId === mexToken.id || x.quoteId === mexToken.id);
-    let computeResult = pairs.sum(pair => pair.tradesCount ?? 0);
+    const computeResult = pairs.sum(pair => pair.tradesCount ?? 0);
     return computeResult;
   }
 }

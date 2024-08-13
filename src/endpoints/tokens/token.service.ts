@@ -42,6 +42,7 @@ import { TransferService } from "../transfers/transfer.service";
 import { MexPairService } from "../mex/mex.pair.service";
 import { MexPairState } from "../mex/entities/mex.pair.state";
 import { MexTokenType } from "../mex/entities/mex.token.type";
+import assert from "assert";
 
 @Injectable()
 export class TokenService {
@@ -958,19 +959,28 @@ export class TokenService {
   }
 
   private async applyMexPairTradesCount(tokens: TokenDetailed[]): Promise<void> {
+    if (!tokens.length) {
+      return;
+    }
+
     try {
       const pairs = await this.mexPairService.getAllMexPairs();
       const filteredPairs = pairs.filter(x => x.state === MexPairState.active);
 
-      for (const token of tokens) {
-        const pairs = filteredPairs.filter(x => x.baseId === token.identifier || x.quoteId === token.identifier);
+      if (!filteredPairs.length) {
+        return;
+      }
 
-        if (pairs.length > 0) {
-          token.tradesCount = pairs.sum(pair => pair.tradesCount ?? 0);
+      for (const token of tokens) {
+        const tokenPairs = filteredPairs.filter(x => x.baseId === token.identifier || x.quoteId === token.identifier);
+
+        if (tokenPairs.length > 0) {
+          token.tradesCount = tokenPairs.sum(tokenPair => tokenPair.tradesCount ?? 0);
         }
       }
+
     } catch (error) {
-      this.logger.error('Could not apply mex pair info');
+      this.logger.error('Could not apply mex trades count');
       this.logger.error(error);
     }
   }
