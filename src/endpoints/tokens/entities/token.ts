@@ -163,19 +163,7 @@ export class Token {
   @ApiProperty({ type: Number, nullable: true })
   lowLiquidityThresholdPercent: number | undefined = undefined;
 
-  @Field(() => Boolean, { description: '.', nullable: true })
-  @ApiProperty({ type: Boolean, nullable: true })
-  hasFarms: boolean | undefined = undefined;
-
-  @Field(() => Boolean, { description: '.', nullable: true })
-  @ApiProperty({ type: Boolean, nullable: true })
-  hasDualFarms: boolean | undefined = undefined;
-
-  @Field(() => Number, { description: '.', nullable: true })
+  @Field(() => Number, { description: 'Mex pair trades count.', nullable: true })
   @ApiProperty({ type: Number, nullable: true })
   tradesCount: number | undefined = undefined;
-
-  @Field(() => Number, { description: '.', nullable: true })
-  @ApiProperty({ type: Number, nullable: true })
-  deployedAt: number | undefined = undefined;
 }
