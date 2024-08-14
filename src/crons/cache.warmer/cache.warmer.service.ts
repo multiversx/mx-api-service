@@ -154,6 +154,7 @@ export class CacheWarmerService {
   async handleEsdtTokenInvalidations() {
     const tokens = await this.tokenService.getAllTokensRaw();
     await this.invalidateKey(CacheInfo.AllEsdtTokens.key, tokens, CacheInfo.AllEsdtTokens.ttl);
+
   }
 
   @Cron(CronExpression.EVERY_MINUTE)
