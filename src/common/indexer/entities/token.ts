@@ -7,3 +7,4 @@ export interface Token extends Collection {
   roles: any;
   data?: TokenData;
 }
+
