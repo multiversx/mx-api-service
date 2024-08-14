@@ -863,12 +863,12 @@ export class TokenService {
 
   private async getAllTokensFromApi(): Promise<TokenDetailed[]> {
     try {
-      const requestTokenCount = await this.apiService.get(this.apiConfigService.getTokensFetchServiceUrl() + '/tokens/count');
-      const tokenCount = requestTokenCount.data;
+      const requestTokensCount = await this.apiService.get(this.apiConfigService.getTokensFetchServiceUrl() + '/tokens/count');
+      const tokensCount = requestTokensCount.data;
 
       const requestUrlParams = new ApiSettings();
       requestUrlParams.params = {
-        size: tokenCount,
+        size: tokensCount,
       };
 
       const requestTokens = await this.apiService.get(this.apiConfigService.getTokensFetchServiceUrl() + '/tokens', requestUrlParams);
@@ -880,7 +880,6 @@ export class TokenService {
       this.logger.error(error);
       return [];
     }
-
   }
 
   private async getTotalTransactions(token: TokenDetailed): Promise<{ count: number, lastUpdatedAt: number } | undefined> {

@@ -884,7 +884,7 @@ export class ApiConfigService {
   }
 
   isNodesFetchFeatureEnabled(): boolean {
-    return this.configService.get<boolean>('features.nodeFetch.enabled') ?? false;
+    return this.configService.get<boolean>('features.nodesFetch.enabled') ?? false;
   }
 
   getNodesFetchServiceUrl(): string {
