@@ -15,7 +15,7 @@ services:
     environment:
       - MYSQL_ROOT_PASSWORD=root
       - MYSQL_DATABASE=api
-  
+
   mongodbdatabase:
     image: mongo:latest
     environment:
@@ -49,4 +49,5 @@ services:
       - /var/lib/notifier
     ports:
       - 5673:5672
+
       - 15673:15672
