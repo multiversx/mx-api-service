@@ -869,4 +869,30 @@ export class ApiConfigService {
 
     return deepHistoryUrl;
   }
+
+  isTokensFetchFeatureEnabled(): boolean {
+    return this.configService.get<boolean>('features.tokensFetch.enabled') ?? false;
+  }
+
+  getTokensFetchServiceUrl(): string {
+    const serviceUrl = this.configService.get<string>('features.tokensFetch.serviceUrl');
+    if (!serviceUrl) {
+      throw new Error('No tokens fetch service url present');
+    }
+
+    return serviceUrl;
+  }
+
+  isNodesFetchFeatureEnabled(): boolean {
+    return this.configService.get<boolean>('features.nodeFetch.enabled') ?? false;
+  }
+
+  getNodesFetchServiceUrl(): string {
+    const serviceUrl = this.configService.get<string>('features.nodesFetch.serviceUrl');
+    if (!serviceUrl) {
+      throw new Error('No nodes fetch service url present');
+    }
+
+    return serviceUrl;
+  }
 }

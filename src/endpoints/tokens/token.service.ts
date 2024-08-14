@@ -20,7 +20,7 @@ import { TokenSort } from "./entities/token.sort";
 import { TokenWithRoles } from "./entities/token.with.roles";
 import { TokenWithRolesFilter } from "./entities/token.with.roles.filter";
 import { AddressUtils, BinaryUtils, NumberUtils, TokenUtils } from "@multiversx/sdk-nestjs-common";
-import { ApiUtils } from "@multiversx/sdk-nestjs-http";
+import { ApiService, ApiSettings, ApiUtils } from "@multiversx/sdk-nestjs-http";
 import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { OriginLogger } from "@multiversx/sdk-nestjs-common";
@@ -63,6 +63,7 @@ export class TokenService {
     private readonly collectionService: CollectionService,
     private readonly dataApiService: DataApiService,
     private readonly mexPairService: MexPairService,
+    private readonly apiService: ApiService,
   ) { }
 
   async isToken(identifier: string): Promise<boolean> {
@@ -721,6 +722,10 @@ export class TokenService {
   async getAllTokensRaw(): Promise<TokenDetailed[]> {
     this.logger.log(`Starting to fetch all tokens`);
 
+    if (this.apiConfigService.isTokensFetchFeatureEnabled()) {
+      return await this.getAllTokensFromApi();
+    }
+
     const tokensProperties = await this.esdtService.getAllFungibleTokenProperties();
     let tokens = tokensProperties.map(properties => ApiUtils.mergeObjects(new TokenDetailed(), properties));
 
@@ -854,6 +859,28 @@ export class TokenService {
       CacheInfo.TokenTransfers('').ttl,
       10,
     );
+  }
+
+  private async getAllTokensFromApi(): Promise<TokenDetailed[]> {
+    try {
+      const requestTokenCount = await this.apiService.get(this.apiConfigService.getTokensFetchServiceUrl() + '/tokens/count');
+      const tokenCount = requestTokenCount.data;
+
+      const requestUrlParams = new ApiSettings();
+      requestUrlParams.params = {
+        size: tokenCount,
+      };
+
+      const requestTokens = await this.apiService.get(this.apiConfigService.getTokensFetchServiceUrl() + '/tokens', requestUrlParams);
+      const tokens = requestTokens.data;
+
+      return tokens;
+    } catch (error) {
+      this.logger.error('An unhandled error occurred when getting tokens from API');
+      this.logger.error(error);
+      return [];
+    }
+
   }
 
   private async getTotalTransactions(token: TokenDetailed): Promise<{ count: number, lastUpdatedAt: number } | undefined> {
