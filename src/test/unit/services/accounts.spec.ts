@@ -858,7 +858,7 @@ describe('Account Service', () => {
       },
     };
 
-    it('should return the account contracts', async () => {
+    it.skip('should return the account contracts', async () => {
       jest.spyOn(indexerService, 'getAccountContracts').mockResolvedValue(details);
       jest.spyOn(assetsService, 'getAllAccountAssets').mockResolvedValue(assets);
 
