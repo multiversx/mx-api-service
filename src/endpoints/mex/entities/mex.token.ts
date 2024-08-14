@@ -34,3 +34,4 @@ export class MexToken {
   @ApiProperty({ type: Number, nullable: true })
   tradesCount: number | undefined = 0;
 }
+
