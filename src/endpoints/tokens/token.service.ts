@@ -10,7 +10,6 @@ import { TokenAccount } from "./entities/token.account";
 import { EsdtType } from "../esdt/entities/esdt.type";
 import { EsdtAddressService } from "../esdt/esdt.address.service";
 import { GatewayService } from "src/common/gateway/gateway.service";
-import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { TokenProperties } from "./entities/token.properties";
 import { TokenRoles } from "./entities/token.roles";
 import { TokenSupplyResult } from "./entities/token.supply.result";
@@ -51,7 +50,6 @@ export class TokenService {
     private readonly indexerService: IndexerService,
     private readonly esdtAddressService: EsdtAddressService,
     private readonly gatewayService: GatewayService,
-    private readonly apiConfigService: ApiConfigService,
     private readonly assetsService: AssetsService,
     private readonly cachingService: CacheService,
     @Inject(forwardRef(() => TransactionService))
@@ -463,49 +461,31 @@ export class TokenService {
   }
 
   async getTokenRoles(identifier: string): Promise<TokenRoles[] | undefined> {
-    if (this.apiConfigService.getIsIndexerV3FlagActive()) {
-      return await this.getTokenRolesFromElastic(identifier);
-    }
-
-    return await this.esdtService.getEsdtAddressesRoles(identifier);
+    return await this.getTokenRolesFromElastic(identifier);
   }
 
   async getTokenRolesForIdentifierAndAddress(identifier: string, address: string): Promise<TokenRoles | undefined> {
-    if (this.apiConfigService.getIsIndexerV3FlagActive()) {
-      const token = await this.indexerService.getToken(identifier);
+    const token = await this.indexerService.getToken(identifier);
 
-      if (!token) {
-        return undefined;
-      }
-
-      if (!token.roles) {
-        return undefined;
-      }
-
-      const addressRoles: TokenRoles = new TokenRoles();
-      addressRoles.address = address;
-      for (const role of Object.keys(token.roles)) {
-        const addresses = token.roles[role].distinct();
-        if (addresses.includes(address)) {
-          TokenHelpers.setTokenRole(addressRoles, role);
-        }
-      }
-
-      //@ts-ignore
-      delete addressRoles.address;
-
-      return addressRoles;
+    if (!token) {
+      return undefined;
     }
 
-    const tokenAddressesRoles = await this.esdtService.getEsdtAddressesRoles(identifier);
-    let addressRoles = tokenAddressesRoles?.find((role: TokenRoles) => role.address === address);
-    if (addressRoles) {
-      // clone
-      addressRoles = new TokenRoles(JSON.parse(JSON.stringify(addressRoles)));
-
-      //@ts-ignore
-      delete addressRoles?.address;
+    if (!token.roles) {
+      return undefined;
     }
+
+    const addressRoles: TokenRoles = new TokenRoles();
+    addressRoles.address = address;
+    for (const role of Object.keys(token.roles)) {
+      const addresses = token.roles[role].distinct();
+      if (addresses.includes(address)) {
+        TokenHelpers.setTokenRole(addressRoles, role);
+      }
+    }
+
+    //@ts-ignore
+    delete addressRoles.address;
 
     return addressRoles;
   }

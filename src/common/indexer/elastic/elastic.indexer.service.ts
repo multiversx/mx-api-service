@@ -653,17 +653,12 @@ export class ElasticIndexerService implements IndexerInterface {
   }
 
   async getNftsForAddress(address: string, filter: NftFilter, pagination: QueryPagination): Promise<any[]> {
-    let elasticQuery = this.indexerHelper.buildElasticNftFilter(filter, undefined, address)
-      .withPagination(pagination);
-
-    if (this.apiConfigService.getIsIndexerV3FlagActive()) {
-      elasticQuery = elasticQuery.withSort([
+    const elasticQuery = this.indexerHelper.buildElasticNftFilter(filter, undefined, address)
+      .withSort([
         { name: 'timestamp', order: ElasticSortOrder.descending },
         { name: 'tokenNonce', order: ElasticSortOrder.descending },
-      ]);
-    } else {
-      elasticQuery = elasticQuery.withSort([{ name: '_id', order: ElasticSortOrder.ascending }]);
-    }
+      ])
+      .withPagination(pagination);
 
     return await this.elasticService.getList('accountsesdt', 'identifier', elasticQuery);
   }

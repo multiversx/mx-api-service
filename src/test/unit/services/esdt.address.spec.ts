@@ -1,6 +1,5 @@
 import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { MetricsService } from "@multiversx/sdk-nestjs-monitoring";
-import { BadRequestException } from "@nestjs/common";
 import { Test } from "@nestjs/testing";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { AssetsService } from "src/common/assets/assets.service";
@@ -21,7 +20,6 @@ import { TokenAssetStatus } from "src/endpoints/tokens/entities/token.asset.stat
 describe('EsdtAddressService', () => {
   let service: EsdtAddressService;
   let indexerService: IndexerService;
-  let apiConfigService: ApiConfigService;
   let collectionService: CollectionService;
   let cacheService: CacheService;
   let metricsService: MetricsService;
@@ -45,7 +43,6 @@ describe('EsdtAddressService', () => {
           useValue:
           {
             getExternalMediaUrl: jest.fn(),
-            getIsIndexerV3FlagActive: jest.fn(),
           },
         },
         {
@@ -107,7 +104,6 @@ describe('EsdtAddressService', () => {
 
     service = moduleRef.get<EsdtAddressService>(EsdtAddressService);
     indexerService = moduleRef.get<IndexerService>(IndexerService);
-    apiConfigService = moduleRef.get<ApiConfigService>(ApiConfigService);
     collectionService = moduleRef.get<CollectionService>(CollectionService);
     cacheService = moduleRef.get<CacheService>(CacheService);
     metricsService = moduleRef.get<MetricsService>(MetricsService);
@@ -290,17 +286,7 @@ describe('EsdtAddressService', () => {
       nftCount: undefined,
     };
 
-    it('should throw BadRequestException when IndexerV3Flag is inactive and specific filters are used', async () => {
-      jest.spyOn(apiConfigService, 'getIsIndexerV3FlagActive').mockReturnValue(false);
-
-      const address = 'erd1qga7ze0l03chfgru0a32wxqf2226nzrxnyhzer9lmudqhjgy7ycqjjyknz';
-      const filter = { canCreate: true };
-
-      await expect(service.getCollectionsForAddress(address, filter, new QueryPagination())).rejects.toThrow(BadRequestException);
-    });
-
-    it('should return collections for a given address with IndexerV3Flag active', async () => {
-      jest.spyOn(apiConfigService, 'getIsIndexerV3FlagActive').mockReturnValue(true);
+    it('should return collections for a given address', async () => {
       jest.spyOn(indexerService, 'getNftCollections').mockResolvedValue([indexerCollectionMock]);
       jest.spyOn(collectionService, 'applyPropertiesToCollections').mockResolvedValue([propertiesToCollectionsMock]);
 
@@ -311,15 +297,12 @@ describe('EsdtAddressService', () => {
       const results = await service.getCollectionsForAddress(address, filter, pagination);
 
       expect(results).toHaveLength(1);
-      expect(apiConfigService.getIsIndexerV3FlagActive).toHaveBeenCalled();
-      expect(apiConfigService.getIsIndexerV3FlagActive).toHaveBeenCalledTimes(2);
       expect(indexerService.getNftCollections).toHaveBeenCalledWith(pagination, filter, address);
       expect(indexerService.getNftCollections).toHaveBeenCalledTimes(1);
       expect(collectionService.applyPropertiesToCollections).toHaveBeenCalled();
     });
 
-    it('should correctly apply roles to collections for a given address with IndexerV3Flag active', async () => {
-      jest.spyOn(apiConfigService, 'getIsIndexerV3FlagActive').mockReturnValue(true);
+    it('should correctly apply roles to collections for a given address', async () => {
       jest.spyOn(indexerService, 'getNftCollections').mockResolvedValue([indexerCollectionMock]);
       jest.spyOn(collectionService, 'applyPropertiesToCollections').mockResolvedValue([propertiesToCollectionsMock]);
 
