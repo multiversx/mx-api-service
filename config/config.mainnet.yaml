@@ -97,7 +97,13 @@ features:
     deadLetterQueueName: 'api-process-nfts-dlq'
   tps:
     enabled: true
-    maxLookBehindNonces: 100  
+    maxLookBehindNonces: 100
+  nodesFetch:
+    enabled: true
+    serviceUrl: 'https://mainnet-api.multiversx.com'
+  tokensFetch:
+    enabled: true
+    serviceUrl: 'https://mainnet-api.multiversx.com'
 image:
   width: 600
   height: 600
