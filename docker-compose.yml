@@ -49,5 +49,4 @@ services:
       - /var/lib/notifier
     ports:
       - 5673:5672
-
       - 15673:15672
