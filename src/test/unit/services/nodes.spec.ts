@@ -19,6 +19,7 @@ import { IdentitiesService } from "src/endpoints/identities/identities.service";
 import { NodeAuctionFilter } from "src/endpoints/nodes/entities/node.auction.filter";
 import * as fs from 'fs';
 import * as path from 'path';
+import { ApiService } from "@multiversx/sdk-nestjs-http";
 
 describe('NodeService', () => {
   let nodeService: NodeService;
@@ -106,6 +107,12 @@ describe('NodeService', () => {
           useValue: {
             getIdentity: jest.fn(),
             getAllIdentities: jest.fn(),
+          },
+        },
+        {
+          provide: ApiService,
+          useValue: {
+            get: jest.fn(),
           },
         },
       ],
