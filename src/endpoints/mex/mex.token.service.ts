@@ -26,7 +26,7 @@ export class MexTokenService {
     @Inject(forwardRef(() => MexFarmService))
     private readonly mexFarmService: MexFarmService,
     private readonly mexSettingsService: MexSettingsService,
-    private readonly graphQlService: GraphQlService
+    private readonly graphQlService: GraphQlService,
   ) { }
 
   async refreshMexTokens(): Promise<void> {
@@ -183,6 +183,8 @@ export class MexTokenService {
         wegldToken.name = pair.baseName;
         wegldToken.price = pair.basePrice;
         wegldToken.previous24hPrice = pair.basePrevious24hPrice;
+        wegldToken.previous24hVolume = pair.volume24h;
+        wegldToken.tradesCount = this.computeTradesCountForMexToken(wegldToken, filteredPairs);
         mexTokens.push(wegldToken);
       }
 
@@ -190,6 +192,8 @@ export class MexTokenService {
       if (!mexToken) {
         continue;
       }
+
+      mexToken.tradesCount = this.computeTradesCountForMexToken(mexToken, filteredPairs);
 
       mexTokens.push(mexToken);
     }
@@ -205,6 +209,8 @@ export class MexTokenService {
         name: pair.quoteName,
         price: pair.quotePrice,
         previous24hPrice: pair.quotePrevious24hPrice,
+        previous24hVolume: pair.volume24h,
+        tradesCount: 0,
       };
     }
 
@@ -215,6 +221,8 @@ export class MexTokenService {
         name: pair.baseName,
         price: pair.basePrice,
         previous24hPrice: pair.basePrevious24hPrice,
+        previous24hVolume: pair.volume24h,
+        tradesCount: 0,
       };
     }
 
@@ -225,6 +233,8 @@ export class MexTokenService {
         name: pair.quoteName,
         price: pair.quotePrice,
         previous24hPrice: pair.quotePrevious24hPrice,
+        previous24hVolume: pair.volume24h,
+        tradesCount: 0,
       };
     }
 
@@ -274,5 +284,11 @@ export class MexTokenService {
       this.logger.error(error);
       return [];
     }
+  }
+
+  private computeTradesCountForMexToken(mexToken: MexToken, filteredPairs: MexPair[]): number {
+    const pairs = filteredPairs.filter(x => x.baseId === mexToken.id || x.quoteId === mexToken.id);
+    const computeResult = pairs.sum(pair => pair.tradesCount ?? 0);
+    return computeResult;
   }
 }

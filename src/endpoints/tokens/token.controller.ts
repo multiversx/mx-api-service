@@ -62,6 +62,7 @@ export class TokenController {
     @Query('includeMetaESDT', new ParseBoolPipe) includeMetaESDT?: boolean,
     @Query('mexPairType', new ParseEnumArrayPipe(MexPairType)) mexPairType?: MexPairType[],
   ): Promise<TokenDetailed[]> {
+
     return await this.tokenService.getTokens(
       new QueryPagination({ from, size }),
       new TokenFilter({ type, search, name, identifier, identifiers, includeMetaESDT, sort, order, mexPairType })
