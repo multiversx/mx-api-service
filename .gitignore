@@ -1,7 +1,6 @@
 # compiled output
 /dist
 /node_modules
-/config/config.yaml
 /config/config.custom.yaml
 /config/config.custom.devnet.yaml
 /config/config.custom.testnet.yaml
