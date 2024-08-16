@@ -28,6 +28,9 @@ jobs:
     - name: Copy devnet config file from src to dist
       run: cp ./config/config.devnet.yaml ./dist/config/config.yaml
 
+    - name: Start docker services
+      run: docker-compose up -d
+
     - name: Start Node.js API
       run: node ./dist/src/main.js
 
@@ -55,6 +58,9 @@ jobs:
         name: base-results
         path: k6/output/summary.json
 
+    - name: Stop docker services
+      run: docker-compose down
+
   test-head:
     runs-on: ubuntu-latest
 
@@ -80,10 +86,8 @@ jobs:
     - name: Copy devnet config file from src to dist
       run: cp ./config/config.devnet.yaml ./dist/config/config.yaml
 
-    - name: Check folder content
-      run: ls -la
-    - run: ls ./dist
-    - run: ls ./dist/config
+    - name: Start docker services
+      run: docker-compose up -d
 
     - name: Start Node.js API
       run: node ./dist/src/main.js
@@ -111,6 +115,9 @@ jobs:
       with:
         name: head-results
         path: k6/output/summary.json
+
+    - name: Stop docker services
+      run: docker-compose down
 
   compare-results:
     runs-on: ubuntu-latest
