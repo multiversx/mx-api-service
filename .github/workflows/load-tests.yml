@@ -26,12 +26,10 @@ jobs:
       run: npm run build
 
     - name: Start Node.js API
-      run: node ./dist/src/main.js &
-      env:
-        SELF_URL: 'http://localhost:3001'
-        PUBLIC_API_PORT: 3001
-        PUBLIC_API_PREFIX: ''
-        PRIVATE_API_PORT: 4001
+      run: node ./dist/src/main.js
+
+    - name: Check folder content
+      run: ls -la
 
     - name: Install k6
       run: |
@@ -80,12 +78,10 @@ jobs:
       run: npm run build
 
     - name: Start Node.js API
-      run: node ./dist/src/main.js &
-      env:
-        SELF_URL: 'http://localhost:3001'
-        PUBLIC_API_PORT: 3001
-        PUBLIC_API_PREFIX: ''
-        PRIVATE_API_PORT: 4001
+      run: node ./dist/src/main.js
+
+    - name: Check folder content
+      run: ls -la
 
     - name: Install k6
       run: |
