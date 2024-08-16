@@ -43,7 +43,7 @@ jobs:
 
     - name: Wait for API to be ready
       run: |
-        until curl --output /dev/null --silent --fail http://localhost:4000/hello; do
+        until curl --output /dev/null --silent --fail http://localhost:4001/hello; do
           echo 'Waiting for API...'
           sleep 1
         done
@@ -97,7 +97,7 @@ jobs:
 
     - name: Wait for API to be ready
       run: |
-        until curl --output /dev/null --silent --fail http://localhost:4000/hello; do
+        until curl --output /dev/null --silent --fail http://localhost:4001/hello; do
           echo 'Waiting for API...'
           sleep 1
         done
