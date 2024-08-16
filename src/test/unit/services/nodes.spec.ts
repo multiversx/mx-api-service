@@ -28,6 +28,7 @@ describe('NodeService', () => {
   let apiConfigService: ApiConfigService;
   let gatewayService: GatewayService;
   let identitiesService: IdentitiesService;
+  let apiService: ApiService;
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
@@ -59,6 +60,8 @@ describe('NodeService', () => {
             getAuctionContractAddress: jest.fn(),
             isNodeSyncProgressEnabled: jest.fn(),
             isNodeEpochsLeftEnabled: jest.fn(),
+            isNodesFetchFeatureEnabled: jest.fn(),
+            getNodesFetchServiceUrl: jest.fn(),
           },
         },
         {
@@ -124,6 +127,7 @@ describe('NodeService', () => {
     apiConfigService = moduleRef.get<ApiConfigService>(ApiConfigService);
     gatewayService = moduleRef.get<GatewayService>(GatewayService);
     identitiesService = moduleRef.get<IdentitiesService>(IdentitiesService);
+    apiService = moduleRef.get<ApiService>(ApiService);
   });
 
   beforeEach(() => { jest.restoreAllMocks(); });
@@ -431,6 +435,22 @@ describe('NodeService', () => {
           expect(result.identityInfo).not.toBeDefined();
         }
         expect(allNodesSpy).toHaveBeenCalled();
+      });
+    });
+
+    describe('getAllNodes', () => {
+      it('should return values from external api', async () => {
+        const mockNodes = JSON.parse(fs.readFileSync(path.join(__dirname, '../../mocks/nodes.mock.json'), 'utf-8'));
+        nodeService['cacheService'].getOrSet = jest.fn().mockImplementation((_, callback) => callback());
+        jest.spyOn(apiConfigService, 'isNodesFetchFeatureEnabled').mockReturnValue(true);
+        jest.spyOn(apiConfigService, 'getNodesFetchServiceUrl').mockReturnValue('https://testnet-api.multiversx.com');
+        jest.spyOn(apiService, 'get').mockResolvedValueOnce({data: mockNodes.length}).mockResolvedValueOnce({data: mockNodes});
+        const getHeartbeatValidatorsAndQueueSpy = jest.spyOn(nodeService, 'getHeartbeatValidatorsAndQueue');
+
+        const result = await nodeService.getAllNodes();
+        expect(result).toEqual(mockNodes);
+        expect(apiService.get).toHaveBeenCalledTimes(2);
+        expect(getHeartbeatValidatorsAndQueueSpy).not.toHaveBeenCalled();
       });
     });
 
