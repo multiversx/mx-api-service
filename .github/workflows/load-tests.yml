@@ -22,11 +22,11 @@ jobs:
     - name: Initialize the project
       run: npm run init
 
-    - name: Copy devnet config file from src to dist
-      run: cp ./config/config.devnet.yaml ./dist/config/config.yaml
-
     - name: Build
       run: npm run build
+
+    - name: Copy devnet config file from src to dist
+      run: cp ./config/config.devnet.yaml ./dist/config/config.yaml
 
     - name: Start Node.js API
       run: node ./dist/src/main.js
@@ -74,11 +74,11 @@ jobs:
     - name: Initialize the project
       run: npm run init
 
-    - name: Copy devnet config file from src to dist
-      run: cp ./config/config.devnet.yaml ./dist/config/config.yaml
-
     - name: Build
       run: npm run build
+
+    - name: Copy devnet config file from src to dist
+      run: cp ./config/config.devnet.yaml ./dist/config/config.yaml
 
     - name: Check folder content
       run: ls -la
