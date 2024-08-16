@@ -32,7 +32,7 @@ jobs:
       run: docker compose up -d
 
     - name: Start Node.js API
-      run: node ./dist/src/main.js
+      run: node ./dist/src/main.js &
 
     - name: Install k6
       run: |
@@ -90,7 +90,7 @@ jobs:
       run: docker compose up -d
 
     - name: Start Node.js API
-      run: node ./dist/src/main.js
+      run: node ./dist/src/main.js &
 
     - name: Install k6
       run: |
