@@ -28,6 +28,9 @@ jobs:
     - name: Check folder content
       run: ls -la
 
+    - run: ls ./dist
+    - run: ls ./dist/config
+
     - name: Start Node.js API
       run: node ./dist/src/main.js
 
@@ -79,6 +82,8 @@ jobs:
 
     - name: Check folder content
       run: ls -la
+    - run: ls ./dist
+    - run: ls ./dist/config
 
     - name: Start Node.js API
       run: node ./dist/src/main.js
