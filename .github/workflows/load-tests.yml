@@ -29,7 +29,7 @@ jobs:
       run: cp ./config/config.devnet.yaml ./dist/config/config.yaml
 
     - name: Start docker services
-      run: docker-compose up -d
+      run: docker compose up -d
 
     - name: Start Node.js API
       run: node ./dist/src/main.js
@@ -59,7 +59,7 @@ jobs:
         path: k6/output/summary.json
 
     - name: Stop docker services
-      run: docker-compose down
+      run: docker compose down
 
   test-head:
     runs-on: ubuntu-latest
@@ -87,7 +87,7 @@ jobs:
       run: cp ./config/config.devnet.yaml ./dist/config/config.yaml
 
     - name: Start docker services
-      run: docker-compose up -d
+      run: docker compose up -d
 
     - name: Start Node.js API
       run: node ./dist/src/main.js
@@ -117,7 +117,7 @@ jobs:
         path: k6/output/summary.json
 
     - name: Stop docker services
-      run: docker-compose down
+      run: docker compose down
 
   compare-results:
     runs-on: ubuntu-latest
