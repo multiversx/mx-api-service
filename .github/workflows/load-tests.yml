@@ -25,11 +25,11 @@ jobs:
     - name: Build
       run: npm run build
 
-    - name: Start Node.js API
-      run: node ./dist/src/main.js
-
     - name: Check folder content
       run: ls -la
+
+    - name: Start Node.js API
+      run: node ./dist/src/main.js
 
     - name: Install k6
       run: |
@@ -77,11 +77,11 @@ jobs:
     - name: Build
       run: npm run build
 
-    - name: Start Node.js API
-      run: node ./dist/src/main.js
-
     - name: Check folder content
       run: ls -la
+
+    - name: Start Node.js API
+      run: node ./dist/src/main.js
 
     - name: Install k6
       run: |
