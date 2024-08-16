@@ -84,13 +84,7 @@ export class EsdtService {
   }
 
   async getEsdtTokenPropertiesRaw(identifier: string): Promise<TokenProperties | null> {
-    const getCollectionPropertiesFromGateway = this.apiConfigService.getCollectionPropertiesFromGateway();
-    const isIndexerV5Active = await this.elasticIndexerService.isIndexerV5Active();
-    if (isIndexerV5Active && !getCollectionPropertiesFromGateway) {
-      return await this.getEsdtTokenPropertiesRawFromElastic(identifier);
-    } else {
-      return await this.getEsdtTokenPropertiesRawFromGateway(identifier);
-    }
+    return await this.getEsdtTokenPropertiesRawFromGateway(identifier);
   }
 
   async getEsdtTokenPropertiesRawFromElastic(identifier: string): Promise<TokenProperties | null> {
@@ -176,12 +170,7 @@ export class EsdtService {
   }
 
   async getAllFungibleTokenProperties(): Promise<TokenProperties[]> {
-    const isIndexerV5Active = await this.elasticIndexerService.isIndexerV5Active();
-    if (isIndexerV5Active && !this.apiConfigService.getCollectionPropertiesFromGateway()) {
-      return await this.getAllFungibleTokenPropertiesFromElastic();
-    } else {
-      return await this.getAllFungibleTokenPropertiesFromGateway();
-    }
+    return await this.getAllFungibleTokenPropertiesFromGateway();
   }
 
   async getAllFungibleTokenPropertiesFromElastic(): Promise<TokenProperties[]> {
