@@ -47,7 +47,7 @@ export class MexWrapActionRecognizerService {
     result.arguments = {
       transfers: [
         {
-          type: EsdtType.FungibleESDT,
+          type: 'EGLD',
           name: 'EGLD',
           token: 'EGLD',
           ticker: 'EGLD',
