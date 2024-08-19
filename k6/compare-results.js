@@ -8,6 +8,9 @@ function generateComparisonTable(baseCommitHash, baseMetricsPath, targetCommitHa
   const baseData = extractMetrics(baseMetrics);
   const targetData = extractMetrics(targetMetrics);
 
+  console.log(baseData);
+  console.log(targetData);
+
   const table = generateTable(baseCommitHash, baseData, targetCommitHash, targetData);
 
   fs.writeFileSync(outputPath, table);
