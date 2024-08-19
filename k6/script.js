@@ -24,7 +24,7 @@ export const options = {
             exec: 'nodes',
         },
     },
-    // discardResponseBodies: true,
+    discardResponseBodies: true,
 };
 
 export function tokens() {
