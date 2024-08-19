@@ -407,7 +407,7 @@ export class NodeService {
       let from = 0, size = nodesCount <= 1000 ? nodesCount : 1000;
 
       while (size) {
-        const requestNodes = await this.apiService.get(`${this.apiConfigService.getTokensFetchServiceUrl()}/nodes`, { params: { from: from, size: size } });
+        const requestNodes = await this.apiService.get(`${this.apiConfigService.getNodesFetchServiceUrl()}/nodes`, { params: { from: from, size: size } });
         nodes.push(...requestNodes.data);
         from += size;
         size = nodesCount <= from + 1000 ? nodesCount - from : 1000;
