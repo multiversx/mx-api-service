@@ -6,6 +6,7 @@ const BASE_URL = 'http://localhost:3001';
 
 const tokensApiCallTrened = new Trend('tokens_http_req_duration', true);
 const nodesApiCallTrened = new Trend('nodes_http_req_duration', true);
+const poolApiCallTrened = new Trend('pool_http_req_duration', true);
 
 export const options = {
     scenarios: {
@@ -23,6 +24,13 @@ export const options = {
             gracefulStop: '0s',
             exec: 'nodes',
         },
+        pool: {
+            executor: 'constant-vus',
+            vus: 10,
+            duration: '30s',
+            gracefulStop: '0s',
+            exec: 'pool',
+        },
     },
     discardResponseBodies: true,
 };
@@ -35,6 +43,11 @@ export function tokens() {
 export function nodes() {
     const response = http.get(`${BASE_URL}/nodes`);
     nodesApiCallTrened.add(response.timings.duration);
+}
+
+export function pool() {
+    const response = http.get(`${BASE_URL}/pool`);
+    poolApiCallTrened.add(response.timings.duration);
 }
 
 export function handleSummary(data) {
