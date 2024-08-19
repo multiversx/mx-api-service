@@ -5,6 +5,8 @@ function generateComparisonTable(baseCommitHash, baseMetricsPath, targetCommitHa
   const baseMetrics = JSON.parse(fs.readFileSync(baseMetricsPath, 'utf8'));
   const targetMetrics = JSON.parse(fs.readFileSync(targetMetricsPath, 'utf8'));
 
+  console.log(baseMetrics);
+
   const baseData = extractMetrics(baseMetrics);
   const targetData = extractMetrics(targetMetrics);
 
@@ -19,6 +21,8 @@ function generateComparisonTable(baseCommitHash, baseMetricsPath, targetCommitHa
 function extractMetrics(metrics) {
   const extractedMetrics = {};
   const metricKeys = Object.keys(metrics.metrics);
+
+  console.log(metricKeys);
 
   for (const key of metricKeys) {
     if (key.endsWith('_http_req_duration')) {
