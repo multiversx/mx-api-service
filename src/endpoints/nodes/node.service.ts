@@ -400,23 +400,29 @@ export class NodeService {
 
   private async getAllNodesFromApi(): Promise<Node[]> {
     try {
-      const requestNodesCount = await this.apiService.get(`${this.apiConfigService.getNodesFetchServiceUrl()}/nodes/count`);
-      const nodesCount = requestNodesCount.data;
-
+      let from = 0;
+      const size = 10000;
       const nodes = [];
-      let from = 0, size = nodesCount <= 1000 ? nodesCount : 1000;
+      let currentNodes = [];
 
-      while (size) {
-        const requestNodes = await this.apiService.get(`${this.apiConfigService.getNodesFetchServiceUrl()}/nodes`, { params: { from: from, size: size } });
-        nodes.push(...requestNodes.data);
+      do {
+        const { data } = await this.apiService.get(`${this.apiConfigService.getNodesFetchServiceUrl()}/nodes`, {
+          params: {
+            from,
+            size
+          }
+        });
+
+        nodes.push(...data);
+        currentNodes = data
         from += size;
-        size = nodesCount <= from + 1000 ? nodesCount - from : 1000;
-      }
+      } while (currentNodes.length === size);
 
       return nodes;
     } catch (error) {
       this.logger.error('An unhandled error occurred when getting nodes from API');
       this.logger.error(error);
+
       throw error;
     }
   }

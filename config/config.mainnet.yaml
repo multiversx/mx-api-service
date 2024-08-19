@@ -100,10 +100,10 @@ features:
     maxLookBehindNonces: 100
   nodesFetch:
     enabled: true
-    serviceUrl: 'https://mainnet-api.multiversx.com'
+    serviceUrl: 'https://api.multiversx.com'
   tokensFetch:
     enabled: true
-    serviceUrl: 'https://mainnet-api.multiversx.com'
+    serviceUrl: 'https://api.multiversx.com'
 image:
   width: 600
   height: 600
