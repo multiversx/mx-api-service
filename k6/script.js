@@ -4,8 +4,8 @@ import { Trend } from 'k6/metrics';
 
 const BASE_URL = 'http://localhost:3001';
 
-const tokensApiCallTrened = new Trend('tokens_api_call_trend', true);
-const nodesApiCallTrened = new Trend('nodes_api_call_trend', true);
+const tokensApiCallTrened = new Trend('tokens_http_req_duration', true);
+const nodesApiCallTrened = new Trend('nodes_http_req_duration', true);
 
 export const options = {
     scenarios: {
@@ -24,7 +24,7 @@ export const options = {
             exec: 'nodes',
         },
     },
-    discardResponseBodies: true,
+    // discardResponseBodies: true,
 };
 
 export function tokens() {
