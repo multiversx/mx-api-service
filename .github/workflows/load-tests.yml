@@ -29,15 +29,16 @@ jobs:
     - name: Check Docker Version
       run: docker --version
 
-    - name: Install Docker Compose v2.23.0-desktop.1
+    - name: Install Docker Compose Plugin v2.23.0-desktop.1
       run: |
         DOCKER_COMPOSE_VERSION=v2.23.0-desktop.1
-        sudo curl -L "https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-        sudo chmod +x /usr/local/bin/docker-compose
-        sudo ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
+        mkdir -p ~/.docker/cli-plugins/
+        curl -SL https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-linux-x86_64 \
+          -o ~/.docker/cli-plugins/docker-compose
+        chmod +x ~/.docker/cli-plugins/docker-compose
 
     - name: Check Docker Compose Version
-      run: docker-compose --version
+      run: docker compose version
 
     - name: Install dependencies
       run: npm ci
@@ -52,7 +53,7 @@ jobs:
       run: cp ./config/config.devnet.yaml ./dist/config/config.yaml
 
     - name: Start docker services
-      run: docker-compose up -d
+      run: docker compose up -d
 
     - name: Start Node.js API
       run: node ./dist/src/main.js &
