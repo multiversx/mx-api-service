@@ -52,7 +52,7 @@ jobs:
       run: cp ./config/config.devnet.yaml ./dist/config/config.yaml
 
     - name: Start docker services
-      run: docker compose up -d
+      run: docker-compose up -d
 
     - name: Start Node.js API
       run: node ./dist/src/main.js &
