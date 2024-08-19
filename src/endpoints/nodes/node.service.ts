@@ -25,7 +25,7 @@ import { NodeAuction } from "./entities/node.auction";
 import { NodeAuctionFilter } from "./entities/node.auction.filter";
 import { Identity } from "../identities/entities/identity";
 import { NodeSortAuction } from "./entities/node.sort.auction";
-import { ApiService, ApiSettings } from "@multiversx/sdk-nestjs-http";
+import { ApiService } from "@multiversx/sdk-nestjs-http";
 
 @Injectable()
 export class NodeService {
@@ -400,22 +400,24 @@ export class NodeService {
 
   private async getAllNodesFromApi(): Promise<Node[]> {
     try {
-      const requestNodesCount = await this.apiService.get(this.apiConfigService.getNodesFetchServiceUrl() + '/nodes/count');
+      const requestNodesCount = await this.apiService.get(`${this.apiConfigService.getNodesFetchServiceUrl()}/nodes/count`);
       const nodesCount = requestNodesCount.data;
 
-      const requestUrlParams = new ApiSettings();
-      requestUrlParams.params = {
-        size: nodesCount,
-      };
+      const nodes = [];
+      let from = 0, size = nodesCount <= 1000 ? nodesCount : 1000;
 
-      const requestNodes = await this.apiService.get(this.apiConfigService.getNodesFetchServiceUrl() + '/nodes', requestUrlParams);
-      const nodes = requestNodes.data;
+      while (size) {
+        const requestNodes = await this.apiService.get(`${this.apiConfigService.getTokensFetchServiceUrl()}/nodes`, { params: { from: from, size: size } });
+        nodes.push(...requestNodes.data);
+        from += size;
+        size = nodesCount <= from + 1000 ? nodesCount - from : 1000;
+      }
 
       return nodes;
     } catch (error) {
       this.logger.error('An unhandled error occurred when getting nodes from API');
       this.logger.error(error);
-      return [];
+      throw error;
     }
   }
 
