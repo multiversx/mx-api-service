@@ -24,14 +24,14 @@ jobs:
         curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
         sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
         sudo apt-get update
-        sudo apt-get install docker-ce
+        sudo apt-get install docker-ce docker-ce-cli containerd.io
       
     - name: Check Docker Version
       run: docker --version
 
-    - name: Install Docker Compose Plugin v2.23.0-desktop.1
+    - name: Install Docker Compose Plugin v2.23.0
       run: |
-        DOCKER_COMPOSE_VERSION=v2.23.0-desktop.1
+        DOCKER_COMPOSE_VERSION=2.23.0
         mkdir -p ~/.docker/cli-plugins/
         curl -SL https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-linux-x86_64 \
           -o ~/.docker/cli-plugins/docker-compose
