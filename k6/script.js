@@ -12,14 +12,14 @@ export const options = {
         tokens: {
             executor: 'constant-vus',
             vus: 10,
-            duration: '30s',
+            duration: '1m',
             gracefulStop: '0s',
             exec: 'tokens',
         },
         nodes: {
             executor: 'constant-vus',
             vus: 10,
-            duration: '30s',
+            duration: '1m',
             gracefulStop: '0s',
             exec: 'nodes',
         },
