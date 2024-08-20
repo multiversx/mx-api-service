@@ -622,11 +622,11 @@ describe('Token Service', () => {
       tokenService['cachingService'].getOrSet = jest.fn().mockImplementation((_, callback) => callback());
       jest.spyOn(apiConfigService, 'isTokensFetchFeatureEnabled').mockReturnValue(true);
       jest.spyOn(apiConfigService, 'getTokensFetchServiceUrl').mockReturnValue('https://testnet-api.multiversx.com');
-      jest.spyOn(apiService, 'get').mockResolvedValueOnce({data: mockTokens.length}).mockResolvedValueOnce({data: mockTokens});
+      jest.spyOn(apiService, 'get').mockResolvedValueOnce({data: mockTokens});
 
       const result = await tokenService.getAllTokens();
       expect(result).toEqual(mockTokens);
-      expect(apiService.get).toHaveBeenCalledTimes(2);
+      expect(apiService.get).toHaveBeenCalledTimes(1);
       expect(esdtService.getAllFungibleTokenProperties).not.toHaveBeenCalled();
       expect(collectionService.getNftCollections).not.toHaveBeenCalled();
     });

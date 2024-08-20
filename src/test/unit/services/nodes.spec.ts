@@ -444,12 +444,12 @@ describe('NodeService', () => {
         nodeService['cacheService'].getOrSet = jest.fn().mockImplementation((_, callback) => callback());
         jest.spyOn(apiConfigService, 'isNodesFetchFeatureEnabled').mockReturnValue(true);
         jest.spyOn(apiConfigService, 'getNodesFetchServiceUrl').mockReturnValue('https://testnet-api.multiversx.com');
-        jest.spyOn(apiService, 'get').mockResolvedValueOnce({data: mockNodes.length}).mockResolvedValueOnce({data: mockNodes});
+        jest.spyOn(apiService, 'get').mockResolvedValueOnce({data: mockNodes});
         const getHeartbeatValidatorsAndQueueSpy = jest.spyOn(nodeService, 'getHeartbeatValidatorsAndQueue');
 
         const result = await nodeService.getAllNodes();
         expect(result).toEqual(mockNodes);
-        expect(apiService.get).toHaveBeenCalledTimes(2);
+        expect(apiService.get).toHaveBeenCalledTimes(1);
         expect(getHeartbeatValidatorsAndQueueSpy).not.toHaveBeenCalled();
       });
     });
