@@ -63,7 +63,7 @@ function generateTable(baseCommitHash, baseData, targetCommitHash, targetData) {
               <th>Max time</th> \
               <th>90 Perc</th> \
               <th>95 Perc</th> \
-            </tr></table>';
+            </tr>';
   // table += '| Metric | Base | Target | Diff |\n';
   // table += '| ------ | ---- | ------ | ---- |\n';
 
@@ -104,7 +104,7 @@ function generateTable(baseCommitHash, baseData, targetCommitHash, targetData) {
 
   const baseDuration = baseData['Test Run Duration'].toFixed(2);
   const targetDuration = targetData['Test Run Duration'].toFixed(2);
-  table += `<tr><td><b>Test Run Duration</b></td><td colspan="4">${baseDuration} ms</td><td colspan="4">${targetDuration} ms</td><td colspan="4"></td></tr>`;
+  table += `<tr><td><b>Test Run Duration</b></td><td colspan="4">${baseDuration} ms</td><td colspan="4">${targetDuration} ms</td><td colspan="4"></td></tr></table>`;
   // table += `| **Test Run Duration**     | ${baseDuration} ms | ${targetDuration} ms | |\n`;
 
   return table;
