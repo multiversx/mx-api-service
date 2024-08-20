@@ -162,4 +162,8 @@ export class Token {
   @Field(() => Number, { description: 'If the liquidity to market cap ratio is less than 0.5%, we consider it as low liquidity and display threshold percent .', nullable: true })
   @ApiProperty({ type: Number, nullable: true })
   lowLiquidityThresholdPercent: number | undefined = undefined;
+
+  @Field(() => Number, { description: 'Mex pair trades count.', nullable: true })
+  @ApiProperty({ type: Number, nullable: true })
+  tradesCount: number | undefined = undefined;
 }
