@@ -862,25 +862,9 @@ export class TokenService {
 
   private async getAllTokensFromApi(): Promise<TokenDetailed[]> {
     try {
-      let from = 0;
-      const size = 10000;
-      const tokens = [];
-      let currentTokens = [];
+      const { data } = await this.apiService.get(`${this.apiConfigService.getTokensFetchServiceUrl()}/tokens`, { params: { size: 10000 } });
 
-      do {
-        const { data } = await this.apiService.get(`${this.apiConfigService.getTokensFetchServiceUrl()}/tokens`, {
-          params: {
-            from,
-            size
-          }
-        });
-
-        tokens.push(...data);
-        currentTokens = data;
-        from += size;
-      } while (currentTokens.length === size);
-
-      return tokens;
+      return data;
     } catch (error) {
       this.logger.error('An unhandled error occurred when getting tokens from API');
       this.logger.error(error);
