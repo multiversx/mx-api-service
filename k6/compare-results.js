@@ -45,8 +45,27 @@ function extractMetrics(metrics) {
 
 function generateTable(baseCommitHash, baseData, targetCommitHash, targetData) {
   let table = `k6 load testing comparison.\nBase Commit Hash: ${baseCommitHash}\nTarget Commit Hash: ${targetCommitHash}\n\n`;
-  table += '| Metric | Base | Target | Diff |\n';
-  table += '| ------ | ---- | ------ | ---- |\n';
+  table += '<table><tr> \
+              <th rowspan="2">Metric</th> \
+              <th colspan="4">Base</th> \
+              <th colspan="4">Target</th> \
+              <th colspan="4">Diff</th> \
+            </tr><tr> \
+              <th>Avg time</th> \
+              <th>Max time</th> \
+              <th>90 Perc</th> \
+              <th>95 Perc</th> \
+              <th>Avg time</th> \
+              <th>Max time</th> \
+              <th>90 Perc</th> \
+              <th>95 Perc</th> \
+              <th>Avg time</th> \
+              <th>Max time</th> \
+              <th>90 Perc</th> \
+              <th>95 Perc</th> \
+            </tr></table>';
+  // table += '| Metric | Base | Target | Diff |\n';
+  // table += '| ------ | ---- | ------ | ---- |\n';
 
   for (const key of Object.keys(baseData)) {
     if (key === 'Test Run Duration') {
@@ -71,16 +90,22 @@ function generateTable(baseCommitHash, baseData, targetCommitHash, targetData) {
     const p90Color = getColor(baseP90, targetP90);
     const p95Color = getColor(baseP95, targetP95);
 
-    table += `| **${key}** | | |\n`;
-    table += `| - Average Response Time | ${baseAvg.toFixed(2)} ms | ${targetAvg.toFixed(2)} ms | ${avgDiff} ${avgColor} |\n`;
-    table += `| - Max Response Time | ${baseMax.toFixed(2)} ms | ${targetMax.toFixed(2)} ms | ${maxDiff} ${maxColor} |\n`;
-    table += `| - 90th Percentile | ${baseP90.toFixed(2)} ms | ${targetP90.toFixed(2)} ms | ${p90Diff} ${p90Color} |\n`;
-    table += `| - 95th Percentile | ${baseP95.toFixed(2)} ms | ${targetP95.toFixed(2)} ms | ${p95Diff} ${p95Color} |\n`;
+    table += `<tr><td><b>${key}</b></td>`;
+    table += `<td>${baseAvg.toFixed(2)} ms</td><td>${baseMax.toFixed(2)} ms</td><td>${baseP90.toFixed(2)} ms</td><td>${baseP95.toFixed(2)} ms</td>`;
+    table += `<td>${targetAvg.toFixed(2)} ms</td><td>${targetMax.toFixed(2)} ms</td><td>${targetP90.toFixed(2)} ms</td><td>${targetP95.toFixed(2)} ms</td>`;
+    table += `<td>${avgDiff} ${avgColor}</td><td>${maxDiff} ${maxColor}</td><td>${p90Diff} ${p90Color}</td><td>${p95Diff} ${p95Color}</td></tr>`;
+
+    // table += `| **${key}** | | |\n`;
+    // table += `| - Average Response Time | ${baseAvg.toFixed(2)} ms | ${targetAvg.toFixed(2)} ms | ${avgDiff} ${avgColor} |\n`;
+    // table += `| - Max Response Time | ${baseMax.toFixed(2)} ms | ${targetMax.toFixed(2)} ms | ${maxDiff} ${maxColor} |\n`;
+    // table += `| - 90th Percentile | ${baseP90.toFixed(2)} ms | ${targetP90.toFixed(2)} ms | ${p90Diff} ${p90Color} |\n`;
+    // table += `| - 95th Percentile | ${baseP95.toFixed(2)} ms | ${targetP95.toFixed(2)} ms | ${p95Diff} ${p95Color} |\n`;
   }
 
   const baseDuration = baseData['Test Run Duration'].toFixed(2);
   const targetDuration = targetData['Test Run Duration'].toFixed(2);
-  table += `| **Test Run Duration**     | ${baseDuration} ms | ${targetDuration} ms | |\n`;
+  table += `<tr><td><b>Test Run Duration</b></td><td colspan="4">${baseDuration} ms</td><td colspan="4">${targetDuration} ms</td><td colspan="4"></td></tr>`;
+  // table += `| **Test Run Duration**     | ${baseDuration} ms | ${targetDuration} ms | |\n`;
 
   return table;
 }
