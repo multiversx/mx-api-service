@@ -769,6 +769,7 @@ export class TokenService {
     await this.applyMexLiquidity(tokens.filter(x => x.type !== TokenType.MetaESDT));
     await this.applyMexPrices(tokens.filter(x => x.type !== TokenType.MetaESDT));
     await this.applyMexPairType(tokens.filter(x => x.type !== TokenType.MetaESDT));
+    await this.applyMexPairTradesCount(tokens.filter(x => x.type !== TokenType.MetaESDT));
 
     await this.cachingService.batchApplyAll(
       tokens,
@@ -969,6 +970,33 @@ export class TokenService {
       }
     } catch (error) {
       this.logger.error('Could not apply mex tokens prices');
+      this.logger.error(error);
+    }
+  }
+
+  private async applyMexPairTradesCount(tokens: TokenDetailed[]): Promise<void> {
+    if (!tokens.length) {
+      return;
+    }
+
+    try {
+      const pairs = await this.mexPairService.getAllMexPairs();
+      const filteredPairs = pairs.filter(x => x.state === MexPairState.active);
+
+      if (!filteredPairs.length) {
+        return;
+      }
+
+      for (const token of tokens) {
+        const tokenPairs = filteredPairs.filter(x => x.baseId === token.identifier || x.quoteId === token.identifier);
+
+        if (tokenPairs.length > 0) {
+          token.tradesCount = tokenPairs.sum(tokenPair => tokenPair.tradesCount ?? 0);
+        }
+      }
+
+    } catch (error) {
+      this.logger.error('Could not apply mex trades count');
       this.logger.error(error);
     }
   }
