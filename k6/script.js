@@ -44,52 +44,52 @@ export const options = {
 
 export function accounts() {
     const response = http.get(`${BASE_URL}/accounts`);
-    accountsApiCallTrened.add(response.timings.duration);
+    accountsApiCallTrend.add(response.timings.duration);
 }
 
 export function blocks() {
     const response = http.get(`${BASE_URL}/blocks`);
-    blocksApiCallTrened.add(response.timings.duration);
+    blocksApiCallTrend.add(response.timings.duration);
 }
 
 export function mexPairs() {
     const response = http.get(`${BASE_URL}/mex/pairs`);
-    nodesApiCallTrened.add(response.timings.duration);
+    nodesApiCallTrend.add(response.timings.duration);
 }
 
 export function mexTokens() {
     const response = http.get(`${BASE_URL}/mex/tokens`);
-    nodesApiCallTrened.add(response.timings.duration);
+    nodesApiCallTrend.add(response.timings.duration);
 }
 
 export function mexFarms() {
     const response = http.get(`${BASE_URL}/mex/farms`);
-    nodesApiCallTrened.add(response.timings.duration);
+    nodesApiCallTrend.add(response.timings.duration);
 }
 
 export function nodes() {
     const response = http.get(`${BASE_URL}/nodes`);
-    nodesApiCallTrened.add(response.timings.duration);
+    nodesApiCallTrend.add(response.timings.duration);
 }
 
 export function nodesAuctions() {
     const response = http.get(`${BASE_URL}/nodes/auctions`);
-    nodesApiCallTrened.add(response.timings.duration);
+    nodesApiCallTrend.add(response.timings.duration);
 }
 
 export function pool() {
     const response = http.get(`${BASE_URL}/pool`);
-    nodesApiCallTrened.add(response.timings.duration);
+    nodesApiCallTrend.add(response.timings.duration);
 }
 
 export function tokens() {
     const response = http.get(`${BASE_URL}/tokens`);
-    tokensApiCallTrened.add(response.timings.duration);
+    tokensApiCallTrend.add(response.timings.duration);
 }
 
 export function transactions() {
     const response = http.get(`${BASE_URL}/transactions`);
-    transactionsApiCallTrened.add(response.timings.duration);
+    transactionsApiCallTrend.add(response.timings.duration);
 }
 
 export function handleSummary(data) {
