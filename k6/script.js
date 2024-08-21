@@ -54,17 +54,17 @@ export function blocks() {
 
 export function mexPairs() {
     const response = http.get(`${BASE_URL}/mex/pairs`);
-    nodesApiCallTrend.add(response.timings.duration);
+    mexPairsApiCallTrend.add(response.timings.duration);
 }
 
 export function mexTokens() {
     const response = http.get(`${BASE_URL}/mex/tokens`);
-    nodesApiCallTrend.add(response.timings.duration);
+    mexTokensApiCallTrend.add(response.timings.duration);
 }
 
 export function mexFarms() {
     const response = http.get(`${BASE_URL}/mex/farms`);
-    nodesApiCallTrend.add(response.timings.duration);
+    mexFarmsApiCallTrend.add(response.timings.duration);
 }
 
 export function nodes() {
@@ -74,12 +74,12 @@ export function nodes() {
 
 export function nodesAuctions() {
     const response = http.get(`${BASE_URL}/nodes/auctions`);
-    nodesApiCallTrend.add(response.timings.duration);
+    nodesAuctionsApiCallTrend.add(response.timings.duration);
 }
 
 export function pool() {
     const response = http.get(`${BASE_URL}/pool`);
-    nodesApiCallTrend.add(response.timings.duration);
+    poolApiCallTrend.add(response.timings.duration);
 }
 
 export function tokens() {
