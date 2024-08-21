@@ -4,37 +4,92 @@ import { Trend } from 'k6/metrics';
 
 const BASE_URL = 'http://localhost:3001';
 
-const tokensApiCallTrened = new Trend('tokens_http_req_duration', true);
-const nodesApiCallTrened = new Trend('nodes_http_req_duration', true);
+const accountsApiCallTrend = new Trend('accounts_http_req_duration', true);
+const blocksApiCallTrend = new Trend('blocks_http_req_duration', true);
+const mexPairsApiCallTrend = new Trend('mex_pairs_http_req_duration', true);
+const mexTokensApiCallTrend = new Trend('mex_tokens_http_req_duration', true);
+const mexFarmsApiCallTrend = new Trend('mex_farms_http_req_duration', true);
+const nodesApiCallTrend = new Trend('nodes_http_req_duration', true);
+const nodesAuctionsApiCallTrend = new Trend('nodes_auctions_http_req_duration', true);
+const poolApiCallTrend = new Trend('pool_http_req_duration', true);
+const tokensApiCallTrend = new Trend('tokens_http_req_duration', true);
+const transactionsApiCallTrend = new Trend('transactions_http_req_duration', true);
+
+
+function getScenarioDict(functionName) {
+    return {
+        executor: 'constant-vus',
+        vus: 10,
+        duration: '1m',
+        gracefulStop: '0s',
+        exec: functionName,
+    }
+}
 
 export const options = {
     scenarios: {
-        tokens: {
-            executor: 'constant-vus',
-            vus: 10,
-            duration: '1m',
-            gracefulStop: '0s',
-            exec: 'tokens',
-        },
-        nodes: {
-            executor: 'constant-vus',
-            vus: 10,
-            duration: '1m',
-            gracefulStop: '0s',
-            exec: 'nodes',
-        },
+        accounts: getScenarioDict('accounts'),
+        blocks: getScenarioDict('blocks'),
+        mexPairs: getScenarioDict('mexPairs'),
+        mexTokens: getScenarioDict('mexTokens'),
+        mexFarms: getScenarioDict('mexFarms'),
+        nodes: getScenarioDict('nodes'),
+        nodesAuctions: getScenarioDict('nodesAuctions'),
+        pool: getScenarioDict('pool'),
+        tokens: getScenarioDict('tokens'),
+        transactions: getScenarioDict('transactions'),
     },
     discardResponseBodies: true,
 };
+
+export function accounts() {
+    const response = http.get(`${BASE_URL}/accounts`);
+    accountsApiCallTrened.add(response.timings.duration);
+}
+
+export function blocks() {
+    const response = http.get(`${BASE_URL}/blocks`);
+    blocksApiCallTrened.add(response.timings.duration);
+}
+
+export function mexPairs() {
+    const response = http.get(`${BASE_URL}/mex/pairs`);
+    nodesApiCallTrened.add(response.timings.duration);
+}
+
+export function mexTokens() {
+    const response = http.get(`${BASE_URL}/mex/tokens`);
+    nodesApiCallTrened.add(response.timings.duration);
+}
+
+export function mexFarms() {
+    const response = http.get(`${BASE_URL}/mex/farms`);
+    nodesApiCallTrened.add(response.timings.duration);
+}
+
+export function nodes() {
+    const response = http.get(`${BASE_URL}/nodes`);
+    nodesApiCallTrened.add(response.timings.duration);
+}
+
+export function nodesAuctions() {
+    const response = http.get(`${BASE_URL}/nodes/auctions`);
+    nodesApiCallTrened.add(response.timings.duration);
+}
+
+export function pool() {
+    const response = http.get(`${BASE_URL}/pool`);
+    nodesApiCallTrened.add(response.timings.duration);
+}
 
 export function tokens() {
     const response = http.get(`${BASE_URL}/tokens`);
     tokensApiCallTrened.add(response.timings.duration);
 }
 
-export function nodes() {
-    const response = http.get(`${BASE_URL}/nodes`);
-    nodesApiCallTrened.add(response.timings.duration);
+export function transactions() {
+    const response = http.get(`${BASE_URL}/transactions`);
+    transactionsApiCallTrened.add(response.timings.duration);
 }
 
 export function handleSummary(data) {
