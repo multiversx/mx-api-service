@@ -118,7 +118,7 @@ urls:
   nftThumbnails: 'https://devnet-media.elrond.com/nfts/thumbnail'
   tmp: '/tmp'
   ipfs: 'https://ipfs.io/ipfs'
-  socket: 'devnet-socket-fra.elrond.com'
+  socket: 'devnet-socket-api.multiversx.com'
   maiarId: 'https://devnet-id-api.multiversx.com'
 indexer:
   type: 'elastic'
