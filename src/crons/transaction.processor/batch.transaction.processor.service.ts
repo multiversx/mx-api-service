@@ -10,6 +10,9 @@ import { TransactionBatchStatus } from "src/endpoints/transactions.batch/entitie
 import { TransactionsBatchService } from "src/endpoints/transactions.batch/transactions.batch.service";
 import { TransactionService } from "src/endpoints/transactions/transaction.service";
 import { CacheInfo } from "src/utils/cache.info";
+import { LogMetricsEvent } from "src/common/entities/log.metrics.event";
+import { EventEmitter2 } from "@nestjs/event-emitter";
+import { MetricsEvents } from "src/utils/metrics-events.constants";
 
 @Injectable()
 export class BatchTransactionProcessorService {
@@ -22,7 +25,8 @@ export class BatchTransactionProcessorService {
     private readonly cachingService: CacheService,
     private readonly transactionsBatchService: TransactionsBatchService,
     @Inject('PUBSUB_SERVICE') private clientProxy: ClientProxy,
-    private readonly transactionService: TransactionService
+    private readonly transactionService: TransactionService,
+    private readonly eventEmitter: EventEmitter2,
   ) {
     this.logger = new Logger(BatchTransactionProcessorService.name);
   }
@@ -140,6 +144,13 @@ export class BatchTransactionProcessorService {
           return await this.cachingService.getRemote(CacheInfo.TransactionBatchShardNonce(shardId).key);
         },
         setLastProcessedNonce: async (shardId, nonce) => {
+          const event = new LogMetricsEvent();
+          event.args = [shardId, nonce];
+          this.eventEmitter.emit(
+            MetricsEvents.SetLastProcessedBatchProcessorNonce,
+            event
+          );
+
           await this.cachingService.setRemote(CacheInfo.TransactionBatchShardNonce(shardId).key, nonce, CacheInfo.TransactionBatchShardNonce(shardId).ttl);
         },
       });

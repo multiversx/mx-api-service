@@ -5,6 +5,9 @@ import { ClientProxy } from "@nestjs/microservices";
 import { Cron } from "@nestjs/schedule";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { CacheInfo } from "src/utils/cache.info";
+import { LogMetricsEvent } from "src/common/entities/log.metrics.event";
+import { EventEmitter2 } from "@nestjs/event-emitter";
+import { MetricsEvents } from "src/utils/metrics-events.constants";
 
 @Injectable()
 export class TransactionCompletedService {
@@ -16,6 +19,7 @@ export class TransactionCompletedService {
     private readonly apiConfigService: ApiConfigService,
     private readonly cachingService: CacheService,
     @Inject('PUBSUB_SERVICE') private clientProxy: ClientProxy,
+    private readonly eventEmitter: EventEmitter2,
   ) { }
 
   @Cron('*/1 * * * * *')
@@ -59,6 +63,13 @@ export class TransactionCompletedService {
           return await this.cachingService.get<number>(CacheInfo.TransactionCompletedShardNonce(shardId).key);
         },
         setLastProcessedNonce: async (shardId, nonce) => {
+          const event = new LogMetricsEvent();
+          event.args = [shardId, nonce];
+          this.eventEmitter.emit(
+            MetricsEvents.SetLastProcessedTransactionCompletedProcessorNonce,
+            event
+          );
+
           await this.cachingService.set<number>(CacheInfo.TransactionCompletedShardNonce(shardId).key, nonce, CacheInfo.TransactionCompletedShardNonce(shardId).ttl);
         },
         onMessageLogged: (topic, message) => {
