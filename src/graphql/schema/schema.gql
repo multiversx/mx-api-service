@@ -2058,8 +2058,17 @@ type MexPair {
   """Base symbol details."""
   baseSymbol: String!
 
+  """Mex pair deploy date in unix time."""
+  deployedAt: Float
+
   """Mex pair exchange details."""
   exchange: String
+
+  """Mex pair dual farms details."""
+  hasDualFarms: Boolean
+
+  """Mex pair farms details."""
+  hasFarms: Boolean
 
   """Id details."""
   id: String!
@@ -2093,6 +2102,9 @@ type MexPair {
 
   """Total value details."""
   totalValue: String!
+
+  """Mex pair trades count."""
+  tradesCount: Float
 
   """Mex pair type details."""
   type: MexPairType!
@@ -2145,11 +2157,17 @@ type MexToken {
   """Mex token previous24hPrice."""
   previous24hPrice: Float!
 
+  """Mex token previous24hVolume."""
+  previous24hVolume: Float!
+
   """Mex token current price."""
   price: Float!
 
   """Symbol for the mex token."""
   symbol: String!
+
+  """Mex token trades count."""
+  tradesCount: Float
 }
 
 """MiniBlocks object type."""
@@ -3748,6 +3766,9 @@ type TokenDetailed {
   """Total traded value in the last 24h within the liquidity pools."""
   totalVolume24h: Float!
 
+  """Mex pair trades count."""
+  tradesCount: Float
+
   """Token transactions."""
   transactions: Float
 
@@ -3951,6 +3972,9 @@ type TokenWithBalanceAccountFlat {
 
   """Total traded value in the last 24h within the liquidity pools."""
   totalVolume24h: Float!
+
+  """Mex pair trades count."""
+  tradesCount: Float
 
   """Token transactions."""
   transactions: Float

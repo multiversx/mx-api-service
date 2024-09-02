@@ -786,8 +786,6 @@ export class ElasticIndexerService implements IndexerInterface {
       types.push(NftType.MetaESDT);
     }
 
-    const isIndexerV5Active = await this.isIndexerV5Active();
-
     const elasticQuery = ElasticQuery.create()
       .withMustExistCondition('identifier')
       .withMustMatchCondition('address', address)
@@ -806,7 +804,7 @@ export class ElasticIndexerService implements IndexerInterface {
                 {
                   collection: {
                     terms: {
-                      field: isIndexerV5Active ? 'token' : 'token.keyword',
+                      field: 'token.keyword',
                     },
                   },
                 },
