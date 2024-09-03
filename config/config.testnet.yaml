@@ -123,6 +123,7 @@ urls:
   ipfs: 'https://ipfs.io/ipfs'
   socket: 'testnet-socket-api.multiversx.com'
   maiarId: 'https://testnet-id-api.multiversx.com'
+  assetsCdn: 'https://tools.multiversx.com/assets-cdn'
 database:
   enabled: false
   url: 'mongodb://127.0.0.1:27017/api?authSource=admin'

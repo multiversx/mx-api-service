@@ -88,6 +88,7 @@ urls:
   ipfs: 'https://ipfs.io/ipfs'
   socket: 'devnet-socket-api.multiversx.com'
   maiarId: 'https://devnet-old-id-api.multiversx.com'
+  assetsCdn: 'https://tools.multiversx.com/assets-cdn'
 indexer:
   type: 'elastic'
   maxPagination: 10000

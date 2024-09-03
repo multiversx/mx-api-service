@@ -869,4 +869,13 @@ export class ApiConfigService {
 
     return deepHistoryUrl;
   }
+
+  getAssetsCdnUrl(): string {
+    const assetsCdnUrl = this.configService.get<string>('urls.assetsCdn');
+    if (!assetsCdnUrl) {
+      throw new Error('No assets cdn url present');
+    }
+
+    return assetsCdnUrl;
+  }
 }
