@@ -123,6 +123,10 @@ export class MexPairService {
             type
             lockedValueUSD
             volumeUSD24h
+            hasFarms
+            hasDualFarms
+            tradesCount
+            deployedAt
             __typename
           }
         }
@@ -185,6 +189,10 @@ export class MexPairService {
         quoteName: pair.secondToken.name,
         totalValue: Number(pair.lockedValueUSD),
         volume24h: Number(pair.volumeUSD24h),
+        hasFarms: pair.hasFarms,
+        hasDualFarms: pair.hasDualFarms,
+        tradesCount: Number(pair.tradesCount),
+        deployedAt: Number(pair.deployedAt),
         state,
         type,
         exchange,
@@ -209,6 +217,10 @@ export class MexPairService {
       quoteName: pair.firstToken.name,
       totalValue: Number(pair.lockedValueUSD),
       volume24h: Number(pair.volumeUSD24h),
+      hasFarms: pair.hasFarms,
+      hasDualFarms: pair.hasDualFarms,
+      tradesCount: Number(pair.tradesCount),
+      deployedAt: Number(pair.deployedAt),
       state,
       type,
       exchange,
