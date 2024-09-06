@@ -869,4 +869,8 @@ export class ApiConfigService {
 
     return deepHistoryUrl;
   }
+
+  getCacheDuration(): number {
+    return this.configService.get<number>('caching.cacheDuration') ?? 3;
+  }
 }
