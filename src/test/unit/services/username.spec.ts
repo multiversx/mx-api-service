@@ -220,7 +220,7 @@ describe('UsernameService', () => {
       expect(service['cachingService'].get).toHaveBeenCalledWith(normalizedUsername);
       expect(service['cachingService'].set).toHaveBeenCalledWith(normalizedUsername, address, Constants.oneWeek());
     });
-  })
+  });
 
   describe('getUsernameRedirectRoute', () => {
     it('should return route with address only when withGuardianInfo is undefined', () => {
