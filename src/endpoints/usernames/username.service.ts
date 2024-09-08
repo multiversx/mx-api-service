@@ -60,22 +60,31 @@ export class UsernameService {
   }
 
   async getAddressForUsername(username: string): Promise<string | null> {
-    const address = await this.cachingService.getOrSet(
-      UsernameUtils.normalizeUsername(username),
-      async () => await this.getAddressForUsernameRaw(username),
-      Constants.oneWeek()
-    );
+    const cacheKey = UsernameUtils.normalizeUsername(username);
+    const cachedAddress = await this.cachingService.get<string | null>(cacheKey);
 
-    if (!address) {
-      return null;
+    if (cachedAddress !== undefined) {
+      return cachedAddress;
     }
 
-    const crossCheckUsername = await this.getUsernameForAddressRaw(address);
-    if (!crossCheckUsername) {
+    const address = await this.getAddressForUsernameRaw(username);
+
+    if (address) {
+      await this.cachingService.set(
+        cacheKey,
+        address,
+        Constants.oneWeek()
+      );
+
+      const crossCheckUsername = await this.getUsernameForAddressRaw(address);
+      if (!crossCheckUsername) {
+        return null;
+      }
+
+      return address;
+    } else {
       return null;
     }
-
-    return address;
   }
 
   getUsernameRedirectRoute(address: string, withGuardianInfo: boolean | undefined) {
