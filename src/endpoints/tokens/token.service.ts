@@ -20,7 +20,7 @@ import { TokenSort } from "./entities/token.sort";
 import { TokenWithRoles } from "./entities/token.with.roles";
 import { TokenWithRolesFilter } from "./entities/token.with.roles.filter";
 import { AddressUtils, BinaryUtils, NumberUtils, TokenUtils } from "@multiversx/sdk-nestjs-common";
-import { ApiUtils } from "@multiversx/sdk-nestjs-http";
+import { ApiService, ApiUtils } from "@multiversx/sdk-nestjs-http";
 import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { OriginLogger } from "@multiversx/sdk-nestjs-common";
@@ -63,6 +63,7 @@ export class TokenService {
     private readonly collectionService: CollectionService,
     private readonly dataApiService: DataApiService,
     private readonly mexPairService: MexPairService,
+    private readonly apiService: ApiService,
   ) { }
 
   async isToken(identifier: string): Promise<boolean> {
@@ -765,6 +766,7 @@ export class TokenService {
     await this.applyMexLiquidity(tokens.filter(x => x.type !== TokenType.MetaESDT));
     await this.applyMexPrices(tokens.filter(x => x.type !== TokenType.MetaESDT));
     await this.applyMexPairType(tokens.filter(x => x.type !== TokenType.MetaESDT));
+    await this.applyMexPairTradesCount(tokens.filter(x => x.type !== TokenType.MetaESDT));
 
     await this.cachingService.batchApplyAll(
       tokens,
@@ -775,14 +777,25 @@ export class TokenService {
     );
 
     for (const token of tokens) {
-      if (token.assets?.priceSource?.type === TokenAssetsPriceSourceType.dataApi) {
-        token.price = await this.dataApiService.getEsdtTokenPrice(token.identifier);
+      const priceSourcetype = token.assets?.priceSource?.type;
 
+      if (priceSourcetype === TokenAssetsPriceSourceType.dataApi) {
+        token.price = await this.dataApiService.getEsdtTokenPrice(token.identifier);
+      } else if (priceSourcetype === TokenAssetsPriceSourceType.customUrl && token.assets?.priceSource?.url) {
+        const pathToPrice = token.assets?.priceSource?.path ?? "0.usdPrice";
+        const tokenData = await this.fetchTokenDataFromUrl(token.assets.priceSource.url, pathToPrice);
+
+        if (tokenData) {
+          token.price = tokenData;
+        }
+      }
+
+      if (token.price) {
         const supply = await this.esdtService.getTokenSupply(token.identifier);
         token.supply = supply.totalSupply;
         token.circulatingSupply = supply.circulatingSupply;
 
-        if (token.price && token.circulatingSupply) {
+        if (token.circulatingSupply) {
           token.marketCap = token.price * NumberUtils.denominateString(token.circulatingSupply, token.decimals);
         }
       }
@@ -796,6 +809,43 @@ export class TokenService {
 
     return tokens;
   }
+
+  private extractData(data: any, path: string): any {
+    const keys = path.split('.');
+    let result: any = data;
+
+    for (const key of keys) {
+      if (result === undefined || result === null) {
+        return undefined;
+      }
+
+      result = !isNaN(Number(key)) ? result[Number(key)] : result[key];
+    }
+
+    return result;
+  }
+
+  private async fetchTokenDataFromUrl(url: string, path: string): Promise<any> {
+    try {
+      const result = await this.apiService.get(url);
+
+      if (!result || !result.data) {
+        this.logger.error(`Invalid response received from URL: ${url}`);
+        return;
+      }
+
+      const extractedValue = this.extractData(result.data, path);
+      if (!extractedValue) {
+        this.logger.error(`No valid data found at URL: ${url}`);
+        return;
+      }
+
+      return extractedValue;
+    } catch (error) {
+      this.logger.error(`Failed to fetch token data from URL: ${url}`, error);
+    }
+  }
+
 
   private async getTokenAssetsRaw(identifier: string): Promise<TokenAssets | undefined> {
     return await this.assetsService.getTokenAssets(identifier);
@@ -952,6 +1002,33 @@ export class TokenService {
       }
     } catch (error) {
       this.logger.error('Could not apply mex tokens prices');
+      this.logger.error(error);
+    }
+  }
+
+  private async applyMexPairTradesCount(tokens: TokenDetailed[]): Promise<void> {
+    if (!tokens.length) {
+      return;
+    }
+
+    try {
+      const pairs = await this.mexPairService.getAllMexPairs();
+      const filteredPairs = pairs.filter(x => x.state === MexPairState.active);
+
+      if (!filteredPairs.length) {
+        return;
+      }
+
+      for (const token of tokens) {
+        const tokenPairs = filteredPairs.filter(x => x.baseId === token.identifier || x.quoteId === token.identifier);
+
+        if (tokenPairs.length > 0) {
+          token.tradesCount = tokenPairs.sum(tokenPair => tokenPair.tradesCount ?? 0);
+        }
+      }
+
+    } catch (error) {
+      this.logger.error('Could not apply mex trades count');
       this.logger.error(error);
     }
   }

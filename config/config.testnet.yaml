@@ -2,7 +2,10 @@ network: 'testnet'
 metaChainShardId: 4294967295
 api:
   public: true
+  publicPort: 3001
   private: true
+  privatePort: 4001
+  websocket: true
 cron:
   cacheWarmer: true
   fastWarm: true
@@ -118,7 +121,7 @@ urls:
   nftThumbnails: 'https://testnet-media.elrond.com/nfts/thumbnail'
   tmp: '/tmp'
   ipfs: 'https://ipfs.io/ipfs'
-  socket: 'testnet-socket-fra.elrond.com'
+  socket: 'testnet-socket-api.multiversx.com'
   maiarId: 'https://testnet-id-api.multiversx.com'
 database:
   enabled: false

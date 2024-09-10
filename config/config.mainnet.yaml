@@ -2,7 +2,10 @@ network: 'mainnet'
 metaChainShardId: 4294967295
 api:
   public: true
+  publicPort: 3001
   private: true
+  privatePort: 4001
+  websocket: true
 cron:
   cacheWarmer: true
   fastWarm: false
@@ -119,7 +122,7 @@ urls:
   nftThumbnails: 'https://media.elrond.com/nfts/thumbnail'
   tmp: '/tmp'
   ipfs: 'https://ipfs.io/ipfs'
-  socket: 'socket-fra.elrond.com'
+  socket: 'socket-api-fra.multiversx.com'
   maiarId: 'https://id-api.multiversx.com'
 indexer:
   type: 'elastic'

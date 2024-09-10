@@ -2,7 +2,10 @@ network: 'devnet'
 metaChainShardId: 4294967295
 api:
   public: true
+  publicPort: 3001
   private: true
+  privatePort: 4001
+  websocket: true
 cron:
   cacheWarmer: true
   fastWarm: true
@@ -115,7 +118,7 @@ urls:
   nftThumbnails: 'https://devnet-media.elrond.com/nfts/thumbnail'
   tmp: '/tmp'
   ipfs: 'https://ipfs.io/ipfs'
-  socket: 'devnet-socket-fra.elrond.com'
+  socket: 'devnet-socket-api.multiversx.com'
   maiarId: 'https://devnet-id-api.multiversx.com'
 indexer:
   type: 'elastic'
