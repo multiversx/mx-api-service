@@ -127,7 +127,7 @@ urls:
   nftThumbnails: 'https://testnet-media.elrond.com/nfts/thumbnail'
   tmp: '/tmp'
   ipfs: 'https://ipfs.io/ipfs'
-  socket: 'testnet-socket-fra.elrond.com'
+  socket: 'testnet-socket-api.multiversx.com'
   maiarId: 'https://testnet-id-api.multiversx.com'
 database:
   enabled: false

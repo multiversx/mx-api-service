@@ -128,7 +128,7 @@ urls:
   nftThumbnails: 'https://media.elrond.com/nfts/thumbnail'
   tmp: '/tmp'
   ipfs: 'https://ipfs.io/ipfs'
-  socket: 'socket-fra.elrond.com'
+  socket: 'socket-api-fra.multiversx.com'
   maiarId: 'https://id-api.multiversx.com'
 indexer:
   type: 'elastic'
