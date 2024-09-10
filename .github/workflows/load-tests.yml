@@ -9,7 +9,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
       with:
-        ref: ${{ github.event.pull_request.base.sha }}
+        ref: ${{ github.event.pull_request.head.sha }}
 
     - name: Set up Node.js
       uses: actions/setup-node@v2
@@ -48,7 +48,7 @@ jobs:
           echo 'Waiting for API...'
           sleep 1
         done
-
+    
     - name: Preload cache
       run: k6 run ./k6/preload.js
 
