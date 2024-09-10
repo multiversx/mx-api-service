@@ -94,6 +94,12 @@ features:
   tps:
     enabled: true
     maxLookBehindNonces: 100
+  nodesFetch:
+    enabled: true
+    serviceUrl: 'https://devnet-api.multiversx.com'
+  tokensFetch:
+    enabled: true
+    serviceUrl: 'https://devnet-api.multiversx.com'
 image:
   width: 600
   height: 600

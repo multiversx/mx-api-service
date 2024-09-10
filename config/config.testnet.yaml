@@ -97,6 +97,12 @@ features:
   tps:
     enabled: true
     maxLookBehindNonces: 100
+  nodesFetch:
+    enabled: true
+    serviceUrl: 'https://testnet-api.multiversx.com'
+  tokensFetch:
+    enabled: true
+    serviceUrl: 'https://testnet-api.multiversx.com'
 image:
   width: 600
   height: 600
