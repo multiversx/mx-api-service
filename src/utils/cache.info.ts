@@ -48,7 +48,7 @@ export class CacheInfo {
   };
 
   static AllEsdtTokens: CacheInfo = {
-    key: 'allEsdtTokens:v2',
+    key: 'allEsdtTokens',
     ttl: Constants.oneHour(),
   };
 
