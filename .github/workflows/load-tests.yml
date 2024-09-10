@@ -48,9 +48,9 @@ jobs:
           echo 'Waiting for API...'
           sleep 1
         done
-    
-    - name: Preload cache
-      run: k6 run ./k6/preload.js
+
+    # - name: Preload cache
+    #   run: k6 run ./k6/preload.js
 
     - name: Run k6 Load Test
       run: k6 run ./k6/script.js
@@ -131,7 +131,7 @@ jobs:
     needs: [test-base, test-head]
     steps:
       - uses: actions/checkout@v2
-      
+
       - name: Download all artifacts
         uses: actions/download-artifact@v3
         with:
