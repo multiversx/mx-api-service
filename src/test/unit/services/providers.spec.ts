@@ -228,7 +228,7 @@ describe('ProviderService', () => {
           "numUsers": 1,
           "cumulatedRewards": "1371012041789457038610",
           "automaticActivation": false,
-          "checkCapOnRedelegate": false
+          "checkCapOnRedelegate": false,
         },
         {
           "numNodes": 20,
@@ -244,7 +244,7 @@ describe('ProviderService', () => {
           "numUsers": 2,
           "cumulatedRewards": "1360185962261010203331",
           "automaticActivation": false,
-          "checkCapOnRedelegate": true
+          "checkCapOnRedelegate": true,
         },
         {
           "numNodes": 5,
@@ -260,9 +260,9 @@ describe('ProviderService', () => {
           "numUsers": 3,
           "cumulatedRewards": "14180909671679351854",
           "automaticActivation": true,
-          "checkCapOnRedelegate": true
-        }
-      ]
+          "checkCapOnRedelegate": true,
+        },
+      ];
 
       it('should return values from external api', async () => {
         service['cachingService'].getOrSet = jest.fn().mockImplementation((_, callback) => callback());
@@ -284,7 +284,7 @@ describe('ProviderService', () => {
         expect(service.getCumulatedRewards).not.toHaveBeenCalled();
       });
 
-    })
+    });
 
 
     it('should return empty array if no contract addresses are returned from vmQuery', async () => {
