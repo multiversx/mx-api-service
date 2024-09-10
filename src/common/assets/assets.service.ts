@@ -48,7 +48,6 @@ export class AssetsService {
 
   async getCollectionRanks(identifier: string): Promise<NftRank[] | undefined> {
     const allCollectionRanks = await this.getAllCollectionRanks();
-
     return allCollectionRanks[identifier];
   }
 
@@ -60,10 +59,25 @@ export class AssetsService {
     );
   }
 
-  // eslint-disable-next-line require-await
   async getAllCollectionRanksRaw(): Promise<{ [key: string]: NftRank[] }> {
-    // TODO get ranks if available via API
+    const assetsCdnUrl = this.apiConfigService.getAssetsCdnUrl();
+    const network = this.apiConfigService.getNetwork();
+
+    const { data: assets } = await this.apiService.get(`${assetsCdnUrl}/${network}/tokens`);
+
     const result: { [key: string]: NftRank[] } = {};
+
+    for (const asset of assets) {
+      if (asset.ranks && asset.ranks.length > 0) {
+        result[asset.identifier] = asset.ranks.map((rank: any) => {
+          const nftRank = new NftRank();
+          nftRank.identifier = rank.identifier;
+          nftRank.rank = rank.rank;
+          return nftRank;
+        });
+      }
+    }
+
     return result;
   }
 
