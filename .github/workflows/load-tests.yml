@@ -50,7 +50,7 @@ jobs:
         done
 
     - name: Preload cache
-      run: k6 run ../../k6/preload.js
+      run: k6 run ./k6/preload.js
 
     - name: Run k6 Load Test
       run: k6 run ./k6/script.js
