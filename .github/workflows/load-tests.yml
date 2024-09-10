@@ -49,8 +49,8 @@ jobs:
           sleep 1
         done
 
-    # - name: Preload cache
-    #   run: k6 run ./k6/preload.js
+    - name: Preload cache
+      run: k6 run ./k6/preload.js
 
     - name: Run k6 Load Test
       run: k6 run ./k6/script.js
