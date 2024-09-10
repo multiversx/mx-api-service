@@ -28,9 +28,6 @@ jobs:
     - name: Copy devnet config file from src to dist
       run: cp ./config/config.devnet.yaml ./dist/config/config.yaml
 
-    - name: Clear cache for docker images
-      run: docker system prune -af
-
     - name: Start docker services
       run: docker compose up -d
 
