@@ -56,7 +56,7 @@ jobs:
       run: k6 run ./k6/script.js
 
     - name: Upload result file for base branch
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: base-results
         path: k6/output/summary.json
@@ -117,7 +117,7 @@ jobs:
       run: k6 run ./k6/script.js
 
     - name: Upload result file for head branch
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: head-results
         path: k6/output/summary.json
