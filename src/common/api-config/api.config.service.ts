@@ -871,12 +871,7 @@ export class ApiConfigService {
   }
 
   getAssetsCdnUrl(): string {
-    const assetsCdnUrl = this.configService.get<string>('urls.assetsCdn');
-    if (!assetsCdnUrl) {
-      throw new Error('No assets cdn url present');
-    }
-
-    return assetsCdnUrl;
+    return this.configService.get<string>('urls.assetsCdn') ?? 'https://tools.multiversx.com/assets-cdn';
   }
 
   isTokensFetchFeatureEnabled(): boolean {
