@@ -20,7 +20,7 @@ import { TokenSort } from "./entities/token.sort";
 import { TokenWithRoles } from "./entities/token.with.roles";
 import { TokenWithRolesFilter } from "./entities/token.with.roles.filter";
 import { AddressUtils, BinaryUtils, NumberUtils, TokenUtils } from "@multiversx/sdk-nestjs-common";
-import { ApiUtils } from "@multiversx/sdk-nestjs-http";
+import { ApiService, ApiUtils } from "@multiversx/sdk-nestjs-http";
 import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { OriginLogger } from "@multiversx/sdk-nestjs-common";
@@ -63,6 +63,7 @@ export class TokenService {
     private readonly collectionService: CollectionService,
     private readonly dataApiService: DataApiService,
     private readonly mexPairService: MexPairService,
+    private readonly apiService: ApiService,
   ) { }
 
   async isToken(identifier: string): Promise<boolean> {
@@ -719,8 +720,11 @@ export class TokenService {
   }
 
   async getAllTokensRaw(): Promise<TokenDetailed[]> {
-    this.logger.log(`Starting to fetch all tokens`);
+    if (this.apiConfigService.isTokensFetchFeatureEnabled()) {
+      return await this.getAllTokensFromApi();
+    }
 
+    this.logger.log(`Starting to fetch all tokens`);
     const tokensProperties = await this.esdtService.getAllFungibleTokenProperties();
     let tokens = tokensProperties.map(properties => ApiUtils.mergeObjects(new TokenDetailed(), properties));
 
@@ -776,14 +780,25 @@ export class TokenService {
     );
 
     for (const token of tokens) {
-      if (token.assets?.priceSource?.type === TokenAssetsPriceSourceType.dataApi) {
-        token.price = await this.dataApiService.getEsdtTokenPrice(token.identifier);
+      const priceSourcetype = token.assets?.priceSource?.type;
 
+      if (priceSourcetype === TokenAssetsPriceSourceType.dataApi) {
+        token.price = await this.dataApiService.getEsdtTokenPrice(token.identifier);
+      } else if (priceSourcetype === TokenAssetsPriceSourceType.customUrl && token.assets?.priceSource?.url) {
+        const pathToPrice = token.assets?.priceSource?.path ?? "0.usdPrice";
+        const tokenData = await this.fetchTokenDataFromUrl(token.assets.priceSource.url, pathToPrice);
+
+        if (tokenData) {
+          token.price = tokenData;
+        }
+      }
+
+      if (token.price) {
         const supply = await this.esdtService.getTokenSupply(token.identifier);
         token.supply = supply.totalSupply;
         token.circulatingSupply = supply.circulatingSupply;
 
-        if (token.price && token.circulatingSupply) {
+        if (token.circulatingSupply) {
           token.marketCap = token.price * NumberUtils.denominateString(token.circulatingSupply, token.decimals);
         }
       }
@@ -797,6 +812,43 @@ export class TokenService {
 
     return tokens;
   }
+
+  private extractData(data: any, path: string): any {
+    const keys = path.split('.');
+    let result: any = data;
+
+    for (const key of keys) {
+      if (result === undefined || result === null) {
+        return undefined;
+      }
+
+      result = !isNaN(Number(key)) ? result[Number(key)] : result[key];
+    }
+
+    return result;
+  }
+
+  private async fetchTokenDataFromUrl(url: string, path: string): Promise<any> {
+    try {
+      const result = await this.apiService.get(url);
+
+      if (!result || !result.data) {
+        this.logger.error(`Invalid response received from URL: ${url}`);
+        return;
+      }
+
+      const extractedValue = this.extractData(result.data, path);
+      if (!extractedValue) {
+        this.logger.error(`No valid data found at URL: ${url}`);
+        return;
+      }
+
+      return extractedValue;
+    } catch (error) {
+      this.logger.error(`Failed to fetch token data from URL: ${url}`, error);
+    }
+  }
+
 
   private async getTokenAssetsRaw(identifier: string): Promise<TokenAssets | undefined> {
     return await this.assetsService.getTokenAssets(identifier);
@@ -855,6 +907,19 @@ export class TokenService {
       CacheInfo.TokenTransfers('').ttl,
       10,
     );
+  }
+
+  private async getAllTokensFromApi(): Promise<TokenDetailed[]> {
+    try {
+      const { data } = await this.apiService.get(`${this.apiConfigService.getTokensFetchServiceUrl()}/tokens`, { params: { size: 10000 } });
+
+      return data;
+    } catch (error) {
+      this.logger.error('An unhandled error occurred when getting tokens from API');
+      this.logger.error(error);
+
+      throw error;
+    }
   }
 
   private async getTotalTransactions(token: TokenDetailed): Promise<{ count: number, lastUpdatedAt: number } | undefined> {

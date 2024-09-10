@@ -25,6 +25,7 @@ import { TransferService } from "src/endpoints/transfers/transfer.service";
 import { MexPairService } from "src/endpoints/mex/mex.pair.service";
 import * as fs from 'fs';
 import * as path from 'path';
+import { ApiService } from "@multiversx/sdk-nestjs-http";
 
 describe('Token Service', () => {
   let tokenService: TokenService;
@@ -32,6 +33,8 @@ describe('Token Service', () => {
   let collectionService: CollectionService;
   let indexerService: IndexerService;
   let assetsService: AssetsService;
+  let apiService: ApiService;
+  let apiConfigService: ApiConfigService;
 
   beforeEach(async () => {
     const moduleRef = await Test.createTestingModule({
@@ -85,6 +88,8 @@ describe('Token Service', () => {
           provide: ApiConfigService,
           useValue: {
             getIsIndexerV3FlagActive: jest.fn(),
+            isTokensFetchFeatureEnabled: jest.fn(),
+            getTokensFetchServiceUrl: jest.fn(),
           },
         },
         {
@@ -131,6 +136,12 @@ describe('Token Service', () => {
             getAllMexPairs: jest.fn(),
           },
         },
+        {
+          provide: ApiService,
+          useValue: {
+            get: jest.fn(),
+          },
+        },
       ],
     }).compile();
 
@@ -139,6 +150,8 @@ describe('Token Service', () => {
     collectionService = moduleRef.get<CollectionService>(CollectionService);
     indexerService = moduleRef.get<IndexerService>(IndexerService);
     assetsService = moduleRef.get<AssetsService>(AssetsService);
+    apiService = moduleRef.get<ApiService>(ApiService);
+    apiConfigService = moduleRef.get<ApiConfigService>(ApiConfigService);
   });
 
   afterEach(() => {
@@ -604,6 +617,19 @@ describe('Token Service', () => {
         canWipe: true,
       },
     ];
+
+    it('should return values from external api', async () => {
+      tokenService['cachingService'].getOrSet = jest.fn().mockImplementation((_, callback) => callback());
+      jest.spyOn(apiConfigService, 'isTokensFetchFeatureEnabled').mockReturnValue(true);
+      jest.spyOn(apiConfigService, 'getTokensFetchServiceUrl').mockReturnValue('https://testnet-api.multiversx.com');
+      jest.spyOn(apiService, 'get').mockResolvedValueOnce({data: mockTokens});
+
+      const result = await tokenService.getAllTokens();
+      expect(result).toEqual(mockTokens);
+      expect(apiService.get).toHaveBeenCalledTimes(1);
+      expect(esdtService.getAllFungibleTokenProperties).not.toHaveBeenCalled();
+      expect(collectionService.getNftCollections).not.toHaveBeenCalled();
+    });
 
     it('should return values from cache', async () => {
       const cachedValueMock = jest.spyOn(tokenService['cachingService'], 'getOrSet').mockResolvedValue(mockTokens);
