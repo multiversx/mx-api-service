@@ -35,8 +35,7 @@ export class AssetsService {
     const assetsCdnUrl = this.apiConfigService.getAssetsCdnUrl();
     const network = this.apiConfigService.getNetwork();
 
-    const assetsRaw = await this.apiService.get(`${assetsCdnUrl}/${network}/tokens`)
-      .then(res => res.data);
+    const { data: assetsRaw } = await this.apiService.get(`${assetsCdnUrl}/${network}/tokens`);
 
     const assets: { [key: string]: TokenAssets } = {};
     for (const asset of assetsRaw) {
@@ -80,8 +79,7 @@ export class AssetsService {
     const assetsCdnUrl = this.apiConfigService.getAssetsCdnUrl();
     const network = this.apiConfigService.getNetwork();
 
-    const assets = await this.apiService.get(`${assetsCdnUrl}/${network}/accounts`)
-      .then(res => res.data);
+    const { data: assets } = await this.apiService.get(`${assetsCdnUrl}/${network}/accounts`);
 
     const allAssets: { [key: string]: AccountAssets } = {};
     for (const asset of assets) {
@@ -172,9 +170,7 @@ export class AssetsService {
     const assetsCdnUrl = this.apiConfigService.getAssetsCdnUrl();
     const network = this.apiConfigService.getNetwork();
 
-    const assets = await this.apiService.get(`${assetsCdnUrl}/${network}/identities`)
-      .then(res => res.data);
-
+    const { data: assets } = await this.apiService.get(`${assetsCdnUrl}/${network}/identities`);
 
     const allAssets: { [key: string]: KeybaseIdentity } = {};
     for (const asset of assets) {
