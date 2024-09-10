@@ -334,7 +334,7 @@ export class ProviderService {
     return providersRaw;
   }
 
-  async getProviderAddressesFromApi(): Promise<Provider[] | PromiseLike<Provider[]>> {
+  async getProviderAddressesFromApi(): Promise<Provider[]> {
     try {
       const { data } = await this.apiService.get(`${this.apiConfigService.getProvidersFetchServiceUrl()}/providers`, { params: { size: 10000 } });
 
