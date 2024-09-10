@@ -32,9 +32,9 @@ features:
     hitsThreshold: 100
     ttl: 12
   transactionPool:
-    enabled: true
+    enabled: false
   transactionPoolWarmer:
-    enabled: true
+    enabled: false
     cronExpression: '*/5 * * * * *'
     ttlInSeconds: 60
   updateCollectionExtraDetails:
@@ -95,8 +95,14 @@ features:
     nftQueueName: 'api-process-nfts'
     deadLetterQueueName: 'api-process-nfts-dlq'
   tps:
-    enabled: true
+    enabled: false
     maxLookBehindNonces: 100
+  nodesFetch:
+    enabled: true
+    serviceUrl: 'https://testnet-api.multiversx.com'
+  tokensFetch:
+    enabled: true
+    serviceUrl: 'https://testnet-api.multiversx.com'
 image:
   width: 600
   height: 600
@@ -121,7 +127,7 @@ urls:
   nftThumbnails: 'https://testnet-media.elrond.com/nfts/thumbnail'
   tmp: '/tmp'
   ipfs: 'https://ipfs.io/ipfs'
-  socket: 'testnet-socket-fra.elrond.com'
+  socket: 'testnet-socket-api.multiversx.com'
   maiarId: 'https://testnet-id-api.multiversx.com'
 database:
   enabled: false
