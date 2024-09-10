@@ -7,4 +7,6 @@ export default function preloadCache() {
     http.get(`${BASE_URL}/tokens?size=${numberofTokens}`);
     const numberofNodes = http.get(`${BASE_URL}/nodes/count`);
     http.get(`${BASE_URL}/nodes?size=${numberofNodes}`);
+    const numberofTags = http.get(`${BASE_URL}/tags/count`);
+    http.get(`${BASE_URL}/tags?size=${numberofTags}`);
 }
