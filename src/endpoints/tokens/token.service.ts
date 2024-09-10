@@ -777,30 +777,26 @@ export class TokenService {
     );
 
     for (const token of tokens) {
-      if (token.assets?.priceSource?.type === TokenAssetsPriceSourceType.dataApi) {
+      const priceSourcetype = token.assets?.priceSource?.type;
+
+      if (priceSourcetype === TokenAssetsPriceSourceType.dataApi) {
         token.price = await this.dataApiService.getEsdtTokenPrice(token.identifier);
-
-        const supply = await this.esdtService.getTokenSupply(token.identifier);
-        token.supply = supply.totalSupply;
-        token.circulatingSupply = supply.circulatingSupply;
-
-        if (token.price && token.circulatingSupply) {
-          token.marketCap = token.price * NumberUtils.denominateString(token.circulatingSupply, token.decimals);
-        }
-      } else if (token.assets?.priceSource?.url) {
-        const pathToPrice = "0.usdPrice";
+      } else if (priceSourcetype === TokenAssetsPriceSourceType.customUrl && token.assets?.priceSource?.url) {
+        const pathToPrice = token.assets?.priceSource?.path ?? "0.usdPrice";
         const tokenData = await this.fetchTokenDataFromUrl(token.assets.priceSource.url, pathToPrice);
 
         if (tokenData) {
           token.price = tokenData;
+        }
+      }
 
-          const supply = await this.esdtService.getTokenSupply(token.identifier);
-          token.supply = supply.totalSupply;
-          token.circulatingSupply = supply.circulatingSupply;
+      if (token.price) {
+        const supply = await this.esdtService.getTokenSupply(token.identifier);
+        token.supply = supply.totalSupply;
+        token.circulatingSupply = supply.circulatingSupply;
 
-          if (token.price && token.circulatingSupply) {
-            token.marketCap = token.price * NumberUtils.denominateString(token.circulatingSupply, token.decimals);
-          }
+        if (token.circulatingSupply) {
+          token.marketCap = token.price * NumberUtils.denominateString(token.circulatingSupply, token.decimals);
         }
       }
     }
@@ -822,8 +818,10 @@ export class TokenService {
       if (result === undefined || result === null) {
         return undefined;
       }
+
       result = !isNaN(Number(key)) ? result[Number(key)] : result[key];
     }
+
     return result;
   }
 
@@ -831,16 +829,18 @@ export class TokenService {
     try {
       const result = await this.apiService.get(url);
 
-      if (result && result.data) {
-        const extractedValue = this.extractData(result.data, path);
-        if (extractedValue) {
-          return extractedValue;
-        } else {
-          this.logger.error(`No valid data found at URL: ${url}`);
-        }
-      } else {
+      if (!result || !result.data) {
         this.logger.error(`Invalid response received from URL: ${url}`);
+        return;
       }
+
+      const extractedValue = this.extractData(result.data, path);
+      if (!extractedValue) {
+        this.logger.error(`No valid data found at URL: ${url}`);
+        return;
+      }
+
+      return extractedValue;
     } catch (error) {
       this.logger.error(`Failed to fetch token data from URL: ${url}`, error);
     }
