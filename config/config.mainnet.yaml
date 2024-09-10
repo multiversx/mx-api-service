@@ -32,9 +32,9 @@ features:
     hitsThreshold: 100
     ttl: 12
   transactionPool:
-    enabled: true
+    enabled: false
   transactionPoolWarmer:
-    enabled: true
+    enabled: false
     cronExpression: '*/5 * * * * *'
     ttlInSeconds: 60 
   updateCollectionExtraDetails:
@@ -96,8 +96,14 @@ features:
     nftQueueName: 'api-process-nfts'
     deadLetterQueueName: 'api-process-nfts-dlq'
   tps:
+    enabled: false
+    maxLookBehindNonces: 100
+  nodesFetch:
     enabled: true
-    maxLookBehindNonces: 100  
+    serviceUrl: 'https://api.multiversx.com'
+  tokensFetch:
+    enabled: true
+    serviceUrl: 'https://api.multiversx.com'
 image:
   width: 600
   height: 600
