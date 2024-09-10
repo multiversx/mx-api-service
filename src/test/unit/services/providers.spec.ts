@@ -14,6 +14,7 @@ describe('ProviderService', () => {
   let vmQuery: VmQueryService;
   let apiService: ApiService;
   let elasticIndexerService: ElasticIndexerService;
+  let apiConfigService: ApiConfigService;
 
   beforeEach(async () => {
     const moduleRef = await Test.createTestingModule({
@@ -34,6 +35,8 @@ describe('ProviderService', () => {
             getProvidersUrl: jest.fn(),
             getDelegationManagerContractAddress: jest.fn(),
             getDelegationContractAddress: jest.fn(),
+            isProvidersFetchFeatureEnabled: jest.fn(),
+            getProvidersFetchServiceUrl: jest.fn(),
           },
         },
         {
@@ -75,6 +78,7 @@ describe('ProviderService', () => {
     vmQuery = moduleRef.get<VmQueryService>(VmQueryService);
     apiService = moduleRef.get<ApiService>(ApiService);
     elasticIndexerService = moduleRef.get<ElasticIndexerService>(ElasticIndexerService);
+    apiConfigService = moduleRef.get<ApiConfigService>(ApiConfigService);
   });
 
   it('service should be defined', () => {
@@ -207,6 +211,81 @@ describe('ProviderService', () => {
       const results = await service.getProviderAddresses();
       expect(results).toEqual(expectedBech32Encoded);
     });
+
+    describe('getAllProviders', () => {
+      const mockProviders = [
+        {
+          "numNodes": 40,
+          "stake": "100000000000000000000000",
+          "topUp": "0",
+          "locked": "100000000000000000000000",
+          "provider": "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqphllllsndz99p",
+          "owner": "erd146zgxv6dv2x5d2cangu7r6flw8gv7ck2sjzf84l7lueh6h2lgg5s7ud0g8",
+          "featured": false,
+          "serviceFee": 0.25,
+          "delegationCap": "0",
+          "apr": 28.48,
+          "numUsers": 1,
+          "cumulatedRewards": "1371012041789457038610",
+          "automaticActivation": false,
+          "checkCapOnRedelegate": false
+        },
+        {
+          "numNodes": 20,
+          "stake": "50000000000000000000000",
+          "topUp": "28757498704655000000000",
+          "locked": "78757498704655000000000",
+          "provider": "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqp0llllswfeycs",
+          "owner": "erd1kkcvtdc6j235d9x830hlz8xc4vvz3q63mlhqykw5nq8f2t0tfx7sx4jhhj",
+          "featured": false,
+          "serviceFee": 0.1,
+          "delegationCap": "0",
+          "apr": 26.79,
+          "numUsers": 2,
+          "cumulatedRewards": "1360185962261010203331",
+          "automaticActivation": false,
+          "checkCapOnRedelegate": true
+        },
+        {
+          "numNodes": 5,
+          "stake": "12500000000000000000000",
+          "topUp": "37402000000000000000000",
+          "locked": "49902000000000000000000",
+          "provider": "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqlllllskf06ky",
+          "owner": "erd1gpvktvhygks33n4xhmy9zd4j2pagjkfcx4nhgxn8hxuhp2zc7evq3z9mnf",
+          "featured": false,
+          "serviceFee": 0,
+          "delegationCap": "0",
+          "apr": 0,
+          "numUsers": 3,
+          "cumulatedRewards": "14180909671679351854",
+          "automaticActivation": true,
+          "checkCapOnRedelegate": true
+        }
+      ]
+
+      it('should return values from external api', async () => {
+        service['cachingService'].getOrSet = jest.fn().mockImplementation((_, callback) => callback());
+        jest.spyOn(apiConfigService, 'isProvidersFetchFeatureEnabled').mockReturnValue(true);
+        jest.spyOn(apiConfigService, 'getProvidersFetchServiceUrl').mockReturnValue('https://testnet-api.multiversx.com');
+        jest.spyOn(apiService, 'get').mockResolvedValueOnce({ data: mockProviders });
+
+        jest.spyOn(service, 'getProviderAddresses');
+        jest.spyOn(service, 'getProviderConfig');
+        jest.spyOn(service, 'getNumUsers');
+        jest.spyOn(service, 'getCumulatedRewards');
+
+        const result = await service.getAllProviders();
+        expect(result).toEqual(mockProviders);
+        expect(apiService.get).toHaveBeenCalledTimes(1);
+        expect(service.getProviderAddresses).not.toHaveBeenCalled();
+        expect(service.getProviderConfig).not.toHaveBeenCalled();
+        expect(service.getNumUsers).not.toHaveBeenCalled();
+        expect(service.getCumulatedRewards).not.toHaveBeenCalled();
+      });
+
+    })
+
 
     it('should return empty array if no contract addresses are returned from vmQuery', async () => {
       jest.spyOn(vmQuery, 'vmQuery').mockResolvedValue([]);
