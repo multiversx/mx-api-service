@@ -25,6 +25,7 @@ import { NodeAuction } from "./entities/node.auction";
 import { NodeAuctionFilter } from "./entities/node.auction.filter";
 import { Identity } from "../identities/entities/identity";
 import { NodeSortAuction } from "./entities/node.sort.auction";
+import { ApiService } from "@multiversx/sdk-nestjs-http";
 
 @Injectable()
 export class NodeService {
@@ -42,7 +43,8 @@ export class NodeService {
     private readonly protocolService: ProtocolService,
     private readonly keysService: KeysService,
     @Inject(forwardRef(() => IdentitiesService))
-    private readonly identitiesService: IdentitiesService
+    private readonly identitiesService: IdentitiesService,
+    private readonly apiService: ApiService,
   ) { }
 
   private getIssues(node: Node, version: string | undefined): string[] {
@@ -372,6 +374,10 @@ export class NodeService {
   }
 
   async getAllNodesRaw(): Promise<Node[]> {
+    if (this.apiConfigService.isNodesFetchFeatureEnabled()) {
+      return await this.getAllNodesFromApi();
+    }
+
     const nodes = await this.getHeartbeatValidatorsAndQueue();
 
     await this.applyNodeIdentities(nodes);
@@ -390,6 +396,19 @@ export class NodeService {
     await this.applyNodeUnbondingPeriods(nodes);
 
     return nodes;
+  }
+
+  private async getAllNodesFromApi(): Promise<Node[]> {
+    try {
+      const { data } = await this.apiService.get(`${this.apiConfigService.getNodesFetchServiceUrl()}/nodes`, { params: { size: 10000 } });
+
+      return data;
+    } catch (error) {
+      this.logger.error('An unhandled error occurred when getting nodes from API');
+      this.logger.error(error);
+
+      throw error;
+    }
   }
 
   async processAuctions(nodes: Node[], auctions: Auction[]) {
