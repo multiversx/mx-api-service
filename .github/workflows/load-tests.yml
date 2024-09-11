@@ -1,7 +1,11 @@
 name: Load Tests
 
-on: [pull_request]
-
+on:
+  pull_request:
+    branches:
+      - main
+      - development
+      
 jobs:
   test-base:
     runs-on: ubuntu-latest
