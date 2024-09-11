@@ -27,7 +27,7 @@ export class AssetsService {
     return await this.cachingService.getOrSet(
       CacheInfo.TokenAssets.key,
       async () => await this.getAllTokenAssetsRaw(),
-      CacheInfo.TokenAssets.ttl
+      CacheInfo.TokenAssets.ttl,
     );
   }
 
@@ -55,7 +55,7 @@ export class AssetsService {
     return await this.cachingService.getOrSet(
       CacheInfo.CollectionRanks.key,
       async () => await this.getAllCollectionRanksRaw(),
-      CacheInfo.CollectionRanks.ttl
+      CacheInfo.CollectionRanks.ttl,
     );
   }
 
@@ -69,12 +69,10 @@ export class AssetsService {
 
     for (const asset of assets) {
       if (asset.ranks && asset.ranks.length > 0) {
-        result[asset.identifier] = asset.ranks.map((rank: any) => {
-          const nftRank = new NftRank();
-          nftRank.identifier = rank.identifier;
-          nftRank.rank = rank.rank;
-          return nftRank;
-        });
+        result[asset.identifier] = asset.ranks.map((rank: any) => new NftRank({
+          identifier: rank.identifier,
+          rank: rank.rank,
+        }));
       }
     }
 
@@ -85,7 +83,7 @@ export class AssetsService {
     return await this.cachingService.getOrSet(
       CacheInfo.AccountAssets.key,
       async () => await this.getAllAccountAssetsRaw(),
-      CacheInfo.AccountAssets.ttl
+      CacheInfo.AccountAssets.ttl,
     );
   }
 
