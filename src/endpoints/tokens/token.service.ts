@@ -720,8 +720,11 @@ export class TokenService {
   }
 
   async getAllTokensRaw(): Promise<TokenDetailed[]> {
-    this.logger.log(`Starting to fetch all tokens`);
+    if (this.apiConfigService.isTokensFetchFeatureEnabled()) {
+      return await this.getAllTokensFromApi();
+    }
 
+    this.logger.log(`Starting to fetch all tokens`);
     const tokensProperties = await this.esdtService.getAllFungibleTokenProperties();
     let tokens = tokensProperties.map(properties => ApiUtils.mergeObjects(new TokenDetailed(), properties));
 
@@ -904,6 +907,19 @@ export class TokenService {
       CacheInfo.TokenTransfers('').ttl,
       10,
     );
+  }
+
+  private async getAllTokensFromApi(): Promise<TokenDetailed[]> {
+    try {
+      const { data } = await this.apiService.get(`${this.apiConfigService.getTokensFetchServiceUrl()}/tokens`, { params: { size: 10000 } });
+
+      return data;
+    } catch (error) {
+      this.logger.error('An unhandled error occurred when getting tokens from API');
+      this.logger.error(error);
+
+      throw error;
+    }
   }
 
   private async getTotalTransactions(token: TokenDetailed): Promise<{ count: number, lastUpdatedAt: number } | undefined> {
