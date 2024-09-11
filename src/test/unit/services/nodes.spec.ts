@@ -20,6 +20,7 @@ import { NodeAuctionFilter } from "src/endpoints/nodes/entities/node.auction.fil
 import * as fs from 'fs';
 import * as path from 'path';
 import { ApiService } from "@multiversx/sdk-nestjs-http";
+import { Node } from "src/endpoints/nodes/entities/node";
 
 describe('NodeService', () => {
   let nodeService: NodeService;
@@ -439,18 +440,45 @@ describe('NodeService', () => {
     });
 
     describe('getAllNodes', () => {
-      it('should return values from external api', async () => {
-        const mockNodes = JSON.parse(fs.readFileSync(path.join(__dirname, '../../mocks/nodes.mock.json'), 'utf-8'));
-        nodeService['cacheService'].getOrSet = jest.fn().mockImplementation((_, callback) => callback());
+      it('should return nodes from API when isNodesFetchFeatureEnabled is true', async () => {
+        const mockNodes: Partial<Node>[] = [{ bls: 'mockBls' }];
+        const url = 'https://testnet-api.multiversx.com';
+
         jest.spyOn(apiConfigService, 'isNodesFetchFeatureEnabled').mockReturnValue(true);
-        jest.spyOn(apiConfigService, 'getNodesFetchServiceUrl').mockReturnValue('https://testnet-api.multiversx.com');
-        jest.spyOn(apiService, 'get').mockResolvedValueOnce({data: mockNodes});
-        const getHeartbeatValidatorsAndQueueSpy = jest.spyOn(nodeService, 'getHeartbeatValidatorsAndQueue');
+        jest.spyOn(apiConfigService, 'getNodesFetchServiceUrl').mockReturnValue(url);
+        jest.spyOn(apiService, 'get').mockResolvedValue({ data: mockNodes });
+        // eslint-disable-next-line require-await
+        jest.spyOn(cacheService, 'getOrSet').mockImplementation(async (_key, getter) => getter());
 
         const result = await nodeService.getAllNodes();
+
+        expect(apiConfigService.isNodesFetchFeatureEnabled).toHaveBeenCalled();
+        expect(apiService.get).toHaveBeenCalledWith(`${url}/nodes`, { params: { size: 10000 } });
         expect(result).toEqual(mockNodes);
-        expect(apiService.get).toHaveBeenCalledTimes(1);
-        expect(getHeartbeatValidatorsAndQueueSpy).not.toHaveBeenCalled();
+      });
+
+      it('should return nodes from other sources when isNodesFetchFeatureEnabled is false', async () => {
+        const mockNodes: Partial<Node>[] = [{ bls: 'mockBls' }];
+        jest.spyOn(apiConfigService, 'isNodesFetchFeatureEnabled').mockReturnValue(false);
+        jest.spyOn(nodeService, 'getHeartbeatValidatorsAndQueue').mockResolvedValue(mockNodes as Node[]);
+        jest.spyOn(nodeService as any, 'applyNodeIdentities').mockImplementation(() => Promise.resolve());
+        jest.spyOn(nodeService as any, 'applyNodeOwners').mockImplementation(() => Promise.resolve());
+        jest.spyOn(nodeService as any, 'applyNodeProviders').mockImplementation(() => Promise.resolve());
+        jest.spyOn(nodeService as any, 'applyNodeStakeInfo').mockImplementation(() => Promise.resolve());
+        jest.spyOn(nodeService as any, 'applyNodeUnbondingPeriods').mockImplementation(() => Promise.resolve());
+        // eslint-disable-next-line require-await
+        jest.spyOn(cacheService, 'getOrSet').mockImplementation(async (_key, getter) => getter());
+
+        const result = await nodeService.getAllNodes();
+
+        expect(apiConfigService.isNodesFetchFeatureEnabled).toHaveBeenCalled();
+        expect(nodeService.getHeartbeatValidatorsAndQueue).toHaveBeenCalled();
+        expect((nodeService as any).applyNodeIdentities).toHaveBeenCalledWith(mockNodes);
+        expect((nodeService as any).applyNodeOwners).toHaveBeenCalledWith(mockNodes);
+        expect((nodeService as any).applyNodeProviders).toHaveBeenCalledWith(mockNodes);
+        expect((nodeService as any).applyNodeStakeInfo).toHaveBeenCalledWith(mockNodes);
+        expect((nodeService as any).applyNodeUnbondingPeriods).toHaveBeenCalledWith(mockNodes);
+        expect(result).toEqual(mockNodes);
       });
     });
 

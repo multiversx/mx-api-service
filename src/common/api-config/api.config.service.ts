@@ -899,4 +899,18 @@ export class ApiConfigService {
 
     return serviceUrl;
   }
+
+  isProvidersFetchFeatureEnabled(): boolean {
+    return this.configService.get<boolean>('features.providersFetch.enabled') ?? false;
+  }
+
+  getProvidersFetchServiceUrl(): string {
+    const serviceUrl = this.configService.get<string>('features.providersFetch.serviceUrl');
+    if (!serviceUrl) {
+      throw new Error('No providers fetch service url present');
+    }
+
+    return serviceUrl;
+  }
+
 }
