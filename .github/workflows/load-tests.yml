@@ -1,10 +1,11 @@
 name: Load Tests
 
 on:
+  push:
+    branches: [main, development]
   pull_request:
-    branches:
-      - main
-      - development
+    branches: [main, development]
+
 jobs:
   test-base:
     runs-on: ubuntu-latest
