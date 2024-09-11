@@ -6,14 +6,19 @@ import { QueryPagination } from "src/common/entities/query.pagination";
 import { ElasticIndexerService } from "src/common/indexer/elastic/elastic.indexer.service";
 import { IdentitiesService } from "src/endpoints/identities/identities.service";
 import { NodeService } from "src/endpoints/nodes/node.service";
+import { Provider } from "src/endpoints/providers/entities/provider";
+import { ProviderConfig } from "src/endpoints/providers/entities/provider.config";
 import { ProviderService } from "src/endpoints/providers/provider.service";
 import { VmQueryService } from "src/endpoints/vm.query/vm.query.service";
+import { CacheInfo } from "src/utils/cache.info";
 
 describe('ProviderService', () => {
   let service: ProviderService;
   let vmQuery: VmQueryService;
   let apiService: ApiService;
   let elasticIndexerService: ElasticIndexerService;
+  let apiConfigService: ApiConfigService;
+  let cachingService: CacheService;
 
   beforeEach(async () => {
     const moduleRef = await Test.createTestingModule({
@@ -34,6 +39,8 @@ describe('ProviderService', () => {
             getProvidersUrl: jest.fn(),
             getDelegationManagerContractAddress: jest.fn(),
             getDelegationContractAddress: jest.fn(),
+            isProvidersFetchFeatureEnabled: jest.fn(),
+            getProvidersFetchServiceUrl: jest.fn(),
           },
         },
         {
@@ -75,6 +82,8 @@ describe('ProviderService', () => {
     vmQuery = moduleRef.get<VmQueryService>(VmQueryService);
     apiService = moduleRef.get<ApiService>(ApiService);
     elasticIndexerService = moduleRef.get<ElasticIndexerService>(ElasticIndexerService);
+    apiConfigService = moduleRef.get<ApiConfigService>(ApiConfigService);
+    cachingService = moduleRef.get<CacheService>(CacheService);
   });
 
   it('service should be defined', () => {
@@ -266,6 +275,133 @@ describe('ProviderService', () => {
 
       expect(elasticIndexerService.getProviderDelegatorsCount).toHaveBeenCalled();
       expect(results).toStrictEqual(100);
+    });
+  });
+
+  describe('getAllProvidersRaw', () => {
+    it('should return providers from API when fetch feature is enabled', async () => {
+      jest.spyOn(apiConfigService, 'isProvidersFetchFeatureEnabled').mockReturnValue(true);
+      const mockProviders = [
+        new Provider({ provider: 'provider1' }),
+        new Provider({ provider: 'provider2' }),
+      ];
+
+      jest.spyOn(service, 'getProviderAddressesFromApi').mockResolvedValue(mockProviders);
+      const getProviderAddressesSpy = jest.spyOn(service, 'getProviderAddresses');
+      const batchProcessSpy = jest.spyOn(cachingService, 'batchProcess');
+      const getRemoteSpy = jest.spyOn(cachingService, 'getRemote');
+      const setSpy = jest.spyOn(cachingService, 'set');
+
+      const result = await service.getAllProvidersRaw();
+
+      expect(apiConfigService.isProvidersFetchFeatureEnabled).toHaveBeenCalled();
+      expect(service.getProviderAddressesFromApi).toHaveBeenCalled();
+      expect(result).toEqual(mockProviders);
+
+      expect(getProviderAddressesSpy).not.toHaveBeenCalled();
+      expect(batchProcessSpy).not.toHaveBeenCalled();
+      expect(getRemoteSpy).not.toHaveBeenCalled();
+      expect(setSpy).not.toHaveBeenCalled();
+    });
+
+    it('should return providers from VM query when fetch feature is disabled', async () => {
+      jest.spyOn(apiConfigService, 'isProvidersFetchFeatureEnabled').mockReturnValue(false);
+
+      const mockProviderAddresses = ['provider1', 'provider2'];
+      const mockConfigs = [new ProviderConfig(), new ProviderConfig()];
+      const mockNumUsers = [10, 20];
+      const mockCumulatedRewards = ['1000', '2000'];
+      const mockIdentities = ['identity1', 'identity2'];
+
+      jest.spyOn(service, 'getProviderAddresses').mockResolvedValue(mockProviderAddresses);
+      jest.spyOn(cachingService, 'batchProcess')
+        .mockImplementation((addresses, keyFn, _callback) => {
+          if (keyFn(addresses[0]).startsWith('providerConfig')) {
+            return Promise.resolve(mockConfigs);
+          } else if (keyFn(addresses[0]).startsWith('providerNumUsers')) {
+            return Promise.resolve(mockNumUsers);
+          } else if (keyFn(addresses[0]).startsWith('providerCumulatedRewards')) {
+            return Promise.resolve(mockCumulatedRewards);
+          }
+          return Promise.resolve([]);
+        });
+
+      jest.spyOn(cachingService, 'getRemote').mockImplementation((key) => {
+        if (key.startsWith('confirmedProvider')) {
+          return Promise.resolve(mockIdentities.shift());
+        }
+        return Promise.resolve(null);
+      });
+
+      jest.spyOn(cachingService, 'set').mockResolvedValue();
+
+      const result = await service.getAllProvidersRaw();
+
+      expect(apiConfigService.isProvidersFetchFeatureEnabled).toHaveBeenCalled();
+      expect(service.getProviderAddresses).toHaveBeenCalled();
+      expect(cachingService.batchProcess).toHaveBeenCalledTimes(3);
+      expect(cachingService.getRemote).toHaveBeenCalledTimes(mockProviderAddresses.length);
+      expect(cachingService.set).toHaveBeenCalledTimes(mockProviderAddresses.length);
+
+      expect(result.length).toBe(mockProviderAddresses.length);
+      expect(result[0].provider).toBe(mockProviderAddresses[0]);
+      expect(result[0].numUsers).toBe(mockNumUsers[0]);
+      expect(result[0].cumulatedRewards).toBe(mockCumulatedRewards[0]);
+      expect(result[0].identity).toBe('identity1');
+      expect(result[1].provider).toBe(mockProviderAddresses[1]);
+      expect(result[1].numUsers).toBe(mockNumUsers[1]);
+      expect(result[1].cumulatedRewards).toBe(mockCumulatedRewards[1]);
+      expect(result[1].identity).toBe('identity2');
+    });
+  });
+
+  describe('getAllProviders', () => {
+    it('should return providers from cache if available', async () => {
+      const mockProviders = [
+        new Provider({ provider: 'provider1' }),
+        new Provider({ provider: 'provider2' }),
+      ];
+
+      jest.spyOn(cachingService, 'getOrSet').mockImplementation((key, callback) => {
+        if (key === CacheInfo.Providers.key) {
+          return Promise.resolve(mockProviders);
+        }
+        return callback();
+      });
+
+      const result = await service.getAllProviders();
+
+      expect(cachingService.getOrSet).toHaveBeenCalledWith(
+        CacheInfo.Providers.key,
+        expect.any(Function),
+        CacheInfo.Providers.ttl
+      );
+      expect(result).toEqual(mockProviders);
+    });
+
+    it('should fetch providers using getAllProvidersRaw if not available in cache', async () => {
+      const mockProviders = [
+        new Provider({ provider: 'provider1' }),
+        new Provider({ provider: 'provider2' }),
+      ];
+
+      jest.spyOn(cachingService, 'getOrSet').mockImplementation((key, callback) => {
+        if (key === CacheInfo.Providers.key) {
+          return callback();
+        }
+        return Promise.resolve([]);
+      });
+      jest.spyOn(service, 'getAllProvidersRaw').mockResolvedValue(mockProviders);
+
+      const result = await service.getAllProviders();
+
+      expect(cachingService.getOrSet).toHaveBeenCalledWith(
+        CacheInfo.Providers.key,
+        expect.any(Function),
+        CacheInfo.Providers.ttl
+      );
+      expect(service.getAllProvidersRaw).toHaveBeenCalled();
+      expect(result).toEqual(mockProviders);
     });
   });
 });
