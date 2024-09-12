@@ -655,7 +655,7 @@ describe('Token Service', () => {
         let mockTokens: Partial<TokenDetailed>[] = mockTokenProperties.map(properties => ApiUtils.mergeObjects(new TokenDetailed(), properties));
         const mockTokenAssets: Partial<TokenAssets> = { name: 'mockName' };
         const mockNftCollections: Partial<NftCollection>[] = [{ collection: 'mockCollection' }];
-        const mockTokenSupply: Partial<EsdtSupply> = { totalSupply: '1000000000000000000', circulatingSupply: '500000000000000000' }
+        const mockTokenSupply: Partial<EsdtSupply> = { totalSupply: '1000000000000000000', circulatingSupply: '500000000000000000' };
 
         jest.spyOn(apiConfigService, 'isTokensFetchFeatureEnabled').mockReturnValue(false);
         jest.spyOn(esdtService, 'getAllFungibleTokenProperties').mockResolvedValue(mockTokenProperties as TokenProperties[]);
@@ -681,7 +681,7 @@ describe('Token Service', () => {
         expect(esdtService.getAllFungibleTokenProperties).toHaveBeenCalled();
 
         mockTokens.forEach((mockToken) => {
-          expect(assetsService.getTokenAssets).toHaveBeenCalledWith(mockToken.identifier)
+          expect(assetsService.getTokenAssets).toHaveBeenCalledWith(mockToken.identifier);
         });
 
         expect(esdtService.getAllFungibleTokenProperties).toHaveBeenCalled();
@@ -708,10 +708,10 @@ describe('Token Service', () => {
             canAddSpecialRoles: collection.canAddSpecialRoles,
             canChangeOwner: collection.canChangeOwner,
             canUpgrade: collection.canUpgrade,
-          }))
+          }));
         });
         console.log(mockTokens);
-        expect((tokenService as any).batchProcessTokens).toHaveBeenCalledWith(mockTokens)
+        expect((tokenService as any).batchProcessTokens).toHaveBeenCalledWith(mockTokens);
         expect((tokenService as any).applyMexLiquidity).toHaveBeenCalledWith(mockTokens.filter(x => x.type !== TokenType.MetaESDT));
         expect((tokenService as any).applyMexPrices).toHaveBeenCalledWith(mockTokens.filter(x => x.type !== TokenType.MetaESDT));
         expect((tokenService as any).applyMexPairType).toHaveBeenCalledWith(mockTokens.filter(x => x.type !== TokenType.MetaESDT));
@@ -723,7 +723,7 @@ describe('Token Service', () => {
             expect(dataApiService.getEsdtTokenPrice).toHaveBeenCalledWith(mockToken.identifier);
           } else if (priceSourcetype === 'customUrl' && mockToken.assets?.priceSource?.url) {
             const pathToPrice = mockToken.assets?.priceSource?.path ?? "0.usdPrice";
-            expect((tokenService as any).fetchTokenDataFromUrl).toHaveBeenCalledWith(mockToken.assets?.priceSource?.url, pathToPrice)
+            expect((tokenService as any).fetchTokenDataFromUrl).toHaveBeenCalledWith(mockToken.assets?.priceSource?.url, pathToPrice);
           }
 
           if (mockToken.price) {
