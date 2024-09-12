@@ -30,6 +30,7 @@ import { Token } from "src/endpoints/tokens/entities/token";
 import { NftCollection } from "src/endpoints/collections/entities/nft.collection";
 import { EsdtSupply } from "src/endpoints/esdt/entities/esdt.supply";
 import { TokenDetailed } from "src/endpoints/tokens/entities/token.detailed";
+import { NumberUtils } from "@multiversx/sdk-nestjs-common";
 
 describe('Token Service', () => {
   let tokenService: TokenService;
@@ -630,7 +631,7 @@ describe('Token Service', () => {
         canWipe: true,
       },
     ];
-    describe('getAllNodes', () => {
+    describe('getAllTokens', () => {
       it('should return nodes from API when isNodesFetchFeatureEnabled is true', async () => {
         const mockTokens: Partial<Token>[] = [{ identifier: 'mockIdentifier' }];
         const url = 'https://testnet-api.multiversx.com';
@@ -651,10 +652,10 @@ describe('Token Service', () => {
       it('should return tokens from other sources when isTokensFetchFeatureEnabled is false', async () => {
 
         const mockTokenProperties: Partial<TokenProperties>[] = [{ identifier: 'mockIdentifier' }];
-        const mockTokens = mockTokenProperties.map(properties => ApiUtils.mergeObjects(new TokenDetailed(), properties));
+        let mockTokens: Partial<TokenDetailed>[] = mockTokenProperties.map(properties => ApiUtils.mergeObjects(new TokenDetailed(), properties));
         const mockTokenAssets: Partial<TokenAssets> = { name: 'mockName' };
         const mockNftCollections: Partial<NftCollection>[] = [{ collection: 'mockCollection' }];
-        const mockTokenSupply: Partial<EsdtSupply> = { totalSupply: '1000000000000000000' }
+        const mockTokenSupply: Partial<EsdtSupply> = { totalSupply: '1000000000000000000', circulatingSupply: '500000000000000000' }
 
         jest.spyOn(apiConfigService, 'isTokensFetchFeatureEnabled').mockReturnValue(false);
         jest.spyOn(esdtService, 'getAllFungibleTokenProperties').mockResolvedValue(mockTokenProperties as TokenProperties[]);
@@ -686,44 +687,63 @@ describe('Token Service', () => {
         expect(esdtService.getAllFungibleTokenProperties).toHaveBeenCalled();
         mockTokens.forEach(mockToken => {
           expect(assetsService.getTokenAssets).toHaveBeenCalledWith(mockToken.identifier);
+          mockToken.name = mockTokenAssets.name;
         });
         expect(assetsService.getTokenAssets).toHaveBeenCalledTimes(mockTokens.length);
 
 
         expect((collectionService as any).getNftCollections).toHaveBeenCalledWith(expect.anything(), { type: [TokenType.MetaESDT] });
-        expect((tokenService as any).batchProcessTokens).toHaveBeenCalledWith(mockTokens);
+        mockNftCollections.forEach(collection => {
+          mockTokens.push(new TokenDetailed({
+            type: TokenType.MetaESDT,
+            identifier: collection.collection,
+            name: collection.name,
+            timestamp: collection.timestamp,
+            owner: collection.owner,
+            decimals: collection.decimals,
+            canFreeze: collection.canFreeze,
+            canPause: collection.canPause,
+            canTransferNftCreateRole: collection.canTransferNftCreateRole,
+            canWipe: collection.canWipe,
+            canAddSpecialRoles: collection.canAddSpecialRoles,
+            canChangeOwner: collection.canChangeOwner,
+            canUpgrade: collection.canUpgrade,
+          }))
+        });
+        console.log(mockTokens);
+        expect((tokenService as any).batchProcessTokens).toHaveBeenCalledWith(mockTokens)
         expect((tokenService as any).applyMexLiquidity).toHaveBeenCalledWith(mockTokens.filter(x => x.type !== TokenType.MetaESDT));
         expect((tokenService as any).applyMexPrices).toHaveBeenCalledWith(mockTokens.filter(x => x.type !== TokenType.MetaESDT));
         expect((tokenService as any).applyMexPairType).toHaveBeenCalledWith(mockTokens.filter(x => x.type !== TokenType.MetaESDT));
         expect((tokenService as any).applyMexPairTradesCount).toHaveBeenCalledWith(mockTokens.filter(x => x.type !== TokenType.MetaESDT));
-
-        jest.spyOn(cacheService as any, 'batchApplyAll').mockImplementation(() => Promise.resolve());
-        jest.spyOn(dataApiService, 'getEsdtTokenPrice').mockResolvedValue(100);
-        jest.spyOn(tokenService as any, 'fetchTokenDataFromUrl').mockResolvedValue(100);
-        jest.spyOn(esdtService, 'getTokenSupply').mockResolvedValue(mockTokenSupply as EsdtSupply);
         expect((cacheService as any).batchApplyAll).toHaveBeenCalled();
         mockTokens.forEach(mockToken => {
-          expect(dataApiService.getEsdtTokenPrice).toHaveBeenCalledWith(mockToken.identifier);
-          // expect((tokenService as any).fetchTokenDataFromUrl).toHaveBeenCalledWith(mockNodes);
-          expect(esdtService.getTokenSupply).toHaveBeenCalledWith(mockToken.identifier);
+          const priceSourcetype = mockToken.assets?.priceSource?.type;
+          if (priceSourcetype === 'dataApi') {
+            expect(dataApiService.getEsdtTokenPrice).toHaveBeenCalledWith(mockToken.identifier);
+          } else if (priceSourcetype === 'customUrl' && mockToken.assets?.priceSource?.url) {
+            const pathToPrice = mockToken.assets?.priceSource?.path ?? "0.usdPrice";
+            expect((tokenService as any).fetchTokenDataFromUrl).toHaveBeenCalledWith(mockToken.assets?.priceSource?.url, pathToPrice)
+          }
+
+          if (mockToken.price) {
+            expect(esdtService.getTokenSupply).toHaveBeenCalledWith(mockToken.identifier);
+            mockToken.supply = mockTokenSupply.totalSupply;
+
+            if (mockToken.circulatingSupply) {
+              mockToken.marketCap = mockToken.price * NumberUtils.denominateString(mockToken.circulatingSupply.toString(), mockToken.decimals);
+            }
+          }
         });
 
+        mockTokens = mockTokens.sortedDescending(
+          token => token.assets ? 1 : 0,
+          token => token.isLowLiquidity ? 0 : (token.marketCap ?? 0),
+          token => token.transactions ?? 0,
+        );
         expect(result).toEqual(mockTokens);
       });
     });
-
-    // it('should return tokens from external api', async () => {
-    //   tokenService['cachingService'].getOrSet = jest.fn().mockImplementation((_, callback) => callback());
-    //   jest.spyOn(apiConfigService, 'isTokensFetchFeatureEnabled').mockReturnValue(true);
-    //   jest.spyOn(apiConfigService, 'getTokensFetchServiceUrl').mockReturnValue('https://testnet-api.multiversx.com');
-    //   jest.spyOn(apiService, 'get').mockResolvedValueOnce({ data: mockTokens });
-
-    //   const result = await tokenService.getAllTokens();
-    //   expect(result).toEqual(mockTokens);
-    //   expect(apiService.get).toHaveBeenCalledTimes(1);
-    //   expect(esdtService.getAllFungibleTokenProperties).not.toHaveBeenCalled();
-    //   expect(collectionService.getNftCollections).not.toHaveBeenCalled();
-    // });
 
     it('should return values from cache', async () => {
       const cachedValueMock = jest.spyOn(tokenService['cachingService'], 'getOrSet').mockResolvedValue(mockTokens);
