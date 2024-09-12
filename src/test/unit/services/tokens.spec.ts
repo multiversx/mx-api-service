@@ -710,7 +710,7 @@ describe('Token Service', () => {
             canUpgrade: collection.canUpgrade,
           }));
         });
-        console.log(mockTokens);
+
         expect((tokenService as any).batchProcessTokens).toHaveBeenCalledWith(mockTokens);
         expect((tokenService as any).applyMexLiquidity).toHaveBeenCalledWith(mockTokens.filter(x => x.type !== TokenType.MetaESDT));
         expect((tokenService as any).applyMexPrices).toHaveBeenCalledWith(mockTokens.filter(x => x.type !== TokenType.MetaESDT));
