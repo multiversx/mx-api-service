@@ -2,6 +2,7 @@ const fs = require('fs');
 
 function generateComparisonTable(baseCommitHash, baseMetricsPath, targetCommitHash, targetMetricsPath, outputPath) {
   // Load JSON outputs from k6
+  //test
   const baseMetrics = JSON.parse(fs.readFileSync(baseMetricsPath, 'utf8'));
   const targetMetrics = JSON.parse(fs.readFileSync(targetMetricsPath, 'utf8'));
 
@@ -52,12 +53,12 @@ function generateTable(baseCommitHash, baseData, targetCommitHash, targetData) {
               <th colspan="4">Target</th> \
               <th colspan="4">Diff</th> \
             </tr><tr> '
-  for (let i = 0; i < 3; i++) { 
+  for (let i = 0; i < 3; i++) {
     headers.forEach(header => {
       table += `<th>${header}</th>`;
     });
   }
-  table += '</tr>'; 
+  table += '</tr>';
 
   for (const key of Object.keys(baseData)) {
     if (key === 'Test Run Duration') {
