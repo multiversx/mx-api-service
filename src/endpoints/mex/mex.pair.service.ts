@@ -71,63 +71,68 @@ export class MexPairService {
       }
 
       const pairsLimit = gql`
-      query PairCount {
-        factory {
-          pairCount
-        }
-      }`;
+        query PairCount {
+          factory {
+            pairCount
+          }
+        }`;
 
       const pairsLimitResult: any = await this.graphQlService.getExchangeServiceData(pairsLimit);
       const totalPairs = pairsLimitResult?.factory?.pairCount;
 
       const variables = {
-        "offset": 0,
-        "pairsLimit": totalPairs,
+        pagination: { first: totalPairs },
+        filters: {},
       };
 
       const query = gql`
-        query ($offset: Int, $pairsLimit: Int) {
-          pairs(offset: $offset, limit: $pairsLimit) { 
-            address 
-            liquidityPoolToken {
-              identifier
-              name
-              __typename
+        query filteredPairs($pagination: ConnectionArgs!, $filters: PairsFilter!) {
+          filteredPairs(pagination: $pagination, filters: $filters) {
+            edges {
+              cursor
+              node {
+                address
+                liquidityPoolToken {
+                  identifier
+                  name
+                  __typename
+                }
+                liquidityPoolTokenPriceUSD
+                firstToken {
+                  name
+                  identifier
+                  decimals
+                  previous24hPrice
+                  __typename
+                }
+                secondToken {
+                  name
+                  identifier
+                  decimals
+                  previous24hPrice
+                  __typename
+                }
+                firstTokenPrice
+                firstTokenPriceUSD
+                secondTokenPrice
+                secondTokenPriceUSD
+                info {
+                  reserves0
+                  reserves1
+                  totalSupply
+                  __typename
+                }
+                state
+                type
+                lockedValueUSD
+                volumeUSD24h
+                hasFarms
+                hasDualFarms
+                tradesCount
+                deployedAt
+                __typename
+              }
             }
-            liquidityPoolTokenPriceUSD
-            firstToken {
-              name
-              identifier
-              decimals
-              previous24hPrice
-              __typename
-            }
-            secondToken {
-              name
-              identifier
-              decimals
-              previous24hPrice
-              __typename
-            }
-            firstTokenPrice
-            firstTokenPriceUSD
-            secondTokenPrice
-            secondTokenPriceUSD
-            info {
-              reserves0
-              reserves1
-              totalSupply
-              __typename
-            }
-            state
-            type
-            lockedValueUSD
-            volumeUSD24h
-            hasFarms
-            hasDualFarms
-            tradesCount
-            deployedAt
-            __typename
           }
         }
       `;
@@ -137,7 +142,9 @@ export class MexPairService {
         return [];
       }
 
-      return result.pairs.map((pair: any) => this.getPairInfo(pair)).filter((x: MexPair | undefined) => x && x.state === MexPairState.active);
+      return result.filteredPairs.edges
+        .map((edge: any) => this.getPairInfo(edge.node))
+        .filter((x: MexPair | undefined) => x && x.state === MexPairState.active);
     } catch (error) {
       this.logger.error('An error occurred while getting all mex pairs');
       this.logger.error(error);
