@@ -106,6 +106,10 @@ export interface IndexerInterface {
 
   getAccountDeploys(pagination: QueryPagination, address: string): Promise<ScDeploy[]>
 
+  getAccountContracts(pagination: QueryPagination, address: string): Promise<any[]>
+
+  getAccountContractsCount( address: string): Promise<number>
+
   getAccountHistory(address: string, pagination: QueryPagination, filter: AccountHistoryFilter): Promise<AccountHistory[]>
 
   getProviderDelegators(address: string, pagination: QueryPagination): Promise<ProviderDelegators[]>

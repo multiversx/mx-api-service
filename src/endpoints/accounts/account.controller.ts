@@ -1092,7 +1092,7 @@ export class AccountController {
   }
 
   @Get("/accounts/:address/deploys")
-  @ApiOperation({ summary: 'Account deploys details', description: 'Returns contracts details for a given account' })
+  @ApiOperation({ summary: 'Account deploys details', description: 'Returns deploys details for a given account' })
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   @ApiOkResponse({ type: [DeployedContract] })
@@ -1115,6 +1115,32 @@ export class AccountController {
   @ApiExcludeEndpoint()
   getAccountDeploysCountAlternative(@Param('address', ParseAddressPipe) address: string): Promise<number> {
     return this.accountService.getAccountDeploysCount(address);
+  }
+
+  @Get("/accounts/:address/contracts")
+  @ApiOperation({ summary: 'Account contracts details', description: 'Returns contracts details for a given account' })
+  @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
+  @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
+  @ApiOkResponse({ type: [DeployedContract] })
+  getAccountContracts(
+    @Param('address', ParseAddressPipe) address: string,
+    @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
+    @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
+  ): Promise<any[]> {
+    return this.accountService.getAccountContracts(new QueryPagination({ from, size }), address);
+  }
+
+  @Get("/accounts/:address/contracts/count")
+  @ApiOperation({ summary: 'Account contracts count', description: 'Returns total number of contracts for a given address' })
+  @ApiOkResponse({ type: Number })
+  getAccountContractsCount(@Param('address', ParseAddressPipe) address: string): Promise<number> {
+    return this.accountService.getAccountContractsCount(address);
+  }
+
+  @Get("/accounts/:address/contracts/c")
+  @ApiExcludeEndpoint()
+  getAccountContractsCountAlternative(@Param('address', ParseAddressPipe) address: string): Promise<number> {
+    return this.accountService.getAccountContractsCount(address);
   }
 
   @Get("/accounts/:address/upgrades")
