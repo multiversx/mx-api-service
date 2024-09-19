@@ -43,7 +43,7 @@ export class MexTokenChartsService {
     }
   }
 
-  async getTokenPricesDayResolution(tokenIdentifier: string, start: string): Promise<MexTokenChart[]> {
+  async getTokenPricesDayResolution(tokenIdentifier: string, after: string): Promise<MexTokenChart[]> {
     const tokenExists = await this.checkTokenExists(tokenIdentifier);
 
     if (!tokenExists) {
@@ -56,7 +56,7 @@ export class MexTokenChartsService {
         latestCompleteValues(
           series: "${tokenIdentifier}",
           metric: "priceUSD",
-          start: "${start}"
+          start: "${after}"
         ) {
           timestamp
           value

@@ -167,7 +167,7 @@ export class MexController {
   @Get('mex/tokens/prices/daily/:identifier')
   async getTokenPricesDayResolution(
     @Param('identifier',new ParseTokenPipe) identifier: string,
-    @Query('start') start: string): Promise<MexTokenChart[]> {
-    return await this.mexTokenChartsService.getTokenPricesDayResolution(identifier, start);
+    @Query('after') after: string): Promise<MexTokenChart[]> {
+    return await this.mexTokenChartsService.getTokenPricesDayResolution(identifier, after);
   }
 }
