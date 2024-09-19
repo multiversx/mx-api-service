@@ -124,9 +124,9 @@ export class AccountDetailedResolver extends AccountDetailedQuery {
       }));
   }
 
-  @ResolveField("contractAccount", () => [DeployedContract], { name: "contractAccount", description: "Contracts for the given detailed account.", nullable: true })
-  public async getAccountContracts(@Args("input", { description: "Input to retrieve the given contracts for." }) input: GetFromAndSizeInput, @Parent() account: AccountDetailed) {
-    return await this.accountService.getAccountContracts(
+  @ResolveField("deploysAccount", () => [DeployedContract], { name: "deploysAccount", description: "Deploys for the given detailed account.", nullable: true })
+  public async getAccountDeploys(@Args("input", { description: "Input to retrieve the given deploys for." }) input: GetFromAndSizeInput, @Parent() account: AccountDetailed) {
+    return await this.accountService.getAccountDeploys(
       new QueryPagination({
         from: input.from,
         size: input.size,
@@ -134,9 +134,9 @@ export class AccountDetailedResolver extends AccountDetailedQuery {
     );
   }
 
-  @ResolveField("contractAccountCount", () => Float, { name: "contractAccountCount", description: "Contracts count for the given detailed account." })
-  public async getAccountContractsCount(@Parent() account: AccountDetailed) {
-    return await this.accountService.getAccountContractsCount(account.address);
+  @ResolveField("deployAccountCount", () => Float, { name: "deployAccountCount", description: "Contracts count for the given detailed account." })
+  public async getAccountDeploysCount(@Parent() account: AccountDetailed) {
+    return await this.accountService.getAccountDeploysCount(account.address);
   }
 
   @ResolveField("nftCollections", () => [NftCollectionAccountFlat], { name: "nftCollections", description: "NFT collections for the given detailed account.", nullable: true })

@@ -628,8 +628,8 @@ export class AccountService {
     }
   }
 
-  async getAccountContracts(pagination: QueryPagination, address: string): Promise<DeployedContract[]> {
-    const accountDeployedContracts = await this.indexerService.getAccountContracts(pagination, address);
+  async getAccountDeploys(pagination: QueryPagination, address: string): Promise<DeployedContract[]> {
+    const accountDeployedContracts = await this.indexerService.getAccountDeploys(pagination, address);
     const assets = await this.assetsService.getAllAccountAssets();
 
     const accounts: DeployedContract[] = accountDeployedContracts.map(contract => ({
@@ -642,8 +642,8 @@ export class AccountService {
     return accounts;
   }
 
-  async getAccountContractsCount(address: string): Promise<number> {
-    return await this.indexerService.getAccountContractsCount(address);
+  async getAccountDeploysCount(address: string): Promise<number> {
+    return await this.indexerService.getAccountDeploysCount(address);
   }
 
   async getContractUpgrades(queryPagination: QueryPagination, address: string): Promise<ContractUpgrades[]> {

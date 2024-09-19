@@ -51,7 +51,7 @@ export class ElasticIndexerService implements IndexerInterface {
     return await this.elasticService.getCount('operations', query);
   }
 
-  async getAccountContractsCount(address: string): Promise<number> {
+  async getAccountDeploysCount(address: string): Promise<number> {
     const elasticQuery: ElasticQuery = ElasticQuery.create()
       .withCondition(QueryConditionOptions.must, [QueryType.Match("deployer", address)]);
 
@@ -437,7 +437,7 @@ export class ElasticIndexerService implements IndexerInterface {
     );
   }
 
-  async getAccountContracts(pagination: QueryPagination, address: string): Promise<any[]> {
+  async getAccountDeploys(pagination: QueryPagination, address: string): Promise<any[]> {
     const elasticQuery: ElasticQuery = ElasticQuery.create()
       .withPagination(pagination)
       .withCondition(QueryConditionOptions.must, [QueryType.Match("deployer", address)])

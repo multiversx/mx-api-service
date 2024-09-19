@@ -118,7 +118,7 @@ export class PostgresIndexerService implements IndexerInterface {
     return await this.scResultsRepository.count();
   }
 
-  async getAccountContractsCount(address: string): Promise<number> {
+  async getAccountDeploysCount(address: string): Promise<number> {
     const query = this.scDeploysRepository
       .createQueryBuilder()
       .where('creator = :address', { address });
@@ -398,7 +398,7 @@ export class PostgresIndexerService implements IndexerInterface {
     return await query.getMany();
   }
 
-  async getAccountContracts({ from, size }: QueryPagination, address: string): Promise<any[]> {
+  async getAccountDeploys({ from, size }: QueryPagination, address: string): Promise<any[]> {
     const query = this.scDeploysRepository
       .createQueryBuilder()
       .skip(from).take(size)
