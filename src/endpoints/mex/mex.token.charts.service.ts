@@ -4,6 +4,8 @@ import { OriginLogger } from "@multiversx/sdk-nestjs-common";
 import { gql } from 'graphql-request';
 import { MexTokenChart } from "./entities/mex.token.chart";
 import { MexTokenService } from "./mex.token.service";
+import { CacheService } from "@multiversx/sdk-nestjs-cache";
+import { CacheInfo } from "src/utils/cache.info";
 
 @Injectable()
 export class MexTokenChartsService {
@@ -11,10 +13,19 @@ export class MexTokenChartsService {
 
   constructor(
     private readonly graphQlService: GraphQlService,
-    private readonly mexTokenService: MexTokenService
+    private readonly mexTokenService: MexTokenService,
+    private readonly cachingService: CacheService,
   ) { }
 
   async getTokenPricesHourResolution(tokenIdentifier: string): Promise<MexTokenChart[]> {
+    return await this.cachingService.getOrSet(
+      CacheInfo.TokenHourChar(tokenIdentifier).key,
+      async () => await this.getTokenPricesHourResolutionRaw(tokenIdentifier),
+      CacheInfo.TokenHourChar(tokenIdentifier).ttl,
+    );
+  }
+
+  async getTokenPricesHourResolutionRaw(tokenIdentifier: string): Promise<MexTokenChart[]> {
     const tokenExists = await this.checkTokenExists(tokenIdentifier);
 
     if (!tokenExists) {
@@ -44,6 +55,14 @@ export class MexTokenChartsService {
   }
 
   async getTokenPricesDayResolution(tokenIdentifier: string, after: string): Promise<MexTokenChart[]> {
+    return await this.cachingService.getOrSet(
+      CacheInfo.TokenDailyChar(tokenIdentifier, after).key,
+      async () => await this.getTokenPricesDayResolutionRaw(tokenIdentifier, after),
+      CacheInfo.TokenDailyChar(tokenIdentifier, after).ttl,
+    );
+  }
+
+  async getTokenPricesDayResolutionRaw(tokenIdentifier: string, after: string): Promise<MexTokenChart[]> {
     const tokenExists = await this.checkTokenExists(tokenIdentifier);
 
     if (!tokenExists) {
