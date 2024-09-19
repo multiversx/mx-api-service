@@ -3,16 +3,25 @@ import { GraphQlService } from "src/common/graphql/graphql.service";
 import { OriginLogger } from "@multiversx/sdk-nestjs-common";
 import { gql } from 'graphql-request';
 import { MexTokenChart } from "./entities/mex.token.chart";
+import { MexTokenService } from "./mex.token.service";
 
 @Injectable()
 export class MexTokenChartsService {
   private readonly logger = new OriginLogger(MexTokenChartsService.name);
 
   constructor(
-    private readonly graphQlService: GraphQlService
+    private readonly graphQlService: GraphQlService,
+    private readonly mexTokenService: MexTokenService
   ) { }
 
   async getTokenPricesHourResolution(tokenIdentifier: string): Promise<MexTokenChart[]> {
+    const tokenExists = await this.checkTokenExists(tokenIdentifier);
+
+    if (!tokenExists) {
+      this.logger.error(`Token ${tokenIdentifier} does not exist or has no trading pair`);
+      return [];
+    }
+
     const query = gql`
       query tokenPricesHourResolution {
         values24h(
@@ -35,6 +44,13 @@ export class MexTokenChartsService {
   }
 
   async getTokenPricesDayResolution(tokenIdentifier: string, start: string): Promise<MexTokenChart[]> {
+    const tokenExists = await this.checkTokenExists(tokenIdentifier);
+
+    if (!tokenExists) {
+      this.logger.error(`Token ${tokenIdentifier} does not exist or has no trading pair`);
+      return [];
+    }
+
     const query = gql`
       query tokenPriceDayResolution {
         latestCompleteValues(
@@ -62,5 +78,10 @@ export class MexTokenChartsService {
       timestamp: Math.floor(new Date(item.timestamp).getTime() / 1000),
       value: Number(item.value),
     })) || [];
+  }
+
+  private async checkTokenExists(tokenIdentifier: string): Promise<boolean> {
+    const token = await this.mexTokenService.getMexTokenByIdentifier(tokenIdentifier);
+    return token !== undefined;
   }
 }
