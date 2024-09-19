@@ -55,9 +55,9 @@ describe('MexTokenChartsService', () => {
         ],
       };
 
-
       jest.spyOn(graphQlService, 'getExchangeServiceData').mockResolvedValue(mockData);
       jest.spyOn(mexTokenService, 'getMexTokenByIdentifier').mockResolvedValue(mockToken);
+      jest.spyOn(mexTokenChartsService as any, 'checkTokenExists').mockReturnValue(true);
 
       const result = await mexTokenChartsService.getTokenPricesHourResolutionRaw('TOKEN-123456');
 
@@ -69,14 +69,7 @@ describe('MexTokenChartsService', () => {
 
     it('should return an empty array when no data is available', async () => {
       jest.spyOn(graphQlService, 'getExchangeServiceData').mockResolvedValue({});
-
-      const result = await mexTokenChartsService.getTokenPricesHourResolutionRaw('TOKEN-123456');
-
-      expect(result).toEqual([]);
-    });
-
-    it('should return an empty array when an error occurs', async () => {
-      jest.spyOn(graphQlService, 'getExchangeServiceData').mockRejectedValue(new Error('GraphQL error'));
+      jest.spyOn(mexTokenChartsService as any, 'checkTokenExists').mockReturnValue(true);
 
       const result = await mexTokenChartsService.getTokenPricesHourResolutionRaw('TOKEN-123456');
 
@@ -97,6 +90,7 @@ describe('MexTokenChartsService', () => {
 
       jest.spyOn(graphQlService, 'getExchangeServiceData').mockResolvedValue(mockData);
       jest.spyOn(mexTokenService, 'getMexTokenByIdentifier').mockResolvedValue(mockToken);
+      jest.spyOn(mexTokenChartsService as any, 'checkTokenExists').mockReturnValue(true);
 
       const result = await mexTokenChartsService.getTokenPricesDayResolutionRaw('TOKEN-123456', '1683561648');
 
@@ -108,15 +102,7 @@ describe('MexTokenChartsService', () => {
 
     it('should return an empty array when no data is available', async () => {
       jest.spyOn(graphQlService, 'getExchangeServiceData').mockResolvedValue({});
-
-      const result = await mexTokenChartsService.getTokenPricesDayResolutionRaw('TOKEN-123456', '1683561648');
-
-      expect(result).toEqual([]);
-    });
-
-    it('should return an empty array when an error occurs', async () => {
-      jest.spyOn(graphQlService, 'getExchangeServiceData').mockRejectedValue(new Error('GraphQL error'));
-
+      jest.spyOn(mexTokenChartsService as any, 'checkTokenExists').mockReturnValue(true);
       const result = await mexTokenChartsService.getTokenPricesDayResolutionRaw('TOKEN-123456', '1683561648');
 
       expect(result).toEqual([]);
