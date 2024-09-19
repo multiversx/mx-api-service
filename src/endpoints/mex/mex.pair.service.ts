@@ -129,6 +129,7 @@ export class MexPairService {
                 hasFarms
                 hasDualFarms
                 tradesCount
+                tradesCount24h
                 deployedAt
                 __typename
               }
@@ -199,6 +200,7 @@ export class MexPairService {
         hasFarms: pair.hasFarms,
         hasDualFarms: pair.hasDualFarms,
         tradesCount: Number(pair.tradesCount),
+        tradesCount24h: Number(pair.tradesCount24h),
         deployedAt: Number(pair.deployedAt),
         state,
         type,
@@ -227,6 +229,7 @@ export class MexPairService {
       hasFarms: pair.hasFarms,
       hasDualFarms: pair.hasDualFarms,
       tradesCount: Number(pair.tradesCount),
+      tradesCount24h: Number(pair.tradesCount24h),
       deployedAt: Number(pair.deployedAt),
       state,
       type,
