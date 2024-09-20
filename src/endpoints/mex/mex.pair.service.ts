@@ -1,17 +1,18 @@
-import { Constants } from "@multiversx/sdk-nestjs-common";
-import { CacheService } from "@multiversx/sdk-nestjs-cache";
-import { BadRequestException, Injectable } from "@nestjs/common";
-import { gql } from "graphql-request";
-import { CacheInfo } from "src/utils/cache.info";
-import { GraphQlService } from "src/common/graphql/graphql.service";
-import { MexPair } from "./entities/mex.pair";
-import { MexPairState } from "./entities/mex.pair.state";
-import { MexPairType } from "./entities/mex.pair.type";
-import { MexSettingsService } from "./mex.settings.service";
-import { OriginLogger } from "@multiversx/sdk-nestjs-common";
-import { ApiConfigService } from "src/common/api-config/api.config.service";
-import { MexPairExchange } from "./entities/mex.pair.exchange";
-import { MexPairsFilter } from "./entities/mex.pairs..filter";
+import { Constants } from '@multiversx/sdk-nestjs-common';
+import { CacheService } from '@multiversx/sdk-nestjs-cache';
+import { BadRequestException, Injectable } from '@nestjs/common';
+import { gql } from 'graphql-request';
+import { CacheInfo } from 'src/utils/cache.info';
+import { GraphQlService } from 'src/common/graphql/graphql.service';
+import { MexPair } from './entities/mex.pair';
+import { MexPairState } from './entities/mex.pair.state';
+import { MexPairType } from './entities/mex.pair.type';
+import { MexSettingsService } from './mex.settings.service';
+import { OriginLogger } from '@multiversx/sdk-nestjs-common';
+import { ApiConfigService } from 'src/common/api-config/api.config.service';
+import { MexPairExchange } from './entities/mex.pair.exchange';
+import { MexPairsFilter } from './entities/mex.pairs..filter';
+import { MexPairStatus } from './entities/mex.pair.status';
 
 @Injectable()
 export class MexPairService {
@@ -52,7 +53,7 @@ export class MexPairService {
       CacheInfo.MexPairs.key,
       async () => await this.getAllMexPairsRaw(),
       CacheInfo.MexPairs.ttl,
-      Constants.oneSecond() * 30
+      Constants.oneSecond() * 30,
     );
   }
 
@@ -82,7 +83,7 @@ export class MexPairService {
 
       const variables = {
         pagination: { first: totalPairs },
-        filters: {},
+        filters: { state: MexPairStatus.active },
       };
 
       const query = gql`
@@ -144,8 +145,7 @@ export class MexPairService {
       }
 
       return result.filteredPairs.edges
-        .map((edge: any) => this.getPairInfo(edge.node))
-        .filter((x: MexPair | undefined) => x && x.state === MexPairState.active);
+        .map((edge: any) => this.getPairInfo(edge.node));
     } catch (error) {
       this.logger.error('An error occurred while getting all mex pairs');
       this.logger.error(error);
