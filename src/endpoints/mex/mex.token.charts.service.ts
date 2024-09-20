@@ -17,20 +17,19 @@ export class MexTokenChartsService {
     private readonly cachingService: CacheService,
   ) { }
 
-  async getTokenPricesHourResolution(tokenIdentifier: string): Promise<MexTokenChart[]> {
+  async getTokenPricesHourResolution(tokenIdentifier: string): Promise<MexTokenChart[] | undefined> {
     return await this.cachingService.getOrSet(
-      CacheInfo.TokenHourChar(tokenIdentifier).key,
+      CacheInfo.TokenHourChart(tokenIdentifier).key,
       async () => await this.getTokenPricesHourResolutionRaw(tokenIdentifier),
-      CacheInfo.TokenHourChar(tokenIdentifier).ttl,
+      CacheInfo.TokenHourChart(tokenIdentifier).ttl,
     );
   }
 
-  async getTokenPricesHourResolutionRaw(tokenIdentifier: string): Promise<MexTokenChart[]> {
+  async getTokenPricesHourResolutionRaw(tokenIdentifier: string): Promise<MexTokenChart[] | undefined> {
     const tokenExists = await this.checkTokenExists(tokenIdentifier);
 
     if (!tokenExists) {
-      this.logger.error(`Token ${tokenIdentifier} does not exist or has no trading pair`);
-      return [];
+      return undefined;
     }
 
     const query = gql`
@@ -54,20 +53,19 @@ export class MexTokenChartsService {
     }
   }
 
-  async getTokenPricesDayResolution(tokenIdentifier: string, after: string): Promise<MexTokenChart[]> {
+  async getTokenPricesDayResolution(tokenIdentifier: string, after: string): Promise<MexTokenChart[] | undefined> {
     return await this.cachingService.getOrSet(
-      CacheInfo.TokenDailyChar(tokenIdentifier, after).key,
+      CacheInfo.TokenDailyChart(tokenIdentifier, after).key,
       async () => await this.getTokenPricesDayResolutionRaw(tokenIdentifier, after),
-      CacheInfo.TokenDailyChar(tokenIdentifier, after).ttl,
+      CacheInfo.TokenDailyChart(tokenIdentifier, after).ttl,
     );
   }
 
-  async getTokenPricesDayResolutionRaw(tokenIdentifier: string, after: string): Promise<MexTokenChart[]> {
+  async getTokenPricesDayResolutionRaw(tokenIdentifier: string, after: string): Promise<MexTokenChart[] | undefined> {
     const tokenExists = await this.checkTokenExists(tokenIdentifier);
 
     if (!tokenExists) {
-      this.logger.error(`Token ${tokenIdentifier} does not exist or has no trading pair`);
-      return [];
+      return undefined;
     }
 
     const query = gql`

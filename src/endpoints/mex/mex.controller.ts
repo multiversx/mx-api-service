@@ -160,14 +160,26 @@ export class MexController {
 
   @Get('mex/tokens/prices/hourly/:identifier')
   async getTokenPricesHourResolution(
-    @Param('identifier', new ParseTokenPipe) identifier: string): Promise<MexTokenChart[]> {
-    return await this.mexTokenChartsService.getTokenPricesHourResolution(identifier);
+    @Param('identifier', new ParseTokenPipe) identifier: string): Promise<MexTokenChart[] | undefined> {
+    const charts =  await this.mexTokenChartsService.getTokenPricesHourResolution(identifier);
+
+    if(!charts){
+      throw new NotFoundException('Token not found');
+    }
+
+    return charts;
   }
 
   @Get('mex/tokens/prices/daily/:identifier')
   async getTokenPricesDayResolution(
     @Param('identifier',new ParseTokenPipe) identifier: string,
-    @Query('after') after: string): Promise<MexTokenChart[]> {
-    return await this.mexTokenChartsService.getTokenPricesDayResolution(identifier, after);
+    @Query('after') after: string): Promise<MexTokenChart[]  | undefined> {
+    const charts =  await this.mexTokenChartsService.getTokenPricesDayResolution(identifier, after);
+
+    if(!charts){
+      throw new NotFoundException('Token not found');
+    }
+
+    return charts;
   }
 }
