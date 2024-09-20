@@ -57,6 +57,7 @@ import { AccountKeyFilter } from './entities/account.key.filter';
 import { ScamType } from 'src/common/entities/scam-type.enum';
 import { DeepHistoryInterceptor } from 'src/interceptors/deep-history.interceptor';
 import { MexPairType } from '../mex/entities/mex.pair.type';
+import { AccountContract } from './entities/account.contract';
 
 @Controller()
 @ApiTags('accounts')
@@ -1126,7 +1127,7 @@ export class AccountController {
     @Param('address', ParseAddressPipe) address: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
-  ): Promise<any[]> {
+  ): Promise<AccountContract[]> {
     return this.accountService.getAccountContracts(new QueryPagination({ from, size }), address);
   }
 
