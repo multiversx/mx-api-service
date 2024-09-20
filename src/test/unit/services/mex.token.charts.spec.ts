@@ -61,7 +61,7 @@ describe('MexTokenChartsService', () => {
 
       const result = await mexTokenChartsService.getTokenPricesHourResolutionRaw('TOKEN-123456');
 
-      if(result){
+      if (result) {
         expect(result).toHaveLength(2);
         expect(result[0]).toBeInstanceOf(MexTokenChart);
         expect(result[0].timestamp).toBe(Math.floor(new Date('2023-05-08 10:00:00').getTime() / 1000));
@@ -96,7 +96,7 @@ describe('MexTokenChartsService', () => {
 
       const result = await mexTokenChartsService.getTokenPricesDayResolutionRaw('TOKEN-123456', '1683561648');
 
-      if(result){
+      if (result) {
         expect(result).toHaveLength(2);
         expect(result[0]).toBeInstanceOf(MexTokenChart);
         expect(result[0].timestamp).toBe(Math.floor(new Date('2023-05-01 00:00:00').getTime() / 1000));
