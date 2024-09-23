@@ -103,6 +103,9 @@ features:
   tokensFetch:
     enabled: true
     serviceUrl: 'https://api.multiversx.com'
+  providersFetch:
+    enabled: true
+    serviceUrl: 'https://api.multiversx.com'
 image:
   width: 600
   height: 600

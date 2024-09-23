@@ -202,7 +202,7 @@ export class ElasticIndexerHelper {
     }
 
     if (filter.tags) {
-      elasticQuery = elasticQuery.withMustCondition(QueryType.Should(filter.tags.map(tag => QueryType.Nested("data", [new MatchQuery("data.tags", tag)]))));
+      elasticQuery = elasticQuery.withMustCondition(QueryType.Should(filter.tags.map(tag => QueryType.Nested("data", [new MatchQuery("data.tags", tag, QueryOperator.AND)]))));
     }
 
     if (filter.creator !== undefined) {

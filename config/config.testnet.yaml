@@ -102,6 +102,9 @@ features:
   tokensFetch:
     enabled: true
     serviceUrl: 'https://testnet-api.multiversx.com'
+  providersFetch:
+    enabled: true
+    serviceUrl: 'https://testnet-api.multiversx.com'
 image:
   width: 600
   height: 600
