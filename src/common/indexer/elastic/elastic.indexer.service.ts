@@ -28,6 +28,7 @@ import { AccountHistoryFilter } from "src/endpoints/accounts/entities/account.hi
 import { AccountAssets } from "src/common/assets/entities/account.assets";
 import { NotWritableError } from "../entities/not.writable.error";
 import { ApplicationFilter } from "src/endpoints/applications/entities/application.filter";
+import { NftSubType } from "src/endpoints/nfts/entities/nft.sub.type";
 
 
 @Injectable()
@@ -782,11 +783,12 @@ export class ElasticIndexerService implements IndexerInterface {
     pagination: QueryPagination
   ): Promise<{ collection: string, count: number, balance: number }[]> {
     const types = [NftType.SemiFungibleESDT, NftType.NonFungibleESDT];
+    const subtypes = [NftSubType.NonFungibleESDTv2, NftSubType.DynamicSemiFungibleESDT, NftSubType.DynamicNonFungibleESDT];
+    const allTypes = [...types, ...subtypes];
+
     if (!filter.excludeMetaESDT) {
       types.push(NftType.MetaESDT);
     }
-
-    const isIndexerV5Active = await this.isIndexerV5Active();
 
     const elasticQuery = ElasticQuery.create()
       .withMustExistCondition('identifier')
@@ -796,7 +798,7 @@ export class ElasticIndexerService implements IndexerInterface {
       .withMustMultiShouldCondition(filter.identifiers, identifier => QueryType.Match('token', identifier, QueryOperator.AND))
       .withSearchWildcardCondition(filter.search, ['token', 'name'])
       .withMustMultiShouldCondition(filter.type, type => QueryType.Match('type', type))
-      .withMustMultiShouldCondition(types, type => QueryType.Match('type', type))
+      .withMustMultiShouldCondition(allTypes, type => QueryType.Match('type', type))
       .withExtra({
         aggs: {
           collections: {
@@ -806,7 +808,7 @@ export class ElasticIndexerService implements IndexerInterface {
                 {
                   collection: {
                     terms: {
-                      field: isIndexerV5Active ? 'token' : 'token.keyword',
+                      field: 'token',
                     },
                   },
                 },

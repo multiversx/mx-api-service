@@ -909,4 +909,7 @@ export class ApiConfigService {
     return serviceUrl;
   }
 
+  getCacheDuration(): number {
+    return this.configService.get<number>('caching.cacheDuration') ?? 3;
+  }
 }
