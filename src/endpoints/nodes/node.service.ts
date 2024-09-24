@@ -388,7 +388,8 @@ export class NodeService {
 
     await this.applyNodeStakeInfo(nodes);
 
-    if (this.apiConfigService.isStakingV4Enabled()) {
+    const currentEpoch = await this.blockService.getCurrentEpoch();
+    if (this.apiConfigService.isStakingV4Enabled() && currentEpoch >= this.apiConfigService.getStakingV4ActivationEpoch()) {
       const auctions = await this.gatewayService.getValidatorAuctions();
       await this.processAuctions(nodes, auctions);
     }
