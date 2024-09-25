@@ -155,6 +155,20 @@ export class CacheInfo {
     };
   }
 
+  static TokenHourChart(tokenIdentifier: string): CacheInfo {
+    return {
+      key: `tokenHourChart:${tokenIdentifier}`,
+      ttl: Constants.oneMinute() * 10,
+    };
+  }
+
+  static TokenDailyChart(tokenIdentifier: string, after: string): CacheInfo {
+    return {
+      key: `tokenDailyChart:${tokenIdentifier}:${after}`,
+      ttl: Constants.oneDay(),
+    };
+  }
+
   static TokenAssets: CacheInfo = {
     key: 'tokenAssets',
     ttl: Constants.oneDay(),
