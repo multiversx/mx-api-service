@@ -162,9 +162,8 @@ export class MexController {
   async getTokenPricesHourResolution(
     @Param('identifier', ParseTokenPipe) identifier: string): Promise<MexTokenChart[] | undefined> {
     const charts = await this.mexTokenChartsService.getTokenPricesHourResolution(identifier);
-
     if (!charts) {
-      throw new NotFoundException('Token not found');
+      throw new NotFoundException('Price not available for given token identifier');
     }
 
     return charts;
@@ -175,9 +174,8 @@ export class MexController {
     @Param('identifier', ParseTokenPipe) identifier: string,
     @Query('after') after: string): Promise<MexTokenChart[] | undefined> {
     const charts = await this.mexTokenChartsService.getTokenPricesDayResolution(identifier, after);
-
     if (!charts) {
-      throw new NotFoundException('Token not found');
+      throw new NotFoundException('Price not available for given token identifier');
     }
 
     return charts;

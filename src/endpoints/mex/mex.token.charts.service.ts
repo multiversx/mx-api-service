@@ -26,9 +26,8 @@ export class MexTokenChartsService {
   }
 
   async getTokenPricesHourResolutionRaw(tokenIdentifier: string): Promise<MexTokenChart[] | undefined> {
-    const tokenExists = await this.checkTokenExists(tokenIdentifier);
-
-    if (!tokenExists) {
+    const isMexToken = await this.isMexToken(tokenIdentifier);
+    if (!isMexToken) {
       return undefined;
     }
 
@@ -62,9 +61,8 @@ export class MexTokenChartsService {
   }
 
   async getTokenPricesDayResolutionRaw(tokenIdentifier: string, after: string): Promise<MexTokenChart[] | undefined> {
-    const tokenExists = await this.checkTokenExists(tokenIdentifier);
-
-    if (!tokenExists) {
+    const isMexToken = await this.isMexToken(tokenIdentifier);
+    if (!isMexToken) {
       return undefined;
     }
 
@@ -97,7 +95,7 @@ export class MexTokenChartsService {
     })) || [];
   }
 
-  private async checkTokenExists(tokenIdentifier: string): Promise<boolean> {
+  private async isMexToken(tokenIdentifier: string): Promise<boolean> {
     const token = await this.mexTokenService.getMexTokenByIdentifier(tokenIdentifier);
     return token !== undefined;
   }
