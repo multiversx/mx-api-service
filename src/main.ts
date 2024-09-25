@@ -173,7 +173,6 @@ async function bootstrap() {
 
   logger.log(`Use tracing: ${apiConfigService.getUseTracingFlag()}`);
   logger.log(`Process NFTs flag: ${apiConfigService.getIsProcessNftsFlagActive()}`);
-  logger.log(`Indexer v3 flag: ${apiConfigService.getIsIndexerV3FlagActive()}`);
   logger.log(`Staking v4 enabled: ${apiConfigService.isStakingV4Enabled()}`);
   logger.log(`Events notifier enabled: ${apiConfigService.isEventsNotifierFeatureActive()}`);
   logger.log(`Guest caching enabled: ${apiConfigService.isGuestCacheFeatureActive()}`);
@@ -279,7 +278,7 @@ async function configurePublicApp(publicApp: NestExpressApplication, apiConfigSe
   const config = documentBuilder.build();
   const options = {
     customSiteTitle: 'Multiversx API',
-    customCss: `.topbar-wrapper img 
+    customCss: `.topbar-wrapper img
           {
             content:url(\'/img/mvx-ledger-icon-mint.png\'); width:100px; height:auto;
           }
@@ -353,4 +352,3 @@ RedisClient.prototype.on_error = function (err: any) {
   // then we should try to reconnect.
   this.connection_gone('error', err);
 };
-

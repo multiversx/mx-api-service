@@ -726,26 +726,6 @@ describe('API Config', () => {
     });
   });
 
-  describe("getIsIndexerV3FlagActive", () => {
-    it("should return indexer V3 flag active", () => {
-      jest
-        .spyOn(ConfigService.prototype, "get")
-        .mockImplementation(jest.fn(() => true));
-
-      const results = apiConfigService.getIsIndexerV3FlagActive();
-      expect(results).toEqual(true);
-    });
-
-    it("should return default value because test simulates that indexer V3 flag active is not defined", () => {
-      jest
-        .spyOn(ConfigService.prototype, 'get')
-        .mockImplementation(jest.fn(() => undefined));
-
-      const results = apiConfigService.getIsIndexerV3FlagActive();
-      expect(results).toEqual(false);
-    });
-  });
-
   describe("getIsPublicApiActive", () => {
     it("should return is public api active flag", () => {
       jest

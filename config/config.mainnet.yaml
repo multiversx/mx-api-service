@@ -18,7 +18,6 @@ flags:
   useRequestLogging: false
   useVmQueryTracing: false
   processNfts: true
-  indexer-v3: false
   collectionPropertiesFromGateway: false
 features:
   eventsNotifier:
