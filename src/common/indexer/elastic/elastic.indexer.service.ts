@@ -781,7 +781,7 @@ export class ElasticIndexerService implements IndexerInterface {
                 {
                   collection: {
                     terms: {
-                      field: 'token.keyword',
+                      field: 'token',
                     },
                   },
                 },
