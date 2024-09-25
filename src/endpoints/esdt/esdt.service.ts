@@ -213,6 +213,7 @@ export class EsdtService {
       identifier: elasticProperties.identifier,
       name: elasticProperties.name,
       type: elasticProperties.type as EsdtType,
+      subType: elasticProperties.type as EsdtSubType,
       owner: elasticProperties.currentOwner,
       decimals: elasticProperties.numDecimals,
       canUpgrade: elasticProperties.properties?.canUpgrade ?? false,
