@@ -9,7 +9,7 @@ import { AssetsService } from '../../common/assets/assets.service';
 export class ApplicationService {
   constructor(
     private readonly elasticIndexerService: ElasticIndexerService,
-    private readonly  assetsService: AssetsService,
+    private readonly assetsService: AssetsService,
   ) { }
 
   async getApplications(pagination: QueryPagination, filter: ApplicationFilter): Promise<Application[]> {
