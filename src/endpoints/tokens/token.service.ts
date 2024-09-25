@@ -167,6 +167,10 @@ export class TokenService {
       tokens = tokens.filter(token => mexPairTypes.includes(token.mexPairType));
     }
 
+    if (filter.priceSource) {
+      tokens = tokens.filter(token => token.assets?.priceSource?.type === filter.priceSource);
+    }
+
     return tokens;
   }
 
