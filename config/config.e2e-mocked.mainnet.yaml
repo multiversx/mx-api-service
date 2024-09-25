@@ -21,7 +21,6 @@ flags:
   useRequestCaching: true
   useKeepAliveAgent: true
   useTracing: false
-  indexer-v3: true
   collectionPropertiesFromGateway: false
 urls:
   self: 'https://api.multiversx.com'

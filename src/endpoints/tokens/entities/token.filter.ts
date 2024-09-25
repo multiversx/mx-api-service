@@ -2,6 +2,7 @@ import { SortOrder } from "src/common/entities/sort.order";
 import { TokenType } from "src/common/indexer/entities";
 import { TokenSort } from "./token.sort";
 import { MexPairType } from "src/endpoints/mex/entities/mex.pair.type";
+import { TokenAssetsPriceSourceType } from "src/common/assets/entities/token.assets.price.source.type";
 
 export class TokenFilter {
   constructor(init?: Partial<TokenFilter>) {
@@ -25,4 +26,6 @@ export class TokenFilter {
   order?: SortOrder;
 
   mexPairType?: MexPairType[];
+
+  priceSource?: TokenAssetsPriceSourceType;
 }

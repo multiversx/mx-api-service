@@ -1,6 +1,5 @@
 import { HttpStatus, Injectable } from "@nestjs/common";
 import { BinaryUtils } from "@multiversx/sdk-nestjs-common";
-import { ApiService } from "@multiversx/sdk-nestjs-http";
 import { ElasticService, ElasticQuery, QueryOperator, QueryType, QueryConditionOptions, ElasticSortOrder, ElasticSortProperty, TermsQuery, RangeGreaterThanOrEqual, MatchQuery } from "@multiversx/sdk-nestjs-elastic";
 import { IndexerInterface } from "../indexer.interface";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
@@ -36,7 +35,6 @@ export class ElasticIndexerService implements IndexerInterface {
     private readonly apiConfigService: ApiConfigService,
     private readonly elasticService: ElasticService,
     private readonly indexerHelper: ElasticIndexerHelper,
-    private readonly apiService: ApiService,
   ) { }
 
   async getAccountsCount(filter: AccountQueryOptions): Promise<number> {
@@ -669,17 +667,12 @@ export class ElasticIndexerService implements IndexerInterface {
   }
 
   async getNftsForAddress(address: string, filter: NftFilter, pagination: QueryPagination): Promise<any[]> {
-    let elasticQuery = this.indexerHelper.buildElasticNftFilter(filter, undefined, address)
-      .withPagination(pagination);
-
-    if (this.apiConfigService.getIsIndexerV3FlagActive()) {
-      elasticQuery = elasticQuery.withSort([
+    const elasticQuery = this.indexerHelper.buildElasticNftFilter(filter, undefined, address)
+      .withPagination(pagination)
+      .withSort([
         { name: 'timestamp', order: ElasticSortOrder.descending },
         { name: 'tokenNonce', order: ElasticSortOrder.descending },
       ]);
-    } else {
-      elasticQuery = elasticQuery.withSort([{ name: '_id', order: ElasticSortOrder.ascending }]);
-    }
 
     return await this.elasticService.getList('accountsesdt', 'identifier', elasticQuery);
   }
@@ -776,22 +769,6 @@ export class ElasticIndexerService implements IndexerInterface {
     return undefined;
   }
 
-  private indexerV5Active: boolean | undefined = undefined;
-
-  async isIndexerV5Active(): Promise<boolean> {
-    if (this.indexerV5Active !== undefined) {
-      return this.indexerV5Active;
-    }
-
-    const mappingsResult = await this.apiService.get(`${this.apiConfigService.getElasticUrl()}/tokens/_mappings`);
-    const mappings = mappingsResult.data?.tokens?.mappings?.properties ?? mappingsResult.data['tokens-000001']?.mappings?.properties;
-
-    const currentOwnerType = mappings?.currentOwner?.type;
-
-    this.indexerV5Active = currentOwnerType === 'keyword';
-    return this.indexerV5Active;
-  }
-
   async getCollectionsForAddress(
     address: string,
     filter: CollectionFilter,
@@ -801,8 +778,6 @@ export class ElasticIndexerService implements IndexerInterface {
     if (!filter.excludeMetaESDT) {
       types.push(NftType.MetaESDT);
     }
-
-    const isIndexerV5Active = await this.isIndexerV5Active();
 
     const elasticQuery = ElasticQuery.create()
       .withMustExistCondition('identifier')
@@ -822,7 +797,7 @@ export class ElasticIndexerService implements IndexerInterface {
                 {
                   collection: {
                     terms: {
-                      field: isIndexerV5Active ? 'token' : 'token.keyword',
+                      field: 'token',
                     },
                   },
                 },

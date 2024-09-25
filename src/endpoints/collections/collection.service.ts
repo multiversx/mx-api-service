@@ -247,11 +247,7 @@ export class CollectionService {
   }
 
   async getNftCollectionRoles(elasticCollection: any): Promise<CollectionRoles[]> {
-    if (!this.apiConfigService.getIsIndexerV3FlagActive()) {
-      return await this.getNftCollectionRolesFromEsdtContract(elasticCollection.token);
-    }
-
-    return this.getNftCollectionRolesFromElasticResponse(elasticCollection);
+    return await this.getNftCollectionRolesFromElasticResponse(elasticCollection);
   }
 
   async getNftCollectionRolesFromGateway(elasticCollection: any): Promise<CollectionRoles[]> {

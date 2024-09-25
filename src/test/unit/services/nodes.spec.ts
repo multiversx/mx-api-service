@@ -493,7 +493,7 @@ describe('NodeService', () => {
         const result = await nodeService.deleteOwnersForAddressInCache(address);
 
         expect(result).toEqual([]);
-        expect(currentEpochSpy).toHaveBeenCalledTimes(1);
+        expect(currentEpochSpy).toHaveBeenCalledTimes(2);
         expect(allNodesSpy).toHaveBeenCalledTimes(1);
       });
     });
@@ -539,7 +539,7 @@ describe('NodeService', () => {
             undefined,
           ]
         );
-        expect(currentEpochSpy).toHaveBeenCalledTimes(1);
+        expect(currentEpochSpy).toHaveBeenCalledTimes(2);
       });
     });
 
