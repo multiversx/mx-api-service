@@ -54,6 +54,7 @@ export class NftController {
   @ApiQuery({ name: 'after', description: 'Return all NFTs after given timestamp', required: false, type: Number })
   @ApiQuery({ name: 'withOwner', description: 'Return owner where type = NonFungibleESDT', required: false, type: Boolean })
   @ApiQuery({ name: 'withSupply', description: 'Return supply where type = SemiFungibleESDT', required: false, type: Boolean })
+  @ApiQuery({ name: 'excludeMetaESDT', description: 'Exclude NFTs of type "MetaESDT" in the response', required: false, type: Boolean })
   async getNfts(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
@@ -75,6 +76,7 @@ export class NftController {
     @Query('after', new ParseIntPipe) after?: number,
     @Query('withOwner', new ParseBoolPipe) withOwner?: boolean,
     @Query('withSupply', new ParseBoolPipe) withSupply?: boolean,
+    @Query('excludeMetaESDT', new ParseBoolPipe) excludeMetaESDT?: boolean,
   ): Promise<Nft[]> {
     return await this.nftService.getNfts(
       new QueryPagination({ from, size }),
@@ -95,6 +97,7 @@ export class NftController {
         traits,
         before,
         after,
+        excludeMetaESDT,
       }),
       new NftQueryOptions({ withOwner, withSupply }),
     );
