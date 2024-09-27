@@ -19,6 +19,7 @@ import { TransactionFilter } from '../transactions/entities/transaction.filter';
 import { Transaction } from '../transactions/entities/transaction';
 import { ScamType } from 'src/common/entities/scam-type.enum';
 import { TransferService } from '../transfers/transfer.service';
+import { NftSubType } from './entities/nft.sub.type';
 
 @Controller()
 @ApiTags('nfts')
@@ -38,7 +39,8 @@ export class NftController {
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   @ApiQuery({ name: 'search', description: 'Search by collection identifier', required: false })
   @ApiQuery({ name: 'identifiers', description: 'Search by token identifiers, comma-separated', required: false })
-  @ApiQuery({ name: 'type', description: 'Filter by type (NonFungibleESDT/SemiFungibleESDT/MetaESDT)', required: false })
+  @ApiQuery({ name: 'type', description: 'Filter by type (NonFungibleESDT/SemiFungibleESDT)', required: false })
+  @ApiQuery({ name: 'subType', description: 'Filter by type (NonFungibleESDTv2/DynamicNonFungibleESDT/DynamicSemiFungibleESDT)', required: false })
   @ApiQuery({ name: 'collection', description: 'Get all tokens by token collection', required: false })
   @ApiQuery({ name: 'collections', description: 'Get all tokens by token collections, comma-separated', required: false })
   @ApiQuery({ name: 'name', description: 'Get all nfts by name', required: false })
@@ -60,6 +62,7 @@ export class NftController {
     @Query('search') search?: string,
     @Query('identifiers', ParseNftArrayPipe) identifiers?: string[],
     @Query('type') type?: NftType,
+    @Query('subType', new ParseEnumPipe(NftSubType)) subType?: NftSubType,
     @Query('collection', ParseCollectionPipe) collection?: string,
     @Query('collections', ParseCollectionArrayPipe) collections?: string[],
     @Query('name') name?: string,
@@ -82,6 +85,7 @@ export class NftController {
         search,
         identifiers,
         type,
+        subType,
         collection,
         collections,
         name,
