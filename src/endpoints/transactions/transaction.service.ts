@@ -18,7 +18,7 @@ import { GatewayComponentRequest } from 'src/common/gateway/entities/gateway.com
 import { TransactionActionService } from './transaction-action/transaction.action.service';
 import { TransactionDecodeDto } from './entities/dtos/transaction.decode.dto';
 import { TransactionStatus } from './entities/transaction.status';
-import { AddressUtils, BinaryUtils, Constants, PendingExecuter } from '@multiversx/sdk-nestjs-common';
+import { AddressUtils, Constants, PendingExecuter } from '@multiversx/sdk-nestjs-common';
 import { ApiUtils } from "@multiversx/sdk-nestjs-http";
 import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { TransactionUtils } from './transaction.utils';
@@ -152,7 +152,11 @@ export class TransactionService {
     const elasticTransactions = await this.indexerService.getTransactions(filter, pagination, address);
 
     let transactions: TransactionDetailed[] = [];
-    transactions = elasticTransactions.map(x => ApiUtils.mergeObjects(new TransactionDetailed(), x));
+         transactions = elasticTransactions.map(x => {
+           const transaction = ApiUtils.mergeObjects(new TransactionDetailed(), x);
+           transaction.relayedVersion = x.version;
+           return transaction;
+         });
 
     if (filter.hashes) {
       const txHashes: string[] = filter.hashes;
@@ -178,7 +182,6 @@ export class TransactionService {
 
     for (const transaction of transactions) {
       transaction.type = undefined;
-      transaction.relayedVersion = this.extractRelayedVersion(transaction);
     }
 
     await this.processTransactions(transactions, {
@@ -549,19 +552,5 @@ export class TransactionService {
         }
       }
     }
-  }
-
-  private extractRelayedVersion(transaction: TransactionDetailed): string | undefined {
-    if (transaction.isRelayed == true && transaction.data) {
-      const decodedData = BinaryUtils.base64Decode(transaction.data);
-
-      if (decodedData.startsWith('relayedTx@')) {
-        return 'v1';
-      } else if (decodedData.startsWith('relayedTxV2@')) {
-        return 'v2';
-      }
-    }
-
-    return undefined;
   }
 }
