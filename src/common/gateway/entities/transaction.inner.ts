@@ -11,7 +11,10 @@ export class TransactionInner {
   gasLimit: number = 0;
   data: string = '';
   signature: string = '';
-  chainId: number = 0;
+  chainID: string = '';
   version: number = 0;
   relayer: string = '';
+  options: number = 0;
+  guardianSignature: string = '';
+  senderUsername: string = '';
 }

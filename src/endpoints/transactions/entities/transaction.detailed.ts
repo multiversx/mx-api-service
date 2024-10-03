@@ -68,6 +68,5 @@ export class TransactionDetailed extends Transaction {
 
   @Field(() => [TransactionInner], { description: 'Inner transactions list details.', nullable: true })
   @ApiProperty({ type: TransactionInner, isArray: true })
-  innerTransactions: TransactionDetailed[] | undefined = undefined;
+  innerTransactions: TransactionInner[] | undefined = undefined;
 }
-
