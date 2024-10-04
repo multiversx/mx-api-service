@@ -113,8 +113,10 @@ export class NetworkService {
     const egldPrice = await this.dataApiService.getEgldPrice();
     const tokenMarketCap = await this.tokenService.getTokenMarketCapRaw();
 
+    const currentEpoch = await this.blockService.getCurrentEpoch();
+
     let totalWaitingStake: BigInt = BigInt(0);
-    if (!this.apiConfigService.isStakingV4Enabled()) {
+    if (!this.apiConfigService.isStakingV4Enabled() || currentEpoch < this.apiConfigService.getStakingV4ActivationEpoch()) {
       totalWaitingStake = await this.getTotalWaitingStake();
     }
 

@@ -1,4 +1,4 @@
-import { BadRequestException, forwardRef, Inject, Injectable } from "@nestjs/common";
+import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
@@ -100,10 +100,6 @@ export class EsdtAddressService {
   }
 
   async getCollectionsForAddress(address: string, filter: CollectionFilter, pagination: QueryPagination): Promise<NftCollectionWithRoles[]> {
-    if (!this.apiConfigService.getIsIndexerV3FlagActive() && (filter.canCreate !== undefined || filter.canBurn !== undefined || filter.canAddQuantity !== undefined || filter.canUpdateAttributes !== undefined || filter.canAddUri !== undefined || filter.canTransferRole !== undefined)) {
-      throw new BadRequestException('canCreate / canBurn / canAddQuantity / canUpdateAttributes / canAddUri / canTransferRole filter not supported when fetching account collections from elastic');
-    }
-
     const tokenCollections = await this.indexerService.getNftCollections(pagination, filter, address);
     const collectionsIdentifiers = tokenCollections.map((collection) => collection.token);
 
@@ -155,27 +151,22 @@ export class EsdtAddressService {
       }
     }
 
-    if (this.apiConfigService.getIsIndexerV3FlagActive()) {
-      for (const collection of collectionsWithRoles) {
-        if (collection.type === NftType.NonFungibleESDT) {
-          //@ts-ignore
-          delete collection.canAddQuantity;
-        }
-
-        if (collection.timestamp === 0) {
-          // @ts-ignore
-          delete accountCollection.timestamp;
-        }
+    for (const collection of collectionsWithRoles) {
+      if (collection.type === NftType.NonFungibleESDT) {
+        //@ts-ignore
+        delete collection.canAddQuantity;
       }
 
-      return collectionsWithRoles;
-    } else {
-      await this.applyRolesToAccountCollections(address, collectionsWithRoles);
+      if (collection.timestamp === 0) {
+        // @ts-ignore
+        delete accountCollection.timestamp;
+      }
     }
 
     return collectionsWithRoles;
   }
 
+  //@ts-ignore ( TBD )
   private async applyRolesToAccountCollections(address: string, collections: NftCollectionWithRoles[]): Promise<void> {
     const rolesResult = await this.gatewayService.getAddressEsdtRoles(address);
     const roles = rolesResult.roles;

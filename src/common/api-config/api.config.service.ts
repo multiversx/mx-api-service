@@ -367,10 +367,6 @@ export class ApiConfigService {
     return this.configService.get<boolean>('features.processNfts.enabled') ?? this.configService.get<boolean>('flags.processNfts') ?? false;
   }
 
-  getIsIndexerV3FlagActive(): boolean {
-    return this.configService.get<boolean>('flags.indexer-v3') ?? false;
-  }
-
   isGraphQlActive(): boolean {
     return this.configService.get<boolean>('api.graphql') ?? false;
   }

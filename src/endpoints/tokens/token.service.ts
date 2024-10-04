@@ -167,6 +167,10 @@ export class TokenService {
       tokens = tokens.filter(token => mexPairTypes.includes(token.mexPairType));
     }
 
+    if (filter.priceSource) {
+      tokens = tokens.filter(token => token.assets?.priceSource?.type === filter.priceSource);
+    }
+
     return tokens;
   }
 
@@ -464,49 +468,31 @@ export class TokenService {
   }
 
   async getTokenRoles(identifier: string): Promise<TokenRoles[] | undefined> {
-    if (this.apiConfigService.getIsIndexerV3FlagActive()) {
-      return await this.getTokenRolesFromElastic(identifier);
-    }
-
-    return await this.esdtService.getEsdtAddressesRoles(identifier);
+    return await this.getTokenRolesFromElastic(identifier);
   }
 
   async getTokenRolesForIdentifierAndAddress(identifier: string, address: string): Promise<TokenRoles | undefined> {
-    if (this.apiConfigService.getIsIndexerV3FlagActive()) {
-      const token = await this.indexerService.getToken(identifier);
+    const token = await this.indexerService.getToken(identifier);
 
-      if (!token) {
-        return undefined;
-      }
-
-      if (!token.roles) {
-        return undefined;
-      }
-
-      const addressRoles: TokenRoles = new TokenRoles();
-      addressRoles.address = address;
-      for (const role of Object.keys(token.roles)) {
-        const addresses = token.roles[role].distinct();
-        if (addresses.includes(address)) {
-          TokenHelpers.setTokenRole(addressRoles, role);
-        }
-      }
-
-      //@ts-ignore
-      delete addressRoles.address;
-
-      return addressRoles;
+    if (!token) {
+      return undefined;
     }
 
-    const tokenAddressesRoles = await this.esdtService.getEsdtAddressesRoles(identifier);
-    let addressRoles = tokenAddressesRoles?.find((role: TokenRoles) => role.address === address);
-    if (addressRoles) {
-      // clone
-      addressRoles = new TokenRoles(JSON.parse(JSON.stringify(addressRoles)));
-
-      //@ts-ignore
-      delete addressRoles?.address;
+    if (!token.roles) {
+      return undefined;
     }
+
+    const addressRoles: TokenRoles = new TokenRoles();
+    addressRoles.address = address;
+    for (const role of Object.keys(token.roles)) {
+      const addresses = token.roles[role].distinct();
+      if (addresses.includes(address)) {
+        TokenHelpers.setTokenRole(addressRoles, role);
+      }
+    }
+
+    //@ts-ignore
+    delete addressRoles.address;
 
     return addressRoles;
   }

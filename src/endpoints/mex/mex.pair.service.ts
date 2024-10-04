@@ -1,17 +1,18 @@
-import { Constants } from "@multiversx/sdk-nestjs-common";
-import { CacheService } from "@multiversx/sdk-nestjs-cache";
-import { BadRequestException, Injectable } from "@nestjs/common";
-import { gql } from "graphql-request";
-import { CacheInfo } from "src/utils/cache.info";
-import { GraphQlService } from "src/common/graphql/graphql.service";
-import { MexPair } from "./entities/mex.pair";
-import { MexPairState } from "./entities/mex.pair.state";
-import { MexPairType } from "./entities/mex.pair.type";
-import { MexSettingsService } from "./mex.settings.service";
-import { OriginLogger } from "@multiversx/sdk-nestjs-common";
-import { ApiConfigService } from "src/common/api-config/api.config.service";
-import { MexPairExchange } from "./entities/mex.pair.exchange";
-import { MexPairsFilter } from "./entities/mex.pairs..filter";
+import { Constants } from '@multiversx/sdk-nestjs-common';
+import { CacheService } from '@multiversx/sdk-nestjs-cache';
+import { BadRequestException, Injectable } from '@nestjs/common';
+import { gql } from 'graphql-request';
+import { CacheInfo } from 'src/utils/cache.info';
+import { GraphQlService } from 'src/common/graphql/graphql.service';
+import { MexPair } from './entities/mex.pair';
+import { MexPairState } from './entities/mex.pair.state';
+import { MexPairType } from './entities/mex.pair.type';
+import { MexSettingsService } from './mex.settings.service';
+import { OriginLogger } from '@multiversx/sdk-nestjs-common';
+import { ApiConfigService } from 'src/common/api-config/api.config.service';
+import { MexPairExchange } from './entities/mex.pair.exchange';
+import { MexPairsFilter } from './entities/mex.pairs..filter';
+import { MexPairStatus } from './entities/mex.pair.status';
 
 @Injectable()
 export class MexPairService {
@@ -52,7 +53,7 @@ export class MexPairService {
       CacheInfo.MexPairs.key,
       async () => await this.getAllMexPairsRaw(),
       CacheInfo.MexPairs.ttl,
-      Constants.oneSecond() * 30
+      Constants.oneSecond() * 30,
     );
   }
 
@@ -71,63 +72,69 @@ export class MexPairService {
       }
 
       const pairsLimit = gql`
-      query PairCount {
-        factory {
-          pairCount
-        }
-      }`;
+        query PairCount {
+          factory {
+            pairCount
+          }
+        }`;
 
       const pairsLimitResult: any = await this.graphQlService.getExchangeServiceData(pairsLimit);
       const totalPairs = pairsLimitResult?.factory?.pairCount;
 
       const variables = {
-        "offset": 0,
-        "pairsLimit": totalPairs,
+        pagination: { first: totalPairs },
+        filters: { state: MexPairStatus.active },
       };
 
       const query = gql`
-        query ($offset: Int, $pairsLimit: Int) {
-          pairs(offset: $offset, limit: $pairsLimit) { 
-            address 
-            liquidityPoolToken {
-              identifier
-              name
-              __typename
+        query filteredPairs($pagination: ConnectionArgs!, $filters: PairsFilter!) {
+          filteredPairs(pagination: $pagination, filters: $filters) {
+            edges {
+              cursor
+              node {
+                address
+                liquidityPoolToken {
+                  identifier
+                  name
+                  __typename
+                }
+                liquidityPoolTokenPriceUSD
+                firstToken {
+                  name
+                  identifier
+                  decimals
+                  previous24hPrice
+                  __typename
+                }
+                secondToken {
+                  name
+                  identifier
+                  decimals
+                  previous24hPrice
+                  __typename
+                }
+                firstTokenPrice
+                firstTokenPriceUSD
+                secondTokenPrice
+                secondTokenPriceUSD
+                info {
+                  reserves0
+                  reserves1
+                  totalSupply
+                  __typename
+                }
+                state
+                type
+                lockedValueUSD
+                volumeUSD24h
+                hasFarms
+                hasDualFarms
+                tradesCount
+                tradesCount24h
+                deployedAt
+                __typename
+              }
             }
-            liquidityPoolTokenPriceUSD
-            firstToken {
-              name
-              identifier
-              decimals
-              previous24hPrice
-              __typename
-            }
-            secondToken {
-              name
-              identifier
-              decimals
-              previous24hPrice
-              __typename
-            }
-            firstTokenPrice
-            firstTokenPriceUSD
-            secondTokenPrice
-            secondTokenPriceUSD
-            info {
-              reserves0
-              reserves1
-              totalSupply
-              __typename
-            }
-            state
-            type
-            lockedValueUSD
-            volumeUSD24h
-            hasFarms
-            hasDualFarms
-            tradesCount
-            deployedAt
-            __typename
           }
         }
       `;
@@ -137,7 +144,8 @@ export class MexPairService {
         return [];
       }
 
-      return result.pairs.map((pair: any) => this.getPairInfo(pair)).filter((x: MexPair | undefined) => x && x.state === MexPairState.active);
+      return result.filteredPairs.edges
+        .map((edge: any) => this.getPairInfo(edge.node));
     } catch (error) {
       this.logger.error('An error occurred while getting all mex pairs');
       this.logger.error(error);
@@ -192,6 +200,7 @@ export class MexPairService {
         hasFarms: pair.hasFarms,
         hasDualFarms: pair.hasDualFarms,
         tradesCount: Number(pair.tradesCount),
+        tradesCount24h: Number(pair.tradesCount24h),
         deployedAt: Number(pair.deployedAt),
         state,
         type,
@@ -220,6 +229,7 @@ export class MexPairService {
       hasFarms: pair.hasFarms,
       hasDualFarms: pair.hasDualFarms,
       tradesCount: Number(pair.tradesCount),
+      tradesCount24h: Number(pair.tradesCount24h),
       deployedAt: Number(pair.deployedAt),
       state,
       type,
