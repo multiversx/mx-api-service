@@ -87,28 +87,27 @@ export class MexSettingsService {
   }
 
   public async getSettingsRaw(): Promise<MexSettings | null> {
-    const variables = {
-      offset: 0,
-      limit: 500,
-    };
-
     const query = gql`
-    query ($offset: Int, $limit: Int) {
-      pairs(offset: $offset, limit: $limit) {
-        state
-        address
-        firstToken {
-          name
-          identifier
-          decimals
-          __typename
+    query {
+      filteredPairs(filters: {}) {
+        edges {
+          node {
+            state
+            address
+            firstToken {
+              name
+              identifier
+              decimals
+              __typename
+            }
+            secondToken {
+              name
+              identifier
+              decimals
+              __typename
+            }
+          }
         }
-        secondToken {
-          name
-          identifier
-          decimals
-          __typename
-        } 
       }
       proxy {
         address
