@@ -184,6 +184,7 @@ describe('TransactionService', () => {
         operation: 'transfer',
         scResults: [''],
         relayerAddr: 'erd1sdrjn0uuulydacwjam3v5afl427ptk797fpcujpfcsakfck8aqjquq9afc',
+        version: 1,
       },
       {
         hash: '2b1ce5558f5faa533afd437a42a5aeadea8302dc3cca778c0ed50d19c0a047a4',
@@ -220,6 +221,7 @@ describe('TransactionService', () => {
         operation: 'transfer',
         scResults: [''],
         relayerAddr: 'erd1sdrjn0uuulydacwjam3v5afl427ptk797fpcujpfcsakfck8aqjquq9afc',
+        version: 1,
       },
     ];
 
