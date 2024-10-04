@@ -16,6 +16,8 @@ import { Account, AccountHistory, AccountTokenHistory, Block, Collection, MiniBl
 import { AccountAssets } from "../assets/entities/account.assets";
 import { ProviderDelegators } from "./entities/provider.delegators";
 import { ApplicationFilter } from "src/endpoints/applications/entities/application.filter";
+import { Events } from './entities/events';
+import { EventsFilter } from '../../endpoints/events/entities/events.filter';
 
 export interface IndexerInterface {
   getAccountsCount(filter: AccountQueryOptions): Promise<number>
@@ -181,4 +183,6 @@ export interface IndexerInterface {
   getApplications(filter: ApplicationFilter, pagination: QueryPagination): Promise<any[]>
 
   getApplicationCount(filter: ApplicationFilter): Promise<number>
+
+  getEvents(pagination: QueryPagination, filter: EventsFilter): Promise<Events[]>
 }

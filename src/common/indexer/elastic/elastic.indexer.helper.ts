@@ -1,22 +1,33 @@
-import { AddressUtils, BinaryUtils } from "@multiversx/sdk-nestjs-common";
-import { AbstractQuery, ElasticQuery, MatchQuery, QueryConditionOptions, QueryOperator, QueryType, RangeGreaterThanOrEqual, RangeLowerThan, RangeLowerThanOrEqual } from "@multiversx/sdk-nestjs-elastic";
-import { Injectable } from "@nestjs/common";
-import { ApiConfigService } from "src/common/api-config/api.config.service";
-import { QueryPagination } from "src/common/entities/query.pagination";
-import { BlockFilter } from "src/endpoints/blocks/entities/block.filter";
-import { BlsService } from "src/endpoints/bls/bls.service";
-import { CollectionFilter } from "src/endpoints/collections/entities/collection.filter";
-import { NftFilter } from "src/endpoints/nfts/entities/nft.filter";
-import { RoundFilter } from "src/endpoints/rounds/entities/round.filter";
-import { EsdtType } from "src/endpoints/esdt/entities/esdt.type";
-import { TokenWithRolesFilter } from "src/endpoints/tokens/entities/token.with.roles.filter";
-import { TransactionFilter } from "src/endpoints/transactions/entities/transaction.filter";
-import { TransactionType } from "src/endpoints/transactions/entities/transaction.type";
-import { AccountQueryOptions } from "src/endpoints/accounts/entities/account.query.options";
-import { AccountHistoryFilter } from "src/endpoints/accounts/entities/account.history.filter";
-import { SmartContractResultFilter } from "src/endpoints/sc-results/entities/smart.contract.result.filter";
-import { ApplicationFilter } from "src/endpoints/applications/entities/application.filter";
-import { NftType } from "../entities/nft.type";
+import { AddressUtils, BinaryUtils } from '@multiversx/sdk-nestjs-common';
+import {
+  AbstractQuery,
+  ElasticQuery,
+  MatchQuery,
+  QueryConditionOptions,
+  QueryOperator,
+  QueryType,
+  RangeGreaterThanOrEqual,
+  RangeLowerThan,
+  RangeLowerThanOrEqual,
+} from '@multiversx/sdk-nestjs-elastic';
+import { Injectable } from '@nestjs/common';
+import { ApiConfigService } from 'src/common/api-config/api.config.service';
+import { QueryPagination } from 'src/common/entities/query.pagination';
+import { BlockFilter } from 'src/endpoints/blocks/entities/block.filter';
+import { BlsService } from 'src/endpoints/bls/bls.service';
+import { CollectionFilter } from 'src/endpoints/collections/entities/collection.filter';
+import { NftFilter } from 'src/endpoints/nfts/entities/nft.filter';
+import { RoundFilter } from 'src/endpoints/rounds/entities/round.filter';
+import { EsdtType } from 'src/endpoints/esdt/entities/esdt.type';
+import { TokenWithRolesFilter } from 'src/endpoints/tokens/entities/token.with.roles.filter';
+import { TransactionFilter } from 'src/endpoints/transactions/entities/transaction.filter';
+import { TransactionType } from 'src/endpoints/transactions/entities/transaction.type';
+import { AccountQueryOptions } from 'src/endpoints/accounts/entities/account.query.options';
+import { AccountHistoryFilter } from 'src/endpoints/accounts/entities/account.history.filter';
+import { SmartContractResultFilter } from 'src/endpoints/sc-results/entities/smart.contract.result.filter';
+import { ApplicationFilter } from 'src/endpoints/applications/entities/application.filter';
+import { NftType } from '../entities/nft.type';
+import { EventsFilter } from '../../../endpoints/events/entities/events.filter';
 
 @Injectable()
 export class ElasticIndexerHelper {
@@ -32,7 +43,7 @@ export class ElasticIndexerHelper {
   public async buildElasticBlocksFilter(filter: BlockFilter): Promise<AbstractQuery[]> {
     const queries: AbstractQuery[] = [];
     if (filter.nonce !== undefined) {
-      const nonceQuery = QueryType.Match("nonce", filter.nonce);
+      const nonceQuery = QueryType.Match('nonce', filter.nonce);
       queries.push(nonceQuery);
     }
 
@@ -92,7 +103,7 @@ export class ElasticIndexerHelper {
           QueryType.Nested('roles', [new MatchQuery('roles.ESDTRoleNFTUpdateAttributes', address)]),
           QueryType.Nested('roles', [new MatchQuery('roles.ESDTRoleNFTAddURI', address)]),
           QueryType.Nested('roles', [new MatchQuery('roles.ESDTTransferRole', address)]),
-        ]
+        ],
       ));
     }
 
@@ -194,19 +205,19 @@ export class ElasticIndexerHelper {
     }
 
     if (filter.name !== undefined && filter.name !== '') {
-      elasticQuery = elasticQuery.withMustCondition(QueryType.Nested('data', [new MatchQuery("data.name", filter.name)]));
+      elasticQuery = elasticQuery.withMustCondition(QueryType.Nested('data', [new MatchQuery('data.name', filter.name)]));
     }
 
     if (filter.hasUris !== undefined) {
-      elasticQuery = elasticQuery.withMustCondition(QueryType.Nested('data', [new MatchQuery("data.nonEmptyURIs", filter.hasUris)]));
+      elasticQuery = elasticQuery.withMustCondition(QueryType.Nested('data', [new MatchQuery('data.nonEmptyURIs', filter.hasUris)]));
     }
 
     if (filter.tags) {
-      elasticQuery = elasticQuery.withMustCondition(QueryType.Should(filter.tags.map(tag => QueryType.Nested("data", [new MatchQuery("data.tags", tag, QueryOperator.AND)]))));
+      elasticQuery = elasticQuery.withMustCondition(QueryType.Should(filter.tags.map(tag => QueryType.Nested('data', [new MatchQuery('data.tags', tag, QueryOperator.AND)]))));
     }
 
     if (filter.creator !== undefined) {
-      elasticQuery = elasticQuery.withMustCondition(QueryType.Nested("data", [new MatchQuery("data.creator", filter.creator)]));
+      elasticQuery = elasticQuery.withMustCondition(QueryType.Nested('data', [new MatchQuery('data.creator', filter.creator)]));
     }
 
     if (filter.identifiers) {
@@ -214,7 +225,7 @@ export class ElasticIndexerHelper {
     }
 
     if (filter.isWhitelistedStorage !== undefined) {
-      elasticQuery = elasticQuery.withMustCondition(QueryType.Nested("data", [new MatchQuery("data.whiteListedStorage", filter.isWhitelistedStorage)]));
+      elasticQuery = elasticQuery.withMustCondition(QueryType.Nested('data', [new MatchQuery('data.whiteListedStorage', filter.isWhitelistedStorage)]));
     }
 
     if (this.apiConfigService.getIsNftScamInfoEnabled() && filter.isScam) {
@@ -223,7 +234,7 @@ export class ElasticIndexerHelper {
         QueryType.Should([
           QueryType.Match('nft_scamInfoType', 'scam'),
           QueryType.Match('nft_scamInfoType', 'potentialScam'),
-        ])
+        ]),
       );
     }
 
@@ -387,7 +398,7 @@ export class ElasticIndexerHelper {
         [
           QueryType.Match('currentOwner', address),
           ...rolesConditions,
-        ]
+        ],
       ))
       .withMustMatchCondition('token', filter.identifier)
       .withMustMatchCondition('currentOwner', filter.owner);
@@ -655,6 +666,32 @@ export class ElasticIndexerHelper {
 
     if (filter.before) {
       elasticQuery = elasticQuery.withRangeFilter('timestamp', new RangeLowerThanOrEqual(filter.before));
+    }
+
+    return elasticQuery;
+  }
+
+  buildEventsFilter(filter: EventsFilter): ElasticQuery {
+    let elasticQuery = ElasticQuery.create();
+
+    if (filter.before) {
+      elasticQuery = elasticQuery.withRangeFilter('timestamp', new RangeLowerThanOrEqual(filter.before));
+    }
+
+    if (filter.after) {
+      elasticQuery = elasticQuery.withRangeFilter('timestamp', new RangeGreaterThanOrEqual(filter.after));
+    }
+
+    if (filter.identifier) {
+      elasticQuery = elasticQuery.withMustMatchCondition('identifier', filter.identifier);
+    }
+
+    if (filter.txHash) {
+      elasticQuery = elasticQuery.withMustMatchCondition('txHash', filter.txHash);
+    }
+
+    if (filter.shard) {
+      elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Match('shardID', filter.shard));
     }
 
     return elasticQuery;

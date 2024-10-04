@@ -21,6 +21,8 @@ import { PostgresIndexerHelper } from "./postgres.indexer.helper";
 import { AccountAssets } from "src/common/assets/entities/account.assets";
 import { ProviderDelegators } from "../entities/provider.delegators";
 import { ApplicationFilter } from "src/endpoints/applications/entities/application.filter";
+import { Events } from '../entities/events';
+import { EventsFilter } from '../../../endpoints/events/entities/events.filter';
 
 @Injectable()
 export class PostgresIndexerService implements IndexerInterface {
@@ -686,5 +688,9 @@ export class PostgresIndexerService implements IndexerInterface {
 
   async setAccountTransfersLast24h(_address: string, _transfersLast24h: number): Promise<void> {
     // TODO custom columns cannot be added
+  }
+
+  getEvents(_pagination: QueryPagination, _filter: EventsFilter): Promise<Events[]> {
+    throw new Error("Method not implemented.");
   }
 }
