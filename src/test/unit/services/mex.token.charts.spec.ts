@@ -57,7 +57,7 @@ describe('MexTokenChartsService', () => {
 
       jest.spyOn(graphQlService, 'getExchangeServiceData').mockResolvedValue(mockData);
       jest.spyOn(mexTokenService, 'getMexTokenByIdentifier').mockResolvedValue(mockToken);
-      jest.spyOn(mexTokenChartsService as any, 'checkTokenExists').mockReturnValue(true);
+      jest.spyOn(mexTokenChartsService as any, 'isMexToken').mockReturnValue(true);
 
       const result = await mexTokenChartsService.getTokenPricesHourResolutionRaw('TOKEN-123456');
 
@@ -71,7 +71,7 @@ describe('MexTokenChartsService', () => {
 
     it('should return an empty array when no data is available', async () => {
       jest.spyOn(graphQlService, 'getExchangeServiceData').mockResolvedValue({});
-      jest.spyOn(mexTokenChartsService as any, 'checkTokenExists').mockReturnValue(true);
+      jest.spyOn(mexTokenChartsService as any, 'isMexToken').mockReturnValue(true);
 
       const result = await mexTokenChartsService.getTokenPricesHourResolutionRaw('TOKEN-123456');
 
@@ -92,7 +92,7 @@ describe('MexTokenChartsService', () => {
 
       jest.spyOn(graphQlService, 'getExchangeServiceData').mockResolvedValue(mockData);
       jest.spyOn(mexTokenService, 'getMexTokenByIdentifier').mockResolvedValue(mockToken);
-      jest.spyOn(mexTokenChartsService as any, 'checkTokenExists').mockReturnValue(true);
+      jest.spyOn(mexTokenChartsService as any, 'isMexToken').mockReturnValue(true);
 
       const result = await mexTokenChartsService.getTokenPricesDayResolutionRaw('TOKEN-123456', '1683561648');
 
@@ -106,7 +106,7 @@ describe('MexTokenChartsService', () => {
 
     it('should return an empty array when no data is available', async () => {
       jest.spyOn(graphQlService, 'getExchangeServiceData').mockResolvedValue({});
-      jest.spyOn(mexTokenChartsService as any, 'checkTokenExists').mockReturnValue(true);
+      jest.spyOn(mexTokenChartsService as any, 'isMexToken').mockReturnValue(true);
       const result = await mexTokenChartsService.getTokenPricesDayResolutionRaw('TOKEN-123456', '1683561648');
 
       expect(result).toEqual([]);
