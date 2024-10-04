@@ -17,4 +17,5 @@ export class TransactionInner {
   options: number = 0;
   guardianSignature: string = '';
   senderUsername: string = '';
+  receiverUsername: string = '';
 }
