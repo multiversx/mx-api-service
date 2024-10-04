@@ -12,7 +12,6 @@ import { Transaction } from "../transactions/entities/transaction";
 import { TokenSupplyResult } from "./entities/token.supply.result";
 import { TokenSort } from "./entities/token.sort";
 import { SortTokens } from "src/common/entities/sort.tokens";
-import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { TransferService } from "../transfers/transfer.service";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { TokenFilter } from "./entities/token.filter";
@@ -24,6 +23,7 @@ import { Response } from "express";
 import { TokenType } from "src/common/indexer/entities";
 import { ParseArrayPipeOptions } from "@multiversx/sdk-nestjs-common/lib/pipes/entities/parse.array.options";
 import { MexPairType } from "../mex/entities/mex.pair.type";
+import { TokenAssetsPriceSourceType } from "src/common/assets/entities/token.assets.price.source.type";
 
 @Controller()
 @ApiTags('tokens')
@@ -31,7 +31,6 @@ export class TokenController {
   constructor(
     private readonly tokenService: TokenService,
     private readonly transactionService: TransactionService,
-    private readonly apiConfigService: ApiConfigService,
     private readonly transferService: TransferService,
   ) { }
 
@@ -49,6 +48,7 @@ export class TokenController {
   @ApiQuery({ name: 'order', description: 'Sorting order (asc / desc)', required: false, enum: SortOrder })
   @ApiQuery({ name: 'includeMetaESDT', description: 'Include MetaESDTs in response', required: false, type: Boolean })
   @ApiQuery({ name: 'mexPairType', description: 'Token Mex Pair', required: false, enum: MexPairType })
+  @ApiQuery({ name: 'priceSource', description: 'Token Price Source', required: false, enum: TokenAssetsPriceSourceType })
   async getTokens(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
@@ -61,11 +61,12 @@ export class TokenController {
     @Query('order', new ParseEnumPipe(SortOrder)) order?: SortOrder,
     @Query('includeMetaESDT', new ParseBoolPipe) includeMetaESDT?: boolean,
     @Query('mexPairType', new ParseEnumArrayPipe(MexPairType)) mexPairType?: MexPairType[],
+    @Query('priceSource', new ParseEnumPipe(TokenAssetsPriceSourceType)) priceSource?: TokenAssetsPriceSourceType,
   ): Promise<TokenDetailed[]> {
 
     return await this.tokenService.getTokens(
       new QueryPagination({ from, size }),
-      new TokenFilter({ type, search, name, identifier, identifiers, includeMetaESDT, sort, order, mexPairType })
+      new TokenFilter({ type, search, name, identifier, identifiers, includeMetaESDT, sort, order, mexPairType, priceSource })
     );
   }
 
@@ -79,6 +80,7 @@ export class TokenController {
   @ApiQuery({ name: 'identifiers', description: 'Search by multiple token identifiers, comma-separated', required: false })
   @ApiQuery({ name: 'includeMetaESDT', description: 'Include MetaESDTs in response', required: false, type: Boolean })
   @ApiQuery({ name: 'mexPairType', description: 'Token Mex Pair', required: false, enum: MexPairType })
+  @ApiQuery({ name: 'priceSource', description: 'Token Price Source', required: false, enum: TokenAssetsPriceSourceType })
   async getTokenCount(
     @Query('search') search?: string,
     @Query('name') name?: string,
@@ -87,8 +89,9 @@ export class TokenController {
     @Query('identifiers', ParseArrayPipe) identifiers?: string[],
     @Query('includeMetaESDT', new ParseBoolPipe) includeMetaESDT?: boolean,
     @Query('mexPairType', new ParseEnumArrayPipe(MexPairType)) mexPairType?: MexPairType[],
+    @Query('priceSource', new ParseEnumPipe(TokenAssetsPriceSourceType)) priceSource?: TokenAssetsPriceSourceType,
   ): Promise<number> {
-    return await this.tokenService.getTokenCount(new TokenFilter({ type, search, name, identifier, identifiers, includeMetaESDT, mexPairType }));
+    return await this.tokenService.getTokenCount(new TokenFilter({ type, search, name, identifier, identifiers, includeMetaESDT, mexPairType, priceSource }));
   }
 
   @Get("/tokens/c")
@@ -101,8 +104,9 @@ export class TokenController {
     @Query('identifiers', ParseArrayPipe) identifiers?: string[],
     @Query('includeMetaESDT', new ParseBoolPipe) includeMetaESDT?: boolean,
     @Query('mexPairType', new ParseEnumArrayPipe(MexPairType)) mexPairType?: MexPairType[],
+    @Query('priceSource', new ParseEnumPipe(TokenAssetsPriceSourceType)) priceSource?: TokenAssetsPriceSourceType,
   ): Promise<number> {
-    return await this.tokenService.getTokenCount(new TokenFilter({ type, search, name, identifier, identifiers, includeMetaESDT, mexPairType }));
+    return await this.tokenService.getTokenCount(new TokenFilter({ type, search, name, identifier, identifiers, includeMetaESDT, mexPairType, priceSource }));
   }
 
   @Get('/tokens/:identifier')
@@ -394,10 +398,6 @@ export class TokenController {
     @Query('withBlockInfo', new ParseBoolPipe) withBlockInfo?: boolean,
     @Query('withActionTransferValue', ParseBoolPipe) withActionTransferValue?: boolean,
   ): Promise<Transaction[]> {
-    if (!this.apiConfigService.getIsIndexerV3FlagActive()) {
-      throw new HttpException('Endpoint not live yet', HttpStatus.NOT_IMPLEMENTED);
-    }
-
     const isToken = await this.tokenService.isToken(identifier);
     if (!isToken) {
       throw new NotFoundException('Token not found');
@@ -451,10 +451,6 @@ export class TokenController {
     @Query('before', ParseIntPipe) before?: number,
     @Query('after', ParseIntPipe) after?: number,
   ): Promise<number> {
-    if (!this.apiConfigService.getIsIndexerV3FlagActive()) {
-      throw new HttpException('Endpoint not live yet', HttpStatus.NOT_IMPLEMENTED);
-    }
-
     const isToken = await this.tokenService.isToken(identifier);
     if (!isToken) {
       throw new NotFoundException('Token not found');
@@ -490,10 +486,6 @@ export class TokenController {
     @Query('before', ParseIntPipe) before?: number,
     @Query('after', ParseIntPipe) after?: number,
   ): Promise<number> {
-    if (!this.apiConfigService.getIsIndexerV3FlagActive()) {
-      throw new HttpException('Endpoint not live yet', HttpStatus.NOT_IMPLEMENTED);
-    }
-
     const isToken = await this.tokenService.isToken(identifier);
     if (!isToken) {
       throw new NotFoundException('Token not found');

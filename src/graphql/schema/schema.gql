@@ -3649,8 +3649,14 @@ type TokenAssets {
 
 """Token assets price source object type."""
 type TokenAssetsPriceSource {
+  """(Optional) path to fetch the price info in case of customUrl type"""
+  path: String
+
   """Type of price source"""
   type: String
+
+  """URL of price source in case of customUrl type"""
+  url: String
 }
 
 """TokenDetailed object type."""

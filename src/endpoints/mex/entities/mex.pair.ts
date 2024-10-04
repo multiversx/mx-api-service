@@ -102,6 +102,10 @@ export class MexPair {
   @ApiProperty({ type: Number, nullable: true })
   tradesCount: number | undefined = undefined;
 
+  @Field(() => Number, { description: 'Mex pair trades count 24h.', nullable: true })
+  @ApiProperty({ type: Number, nullable: true })
+  tradesCount24h: number | undefined = undefined;
+
   @Field(() => Number, { description: 'Mex pair deploy date in unix time.', nullable: true })
   @ApiProperty({ type: Number, nullable: true })
   deployedAt: number | undefined = undefined;
