@@ -260,7 +260,7 @@ export class ElasticIndexerHelper {
     }
 
     if (filter.excludeMetaESDT === true) {
-      elasticQuery = elasticQuery.withMustMultiShouldCondition([NftType.SemiFungibleESDT, NftType.NonFungibleESDT], type => QueryType.Match('type', type));
+      elasticQuery = elasticQuery.withMustMultiShouldCondition([...this.nonFungibleEsdtTypes, ...this.semiFungibleEsdtTypes], type => QueryType.Match('type', type));
     }
 
     return elasticQuery;
