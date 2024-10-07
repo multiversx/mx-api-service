@@ -38,6 +38,7 @@ import { JwtOrNativeAuthGuard } from '@multiversx/sdk-nestjs-auth';
 import { WebSocketPublisherModule } from './common/websockets/web-socket-publisher-module';
 import { IndexerService } from './common/indexer/indexer.service';
 import { NotWritableError } from './common/indexer/entities/not.writable.error';
+import { ApiMetricsService } from './common/metrics/api.metrics.service';
 
 async function bootstrap() {
   const logger = new Logger('Bootstrapper');
@@ -189,6 +190,7 @@ async function configurePublicApp(publicApp: NestExpressApplication, apiConfigSe
   publicApp.disable('x-powered-by');
   publicApp.useStaticAssets(join(__dirname, 'public/assets'));
 
+  const apiMetricsService = publicApp.get<ApiMetricsService>(ApiMetricsService);
   const metricsService = publicApp.get<MetricsService>(MetricsService);
   const eventEmitterService = publicApp.get<EventEmitter2>(EventEmitter2);
   const pluginService = publicApp.get<PluginService>(PluginService);
@@ -205,60 +207,66 @@ async function configurePublicApp(publicApp: NestExpressApplication, apiConfigSe
   httpServer.headersTimeout = apiConfigService.getHeadersTimeout(); //`keepAliveTimeout + server's expected response time`
 
   const globalInterceptors: NestInterceptor[] = [];
-  // @ts-ignore
   globalInterceptors.push(new QueryCheckInterceptor(httpAdapterHostService));
 
   if (apiConfigService.isGuestCacheFeatureActive()) {
     const guestCacheService = publicApp.get<GuestCacheService>(GuestCacheService);
-    // @ts-ignore
     globalInterceptors.push(new GuestCacheInterceptor(guestCacheService, {
       ignoreAuthorizationHeader: true,
     }));
   }
 
-  // @ts-ignore
   globalInterceptors.push(new OriginInterceptor());
-  // @ts-ignore
   globalInterceptors.push(new ComplexityInterceptor());
   globalInterceptors.push(new GraphqlComplexityInterceptor());
   globalInterceptors.push(new GraphQLMetricsInterceptor(eventEmitterService));
-  // @ts-ignore
-  globalInterceptors.push(new RequestCpuTimeInterceptor(metricsService));
-  // @ts-ignore
-  globalInterceptors.push(new LoggingInterceptor(metricsService));
+
+  const cpuTimeInterceptor = new RequestCpuTimeInterceptor(metricsService);
+  cpuTimeInterceptor.onRequest = (apiFunction, durationMs, context) => {
+    if (durationMs > 1_000) {
+      logger.error(`Request CPU Time took more than 1 second: ${context.switchToHttp().getRequest().url}`);
+      apiMetricsService.setApiCpuTimeError(apiFunction, durationMs);
+    } else if (durationMs > 100) {
+      logger.warn(`Request CPU Time took more than 100ms: ${context.switchToHttp().getRequest().url}`);
+      apiMetricsService.setApiCpuTimeWarning(apiFunction, durationMs);
+    }
+  };
+  globalInterceptors.push(cpuTimeInterceptor);
+
+  const loggingInterceptor = new LoggingInterceptor(metricsService);
+  loggingInterceptor.onRequest = (apiFunction, durationMs, context) => {
+    if (durationMs > 10_000) {
+      logger.error(`Request duration took more than 10 seconds: ${context.switchToHttp().getRequest().url}`);
+      apiMetricsService.setApiDurationError(apiFunction, durationMs);
+    } else if (durationMs > 1_000) {
+      logger.warn(`Request duration took more than 1 second: ${context.switchToHttp().getRequest().url}`);
+      apiMetricsService.setApiDurationWarning(apiFunction, durationMs);
+    }
+  };
+  globalInterceptors.push(loggingInterceptor);
 
   const getUseRequestCachingFlag = await settingsService.getUseRequestCachingFlag();
   if (getUseRequestCachingFlag) {
     const cachingInterceptor = new CachingInterceptor(
       cachingService,
-      // @ts-ignore
       httpAdapterHostService,
       metricsService,
     );
 
-    // @ts-ignore
     globalInterceptors.push(cachingInterceptor);
   }
 
-  // @ts-ignore
   globalInterceptors.push(new ExcludeFieldsInterceptor());
-
-  // @ts-ignore
   globalInterceptors.push(new FieldsInterceptor());
 
   const getUseRequestLoggingFlag = await settingsService.getUseRequestLoggingFlag();
   if (getUseRequestLoggingFlag) {
-    // @ts-ignore
     globalInterceptors.push(new LogRequestsInterceptor(httpAdapterHostService));
   }
 
-  // @ts-ignore
   globalInterceptors.push(new ExtractInterceptor());
-  // @ts-ignore
   globalInterceptors.push(new CleanupInterceptor());
-  // @ts-ignore
   globalInterceptors.push(new PaginationInterceptor(apiConfigService.getIndexerMaxPagination()));
-  // @ts-ignore
   globalInterceptors.push(new TransactionLoggingInterceptor());
 
   await pluginService.bootstrapPublicApp(publicApp);
