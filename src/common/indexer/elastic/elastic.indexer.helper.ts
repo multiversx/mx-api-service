@@ -151,6 +151,10 @@ export class ElasticIndexerHelper {
       elasticQuery = elasticQuery.withMustMultiShouldCondition(types, type => QueryType.Match('type', type));
     }
 
+    if(filter.subType){
+      elasticQuery = elasticQuery.withMustCondition(QueryType.Match('type', filter.subType));
+    }
+
     return elasticQuery.withMustMatchCondition('token', filter.collection, QueryOperator.AND)
       .withMustMultiShouldCondition(filter.identifiers, identifier => QueryType.Match('token', identifier, QueryOperator.AND))
       .withSearchWildcardCondition(filter.search, ['token', 'name']);
