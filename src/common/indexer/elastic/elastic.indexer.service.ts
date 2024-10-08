@@ -800,6 +800,7 @@ export class ElasticIndexerService implements IndexerInterface {
       .withMustMultiShouldCondition(filter.identifiers, identifier => QueryType.Match('token', identifier, QueryOperator.AND))
       .withSearchWildcardCondition(filter.search, ['token', 'name'])
       .withMustMultiShouldCondition(allTypes, type => QueryType.Match('type', type))
+      .withMustMatchCondition('type', filter.subType, QueryOperator.AND)
       .withExtra({
         aggs: {
           collections: {
