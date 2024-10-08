@@ -18,6 +18,8 @@ export class ApiMetricsService {
   private static currentNonceGauge: Gauge<string>;
   private static lastProcessedNonceGauge: Gauge<string>;
   private static elasticCallsHistogram: Histogram<string>;
+  private static lastProcessedBatchProcessorNonce: Gauge<string>;
+  private static lastProcessedTransactionCompletedProcessorNonce: Gauge<string>;
 
   constructor(
     private readonly apiConfigService: ApiConfigService,
@@ -97,6 +99,22 @@ export class ApiMetricsService {
         buckets: [],
       });
     }
+
+    if (!ApiMetricsService.lastProcessedBatchProcessorNonce) {
+      ApiMetricsService.lastProcessedBatchProcessorNonce = new Gauge({
+        name: 'last_processed_batch_processor_nonce',
+        help: 'Last processed nonce of the given shard',
+        labelNames: ['shardId'],
+      });
+    }
+
+    if (!ApiMetricsService.lastProcessedTransactionCompletedProcessorNonce) {
+      ApiMetricsService.lastProcessedTransactionCompletedProcessorNonce = new Gauge({
+        name: 'last_processed_transaction_completed_processor_nonce',
+        help: 'Last processed nonce of the given shard',
+        labelNames: ['shardId'],
+      });
+    }
   }
 
   @OnEvent(MetricsEvents.SetVmQuery)
@@ -140,6 +158,18 @@ export class ApiMetricsService {
 
   setElasticCalls(apiFunction: string, count: number) {
     ApiMetricsService.elasticCallsHistogram.labels(apiFunction).observe(count);
+  }
+
+  @OnEvent(MetricsEvents.SetLastProcessedBatchProcessorNonce)
+  setLastProcessedBatchProcessorNonce(payload: LogMetricsEvent) {
+    const [shardId, nonce] = payload.args;
+    ApiMetricsService.lastProcessedBatchProcessorNonce.set({ shardId }, nonce);
+  }
+
+  @OnEvent(MetricsEvents.SetLastProcessedTransactionCompletedProcessorNonce)
+  setLastProcessedTransactionCompletedProcessorNonce(payload: LogMetricsEvent) {
+    const [shardId, nonce] = payload.args;
+    ApiMetricsService.lastProcessedTransactionCompletedProcessorNonce.set({ shardId }, nonce);
   }
 
   async getMetrics(): Promise<string> {

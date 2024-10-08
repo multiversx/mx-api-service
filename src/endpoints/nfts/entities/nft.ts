@@ -10,6 +10,7 @@ import { Account } from "src/endpoints/accounts/entities/account";
 import { NftRarities } from "./nft.rarities";
 import { UnlockMileStoneModel } from "src/common/locked-asset/entities/unlock.milestone.model";
 import { ScamInfo } from "src/common/entities/scam-info.dto";
+import { NftSubType } from "./nft.sub.type";
 
 @ObjectType("Nft", { description: "NFT object type." })
 export class Nft {
@@ -40,6 +41,10 @@ export class Nft {
   @Field(() => NftType, { description: "NFT type for the given NFT." })
   @ApiProperty({ enum: NftType })
   type: NftType = NftType.NonFungibleESDT;
+
+  @Field(() => NftSubType, { description: "NFT sub type for the given NFT.", nullable: true })
+  @ApiProperty({ enum: NftSubType, nullable: true })
+  subType: NftSubType | undefined = undefined;
 
   @Field(() => String, { description: "Name for the given NFT." })
   @ApiProperty({ type: String })

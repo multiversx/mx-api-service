@@ -15,13 +15,14 @@ import { QueryPagination } from "../entities/query.pagination";
 import { Account, AccountHistory, AccountTokenHistory, Block, Collection, MiniBlock, Operation, Round, ScDeploy, ScResult, Tag, Token, TokenAccount, Transaction, TransactionLog, TransactionReceipt } from "./entities";
 import { AccountAssets } from "../assets/entities/account.assets";
 import { ProviderDelegators } from "./entities/provider.delegators";
+import { ApplicationFilter } from "src/endpoints/applications/entities/application.filter";
 
 export interface IndexerInterface {
   getAccountsCount(filter: AccountQueryOptions): Promise<number>
 
   getScResultsCount(filter: SmartContractResultFilter): Promise<number>
 
-  getAccountContractsCount(address: string): Promise<number>
+  getAccountDeploysCount(address: string): Promise<number>
 
   getBlocksCount(filter: BlockFilter): Promise<number>
 
@@ -103,7 +104,11 @@ export interface IndexerInterface {
 
   getAccounts(queryPagination: QueryPagination, filter: AccountQueryOptions): Promise<Account[]>
 
-  getAccountContracts(pagination: QueryPagination, address: string): Promise<ScDeploy[]>
+  getAccountDeploys(pagination: QueryPagination, address: string): Promise<ScDeploy[]>
+
+  getAccountContracts(pagination: QueryPagination, address: string): Promise<any[]>
+
+  getAccountContractsCount( address: string): Promise<number>
 
   getAccountHistory(address: string, pagination: QueryPagination, filter: AccountHistoryFilter): Promise<AccountHistory[]>
 
@@ -116,6 +121,10 @@ export interface IndexerInterface {
   getAccountTokenHistoryCount(address: string, tokenIdentifier: string, filter?: AccountHistoryFilter): Promise<number>
 
   getAccountTokenHistory(address: string, tokenIdentifier: string, pagination: QueryPagination, filter: AccountHistoryFilter): Promise<AccountTokenHistory[]>
+
+  getAccountEsdtHistory(address: string, pagination: QueryPagination, filter: AccountHistoryFilter): Promise<AccountTokenHistory[]>
+
+  getAccountEsdtHistoryCount(address: string, filter?: AccountHistoryFilter): Promise<number>
 
   getTransactions(filter: TransactionFilter, pagination: QueryPagination, address?: string): Promise<Transaction[]>
 
@@ -172,4 +181,8 @@ export interface IndexerInterface {
   getBlockByTimestampAndShardId(timestamp: number, shardId: number): Promise<Block | undefined>
 
   getVersion(): Promise<string | undefined>
+
+  getApplications(filter: ApplicationFilter, pagination: QueryPagination): Promise<any[]>
+
+  getApplicationCount(filter: ApplicationFilter): Promise<number>
 }

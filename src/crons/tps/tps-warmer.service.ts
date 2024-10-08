@@ -10,6 +10,9 @@ import { CronJob } from "cron";
 import { TpsUtils } from "src/utils/tps.utils";
 import { TpsService } from "src/endpoints/tps/tps.service";
 import { TpsInterval } from "src/endpoints/tps/entities/tps.interval";
+import { Tps } from "src/endpoints/tps/entities/tps";
+import { BlockService } from "src/endpoints/blocks/block.service";
+import { TransferService } from "src/endpoints/transfers/transfer.service";
 
 @Injectable()
 export class TpsWarmerService {
@@ -23,6 +26,8 @@ export class TpsWarmerService {
     private readonly gatewayService: GatewayService,
     private readonly schedulerRegistry: SchedulerRegistry,
     private readonly tpsService: TpsService,
+    private readonly blockService: BlockService,
+    private readonly transferService: TransferService,
   ) {
     if (!this.apiConfigService.isTpsEnabled()) {
       return;
@@ -49,13 +54,48 @@ export class TpsWarmerService {
 
   @Lock({ name: 'Refresh TPS History', verbose: true })
   async refreshTpsHistory() {
-    const intervals = [TpsInterval._1h, TpsInterval._1d];
+    const intervals = [TpsInterval._10m, TpsInterval._1h, TpsInterval._1d];
 
     for (const interval of intervals) {
       const tpsHistory = await this.tpsService.getTpsHistoryRaw(interval);
 
+      if (tpsHistory.length > 0) {
+        const calculatedMaxTps = this.getMaxTps(tpsHistory);
+        const retrievedMaxTps = await this.cachingService.getRemote<Tps>(CacheInfo.TpsMaxByInterval(interval).key);
+        if (!retrievedMaxTps || calculatedMaxTps.tps > retrievedMaxTps.tps) {
+          await this.cachingService.setRemote(CacheInfo.TpsMaxByInterval(interval).key, calculatedMaxTps, CacheInfo.TpsMaxByInterval(interval).ttl);
+        }
+      }
+
       await this.cachingService.setRemote(CacheInfo.TpsHistoryByInterval(interval).key, tpsHistory);
     }
+  }
+
+  private async incrementTotalTransactions(shardId: number, totalTransactions: number, startNonce: number) {
+    const incrementResult = await this.redisCacheService.incrby(CacheInfo.TransactionCountByShard(shardId).key, totalTransactions);
+    if (incrementResult === totalTransactions) {
+      await this.redisCacheService.expire(CacheInfo.TransactionCountByShard(shardId).key, CacheInfo.TransactionCountByShard(shardId).ttl);
+
+      const blocks = await this.blockService.getBlocks({ shard: shardId, beforeNonce: startNonce - 1 }, { from: 0, size: 1 });
+      if (blocks.length === 0) {
+        this.logger.error(`No block found for shard ${shardId} and nonce ${startNonce - 1}`);
+        return;
+      }
+
+      const block = blocks[0];
+      const transactionsUntilStartNonce = await this.transferService.getTransfersCount({ senderShard: shardId, before: block.timestamp });
+      await this.redisCacheService.incrby(CacheInfo.TransactionCountByShard(shardId).key, transactionsUntilStartNonce);
+    }
+  }
+
+  private getMaxTps(tpsHistory: Tps[]): Tps {
+    if (tpsHistory.length === 0) {
+      throw new Error('TPS history is empty');
+    }
+
+    return tpsHistory.reduce((prev, current) => {
+      return prev.tps > current.tps ? prev : current;
+    });
   }
 
   private async processTpsForShard(shardId: number) {
@@ -63,10 +103,10 @@ export class TpsWarmerService {
     const startNonce = await this.getStartNonce(shardId, endNonce);
 
     for (let nonce = startNonce + 1; nonce <= endNonce; nonce++) {
-      this.logger.log(`Processing TPS for shard ${shardId} and nonce ${nonce}. Nonces to process: ${endNonce - nonce}`);
-      await this.processTpsForShardAndNonce(shardId, nonce);
+      const transactionCount = await this.processTpsForShardAndNonce(shardId, nonce);
 
       await this.cachingService.setRemote(CacheInfo.TpsNonceByShard(shardId).key, nonce);
+      await this.incrementTotalTransactions(shardId, transactionCount, nonce);
     }
   }
 
@@ -88,15 +128,16 @@ export class TpsWarmerService {
     return networkStatus.erd_nonce;
   }
 
-  private async processTpsForShardAndNonce(shardId: number, nonce: number) {
+  private async processTpsForShardAndNonce(shardId: number, nonce: number): Promise<number> {
     const block = await this.gatewayService.getBlockByShardAndNonce(shardId, nonce);
     const transactionCount: number = block.numTxs;
     const timestamp: number = block.timestamp;
-    this.logger.log(`Processing TPS for shard ${shardId} and nonce ${nonce}. Transactions: ${transactionCount} Timestamp: ${timestamp}`);
 
     for (const frequency of TpsUtils.Frequencies) {
       await this.saveTps(timestamp, frequency, transactionCount);
     }
+
+    return transactionCount;
   }
 
   private async saveTps(timestamp: number, frequency: number, transactionCount: number) {

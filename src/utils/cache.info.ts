@@ -155,6 +155,20 @@ export class CacheInfo {
     };
   }
 
+  static TokenHourChart(tokenIdentifier: string): CacheInfo {
+    return {
+      key: `tokenHourChart:${tokenIdentifier}`,
+      ttl: Constants.oneMinute() * 10,
+    };
+  }
+
+  static TokenDailyChart(tokenIdentifier: string, after: string): CacheInfo {
+    return {
+      key: `tokenDailyChart:${tokenIdentifier}:${after}`,
+      ttl: Constants.oneDay(),
+    };
+  }
+
   static TokenAssets: CacheInfo = {
     key: 'tokenAssets',
     ttl: Constants.oneDay(),
@@ -194,7 +208,7 @@ export class CacheInfo {
 
   static EsdtProperties(identifier: string): CacheInfo {
     return {
-      key: `esdt:${identifier}`,
+      key: `esdt:v2:${identifier}`,
       ttl: Constants.oneDay(),
     };
   }
@@ -326,6 +340,11 @@ export class CacheInfo {
 
   static MexTokens: CacheInfo = {
     key: "mexTokens",
+    ttl: Constants.oneMinute() * 10,
+  };
+
+  static MexTokenTypes: CacheInfo = {
+    key: "mexTokenTypes",
     ttl: Constants.oneMinute() * 10,
   };
 
@@ -614,8 +633,13 @@ export class CacheInfo {
     const isCurrentDate = priceDate.toISODateString() === new Date().toISODateString();
     const ttl = isCurrentDate ? Constants.oneMinute() * 5 : Constants.oneWeek();
 
+    let key = priceDate.toISODateString();
+    if (!isCurrentDate) {
+      key = priceDate.startOfDay().addDays(1).toISODateString();
+    }
+
     return {
-      key: `data-api:price:${identifier}:${priceDate.toISODateString()}`,
+      key: `data-api:price:${identifier}:${key}`,
       ttl,
     };
   }
@@ -641,8 +665,41 @@ export class CacheInfo {
     };
   }
 
+  static TpsMaxByInterval(interval: TpsInterval): CacheInfo {
+    return {
+      key: `tpsMax:${interval}`,
+      ttl: Constants.oneDay(),
+    };
+  }
+
+  static TransactionCountByShard(shardId: number): CacheInfo {
+    return {
+      key: `transactionCount:${shardId}`,
+      ttl: Constants.oneHour(),
+    };
+  }
+
   static NodesAuctions: CacheInfo = {
     key: 'nodesAuctions',
     ttl: Constants.oneMinute(),
   };
+
+  static ValidatorAuctions: CacheInfo = {
+    key: 'validatorAuctions',
+    ttl: Constants.oneHour(),
+  };
+
+  static Applications(queryPagination: QueryPagination): CacheInfo {
+    return {
+      key: `applications:${queryPagination.from}:${queryPagination.size}`,
+      ttl: Constants.oneHour(),
+    };
+  }
+
+  static DeepHistoryBlock(timestamp: number, shardId: number): CacheInfo {
+    return {
+      key: `deepHistoryBlock:${timestamp}:${shardId}`,
+      ttl: Constants.oneMinute() * 10,
+    };
+  }
 }

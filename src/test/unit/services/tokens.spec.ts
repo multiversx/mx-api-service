@@ -25,6 +25,12 @@ import { TransferService } from "src/endpoints/transfers/transfer.service";
 import { MexPairService } from "src/endpoints/mex/mex.pair.service";
 import * as fs from 'fs';
 import * as path from 'path';
+import { ApiService, ApiUtils } from "@multiversx/sdk-nestjs-http";
+import { Token } from "src/endpoints/tokens/entities/token";
+import { NftCollection } from "src/endpoints/collections/entities/nft.collection";
+import { EsdtSupply } from "src/endpoints/esdt/entities/esdt.supply";
+import { TokenDetailed } from "src/endpoints/tokens/entities/token.detailed";
+import { NumberUtils } from "@multiversx/sdk-nestjs-common";
 
 describe('Token Service', () => {
   let tokenService: TokenService;
@@ -32,6 +38,10 @@ describe('Token Service', () => {
   let collectionService: CollectionService;
   let indexerService: IndexerService;
   let assetsService: AssetsService;
+  let apiService: ApiService;
+  let apiConfigService: ApiConfigService;
+  let cacheService: CacheService;
+  let dataApiService: DataApiService;
 
   beforeEach(async () => {
     const moduleRef = await Test.createTestingModule({
@@ -57,6 +67,11 @@ describe('Token Service', () => {
           {
             getOrSet: jest.fn(),
             get: jest.fn(),
+            batchSet: jest.fn(),
+            getLocal: jest.fn(),
+            deleteInCache: jest.fn(),
+            batchGetManyRemote: jest.fn(),
+            batchApplyAll: jest.fn(),
           },
         },
         {
@@ -85,6 +100,8 @@ describe('Token Service', () => {
           provide: ApiConfigService,
           useValue: {
             getIsIndexerV3FlagActive: jest.fn(),
+            isTokensFetchFeatureEnabled: jest.fn(),
+            getTokensFetchServiceUrl: jest.fn(),
           },
         },
         {
@@ -131,14 +148,24 @@ describe('Token Service', () => {
             getAllMexPairs: jest.fn(),
           },
         },
+        {
+          provide: ApiService,
+          useValue: {
+            get: jest.fn(),
+          },
+        },
       ],
     }).compile();
 
     tokenService = moduleRef.get<TokenService>(TokenService);
+    cacheService = moduleRef.get<CacheService>(CacheService);
     esdtService = moduleRef.get<EsdtService>(EsdtService);
     collectionService = moduleRef.get<CollectionService>(CollectionService);
     indexerService = moduleRef.get<IndexerService>(IndexerService);
     assetsService = moduleRef.get<AssetsService>(AssetsService);
+    apiService = moduleRef.get<ApiService>(ApiService);
+    apiConfigService = moduleRef.get<ApiConfigService>(ApiConfigService);
+    dataApiService = moduleRef.get<DataApiService>(DataApiService);
   });
 
   afterEach(() => {
@@ -604,6 +631,119 @@ describe('Token Service', () => {
         canWipe: true,
       },
     ];
+    describe('getAllTokens', () => {
+      it('should return nodes from API when isNodesFetchFeatureEnabled is true', async () => {
+        const mockTokens: Partial<Token>[] = [{ identifier: 'mockIdentifier' }];
+        const url = 'https://testnet-api.multiversx.com';
+
+        jest.spyOn(apiConfigService, 'isTokensFetchFeatureEnabled').mockReturnValue(true);
+        jest.spyOn(apiConfigService, 'getTokensFetchServiceUrl').mockReturnValue(url);
+        jest.spyOn(apiService, 'get').mockResolvedValue({ data: mockTokens });
+        // eslint-disable-next-line require-await
+        jest.spyOn(cacheService, 'getOrSet').mockImplementation(async (_key, getter) => getter());
+
+        const result = await tokenService.getAllTokens();
+
+        expect(apiConfigService.isTokensFetchFeatureEnabled).toHaveBeenCalled();
+        expect(apiService.get).toHaveBeenCalledWith(`${url}/tokens`, { params: { size: 10000 } });
+        expect(result).toEqual(mockTokens);
+      });
+
+      it('should return tokens from other sources when isTokensFetchFeatureEnabled is false', async () => {
+
+        const mockTokenProperties: Partial<TokenProperties>[] = [{ identifier: 'mockIdentifier' }];
+        let mockTokens: Partial<TokenDetailed>[] = mockTokenProperties.map(properties => ApiUtils.mergeObjects(new TokenDetailed(), properties));
+        const mockTokenAssets: Partial<TokenAssets> = { name: 'mockName' };
+        const mockNftCollections: Partial<NftCollection>[] = [{ collection: 'mockCollection' }];
+        const mockTokenSupply: Partial<EsdtSupply> = { totalSupply: '1000000000000000000', circulatingSupply: '500000000000000000' };
+
+        jest.spyOn(apiConfigService, 'isTokensFetchFeatureEnabled').mockReturnValue(false);
+        jest.spyOn(esdtService, 'getAllFungibleTokenProperties').mockResolvedValue(mockTokenProperties as TokenProperties[]);
+        jest.spyOn(assetsService, 'getTokenAssets').mockResolvedValue(mockTokenAssets as TokenAssets);
+        jest.spyOn(collectionService, 'getNftCollections').mockResolvedValue(mockNftCollections as NftCollection[]);
+
+        jest.spyOn(tokenService as any, 'batchProcessTokens').mockImplementation(() => Promise.resolve());
+        jest.spyOn(tokenService as any, 'applyMexLiquidity').mockImplementation(() => Promise.resolve());
+        jest.spyOn(tokenService as any, 'applyMexPrices').mockImplementation(() => Promise.resolve());
+        jest.spyOn(tokenService as any, 'applyMexPairType').mockImplementation(() => Promise.resolve());
+        jest.spyOn(tokenService as any, 'applyMexPairTradesCount').mockImplementation(() => Promise.resolve());
+        jest.spyOn(cacheService as any, 'batchApplyAll').mockImplementation(() => Promise.resolve());
+        jest.spyOn(dataApiService, 'getEsdtTokenPrice').mockResolvedValue(100);
+        jest.spyOn(tokenService as any, 'fetchTokenDataFromUrl').mockResolvedValue(100);
+        jest.spyOn(esdtService, 'getTokenSupply').mockResolvedValue(mockTokenSupply as EsdtSupply);
+
+        // eslint-disable-next-line require-await
+        jest.spyOn(cacheService, 'getOrSet').mockImplementation(async (_key, getter) => getter());
+
+        const result = await tokenService.getAllTokens();
+
+        expect(apiConfigService.isTokensFetchFeatureEnabled).toHaveBeenCalled();
+        expect(esdtService.getAllFungibleTokenProperties).toHaveBeenCalled();
+
+        mockTokens.forEach((mockToken) => {
+          expect(assetsService.getTokenAssets).toHaveBeenCalledWith(mockToken.identifier);
+        });
+
+        expect(esdtService.getAllFungibleTokenProperties).toHaveBeenCalled();
+        mockTokens.forEach(mockToken => {
+          expect(assetsService.getTokenAssets).toHaveBeenCalledWith(mockToken.identifier);
+          mockToken.name = mockTokenAssets.name;
+        });
+        expect(assetsService.getTokenAssets).toHaveBeenCalledTimes(mockTokens.length);
+
+
+        expect((collectionService as any).getNftCollections).toHaveBeenCalledWith(expect.anything(), { type: [TokenType.MetaESDT] });
+        mockNftCollections.forEach(collection => {
+          mockTokens.push(new TokenDetailed({
+            type: TokenType.MetaESDT,
+            identifier: collection.collection,
+            name: collection.name,
+            timestamp: collection.timestamp,
+            owner: collection.owner,
+            decimals: collection.decimals,
+            canFreeze: collection.canFreeze,
+            canPause: collection.canPause,
+            canTransferNftCreateRole: collection.canTransferNftCreateRole,
+            canWipe: collection.canWipe,
+            canAddSpecialRoles: collection.canAddSpecialRoles,
+            canChangeOwner: collection.canChangeOwner,
+            canUpgrade: collection.canUpgrade,
+          }));
+        });
+
+        expect((tokenService as any).batchProcessTokens).toHaveBeenCalledWith(mockTokens);
+        expect((tokenService as any).applyMexLiquidity).toHaveBeenCalledWith(mockTokens.filter(x => x.type !== TokenType.MetaESDT));
+        expect((tokenService as any).applyMexPrices).toHaveBeenCalledWith(mockTokens.filter(x => x.type !== TokenType.MetaESDT));
+        expect((tokenService as any).applyMexPairType).toHaveBeenCalledWith(mockTokens.filter(x => x.type !== TokenType.MetaESDT));
+        expect((tokenService as any).applyMexPairTradesCount).toHaveBeenCalledWith(mockTokens.filter(x => x.type !== TokenType.MetaESDT));
+        expect((cacheService as any).batchApplyAll).toHaveBeenCalled();
+        mockTokens.forEach(mockToken => {
+          const priceSourcetype = mockToken.assets?.priceSource?.type;
+          if (priceSourcetype === 'dataApi') {
+            expect(dataApiService.getEsdtTokenPrice).toHaveBeenCalledWith(mockToken.identifier);
+          } else if (priceSourcetype === 'customUrl' && mockToken.assets?.priceSource?.url) {
+            const pathToPrice = mockToken.assets?.priceSource?.path ?? "0.usdPrice";
+            expect((tokenService as any).fetchTokenDataFromUrl).toHaveBeenCalledWith(mockToken.assets?.priceSource?.url, pathToPrice);
+          }
+
+          if (mockToken.price) {
+            expect(esdtService.getTokenSupply).toHaveBeenCalledWith(mockToken.identifier);
+            mockToken.supply = mockTokenSupply.totalSupply;
+
+            if (mockToken.circulatingSupply) {
+              mockToken.marketCap = mockToken.price * NumberUtils.denominateString(mockToken.circulatingSupply.toString(), mockToken.decimals);
+            }
+          }
+        });
+
+        mockTokens = mockTokens.sortedDescending(
+          token => token.assets ? 1 : 0,
+          token => token.isLowLiquidity ? 0 : (token.marketCap ?? 0),
+          token => token.transactions ?? 0,
+        );
+        expect(result).toEqual(mockTokens);
+      });
+    });
 
     it('should return values from cache', async () => {
       const cachedValueMock = jest.spyOn(tokenService['cachingService'], 'getOrSet').mockResolvedValue(mockTokens);
@@ -694,6 +834,7 @@ describe('Token Service', () => {
       identifier: 'WEGLD-bd4d79',
       name: 'WrappedEGLD',
       type: EsdtType.FungibleESDT,
+      subType: undefined,
       owner: 'erd1ss6u80ruas2phpmr82r42xnkd6rxy40g9jl69frppl4qez9w2jpsqj8x97',
       wiped: '',
       decimals: 18,
@@ -742,6 +883,7 @@ describe('Token Service', () => {
       identifier: 'WEGLD-bd4d79',
       name: 'WrappedEGLD',
       type: EsdtType.FungibleESDT,
+      subType: undefined,
       owner: 'erd1ss6u80ruas2phpmr82r42xnkd6rxy40g9jl69frppl4qez9w2jpsqj8x97',
       wiped: '',
       decimals: 18,

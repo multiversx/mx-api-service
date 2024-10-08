@@ -1016,7 +1016,7 @@ describe('CollectionController', () => {
         .get(`${path}/${collection}/transactions/count`)
         .expect(200);
       expect(transactionServiceMocks.getTransactionCount).toHaveBeenCalledWith(
-        createTransactionFilter({ token: collection })
+        createTransactionFilter({ token: collection, functions: [] })
       );
     });
 
@@ -1030,7 +1030,7 @@ describe('CollectionController', () => {
         .get(`${path}/${collection}/transactions/count?sender=${sender}`)
         .expect(200);
       expect(transactionServiceMocks.getTransactionCount).toHaveBeenCalledWith(
-        createTransactionFilter({ token: collection, sender: sender })
+        createTransactionFilter({ token: collection, sender: sender, functions: [] })
       );
     });
 
@@ -1044,7 +1044,7 @@ describe('CollectionController', () => {
         .get(`${path}/${collection}/transactions/count?senderShard=${senderShard}`)
         .expect(200);
       expect(transactionServiceMocks.getTransactionCount).toHaveBeenCalledWith(
-        createTransactionFilter({ token: collection, senderShard: senderShard })
+        createTransactionFilter({ token: collection, senderShard: senderShard, functions: [] })
       );
     });
 
@@ -1058,7 +1058,7 @@ describe('CollectionController', () => {
         .get(`${path}/${collection}/transactions/count?receiverShard=${receiverShard}`)
         .expect(200);
       expect(transactionServiceMocks.getTransactionCount).toHaveBeenCalledWith(
-        createTransactionFilter({ token: collection, receiverShard: receiverShard })
+        createTransactionFilter({ token: collection, receiverShard: receiverShard, functions: [] })
       );
     });
 
@@ -1072,7 +1072,7 @@ describe('CollectionController', () => {
         .get(`${path}/${collection}/transactions/count?miniBlockHash=${miniBlockHash}`)
         .expect(200);
       expect(transactionServiceMocks.getTransactionCount).toHaveBeenCalledWith(
-        createTransactionFilter({ token: collection, miniBlockHash: miniBlockHash })
+        createTransactionFilter({ token: collection, miniBlockHash: miniBlockHash, functions: [] })
       );
     });
 
@@ -1086,7 +1086,7 @@ describe('CollectionController', () => {
         .get(`${path}/${collection}/transactions/count?status=${status}`)
         .expect(200);
       expect(transactionServiceMocks.getTransactionCount).toHaveBeenCalledWith(
-        createTransactionFilter({ token: collection, status: status })
+        createTransactionFilter({ token: collection, status: status, functions: [] })
       );
     });
 
@@ -1100,7 +1100,7 @@ describe('CollectionController', () => {
         .get(`${path}/${collection}/transactions/count?before=${before}`)
         .expect(200);
       expect(transactionServiceMocks.getTransactionCount).toHaveBeenCalledWith(
-        createTransactionFilter({ token: collection, before: before })
+        createTransactionFilter({ token: collection, before: before, functions: [] })
       );
     });
 
@@ -1114,7 +1114,7 @@ describe('CollectionController', () => {
         .get(`${path}/${collection}/transactions/count?after=${after}`)
         .expect(200);
       expect(transactionServiceMocks.getTransactionCount).toHaveBeenCalledWith(
-        createTransactionFilter({ token: collection, after: after })
+        createTransactionFilter({ token: collection, after: after, functions: [] })
       );
     });
   });
@@ -1129,7 +1129,7 @@ describe('CollectionController', () => {
         .get(`${path}/${collection}/transfers/count`)
         .expect(200);
       expect(transferServiceMocks.getTransfersCount).toHaveBeenCalledWith(
-        createTransactionFilter({ token: collection })
+        createTransactionFilter({ token: collection, functions: undefined })
       );
     });
 
@@ -1143,7 +1143,7 @@ describe('CollectionController', () => {
         .get(`${path}/${collection}/transfers/count?sender=${sender}`)
         .expect(200);
       expect(transferServiceMocks.getTransfersCount).toHaveBeenCalledWith(
-        createTransactionFilter({ token: collection, sender: sender })
+        createTransactionFilter({ token: collection, sender: sender, functions: undefined })
       );
     });
 
@@ -1157,7 +1157,7 @@ describe('CollectionController', () => {
         .get(`${path}/${collection}/transfers/count?senderShard=${senderShard}`)
         .expect(200);
       expect(transferServiceMocks.getTransfersCount).toHaveBeenCalledWith(
-        createTransactionFilter({ token: collection, senderShard: senderShard })
+        createTransactionFilter({ token: collection, senderShard: senderShard, functions: undefined })
       );
     });
 
@@ -1171,7 +1171,7 @@ describe('CollectionController', () => {
         .get(`${path}/${collection}/transfers/count?receiverShard=${receiverShard}`)
         .expect(200);
       expect(transferServiceMocks.getTransfersCount).toHaveBeenCalledWith(
-        createTransactionFilter({ token: collection, receiverShard: receiverShard })
+        createTransactionFilter({ token: collection, receiverShard: receiverShard, functions: undefined })
       );
     });
 
@@ -1185,7 +1185,7 @@ describe('CollectionController', () => {
         .get(`${path}/${collection}/transfers/count?miniBlockHash=${miniBlockHash}`)
         .expect(200);
       expect(transferServiceMocks.getTransfersCount).toHaveBeenCalledWith(
-        createTransactionFilter({ token: collection, miniBlockHash: miniBlockHash })
+        createTransactionFilter({ token: collection, miniBlockHash: miniBlockHash, functions: undefined })
       );
     });
 
@@ -1199,7 +1199,7 @@ describe('CollectionController', () => {
         .get(`${path}/${collection}/transfers/count?status=${status}`)
         .expect(200);
       expect(transferServiceMocks.getTransfersCount).toHaveBeenCalledWith(
-        createTransactionFilter({ token: collection, status: status })
+        createTransactionFilter({ token: collection, status: status, functions: undefined })
       );
     });
 
@@ -1213,7 +1213,7 @@ describe('CollectionController', () => {
         .get(`${path}/${collection}/transfers/count?before=${before}`)
         .expect(200);
       expect(transferServiceMocks.getTransfersCount).toHaveBeenCalledWith(
-        createTransactionFilter({ token: collection, before: before })
+        createTransactionFilter({ token: collection, before: before, functions: undefined })
       );
     });
 
@@ -1227,7 +1227,21 @@ describe('CollectionController', () => {
         .get(`${path}/${collection}/transfers/count?after=${after}`)
         .expect(200);
       expect(transferServiceMocks.getTransfersCount).toHaveBeenCalledWith(
-        createTransactionFilter({ token: collection, after: after })
+        createTransactionFilter({ token: collection, after: after, functions: undefined })
+      );
+    });
+
+    it('should return collection NFTs transfers count filtered by function', async () => {
+      collectionServiceMocks.isCollection.mockResolvedValue(true);
+      transferServiceMocks.getTransfersCount.mockResolvedValue(10);
+      const collection = 'TEST-5409d3';
+      const functions = 'auctionListing';
+
+      await request(app.getHttpServer())
+        .get(`${path}/${collection}/transfers/count?function=${functions}`)
+        .expect(200);
+      expect(transferServiceMocks.getTransfersCount).toHaveBeenCalledWith(
+        createTransactionFilter({ token: collection, functions: ['auctionListing'] })
       );
     });
   });
@@ -1284,5 +1298,6 @@ function createTransactionFilter(options: TransactionFilter = {}) {
     status: options.status,
     before: options.before,
     after: options.after,
+    functions: options.functions,
   });
 }

@@ -135,11 +135,13 @@ export class CacheWarmerService {
 
   @Lock({ name: 'Node auction invalidations', verbose: true })
   async handleNodeAuctionInvalidations() {
-    const nodes = await this.nodeService.getAllNodes();
-    const auctions = await this.gatewayService.getValidatorAuctions();
+    const currentEpoch = await this.blockService.getCurrentEpoch();
+    if (currentEpoch < this.apiConfigService.getStakingV4ActivationEpoch()) {
+      return;
+    }
 
-    await this.nodeService.processAuctions(nodes, auctions);
-    await this.invalidateKey(CacheInfo.Nodes.key, nodes, CacheInfo.Nodes.ttl);
+    // wait randomly between 1 and 2 seconds to avoid all nodes refreshing at the same time
+    await new Promise(resolve => setTimeout(resolve, 1000 + 1000 * Math.random()));
 
     const nodesAuctions = await this.nodeService.getAllNodesAuctionsRaw();
     await this.invalidateKey(CacheInfo.NodesAuctions.key, nodesAuctions, CacheInfo.NodesAuctions.ttl);
@@ -159,6 +161,7 @@ export class CacheWarmerService {
     await this.invalidateKey(CacheInfo.AllEsdtTokens.key, tokens, CacheInfo.AllEsdtTokens.ttl);
   }
 
+  @Cron(CronExpression.EVERY_MINUTE)
   @Lock({ name: 'Identities invalidations', verbose: true })
   async handleIdentityInvalidations() {
     const identities = await this.identitiesService.getAllIdentitiesRaw();

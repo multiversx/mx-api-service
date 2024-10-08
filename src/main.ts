@@ -59,29 +59,31 @@ async function bootstrap() {
 
     await configurePublicApp(publicApp, apiConfigService);
 
-    await publicApp.listen(3001);
+    await publicApp.listen(apiConfigService.getPublicApiPort());
 
-    const websocketPublisherApp = await NestFactory.createMicroservice<MicroserviceOptions>(
-      WebSocketPublisherModule,
-      {
-        transport: Transport.REDIS,
-        options: {
-          host: apiConfigService.getRedisUrl(),
-          port: 6379,
-          retryAttempts: 100,
-          retryDelay: 1000,
-          retryStrategy: () => 1000,
+    if (apiConfigService.getIsWebsocketApiActive()) {
+      const websocketPublisherApp = await NestFactory.createMicroservice<MicroserviceOptions>(
+        WebSocketPublisherModule,
+        {
+          transport: Transport.REDIS,
+          options: {
+            host: apiConfigService.getRedisUrl(),
+            port: 6379,
+            retryAttempts: 100,
+            retryDelay: 1000,
+            retryStrategy: () => 1000,
+          },
         },
-      },
-    );
-    websocketPublisherApp.useWebSocketAdapter(new SocketAdapter(websocketPublisherApp));
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    websocketPublisherApp.listen();
+      );
+      websocketPublisherApp.useWebSocketAdapter(new SocketAdapter(websocketPublisherApp));
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      websocketPublisherApp.listen();
+    }
   }
 
   if (apiConfigService.getIsPrivateApiActive()) {
     const privateApp = await NestFactory.create(PrivateAppModule);
-    await privateApp.listen(4001);
+    await privateApp.listen(apiConfigService.getPrivateApiPort());
   }
 
   if (apiConfigService.getIsTransactionProcessorCronActive()) {
@@ -120,7 +122,7 @@ async function bootstrap() {
       transport: Transport.RMQ,
       options: {
         urls: [apiConfigService.getRabbitmqUrl()],
-        queue: 'api-process-nfts',
+        queue: apiConfigService.getNftQueueName(),
         noAck: false,
         prefetchCount: apiConfigService.getNftProcessParallelism(),
         queueOptions: {
@@ -128,7 +130,7 @@ async function bootstrap() {
           // arguments: {
           //   'x-single-active-consumer': true,
           // },
-          deadLetterExchange: 'api-process-nfts-dlq',
+          deadLetterExchange: apiConfigService.getNftQueueDlqName(),
         },
       },
     });
@@ -173,7 +175,6 @@ async function bootstrap() {
 
   logger.log(`Use tracing: ${apiConfigService.getUseTracingFlag()}`);
   logger.log(`Process NFTs flag: ${apiConfigService.getIsProcessNftsFlagActive()}`);
-  logger.log(`Indexer v3 flag: ${apiConfigService.getIsIndexerV3FlagActive()}`);
   logger.log(`Staking v4 enabled: ${apiConfigService.isStakingV4Enabled()}`);
   logger.log(`Events notifier enabled: ${apiConfigService.isEventsNotifierFeatureActive()}`);
   logger.log(`Guest caching enabled: ${apiConfigService.isGuestCacheFeatureActive()}`);
@@ -284,7 +285,7 @@ async function configurePublicApp(publicApp: NestExpressApplication, apiConfigSe
   const config = documentBuilder.build();
   const options = {
     customSiteTitle: 'Multiversx API',
-    customCss: `.topbar-wrapper img 
+    customCss: `.topbar-wrapper img
           {
             content:url(\'/img/mvx-ledger-icon-mint.png\'); width:100px; height:auto;
           }
@@ -358,4 +359,3 @@ RedisClient.prototype.on_error = function (err: any) {
   // then we should try to reconnect.
   this.connection_gone('error', err);
 };
-

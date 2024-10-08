@@ -1,4 +1,4 @@
-import { BadRequestException, forwardRef, Inject, Injectable } from "@nestjs/common";
+import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
@@ -23,6 +23,7 @@ import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { TrieOperationsTimeoutError } from "./exceptions/trie.operations.timeout.error";
 import { CacheInfo } from "src/utils/cache.info";
+import { AssetsService } from "src/common/assets/assets.service";
 
 @Injectable()
 export class EsdtAddressService {
@@ -40,6 +41,7 @@ export class EsdtAddressService {
     private readonly nftExtendedAttributesService: NftExtendedAttributesService,
     @Inject(forwardRef(() => CollectionService))
     private readonly collectionService: CollectionService,
+    private readonly assetsService: AssetsService
   ) {
     this.NFT_THUMBNAIL_PREFIX = this.apiConfigService.getExternalMediaUrl() + '/nfts/asset';
   }
@@ -98,10 +100,6 @@ export class EsdtAddressService {
   }
 
   async getCollectionsForAddress(address: string, filter: CollectionFilter, pagination: QueryPagination): Promise<NftCollectionWithRoles[]> {
-    if (!this.apiConfigService.getIsIndexerV3FlagActive() && (filter.canCreate !== undefined || filter.canBurn !== undefined || filter.canAddQuantity !== undefined || filter.canUpdateAttributes !== undefined || filter.canAddUri !== undefined || filter.canTransferRole !== undefined)) {
-      throw new BadRequestException('canCreate / canBurn / canAddQuantity / canUpdateAttributes / canAddUri / canTransferRole filter not supported when fetching account collections from elastic');
-    }
-
     const tokenCollections = await this.indexerService.getNftCollections(pagination, filter, address);
     const collectionsIdentifiers = tokenCollections.map((collection) => collection.token);
 
@@ -153,27 +151,22 @@ export class EsdtAddressService {
       }
     }
 
-    if (this.apiConfigService.getIsIndexerV3FlagActive()) {
-      for (const collection of collectionsWithRoles) {
-        if (collection.type === NftType.NonFungibleESDT) {
-          //@ts-ignore
-          delete collection.canAddQuantity;
-        }
-
-        if (collection.timestamp === 0) {
-          // @ts-ignore
-          delete accountCollection.timestamp;
-        }
+    for (const collection of collectionsWithRoles) {
+      if (collection.type === NftType.NonFungibleESDT) {
+        //@ts-ignore
+        delete collection.canAddQuantity;
       }
 
-      return collectionsWithRoles;
-    } else {
-      await this.applyRolesToAccountCollections(address, collectionsWithRoles);
+      if (collection.timestamp === 0) {
+        // @ts-ignore
+        delete accountCollection.timestamp;
+      }
     }
 
     return collectionsWithRoles;
   }
 
+  //@ts-ignore ( TBD )
   private async applyRolesToAccountCollections(address: string, collections: NftCollectionWithRoles[]): Promise<void> {
     const rolesResult = await this.gatewayService.getAddressEsdtRoles(address);
     const roles = rolesResult.roles;
@@ -291,8 +284,17 @@ export class EsdtAddressService {
         // @ts-ignore
         nft.type = collectionDetails.type;
 
+        // @ts-ignore
+        nft.subType = collectionDetails.subType;
+
         if (nft.type === NftType.MetaESDT) {
+          const assets = await this.assetsService.getTokenAssets(nft.collection);
+          if (assets && assets.name) {
+            nft.name = assets.name;
+          }
+
           nft.decimals = collectionDetails.decimals;
+
           // @ts-ignore
           delete nft.royalties;
           // @ts-ignore
@@ -327,8 +329,6 @@ export class EsdtAddressService {
           throw new TrieOperationsTimeoutError();
         }
       }
-
-
 
       return false;
     });

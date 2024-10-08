@@ -14,10 +14,9 @@ import { TransactionDetailed } from "../transactions/entities/transaction.detail
 import { BinaryUtils } from "@multiversx/sdk-nestjs-common";
 import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { OriginLogger } from "@multiversx/sdk-nestjs-common";
-import { QueryPagination } from "src/common/entities/query.pagination";
-import { NftFilter } from "../nfts/entities/nft.filter";
-import { IndexerService } from "src/common/indexer/indexer.service";
-import { TokenAccount } from "src/common/indexer/entities";
+import { DataApiService } from "src/common/data-api/data-api.service";
+import BigNumber from "bignumber.js";
+import { EsdtType } from "../esdt/entities/esdt.type";
 
 @Injectable()
 export class TokenTransferService {
@@ -28,7 +27,7 @@ export class TokenTransferService {
     @Inject(forwardRef(() => EsdtService))
     private readonly esdtService: EsdtService,
     private readonly assetsService: AssetsService,
-    private readonly indexerService: IndexerService,
+    private readonly dataApiService: DataApiService
   ) { }
 
   getTokenTransfer(elasticTransaction: any): { tokenIdentifier: string, tokenAmount: string } | undefined {
@@ -152,19 +151,8 @@ export class TokenTransferService {
         }
 
         if (operation) {
+          operation.additionalData = event.additionalData;
           operations.push(operation);
-        }
-      }
-    }
-
-    const distinctNftIdentifiers = operations.filter(x => x.type === TransactionOperationType.nft).map(x => x.identifier).distinct();
-    if (distinctNftIdentifiers.length > 0) {
-      const elasticNfts = await this.indexerService.getNfts(new QueryPagination({ from: 0, size: distinctNftIdentifiers.length }), new NftFilter({ identifiers: distinctNftIdentifiers }));
-      const elasticNftsDict = elasticNfts.toRecord<TokenAccount>(x => x.identifier);
-
-      for (const operation of operations) {
-        if (elasticNftsDict[operation.identifier]) {
-          operation.name = elasticNftsDict[operation.identifier].data?.name ?? operation.name;
         }
       }
     }
@@ -312,18 +300,30 @@ export class TokenTransferService {
     }
   }
 
-  async getTokenTransferProperties(identifier: string, nonce?: string): Promise<TokenTransferProperties | null> {
+  async getTokenTransferProperties(options: { identifier: string, nonce?: string, timestamp?: number, value?: string, applyValue?: boolean }): Promise<TokenTransferProperties | null> {
     let properties = await this.cachingService.getOrSet(
-      CacheInfo.TokenTransferProperties(identifier).key,
-      async () => await this.getTokenTransferPropertiesRaw(identifier),
-      CacheInfo.TokenTransferProperties(identifier).ttl,
+      CacheInfo.TokenTransferProperties(options.identifier).key,
+      async () => await this.getTokenTransferPropertiesRaw(options.identifier),
+      CacheInfo.TokenTransferProperties(options.identifier).ttl,
     );
 
     // we clone it since we alter the resulting object 
     properties = JSON.parse(JSON.stringify(properties));
 
-    if (properties && nonce) {
-      properties.identifier = `${identifier}-${nonce}`;
+    if (properties && properties.type !== EsdtType.FungibleESDT && options.nonce) {
+      properties.identifier = `${options.identifier}-${options.nonce}`;
+    }
+
+    if (properties && options.applyValue && options.timestamp && options.value) {
+      const esdtPrice = await this.dataApiService.getEsdtTokenPrice(options.identifier, options.timestamp);
+      if (esdtPrice) {
+        properties.valueUsd = new BigNumber(esdtPrice).multipliedBy(options.value).shiftedBy(-(properties.decimals ?? 0)).toNumber();
+
+        const egldPrice = await this.dataApiService.getEgldPrice(options.timestamp);
+        if (egldPrice) {
+          properties.valueEgld = properties.valueUsd / egldPrice;
+        }
+      }
     }
 
     return properties;
@@ -339,9 +339,9 @@ export class TokenTransferService {
 
     const result: TokenTransferProperties = {
       type: properties.type,
-      name: properties.name,
+      name: assets?.name ?? properties.name,
       ticker: assets ? identifier.split('-')[0] : identifier,
-      svgUrl: assets ? assets.svgUrl : '',
+      svgUrl: assets?.svgUrl ?? '',
     };
 
     if (properties.type === 'FungibleESDT') {

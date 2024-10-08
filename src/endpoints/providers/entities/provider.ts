@@ -57,6 +57,9 @@ export class Provider extends NodesInfos {
   @ApiProperty({ type: Boolean, default: false })
   checkCapOnRedelegate: boolean | undefined = undefined;
 
+  @ApiProperty({ type: Boolean, default: false })
+  ownerBelowRequiredBalanceThreshold: boolean | undefined = undefined;
+
   @ApiProperty({ type: String })
   totalUnStaked: string | undefined = undefined;
 

@@ -1,4 +1,4 @@
-import { ParseBlockHashPipe, ParseEnumPipe, ParseIntPipe, ParseArrayPipe, ParseAddressArrayPipe, ParseBoolPipe, ApplyComplexity } from "@multiversx/sdk-nestjs-common";
+import { ParseBlockHashPipe, ParseEnumPipe, ParseIntPipe, ParseArrayPipe, ParseAddressArrayPipe, ParseBoolPipe, ApplyComplexity, ParseAddressPipe } from "@multiversx/sdk-nestjs-common";
 import { Controller, DefaultValuePipe, Get, Query } from "@nestjs/common";
 import { ApiExcludeEndpoint, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { QueryPagination } from "src/common/entities/query.pagination";
@@ -37,9 +37,13 @@ export class TransferController {
   @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
   @ApiQuery({ name: 'function', description: 'Filter transfers by function name', required: false })
+  @ApiQuery({ name: 'relayer', description: 'Filter by relayer address', required: false })
   @ApiQuery({ name: 'withScamInfo', description: 'Returns scam information', required: false, type: Boolean })
   @ApiQuery({ name: 'withUsername', description: 'Integrates username in assets for all addresses present in the transactions', required: false, type: Boolean })
   @ApiQuery({ name: 'withBlockInfo', description: 'Returns sender / receiver block details', required: false, type: Boolean })
+  @ApiQuery({ name: 'withLogs', description: 'Return logs for transfers. When "withLogs" parameter is applied, complexity estimation is 200', required: false })
+  @ApiQuery({ name: 'withOperations', description: 'Return operations for transfers. When "withOperations" parameter is applied, complexity estimation is 200', required: false })
+  @ApiQuery({ name: 'withActionTransferValue', description: 'Returns value in USD and EGLD for transferred tokens within the action attribute', required: false })
   async getAccountTransfers(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
@@ -56,11 +60,17 @@ export class TransferController {
     @Query('after', ParseIntPipe) after?: number,
     @Query('order', new ParseEnumPipe(SortOrder)) order?: SortOrder,
     @Query('fields', ParseArrayPipe) fields?: string[],
+    @Query('relayer', ParseAddressPipe) relayer?: string,
     @Query('withScamInfo', new ParseBoolPipe) withScamInfo?: boolean,
     @Query('withUsername', new ParseBoolPipe) withUsername?: boolean,
     @Query('withBlockInfo', new ParseBoolPipe) withBlockInfo?: boolean,
+    @Query('withLogs', new ParseBoolPipe) withLogs?: boolean,
+    @Query('withOperations', new ParseBoolPipe) withOperations?: boolean,
+    @Query('withActionTransferValue', ParseBoolPipe) withActionTransferValue?: boolean,
   ): Promise<Transaction[]> {
-    const options = TransactionQueryOptions.applyDefaultOptions(size, { withScamInfo, withUsername, withBlockInfo });
+    const options = TransactionQueryOptions.applyDefaultOptions(
+      size, new TransactionQueryOptions({ withScamInfo, withUsername, withBlockInfo, withLogs, withOperations, withActionTransferValue }),
+    );
 
     return await this.transferService.getTransfers(new TransactionFilter({
       senders: sender,
@@ -75,6 +85,7 @@ export class TransferController {
       before,
       after,
       order,
+      relayer,
     }),
       new QueryPagination({ from, size }),
       options,

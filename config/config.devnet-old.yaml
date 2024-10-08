@@ -22,7 +22,6 @@ flags:
   useRequestLogging: false
   useVmQueryTracing: false
   processNfts: true
-  indexer-v3: true
   collectionPropertiesFromGateway: false
 features:
   eventsNotifier:
@@ -86,7 +85,7 @@ urls:
   nftThumbnails: 'https://devnet-old-media.elrond.com/nfts/thumbnail'
   tmp: '/tmp'
   ipfs: 'https://ipfs.io/ipfs'
-  socket: 'devnet-old-socket-fra.elrond.com'
+  socket: 'devnet-socket-api.multiversx.com'
   maiarId: 'https://devnet-old-id-api.multiversx.com'
 indexer:
   type: 'elastic'

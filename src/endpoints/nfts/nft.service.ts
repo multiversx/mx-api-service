@@ -365,11 +365,7 @@ export class NftService {
           }
         }
 
-        if (this.apiConfigService.getIsIndexerV3FlagActive()) {
-          nft.isWhitelistedStorage = elasticNft.data.whiteListedStorage;
-        } else {
-          nft.isWhitelistedStorage = nft.url.startsWith(this.NFT_THUMBNAIL_PREFIX);
-        }
+        nft.isWhitelistedStorage = elasticNft.data.whiteListedStorage;
       }
 
       nfts.push(nft);
@@ -385,6 +381,9 @@ export class NftService {
 
         // @ts-ignore
         nft.type = collectionProperties.type;
+
+        // @ts-ignore
+        nft.subType = collectionProperties.subType;
 
         if (nft.type === NftType.MetaESDT) {
           nft.decimals = collectionProperties.decimals;

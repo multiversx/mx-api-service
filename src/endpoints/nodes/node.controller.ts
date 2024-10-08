@@ -146,7 +146,7 @@ export class NodeController {
   @ApiQuery({ name: 'order', description: 'Sorting order (asc / desc)', required: false, enum: SortOrder })
   async getNodesAuctions(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
-    @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
+    @Query('size', new DefaultValuePipe(10000), ParseIntPipe) size: number,
     @Query('sort', new ParseEnumPipe(NodeSortAuction)) sort?: NodeSortAuction,
     @Query('order', new ParseEnumPipe(SortOrder)) order?: SortOrder,
   ): Promise<NodeAuction[]> {

@@ -12,4 +12,5 @@ export class DelegationData {
   checkCapOnRedelegate: boolean = false;
   totalUnStaked: string = "";
   createdNonce: number = 0;
+  ownerBelowRequiredBalanceThreshold: boolean = false;
 }

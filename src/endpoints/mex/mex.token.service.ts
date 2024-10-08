@@ -1,4 +1,4 @@
-import { forwardRef, Inject, Injectable } from "@nestjs/common";
+import { BadRequestException, forwardRef, Inject, Injectable } from "@nestjs/common";
 import { CacheInfo } from "src/utils/cache.info";
 import { MexToken } from "./entities/mex.token";
 import { MexPairService } from "./mex.pair.service";
@@ -11,6 +11,9 @@ import { Constants } from "@multiversx/sdk-nestjs-common";
 import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { OriginLogger } from "@multiversx/sdk-nestjs-common";
 import { QueryPagination } from "src/common/entities/query.pagination";
+import { MexTokenType } from "./entities/mex.token.type";
+import { GraphQlService } from "src/common/graphql/graphql.service";
+import { gql } from "graphql-request";
 
 @Injectable()
 export class MexTokenService {
@@ -23,12 +26,17 @@ export class MexTokenService {
     @Inject(forwardRef(() => MexFarmService))
     private readonly mexFarmService: MexFarmService,
     private readonly mexSettingsService: MexSettingsService,
+    private readonly graphQlService: GraphQlService,
   ) { }
 
   async refreshMexTokens(): Promise<void> {
     const tokens = await this.getAllMexTokensRaw();
     await this.cachingService.setRemote(CacheInfo.MexTokens.key, tokens, CacheInfo.MexTokens.ttl);
     await this.cachingService.setLocal(CacheInfo.MexTokens.key, tokens, Constants.oneSecond() * 30);
+
+    const tokenTypes = await this.getAllMexTokenTypesRaw();
+    await this.cachingService.setRemote(CacheInfo.MexTokenTypes.key, tokenTypes, CacheInfo.MexTokenTypes.ttl);
+    await this.cachingService.setLocal(CacheInfo.MexTokenTypes.key, tokenTypes, Constants.oneSecond() * 30);
 
     const indexedTokens = await this.getIndexedMexTokensRaw();
     await this.cachingService.setRemote(CacheInfo.MexTokensIndexed.key, indexedTokens, CacheInfo.MexTokensIndexed.ttl);
@@ -175,6 +183,8 @@ export class MexTokenService {
         wegldToken.name = pair.baseName;
         wegldToken.price = pair.basePrice;
         wegldToken.previous24hPrice = pair.basePrevious24hPrice;
+        wegldToken.previous24hVolume = pair.volume24h;
+        wegldToken.tradesCount = this.computeTradesCountForMexToken(wegldToken, filteredPairs);
         mexTokens.push(wegldToken);
       }
 
@@ -182,6 +192,8 @@ export class MexTokenService {
       if (!mexToken) {
         continue;
       }
+
+      mexToken.tradesCount = this.computeTradesCountForMexToken(mexToken, filteredPairs);
 
       mexTokens.push(mexToken);
     }
@@ -197,6 +209,8 @@ export class MexTokenService {
         name: pair.quoteName,
         price: pair.quotePrice,
         previous24hPrice: pair.quotePrevious24hPrice,
+        previous24hVolume: pair.volume24h,
+        tradesCount: 0,
       };
     }
 
@@ -207,6 +221,8 @@ export class MexTokenService {
         name: pair.baseName,
         price: pair.basePrice,
         previous24hPrice: pair.basePrevious24hPrice,
+        previous24hVolume: pair.volume24h,
+        tradesCount: 0,
       };
     }
 
@@ -217,9 +233,62 @@ export class MexTokenService {
         name: pair.quoteName,
         price: pair.quotePrice,
         previous24hPrice: pair.quotePrevious24hPrice,
+        previous24hVolume: pair.volume24h,
+        tradesCount: 0,
       };
     }
 
     return null;
+  }
+
+  async getAllMexTokenTypes(): Promise<MexTokenType[]> {
+    if (!this.apiConfigService.getExchangeServiceUrl()) {
+      return [];
+    }
+
+    return await this.cachingService.getOrSet(
+      CacheInfo.MexTokenTypes.key,
+      async () => await this.getAllMexTokenTypesRaw(),
+      CacheInfo.MexTokenTypes.ttl,
+      Constants.oneSecond() * 30
+    );
+  }
+
+  private async getAllMexTokenTypesRaw(): Promise<MexTokenType[]> {
+    try {
+      const settings = await this.mexSettingsService.getSettings();
+      if (!settings) {
+        throw new BadRequestException('Could not fetch MEX tokens');
+      }
+
+      const query = gql`
+        query tokens {
+          tokens {
+            identifier
+            type
+          }
+        }
+      `;
+
+      const result: any = await this.graphQlService.getExchangeServiceData(query);
+      if (!result || !result.tokens) {
+        return [];
+      }
+
+      return result.tokens.map((token: MexTokenType) => ({
+        identifier: token.identifier,
+        type: token.type.toLowerCase(),
+      }));
+    } catch (error) {
+      this.logger.error('An error occurred while fetching all mex token types');
+      this.logger.error(error);
+      return [];
+    }
+  }
+
+  private computeTradesCountForMexToken(mexToken: MexToken, filteredPairs: MexPair[]): number {
+    const pairs = filteredPairs.filter(x => x.baseId === mexToken.id || x.quoteId === mexToken.id);
+    const computeResult = pairs.sum(pair => pair.tradesCount ?? 0);
+    return computeResult;
   }
 }

@@ -25,6 +25,7 @@ import { NodeAuction } from "./entities/node.auction";
 import { NodeAuctionFilter } from "./entities/node.auction.filter";
 import { Identity } from "../identities/entities/identity";
 import { NodeSortAuction } from "./entities/node.sort.auction";
+import { ApiService } from "@multiversx/sdk-nestjs-http";
 
 @Injectable()
 export class NodeService {
@@ -42,7 +43,8 @@ export class NodeService {
     private readonly protocolService: ProtocolService,
     private readonly keysService: KeysService,
     @Inject(forwardRef(() => IdentitiesService))
-    private readonly identitiesService: IdentitiesService
+    private readonly identitiesService: IdentitiesService,
+    private readonly apiService: ApiService,
   ) { }
 
   private getIssues(node: Node, version: string | undefined): string[] {
@@ -372,6 +374,10 @@ export class NodeService {
   }
 
   async getAllNodesRaw(): Promise<Node[]> {
+    if (this.apiConfigService.isNodesFetchFeatureEnabled()) {
+      return await this.getAllNodesFromApi();
+    }
+
     const nodes = await this.getHeartbeatValidatorsAndQueue();
 
     await this.applyNodeIdentities(nodes);
@@ -382,7 +388,8 @@ export class NodeService {
 
     await this.applyNodeStakeInfo(nodes);
 
-    if (this.apiConfigService.isStakingV4Enabled()) {
+    const currentEpoch = await this.blockService.getCurrentEpoch();
+    if (this.apiConfigService.isStakingV4Enabled() && currentEpoch >= this.apiConfigService.getStakingV4ActivationEpoch()) {
       const auctions = await this.gatewayService.getValidatorAuctions();
       await this.processAuctions(nodes, auctions);
     }
@@ -392,8 +399,21 @@ export class NodeService {
     return nodes;
   }
 
+  private async getAllNodesFromApi(): Promise<Node[]> {
+    try {
+      const { data } = await this.apiService.get(`${this.apiConfigService.getNodesFetchServiceUrl()}/nodes`, { params: { size: 10000 } });
+
+      return data;
+    } catch (error) {
+      this.logger.error('An unhandled error occurred when getting nodes from API');
+      this.logger.error(error);
+
+      throw error;
+    }
+  }
+
   async processAuctions(nodes: Node[], auctions: Auction[]) {
-    const minimumAuctionStake = await this.stakeService.getMinimumAuctionStake();
+    const minimumAuctionStake = await this.stakeService.getMinimumAuctionStake(auctions);
     const dangerZoneThreshold = BigInt(minimumAuctionStake) * BigInt(105) / BigInt(100);
     for (const node of nodes) {
       let position = 1;
@@ -666,7 +686,7 @@ export class NodeService {
       const node: Node = new Node({
         bls,
         name,
-        version: version ? (version.includes('-rc') ? version.split('-').slice(0, 2).join('-').split('/')[0] : version.split('-')[0].split('/')[0]) : '',
+        version: version ? (version.includes('-rc') || version.includes('-patch') ? version.split('-').slice(0, 2).join('-').split('/')[0] : version.split('-')[0].split('/')[0]) : '',
         identity: identity && identity !== '' ? identity.toLowerCase() : identity,
         rating: parseFloat(parseFloat(rating).toFixed(2)),
         tempRating: parseFloat(parseFloat(tempRating).toFixed(2)),
@@ -731,20 +751,6 @@ export class NodeService {
 
   async getAllNodesAuctionsRaw(): Promise<NodeAuction[]> {
     const allNodes = await this.getNodes(new QueryPagination({ size: 10000 }), new NodeFilter({ status: NodeStatus.auction }));
-
-    const auctions = await this.gatewayService.getValidatorAuctions();
-    const auctionNodesMap = new Map();
-
-    for (const auction of auctions) {
-      if (auction.nodes) {
-        for (const auctionNode of auction.nodes) {
-          auctionNodesMap.set(auctionNode.blsKey, {
-            auctionTopUp: auction.qualifiedTopUp,
-            qualified: auctionNode.qualified,
-          });
-        }
-      }
-    }
 
     const groupedNodes = allNodes.groupBy(node => (node.provider || node.owner) + ':' + (BigInt(node.stake).toString()) + (BigInt(node.topUp).toString()), true);
 

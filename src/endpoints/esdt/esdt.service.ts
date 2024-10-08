@@ -15,6 +15,7 @@ import { IndexerService } from "src/common/indexer/indexer.service";
 import { EsdtType } from "./entities/esdt.type";
 import { ElasticIndexerService } from "src/common/indexer/elastic/elastic.indexer.service";
 import { randomUUID } from "crypto";
+import { EsdtSubType } from "./entities/esdt.sub.type";
 
 @Injectable()
 export class EsdtService {
@@ -32,18 +33,24 @@ export class EsdtService {
   ) { }
 
   async getEsdtTokenProperties(identifier: string): Promise<TokenProperties | undefined> {
-    const properties = await this.cachingService.getOrSet(
-      CacheInfo.EsdtProperties(identifier).key,
-      async () => await this.getEsdtTokenPropertiesRaw(identifier),
-      Constants.oneWeek(),
-      CacheInfo.EsdtProperties(identifier).ttl
-    );
+    try {
+      const properties = await this.cachingService.getOrSet(
+        CacheInfo.EsdtProperties(identifier).key,
+        async () => await this.getEsdtTokenPropertiesRaw(identifier),
+        Constants.oneWeek(),
+        CacheInfo.EsdtProperties(identifier).ttl
+      );
 
-    if (!properties) {
+      if (!properties) {
+        return undefined;
+      }
+
+      return properties;
+    } catch (error) {
+      this.logger.error(`Error when getting esdt token properties for identifier: ${identifier}`);
+      this.logger.error(error);
       return undefined;
     }
-
-    return properties;
   }
 
   async getCollectionProperties(identifier: string): Promise<TokenProperties | undefined> {
@@ -78,8 +85,7 @@ export class EsdtService {
 
   async getEsdtTokenPropertiesRaw(identifier: string): Promise<TokenProperties | null> {
     const getCollectionPropertiesFromGateway = this.apiConfigService.getCollectionPropertiesFromGateway();
-    const isIndexerV5Active = await this.elasticIndexerService.isIndexerV5Active();
-    if (isIndexerV5Active && !getCollectionPropertiesFromGateway) {
+    if (!getCollectionPropertiesFromGateway) {
       return await this.getEsdtTokenPropertiesRawFromElastic(identifier);
     } else {
       return await this.getEsdtTokenPropertiesRawFromGateway(identifier);
@@ -163,12 +169,13 @@ export class EsdtService {
       delete tokenProps.wiped;
     }
 
+    this.applySubType(tokenProps, type);
+
     return tokenProps;
   }
 
   async getAllFungibleTokenProperties(): Promise<TokenProperties[]> {
-    const isIndexerV5Active = await this.elasticIndexerService.isIndexerV5Active();
-    if (isIndexerV5Active && !this.apiConfigService.getCollectionPropertiesFromGateway()) {
+    if (!this.apiConfigService.getCollectionPropertiesFromGateway()) {
       return await this.getAllFungibleTokenPropertiesFromElastic();
     } else {
       return await this.getAllFungibleTokenPropertiesFromGateway();
@@ -229,7 +236,27 @@ export class EsdtService {
       delete tokenProps.NFTCreateStopped;
     }
 
+    this.applySubType(tokenProps, elasticProperties.type);
+
     return tokenProps;
+  }
+
+  private applySubType(tokenProps: TokenProperties, type: string): void {
+    switch (type) {
+      case EsdtSubType.NonFungibleESDTv2:
+      case EsdtSubType.DynamicNonFungibleESDT:
+        tokenProps.type = EsdtType.NonFungibleESDT;
+        tokenProps.subType = type;
+        break;
+      case EsdtSubType.DynamicSemiFungibleESDT:
+        tokenProps.type = EsdtType.SemiFungibleESDT;
+        tokenProps.subType = type;
+        break;
+      case EsdtSubType.DynamicMetaESDT:
+        tokenProps.type = EsdtType.MetaESDT;
+        tokenProps.subType = type;
+        break;
+    }
   }
 
   async getEsdtAddressesRolesRaw(identifier: string): Promise<TokenRoles[] | null> {

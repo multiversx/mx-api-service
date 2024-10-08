@@ -2,7 +2,10 @@ network: 'devnet'
 metaChainShardId: 4294967295
 api:
   public: true
+  publicPort: 3001
   private: true
+  privatePort: 4001
+  websocket: true
 cron:
   cacheWarmer: true
   fastWarm: true
@@ -15,7 +18,6 @@ flags:
   useRequestLogging: false
   useVmQueryTracing: false
   processNfts: true
-  indexer-v3: true
   collectionPropertiesFromGateway: false
 features:
   eventsNotifier:
@@ -29,9 +31,9 @@ features:
     hitsThreshold: 100
     ttl: 12
   transactionPool:
-    enabled: true
+    enabled: false
   transactionPoolWarmer:
-    enabled: true
+    enabled: false
     cronExpression: '*/5 * * * * *'
     ttlInSeconds: 60
   updateCollectionExtraDetails:
@@ -84,13 +86,26 @@ features:
       nodeValidators: 300
   nftScamInfo:
     enabled: false
+  processNfts:
+    enabled: false
+    nftQueueName: 'api-process-nfts'
+    deadLetterQueueName: 'api-process-nfts-dlq'
   tps:
-    enabled: true
+    enabled: false
     maxLookBehindNonces: 100
   elasticCallsTracing:
     enabled: false
     logThreshold: 10
     verboseLogging: false
+  nodesFetch:
+    enabled: true
+    serviceUrl: 'https://devnet-api.multiversx.com'
+  tokensFetch:
+    enabled: true
+    serviceUrl: 'https://devnet-api.multiversx.com'
+  providersFetch:
+    enabled: true
+    serviceUrl: 'https://devnet-api.multiversx.com'
 image:
   width: 600
   height: 600
@@ -115,7 +130,7 @@ urls:
   nftThumbnails: 'https://devnet-media.elrond.com/nfts/thumbnail'
   tmp: '/tmp'
   ipfs: 'https://ipfs.io/ipfs'
-  socket: 'devnet-socket-fra.elrond.com'
+  socket: 'devnet-socket-api.multiversx.com'
   maiarId: 'https://devnet-id-api.multiversx.com'
 indexer:
   type: 'elastic'

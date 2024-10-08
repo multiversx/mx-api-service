@@ -20,7 +20,7 @@ import { TokenSort } from "./entities/token.sort";
 import { TokenWithRoles } from "./entities/token.with.roles";
 import { TokenWithRolesFilter } from "./entities/token.with.roles.filter";
 import { AddressUtils, BinaryUtils, NumberUtils, TokenUtils } from "@multiversx/sdk-nestjs-common";
-import { ApiUtils } from "@multiversx/sdk-nestjs-http";
+import { ApiService, ApiUtils } from "@multiversx/sdk-nestjs-http";
 import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { OriginLogger } from "@multiversx/sdk-nestjs-common";
@@ -41,6 +41,7 @@ import { TokenSupplyOptions } from "./entities/token.supply.options";
 import { TransferService } from "../transfers/transfer.service";
 import { MexPairService } from "../mex/mex.pair.service";
 import { MexPairState } from "../mex/entities/mex.pair.state";
+import { MexTokenType } from "../mex/entities/mex.token.type";
 
 @Injectable()
 export class TokenService {
@@ -62,6 +63,7 @@ export class TokenService {
     private readonly collectionService: CollectionService,
     private readonly dataApiService: DataApiService,
     private readonly mexPairService: MexPairService,
+    private readonly apiService: ApiService,
   ) { }
 
   async isToken(identifier: string): Promise<boolean> {
@@ -163,6 +165,10 @@ export class TokenService {
     const mexPairTypes = filter.mexPairType ?? [];
     if (mexPairTypes.length > 0) {
       tokens = tokens.filter(token => mexPairTypes.includes(token.mexPairType));
+    }
+
+    if (filter.priceSource) {
+      tokens = tokens.filter(token => token.assets?.priceSource?.type === filter.priceSource);
     }
 
     return tokens;
@@ -462,49 +468,31 @@ export class TokenService {
   }
 
   async getTokenRoles(identifier: string): Promise<TokenRoles[] | undefined> {
-    if (this.apiConfigService.getIsIndexerV3FlagActive()) {
-      return await this.getTokenRolesFromElastic(identifier);
-    }
-
-    return await this.esdtService.getEsdtAddressesRoles(identifier);
+    return await this.getTokenRolesFromElastic(identifier);
   }
 
   async getTokenRolesForIdentifierAndAddress(identifier: string, address: string): Promise<TokenRoles | undefined> {
-    if (this.apiConfigService.getIsIndexerV3FlagActive()) {
-      const token = await this.indexerService.getToken(identifier);
+    const token = await this.indexerService.getToken(identifier);
 
-      if (!token) {
-        return undefined;
-      }
-
-      if (!token.roles) {
-        return undefined;
-      }
-
-      const addressRoles: TokenRoles = new TokenRoles();
-      addressRoles.address = address;
-      for (const role of Object.keys(token.roles)) {
-        const addresses = token.roles[role].distinct();
-        if (addresses.includes(address)) {
-          TokenHelpers.setTokenRole(addressRoles, role);
-        }
-      }
-
-      //@ts-ignore
-      delete addressRoles.address;
-
-      return addressRoles;
+    if (!token) {
+      return undefined;
     }
 
-    const tokenAddressesRoles = await this.esdtService.getEsdtAddressesRoles(identifier);
-    let addressRoles = tokenAddressesRoles?.find((role: TokenRoles) => role.address === address);
-    if (addressRoles) {
-      // clone
-      addressRoles = new TokenRoles(JSON.parse(JSON.stringify(addressRoles)));
-
-      //@ts-ignore
-      delete addressRoles?.address;
+    if (!token.roles) {
+      return undefined;
     }
+
+    const addressRoles: TokenRoles = new TokenRoles();
+    addressRoles.address = address;
+    for (const role of Object.keys(token.roles)) {
+      const addresses = token.roles[role].distinct();
+      if (addresses.includes(address)) {
+        TokenHelpers.setTokenRole(addressRoles, role);
+      }
+    }
+
+    //@ts-ignore
+    delete addressRoles.address;
 
     return addressRoles;
   }
@@ -718,8 +706,11 @@ export class TokenService {
   }
 
   async getAllTokensRaw(): Promise<TokenDetailed[]> {
-    this.logger.log(`Starting to fetch all tokens`);
+    if (this.apiConfigService.isTokensFetchFeatureEnabled()) {
+      return await this.getAllTokensFromApi();
+    }
 
+    this.logger.log(`Starting to fetch all tokens`);
     const tokensProperties = await this.esdtService.getAllFungibleTokenProperties();
     let tokens = tokensProperties.map(properties => ApiUtils.mergeObjects(new TokenDetailed(), properties));
 
@@ -759,17 +750,12 @@ export class TokenService {
       }));
     }
 
-    this.logger.log(`Starting to batch process tokens`);
     await this.batchProcessTokens(tokens);
-    this.logger.log(`Finished batch processing tokens`);
 
-    this.logger.log(`Applying mex liquidity`);
     await this.applyMexLiquidity(tokens.filter(x => x.type !== TokenType.MetaESDT));
-    this.logger.log(`Finished applying mex liquidity`);
     await this.applyMexPrices(tokens.filter(x => x.type !== TokenType.MetaESDT));
-    this.logger.log(`Finished applying mex prices`);
     await this.applyMexPairType(tokens.filter(x => x.type !== TokenType.MetaESDT));
-    this.logger.log(`Finished applying mex pair type`);
+    await this.applyMexPairTradesCount(tokens.filter(x => x.type !== TokenType.MetaESDT));
 
     await this.cachingService.batchApplyAll(
       tokens,
@@ -778,23 +764,31 @@ export class TokenService {
       (token, assets) => token.assets = assets,
       CacheInfo.EsdtAssets('').ttl,
     );
-    this.logger.log(`Finished applying assets`);
 
     for (const token of tokens) {
-      if (token.assets?.priceSource?.type === TokenAssetsPriceSourceType.dataApi) {
-        token.price = await this.dataApiService.getEsdtTokenPrice(token.identifier);
+      const priceSourcetype = token.assets?.priceSource?.type;
 
+      if (priceSourcetype === TokenAssetsPriceSourceType.dataApi) {
+        token.price = await this.dataApiService.getEsdtTokenPrice(token.identifier);
+      } else if (priceSourcetype === TokenAssetsPriceSourceType.customUrl && token.assets?.priceSource?.url) {
+        const pathToPrice = token.assets?.priceSource?.path ?? "0.usdPrice";
+        const tokenData = await this.fetchTokenDataFromUrl(token.assets.priceSource.url, pathToPrice);
+
+        if (tokenData) {
+          token.price = tokenData;
+        }
+      }
+
+      if (token.price) {
         const supply = await this.esdtService.getTokenSupply(token.identifier);
         token.supply = supply.totalSupply;
         token.circulatingSupply = supply.circulatingSupply;
 
-        if (token.price && token.circulatingSupply) {
+        if (token.circulatingSupply) {
           token.marketCap = token.price * NumberUtils.denominateString(token.circulatingSupply, token.decimals);
         }
       }
     }
-
-    this.logger.log(`Finished applying supply`);
 
     tokens = tokens.sortedDescending(
       token => token.assets ? 1 : 0,
@@ -805,23 +799,61 @@ export class TokenService {
     return tokens;
   }
 
+  private extractData(data: any, path: string): any {
+    const keys = path.split('.');
+    let result: any = data;
+
+    for (const key of keys) {
+      if (result === undefined || result === null) {
+        return undefined;
+      }
+
+      result = !isNaN(Number(key)) ? result[Number(key)] : result[key];
+    }
+
+    return result;
+  }
+
+  private async fetchTokenDataFromUrl(url: string, path: string): Promise<any> {
+    try {
+      const result = await this.apiService.get(url);
+
+      if (!result || !result.data) {
+        this.logger.error(`Invalid response received from URL: ${url}`);
+        return;
+      }
+
+      const extractedValue = this.extractData(result.data, path);
+      if (!extractedValue) {
+        this.logger.error(`No valid data found at URL: ${url}`);
+        return;
+      }
+
+      return extractedValue;
+    } catch (error) {
+      this.logger.error(`Failed to fetch token data from URL: ${url}`, error);
+    }
+  }
+
+
   private async getTokenAssetsRaw(identifier: string): Promise<TokenAssets | undefined> {
     return await this.assetsService.getTokenAssets(identifier);
   }
 
   private async applyMexPairType(tokens: TokenDetailed[]): Promise<void> {
     try {
-      const mexPairs = await this.mexPairService.getAllMexPairs();
-      const mexPairsMap = new Map(mexPairs.map(pair => [pair.baseId, pair.type]));
+      const mexTokens = await this.mexTokenService.getAllMexTokenTypes();
+      const mexTokensDictionary = mexTokens.toRecord<MexTokenType>(token => token.identifier);
 
       for (const token of tokens) {
-        const mexPairType = mexPairsMap.get(token.identifier);
-        if (mexPairType) {
-          token.mexPairType = mexPairType;
+        const mexTokenType = mexTokensDictionary[token.identifier];
+        if (mexTokenType) {
+          token.mexPairType = mexTokenType.type;
         }
       }
     } catch (error) {
-      this.logger.error('Could not apply mex pair types', error);
+      this.logger.error('Could not apply mex pair types');
+      this.logger.error(error);
     }
   }
 
@@ -861,6 +893,19 @@ export class TokenService {
       CacheInfo.TokenTransfers('').ttl,
       10,
     );
+  }
+
+  private async getAllTokensFromApi(): Promise<TokenDetailed[]> {
+    try {
+      const { data } = await this.apiService.get(`${this.apiConfigService.getTokensFetchServiceUrl()}/tokens`, { params: { size: 10000 } });
+
+      return data;
+    } catch (error) {
+      this.logger.error('An unhandled error occurred when getting tokens from API');
+      this.logger.error(error);
+
+      throw error;
+    }
   }
 
   private async getTotalTransactions(token: TokenDetailed): Promise<{ count: number, lastUpdatedAt: number } | undefined> {
@@ -959,6 +1004,33 @@ export class TokenService {
       }
     } catch (error) {
       this.logger.error('Could not apply mex tokens prices');
+      this.logger.error(error);
+    }
+  }
+
+  private async applyMexPairTradesCount(tokens: TokenDetailed[]): Promise<void> {
+    if (!tokens.length) {
+      return;
+    }
+
+    try {
+      const pairs = await this.mexPairService.getAllMexPairs();
+      const filteredPairs = pairs.filter(x => x.state === MexPairState.active);
+
+      if (!filteredPairs.length) {
+        return;
+      }
+
+      for (const token of tokens) {
+        const tokenPairs = filteredPairs.filter(x => x.baseId === token.identifier || x.quoteId === token.identifier);
+
+        if (tokenPairs.length > 0) {
+          token.tradesCount = tokenPairs.sum(tokenPair => tokenPair.tradesCount ?? 0);
+        }
+      }
+
+    } catch (error) {
+      this.logger.error('Could not apply mex trades count');
       this.logger.error(error);
     }
   }

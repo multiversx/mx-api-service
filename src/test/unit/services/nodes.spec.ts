@@ -19,6 +19,8 @@ import { IdentitiesService } from "src/endpoints/identities/identities.service";
 import { NodeAuctionFilter } from "src/endpoints/nodes/entities/node.auction.filter";
 import * as fs from 'fs';
 import * as path from 'path';
+import { ApiService } from "@multiversx/sdk-nestjs-http";
+import { Node } from "src/endpoints/nodes/entities/node";
 
 describe('NodeService', () => {
   let nodeService: NodeService;
@@ -27,6 +29,7 @@ describe('NodeService', () => {
   let apiConfigService: ApiConfigService;
   let gatewayService: GatewayService;
   let identitiesService: IdentitiesService;
+  let apiService: ApiService;
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
@@ -58,6 +61,8 @@ describe('NodeService', () => {
             getAuctionContractAddress: jest.fn(),
             isNodeSyncProgressEnabled: jest.fn(),
             isNodeEpochsLeftEnabled: jest.fn(),
+            isNodesFetchFeatureEnabled: jest.fn(),
+            getNodesFetchServiceUrl: jest.fn(),
           },
         },
         {
@@ -108,6 +113,12 @@ describe('NodeService', () => {
             getAllIdentities: jest.fn(),
           },
         },
+        {
+          provide: ApiService,
+          useValue: {
+            get: jest.fn(),
+          },
+        },
       ],
     }).compile();
 
@@ -117,6 +128,7 @@ describe('NodeService', () => {
     apiConfigService = moduleRef.get<ApiConfigService>(ApiConfigService);
     gatewayService = moduleRef.get<GatewayService>(GatewayService);
     identitiesService = moduleRef.get<IdentitiesService>(IdentitiesService);
+    apiService = moduleRef.get<ApiService>(ApiService);
   });
 
   beforeEach(() => { jest.restoreAllMocks(); });
@@ -427,6 +439,49 @@ describe('NodeService', () => {
       });
     });
 
+    describe('getAllNodes', () => {
+      it('should return nodes from API when isNodesFetchFeatureEnabled is true', async () => {
+        const mockNodes: Partial<Node>[] = [{ bls: 'mockBls' }];
+        const url = 'https://testnet-api.multiversx.com';
+
+        jest.spyOn(apiConfigService, 'isNodesFetchFeatureEnabled').mockReturnValue(true);
+        jest.spyOn(apiConfigService, 'getNodesFetchServiceUrl').mockReturnValue(url);
+        jest.spyOn(apiService, 'get').mockResolvedValue({ data: mockNodes });
+        // eslint-disable-next-line require-await
+        jest.spyOn(cacheService, 'getOrSet').mockImplementation(async (_key, getter) => getter());
+
+        const result = await nodeService.getAllNodes();
+
+        expect(apiConfigService.isNodesFetchFeatureEnabled).toHaveBeenCalled();
+        expect(apiService.get).toHaveBeenCalledWith(`${url}/nodes`, { params: { size: 10000 } });
+        expect(result).toEqual(mockNodes);
+      });
+
+      it('should return nodes from other sources when isNodesFetchFeatureEnabled is false', async () => {
+        const mockNodes: Partial<Node>[] = [{ bls: 'mockBls' }];
+        jest.spyOn(apiConfigService, 'isNodesFetchFeatureEnabled').mockReturnValue(false);
+        jest.spyOn(nodeService, 'getHeartbeatValidatorsAndQueue').mockResolvedValue(mockNodes as Node[]);
+        jest.spyOn(nodeService as any, 'applyNodeIdentities').mockImplementation(() => Promise.resolve());
+        jest.spyOn(nodeService as any, 'applyNodeOwners').mockImplementation(() => Promise.resolve());
+        jest.spyOn(nodeService as any, 'applyNodeProviders').mockImplementation(() => Promise.resolve());
+        jest.spyOn(nodeService as any, 'applyNodeStakeInfo').mockImplementation(() => Promise.resolve());
+        jest.spyOn(nodeService as any, 'applyNodeUnbondingPeriods').mockImplementation(() => Promise.resolve());
+        // eslint-disable-next-line require-await
+        jest.spyOn(cacheService, 'getOrSet').mockImplementation(async (_key, getter) => getter());
+
+        const result = await nodeService.getAllNodes();
+
+        expect(apiConfigService.isNodesFetchFeatureEnabled).toHaveBeenCalled();
+        expect(nodeService.getHeartbeatValidatorsAndQueue).toHaveBeenCalled();
+        expect((nodeService as any).applyNodeIdentities).toHaveBeenCalledWith(mockNodes);
+        expect((nodeService as any).applyNodeOwners).toHaveBeenCalledWith(mockNodes);
+        expect((nodeService as any).applyNodeProviders).toHaveBeenCalledWith(mockNodes);
+        expect((nodeService as any).applyNodeStakeInfo).toHaveBeenCalledWith(mockNodes);
+        expect((nodeService as any).applyNodeUnbondingPeriods).toHaveBeenCalledWith(mockNodes);
+        expect(result).toEqual(mockNodes);
+      });
+    });
+
     describe('deleteOwnersForAddressInCache', () => {
       it('should return an empty array if no cache entries are found for an address', async () => {
         const address = 'erd1qqqqqqqqqqqqqpgqp699jngundfqw07d8jzkepucvpzush6k3wvqyc44rx';
@@ -438,7 +493,7 @@ describe('NodeService', () => {
         const result = await nodeService.deleteOwnersForAddressInCache(address);
 
         expect(result).toEqual([]);
-        expect(currentEpochSpy).toHaveBeenCalledTimes(1);
+        expect(currentEpochSpy).toHaveBeenCalledTimes(2);
         expect(allNodesSpy).toHaveBeenCalledTimes(1);
       });
     });
@@ -484,7 +539,7 @@ describe('NodeService', () => {
             undefined,
           ]
         );
-        expect(currentEpochSpy).toHaveBeenCalledTimes(1);
+        expect(currentEpochSpy).toHaveBeenCalledTimes(2);
       });
     });
 

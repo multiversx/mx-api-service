@@ -27,7 +27,6 @@ import { AccountHistory } from "./entities/account.history";
 import { AccountEsdtHistory } from "./entities/account.esdt.history";
 import { EsdtDataSource } from '../esdt/entities/esdt.data.source';
 import { TransferService } from '../transfers/transfer.service';
-import { ApiConfigService } from 'src/common/api-config/api.config.service';
 import { Transaction } from '../transactions/entities/transaction';
 import { ProviderStake } from '../stake/entities/provider.stake';
 import { TokenDetailedWithBalance } from '../tokens/entities/token.detailed.with.balance';
@@ -57,6 +56,7 @@ import { AccountKeyFilter } from './entities/account.key.filter';
 import { ScamType } from 'src/common/entities/scam-type.enum';
 import { DeepHistoryInterceptor } from 'src/interceptors/deep-history.interceptor';
 import { MexPairType } from '../mex/entities/mex.pair.type';
+import { AccountContract } from './entities/account.contract';
 
 @Controller()
 @ApiTags('accounts')
@@ -74,7 +74,6 @@ export class AccountController {
     private readonly scResultService: SmartContractResultService,
     private readonly collectionService: CollectionService,
     private readonly transferService: TransferService,
-    private readonly apiConfigService: ApiConfigService,
     private readonly delegationService: DelegationService,
   ) { }
 
@@ -824,6 +823,7 @@ export class AccountController {
   @ApiQuery({ name: 'computeScamInfo', required: false, type: Boolean })
   @ApiQuery({ name: 'senderOrReceiver', description: 'One address that current address interacted with', required: false })
   @ApiQuery({ name: 'isRelayed', description: 'Returns isRelayed transactions details', required: false, type: Boolean })
+  @ApiQuery({ name: 'withActionTransferValue', description: 'Returns value in USD and EGLD for transferred tokens within the action attribute', required: false })
   async getAccountTransactions(
     @Param('address', ParseAddressPipe) address: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
@@ -849,8 +849,9 @@ export class AccountController {
     @Query('withBlockInfo', new ParseBoolPipe) withBlockInfo?: boolean,
     @Query('senderOrReceiver', ParseAddressPipe) senderOrReceiver?: string,
     @Query('isRelayed', new ParseBoolPipe) isRelayed?: boolean,
+    @Query('withActionTransferValue', ParseBoolPipe) withActionTransferValue?: boolean,
   ) {
-    const options = TransactionQueryOptions.applyDefaultOptions(size, { withScResults, withOperations, withLogs, withScamInfo, withUsername, withBlockInfo });
+    const options = TransactionQueryOptions.applyDefaultOptions(size, { withScResults, withOperations, withLogs, withScamInfo, withUsername, withBlockInfo, withActionTransferValue });
 
     return await this.transactionService.getTransactions(new TransactionFilter({
       sender,
@@ -939,10 +940,14 @@ export class AccountController {
   @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
   @ApiQuery({ name: 'fields', description: 'List of fields to filter by', required: false })
+  @ApiQuery({ name: 'relayer', description: 'Address of the relayer', required: false })
   @ApiQuery({ name: 'withScamInfo', description: 'Returns scam information', required: false, type: Boolean })
   @ApiQuery({ name: 'withUsername', description: 'Integrates username in assets for all addresses present in the transactions', required: false, type: Boolean })
   @ApiQuery({ name: 'withBlockInfo', description: 'Returns sender / receiver block details', required: false, type: Boolean })
   @ApiQuery({ name: 'senderOrReceiver', description: 'One address that current address interacted with', required: false })
+  @ApiQuery({ name: 'withLogs', description: 'Return logs for transfers. When "withLogs" parameter is applied, complexity estimation is 200', required: false })
+  @ApiQuery({ name: 'withOperations', description: 'Return operations for transfers. When "withOperations" parameter is applied, complexity estimation is 200', required: false })
+  @ApiQuery({ name: 'withActionTransferValue', description: 'Returns value in USD and EGLD for transferred tokens within the action attribute', required: false })
   async getAccountTransfers(
     @Param('address', ParseAddressPipe) address: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
@@ -960,16 +965,17 @@ export class AccountController {
     @Query('after', ParseIntPipe) after?: number,
     @Query('fields', ParseArrayPipe) fields?: string[],
     @Query('order', new ParseEnumPipe(SortOrder)) order?: SortOrder,
+    @Query('relayer', ParseAddressPipe) relayer?: string,
     @Query('withScamInfo', new ParseBoolPipe) withScamInfo?: boolean,
     @Query('withUsername', new ParseBoolPipe) withUsername?: boolean,
     @Query('withBlockInfo', new ParseBoolPipe) withBlockInfo?: boolean,
     @Query('senderOrReceiver', ParseAddressPipe) senderOrReceiver?: string,
+    @Query('withLogs', new ParseBoolPipe) withLogs?: boolean,
+    @Query('withOperations', new ParseBoolPipe) withOperations?: boolean,
+    @Query('withActionTransferValue', ParseBoolPipe) withActionTransferValue?: boolean,
   ): Promise<Transaction[]> {
-    if (!this.apiConfigService.getIsIndexerV3FlagActive()) {
-      throw new HttpException('Endpoint not live yet', HttpStatus.NOT_IMPLEMENTED);
-    }
-
-    const options = TransactionQueryOptions.applyDefaultOptions(size, { withScamInfo, withUsername, withBlockInfo });
+    const options = TransactionQueryOptions.applyDefaultOptions(
+      size, { withScamInfo, withUsername, withBlockInfo, withOperations, withLogs, withActionTransferValue });
 
     return await this.transferService.getTransfers(new TransactionFilter({
       address,
@@ -986,6 +992,7 @@ export class AccountController {
       after,
       order,
       senderOrReceiver,
+      relayer,
     }),
       new QueryPagination({ from, size }),
       options,
@@ -1023,10 +1030,6 @@ export class AccountController {
     @Query('after', ParseIntPipe) after?: number,
     @Query('senderOrReceiver', ParseAddressPipe) senderOrReceiver?: string,
   ): Promise<number> {
-    if (!this.apiConfigService.getIsIndexerV3FlagActive()) {
-      throw new HttpException('Endpoint not live yet', HttpStatus.NOT_IMPLEMENTED);
-    }
-
     return await this.transferService.getTransfersCount(new TransactionFilter({
       address,
       senders: sender,
@@ -1061,10 +1064,6 @@ export class AccountController {
     @Query('after', ParseIntPipe) after?: number,
     @Query('senderOrReceiver', ParseAddressPipe) senderOrReceiver?: string,
   ): Promise<number> {
-    if (!this.apiConfigService.getIsIndexerV3FlagActive()) {
-      throw new HttpException('Endpoint not live yet', HttpStatus.NOT_IMPLEMENTED);
-    }
-
     return await this.transferService.getTransfersCount(new TransactionFilter({
       address,
       senders: sender,
@@ -1082,8 +1081,34 @@ export class AccountController {
     }));
   }
 
+  @Get("/accounts/:address/deploys")
+  @ApiOperation({ summary: 'Account deploys details', description: 'Returns deploys details for a given account' })
+  @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
+  @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
+  @ApiOkResponse({ type: [DeployedContract] })
+  getAccountDeploys(
+    @Param('address', ParseAddressPipe) address: string,
+    @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
+    @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
+  ): Promise<DeployedContract[]> {
+    return this.accountService.getAccountDeploys(new QueryPagination({ from, size }), address);
+  }
+
+  @Get("/accounts/:address/deploys/count")
+  @ApiOperation({ summary: 'Account deploys count', description: 'Returns total number of deploys for a given address' })
+  @ApiOkResponse({ type: Number })
+  getAccountDeploysCount(@Param('address', ParseAddressPipe) address: string): Promise<number> {
+    return this.accountService.getAccountDeploysCount(address);
+  }
+
+  @Get("/accounts/:address/deploys/c")
+  @ApiExcludeEndpoint()
+  getAccountDeploysCountAlternative(@Param('address', ParseAddressPipe) address: string): Promise<number> {
+    return this.accountService.getAccountDeploysCount(address);
+  }
+
   @Get("/accounts/:address/contracts")
-  @ApiOperation({ summary: 'Account smart contracts details', description: 'Returns smart contracts details for a given account' })
+  @ApiOperation({ summary: 'Account contracts details', description: 'Returns contracts details for a given account' })
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   @ApiOkResponse({ type: [DeployedContract] })
@@ -1091,12 +1116,12 @@ export class AccountController {
     @Param('address', ParseAddressPipe) address: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
-  ): Promise<DeployedContract[]> {
+  ): Promise<AccountContract[]> {
     return this.accountService.getAccountContracts(new QueryPagination({ from, size }), address);
   }
 
   @Get("/accounts/:address/contracts/count")
-  @ApiOperation({ summary: 'Account contracts count', description: 'Returns total number of deployed contracts for a given address' })
+  @ApiOperation({ summary: 'Account contracts count', description: 'Returns total number of contracts for a given address' })
   @ApiOkResponse({ type: Number })
   getAccountContractsCount(@Param('address', ParseAddressPipe) address: string): Promise<number> {
     return this.accountService.getAccountContractsCount(address);
@@ -1212,6 +1237,47 @@ export class AccountController {
       address,
       tokenIdentifier,
       new AccountHistoryFilter({ before, after }));
+  }
+
+  @Get("/accounts/:address/esdthistory")
+  @ApiOperation({ summary: 'Account esdts history', description: 'Returns account esdts balance history' })
+  @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
+  @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
+  @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
+  @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
+  @ApiQuery({ name: 'identifier', description: 'Filter by multiple esdt identifiers, comma-separated', required: false })
+  @ApiQuery({ name: 'token', description: 'Token identifier', required: false })
+  async getAccountEsdtHistory(
+    @Param('address', ParseAddressPipe) address: string,
+    @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
+    @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
+    @Query('before', ParseIntPipe) before?: number,
+    @Query('after', ParseIntPipe) after?: number,
+    @Query('identifier', ParseArrayPipe) identifier?: string[],
+    @Query('token', ParseTokenPipe) token?: string,
+  ): Promise<AccountEsdtHistory[]> {
+    return await this.accountService.getAccountEsdtHistory(
+      address,
+      new QueryPagination({ from, size }),
+      new AccountHistoryFilter({ before, after, identifiers: identifier, token }));
+  }
+
+  @Get("/accounts/:address/esdthistory/count")
+  @ApiOperation({ summary: 'Account esdts history count', description: 'Returns account esdts balance history count' })
+  @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
+  @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
+  @ApiQuery({ name: 'identifier', description: 'Filter by multiple esdt identifiers, comma-separated', required: false })
+  @ApiQuery({ name: 'token', description: 'Token identifier', required: false })
+  async getAccountEsdtHistoryCount(
+    @Param('address', ParseAddressPipe) address: string,
+    @Query('before', ParseIntPipe) before?: number,
+    @Query('after', ParseIntPipe) after?: number,
+    @Query('identifier', ParseArrayPipe) identifier?: string[],
+    @Query('token', ParseTokenPipe) token?: string,
+  ): Promise<number> {
+    return await this.accountService.getAccountEsdtHistoryCount(
+      address,
+      new AccountHistoryFilter({ before, after, identifiers: identifier, token }));
   }
 
   @Get("/accounts/:address/history/:tokenIdentifier")

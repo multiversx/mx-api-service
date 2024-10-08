@@ -154,6 +154,14 @@ export class ApiConfigService {
     return rabbitmqUrl;
   }
 
+  getNftQueueName(): string {
+    return this.configService.get<string>('features.processNfts.nftQueueName', 'api-process-nfts');
+  }
+
+  getNftQueueDlqName(): string {
+    return this.configService.get<string>('features.processNfts.deadLetterQueueName', 'api-process-nfts-dlq');
+  }
+
   getCacheTtl(): number {
     return this.configService.get<number>('caching.cacheTtl') ?? 6;
   }
@@ -356,11 +364,7 @@ export class ApiConfigService {
   }
 
   getIsProcessNftsFlagActive(): boolean {
-    return this.configService.get<boolean>('flags.processNfts') ?? false;
-  }
-
-  getIsIndexerV3FlagActive(): boolean {
-    return this.configService.get<boolean>('flags.indexer-v3') ?? false;
+    return this.configService.get<boolean>('features.processNfts.enabled') ?? this.configService.get<boolean>('flags.processNfts') ?? false;
   }
 
   isGraphQlActive(): boolean {
@@ -376,6 +380,10 @@ export class ApiConfigService {
     return isApiActive;
   }
 
+  getPublicApiPort(): number {
+    return this.configService.get<number>('api.publicPort') ?? 3001;
+  }
+
   getIsPrivateApiActive(): boolean {
     const isApiActive = this.configService.get<boolean>('api.private');
     if (isApiActive === undefined) {
@@ -383,6 +391,14 @@ export class ApiConfigService {
     }
 
     return isApiActive;
+  }
+
+  getIsWebsocketApiActive(): boolean {
+    return this.configService.get<boolean>('api.websocket') ?? true;
+  }
+
+  getPrivateApiPort(): number {
+    return this.configService.get<number>('api.privatePort') ?? 4001;
   }
 
   getIsAuthActive(): boolean {
@@ -860,5 +876,44 @@ export class ApiConfigService {
 
   getElasticCallsTracingLogThreshold(): number | undefined {
     return this.configService.get<number>('features.elasticCallsTracing.logThreshold');
+  }
+
+  isTokensFetchFeatureEnabled(): boolean {
+    return this.configService.get<boolean>('features.tokensFetch.enabled') ?? false;
+  }
+
+  getTokensFetchServiceUrl(): string {
+    const serviceUrl = this.configService.get<string>('features.tokensFetch.serviceUrl');
+    if (!serviceUrl) {
+      throw new Error('No tokens fetch service url present');
+    }
+
+    return serviceUrl;
+  }
+
+  isNodesFetchFeatureEnabled(): boolean {
+    return this.configService.get<boolean>('features.nodesFetch.enabled') ?? false;
+  }
+
+  getNodesFetchServiceUrl(): string {
+    const serviceUrl = this.configService.get<string>('features.nodesFetch.serviceUrl');
+    if (!serviceUrl) {
+      throw new Error('No nodes fetch service url present');
+    }
+
+    return serviceUrl;
+  }
+
+  isProvidersFetchFeatureEnabled(): boolean {
+    return this.configService.get<boolean>('features.providersFetch.enabled') ?? false;
+  }
+
+  getProvidersFetchServiceUrl(): string {
+    const serviceUrl = this.configService.get<string>('features.providersFetch.serviceUrl');
+    if (!serviceUrl) {
+      throw new Error('No providers fetch service url present');
+    }
+
+    return serviceUrl;
   }
 }

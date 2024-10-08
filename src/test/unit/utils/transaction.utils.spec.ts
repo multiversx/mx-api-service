@@ -224,6 +224,7 @@ describe('Transaction Utils', () => {
       receiverAssets: undefined,
       senderAssets: undefined,
       ticker: "",
+      additionalData: [],
     });
   });
 });

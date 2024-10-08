@@ -2,6 +2,7 @@ import { registerEnumType } from "@nestjs/graphql";
 
 export enum TokenAssetsPriceSourceType {
   dataApi = 'dataApi',
+  customUrl = 'customUrl',
 }
 
 registerEnumType(TokenAssetsPriceSourceType, {
@@ -10,6 +11,9 @@ registerEnumType(TokenAssetsPriceSourceType, {
   valuesMap: {
     dataApi: {
       description: 'Data API type.',
+    },
+    customUrl: {
+      description: 'Custom URL to fetch price.',
     },
   },
 });

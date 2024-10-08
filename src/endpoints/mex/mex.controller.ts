@@ -14,6 +14,8 @@ import { QueryPagination } from 'src/common/entities/query.pagination';
 import { ParseIntPipe, ParseTokenPipe, ParseEnumPipe } from '@multiversx/sdk-nestjs-common';
 import { MexPairExchange } from './entities/mex.pair.exchange';
 import { MexPairsFilter } from './entities/mex.pairs..filter';
+import { MexTokenChartsService } from './mex.token.charts.service';
+import { MexTokenChart } from './entities/mex.token.chart';
 
 @Controller()
 @ApiTags('xexchange')
@@ -23,7 +25,8 @@ export class MexController {
     private readonly mexSettingsService: MexSettingsService,
     private readonly mexPairsService: MexPairService,
     private readonly mexTokensService: MexTokenService,
-    private readonly mexFarmsService: MexFarmService
+    private readonly mexFarmsService: MexFarmService,
+    private readonly mexTokenChartsService: MexTokenChartsService
   ) { }
 
   @Get("/mex/settings")
@@ -54,6 +57,21 @@ export class MexController {
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   @ApiQuery({ name: 'exchange', description: 'Filter by exchange', required: false, enum: MexPairExchange })
   async getMexPairs(
+    @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
+    @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number,
+    @Query('exchange', new ParseEnumPipe(MexPairExchange)) exchange?: MexPairExchange,
+  ): Promise<MexPair[]> {
+    const filter = new MexPairsFilter({ exchange });
+    return await this.mexPairsService.getMexPairs(from, size, filter);
+  }
+
+  @Get("/mex-pairs")
+  @ApiOperation({ summary: 'xExchange pairs', description: 'Returns active liquidity pools available on xExchange', deprecated: true })
+  @ApiOkResponse({ type: [MexPair] })
+  @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
+  @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
+  @ApiQuery({ name: 'exchange', description: 'Filter by exchange', required: false, enum: MexPairExchange })
+  async getMexPairsTemp(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number,
     @Query('exchange', new ParseEnumPipe(MexPairExchange)) exchange?: MexPairExchange,
@@ -138,5 +156,28 @@ export class MexController {
     }
 
     return pair;
+  }
+
+  @Get('mex/tokens/prices/hourly/:identifier')
+  async getTokenPricesHourResolution(
+    @Param('identifier', ParseTokenPipe) identifier: string): Promise<MexTokenChart[] | undefined> {
+    const charts = await this.mexTokenChartsService.getTokenPricesHourResolution(identifier);
+    if (!charts) {
+      throw new NotFoundException('Price not available for given token identifier');
+    }
+
+    return charts;
+  }
+
+  @Get('mex/tokens/prices/daily/:identifier')
+  async getTokenPricesDayResolution(
+    @Param('identifier', ParseTokenPipe) identifier: string,
+    @Query('after') after: string): Promise<MexTokenChart[] | undefined> {
+    const charts = await this.mexTokenChartsService.getTokenPricesDayResolution(identifier, after);
+    if (!charts) {
+      throw new NotFoundException('Price not available for given token identifier');
+    }
+
+    return charts;
   }
 }

@@ -37,6 +37,7 @@ import { WaitingListController } from "./waiting-list/waiting.list.controller";
 import { WebsocketController } from "./websocket/websocket.controller";
 import { PoolController } from "./pool/pool.controller";
 import { TpsController } from "./tps/tps.controller";
+import { ApplicationController } from "./applications/application.controller";
 
 @Module({})
 export class EndpointsControllersModule {
@@ -47,7 +48,7 @@ export class EndpointsControllersModule {
       ProviderController, GatewayProxyController, RoundController, SmartContractResultController, ShardController, StakeController, StakeController,
       TokenController, TransactionController, UsernameController, VmQueryController, WaitingListController,
       HealthCheckController, DappConfigController, WebsocketController, TransferController,
-      ProcessNftsPublicController, TransactionsBatchController,
+      ProcessNftsPublicController, TransactionsBatchController, ApplicationController,
     ];
 
     const isMarketplaceFeatureEnabled = configuration().features?.marketplace?.enabled ?? false;

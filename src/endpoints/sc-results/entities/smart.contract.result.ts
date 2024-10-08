@@ -90,4 +90,8 @@ export class SmartContractResult {
   @Field(() => String, { description: 'Function call', nullable: true })
   @ApiProperty({ type: String, nullable: true })
   function: string | undefined = undefined;
+
+  @Field(() => String, { description: 'Result status', nullable: true })
+  @ApiProperty({ type: String, nullable: true })
+  status: string | undefined = undefined;
 }

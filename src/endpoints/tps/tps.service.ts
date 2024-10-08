@@ -5,11 +5,15 @@ import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { CacheInfo } from "src/utils/cache.info";
 import { Tps } from "./entities/tps";
 import { TpsInterval } from "./entities/tps.interval";
+import { ProtocolService } from "src/common/protocol/protocol.service";
+import { ApiConfigService } from "src/common/api-config/api.config.service";
 
 @Injectable()
 export class TpsService {
   constructor(
     private readonly cacheService: CacheService,
+    private readonly protocolService: ProtocolService,
+    private readonly apiConfigService: ApiConfigService,
   ) { }
 
   async getTpsLatest(frequency: TpsFrequency): Promise<Tps> {
@@ -21,6 +25,15 @@ export class TpsService {
     const tps = transactionCount / frequencySeconds;
 
     return new Tps({ timestamp, tps });
+  }
+
+  async getTpsMax(interval: TpsInterval): Promise<Tps> {
+    const result = await this.cacheService.getRemote<Tps>(CacheInfo.TpsMaxByInterval(interval).key);
+    if (!result) {
+      return new Tps({ timestamp: 0, tps: 0 });
+    }
+
+    return result;
   }
 
   async getTpsHistory(interval: TpsInterval): Promise<Tps[]> {
@@ -48,5 +61,16 @@ export class TpsService {
     return timestamps.zip(transactionResults, (timestamp, transactions) => new Tps({ timestamp, tps: (transactions ?? 0) / frequencySeconds }));
   }
 
+  async getTransactionCount(): Promise<number> {
+    const totalShards = await this.protocolService.getShardCount();
+    const shardIds = [...Array.from({ length: totalShards }, (_, i) => i), this.apiConfigService.getMetaChainShardId()];
 
+    let totalTransactions = 0;
+
+    for (const shardId of shardIds) {
+      totalTransactions += await this.cacheService.getRemote<number>(CacheInfo.TransactionCountByShard(shardId).key) ?? 0;
+    }
+
+    return totalTransactions;
+  }
 }
