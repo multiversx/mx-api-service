@@ -56,6 +56,7 @@ import { AccountKeyFilter } from './entities/account.key.filter';
 import { ScamType } from 'src/common/entities/scam-type.enum';
 import { DeepHistoryInterceptor } from 'src/interceptors/deep-history.interceptor';
 import { MexPairType } from '../mex/entities/mex.pair.type';
+import { NftSubType } from '../nfts/entities/nft.sub.type';
 
 @Controller()
 @ApiTags('accounts')
@@ -347,6 +348,7 @@ export class AccountController {
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   @ApiQuery({ name: 'search', description: 'Search by collection identifier', required: false })
   @ApiQuery({ name: 'type', description: 'Filter by type (NonFungibleESDT/SemiFungibleESDT/MetaESDT)', required: false })
+  @ApiQuery({ name: 'subType', description: 'Filter by type (NonFungibleESDTv2/DynamicNonFungibleESDT/DynamicSemiFungibleESDT)', required: false })
   @ApiQuery({ name: 'owner', description: 'Filter by collection owner', required: false })
   @ApiQuery({ name: 'canCreate', description: 'Filter by property canCreate (boolean)', required: false })
   @ApiQuery({ name: 'canBurn', description: 'Filter by property canBurn (boolean)', required: false })
@@ -362,6 +364,7 @@ export class AccountController {
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
     @Query('search') search?: string,
     @Query('type', new ParseEnumArrayPipe(NftType)) type?: NftType[],
+    @Query('subType', new ParseEnumPipe(NftSubType)) subType?: NftSubType,
     @Query('owner', ParseAddressPipe) owner?: string,
     @Query('canCreate', new ParseBoolPipe) canCreate?: boolean,
     @Query('canBurn', new ParseBoolPipe) canBurn?: boolean,
@@ -371,7 +374,21 @@ export class AccountController {
     @Query('canTransferRole', new ParseBoolPipe) canTransferRole?: boolean,
     @Query('excludeMetaESDT', new ParseBoolPipe) excludeMetaESDT?: boolean,
   ): Promise<NftCollectionWithRoles[]> {
-    return await this.collectionService.getCollectionsWithRolesForAddress(address, new CollectionFilter({ search, type, owner, canCreate, canBurn, canAddQuantity, canUpdateAttributes, canAddUri, canTransferRole, excludeMetaESDT }), new QueryPagination({ from, size }));
+    return await this.collectionService.getCollectionsWithRolesForAddress(
+      address,
+      new CollectionFilter({
+        search,
+        type,
+        subType,
+        owner,
+        canCreate,
+        canBurn,
+        canAddQuantity,
+        canUpdateAttributes,
+        canAddUri,
+        canTransferRole,
+        excludeMetaESDT,
+      }), new QueryPagination({ from, size }));
   }
 
   @Get("/accounts/:address/roles/collections/count")

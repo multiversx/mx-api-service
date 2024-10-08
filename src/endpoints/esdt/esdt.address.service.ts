@@ -116,6 +116,7 @@ export class EsdtAddressService {
       const indexedCollection = indexedCollections[accountCollection.collection];
       if (indexedCollection) {
         accountCollection.timestamp = indexedCollection.timestamp;
+        accountCollection.subType = indexedCollection.type;
 
         const collectionWithRoles = ApiUtils.mergeObjects(new NftCollectionWithRoles(), accountCollection);
 
