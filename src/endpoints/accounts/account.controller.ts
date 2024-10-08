@@ -588,6 +588,7 @@ export class AccountController {
   @ApiQuery({ name: 'search', description: 'Search by collection identifier', required: false })
   @ApiQuery({ name: 'identifiers', description: 'Filter by identifiers, comma-separated', required: false })
   @ApiQuery({ name: 'type', description: 'Filter by type (NonFungibleESDT/SemiFungibleESDT/MetaESDT)', required: false })
+  @ApiQuery({ name: 'subType', description: 'Filter by type (NonFungibleESDTv2/DynamicNonFungibleESDT/DynamicSemiFungibleESDT)', required: false })
   @ApiQuery({ name: 'collection', description: 'Get all tokens by token collection. Deprecated, replaced by collections parameter', required: false, deprecated: true })
   @ApiQuery({ name: 'collections', description: 'Get all tokens by token collections, comma-separated', required: false })
   @ApiQuery({ name: 'name', description: 'Get all nfts by name', required: false })
@@ -611,6 +612,7 @@ export class AccountController {
     @Query('search') search?: string,
     @Query('identifiers', ParseNftArrayPipe) identifiers?: string[],
     @Query('type') type?: NftType,
+    @Query('subType', new ParseEnumPipe(NftSubType)) subType?: NftSubType,
     @Query('collection') collection?: string,
     @Query('collections', ParseArrayPipe) collections?: string[],
     @Query('name') name?: string,
@@ -633,6 +635,7 @@ export class AccountController {
         search,
         identifiers,
         type,
+        subType,
         collection,
         name,
         collections,
