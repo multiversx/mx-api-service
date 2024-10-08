@@ -57,6 +57,7 @@ import { ScamType } from 'src/common/entities/scam-type.enum';
 import { DeepHistoryInterceptor } from 'src/interceptors/deep-history.interceptor';
 import { MexPairType } from '../mex/entities/mex.pair.type';
 import { NftSubType } from '../nfts/entities/nft.sub.type';
+import { AccountContract } from './entities/account.contract';
 
 @Controller()
 @ApiTags('accounts')
@@ -970,6 +971,7 @@ export class AccountController {
   @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
   @ApiQuery({ name: 'fields', description: 'List of fields to filter by', required: false })
+  @ApiQuery({ name: 'relayer', description: 'Address of the relayer', required: false })
   @ApiQuery({ name: 'withScamInfo', description: 'Returns scam information', required: false, type: Boolean })
   @ApiQuery({ name: 'withUsername', description: 'Integrates username in assets for all addresses present in the transactions', required: false, type: Boolean })
   @ApiQuery({ name: 'withBlockInfo', description: 'Returns sender / receiver block details', required: false, type: Boolean })
@@ -994,6 +996,7 @@ export class AccountController {
     @Query('after', ParseIntPipe) after?: number,
     @Query('fields', ParseArrayPipe) fields?: string[],
     @Query('order', new ParseEnumPipe(SortOrder)) order?: SortOrder,
+    @Query('relayer', ParseAddressPipe) relayer?: string,
     @Query('withScamInfo', new ParseBoolPipe) withScamInfo?: boolean,
     @Query('withUsername', new ParseBoolPipe) withUsername?: boolean,
     @Query('withBlockInfo', new ParseBoolPipe) withBlockInfo?: boolean,
@@ -1020,6 +1023,7 @@ export class AccountController {
       after,
       order,
       senderOrReceiver,
+      relayer,
     }),
       new QueryPagination({ from, size }),
       options,
@@ -1108,8 +1112,34 @@ export class AccountController {
     }));
   }
 
+  @Get("/accounts/:address/deploys")
+  @ApiOperation({ summary: 'Account deploys details', description: 'Returns deploys details for a given account' })
+  @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
+  @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
+  @ApiOkResponse({ type: [DeployedContract] })
+  getAccountDeploys(
+    @Param('address', ParseAddressPipe) address: string,
+    @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
+    @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
+  ): Promise<DeployedContract[]> {
+    return this.accountService.getAccountDeploys(new QueryPagination({ from, size }), address);
+  }
+
+  @Get("/accounts/:address/deploys/count")
+  @ApiOperation({ summary: 'Account deploys count', description: 'Returns total number of deploys for a given address' })
+  @ApiOkResponse({ type: Number })
+  getAccountDeploysCount(@Param('address', ParseAddressPipe) address: string): Promise<number> {
+    return this.accountService.getAccountDeploysCount(address);
+  }
+
+  @Get("/accounts/:address/deploys/c")
+  @ApiExcludeEndpoint()
+  getAccountDeploysCountAlternative(@Param('address', ParseAddressPipe) address: string): Promise<number> {
+    return this.accountService.getAccountDeploysCount(address);
+  }
+
   @Get("/accounts/:address/contracts")
-  @ApiOperation({ summary: 'Account smart contracts details', description: 'Returns smart contracts details for a given account' })
+  @ApiOperation({ summary: 'Account contracts details', description: 'Returns contracts details for a given account' })
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   @ApiOkResponse({ type: [DeployedContract] })
@@ -1117,12 +1147,12 @@ export class AccountController {
     @Param('address', ParseAddressPipe) address: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
-  ): Promise<DeployedContract[]> {
+  ): Promise<AccountContract[]> {
     return this.accountService.getAccountContracts(new QueryPagination({ from, size }), address);
   }
 
   @Get("/accounts/:address/contracts/count")
-  @ApiOperation({ summary: 'Account contracts count', description: 'Returns total number of deployed contracts for a given address' })
+  @ApiOperation({ summary: 'Account contracts count', description: 'Returns total number of contracts for a given address' })
   @ApiOkResponse({ type: Number })
   getAccountContractsCount(@Param('address', ParseAddressPipe) address: string): Promise<number> {
     return this.accountService.getAccountContractsCount(address);

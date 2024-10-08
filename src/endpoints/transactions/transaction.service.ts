@@ -552,16 +552,16 @@ export class TransactionService {
   }
 
   private extractRelayedVersion(transaction: TransactionDetailed): string | undefined {
-    if (transaction.isRelayed == true && transaction.data) {
-      const decodedData = BinaryUtils.base64Decode(transaction.data);
+      if (transaction.isRelayed == true && transaction.data) {
+        const decodedData = BinaryUtils.base64Decode(transaction.data);
 
-      if (decodedData.startsWith('relayedTx@')) {
-        return 'v1';
-      } else if (decodedData.startsWith('relayedTxV2@')) {
-        return 'v2';
+        if (decodedData.startsWith('relayedTx@')) {
+          return 'v1';
+        } else if (decodedData.startsWith('relayedTxV2@')) {
+          return 'v2';
+        }
       }
-    }
 
-    return undefined;
-  }
+      return undefined;
+    }
 }
