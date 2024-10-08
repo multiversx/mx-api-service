@@ -295,6 +295,10 @@ export class ElasticIndexerHelper {
         ]));
     }
 
+    if (filter.relayer) {
+      elasticQuery = elasticQuery.withMustMatchCondition('relayerAddr', filter.relayer);
+    }
+
     if (filter.type) {
       elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Match('type', filter.type === TransactionType.Transaction ? 'normal' : 'unsigned'));
     }
