@@ -48,7 +48,7 @@ export class TransactionController {
   @ApiQuery({ name: 'withBlockInfo', description: 'Returns sender / receiver block details', required: false, type: Boolean })
   @ApiQuery({ name: 'isRelayed', description: 'Returns relayed transactions details', required: false, type: Boolean })
   @ApiQuery({ name: 'withActionTransferValue', description: 'Returns value in USD and EGLD for transferred tokens within the action attribute', required: false })
-  getTransactions(
+  async getTransactions(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
     @Query('sender', ParseAddressAndMetachainPipe) sender?: string,
@@ -76,7 +76,7 @@ export class TransactionController {
   ) {
     const options = TransactionQueryOptions.applyDefaultOptions(size, { withScResults, withOperations, withLogs, withScamInfo, withUsername, withBlockInfo, withActionTransferValue });
 
-    return this.transactionService.getTransactions(new TransactionFilter({
+    return await this.transactionService.getTransactions(new TransactionFilter({
       sender,
       receivers: receiver,
       token,

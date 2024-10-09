@@ -17,6 +17,7 @@ export class ApiMetricsService {
   private static graphqlDurationHistogram: Histogram<string>;
   private static currentNonceGauge: Gauge<string>;
   private static lastProcessedNonceGauge: Gauge<string>;
+  private static elasticCallsHistogram: Histogram<string>;
   private static lastProcessedBatchProcessorNonce: Gauge<string>;
   private static lastProcessedTransactionCompletedProcessorNonce: Gauge<string>;
 
@@ -90,6 +91,15 @@ export class ApiMetricsService {
       });
     }
 
+    if (!ApiMetricsService.elasticCallsHistogram) {
+      ApiMetricsService.elasticCallsHistogram = new Histogram({
+        name: 'elastic_calls',
+        help: 'Elastic Calls',
+        labelNames: ['apiFunction'],
+        buckets: [],
+      });
+    }
+
     if (!ApiMetricsService.lastProcessedBatchProcessorNonce) {
       ApiMetricsService.lastProcessedBatchProcessorNonce = new Gauge({
         name: 'last_processed_batch_processor_nonce',
@@ -144,6 +154,10 @@ export class ApiMetricsService {
   setLastProcessedNonce(payload: LogMetricsEvent) {
     const [shardId, nonce] = payload.args;
     ApiMetricsService.lastProcessedNonceGauge.set({ shardId }, nonce);
+  }
+
+  setElasticCalls(apiFunction: string, count: number) {
+    ApiMetricsService.elasticCallsHistogram.labels(apiFunction).observe(count);
   }
 
   @OnEvent(MetricsEvents.SetLastProcessedBatchProcessorNonce)
