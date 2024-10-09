@@ -619,6 +619,10 @@ export class ElasticIndexerHelper {
       elasticQuery = elasticQuery.withMustMultiShouldCondition(filter.addresses, address => QueryType.Match('address', address));
     }
 
+    if (filter.search) {
+      elasticQuery = elasticQuery.withSearchWildcardCondition(filter.search, ['address', 'api_assets.name']);
+    }
+
     return elasticQuery;
   }
 
