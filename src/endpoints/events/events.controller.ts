@@ -2,7 +2,7 @@ import { Controller, DefaultValuePipe, Get, Query } from '@nestjs/common';
 import { ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { EventsService } from './events.service';
 import { QueryPagination } from '../../common/entities/query.pagination';
-import { ParseIntPipe } from '@multiversx/sdk-nestjs-common';
+import { ParseAddressPipe, ParseIntPipe } from '@multiversx/sdk-nestjs-common';
 import { Events } from './entities/events';
 import { EventsFilter } from './entities/events.filter';
 
@@ -18,6 +18,7 @@ export class EventsController {
   @ApiOkResponse({ type: [Events] })
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
+  @ApiQuery({ name: 'address', description: 'Event address', required: false })
   @ApiQuery({ name: 'identifier', description: 'Event identifier', required: false })
   @ApiQuery({ name: 'txHash', description: 'Event transaction hash', required: false })
   @ApiQuery({ name: 'shard', description: 'Event shard id', required: false })
@@ -26,6 +27,7 @@ export class EventsController {
   async getEvents(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
+    @Query('address', ParseAddressPipe) address: string,
     @Query('identifier') identifier: string,
     @Query('txHash') txHash: string,
     @Query('shard', ParseIntPipe) shard: number,
@@ -34,18 +36,20 @@ export class EventsController {
   ): Promise<Events[]> {
     return await this.eventsService.getEvents(
       new QueryPagination({ from, size }),
-      new EventsFilter({ identifier, txHash, shard, after, before }));
+      new EventsFilter({ address, identifier, txHash, shard, after, before }));
   }
 
   @Get('/events/count')
   @ApiOperation({ summary: 'Events count', description: 'Returns events count' })
   @ApiOkResponse({ type: Number })
+  @ApiQuery({ name: 'address', description: 'Event address', required: false })
   @ApiQuery({ name: 'identifier', description: 'Event identifier', required: false })
   @ApiQuery({ name: 'txHash', description: 'Event transaction hash', required: false })
   @ApiQuery({ name: 'shard', description: 'Event shard id', required: false })
   @ApiQuery({ name: 'before', description: 'Event before timestamp', required: false })
   @ApiQuery({ name: 'after', description: 'Event after timestamp', required: false })
   async getEventsCount(
+    @Query('address', ParseAddressPipe) address: string,
     @Query('identifier') identifier: string,
     @Query('txHash') txHash: string,
     @Query('shard', ParseIntPipe) shard: number,
@@ -53,6 +57,6 @@ export class EventsController {
     @Query('after', ParseIntPipe) after: number,
   ): Promise<number> {
     return await this.eventsService.getEventsCount(
-      new EventsFilter({ identifier, txHash, shard, after, before }));
+      new EventsFilter({ address, identifier, txHash, shard, after, before }));
   }
 }

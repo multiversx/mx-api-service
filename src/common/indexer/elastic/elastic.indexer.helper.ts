@@ -706,6 +706,10 @@ export class ElasticIndexerHelper {
       elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Match('shardID', filter.shard));
     }
 
+    if (filter.address) {
+      elasticQuery = elasticQuery.withMustMatchCondition('address', filter.address);
+    }
+
     return elasticQuery;
   }
 
