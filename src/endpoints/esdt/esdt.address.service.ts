@@ -24,6 +24,7 @@ import { IndexerService } from "src/common/indexer/indexer.service";
 import { TrieOperationsTimeoutError } from "./exceptions/trie.operations.timeout.error";
 import { CacheInfo } from "src/utils/cache.info";
 import { AssetsService } from "src/common/assets/assets.service";
+import { EsdtType } from "@multiversx/sdk-data-api-client";
 
 @Injectable()
 export class EsdtAddressService {
@@ -210,11 +211,20 @@ export class EsdtAddressService {
 
   private async getNftsForAddressFromGateway(address: string, filter: NftFilter, pagination: QueryPagination): Promise<NftAccount[]> {
     let esdts: Record<string, any> = {};
+    let collection: string | undefined;
+    let nonceHex: string | undefined;
 
     if (filter.identifiers && filter.identifiers.length === 1) {
       const identifier = filter.identifiers[0];
-      const collection = identifier.split('-').slice(0, 2).join('-');
-      const nonceHex = identifier.split('-')[2];
+
+      if (identifier.split('-').length === 2) {
+        collection = identifier.split('-').slice(0, 2).join('-');
+        nonceHex = identifier.split('-')[2];
+      }
+
+      collection = identifier.split('-').slice(0, 3).join('-');
+      nonceHex = identifier.split('-')[3];
+
       const nonceNumeric = BinaryUtils.hexToNumber(nonceHex);
 
       let result: any;
@@ -239,7 +249,10 @@ export class EsdtAddressService {
       esdts = await this.getAllEsdtsForAddressFromGateway(address);
     }
 
-    const nfts: GatewayNft[] = Object.values(esdts).map(x => x as any).filter(x => x.tokenIdentifier.split('-').length === 3);
+    const nfts: GatewayNft[] = Object.values(esdts).map(x => x as any).filter(x => {
+      const parts = x.tokenIdentifier.split('-');
+      return (parts.length === 3 && x.type !== EsdtType.FungibleESDT) || parts.length === 4;
+    });
 
     const collator = new Intl.Collator('en', { sensitivity: 'base' });
     nfts.sort((a: GatewayNft, b: GatewayNft) => collator.compare(a.tokenIdentifier, b.tokenIdentifier));
