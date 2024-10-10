@@ -51,6 +51,7 @@ export class CollectionService {
 
   async getNftCollections(pagination: QueryPagination, filter: CollectionFilter): Promise<NftCollection[]> {
     const tokenCollections = await this.indexerService.getNftCollections(pagination, filter);
+    console.log(tokenCollections);
     return await this.processNftCollections(tokenCollections);
   }
 
@@ -134,7 +135,7 @@ export class CollectionService {
       // @ts-ignore
       nftCollection.type = collectionProperties.type;
       nftCollection.name = collectionProperties.name;
-      nftCollection.collection = collectionIdentifier.split('-').slice(0, 2).join('-');
+      nftCollection.collection = collectionIdentifier.split('-').slice(0, 3).join('-');
       nftCollection.ticker = collectionIdentifier.split('-')[0];
       nftCollection.canFreeze = collectionProperties.canFreeze;
       nftCollection.canWipe = collectionProperties.canWipe;
