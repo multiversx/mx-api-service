@@ -75,10 +75,6 @@ export class TokenService {
     const tokens = await this.getAllTokens();
     let token = tokens.find(x => x.identifier === identifier);
 
-    if (!TokenUtils.isToken(identifier)) {
-      return undefined;
-    }
-
     if (!token) {
       return undefined;
     }
@@ -368,7 +364,6 @@ export class TokenService {
 
   async getAllTokensForAddress(address: string, filter: TokenFilter): Promise<TokenWithBalance[]> {
     const tokens = await this.getFilteredTokens(filter);
-
     const tokensIndexed: { [index: string]: Token } = {};
     for (const token of tokens) {
       tokensIndexed[token.identifier] = token;
@@ -379,8 +374,7 @@ export class TokenService {
     const tokensWithBalance: TokenWithBalance[] = [];
 
     for (const tokenIdentifier of Object.keys(esdts)) {
-      const identifier = tokenIdentifier.split('-').slice(0, 2).join('-');
-
+      const identifier = tokenIdentifier.split('-').slice(0, 3).join('-');
       const esdt = esdts[tokenIdentifier];
       const token = tokensIndexed[identifier];
       if (!token) {
@@ -530,11 +524,13 @@ export class TokenService {
     let circulatingSupply: string | number;
 
     const properties = await this.getTokenProperties(identifier);
+    console.log(properties);
     if (!properties) {
       return undefined;
     }
 
     const result = await this.esdtService.getTokenSupply(identifier);
+    console.log(result);
     const denominated = supplyOptions && supplyOptions.denominated;
 
     if (denominated === true) {
@@ -570,7 +566,7 @@ export class TokenService {
   }
 
   async getTokenProperties(identifier: string): Promise<TokenProperties | undefined> {
-    if (identifier.split('-').length !== 2) {
+    if (identifier.split('-').length !== 2 && identifier.split('-').length !== 3) {
       return undefined;
     }
 

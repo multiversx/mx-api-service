@@ -321,6 +321,10 @@ export class ElasticIndexerHelper {
       elasticQuery = elasticQuery.withMustMatchCondition('relayerAddr', filter.relayer);
     }
 
+    if (filter.isRelayed) {
+      elasticQuery = elasticQuery.withMustMatchCondition('isRelayed', filter.isRelayed);
+    }
+
     if (filter.type) {
       elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Match('type', filter.type === TransactionType.Transaction ? 'normal' : 'unsigned'));
     }
@@ -635,6 +639,10 @@ export class ElasticIndexerHelper {
 
     if (filter.addresses !== undefined && filter.addresses.length > 0) {
       elasticQuery = elasticQuery.withMustMultiShouldCondition(filter.addresses, address => QueryType.Match('address', address));
+    }
+
+    if (filter.search) {
+      elasticQuery = elasticQuery.withSearchWildcardCondition(filter.search, ['address', 'api_assets.name']);
     }
 
     return elasticQuery;

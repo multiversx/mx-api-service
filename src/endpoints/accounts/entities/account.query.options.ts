@@ -21,6 +21,7 @@ export class AccountQueryOptions {
   tags?: string[];
   excludeTags?: string[];
   hasAssets?: boolean;
+  search?: string;
 
   validate(size: number) {
     if (this.withDeployInfo && size > 25) {
@@ -46,6 +47,7 @@ export class AccountQueryOptions {
       this.name !== undefined ||
       this.tags !== undefined ||
       this.excludeTags !== undefined ||
-      this.hasAssets !== undefined;
+      this.hasAssets !== undefined ||
+      this.search !== undefined;
   }
 }

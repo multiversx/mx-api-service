@@ -64,6 +64,7 @@ export class TransactionGetService {
     let transaction: any;
     try {
       transaction = await this.indexerService.getTransaction(txHash);
+
       if (!transaction) {
         return null;
       }
@@ -77,6 +78,10 @@ export class TransactionGetService {
     try {
       if (transaction.scResults) {
         transaction.results = transaction.scResults;
+      }
+
+      if (transaction.relayerAddr) {
+        transaction.relayer = transaction.relayerAddr;
       }
 
       const transactionDetailed: TransactionDetailed = ApiUtils.mergeObjects(new TransactionDetailed(), transaction);
@@ -124,7 +129,6 @@ export class TransactionGetService {
             }
           }
         }
-
       }
 
       this.applyUsernamesToDetailedTransaction(transaction, transactionDetailed);
