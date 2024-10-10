@@ -622,7 +622,7 @@ export class AccountController {
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
     @Query('search') search?: string,
-    @Query('identifiers', ParseNftArrayPipe) identifiers?: string[],
+    @Query('identifiers') identifiers?: string[],
     @Query('type') type?: NftType,
     @Query('subType', new ParseEnumPipe(NftSubType)) subType?: NftSubType,
     @Query('collection') collection?: string,
