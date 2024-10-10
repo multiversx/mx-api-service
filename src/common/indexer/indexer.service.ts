@@ -41,8 +41,8 @@ export class IndexerService implements IndexerInterface {
   }
 
   @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
-  async getAccountContractsCount(address: string): Promise<number> {
-    return await this.indexerInterface.getAccountContractsCount(address);
+  async getAccountDeploysCount(address: string): Promise<number> {
+    return await this.indexerInterface.getAccountDeploysCount(address);
   }
 
   @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
@@ -232,8 +232,18 @@ export class IndexerService implements IndexerInterface {
   }
 
   @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
-  async getAccountContracts(pagination: QueryPagination, address: string): Promise<ScDeploy[]> {
+  async getAccountDeploys(pagination: QueryPagination, address: string): Promise<ScDeploy[]> {
+    return await this.indexerInterface.getAccountDeploys(pagination, address);
+  }
+
+  @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
+  async getAccountContracts(pagination: QueryPagination, address: string): Promise<any[]> {
     return await this.indexerInterface.getAccountContracts(pagination, address);
+  }
+
+  @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
+  async getAccountContractsCount(address: string): Promise<number> {
+    return await this.indexerInterface.getAccountContractsCount(address);
   }
 
   @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)

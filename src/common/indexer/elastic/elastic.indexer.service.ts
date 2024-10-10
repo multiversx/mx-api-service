@@ -62,7 +62,7 @@ export class ElasticIndexerService implements IndexerInterface {
     return await this.elasticService.getCount('operations', query);
   }
 
-  async getAccountContractsCount(address: string): Promise<number> {
+  async getAccountDeploysCount(address: string): Promise<number> {
     const elasticQuery: ElasticQuery = ElasticQuery.create()
       .withCondition(QueryConditionOptions.must, [QueryType.Match('deployer', address)]);
 
@@ -448,13 +448,29 @@ export class ElasticIndexerService implements IndexerInterface {
     );
   }
 
-  async getAccountContracts(pagination: QueryPagination, address: string): Promise<any[]> {
+  async getAccountDeploys(pagination: QueryPagination, address: string): Promise<any[]> {
     const elasticQuery: ElasticQuery = ElasticQuery.create()
       .withPagination(pagination)
       .withCondition(QueryConditionOptions.must, [QueryType.Match('deployer', address)])
       .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }]);
 
     return await this.elasticService.getList('scdeploys', 'contract', elasticQuery);
+  }
+
+  async getAccountContracts(pagination: QueryPagination, address: string): Promise<any[]> {
+    const elasticQuery: ElasticQuery = ElasticQuery.create()
+      .withPagination(pagination)
+      .withCondition(QueryConditionOptions.must, [QueryType.Match("currentOwner", address)])
+      .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }]);
+
+    return await this.elasticService.getList('scdeploys', "contract", elasticQuery);
+  }
+
+  async getAccountContractsCount(address: string): Promise<number> {
+    const elasticQuery: ElasticQuery = ElasticQuery.create()
+      .withCondition(QueryConditionOptions.must, [QueryType.Match("currentOwner", address)]);
+
+    return await this.elasticService.getCount('scdeploys', elasticQuery);
   }
 
   async getProviderDelegators(address: string, pagination: QueryPagination): Promise<any[]> {

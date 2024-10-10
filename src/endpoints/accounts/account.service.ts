@@ -35,6 +35,7 @@ import { NodeStatusRaw } from '../nodes/entities/node.status';
 import { AccountKeyFilter } from './entities/account.key.filter';
 import { Provider } from '../providers/entities/provider';
 import { ApplicationMostUsed } from './entities/application.most.used';
+import { AccountContract } from './entities/account.contract';
 
 @Injectable()
 export class AccountService {
@@ -614,11 +615,29 @@ export class AccountService {
     }
   }
 
-  async getAccountContracts(pagination: QueryPagination, address: string): Promise<DeployedContract[]> {
-    const accountDeployedContracts = await this.indexerService.getAccountContracts(pagination, address);
+  async getAccountDeploys(pagination: QueryPagination, address: string): Promise<DeployedContract[]> {
+    const accountDeployedContracts = await this.indexerService.getAccountDeploys(pagination, address);
     const assets = await this.assetsService.getAllAccountAssets();
 
     const accounts: DeployedContract[] = accountDeployedContracts.map(contract => ({
+      address: contract.contract,
+      deployTxHash: contract.deployTxHash,
+      timestamp: contract.timestamp,
+      assets: assets[contract.contract],
+    }));
+
+    return accounts;
+  }
+
+  async getAccountDeploysCount(address: string): Promise<number> {
+    return await this.indexerService.getAccountDeploysCount(address);
+  }
+
+  async getAccountContracts(pagination: QueryPagination, address: string): Promise<AccountContract[]> {
+    const accountContracts = await this.indexerService.getAccountContracts(pagination, address);
+    const assets = await this.assetsService.getAllAccountAssets();
+
+    const accounts: DeployedContract[] = accountContracts.map(contract => ({
       address: contract.contract,
       deployTxHash: contract.deployTxHash,
       timestamp: contract.timestamp,
