@@ -14,6 +14,11 @@ export class EventsService {
     return await this.indexerService.getEvents(pagination, filter);
   }
 
+  async getEvent(txHash: string): Promise<Events | undefined> {
+    const result = await this.indexerService.getEvent(txHash);
+    return result ? result : undefined;
+  }
+
   async getEventsCount(filter: EventsFilter): Promise<number> {
     return await this.indexerService.getEventsCount(filter);
   }

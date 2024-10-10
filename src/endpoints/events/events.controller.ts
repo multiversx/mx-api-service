@@ -1,8 +1,9 @@
-import { Controller, DefaultValuePipe, Get, Query } from '@nestjs/common';
+import { Controller, DefaultValuePipe, Get, NotFoundException, Param, Query } from '@nestjs/common';
 import { ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { EventsService } from './events.service';
 import { QueryPagination } from '../../common/entities/query.pagination';
 import { ParseAddressPipe, ParseIntPipe } from '@multiversx/sdk-nestjs-common';
+
 import { Events } from './entities/events';
 import { EventsFilter } from './entities/events.filter';
 
@@ -37,6 +38,21 @@ export class EventsController {
     return await this.eventsService.getEvents(
       new QueryPagination({ from, size }),
       new EventsFilter({ address, identifier, txHash, shard, after, before }));
+  }
+
+  @Get('/events/:txHash')
+  @ApiOperation({ summary: 'Event', description: 'Returns event' })
+  @ApiOkResponse({ type: Events })
+  async getEvent(
+    @Param('txHash') txHash: string,
+  ): Promise<Events | undefined> {
+    const result = await this.eventsService.getEvent(txHash);
+
+    if (!result) {
+      throw new NotFoundException('Event not found');
+    }
+
+    return result;
   }
 
   @Get('/events/count')

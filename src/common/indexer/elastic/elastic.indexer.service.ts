@@ -974,6 +974,10 @@ export class ElasticIndexerService implements IndexerInterface {
     return await this.elasticService.getList('events', 'txHash', elasticQuery);
   }
 
+  async getEvent(txHash: string): Promise<Events> {
+    return await this.elasticService.getItem('events', 'txHash', txHash);
+  }
+
   async getEventsCount(filter: EventsFilter): Promise<number> {
     const elasticQuery = this.indexerHelper.buildEventsFilter(filter);
 

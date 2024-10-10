@@ -457,6 +457,11 @@ export class IndexerService implements IndexerInterface {
   }
 
   @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
+  async getEvent(txHash: string): Promise<Events> {
+    return await this.indexerInterface.getEvent(txHash);
+  }
+
+  @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
   async getEventsCount(filter: EventsFilter): Promise<number> {
     return await this.indexerInterface.getEventsCount(filter);
   }

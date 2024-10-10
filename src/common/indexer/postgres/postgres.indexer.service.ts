@@ -55,7 +55,6 @@ export class PostgresIndexerService implements IndexerInterface {
     private readonly validatorPublicKeysRepository: Repository<ValidatorPublicKeysDb>,
     private readonly indexerHelper: PostgresIndexerHelper,
   ) { }
-
   getAccountDeploys(_pagination: QueryPagination, _address: string): Promise<ScDeploy[]> {
     throw new Error("Method not implemented.");
   }
@@ -404,12 +403,12 @@ export class PostgresIndexerService implements IndexerInterface {
     return await query.getMany();
   }
 
-   getAccountContracts(): Promise<any[]> {
+  getAccountContracts(): Promise<any[]> {
     throw new Error("Method not implemented.");
   }
 
   getAccountContractsCount(): Promise<number> {
-   throw new Error("Method not implemented.");
+    throw new Error("Method not implemented.");
   }
 
   async getAccountHistory(address: string, { from, size }: QueryPagination): Promise<any[]> {
@@ -693,6 +692,10 @@ export class PostgresIndexerService implements IndexerInterface {
   }
 
   getEvents(_pagination: QueryPagination, _filter: EventsFilter): Promise<Events[]> {
+    throw new Error("Method not implemented.");
+  }
+
+  getEvent(_txHash: string): Promise<Events> {
     throw new Error("Method not implemented.");
   }
 

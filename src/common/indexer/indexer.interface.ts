@@ -110,7 +110,7 @@ export interface IndexerInterface {
 
   getAccountContracts(pagination: QueryPagination, address: string): Promise<any[]>
 
-  getAccountContractsCount( address: string): Promise<number>
+  getAccountContractsCount(address: string): Promise<number>
 
   getAccountHistory(address: string, pagination: QueryPagination, filter: AccountHistoryFilter): Promise<AccountHistory[]>
 
@@ -189,6 +189,8 @@ export interface IndexerInterface {
   getApplicationCount(filter: ApplicationFilter): Promise<number>
 
   getEvents(pagination: QueryPagination, filter: EventsFilter): Promise<Events[]>
+
+  getEvent(txHash: string): Promise<Events>
 
   getEventsCount(filter: EventsFilter): Promise<number>
 }
