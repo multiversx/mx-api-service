@@ -75,10 +75,6 @@ export class TokenService {
     const tokens = await this.getAllTokens();
     let token = tokens.find(x => x.identifier === identifier);
 
-    if (!TokenUtils.isToken(identifier)) {
-      return undefined;
-    }
-
     if (!token) {
       return undefined;
     }
@@ -530,11 +526,13 @@ export class TokenService {
     let circulatingSupply: string | number;
 
     const properties = await this.getTokenProperties(identifier);
+    console.log(properties);
     if (!properties) {
       return undefined;
     }
 
     const result = await this.esdtService.getTokenSupply(identifier);
+    console.log(result);
     const denominated = supplyOptions && supplyOptions.denominated;
 
     if (denominated === true) {
@@ -570,7 +568,7 @@ export class TokenService {
   }
 
   async getTokenProperties(identifier: string): Promise<TokenProperties | undefined> {
-    if (identifier.split('-').length !== 2) {
+    if (identifier.split('-').length !== 2 && identifier.split('-').length !== 3) {
       return undefined;
     }
 

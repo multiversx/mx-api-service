@@ -186,7 +186,7 @@ export class NftController {
   @ApiOkResponse({ type: Nft })
   @ApiNotFoundResponse({ description: 'Token not found' })
   async getNft(
-    @Param('identifier', ParseNftPipe) identifier: string
+    @Param('identifier') identifier: string
   ): Promise<Nft> {
     const token = await this.nftService.getSingleNft(identifier);
     if (token === undefined) {
@@ -224,7 +224,7 @@ export class NftController {
   @ApiOkResponse({ type: NftSupply })
   @ApiNotFoundResponse({ description: 'Token not found' })
   async getNftSupply(
-    @Param('identifier', ParseNftPipe) identifier: string
+    @Param('identifier') identifier: string
   ): Promise<{ supply: string; }> {
     const totalSupply = await this.nftService.getNftSupply(identifier);
     if (!totalSupply) {
@@ -241,7 +241,7 @@ export class NftController {
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   async getNftAccounts(
-    @Param('identifier', ParseNftPipe) identifier: string,
+    @Param('identifier') identifier: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
   ): Promise<NftOwner[]> {
@@ -257,7 +257,7 @@ export class NftController {
   @ApiOperation({ summary: 'NFT accounts count', description: 'Returns number of addresses that hold balances for a specific Non-Fungible / Semi-Fungible / MetaESDT token' })
   @ApiOkResponse({ type: Number })
   async getNftAccountsCount(
-    @Param('identifier', ParseNftPipe) identifier: string
+    @Param('identifier') identifier: string
   ): Promise<number> {
     const ownersCount = await this.nftService.getNftOwnersCount(identifier);
     if (ownersCount === undefined) {
@@ -290,7 +290,7 @@ export class NftController {
   @ApiQuery({ name: 'withScamInfo', description: 'Returns scam information', required: false, type: Boolean })
   @ApiQuery({ name: 'withUsername', description: 'Integrates username in assets for all addresses present in the transactions', required: false, type: Boolean })
   async getNftTransactions(
-    @Param('identifier', ParseNftPipe) identifier: string,
+    @Param('identifier') identifier: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
     @Query('sender', ParseAddressPipe) sender?: string,
@@ -342,7 +342,7 @@ export class NftController {
   @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
   async getNftTransactionsCount(
-    @Param('identifier', ParseNftPipe) identifier: string,
+    @Param('identifier') identifier: string,
     @Query('sender', ParseAddressPipe) sender?: string,
     @Query('receiver', ParseAddressArrayPipe) receiver?: string[],
     @Query('senderShard', ParseIntPipe) senderShard?: number,
@@ -392,7 +392,7 @@ export class NftController {
   @ApiQuery({ name: 'withScamInfo', description: 'Returns scam information', required: false, type: Boolean })
   @ApiQuery({ name: 'withUsername', description: 'Integrates username in assets for all addresses present in the transfers', required: false, type: Boolean })
   async getNftTransfers(
-    @Param('identifier', ParseNftPipe) identifier: string,
+    @Param('identifier') identifier: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
     @Query('sender', ParseAddressPipe) sender?: string,
@@ -444,7 +444,7 @@ export class NftController {
   @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
   async getNftTransfersCount(
-    @Param('identifier', ParseNftPipe) identifier: string,
+    @Param('identifier') identifier: string,
     @Query('sender', ParseAddressPipe) sender?: string,
     @Query('receiver', ParseAddressArrayPipe) receiver?: string[],
     @Query('senderShard', ParseIntPipe) senderShard?: number,

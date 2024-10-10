@@ -208,9 +208,9 @@ export class CollectionService {
       return undefined;
     }
 
-    if (!TokenUtils.isCollection(identifier)) {
-      return undefined;
-    }
+    // if (!TokenUtils.isCollection(identifier)) {
+    //   return undefined;
+    // }
 
     if (!Object.values(ElasticNftType).includes(elasticCollection.type as NftType)) {
       return undefined;
