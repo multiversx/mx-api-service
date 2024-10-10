@@ -364,7 +364,6 @@ export class TokenService {
 
   async getAllTokensForAddress(address: string, filter: TokenFilter): Promise<TokenWithBalance[]> {
     const tokens = await this.getFilteredTokens(filter);
-
     const tokensIndexed: { [index: string]: Token } = {};
     for (const token of tokens) {
       tokensIndexed[token.identifier] = token;
@@ -375,8 +374,7 @@ export class TokenService {
     const tokensWithBalance: TokenWithBalance[] = [];
 
     for (const tokenIdentifier of Object.keys(esdts)) {
-      const identifier = tokenIdentifier.split('-').slice(0, 2).join('-');
-
+      const identifier = tokenIdentifier.split('-').slice(0, 3).join('-');
       const esdt = esdts[tokenIdentifier];
       const token = tokensIndexed[identifier];
       if (!token) {
