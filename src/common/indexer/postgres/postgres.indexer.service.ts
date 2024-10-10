@@ -693,4 +693,9 @@ export class PostgresIndexerService implements IndexerInterface {
   getEvents(_pagination: QueryPagination, _filter: EventsFilter): Promise<Events[]> {
     throw new Error("Method not implemented.");
   }
+
+  getEventsCount(_filter: EventsFilter): Promise<number> {
+    throw new Error("Method not implemented.");
+  }
 }
+

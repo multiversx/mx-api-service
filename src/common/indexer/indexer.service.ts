@@ -445,4 +445,9 @@ export class IndexerService implements IndexerInterface {
   async getEvents(pagination: QueryPagination, filter: EventsFilter): Promise<Events[]> {
     return await this.indexerInterface.getEvents(pagination, filter);
   }
+
+  @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
+  async getEventsCount(filter: EventsFilter): Promise<number> {
+    return await this.indexerInterface.getEventsCount(filter);
+  }
 }

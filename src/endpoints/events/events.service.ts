@@ -8,9 +8,13 @@ import { EventsFilter } from './entities/events.filter';
 export class EventsService {
   constructor(
     private readonly indexerService: IndexerService,
-  ) {}
+  ) { }
 
   async getEvents(pagination: QueryPagination, filter: EventsFilter): Promise<Events[]> {
     return await this.indexerService.getEvents(pagination, filter);
+  }
+
+  async getEventsCount(filter: EventsFilter): Promise<number> {
+    return await this.indexerService.getEventsCount(filter);
   }
 }

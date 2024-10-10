@@ -185,4 +185,6 @@ export interface IndexerInterface {
   getApplicationCount(filter: ApplicationFilter): Promise<number>
 
   getEvents(pagination: QueryPagination, filter: EventsFilter): Promise<Events[]>
+
+  getEventsCount(filter: EventsFilter): Promise<number>
 }
