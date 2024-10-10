@@ -151,6 +151,10 @@ export class ElasticIndexerHelper {
       elasticQuery = elasticQuery.withMustMultiShouldCondition(types, type => QueryType.Match('type', type));
     }
 
+    if(filter.subType){
+      elasticQuery = elasticQuery.withMustCondition(QueryType.Match('type', filter.subType));
+    }
+
     return elasticQuery.withMustMatchCondition('token', filter.collection, QueryOperator.AND)
       .withMustMultiShouldCondition(filter.identifiers, identifier => QueryType.Match('token', identifier, QueryOperator.AND))
       .withSearchWildcardCondition(filter.search, ['token', 'name']);
@@ -175,10 +179,28 @@ export class ElasticIndexerHelper {
       elasticQuery = elasticQuery.withSearchWildcardCondition(filter.search, ['token', 'name']);
     }
 
-    if (filter.type !== undefined) {
-      const types = (filter.type ?? '').split(',');
+    if (filter.type) {
+      const types = [];
+
+      switch (filter.type) {
+        case NftType.NonFungibleESDT:
+          types.push(...this.nonFungibleEsdtTypes);
+          break;
+        case NftType.SemiFungibleESDT:
+          types.push(...this.semiFungibleEsdtTypes);
+          break;
+        case NftType.MetaESDT:
+          types.push(...this.metaEsdtTypes);
+          break;
+        default:
+          types.push(filter.type);
+      }
 
       elasticQuery = elasticQuery.withMustMultiShouldCondition(types, type => QueryType.Match('type', type));
+    }
+
+    if(filter.subType){
+      elasticQuery = elasticQuery.withMustCondition(QueryType.Match('type', filter.subType));
     }
 
     if (identifier !== undefined) {
