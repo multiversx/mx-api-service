@@ -163,15 +163,6 @@ type AccountDetailed {
   """Code hash for the given detailed account."""
   codeHash: String
 
-  """Contracts for the given detailed account."""
-  contractAccount(
-    """Input to retrieve the given contracts for."""
-    input: GetFromAndSizeInput!
-  ): [DeployedContract!]
-
-  """Contracts count for the given detailed account."""
-  contractAccountCount: Float!
-
   """
   Summarizes all delegation positions with staking providers, together with unDelegation positions for the givven detailed account.
   """
@@ -180,11 +171,20 @@ type AccountDetailed {
   """Returns staking information related to the legacy delegation pool."""
   delegationLegacy: AccountDelegationLegacy!
 
+  """Contracts count for the given detailed account."""
+  deployAccountCount: Float!
+
   """DeployTxHash for the given detailed account."""
   deployTxHash: String
 
   """Deployment timestamp for the given detailed account."""
   deployedAt: Float
+
+  """Deploys for the given detailed account."""
+  deploysAccount(
+    """Input to retrieve the given deploys for."""
+    input: GetFromAndSizeInput!
+  ): [DeployedContract!]
 
   """Developer reward for the given detailed account."""
   developerReward: String!
@@ -2106,6 +2106,9 @@ type MexPair {
   """Mex pair trades count."""
   tradesCount: Float
 
+  """Mex pair trades count 24h."""
+  tradesCount24h: Float
+
   """Mex pair type details."""
   type: MexPairType!
 
@@ -3536,6 +3539,9 @@ type SmartContractResult {
   """Sender assets for the given smart contract result."""
   senderAssets: AccountAssets
 
+  """Result status"""
+  status: String
+
   """Timestamp for the given smart contract result."""
   timestamp: Float!
 
@@ -4060,6 +4066,9 @@ type Transaction {
   """The username of the receiver for the given transaction."""
   receiverUsername: String!
 
+  """Relayer address for the given transaction."""
+  relayer: String
+
   """Round for the given transaction."""
   round: Float
 
@@ -4197,6 +4206,9 @@ type TransactionDetailed {
 
   """Relayed transaction version."""
   relayedVersion: String
+
+  """Relayer address for the given transaction."""
+  relayer: String
 
   """Smart contract results for the given detailed transaction."""
   results: [SmartContractResult!]
@@ -4356,6 +4368,9 @@ enum TransactionOperationAction {
 
   """Freeze operation action."""
   freeze
+
+  """Inner transaction operation action."""
+  innerTransaction
 
   """Local burn operation action."""
   localBurn

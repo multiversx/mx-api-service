@@ -17,6 +17,7 @@ import { OriginLogger } from "@multiversx/sdk-nestjs-common";
 import { DataApiService } from "src/common/data-api/data-api.service";
 import BigNumber from "bignumber.js";
 import { EsdtType } from "../esdt/entities/esdt.type";
+import { TransactionDecoder } from "../transactions/transaction.decoder";
 
 @Injectable()
 export class TokenTransferService {
@@ -91,10 +92,83 @@ export class TokenTransferService {
   async getOperationsForTransaction(transaction: TransactionDetailed, logs: TransactionLog[]): Promise<TransactionOperation[]> {
     const scResultsOperations: TransactionOperation[] = this.getOperationsForTransactionScResults(transaction.results ?? []);
     const logsOperations: TransactionOperation[] = await this.getOperationsForTransactionLogs(transaction.txHash, logs, transaction.sender);
+    const innerTransactionsOperations: TransactionOperation[] = await this.getOperationsForInnerTransactions(transaction);
 
-    return [...scResultsOperations, ...logsOperations];
+    return [...scResultsOperations, ...logsOperations, ...innerTransactionsOperations];
   }
 
+  private async getOperationsForInnerTransactions(transactionDetailed: TransactionDetailed): Promise<TransactionOperation[]> {
+    if (!transactionDetailed.innerTransactions || transactionDetailed.innerTransactions.length === 0) {
+      return [];
+    }
+
+    const operations: TransactionOperation[] = [];
+    const accountAssets = await this.assetsService.getAllAccountAssets();
+    const tokenAssets = await this.assetsService.getAllTokenAssets();
+
+    for (const innerTransaction of transactionDetailed.innerTransactions) {
+      const decoded = new TransactionDecoder().getTransactionMetadata({
+        data: innerTransaction.data,
+        sender: innerTransaction.sender,
+        receiver: innerTransaction.receiver,
+        value: innerTransaction.value,
+      });
+
+      if (decoded.value > BigInt(0)) {
+        const operation = new TransactionOperation({
+          id: innerTransaction.hash,
+          action: TransactionOperationAction.innerTransaction,
+          type: TransactionOperationType.egld,
+          data: innerTransaction.data,
+          sender: innerTransaction.sender,
+          senderAssets: accountAssets[innerTransaction.sender],
+          receiver: innerTransaction.receiver,
+          receiverAssets: accountAssets[innerTransaction.receiver],
+          value: decoded.value.toString(),
+          decimals: 18,
+        });
+
+        operations.push(operation);
+      }
+
+      if (decoded.transfers) {
+        for (const transfer of decoded.transfers) {
+          const tokenOrCollection = transfer.properties?.collection ?? transfer.properties?.token;
+          if (!tokenOrCollection) {
+            continue;
+          }
+
+          const tokenAsset = tokenAssets[tokenOrCollection];
+          const ticker = tokenAsset ? tokenOrCollection.split('-')[0] : undefined;
+          const tokenProperties = await this.getTokenTransferPropertiesRaw(tokenOrCollection);
+          if (!tokenProperties) {
+            continue;
+          }
+
+          const operation = new TransactionOperation({
+            id: innerTransaction.hash,
+            action: TransactionOperationAction.innerTransaction,
+            type: TransactionOperationType.esdt,
+            identifier: tokenProperties.identifier,
+            collection: tokenProperties.collection,
+            ticker: ticker,
+            sender: innerTransaction.sender,
+            senderAssets: accountAssets[innerTransaction.sender],
+            receiver: innerTransaction.receiver,
+            receiverAssets: accountAssets[innerTransaction.receiver],
+            value: transfer.value.toString(),
+            esdtType: tokenProperties.type,
+            decimals: tokenProperties.decimals,
+            svgUrl: tokenProperties.svgUrl,
+          });
+
+          operations.push(operation);
+        }
+      }
+    }
+
+    return operations;
+  }
 
   private getOperationsForTransactionScResults(scResults: SmartContractResult[]): TransactionOperation[] {
     if (!scResults.length) {

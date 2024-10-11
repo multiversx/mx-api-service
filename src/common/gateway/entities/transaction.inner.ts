@@ -3,6 +3,7 @@ export class TransactionInner {
     Object.assign(this, init);
   }
 
+  hash: string = '';
   nonce: number = 0;
   value: string = '';
   receiver: string = '';

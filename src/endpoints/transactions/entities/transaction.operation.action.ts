@@ -13,6 +13,7 @@ export enum TransactionOperationAction {
   freeze = 'freeze',
   writeLog = 'writeLog',
   signalError = 'signalError',
+  innerTransaction = 'innerTransaction',
 }
 
 registerEnumType(TransactionOperationAction, {
@@ -54,6 +55,9 @@ registerEnumType(TransactionOperationAction, {
     },
     signalError: {
       description: 'Signal error operation action.',
+    },
+    innerTransaction: {
+      description: 'Inner transaction operation action.',
     },
   },
 });
