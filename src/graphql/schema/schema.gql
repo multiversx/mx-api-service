@@ -4447,6 +4447,9 @@ enum TransactionStatus {
 
 """Transaction type object type."""
 enum TransactionType {
+  """InnerTransaction type."""
+  InnerTransaction
+
   """Reward type."""
   Reward
 
