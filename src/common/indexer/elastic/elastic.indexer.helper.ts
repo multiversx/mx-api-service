@@ -286,7 +286,10 @@ export class ElasticIndexerHelper {
         QueryType.Exists('canBeIgnored'),
       ]))
         .withCondition(QueryConditionOptions.should, QueryType.Must([
-          QueryType.Match('type', 'normal'),
+          QueryType.Should([
+            QueryType.Match('type', 'normal'),
+            QueryType.Match('type', 'innerTx'),
+          ]),
           QueryType.Should([
             QueryType.Match('sender', filter.address),
             QueryType.Match('receiver', filter.address),

@@ -66,7 +66,7 @@ export class TransactionDetailed extends Transaction {
   @ApiProperty({ type: String, nullable: true })
   relayedVersion: string | undefined = undefined;
 
-  @Field(() => [TransactionInner], { description: 'Inner transactions list details.', nullable: true })
+  // @Field(() => [TransactionInner], { description: 'Inner transactions list details.', nullable: true })
   @ApiProperty({ type: TransactionInner, isArray: true })
   innerTransactions: TransactionInner[] | undefined = undefined;
 }
