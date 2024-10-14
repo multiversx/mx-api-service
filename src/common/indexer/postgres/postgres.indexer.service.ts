@@ -21,6 +21,8 @@ import { PostgresIndexerHelper } from "./postgres.indexer.helper";
 import { AccountAssets } from "src/common/assets/entities/account.assets";
 import { ProviderDelegators } from "../entities/provider.delegators";
 import { ApplicationFilter } from "src/endpoints/applications/entities/application.filter";
+import { Events } from '../entities/events';
+import { EventsFilter } from '../../../endpoints/events/entities/events.filter';
 
 @Injectable()
 export class PostgresIndexerService implements IndexerInterface {
@@ -53,7 +55,6 @@ export class PostgresIndexerService implements IndexerInterface {
     private readonly validatorPublicKeysRepository: Repository<ValidatorPublicKeysDb>,
     private readonly indexerHelper: PostgresIndexerHelper,
   ) { }
-
   getAccountDeploys(_pagination: QueryPagination, _address: string): Promise<ScDeploy[]> {
     throw new Error("Method not implemented.");
   }
@@ -402,12 +403,12 @@ export class PostgresIndexerService implements IndexerInterface {
     return await query.getMany();
   }
 
-   getAccountContracts(): Promise<any[]> {
+  getAccountContracts(): Promise<any[]> {
     throw new Error("Method not implemented.");
   }
 
   getAccountContractsCount(): Promise<number> {
-   throw new Error("Method not implemented.");
+    throw new Error("Method not implemented.");
   }
 
   async getAccountHistory(address: string, { from, size }: QueryPagination): Promise<any[]> {
@@ -689,4 +690,17 @@ export class PostgresIndexerService implements IndexerInterface {
   async setAccountTransfersLast24h(_address: string, _transfersLast24h: number): Promise<void> {
     // TODO custom columns cannot be added
   }
+
+  getEvents(_pagination: QueryPagination, _filter: EventsFilter): Promise<Events[]> {
+    throw new Error("Method not implemented.");
+  }
+
+  getEvent(_txHash: string): Promise<Events> {
+    throw new Error("Method not implemented.");
+  }
+
+  getEventsCount(_filter: EventsFilter): Promise<number> {
+    throw new Error("Method not implemented.");
+  }
 }
+
