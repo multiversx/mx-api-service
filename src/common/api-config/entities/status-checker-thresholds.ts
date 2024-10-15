@@ -11,4 +11,5 @@ export class StatusCheckerThresholds {
   public tokenAccounts: number = 0;
   public tokenTransactions: number = 0;
   public nodeValidators: number = 0;
+
 }
