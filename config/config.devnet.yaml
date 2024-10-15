@@ -49,6 +49,9 @@ features:
   dataApi:
     enabled: false
     serviceUrl: 'https://devnet-data-api.multiversx.com'
+   mainChainUrl:
+    enabled: false
+    url: 'https://devnet-gateway.multiversx.com'
   auth:
     enabled: false
     maxExpirySeconds: 86400
