@@ -124,7 +124,7 @@ export class ElasticIndexerHelper {
       elasticQuery = this.getRoleCondition(elasticQuery, 'ESDTTransferRole', address, filter.canTransferRole);
     }
 
-    if (filter.excludeMetaESDT === true) {
+    if (filter.excludeMetaESDT === true && !filter.type) {
       elasticQuery = elasticQuery.withMustMultiShouldCondition([
         ...this.nonFungibleEsdtTypes,
         ...this.semiFungibleEsdtTypes,
@@ -151,8 +151,8 @@ export class ElasticIndexerHelper {
       elasticQuery = elasticQuery.withMustMultiShouldCondition(types, type => QueryType.Match('type', type));
     }
 
-    if(filter.subType){
-      elasticQuery = elasticQuery.withMustCondition(QueryType.Match('type', filter.subType));
+    if (filter.subType) {
+      elasticQuery = elasticQuery.withMustMultiShouldCondition(filter.subType, subType => QueryType.Match('type', subType));
     }
 
     return elasticQuery.withMustMatchCondition('token', filter.collection, QueryOperator.AND)
@@ -182,24 +182,26 @@ export class ElasticIndexerHelper {
     if (filter.type) {
       const types = [];
 
-      switch (filter.type) {
-        case NftType.NonFungibleESDT:
-          types.push(...this.nonFungibleEsdtTypes);
-          break;
-        case NftType.SemiFungibleESDT:
-          types.push(...this.semiFungibleEsdtTypes);
-          break;
-        case NftType.MetaESDT:
-          types.push(...this.metaEsdtTypes);
-          break;
-        default:
-          types.push(filter.type);
+      for (const type of filter.type) {
+        switch (type) {
+          case NftType.NonFungibleESDT:
+            types.push(...this.nonFungibleEsdtTypes);
+            break;
+          case NftType.SemiFungibleESDT:
+            types.push(...this.semiFungibleEsdtTypes);
+            break;
+          case NftType.MetaESDT:
+            types.push(...this.metaEsdtTypes);
+            break;
+          default:
+            types.push(filter.type);
+        }
       }
 
       elasticQuery = elasticQuery.withMustMultiShouldCondition(types, type => QueryType.Match('type', type));
     }
 
-    if(filter.subType){
+    if (filter.subType) {
       elasticQuery = elasticQuery.withMustCondition(QueryType.Match('type', filter.subType));
     }
 

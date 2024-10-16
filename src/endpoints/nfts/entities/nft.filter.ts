@@ -11,8 +11,8 @@ export class NftFilter {
 
   search?: string;
   identifiers?: string[];
-  type?: NftType;
-  subType?: NftSubType;
+  type?: NftType[];
+  subType?: NftSubType[];
   collection?: string;
   collections?: string[];
   tags?: string[];

@@ -64,7 +64,7 @@ export class CollectionController {
     @Query('search') search?: string,
     @Query('identifiers', ParseCollectionArrayPipe) identifiers?: string[],
     @Query('type', new ParseEnumArrayPipe(NftType)) type?: NftType[],
-    @Query('subType', new ParseEnumPipe(NftSubType)) subType?: NftSubType,
+    @Query('subType', new ParseEnumArrayPipe(NftSubType)) subType?: NftSubType[],
     @Query('creator', ParseAddressPipe) creator?: string,
     @Query('before', new ParseIntPipe) before?: number,
     @Query('after', new ParseIntPipe) after?: number,
@@ -115,6 +115,7 @@ export class CollectionController {
   async getCollectionCount(
     @Query('search') search?: string,
     @Query('type', new ParseEnumArrayPipe(NftType)) type?: NftType[],
+    @Query('subType', new ParseEnumArrayPipe(NftSubType)) subType?: NftSubType[],
     @Query('creator', ParseAddressPipe) creator?: string,
     @Query('before', new ParseIntPipe) before?: number,
     @Query('after', new ParseIntPipe) after?: number,
@@ -129,6 +130,7 @@ export class CollectionController {
     return await this.collectionService.getNftCollectionCount(new CollectionFilter({
       search,
       type,
+      subType,
       canCreate: canCreate ?? creator,
       before,
       after,

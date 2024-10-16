@@ -12,7 +12,7 @@ export class CollectionFilter {
   identifiers?: string[];
   search?: string;
   type?: NftType[];
-  subType?: NftSubType;
+  subType?: NftSubType[];
   owner?: string;
   before?: number;
   after?: number;
