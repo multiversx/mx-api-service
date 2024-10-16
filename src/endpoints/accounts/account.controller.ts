@@ -95,6 +95,7 @@ export class AccountController {
   @ApiQuery({ name: 'tags', description: 'Filter accounts by assets tags', required: false })
   @ApiQuery({ name: 'excludeTags', description: 'Exclude specific tags from result', required: false })
   @ApiQuery({ name: 'hasAssets', description: 'Returns a list of accounts that have assets', required: false })
+  @ApiQuery({ name: 'search', description: 'Search by account address', required: false })
   getAccounts(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number,
@@ -110,6 +111,7 @@ export class AccountController {
     @Query("withScrCount", new ParseBoolPipe) withScrCount?: boolean,
     @Query("excludeTags", new ParseArrayPipe) excludeTags?: string[],
     @Query("hasAssets", new ParseBoolPipe) hasAssets?: boolean,
+    @Query("search") search?: string,
   ): Promise<Account[]> {
     const queryOptions = new AccountQueryOptions(
       {
@@ -125,6 +127,7 @@ export class AccountController {
         tags,
         excludeTags,
         hasAssets,
+        search,
       });
     queryOptions.validate(size);
     return this.accountService.getAccounts(
