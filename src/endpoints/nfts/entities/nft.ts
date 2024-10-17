@@ -43,8 +43,8 @@ export class Nft {
   type: NftType = NftType.NonFungibleESDT;
 
   @Field(() => NftSubType, { description: "NFT sub type for the given NFT.", nullable: true })
-  @ApiProperty({ enum: NftSubType, nullable: true })
-  subType: NftSubType | undefined = undefined;
+  @ApiProperty({ enum: NftSubType })
+  subType: NftSubType = NftSubType.NonFungibleESDT;
 
   @Field(() => String, { description: "Name for the given NFT." })
   @ApiProperty({ type: String })

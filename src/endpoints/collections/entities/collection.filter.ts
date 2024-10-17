@@ -1,4 +1,5 @@
 import { SortOrder } from "src/common/entities/sort.order";
+import { NftSubType } from "src/endpoints/nfts/entities/nft.sub.type";
 import { NftType } from "../../nfts/entities/nft.type";
 import { SortCollections } from "./sort.collections";
 
@@ -11,6 +12,7 @@ export class CollectionFilter {
   identifiers?: string[];
   search?: string;
   type?: NftType[];
+  subType?: NftSubType[];
   owner?: string;
   before?: number;
   after?: number;
