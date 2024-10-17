@@ -32,6 +32,10 @@ export class AssetsService {
   }
 
   async getAllTokenAssetsRaw(): Promise<{ [key: string]: TokenAssets }> {
+    if (!this.apiConfigService.isAssetsCdnFeatureEnabled()) {
+      return {};
+    }
+
     const assetsCdnUrl = this.apiConfigService.getAssetsCdnUrl();
     const network = this.apiConfigService.getNetwork();
 
@@ -60,6 +64,10 @@ export class AssetsService {
   }
 
   async getAllCollectionRanksRaw(): Promise<{ [key: string]: NftRank[] }> {
+    if (!this.apiConfigService.isAssetsCdnFeatureEnabled()) {
+      return {};
+    }
+
     const assetsCdnUrl = this.apiConfigService.getAssetsCdnUrl();
     const network = this.apiConfigService.getNetwork();
 
@@ -88,6 +96,10 @@ export class AssetsService {
   }
 
   async getAllAccountAssetsRaw(providers?: Provider[], identities?: Identity[], pairs?: MexPair[], farms?: MexFarm[], mexSettings?: MexSettings, stakingProxies?: MexStakingProxy[]): Promise<{ [key: string]: AccountAssets }> {
+    if (!this.apiConfigService.isAssetsCdnFeatureEnabled()) {
+      return {};
+    }
+
     const assetsCdnUrl = this.apiConfigService.getAssetsCdnUrl();
     const network = this.apiConfigService.getNetwork();
 
@@ -179,6 +191,10 @@ export class AssetsService {
   }
 
   async getAllIdentitiesRaw(): Promise<{ [key: string]: KeybaseIdentity }> {
+    if (!this.apiConfigService.isAssetsCdnFeatureEnabled()) {
+      return {};
+    }
+
     const assetsCdnUrl = this.apiConfigService.getAssetsCdnUrl();
     const network = this.apiConfigService.getNetwork();
 

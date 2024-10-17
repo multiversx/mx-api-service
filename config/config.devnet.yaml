@@ -49,6 +49,9 @@ features:
   dataApi:
     enabled: false
     serviceUrl: 'https://devnet-data-api.multiversx.com'
+  assetsFetch:
+    enabled: true
+    assetesUrl: 'https://tools.multiversx.com/assets-cdn'
   auth:
     enabled: false
     maxExpirySeconds: 86400
@@ -128,7 +131,6 @@ urls:
   ipfs: 'https://ipfs.io/ipfs'
   socket: 'devnet-socket-api.multiversx.com'
   maiarId: 'https://devnet-id-api.multiversx.com'
-  assetsCdn: 'https://tools.multiversx.com/assets-cdn'
 indexer:
   type: 'elastic'
   maxPagination: 10000

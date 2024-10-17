@@ -106,6 +106,9 @@ features:
   providersFetch:
     enabled: true
     serviceUrl: 'https://api.multiversx.com'
+  assetsFetch:
+    enabled: true
+    assetesUrl: 'https://tools.multiversx.com/assets-cdn'
 image:
   width: 600
   height: 600
@@ -132,7 +135,6 @@ urls:
   ipfs: 'https://ipfs.io/ipfs'
   socket: 'socket-api-fra.multiversx.com'
   maiarId: 'https://id-api.multiversx.com'
-  assetsCdn: 'https://tools.multiversx.com/assets-cdn'
 indexer:
   type: 'elastic'
   maxPagination: 10000

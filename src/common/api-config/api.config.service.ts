@@ -866,8 +866,12 @@ export class ApiConfigService {
     return deepHistoryUrl;
   }
 
+  isAssetsCdnFeatureEnabled(): boolean {
+    return this.configService.get<boolean>('features.assetsFetch.enabled') ?? false;
+  }
+
   getAssetsCdnUrl(): string {
-    return this.configService.get<string>('urls.assetsCdn') ?? 'https://tools.multiversx.com/assets-cdn';
+    return this.configService.get<string>('features.assetsFetch.assetesUrl') ?? 'https://tools.multiversx.com/assets-cdn';
   }
 
   isTokensFetchFeatureEnabled(): boolean {
