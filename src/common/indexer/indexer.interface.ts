@@ -22,7 +22,7 @@ export interface IndexerInterface {
 
   getScResultsCount(filter: SmartContractResultFilter): Promise<number>
 
-  getAccountContractsCount(address: string): Promise<number>
+  getAccountDeploysCount(address: string): Promise<number>
 
   getBlocksCount(filter: BlockFilter): Promise<number>
 
@@ -104,7 +104,11 @@ export interface IndexerInterface {
 
   getAccounts(queryPagination: QueryPagination, filter: AccountQueryOptions): Promise<Account[]>
 
-  getAccountContracts(pagination: QueryPagination, address: string): Promise<ScDeploy[]>
+  getAccountDeploys(pagination: QueryPagination, address: string): Promise<ScDeploy[]>
+
+  getAccountContracts(pagination: QueryPagination, address: string): Promise<any[]>
+
+  getAccountContractsCount( address: string): Promise<number>
 
   getAccountHistory(address: string, pagination: QueryPagination, filter: AccountHistoryFilter): Promise<AccountHistory[]>
 

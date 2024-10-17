@@ -14,7 +14,7 @@ import { TokenFilter } from "src/endpoints/tokens/entities/token.filter";
 import { TokenWithRolesFilter } from "src/endpoints/tokens/entities/token.with.roles.filter";
 import { TransactionFilter } from "src/endpoints/transactions/entities/transaction.filter";
 import { Repository } from "typeorm";
-import { Collection, ScResult, Account, MiniBlock, Tag, TokenType, Block } from "../entities";
+import { Collection, ScResult, Account, MiniBlock, Tag, TokenType, Block, ScDeploy } from "../entities";
 import { IndexerInterface } from "../indexer.interface";
 import { AccountDb, AccountsEsdtDb, BlockDb, LogDb, MiniBlockDb, ReceiptDb, RoundInfoDb, ScDeployInfoDb, ScResultDb, TagDb, TokenInfoDb, TransactionDb, ValidatorPublicKeysDb } from "./entities";
 import { PostgresIndexerHelper } from "./postgres.indexer.helper";
@@ -53,6 +53,10 @@ export class PostgresIndexerService implements IndexerInterface {
     private readonly validatorPublicKeysRepository: Repository<ValidatorPublicKeysDb>,
     private readonly indexerHelper: PostgresIndexerHelper,
   ) { }
+
+  getAccountDeploys(_pagination: QueryPagination, _address: string): Promise<ScDeploy[]> {
+    throw new Error("Method not implemented.");
+  }
   getApplicationCount(): Promise<number> {
     throw new Error("Method not implemented.");
   }
@@ -118,7 +122,7 @@ export class PostgresIndexerService implements IndexerInterface {
     return await this.scResultsRepository.count();
   }
 
-  async getAccountContractsCount(address: string): Promise<number> {
+  async getAccountDeploysCount(address: string): Promise<number> {
     const query = this.scDeploysRepository
       .createQueryBuilder()
       .where('creator = :address', { address });
@@ -398,14 +402,12 @@ export class PostgresIndexerService implements IndexerInterface {
     return await query.getMany();
   }
 
-  async getAccountContracts({ from, size }: QueryPagination, address: string): Promise<any[]> {
-    const query = this.scDeploysRepository
-      .createQueryBuilder()
-      .skip(from).take(size)
-      .where('creator = :address', { address })
-      .orderBy('timestamp', 'DESC');
+   getAccountContracts(): Promise<any[]> {
+    throw new Error("Method not implemented.");
+  }
 
-    return await query.getMany();
+  getAccountContractsCount(): Promise<number> {
+   throw new Error("Method not implemented.");
   }
 
   async getAccountHistory(address: string, { from, size }: QueryPagination): Promise<any[]> {

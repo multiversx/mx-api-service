@@ -286,13 +286,24 @@ export class ElasticIndexerHelper {
         QueryType.Exists('canBeIgnored'),
       ]))
         .withCondition(QueryConditionOptions.should, QueryType.Must([
-          QueryType.Match('type', 'normal'),
+          QueryType.Should([
+            QueryType.Match('type', 'normal'),
+            QueryType.Match('type', 'innerTx'),
+          ]),
           QueryType.Should([
             QueryType.Match('sender', filter.address),
             QueryType.Match('receiver', filter.address),
             QueryType.Match('receivers', filter.address),
           ]),
         ]));
+    }
+
+    if (filter.relayer) {
+      elasticQuery = elasticQuery.withMustMatchCondition('relayerAddr', filter.relayer);
+    }
+
+    if (filter.isRelayed) {
+      elasticQuery = elasticQuery.withMustMatchCondition('isRelayed', filter.isRelayed);
     }
 
     if (filter.type) {
@@ -609,6 +620,10 @@ export class ElasticIndexerHelper {
 
     if (filter.addresses !== undefined && filter.addresses.length > 0) {
       elasticQuery = elasticQuery.withMustMultiShouldCondition(filter.addresses, address => QueryType.Match('address', address));
+    }
+
+    if (filter.search) {
+      elasticQuery = elasticQuery.withSearchWildcardCondition(filter.search, ['address', 'api_assets.name']);
     }
 
     return elasticQuery;
