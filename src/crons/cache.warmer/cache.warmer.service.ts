@@ -245,8 +245,7 @@ export class CacheWarmerService {
 
   @Lock({ name: 'Token / account assets invalidations', verbose: true })
   async handleTokenAssetsInvalidations() {
-    await this.assetsService.checkout();
-    const assets = this.assetsService.getAllTokenAssetsRaw();
+    const assets = await this.assetsService.getAllTokenAssetsRaw();
     await this.invalidateKey(CacheInfo.TokenAssets.key, assets, CacheInfo.TokenAssets.ttl);
 
     await this.keybaseService.confirmIdentities();
