@@ -707,5 +707,4 @@ export class ElasticIndexerHelper {
     }
     return elasticQuery.withMustCondition(QueryType.Should(functionConditions));
   }
-
 }
