@@ -202,7 +202,7 @@ export class ElasticIndexerHelper {
     }
 
     if (filter.subType) {
-      elasticQuery = elasticQuery.withMustCondition(QueryType.Match('type', filter.subType));
+      elasticQuery = elasticQuery.withMustMultiShouldCondition(filter.subType, subType => QueryType.Match('type', subType, QueryOperator.AND));
     }
 
     if (identifier !== undefined) {
