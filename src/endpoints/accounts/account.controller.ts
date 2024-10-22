@@ -368,7 +368,7 @@ export class AccountController {
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
     @Query('search') search?: string,
     @Query('type', new ParseEnumArrayPipe(NftType)) type?: NftType[],
-    @Query('subType', new ParseEnumPipe(NftSubType)) subType?: NftSubType,
+    @Query('subType', new ParseEnumArrayPipe(NftSubType)) subType?: NftSubType[],
     @Query('owner', ParseAddressPipe) owner?: string,
     @Query('canCreate', new ParseBoolPipe) canCreate?: boolean,
     @Query('canBurn', new ParseBoolPipe) canBurn?: boolean,
@@ -410,7 +410,7 @@ export class AccountController {
     @Param('address', ParseAddressPipe) address: string,
     @Query('search') search?: string,
     @Query('type', new ParseEnumArrayPipe(NftType)) type?: NftType[],
-    @Query('subType', new ParseEnumPipe(NftSubType)) subType?: NftSubType,
+    @Query('subType', new ParseEnumArrayPipe(NftSubType)) subType?: NftSubType[],
     @Query('owner', ParseAddressPipe) owner?: string,
     @Query('canCreate', new ParseBoolPipe) canCreate?: boolean,
     @Query('canBurn', new ParseBoolPipe) canBurn?: boolean,
@@ -426,7 +426,7 @@ export class AccountController {
     @Param('address', ParseAddressPipe) address: string,
     @Query('search') search?: string,
     @Query('type', new ParseEnumArrayPipe(NftType)) type?: NftType[],
-    @Query('subType', new ParseEnumPipe(NftSubType)) subType?: NftSubType,
+    @Query('subType', new ParseEnumArrayPipe(NftSubType)) subType?: NftSubType[],
     @Query('owner', ParseAddressPipe) owner?: string,
     @Query('canCreate', new ParseBoolPipe) canCreate?: boolean,
     @Query('canBurn', new ParseBoolPipe) canBurn?: boolean,
@@ -538,7 +538,7 @@ export class AccountController {
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
     @Query('search') search?: string,
     @Query('type', new ParseEnumArrayPipe(NftType)) type?: NftType[],
-    @Query('subType', new ParseEnumPipe(NftSubType)) subType?: NftSubType,
+    @Query('subType', new ParseEnumArrayPipe(NftSubType)) subType?: NftSubType[],
     @Query('excludeMetaESDT', new ParseBoolPipe) excludeMetaESDT?: boolean,
   ): Promise<NftCollectionAccount[]> {
     return await this.collectionService.getCollectionsForAddress(
@@ -558,7 +558,7 @@ export class AccountController {
     @Param('address', ParseAddressPipe) address: string,
     @Query('search') search?: string,
     @Query('type', new ParseEnumArrayPipe(NftType)) type?: NftType[],
-    @Query('subType', new ParseEnumPipe(NftSubType)) subType?: NftSubType,
+    @Query('subType', new ParseEnumArrayPipe(NftSubType)) subType?: NftSubType[],
     @Query('excludeMetaESDT', new ParseBoolPipe) excludeMetaESDT?: boolean,
   ): Promise<number> {
     return await this.collectionService.getCollectionCountForAddress(address, new CollectionFilter({ search, type, subType, excludeMetaESDT }));
@@ -570,7 +570,7 @@ export class AccountController {
     @Param('address', ParseAddressPipe) address: string,
     @Query('search') search?: string,
     @Query('type', new ParseEnumArrayPipe(NftType)) type?: NftType[],
-    @Query('subType', new ParseEnumPipe(NftSubType)) subType?: NftSubType,
+    @Query('subType', new ParseEnumArrayPipe(NftSubType)) subType?: NftSubType[],
     @Query('excludeMetaESDT', new ParseBoolPipe) excludeMetaESDT?: boolean,
   ): Promise<number> {
     return await this.collectionService.getCollectionCountForAddress(address, new CollectionFilter({ search, type, subType, excludeMetaESDT }));
@@ -622,9 +622,9 @@ export class AccountController {
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
     @Query('search') search?: string,
-    @Query('identifiers') identifiers?: string[],
-    @Query('type') type?: NftType,
-    @Query('subType', new ParseEnumPipe(NftSubType)) subType?: NftSubType,
+    @Query('identifiers', ParseNftArrayPipe) identifiers?: string[],
+    @Query('type', new ParseEnumArrayPipe(NftType)) type?: NftType[],
+    @Query('subType', new ParseEnumArrayPipe(NftSubType)) subType?: NftSubType[],
     @Query('collection') collection?: string,
     @Query('collections', ParseArrayPipe) collections?: string[],
     @Query('name') name?: string,
@@ -671,6 +671,7 @@ export class AccountController {
   @ApiQuery({ name: 'search', description: 'Search by collection identifier', required: false })
   @ApiQuery({ name: 'identifiers', description: 'Filter by identifiers, comma-separated', required: false })
   @ApiQuery({ name: 'type', description: 'Filter by type (NonFungibleESDT/SemiFungibleESDT/MetaESDT)', required: false })
+  @ApiQuery({ name: 'subType', description: 'Filter by subType', required: false })
   @ApiQuery({ name: 'collection', description: 'Get all tokens by token collection', required: false })
   @ApiQuery({ name: 'collections', description: 'Get all tokens by token collections, comma-separated', required: false })
   @ApiQuery({ name: 'name', description: 'Get all nfts by name', required: false })
@@ -687,7 +688,8 @@ export class AccountController {
     @Param('address', ParseAddressPipe) address: string,
     @Query('identifiers', ParseNftArrayPipe) identifiers?: string[],
     @Query('search') search?: string,
-    @Query('type') type?: NftType,
+    @Query('type', new ParseEnumArrayPipe(NftType)) type?: NftType[],
+    @Query('subType', new ParseEnumArrayPipe(NftSubType)) subType?: NftSubType[],
     @Query('collection') collection?: string,
     @Query('collections', ParseArrayPipe) collections?: string[],
     @Query('name') name?: string,
@@ -704,6 +706,7 @@ export class AccountController {
       search,
       identifiers,
       type,
+      subType,
       collection,
       collections,
       name,
@@ -724,7 +727,8 @@ export class AccountController {
     @Param('address', ParseAddressPipe) address: string,
     @Query('search') search?: string,
     @Query('identifiers', ParseNftArrayPipe) identifiers?: string[],
-    @Query('type') type?: NftType,
+    @Query('type', new ParseEnumArrayPipe(NftType)) type?: NftType[],
+    @Query('subType', new ParseEnumArrayPipe(NftSubType)) subType?: NftSubType[],
     @Query('collection') collection?: string,
     @Query('collections', ParseArrayPipe) collections?: string[],
     @Query('name') name?: string,
@@ -737,7 +741,7 @@ export class AccountController {
     @Query('scamType', new ParseEnumPipe(ScamType)) scamType?: ScamType,
     @Query('timestamp', ParseIntPipe) _timestamp?: number,
   ): Promise<number> {
-    return await this.nftService.getNftCountForAddress(address, new NftFilter({ search, identifiers, type, collection, collections, name, tags, creator, hasUris, includeFlagged, excludeMetaESDT, isScam, scamType }));
+    return await this.nftService.getNftCountForAddress(address, new NftFilter({ search, identifiers, type, subType, collection, collections, name, tags, creator, hasUris, includeFlagged, excludeMetaESDT, isScam, scamType }));
   }
 
   @Get("/accounts/:address/nfts/:nft")

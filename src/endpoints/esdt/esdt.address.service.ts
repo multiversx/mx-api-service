@@ -399,9 +399,15 @@ export class EsdtAddressService {
     }
 
     if (filter.type) {
-      const types = (filter.type ?? '').split(',');
+      const nftTypes = filter.type ?? [];
 
-      nfts = nfts.filter(x => types.includes(x.type));
+      nfts = nfts.filter(x => nftTypes.includes(x.type));
+    }
+
+    if (filter.subType) {
+      const nftSubTypes = filter.subType ?? [];
+
+      nfts = nfts.filter(x => nftSubTypes.includes(x.subType));
     }
 
     if (filter.subType) {

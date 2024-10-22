@@ -99,10 +99,7 @@ export class CollectionService {
         break;
     }
 
-    if (nftCollection.type !== indexedCollection.type) {
-      nftCollection.subType = indexedCollection.type as NftSubType;
-    }
-
+    nftCollection.subType = indexedCollection.type as NftSubType;
     nftCollection.timestamp = indexedCollection.timestamp;
 
     if (nftCollection.type.in(NftType.NonFungibleESDT, NftType.SemiFungibleESDT)) {

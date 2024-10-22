@@ -235,7 +235,7 @@ async function configurePublicApp(publicApp: NestExpressApplication, apiConfigSe
       // @ts-ignore
       httpAdapterHostService,
       metricsService,
-      cacheDuration,
+      cacheDuration
     );
 
     // @ts-ignore

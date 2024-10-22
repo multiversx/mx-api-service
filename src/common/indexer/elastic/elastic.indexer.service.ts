@@ -26,7 +26,6 @@ import { AccountHistoryFilter } from "src/endpoints/accounts/entities/account.hi
 import { AccountAssets } from "src/common/assets/entities/account.assets";
 import { NotWritableError } from "../entities/not.writable.error";
 import { ApplicationFilter } from "src/endpoints/applications/entities/application.filter";
-import { NftSubType } from '../../../endpoints/nfts/entities/nft.sub.type';
 import { NftType } from "../entities/nft.type";
 
 @Injectable()
@@ -778,17 +777,15 @@ export class ElasticIndexerService implements IndexerInterface {
     filter: CollectionFilter,
     pagination: QueryPagination
   ): Promise<{ collection: string, count: number, balance: number }[]> {
-    const types = [NftType.SemiFungibleESDT, NftType.NonFungibleESDT];
-    const subtypes = [NftSubType.NonFungibleESDTv2, NftSubType.DynamicSemiFungibleESDT, NftSubType.DynamicNonFungibleESDT];
-    let allTypes = [...types, ...subtypes];
+    let filterTypes = [...this.nonFungibleEsdtTypes, ...this.semiFungibleEsdtTypes];
 
     if (!filter.excludeMetaESDT) {
-      types.push(NftType.MetaESDT);
+      filterTypes.push(...this.metaEsdtTypes);
     }
 
     if (filter.type && filter.type.length > 0) {
-      const filterTypes = [];
-
+      filterTypes = [];
+      
       for (const type of filter.type) {
         switch (type) {
           case NftType.NonFungibleESDT:
@@ -804,10 +801,10 @@ export class ElasticIndexerService implements IndexerInterface {
             filterTypes.push(type);
         }
       }
-
       allTypes = filterTypes;
     }
-
+      
+    }
     const elasticQuery = ElasticQuery.create()
       .withMustExistCondition('identifier')
       .withMustMatchCondition('address', address)
@@ -815,8 +812,8 @@ export class ElasticIndexerService implements IndexerInterface {
       .withMustMatchCondition('token', filter.collection, QueryOperator.AND)
       .withMustMultiShouldCondition(filter.identifiers, identifier => QueryType.Match('token', identifier, QueryOperator.AND))
       .withSearchWildcardCondition(filter.search, ['token', 'name'])
-      .withMustMultiShouldCondition(allTypes, type => QueryType.Match('type', type))
-      .withMustMatchCondition('type', filter.subType, QueryOperator.AND)
+      .withMustMultiShouldCondition(filterTypes, type => QueryType.Match('type', type))
+      .withMustMultiShouldCondition(filter.subType, subType => QueryType.Match('type', subType))
       .withExtra({
         aggs: {
           collections: {
