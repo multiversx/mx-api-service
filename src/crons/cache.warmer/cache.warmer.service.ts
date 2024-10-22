@@ -379,7 +379,7 @@ export class CacheWarmerService {
   async handleUpdateAccountTransfersLast24h() {
     const batchSize = 100;
     const mostUsed = await this.accountService.getApplicationMostUsedRaw();
-    const mostUsedIndexedAccounts = await this.indexerService.getAddressesWithTransfersLast24h()
+    const mostUsedIndexedAccounts = await this.indexerService.getAddressesWithTransfersLast24h();
 
     const allAddressesToUpdate = [...mostUsed.map(item => item.address), ...mostUsedIndexedAccounts].distinct();
     const mostUsedDictionary = mostUsed.toRecord<ApplicationMostUsed>(item => item.address);
@@ -389,7 +389,7 @@ export class CacheWarmerService {
       const accounts = await this.indexerService.getAccounts(
         new QueryPagination({ from: 0, size: batchSize }),
         new AccountQueryOptions({ addresses: batch }),
-        ['address', 'api_transfersLast24h']
+        ['address', 'api_transfersLast24h'],
       );
 
       const accountsDictionary = accounts.toRecord<Pick<Account, 'address' | 'api_transfersLast24h'>>(account => account.address);

@@ -690,6 +690,7 @@ export class PostgresIndexerService implements IndexerInterface {
     // TODO custom columns cannot be added
   }
 
+  // eslint-disable-next-line require-await
   async getAddressesWithTransfersLast24h(): Promise<string[]> {
     // TODO not implemented
     return [];
