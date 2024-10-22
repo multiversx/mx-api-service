@@ -785,7 +785,7 @@ export class ElasticIndexerService implements IndexerInterface {
 
     if (filter.type && filter.type.length > 0) {
       filterTypes = [];
-      
+
       for (const type of filter.type) {
         switch (type) {
           case NftType.NonFungibleESDT:
@@ -801,10 +801,8 @@ export class ElasticIndexerService implements IndexerInterface {
             filterTypes.push(type);
         }
       }
-      allTypes = filterTypes;
     }
-      
-    }
+
     const elasticQuery = ElasticQuery.create()
       .withMustExistCondition('identifier')
       .withMustMatchCondition('address', address)
