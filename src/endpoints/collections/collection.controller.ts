@@ -25,6 +25,7 @@ import { Response } from "express";
 import { SortCollections } from "./entities/sort.collections";
 import { ParseArrayPipeOptions } from "@multiversx/sdk-nestjs-common/lib/pipes/entities/parse.array.options";
 import { TransferService } from "../transfers/transfer.service";
+import { NftSubType } from "../nfts/entities/nft.sub.type";
 
 @Controller()
 @ApiTags('collections')
@@ -44,6 +45,7 @@ export class CollectionController {
   @ApiQuery({ name: 'search', description: 'Search by collection identifier', required: false })
   @ApiQuery({ name: 'identifiers', description: 'Search by collection identifiers, comma-separated', required: false })
   @ApiQuery({ name: 'type', description: 'Filter by type (NonFungibleESDT/SemiFungibleESDT/MetaESDT)', required: false })
+  @ApiQuery({ name: 'subType', description: 'Filter by type (NonFungibleESDTv2/DynamicNonFungibleESDT/DynamicSemiFungibleESDT)', required: false })
   @ApiQuery({ name: 'creator', description: 'Filter collections where the given address has a creator role', required: false, deprecated: true })
   @ApiQuery({ name: 'before', description: 'Return all collections before given timestamp', required: false, type: Number })
   @ApiQuery({ name: 'after', description: 'Return all collections after given timestamp', required: false, type: Number })
@@ -62,6 +64,7 @@ export class CollectionController {
     @Query('search') search?: string,
     @Query('identifiers', ParseCollectionArrayPipe) identifiers?: string[],
     @Query('type', new ParseEnumArrayPipe(NftType)) type?: NftType[],
+    @Query('subType', new ParseEnumArrayPipe(NftSubType)) subType?: NftSubType[],
     @Query('creator', ParseAddressPipe) creator?: string,
     @Query('before', new ParseIntPipe) before?: number,
     @Query('after', new ParseIntPipe) after?: number,
@@ -78,6 +81,7 @@ export class CollectionController {
     return await this.collectionService.getNftCollections(new QueryPagination({ from, size }), new CollectionFilter({
       search,
       type,
+      subType,
       identifiers,
       canCreate: canCreate ?? creator,
       before,
@@ -111,6 +115,7 @@ export class CollectionController {
   async getCollectionCount(
     @Query('search') search?: string,
     @Query('type', new ParseEnumArrayPipe(NftType)) type?: NftType[],
+    @Query('subType', new ParseEnumArrayPipe(NftSubType)) subType?: NftSubType[],
     @Query('creator', ParseAddressPipe) creator?: string,
     @Query('before', new ParseIntPipe) before?: number,
     @Query('after', new ParseIntPipe) after?: number,
@@ -125,6 +130,7 @@ export class CollectionController {
     return await this.collectionService.getNftCollectionCount(new CollectionFilter({
       search,
       type,
+      subType,
       canCreate: canCreate ?? creator,
       before,
       after,

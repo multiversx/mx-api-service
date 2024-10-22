@@ -69,8 +69,8 @@ export class GetNftsAccountInput {
   @Field(() => [ID], { name: "identifiers", description: "NFT comma-separated identifiers list to retrieve for the given result set.", nullable: true })
   identifiers: Array<string> | undefined = undefined;
 
-  @Field(() => NftType, { name: "type", description: "NFT type to retrieve for the given result set.", nullable: true })
-  type: NftType | undefined = undefined;
+  @Field(() => [NftType], { name: "type", description: "NFT type to retrieve for the given result set.", nullable: true })
+  type: Array<NftType> | undefined = undefined;
 
   @Field(() => [String], { name: "collections", description: "Collections to retrieve for the given result set.", nullable: true })
   collections: Array<string> | undefined = undefined;
