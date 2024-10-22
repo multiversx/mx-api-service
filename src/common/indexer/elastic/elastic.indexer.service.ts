@@ -803,8 +803,6 @@ export class ElasticIndexerService implements IndexerInterface {
       }
     }
 
-    console.log({ subType: filter.subType });
-
     const elasticQuery = ElasticQuery.create()
       .withMustExistCondition('identifier')
       .withMustMatchCondition('address', address)
