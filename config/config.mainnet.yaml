@@ -106,6 +106,9 @@ features:
   providersFetch:
     enabled: true
     serviceUrl: 'https://api.multiversx.com'
+  assetsFetch:
+    enabled: true
+    assetesUrl: 'https://tools.multiversx.com/assets-cdn'
 image:
   width: 600
   height: 600
