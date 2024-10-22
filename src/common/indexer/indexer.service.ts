@@ -225,8 +225,8 @@ export class IndexerService implements IndexerInterface {
   }
 
   @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
-  async getAccounts(queryPagination: QueryPagination, filter: AccountQueryOptions): Promise<Account[]> {
-    return await this.indexerInterface.getAccounts(queryPagination, filter);
+  async getAccounts(queryPagination: QueryPagination, filter: AccountQueryOptions, fields?: string[]): Promise<Account[]> {
+    return await this.indexerInterface.getAccounts(queryPagination, filter, fields);
   }
 
   @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
@@ -447,5 +447,10 @@ export class IndexerService implements IndexerInterface {
   @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
   async getApplicationCount(filter: ApplicationFilter): Promise<number> {
     return await this.indexerInterface.getApplicationCount(filter);
+  }
+
+  @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
+  async getAddressesWithTransfersLast24h(): Promise<string[]> {
+    return await this.indexerInterface.getAddressesWithTransfersLast24h();
   }
 }

@@ -402,12 +402,12 @@ export class PostgresIndexerService implements IndexerInterface {
     return await query.getMany();
   }
 
-   getAccountContracts(): Promise<any[]> {
+  getAccountContracts(): Promise<any[]> {
     throw new Error("Method not implemented.");
   }
 
   getAccountContractsCount(): Promise<number> {
-   throw new Error("Method not implemented.");
+    throw new Error("Method not implemented.");
   }
 
   async getAccountHistory(address: string, { from, size }: QueryPagination): Promise<any[]> {
@@ -688,5 +688,11 @@ export class PostgresIndexerService implements IndexerInterface {
 
   async setAccountTransfersLast24h(_address: string, _transfersLast24h: number): Promise<void> {
     // TODO custom columns cannot be added
+  }
+
+  // eslint-disable-next-line require-await
+  async getAddressesWithTransfersLast24h(): Promise<string[]> {
+    // TODO not implemented
+    return [];
   }
 }
