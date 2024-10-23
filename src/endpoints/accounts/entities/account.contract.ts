@@ -2,7 +2,7 @@ import { Field, Float, ObjectType } from "@nestjs/graphql";
 import { ApiProperty } from "@nestjs/swagger";
 import { AccountAssets } from "src/common/assets/entities/account.assets";
 
-@ObjectType("AccountContract ", { description: "Account contract object type." })
+@ObjectType("AccountContract", { description: "Account contract object type." })
 export class AccountContract {
   constructor(init?: Partial<AccountContract>) {
     Object.assign(this, init);
