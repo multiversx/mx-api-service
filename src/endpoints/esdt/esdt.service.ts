@@ -215,6 +215,7 @@ export class EsdtService {
       type: elasticProperties.type as EsdtType,
       subType: elasticProperties.type as EsdtSubType,
       owner: elasticProperties.currentOwner,
+      ownersHistory: elasticProperties.ownersHistory,
       decimals: elasticProperties.numDecimals,
       canUpgrade: elasticProperties.properties?.canUpgrade ?? false,
       canMint: elasticProperties.properties?.canMint ?? false,
