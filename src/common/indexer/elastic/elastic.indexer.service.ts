@@ -884,7 +884,7 @@ export class ElasticIndexerService implements IndexerInterface {
   async getAllFungibleTokens(): Promise<any[]> {
     const query = ElasticQuery.create()
       .withMustMatchCondition('type', TokenType.FungibleESDT)
-      .withFields(["name", "type", "currentOwner", "numDecimals", "properties", "timestamp", 'ownersHistory'])
+      .withFields(["name", "type", "currentOwner", "numDecimals", "properties", "timestamp", "ownersHistory"])
       .withMustNotExistCondition('identifier')
       .withPagination({ from: 0, size: 1000 });
 
