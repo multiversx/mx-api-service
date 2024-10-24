@@ -1,6 +1,6 @@
 import { HttpStatus, Injectable } from "@nestjs/common";
 import { BinaryUtils } from "@multiversx/sdk-nestjs-common";
-import { ElasticService, ElasticQuery, QueryOperator, QueryType, QueryConditionOptions, ElasticSortOrder, ElasticSortProperty, TermsQuery, RangeGreaterThanOrEqual, MatchQuery } from "@multiversx/sdk-nestjs-elastic";
+import { ElasticQuery, QueryOperator, QueryType, QueryConditionOptions, ElasticSortOrder, ElasticSortProperty, TermsQuery, RangeGreaterThanOrEqual, MatchQuery } from "@multiversx/sdk-nestjs-elastic";
 import { IndexerInterface } from "../indexer.interface";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { CollectionFilter } from "src/endpoints/collections/entities/collection.filter";
@@ -25,6 +25,7 @@ import { MiniBlockFilter } from "src/endpoints/miniblocks/entities/mini.block.fi
 import { AccountHistoryFilter } from "src/endpoints/accounts/entities/account.history.filter";
 import { AccountAssets } from "src/common/assets/entities/account.assets";
 import { NotWritableError } from "../entities/not.writable.error";
+import { ApiElasticService } from "./api.elastic.service";
 import { ApplicationFilter } from "src/endpoints/applications/entities/application.filter";
 import { NftType } from "../entities/nft.type";
 
@@ -36,34 +37,33 @@ export class ElasticIndexerService implements IndexerInterface {
 
   constructor(
     private readonly apiConfigService: ApiConfigService,
-    private readonly elasticService: ElasticService,
     private readonly indexerHelper: ElasticIndexerHelper,
+    private readonly apiElasticService: ApiElasticService,
   ) { }
 
   async getAccountsCount(filter: AccountQueryOptions): Promise<number> {
     const query = this.indexerHelper.buildAccountFilterQuery(filter);
 
-    return await this.elasticService.getCount('accounts', query);
+    return await this.apiElasticService.getCount('accounts', query);
   }
 
   async getScResultsCount(filter: SmartContractResultFilter): Promise<number> {
     const query = this.indexerHelper.buildResultsFilterQuery(filter);
-
-    return await this.elasticService.getCount('operations', query);
+    return await this.apiElasticService.getCount('operations', query);
   }
 
   async getAccountDeploysCount(address: string): Promise<number> {
     const elasticQuery: ElasticQuery = ElasticQuery.create()
       .withCondition(QueryConditionOptions.must, [QueryType.Match("deployer", address)]);
 
-    return await this.elasticService.getCount('scdeploys', elasticQuery);
+    return await this.apiElasticService.getCount('scdeploys', elasticQuery);
   }
 
   async getBlocksCount(filter: BlockFilter): Promise<number> {
     const elasticQuery: ElasticQuery = ElasticQuery.create()
       .withCondition(QueryConditionOptions.must, await this.indexerHelper.buildElasticBlocksFilter(filter));
 
-    return await this.elasticService.getCount('blocks', elasticQuery);
+    return await this.apiElasticService.getCount('blocks', elasticQuery);
   }
 
   async getBlocks(filter: BlockFilter, queryPagination: QueryPagination): Promise<Block[]> {
@@ -78,28 +78,28 @@ export class ElasticIndexerService implements IndexerInterface {
       { name: "shardId", order: ElasticSortOrder.ascending },
     ]);
 
-    const result = await this.elasticService.getList('blocks', 'hash', elasticQuery);
+    const result = await this.apiElasticService.getList('blocks', 'hash', elasticQuery);
     return result;
   }
 
   async getNftCollectionCount(filter: CollectionFilter): Promise<number> {
     const elasticQuery = this.indexerHelper.buildCollectionRolesFilter(filter);
-    return await this.elasticService.getCount('tokens', elasticQuery);
+    return await this.apiElasticService.getCount('tokens', elasticQuery);
   }
 
   async getNftCountForAddress(address: string, filter: NftFilter): Promise<number> {
     const elasticQuery = this.indexerHelper.buildElasticNftFilter(filter, undefined, address);
-    return await this.elasticService.getCount('accountsesdt', elasticQuery);
+    return await this.apiElasticService.getCount('accountsesdt', elasticQuery);
   }
 
   async getCollectionCountForAddress(address: string, filter: CollectionFilter): Promise<number> {
     const elasticQuery = this.indexerHelper.buildCollectionRolesFilter(filter, address);
-    return await this.elasticService.getCount('tokens', elasticQuery);
+    return await this.apiElasticService.getCount('tokens', elasticQuery);
   }
 
   async getNftCount(filter: NftFilter): Promise<number> {
     const elasticQuery = this.indexerHelper.buildElasticNftFilter(filter);
-    return await this.elasticService.getCount('tokens', elasticQuery);
+    return await this.apiElasticService.getCount('tokens', elasticQuery);
   }
 
   async getNftOwnersCount(identifier: string): Promise<number> {
@@ -107,13 +107,12 @@ export class ElasticIndexerService implements IndexerInterface {
       .withCondition(QueryConditionOptions.mustNot, [QueryType.Match('address', 'pending')])
       .withCondition(QueryConditionOptions.must, [QueryType.Match('identifier', identifier, QueryOperator.AND)]);
 
-    return await this.elasticService.getCount('accountsesdt', elasticQuery);
+    return await this.apiElasticService.getCount('accountsesdt', elasticQuery);
   }
 
   async getTransfersCount(filter: TransactionFilter): Promise<number> {
     const elasticQuery = this.indexerHelper.buildTransferFilterQuery(filter);
-
-    return await this.elasticService.getCount('operations', elasticQuery);
+    return await this.apiElasticService.getCount('operations', elasticQuery);
   }
 
   async getTokenCountForAddress(address: string, filter: TokenFilter): Promise<number> {
@@ -122,7 +121,7 @@ export class ElasticIndexerService implements IndexerInterface {
 
     query = this.buildTokenFilter(query, filter);
 
-    return await this.elasticService.getCount('accountsesdt', query);
+    return await this.apiElasticService.getCount('accountsesdt', query);
   }
 
   async getTokensForAddress(address: string, queryPagination: QueryPagination, filter: TokenFilter): Promise<any[]> {
@@ -132,14 +131,14 @@ export class ElasticIndexerService implements IndexerInterface {
 
     query = this.buildTokenFilter(query, filter);
 
-    return await this.elasticService.getList('accountsesdt', 'token', query);
+    return await this.apiElasticService.getList('accountsesdt', 'token', query);
   }
 
   async getTokenAccountsCount(identifier: string): Promise<number | undefined> {
     const elasticQuery: ElasticQuery = ElasticQuery.create()
       .withCondition(QueryConditionOptions.must, [QueryType.Match("token", identifier, QueryOperator.AND)]);
 
-    const count = await this.elasticService.getCount("accountsesdt", elasticQuery);
+    const count = await this.apiElasticService.getCount("accountsesdt", elasticQuery);
     return count;
   }
 
@@ -150,32 +149,31 @@ export class ElasticIndexerService implements IndexerInterface {
       .withCondition(QueryConditionOptions.must, [QueryType.Match("token", identifier, QueryOperator.AND)])
       .withCondition(QueryConditionOptions.mustNot, [QueryType.Match('address', 'pending')]);
 
-    return await this.elasticService.getList("accountsesdt", identifier, elasticQuery);
+    return await this.apiElasticService.getList("accountsesdt", identifier, elasticQuery);
   }
 
   async getTokensWithRolesForAddressCount(address: string, filter: TokenWithRolesFilter): Promise<number> {
     const elasticQuery = this.indexerHelper.buildTokensWithRolesForAddressQuery(address, filter);
-    return await this.elasticService.getCount('tokens', elasticQuery);
+    return await this.apiElasticService.getCount('tokens', elasticQuery);
   }
 
   async getNftTagCount(search?: string): Promise<number> {
     const query = ElasticQuery.create()
       .withSearchWildcardCondition(search, ['tag']);
 
-    return await this.elasticService.getCount('tags', query);
+    return await this.apiElasticService.getCount('tags', query);
   }
 
   async getRoundCount(filter: RoundFilter): Promise<number> {
     const elasticQuery: ElasticQuery = ElasticQuery.create()
       .withCondition(QueryConditionOptions.must, await this.indexerHelper.buildElasticRoundsFilter(filter));
 
-    return await this.elasticService.getCount('rounds', elasticQuery);
+    return await this.apiElasticService.getCount('rounds', elasticQuery);
   }
 
   async getAccountScResultsCount(address: string): Promise<number> {
-    const query = this.indexerHelper.buildSmartContractResultFilterQuery(address);
-
-    return await this.elasticService.getCount('operations', query);
+    const elasticQuery: ElasticQuery = this.indexerHelper.buildSmartContractResultFilterQuery(address);
+    return await this.apiElasticService.getCount('operations', elasticQuery);
   }
 
   async getTransactionCountForAddress(address: string): Promise<number> {
@@ -187,31 +185,31 @@ export class ElasticIndexerService implements IndexerInterface {
       .withMustMatchCondition('type', 'normal')
       .withCondition(QueryConditionOptions.should, queries);
 
-    return await this.elasticService.getCount('operations', elasticQuery);
+    return await this.apiElasticService.getCount('operations', elasticQuery);
   }
 
   async getTransactionCount(filter: TransactionFilter, address?: string): Promise<number> {
     const elasticQuery = this.indexerHelper.buildTransactionFilterQuery(filter, address);
-    return await this.elasticService.getCount('operations', elasticQuery);
+    return await this.apiElasticService.getCount('operations', elasticQuery);
   }
 
   async getRound(shard: number, round: number): Promise<any> {
-    return await this.elasticService.getItem('rounds', 'round', `${shard}_${round}`);
+    return await this.apiElasticService.getItem('rounds', 'round', `${shard}_${round}`);
   }
 
   async getToken(identifier: string): Promise<any> {
-    return await this.elasticService.getItem('tokens', 'identifier', identifier);
+    return await this.apiElasticService.getItem('tokens', 'identifier', identifier);
   }
 
   async getCollection(identifier: string): Promise<any> {
-    return await this.elasticService.getItem('tokens', '_id', identifier);
+    return await this.apiElasticService.getItem('tokens', '_id', identifier);
   }
 
   async getVersion(): Promise<string | undefined> {
     const query = ElasticQuery.create()
       .withMustMatchCondition('key', 'indexer-version');
 
-    const result = await this.elasticService.getList('values', '_search', query);
+    const result = await this.apiElasticService.getList('values', '_search', query);
 
     if (result && result.length > 0) {
       return result[0].value;
@@ -221,7 +219,7 @@ export class ElasticIndexerService implements IndexerInterface {
   }
 
   async getTransaction(txHash: string): Promise<any> {
-    const transaction = await this.elasticService.getItem('operations', 'txHash', txHash);
+    const transaction = await this.apiElasticService.getItem('operations', 'txHash', txHash);
 
     this.processTransaction(transaction);
 
@@ -229,11 +227,11 @@ export class ElasticIndexerService implements IndexerInterface {
   }
 
   async getScDeploy(address: string): Promise<any> {
-    return await this.elasticService.getItem('scdeploys', '_id', address);
+    return await this.apiElasticService.getItem('scdeploys', '_id', address);
   }
 
   async getScResult(scHash: string): Promise<any> {
-    const result = await this.elasticService.getItem('operations', 'hash', scHash);
+    const result = await this.apiElasticService.getItem('operations', 'hash', scHash);
     if (result?.type !== 'unsigned') {
       return undefined;
     }
@@ -244,15 +242,15 @@ export class ElasticIndexerService implements IndexerInterface {
   }
 
   async getBlock(hash: string): Promise<Block> {
-    return await this.elasticService.getItem('blocks', 'hash', hash);
+    return await this.apiElasticService.getItem('blocks', 'hash', hash);
   }
 
   async getMiniBlock(miniBlockHash: string): Promise<any> {
-    return await this.elasticService.getItem('miniblocks', 'miniBlockHash', miniBlockHash);
+    return await this.apiElasticService.getItem('miniblocks', 'miniBlockHash', miniBlockHash);
   }
 
   async getTag(tag: string): Promise<Tag> {
-    return await this.elasticService.getItem('tags', 'tag', BinaryUtils.base64Encode(tag));
+    return await this.apiElasticService.getItem('tags', 'tag', BinaryUtils.base64Encode(tag));
   }
 
   async getTransfers(filter: TransactionFilter, pagination: QueryPagination): Promise<any[]> {
@@ -265,7 +263,7 @@ export class ElasticIndexerService implements IndexerInterface {
       .withPagination({ from: pagination.from, size: pagination.size })
       .withSort([timestamp, nonce]);
 
-    const elasticOperations = await this.elasticService.getList('operations', 'txHash', elasticQuery);
+    const elasticOperations = await this.apiElasticService.getList('operations', 'txHash', elasticQuery);
 
     for (const operation of elasticOperations) {
       this.processTransaction(operation);
@@ -276,7 +274,7 @@ export class ElasticIndexerService implements IndexerInterface {
 
   async getTokensWithRolesForAddress(address: string, filter: TokenWithRolesFilter, pagination: QueryPagination): Promise<any[]> {
     const elasticQuery = this.indexerHelper.buildTokensWithRolesForAddressQuery(address, filter, pagination);
-    const tokenList = await this.elasticService.getList('tokens', 'identifier', elasticQuery);
+    const tokenList = await this.apiElasticService.getList('tokens', 'identifier', elasticQuery);
     return tokenList;
   }
 
@@ -288,7 +286,7 @@ export class ElasticIndexerService implements IndexerInterface {
       .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }])
       .withCondition(filter.condition ?? QueryConditionOptions.must, await this.indexerHelper.buildElasticRoundsFilter(filter));
 
-    return await this.elasticService.getList('rounds', 'round', elasticQuery);
+    return await this.apiElasticService.getList('rounds', 'round', elasticQuery);
   }
 
   async getNftCollections(pagination: QueryPagination, filter: CollectionFilter, address?: string): Promise<any[]> {
@@ -309,7 +307,7 @@ export class ElasticIndexerService implements IndexerInterface {
       ]);
     }
 
-    return await this.elasticService.getList('tokens', 'identifier', elasticQuery);
+    return await this.apiElasticService.getList('tokens', 'identifier', elasticQuery);
   }
 
   async getNftCollectionsByIds(identifiers: string[]): Promise<any[]> {
@@ -318,7 +316,7 @@ export class ElasticIndexerService implements IndexerInterface {
       .withMustNotExistCondition('identifier')
       .withMustMultiShouldCondition(identifiers, identifier => QueryType.Match('token', identifier, QueryOperator.AND));
 
-    return await this.elasticService.getList('tokens', 'identifier', elasticQuery);
+    return await this.apiElasticService.getList('tokens', 'identifier', elasticQuery);
   }
 
   async getSmartContractResults(transactionHashes: string[]): Promise<any[]> {
@@ -328,7 +326,7 @@ export class ElasticIndexerService implements IndexerInterface {
       .withSort([{ name: 'timestamp', order: ElasticSortOrder.ascending }])
       .withTerms(new TermsQuery('originalTxHash', transactionHashes));
 
-    return await this.elasticService.getList('operations', 'scHash', elasticQuery);
+    return await this.apiElasticService.getList('operations', 'scHash', elasticQuery);
   }
 
   async getAccountsForAddresses(addresses: string[]): Promise<any[]> {
@@ -336,7 +334,7 @@ export class ElasticIndexerService implements IndexerInterface {
       .withPagination({ from: 0, size: addresses.length + 1 })
       .withTerms(new TermsQuery('address', addresses));
 
-    return await this.elasticService.getList('accounts', 'address', elasticQuery);
+    return await this.apiElasticService.getList('accounts', 'address', elasticQuery);
   }
 
   async getAccountEsdtByAddressesAndIdentifier(identifier: string, addresses: string[]): Promise<any[]> {
@@ -353,7 +351,7 @@ export class ElasticIndexerService implements IndexerInterface {
       .withRangeFilter("balanceNum", new RangeGreaterThanOrEqual(0))
       .withCondition(QueryConditionOptions.should, queries);
 
-    return await this.elasticService.getList('accountsesdt', 'identifier', elasticQuery);
+    return await this.apiElasticService.getList('accountsesdt', 'identifier', elasticQuery);
   }
 
   async getNftTags(pagination: QueryPagination, search?: string): Promise<any[]> {
@@ -362,14 +360,14 @@ export class ElasticIndexerService implements IndexerInterface {
       .withSearchWildcardCondition(search, ['tag'])
       .withSort([{ name: 'count', order: ElasticSortOrder.descending }]);
 
-    return await this.elasticService.getList('tags', 'tag', elasticQuery);
+    return await this.apiElasticService.getList('tags', 'tag', elasticQuery);
   }
 
   async getScResults(pagination: QueryPagination, filter: SmartContractResultFilter): Promise<any[]> {
     const elasticQuery: ElasticQuery = this.indexerHelper.buildResultsFilterQuery(filter)
       .withPagination(pagination);
 
-    const results = await this.elasticService.getList('operations', 'hash', elasticQuery);
+    const results = await this.apiElasticService.getList('operations', 'hash', elasticQuery);
 
     for (const result of results) {
       this.processTransaction(result);
@@ -391,7 +389,7 @@ export class ElasticIndexerService implements IndexerInterface {
       query = query.withCondition(QueryConditionOptions.must, [QueryType.Match("type", filter.type)]);
     }
 
-    return await this.elasticService.getList('miniblocks', 'miniBlockHash', query);
+    return await this.apiElasticService.getList('miniblocks', 'miniBlockHash', query);
   }
 
   async getAccountScResults(address: string, pagination: QueryPagination): Promise<any[]> {
@@ -399,7 +397,7 @@ export class ElasticIndexerService implements IndexerInterface {
       .withPagination(pagination)
       .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }]);
 
-    return await this.elasticService.getList('operations', 'hash', elasticQuery);
+    return await this.apiElasticService.getList('operations', 'hash', elasticQuery);
   }
 
   async getAccounts(queryPagination: QueryPagination, filter: AccountQueryOptions): Promise<any[]> {
@@ -427,11 +425,11 @@ export class ElasticIndexerService implements IndexerInterface {
 
     elasticQuery = elasticQuery.withPagination(queryPagination);
 
-    return await this.elasticService.getList('accounts', 'address', elasticQuery);
+    return await this.apiElasticService.getList('accounts', 'address', elasticQuery);
   }
 
   async getAccount(address: string): Promise<any> {
-    return await this.elasticService.getItem(
+    return await this.apiElasticService.getItem(
       'accounts',
       'address',
       address
@@ -444,7 +442,7 @@ export class ElasticIndexerService implements IndexerInterface {
       .withCondition(QueryConditionOptions.must, [QueryType.Match("deployer", address)])
       .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }]);
 
-    return await this.elasticService.getList('scdeploys', "contract", elasticQuery);
+    return await this.apiElasticService.getList('scdeploys', "contract", elasticQuery);
   }
 
   async getAccountContracts(pagination: QueryPagination, address: string): Promise<any[]> {
@@ -453,14 +451,14 @@ export class ElasticIndexerService implements IndexerInterface {
       .withCondition(QueryConditionOptions.must, [QueryType.Match("currentOwner", address)])
       .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }]);
 
-    return await this.elasticService.getList('scdeploys', "contract", elasticQuery);
+    return await this.apiElasticService.getList('scdeploys', "contract", elasticQuery);
   }
 
   async getAccountContractsCount(address: string): Promise<number> {
     const elasticQuery: ElasticQuery = ElasticQuery.create()
       .withCondition(QueryConditionOptions.must, [QueryType.Match("currentOwner", address)]);
 
-    return await this.elasticService.getCount('scdeploys', elasticQuery);
+    return await this.apiElasticService.getCount('scdeploys', elasticQuery);
   }
 
   async getProviderDelegators(address: string, pagination: QueryPagination): Promise<any[]> {
@@ -469,21 +467,21 @@ export class ElasticIndexerService implements IndexerInterface {
       .withCondition(QueryConditionOptions.must, [QueryType.Match("contract", address)])
       .withSort([{ name: 'activeStake', order: ElasticSortOrder.descending }]);
 
-    return await this.elasticService.getList("delegators", "contract", elasticQuery);
+    return await this.apiElasticService.getList("delegators", "contract", elasticQuery);
   }
 
   async getProviderDelegatorsCount(address: string): Promise<number> {
     const elasticQuery: ElasticQuery = ElasticQuery.create()
       .withCondition(QueryConditionOptions.must, [QueryType.Match("contract", address)]);
 
-    return await this.elasticService.getCount('delegators', elasticQuery);
+    return await this.apiElasticService.getCount('delegators', elasticQuery);
   }
   async getAccountHistory(address: string, pagination: QueryPagination, filter?: AccountHistoryFilter): Promise<any[]> {
     const elasticQuery: ElasticQuery = this.indexerHelper.buildAccountHistoryFilterQuery(address, undefined, filter)
       .withPagination(pagination)
       .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }]);
 
-    return await this.elasticService.getList('accountshistory', 'address', elasticQuery);
+    return await this.apiElasticService.getList('accountshistory', 'address', elasticQuery);
   }
 
   async getAccountTokenHistory(address: string, tokenIdentifier: string, pagination: QueryPagination, filter: AccountHistoryFilter): Promise<any[]> {
@@ -491,19 +489,19 @@ export class ElasticIndexerService implements IndexerInterface {
       .withPagination(pagination)
       .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }]);
 
-    return await this.elasticService.getList('accountsesdthistory', 'address', elasticQuery);
+    return await this.apiElasticService.getList('accountsesdthistory', 'address', elasticQuery);
   }
 
   async getAccountHistoryCount(address: string, filter?: AccountHistoryFilter): Promise<number> {
     const elasticQuery: ElasticQuery = this.indexerHelper.buildAccountHistoryFilterQuery(address, undefined, filter);
 
-    return await this.elasticService.getCount('accountshistory', elasticQuery);
+    return await this.apiElasticService.getCount('accountshistory', elasticQuery);
   }
 
   async getAccountTokenHistoryCount(address: string, tokenIdentifier: string, filter?: AccountHistoryFilter): Promise<number> {
     const elasticQuery: ElasticQuery = this.indexerHelper.buildAccountHistoryFilterQuery(address, tokenIdentifier, filter);
 
-    return await this.elasticService.getCount('accountsesdthistory', elasticQuery);
+    return await this.apiElasticService.getCount('accountsesdthistory', elasticQuery);
   }
 
   async getAccountEsdtHistory(address: string, pagination: QueryPagination, filter: AccountHistoryFilter): Promise<any[]> {
@@ -511,13 +509,13 @@ export class ElasticIndexerService implements IndexerInterface {
       .withPagination(pagination)
       .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }]);
 
-    return await this.elasticService.getList('accountsesdthistory', 'address', elasticQuery);
+    return await this.apiElasticService.getList('accountsesdthistory', 'address', elasticQuery);
   }
 
   async getAccountEsdtHistoryCount(address: string, filter?: AccountHistoryFilter): Promise<number> {
     const elasticQuery: ElasticQuery = this.indexerHelper.buildAccountHistoryFilterQuery(address, undefined, filter);
 
-    return await this.elasticService.getCount('accountsesdthistory', elasticQuery);
+    return await this.apiElasticService.getCount('accountsesdthistory', elasticQuery);
   }
 
   async getTransactions(filter: TransactionFilter, pagination: QueryPagination, address?: string): Promise<any[]> {
@@ -530,7 +528,7 @@ export class ElasticIndexerService implements IndexerInterface {
       .withPagination({ from: pagination.from, size: pagination.size })
       .withSort([timestamp, nonce]);
 
-    const transactions = await this.elasticService.getList('operations', 'txHash', elasticQuery);
+    const transactions = await this.apiElasticService.getList('operations', 'txHash', elasticQuery);
 
     for (const transaction of transactions) {
       this.processTransaction(transaction);
@@ -585,7 +583,7 @@ export class ElasticIndexerService implements IndexerInterface {
       .withPagination({ from: 0, size: 10000 })
       .withCondition(QueryConditionOptions.should, queries);
 
-    return await this.elasticService.getList('logs', 'id', elasticQueryLogs);
+    return await this.apiElasticService.getList('logs', 'id', elasticQueryLogs);
   }
 
   async getTransactionScResults(txHash: string): Promise<any[]> {
@@ -598,7 +596,7 @@ export class ElasticIndexerService implements IndexerInterface {
       .withSort([timestamp])
       .withCondition(QueryConditionOptions.must, [originalTxHashQuery]);
 
-    const results = await this.elasticService.getList('operations', 'hash', elasticQuerySc);
+    const results = await this.apiElasticService.getList('operations', 'hash', elasticQuerySc);
 
     for (const result of results) {
       this.processTransaction(result);
@@ -622,7 +620,7 @@ export class ElasticIndexerService implements IndexerInterface {
       .withSort([{ name: 'timestamp', order: ElasticSortOrder.ascending }])
       .withMustMultiShouldCondition(hashes, hash => QueryType.Match('originalTxHash', hash));
 
-    return await this.elasticService.getList('operations', 'scHash', elasticQuery);
+    return await this.apiElasticService.getList('operations', 'scHash', elasticQuery);
   }
 
   async getAccountEsdtByIdentifiers(identifiers: string[], pagination?: QueryPagination) {
@@ -644,7 +642,7 @@ export class ElasticIndexerService implements IndexerInterface {
       .withCondition(QueryConditionOptions.should, queries)
       .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }]);
 
-    return await this.elasticService.getList('accountsesdt', 'identifier', elasticQuery);
+    return await this.apiElasticService.getList('accountsesdt', 'identifier', elasticQuery);
   }
 
   async getAccountsEsdtByCollection(identifiers: string[], pagination?: QueryPagination) {
@@ -666,7 +664,7 @@ export class ElasticIndexerService implements IndexerInterface {
       .withCondition(QueryConditionOptions.should, queries)
       .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }]);
 
-    return await this.elasticService.getList('accountsesdt', 'identifier', elasticQuery);
+    return await this.apiElasticService.getList('accountsesdt', 'identifier', elasticQuery);
   }
 
   async getNftsForAddress(address: string, filter: NftFilter, pagination: QueryPagination): Promise<any[]> {
@@ -677,7 +675,7 @@ export class ElasticIndexerService implements IndexerInterface {
         { name: 'tokenNonce', order: ElasticSortOrder.descending },
       ]);
 
-    return await this.elasticService.getList('accountsesdt', 'identifier', elasticQuery);
+    return await this.apiElasticService.getList('accountsesdt', 'identifier', elasticQuery);
   }
 
   async getNfts(pagination: QueryPagination, filter: NftFilter, identifier?: string): Promise<any[]> {
@@ -695,9 +693,9 @@ export class ElasticIndexerService implements IndexerInterface {
       ]);
     }
 
-    let elasticNfts = await this.elasticService.getList('tokens', 'identifier', elasticQuery);
+    let elasticNfts = await this.apiElasticService.getList('tokens', 'identifier', elasticQuery);
     if (elasticNfts.length === 0 && identifier !== undefined) {
-      elasticNfts = await this.elasticService.getList('accountsesdt', 'identifier', ElasticQuery.create().withMustMatchCondition('identifier', identifier, QueryOperator.AND));
+      elasticNfts = await this.apiElasticService.getList('accountsesdt', 'identifier', ElasticQuery.create().withMustMatchCondition('identifier', identifier, QueryOperator.AND));
     }
     return elasticNfts;
   }
@@ -713,7 +711,7 @@ export class ElasticIndexerService implements IndexerInterface {
       .withPagination({ from: 0, size: 1 })
       .withCondition(QueryConditionOptions.must, queries);
 
-    return await this.elasticService.getList('operations', 'txHash', elasticQuery);
+    return await this.apiElasticService.getList('operations', 'txHash', elasticQuery);
   }
 
   async getTransactionReceipts(txHash: string): Promise<any[]> {
@@ -722,7 +720,7 @@ export class ElasticIndexerService implements IndexerInterface {
       .withPagination({ from: 0, size: 1 })
       .withCondition(QueryConditionOptions.must, [receiptHashQuery]);
 
-    return await this.elasticService.getList('receipts', 'receiptHash', elasticQueryReceipts);
+    return await this.apiElasticService.getList('receipts', 'receiptHash', elasticQueryReceipts);
   }
 
   async getAllTokensMetadata(action: (items: any[]) => Promise<void>): Promise<void> {
@@ -737,14 +735,14 @@ export class ElasticIndexerService implements IndexerInterface {
       .withMustMultiShouldCondition([EsdtType.NonFungibleESDT, EsdtType.SemiFungibleESDT], type => QueryType.Match('type', type))
       .withPagination({ from: 0, size: 10000 });
 
-    return await this.elasticService.getScrollableList('tokens', 'identifier', query, action);
+    return await this.apiElasticService.getScrollableList('tokens', 'identifier', query, action);
   }
 
   async getEsdtAccountsCount(identifier: string): Promise<number> {
     const elasticQuery: ElasticQuery = ElasticQuery.create()
       .withCondition(QueryConditionOptions.must, [QueryType.Match("token", identifier, QueryOperator.AND)]);
 
-    const count = await this.elasticService.getCount("accountsesdt", elasticQuery);
+    const count = await this.apiElasticService.getCount("accountsesdt", elasticQuery);
     return count;
   }
 
@@ -753,7 +751,7 @@ export class ElasticIndexerService implements IndexerInterface {
       .withPagination({ from: 0, size: 10000 })
       .withMustMatchCondition('token', identifier, QueryOperator.AND);
 
-    return await this.elasticService.getScrollableList('accountsesdt', 'id', query, action);
+    return await this.apiElasticService.getScrollableList('accountsesdt', 'id', query, action);
   }
 
   async getPublicKeys(shard: number, epoch: number): Promise<string[] | undefined> {
@@ -761,7 +759,7 @@ export class ElasticIndexerService implements IndexerInterface {
 
     const url = `${this.apiConfigService.getElasticUrl()}/validators/_search?q=_id:${key}`;
 
-    const result = await this.elasticService.get(url);
+    const result = await this.apiElasticService.get(url);
 
     const hits = result.data?.hits?.hits;
     if (hits && hits.length > 0) {
@@ -840,7 +838,7 @@ export class ElasticIndexerService implements IndexerInterface {
         },
       });
 
-    const result = await this.elasticService.post(`${this.apiConfigService.getElasticUrl()}/accountsesdt/_search`, elasticQuery.toJson());
+    const result = await this.apiElasticService.post(`${this.apiConfigService.getElasticUrl()}/accountsesdt/_search`, elasticQuery.toJson());
 
     const buckets = result?.data?.aggregations?.collections?.buckets;
 
@@ -856,27 +854,27 @@ export class ElasticIndexerService implements IndexerInterface {
 
 
   async getAssetsForToken(identifier: string): Promise<any> {
-    return await this.elasticService.getCustomValue('tokens', identifier, 'assets');
+    return await this.apiElasticService.getCustomValue('tokens', identifier, 'assets');
   }
 
   async setAssetsForToken(identifier: string, value: any): Promise<void> {
-    return await this.elasticService.setCustomValue('tokens', identifier, 'assets', value);
+    return await this.apiElasticService.setCustomValue('tokens', identifier, 'assets', value);
   }
 
   async setIsWhitelistedStorageForToken(identifier: string, value: boolean): Promise<void> {
-    return await this.elasticService.setCustomValue('tokens', identifier, 'isWhitelistedStorage', value);
+    return await this.apiElasticService.setCustomValue('tokens', identifier, 'isWhitelistedStorage', value);
   }
 
   async setMediaForToken(identifier: string, value: any[]): Promise<void> {
-    return await this.elasticService.setCustomValue('tokens', identifier, 'media', value);
+    return await this.apiElasticService.setCustomValue('tokens', identifier, 'media', value);
   }
 
   async setMetadataForToken(identifier: string, value: any): Promise<void> {
-    return await this.elasticService.setCustomValue('tokens', identifier, 'metadata', value);
+    return await this.apiElasticService.setCustomValue('tokens', identifier, 'metadata', value);
   }
 
   async getEsdtProperties(identifier: string): Promise<any> {
-    return await this.elasticService.getItem(
+    return await this.apiElasticService.getItem(
       'tokens',
       'identifier',
       identifier
@@ -892,7 +890,7 @@ export class ElasticIndexerService implements IndexerInterface {
 
     const allTokens: any[] = [];
 
-    await this.elasticService.getScrollableList(
+    await this.apiElasticService.getScrollableList(
       'tokens',
       'identifier',
       query,
@@ -905,7 +903,7 @@ export class ElasticIndexerService implements IndexerInterface {
   }
 
   async setExtraCollectionFields(identifier: string, isVerified: boolean, holderCount: number, nftCount: number): Promise<void> {
-    return await this.elasticService.setCustomValues('tokens', identifier, {
+    return await this.apiElasticService.setCustomValues('tokens', identifier, {
       isVerified,
       holderCount,
       nftCount,
@@ -913,7 +911,7 @@ export class ElasticIndexerService implements IndexerInterface {
   }
 
   async setAccountAssetsFields(address: string, assets: AccountAssets): Promise<void> {
-    return await this.elasticService.setCustomValues('accounts', address, { assets });
+    return await this.apiElasticService.setCustomValues('accounts', address, { assets });
   }
 
   async ensureAccountsWritable(): Promise<void> {
@@ -926,7 +924,7 @@ export class ElasticIndexerService implements IndexerInterface {
 
   private async ensureCollectionWritable(collection: string) {
     const query = new ElasticQuery().withPagination({ from: 0, size: 1 });
-    const items = await this.elasticService.getList(collection, 'id', query);
+    const items = await this.apiElasticService.getList(collection, 'id', query);
 
     if (items.length === 0) {
       throw new Error(`No entries available in the '${collection}' collection`);
@@ -935,7 +933,7 @@ export class ElasticIndexerService implements IndexerInterface {
     const item = items[0];
 
     try {
-      await this.elasticService.setCustomValue(collection, item.id, 'ensureWritable', undefined);
+      await this.apiElasticService.setCustomValue(collection, item.id, 'ensureWritable', undefined);
     } catch (error) {
       // @ts-ignore
       if (error.status === HttpStatus.FORBIDDEN) {
@@ -945,7 +943,7 @@ export class ElasticIndexerService implements IndexerInterface {
   }
 
   async setAccountTransfersLast24h(address: string, transfersLast24h: number): Promise<void> {
-    return await this.elasticService.setCustomValues('accounts', address, {
+    return await this.apiElasticService.setCustomValues('accounts', address, {
       transfersLast24h,
     });
   }
@@ -956,7 +954,7 @@ export class ElasticIndexerService implements IndexerInterface {
       .withCondition(QueryConditionOptions.must, [QueryType.Match('shardId', shardId, QueryOperator.AND)])
       .withSort([{ name: 'timestamp', order: ElasticSortOrder.ascending }]);
 
-    const blocks: Block[] = await this.elasticService.getList('blocks', '_search', elasticQuery);
+    const blocks: Block[] = await this.apiElasticService.getList('blocks', '_search', elasticQuery);
 
     return blocks.at(0);
   }
@@ -967,12 +965,12 @@ export class ElasticIndexerService implements IndexerInterface {
       .withFields(['address', 'deployer', 'currentOwner', 'initialCodeHash', 'timestamp'])
       .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }]);
 
-    return await this.elasticService.getList('scdeploys', 'address', elasticQuery);
+    return await this.apiElasticService.getList('scdeploys', 'address', elasticQuery);
   }
 
   async getApplicationCount(filter: ApplicationFilter): Promise<number> {
     const elasticQuery = this.indexerHelper.buildApplicationFilter(filter);
 
-    return await this.elasticService.getCount('scdeploys', elasticQuery);
+    return await this.apiElasticService.getCount('scdeploys', elasticQuery);
   }
 }

@@ -93,6 +93,10 @@ features:
   tps:
     enabled: false
     maxLookBehindNonces: 100
+  elasticCallsTracing:
+    enabled: false
+    logThreshold: 10
+    verboseLogging: false
   nodesFetch:
     enabled: true
     serviceUrl: 'https://devnet-api.multiversx.com'

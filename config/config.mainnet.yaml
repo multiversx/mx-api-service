@@ -99,6 +99,11 @@ features:
     maxLookBehindNonces: 100
   nodesFetch:
     enabled: true
+    maxLookBehindNonces: 100  
+  elasticCallsTracing:
+    enabled: false
+    logThreshold: 10
+    verboseLogging: false
     serviceUrl: 'https://api.multiversx.com'
   tokensFetch:
     enabled: true
