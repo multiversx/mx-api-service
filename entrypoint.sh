@@ -9,7 +9,7 @@
 if [ -n "$MVX_ENV" ] && [ "$MVX_ENV" = "devnet" ]; then
     # Copy config file
     cp ./config/config.${MVX_ENV}.yaml /app/dist/config/config.yaml
-    
+
     if [ $? -eq 0 ]; then
         echo "Config file copied successfully from config/config.${MVX_ENV}.yaml /app/dist/config/config.yaml"
     else
@@ -18,7 +18,7 @@ if [ -n "$MVX_ENV" ] && [ "$MVX_ENV" = "devnet" ]; then
 
 else
     cp ./config/config.devnet.yaml /app/dist/config/config.yaml
-    
+
     if [ $? -eq 0 ]; then
         echo "Default config file copied successfully from config/config.devnet.yaml /app/dist/config/config.yaml"
     else
