@@ -14,7 +14,6 @@ import {
 } from '@multiversx/sdk-nestjs-elastic';
 import { IndexerInterface } from '../indexer.interface';
 import { ApiConfigService } from 'src/common/api-config/api.config.service';
-import { NftType } from 'src/endpoints/nfts/entities/nft.type';
 import { CollectionFilter } from 'src/endpoints/collections/entities/collection.filter';
 import { QueryPagination } from 'src/common/entities/query.pagination';
 import { EsdtType } from 'src/endpoints/esdt/entities/esdt.type';
@@ -40,6 +39,7 @@ import { NotWritableError } from '../entities/not.writable.error';
 import { ApplicationFilter } from 'src/endpoints/applications/entities/application.filter';
 import { Events } from '../entities/events';
 import { EventsFilter } from '../../../endpoints/events/entities/events.filter';
+import { NftType } from '../entities/nft.type';
 
 @Injectable()
 export class ElasticIndexerService implements IndexerInterface {
