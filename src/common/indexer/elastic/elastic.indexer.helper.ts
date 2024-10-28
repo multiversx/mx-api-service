@@ -176,7 +176,12 @@ export class ElasticIndexerHelper {
     }
 
     if (filter.search !== undefined) {
-      elasticQuery = elasticQuery.withSearchWildcardCondition(filter.search, ['token', 'name']);
+      const searchable = filter.search;
+      const conditions: AbstractQuery[] = [];
+      conditions.push(QueryType.Wildcard('data.name', `*${searchable.toLowerCase()}*`));
+      conditions.push(QueryType.Wildcard('data.token', `*${searchable.toLowerCase()}*`));
+
+      elasticQuery = elasticQuery.withMustCondition(QueryType.NestedShould('data', conditions));
     }
 
     if (filter.type) {
@@ -310,10 +315,7 @@ export class ElasticIndexerHelper {
         QueryType.Exists('canBeIgnored'),
       ]))
         .withCondition(QueryConditionOptions.should, QueryType.Must([
-          QueryType.Should([
-            QueryType.Match('type', 'normal'),
-            QueryType.Match('type', 'innerTx'),
-          ]),
+          QueryType.Should([QueryType.Match('type', 'normal')]),
           QueryType.Should([
             QueryType.Match('sender', filter.address),
             QueryType.Match('receiver', filter.address),
