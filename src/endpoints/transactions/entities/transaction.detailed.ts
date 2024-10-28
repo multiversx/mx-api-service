@@ -6,8 +6,6 @@ import { TransactionReceipt } from './transaction.receipt';
 import { TransactionLog } from './transaction.log';
 import { TransactionOperation } from './transaction.operation';
 import { ComplexityEstimation } from '@multiversx/sdk-nestjs-common';
-import { TransactionInner } from 'src/common/gateway/entities/transaction.inner';
-
 @ObjectType(TransactionDetailed.name, { description: 'Detailed Transaction object type that extends Transaction.' })
 export class TransactionDetailed extends Transaction {
   constructor(init?: Partial<TransactionDetailed>) {
@@ -65,8 +63,4 @@ export class TransactionDetailed extends Transaction {
   @Field(() => String, { description: "Relayed transaction version.", nullable: true })
   @ApiProperty({ type: String, nullable: true })
   relayedVersion: string | undefined = undefined;
-
-  // @Field(() => [TransactionInner], { description: 'Inner transactions list details.', nullable: true })
-  @ApiProperty({ type: TransactionInner, isArray: true })
-  innerTransactions: TransactionInner[] | undefined = undefined;
 }
