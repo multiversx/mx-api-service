@@ -400,6 +400,10 @@ export class ElasticIndexerHelper {
         ]));
     }
 
+    if (filter.round) {
+      elasticQuery = elasticQuery.withMustMatchCondition('round', filter.round);
+    }
+
     return elasticQuery;
   }
 
@@ -528,6 +532,10 @@ export class ElasticIndexerHelper {
 
     if (filter.isRelayed) {
       elasticQuery = elasticQuery.withMustMatchCondition('isRelayed', filter.isRelayed);
+    }
+
+    if (filter.round) {
+      elasticQuery = elasticQuery.withMustMatchCondition('round', filter.round);
     }
 
     if (filter.condition === QueryConditionOptions.should) {
