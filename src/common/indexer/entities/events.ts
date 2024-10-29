@@ -1,5 +1,5 @@
 export class Events {
-  txHash: string = '';
+  _id: string = '';
   logAddress: string = '';
   identifier: string = '';
   address: string = '';

@@ -983,11 +983,11 @@ export class ElasticIndexerService implements IndexerInterface {
       .withPagination(pagination)
       .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }]);
 
-    return await this.elasticService.getList('events', 'txHash', elasticQuery);
+    return await this.elasticService.getList('events', '_id', elasticQuery);
   }
 
   async getEvent(txHash: string): Promise<Events> {
-    return await this.elasticService.getItem('events', 'txHash', txHash);
+    return await this.elasticService.getItem('events', '_id', txHash);
   }
 
   async getEventsCount(filter: EventsFilter): Promise<number> {
