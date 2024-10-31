@@ -3,7 +3,6 @@ import { BinaryUtils } from "@multiversx/sdk-nestjs-common";
 import { ElasticService, ElasticQuery, QueryOperator, QueryType, QueryConditionOptions, ElasticSortOrder, ElasticSortProperty, TermsQuery, RangeGreaterThanOrEqual, MatchQuery } from "@multiversx/sdk-nestjs-elastic";
 import { IndexerInterface } from "../indexer.interface";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
-import { NftType } from "src/endpoints/nfts/entities/nft.type";
 import { CollectionFilter } from "src/endpoints/collections/entities/collection.filter";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { EsdtType } from "src/endpoints/esdt/entities/esdt.type";
@@ -27,10 +26,16 @@ import { AccountHistoryFilter } from "src/endpoints/accounts/entities/account.hi
 import { AccountAssets } from "src/common/assets/entities/account.assets";
 import { NotWritableError } from "../entities/not.writable.error";
 import { ApplicationFilter } from "src/endpoints/applications/entities/application.filter";
-
+import { NftType } from "../entities/nft.type";
+import { EventsFilter } from "src/endpoints/events/entities/events.filter";
+import { Events } from "../entities/events";
 
 @Injectable()
 export class ElasticIndexerService implements IndexerInterface {
+  private nonFungibleEsdtTypes: NftType[] = [NftType.NonFungibleESDT, NftType.NonFungibleESDTv2, NftType.DynamicNonFungibleESDT];
+  private semiFungibleEsdtTypes: NftType[] = [NftType.SemiFungibleESDT, NftType.DynamicSemiFungibleESDT];
+  private metaEsdtTypes: NftType[] = [NftType.MetaESDT, NftType.DynamicMetaESDT];
+
   constructor(
     private readonly apiConfigService: ApiConfigService,
     private readonly elasticService: ElasticService,
@@ -774,10 +779,33 @@ export class ElasticIndexerService implements IndexerInterface {
     filter: CollectionFilter,
     pagination: QueryPagination
   ): Promise<{ collection: string, count: number, balance: number }[]> {
-    const types = [NftType.SemiFungibleESDT, NftType.NonFungibleESDT];
+    let filterTypes = [...this.nonFungibleEsdtTypes, ...this.semiFungibleEsdtTypes];
+
     if (!filter.excludeMetaESDT) {
-      types.push(NftType.MetaESDT);
+      filterTypes.push(...this.metaEsdtTypes);
     }
+
+    if (filter.type && filter.type.length > 0) {
+      filterTypes = [];
+
+      for (const type of filter.type) {
+        switch (type) {
+          case NftType.NonFungibleESDT:
+            filterTypes.push(...this.nonFungibleEsdtTypes);
+            break;
+          case NftType.SemiFungibleESDT:
+            filterTypes.push(...this.semiFungibleEsdtTypes);
+            break;
+          case NftType.MetaESDT:
+            filterTypes.push(...this.metaEsdtTypes);
+            break;
+          default:
+            filterTypes.push(type);
+        }
+      }
+    }
+
+    console.log({ subType: filter.subType });
 
     const elasticQuery = ElasticQuery.create()
       .withMustExistCondition('identifier')
@@ -786,8 +814,8 @@ export class ElasticIndexerService implements IndexerInterface {
       .withMustMatchCondition('token', filter.collection, QueryOperator.AND)
       .withMustMultiShouldCondition(filter.identifiers, identifier => QueryType.Match('token', identifier, QueryOperator.AND))
       .withSearchWildcardCondition(filter.search, ['token', 'name'])
-      .withMustMultiShouldCondition(filter.type, type => QueryType.Match('type', type))
-      .withMustMultiShouldCondition(types, type => QueryType.Match('type', type))
+      .withMustMultiShouldCondition(filterTypes, type => QueryType.Match('type', type))
+      .withMustMultiShouldCondition(filter.subType, subType => QueryType.Match('type', subType))
       .withExtra({
         aggs: {
           collections: {
@@ -827,6 +855,7 @@ export class ElasticIndexerService implements IndexerInterface {
     data = data.slice(pagination.from, pagination.from + pagination.size);
     return data;
   }
+
 
   async getAssetsForToken(identifier: string): Promise<any> {
     return await this.elasticService.getCustomValue('tokens', identifier, 'assets');
@@ -947,5 +976,23 @@ export class ElasticIndexerService implements IndexerInterface {
     const elasticQuery = this.indexerHelper.buildApplicationFilter(filter);
 
     return await this.elasticService.getCount('scdeploys', elasticQuery);
+  }
+
+  async getEvents(pagination: QueryPagination, filter: EventsFilter): Promise<Events[]> {
+    const elasticQuery = this.indexerHelper.buildEventsFilter(filter)
+      .withPagination(pagination)
+      .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }]);
+
+    return await this.elasticService.getList('events', '_id', elasticQuery);
+  }
+
+  async getEvent(txHash: string): Promise<Events> {
+    return await this.elasticService.getItem('events', '_id', txHash);
+  }
+
+  async getEventsCount(filter: EventsFilter): Promise<number> {
+    const elasticQuery = this.indexerHelper.buildEventsFilter(filter);
+
+    return await this.elasticService.getCount('events', elasticQuery);
   }
 }

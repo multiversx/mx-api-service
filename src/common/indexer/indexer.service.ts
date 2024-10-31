@@ -20,6 +20,8 @@ import { AccountHistoryFilter } from "src/endpoints/accounts/entities/account.hi
 import { AccountAssets } from "../assets/entities/account.assets";
 import { ProviderDelegators } from "./entities/provider.delegators";
 import { ApplicationFilter } from "src/endpoints/applications/entities/application.filter";
+import { EventsFilter } from "src/endpoints/events/entities/events.filter";
+import { Events } from "./entities/events";
 
 @Injectable()
 export class IndexerService implements IndexerInterface {
@@ -447,5 +449,20 @@ export class IndexerService implements IndexerInterface {
   @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
   async getApplicationCount(filter: ApplicationFilter): Promise<number> {
     return await this.indexerInterface.getApplicationCount(filter);
+  }
+
+  @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
+  async getEvents(pagination: QueryPagination, filter: EventsFilter): Promise<Events[]> {
+    return await this.indexerInterface.getEvents(pagination, filter);
+  }
+
+  @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
+  async getEvent(txHash: string): Promise<Events> {
+    return await this.indexerInterface.getEvent(txHash);
+  }
+
+  @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
+  async getEventsCount(filter: EventsFilter): Promise<number> {
+    return await this.indexerInterface.getEventsCount(filter);
   }
 }

@@ -26,7 +26,7 @@ import { CacheService, CachingInterceptor, GuestCacheInterceptor, GuestCacheServ
 import { LoggerInitializer } from '@multiversx/sdk-nestjs-common';
 import { MetricsService, RequestCpuTimeInterceptor, LoggingInterceptor, LogRequestsInterceptor } from '@multiversx/sdk-nestjs-monitoring';
 import { FieldsInterceptor, ExtractInterceptor, CleanupInterceptor, PaginationInterceptor, QueryCheckInterceptor, ComplexityInterceptor, OriginInterceptor, ExcludeFieldsInterceptor } from '@multiversx/sdk-nestjs-http';
-import { ErdnestConfigServiceImpl } from './common/api-config/erdnest.config.service.impl';
+import { MxnestConfigServiceImpl } from './common/api-config/mxnest-config-service-impl.service';
 import { RabbitMqModule } from './common/rabbitmq/rabbitmq.module';
 import { TransactionLoggingInterceptor } from './interceptors/transaction.logging.interceptor';
 import { BatchTransactionProcessorModule } from './crons/transaction.processor/batch.transaction.processor.module';
@@ -197,7 +197,7 @@ async function configurePublicApp(publicApp: NestExpressApplication, apiConfigSe
   const settingsService = publicApp.get<SettingsService>(SettingsService);
 
   if (apiConfigService.getIsAuthActive()) {
-    publicApp.useGlobalGuards(new JwtOrNativeAuthGuard(new ErdnestConfigServiceImpl(apiConfigService), cachingService));
+    publicApp.useGlobalGuards(new JwtOrNativeAuthGuard(new MxnestConfigServiceImpl(apiConfigService), cachingService));
   }
 
   const httpServer = httpAdapterHostService.httpAdapter.getHttpServer();
@@ -228,12 +228,14 @@ async function configurePublicApp(publicApp: NestExpressApplication, apiConfigSe
   globalInterceptors.push(new LoggingInterceptor(metricsService));
 
   const getUseRequestCachingFlag = await settingsService.getUseRequestCachingFlag();
+  const cacheDuration = apiConfigService.getCacheDuration();
   if (getUseRequestCachingFlag) {
     const cachingInterceptor = new CachingInterceptor(
       cachingService,
       // @ts-ignore
       httpAdapterHostService,
       metricsService,
+      cacheDuration
     );
 
     // @ts-ignore
