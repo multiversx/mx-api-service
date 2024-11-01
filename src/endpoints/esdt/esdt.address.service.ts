@@ -306,7 +306,7 @@ export class EsdtAddressService {
         }
       }
 
-      if ([NftType.SemiFungibleESDT, NftType.MetaESDT].includes(nft.type)) {
+      if ([NftType.NonFungibleESDT, NftType.SemiFungibleESDT, NftType.MetaESDT].includes(nft.type)) {
         nft.balance = dataSourceNft.balance;
       }
 
