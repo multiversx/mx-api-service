@@ -104,7 +104,7 @@ export interface IndexerInterface {
 
   getAccount(address: string): Promise<Account>
 
-  getAccounts(queryPagination: QueryPagination, filter: AccountQueryOptions): Promise<Account[]>
+  getAccounts(queryPagination: QueryPagination, filter: AccountQueryOptions, fields?: string[]): Promise<Account[]>
 
   getAccountDeploys(pagination: QueryPagination, address: string): Promise<ScDeploy[]>
 
@@ -187,6 +187,8 @@ export interface IndexerInterface {
   getApplications(filter: ApplicationFilter, pagination: QueryPagination): Promise<any[]>
 
   getApplicationCount(filter: ApplicationFilter): Promise<number>
+
+  getAddressesWithTransfersLast24h(): Promise<string[]>
 
   getEvents(pagination: QueryPagination, filter: EventsFilter): Promise<Events[]>
 

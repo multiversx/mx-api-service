@@ -404,7 +404,7 @@ export class ElasticIndexerService implements IndexerInterface {
     return await this.elasticService.getList('operations', 'hash', elasticQuery);
   }
 
-  async getAccounts(queryPagination: QueryPagination, filter: AccountQueryOptions): Promise<any[]> {
+  async getAccounts(queryPagination: QueryPagination, filter: AccountQueryOptions, fields?: string[]): Promise<any[]> {
     let elasticQuery = this.indexerHelper.buildAccountFilterQuery(filter);
     const sortOrder: ElasticSortOrder = !filter.order || filter.order === SortOrder.desc ? ElasticSortOrder.descending : ElasticSortOrder.ascending;
     const sort: AccountSort = filter.sort ?? AccountSort.balance;
@@ -428,6 +428,10 @@ export class ElasticIndexerService implements IndexerInterface {
     }
 
     elasticQuery = elasticQuery.withPagination(queryPagination);
+
+    if (fields && fields.length > 0) {
+      elasticQuery = elasticQuery.withFields(fields);
+    }
 
     return await this.elasticService.getList('accounts', 'address', elasticQuery);
   }
@@ -974,6 +978,16 @@ export class ElasticIndexerService implements IndexerInterface {
     const elasticQuery = this.indexerHelper.buildApplicationFilter(filter);
 
     return await this.elasticService.getCount('scdeploys', elasticQuery);
+  }
+
+  async getAddressesWithTransfersLast24h(): Promise<string[]> {
+    const elasticQuery = ElasticQuery.create()
+      .withFields(['address'])
+      .withPagination({ from: 0, size: 10000 })
+      .withMustExistCondition('api_transfersLast24h');
+
+    const result = await this.elasticService.getList('accounts', 'address', elasticQuery);
+    return result.map(x => x.address);
   }
 
   async getEvents(pagination: QueryPagination, filter: EventsFilter): Promise<Events[]> {
