@@ -15,10 +15,10 @@ export class Token {
   @ApiProperty({ type: String })
   identifier: string = '';
 
-  @ApiProperty({ type: String, nullable: true })
+  @ApiProperty({ type: String, nullable: true, required: false })
   collection: string | undefined = undefined;
 
-  @ApiProperty({ type: Number, nullable: true })
+  @ApiProperty({ type: Number, nullable: true, required: false })
   nonce: number | undefined = undefined;
 
   @ApiProperty({ type: String })
@@ -45,7 +45,7 @@ export class Token {
   @ApiProperty({ type: Boolean, default: false })
   isPaused: boolean = false;
 
-  @ApiProperty({ type: TokenAssets, nullable: true })
+  @ApiProperty({ type: TokenAssets, nullable: true, required: false })
   assets: TokenAssets | undefined = undefined;
 
   @ApiProperty({ type: Number, nullable: true })
@@ -93,10 +93,10 @@ export class Token {
   @ApiProperty({ type: Boolean, nullable: true })
   canTransferNftCreateRole: boolean | undefined = undefined;
 
-  @ApiProperty({ type: Number, nullable: true })
+  @ApiProperty({ type: Number, nullable: true, required: false })
   price: number | undefined = undefined;
 
-  @ApiProperty({ type: Number, nullable: true })
+  @ApiProperty({ type: Number, nullable: true, required: false })
   marketCap: number | undefined = undefined;
 
   @ApiProperty(SwaggerUtils.amountPropertyOptions({ description: 'Supply amount' }))
@@ -111,18 +111,18 @@ export class Token {
   @ApiProperty({ enum: MexPairType })
   mexPairType: MexPairType = MexPairType.experimental;
 
-  @ApiProperty({ type: Number, nullable: true })
+  @ApiProperty({ type: Number, nullable: true, required: false })
   totalLiquidity: number | undefined = undefined;
 
-  @ApiProperty({ type: Number, nullable: true })
+  @ApiProperty({ type: Number, nullable: true, required: false })
   totalVolume24h: number | undefined = undefined;
 
-  @ApiProperty({ type: Boolean, nullable: true })
+  @ApiProperty({ type: Boolean, nullable: true, required: false })
   isLowLiquidity: boolean | undefined = undefined;
 
-  @ApiProperty({ type: Number, nullable: true })
+  @ApiProperty({ type: Number, nullable: true, required: false })
   lowLiquidityThresholdPercent: number | undefined = undefined;
 
-  @ApiProperty({ type: Number, nullable: true })
+  @ApiProperty({ type: Number, nullable: true, required: false })
   tradesCount: number | undefined = undefined;
 }

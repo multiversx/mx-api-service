@@ -18,25 +18,25 @@ export class TransactionOperation {
   @ApiProperty({ enum: TransactionOperationType, default: TransactionOperationType.none })
   type: TransactionOperationType = TransactionOperationType.none;
 
-  @ApiProperty({ enum: EsdtType , required: false })
+  @ApiProperty({ enum: EsdtType, required: false })
   esdtType?: EsdtType;
 
   @ApiProperty({ type: String })
   identifier: string = '';
 
-  @ApiProperty({ type: String , required: false })
+  @ApiProperty({ type: String, required: false })
   ticker?: string = '';
 
-  @ApiProperty({ type: String , required: false })
+  @ApiProperty({ type: String, required: false })
   collection?: string;
 
-  @ApiProperty({ type: String , required: false })
+  @ApiProperty({ type: String, required: false })
   name?: string;
 
-  @ApiProperty({ type: String , required: false })
+  @ApiProperty({ type: String, required: false })
   value?: string;
 
-  @ApiProperty({ type: Number , required: false })
+  @ApiProperty({ type: Number, required: false })
   valueUSD?: number;
 
   @ApiProperty({ type: String })
@@ -45,24 +45,24 @@ export class TransactionOperation {
   @ApiProperty({ type: String })
   receiver: string = '';
 
-  @ApiProperty({ type: AccountAssets, nullable: true })
+  @ApiProperty({ type: AccountAssets, nullable: true, required: false })
   senderAssets: AccountAssets | undefined = undefined;
 
-  @ApiProperty({ type: AccountAssets, nullable: true })
+  @ApiProperty({ type: AccountAssets, nullable: true, required: false })
   receiverAssets: AccountAssets | undefined = undefined;
 
-  @ApiProperty({ type: Number, nullable: true , required: false })
+  @ApiProperty({ type: Number, nullable: true, required: false })
   decimals?: number;
 
-  @ApiProperty({ type: String, nullable: true , required: false })
+  @ApiProperty({ type: String, nullable: true, required: false })
   data?: string;
 
-  @ApiProperty()
+  @ApiProperty({ required: false })
   additionalData?: string[] = [];
 
-  @ApiProperty({ type: String, nullable: true , required: false })
+  @ApiProperty({ type: String, nullable: true, required: false })
   message?: string;
 
-  @ApiProperty({ type: String, nullable: true , required: false })
+  @ApiProperty({ type: String, nullable: true, required: false })
   svgUrl?: string;
 }

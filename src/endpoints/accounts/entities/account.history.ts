@@ -15,6 +15,6 @@ export class AccountHistory {
   @ApiProperty({ type: Number, example: 10000 })
   timestamp: number = 0;
 
-  @ApiProperty({ type: Boolean, nullable: true, example: true , required: false })
+  @ApiProperty({ type: Boolean, nullable: true, example: true, required: false })
   isSender?: boolean | undefined = undefined;
 }

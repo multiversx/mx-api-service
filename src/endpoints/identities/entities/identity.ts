@@ -6,31 +6,31 @@ export class Identity {
     Object.assign(this, init);
   }
 
-  @ApiProperty({ type: String , required: false })
+  @ApiProperty({ type: String })
   identity?: string = '';
 
-  @ApiProperty({ type: String , required: false })
+  @ApiProperty({ type: String })
   name?: string;
 
-  @ApiProperty({ type: String , required: false })
+  @ApiProperty({ type: String })
   description?: string;
 
-  @ApiProperty({ type: String , required: false })
+  @ApiProperty({ type: String, required: false })
   avatar?: string;
 
-  @ApiProperty({ type: String , required: false })
+  @ApiProperty({ type: String, required: false })
   website?: string;
 
-  @ApiProperty({ type: String , required: false })
+  @ApiProperty({ type: String, required: false })
   twitter?: string;
 
-  @ApiProperty({ type: String , required: false })
+  @ApiProperty({ type: String })
   location?: string;
 
-  @ApiProperty({ type: Number , required: false })
+  @ApiProperty({ type: Number, required: false })
   score?: number;
 
-  @ApiProperty({ type: Number , required: false })
+  @ApiProperty({ type: Number })
   validators?: number;
 
   @ApiProperty(SwaggerUtils.amountPropertyOptions())
@@ -45,15 +45,15 @@ export class Identity {
   @ApiProperty()
   distribution?: { [index: string]: number | undefined } = {};
 
-  @ApiProperty({ type: [String] , required: false })
+  @ApiProperty({ type: [String], required: false })
   providers?: string[];
 
-  @ApiProperty({ type: Number , required: false })
+  @ApiProperty({ type: Number, required: false })
   stakePercent?: number;
 
-  @ApiProperty({ type: Number , required: false })
+  @ApiProperty({ type: Number, required: false })
   rank?: number;
 
-  @ApiProperty({ type: Number , required: false })
+  @ApiProperty({ type: Number, required: false })
   apr?: number;
 }

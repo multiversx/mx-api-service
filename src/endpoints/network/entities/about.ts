@@ -9,13 +9,13 @@ export class About {
   @ApiProperty({ type: String, nullable: true })
   appVersion: string | undefined = undefined;
 
-  @ApiProperty({ type: String, nullable: true })
+  @ApiProperty({ type: String, nullable: true, required: false })
   pluginsVersion: string | undefined = undefined;
 
   @ApiProperty({ type: String })
   network: string = '';
 
-  @ApiProperty({ type: String })
+  @ApiProperty({ type: String, required: false })
   cluster: string = '';
 
   @ApiProperty({ type: String })
@@ -27,7 +27,7 @@ export class About {
   @ApiProperty({ type: String })
   gatewayVersion: string | undefined = undefined;
 
-  @ApiProperty({ type: String, nullable: true })
+  @ApiProperty({ type: String, nullable: true, required: false })
   scamEngineVersion: string | undefined = undefined;
 
   @ApiProperty({ type: FeatureConfigs, nullable: true })

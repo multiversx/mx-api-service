@@ -5,9 +5,9 @@ export class Bids {
     Object.assign(this, init);
   }
 
-  @ApiProperty({ type: String , required: false })
+  @ApiProperty({ type: String })
   amount?: string = '';
 
-  @ApiProperty({ type: String , required: false })
+  @ApiProperty({ type: String })
   token?: string = '';
 }

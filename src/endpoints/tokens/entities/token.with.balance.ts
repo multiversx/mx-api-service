@@ -12,10 +12,10 @@ export class TokenWithBalance extends Token {
   @ApiProperty(SwaggerUtils.amountPropertyOptions())
   balance: string = '';
 
-  @ApiProperty({ type: Number, nullable: true })
+  @ApiProperty({ type: Number, nullable: true, required: false })
   valueUsd: number | undefined = undefined;
 
-  @ApiProperty({ type: String, nullable: true })
+  @ApiProperty({ type: String, nullable: true, required: false })
   attributes: string | undefined = undefined;
 
   @ApiProperty({ enum: MexPairType })

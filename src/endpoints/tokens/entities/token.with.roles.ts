@@ -20,16 +20,16 @@ export class TokenWithRoles extends Token {
   @ApiProperty({ type: Boolean, nullable: true })
   canLocalBurn: boolean = false;
 
-  @ApiProperty({ type: Boolean, nullable: true , required: false })
+  @ApiProperty({ type: Boolean, nullable: true })
   canCreate?: boolean = undefined;
 
-  @ApiProperty({ type: Boolean, nullable: true , required: false })
+  @ApiProperty({ type: Boolean, nullable: true })
   canAddQuantity?: boolean = undefined;
 
-  @ApiProperty({ type: Boolean, nullable: true , required: false })
+  @ApiProperty({ type: Boolean, nullable: true })
   canUpdateAttributes?: boolean = undefined;
 
-  @ApiProperty({ type: Boolean, nullable: true , required: false })
+  @ApiProperty({ type: Boolean, nullable: true })
   canAddUri?: boolean = undefined;
 
   @ApiProperty({ type: Boolean, nullable: true })

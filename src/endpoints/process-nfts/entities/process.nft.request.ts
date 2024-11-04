@@ -5,24 +5,24 @@ export class ProcessNftRequest {
     Object.assign(this, init);
   }
 
-  @ApiProperty({ type: String, nullable: true , required: false })
+  @ApiProperty({ type: String, nullable: true })
   collection?: string;
 
-  @ApiProperty({ type: String, nullable: true , required: false })
+  @ApiProperty({ type: String, nullable: true })
   identifier?: string;
 
-  @ApiProperty({ type: Boolean, nullable: true , required: false })
+  @ApiProperty({ type: Boolean, nullable: true })
   forceRefreshMedia?: boolean;
 
-  @ApiProperty({ type: Boolean, nullable: true , required: false })
+  @ApiProperty({ type: Boolean, nullable: true })
   forceRefreshMetadata?: boolean;
 
-  @ApiProperty({ type: Boolean, nullable: true , required: false })
+  @ApiProperty({ type: Boolean, nullable: true })
   forceRefreshThumbnail?: boolean;
 
-  @ApiProperty({ type: Boolean, nullable: true , required: false })
+  @ApiProperty({ type: Boolean, nullable: true })
   skipRefreshThumbnail?: boolean;
 
-  @ApiProperty({ type: Boolean, nullable: true , required: false })
+  @ApiProperty({ type: Boolean, nullable: true })
   uploadAsset?: boolean;
 }

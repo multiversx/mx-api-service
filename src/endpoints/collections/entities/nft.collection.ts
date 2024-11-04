@@ -56,24 +56,24 @@ export class NftCollection {
   @ApiProperty({ type: Number, nullable: true })
   decimals: number | undefined = undefined;
 
-  @ApiProperty({ type: TokenAssets, nullable: true })
+  @ApiProperty({ type: TokenAssets, nullable: true, required: false })
   assets: TokenAssets | undefined = undefined;
 
-  @ApiProperty({ type: ScamInfo, nullable: true })
+  @ApiProperty({ type: ScamInfo, nullable: true, required: false })
   scamInfo: ScamInfo | undefined = undefined;
 
-  @ApiProperty({ type: CollectionTrait, isArray: true })
+  @ApiProperty({ type: CollectionTrait, isArray: true, required: false })
   traits: CollectionTrait[] = [];
 
-  @ApiProperty({ type: CollectionAuctionStats, nullable: true })
+  @ApiProperty({ type: CollectionAuctionStats, nullable: true, required: false })
   auctionStats: CollectionAuctionStats | undefined = undefined;
 
-  @ApiProperty({ type: Boolean, nullable: true })
+  @ApiProperty({ type: Boolean, nullable: true, required: false })
   isVerified: boolean | undefined = undefined;
 
-  @ApiProperty({ type: Number, nullable: true })
+  @ApiProperty({ type: Number, nullable: true, required: false })
   holderCount: number | undefined = undefined;
 
-  @ApiProperty({ type: Number, nullable: true })
+  @ApiProperty({ type: Number, nullable: true, required: false })
   nftCount: number | undefined = undefined;
 }
