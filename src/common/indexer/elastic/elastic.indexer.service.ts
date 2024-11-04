@@ -984,7 +984,7 @@ export class ElasticIndexerService implements IndexerInterface {
       .withPagination({ from: 0, size: 10000 })
       .withMustExistCondition('api_transfersLast24h');
 
-    const result = await this.elasticService.getList('accounts', 'address', elasticQuery);
+    const result = await this.apiElasticService.getList('accounts', 'address', elasticQuery);
     return result.map(x => x.address);
   }
 
@@ -993,16 +993,16 @@ export class ElasticIndexerService implements IndexerInterface {
       .withPagination(pagination)
       .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }]);
 
-    return await this.elasticService.getList('events', '_id', elasticQuery);
+    return await this.apiElasticService.getList('events', '_id', elasticQuery);
   }
 
   async getEvent(txHash: string): Promise<Events> {
-    return await this.elasticService.getItem('events', '_id', txHash);
+    return await this.apiElasticService.getItem('events', '_id', txHash);
   }
 
   async getEventsCount(filter: EventsFilter): Promise<number> {
     const elasticQuery = this.indexerHelper.buildEventsFilter(filter);
 
-    return await this.elasticService.getCount('events', elasticQuery);
+    return await this.apiElasticService.getCount('events', elasticQuery);
   }
 }

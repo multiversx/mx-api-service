@@ -876,7 +876,7 @@ export class ApiConfigService {
 
   getElasticCallsTracingLogThreshold(): number | undefined {
     return this.configService.get<number>('features.elasticCallsTracing.logThreshold');
-
+  }
   isAssetsCdnFeatureEnabled(): boolean {
     return this.configService.get<boolean>('features.assetsFetch.enabled') ?? false;
   }
