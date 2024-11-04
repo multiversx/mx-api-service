@@ -13,19 +13,19 @@ export class Transaction {
   @ApiProperty({ type: String })
   txHash: string = '';
 
-  @ApiProperty({ type: Number, nullable: true })
+  @ApiProperty({ type: Number, nullable: true, required: false })
   gasLimit: number | undefined = undefined;
 
-  @ApiProperty({ type: Number, nullable: true })
+  @ApiProperty({ type: Number, nullable: true, required: false })
   gasPrice: number | undefined = undefined;
 
-  @ApiProperty({ type: Number, nullable: true })
+  @ApiProperty({ type: Number, nullable: true, required: false })
   gasUsed: number | undefined = undefined;
 
-  @ApiProperty({ type: String, nullable: true })
+  @ApiProperty({ type: String, nullable: true, required: false })
   miniBlockHash: string | undefined = undefined;
 
-  @ApiProperty({ type: Number, nullable: true })
+  @ApiProperty({ type: Number, nullable: true, required: false })
   nonce: number | undefined = undefined;
 
   @ApiProperty({ type: String })
@@ -36,13 +36,13 @@ export class Transaction {
 
   receiverAccount: Account | undefined = undefined;
 
-  @ApiProperty({ type: AccountAssets, nullable: true })
+  @ApiProperty({ type: AccountAssets, nullable: true, required: false })
   receiverAssets: AccountAssets | undefined = undefined;
 
   @ApiProperty({ type: Number })
   receiverShard: number = 0;
 
-  @ApiProperty({ type: Number, nullable: true })
+  @ApiProperty({ type: Number, nullable: true, required: false })
   round: number | undefined = undefined;
 
   @ApiProperty({ type: String })
@@ -53,13 +53,13 @@ export class Transaction {
 
   senderAccount: Account | undefined = undefined;
 
-  @ApiProperty({ type: AccountAssets, nullable: true })
+  @ApiProperty({ type: AccountAssets, nullable: true, required: false })
   senderAssets: AccountAssets | undefined = undefined;
 
   @ApiProperty({ type: Number })
   senderShard: number = 0;
 
-  @ApiProperty({ type: String, nullable: true })
+  @ApiProperty({ type: String, nullable: true, required: false })
   signature: string | undefined = undefined;
 
   @ApiProperty({ type: String })
@@ -68,43 +68,43 @@ export class Transaction {
   @ApiProperty({ type: String })
   value: string = '';
 
-  @ApiProperty({ type: String, nullable: true })
+  @ApiProperty({ type: String, nullable: true, required: false })
   fee: string | undefined = undefined;
 
   @ApiProperty({ type: Number })
   timestamp: number = 0;
 
-  @ApiProperty({ type: String, nullable: true })
+  @ApiProperty({ type: String, nullable: true, required: false })
   data: string | undefined = undefined;
 
-  @ApiProperty({ type: String, nullable: true })
+  @ApiProperty({ type: String, nullable: true, required: false })
   function: string | undefined = undefined;
 
-  @ApiProperty({ type: TransactionAction, nullable: true })
+  @ApiProperty({ type: TransactionAction, nullable: true, required: false })
   action: TransactionAction | undefined = undefined;
 
-  @ApiProperty({ type: ScamInfo, nullable: true })
+  @ApiProperty({ type: ScamInfo, nullable: true, required: false })
   scamInfo: ScamInfo | undefined = undefined;
 
-  @ApiProperty({ enum: TransactionType, nullable: true })
+  @ApiProperty({ enum: TransactionType, nullable: true, required: false })
   type: TransactionType | undefined = undefined;
 
-  @ApiProperty({ type: String, nullable: true })
+  @ApiProperty({ type: String, nullable: true, required: false })
   originalTxHash: string | undefined = undefined;
 
-  @ApiProperty({ type: Boolean, nullable: true })
+  @ApiProperty({ type: Boolean, nullable: true, required: false })
   pendingResults: boolean | undefined = undefined;
 
-  @ApiProperty({ type: String, nullable: true })
+  @ApiProperty({ type: String, nullable: true, required: false })
   guardianAddress: string | undefined = undefined;
 
-  @ApiProperty({ type: String, nullable: true })
+  @ApiProperty({ type: String, nullable: true, required: false })
   guardianSignature: string | undefined = undefined;
 
-  @ApiProperty({ type: String, nullable: true })
+  @ApiProperty({ type: String, nullable: true, required: false })
   isRelayed: boolean | undefined = undefined;
 
-  @ApiProperty({ type: String, nullable: true })
+  @ApiProperty({ type: String, nullable: true, required: false })
   relayer: string | undefined = undefined;
 
   getDate(): Date | undefined {

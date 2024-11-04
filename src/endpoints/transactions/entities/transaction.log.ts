@@ -7,15 +7,15 @@ export class TransactionLog {
     Object.assign(this, init);
   }
 
-  @ApiProperty({ name: 'Transaction log ID', type: String })
+  @ApiProperty({ description: 'Transaction log ID', type: String })
   id: string | undefined = undefined;
 
-  @ApiProperty({ name: 'Transaction log address', type: String })
+  @ApiProperty({ description: 'Transaction log address', type: String })
   address: string = '';
 
-  @ApiProperty({ name: 'Transaction address assets', type: AccountAssets, nullable: true })
+  @ApiProperty({ description: 'Transaction address assets', type: AccountAssets, nullable: true, required: false })
   addressAssets: AccountAssets | undefined = undefined;
 
-  @ApiProperty({ name: 'Transaction log events', type: TransactionLogEvent, isArray: true })
+  @ApiProperty({ description: 'Transaction log events', type: TransactionLogEvent, isArray: true })
   events: TransactionLogEvent[] = [];
 }

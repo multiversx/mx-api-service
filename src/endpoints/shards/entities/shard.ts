@@ -5,12 +5,12 @@ export class Shard {
     Object.assign(this, init);
   }
 
-  @ApiProperty({ name: 'Shard details', type: Number, example: 1 })
+  @ApiProperty({ description: 'Shard details', type: Number, example: 1 })
   shard: number = 0;
 
-  @ApiProperty({ name: 'Validators details', type: Number, example: 800 })
+  @ApiProperty({ description: 'Validators details', type: Number, example: 800 })
   validators: number = 0;
 
-  @ApiProperty({ name: 'Active validtors details', type: Number, example: 800 })
+  @ApiProperty({ description: 'Active validators details', type: Number, example: 800 })
   activeValidators: number = 0;
 }

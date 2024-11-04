@@ -6,21 +6,21 @@ export class TokenSupplyResult {
     Object.assign(this, init);
   }
 
-  @ApiProperty({ name: 'Supply details', type: String })
+  @ApiProperty({ description: 'Supply details', type: String })
   supply: string | number = '';
 
-  @ApiProperty({ name: 'Circulating supply details', type: String })
+  @ApiProperty({ description: 'Circulating supply details', type: String })
   circulatingSupply: string | number = '';
 
-  @ApiProperty({ name: 'Minted details', type: String })
+  @ApiProperty({ description: 'Minted details', type: String })
   minted: string | number | undefined;
 
-  @ApiProperty({ name: 'Token burnt details', type: String })
+  @ApiProperty({ description: 'Token burnt details', type: String })
   burnt: string | number | undefined;
 
-  @ApiProperty({ name: 'Initial minted details', type: String })
+  @ApiProperty({ description: 'Initial minted details', type: String })
   initialMinted: string | number | undefined;
 
-  @ApiProperty({ name: 'LockedAccounts details', type: EsdtLockedAccount, isArray: true })
+  @ApiProperty({ description: 'LockedAccounts details', type: EsdtLockedAccount, isArray: true })
   lockedAccounts: EsdtLockedAccount[] | undefined = undefined;
 }
