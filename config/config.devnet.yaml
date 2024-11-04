@@ -49,6 +49,9 @@ features:
   dataApi:
     enabled: false
     serviceUrl: 'https://devnet-data-api.multiversx.com'
+  assetsFetch:
+    enabled: true
+    assetesUrl: 'https://tools.multiversx.com/assets-cdn'
   auth:
     enabled: false
     maxExpirySeconds: 86400
