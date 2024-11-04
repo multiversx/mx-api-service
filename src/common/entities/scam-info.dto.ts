@@ -8,7 +8,7 @@ export class ScamInfo {
 
   type?: string | null;
 
-  @ApiProperty({ type: String, nullable: true })
+  @ApiProperty({ type: String, nullable: true , required: false })
   info?: string | null;
 
   static isScam(scamInfo: ScamInfo): boolean {

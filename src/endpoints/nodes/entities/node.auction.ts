@@ -5,10 +5,10 @@ export class NodeAuction {
     Object.assign(this, init);
   }
 
-  @ApiProperty({ type: String })
+  @ApiProperty({ type: String , required: false })
   identity?: string = '';
 
-  @ApiProperty({ type: String })
+  @ApiProperty({ type: String , required: false })
   name?: string = '';
 
   @ApiProperty({ type: String, default: 0 })
@@ -17,10 +17,10 @@ export class NodeAuction {
   @ApiProperty({ type: String })
   avatar: string = '';
 
-  @ApiProperty({ type: String })
+  @ApiProperty({ type: String , required: false })
   provider?: string = '';
 
-  @ApiProperty({ type: String })
+  @ApiProperty({ type: String , required: false })
   bls?: string = '';
 
   @ApiProperty({ type: String })

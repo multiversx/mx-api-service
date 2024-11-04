@@ -14,22 +14,22 @@ export class TokenRoles {
   @ApiProperty({ type: Boolean, nullable: true })
   canLocalBurn: boolean = false;
 
-  @ApiProperty({ type: Boolean, nullable: true })
+  @ApiProperty({ type: Boolean, nullable: true , required: false })
   canCreate?: boolean = undefined;
 
-  @ApiProperty({ type: Boolean, nullable: true })
+  @ApiProperty({ type: Boolean, nullable: true , required: false })
   canBurn?: boolean = undefined;
 
-  @ApiProperty({ type: Boolean, nullable: true })
+  @ApiProperty({ type: Boolean, nullable: true , required: false })
   canAddQuantity?: boolean = undefined;
 
-  @ApiProperty({ type: Boolean, nullable: true })
+  @ApiProperty({ type: Boolean, nullable: true , required: false })
   canUpdateAttributes?: boolean = undefined;
 
-  @ApiProperty({ type: Boolean, nullable: true })
+  @ApiProperty({ type: Boolean, nullable: true , required: false })
   canAddUri?: boolean = undefined;
 
-  @ApiProperty({ type: Boolean, nullable: true })
+  @ApiProperty({ type: Boolean, nullable: true , required: false })
   canTransfer?: boolean = undefined;
 
   @ApiProperty({ type: [String] })

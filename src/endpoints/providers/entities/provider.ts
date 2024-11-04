@@ -67,6 +67,6 @@ export class Provider extends NodesInfos {
   @ApiProperty({ type: String, nullable: true })
   githubKeysValidatedAt: string | undefined = undefined;
 
-  @ApiProperty({ type: Identity, nullable: true })
+  @ApiProperty({ type: Identity, nullable: true , required: false })
   identityInfo?: Identity;
 }

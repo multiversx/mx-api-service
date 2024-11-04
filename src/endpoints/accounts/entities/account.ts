@@ -28,10 +28,10 @@ export class Account {
   @ApiProperty({ type: AccountAssets, nullable: true, description: 'Account assets' })
   assets: AccountAssets | undefined = undefined;
 
-  @ApiProperty({ description: 'Specific property flag for smart contract', type: Number })
+  @ApiProperty({ description: 'Specific property flag for smart contract', type: Number , required: false })
   deployedAt?: number | null;
 
-  @ApiProperty({ description: 'The contract deploy transaction hash' })
+  @ApiProperty({ description: 'The contract deploy transaction hash' , required: false })
   deployTxHash?: string | null;
 
   @ApiProperty({ type: AccountAssets, nullable: true, description: 'Account assets' })
@@ -40,10 +40,10 @@ export class Account {
   @ApiProperty({ description: 'Specific property flag for smart contract', type: Boolean, required: false })
   isVerified?: boolean;
 
-  @ApiProperty({ description: 'The number of transactions performed on this account' })
+  @ApiProperty({ description: 'The number of transactions performed on this account' , required: false })
   txCount?: number;
 
-  @ApiProperty({ description: 'The number of smart contract results of this account' })
+  @ApiProperty({ description: 'The number of smart contract results of this account' , required: false })
   scrCount?: number;
 
   @ApiProperty({ type: Number, description: 'Transfers in the last 24 hours' })

@@ -8,9 +8,9 @@ export class CollectionStatsFilters {
   @ApiProperty({ type: String })
   identifier: string = '';
 
-  @ApiProperty({ type: String })
+  @ApiProperty({ type: String , required: false })
   marketplaceKey?: string = '';
 
-  @ApiProperty({ type: String })
+  @ApiProperty({ type: String , required: false })
   paymentToken?: string = '';
 }

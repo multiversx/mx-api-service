@@ -7,15 +7,15 @@ export class AccountVerification {
     Object.assign(this, init);
   }
 
-  @ApiProperty({ description: 'Source code hash' })
+  @ApiProperty({ description: 'Source code hash' , required: false })
   codeHash?: string = '';
 
-  @ApiProperty({ description: 'Source code of contract', type: AccountVerificationSource })
+  @ApiProperty({ description: 'Source code of contract', type: AccountVerificationSource , required: false })
   source?: any;
 
   @ApiProperty({ description: 'Verifier process status', enum: AccountVerificationStatus })
   status!: AccountVerificationStatus;
 
-  @ApiProperty({ description: 'File hash for IPFS' })
+  @ApiProperty({ description: 'File hash for IPFS' , required: false })
   ipfsFileHash?: string;
 }

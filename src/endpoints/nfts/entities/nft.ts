@@ -20,7 +20,7 @@ export class Nft {
   @ApiProperty({ type: String })
   collection: string = '';
 
-  @ApiProperty({ type: Number, nullable: true })
+  @ApiProperty({ type: Number, nullable: true , required: false })
   timestamp?: number = undefined;
 
   @ApiProperty({ type: String })
@@ -79,10 +79,10 @@ export class Nft {
   @ApiProperty({ type: Number, nullable: true })
   decimals: number | undefined = undefined;
 
-  @ApiProperty({ type: TokenAssets })
+  @ApiProperty({ type: TokenAssets , required: false })
   assets?: TokenAssets;
 
-  @ApiProperty({ type: String })
+  @ApiProperty({ type: String , required: false })
   ticker?: string = '';
 
   @ApiProperty({ type: ScamInfo, nullable: true })
@@ -100,9 +100,9 @@ export class Nft {
   @ApiProperty({ type: Boolean, nullable: true })
   isNsfw: boolean | undefined = undefined;
 
-  @ApiProperty({ type: [UnlockMileStoneModel], nullable: true })
+  @ApiProperty({ type: [UnlockMileStoneModel], nullable: true , required: false })
   unlockSchedule?: UnlockMileStoneModel[] | undefined = undefined;
 
-  @ApiProperty({ type: Number, nullable: true })
+  @ApiProperty({ type: Number, nullable: true , required: false })
   unlockEpoch?: number | undefined = undefined;
 }

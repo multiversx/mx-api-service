@@ -7,10 +7,10 @@ export class Auction {
     Object.assign(this, init);
   }
 
-  @ApiProperty({ type: String })
+  @ApiProperty({ type: String , required: false })
   owner?: string = '';
 
-  @ApiProperty({ type: Number })
+  @ApiProperty({ type: Number , required: false })
   auctionId?: number = 0;
 
   @ApiProperty({ type: String })
@@ -22,13 +22,13 @@ export class Auction {
   @ApiProperty({ enum: AuctionStatus })
   status: AuctionStatus = AuctionStatus.unknown;
 
-  @ApiProperty({ type: String })
+  @ApiProperty({ type: String , required: false })
   auctionType?: string = '';
 
   @ApiProperty({ type: Number })
   createdAt: number = 0;
 
-  @ApiProperty({ type: Number })
+  @ApiProperty({ type: Number , required: false })
   endsAt?: number = 0;
 
   @ApiProperty({ type: String })

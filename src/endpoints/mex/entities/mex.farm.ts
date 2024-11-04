@@ -10,7 +10,7 @@ export class MexFarm {
   @ApiProperty({ enum: MexFarmType })
   type: MexFarmType = MexFarmType.standard;
 
-  @ApiProperty({ nullable: true })
+  @ApiProperty({ nullable: true , required: false })
   version?: string;
 
   @ApiProperty({ type: String, example: 'erd1qqqqqqqqqqqqqpgqzps75vsk97w9nsx2cenv2r2tyxl4fl402jpsx78m9j' })
