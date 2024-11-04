@@ -876,6 +876,13 @@ export class ApiConfigService {
 
   getElasticCallsTracingLogThreshold(): number | undefined {
     return this.configService.get<number>('features.elasticCallsTracing.logThreshold');
+
+  isAssetsCdnFeatureEnabled(): boolean {
+    return this.configService.get<boolean>('features.assetsFetch.enabled') ?? false;
+  }
+
+  getAssetsCdnUrl(): string {
+    return this.configService.get<string>('features.assetsFetch.assetesUrl') ?? 'https://tools.multiversx.com/assets-cdn';
   }
 
   isTokensFetchFeatureEnabled(): boolean {
