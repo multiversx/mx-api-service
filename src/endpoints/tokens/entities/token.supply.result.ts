@@ -21,6 +21,6 @@ export class TokenSupplyResult {
   @ApiProperty({ name: 'Initial minted details', type: String })
   initialMinted: string | number | undefined;
 
-  @ApiProperty({ name: 'LockedAccounts details', type: EsdtLockedAccount, isArray: true })
+  @ApiProperty({ name: 'Esdt locked accounts details', type: EsdtLockedAccount, isArray: true })
   lockedAccounts: EsdtLockedAccount[] | undefined = undefined;
 }
