@@ -4,6 +4,7 @@ import { ApiProperty } from "@nestjs/swagger";
 import { TokenType } from "src/common/indexer/entities";
 import { TokenAssets } from "../../../common/assets/entities/token.assets";
 import { MexPairType } from "src/endpoints/mex/entities/mex.pair.type";
+import { TokenOwnersHistory } from "./token.owner.history";
 
 @ObjectType("Token", { description: "Token object type." })
 export class Token {
@@ -166,4 +167,8 @@ export class Token {
   @Field(() => Number, { description: 'Mex pair trades count.', nullable: true })
   @ApiProperty({ type: Number, nullable: true })
   tradesCount: number | undefined = undefined;
+
+  @Field(() => TokenOwnersHistory, { description: 'Token owners history.', nullable: true })
+  @ApiProperty({ type: TokenOwnersHistory, nullable: true })
+  ownersHistory: TokenOwnersHistory[] = [];
 }
