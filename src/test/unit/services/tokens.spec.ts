@@ -854,6 +854,12 @@ describe('Token Service', () => {
       canTransferNFTCreateRole: false,
       NFTCreateStopped: false,
       timestamp: 1643824710,
+      ownersHistory: [
+        {
+          address: 'erd1qqqqqqqqqqqqqpgq0lzzvt2faev4upyf586tg38s84d7zsaj2jpsglugga',
+          timestamp: 1643824710,
+        },
+      ],
     };
 
     it('should returns undefined if getTokenProperties returns undefined', async () => {
@@ -903,6 +909,12 @@ describe('Token Service', () => {
       canTransferNFTCreateRole: false,
       NFTCreateStopped: false,
       timestamp: 1643824710,
+      ownersHistory: [
+        {
+          address: 'erd1qqqqqqqqqqqqqpgq0lzzvt2faev4upyf586tg38s84d7zsaj2jpsglugga',
+          timestamp: 1643824710,
+        },
+      ],
     };
 
     const assets = {
