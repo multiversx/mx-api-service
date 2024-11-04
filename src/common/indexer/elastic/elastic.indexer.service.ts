@@ -27,6 +27,8 @@ import { AccountAssets } from "src/common/assets/entities/account.assets";
 import { NotWritableError } from "../entities/not.writable.error";
 import { ApplicationFilter } from "src/endpoints/applications/entities/application.filter";
 import { NftType } from "../entities/nft.type";
+import { EventsFilter } from "src/endpoints/events/entities/events.filter";
+import { Events } from "../entities/events";
 
 @Injectable()
 export class ElasticIndexerService implements IndexerInterface {
@@ -988,5 +990,23 @@ export class ElasticIndexerService implements IndexerInterface {
 
     const result = await this.elasticService.getList('accounts', 'address', elasticQuery);
     return result.map(x => x.address);
+  }
+
+  async getEvents(pagination: QueryPagination, filter: EventsFilter): Promise<Events[]> {
+    const elasticQuery = this.indexerHelper.buildEventsFilter(filter)
+      .withPagination(pagination)
+      .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }]);
+
+    return await this.elasticService.getList('events', '_id', elasticQuery);
+  }
+
+  async getEvent(txHash: string): Promise<Events> {
+    return await this.elasticService.getItem('events', '_id', txHash);
+  }
+
+  async getEventsCount(filter: EventsFilter): Promise<number> {
+    const elasticQuery = this.indexerHelper.buildEventsFilter(filter);
+
+    return await this.elasticService.getCount('events', elasticQuery);
   }
 }
