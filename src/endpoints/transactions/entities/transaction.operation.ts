@@ -21,7 +21,7 @@ export class TransactionOperation {
   @ApiProperty({ enum: EsdtType, required: false })
   esdtType?: EsdtType;
 
-  @ApiProperty({ type: String })
+  @ApiProperty({ type: String, required: false })
   identifier: string = '';
 
   @ApiProperty({ type: String, required: false })

@@ -13,25 +13,25 @@ export class Transaction {
   @ApiProperty({ type: String })
   txHash: string = '';
 
-  @ApiProperty({ type: Number, nullable: true, required: false })
+  @ApiProperty({ type: Number })
   gasLimit: number | undefined = undefined;
 
-  @ApiProperty({ type: Number, nullable: true, required: false })
+  @ApiProperty({ type: Number })
   gasPrice: number | undefined = undefined;
 
-  @ApiProperty({ type: Number, nullable: true, required: false })
+  @ApiProperty({ type: Number })
   gasUsed: number | undefined = undefined;
 
-  @ApiProperty({ type: String, nullable: true, required: false })
+  @ApiProperty({ type: String })
   miniBlockHash: string | undefined = undefined;
 
-  @ApiProperty({ type: Number, nullable: true, required: false })
+  @ApiProperty({ type: Number })
   nonce: number | undefined = undefined;
 
   @ApiProperty({ type: String })
   receiver: string = '';
 
-  @ApiProperty({ type: String })
+  @ApiProperty({ type: String, nullable: true, required: false })
   receiverUsername: string = '';
 
   receiverAccount: Account | undefined = undefined;
@@ -42,13 +42,13 @@ export class Transaction {
   @ApiProperty({ type: Number })
   receiverShard: number = 0;
 
-  @ApiProperty({ type: Number, nullable: true, required: false })
+  @ApiProperty({ type: Number })
   round: number | undefined = undefined;
 
   @ApiProperty({ type: String })
   sender: string = '';
 
-  @ApiProperty({ type: String })
+  @ApiProperty({ type: String, nullable: true, required: false })
   senderUsername: string = '';
 
   senderAccount: Account | undefined = undefined;
@@ -59,7 +59,7 @@ export class Transaction {
   @ApiProperty({ type: Number })
   senderShard: number = 0;
 
-  @ApiProperty({ type: String, nullable: true, required: false })
+  @ApiProperty({ type: String })
   signature: string | undefined = undefined;
 
   @ApiProperty({ type: String })
@@ -68,7 +68,7 @@ export class Transaction {
   @ApiProperty({ type: String })
   value: string = '';
 
-  @ApiProperty({ type: String, nullable: true, required: false })
+  @ApiProperty({ type: String })
   fee: string | undefined = undefined;
 
   @ApiProperty({ type: Number })
