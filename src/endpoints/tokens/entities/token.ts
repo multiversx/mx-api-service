@@ -127,7 +127,6 @@ export class Token {
   @ApiProperty({ type: Number, nullable: true, required: false })
   tradesCount: number | undefined = undefined;
 
-  @Field(() => TokenOwnersHistory, { description: 'Token owners history.', nullable: true })
   @ApiProperty({ type: TokenOwnersHistory, nullable: true })
   ownersHistory: TokenOwnersHistory[] = [];
 }
