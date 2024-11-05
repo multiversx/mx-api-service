@@ -1,89 +1,68 @@
-import { Field, Float, ID, ObjectType } from "@nestjs/graphql";
 import { ApiProperty } from "@nestjs/swagger";
 import { AccountAssets } from "src/common/assets/entities/account.assets";
 import { EsdtType } from "src/endpoints/esdt/entities/esdt.type";
 import { TransactionOperationAction } from "./transaction.operation.action";
 import { TransactionOperationType } from "./transaction.operation.type";
 
-@ObjectType('TransactionOperation', { description: 'Transaction operation object type.' })
 export class TransactionOperation {
   constructor(init?: Partial<TransactionOperation>) {
     Object.assign(this, init);
   }
 
-  @Field(() => ID, { description: 'Identifier for the transaction operation.' })
   @ApiProperty({ type: String })
   id: string = '';
 
-  @Field(() => TransactionOperationAction, { description: 'Transaction operation action for the transaction operation.' })
   @ApiProperty({ enum: TransactionOperationAction, default: TransactionOperationAction.none })
   action: TransactionOperationAction = TransactionOperationAction.none;
 
-  @Field(() => TransactionOperationType, { description: 'Transaction operation type for the transaction operation.' })
   @ApiProperty({ enum: TransactionOperationType, default: TransactionOperationType.none })
   type: TransactionOperationType = TransactionOperationType.none;
 
-  @Field(() => EsdtType, { description: 'ESDT type for the transaction operation.', nullable: true })
-  @ApiProperty({ enum: EsdtType })
+  @ApiProperty({ enum: EsdtType, required: false })
   esdtType?: EsdtType;
 
-  @Field(() => String, { description: 'Identifier for the transaction operation.' })
-  @ApiProperty({ type: String })
+  @ApiProperty({ type: String, required: false })
   identifier: string = '';
 
-  @Field(() => String, { description: 'Token ticker for the transaction operation.' })
-  @ApiProperty({ type: String })
+  @ApiProperty({ type: String, required: false })
   ticker?: string = '';
 
-  @Field(() => String, { description: 'Collection for the transaction operation.', nullable: true })
-  @ApiProperty({ type: String })
+  @ApiProperty({ type: String, required: false })
   collection?: string;
 
-  @Field(() => String, { description: 'Name for the transaction operation.', nullable: true })
-  @ApiProperty({ type: String })
+  @ApiProperty({ type: String, required: false })
   name?: string;
 
-  @Field(() => String, { description: 'Value for the transaction operation.', nullable: true })
-  @ApiProperty({ type: String })
+  @ApiProperty({ type: String, required: false })
   value?: string;
 
-  @Field(() => Number, { description: 'Value for the transaction operation in USD.', nullable: true })
-  @ApiProperty({ type: Number })
+  @ApiProperty({ type: Number, required: false })
   valueUSD?: number;
 
-  @Field(() => String, { description: 'Sender address for the transaction operation.' })
   @ApiProperty({ type: String })
   sender: string = '';
 
-  @Field(() => String, { description: 'Receiver address for the transaction operation.' })
   @ApiProperty({ type: String })
   receiver: string = '';
 
-  @Field(() => AccountAssets, { description: 'Sender account assets for the transaction operation.', nullable: true })
-  @ApiProperty({ type: AccountAssets, nullable: true })
+  @ApiProperty({ type: AccountAssets, nullable: true, required: false })
   senderAssets: AccountAssets | undefined = undefined;
 
-  @Field(() => AccountAssets, { description: 'Receiver account assets for the transaction operation.', nullable: true })
-  @ApiProperty({ type: AccountAssets, nullable: true })
+  @ApiProperty({ type: AccountAssets, nullable: true, required: false })
   receiverAssets: AccountAssets | undefined = undefined;
 
-  @Field(() => Float, { description: 'Decimals for the transaction operation.', nullable: true })
-  @ApiProperty({ type: Number, nullable: true })
+  @ApiProperty({ type: Number, nullable: true, required: false })
   decimals?: number;
 
-  @Field(() => String, { description: 'Data for the transaction operation.', nullable: true })
-  @ApiProperty({ type: String, nullable: true })
+  @ApiProperty({ type: String, nullable: true, required: false })
   data?: string;
 
-  @Field(() => String, { description: 'Additional data for the given transaction operation.', nullable: true })
-  @ApiProperty()
+  @ApiProperty({ required: false })
   additionalData?: string[] = [];
 
-  @Field(() => String, { description: 'Message for the transaction operation.', nullable: true })
-  @ApiProperty({ type: String, nullable: true })
+  @ApiProperty({ type: String, nullable: true, required: false })
   message?: string;
 
-  @Field(() => String, { description: 'SVG URL for the transaction operation.', nullable: true })
-  @ApiProperty({ type: String, nullable: true })
+  @ApiProperty({ type: String, nullable: true, required: false })
   svgUrl?: string;
 }

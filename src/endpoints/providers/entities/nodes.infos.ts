@@ -1,25 +1,19 @@
-import { Field, Float, ObjectType } from "@nestjs/graphql";
 import { ApiProperty } from "@nestjs/swagger";
 
-@ObjectType("NodesInfos", { description: "NodesInfos object type." })
 export class NodesInfos {
   constructor(init?: Partial<NodesInfos>) {
     Object.assign(this, init);
   }
 
-  @Field(() => Float, { description: "Total numbers of nodes." })
-  @ApiProperty()
+  @ApiProperty({ description: 'Number of nodes', type: Number, example: 10 })
   numNodes: number = 0;
 
-  @Field(() => Float, { description: "Total stake amount." })
-  @ApiProperty()
+  @ApiProperty({ description: 'Number of stake', type: Number, example: 100 })
   stake: string = '';
 
-  @Field(() => String, { description: "Top up details." })
-  @ApiProperty()
+  @ApiProperty({ description: 'Number of topUp', type: Number, example: 100 })
   topUp: string = '';
 
-  @Field(() => String, { description: "Locked amound details." })
-  @ApiProperty()
+  @ApiProperty({ description: 'Locked number', type: Number, example: 100 })
   locked: string = '';
 }

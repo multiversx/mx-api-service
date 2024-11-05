@@ -1,87 +1,74 @@
 import { ComplexityEstimation } from "@multiversx/sdk-nestjs-common";
-import { Field, ObjectType } from "@nestjs/graphql";
 import { ApiProperty } from "@nestjs/swagger";
 import { ScamInfo } from "src/common/entities/scam-info.dto";
 import { NftCollectionAccount } from "src/endpoints/collections/entities/nft.collection.account";
 import { NftAccount } from "src/endpoints/nfts/entities/nft.account";
 import { Account } from "./account";
 
-@ObjectType("AccountDetailed", { description: "Detailed Account object type that extends Account." })
 export class AccountDetailed extends Account {
   constructor(init?: Partial<AccountDetailed>) {
     super();
     Object.assign(this, init);
   }
 
-  @Field(() => String, { description: 'Code for the given detailed account.' })
-  @ApiProperty({ description: 'The source code in hex format' })
+  @ApiProperty({ description: 'The source code in hex format', required: false })
   code: string = '';
 
-  @Field(() => String, { description: 'Code hash for the given detailed account.', nullable: true })
-  @ApiProperty({ description: 'The hash of the source code' })
+  @ApiProperty({ description: 'The hash of the source code', required: false })
   codeHash: string = '';
 
-  @Field(() => String, { description: 'Root hash for the given detailed account.', nullable: true })
   @ApiProperty({ description: 'The hash of the root node' })
   rootHash: string = '';
 
-  @Field(() => String, { description: 'Username for the given detailed account.', nullable: true })
-  @ApiProperty({ description: 'The username specific for this account', nullable: true })
+  @ApiProperty({ description: 'The username specific for this account', nullable: true, required: false })
   username: string | undefined = undefined;
 
-  @Field(() => String, { description: 'Developer reward for the given detailed account.' })
   @ApiProperty({ description: 'The developer reward' })
   developerReward: string = '';
 
-  @Field(() => String, { description: 'Owner address for the given detailed account.' })
-  @ApiProperty({ description: 'The address in bech 32 format of owner account' })
+  @ApiProperty({ description: 'The address in bech 32 format of owner account', required: false })
   ownerAddress: string = '';
 
-  @Field(() => Boolean, { description: 'If the given detailed account is upgradeable.', nullable: true })
-  @ApiProperty({ description: 'Specific property flag for smart contract', type: Boolean })
+  @ApiProperty({ description: 'Specific property flag for smart contract', type: Boolean, required: false })
   isUpgradeable?: boolean;
 
-  @Field(() => Boolean, { description: 'If the given detailed account is readable.', nullable: true })
-  @ApiProperty({ description: 'Specific property flag for smart contract', type: Boolean })
+  @ApiProperty({ description: 'Specific property flag for smart contract', type: Boolean, required: false })
   isReadable?: boolean;
 
-  @Field(() => Boolean, { description: 'If the given detailed account is payable.', nullable: true })
-  @ApiProperty({ description: 'Specific property flag for smart contract', type: Boolean })
+  @ApiProperty({ description: 'Specific property flag for smart contract', type: Boolean, required: false })
   isPayable?: boolean;
 
-  @Field(() => Boolean, { description: 'If the given detailed account is payable by smart contract.', nullable: true })
-  @ApiProperty({ description: 'Specific property flag for smart contract', type: Boolean, nullable: true })
+  @ApiProperty({ description: 'Specific property flag for smart contract', type: Boolean, nullable: true, required: false })
   isPayableBySmartContract?: boolean | undefined = undefined;
 
-  @Field(() => ScamInfo, { description: 'Scam information for the given detailed account.', nullable: true })
-  @ApiProperty({ type: ScamInfo, nullable: true })
+  @ApiProperty({ type: ScamInfo, nullable: true, required: false })
   scamInfo: ScamInfo | undefined = undefined;
 
-  @Field(() => [NftCollectionAccount], { description: 'NFT collections for the given detailed account.', nullable: true })
+  @ApiProperty({ description: 'Account nft collections', type: Boolean, nullable: true, required: false })
   nftCollections: NftCollectionAccount[] | undefined = undefined;
 
-  @Field(() => [NftAccount], { description: 'NFTs for the given detailed account. Complexity: 1000', nullable: true })
+  @ApiProperty({ description: 'Account nfts', type: Boolean, nullable: true, required: false })
   @ComplexityEstimation({ group: 'nfts', value: 1000 })
   nfts: NftAccount[] | undefined = undefined;
 
-  @ApiProperty({ type: Number, nullable: true })
+  @ApiProperty({ type: Number, nullable: true, required: false })
   activeGuardianActivationEpoch?: number;
 
-  @ApiProperty({ type: String, nullable: true })
+  @ApiProperty({ type: String, nullable: true, required: false })
   activeGuardianAddress?: string;
 
-  @ApiProperty({ type: String, nullable: true })
+  @ApiProperty({ type: String, nullable: true, required: false })
   activeGuardianServiceUid?: string;
 
-  @ApiProperty({ type: Number, nullable: true })
+  @ApiProperty({ type: Number, nullable: true, required: false })
   pendingGuardianActivationEpoch?: number;
 
-  @ApiProperty({ type: String, nullable: true })
+  @ApiProperty({ type: String, nullable: true, required: false })
   pendingGuardianAddress?: string;
 
-  @ApiProperty({ type: String, nullable: true })
+  @ApiProperty({ type: String, nullable: true, required: false })
   pendingGuardianServiceUid?: string;
 
-  @ApiProperty({ type: Boolean, nullable: true })
+  @ApiProperty({ type: Boolean, nullable: true, required: false })
   isGuarded?: boolean;
 }
