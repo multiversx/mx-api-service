@@ -6,6 +6,7 @@ export class ScamInfo {
     Object.assign(this, init);
   }
 
+  @ApiProperty({ type: String, nullable: true })
   type?: string | null;
 
   @ApiProperty({ type: String, nullable: true })

@@ -7,21 +7,21 @@ export class AccountDelegation {
     Object.assign(this, init);
   }
 
-  @ApiProperty({ name: 'Delegation account details', type: String })
+  @ApiProperty({ description: 'Delegation account details', type: String })
   address: string = "";
 
-  @ApiProperty({ name: 'Account delegation contract', type: String })
+  @ApiProperty({ description: 'Account delegation contract', type: String })
   contract: string = "";
 
-  @ApiProperty(SwaggerUtils.amountPropertyOptions())
+  @ApiProperty(SwaggerUtils.amountPropertyOptions({ required: false }))
   userUnBondable: string = "";
 
-  @ApiProperty(SwaggerUtils.amountPropertyOptions())
+  @ApiProperty(SwaggerUtils.amountPropertyOptions({ required: false }))
   userActiveStake: string = "";
 
-  @ApiProperty(SwaggerUtils.amountPropertyOptions())
+  @ApiProperty(SwaggerUtils.amountPropertyOptions({ required: false }))
   claimableRewards: string = "";
 
-  @ApiProperty({ name: 'User undelegated list details', type: AccountUndelegation, isArray: true })
+  @ApiProperty({ description: 'User undelegated list details', type: AccountUndelegation, isArray: true, required: false })
   userUndelegatedList: AccountUndelegation[] = [];
 }

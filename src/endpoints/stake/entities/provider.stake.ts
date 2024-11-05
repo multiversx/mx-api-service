@@ -10,6 +10,6 @@ export class ProviderStake {
   @ApiProperty(SwaggerUtils.amountPropertyOptions())
   totalStaked: string = '';
 
-  @ApiProperty({ type: ProviderUnstakedTokens, isArray: true, nullable: true })
+  @ApiProperty({ type: ProviderUnstakedTokens, isArray: true, nullable: true, required: false })
   unstakedTokens: ProviderUnstakedTokens[] | undefined = undefined;
 }

@@ -7,6 +7,6 @@ export class RoundDetailed extends Round {
     Object.assign(this, init);
   }
 
-  @ApiProperty({ name: 'Signers', type: String, isArray: true })
+  @ApiProperty({ description: 'Signers', type: String, isArray: true })
   signers: string[] = [];
 }

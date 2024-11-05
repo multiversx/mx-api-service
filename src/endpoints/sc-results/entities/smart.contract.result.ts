@@ -33,13 +33,13 @@ export class SmartContractResult {
   @ApiProperty({ type: String })
   receiver: string = '';
 
-  @ApiProperty({ type: AccountAssets, nullable: true })
+  @ApiProperty({ type: AccountAssets, nullable: true, required: false })
   senderAssets: AccountAssets | undefined = undefined;
 
-  @ApiProperty({ type: AccountAssets, nullable: true })
+  @ApiProperty({ type: AccountAssets, nullable: true, required: false })
   receiverAssets: AccountAssets | undefined = undefined;
 
-  @ApiProperty({ type: String })
+  @ApiProperty({ type: String, required: false })
   relayedValue: string = '';
 
   @ApiProperty({ type: String })
@@ -54,19 +54,19 @@ export class SmartContractResult {
   @ApiProperty({ type: String })
   callType: string = '';
 
-  @ApiProperty({ type: String, nullable: true })
+  @ApiProperty({ type: String, nullable: true, required: false })
   miniBlockHash: string | undefined = undefined;
 
-  @ApiProperty({ type: TransactionLog, nullable: true })
+  @ApiProperty({ type: TransactionLog, nullable: true, required: false })
   logs: TransactionLog | undefined = undefined;
 
-  @ApiProperty({ type: String, nullable: true })
+  @ApiProperty({ type: String, nullable: true, required: false })
   returnMessage: string | undefined = undefined;
 
-  @ApiProperty({ type: TransactionAction, nullable: true })
+  @ApiProperty({ type: TransactionAction, nullable: true, required: false })
   action: TransactionAction | undefined = undefined;
 
-  @ApiProperty({ type: String, nullable: true })
+  @ApiProperty({ type: String, nullable: true, required: false })
   function: string | undefined = undefined;
 
   @ApiProperty({ type: String, nullable: true })

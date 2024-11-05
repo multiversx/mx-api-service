@@ -15,19 +15,19 @@ export class Identity {
   @ApiProperty({ type: String })
   description?: string;
 
-  @ApiProperty({ type: String })
+  @ApiProperty({ type: String, required: false })
   avatar?: string;
 
-  @ApiProperty({ type: String })
+  @ApiProperty({ type: String, required: false })
   website?: string;
 
-  @ApiProperty({ type: String })
+  @ApiProperty({ type: String, required: false })
   twitter?: string;
 
   @ApiProperty({ type: String })
   location?: string;
 
-  @ApiProperty({ type: Number })
+  @ApiProperty({ type: Number, required: false })
   score?: number;
 
   @ApiProperty({ type: Number })
@@ -45,15 +45,15 @@ export class Identity {
   @ApiProperty()
   distribution?: { [index: string]: number | undefined } = {};
 
-  @ApiProperty({ type: [String] })
+  @ApiProperty({ type: [String], required: false })
   providers?: string[];
 
-  @ApiProperty({ type: Number })
+  @ApiProperty({ type: Number, required: false })
   stakePercent?: number;
 
-  @ApiProperty({ type: Number })
+  @ApiProperty({ type: Number, required: false })
   rank?: number;
 
-  @ApiProperty({ type: Number })
+  @ApiProperty({ type: Number, required: false })
   apr?: number;
 }

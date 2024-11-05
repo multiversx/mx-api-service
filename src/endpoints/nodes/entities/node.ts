@@ -111,7 +111,7 @@ export class Node {
   @ApiProperty({ type: Number, example: 15 })
   epochsLeft: number | undefined = undefined;
 
-  @ApiProperty({ type: Identity, nullable: true })
+  @ApiProperty({ type: Identity, nullable: true, required: false })
   identityInfo?: Identity;
 
   @ApiProperty({ type: String, default: 0 })

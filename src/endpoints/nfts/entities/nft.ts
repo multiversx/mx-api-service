@@ -50,16 +50,16 @@ export class Nft {
   @ApiProperty({ type: String })
   url: string = '';
 
-  @ApiProperty({ type: NftMedia, nullable: true })
+  @ApiProperty({ type: NftMedia, nullable: true, required: false })
   media: NftMedia[] | undefined = undefined;
 
-  @ApiProperty({ type: Boolean, default: false })
+  @ApiProperty({ type: Boolean, default: false, required: false })
   isWhitelistedStorage: boolean = false;
 
-  @ApiProperty({ type: String })
+  @ApiProperty({ type: String, required: false })
   thumbnailUrl: string = '';
 
-  @ApiProperty({ type: String, isArray: true })
+  @ApiProperty({ type: String, isArray: true, required: false })
   tags: string[] = [];
 
   @ApiProperty({ type: NftMetadata, nullable: true })
@@ -79,30 +79,30 @@ export class Nft {
   @ApiProperty({ type: Number, nullable: true })
   decimals: number | undefined = undefined;
 
-  @ApiProperty({ type: TokenAssets })
+  @ApiProperty({ type: TokenAssets, required: false })
   assets?: TokenAssets;
 
   @ApiProperty({ type: String })
   ticker?: string = '';
 
-  @ApiProperty({ type: ScamInfo, nullable: true })
+  @ApiProperty({ type: ScamInfo, nullable: true, required: false })
   scamInfo: ScamInfo | undefined = undefined;
 
-  @ApiProperty({ type: Number, nullable: true })
+  @ApiProperty({ type: Number, nullable: true, required: false })
   score: number | undefined = undefined;
 
-  @ApiProperty({ type: Number, nullable: true })
+  @ApiProperty({ type: Number, nullable: true, required: false })
   rank: number | undefined = undefined;
 
-  @ApiProperty({ type: NftRarities, nullable: true })
+  @ApiProperty({ type: NftRarities, nullable: true, required: false })
   rarities: NftRarities | undefined = undefined;
 
   @ApiProperty({ type: Boolean, nullable: true })
   isNsfw: boolean | undefined = undefined;
 
-  @ApiProperty({ type: [UnlockMileStoneModel], nullable: true })
+  @ApiProperty({ type: [UnlockMileStoneModel], nullable: true, required: false })
   unlockSchedule?: UnlockMileStoneModel[] | undefined = undefined;
 
-  @ApiProperty({ type: Number, nullable: true })
+  @ApiProperty({ type: Number, nullable: true, required: false })
   unlockEpoch?: number | undefined = undefined;
 }

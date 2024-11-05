@@ -20,7 +20,7 @@ export class TransactionPool {
   @ApiProperty({ type: Number, description: 'Nonce details', example: 100 })
   nonce?: number;
 
-  @ApiProperty({ type: String, description: 'Transaction data', example: 'TEST==' })
+  @ApiProperty({ type: String, description: 'Transaction data', example: 'TEST==', required: false })
   data?: string;
 
   @ApiProperty({ type: Number, description: 'Transaction gas price', example: 1000000000 })

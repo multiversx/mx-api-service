@@ -34,7 +34,7 @@ export class Provider extends NodesInfos {
   @ApiProperty({ type: String, nullable: true })
   cumulatedRewards: string | null = null;
 
-  @ApiProperty({ type: String, nullable: true })
+  @ApiProperty({ type: String, nullable: true, required: false })
   identity: string | undefined = undefined;
 
   @ApiProperty({ type: String })
@@ -55,18 +55,18 @@ export class Provider extends NodesInfos {
   @ApiProperty({ type: Number })
   createdNonce: number | undefined = undefined;
 
-  @ApiProperty({ type: Boolean, nullable: true })
+  @ApiProperty({ type: Boolean, nullable: true, required: false })
   githubProfileValidated: boolean | undefined = undefined;
 
-  @ApiProperty({ type: String, nullable: true })
+  @ApiProperty({ type: String, nullable: true, required: false })
   githubProfileValidatedAt: string | undefined = undefined;
 
-  @ApiProperty({ type: Boolean, nullable: true })
+  @ApiProperty({ type: Boolean, nullable: true, required: false })
   githubKeysValidated: boolean | undefined = undefined;
 
-  @ApiProperty({ type: String, nullable: true })
+  @ApiProperty({ type: String, nullable: true, required: false })
   githubKeysValidatedAt: string | undefined = undefined;
 
-  @ApiProperty({ type: Identity, nullable: true })
+  @ApiProperty({ type: Identity, nullable: true, required: false })
   identityInfo?: Identity;
 }

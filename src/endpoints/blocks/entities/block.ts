@@ -22,7 +22,7 @@ export class Block {
   @ApiProperty({ type: String })
   proposer: string = '';
 
-  @ApiProperty({ type: Identity, nullable: true })
+  @ApiProperty({ type: Identity, nullable: true, required: false })
   proposerIdentity: Identity | undefined = undefined;
 
   @ApiProperty({ type: String })
@@ -61,7 +61,7 @@ export class Block {
   @ApiProperty({ type: Number })
   maxGasLimit: number = 0;
 
-  @ApiProperty({ type: String, nullable: true })
+  @ApiProperty({ type: String, nullable: true, required: false })
   scheduledRootHash: string | undefined = undefined;
 
   static mergeWithElasticResponse<T extends Block>(newBlock: T, blockRaw: any): T {
