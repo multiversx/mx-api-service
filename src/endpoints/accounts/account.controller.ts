@@ -101,7 +101,7 @@ export class AccountController {
     @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number,
     @Query("ownerAddress", ParseAddressPipe) ownerAddress?: string,
     @Query("name") name?: string,
-    @Query("tags", new ParseArrayPipe()) tags?: string[],
+    @Query("tags", ParseArrayPipe) tags?: string[],
     @Query('sort', new ParseEnumPipe(AccountSort)) sort?: AccountSort,
     @Query('order', new ParseEnumPipe(SortOrder)) order?: SortOrder,
     @Query("isSmartContract", ParseBoolPipe) isSmartContract?: boolean,
@@ -149,7 +149,7 @@ export class AccountController {
     @Query("ownerAddress", ParseAddressPipe) ownerAddress?: string,
     @Query("isSmartContract", ParseBoolPipe) isSmartContract?: boolean,
     @Query("name") name?: string,
-    @Query("tags", new ParseArrayPipe()) tags?: string[],
+    @Query("tags", ParseArrayPipe) tags?: string[],
     @Query("excludeTags", ParseArrayPipe) excludeTags?: string[],
     @Query("hasAssets", ParseBoolPipe) hasAssets?: boolean,
   ): Promise<number> {
@@ -171,7 +171,7 @@ export class AccountController {
     @Query("ownerAddress", ParseAddressPipe) ownerAddress?: string,
     @Query("isSmartContract", ParseBoolPipe) isSmartContract?: boolean,
     @Query("name") name?: string,
-    @Query("tags", new ParseArrayPipe()) tags?: string[],
+    @Query("tags", ParseArrayPipe) tags?: string[],
     @Query("excludeTags", ParseArrayPipe) excludeTags?: string[],
     @Query("hasAssets", ParseBoolPipe) hasAssets?: boolean,
   ): Promise<number> {
