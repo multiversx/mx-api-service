@@ -634,7 +634,7 @@ export class AccountController {
     @Query('includeFlagged', ParseBoolPipe) includeFlagged?: boolean,
     @Query('withSupply', ParseBoolPipe) withSupply?: boolean,
     @Query('source', new ParseEnumPipe(EsdtDataSource)) source?: EsdtDataSource,
-    @Query('excludeMetaESDT', new ParseBoolPipe) excludeMetaESDT?: boolean,
+    @Query('excludeMetaESDT', ParseBoolPipe) excludeMetaESDT?: boolean,
     @Query('fields', ParseArrayPipe) fields?: string[],
     @Query('isScam', ParseBoolPipe) isScam?: boolean,
     @Query('scamType', new ParseEnumPipe(ScamType)) scamType?: ScamType,
@@ -944,7 +944,7 @@ export class AccountController {
     @Query('after', ParseIntPipe) after?: number,
     @Query('round', ParseIntPipe) round?: number,
     @Query('senderOrReceiver', ParseAddressPipe) senderOrReceiver?: string,
-    @Query('isRelayed', new ParseBoolPipe) isRelayed?: boolean,
+    @Query('isRelayed', ParseBoolPipe) isRelayed?: boolean,
   ): Promise<number> {
 
     return await this.transactionService.getTransactionCount(new TransactionFilter({
