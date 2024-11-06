@@ -178,12 +178,12 @@ export class NftController {
     @Query('tags', ParseArrayPipe) tags?: string[],
     @Query('creator', ParseAddressPipe) creator?: string,
     @Query('isWhitelistedStorage', new ParseBoolPipe) isWhitelistedStorage?: boolean,
-    @Query('hasUris', new ParseBoolPipe) hasUris?: boolean,
-    @Query('isNsfw', new ParseBoolPipe) isNsfw?: boolean,
-    @Query('traits', new ParseRecordPipe) traits?: Record<string, string>,
-    @Query('before', new ParseIntPipe) before?: number,
-    @Query('after', new ParseIntPipe) after?: number,
-    @Query('isScam', new ParseBoolPipe) isScam?: boolean,
+    @Query('hasUris', ParseBoolPipe) hasUris?: boolean,
+    @Query('isNsfw', ParseBoolPipe) isNsfw?: boolean,
+    @Query('traits', ParseRecordPipe) traits?: Record<string, string>,
+    @Query('before', ParseIntPipe) before?: number,
+    @Query('after', ParseIntPipe) after?: number,
+    @Query('isScam', ParseBoolPipe) isScam?: boolean,
     @Query('scamType', new ParseEnumPipe(ScamType)) scamType?: ScamType,
   ): Promise<number> {
     return await this.nftService.getNftCount(new NftFilter({ search, identifiers, type, subType, collection, collections, name, tags, creator, isWhitelistedStorage, hasUris, isNsfw, traits, before, after, isScam, scamType }));
@@ -312,11 +312,11 @@ export class NftController {
     @Query('before', ParseIntPipe) before?: number,
     @Query('after', ParseIntPipe) after?: number,
     @Query('order', new ParseEnumPipe(SortOrder)) order?: SortOrder,
-    @Query('withScResults', new ParseBoolPipe) withScResults?: boolean,
-    @Query('withOperations', new ParseBoolPipe) withOperations?: boolean,
-    @Query('withLogs', new ParseBoolPipe) withLogs?: boolean,
-    @Query('withScamInfo', new ParseBoolPipe) withScamInfo?: boolean,
-    @Query('withUsername', new ParseBoolPipe) withUsername?: boolean,
+    @Query('withScResults', ParseBoolPipe) withScResults?: boolean,
+    @Query('withOperations', ParseBoolPipe) withOperations?: boolean,
+    @Query('withLogs', ParseBoolPipe) withLogs?: boolean,
+    @Query('withScamInfo', ParseBoolPipe) withScamInfo?: boolean,
+    @Query('withUsername', ParseBoolPipe) withUsername?: boolean,
   ) {
     const options = TransactionQueryOptions.applyDefaultOptions(size, { withScResults, withOperations, withLogs, withScamInfo, withUsername });
 
@@ -414,11 +414,11 @@ export class NftController {
     @Query('before', ParseIntPipe) before?: number,
     @Query('after', ParseIntPipe) after?: number,
     @Query('order', new ParseEnumPipe(SortOrder)) order?: SortOrder,
-    @Query('withScResults', new ParseBoolPipe) withScResults?: boolean,
-    @Query('withOperations', new ParseBoolPipe) withOperations?: boolean,
-    @Query('withLogs', new ParseBoolPipe) withLogs?: boolean,
-    @Query('withScamInfo', new ParseBoolPipe) withScamInfo?: boolean,
-    @Query('withUsername', new ParseBoolPipe) withUsername?: boolean,
+    @Query('withScResults', ParseBoolPipe) withScResults?: boolean,
+    @Query('withOperations', ParseBoolPipe) withOperations?: boolean,
+    @Query('withLogs', ParseBoolPipe) withLogs?: boolean,
+    @Query('withScamInfo', ParseBoolPipe) withScamInfo?: boolean,
+    @Query('withUsername', ParseBoolPipe) withUsername?: boolean,
   ) {
     const options = TransactionQueryOptions.applyDefaultOptions(size, { withScResults, withOperations, withLogs, withScamInfo, withUsername });
 
