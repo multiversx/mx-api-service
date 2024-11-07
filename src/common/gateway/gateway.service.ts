@@ -95,7 +95,7 @@ export class GatewayService {
   }
 
   async getAccountsBulk(addresses: string[]): Promise<Account[]> {
-    const result = await this.create('address/bulk', GatewayComponentRequest.addressDetails, addresses);
+    const result = await this.create('address/bulk', GatewayComponentRequest.addressesBulk, addresses);
     return result.accounts;
   }
 
