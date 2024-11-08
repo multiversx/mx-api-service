@@ -239,7 +239,7 @@ describe('Token Service', () => {
       }));
     });
 
-    it('should return token even if the input string is not uppercase', async () => {
+    it('should return token case insensitive', async () => {
       const data = require('../../mocks/tokens.mock.json');
 
       tokenService.getAllTokens = jest.fn().mockResolvedValue(data);
@@ -248,7 +248,7 @@ describe('Token Service', () => {
       tokenService.applySupply = jest.fn().mockResolvedValue(undefined);
       tokenService.getTokenRoles = jest.fn().mockResolvedValue([]);
 
-      const result = await tokenService.getToken('wEglD-bd4d79');
+      const result = await tokenService.getToken('wEglD-bd4D79');
       expect(tokenService.getAllTokens).toHaveBeenCalledTimes(1);
       expect(tokenService.applyTickerFromAssets).toHaveBeenCalledTimes(1);
       expect(tokenService.applySupply).toHaveBeenCalledTimes(1);

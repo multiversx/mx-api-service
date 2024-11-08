@@ -72,12 +72,12 @@ export class TokenService {
     return tokens.find(x => x.identifier.toLowerCase() === lowercaseIdentifier) !== undefined;
   }
 
-  async getToken(identifier: string, supplyOptions?: TokenSupplyOptions): Promise<TokenDetailed | undefined> {
+  async getToken(rawIdentifier: string, supplyOptions?: TokenSupplyOptions): Promise<TokenDetailed | undefined> {
     const tokens = await this.getAllTokens();
-    const uppercaseIdentifier = this.uppercaseToken(identifier);
-    let token = tokens.find(x => x.identifier === uppercaseIdentifier);
+    const identifier = this.adaptIdentifierCase(rawIdentifier);
+    let token = tokens.find(x => x.identifier === identifier);
 
-    if (!TokenUtils.isToken(uppercaseIdentifier)) {
+    if (!TokenUtils.isToken(identifier)) {
       return undefined;
     }
 
@@ -92,9 +92,9 @@ export class TokenService {
     await this.applySupply(token, supplyOptions);
 
     if (token.type === TokenType.FungibleESDT) {
-      token.roles = await this.getTokenRoles(uppercaseIdentifier);
+      token.roles = await this.getTokenRoles(identifier);
     } else if (token.type === TokenType.MetaESDT) {
-      const elasticCollection = await this.indexerService.getCollection(uppercaseIdentifier);
+      const elasticCollection = await this.indexerService.getCollection(identifier);
       if (elasticCollection) {
         await this.collectionService.applyCollectionRoles(token, elasticCollection);
       }
@@ -103,7 +103,7 @@ export class TokenService {
     return token;
   }
 
-  uppercaseToken(identifier: string): string {
+  adaptIdentifierCase(identifier: string): string {
     if (!identifier.includes("-")) {
       return identifier.toUpperCase();
     }
@@ -113,7 +113,7 @@ export class TokenService {
       return identifier.toUpperCase();
     }
 
-    return tokenParts[0].toUpperCase() + "-" + tokenParts[1];
+    return tokenParts[0].toUpperCase() + "-" + tokenParts[1].toLowerCase();
   }
 
   async getTokens(queryPagination: QueryPagination, filter: TokenFilter): Promise<TokenDetailed[]> {
