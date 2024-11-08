@@ -74,7 +74,7 @@ export class TokenService {
 
   async getToken(rawIdentifier: string, supplyOptions?: TokenSupplyOptions): Promise<TokenDetailed | undefined> {
     const tokens = await this.getAllTokens();
-    const identifier = this.adaptIdentifierCase(rawIdentifier);
+    const identifier = this.normalizeIdentifierCase(rawIdentifier);
     let token = tokens.find(x => x.identifier === identifier);
 
     if (!TokenUtils.isToken(identifier)) {
@@ -103,7 +103,7 @@ export class TokenService {
     return token;
   }
 
-  adaptIdentifierCase(identifier: string): string {
+  normalizeIdentifierCase(identifier: string): string {
     if (!identifier.includes("-")) {
       return identifier.toUpperCase();
     }
