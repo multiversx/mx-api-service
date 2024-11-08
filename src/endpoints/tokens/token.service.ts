@@ -68,14 +68,16 @@ export class TokenService {
 
   async isToken(identifier: string): Promise<boolean> {
     const tokens = await this.getAllTokens();
-    return tokens.find(x => x.identifier === identifier) !== undefined;
+    const lowercaseIdentifier = identifier.toLowerCase();
+    return tokens.find(x => x.identifier.toLowerCase() === lowercaseIdentifier) !== undefined;
   }
 
   async getToken(identifier: string, supplyOptions?: TokenSupplyOptions): Promise<TokenDetailed | undefined> {
     const tokens = await this.getAllTokens();
-    let token = tokens.find(x => x.identifier === identifier);
+    const uppercaseIdentifier = this.uppercaseToken(identifier);
+    let token = tokens.find(x => x.identifier === uppercaseIdentifier);
 
-    if (!TokenUtils.isToken(identifier)) {
+    if (!TokenUtils.isToken(uppercaseIdentifier)) {
       return undefined;
     }
 
@@ -90,15 +92,28 @@ export class TokenService {
     await this.applySupply(token, supplyOptions);
 
     if (token.type === TokenType.FungibleESDT) {
-      token.roles = await this.getTokenRoles(identifier);
+      token.roles = await this.getTokenRoles(uppercaseIdentifier);
     } else if (token.type === TokenType.MetaESDT) {
-      const elasticCollection = await this.indexerService.getCollection(identifier);
+      const elasticCollection = await this.indexerService.getCollection(uppercaseIdentifier);
       if (elasticCollection) {
         await this.collectionService.applyCollectionRoles(token, elasticCollection);
       }
     }
 
     return token;
+  }
+
+  uppercaseToken(identifier: string): string {
+    if (!identifier.includes("-")) {
+      return identifier.toUpperCase();
+    }
+
+    const tokenParts = identifier.split("-");
+    if (tokenParts.length !== 2) {
+      return identifier.toUpperCase();
+    }
+
+    return tokenParts[0].toUpperCase() + "-" + tokenParts[1];
   }
 
   async getTokens(queryPagination: QueryPagination, filter: TokenFilter): Promise<TokenDetailed[]> {
