@@ -104,16 +104,12 @@ export class TokenService {
   }
 
   normalizeIdentifierCase(identifier: string): string {
-    if (!identifier.includes("-")) {
+    const [ticker, randomSequence] = identifier.split("-");
+    if (!ticker || !randomSequence) {
       return identifier.toUpperCase();
     }
 
-    const tokenParts = identifier.split("-");
-    if (tokenParts.length !== 2) {
-      return identifier.toUpperCase();
-    }
-
-    return tokenParts[0].toUpperCase() + "-" + tokenParts[1].toLowerCase();
+    return `${ticker.toUpperCase()}-${randomSequence.toLowerCase()}`;
   }
 
   async getTokens(queryPagination: QueryPagination, filter: TokenFilter): Promise<TokenDetailed[]> {
