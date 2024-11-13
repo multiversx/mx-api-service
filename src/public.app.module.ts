@@ -9,8 +9,6 @@ import { GuestCacheService } from '@multiversx/sdk-nestjs-cache';
 import { LoggingModule } from '@multiversx/sdk-nestjs-common';
 import { DynamicModuleUtils } from './utils/dynamic.module.utils';
 import { LocalCacheController } from './endpoints/caching/local.cache.controller';
-import { GraphQlModule } from './graphql/graphql.module';
-import { ApiMetricsModule } from './common/metrics/api.metrics.module';
 
 @Module({
   imports: [
@@ -18,8 +16,6 @@ import { ApiMetricsModule } from './common/metrics/api.metrics.module';
     EndpointsServicesModule,
     EndpointsControllersModule.forRoot(),
     DynamicModuleUtils.getRedisCacheModule(),
-    GraphQlModule.register(),
-    ApiMetricsModule,
   ],
   controllers: [
     LocalCacheController,
