@@ -42,10 +42,8 @@ jobs:
           sleep 20
           docker ps
 
-      - name: Install dependencies
-        run: |
-          npm ci
-          npm init
+      - run: npm ci
+      - run: npm run init
 
       - name: Start API
         run: |
