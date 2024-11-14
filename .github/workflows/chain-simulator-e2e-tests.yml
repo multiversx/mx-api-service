@@ -56,7 +56,9 @@ jobs:
           docker ps
 
       - name: Install dependencies
-        run: npm install
+        run: |
+          npm init
+          npm install
 
       - name: Start API
         run: |
