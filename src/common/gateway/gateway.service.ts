@@ -166,7 +166,7 @@ export class GatewayService {
   }
 
   async getTransactionPool(): Promise<TxPoolGatewayResponse> {
-    return await this.get(`transaction/pool?fields=nonce,sender,receiver,gaslimit,gasprice,receiverusername,data,value`, GatewayComponentRequest.transactionPool);
+    return await this.get(`transaction/pool?fields=*`, GatewayComponentRequest.transactionPool);
   }
 
   async getTransaction(txHash: string): Promise<Transaction | undefined> {

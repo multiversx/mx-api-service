@@ -6,6 +6,7 @@ import { GatewayService } from "src/common/gateway/gateway.service";
 import { PoolFilter } from "src/endpoints/pool/entities/pool.filter";
 import { PoolService } from "src/endpoints/pool/pool.service";
 import { TransactionType } from "src/endpoints/transactions/entities/transaction.type";
+import { ProtocolService } from "../../../common/protocol/protocol.service";
 
 describe('PoolService', () => {
   let service: PoolService;
@@ -26,6 +27,12 @@ describe('PoolService', () => {
           provide: CacheService,
           useValue: {
             getOrSet: jest.fn(),
+          },
+        },
+        {
+          provide: ProtocolService,
+          useValue: {
+            getShardCount: jest.fn(),
           },
         },
         {
