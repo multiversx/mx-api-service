@@ -1,0 +1,73 @@
+name: Chain simulator e2e tests workflow
+
+on:
+  pull_request:
+
+jobs:
+  call-reusable-workflow:
+    uses: multiversx/chain-simulator-reusable-workflow/.github/workflows/workflow.yml@v1
+    with:
+      with_elastic: true  # Enable Elasticsearch services
+      with_notifier: false # Do not enable notifier services
+
+  test-chainsimulator-e2e:
+    runs-on: ubuntu-latest
+    needs: call-reusable-workflow  # Ensures this job waits for call-reusable-workflow
+    strategy:
+      matrix:
+        node-version: [18.x]
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Download Docker directory artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: docker
+          path: docker/
+
+      - name: Start Chain simulator Docker containers
+        run: |
+          cd docker
+          docker compose -f docker-compose.yml --profile elastic up -d
+
+      # Step 1: Wait for services to be healthy
+      - name: Wait for services to be ready
+        run: |
+          echo "Waiting for services to be healthy..."
+          docker ps
+          sleep 10 # Allow time for the containers to initialize
+          docker logs chainsimulator
+          sleep 20 # Wait for 20 seconds to ensure services are up
+
+      # Step 2: Check chain-simulator API
+      - name: Check chain-simulator API
+        run: |
+          curl http://localhost:8085/simulator/observers
+
+      - name: Start API Docker containers
+        run: |
+          cd .
+          docker compose up -d
+
+      - name: Wait for API docker containers to start
+        run: |
+          sleep 20
+          docker ps
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Start API
+        run: |
+          npm run start:mainnet:e2e
+
+      # Step 3: Set up Node.js environment
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: Run e2e tests
+        run: npm run test:cs-e2e
