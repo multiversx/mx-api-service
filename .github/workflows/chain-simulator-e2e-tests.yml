@@ -6,7 +6,6 @@ on:
 jobs:
   test-chainsimulator-e2e:
     runs-on: ubuntu-latest
-    needs: call-reusable-workflow  # Ensures this job waits for call-reusable-workflow
     strategy:
       matrix:
         node-version: [18.x]
@@ -14,8 +13,14 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Build and start the Docker images
-        run: docker compose -f "src/test/chain-simulator/docker/docker-compose.yml" up -d --build
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: Build and start chain simulator
+        run: npm run start-chain-simulator
 
       - name: Wait for services to be ready
         run: |
@@ -45,13 +50,6 @@ jobs:
       - name: Start API
         run: |
           npm run start:mainnet:e2e
-
-      # Step 3: Set up Node.js environment
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v3
-        with:
-          node-version: ${{ matrix.node-version }}
-          cache: 'npm'
 
       - name: Run e2e tests
         run: npm run test:cs-e2e
