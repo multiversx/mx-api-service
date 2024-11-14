@@ -44,7 +44,7 @@
     "test:e2e:local": "npm run test:e2e:warm & npm run test:e2e",
     "test:api": "jest --config ./src/test/jest-api.json --runInBand --detectOpenHandles --forceExit",
     "test:graph": "jest --config ./src/test/jest-graph-spec.json --runInBand --detectOpenHandles --forceExit",
-    "test:cs-e2e": "jest --testPathPattern='\\.cs-e2e\\.spec\\.ts$'",
+    "test:cs-e2e": "jest --config ./src/test/jest-chain-simulator.json --runInBand --detectOpenHandles --forceExit",
     "init": "run-script-os",
     "copy-mainnet-config": "run-script-os",
     "copy-testnet-config": "run-script-os",

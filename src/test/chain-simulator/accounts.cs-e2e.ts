@@ -37,8 +37,15 @@ describe('EventProcessor e2e tests with chain simulator', () => {
     const csResponse = await axios.get(`${CHAIN_SIMULATOR_URL}/address/${ALICE_ADDRESS}`);
     console.log(csResponse);
 
-    const apiServiceResponse = await axios.get(`${API_SERVICE_URL}/accounts/${ALICE_ADDRESS}`);
-    console.log(apiServiceResponse);
-
+    try {
+      const apiServiceResponse = await axios.get(`${API_SERVICE_URL}/accounts/${ALICE_ADDRESS}`);
+      console.log(JSON.stringify(apiServiceResponse).toString());
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        console.error('Error response:', error.response);
+      } else {
+        console.error('Unexpected error:', error);
+      }
+    }
   }, 100000);
 });
