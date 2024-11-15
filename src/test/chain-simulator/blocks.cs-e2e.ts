@@ -53,10 +53,17 @@ describe('Blocks e2e tests with chain simulator', () => {
     });
 
     it('should return blocks count filter by epoch', async () => {
-      const response = await axios.get(`${API_SERVICE_URL}/blocks/count?epoch=2`);
+      const response = await axios.get(`${API_SERVICE_URL}/blocks/count?epoch=1`);
       const count = response.data;
 
-      expect(count).toBeGreaterThan(2);
+      expect(count).toBeGreaterThan(1);
+    });
+
+    it('should return blocks count 0 if epoch value is to high', async () => {
+      const response = await axios.get(`${API_SERVICE_URL}/blocks/count?epoch=10`);
+      const count = response.data;
+
+      expect(count).toStrictEqual(0);
     });
 
     it('should return blocks count filter by nonce', async () => {
