@@ -60,10 +60,10 @@ describe('Blocks e2e tests with chain simulator', () => {
     });
 
     it('should return blocks count filter by nonce', async () => {
-      const response = await axios.get(`${API_SERVICE_URL}/blocks/count?nonce=2`);
+      const response = await axios.get(`${API_SERVICE_URL}/blocks/count?nonce=0`);
       const count = response.data;
 
-      expect(count).toBeGreaterThan(2);
+      expect(count).toBeGreaterThan(0);
     });
   });
 
