@@ -28,7 +28,6 @@ describe('Miniblocks e2e tests with chain simulator', () => {
     jest.clearAllMocks();
   });
 
-
   describe('GET /miniblocks', () => {
     it('should return status code 200', async () => {
       const response = await axios.get(`${API_SERVICE_URL}/miniblocks`);
