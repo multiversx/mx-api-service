@@ -239,6 +239,27 @@ describe('Token Service', () => {
       }));
     });
 
+    it('should return token case insensitive', async () => {
+      const data = require('../../mocks/tokens.mock.json');
+
+      tokenService.getAllTokens = jest.fn().mockResolvedValue(data);
+
+      tokenService.applyTickerFromAssets = jest.fn().mockResolvedValue(undefined);
+      tokenService.applySupply = jest.fn().mockResolvedValue(undefined);
+      tokenService.getTokenRoles = jest.fn().mockResolvedValue([]);
+
+      const result = await tokenService.getToken('wEglD-bd4D79');
+      expect(tokenService.getAllTokens).toHaveBeenCalledTimes(1);
+      expect(tokenService.applyTickerFromAssets).toHaveBeenCalledTimes(1);
+      expect(tokenService.applySupply).toHaveBeenCalledTimes(1);
+      expect(tokenService.getTokenRoles).toHaveBeenCalledTimes(1);
+      expect(result).toEqual(expect.objectContaining({
+        identifier: 'WEGLD-bd4d79',
+        type: 'FungibleESDT',
+        price: 41.626458658528016,
+      }));
+    });
+
     it('should return undefined if identifier does not exist in getAllTokens', async () => {
       tokenService.getAllTokens = jest.fn().mockResolvedValue([]);
       tokenService.applyTickerFromAssets = jest.fn().mockResolvedValue(undefined);
