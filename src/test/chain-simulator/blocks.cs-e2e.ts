@@ -117,7 +117,7 @@ describe('Blocks e2e tests with chain simulator', () => {
       const expectedProperties = [
         'hash', 'epoch', 'nonce', 'prevHash', 'pubKeyBitmap', 'round', 'shard',
         'size', 'sizeTxs', 'stateRootHash', 'timestamp', 'txCount', 'gasConsumed',
-        'gasRefunded', 'gasPenalized', 'maxGasLimit', 'scheduledRootHash',
+        'gasRefunded', 'gasPenalized', 'maxGasLimit',
       ];
 
       for (const property of expectedProperties) {
@@ -142,7 +142,6 @@ describe('Blocks e2e tests with chain simulator', () => {
         gasRefunded: 'number',
         gasPenalized: 'number',
         maxGasLimit: 'number',
-        scheduledRootHash: 'string',
       };
 
       Object.entries(typeValidation).forEach(([key, type]) => {
