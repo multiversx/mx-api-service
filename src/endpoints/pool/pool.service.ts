@@ -23,9 +23,7 @@ export class PoolService {
 
   async getTransactionFromPool(txHash: string): Promise<TransactionInPool | undefined> {
     const pool = await this.getEntirePool();
-    const transaction = pool.find(tx => tx.txHash === txHash);
-
-    return transaction;
+    return pool.find(tx => tx.txHash === txHash);
   }
 
   async getPoolCount(filter: PoolFilter): Promise<number> {
@@ -41,7 +39,7 @@ export class PoolService {
       return [];
     }
 
-    const {from, size} = queryPagination;
+    const { from, size } = queryPagination;
     const entirePool = await this.getEntirePool();
     const pool = this.applyFilters(entirePool, filter);
     return pool.slice(from, from + size);
