@@ -60,7 +60,7 @@ describe('Blocks e2e tests with chain simulator', () => {
     });
 
     it('should return blocks count 0 if epoch value is to high', async () => {
-      const response = await axios.get(`${API_SERVICE_URL}/blocks/count?epoch=10`);
+      const response = await axios.get(`${API_SERVICE_URL}/blocks/count?epoch=10000`);
       const count = response.data;
 
       expect(count).toStrictEqual(0);
@@ -71,6 +71,13 @@ describe('Blocks e2e tests with chain simulator', () => {
       const count = response.data;
 
       expect(count).toBeGreaterThan(0);
+    });
+
+    it('should return blocks count 0 if nonce value is to high', async () => {
+      const response = await axios.get(`${API_SERVICE_URL}/blocks/count?nonce=10000`);
+      const count = response.data;
+
+      expect(count).toStrictEqual(0);
     });
   });
 
