@@ -18,6 +18,12 @@ export class TransactionInPool {
   @ApiProperty({ type: String, example: "alice.elrond" })
   receiverUsername: string = '';
 
+  @ApiProperty({ type: String, example: "erd17rc0pu8s7rc0pu8s7rc0pu8s7rc0pu8s7rc0pu8s7rc0pu8s7rcqqkhty3" })
+  guardian: string = '';
+
+  @ApiProperty({ type: String, example: "0228618b6339c5eaf71ed1a8cd71df010ccd0369a29d957c37d53b0409408161726dd97e10ac7836996f666ffd636a797b9b9abecbd276971376fb3479b48203" })
+  guardianSignature: string = '';
+
   @ApiProperty({ type: Number, example: 37 })
   nonce: number = 0;
 
@@ -32,6 +38,15 @@ export class TransactionInPool {
 
   @ApiProperty({ type: Number, example: 50000 })
   gasLimit: number = 0;
+
+  @ApiProperty({ type: Number, example: 0 })
+  senderShard: number = 0;
+
+  @ApiProperty({ type: Number, example: 1 })
+  receiverShard: number = 0;
+
+  @ApiProperty({ type: String, example: "0228618b6339c5eaf71ed1a8cd71df010ccd0369a29d957c37d53b0409408161726dd97e10ac7836996f666ffd636a797b9b9abecbd276971376fb3479b48203" })
+  signature: string = '';
 
   @ApiProperty({ type: String, example: "SmartContractResult" })
   type: TransactionType = TransactionType.Transaction;
