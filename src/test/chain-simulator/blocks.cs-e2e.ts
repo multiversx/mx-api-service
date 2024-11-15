@@ -6,11 +6,16 @@ const API_SERVICE_URL = 'http://localhost:3001';
 describe('Blocks e2e tests with chain simulator', () => {
   beforeAll(async () => {
     try {
-      const response = await axios.get(`${CHAIN_SIMULATOR_URL}/simulator/observers`);
+      const response = await axios.get(
+        `${CHAIN_SIMULATOR_URL}/simulator/observers`,
+      );
       let numRetries = 0;
       while (true) {
         if (response.status === 200) {
-          await axios.post(`${CHAIN_SIMULATOR_URL}/simulator/generate-blocks-until-epoch-reached/2`, {});
+          await axios.post(
+            `${CHAIN_SIMULATOR_URL}/simulator/generate-blocks-until-epoch-reached/2`,
+            {},
+          );
           break;
         }
 
@@ -52,35 +57,45 @@ describe('Blocks e2e tests with chain simulator', () => {
     });
 
     it('should return blocks count filter by shard', async () => {
-      const response = await axios.get(`${API_SERVICE_URL}/blocks/count?shard=1`);
+      const response = await axios.get(
+        `${API_SERVICE_URL}/blocks/count?shard=1`,
+      );
       const count = response.data;
 
       expect(count).toBeGreaterThan(0);
     });
 
     it('should return blocks count filter by epoch', async () => {
-      const response = await axios.get(`${API_SERVICE_URL}/blocks/count?epoch=1`);
+      const response = await axios.get(
+        `${API_SERVICE_URL}/blocks/count?epoch=1`,
+      );
       const count = response.data;
 
       expect(count).toBeGreaterThan(1);
     });
 
     it('should return blocks count 0 if epoch value is to high', async () => {
-      const response = await axios.get(`${API_SERVICE_URL}/blocks/count?epoch=10000`);
+      const response = await axios.get(
+        `${API_SERVICE_URL}/blocks/count?epoch=10000`,
+      );
       const count = response.data;
 
       expect(count).toStrictEqual(0);
     });
 
     it('should return blocks count filter by nonce', async () => {
-      const response = await axios.get(`${API_SERVICE_URL}/blocks/count?nonce=0`);
+      const response = await axios.get(
+        `${API_SERVICE_URL}/blocks/count?nonce=0`,
+      );
       const count = response.data;
 
       expect(count).toBeGreaterThan(0);
     });
 
     it('should return blocks count 0 if nonce value is to high', async () => {
-      const response = await axios.get(`${API_SERVICE_URL}/blocks/count?nonce=10000`);
+      const response = await axios.get(
+        `${API_SERVICE_URL}/blocks/count?nonce=10000`,
+      );
       const count = response.data;
 
       expect(count).toStrictEqual(0);
@@ -121,9 +136,22 @@ describe('Blocks e2e tests with chain simulator', () => {
       const block = response.data;
 
       const expectedProperties = [
-        'hash', 'epoch', 'nonce', 'prevHash', 'pubKeyBitmap', 'round', 'shard',
-        'size', 'sizeTxs', 'stateRootHash', 'timestamp', 'txCount', 'gasConsumed',
-        'gasRefunded', 'gasPenalized', 'maxGasLimit',
+        'hash',
+        'epoch',
+        'nonce',
+        'prevHash',
+        'pubKeyBitmap',
+        'round',
+        'shard',
+        'size',
+        'sizeTxs',
+        'stateRootHash',
+        'timestamp',
+        'txCount',
+        'gasConsumed',
+        'gasRefunded',
+        'gasPenalized',
+        'maxGasLimit',
       ];
 
       for (const property of expectedProperties) {

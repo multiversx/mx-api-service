@@ -6,11 +6,16 @@ const API_SERVICE_URL = 'http://localhost:3001';
 describe('Miniblocks e2e tests with chain simulator', () => {
   beforeAll(async () => {
     try {
-      const response = await axios.get(`${CHAIN_SIMULATOR_URL}/simulator/observers`);
+      const response = await axios.get(
+        `${CHAIN_SIMULATOR_URL}/simulator/observers`,
+      );
       let numRetries = 0;
       while (true) {
         if (response.status === 200) {
-          await axios.post(`${CHAIN_SIMULATOR_URL}/simulator/generate-blocks-until-epoch-reached/2`, {});
+          await axios.post(
+            `${CHAIN_SIMULATOR_URL}/simulator/generate-blocks-until-epoch-reached/2`,
+            {},
+          );
           break;
         }
 
@@ -54,8 +59,14 @@ describe('Miniblocks e2e tests with chain simulator', () => {
       const response = await axios.get(`${API_SERVICE_URL}/miniblocks`);
       const miniblocks = response.data;
 
-      const expectedProperties = ['miniBlockHash', 'receiverShard', 'senderShard', 'timestamp', 'type'];
       //TBD - senderBlockHash is not in the response
+      const expectedProperties = [
+        'miniBlockHash',
+        'receiverShard',
+        'senderShard',
+        'timestamp',
+        'type',
+      ];
 
       for (const miniblock of miniblocks) {
         for (const property of expectedProperties) {
@@ -74,7 +85,9 @@ describe('Miniblocks e2e tests with chain simulator', () => {
     });
 
     it('should support filtering by types', async () => {
-      const response = await axios.get(`${API_SERVICE_URL}/miniblocks?type=SmartContractResultBlock`);
+      const response = await axios.get(
+        `${API_SERVICE_URL}/miniblocks?type=SmartContractResultBlock`,
+      );
       const miniblocks = response.data;
 
       for (const miniblock of miniblocks) {
@@ -83,7 +96,9 @@ describe('Miniblocks e2e tests with chain simulator', () => {
     });
 
     it('should support filtering by types', async () => {
-      const response = await axios.get(`${API_SERVICE_URL}/miniblocks?type=InvalidBlock`);
+      const response = await axios.get(
+        `${API_SERVICE_URL}/miniblocks?type=InvalidBlock`,
+      );
       const miniblocks = response.data;
 
       for (const miniblock of miniblocks) {
@@ -94,7 +109,9 @@ describe('Miniblocks e2e tests with chain simulator', () => {
     const typesToTest = ['SmartContractResultBlock', 'InvalidBlock', 'TxBlock'];
     for (const type of typesToTest) {
       it(`should return miniblocks filtered by type: ${type}`, async () => {
-        const response = await axios.get(`${API_SERVICE_URL}/miniblocks?type=${type}`);
+        const response = await axios.get(
+          `${API_SERVICE_URL}/miniblocks?type=${type}`,
+        );
         const miniblocks = response.data;
 
         for (const miniblock of miniblocks) {
