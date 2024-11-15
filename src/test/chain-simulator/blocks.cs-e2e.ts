@@ -101,4 +101,46 @@ describe('Blocks e2e tests with chain simulator', () => {
       }
     });
   });
+
+  describe('GET /blocks/latest', () => {
+    it('should return the latest block data', async () => {
+      const response = await axios.get(`${API_SERVICE_URL}/blocks/latest`);
+      const block = response.data;
+
+      const expectedProperties = [
+        'hash', 'epoch', 'nonce', 'prevHash', 'pubKeyBitmap', 'round', 'shard',
+        'size', 'sizeTxs', 'stateRootHash', 'timestamp', 'txCount', 'gasConsumed',
+        'gasRefunded', 'gasPenalized', 'maxGasLimit', 'scheduledRootHash',
+      ];
+
+      for (const property of expectedProperties) {
+        expect(block).toHaveProperty(property);
+        expect(block[property]).not.toBeNull();
+      }
+
+      const typeValidation = {
+        hash: 'string',
+        epoch: 'number',
+        nonce: 'number',
+        prevHash: 'string',
+        pubKeyBitmap: 'string',
+        round: 'number',
+        shard: 'number',
+        size: 'number',
+        sizeTxs: 'number',
+        stateRootHash: 'string',
+        timestamp: 'number',
+        txCount: 'number',
+        gasConsumed: 'number',
+        gasRefunded: 'number',
+        gasPenalized: 'number',
+        maxGasLimit: 'number',
+        scheduledRootHash: 'string',
+      };
+
+      Object.entries(typeValidation).forEach(([key, type]) => {
+        expect(typeof block[key]).toBe(type);
+      });
+    });
+  });
 });
