@@ -121,7 +121,7 @@ describe('Rounds e2e tests with chain simulator', () => {
       expect(roundDetails).toHaveProperty('round', round);
     });
 
-    it('should return status code 404 for non-existent round (TEST)', async () => {
+    it('should return status code 404 for non-existent round ', async () => {
       const shard = 0;
       const round = 999999;
       try {
