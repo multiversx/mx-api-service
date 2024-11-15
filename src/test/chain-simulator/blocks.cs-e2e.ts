@@ -28,6 +28,11 @@ describe('Blocks e2e tests with chain simulator', () => {
   });
 
   describe('GET /blocks', () => {
+    it('should return status code 200', async () => {
+      const response = await axios.get(`${API_SERVICE_URL}/blocks`);
+      expect(response.status).toBe(200);
+    });
+
     it('should handle invalid block requests gracefully', async () => {
       try {
         await axios.get(`${API_SERVICE_URL}/blocks/invalid`);
