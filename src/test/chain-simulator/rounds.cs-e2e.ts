@@ -1,4 +1,5 @@
-import axios from "axios";
+import axios from 'axios';
+
 const CHAIN_SIMULATOR_URL = 'http://localhost:8085';
 const API_SERVICE_URL = 'http://localhost:3001';
 
@@ -15,7 +16,7 @@ describe('Rounds e2e tests with chain simulator', () => {
 
         numRetries += 1;
         if (numRetries > 50) {
-          fail("Chain simulator not started!");
+          fail('Chain simulator not started!');
         }
       }
     } catch (e) {
