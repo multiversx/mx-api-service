@@ -30,7 +30,6 @@ describe('Miniblocks e2e tests with chain simulator', () => {
 
 
   describe('GET /miniblocks', () => {
-
     it('should return status code 200', async () => {
       const response = await axios.get(`${API_SERVICE_URL}/miniblocks`);
       expect(response.status).toBe(200);
@@ -65,5 +64,44 @@ describe('Miniblocks e2e tests with chain simulator', () => {
         }
       }
     });
+  });
+
+  describe('GET /miniblocks filters', () => {
+    it('should support pagination', async () => {
+      const response = await axios.get(`${API_SERVICE_URL}/miniblocks?size=5`);
+      const miniblocks = response.data;
+
+      expect(miniblocks.length).toBe(5);
+    });
+
+    it('should support filtering by types', async () => {
+      const response = await axios.get(`${API_SERVICE_URL}/miniblocks?type=SmartContractResultBlock`);
+      const miniblocks = response.data;
+
+      for (const miniblock of miniblocks) {
+        expect(miniblock.type).toStrictEqual('SmartContractResultBlock');
+      }
+    });
+
+    it('should support filtering by types', async () => {
+      const response = await axios.get(`${API_SERVICE_URL}/miniblocks?type=InvalidBlock`);
+      const miniblocks = response.data;
+
+      for (const miniblock of miniblocks) {
+        expect(miniblock.type).toStrictEqual('InvalidBlock');
+      }
+    });
+
+    const typesToTest = ['SmartContractResultBlock', 'InvalidBlock', 'TxBlock'];
+    for (const type of typesToTest) {
+      it(`should return miniblocks filtered by type: ${type}`, async () => {
+        const response = await axios.get(`${API_SERVICE_URL}/miniblocks?type=${type}`);
+        const miniblocks = response.data;
+
+        for (const miniblock of miniblocks) {
+          expect(miniblock.type).toStrictEqual(type);
+        }
+      });
+    }
   });
 });
