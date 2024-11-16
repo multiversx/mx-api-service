@@ -4,7 +4,8 @@ const CHAIN_SIMULATOR_URL = 'http://localhost:8085';
 const API_SERVICE_URL = 'http://localhost:3001';
 const ALICE_ADDRESS =
   'erd1qyu5wthldzr8wx5c9ucg8kjagg0jfs53s8nr3zpz3hypefsdd8ssycr6th';
-
+const BOB_ADDRESS =
+  'erd1spyavw0956vq68xj8y4tenjpq2wd5a9p2c6j8gsz7ztyrnpxrruqzu66jx';
 import { fundAddress, issueMultipleEsdts } from './chain.simulator.operations';
 
 describe('Tokens e2e tests with chain simulator', () => {
@@ -227,6 +228,89 @@ describe('Tokens e2e tests with chain simulator', () => {
       );
       expect(token).toHaveProperty('supply');
       expect(typeof token.supply).toStrictEqual('string');
+    });
+  });
+
+  describe('GET /tokens/:identifier/roles', () => {
+    it('should return status code 200 and token roles', async () => {
+      const tokensResponse = await axios.get(
+        `${API_SERVICE_URL}/tokens?size=1`,
+      );
+      const response = await axios.get(
+        `${API_SERVICE_URL}/tokens/${tokensResponse.data[0].identifier}/roles`,
+      );
+      const roles = response.data;
+
+      expect(response.status).toBe(200);
+      expect(roles).toBeInstanceOf(Array);
+      for (const role of roles) {
+        expect(role).toHaveProperty('canLocalMint');
+        expect(role).toHaveProperty('canLocalBurn');
+        expect(role).toHaveProperty('roles');
+        expect(role.roles).toBeInstanceOf(Array);
+      }
+    });
+
+    it('should return status code 400 for invalid token identifier', async () => {
+      const nonExistentTokenIdentifier = 'NON_EXISTENT_TOKEN';
+      try {
+        await axios.get(
+          `${API_SERVICE_URL}/tokens/${nonExistentTokenIdentifier}/roles`,
+        );
+      } catch (error: any) {
+        expect(error.response.status).toBe(400);
+      }
+    });
+
+    it('should return status code 404 for non-existent token roles', async () => {
+      const nonExistentTokenIdentifier = 'TKNTEST1-f61adc';
+      try {
+        await axios.get(
+          `${API_SERVICE_URL}/tokens/${nonExistentTokenIdentifier}/roles`,
+        );
+      } catch (error: any) {
+        expect(error.response.status).toBe(404);
+      }
+    });
+  });
+
+  describe('GET /tokens/:identifier/roles/:address', () => {
+    it('should return status code 200 and token roles for the address', async () => {
+      const tokensResponse = await axios.get(
+        `${API_SERVICE_URL}/tokens?size=1`,
+      );
+      const response = await axios.get(
+        `${API_SERVICE_URL}/tokens/${tokensResponse.data[0].identifier}/roles/${ALICE_ADDRESS}`,
+      );
+      const roles = response.data;
+      expect(response.status).toBe(200);
+      expect(roles).toHaveProperty('canLocalMint');
+      expect(roles).toHaveProperty('canLocalBurn');
+    });
+
+    it('should return status code 400 for non-existent token roles for the address', async () => {
+      const nonExistentTokenIdentifier = 'NON_EXISTENT_TOKEN';
+      try {
+        await axios.get(
+          `${API_SERVICE_URL}/tokens/${nonExistentTokenIdentifier}/roles/${ALICE_ADDRESS}`,
+        );
+      } catch (error: any) {
+        expect(error.response.status).toBe(400);
+      }
+    });
+
+    it('should return status code 404 for non-existent address roles for the token', async () => {
+      const tokensResponse = await axios.get(
+        `${API_SERVICE_URL}/tokens?size=1`,
+      );
+
+      try {
+        await axios.get(
+          `${API_SERVICE_URL}/tokens/${tokensResponse.data[0].identifier}/roles/${BOB_ADDRESS}`,
+        );
+      } catch (error: any) {
+        expect(error.response.status).toBe(404);
+      }
     });
   });
 });
