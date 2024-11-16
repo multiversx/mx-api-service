@@ -125,12 +125,14 @@ describe('Smart Contract Results e2e tests with chain simulator', () => {
 
   describe('GET /results/:scHash', () => {
     it('should return status code 200 and smart contract result details (test )', async () => {
-      const scHash =
-        '4c4808508dc4a6d063ad1853ab546da978fcc05260c5b93b22afe5903d09a1a0';
-      const response = await axios.get(`${API_SERVICE_URL}/results/${scHash}`);
+      const results = await axios.get(`${API_SERVICE_URL}/results`);
+      const hash = results.data[0].hash;
+
+      const response = await axios.get(`${API_SERVICE_URL}/results/${hash}`);
       const result = response.data;
+
       expect(response.status).toBe(200);
-      expect(result).toHaveProperty('hash', scHash);
+      expect(result).toHaveProperty('hash', hash);
     });
 
     it('should return status code 400 for invalid smart contract hash', async () => {
