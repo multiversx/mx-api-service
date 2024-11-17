@@ -35,7 +35,7 @@ describe('Tokens e2e tests with chain simulator', () => {
 
       // Issue multiple ESDT tokens
       await issueMultipleEsdts(CHAIN_SIMULATOR_URL, ALICE_ADDRESS, 5);
-      await new Promise((resolve) => setTimeout(resolve, 10000));
+      await new Promise((resolve) => setTimeout(resolve, 20000));
     } catch (e) {
       console.error(e);
     }
