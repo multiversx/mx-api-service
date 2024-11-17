@@ -313,4 +313,151 @@ describe('Tokens e2e tests with chain simulator', () => {
       }
     });
   });
+
+  describe('GET /tokens/:identifier/transfers', () => {
+    it('should return status code 200 and a list of transfers', async () => {
+      const tokensResponse = await axios.get(
+        `${API_SERVICE_URL}/tokens?size=1`,
+      );
+      const response = await axios.get(
+        `${API_SERVICE_URL}/tokens/${tokensResponse.data[0].identifier}/transfers`,
+      );
+      const transfers = response.data;
+      expect(response.status).toBe(200);
+      expect(transfers).toBeInstanceOf(Array);
+    });
+
+    it('should return filtered transfers by receiver', async () => {
+      const tokensResponse = await axios.get(
+        `${API_SERVICE_URL}/tokens?size=1`,
+      );
+      const response = await axios.get(
+        `${API_SERVICE_URL}/tokens/${tokensResponse.data[0].identifier}/transfers?receiver=${ALICE_ADDRESS}`,
+      );
+      const transfers = response.data;
+      expect(response.status).toBe(200);
+      for (const transfer of transfers) {
+        expect(transfer.receiver).toBe(ALICE_ADDRESS);
+      }
+    });
+
+    it('should return filtered transfers by receiver', async () => {
+      const sender =
+        'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u';
+      const tokensResponse = await axios.get(
+        `${API_SERVICE_URL}/tokens?size=1`,
+      );
+      const response = await axios.get(
+        `${API_SERVICE_URL}/tokens/${tokensResponse.data[0].identifier}/transfers?receiver=${sender}`,
+      );
+      const transfers = response.data;
+      expect(response.status).toBe(200);
+      for (const transfer of transfers) {
+        expect(transfer.receiver).toBe(BOB_ADDRESS);
+      }
+    });
+
+    it('should return filtered transfers by status', async () => {
+      const tokensResponse = await axios.get(
+        `${API_SERVICE_URL}/tokens?size=1`,
+      );
+      const status = 'success';
+      const response = await axios.get(
+        `${API_SERVICE_URL}/tokens/${tokensResponse.data[0].identifier}/transfers?status=${status}`,
+      );
+      const transfers = response.data;
+      expect(response.status).toBe(200);
+      for (const transfer of transfers) {
+        expect(transfer.status).toBe(status);
+      }
+    });
+
+    it('should support pagination and return 1 transfer', async () => {
+      const tokensResponse = await axios.get(
+        `${API_SERVICE_URL}/tokens?size=1`,
+      );
+      const response = await axios.get(
+        `${API_SERVICE_URL}/tokens/${tokensResponse.data[0].identifier}/transfers?size=1`,
+      );
+      const transfers = response.data;
+      expect(response.status).toBe(200);
+      expect(transfers.length).toBe(1);
+      expect(Array.isArray(transfers)).toBe(true);
+    });
+
+    it('should return status code 400 for non-existent token transfers', async () => {
+      const nonExistentTokenIdentifier = 'NON_EXISTENT_TOKEN';
+      try {
+        await axios.get(
+          `${API_SERVICE_URL}/tokens/${nonExistentTokenIdentifier}/transfers`,
+        );
+      } catch (error: any) {
+        expect(error.response.status).toBe(400);
+      }
+    });
+  });
+
+  describe('GET /tokens/:identifier/transfers/count', () => {
+    it('should return status code 200 and the total count of transfers', async () => {
+      const tokensResponse = await axios.get(
+        `${API_SERVICE_URL}/tokens?size=1`,
+      );
+      const response = await axios.get(
+        `${API_SERVICE_URL}/tokens/${tokensResponse.data[0].identifier}/transfers/count`,
+      );
+      const count = response.data;
+      expect(response.status).toBe(200);
+      expect(typeof count).toBe('number');
+    });
+
+    it('should return filtered transfer count by sender', async () => {
+      const sender =
+        'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u';
+      const tokensResponse = await axios.get(
+        `${API_SERVICE_URL}/tokens?size=1`,
+      );
+      const response = await axios.get(
+        `${API_SERVICE_URL}/tokens/${tokensResponse.data[0].identifier}/transfers/count?sender=${sender}`,
+      );
+      const count = response.data;
+      expect(response.status).toBe(200);
+      expect(typeof count).toBe('number');
+    });
+
+    it('should return filtered transfer count by receiver', async () => {
+      const tokensResponse = await axios.get(
+        `${API_SERVICE_URL}/tokens?size=1`,
+      );
+      const response = await axios.get(
+        `${API_SERVICE_URL}/tokens/${tokensResponse.data[0].identifier}/transfers/count?receiver=${ALICE_ADDRESS}`,
+      );
+      const count = response.data;
+      expect(response.status).toBe(200);
+      expect(typeof count).toBe('number');
+    });
+
+    it('should return filtered transfer count by status', async () => {
+      const tokensResponse = await axios.get(
+        `${API_SERVICE_URL}/tokens?size=1`,
+      );
+      const status = 'success';
+      const response = await axios.get(
+        `${API_SERVICE_URL}/tokens/${tokensResponse.data[0].identifier}/transfers/count?status=${status}`,
+      );
+      const count = response.data;
+      expect(response.status).toBe(200);
+      expect(typeof count).toBe('number');
+    });
+
+    it('should return status code 400 for non-existent token transfers count', async () => {
+      const nonExistentTokenIdentifier = 'NON_EXISTENT_TOKEN';
+      try {
+        await axios.get(
+          `${API_SERVICE_URL}/tokens/${nonExistentTokenIdentifier}/transfers/count`,
+        );
+      } catch (error: any) {
+        expect(error.response.status).toBe(400);
+      }
+    });
+  });
 });
