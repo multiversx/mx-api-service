@@ -21,29 +21,49 @@ export class PoolController {
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   @ApiQuery({ name: 'sender', description: 'Search in transaction pool by a specific sender', required: false })
   @ApiQuery({ name: 'receiver', description: 'Search in transaction pool by a specific receiver', required: false })
+  @ApiQuery({ name: 'senderShard', description: 'The shard of the sender', required: false })
+  @ApiQuery({ name: 'receiverShard', description: 'The shard of the receiver', required: false })
   @ApiQuery({ name: 'type', description: 'Search in transaction pool by type', required: false })
   async getTransactionPool(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
     @Query('sender', ParseAddressAndMetachainPipe) sender?: string,
     @Query('receiver', ParseAddressPipe) receiver?: string,
+    @Query('senderShard', ParseIntPipe) senderShard?: number,
+    @Query('receiverShard', ParseIntPipe) receiverShard?: number,
     @Query('type', new ParseEnumPipe(TransactionType)) type?: TransactionType,
   ): Promise<TransactionInPool[]> {
-    return await this.poolService.getPool(new QueryPagination({ from, size }), new PoolFilter({ sender: sender, receiver: receiver, type: type }));
+    return await this.poolService.getPool(new QueryPagination({ from, size }), new PoolFilter({
+      sender: sender,
+      receiver: receiver,
+      senderShard: senderShard,
+      receiverShard: receiverShard,
+      type: type,
+    }));
   }
 
   @Get("/pool/count")
   @ApiOperation({ summary: 'Transactions pool count', description: 'Returns the number of transactions that are currently in the memory pool.' })
   @ApiOkResponse({ type: Number })
   @ApiQuery({ name: 'sender', description: 'Returns the number of transactions with a specific sender', required: false })
-  @ApiQuery({ name: 'receiver', description: 'Returns the number of transactions with a specific receiver', required: false })
+  @ApiQuery({ name: 'receiver', description: 'Search in transaction pool by a specific receiver', required: false })
+  @ApiQuery({ name: 'senderShard', description: 'The shard of the sender', required: false })
+  @ApiQuery({ name: 'receiverShard', description: 'The shard of the receiver', required: false })
   @ApiQuery({ name: 'type', description: 'Returns the number of transactions with a specific type', required: false })
   async getTransactionPoolCount(
     @Query('sender', ParseAddressAndMetachainPipe) sender?: string,
     @Query('receiver', ParseAddressPipe) receiver?: string,
+    @Query('senderShard', ParseIntPipe) senderShard?: number,
+    @Query('receiverShard', ParseIntPipe) receiverShard?: number,
     @Query('type', new ParseEnumPipe(TransactionType)) type?: TransactionType,
   ): Promise<number> {
-    return await this.poolService.getPoolCount(new PoolFilter({ sender, receiver, type }));
+    return await this.poolService.getPoolCount(new PoolFilter({
+      sender: sender,
+      receiver: receiver,
+      senderShard: senderShard,
+      receiverShard: receiverShard,
+      type: type,
+    }));
   }
 
   @Get("/pool/c")
@@ -70,5 +90,4 @@ export class PoolController {
 
     return transaction;
   }
-
 }

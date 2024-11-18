@@ -46,6 +46,16 @@ export class GatewayProxyController {
     return await this.gatewayGet(`address/${address}/shard`, GatewayComponentRequest.addressShard);
   }
 
+  @Get('/address/:address/keys')
+  async getAddressKeys(@Param('address', ParseAddressPipe) address: string) {
+    try {
+      return await this.gatewayGet(`address/${address}/keys`, GatewayComponentRequest.addressKeys);
+    } catch (error: any) {
+      this.logger.error(`Error fetching address keys for address ${address}: ${error.message}`);
+      throw new BadRequestException(error.response?.data || 'An error occurred while fetching address keys');
+    }
+  }
+
   @Get('/address/:address/key/:key')
   async getAddressStorageKey(@Param('address', ParseAddressPipe) address: string, @Param('key') key: string) {
     // eslint-disable-next-line require-await

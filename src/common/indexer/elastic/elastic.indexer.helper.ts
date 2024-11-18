@@ -17,6 +17,7 @@ import { AccountHistoryFilter } from "src/endpoints/accounts/entities/account.hi
 import { SmartContractResultFilter } from "src/endpoints/sc-results/entities/smart.contract.result.filter";
 import { ApplicationFilter } from "src/endpoints/applications/entities/application.filter";
 import { NftType } from "../entities/nft.type";
+import { EventsFilter } from "src/endpoints/events/entities/events.filter";
 
 @Injectable()
 export class ElasticIndexerHelper {
@@ -124,7 +125,7 @@ export class ElasticIndexerHelper {
       elasticQuery = this.getRoleCondition(elasticQuery, 'ESDTTransferRole', address, filter.canTransferRole);
     }
 
-    if (filter.excludeMetaESDT === true) {
+    if (filter.excludeMetaESDT === true && !filter.type) {
       elasticQuery = elasticQuery.withMustMultiShouldCondition([
         ...this.nonFungibleEsdtTypes,
         ...this.semiFungibleEsdtTypes,
@@ -151,6 +152,10 @@ export class ElasticIndexerHelper {
       elasticQuery = elasticQuery.withMustMultiShouldCondition(types, type => QueryType.Match('type', type));
     }
 
+    if (filter.subType) {
+      elasticQuery = elasticQuery.withMustMultiShouldCondition(filter.subType, subType => QueryType.Match('type', subType));
+    }
+
     return elasticQuery.withMustMatchCondition('token', filter.collection, QueryOperator.AND)
       .withMustMultiShouldCondition(filter.identifiers, identifier => QueryType.Match('token', identifier, QueryOperator.AND))
       .withSearchWildcardCondition(filter.search, ['token', 'name']);
@@ -172,13 +177,38 @@ export class ElasticIndexerHelper {
     }
 
     if (filter.search !== undefined) {
-      elasticQuery = elasticQuery.withSearchWildcardCondition(filter.search, ['token', 'name']);
+      const searchable = filter.search;
+      const conditions: AbstractQuery[] = [];
+      conditions.push(QueryType.Wildcard('data.name', `*${searchable.toLowerCase()}*`));
+      conditions.push(QueryType.Wildcard('data.token', `*${searchable.toLowerCase()}*`));
+
+      elasticQuery = elasticQuery.withMustCondition(QueryType.NestedShould('data', conditions));
     }
 
-    if (filter.type !== undefined) {
-      const types = (filter.type ?? '').split(',');
+    if (filter.type) {
+      const types = [];
+
+      for (const type of filter.type) {
+        switch (type) {
+          case NftType.NonFungibleESDT:
+            types.push(...this.nonFungibleEsdtTypes);
+            break;
+          case NftType.SemiFungibleESDT:
+            types.push(...this.semiFungibleEsdtTypes);
+            break;
+          case NftType.MetaESDT:
+            types.push(...this.metaEsdtTypes);
+            break;
+          default:
+            types.push(filter.type);
+        }
+      }
 
       elasticQuery = elasticQuery.withMustMultiShouldCondition(types, type => QueryType.Match('type', type));
+    }
+
+    if (filter.subType) {
+      elasticQuery = elasticQuery.withMustMultiShouldCondition(filter.subType, subType => QueryType.Match('type', subType, QueryOperator.AND));
     }
 
     if (identifier !== undefined) {
@@ -286,10 +316,7 @@ export class ElasticIndexerHelper {
         QueryType.Exists('canBeIgnored'),
       ]))
         .withCondition(QueryConditionOptions.should, QueryType.Must([
-          QueryType.Should([
-            QueryType.Match('type', 'normal'),
-            QueryType.Match('type', 'innerTx'),
-          ]),
+          QueryType.Should([QueryType.Match('type', 'normal')]),
           QueryType.Should([
             QueryType.Match('sender', filter.address),
             QueryType.Match('receiver', filter.address),
@@ -372,6 +399,10 @@ export class ElasticIndexerHelper {
           QueryType.Match('sender', filter.senderOrReceiver),
           QueryType.Match('receiver', filter.senderOrReceiver),
         ]));
+    }
+
+    if (filter.round) {
+      elasticQuery = elasticQuery.withMustMatchCondition('round', filter.round);
     }
 
     return elasticQuery;
@@ -502,6 +533,10 @@ export class ElasticIndexerHelper {
 
     if (filter.isRelayed) {
       elasticQuery = elasticQuery.withMustMatchCondition('isRelayed', filter.isRelayed);
+    }
+
+    if (filter.round) {
+      elasticQuery = elasticQuery.withMustMatchCondition('round', filter.round);
     }
 
     if (filter.condition === QueryConditionOptions.should) {
@@ -682,5 +717,35 @@ export class ElasticIndexerHelper {
       functionConditions.push(QueryType.Match('operation', field));
     }
     return elasticQuery.withMustCondition(QueryType.Should(functionConditions));
+  }
+
+  public buildEventsFilter(filter: EventsFilter): ElasticQuery {
+    let elasticQuery = ElasticQuery.create();
+
+    if (filter.before) {
+      elasticQuery = elasticQuery.withRangeFilter('timestamp', new RangeLowerThanOrEqual(filter.before));
+    }
+
+    if (filter.after) {
+      elasticQuery = elasticQuery.withRangeFilter('timestamp', new RangeGreaterThanOrEqual(filter.after));
+    }
+
+    if (filter.identifier) {
+      elasticQuery = elasticQuery.withMustMatchCondition('identifier', filter.identifier);
+    }
+
+    if (filter.txHash) {
+      elasticQuery = elasticQuery.withMustMatchCondition('txHash', filter.txHash);
+    }
+
+    if (filter.shard) {
+      elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Match('shardID', filter.shard));
+    }
+
+    if (filter.address) {
+      elasticQuery = elasticQuery.withMustMatchCondition('address', filter.address);
+    }
+
+    return elasticQuery;
   }
 }

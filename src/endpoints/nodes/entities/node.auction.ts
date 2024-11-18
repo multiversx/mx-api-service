@@ -11,13 +11,13 @@ export class NodeAuction {
   @ApiProperty({ type: String })
   name?: string = '';
 
-  @ApiProperty({ type: String, default: 0 })
+  @ApiProperty({ type: String, default: 0, required: false })
   description: string = '';
 
-  @ApiProperty({ type: String })
+  @ApiProperty({ type: String, required: false })
   avatar: string = '';
 
-  @ApiProperty({ type: String })
+  @ApiProperty({ type: String, required: false })
   provider?: string = '';
 
   @ApiProperty({ type: String })
@@ -29,7 +29,7 @@ export class NodeAuction {
   @ApiProperty({ type: String })
   owner: string = '';
 
-  @ApiProperty()
+  @ApiProperty({ required: false })
   distribution?: { [index: string]: number | undefined } = {};
 
   @ApiProperty({ type: String })
