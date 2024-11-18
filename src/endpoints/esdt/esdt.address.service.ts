@@ -16,7 +16,7 @@ import { NftCollectionWithRoles } from "../collections/entities/nft.collection.w
 import { CollectionService } from "../collections/collection.service";
 import { CollectionFilter } from "../collections/entities/collection.filter";
 import { CollectionRoles } from "../tokens/entities/collection.roles";
-import { AddressUtils, BinaryUtils, OriginLogger } from '@multiversx/sdk-nestjs-common';
+import { AddressUtils, BinaryUtils, OriginLogger, TokenUtils } from '@multiversx/sdk-nestjs-common';
 import { ApiUtils } from "@multiversx/sdk-nestjs-http";
 import { MetricsService } from "@multiversx/sdk-nestjs-monitoring";
 import { CacheService } from "@multiversx/sdk-nestjs-cache";
@@ -217,13 +217,13 @@ export class EsdtAddressService {
     if (filter.identifiers && filter.identifiers.length === 1) {
       const identifier = filter.identifiers[0];
 
-      if (identifier.split('-').length === 2) {
+      if (TokenUtils.isSovereignIdentifier(identifier)) {
+        collection = identifier.split('-').slice(0, 3).join('-');
+        nonceHex = identifier.split('-')[3];
+      } else {
         collection = identifier.split('-').slice(0, 2).join('-');
         nonceHex = identifier.split('-')[2];
       }
-
-      collection = identifier.split('-').slice(0, 3).join('-');
-      nonceHex = identifier.split('-')[3];
 
       const nonceNumeric = BinaryUtils.hexToNumber(nonceHex);
 
@@ -250,8 +250,8 @@ export class EsdtAddressService {
     }
 
     const nfts: GatewayNft[] = Object.values(esdts).map(x => x as any).filter(x => {
-      const parts = x.tokenIdentifier.split('-');
-      return (parts.length === 3 && x.type !== EsdtType.FungibleESDT) || parts.length === 4;
+      const isSovereignIdentifier = TokenUtils.isSovereignIdentifier(x.tokenIdentifier);
+      return (!isSovereignIdentifier && x.type !== EsdtType.FungibleESDT) || isSovereignIdentifier;
     });
 
     const collator = new Intl.Collator('en', { sensitivity: 'base' });

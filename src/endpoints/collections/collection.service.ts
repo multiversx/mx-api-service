@@ -132,7 +132,11 @@ export class CollectionService {
       // @ts-ignore
       nftCollection.type = collectionProperties.type;
       nftCollection.name = collectionProperties.name;
-      nftCollection.collection = collectionIdentifier.split('-').slice(0, 3).join('-');
+      if (TokenUtils.isSovereignIdentifier(collectionIdentifier)) {
+        nftCollection.collection = collectionIdentifier.split('-').slice(0, 3).join('-');
+      } else {
+        nftCollection.collection = collectionIdentifier.split('-').slice(0, 2).join('-');
+      }
       nftCollection.ticker = collectionIdentifier.split('-')[0];
       nftCollection.canFreeze = collectionProperties.canFreeze;
       nftCollection.canWipe = collectionProperties.canWipe;
@@ -206,9 +210,9 @@ export class CollectionService {
       return undefined;
     }
 
-    // if (!TokenUtils.isCollection(identifier)) {
-    //   return undefined;
-    // }
+    if (!TokenUtils.isCollection(identifier)) {
+      return undefined;
+    }
 
     if (!Object.values(ElasticNftType).includes(elasticCollection.type as NftType)) {
       return undefined;

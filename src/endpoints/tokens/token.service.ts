@@ -75,6 +75,10 @@ export class TokenService {
     const tokens = await this.getAllTokens();
     let token = tokens.find(x => x.identifier === identifier);
 
+    if (!TokenUtils.isToken(identifier)) {
+      return undefined;
+    }
+
     if (!token) {
       return undefined;
     }
@@ -374,7 +378,13 @@ export class TokenService {
     const tokensWithBalance: TokenWithBalance[] = [];
 
     for (const tokenIdentifier of Object.keys(esdts)) {
-      const identifier = tokenIdentifier.split('-').slice(0, 3).join('-');
+      let identifier = '';
+      if (TokenUtils.isSovereignIdentifier(tokenIdentifier)) {
+        identifier = tokenIdentifier.split('-').slice(0, 3).join('-');
+      } else {
+        identifier = tokenIdentifier.split('-').slice(0, 2).join('-');
+      }
+
       const esdt = esdts[tokenIdentifier];
       const token = tokensIndexed[identifier];
       if (!token) {
@@ -566,7 +576,7 @@ export class TokenService {
   }
 
   async getTokenProperties(identifier: string): Promise<TokenProperties | undefined> {
-    if (identifier.split('-').length !== 2 && identifier.split('-').length !== 3) {
+    if (!TokenUtils.isCollection(identifier)) {
       return undefined;
     }
 
