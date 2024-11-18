@@ -6,10 +6,15 @@ export class TxInPoolFields {
   data: string = '';
   gaslimit: number = 0;
   gasprice: number = 0;
+  guardian: string = '';
+  guardiansignature: string = '';
   hash: string = '';
   nonce: number = 0;
   receiver: string = '';
-  receiverusername: string = '';
+  receivershard: number = 0;
+  receiverusername: string | null = '';
   sender: string = '';
+  sendershard: number = 0;
+  signature: string = '';
   value: string = '';
 }
