@@ -35,6 +35,7 @@ export class TransactionController {
   @ApiQuery({ name: 'function', description: 'Filter transactions by function name', required: false })
   @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
+  @ApiQuery({ name: 'round', description: 'Round number', required: false })
   @ApiQuery({ name: 'order', description: 'Sort order (asc/desc)', required: false, enum: SortOrder })
   @ApiQuery({ name: 'fields', description: 'List of fields to filter by', required: false })
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
@@ -63,6 +64,7 @@ export class TransactionController {
     @Query('condition') condition?: QueryConditionOptions,
     @Query('before', ParseIntPipe) before?: number,
     @Query('after', ParseIntPipe) after?: number,
+    @Query('round', ParseIntPipe) round?: number,
     @Query('order', new ParseEnumPipe(SortOrder)) order?: SortOrder,
     @Query('fields', ParseArrayPipe) fields?: string[],
     @Query('withScResults', new ParseBoolPipe) withScResults?: boolean,
@@ -91,6 +93,7 @@ export class TransactionController {
       condition,
       order,
       isRelayed,
+      round,
     }),
       new QueryPagination({ from, size }),
       options,
@@ -114,6 +117,7 @@ export class TransactionController {
   @ApiQuery({ name: 'function', description: 'Filter transactions by function name', required: false })
   @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
+  @ApiQuery({ name: 'round', description: 'Round number', required: false })
   @ApiQuery({ name: 'isRelayed', description: 'Returns relayed transactions details', required: false, type: Boolean })
   getTransactionCount(
     @Query('sender', ParseAddressAndMetachainPipe) sender?: string,
@@ -128,6 +132,7 @@ export class TransactionController {
     @Query('condition') condition?: QueryConditionOptions,
     @Query('before', ParseIntPipe) before?: number,
     @Query('after', ParseIntPipe) after?: number,
+    @Query('round', ParseIntPipe) round?: number,
     @Query('isRelayed', new ParseBoolPipe) isRelayed?: boolean,
   ): Promise<number> {
     return this.transactionService.getTransactionCount(new TransactionFilter({
@@ -144,6 +149,7 @@ export class TransactionController {
       after,
       condition,
       isRelayed,
+      round,
     }));
   }
 
@@ -162,6 +168,7 @@ export class TransactionController {
     @Query('condition') condition?: QueryConditionOptions,
     @Query('before', ParseIntPipe) before?: number,
     @Query('after', ParseIntPipe) after?: number,
+    @Query('round', new ParseIntPipe) round?: number,
     @Query('isRelayed', new ParseBoolPipe) isRelayed?: boolean,
   ): Promise<number> {
     return this.transactionService.getTransactionCount(new TransactionFilter({
@@ -178,6 +185,7 @@ export class TransactionController {
       after,
       condition,
       isRelayed,
+      round,
     }));
   }
 

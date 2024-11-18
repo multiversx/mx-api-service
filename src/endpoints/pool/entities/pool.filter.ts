@@ -7,5 +7,7 @@ export class PoolFilter {
 
   sender?: string;
   receiver?: string;
+  senderShard?: number;
+  receiverShard?: number;
   type?: TransactionType;
 }

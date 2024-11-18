@@ -68,11 +68,13 @@ export class TokenService {
 
   async isToken(identifier: string): Promise<boolean> {
     const tokens = await this.getAllTokens();
-    return tokens.find(x => x.identifier === identifier) !== undefined;
+    const lowercaseIdentifier = identifier.toLowerCase();
+    return tokens.find(x => x.identifier.toLowerCase() === lowercaseIdentifier) !== undefined;
   }
 
-  async getToken(identifier: string, supplyOptions?: TokenSupplyOptions): Promise<TokenDetailed | undefined> {
+  async getToken(rawIdentifier: string, supplyOptions?: TokenSupplyOptions): Promise<TokenDetailed | undefined> {
     const tokens = await this.getAllTokens();
+    const identifier = this.normalizeIdentifierCase(rawIdentifier);
     let token = tokens.find(x => x.identifier === identifier);
 
     if (!token) {
@@ -95,6 +97,15 @@ export class TokenService {
     }
 
     return token;
+  }
+
+  normalizeIdentifierCase(identifier: string): string {
+    const [ticker, randomSequence] = identifier.split("-");
+    if (!ticker || !randomSequence) {
+      return identifier.toUpperCase();
+    }
+
+    return `${ticker.toUpperCase()}-${randomSequence.toLowerCase()}`;
   }
 
   async getTokens(queryPagination: QueryPagination, filter: TokenFilter): Promise<TokenDetailed[]> {
