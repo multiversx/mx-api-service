@@ -367,14 +367,6 @@ export class ApiConfigService {
     return this.configService.get<boolean>('features.processNfts.enabled') ?? this.configService.get<boolean>('flags.processNfts') ?? false;
   }
 
-  getIsIndexerV3FlagActive(): boolean {
-    return this.configService.get<boolean>('flags.indexer-v3') ?? false;
-  }
-
-  isGraphQlActive(): boolean {
-    return this.configService.get<boolean>('api.graphql') ?? false;
-  }
-
   getIsPublicApiActive(): boolean {
     const isApiActive = this.configService.get<boolean>('api.public');
     if (isApiActive === undefined) {
@@ -868,5 +860,56 @@ export class ApiConfigService {
     }
 
     return deepHistoryUrl;
+  }
+
+  isAssetsCdnFeatureEnabled(): boolean {
+    return this.configService.get<boolean>('features.assetsFetch.enabled') ?? false;
+  }
+
+  getAssetsCdnUrl(): string {
+    return this.configService.get<string>('features.assetsFetch.assetesUrl') ?? 'https://tools.multiversx.com/assets-cdn';
+  }
+
+  isTokensFetchFeatureEnabled(): boolean {
+    return this.configService.get<boolean>('features.tokensFetch.enabled') ?? false;
+  }
+
+  getTokensFetchServiceUrl(): string {
+    const serviceUrl = this.configService.get<string>('features.tokensFetch.serviceUrl');
+    if (!serviceUrl) {
+      throw new Error('No tokens fetch service url present');
+    }
+
+    return serviceUrl;
+  }
+
+  isNodesFetchFeatureEnabled(): boolean {
+    return this.configService.get<boolean>('features.nodesFetch.enabled') ?? false;
+  }
+
+  getNodesFetchServiceUrl(): string {
+    const serviceUrl = this.configService.get<string>('features.nodesFetch.serviceUrl');
+    if (!serviceUrl) {
+      throw new Error('No nodes fetch service url present');
+    }
+
+    return serviceUrl;
+  }
+
+  isProvidersFetchFeatureEnabled(): boolean {
+    return this.configService.get<boolean>('features.providersFetch.enabled') ?? false;
+  }
+
+  getProvidersFetchServiceUrl(): string {
+    const serviceUrl = this.configService.get<string>('features.providersFetch.serviceUrl');
+    if (!serviceUrl) {
+      throw new Error('No providers fetch service url present');
+    }
+
+    return serviceUrl;
+  }
+
+  getCacheDuration(): number {
+    return this.configService.get<number>('caching.cacheDuration') ?? 3;
   }
 }

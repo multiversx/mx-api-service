@@ -8,7 +8,6 @@ import { PrivateAppModule } from './private.app.module';
 import { CacheWarmerModule } from './crons/cache.warmer/cache.warmer.module';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { INestApplication, Logger, NestInterceptor } from '@nestjs/common';
-import { EventEmitter2 } from '@nestjs/event-emitter';
 import * as bodyParser from 'body-parser';
 import * as requestIp from 'request-ip';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
@@ -26,12 +25,10 @@ import { CacheService, CachingInterceptor, GuestCacheInterceptor, GuestCacheServ
 import { LoggerInitializer } from '@multiversx/sdk-nestjs-common';
 import { MetricsService, RequestCpuTimeInterceptor, LoggingInterceptor, LogRequestsInterceptor } from '@multiversx/sdk-nestjs-monitoring';
 import { FieldsInterceptor, ExtractInterceptor, CleanupInterceptor, PaginationInterceptor, QueryCheckInterceptor, ComplexityInterceptor, OriginInterceptor, ExcludeFieldsInterceptor } from '@multiversx/sdk-nestjs-http';
-import { ErdnestConfigServiceImpl } from './common/api-config/erdnest.config.service.impl';
+import { MxnestConfigServiceImpl } from './common/api-config/mxnest-config-service-impl.service';
 import { RabbitMqModule } from './common/rabbitmq/rabbitmq.module';
 import { TransactionLoggingInterceptor } from './interceptors/transaction.logging.interceptor';
 import { BatchTransactionProcessorModule } from './crons/transaction.processor/batch.transaction.processor.module';
-import { GraphqlComplexityInterceptor } from './graphql/interceptors/graphql.complexity.interceptor';
-import { GraphQLMetricsInterceptor } from './graphql/interceptors/graphql.metrics.interceptor';
 import { SettingsService } from './common/settings/settings.service';
 import { StatusCheckerModule } from './crons/status.checker/status.checker.module';
 import { JwtOrNativeAuthGuard } from '@multiversx/sdk-nestjs-auth';
@@ -173,7 +170,6 @@ async function bootstrap() {
 
   logger.log(`Use tracing: ${apiConfigService.getUseTracingFlag()}`);
   logger.log(`Process NFTs flag: ${apiConfigService.getIsProcessNftsFlagActive()}`);
-  logger.log(`Indexer v3 flag: ${apiConfigService.getIsIndexerV3FlagActive()}`);
   logger.log(`Staking v4 enabled: ${apiConfigService.isStakingV4Enabled()}`);
   logger.log(`Events notifier enabled: ${apiConfigService.isEventsNotifierFeatureActive()}`);
   logger.log(`Guest caching enabled: ${apiConfigService.isGuestCacheFeatureActive()}`);
@@ -191,14 +187,13 @@ async function configurePublicApp(publicApp: NestExpressApplication, apiConfigSe
   publicApp.useStaticAssets(join(__dirname, 'public/assets'));
 
   const metricsService = publicApp.get<MetricsService>(MetricsService);
-  const eventEmitterService = publicApp.get<EventEmitter2>(EventEmitter2);
   const pluginService = publicApp.get<PluginService>(PluginService);
   const httpAdapterHostService = publicApp.get<HttpAdapterHost>(HttpAdapterHost);
   const cachingService = publicApp.get<CacheService>(CacheService);
   const settingsService = publicApp.get<SettingsService>(SettingsService);
 
   if (apiConfigService.getIsAuthActive()) {
-    publicApp.useGlobalGuards(new JwtOrNativeAuthGuard(new ErdnestConfigServiceImpl(apiConfigService), cachingService));
+    publicApp.useGlobalGuards(new JwtOrNativeAuthGuard(new MxnestConfigServiceImpl(apiConfigService), cachingService));
   }
 
   const httpServer = httpAdapterHostService.httpAdapter.getHttpServer();
@@ -221,20 +216,20 @@ async function configurePublicApp(publicApp: NestExpressApplication, apiConfigSe
   globalInterceptors.push(new OriginInterceptor());
   // @ts-ignore
   globalInterceptors.push(new ComplexityInterceptor());
-  globalInterceptors.push(new GraphqlComplexityInterceptor());
-  globalInterceptors.push(new GraphQLMetricsInterceptor(eventEmitterService));
   // @ts-ignore
   globalInterceptors.push(new RequestCpuTimeInterceptor(metricsService));
   // @ts-ignore
   globalInterceptors.push(new LoggingInterceptor(metricsService));
 
   const getUseRequestCachingFlag = await settingsService.getUseRequestCachingFlag();
+  const cacheDuration = apiConfigService.getCacheDuration();
   if (getUseRequestCachingFlag) {
     const cachingInterceptor = new CachingInterceptor(
       cachingService,
       // @ts-ignore
       httpAdapterHostService,
       metricsService,
+      cacheDuration
     );
 
     // @ts-ignore
@@ -273,13 +268,13 @@ async function configurePublicApp(publicApp: NestExpressApplication, apiConfigSe
   const documentBuilder = new DocumentBuilder()
     .setTitle('Multiversx API')
     .setDescription(description)
-    .setVersion('1.0.0')
+    .setVersion('1.8.0')
     .setExternalDoc('Find out more about Multiversx API', 'https://docs.multiversx.com/sdk-and-tools/rest-api/rest-api/');
 
   const config = documentBuilder.build();
   const options = {
     customSiteTitle: 'Multiversx API',
-    customCss: `.topbar-wrapper img 
+    customCss: `.topbar-wrapper img
           {
             content:url(\'/img/mvx-ledger-icon-mint.png\'); width:100px; height:auto;
           }
@@ -353,4 +348,3 @@ RedisClient.prototype.on_error = function (err: any) {
   // then we should try to reconnect.
   this.connection_gone('error', err);
 };
-

@@ -20,6 +20,8 @@ import { AccountHistoryFilter } from "src/endpoints/accounts/entities/account.hi
 import { AccountAssets } from "../assets/entities/account.assets";
 import { ProviderDelegators } from "./entities/provider.delegators";
 import { ApplicationFilter } from "src/endpoints/applications/entities/application.filter";
+import { EventsFilter } from "src/endpoints/events/entities/events.filter";
+import { Events } from "./entities/events";
 
 @Injectable()
 export class IndexerService implements IndexerInterface {
@@ -39,8 +41,8 @@ export class IndexerService implements IndexerInterface {
   }
 
   @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
-  async getAccountContractsCount(address: string): Promise<number> {
-    return await this.indexerInterface.getAccountContractsCount(address);
+  async getAccountDeploysCount(address: string): Promise<number> {
+    return await this.indexerInterface.getAccountDeploysCount(address);
   }
 
   @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
@@ -225,13 +227,23 @@ export class IndexerService implements IndexerInterface {
   }
 
   @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
-  async getAccounts(queryPagination: QueryPagination, filter: AccountQueryOptions): Promise<Account[]> {
-    return await this.indexerInterface.getAccounts(queryPagination, filter);
+  async getAccounts(queryPagination: QueryPagination, filter: AccountQueryOptions, fields?: string[]): Promise<Account[]> {
+    return await this.indexerInterface.getAccounts(queryPagination, filter, fields);
   }
 
   @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
-  async getAccountContracts(pagination: QueryPagination, address: string): Promise<ScDeploy[]> {
+  async getAccountDeploys(pagination: QueryPagination, address: string): Promise<ScDeploy[]> {
+    return await this.indexerInterface.getAccountDeploys(pagination, address);
+  }
+
+  @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
+  async getAccountContracts(pagination: QueryPagination, address: string): Promise<any[]> {
     return await this.indexerInterface.getAccountContracts(pagination, address);
+  }
+
+  @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
+  async getAccountContractsCount(address: string): Promise<number> {
+    return await this.indexerInterface.getAccountContractsCount(address);
   }
 
   @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
@@ -437,5 +449,24 @@ export class IndexerService implements IndexerInterface {
   @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
   async getApplicationCount(filter: ApplicationFilter): Promise<number> {
     return await this.indexerInterface.getApplicationCount(filter);
+  }
+
+  @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
+  async getAddressesWithTransfersLast24h(): Promise<string[]> {
+    return await this.indexerInterface.getAddressesWithTransfersLast24h();
+  }
+
+  async getEvents(pagination: QueryPagination, filter: EventsFilter): Promise<Events[]> {
+    return await this.indexerInterface.getEvents(pagination, filter);
+  }
+
+  @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
+  async getEvent(txHash: string): Promise<Events> {
+    return await this.indexerInterface.getEvent(txHash);
+  }
+
+  @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
+  async getEventsCount(filter: EventsFilter): Promise<number> {
+    return await this.indexerInterface.getEventsCount(filter);
   }
 }

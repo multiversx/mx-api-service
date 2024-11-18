@@ -7,13 +7,11 @@ import { AccountDeferred } from './entities/account.deferred';
 import { QueryPagination } from 'src/common/entities/query.pagination';
 import { AccountKey } from './entities/account.key';
 import { DeployedContract } from './entities/deployed.contract';
-import { TransactionService } from '../transactions/transaction.service';
 import { PluginService } from 'src/common/plugins/plugin.service';
 import { AccountEsdtHistory } from "./entities/account.esdt.history";
 import { AccountHistory } from "./entities/account.history";
 import { StakeService } from '../stake/stake.service';
 import { TransferService } from '../transfers/transfer.service';
-import { SmartContractResultService } from '../sc-results/scresult.service';
 import { TransactionType } from '../transactions/entities/transaction.type';
 import { AssetsService } from 'src/common/assets/assets.service';
 import { TransactionFilter } from '../transactions/entities/transaction.filter';
@@ -37,6 +35,7 @@ import { NodeStatusRaw } from '../nodes/entities/node.status';
 import { AccountKeyFilter } from './entities/account.key.filter';
 import { Provider } from '../providers/entities/provider';
 import { ApplicationMostUsed } from './entities/application.most.used';
+import { AccountContract } from './entities/account.contract';
 
 @Injectable()
 export class AccountService {
@@ -48,16 +47,12 @@ export class AccountService {
     private readonly cachingService: CacheService,
     private readonly vmQueryService: VmQueryService,
     private readonly apiConfigService: ApiConfigService,
-    @Inject(forwardRef(() => TransactionService))
-    private readonly transactionService: TransactionService,
     @Inject(forwardRef(() => PluginService))
     private readonly pluginService: PluginService,
     @Inject(forwardRef(() => StakeService))
     private readonly stakeService: StakeService,
     @Inject(forwardRef(() => TransferService))
     private readonly transferService: TransferService,
-    @Inject(forwardRef(() => SmartContractResultService))
-    private readonly smartContractResultService: SmartContractResultService,
     private readonly assetsService: AssetsService,
     private readonly usernameService: UsernameService,
     private readonly apiService: ApiService,
@@ -217,18 +212,10 @@ export class AccountService {
   }
 
   async getAccountTxCount(address: string): Promise<number> {
-    if (!this.apiConfigService.getIsIndexerV3FlagActive()) {
-      return this.transactionService.getTransactionCountForAddress(address);
-    }
-
     return await this.transferService.getTransfersCount(new TransactionFilter({ address, type: TransactionType.Transaction }));
   }
 
   async getAccountScResults(address: string): Promise<number> {
-    if (!this.apiConfigService.getIsIndexerV3FlagActive()) {
-      return await this.smartContractResultService.getAccountScResultsCount(address);
-    }
-
     return await this.transferService.getTransfersCount(new TransactionFilter({ address, type: TransactionType.SmartContractResult }));
   }
 
@@ -628,11 +615,29 @@ export class AccountService {
     }
   }
 
-  async getAccountContracts(pagination: QueryPagination, address: string): Promise<DeployedContract[]> {
-    const accountDeployedContracts = await this.indexerService.getAccountContracts(pagination, address);
+  async getAccountDeploys(pagination: QueryPagination, address: string): Promise<DeployedContract[]> {
+    const accountDeployedContracts = await this.indexerService.getAccountDeploys(pagination, address);
     const assets = await this.assetsService.getAllAccountAssets();
 
     const accounts: DeployedContract[] = accountDeployedContracts.map(contract => ({
+      address: contract.contract,
+      deployTxHash: contract.deployTxHash,
+      timestamp: contract.timestamp,
+      assets: assets[contract.contract],
+    }));
+
+    return accounts;
+  }
+
+  async getAccountDeploysCount(address: string): Promise<number> {
+    return await this.indexerService.getAccountDeploysCount(address);
+  }
+
+  async getAccountContracts(pagination: QueryPagination, address: string): Promise<AccountContract[]> {
+    const accountContracts = await this.indexerService.getAccountContracts(pagination, address);
+    const assets = await this.assetsService.getAllAccountAssets();
+
+    const accounts: DeployedContract[] = accountContracts.map(contract => ({
       address: contract.contract,
       deployTxHash: contract.deployTxHash,
       timestamp: contract.timestamp,

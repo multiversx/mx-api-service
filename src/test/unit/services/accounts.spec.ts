@@ -52,8 +52,8 @@ describe('Account Service', () => {
             getAccounts: jest.fn(),
             getAccountsCount: jest.fn(),
             getAccountsForAddresses: jest.fn(),
-            getAccountContracts: jest.fn(),
-            getAccountContractsCount: jest.fn(),
+            getAccountDeploys: jest.fn(),
+            getAccountDeploysCount: jest.fn(),
             getAccountHistory: jest.fn(),
             getAccountTokenHistory: jest.fn(),
             getAccountHistoryCount: jest.fn(),
@@ -88,7 +88,6 @@ describe('Account Service', () => {
           provide: ApiConfigService,
           useValue: {
             getVerifierUrl: jest.fn(),
-            getIsIndexerV3FlagActive: jest.fn(),
             getDelegationContractAddress: jest.fn(),
             getAuctionContractAddress: jest.fn(),
             getStakingContractAddress: jest.fn(),
@@ -314,25 +313,10 @@ describe('Account Service', () => {
   });
 
   describe('getAccountTxCount', () => {
-    it('should return account transactions count from transaction service if indexer-v3 is false', async () => {
+    it('should return account transactions count from transfer service', async () => {
       const address = 'erd1qga7ze0l03chfgru0a32wxqf2226nzrxnyhzer9lmudqhjgy7ycqjjyknz';
       const expectedTxCount = 100;
 
-      jest.spyOn(apiConfigService, 'getIsIndexerV3FlagActive').mockReturnValue(false);
-      jest.spyOn(transactionService, 'getTransactionCountForAddress').mockResolvedValue(expectedTxCount);
-
-      const result = await service.getAccountTxCount(address);
-
-      expect(transactionService.getTransactionCountForAddress).toHaveBeenCalledWith(address);
-      expect(transferService.getTransfersCount).not.toHaveBeenCalled();
-      expect(result).toStrictEqual(expectedTxCount);
-    });
-
-    it('should return account transactions count from transfer service if indexer-v3 is true', async () => {
-      const address = 'erd1qga7ze0l03chfgru0a32wxqf2226nzrxnyhzer9lmudqhjgy7ycqjjyknz';
-      const expectedTxCount = 100;
-
-      jest.spyOn(apiConfigService, 'getIsIndexerV3FlagActive').mockReturnValue(true);
       jest.spyOn(transferService, 'getTransfersCount').mockResolvedValue(expectedTxCount);
 
       const result = await service.getAccountTxCount(address);
@@ -346,27 +330,11 @@ describe('Account Service', () => {
   });
 
   describe('getAccountScResults', () => {
-    it('should return account smart contract results from smartContractResult service if indexer-v3 is false',
+    it('should return account smart contract results from transfer service',
       async () => {
         const address = "erd1qga7ze0l03chfgru0a32wxqf2226nzrxnyhzer9lmudqhjgy7ycqjjyknz";
         const expectedTxCount = 100;
 
-        jest.spyOn(apiConfigService, 'getIsIndexerV3FlagActive').mockReturnValue(false);
-        jest.spyOn(smartContractResultService, 'getAccountScResultsCount').mockResolvedValue(expectedTxCount);
-
-        const result = await service.getAccountScResults(address);
-
-        expect(smartContractResultService.getAccountScResultsCount).toHaveBeenCalledWith(address);
-        expect(transferService.getTransfersCount).not.toHaveBeenCalled();
-        expect(result).toStrictEqual(expectedTxCount);
-      });
-
-    it('should return account smart contract results from transfer service if indexer-v3 is true',
-      async () => {
-        const address = "erd1qga7ze0l03chfgru0a32wxqf2226nzrxnyhzer9lmudqhjgy7ycqjjyknz";
-        const expectedTxCount = 100;
-
-        jest.spyOn(apiConfigService, 'getIsIndexerV3FlagActive').mockReturnValue(true);
         jest.spyOn(transferService, 'getTransfersCount').mockResolvedValue(expectedTxCount);
 
         const result = await service.getAccountScResults(address);
@@ -457,6 +425,8 @@ describe('Account Service', () => {
         receiversShardIDs: [],
         operation: '',
         scResults: [],
+        relayerAddr: '',
+        version: 2,
       });
 
       const result = await service.getAccountDeployedAtRaw(address);
@@ -586,11 +556,11 @@ describe('Account Service', () => {
       const address = 'erd1qga7ze0l03chfgru0a32wxqf2226nzrxnyhzer9lmudqhjgy7ycqjjyknz';
       const contractsCount = 5;
 
-      jest.spyOn(indexerService, 'getAccountContractsCount').mockResolvedValue(contractsCount);
+      jest.spyOn(indexerService, 'getAccountDeploysCount').mockResolvedValue(contractsCount);
 
-      const result = await service.getAccountContractsCount(address);
+      const result = await service.getAccountDeploysCount(address);
 
-      expect(indexerService.getAccountContractsCount).toHaveBeenCalledWith(address);
+      expect(indexerService.getAccountDeploysCount).toHaveBeenCalledWith(address);
       expect(result).toEqual(contractsCount);
     });
   });
@@ -890,12 +860,12 @@ describe('Account Service', () => {
     };
 
     it('should return the account contracts', async () => {
-      jest.spyOn(indexerService, 'getAccountContracts').mockResolvedValue(details);
+      jest.spyOn(indexerService, 'getAccountDeploys').mockResolvedValue(details);
       jest.spyOn(assetsService, 'getAllAccountAssets').mockResolvedValue(assets);
 
-      const result = await service.getAccountContracts(pagination, address);
+      const result = await service.getAccountDeploys(pagination, address);
 
-      expect(indexerService.getAccountContracts).toHaveBeenCalledWith(pagination, address);
+      expect(indexerService.getAccountDeploys).toHaveBeenCalledWith(pagination, address);
       expect(assetsService.getAllAccountAssets).toHaveBeenCalled();
 
       const expectedAccounts = details.map(contract => ({

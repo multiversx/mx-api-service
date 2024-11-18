@@ -33,6 +33,7 @@ import { PoolService } from "src/endpoints/pool/pool.service";
 import * as JsonDiff from "json-diff";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { StakeService } from "src/endpoints/stake/stake.service";
+import { ApplicationMostUsed } from "src/endpoints/accounts/entities/application.most.used";
 
 @Injectable()
 export class CacheWarmerService {
@@ -135,6 +136,11 @@ export class CacheWarmerService {
 
   @Lock({ name: 'Node auction invalidations', verbose: true })
   async handleNodeAuctionInvalidations() {
+    const currentEpoch = await this.blockService.getCurrentEpoch();
+    if (currentEpoch < this.apiConfigService.getStakingV4ActivationEpoch()) {
+      return;
+    }
+
     // wait randomly between 1 and 2 seconds to avoid all nodes refreshing at the same time
     await new Promise(resolve => setTimeout(resolve, 1000 + 1000 * Math.random()));
 
@@ -240,8 +246,7 @@ export class CacheWarmerService {
 
   @Lock({ name: 'Token / account assets invalidations', verbose: true })
   async handleTokenAssetsInvalidations() {
-    await this.assetsService.checkout();
-    const assets = this.assetsService.getAllTokenAssetsRaw();
+    const assets = await this.assetsService.getAllTokenAssetsRaw();
     await this.invalidateKey(CacheInfo.TokenAssets.key, assets, CacheInfo.TokenAssets.ttl);
 
     await this.keybaseService.confirmIdentities();
@@ -373,21 +378,28 @@ export class CacheWarmerService {
   async handleUpdateAccountTransfersLast24h() {
     const batchSize = 100;
     const mostUsed = await this.accountService.getApplicationMostUsedRaw();
+    const mostUsedIndexedAccounts = await this.indexerService.getAddressesWithTransfersLast24h();
 
-    const batches = BatchUtils.splitArrayIntoChunks(mostUsed, batchSize);
+    const allAddressesToUpdate = [...mostUsed.map(item => item.address), ...mostUsedIndexedAccounts].distinct();
+    const mostUsedDictionary = mostUsed.toRecord<ApplicationMostUsed>(item => item.address);
+
+    const batches = BatchUtils.splitArrayIntoChunks(allAddressesToUpdate, batchSize);
     for (const batch of batches) {
       const accounts = await this.indexerService.getAccounts(
         new QueryPagination({ from: 0, size: batchSize }),
-        new AccountQueryOptions({ addresses: batch.map(item => item.address) }),
+        new AccountQueryOptions({ addresses: batch }),
+        ['address', 'api_transfersLast24h'],
       );
 
-      const accountsDictionary = accounts.toRecord<Account>(account => account.address);
+      const accountsDictionary = accounts.toRecord<Pick<Account, 'address' | 'api_transfersLast24h'>>(account => account.address);
 
-      for (const item of batch) {
-        const account = accountsDictionary[item.address];
-        if (account && account.api_transfersLast24h !== item.transfers24H) {
-          this.logger.log(`Setting transferLast24h to ${item.transfers24H} for account with address '${item.address}'`);
-          await this.indexerService.setAccountTransfersLast24h(item.address, item.transfers24H);
+      for (const address of batch) {
+        const account = accountsDictionary[address];
+        const newTransfersLast24h = mostUsedDictionary[address]?.transfers24H ?? 0;
+
+        if (account && account.api_transfersLast24h !== newTransfersLast24h) {
+          this.logger.log(`Setting transferLast24h to ${newTransfersLast24h} for account with address '${address}'`);
+          await this.indexerService.setAccountTransfersLast24h(address, newTransfersLast24h);
         }
       }
     }

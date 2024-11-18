@@ -365,11 +365,7 @@ export class NftService {
           }
         }
 
-        if (this.apiConfigService.getIsIndexerV3FlagActive()) {
-          nft.isWhitelistedStorage = elasticNft.data.whiteListedStorage;
-        } else {
-          nft.isWhitelistedStorage = nft.url.startsWith(this.NFT_THUMBNAIL_PREFIX);
-        }
+        nft.isWhitelistedStorage = elasticNft.data.whiteListedStorage;
       }
 
       nfts.push(nft);

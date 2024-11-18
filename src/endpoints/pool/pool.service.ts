@@ -9,6 +9,8 @@ import { TransactionType } from "../transactions/entities/transaction.type";
 import { TransactionInPool } from "./entities/transaction.in.pool.dto";
 import { PoolFilter } from "./entities/pool.filter";
 import { TxInPoolFields } from "src/common/gateway/entities/tx.in.pool.fields";
+import { AddressUtils } from "@multiversx/sdk-nestjs-common";
+import { ProtocolService } from "../../common/protocol/protocol.service";
 
 @Injectable()
 export class PoolService {
@@ -16,13 +18,12 @@ export class PoolService {
     private readonly gatewayService: GatewayService,
     private readonly apiConfigService: ApiConfigService,
     private readonly cacheService: CacheService,
+    private readonly protocolService: ProtocolService,
   ) { }
 
   async getTransactionFromPool(txHash: string): Promise<TransactionInPool | undefined> {
     const pool = await this.getEntirePool();
-    const transaction = pool.find(tx => tx.txHash === txHash);
-
-    return transaction;
+    return pool.find(tx => tx.txHash === txHash);
   }
 
   async getPoolCount(filter: PoolFilter): Promise<number> {
@@ -48,7 +49,7 @@ export class PoolService {
     return await this.cacheService.getOrSet(
       CacheInfo.TransactionPool.key,
       async () => await this.getTxPoolRaw(),
-      CacheInfo.TransactionPool.ttl
+      CacheInfo.TransactionPool.ttl,
     );
   }
 
@@ -57,33 +58,54 @@ export class PoolService {
     return this.parseTransactions(pool);
   }
 
-  private parseTransactions(rawPool: TxPoolGatewayResponse): TransactionInPool[] {
+  private async parseTransactions(rawPool: TxPoolGatewayResponse): Promise<TransactionInPool[]> {
     const transactionPool: TransactionInPool[] = [];
-    if (rawPool && rawPool.txPool) {
-      transactionPool.push(...this.processTransactionType(rawPool.txPool.regularTransactions ?? [], TransactionType.Transaction));
-      transactionPool.push(...this.processTransactionType(rawPool.txPool.smartContractResults ?? [], TransactionType.SmartContractResult));
-      transactionPool.push(...this.processTransactionType(rawPool.txPool.rewards ?? [], TransactionType.Reward));
+
+    if (rawPool?.txPool) {
+      const regularTransactions = this.processTransactionsWithType(rawPool.txPool.regularTransactions ?? [], TransactionType.Transaction);
+      const smartContractResults = this.processTransactionsWithType(rawPool.txPool.smartContractResults ?? [], TransactionType.SmartContractResult);
+      const rewards = this.processTransactionsWithType(rawPool.txPool.rewards ?? [], TransactionType.Reward);
+
+      const allTransactions = await Promise.all([regularTransactions, smartContractResults, rewards]);
+
+      allTransactions.forEach(transactions => transactionPool.push(...transactions));
     }
 
     return transactionPool;
   }
 
-  private processTransactionType(transactions: any[], transactionType: TransactionType): TransactionInPool[] {
-    return transactions.map(tx => this.parseTransaction(tx.txFields, transactionType));
+  // eslint-disable-next-line require-await
+  private async processTransactionsWithType(transactions: any[], transactionType: TransactionType): Promise<TransactionInPool[]> {
+    return Promise.all(transactions.map(tx => this.parseTransaction(tx.txFields, transactionType)));
   }
 
-  private parseTransaction(tx: TxInPoolFields, type: TransactionType): TransactionInPool {
-    return new TransactionInPool({
+  private async parseTransaction(tx: TxInPoolFields, type: TransactionType): Promise<TransactionInPool> {
+    const transaction: TransactionInPool = new TransactionInPool({
       txHash: tx.hash ?? '',
       sender: tx.sender ?? '',
       receiver: tx.receiver ?? '',
+      receiverUsername: tx.receiverusername ?? '',
       nonce: tx.nonce ?? 0,
       value: tx.value ?? '',
       gasPrice: tx.gasprice ?? 0,
       gasLimit: tx.gaslimit ?? 0,
       data: tx.data ?? '',
+      guardian: tx.guardian ?? '',
+      guardianSignature: tx.guardiansignature ?? '',
+      signature: tx.signature ?? '',
       type: type ?? TransactionType.Transaction,
     });
+
+    // TODO: after gateway's /transaction/pool returns the sendershard and receivershard correctly, remove this computation
+    const shardCount = await this.protocolService.getShardCount();
+    if (transaction.sender) {
+      transaction.senderShard = AddressUtils.computeShard(AddressUtils.bech32Decode(transaction.sender), shardCount);
+    }
+    if (transaction.receiver) {
+      transaction.receiverShard = AddressUtils.computeShard(AddressUtils.bech32Decode(transaction.receiver), shardCount);
+    }
+
+    return transaction;
   }
 
   private applyFilters(pool: TransactionInPool[], filters: PoolFilter): TransactionInPool[] {
@@ -91,7 +113,9 @@ export class PoolService {
       return (
         (!filters.sender || transaction.sender === filters.sender) &&
         (!filters.receiver || transaction.receiver === filters.receiver) &&
-        (!filters.type || transaction.type === filters.type)
+        (!filters.type || transaction.type === filters.type) &&
+        (filters.senderShard === undefined || transaction.senderShard === filters.senderShard) &&
+        (filters.receiverShard === undefined || transaction.receiverShard === filters.receiverShard)
       );
     });
   }
