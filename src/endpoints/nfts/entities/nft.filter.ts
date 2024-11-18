@@ -2,6 +2,7 @@ import { SortOrder } from "src/common/entities/sort.order";
 import { SortCollectionNfts } from "src/endpoints/collections/entities/sort.collection.nfts";
 import { NftType } from "./nft.type";
 import { ScamType } from "src/common/entities/scam-type.enum";
+import { NftSubType } from "./nft.sub.type";
 
 export class NftFilter {
   constructor(init?: Partial<NftFilter>) {
@@ -10,7 +11,8 @@ export class NftFilter {
 
   search?: string;
   identifiers?: string[];
-  type?: NftType;
+  type?: NftType[];
+  subType?: NftSubType[];
   collection?: string;
   collections?: string[];
   tags?: string[];

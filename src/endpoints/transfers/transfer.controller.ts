@@ -1,4 +1,4 @@
-import { ParseBlockHashPipe, ParseEnumPipe, ParseIntPipe, ParseArrayPipe, ParseAddressArrayPipe, ParseBoolPipe, ApplyComplexity } from "@multiversx/sdk-nestjs-common";
+import { ParseBlockHashPipe, ParseEnumPipe, ParseIntPipe, ParseArrayPipe, ParseAddressArrayPipe, ParseBoolPipe, ApplyComplexity, ParseAddressPipe } from "@multiversx/sdk-nestjs-common";
 import { Controller, DefaultValuePipe, Get, Query } from "@nestjs/common";
 import { ApiExcludeEndpoint, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { QueryPagination } from "src/common/entities/query.pagination";
@@ -36,7 +36,10 @@ export class TransferController {
   @ApiQuery({ name: 'fields', description: 'List of fields to filter by', required: false })
   @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
+  @ApiQuery({ name: 'round', description: 'Round number', required: false })
   @ApiQuery({ name: 'function', description: 'Filter transfers by function name', required: false })
+  @ApiQuery({ name: 'relayer', description: 'Filter by relayer address', required: false })
+  @ApiQuery({ name: 'isRelayed', description: 'Returns relayed transactions details', required: false, type: Boolean })
   @ApiQuery({ name: 'withScamInfo', description: 'Returns scam information', required: false, type: Boolean })
   @ApiQuery({ name: 'withUsername', description: 'Integrates username in assets for all addresses present in the transactions', required: false, type: Boolean })
   @ApiQuery({ name: 'withBlockInfo', description: 'Returns sender / receiver block details', required: false, type: Boolean })
@@ -57,8 +60,11 @@ export class TransferController {
     @Query('status', new ParseEnumPipe(TransactionStatus)) status?: TransactionStatus,
     @Query('before', ParseIntPipe) before?: number,
     @Query('after', ParseIntPipe) after?: number,
+    @Query('round', ParseIntPipe) round?: number,
     @Query('order', new ParseEnumPipe(SortOrder)) order?: SortOrder,
     @Query('fields', ParseArrayPipe) fields?: string[],
+    @Query('relayer', ParseAddressPipe) relayer?: string,
+    @Query('isRelayed', new ParseBoolPipe) isRelayed?: boolean,
     @Query('withScamInfo', new ParseBoolPipe) withScamInfo?: boolean,
     @Query('withUsername', new ParseBoolPipe) withUsername?: boolean,
     @Query('withBlockInfo', new ParseBoolPipe) withBlockInfo?: boolean,
@@ -83,6 +89,9 @@ export class TransferController {
       before,
       after,
       order,
+      relayer,
+      isRelayed,
+      round,
     }),
       new QueryPagination({ from, size }),
       options,
@@ -104,6 +113,8 @@ export class TransferController {
   @ApiQuery({ name: 'function', description: 'Filter transfers by function name', required: false })
   @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
+  @ApiQuery({ name: 'round', description: 'Round number', required: false })
+  @ApiQuery({ name: 'isRelayed', description: 'Returns relayed transactions details', required: false, type: Boolean })
   async getAccountTransfersCount(
     @Query('sender', ParseAddressArrayPipe) sender?: string[],
     @Query('receiver', ParseAddressArrayPipe) receiver?: string[],
@@ -116,6 +127,8 @@ export class TransferController {
     @Query('function', new ParseArrayPipe(new ParseArrayPipeOptions({ allowEmptyString: true }))) functions?: string[],
     @Query('before', ParseIntPipe) before?: number,
     @Query('after', ParseIntPipe) after?: number,
+    @Query('round', ParseIntPipe) round?: number,
+    @Query('isRelayed', new ParseBoolPipe) isRelayed?: boolean,
   ): Promise<number> {
     return await this.transferService.getTransfersCount(new TransactionFilter({
       senders: sender,
@@ -129,6 +142,8 @@ export class TransferController {
       status,
       before,
       after,
+      isRelayed,
+      round,
     }));
   }
 
@@ -146,6 +161,7 @@ export class TransferController {
     @Query('function', new ParseArrayPipe(new ParseArrayPipeOptions({ allowEmptyString: true }))) functions?: string[],
     @Query('before', ParseIntPipe) before?: number,
     @Query('after', ParseIntPipe) after?: number,
+    @Query('round', ParseIntPipe) round?: number,
   ): Promise<number> {
     return await this.transferService.getTransfersCount(new TransactionFilter({
       senders: sender,
@@ -159,6 +175,7 @@ export class TransferController {
       status,
       before,
       after,
+      round,
     }));
   }
 }

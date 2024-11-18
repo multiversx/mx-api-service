@@ -1,10 +1,8 @@
 import { HttpStatus, Injectable } from "@nestjs/common";
 import { BinaryUtils } from "@multiversx/sdk-nestjs-common";
-import { ApiService } from "@multiversx/sdk-nestjs-http";
 import { ElasticService, ElasticQuery, QueryOperator, QueryType, QueryConditionOptions, ElasticSortOrder, ElasticSortProperty, TermsQuery, RangeGreaterThanOrEqual, MatchQuery } from "@multiversx/sdk-nestjs-elastic";
 import { IndexerInterface } from "../indexer.interface";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
-import { NftType } from "src/endpoints/nfts/entities/nft.type";
 import { CollectionFilter } from "src/endpoints/collections/entities/collection.filter";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { EsdtType } from "src/endpoints/esdt/entities/esdt.type";
@@ -28,15 +26,20 @@ import { AccountHistoryFilter } from "src/endpoints/accounts/entities/account.hi
 import { AccountAssets } from "src/common/assets/entities/account.assets";
 import { NotWritableError } from "../entities/not.writable.error";
 import { ApplicationFilter } from "src/endpoints/applications/entities/application.filter";
-
+import { NftType } from "../entities/nft.type";
+import { EventsFilter } from "src/endpoints/events/entities/events.filter";
+import { Events } from "../entities/events";
 
 @Injectable()
 export class ElasticIndexerService implements IndexerInterface {
+  private nonFungibleEsdtTypes: NftType[] = [NftType.NonFungibleESDT, NftType.NonFungibleESDTv2, NftType.DynamicNonFungibleESDT];
+  private semiFungibleEsdtTypes: NftType[] = [NftType.SemiFungibleESDT, NftType.DynamicSemiFungibleESDT];
+  private metaEsdtTypes: NftType[] = [NftType.MetaESDT, NftType.DynamicMetaESDT];
+
   constructor(
     private readonly apiConfigService: ApiConfigService,
     private readonly elasticService: ElasticService,
     private readonly indexerHelper: ElasticIndexerHelper,
-    private readonly apiService: ApiService,
   ) { }
 
   async getAccountsCount(filter: AccountQueryOptions): Promise<number> {
@@ -51,7 +54,7 @@ export class ElasticIndexerService implements IndexerInterface {
     return await this.elasticService.getCount('operations', query);
   }
 
-  async getAccountContractsCount(address: string): Promise<number> {
+  async getAccountDeploysCount(address: string): Promise<number> {
     const elasticQuery: ElasticQuery = ElasticQuery.create()
       .withCondition(QueryConditionOptions.must, [QueryType.Match("deployer", address)]);
 
@@ -401,7 +404,7 @@ export class ElasticIndexerService implements IndexerInterface {
     return await this.elasticService.getList('operations', 'hash', elasticQuery);
   }
 
-  async getAccounts(queryPagination: QueryPagination, filter: AccountQueryOptions): Promise<any[]> {
+  async getAccounts(queryPagination: QueryPagination, filter: AccountQueryOptions, fields?: string[]): Promise<any[]> {
     let elasticQuery = this.indexerHelper.buildAccountFilterQuery(filter);
     const sortOrder: ElasticSortOrder = !filter.order || filter.order === SortOrder.desc ? ElasticSortOrder.descending : ElasticSortOrder.ascending;
     const sort: AccountSort = filter.sort ?? AccountSort.balance;
@@ -426,6 +429,10 @@ export class ElasticIndexerService implements IndexerInterface {
 
     elasticQuery = elasticQuery.withPagination(queryPagination);
 
+    if (fields && fields.length > 0) {
+      elasticQuery = elasticQuery.withFields(fields);
+    }
+
     return await this.elasticService.getList('accounts', 'address', elasticQuery);
   }
 
@@ -437,13 +444,29 @@ export class ElasticIndexerService implements IndexerInterface {
     );
   }
 
-  async getAccountContracts(pagination: QueryPagination, address: string): Promise<any[]> {
+  async getAccountDeploys(pagination: QueryPagination, address: string): Promise<any[]> {
     const elasticQuery: ElasticQuery = ElasticQuery.create()
       .withPagination(pagination)
       .withCondition(QueryConditionOptions.must, [QueryType.Match("deployer", address)])
       .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }]);
 
     return await this.elasticService.getList('scdeploys', "contract", elasticQuery);
+  }
+
+  async getAccountContracts(pagination: QueryPagination, address: string): Promise<any[]> {
+    const elasticQuery: ElasticQuery = ElasticQuery.create()
+      .withPagination(pagination)
+      .withCondition(QueryConditionOptions.must, [QueryType.Match("currentOwner", address)])
+      .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }]);
+
+    return await this.elasticService.getList('scdeploys', "contract", elasticQuery);
+  }
+
+  async getAccountContractsCount(address: string): Promise<number> {
+    const elasticQuery: ElasticQuery = ElasticQuery.create()
+      .withCondition(QueryConditionOptions.must, [QueryType.Match("currentOwner", address)]);
+
+    return await this.elasticService.getCount('scdeploys', elasticQuery);
   }
 
   async getProviderDelegators(address: string, pagination: QueryPagination): Promise<any[]> {
@@ -653,17 +676,12 @@ export class ElasticIndexerService implements IndexerInterface {
   }
 
   async getNftsForAddress(address: string, filter: NftFilter, pagination: QueryPagination): Promise<any[]> {
-    let elasticQuery = this.indexerHelper.buildElasticNftFilter(filter, undefined, address)
-      .withPagination(pagination);
-
-    if (this.apiConfigService.getIsIndexerV3FlagActive()) {
-      elasticQuery = elasticQuery.withSort([
+    const elasticQuery = this.indexerHelper.buildElasticNftFilter(filter, undefined, address)
+      .withPagination(pagination)
+      .withSort([
         { name: 'timestamp', order: ElasticSortOrder.descending },
         { name: 'tokenNonce', order: ElasticSortOrder.descending },
       ]);
-    } else {
-      elasticQuery = elasticQuery.withSort([{ name: '_id', order: ElasticSortOrder.ascending }]);
-    }
 
     return await this.elasticService.getList('accountsesdt', 'identifier', elasticQuery);
   }
@@ -760,33 +778,36 @@ export class ElasticIndexerService implements IndexerInterface {
     return undefined;
   }
 
-  private indexerV5Active: boolean | undefined = undefined;
-
-  async isIndexerV5Active(): Promise<boolean> {
-    if (this.indexerV5Active !== undefined) {
-      return this.indexerV5Active;
-    }
-
-    const mappingsResult = await this.apiService.get(`${this.apiConfigService.getElasticUrl()}/tokens/_mappings`);
-    const mappings = mappingsResult.data?.tokens?.mappings?.properties ?? mappingsResult.data['tokens-000001']?.mappings?.properties;
-
-    const currentOwnerType = mappings?.currentOwner?.type;
-
-    this.indexerV5Active = currentOwnerType === 'keyword';
-    return this.indexerV5Active;
-  }
-
   async getCollectionsForAddress(
     address: string,
     filter: CollectionFilter,
     pagination: QueryPagination
   ): Promise<{ collection: string, count: number, balance: number }[]> {
-    const types = [NftType.SemiFungibleESDT, NftType.NonFungibleESDT];
+    let filterTypes = [...this.nonFungibleEsdtTypes, ...this.semiFungibleEsdtTypes];
+
     if (!filter.excludeMetaESDT) {
-      types.push(NftType.MetaESDT);
+      filterTypes.push(...this.metaEsdtTypes);
     }
 
-    const isIndexerV5Active = await this.isIndexerV5Active();
+    if (filter.type && filter.type.length > 0) {
+      filterTypes = [];
+
+      for (const type of filter.type) {
+        switch (type) {
+          case NftType.NonFungibleESDT:
+            filterTypes.push(...this.nonFungibleEsdtTypes);
+            break;
+          case NftType.SemiFungibleESDT:
+            filterTypes.push(...this.semiFungibleEsdtTypes);
+            break;
+          case NftType.MetaESDT:
+            filterTypes.push(...this.metaEsdtTypes);
+            break;
+          default:
+            filterTypes.push(type);
+        }
+      }
+    }
 
     const elasticQuery = ElasticQuery.create()
       .withMustExistCondition('identifier')
@@ -795,8 +816,8 @@ export class ElasticIndexerService implements IndexerInterface {
       .withMustMatchCondition('token', filter.collection, QueryOperator.AND)
       .withMustMultiShouldCondition(filter.identifiers, identifier => QueryType.Match('token', identifier, QueryOperator.AND))
       .withSearchWildcardCondition(filter.search, ['token', 'name'])
-      .withMustMultiShouldCondition(filter.type, type => QueryType.Match('type', type))
-      .withMustMultiShouldCondition(types, type => QueryType.Match('type', type))
+      .withMustMultiShouldCondition(filterTypes, type => QueryType.Match('type', type))
+      .withMustMultiShouldCondition(filter.subType, subType => QueryType.Match('type', subType))
       .withExtra({
         aggs: {
           collections: {
@@ -806,7 +827,7 @@ export class ElasticIndexerService implements IndexerInterface {
                 {
                   collection: {
                     terms: {
-                      field: isIndexerV5Active ? 'token' : 'token.keyword',
+                      field: 'token',
                     },
                   },
                 },
@@ -836,6 +857,7 @@ export class ElasticIndexerService implements IndexerInterface {
     data = data.slice(pagination.from, pagination.from + pagination.size);
     return data;
   }
+
 
   async getAssetsForToken(identifier: string): Promise<any> {
     return await this.elasticService.getCustomValue('tokens', identifier, 'assets');
@@ -868,7 +890,7 @@ export class ElasticIndexerService implements IndexerInterface {
   async getAllFungibleTokens(): Promise<any[]> {
     const query = ElasticQuery.create()
       .withMustMatchCondition('type', TokenType.FungibleESDT)
-      .withFields(["name", "type", "currentOwner", "numDecimals", "properties", "timestamp"])
+      .withFields(["name", "type", "currentOwner", "numDecimals", "properties", "timestamp", "ownersHistory"])
       .withMustNotExistCondition('identifier')
       .withPagination({ from: 0, size: 1000 });
 
@@ -956,5 +978,33 @@ export class ElasticIndexerService implements IndexerInterface {
     const elasticQuery = this.indexerHelper.buildApplicationFilter(filter);
 
     return await this.elasticService.getCount('scdeploys', elasticQuery);
+  }
+
+  async getAddressesWithTransfersLast24h(): Promise<string[]> {
+    const elasticQuery = ElasticQuery.create()
+      .withFields(['address'])
+      .withPagination({ from: 0, size: 10000 })
+      .withMustExistCondition('api_transfersLast24h');
+
+    const result = await this.elasticService.getList('accounts', 'address', elasticQuery);
+    return result.map(x => x.address);
+  }
+
+  async getEvents(pagination: QueryPagination, filter: EventsFilter): Promise<Events[]> {
+    const elasticQuery = this.indexerHelper.buildEventsFilter(filter)
+      .withPagination(pagination)
+      .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }]);
+
+    return await this.elasticService.getList('events', '_id', elasticQuery);
+  }
+
+  async getEvent(txHash: string): Promise<Events> {
+    return await this.elasticService.getItem('events', '_id', txHash);
+  }
+
+  async getEventsCount(filter: EventsFilter): Promise<number> {
+    const elasticQuery = this.indexerHelper.buildEventsFilter(filter);
+
+    return await this.elasticService.getCount('events', elasticQuery);
   }
 }

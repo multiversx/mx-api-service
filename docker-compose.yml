@@ -15,7 +15,7 @@ services:
     environment:
       - MYSQL_ROOT_PASSWORD=root
       - MYSQL_DATABASE=api
-  
+
   mongodbdatabase:
     image: mongo:latest
     environment:
@@ -28,7 +28,7 @@ services:
     image: jrottenberg/ffmpeg
 
   rabbitmq:
-    image: rabbitmq:3.5
+    image: rabbitmq:3.9
     container_name: rabbitmq
     environment:
       RABBITMQ_DEFAULT_USER: guest
