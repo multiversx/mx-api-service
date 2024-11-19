@@ -134,10 +134,12 @@ export class CollectionService {
       nftCollection.name = collectionProperties.name;
       if (TokenUtils.isSovereignIdentifier(collectionIdentifier)) {
         nftCollection.collection = collectionIdentifier.split('-').slice(0, 3).join('-');
+        nftCollection.ticker = collectionIdentifier.split('-')[1];
       } else {
         nftCollection.collection = collectionIdentifier.split('-').slice(0, 2).join('-');
+        nftCollection.ticker = collectionIdentifier.split('-')[0];
       }
-      nftCollection.ticker = collectionIdentifier.split('-')[0];
+
       nftCollection.canFreeze = collectionProperties.canFreeze;
       nftCollection.canWipe = collectionProperties.canWipe;
       nftCollection.canPause = collectionProperties.canPause;
@@ -152,7 +154,6 @@ export class CollectionService {
       }
 
       nftCollection.assets = collectionsAssets[collectionIdentifier];
-      nftCollection.ticker = nftCollection.assets ? collectionIdentifier.split('-')[0] : nftCollection.collection;
 
       nftCollections.push(nftCollection);
     }
