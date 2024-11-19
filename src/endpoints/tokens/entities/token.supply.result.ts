@@ -1,27 +1,26 @@
-import { Field, ObjectType } from "@nestjs/graphql";
+import { ApiProperty } from "@nestjs/swagger";
 import { EsdtLockedAccount } from "src/endpoints/esdt/entities/esdt.locked.account";
 
-@ObjectType("TokenSupplyResult", { description: "TokenSupplyResult object type." })
 export class TokenSupplyResult {
   constructor(init?: Partial<TokenSupplyResult>) {
     Object.assign(this, init);
   }
 
-  @Field(() => String, { description: "Token supply." })
+  @ApiProperty({ description: 'Supply details', type: String })
   supply: string | number = '';
 
-  @Field(() => String, { description: "Token circulating supply." })
+  @ApiProperty({ description: 'Circulating supply details', type: String })
   circulatingSupply: string | number = '';
 
-  @Field(() => String, { description: "Token minted details." })
+  @ApiProperty({ description: 'Minted details', type: String })
   minted: string | number | undefined;
 
-  @Field(() => String, { description: "Token burnt." })
+  @ApiProperty({ description: 'Token burnt details', type: String })
   burnt: string | number | undefined;
 
-  @Field(() => String, { description: "Token initial minted." })
+  @ApiProperty({ description: 'Initial minted details', type: String })
   initialMinted: string | number | undefined;
 
-  @Field(() => [EsdtLockedAccount], { description: "Token locked accounts." })
+  @ApiProperty({ description: 'Esdt locked accounts details', type: EsdtLockedAccount, isArray: true })
   lockedAccounts: EsdtLockedAccount[] | undefined = undefined;
 }

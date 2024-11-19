@@ -1,6 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { EsdtType } from "../../esdt/entities/esdt.type";
 import { EsdtSubType } from "src/endpoints/esdt/entities/esdt.sub.type";
+import { TokenOwnersHistory } from "./token.owner.history";
 
 export class TokenProperties {
   constructor(init?: Partial<TokenProperties>) {
@@ -75,4 +76,7 @@ export class TokenProperties {
 
   @ApiProperty()
   timestamp: number = 0;
+
+  @ApiProperty()
+  ownersHistory: TokenOwnersHistory[] = [];
 }

@@ -852,6 +852,7 @@ export class AccountController {
   @ApiQuery({ name: 'fields', description: 'List of fields to filter by', required: false })
   @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
+  @ApiQuery({ name: 'round', description: 'Round number', required: false })
   @ApiQuery({ name: 'withScResults', description: 'Return scResults for transactions. When "withScresults" parameter is applied, complexity estimation is 200', required: false })
   @ApiQuery({ name: 'withOperations', description: 'Return operations for transactions. When "withOperations" parameter is applied, complexity estimation is 200', required: false })
   @ApiQuery({ name: 'withLogs', description: 'Return logs for transactions. When "withLogs" parameter is applied, complexity estimation is 200', required: false })
@@ -877,6 +878,7 @@ export class AccountController {
     @Query('function', new ParseArrayPipe(new ParseArrayPipeOptions({ allowEmptyString: true }))) functions?: string[],
     @Query('before', ParseIntPipe) before?: number,
     @Query('after', ParseIntPipe) after?: number,
+    @Query('round', ParseIntPipe) round?: number,
     @Query('order', new ParseEnumPipe(SortOrder)) order?: SortOrder,
     @Query('fields', ParseArrayPipe) fields?: string[],
     @Query('withScResults', new ParseBoolPipe) withScResults?: boolean,
@@ -906,6 +908,7 @@ export class AccountController {
       order,
       senderOrReceiver,
       isRelayed,
+      round,
     }), new QueryPagination({ from, size }), options, address, fields);
   }
 
@@ -923,6 +926,7 @@ export class AccountController {
   @ApiQuery({ name: 'function', description: 'Filter transactions by function name', required: false })
   @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
+  @ApiQuery({ name: 'round', description: 'Round number', required: false })
   @ApiQuery({ name: 'senderOrReceiver', description: 'One address that current address interacted with', required: false })
   @ApiQuery({ name: 'isRelayed', description: 'Returns isRelayed transactions details', required: false, type: Boolean })
   async getAccountTransactionsCount(
@@ -938,6 +942,7 @@ export class AccountController {
     @Query('function', new ParseArrayPipe(new ParseArrayPipeOptions({ allowEmptyString: true }))) functions?: string[],
     @Query('before', ParseIntPipe) before?: number,
     @Query('after', ParseIntPipe) after?: number,
+    @Query('round', ParseIntPipe) round?: number,
     @Query('senderOrReceiver', ParseAddressPipe) senderOrReceiver?: string,
     @Query('isRelayed', new ParseBoolPipe) isRelayed?: boolean,
   ): Promise<number> {
@@ -956,6 +961,7 @@ export class AccountController {
       after,
       senderOrReceiver,
       isRelayed,
+      round,
     }), address);
   }
 
@@ -977,6 +983,7 @@ export class AccountController {
   @ApiQuery({ name: 'order', description: 'Sort order (asc/desc)', required: false, enum: SortOrder })
   @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
+  @ApiQuery({ name: 'round', description: 'Round number', required: false })
   @ApiQuery({ name: 'fields', description: 'List of fields to filter by', required: false })
   @ApiQuery({ name: 'relayer', description: 'Address of the relayer', required: false })
   @ApiQuery({ name: 'withScamInfo', description: 'Returns scam information', required: false, type: Boolean })
@@ -1001,6 +1008,7 @@ export class AccountController {
     @Query('function', new ParseArrayPipe(new ParseArrayPipeOptions({ allowEmptyString: true }))) functions?: string[],
     @Query('before', ParseIntPipe) before?: number,
     @Query('after', ParseIntPipe) after?: number,
+    @Query('round', ParseIntPipe) round?: number,
     @Query('fields', ParseArrayPipe) fields?: string[],
     @Query('order', new ParseEnumPipe(SortOrder)) order?: SortOrder,
     @Query('relayer', ParseAddressPipe) relayer?: string,
@@ -1031,6 +1039,7 @@ export class AccountController {
       order,
       senderOrReceiver,
       relayer,
+      round,
     }),
       new QueryPagination({ from, size }),
       options,
@@ -1052,6 +1061,7 @@ export class AccountController {
   @ApiQuery({ name: 'function', description: 'Filter transfers by function name', required: false })
   @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
+  @ApiQuery({ name: 'round', description: 'Round number', required: false })
   @ApiQuery({ name: 'senderOrReceiver', description: 'One address that current address interacted with', required: false })
   async getAccountTransfersCount(
     @Param('address', ParseAddressPipe) address: string,
@@ -1066,6 +1076,7 @@ export class AccountController {
     @Query('function', new ParseArrayPipe(new ParseArrayPipeOptions({ allowEmptyString: true }))) functions?: string[],
     @Query('before', ParseIntPipe) before?: number,
     @Query('after', ParseIntPipe) after?: number,
+    @Query('round', ParseIntPipe) round?: number,
     @Query('senderOrReceiver', ParseAddressPipe) senderOrReceiver?: string,
   ): Promise<number> {
     return await this.transferService.getTransfersCount(new TransactionFilter({
@@ -1082,6 +1093,7 @@ export class AccountController {
       before,
       after,
       senderOrReceiver,
+      round,
     }));
   }
 
@@ -1100,6 +1112,7 @@ export class AccountController {
     @Query('function', new ParseArrayPipe(new ParseArrayPipeOptions({ allowEmptyString: true }))) functions?: string[],
     @Query('before', ParseIntPipe) before?: number,
     @Query('after', ParseIntPipe) after?: number,
+    @Query('round', ParseIntPipe) round?: number,
     @Query('senderOrReceiver', ParseAddressPipe) senderOrReceiver?: string,
   ): Promise<number> {
     return await this.transferService.getTransfersCount(new TransactionFilter({
@@ -1116,6 +1129,7 @@ export class AccountController {
       before,
       after,
       senderOrReceiver,
+      round,
     }));
   }
 
@@ -1285,6 +1299,7 @@ export class AccountController {
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
   @ApiQuery({ name: 'identifier', description: 'Filter by multiple esdt identifiers, comma-separated', required: false })
   @ApiQuery({ name: 'token', description: 'Token identifier', required: false })
+  @ApiOkResponse({ type: [AccountEsdtHistory] })
   async getAccountEsdtHistory(
     @Param('address', ParseAddressPipe) address: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,

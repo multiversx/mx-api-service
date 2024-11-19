@@ -3,15 +3,20 @@
     "regularTransactions": [
       {
         "txFields": {
-          "data": "",
-          "gaslimit": 0,
-          "gasprice": 0,
-          "hash": "9aea74b81373148be892539944d60d1dda839028dfb700283a46e026afe4a4f0",
-          "nonce": 100,
-          "receiver": "erd104jng7d9s3z2t096tt6n23kyr7a96qr90dknde4xftrlw32yfejq743kpz",
+          "data": "c2V0U3BlY2lhbFJvbGVANGU0NjU0MmQ2MjM0NjQzNjYzMzJANzVjYjg3YzI0MzUxYTY3Yjg5MmY1N2RjZWMwZWIyYjJhMDdhYWZhYjJmMWFhYjc0MWExMGZjNjEwNTlmMmZlOEA0NTUzNDQ1NDUyNmY2YzY1NGU0NjU0NDM3MjY1NjE3NDY1",
+          "gaslimit": 60000000,
+          "gasprice": 1000000000,
+          "guardian": "erd104jng7d9s3z2t096tt6n23kyr7a96qr90dknde4xftrlw32yfejq743kpz",
+          "guardiansignature": "erd104jng7d9s3z2t096tt6n23kyr7a96qr90dknde4xftrlw32yfejq743kpz",
+          "hash": "67814fdea41ad82f6a2c26d18d1e2f85253b72b81bf7adbfffd5f05bfe389d1d",
+          "nonce": 7774,
+          "receiver": "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u",
+          "receivershard": 4294967295,
           "receiverusername": null,
-          "sender": "erd104jng7d9s3z2t096tt6n23kyr7a96qr90dknde4xftrlw32yfejq743kpz",
-          "value": "1976424131604696600"
+          "sender": "erd1wh9c0sjr2xn8hzf02lwwcr4jk2s84tat9ud2kaq6zr7xzpvl9l5q8awmex",
+          "sendershard": 0,
+          "signature": "erd104jng7d9s3z2t096tt6n23kyr7a96qr90dknde4xftrlw32yfejq743kpz",
+          "value": "0"
         }
       }
     ],
