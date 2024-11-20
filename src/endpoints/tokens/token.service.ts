@@ -104,12 +104,17 @@ export class TokenService {
   }
 
   normalizeIdentifierCase(identifier: string): string {
-    const [ticker, randomSequence] = identifier.split("-");
-    if (!ticker || !randomSequence) {
+    const isSovereignIdentifier = TokenUtils.isSovereignIdentifier(identifier);
+    const parts = identifier.split("-");
+    if (parts.length < 2) {
       return identifier.toUpperCase();
     }
 
-    return `${ticker.toUpperCase()}-${randomSequence.toLowerCase()}`;
+    if (isSovereignIdentifier) {
+      return `${parts[0].toLowerCase()}-${parts[1].toUpperCase()}-${parts[2].toLowerCase()}`;
+    } else {
+      return `${parts[0].toUpperCase()}-${parts[1].toLowerCase()}`;
+    }
   }
 
   async getTokens(queryPagination: QueryPagination, filter: TokenFilter): Promise<TokenDetailed[]> {
