@@ -85,7 +85,7 @@
     "@multiversx/sdk-data-api-client": "^0.7.0",
     "@multiversx/sdk-nestjs-auth": "4.1.0-beta.0",
     "@multiversx/sdk-nestjs-cache": "4.1.0-beta.0",
-    "@multiversx/sdk-nestjs-common": "^4.1.0-beta.0",
+    "@multiversx/sdk-nestjs-common": "4.1.0-beta.0",
     "@multiversx/sdk-nestjs-elastic": "4.1.0-beta.0",
     "@multiversx/sdk-nestjs-http": "4.1.0-beta.0",
     "@multiversx/sdk-nestjs-monitoring": "4.1.0-beta.0",
