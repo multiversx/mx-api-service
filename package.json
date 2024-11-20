@@ -78,7 +78,8 @@
     "copy-e2e-mocked-mainnet-config:nix": "cp ./config/config.e2e-mocked.mainnet.yaml ./config/config.yaml",
     "copy-e2e-mainnet-config:windows": "copy .\\config\\config.e2e.mainnet.yaml .\\config\\config.yaml",
     "copy-e2e-mocked-mainnet-config:windows": "copy .\\config\\config.e2e-mocked.mainnet.yaml .\\config\\config.yaml",
-    "start-chain-simulator": "docker compose -f \"src/test/chain-simulator/docker/docker-compose.yml\" up -d --build"
+    "start-chain-simulator": "docker compose -f \"src/test/chain-simulator/docker/docker-compose.yml\" up -d --build",
+    "stop-chain-simulator": "docker compose -f \"src/test/chain-simulator/docker/docker-compose.yml\" down"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.54.0",
