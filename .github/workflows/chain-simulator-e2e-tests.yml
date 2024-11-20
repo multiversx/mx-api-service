@@ -52,7 +52,7 @@ jobs:
 
       - name: Run e2e tests
         run: npm run test:cs-e2e
-      
+
       - name: Stop API after tests
         run: |
           echo "Stopping the API..."
