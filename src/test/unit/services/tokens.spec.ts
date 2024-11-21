@@ -717,6 +717,7 @@ describe('Token Service', () => {
         mockNftCollections.forEach(collection => {
           mockTokens.push(new TokenDetailed({
             type: TokenType.MetaESDT,
+            subType: collection.subType,
             identifier: collection.collection,
             name: collection.name,
             timestamp: collection.timestamp,
