@@ -42,10 +42,13 @@ import { TransferService } from "../transfers/transfer.service";
 import { MexPairService } from "../mex/mex.pair.service";
 import { MexPairState } from "../mex/entities/mex.pair.state";
 import { MexTokenType } from "../mex/entities/mex.token.type";
+import { NftSubType } from "../nfts/entities/nft.sub.type";
 
 @Injectable()
 export class TokenService {
   private readonly logger = new OriginLogger(TokenService.name);
+  private readonly nftSubTypes = [NftSubType.DynamicNonFungibleESDT, NftSubType.DynamicMetaESDT, NftSubType.NonFungibleESDTv2, NftSubType.DynamicSemiFungibleESDT];
+
   constructor(
     private readonly esdtService: EsdtService,
     private readonly indexerService: IndexerService,
@@ -113,7 +116,7 @@ export class TokenService {
   }
 
   async getTokens(queryPagination: QueryPagination, filter: TokenFilter): Promise<TokenDetailed[]> {
-    const { from, size } = queryPagination;
+    const {from, size} = queryPagination;
 
     let tokens = await this.getFilteredTokens(filter);
 
@@ -139,6 +142,10 @@ export class TokenService {
 
     if (filter.type) {
       tokens = tokens.filter(token => token.type === filter.type);
+    }
+
+    if (filter.subType) {
+      tokens = tokens.filter(token => token.subType.toString() === filter.subType?.toString());
     }
 
     if (filter.search) {
@@ -350,11 +357,11 @@ export class TokenService {
     if (TokenUtils.isNft(identifier)) {
       const nftData = await this.gatewayService.getAddressNft(address, identifier);
 
-      tokenWithBalance = new TokenDetailedWithBalance({ ...token, ...nftData });
+      tokenWithBalance = new TokenDetailedWithBalance({...token, ...nftData});
     } else {
       const esdtData = await this.gatewayService.getAddressEsdt(address, identifier);
 
-      tokenWithBalance = new TokenDetailedWithBalance({ ...token, ...esdtData });
+      tokenWithBalance = new TokenDetailedWithBalance({...token, ...esdtData});
     }
 
     // eslint-disable-next-line require-await
@@ -396,6 +403,27 @@ export class TokenService {
       const token = tokensIndexed[identifier];
       if (!token) {
         continue;
+      }
+
+      if (esdt.type && this.nftSubTypes.includes(esdt.type)) {
+        switch (esdt.type as NftSubType) {
+          case NftSubType.DynamicNonFungibleESDT:
+          case NftSubType.NonFungibleESDTv2:
+            esdt.type = NftSubType.NonFungibleESDT;
+            esdt.subType = esdt.type;
+            break;
+          case NftSubType.DynamicMetaESDT:
+            esdt.type = NftType.MetaESDT;
+            esdt.subType = NftSubType.DynamicMetaESDT;
+            break;
+          case NftSubType.DynamicSemiFungibleESDT:
+            esdt.type = NftType.SemiFungibleESDT;
+            esdt.subType = NftSubType.DynamicSemiFungibleESDT;
+            break;
+          default:
+            esdt.subType = NftSubType.None;
+            break;
+        }
       }
 
       const tokenWithBalance = {
@@ -658,8 +686,6 @@ export class TokenService {
     return result;
   }
 
-
-
   private async getLogo(identifier: string): Promise<TokenLogo | undefined> {
     const assets = await this.assetsService.getTokenAssets(identifier);
     if (!assets) {
@@ -712,7 +738,7 @@ export class TokenService {
     return await this.cachingService.getOrSet(
       CacheInfo.AllEsdtTokens.key,
       async () => await this.getAllTokensRaw(),
-      CacheInfo.AllEsdtTokens.ttl
+      CacheInfo.AllEsdtTokens.ttl,
     );
   }
 
@@ -746,6 +772,7 @@ export class TokenService {
     for (const collection of collections) {
       tokens.push(new TokenDetailed({
         type: TokenType.MetaESDT,
+        subType: collection.subType,
         identifier: collection.collection,
         name: collection.name,
         timestamp: collection.timestamp,
@@ -908,7 +935,7 @@ export class TokenService {
 
   private async getAllTokensFromApi(): Promise<TokenDetailed[]> {
     try {
-      const { data } = await this.apiService.get(`${this.apiConfigService.getTokensFetchServiceUrl()}/tokens`, { params: { size: 10000 } });
+      const {data} = await this.apiService.get(`${this.apiConfigService.getTokensFetchServiceUrl()}/tokens`, {params: {size: 10000}});
 
       return data;
     } catch (error) {
@@ -921,9 +948,9 @@ export class TokenService {
 
   private async getTotalTransactions(token: TokenDetailed): Promise<{ count: number, lastUpdatedAt: number } | undefined> {
     try {
-      const count = await this.transactionService.getTransactionCount(new TransactionFilter({ tokens: [token.identifier, ...token.assets?.extraTokens ?? []] }));
+      const count = await this.transactionService.getTransactionCount(new TransactionFilter({tokens: [token.identifier, ...token.assets?.extraTokens ?? []]}));
 
-      return { count, lastUpdatedAt: new Date().getTimeInSeconds() };
+      return {count, lastUpdatedAt: new Date().getTimeInSeconds()};
     } catch (error) {
       this.logger.error(`An unhandled error occurred when getting transaction count for token '${token.identifier}'`);
       this.logger.error(error);

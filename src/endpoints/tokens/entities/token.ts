@@ -4,6 +4,7 @@ import { TokenType } from "src/common/indexer/entities";
 import { TokenAssets } from "../../../common/assets/entities/token.assets";
 import { MexPairType } from "src/endpoints/mex/entities/mex.pair.type";
 import { TokenOwnersHistory } from "./token.owner.history";
+import { NftSubType } from "../../nfts/entities/nft.sub.type";
 
 export class Token {
   constructor(init?: Partial<Token>) {
@@ -12,6 +13,9 @@ export class Token {
 
   @ApiProperty({ enum: TokenType })
   type: TokenType = TokenType.FungibleESDT;
+
+  @ApiProperty({ enum: NftSubType })
+  subType: NftSubType = NftSubType.None;
 
   @ApiProperty({ type: String })
   identifier: string = '';
