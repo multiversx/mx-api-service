@@ -216,12 +216,13 @@ export class EsdtAddressService {
     if (filter.identifiers && filter.identifiers.length === 1) {
       const identifier = filter.identifiers[0];
 
+      const splitIdentifierParts = identifier.split('-');
       if (TokenUtils.isSovereignIdentifier(identifier)) {
-        collection = identifier.split('-').slice(0, 3).join('-');
-        nonceHex = identifier.split('-')[3];
+        collection = splitIdentifierParts.slice(0, 3).join('-');
+        nonceHex = splitIdentifierParts[3];
       } else {
-        collection = identifier.split('-').slice(0, 2).join('-');
-        nonceHex = identifier.split('-')[2];
+        collection = splitIdentifierParts.slice(0, 2).join('-');
+        nonceHex = splitIdentifierParts[2];
       }
 
       const nonceNumeric = BinaryUtils.hexToNumber(nonceHex);
@@ -268,10 +269,11 @@ export class EsdtAddressService {
     for (const dataSourceNft of nfts) {
       const nft = new NftAccount();
       nft.identifier = dataSourceNft.tokenIdentifier;
+      const splitTokenIdentifierParts = dataSourceNft.tokenIdentifier.split('-');
       if (TokenUtils.isSovereignIdentifier(dataSourceNft.tokenIdentifier)) {
-        nft.collection = dataSourceNft.tokenIdentifier.split('-').slice(0, 3).join('-');
+        nft.collection = splitTokenIdentifierParts.slice(0, 3).join('-');
       } else {
-        nft.collection = dataSourceNft.tokenIdentifier.split('-').slice(0, 2).join('-');
+        nft.collection = splitTokenIdentifierParts.slice(0, 2).join('-');
       }
       nft.nonce = dataSourceNft.nonce;
       nft.creator = dataSourceNft.creator;
