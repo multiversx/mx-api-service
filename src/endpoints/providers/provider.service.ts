@@ -101,7 +101,7 @@ export class ProviderService {
   }
 
   async getProvidersWithStakeInformationRaw(): Promise<Provider[]> {
-    const providers = await this.getAllProviders();
+    const providers = await this.getAllProvidersRaw();
     const nodes = await this.nodeService.getAllNodes();
 
     const nodesGroupedByProvider: { [key: string]: any[] } = nodes.groupBy(x => x.provider);
@@ -499,7 +499,7 @@ export class ProviderService {
   }
 
   async getFilteredProviders(filter: ProviderFilter): Promise<Provider[]> {
-    let providers = await this.getProvidersWithStakeInformation();
+    let providers = await this.getProvidersWithStakeInformationRaw();
 
     if (filter.identity) {
       providers = providers.filter((provider) => provider.identity === filter.identity);

@@ -16,9 +16,12 @@ import { IdentitySortCriteria } from "./entities/identity.sort.criteria";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { BlockService } from "../blocks/block.service";
 import { QueryPagination } from "src/common/entities/query.pagination";
+import { OriginLogger } from "@multiversx/sdk-nestjs-common";
 
 @Injectable()
 export class IdentitiesService {
+  private readonly logger = new OriginLogger(IdentitiesService.name);
+
   constructor(
     @Inject(forwardRef(() => NodeService))
     private readonly nodeService: NodeService,
@@ -196,10 +199,13 @@ export class IdentitiesService {
         identitiesDetailed.push(identityDetailed);
       }
     }
+    for (const identity of identitiesDetailed) {
+      this.logger.log(`identityDetailed: ${JSON.stringify(identity)}`);
+    }
 
     for (const node of nodes) {
       const found = identitiesDetailed.find((identityDetailed) => identityDetailed.identity == node.identity);
-
+      this.logger.log(`node: bls: ${node.bls}, ${JSON.stringify(node)}, found: ${found}`);
       if (found && node.identity && !!node.identity) {
         if (!found.nodes) {
           found.nodes = [];
@@ -207,6 +213,7 @@ export class IdentitiesService {
         found.nodes.push(node);
 
         if (!found.name) {
+          this.logger.log(`found has no name: ${node.bls}`);
           found.name = node.bls;
         }
       }

@@ -2,8 +2,8 @@ import { Injectable } from "@nestjs/common";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { GatewayService } from "src/common/gateway/gateway.service";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
-import { CacheService } from "@multiversx/sdk-nestjs-cache";
-import { CacheInfo } from "src/utils/cache.info";
+// import { CacheService } from "@multiversx/sdk-nestjs-cache";
+// import { CacheInfo } from "src/utils/cache.info";
 import { TxPoolGatewayResponse } from "src/common/gateway/entities/tx.pool.gateway.response";
 import { TransactionType } from "../transactions/entities/transaction.type";
 import { TransactionInPool } from "./entities/transaction.in.pool.dto";
@@ -17,7 +17,7 @@ export class PoolService {
   constructor(
     private readonly gatewayService: GatewayService,
     private readonly apiConfigService: ApiConfigService,
-    private readonly cacheService: CacheService,
+    // private readonly cacheService: CacheService,
     private readonly protocolService: ProtocolService,
   ) { }
 
@@ -46,11 +46,13 @@ export class PoolService {
   }
 
   async getEntirePool(): Promise<TransactionInPool[]> {
-    return await this.cacheService.getOrSet(
-      CacheInfo.TransactionPool.key,
-      async () => await this.getTxPoolRaw(),
-      CacheInfo.TransactionPool.ttl,
-    );
+    await Promise.resolve();
+    return [];
+    // return await this.cacheService.getOrSet(
+    //   CacheInfo.TransactionPool.key,
+    //   async () => await this.getTxPoolRaw(),
+    //   CacheInfo.TransactionPool.ttl,
+    // );
   }
 
   async getTxPoolRaw(): Promise<TransactionInPool[]> {

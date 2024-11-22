@@ -14,6 +14,7 @@ import { TransactionStatus } from './entities/transaction.status';
 import { TransactionQueryOptions } from './entities/transactions.query.options';
 import { TransactionService } from './transaction.service';
 import { ParseArrayPipeOptions } from '@multiversx/sdk-nestjs-common/lib/pipes/entities/parse.array.options';
+// import { Scrollable } from '@multiversx/sdk-nestjs-cache';
 
 @Controller()
 @ApiTags('transactions')
@@ -21,6 +22,7 @@ export class TransactionController {
   constructor(private readonly transactionService: TransactionService) { }
 
   @Get("/transactions")
+  // @Scrollable({ collection: 'operations' })
   @ApiOperation({ summary: 'Transaction list', description: 'Returns a list of transactions available on the blockchain.' })
   @ApplyComplexity({ target: TransactionDetailed })
   @ApiOkResponse({ type: [Transaction] })

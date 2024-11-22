@@ -14,9 +14,11 @@ import { Provider } from "src/endpoints/providers/entities/provider";
 import { ApiService } from "@multiversx/sdk-nestjs-http";
 import { ApiConfigService } from "../api-config/api.config.service";
 import { KeybaseIdentity } from "../keybase/entities/keybase.identity";
+import { OriginLogger } from "@multiversx/sdk-nestjs-common";
 
 @Injectable()
 export class AssetsService {
+  private readonly logger = new OriginLogger(AssetsService.name);
   constructor(
     private readonly apiConfigService: ApiConfigService,
     private readonly apiService: ApiService,
@@ -32,6 +34,7 @@ export class AssetsService {
   }
 
   async getAllTokenAssetsRaw(): Promise<{ [key: string]: TokenAssets }> {
+    this.logger.log("getAllTokenAssetsRaw called");
     if (!this.apiConfigService.isAssetsCdnFeatureEnabled()) {
       return {};
     }
@@ -64,6 +67,7 @@ export class AssetsService {
   }
 
   async getAllCollectionRanksRaw(): Promise<{ [key: string]: NftRank[] }> {
+    this.logger.log("getAllCollectionRanksRaw called");
     if (!this.apiConfigService.isAssetsCdnFeatureEnabled()) {
       return {};
     }
@@ -96,6 +100,7 @@ export class AssetsService {
   }
 
   async getAllAccountAssetsRaw(providers?: Provider[], identities?: Identity[], pairs?: MexPair[], farms?: MexFarm[], mexSettings?: MexSettings, stakingProxies?: MexStakingProxy[]): Promise<{ [key: string]: AccountAssets }> {
+    this.logger.log("getAllAccountAssetsRaw called");
     if (!this.apiConfigService.isAssetsCdnFeatureEnabled()) {
       return {};
     }
@@ -191,6 +196,7 @@ export class AssetsService {
   }
 
   async getAllIdentitiesRaw(): Promise<{ [key: string]: KeybaseIdentity }> {
+    this.logger.log("getAllIdentitiesRaw called");
     if (!this.apiConfigService.isAssetsCdnFeatureEnabled()) {
       return {};
     }
@@ -202,6 +208,7 @@ export class AssetsService {
 
     const allAssets: { [key: string]: KeybaseIdentity } = {};
     for (const asset of assets) {
+      this.logger.log(`[asset] identity: ${asset?.identity}, name: ${asset?.name}, ${JSON.stringify(asset)}`);
       const { identity, ...details } = asset;
       allAssets[identity] = new KeybaseIdentity(details);
     }
@@ -209,9 +216,11 @@ export class AssetsService {
     return allAssets;
   }
 
-  async getIdentityInfo(identity: string): Promise<KeybaseIdentity | null> {
+  async getIdentityInfo(identityKey: string): Promise<KeybaseIdentity | null> {
     const allIdentities = await this.getAllIdentitiesRaw();
-    return allIdentities[identity] || null;
+    const identity = allIdentities[identityKey];
+    this.logger.log(`[asset] getIdentityInfo: identity: ${JSON.stringify(identity)}`);
+    return identity || null;
   }
 
   createAccountAsset(name: string, tags: string[]): AccountAssets {

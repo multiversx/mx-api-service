@@ -96,6 +96,7 @@ export class KeybaseService {
   }
 
   async confirmIdentityProfiles(): Promise<void> {
+    this.logger.log("confirmIdentityProfiles called");
     const identities = await this.getDistinctIdentities();
     const keybaseIdentities = identities.map(identity => this.getProfile(identity));
     await this.cachingService.set(CacheInfo.IdentityProfilesKeybases.key, keybaseIdentities, CacheInfo.IdentityProfilesKeybases.ttl);

@@ -70,8 +70,8 @@ export class CacheWarmerService {
   ) {
     this.configCronJob(
       'handleTokenAssetsInvalidations',
-      CronExpression.EVERY_MINUTE,
-      CronExpression.EVERY_10_MINUTES,
+      CronExpression.EVERY_10_SECONDS,
+      CronExpression.EVERY_10_SECONDS,
       async () => await this.handleTokenAssetsInvalidations()
     );
 
