@@ -8,6 +8,7 @@ export enum NftSubType {
   DynamicNonFungibleESDT = 'DynamicNonFungibleESDT',
   DynamicSemiFungibleESDT = 'DynamicSemiFungibleESDT',
   DynamicMetaESDT = 'DynamicMetaESDT',
+  None = '',
 }
 
 registerEnumType(NftSubType, {
@@ -34,6 +35,9 @@ registerEnumType(NftSubType, {
     },
     DynamicMetaESDT: {
       description: 'Dynamic meta ESDT NFT type.',
+    },
+    None: {
+      description: '',
     },
   },
 });
