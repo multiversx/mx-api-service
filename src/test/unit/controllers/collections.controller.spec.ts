@@ -86,7 +86,7 @@ describe('CollectionController', () => {
       );
     });
 
-    it.skip('should return an array of collections with identifiers filter applied', async () => {
+    it('should return an array of collections with identifiers filter applied', async () => {
       collectionServiceMocks.getNftCollections.mockReturnValue([]);
       const identifiers = ['TEST-5409d3', 'TEST-57a352'];
 
@@ -447,7 +447,7 @@ describe('CollectionController', () => {
       expect(collectionServiceMocks.getNftCollection).toHaveBeenCalled();
     });
 
-    it.skip('should throw collection validation pipe if given collection is not a valid collection', async () => {
+    it('should throw collection validation pipe if given collection is not a valid collection', async () => {
       collectionServiceMocks.getNftCollection.mockReturnValue({});
       const collection = 'TEST-5409d3-Test';
 
@@ -484,7 +484,7 @@ describe('CollectionController', () => {
       expect(collectionServiceMocks.getNftCollectionRanks).toHaveBeenCalled();
     });
 
-    it.skip('should throw collection validation pipe if given collection is not a valid collection', async () => {
+    it('should throw collection validation pipe if given collection is not a valid collection', async () => {
       collectionServiceMocks.getNftCollection.mockReturnValue({});
       const collection = 'TEST-5409d3-Test';
 
@@ -750,7 +750,7 @@ describe('CollectionController', () => {
       );
     });
 
-    it.skip('should throw collection validation pipe if given collection is not a valid collection', async () => {
+    it('should throw collection validation pipe if given collection is not a valid collection', async () => {
       nftServiceMocks.getNfts.mockResolvedValue([]);
       collectionServiceMocks.getNftCollection.mockReturnValue({});
       const collection = 'TEST-5409d3-Test';
@@ -913,7 +913,7 @@ describe('CollectionController', () => {
       );
     });
 
-    it.skip('should throw collection validation pipe if given collection is not a valid collection', async () => {
+    it('should throw collection validation pipe if given collection is not a valid collection', async () => {
       nftServiceMocks.getNftCount.mockResolvedValue(0);
       collectionServiceMocks.getNftCollection.mockReturnValue({});
       const collection = 'TEST-5409d3-Test';

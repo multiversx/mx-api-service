@@ -16,7 +16,7 @@ import { NftCollectionWithRoles } from "../collections/entities/nft.collection.w
 import { CollectionService } from "../collections/collection.service";
 import { CollectionFilter } from "../collections/entities/collection.filter";
 import { CollectionRoles } from "../tokens/entities/collection.roles";
-import { AddressUtils, BinaryUtils, OriginLogger } from '@multiversx/sdk-nestjs-common';
+import { AddressUtils, BinaryUtils, OriginLogger, TokenUtils } from '@multiversx/sdk-nestjs-common';
 import { ApiUtils } from "@multiversx/sdk-nestjs-http";
 import { MetricsService } from "@multiversx/sdk-nestjs-monitoring";
 import { CacheService } from "@multiversx/sdk-nestjs-cache";
@@ -24,7 +24,6 @@ import { IndexerService } from "src/common/indexer/indexer.service";
 import { TrieOperationsTimeoutError } from "./exceptions/trie.operations.timeout.error";
 import { CacheInfo } from "src/utils/cache.info";
 import { AssetsService } from "src/common/assets/assets.service";
-import { EsdtType } from "@multiversx/sdk-data-api-client";
 
 @Injectable()
 export class EsdtAddressService {
@@ -42,7 +41,7 @@ export class EsdtAddressService {
     private readonly nftExtendedAttributesService: NftExtendedAttributesService,
     @Inject(forwardRef(() => CollectionService))
     private readonly collectionService: CollectionService,
-    private readonly assetsService: AssetsService
+    private readonly assetsService: AssetsService,
   ) {
     this.NFT_THUMBNAIL_PREFIX = this.apiConfigService.getExternalMediaUrl() + '/nfts/asset';
   }
@@ -217,13 +216,14 @@ export class EsdtAddressService {
     if (filter.identifiers && filter.identifiers.length === 1) {
       const identifier = filter.identifiers[0];
 
-      if (identifier.split('-').length === 2) {
-        collection = identifier.split('-').slice(0, 2).join('-');
-        nonceHex = identifier.split('-')[2];
+      const splitIdentifierParts = identifier.split('-');
+      if (TokenUtils.isSovereignIdentifier(identifier)) {
+        collection = splitIdentifierParts.slice(0, 3).join('-');
+        nonceHex = splitIdentifierParts[3];
+      } else {
+        collection = splitIdentifierParts.slice(0, 2).join('-');
+        nonceHex = splitIdentifierParts[2];
       }
-
-      collection = identifier.split('-').slice(0, 3).join('-');
-      nonceHex = identifier.split('-')[3];
 
       const nonceNumeric = BinaryUtils.hexToNumber(nonceHex);
 
@@ -250,8 +250,9 @@ export class EsdtAddressService {
     }
 
     const nfts: GatewayNft[] = Object.values(esdts).map(x => x as any).filter(x => {
-      const parts = x.tokenIdentifier.split('-');
-      return (parts.length === 3 && x.type !== EsdtType.FungibleESDT) || parts.length === 4;
+      const isSovereignIdentifier = TokenUtils.isSovereignIdentifier(x.tokenIdentifier);
+      const numParts = x.tokenIdentifier.split('-').length;
+      return (!isSovereignIdentifier && numParts === 3) || (isSovereignIdentifier && numParts === 4);
     });
 
     const collator = new Intl.Collator('en', { sensitivity: 'base' });
@@ -268,7 +269,12 @@ export class EsdtAddressService {
     for (const dataSourceNft of nfts) {
       const nft = new NftAccount();
       nft.identifier = dataSourceNft.tokenIdentifier;
-      nft.collection = dataSourceNft.tokenIdentifier.split('-').slice(0, 2).join('-');
+      const splitTokenIdentifierParts = dataSourceNft.tokenIdentifier.split('-');
+      if (TokenUtils.isSovereignIdentifier(dataSourceNft.tokenIdentifier)) {
+        nft.collection = splitTokenIdentifierParts.slice(0, 3).join('-');
+      } else {
+        nft.collection = splitTokenIdentifierParts.slice(0, 2).join('-');
+      }
       nft.nonce = dataSourceNft.nonce;
       nft.creator = dataSourceNft.creator;
       nft.royalties = Number(dataSourceNft.royalties) / 100; // 10.000 => 100%

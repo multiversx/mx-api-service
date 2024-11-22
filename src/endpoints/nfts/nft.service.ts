@@ -276,7 +276,7 @@ export class NftService {
   }
 
   async isNft(identifier: string): Promise<boolean> {
-    if (identifier.split('-').length !== 3 && identifier.split('-').length !== 4) {
+    if (!TokenUtils.isNft(identifier)) {
       return false;
     }
 
@@ -561,7 +561,7 @@ export class NftService {
   }
 
   async getNftSupply(identifier: string): Promise<string | undefined> {
-    if (identifier.split('-').length !== 3 && identifier.split('-').length !== 4) {
+    if (!TokenUtils.isNft(identifier)) {
       return undefined;
     }
 
