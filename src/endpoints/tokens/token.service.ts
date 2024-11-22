@@ -935,7 +935,7 @@ export class TokenService {
 
   private async getAllTokensFromApi(): Promise<TokenDetailed[]> {
     try {
-      const {data} = await this.apiService.get(`${this.apiConfigService.getTokensFetchServiceUrl()}/tokens`, {params: {size: 10000}});
+      const { data } = await this.apiService.get(`${this.apiConfigService.getTokensFetchServiceUrl()}/tokens`, { params: { size: 10000 } });
 
       return data;
     } catch (error) {

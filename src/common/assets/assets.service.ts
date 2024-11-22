@@ -202,8 +202,7 @@ export class AssetsService {
 
     const allAssets: { [key: string]: KeybaseIdentity } = {};
     for (const asset of assets) {
-      const { identity, ...details } = asset;
-      allAssets[identity] = new KeybaseIdentity(details);
+      allAssets[asset.identity] = new KeybaseIdentity(asset);
     }
 
     return allAssets;
