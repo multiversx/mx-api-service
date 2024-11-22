@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Res } from "@nestjs/common";
+import { Controller, Get, NotFoundException, Param, Res } from "@nestjs/common";
 import { ApiTags } from "@nestjs/swagger";
 import { Response } from "express";
 import { MediaService } from "./media.service";
@@ -11,15 +11,18 @@ export class MediaController {
   ) { }
 
   @Get("/media/:uri(*)")
-  redirectToMediaUri(
+  async redirectToMediaUri(
     @Param('uri') uri: string,
     @Res() response: Response
   ) {
-    const redirectUrl = this.mediaService.getRedirectUrl(uri);
+    const redirectUrl = await this.mediaService.getRedirectUrl(uri);
     if (!redirectUrl) {
-      return response.status(204);
+      throw new NotFoundException('Not found');
     }
 
+    response.statusMessage = 'Found';
+    response.setHeader('location', redirectUrl);
+    response.setHeader('cache-control', 'max-age=60');
     return response.redirect(redirectUrl);
   }
 }
