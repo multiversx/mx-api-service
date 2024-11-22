@@ -550,13 +550,11 @@ export class TokenService {
     let circulatingSupply: string | number;
 
     const properties = await this.getTokenProperties(identifier);
-    console.log(properties);
     if (!properties) {
       return undefined;
     }
 
     const result = await this.esdtService.getTokenSupply(identifier);
-    console.log(result);
     const denominated = supplyOptions && supplyOptions.denominated;
 
     if (denominated === true) {

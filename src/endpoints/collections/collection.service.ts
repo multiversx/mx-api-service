@@ -51,7 +51,6 @@ export class CollectionService {
 
   async getNftCollections(pagination: QueryPagination, filter: CollectionFilter): Promise<NftCollection[]> {
     const tokenCollections = await this.indexerService.getNftCollections(pagination, filter);
-    console.log(tokenCollections);
     return await this.processNftCollections(tokenCollections);
   }
 
