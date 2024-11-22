@@ -135,8 +135,14 @@ export class TokenService {
   }
 
   applyTickerFromAssets(token: Token) {
+    const splitParts = token.identifier.split('-');
+    const isSovereignIdentifier = TokenUtils.isSovereignIdentifier(token.identifier);
     if (token.assets) {
-      token.ticker = token.identifier.split('-')[0];
+      if (isSovereignIdentifier) {
+        token.ticker = splitParts[1];
+      } else {
+        token.ticker = splitParts[0];
+      }
     } else {
       token.ticker = token.identifier;
     }
