@@ -1,5 +1,16 @@
 import { QueryConditionOptions } from '@multiversx/sdk-nestjs-elastic';
-import { ParseBlockHashPipe, ParseBoolPipe, ParseEnumPipe, ParseIntPipe, ParseTransactionHashPipe, ParseAddressAndMetachainPipe, ApplyComplexity, ParseAddressArrayPipe, ParseArrayPipe } from '@multiversx/sdk-nestjs-common';
+import {
+  ParseBlockHashPipe,
+  ParseBoolPipe,
+  ParseEnumPipe,
+  ParseIntPipe,
+  ParseTransactionHashPipe,
+  ParseAddressAndMetachainPipe,
+  ApplyComplexity,
+  ParseAddressArrayPipe,
+  ParseArrayPipe,
+  ParseAddressPipe,
+} from '@multiversx/sdk-nestjs-common';
 import { BadRequestException, Body, Controller, DefaultValuePipe, Get, NotFoundException, Param, Post, Query } from '@nestjs/common';
 import { ApiCreatedResponse, ApiExcludeEndpoint, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { QueryPagination } from 'src/common/entities/query.pagination';
@@ -54,6 +65,7 @@ export class TransactionController {
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
     @Query('sender', ParseAddressAndMetachainPipe) sender?: string,
     @Query('receiver', ParseAddressArrayPipe) receiver?: string[],
+    @Query('relayer', ParseAddressPipe) relayer?: string,
     @Query('token') token?: string,
     @Query('senderShard', ParseIntPipe) senderShard?: number,
     @Query('receiverShard', ParseIntPipe) receiverShard?: number,
@@ -81,6 +93,7 @@ export class TransactionController {
     return this.transactionService.getTransactions(new TransactionFilter({
       sender,
       receivers: receiver,
+      relayer,
       token,
       functions,
       senderShard,

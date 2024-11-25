@@ -535,6 +535,10 @@ export class ElasticIndexerHelper {
       elasticQuery = elasticQuery.withMustMatchCondition('isRelayed', filter.isRelayed);
     }
 
+    if (filter.relayer) {
+      elasticQuery = elasticQuery.withShouldCondition(QueryType.Match('relayer', filter.relayer));
+    }
+
     if (filter.round) {
       elasticQuery = elasticQuery.withMustMatchCondition('round', filter.round);
     }
