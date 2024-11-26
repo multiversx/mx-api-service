@@ -58,6 +58,7 @@ export class TransactionController {
   @ApiQuery({ name: 'withScamInfo', description: 'Returns scam information', required: false, type: Boolean })
   @ApiQuery({ name: 'withUsername', description: 'Integrates username in assets for all addresses present in the transactions', required: false, type: Boolean })
   @ApiQuery({ name: 'withBlockInfo', description: 'Returns sender / receiver block details', required: false, type: Boolean })
+  @ApiQuery({ name: 'relayer', description: 'Search by a relayer address', required: false })
   @ApiQuery({ name: 'isRelayed', description: 'Returns relayed transactions details', required: false, type: Boolean })
   @ApiQuery({ name: 'withActionTransferValue', description: 'Returns value in USD and EGLD for transferred tokens within the action attribute', required: false })
   getTransactions(
@@ -93,7 +94,6 @@ export class TransactionController {
     return this.transactionService.getTransactions(new TransactionFilter({
       sender,
       receivers: receiver,
-      relayer,
       token,
       functions,
       senderShard,
@@ -105,6 +105,7 @@ export class TransactionController {
       after,
       condition,
       order,
+      relayer,
       isRelayed,
       round,
     }),
@@ -132,6 +133,7 @@ export class TransactionController {
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
   @ApiQuery({ name: 'round', description: 'Round number', required: false })
   @ApiQuery({ name: 'isRelayed', description: 'Returns relayed transactions details', required: false, type: Boolean })
+  @ApiQuery({ name: 'relayer', description: 'Filter by a relayer address', required: false })
   getTransactionCount(
     @Query('sender', ParseAddressAndMetachainPipe) sender?: string,
     @Query('receiver', ParseAddressArrayPipe) receiver?: string[],
@@ -146,6 +148,7 @@ export class TransactionController {
     @Query('before', ParseIntPipe) before?: number,
     @Query('after', ParseIntPipe) after?: number,
     @Query('round', ParseIntPipe) round?: number,
+    @Query('relaer', new ParseAddressPipe()) relayer?: string,
     @Query('isRelayed', new ParseBoolPipe) isRelayed?: boolean,
   ): Promise<number> {
     return this.transactionService.getTransactionCount(new TransactionFilter({
@@ -161,6 +164,7 @@ export class TransactionController {
       before,
       after,
       condition,
+      relayer,
       isRelayed,
       round,
     }));
@@ -182,6 +186,7 @@ export class TransactionController {
     @Query('before', ParseIntPipe) before?: number,
     @Query('after', ParseIntPipe) after?: number,
     @Query('round', new ParseIntPipe) round?: number,
+    @Query('relayer', new ParseAddressPipe()) relayer?: string,
     @Query('isRelayed', new ParseBoolPipe) isRelayed?: boolean,
   ): Promise<number> {
     return this.transactionService.getTransactionCount(new TransactionFilter({
@@ -198,6 +203,7 @@ export class TransactionController {
       after,
       condition,
       isRelayed,
+      relayer,
       round,
     }));
   }
