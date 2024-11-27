@@ -107,12 +107,17 @@ export class TokenService {
   }
 
   normalizeIdentifierCase(identifier: string): string {
-    const [ticker, randomSequence] = identifier.split("-");
-    if (!ticker || !randomSequence) {
+    const isSovereignIdentifier = TokenUtils.isSovereignIdentifier(identifier);
+    const parts = identifier.split("-");
+    if (parts.length < 2) {
       return identifier.toUpperCase();
     }
 
-    return `${ticker.toUpperCase()}-${randomSequence.toLowerCase()}`;
+    if (isSovereignIdentifier) {
+      return `${parts[0].toLowerCase()}-${parts[1].toUpperCase()}-${parts[2].toLowerCase()}`;
+    } else {
+      return `${parts[0].toUpperCase()}-${parts[1].toLowerCase()}`;
+    }
   }
 
   async getTokens(queryPagination: QueryPagination, filter: TokenFilter): Promise<TokenDetailed[]> {
@@ -130,8 +135,14 @@ export class TokenService {
   }
 
   applyTickerFromAssets(token: Token) {
+    const splitParts = token.identifier.split('-');
+    const isSovereignIdentifier = TokenUtils.isSovereignIdentifier(token.identifier);
     if (token.assets) {
-      token.ticker = token.identifier.split('-')[0];
+      if (isSovereignIdentifier) {
+        token.ticker = splitParts[1];
+      } else {
+        token.ticker = splitParts[0];
+      }
     } else {
       token.ticker = token.identifier;
     }
@@ -386,7 +397,6 @@ export class TokenService {
 
   async getAllTokensForAddress(address: string, filter: TokenFilter): Promise<TokenWithBalance[]> {
     const tokens = await this.getFilteredTokens(filter);
-
     const tokensIndexed: { [index: string]: Token } = {};
     for (const token of tokens) {
       tokensIndexed[token.identifier] = token;
@@ -397,7 +407,12 @@ export class TokenService {
     const tokensWithBalance: TokenWithBalance[] = [];
 
     for (const tokenIdentifier of Object.keys(esdts)) {
-      const identifier = tokenIdentifier.split('-').slice(0, 2).join('-');
+      let identifier = '';
+      if (TokenUtils.isSovereignIdentifier(tokenIdentifier)) {
+        identifier = tokenIdentifier.split('-').slice(0, 3).join('-');
+      } else {
+        identifier = tokenIdentifier.split('-').slice(0, 2).join('-');
+      }
 
       const esdt = esdts[tokenIdentifier];
       const token = tokensIndexed[identifier];
@@ -609,7 +624,7 @@ export class TokenService {
   }
 
   async getTokenProperties(identifier: string): Promise<TokenProperties | undefined> {
-    if (identifier.split('-').length !== 2) {
+    if (!TokenUtils.isCollection(identifier)) {
       return undefined;
     }
 
