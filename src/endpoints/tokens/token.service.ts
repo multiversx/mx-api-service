@@ -431,6 +431,10 @@ export class TokenService {
         ...esdt,
       };
 
+      if (esdt.type === '') { // empty type can come from gateway
+        tokenWithBalance.type = token.type;
+      }
+
       tokensWithBalance.push(tokenWithBalance);
     }
 
