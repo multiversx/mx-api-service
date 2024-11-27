@@ -193,7 +193,7 @@ export class TransactionController {
   @ApiOperation({ summary: 'Transaction details', description: 'Return transaction details for a given transaction hash' })
   @ApiOkResponse({ type: TransactionDetailed })
   @ApiNotFoundResponse({ description: 'Transaction not found' })
-  @ApiQuery({ name: 'fields', description: 'List of fields to filter by', required: false })
+  @ApiQuery({ name: 'fields', description: 'List of fields to filter by', required: false, isArray: true, style: 'form', explode: false })
   @ApiQuery({ name: 'withActionTransferValue', description: 'Returns value in USD and EGLD for transferred tokens within the action attribute', required: false })
   async getTransaction(
     @Param('txHash', ParseTransactionHashPipe) txHash: string,
