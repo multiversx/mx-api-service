@@ -166,7 +166,7 @@ export class TransferController {
     @Query('after', ParseIntPipe) after?: number,
     @Query('round', ParseIntPipe) round?: number,
     @Query('relayer', ParseAddressPipe) relayer?: string,
-    @Query('isRelayed', new ParseBoolPipe) isRelayed?: boolean,
+    @Query('isRelayed', ParseBoolPipe) isRelayed?: boolean,
   ): Promise<number> {
     return await this.transferService.getTransfersCount(new TransactionFilter({
       senders: sender,

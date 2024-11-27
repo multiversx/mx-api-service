@@ -148,8 +148,8 @@ export class TransactionController {
     @Query('before', ParseIntPipe) before?: number,
     @Query('after', ParseIntPipe) after?: number,
     @Query('round', ParseIntPipe) round?: number,
-    @Query('relaer', new ParseAddressPipe()) relayer?: string,
-    @Query('isRelayed', new ParseBoolPipe) isRelayed?: boolean,
+    @Query('relayer', ParseAddressPipe) relayer?: string,
+    @Query('isRelayed', ParseBoolPipe) isRelayed?: boolean,
   ): Promise<number> {
     return this.transactionService.getTransactionCount(new TransactionFilter({
       sender,
@@ -186,8 +186,8 @@ export class TransactionController {
     @Query('before', ParseIntPipe) before?: number,
     @Query('after', ParseIntPipe) after?: number,
     @Query('round', new ParseIntPipe) round?: number,
-    @Query('relayer', new ParseAddressPipe()) relayer?: string,
-    @Query('isRelayed', new ParseBoolPipe) isRelayed?: boolean,
+    @Query('relayer', ParseAddressPipe) relayer?: string,
+    @Query('isRelayed', ParseBoolPipe) isRelayed?: boolean,
   ): Promise<number> {
     return this.transactionService.getTransactionCount(new TransactionFilter({
       sender,
