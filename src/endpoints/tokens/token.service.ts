@@ -838,6 +838,21 @@ export class TokenService {
       token => token.transactions ?? 0,
     );
 
+    const egldIdentifier = 'EGLD-000000';
+    const egldToken = new TokenDetailed({
+      identifier: egldIdentifier,
+      name: 'EGLD',
+      type: TokenType.FungibleESDT,
+      assets: await this.assetsService.getTokenAssets(egldIdentifier),
+      decimals: 18,
+      isLowLiquidity: false,
+      price: await this.dataApiService.getEsdtTokenPrice(egldIdentifier),
+      supply: '0',
+      circulatingSupply: '0',
+      marketCap: 0,
+    });
+    tokens = [egldToken, ...tokens];
+
     return tokens;
   }
 
