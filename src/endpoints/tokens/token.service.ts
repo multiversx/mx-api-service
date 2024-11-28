@@ -846,12 +846,12 @@ export class TokenService {
       assets: await this.assetsService.getTokenAssets(egldIdentifier),
       decimals: 18,
       isLowLiquidity: false,
-      price: await this.dataApiService.getEsdtTokenPrice(egldIdentifier),
+      price: await this.dataApiService.getEgldPrice(),
       supply: '0',
       circulatingSupply: '0',
       marketCap: 0,
     });
-    tokens = [egldToken, ...tokens];
+    tokens = [...tokens, egldToken];
 
     return tokens;
   }
