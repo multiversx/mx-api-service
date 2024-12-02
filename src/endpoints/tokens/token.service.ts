@@ -127,8 +127,9 @@ export class TokenService {
       this.applyTickerFromAssets(token);
     }
 
-    const allTokens = tokens.map(item => ApiUtils.mergeObjects(new TokenDetailed(), item));
-    return allTokens.filter(t => t.identifier !== this.egldIdentifierInMultiTransfer);
+   return tokens
+    .map(item => ApiUtils.mergeObjects(new TokenDetailed(), item))
+    .filter(t => t.identifier !== this.egldIdentifierInMultiTransfer);
   }
 
   applyTickerFromAssets(token: Token) {
