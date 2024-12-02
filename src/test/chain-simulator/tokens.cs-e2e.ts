@@ -3,20 +3,14 @@ import { config } from './config/env.config';
 import { ChainSimulatorUtils } from './utils/test.utils';
 import { fundAddress, issueMultipleEsdts } from './utils/chain.simulator.operations';
 
-const ALICE_ADDRESS =
-  'erd1qyu5wthldzr8wx5c9ucg8kjagg0jfs53s8nr3zpz3hypefsdd8ssycr6th';
 const BOB_ADDRESS =
   'erd1spyavw0956vq68xj8y4tenjpq2wd5a9p2c6j8gsz7ztyrnpxrruqzu66jx';
 
 describe('Tokens e2e tests with chain simulator', () => {
   beforeAll(async () => {
     await ChainSimulatorUtils.waitForEpoch(2);
-
-    // Fund Alice's address
-    await fundAddress(config.chainSimulatorUrl, ALICE_ADDRESS);
-
-    // Issue multiple ESDT tokens
-    await issueMultipleEsdts(config.chainSimulatorUrl, ALICE_ADDRESS, 5);
+    await fundAddress(config.chainSimulatorUrl, config.aliceAddress);
+    await issueMultipleEsdts(config.chainSimulatorUrl, config.aliceAddress, 5);
     await new Promise((resolve) => setTimeout(resolve, 20000));
   });
 
@@ -259,7 +253,7 @@ describe('Tokens e2e tests with chain simulator', () => {
         `${config.apiServiceUrl}/tokens?size=1`,
       );
       const response = await axios.get(
-        `${config.apiServiceUrl}/tokens/${tokensResponse.data[0].identifier}/roles/${ALICE_ADDRESS}`,
+        `${config.apiServiceUrl}/tokens/${tokensResponse.data[0].identifier}/roles/${config.aliceAddress}`,
       );
       const roles = response.data;
       expect(response.status).toBe(200);
@@ -271,7 +265,7 @@ describe('Tokens e2e tests with chain simulator', () => {
       const nonExistentTokenIdentifier = 'NON_EXISTENT_TOKEN';
       try {
         await axios.get(
-          `${config.apiServiceUrl}/tokens/${nonExistentTokenIdentifier}/roles/${ALICE_ADDRESS}`,
+          `${config.apiServiceUrl}/tokens/${nonExistentTokenIdentifier}/roles/${config.aliceAddress}`,
         );
       } catch (error: any) {
         expect(error.response.status).toBe(400);
@@ -311,12 +305,12 @@ describe('Tokens e2e tests with chain simulator', () => {
         `${config.apiServiceUrl}/tokens?size=1`,
       );
       const response = await axios.get(
-        `${config.apiServiceUrl}/tokens/${tokensResponse.data[0].identifier}/transfers?receiver=${ALICE_ADDRESS}`,
+        `${config.apiServiceUrl}/tokens/${tokensResponse.data[0].identifier}/transfers?receiver=${config.aliceAddress}`,
       );
       const transfers = response.data;
       expect(response.status).toBe(200);
       for (const transfer of transfers) {
-        expect(transfer.receiver).toBe(ALICE_ADDRESS);
+        expect(transfer.receiver).toBe(config.aliceAddress);
       }
     });
 
@@ -408,7 +402,7 @@ describe('Tokens e2e tests with chain simulator', () => {
         `${config.apiServiceUrl}/tokens?size=1`,
       );
       const response = await axios.get(
-        `${config.apiServiceUrl}/tokens/${tokensResponse.data[0].identifier}/transfers/count?receiver=${ALICE_ADDRESS}`,
+        `${config.apiServiceUrl}/tokens/${tokensResponse.data[0].identifier}/transfers/count?receiver=${config.aliceAddress}`,
       );
       const count = response.data;
       expect(response.status).toBe(200);

@@ -6,7 +6,6 @@ import { fundAddress, issueMultipleNftsCollections } from './utils/chain.simulat
 describe('Collections e2e tests with chain simulator', () => {
   beforeAll(async () => {
     await ChainSimulatorUtils.waitForEpoch(2);
-
     await fundAddress(config.chainSimulatorUrl, config.aliceAddress);
     await issueMultipleNftsCollections(config.chainSimulatorUrl, config.aliceAddress, 2);
     await new Promise((resolve) => setTimeout(resolve, 5000));
