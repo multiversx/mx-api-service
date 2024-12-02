@@ -211,3 +211,120 @@ export class DeployScArgs {
     Object.assign(this, options);
   }
 }
+
+export async function issueNftCollection(args: IssueNftArgs): Promise<string> {
+  const properties = [
+    'canFreeze',
+    'canWipe',
+    'canPause',
+    'canTransferNFTCreateRole',
+    'canChangeOwner',
+    'canUpgrade',
+    'canAddSpecialRoles',
+  ];
+
+  const dataFields = [
+    'issueNonFungible',
+    Buffer.from(args.tokenName).toString('hex'),
+    Buffer.from(args.tokenTicker).toString('hex'),
+  ];
+
+  // Add all properties and their values in hex
+  for (const prop of properties) {
+    dataFields.push(Buffer.from(prop).toString('hex'));
+    dataFields.push(Buffer.from('true').toString('hex'));
+  }
+
+  const txHash = await sendTransaction(
+    new SendTransactionArgs({
+      chainSimulatorUrl: args.chainSimulatorUrl,
+      sender: args.issuer,
+      receiver: ESDT_ADDRESS,
+      dataField: dataFields.join('@'),
+      value: '50000000000000000',
+      gasLimit: 60000000,
+    })
+  );
+
+  const txResponse = await axios.get(
+    `${args.chainSimulatorUrl}/transaction/${txHash}?withResults=true`
+  );
+
+  const nftIssueLog = txResponse?.data?.data?.transaction?.logs?.events?.find(
+    (event: { identifier: string }) => event.identifier === 'issueNonFungible'
+  );
+
+  const tokenIdentifier = Buffer.from(
+    nftIssueLog.topics[0],
+    'base64'
+  ).toString();
+
+  console.log(
+    `Issued NFT collection with ticker ${args.tokenTicker}. tx hash: ${txHash}. identifier: ${tokenIdentifier}`
+  );
+
+  return tokenIdentifier;
+}
+
+export async function issueMultipleNftsCollections(
+  chainSimulatorUrl: string,
+  issuer: string,
+  numCollections: number,
+) {
+  const nftCollectionIdentifiers = [];
+  for (let i = 1; i <= numCollections; i++) {
+    const tokenName = `NFTCollection${i}`;
+    const tokenTicker = `NFT${i}`;
+    const tokenIdentifier = await issueNftCollection(
+      new IssueNftArgs({
+        chainSimulatorUrl,
+        issuer,
+        tokenName,
+        tokenTicker,
+      }),
+    );
+    nftCollectionIdentifiers.push(tokenIdentifier);
+  }
+
+  // Wait a bit before setting roles
+  await new Promise(resolve => setTimeout(resolve, 5000));
+
+  // Set roles for each collection
+  for (const tokenIdentifier of nftCollectionIdentifiers) {
+    const roles = ['ESDTRoleNFTCreate', 'ESDTRoleNFTBurn'];
+    const dataFields = [
+      'setSpecialRole',
+      Buffer.from(tokenIdentifier).toString('hex'),
+      Buffer.from(issuer).toString('hex'),
+      ...roles.map(role => Buffer.from(role).toString('hex')),
+    ];
+
+    await sendTransaction(
+      new SendTransactionArgs({
+        chainSimulatorUrl,
+        sender: issuer,
+        receiver: ESDT_ADDRESS,
+        dataField: dataFields.join('@'),
+        value: '0',
+        gasLimit: 60000000,
+      })
+    );
+
+    console.log(
+      `Set roles ${roles.join(', ')} for collection ${tokenIdentifier} to address ${issuer}`
+    );
+  }
+
+  return nftCollectionIdentifiers;
+}
+
+export class IssueNftArgs {
+  chainSimulatorUrl: string = '';
+  issuer: string = '';
+  tokenName: string = '';
+  tokenTicker: string = '';
+
+  constructor(options: Partial<IssueNftArgs> = {}) {
+    Object.assign(this, options);
+  }
+}
