@@ -1,32 +1,10 @@
 import axios from 'axios';
-
-const CHAIN_SIMULATOR_URL = 'http://localhost:8085';
-const API_SERVICE_URL = 'http://localhost:3001';
+import { config } from './config/env.config';
+import { ChainSimulatorUtils } from './utils/test.utils';
 
 describe('Blocks e2e tests with chain simulator', () => {
   beforeAll(async () => {
-    try {
-      const response = await axios.get(
-        `${CHAIN_SIMULATOR_URL}/simulator/observers`,
-      );
-      let numRetries = 0;
-      while (true) {
-        if (response.status === 200) {
-          await axios.post(
-            `${CHAIN_SIMULATOR_URL}/simulator/generate-blocks-until-epoch-reached/2`,
-            {},
-          );
-          break;
-        }
-
-        numRetries += 1;
-        if (numRetries > 50) {
-          fail('Chain simulator not started!');
-        }
-      }
-    } catch (e) {
-      console.error(e);
-    }
+    await ChainSimulatorUtils.waitForEpoch(2);
   });
 
   beforeEach(() => {
@@ -35,13 +13,13 @@ describe('Blocks e2e tests with chain simulator', () => {
 
   describe('GET /blocks', () => {
     it('should return status code 200', async () => {
-      const response = await axios.get(`${API_SERVICE_URL}/blocks`);
+      const response = await axios.get(`${config.apiServiceUrl}/blocks`);
       expect(response.status).toBe(200);
     });
 
     it('should handle invalid block requests gracefully', async () => {
       try {
-        await axios.get(`${API_SERVICE_URL}/blocks/invalid`);
+        await axios.get(`${config.apiServiceUrl}/blocks/invalid`);
       } catch (error: any) {
         expect(error.response.status).toBe(400);
       }
@@ -50,7 +28,7 @@ describe('Blocks e2e tests with chain simulator', () => {
 
   describe('GET /blocks/count', () => {
     it('should return blocks count', async () => {
-      const response = await axios.get(`${API_SERVICE_URL}/blocks/count`);
+      const response = await axios.get(`${config.apiServiceUrl}/blocks/count`);
       const count = response.data;
 
       expect(count).toBeGreaterThan(0);
@@ -58,7 +36,7 @@ describe('Blocks e2e tests with chain simulator', () => {
 
     it('should return blocks count filter by shard', async () => {
       const response = await axios.get(
-        `${API_SERVICE_URL}/blocks/count?shard=1`,
+        `${config.apiServiceUrl}/blocks/count?shard=1`,
       );
       const count = response.data;
 
@@ -67,7 +45,7 @@ describe('Blocks e2e tests with chain simulator', () => {
 
     it('should return blocks count filter by epoch', async () => {
       const response = await axios.get(
-        `${API_SERVICE_URL}/blocks/count?epoch=1`,
+        `${config.apiServiceUrl}/blocks/count?epoch=1`,
       );
       const count = response.data;
 
@@ -76,7 +54,7 @@ describe('Blocks e2e tests with chain simulator', () => {
 
     it('should return blocks count 0 if epoch value is to high', async () => {
       const response = await axios.get(
-        `${API_SERVICE_URL}/blocks/count?epoch=10000`,
+        `${config.apiServiceUrl}/blocks/count?epoch=10000`,
       );
       const count = response.data;
 
@@ -85,7 +63,7 @@ describe('Blocks e2e tests with chain simulator', () => {
 
     it('should return blocks count filter by nonce', async () => {
       const response = await axios.get(
-        `${API_SERVICE_URL}/blocks/count?nonce=0`,
+        `${config.apiServiceUrl}/blocks/count?nonce=0`,
       );
       const count = response.data;
 
@@ -94,7 +72,7 @@ describe('Blocks e2e tests with chain simulator', () => {
 
     it('should return blocks count 0 if nonce value is to high', async () => {
       const response = await axios.get(
-        `${API_SERVICE_URL}/blocks/count?nonce=10000`,
+        `${config.apiServiceUrl}/blocks/count?nonce=10000`,
       );
       const count = response.data;
 
@@ -104,7 +82,7 @@ describe('Blocks e2e tests with chain simulator', () => {
 
   describe('GET /blocks filter tests', () => {
     it('should support pagination', async () => {
-      const response = await axios.get(`${API_SERVICE_URL}/blocks?size=10`);
+      const response = await axios.get(`${config.apiServiceUrl}/blocks?size=10`);
       const blocks = response.data;
 
       expect(blocks).toBeInstanceOf(Array);
@@ -112,7 +90,7 @@ describe('Blocks e2e tests with chain simulator', () => {
     });
 
     it('should filter blocks by shard', async () => {
-      const response = await axios.get(`${API_SERVICE_URL}/blocks?shard=1`);
+      const response = await axios.get(`${config.apiServiceUrl}/blocks?shard=1`);
       const blocks = response.data;
 
       for (const block of blocks) {
@@ -121,7 +99,7 @@ describe('Blocks e2e tests with chain simulator', () => {
     });
 
     it('should filter blocks by epoch', async () => {
-      const response = await axios.get(`${API_SERVICE_URL}/blocks?epoch=2`);
+      const response = await axios.get(`${config.apiServiceUrl}/blocks?epoch=2`);
       const blocks = response.data;
 
       for (const block of blocks) {
@@ -132,7 +110,7 @@ describe('Blocks e2e tests with chain simulator', () => {
 
   describe('GET /blocks/latest', () => {
     it('should return the latest block data', async () => {
-      const response = await axios.get(`${API_SERVICE_URL}/blocks/latest`);
+      const response = await axios.get(`${config.apiServiceUrl}/blocks/latest`);
       const block = response.data;
 
       const expectedProperties = [

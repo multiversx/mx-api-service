@@ -1,32 +1,10 @@
 import axios from 'axios';
-
-const CHAIN_SIMULATOR_URL = 'http://localhost:8085';
-const API_SERVICE_URL = 'http://localhost:3001';
+import { config } from './config/env.config';
+import { ChainSimulatorUtils } from './utils/test.utils';
 
 describe('Smart Contract Results e2e tests with chain simulator', () => {
   beforeAll(async () => {
-    try {
-      const response = await axios.get(
-        `${CHAIN_SIMULATOR_URL}/simulator/observers`,
-      );
-      let numRetries = 0;
-      while (true) {
-        if (response.status === 200) {
-          await axios.post(
-            `${CHAIN_SIMULATOR_URL}/simulator/generate-blocks-until-epoch-reached/2`,
-            {},
-          );
-          break;
-        }
-
-        numRetries += 1;
-        if (numRetries > 50) {
-          fail('Chain simulator not started!');
-        }
-      }
-    } catch (e) {
-      console.error(e);
-    }
+    await ChainSimulatorUtils.waitForEpoch(2);
   });
 
   beforeEach(() => {
@@ -35,7 +13,7 @@ describe('Smart Contract Results e2e tests with chain simulator', () => {
 
   describe('GET /results', () => {
     it('should return status code 200 and a list of smart contract results', async () => {
-      const response = await axios.get(`${API_SERVICE_URL}/results`);
+      const response = await axios.get(`${config.apiServiceUrl}/results`);
       const results = response.data;
       expect(response.status).toBe(200);
       expect(results).toBeInstanceOf(Array);
@@ -45,7 +23,7 @@ describe('Smart Contract Results e2e tests with chain simulator', () => {
       const sender =
         'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqplllst77y4l';
       const response = await axios.get(
-        `${API_SERVICE_URL}/results?sender=${sender}`,
+        `${config.apiServiceUrl}/results?sender=${sender}`,
       );
       const results = response.data;
       expect(response.status).toBe(200);
@@ -58,7 +36,7 @@ describe('Smart Contract Results e2e tests with chain simulator', () => {
       const receiver =
         'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqplllst77y4l';
       const response = await axios.get(
-        `${API_SERVICE_URL}/results?receiver=${receiver}`,
+        `${config.apiServiceUrl}/results?receiver=${receiver}`,
       );
       const results = response.data;
       expect(response.status).toBe(200);
@@ -71,7 +49,7 @@ describe('Smart Contract Results e2e tests with chain simulator', () => {
     it.skip('should return filtered smart contract results by function', async () => {
       const functionName = 'transfer';
       const response = await axios.get(
-        `${API_SERVICE_URL}/results?function=${functionName}`,
+        `${config.apiServiceUrl}/results?function=${functionName}`,
       );
       const results = response.data;
       expect(response.status).toBe(200);
@@ -83,7 +61,7 @@ describe('Smart Contract Results e2e tests with chain simulator', () => {
 
   describe('GET /results/count', () => {
     it('should return status code 200 and the total count of smart contract results', async () => {
-      const response = await axios.get(`${API_SERVICE_URL}/results/count`);
+      const response = await axios.get(`${config.apiServiceUrl}/results/count`);
       const count = response.data;
       expect(response.status).toBe(200);
       expect(count).toBeGreaterThanOrEqual(1);
@@ -94,7 +72,7 @@ describe('Smart Contract Results e2e tests with chain simulator', () => {
       const sender =
         'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqplllst77y4l';
       const response = await axios.get(
-        `${API_SERVICE_URL}/results/count?sender=${sender}`,
+        `${config.apiServiceUrl}/results/count?sender=${sender}`,
       );
       const count = response.data;
       expect(response.status).toBe(200);
@@ -105,7 +83,7 @@ describe('Smart Contract Results e2e tests with chain simulator', () => {
       const receiver =
         'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqplllst77y4l';
       const response = await axios.get(
-        `${API_SERVICE_URL}/results/count?receiver=${receiver}`,
+        `${config.apiServiceUrl}/results/count?receiver=${receiver}`,
       );
       const count = response.data;
       expect(response.status).toBe(200);
@@ -115,7 +93,7 @@ describe('Smart Contract Results e2e tests with chain simulator', () => {
     it('should return filtered smart contract results count by function', async () => {
       const functionName = 'transfer';
       const response = await axios.get(
-        `${API_SERVICE_URL}/results/count?function=${functionName}`,
+        `${config.apiServiceUrl}/results/count?function=${functionName}`,
       );
       const count = response.data;
       expect(response.status).toBe(200);
@@ -125,10 +103,10 @@ describe('Smart Contract Results e2e tests with chain simulator', () => {
 
   describe('GET /results/:scHash', () => {
     it('should return status code 200 and smart contract result details (test )', async () => {
-      const results = await axios.get(`${API_SERVICE_URL}/results`);
+      const results = await axios.get(`${config.apiServiceUrl}/results`);
       const hash = results.data[0].hash;
 
-      const response = await axios.get(`${API_SERVICE_URL}/results/${hash}`);
+      const response = await axios.get(`${config.apiServiceUrl}/results/${hash}`);
       const result = response.data;
 
       expect(response.status).toBe(200);
@@ -138,7 +116,7 @@ describe('Smart Contract Results e2e tests with chain simulator', () => {
     it('should return status code 400 for invalid smart contract hash', async () => {
       const scHash = 'nonExistentHash';
       try {
-        await axios.get(`${API_SERVICE_URL}/results/${scHash}`);
+        await axios.get(`${config.apiServiceUrl}/results/${scHash}`);
       } catch (error: any) {
         expect(error.response.status).toBe(400);
       }

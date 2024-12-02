@@ -1,44 +1,23 @@
 import axios from 'axios';
+import { ChainSimulatorUtils } from './utils/test.utils';
+import { fundAddress, issueMultipleEsdts } from './chain.simulator.operations';
+import { config } from './config/env.config';
 
-const CHAIN_SIMULATOR_URL = 'http://localhost:8085';
-const API_SERVICE_URL = 'http://localhost:3001';
 const ALICE_ADDRESS =
   'erd1qyu5wthldzr8wx5c9ucg8kjagg0jfs53s8nr3zpz3hypefsdd8ssycr6th';
 const BOB_ADDRESS =
   'erd1spyavw0956vq68xj8y4tenjpq2wd5a9p2c6j8gsz7ztyrnpxrruqzu66jx';
-import { fundAddress, issueMultipleEsdts } from './chain.simulator.operations';
 
 describe('Tokens e2e tests with chain simulator', () => {
   beforeAll(async () => {
-    try {
-      const response = await axios.get(
-        `${CHAIN_SIMULATOR_URL}/simulator/observers`,
-      );
-      let numRetries = 0;
-      while (true) {
-        if (response.status === 200) {
-          await axios.post(
-            `${CHAIN_SIMULATOR_URL}/simulator/generate-blocks-until-epoch-reached/2`,
-            {},
-          );
-          break;
-        }
+    await ChainSimulatorUtils.waitForEpoch(2);
 
-        numRetries += 1;
-        if (numRetries > 50) {
-          fail('Chain simulator not started!');
-        }
-      }
+    // Fund Alice's address
+    await fundAddress(config.chainSimulatorUrl, ALICE_ADDRESS);
 
-      // Fund Alice's address
-      await fundAddress(CHAIN_SIMULATOR_URL, ALICE_ADDRESS);
-
-      // Issue multiple ESDT tokens
-      await issueMultipleEsdts(CHAIN_SIMULATOR_URL, ALICE_ADDRESS, 5);
-      await new Promise((resolve) => setTimeout(resolve, 20000));
-    } catch (e) {
-      console.error(e);
-    }
+    // Issue multiple ESDT tokens
+    await issueMultipleEsdts(config.chainSimulatorUrl, ALICE_ADDRESS, 5);
+    await new Promise((resolve) => setTimeout(resolve, 20000));
   });
 
   beforeEach(() => {
@@ -47,7 +26,7 @@ describe('Tokens e2e tests with chain simulator', () => {
 
   describe('GET /tokens', () => {
     it('should return status code 200 and a list of tokens', async () => {
-      const response = await axios.get(`${API_SERVICE_URL}/tokens`);
+      const response = await axios.get(`${config.apiServiceUrl}/tokens`);
       const tokens = response.data;
 
       expect(response.status).toBe(200);
@@ -57,7 +36,7 @@ describe('Tokens e2e tests with chain simulator', () => {
     it('should return filtered tokens by name', async () => {
       const tokenName = 'Token1';
       const response = await axios.get(
-        `${API_SERVICE_URL}/tokens?name=${tokenName}`,
+        `${config.apiServiceUrl}/tokens?name=${tokenName}`,
       );
       const tokens = response.data;
 
@@ -68,10 +47,10 @@ describe('Tokens e2e tests with chain simulator', () => {
     });
 
     it('should return filtered tokens by identifier', async () => {
-      const fetchTokens = await axios.get(`${API_SERVICE_URL}/tokens`);
+      const fetchTokens = await axios.get(`${config.apiServiceUrl}/tokens`);
       const tokenIdentifier = fetchTokens.data[0].identifier;
       const response = await axios.get(
-        `${API_SERVICE_URL}/tokens?identifier=${tokenIdentifier}`,
+        `${config.apiServiceUrl}/tokens?identifier=${tokenIdentifier}`,
       );
       const tokens = response.data;
 
@@ -82,7 +61,7 @@ describe('Tokens e2e tests with chain simulator', () => {
     });
 
     it('should support pagination and return 2 tokens', async () => {
-      const response = await axios.get(`${API_SERVICE_URL}/tokens?size=2`);
+      const response = await axios.get(`${config.apiServiceUrl}/tokens?size=2`);
       const tokens = response.data;
 
       expect(response.status).toBe(200);
@@ -93,7 +72,7 @@ describe('Tokens e2e tests with chain simulator', () => {
     it('should return filtered tokens by type', async () => {
       const tokenType = 'FungibleESDT';
       const response = await axios.get(
-        `${API_SERVICE_URL}/tokens?type=${tokenType}`,
+        `${config.apiServiceUrl}/tokens?type=${tokenType}`,
       );
       const tokens = response.data;
 
@@ -104,12 +83,12 @@ describe('Tokens e2e tests with chain simulator', () => {
     });
 
     it('should return filtered tokens by multiple identifiers', async () => {
-      const fetchTokens = await axios.get(`${API_SERVICE_URL}/tokens`);
+      const fetchTokens = await axios.get(`${config.apiServiceUrl}/tokens`);
       const identifiers = fetchTokens.data.map(
         (token: any) => token.identifier,
       );
       const response = await axios.get(
-        `${API_SERVICE_URL}/tokens?identifiers=${identifiers.join(',')}`,
+        `${config.apiServiceUrl}/tokens?identifiers=${identifiers.join(',')}`,
       );
       const tokens = response.data;
 
@@ -122,7 +101,7 @@ describe('Tokens e2e tests with chain simulator', () => {
     it('should return filtered tokens by search term', async () => {
       const searchTerm = 'Token1';
       const response = await axios.get(
-        `${API_SERVICE_URL}/tokens?search=${searchTerm}`,
+        `${config.apiServiceUrl}/tokens?search=${searchTerm}`,
       );
       const tokens = response.data;
 
@@ -135,7 +114,7 @@ describe('Tokens e2e tests with chain simulator', () => {
 
   describe('GET /tokens/count', () => {
     it('should return status code 200 and the total count of tokens', async () => {
-      const response = await axios.get(`${API_SERVICE_URL}/tokens/count`);
+      const response = await axios.get(`${config.apiServiceUrl}/tokens/count`);
       const count = response.data;
 
       expect(response.status).toBe(200);
@@ -146,7 +125,7 @@ describe('Tokens e2e tests with chain simulator', () => {
     it('should return filtered token count by name', async () => {
       const tokenName = 'Token1';
       const response = await axios.get(
-        `${API_SERVICE_URL}/tokens/count?name=${tokenName}`,
+        `${config.apiServiceUrl}/tokens/count?name=${tokenName}`,
       );
       const count = response.data;
 
@@ -157,7 +136,7 @@ describe('Tokens e2e tests with chain simulator', () => {
     it('should return filtered token count by search term', async () => {
       const searchTerm = 'Token';
       const response = await axios.get(
-        `${API_SERVICE_URL}/tokens/count?search=${searchTerm}`,
+        `${config.apiServiceUrl}/tokens/count?search=${searchTerm}`,
       );
       const count = response.data;
 
@@ -169,10 +148,10 @@ describe('Tokens e2e tests with chain simulator', () => {
   describe('GET /tokens/:identifier', () => {
     it('should return status code 200 and token details', async () => {
       const tokensResponse = await axios.get(
-        `${API_SERVICE_URL}/tokens?size=1`,
+        `${config.apiServiceUrl}/tokens?size=1`,
       );
       const response = await axios.get(
-        `${API_SERVICE_URL}/tokens/${tokensResponse.data[0].identifier}`,
+        `${config.apiServiceUrl}/tokens/${tokensResponse.data[0].identifier}`,
       );
       const token = response.data;
 
@@ -187,7 +166,7 @@ describe('Tokens e2e tests with chain simulator', () => {
       const nonExistentTokenIdentifier = 'NON_EXISTENT_TOKEN';
       try {
         await axios.get(
-          `${API_SERVICE_URL}/tokens/${nonExistentTokenIdentifier}`,
+          `${config.apiServiceUrl}/tokens/${nonExistentTokenIdentifier}`,
         );
       } catch (error: any) {
         expect(error.response.status).toBe(400);
@@ -196,10 +175,10 @@ describe('Tokens e2e tests with chain simulator', () => {
 
     it('should return token details with denominated supply (number)', async () => {
       const tokensResponse = await axios.get(
-        `${API_SERVICE_URL}/tokens?size=1`,
+        `${config.apiServiceUrl}/tokens?size=1`,
       );
       const response = await axios.get(
-        `${API_SERVICE_URL}/tokens/${tokensResponse.data[0].identifier}?denominated=true`,
+        `${config.apiServiceUrl}/tokens/${tokensResponse.data[0].identifier}?denominated=true`,
       );
       const token = response.data;
 
@@ -214,10 +193,10 @@ describe('Tokens e2e tests with chain simulator', () => {
 
     it('should return token details with supply (string)', async () => {
       const tokensResponse = await axios.get(
-        `${API_SERVICE_URL}/tokens?size=1`,
+        `${config.apiServiceUrl}/tokens?size=1`,
       );
       const response = await axios.get(
-        `${API_SERVICE_URL}/tokens/${tokensResponse.data[0].identifier}?denominated=false`,
+        `${config.apiServiceUrl}/tokens/${tokensResponse.data[0].identifier}?denominated=false`,
       );
       const token = response.data;
 
@@ -234,10 +213,10 @@ describe('Tokens e2e tests with chain simulator', () => {
   describe('GET /tokens/:identifier/roles', () => {
     it('should return status code 200 and token roles', async () => {
       const tokensResponse = await axios.get(
-        `${API_SERVICE_URL}/tokens?size=1`,
+        `${config.apiServiceUrl}/tokens?size=1`,
       );
       const response = await axios.get(
-        `${API_SERVICE_URL}/tokens/${tokensResponse.data[0].identifier}/roles`,
+        `${config.apiServiceUrl}/tokens/${tokensResponse.data[0].identifier}/roles`,
       );
       const roles = response.data;
 
@@ -255,7 +234,7 @@ describe('Tokens e2e tests with chain simulator', () => {
       const nonExistentTokenIdentifier = 'NON_EXISTENT_TOKEN';
       try {
         await axios.get(
-          `${API_SERVICE_URL}/tokens/${nonExistentTokenIdentifier}/roles`,
+          `${config.apiServiceUrl}/tokens/${nonExistentTokenIdentifier}/roles`,
         );
       } catch (error: any) {
         expect(error.response.status).toBe(400);
@@ -266,7 +245,7 @@ describe('Tokens e2e tests with chain simulator', () => {
       const nonExistentTokenIdentifier = 'TKNTEST1-f61adc';
       try {
         await axios.get(
-          `${API_SERVICE_URL}/tokens/${nonExistentTokenIdentifier}/roles`,
+          `${config.apiServiceUrl}/tokens/${nonExistentTokenIdentifier}/roles`,
         );
       } catch (error: any) {
         expect(error.response.status).toBe(404);
@@ -277,10 +256,10 @@ describe('Tokens e2e tests with chain simulator', () => {
   describe('GET /tokens/:identifier/roles/:address', () => {
     it('should return status code 200 and token roles for the address', async () => {
       const tokensResponse = await axios.get(
-        `${API_SERVICE_URL}/tokens?size=1`,
+        `${config.apiServiceUrl}/tokens?size=1`,
       );
       const response = await axios.get(
-        `${API_SERVICE_URL}/tokens/${tokensResponse.data[0].identifier}/roles/${ALICE_ADDRESS}`,
+        `${config.apiServiceUrl}/tokens/${tokensResponse.data[0].identifier}/roles/${ALICE_ADDRESS}`,
       );
       const roles = response.data;
       expect(response.status).toBe(200);
@@ -292,7 +271,7 @@ describe('Tokens e2e tests with chain simulator', () => {
       const nonExistentTokenIdentifier = 'NON_EXISTENT_TOKEN';
       try {
         await axios.get(
-          `${API_SERVICE_URL}/tokens/${nonExistentTokenIdentifier}/roles/${ALICE_ADDRESS}`,
+          `${config.apiServiceUrl}/tokens/${nonExistentTokenIdentifier}/roles/${ALICE_ADDRESS}`,
         );
       } catch (error: any) {
         expect(error.response.status).toBe(400);
@@ -301,12 +280,12 @@ describe('Tokens e2e tests with chain simulator', () => {
 
     it('should return status code 404 for non-existent address roles for the token', async () => {
       const tokensResponse = await axios.get(
-        `${API_SERVICE_URL}/tokens?size=1`,
+        `${config.apiServiceUrl}/tokens?size=1`,
       );
 
       try {
         await axios.get(
-          `${API_SERVICE_URL}/tokens/${tokensResponse.data[0].identifier}/roles/${BOB_ADDRESS}`,
+          `${config.apiServiceUrl}/tokens/${tokensResponse.data[0].identifier}/roles/${BOB_ADDRESS}`,
         );
       } catch (error: any) {
         expect(error.response.status).toBe(404);
@@ -317,10 +296,10 @@ describe('Tokens e2e tests with chain simulator', () => {
   describe('GET /tokens/:identifier/transfers', () => {
     it('should return status code 200 and a list of transfers', async () => {
       const tokensResponse = await axios.get(
-        `${API_SERVICE_URL}/tokens?size=1`,
+        `${config.apiServiceUrl}/tokens?size=1`,
       );
       const response = await axios.get(
-        `${API_SERVICE_URL}/tokens/${tokensResponse.data[0].identifier}/transfers`,
+        `${config.apiServiceUrl}/tokens/${tokensResponse.data[0].identifier}/transfers`,
       );
       const transfers = response.data;
       expect(response.status).toBe(200);
@@ -329,10 +308,10 @@ describe('Tokens e2e tests with chain simulator', () => {
 
     it('should return filtered transfers by receiver', async () => {
       const tokensResponse = await axios.get(
-        `${API_SERVICE_URL}/tokens?size=1`,
+        `${config.apiServiceUrl}/tokens?size=1`,
       );
       const response = await axios.get(
-        `${API_SERVICE_URL}/tokens/${tokensResponse.data[0].identifier}/transfers?receiver=${ALICE_ADDRESS}`,
+        `${config.apiServiceUrl}/tokens/${tokensResponse.data[0].identifier}/transfers?receiver=${ALICE_ADDRESS}`,
       );
       const transfers = response.data;
       expect(response.status).toBe(200);
@@ -345,10 +324,10 @@ describe('Tokens e2e tests with chain simulator', () => {
       const sender =
         'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u';
       const tokensResponse = await axios.get(
-        `${API_SERVICE_URL}/tokens?size=1`,
+        `${config.apiServiceUrl}/tokens?size=1`,
       );
       const response = await axios.get(
-        `${API_SERVICE_URL}/tokens/${tokensResponse.data[0].identifier}/transfers?receiver=${sender}`,
+        `${config.apiServiceUrl}/tokens/${tokensResponse.data[0].identifier}/transfers?receiver=${sender}`,
       );
       const transfers = response.data;
       expect(response.status).toBe(200);
@@ -359,11 +338,11 @@ describe('Tokens e2e tests with chain simulator', () => {
 
     it('should return filtered transfers by status', async () => {
       const tokensResponse = await axios.get(
-        `${API_SERVICE_URL}/tokens?size=1`,
+        `${config.apiServiceUrl}/tokens?size=1`,
       );
       const status = 'success';
       const response = await axios.get(
-        `${API_SERVICE_URL}/tokens/${tokensResponse.data[0].identifier}/transfers?status=${status}`,
+        `${config.apiServiceUrl}/tokens/${tokensResponse.data[0].identifier}/transfers?status=${status}`,
       );
       const transfers = response.data;
       expect(response.status).toBe(200);
@@ -374,10 +353,10 @@ describe('Tokens e2e tests with chain simulator', () => {
 
     it('should support pagination and return 1 transfer', async () => {
       const tokensResponse = await axios.get(
-        `${API_SERVICE_URL}/tokens?size=1`,
+        `${config.apiServiceUrl}/tokens?size=1`,
       );
       const response = await axios.get(
-        `${API_SERVICE_URL}/tokens/${tokensResponse.data[0].identifier}/transfers?size=1`,
+        `${config.apiServiceUrl}/tokens/${tokensResponse.data[0].identifier}/transfers?size=1`,
       );
       const transfers = response.data;
       expect(response.status).toBe(200);
@@ -389,7 +368,7 @@ describe('Tokens e2e tests with chain simulator', () => {
       const nonExistentTokenIdentifier = 'NON_EXISTENT_TOKEN';
       try {
         await axios.get(
-          `${API_SERVICE_URL}/tokens/${nonExistentTokenIdentifier}/transfers`,
+          `${config.apiServiceUrl}/tokens/${nonExistentTokenIdentifier}/transfers`,
         );
       } catch (error: any) {
         expect(error.response.status).toBe(400);
@@ -400,10 +379,10 @@ describe('Tokens e2e tests with chain simulator', () => {
   describe('GET /tokens/:identifier/transfers/count', () => {
     it('should return status code 200 and the total count of transfers', async () => {
       const tokensResponse = await axios.get(
-        `${API_SERVICE_URL}/tokens?size=1`,
+        `${config.apiServiceUrl}/tokens?size=1`,
       );
       const response = await axios.get(
-        `${API_SERVICE_URL}/tokens/${tokensResponse.data[0].identifier}/transfers/count`,
+        `${config.apiServiceUrl}/tokens/${tokensResponse.data[0].identifier}/transfers/count`,
       );
       const count = response.data;
       expect(response.status).toBe(200);
@@ -414,10 +393,10 @@ describe('Tokens e2e tests with chain simulator', () => {
       const sender =
         'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u';
       const tokensResponse = await axios.get(
-        `${API_SERVICE_URL}/tokens?size=1`,
+        `${config.apiServiceUrl}/tokens?size=1`,
       );
       const response = await axios.get(
-        `${API_SERVICE_URL}/tokens/${tokensResponse.data[0].identifier}/transfers/count?sender=${sender}`,
+        `${config.apiServiceUrl}/tokens/${tokensResponse.data[0].identifier}/transfers/count?sender=${sender}`,
       );
       const count = response.data;
       expect(response.status).toBe(200);
@@ -426,10 +405,10 @@ describe('Tokens e2e tests with chain simulator', () => {
 
     it('should return filtered transfer count by receiver', async () => {
       const tokensResponse = await axios.get(
-        `${API_SERVICE_URL}/tokens?size=1`,
+        `${config.apiServiceUrl}/tokens?size=1`,
       );
       const response = await axios.get(
-        `${API_SERVICE_URL}/tokens/${tokensResponse.data[0].identifier}/transfers/count?receiver=${ALICE_ADDRESS}`,
+        `${config.apiServiceUrl}/tokens/${tokensResponse.data[0].identifier}/transfers/count?receiver=${ALICE_ADDRESS}`,
       );
       const count = response.data;
       expect(response.status).toBe(200);
@@ -438,11 +417,11 @@ describe('Tokens e2e tests with chain simulator', () => {
 
     it('should return filtered transfer count by status', async () => {
       const tokensResponse = await axios.get(
-        `${API_SERVICE_URL}/tokens?size=1`,
+        `${config.apiServiceUrl}/tokens?size=1`,
       );
       const status = 'success';
       const response = await axios.get(
-        `${API_SERVICE_URL}/tokens/${tokensResponse.data[0].identifier}/transfers/count?status=${status}`,
+        `${config.apiServiceUrl}/tokens/${tokensResponse.data[0].identifier}/transfers/count?status=${status}`,
       );
       const count = response.data;
       expect(response.status).toBe(200);
@@ -453,7 +432,7 @@ describe('Tokens e2e tests with chain simulator', () => {
       const nonExistentTokenIdentifier = 'NON_EXISTENT_TOKEN';
       try {
         await axios.get(
-          `${API_SERVICE_URL}/tokens/${nonExistentTokenIdentifier}/transfers/count`,
+          `${config.apiServiceUrl}/tokens/${nonExistentTokenIdentifier}/transfers/count`,
         );
       } catch (error: any) {
         expect(error.response.status).toBe(400);
