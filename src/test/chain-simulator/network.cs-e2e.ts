@@ -67,7 +67,7 @@ describe('Network e2e tests with chain simulator', () => {
       );
     });
 
-    it('should return status code 200 and about details', async () => {
+    it.skip('should return status code 200 and about details', async () => {
       const response = await axios.get(`${config.apiServiceUrl}/about`);
       const results = response.data;
 

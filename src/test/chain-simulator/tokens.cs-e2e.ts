@@ -1,7 +1,7 @@
 import axios from 'axios';
-import { ChainSimulatorUtils } from './utils/test.utils';
-import { fundAddress, issueMultipleEsdts } from './chain.simulator.operations';
 import { config } from './config/env.config';
+import { ChainSimulatorUtils } from './utils/test.utils';
+import { fundAddress, issueMultipleEsdts } from './utils/chain.simulator.operations';
 
 const ALICE_ADDRESS =
   'erd1qyu5wthldzr8wx5c9ucg8kjagg0jfs53s8nr3zpz3hypefsdd8ssycr6th';
