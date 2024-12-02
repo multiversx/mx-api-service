@@ -2,6 +2,7 @@ import axios from 'axios';
 import { config } from './config/env.config';
 import { ChainSimulatorUtils } from './utils/test.utils';
 import { fundAddress, issueMultipleNftsCollections } from './utils/chain.simulator.operations';
+import { NftType } from 'src/common/indexer/entities/nft.type';
 
 describe('Collections e2e tests with chain simulator', () => {
   beforeAll(async () => {
@@ -67,6 +68,85 @@ describe('Collections e2e tests with chain simulator', () => {
       const timestamps = response.data.map((collection: any) => collection.timestamp);
       const sortedTimestamps = [...timestamps].sort((a, b) => b - a);
       expect(timestamps).toEqual(sortedTimestamps);
+    });
+  });
+
+  describe('GET /collections/count', () => {
+    it('should return status code 200', async () => {
+      const response = await axios.get(`${config.apiServiceUrl}/collections/count`);
+
+      expect(response.status).toBe(200);
+    });
+
+    it('should return total count of collections', async () => {
+      const response = await axios.get(`${config.apiServiceUrl}/collections/count`);
+
+      expect(response.status).toBe(200);
+      expect(response.data).toBeGreaterThanOrEqual(0);
+      expect(typeof response.data).toBe('number');
+    });
+
+    it('should return filtered collection count by search term', async () => {
+      const searchTerm = 'NFTCollection1';
+      const response = await axios.get(`${config.apiServiceUrl}/collections/count?search=${searchTerm}`);
+
+      expect(response.status).toBe(200);
+      expect(response.data).toBeGreaterThanOrEqual(0);
+      expect(typeof response.data).toBe('number');
+    });
+
+    it('should return filtered collection count by type', async () => {
+      const type = NftType.NonFungibleESDT;
+      const response = await axios.get(`${config.apiServiceUrl}/collections/count?type=${type}`);
+
+      expect(response.status).toBe(200);
+      expect(response.data).toBeGreaterThanOrEqual(0);
+      expect(typeof response.data).toBe('number');
+    });
+  });
+
+  describe('GET /collections/c (alternative endpoint)', () => {
+    it('should return status code 200', async () => {
+      const response = await axios.get(`${config.apiServiceUrl}/collections/c`);
+
+      expect(response.status).toBe(200);
+    });
+
+    it('should return total count of collections', async () => {
+      const response = await axios.get(`${config.apiServiceUrl}/collections/c`);
+
+      expect(response.status).toBe(200);
+      expect(response.data).toBeGreaterThanOrEqual(0);
+      expect(typeof response.data).toBe('number');
+    });
+
+    it('should return filtered collection count by search term', async () => {
+      const searchTerm = 'NFTCollection1';
+      const response = await axios.get(`${config.apiServiceUrl}/collections/c?search=${searchTerm}`);
+
+      expect(response.status).toBe(200);
+      expect(response.data).toBeGreaterThanOrEqual(0);
+      expect(typeof response.data).toBe('number');
+    });
+
+    it('should return filtered collection count by type', async () => {
+      const type = NftType.NonFungibleESDT;
+      const response = await axios.get(`${config.apiServiceUrl}/collections/c?type=${type}`);
+
+      expect(response.status).toBe(200);
+      expect(response.data).toBeGreaterThanOrEqual(0);
+      expect(typeof response.data).toBe('number');
+    });
+  });
+
+  describe('GET /collections/:collection', () => {
+    it('should return status code 200', async () => {
+      const collectionsIdentifiers = await axios.get(`${config.apiServiceUrl}/collections?size=1`);
+      const collection = collectionsIdentifiers.data.map((collection: any) => collection.collection);
+      const response = await axios.get(`${config.apiServiceUrl}/collections/${collection[0]}`);
+
+      expect(response.status).toBe(200);
+      expect(response.data.collection).toBe(collection[0]);
     });
   });
 });
