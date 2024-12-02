@@ -48,6 +48,7 @@ import { NftSubType } from "../nfts/entities/nft.sub.type";
 export class TokenService {
   private readonly logger = new OriginLogger(TokenService.name);
   private readonly nftSubTypes = [NftSubType.DynamicNonFungibleESDT, NftSubType.DynamicMetaESDT, NftSubType.NonFungibleESDTv2, NftSubType.DynamicSemiFungibleESDT];
+  private readonly egldIdentifierInMultiTransfer = 'EGLD-000000';
 
   constructor(
     private readonly esdtService: EsdtService,
@@ -126,7 +127,8 @@ export class TokenService {
       this.applyTickerFromAssets(token);
     }
 
-    return tokens.map(item => ApiUtils.mergeObjects(new TokenDetailed(), item));
+    const allTokens = tokens.map(item => ApiUtils.mergeObjects(new TokenDetailed(), item));
+    return allTokens.filter(t => t.identifier !== this.egldIdentifierInMultiTransfer);
   }
 
   applyTickerFromAssets(token: Token) {
@@ -838,12 +840,11 @@ export class TokenService {
       token => token.transactions ?? 0,
     );
 
-    const egldIdentifier = 'EGLD-000000';
     const egldToken = new TokenDetailed({
-      identifier: egldIdentifier,
+      identifier: this.egldIdentifierInMultiTransfer,
       name: 'EGLD',
       type: TokenType.FungibleESDT,
-      assets: await this.assetsService.getTokenAssets(egldIdentifier),
+      assets: await this.assetsService.getTokenAssets(this.egldIdentifierInMultiTransfer),
       decimals: 18,
       isLowLiquidity: false,
       price: await this.dataApiService.getEgldPrice(),

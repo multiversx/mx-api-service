@@ -341,7 +341,7 @@ export class TokenController {
   }
 
   @Get("/tokens/:identifier/roles/:address")
-  @ApiOperation({ summary: 'Token address roles', description: 'Returns roles detalils for a specific address of a given token', deprecated: true })
+  @ApiOperation({ summary: 'Token address roles', description: 'Returns roles details for a specific address of a given token', deprecated: true })
   @ApiOkResponse({ type: TokenRoles })
   @ApiNotFoundResponse({ description: 'Token not found' })
   async getTokenRolesForAddress(
@@ -435,7 +435,7 @@ export class TokenController {
   }
 
   @Get("/tokens/:identifier/transfers/count")
-  @ApiOperation({ summary: 'Account transfer count', description: 'Return total count of tranfers triggerred by a user account (type = Transaction), as well as transfers triggerred by smart contracts (type = SmartContractResult)' })
+  @ApiOperation({ summary: 'Account transfer count', description: 'Return total count of transfers triggerred by a user account (type = Transaction), as well as transfers triggerred by smart contracts (type = SmartContractResult)' })
   @ApiOkResponse({ type: Number })
   @ApiQuery({ name: 'sender', description: 'Address of the transfer sender', required: false })
   @ApiQuery({ name: 'receiver', description: 'Search by multiple receiver addresses, comma-separated', required: false })
