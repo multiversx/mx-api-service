@@ -118,10 +118,10 @@ export async function sendTransaction(
     const tx = {
       sender: args.sender,
       receiver: args.receiver,
-      nonce: nonce,
+      nonce: nonce + (args.nonceOffset ?? 0),
       value: args.value,
       gasPrice: 1000000000,
-      gasLimit: args.gasLimit,
+      gasLimit: args.gasLimit ?? (50_000 + 1_500 * args.dataField.length),
       data: Buffer.from(args.dataField).toString('base64'),
       signature: 'a'.repeat(128),
       chainID: 'chain',
@@ -133,6 +133,16 @@ export async function sendTransaction(
       tx,
     );
     const txHash = txHashResponse.data.data.txHash;
+    if (args.nonceOffset) {
+      // when a nonce offset is present, it means that the transaction won't be executed in real time, so we should early exit
+      console.log(`Broadcasted tx hash ${txHash} of sender ${args.sender} with nonce ${tx.nonce}`);
+      console.log(JSON.stringify(tx));
+      await axios.post(
+        `${args.chainSimulatorUrl}/simulator/generate-blocks/1`,
+      );
+      return txHash;
+    }
+
     await axios.post(
       `${args.chainSimulatorUrl}/simulator/generate-blocks-until-transaction-processed/${txHash}`,
     );
@@ -172,6 +182,7 @@ export class SendTransactionArgs {
   dataField: string = '';
   value?: string = '0';
   gasLimit?: number = 100_000_000;
+  nonceOffset?: number = 0; // useful for scenarios where a higher nonce is desired
 
   constructor(options: Partial<SendTransactionArgs> = {}) {
     Object.assign(this, options);
