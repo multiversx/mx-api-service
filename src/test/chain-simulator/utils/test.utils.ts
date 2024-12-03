@@ -10,7 +10,13 @@ export class ChainSimulatorUtils {
       let retries = 0;
       while (retries < maxRetries) {
         try {
-          // Generate blocks until target epoch
+          const networkStatus = await axios.get(`${config.chainSimulatorUrl}/network/status/4294967295`);
+          const currentEpoch = networkStatus.data.erd_epoch_number;
+
+          if (currentEpoch >= targetEpoch) {
+            return true;
+          }
+
           await axios.post(
             `${config.chainSimulatorUrl}/simulator/generate-blocks-until-epoch-reached/${targetEpoch}`,
             {},
@@ -18,9 +24,9 @@ export class ChainSimulatorUtils {
 
           // Verify we reached the target epoch
           const stats = await axios.get(`${config.apiServiceUrl}/stats`);
-          const currentEpoch = stats.data.epoch;
+          const newEpoch = stats.data.epoch;
 
-          if (currentEpoch >= targetEpoch) {
+          if (newEpoch >= targetEpoch) {
             return true;
           }
 
