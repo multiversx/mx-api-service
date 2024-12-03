@@ -97,12 +97,12 @@ export class KeybaseService {
 
   async confirmIdentityProfiles(): Promise<void> {
     const identities = await this.getDistinctIdentities();
-    const keybaseIdentities = identities.map(identity => this.getProfile(identity));
+    const keybaseIdentities = await Promise.all(identities.map(identity => this.getProfile(identity)));
     await this.cachingService.set(CacheInfo.IdentityProfilesKeybases.key, keybaseIdentities, CacheInfo.IdentityProfilesKeybases.ttl);
   }
 
-  getProfile(identity: string): KeybaseIdentity | null {
-    const keybaseLocal = this.getProfileFromAssets(identity);
+  async getProfile(identity: string): Promise<KeybaseIdentity | null> {
+    const keybaseLocal = await this.getProfileFromAssets(identity);
     if (keybaseLocal) {
       this.logger.log(`Got profile details from assets for identity '${identity}'`);
       return keybaseLocal;
@@ -116,8 +116,8 @@ export class KeybaseService {
     return identityInfo;
   }
 
-  getProfileFromAssets(identity: string): KeybaseIdentity | null {
-    const info = this.readIdentityInfo(identity);
+  async getProfileFromAssets(identity: string): Promise<KeybaseIdentity | null> {
+    const info = await this.readIdentityInfo(identity);
     if (!info) {
       return null;
     }

@@ -28,6 +28,9 @@
     "start:mainnet": "npm run copy-mainnet-config & nest start",
     "start:mainnet:watch": "npm run copy-mainnet-config & nest start --watch",
     "start:mainnet:debug": "npm run copy-mainnet-config & nest start --watch --debug",
+    "start:mainnet:e2e": "npm run copy-e2e-mainnet-config & nest start",
+    "start:mainnet:e2e:watch": "npm run copy-e2e-mainnet-config & nest start --watch",
+    "start:mainnet:e2e:debug": "npm run copy-e2e-mainnet-config & nest start --watch --debug",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\"",
     "lint:fix": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "test": "npm run copy-mainnet-config & nest build & jest",
@@ -41,6 +44,7 @@
     "test:e2e:local": "npm run test:e2e:warm & npm run test:e2e",
     "test:api": "jest --config ./src/test/jest-api.json --runInBand --detectOpenHandles --forceExit",
     "test:graph": "jest --config ./src/test/jest-graph-spec.json --runInBand --detectOpenHandles --forceExit",
+    "test:cs-e2e": "jest --config ./src/test/jest-chain-simulator.json --runInBand --detectOpenHandles --forceExit",
     "init": "run-script-os",
     "copy-mainnet-config": "run-script-os",
     "copy-testnet-config": "run-script-os",
@@ -73,7 +77,9 @@
     "copy-e2e-mainnet-config:nix": "cp ./config/config.e2e.mainnet.yaml ./config/config.yaml",
     "copy-e2e-mocked-mainnet-config:nix": "cp ./config/config.e2e-mocked.mainnet.yaml ./config/config.yaml",
     "copy-e2e-mainnet-config:windows": "copy .\\config\\config.e2e.mainnet.yaml .\\config\\config.yaml",
-    "copy-e2e-mocked-mainnet-config:windows": "copy .\\config\\config.e2e-mocked.mainnet.yaml .\\config\\config.yaml"
+    "copy-e2e-mocked-mainnet-config:windows": "copy .\\config\\config.e2e-mocked.mainnet.yaml .\\config\\config.yaml",
+    "start-chain-simulator": "docker compose -f \"src/test/chain-simulator/docker/docker-compose.yml\" up -d --build",
+    "stop-chain-simulator": "docker compose -f \"src/test/chain-simulator/docker/docker-compose.yml\" down"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.54.0",
