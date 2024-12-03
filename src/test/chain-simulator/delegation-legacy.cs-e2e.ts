@@ -13,7 +13,7 @@ describe.skip('Delegation legacy e2e tests with chain simulator', () => {
   });
 
   describe('GET /delegations-legacy', () => {
-    it('should return status code 200 and a delegation legacy  object details', async () => {
+    it('should return status code 200 and a delegation legacy object details', async () => {
       const response = await axios.get(`${config.apiServiceUrl}/delegation-legacy`);
       const properties = Object.keys(response.data);
 
