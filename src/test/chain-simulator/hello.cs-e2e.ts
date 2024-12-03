@@ -1,0 +1,18 @@
+import axios from "axios";
+import { ChainSimulatorUtils } from "./utils/test.utils";
+import { config } from "./config/env.config";
+
+describe('Hello endpoint e2e tests with chain simulator', () => {
+  beforeAll(async () => {
+    await ChainSimulatorUtils.waitForEpoch(2);
+  });
+
+  describe('GET /hello', () => {
+    it('should return status code 200 and a hello message', async () => {
+      const response = await axios.get(`${config.apiServiceUrl}/hello`);
+
+      expect(response.status).toBe(200);
+      expect(response.data).toBe('hello');
+    });
+  });
+});
