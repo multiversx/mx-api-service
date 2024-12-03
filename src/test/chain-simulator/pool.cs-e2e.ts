@@ -19,10 +19,10 @@ describe('Pool e2e tests with chain simulator', () => {
   describe('GET /pool', () => {
     it('should return status code 200', async () => {
       const response = await axios.get(`${config.apiServiceUrl}/pool`);
-      const tokens = response.data;
+      const txsPool = response.data;
 
       expect(response.status).toBe(200);
-      expect(tokens).toBeInstanceOf(Array);
+      expect(txsPool).toBeInstanceOf(Array);
     });
 
     it('should return the transaction pool', async () => {
@@ -56,23 +56,23 @@ describe('Pool e2e tests with chain simulator', () => {
       const response = await axios.get(
         `${config.apiServiceUrl}/pool/${poolResponse.data[0].txHash}`,
       );
-      const token = response.data;
+      const tx = response.data;
 
       expect(response.status).toBe(200);
-      expect(token).toHaveProperty(
+      expect(tx).toHaveProperty(
         'txHash',
         poolResponse.data[0].txHash,
       );
     });
 
-    it('should return status code 400 for non-existent tx hash', async () => {
+    it('should return status code 404 for non-existent tx hash', async () => {
       const nonExistentTxHash = '0000000000000000000000000000000000000000000000000000000000000000';
       try {
         await axios.get(
           `${config.apiServiceUrl}/pool/${nonExistentTxHash}`,
         );
       } catch (error: any) {
-        expect(error.response.status).toBe(400);
+        expect(error.response.status).toBe(404);
       }
     });
   });
