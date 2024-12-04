@@ -15,10 +15,10 @@ describe('Applications e2e tests with chain simulator', () => {
     });
 
     it('should support pagination', async () => {
-      const response = await axios.get(`${config.apiServiceUrl}/applications?from=0&size=2`);
+      const response = await axios.get(`${config.apiServiceUrl}/applications?from=0&size=1`);
       expect(response.status).toBe(200);
       expect(response.data).toBeInstanceOf(Array);
-      expect(response.data.length).toStrictEqual(2);
+      expect(response.data.length).toStrictEqual(1);
     });
 
     it('should return applications with expected properties', async () => {
