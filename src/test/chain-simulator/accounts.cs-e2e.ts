@@ -16,11 +16,12 @@ describe('Accounts e2e tests with chain simulator', () => {
     });
 
     it('should filter accounts by owner address', async () => {
-      const response = await axios.get(`${config.apiServiceUrl}/accounts?ownerAddress=${config.aliceAddress}`);
+      const address = 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u';
+      const response = await axios.get(`${config.apiServiceUrl}/accounts?ownerAddress=${address}`);
       expect(response.status).toBe(200);
 
       for (const account of response.data) {
-        expect(account.ownerAddress).toBe(config.aliceAddress);
+        expect(account.ownerAddress).toBe(address);
       }
     });
 
@@ -663,4 +664,3 @@ describe('Accounts e2e tests with chain simulator', () => {
     });
   });
 });
-
