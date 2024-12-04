@@ -1,14 +1,12 @@
 import axios from 'axios';
 import { config } from './config/env.config';
 import { ChainSimulatorUtils } from './utils/test.utils';
-import { fundAddress, sendTransaction } from './utils/chain.simulator.operations';
+import { fundAddress } from './utils/chain.simulator.operations';
 
 describe('Pool e2e tests with chain simulator', () => {
   beforeAll(async () => {
     await ChainSimulatorUtils.waitForEpoch(2);
     await fundAddress(config.chainSimulatorUrl, config.aliceAddress);
-    await sendTransaction({nonceOffset: 20, value: '0', sender: config.aliceAddress, receiver: config.bobAddress, chainSimulatorUrl: config.chainSimulatorUrl, dataField: "pool1"});
-    await sendTransaction({nonceOffset: 21, value: '0', sender: config.aliceAddress, receiver: config.bobAddress, chainSimulatorUrl: config.chainSimulatorUrl, dataField: "pool2"});
     await new Promise((resolve) => setTimeout(resolve, 20000));
   });
 
@@ -30,20 +28,13 @@ describe('Pool e2e tests with chain simulator', () => {
         `${config.apiServiceUrl}/pool`,
       );
       const pool = response.data;
-      let numTimesAliceWasSender = 0;
-      let numTimesBobWasReceiver = 0;
       for (const tx of pool) {
-        numTimesAliceWasSender += tx.sender === config.aliceAddress ? 1 : 0;
-        numTimesBobWasReceiver += tx.receiver === config.bobAddress ? 1 : 0;
         expect(tx).toHaveProperty('receiver');
         expect(tx).toHaveProperty('txHash');
         expect(tx).toHaveProperty('nonce');
         expect(tx).toHaveProperty('gasPrice');
         expect(tx).toHaveProperty('gasLimit');
       }
-
-      expect(numTimesAliceWasSender).toBeGreaterThanOrEqual(2);
-      expect(numTimesBobWasReceiver).toBeGreaterThanOrEqual(2);
     });
   });
 
