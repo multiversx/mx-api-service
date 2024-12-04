@@ -33,7 +33,6 @@ describe('Identities e2e tests with chain simulator', () => {
         'stake',
         'topUp',
         'stakePercent',
-        'apr',
         'rank',
       ];
 
