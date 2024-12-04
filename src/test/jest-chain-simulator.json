@@ -6,6 +6,7 @@
   ],
   "rootDir": "../../",
   "testEnvironment": "node",
+  "testSequencer": "<rootDir>/src/test/chain-simulator/utils/testSequencer.js",
   "testRegex": ".cs-e2e.ts$",
   "transform": {
     "^.+\\.(t|j)s$": "ts-jest"

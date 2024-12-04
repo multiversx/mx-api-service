@@ -11,7 +11,7 @@ describe('Tokens e2e tests with chain simulator', () => {
     await ChainSimulatorUtils.waitForEpoch(2);
     await fundAddress(config.chainSimulatorUrl, config.aliceAddress);
     await issueMultipleEsdts(config.chainSimulatorUrl, config.aliceAddress, 5);
-    await new Promise((resolve) => setTimeout(resolve, 20000));
+    await new Promise((resolve) => setTimeout(resolve, 50000));
   });
 
   beforeEach(() => {
