@@ -625,5 +625,42 @@ describe('Accounts e2e tests with chain simulator', () => {
       }
     });
   });
+
+  //TODO: Add tests for the collections endpoint when CS is updated
+  describe.skip('GET /accounts/:address/collections', () => {
+    it('should return NFT collections for a specific address', async () => {
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/collections`);
+      expect(response.status).toBe(200);
+      expect(response.data.length).toBeGreaterThanOrEqual(1);
+    });
+  });
+
+  describe('GET /accounts/:address/stake', () => {
+    it('should return stake details for a specific address', async () => {
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/stake`);
+      expect(response.status).toBe(200);
+      expect(response.data).toHaveProperty('totalStaked');
+    });
+  });
+
+  describe('GET /accounts/:address/delegation-legacy', () => {
+    it('should return delegation details for a specific address', async () => {
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/delegation-legacy`);
+      expect(response.status).toBe(200);
+
+      const expectedProperties = [
+        'userWithdrawOnlyStake',
+        'userWaitingStake',
+        'userActiveStake',
+        'userUnstakedStake',
+        'userDeferredPaymentStake',
+        'claimableRewards',
+      ];
+
+      for (const property of expectedProperties) {
+        expect(response.data).toHaveProperty(property);
+      }
+    });
+  });
 });
 
