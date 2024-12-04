@@ -919,4 +919,272 @@ describe('Accounts e2e tests with chain simulator', () => {
       expect(response.data.length).toStrictEqual(1);
     });
   });
+
+  describe('GET /accounts/:address/transactions', () => {
+    const properties = [
+      'txHash',
+      'gasLimit',
+      'gasPrice',
+      'gasUsed',
+      'miniBlockHash',
+      'nonce',
+      'receiver',
+      'receiverShard',
+      'round',
+      'sender',
+      'senderShard',
+      'signature',
+      'status',
+      'value',
+      'fee',
+      'timestamp',
+      'data',
+      'function',
+      'action',
+    ];
+    it('should return transactions for a given address', async () => {
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transactions`);
+      expect(response.status).toBe(200);
+      expect(response.data.length).toBeGreaterThanOrEqual(1);
+    });
+
+    it('should return paginated results with from and size parameters', async () => {
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transactions?from=0&size=2`);
+      expect(response.status).toBe(200);
+      expect(response.data.length).toBeLessThanOrEqual(2);
+    });
+
+    it('should return transactions with properties', async () => {
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transactions`);
+
+      for (const property of properties) {
+        expect(response.data[0]).toHaveProperty(property);
+      }
+    });
+
+    it('should return transactions with sender parameter', async () => {
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transactions?sender=${config.aliceAddress}`);
+      expect(response.status).toBe(200);
+      expect(response.data.length).toBeGreaterThanOrEqual(1);
+    });
+
+    it('should return transactions with receiver parameter', async () => {
+      const receiverAddress = 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u';
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transactions?receiver=${receiverAddress}`);
+      expect(response.status).toBe(200);
+      expect(response.data.length).toBeGreaterThanOrEqual(1);
+    });
+
+    it('should return transactions with senderShard parameter', async () => {
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transactions?senderShard=1`);
+      expect(response.status).toBe(200);
+      expect(response.data.length).toBeGreaterThanOrEqual(1);
+    });
+
+    it('should return transactions with receiverShard parameter', async () => {
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transactions?receiverShard=4294967295`);
+      expect(response.status).toBe(200);
+      expect(response.data.length).toBeGreaterThanOrEqual(1);
+    });
+
+    it('should return transactions with miniBlockHash parameter', async () => {
+      const miniBlockHashes = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transactions?size=1`);
+      const miniBlockHash = miniBlockHashes.data[0].miniBlockHash;
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transactions?miniBlockHash=${miniBlockHash}`);
+      expect(response.status).toBe(200);
+      expect(response.data.length).toBeGreaterThanOrEqual(1);
+    });
+
+    it('should return transactions with hashes parameter', async () => {
+      const hashes = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transactions?size=2`);
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transactions?hashes=${hashes.data[0].txHash},${hashes.data[1].txHash}`);
+      expect(response.status).toBe(200);
+      expect(response.data.length).toBeGreaterThanOrEqual(2);
+    });
+
+    it('should return transactions with status parameter', async () => {
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transactions?status=success`);
+      expect(response.status).toBe(200);
+      expect(response.data.length).toBeGreaterThanOrEqual(1);
+    });
+
+    it('should return transactions with function parameter', async () => {
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transactions?function=issue`);
+      expect(response.status).toBe(200);
+      expect(response.data.length).toBeGreaterThanOrEqual(1);
+    });
+
+    it('should return transactions with round parameter', async () => {
+      const rounds = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transactions?size=1`);
+      const round = rounds.data[0].round;
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transactions?round=${round}`);
+      expect(response.status).toBe(200);
+      expect(response.data.length).toBeGreaterThanOrEqual(1);
+    });
+
+    it('should return transactions with logs when withLogs parameter is used', async () => {
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transactions?size=50&withLogs=true`);
+      expect(response.status).toBe(200);
+      expect(response.data.length).toBeGreaterThanOrEqual(1);
+    });
+
+    it('should return transactions with scResults when withScResults parameter is used', async () => {
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transactions?size=50&withScResults=true`);
+      expect(response.status).toBe(200);
+      expect(response.data.length).toBeGreaterThanOrEqual(1);
+
+      const hasScResults = response.data.some((transaction: any) => transaction.results && transaction.results.length > 0);
+      expect(hasScResults).toBe(true);
+    });
+
+    it('should return transactions with operations when withOperations parameter is used', async () => {
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transactions?size=50&withOperations=true`);
+      expect(response.status).toBe(200);
+      expect(response.data.length).toBeGreaterThanOrEqual(1);
+
+      const hasOperations = response.data.some((transaction: any) => transaction.operations && transaction.operations.length > 0);
+      expect(hasOperations).toBe(true);
+    });
+
+    it('should return transactions with block info when withBlockInfo parameter is used', async () => {
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transactions?size=50&withBlockInfo=true`);
+      expect(response.status).toBe(200);
+      expect(response.data.length).toBeGreaterThanOrEqual(1);
+
+      const hasBlockInfo = response.data.some((transaction: any) =>
+        transaction.senderBlockHash &&
+        transaction.senderBlockNonce &&
+        transaction.receiverBlockHash &&
+        transaction.receiverBlockNonce
+      );
+      expect(hasBlockInfo).toBe(true);
+    });
+
+    it('should return 400 Bad Request when size > 50 with withScResults parameter', async () => {
+      try {
+        await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transactions?size=51&withScResults=true`);
+        fail('Should have thrown error');
+      } catch (error: any) {
+        expect(error.response.status).toBe(400);
+      }
+    });
+
+    it('should return 400 Bad Request when size > 50 with withOperations parameter', async () => {
+      try {
+        await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transactions?size=51&withOperations=true`);
+        fail('Should have thrown error');
+      } catch (error: any) {
+        expect(error.response.status).toBe(400);
+      }
+    });
+
+    it('should return 400 Bad Request when size > 50 with withLogs parameter', async () => {
+      try {
+        await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transactions?size=51&withLogs=true`);
+        fail('Should have thrown error');
+      } catch (error: any) {
+        expect(error.response.status).toBe(400);
+      }
+    });
+
+    it('should return 400 Bad Request when size > 50 with withBlockInfo parameter', async () => {
+      try {
+        await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transactions?size=51&withBlockInfo=true`);
+        fail('Should have thrown error');
+      } catch (error: any) {
+        expect(error.response.status).toBe(400);
+      }
+    });
+
+    it('should return transactions with senderOrReceiver parameter', async () => {
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transactions?senderOrReceiver=${config.aliceAddress}`);
+      expect(response.status).toBe(200);
+      expect(response.data.length).toBeGreaterThanOrEqual(1);
+    });
+  });
+
+  describe('GET /accounts/:address/transactions/count', () => {
+    it('should return the total number of transactions for a given address', async () => {
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transactions/count`);
+      expect(response.status).toBe(200);
+      expect(typeof response.data).toBe('number');
+      expect(response.data).toBeGreaterThanOrEqual(1);
+    });
+
+    it('should return the total number of transactions for a given address with sender parameter', async () => {
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transactions/count?sender=${config.aliceAddress}`);
+      expect(response.status).toBe(200);
+      expect(typeof response.data).toBe('number');
+      expect(response.data).toBeGreaterThanOrEqual(1);
+    });
+
+    it('should return the total number of transactions for a given address with receiver parameter', async () => {
+      const receiverAddress = 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u';
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transactions/count?receiver=${receiverAddress}`);
+      expect(response.status).toBe(200);
+      expect(typeof response.data).toBe('number');
+      expect(response.data).toBeGreaterThanOrEqual(1);
+    });
+
+    it('should return the total number of transactions for a given address with senderShard parameter', async () => {
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transactions/count?senderShard=1`);
+      expect(response.status).toBe(200);
+      expect(typeof response.data).toBe('number');
+      expect(response.data).toBeGreaterThanOrEqual(1);
+    });
+
+    it('should return the total number of transactions for a given address with receiverShard parameter', async () => {
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transactions/count?receiverShard=4294967295`);
+      expect(response.status).toBe(200);
+      expect(typeof response.data).toBe('number');
+      expect(response.data).toBeGreaterThanOrEqual(1);
+    });
+
+    it('should return the total number of transactions for a given address with miniBlockHash parameter', async () => {
+      const miniBlockHashes = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transactions?size=1`);
+      const miniBlockHash = miniBlockHashes.data[0].miniBlockHash;
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transactions/count?miniBlockHash=${miniBlockHash}`);
+      expect(response.status).toBe(200);
+      expect(typeof response.data).toBe('number');
+      expect(response.data).toStrictEqual(1);
+    });
+
+    it('should return the total number of transactions for a given address with hashes parameter', async () => {
+      const hashes = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transactions?size=2`);
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transactions/count?hashes=${hashes.data[0].txHash},${hashes.data[1].txHash}`);
+      expect(response.status).toBe(200);
+      expect(typeof response.data).toBe('number');
+      expect(response.data).toStrictEqual(2);
+    });
+
+    it('should return the total number of transactions for a given address with status parameter', async () => {
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transactions/count?status=success`);
+      expect(response.status).toBe(200);
+      expect(typeof response.data).toBe('number');
+      expect(response.data).toBeGreaterThanOrEqual(1);
+    });
+
+    it('should return the total number of transactions for a given address with function parameter', async () => {
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transactions/count?function=issue`);
+      expect(response.status).toBe(200);
+      expect(typeof response.data).toBe('number');
+      expect(response.data).toBeGreaterThanOrEqual(1);
+    });
+
+    it('should return the total number of transactions for a given address with round parameter', async () => {
+      const rounds = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transactions?size=1`);
+      const round = rounds.data[0].round;
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transactions/count?round=${round}`);
+      expect(response.status).toBe(200);
+      expect(typeof response.data).toBe('number');
+      expect(response.data).toStrictEqual(1);
+    });
+
+    it('should return the total number of transactions for a given address with senderOrReceiver parameter', async () => {
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transactions/count?senderOrReceiver=${config.aliceAddress}`);
+      expect(response.status).toBe(200);
+      expect(typeof response.data).toBe('number');
+      expect(response.data).toBeGreaterThanOrEqual(1);
+    });
+  });
 });
