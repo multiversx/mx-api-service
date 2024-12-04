@@ -43,9 +43,8 @@ describe('Accounts e2e tests with chain simulator', () => {
       }
     });
 
-    // TODO: to be implemented in Chain Simulator
-    it.skip('should return accounts with transaction count when requested', async () => {
-      const response = await axios.get(`${config.apiServiceUrl}/accounts?withTxCount=true`);
+    it('should return accounts with transaction count when requested', async () => {
+      const response = await axios.get(`${config.apiServiceUrl}/accounts?withTxCount=true&withDeployInfo=true`);
       expect(response.status).toBe(200);
       for (const account of response.data) {
         expect(account).toHaveProperty('txCount');
