@@ -370,7 +370,7 @@ describe('Tokens e2e tests with chain simulator', () => {
     });
   });
 
-  describe('GET /tokens/:identifier/transfers/count', () => {
+  describe('GET /tokens/:identifier/transfers/count ', () => {
     it('should return status code 200 and the total count of transfers', async () => {
       const tokensResponse = await axios.get(
         `${config.apiServiceUrl}/tokens?size=1`,
