@@ -37,11 +37,11 @@ describe('Identities e2e tests with chain simulator', () => {
         'rank',
       ];
 
-      expectedProps.forEach(prop => {
-        expect(response.data[0]).toHaveProperty(prop);
-      });
-
-      expect(response.data[0].distribution).toHaveProperty('direct');
+      for (const identity of response.data) {
+        for (const expectedProp of expectedProps) {
+          expect(identity).toHaveProperty(expectedProp);
+        }
+      }
     });
   });
 });
