@@ -6,7 +6,6 @@ describe('Accounts e2e tests with chain simulator', () => {
   beforeAll(async () => {
     await ChainSimulatorUtils.waitForEpoch(2);
     await new Promise((resolve) => setTimeout(resolve, 20000));
-
   });
 
   describe('GET /accounts with query parameters', () => {
