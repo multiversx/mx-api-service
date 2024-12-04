@@ -1,7 +1,7 @@
-import Sequencer from '@jest/test-sequencer';
+const Sequencer = require('@jest/test-sequencer').default;
 
 class CustomSequencer extends Sequencer {
-  sort(tests: Array<any>): Array<any> {
+  sort(tests) {
     const orderPath = [
       'tokens.cs-e2e.ts',
       'collections.cs-e2e.ts',
@@ -29,4 +29,4 @@ class CustomSequencer extends Sequencer {
   }
 }
 
-export default CustomSequencer;
+module.exports = CustomSequencer; 
