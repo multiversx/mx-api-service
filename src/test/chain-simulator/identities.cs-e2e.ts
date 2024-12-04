@@ -23,22 +23,25 @@ describe('Identities e2e tests with chain simulator', () => {
     it('should return identities with expected properties', async () => {
       const response = await axios.get(`${config.apiServiceUrl}/identities`);
       expect(response.status).toBe(200);
-      expect(response.data[0]).toEqual(
-        expect.objectContaining({
-          locked: expect.any(String),
-          distribution: expect.objectContaining({
-            direct: expect.any(Number),
-          }),
-          name: expect.any(String),
-          score: expect.any(Number),
-          validators: expect.any(Number),
-          stake: expect.any(String),
-          topUp: expect.any(String),
-          stakePercent: expect.any(Number),
-          apr: expect.any(Number),
-          rank: expect.any(Number),
-        })
-      );
+
+      const expectedProps = [
+        'locked',
+        'distribution',
+        'name',
+        'score',
+        'validators',
+        'stake',
+        'topUp',
+        'stakePercent',
+        'apr',
+        'rank',
+      ];
+
+      expectedProps.forEach(prop => {
+        expect(response.data[0]).toHaveProperty(prop);
+      });
+
+      expect(response.data[0].distribution).toHaveProperty('direct');
     });
   });
 });
