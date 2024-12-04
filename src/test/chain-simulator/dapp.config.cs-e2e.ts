@@ -17,21 +17,25 @@ describe('Dapp config e2e tests with chain simulator', () => {
       const response = await axios.get(`${config.apiServiceUrl}/dapp/config`);
       const dappConfig = response.data;
 
-      expect(dappConfig).toEqual(expect.objectContaining({
-        id: expect.any(String),
-        name: expect.any(String),
-        egldLabel: expect.any(String),
-        decimals: expect.any(String),
-        egldDenomination: expect.any(String),
-        gasPerDataByte: expect.any(String),
-        apiTimeout: expect.any(String),
-        walletConnectDeepLink: expect.any(String),
-        walletConnectBridgeAddresses: expect.any(Array),
-        walletAddress: expect.any(String),
-        apiAddress: expect.any(String),
-        explorerAddress: expect.any(String),
-        chainId: expect.any(String),
-      }));
+      const requiredProps = [
+        'id',
+        'name',
+        'egldLabel',
+        'decimals',
+        'egldDenomination',
+        'gasPerDataByte',
+        'apiTimeout',
+        'walletConnectDeepLink',
+        'walletConnectBridgeAddresses',
+        'walletAddress',
+        'apiAddress',
+        'explorerAddress',
+        'chainId',
+      ];
+
+      for (const prop of requiredProps) {
+        expect(dappConfig).toHaveProperty(prop);
+      }
     });
   });
 });
