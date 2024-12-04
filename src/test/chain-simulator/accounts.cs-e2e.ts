@@ -5,6 +5,7 @@ import { ChainSimulatorUtils } from "./utils/test.utils";
 describe('Accounts e2e tests with chain simulator', () => {
   beforeAll(async () => {
     await ChainSimulatorUtils.waitForEpoch(2);
+    await ChainSimulatorUtils.deployPingPongSc(config.aliceAddress);
     await new Promise((resolve) => setTimeout(resolve, 20000));
   });
 
@@ -661,6 +662,261 @@ describe('Accounts e2e tests with chain simulator', () => {
       for (const property of expectedProperties) {
         expect(response.data).toHaveProperty(property);
       }
+    });
+  });
+
+  describe('GET /accounts/:address/deploys', () => {
+    it('should return deploys details for a given address', async () => {
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/deploys`);
+      expect(response.status).toBe(200);
+      expect(response.data.length).toBeGreaterThanOrEqual(1);
+
+      const properties = [
+        'address',
+        'deployTxHash',
+        'timestamp',
+      ];
+
+      for (const property of properties) {
+        expect(response.data[0]).toHaveProperty(property);
+      }
+    });
+
+    it('should return paginated results with from and size parameters', async () => {
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/deploys?from=0&size=1`);
+      expect(response.status).toBe(200);
+      expect(response.data.length).toBeLessThanOrEqual(1);
+    });
+  });
+
+  describe('GET /accounts/:address/deploys/count', () => {
+    it('should return the total number of deploys for a given address', async () => {
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/deploys/count`);
+      expect(response.status).toBe(200);
+      expect(response.data).toBeGreaterThanOrEqual(1);
+    });
+  });
+
+  describe('GET /accounts/:address/deploys/c alternative', () => {
+    it('should return the total number of deploys for a given address', async () => {
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/deploys/c`);
+      expect(response.status).toBe(200);
+      expect(response.data).toBeGreaterThanOrEqual(1);
+    });
+  });
+
+  describe('GET /accounts/:address/contracts', () => {
+    it('should return contracts details for a given address', async () => {
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/contracts`);
+      expect(response.status).toBe(200);
+      expect(response.data.length).toBeGreaterThanOrEqual(1);
+    });
+
+    it('should return paginated results with from and size parameters', async () => {
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/contracts?from=0&size=1`);
+      expect(response.status).toBe(200);
+      expect(response.data.length).toBeLessThanOrEqual(1);
+    });
+  });
+
+  describe('GET /accounts/:address/contracts/count', () => {
+    it('should return the total number of contracts for a given address', async () => {
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/contracts/count`);
+      expect(response.status).toBe(200);
+      expect(response.data).toBeGreaterThanOrEqual(1);
+    });
+  });
+
+  describe('GET /accounts/:address/contracts/c alternative', () => {
+    it('should return the total number of contracts for a given address', async () => {
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/contracts/c`);
+      expect(response.status).toBe(200);
+      expect(response.data).toBeGreaterThanOrEqual(1);
+    });
+  });
+
+  describe('GET /accounts/:address/results', () => {
+    it('should return smart contract results for a given address', async () => {
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/results`);
+      expect(response.status).toBe(200);
+      expect(response.data.length).toBeGreaterThanOrEqual(1);
+    });
+
+    it('should return paginated results with from and size parameters', async () => {
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/results?from=0&size=1`);
+      expect(response.status).toBe(200);
+      expect(response.data.length).toBeLessThanOrEqual(1);
+    });
+
+    it('should return results with properties', async () => {
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/results`);
+      const properties = [
+        'hash',
+        'timestamp',
+        'nonce',
+        'gasLimit',
+        'gasPrice',
+        'value',
+        'sender',
+        'receiver',
+        'data',
+        'prevTxHash',
+        'originalTxHash',
+        'callType',
+        'miniBlockHash',
+        'status',
+      ];
+
+      for (const property of properties) {
+        expect(response.data[0]).toHaveProperty(property);
+      }
+    });
+  });
+
+  describe('GET /accounts/:address/results/count', () => {
+    it('should return the total number of smart contract results for a given address', async () => {
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/results/count`);
+      expect(response.status).toBe(200);
+      expect(typeof response.data).toBe('number');
+      expect(response.data).toBeGreaterThanOrEqual(1);
+    });
+  });
+
+  describe('GET /accounts/:address/results/:scHash', () => {
+    it('should return smart contract result for a given address and scHash', async () => {
+      const results = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/results`);
+      const scHash = results.data[0].hash;
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/results/${scHash}`);
+      const properties = [
+        'hash',
+        'timestamp',
+        'nonce',
+        'gasLimit',
+        'gasPrice',
+        'value',
+        'sender',
+        'receiver',
+        'data',
+        'prevTxHash',
+        'originalTxHash',
+        'callType',
+        'miniBlockHash',
+        'status',
+      ];
+
+      for (const property of properties) {
+        expect(response.data).toHaveProperty(property);
+      }
+      expect(response.status).toBe(200);
+    });
+  });
+
+  describe('GET /accounts/:address/history', () => {
+    it('should return account history for a given address', async () => {
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/history`);
+      expect(response.status).toBe(200);
+      expect(response.data.length).toBeGreaterThanOrEqual(1);
+
+      const properties = [
+        'address',
+        'balance',
+        'timestamp',
+        'isSender',
+      ];
+
+      for (const property of properties) {
+        expect(response.data[0]).toHaveProperty(property);
+      }
+    });
+
+    it('should return paginated results with from and size parameters', async () => {
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/history?from=0&size=1`);
+      expect(response.status).toBe(200);
+      expect(response.data.length).toBeLessThanOrEqual(1);
+    });
+  });
+
+  describe('GET /accounts/:address/history/count', () => {
+    it('should return the total number of account history for a given address', async () => {
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/history/count`);
+      expect(response.status).toBe(200);
+      expect(typeof response.data).toBe('number');
+      expect(response.data).toBeGreaterThanOrEqual(1);
+    });
+  });
+
+  describe('GET /accounts/:address/history/:tokenIdentifier/count', () => {
+    it('should return the total number of account history for a given address and token identifier', async () => {
+      const tokens = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/tokens`);
+      const tokenIdentifier = tokens.data[0].identifier;
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/history/${tokenIdentifier}/count`);
+      expect(response.status).toBe(200);
+      expect(typeof response.data).toBe('number');
+      expect(response.data).toBeGreaterThanOrEqual(1);
+    });
+  });
+
+  describe('GET /accounts/:address/esdthistory', () => {
+    it('should return account esdt history for a given address', async () => {
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/esdthistory`);
+      expect(response.status).toBe(200);
+      expect(response.data.length).toBeGreaterThanOrEqual(1);
+    });
+
+    it('should return paginated results with from and size parameters', async () => {
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/esdthistory?from=0&size=1`);
+      expect(response.status).toBe(200);
+      expect(response.data.length).toBeLessThanOrEqual(1);
+    });
+
+    it('should return results with properties', async () => {
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/esdthistory`);
+      const properties = [
+        'address',
+        'balance',
+        'timestamp',
+        'token',
+      ];
+
+      for (const property of properties) {
+        expect(response.data[0]).toHaveProperty(property);
+      }
+    });
+
+    it('should return results with token parameter', async () => {
+      const tokens = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/tokens`);
+      const tokenIdentifier = tokens.data[0].identifier;
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/esdthistory?token=${tokenIdentifier}`);
+      expect(response.status).toBe(200);
+      expect(response.data.length).toStrictEqual(1);
+    });
+  });
+
+  describe('GET /accounts/:address/esdthistory/count', () => {
+    it('should return the total number of account esdt history for a given address', async () => {
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/esdthistory/count`);
+      expect(response.status).toBe(200);
+      expect(typeof response.data).toBe('number');
+      expect(response.data).toBeGreaterThanOrEqual(1);
+    });
+
+    it('should return the total number of account esdt history for a given address and token identifier', async () => {
+      const tokens = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/tokens`);
+      const tokenIdentifier = tokens.data[0].identifier;
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/esdthistory/count?token=${tokenIdentifier}`);
+      expect(response.status).toBe(200);
+      expect(typeof response.data).toBe('number');
+      expect(response.data).toStrictEqual(1);
+    });
+  });
+
+  describe('GET /accounts/:address/history/:tokenIdentifier', () => {
+    it('should return account history for a given address and token identifier', async () => {
+      const tokens = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/tokens`);
+      const tokenIdentifier = tokens.data[0].identifier;
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/history/${tokenIdentifier}`);
+      expect(response.status).toBe(200);
+      expect(response.data.length).toStrictEqual(1);
     });
   });
 });

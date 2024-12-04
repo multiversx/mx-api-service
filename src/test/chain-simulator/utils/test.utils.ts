@@ -1,6 +1,9 @@
 import axios from 'axios';
 import { config } from '../config/env.config';
-
+import { DeployScArgs } from './chain.simulator.operations';
+import { fundAddress } from './chain.simulator.operations';
+import { deploySc } from './chain.simulator.operations';
+import fs from 'fs';
 export class ChainSimulatorUtils {
   static async waitForEpoch(targetEpoch: number = 2, maxRetries: number = 50) {
     try {
@@ -68,5 +71,29 @@ export class ChainSimulatorUtils {
     }
 
     return false;
+  }
+
+  public static async deployPingPongSc(deployer: string): Promise<string> {
+    try {
+      const contractCodeRaw = fs.readFileSync('./src/test/chain-simulator/utils/contracts/ping-pong-egld.wasm');
+      const contractArgs = [
+        '0de0b6b3a7640000',
+      ];
+
+      await fundAddress(config.chainSimulatorUrl, deployer);
+
+      const scAddress = await deploySc(new DeployScArgs({
+        chainSimulatorUrl: config.chainSimulatorUrl,
+        deployer: deployer,
+        contractCodeRaw: contractCodeRaw,
+        hexArguments: contractArgs,
+      }));
+
+      console.log(`Deployed ping pong SC. Address: ${scAddress} with deployer: ${deployer}`);
+      return scAddress;
+    } catch (error) {
+      console.error('Error deploying ping pong SC:', error);
+      throw error;
+    }
   }
 }
