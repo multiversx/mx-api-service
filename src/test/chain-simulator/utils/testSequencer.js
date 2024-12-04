@@ -6,7 +6,7 @@ class CustomSequencer extends Sequencer {
       'tokens.cs-e2e.ts',
       'collections.cs-e2e.ts',
       'network.cs-e2e.ts',
-      'hellow.cs-e2e.ts',
+      'hello.cs-e2e.ts',
       'blocks.cs-e2e.ts',
       'delegation.cs-e2e.ts',
       'delegation-legacy.cs-e2e.ts',
@@ -21,9 +21,15 @@ class CustomSequencer extends Sequencer {
       const indexA = orderPath.findIndex(path => testA.path.includes(path));
       const indexB = orderPath.findIndex(path => testB.path.includes(path));
 
-      if (indexA !== -1 && indexB !== -1) return indexA - indexB;
-      if (indexA !== -1) return -1;
-      if (indexB !== -1) return 1;
+      if (indexA !== -1 && indexB !== -1) {
+        return indexA - indexB;
+      }
+      if (indexA !== -1) {
+        return -1;
+      }
+      if (indexB !== -1) {
+        return 1;
+      }
       return 0;
     });
   }
