@@ -50,6 +50,7 @@ describe('Events e2e tests with chain simulator', () => {
       expect(response.status).toBe(200);
       expect(response.data).toBeInstanceOf(Array);
       expect(response.data.length).toBeGreaterThan(1);
+      expect(response.data[0].address).toBe(config.aliceAddress);
     });
 
     it('should support filtering by identifier', async () => {
@@ -57,6 +58,7 @@ describe('Events e2e tests with chain simulator', () => {
       expect(response.status).toBe(200);
       expect(response.data).toBeInstanceOf(Array);
       expect(response.data.length).toBeGreaterThan(1);
+      expect(response.data[0].identifier).toBe('completedTxEvent');
     });
 
     // TODO: fix this
