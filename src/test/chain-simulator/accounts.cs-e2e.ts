@@ -1230,7 +1230,7 @@ describe('Accounts e2e tests with chain simulator', () => {
       expect(response.data.length).toBeGreaterThanOrEqual(1);
 
       for (const transfer of response.data) {
-        expect(transfer.token).toBe(token);
+        expect(transfer.identifier).toBe(token);
       }
     });
 
