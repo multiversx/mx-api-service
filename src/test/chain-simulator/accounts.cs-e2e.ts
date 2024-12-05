@@ -1230,7 +1230,7 @@ describe('Accounts e2e tests with chain simulator', () => {
       expect(response.data.length).toBeGreaterThanOrEqual(1);
 
       for (const transfer of response.data) {
-        expect(transfer.identifier).toBe(token);
+        expect(transfer.function).toBe('ESDTTransfer');
       }
     });
 
@@ -1303,7 +1303,7 @@ describe('Accounts e2e tests with chain simulator', () => {
       expect(response.data.length).toBeGreaterThanOrEqual(1);
 
       for (const transfer of response.data) {
-        expect(transfer.sender).toBe(config.aliceAddress);
+        expect(transfer.receiver).toBe('erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u');
       }
     });
 
