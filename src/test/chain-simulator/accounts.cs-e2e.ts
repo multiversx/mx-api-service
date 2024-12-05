@@ -1205,6 +1205,10 @@ describe('Accounts e2e tests with chain simulator', () => {
       const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transfers?sender=${config.aliceAddress}`);
       expect(response.status).toBe(200);
       expect(response.data.length).toBeGreaterThanOrEqual(1);
+
+      for (const transfer of response.data) {
+        expect(transfer.sender).toBe(config.aliceAddress);
+      }
     });
 
     it('should return transfers with receiver parameter', async () => {
@@ -1212,6 +1216,10 @@ describe('Accounts e2e tests with chain simulator', () => {
       const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transfers?receiver=${receiverAddress}`);
       expect(response.status).toBe(200);
       expect(response.data.length).toBeGreaterThanOrEqual(1);
+
+      for (const transfer of response.data) {
+        expect(transfer.receiver).toBe(receiverAddress);
+      }
     });
 
     it('should return transfers with token parameter', async () => {
@@ -1220,18 +1228,30 @@ describe('Accounts e2e tests with chain simulator', () => {
       const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transfers?token=${token}`);
       expect(response.status).toBe(200);
       expect(response.data.length).toBeGreaterThanOrEqual(1);
+
+      for (const transfer of response.data) {
+        expect(transfer.token).toBe(token);
+      }
     });
 
     it('should return transfers with senderShard parameter', async () => {
       const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transfers?senderShard=1`);
       expect(response.status).toBe(200);
       expect(response.data.length).toBeGreaterThanOrEqual(1);
+
+      for (const transfer of response.data) {
+        expect(transfer.senderShard).toBe(1);
+      }
     });
 
     it('should return transfers with receiverShard parameter', async () => {
       const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transfers?receiverShard=4294967295`);
       expect(response.status).toBe(200);
       expect(response.data.length).toBeGreaterThanOrEqual(1);
+
+      for (const transfer of response.data) {
+        expect(transfer.receiverShard).toBe(4294967295);
+      }
     });
 
     it('should return transfers with miniBlockHash parameter', async () => {
@@ -1240,6 +1260,10 @@ describe('Accounts e2e tests with chain simulator', () => {
       const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transfers?miniBlockHash=${miniBlockHash}`);
       expect(response.status).toBe(200);
       expect(response.data.length).toStrictEqual(1);
+
+      for (const transfer of response.data) {
+        expect(transfer.miniBlockHash).toBe(miniBlockHash);
+      }
     });
 
     it('should return transfers with hashes parameter', async () => {
@@ -1247,12 +1271,20 @@ describe('Accounts e2e tests with chain simulator', () => {
       const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transfers?hashes=${hashes.data[0].txHash},${hashes.data[1].txHash}`);
       expect(response.status).toBe(200);
       expect(response.data.length).toStrictEqual(2);
+
+      for (const transfer of response.data) {
+        expect(hashes.data).toContain(transfer.txHash);
+      }
     });
 
     it('should return transfers with status parameter', async () => {
       const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transfers?status=success`);
       expect(response.status).toBe(200);
       expect(response.data.length).toBeGreaterThanOrEqual(1);
+
+      for (const transfer of response.data) {
+        expect(transfer.status).toBe('success');
+      }
     });
 
     it('should return transfers with round parameter', async () => {
@@ -1261,12 +1293,20 @@ describe('Accounts e2e tests with chain simulator', () => {
       const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transfers?round=${round}`);
       expect(response.status).toBe(200);
       expect(response.data.length).toStrictEqual(1);
+
+      for (const transfer of response.data) {
+        expect(transfer.round).toBe(round);
+      }
     });
 
     it('should return transfers with senderOrReceiver parameter', async () => {
       const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transfers?senderOrReceiver=${config.aliceAddress}`);
       expect(response.status).toBe(200);
       expect(response.data.length).toBeGreaterThanOrEqual(1);
+
+      for (const transfer of response.data) {
+        expect(transfer.senderOrReceiver).toBe(config.aliceAddress);
+      }
     });
 
     it('should return transfers with withLogs parameter', async () => {
