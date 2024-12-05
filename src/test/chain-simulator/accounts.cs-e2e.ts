@@ -1271,10 +1271,8 @@ describe('Accounts e2e tests with chain simulator', () => {
       const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transfers?hashes=${hashes.data[0].txHash},${hashes.data[1].txHash}`);
       expect(response.status).toBe(200);
       expect(response.data.length).toStrictEqual(2);
-
-      for (const transfer of response.data) {
-        expect(hashes.data).toContain(transfer.txHash);
-      }
+      expect(response.data).toContainEqual(hashes.data[0]);
+      expect(response.data).toContainEqual(hashes.data[1]);
     });
 
     it('should return transfers with status parameter', async () => {
@@ -1305,7 +1303,7 @@ describe('Accounts e2e tests with chain simulator', () => {
       expect(response.data.length).toBeGreaterThanOrEqual(1);
 
       for (const transfer of response.data) {
-        expect(transfer.senderOrReceiver).toBe(config.aliceAddress);
+        expect(transfer.sender).toBe(config.aliceAddress);
       }
     });
 
