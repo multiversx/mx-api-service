@@ -23,6 +23,10 @@ describe('Transactions e2e tests with chain simulator', () => {
       const response = await axios.get(`${config.apiServiceUrl}/transactions?sender=${config.aliceAddress}`);
       expect(response.status).toBe(200);
       expect(response.data.length).toBeGreaterThan(1);
+
+      for (const transaction of response.data) {
+        expect(transaction.sender).toBe(config.aliceAddress);
+      }
     });
 
     it('should return transactions with receiver filter applied', async () => {
@@ -30,6 +34,10 @@ describe('Transactions e2e tests with chain simulator', () => {
       const response = await axios.get(`${config.apiServiceUrl}/transactions?receiver=${receiver}`);
       expect(response.status).toBe(200);
       expect(response.data.length).toBeGreaterThan(1);
+
+      for (const transaction of response.data) {
+        expect(transaction.receiver).toBe(receiver);
+      }
     });
 
     it('should return transactions with senderShard filter applied', async () => {
@@ -37,6 +45,10 @@ describe('Transactions e2e tests with chain simulator', () => {
       const response = await axios.get(`${config.apiServiceUrl}/transactions?senderShard=${senderShard}`);
       expect(response.status).toBe(200);
       expect(response.data.length).toBeGreaterThanOrEqual(1);
+
+      for (const transaction of response.data) {
+        expect(transaction.senderShard).toBe(senderShard);
+      }
     });
 
     it('should return transactions with receiverShard filter applied', async () => {
@@ -44,6 +56,10 @@ describe('Transactions e2e tests with chain simulator', () => {
       const response = await axios.get(`${config.apiServiceUrl}/transactions?receiverShard=${receiverShard}`);
       expect(response.status).toBe(200);
       expect(response.data.length).toBeGreaterThanOrEqual(1);
+
+      for (const transaction of response.data) {
+        expect(transaction.receiverShard).toBe(receiverShard);
+      }
     });
 
     it('should return transactions with miniBlockHash filter applied', async () => {
@@ -52,6 +68,10 @@ describe('Transactions e2e tests with chain simulator', () => {
       const response = await axios.get(`${config.apiServiceUrl}/transactions?miniBlockHash=${miniBlockHash}`);
       expect(response.status).toBe(200);
       expect(response.data.length).toStrictEqual(1);
+
+      for (const transaction of response.data) {
+        expect(transaction.miniBlockHash).toBe(miniBlockHash);
+      }
     });
 
     it('should return transactions with hashes filter applied', async () => {
@@ -60,18 +80,30 @@ describe('Transactions e2e tests with chain simulator', () => {
       const response = await axios.get(`${config.apiServiceUrl}/transactions?hashes=${hashes}`);
       expect(response.status).toBe(200);
       expect(response.data.length).toStrictEqual(2);
+
+      for (const transaction of response.data) {
+        expect(hashes).toContain(transaction.txHash);
+      }
     });
 
     it('should return transactions with status filter applied', async () => {
       const response = await axios.get(`${config.apiServiceUrl}/transactions?status=success`);
       expect(response.status).toBe(200);
       expect(response.data.length).toBeGreaterThanOrEqual(1);
+
+      for (const transaction of response.data) {
+        expect(transaction.status).toBe('success');
+      }
     });
 
     it('should return transactions with function filter applied', async () => {
       const response = await axios.get(`${config.apiServiceUrl}/transactions?function=scDeploy`);
       expect(response.status).toBe(200);
       expect(response.data.length).toBeGreaterThanOrEqual(1);
+
+      for (const transaction of response.data) {
+        expect(transaction.function).toBe('scDeploy');
+      }
     });
 
     it('should return transactions with round filter applied', async () => {
@@ -80,6 +112,10 @@ describe('Transactions e2e tests with chain simulator', () => {
       const response = await axios.get(`${config.apiServiceUrl}/transactions?round=${round}`);
       expect(response.status).toBe(200);
       expect(response.data.length).toBeGreaterThanOrEqual(1);
+
+      for (const transaction of response.data) {
+        expect(transaction.round).toBe(round);
+      }
     });
 
     it('should return transactions with withLogs filter applied and logs present', async () => {
