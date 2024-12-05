@@ -31,9 +31,9 @@ features:
     hitsThreshold: 100
     ttl: 12
   transactionPool:
-    enabled: false
+    enabled: true
   transactionPoolWarmer:
-    enabled: false
+    enabled: true
     cronExpression: '*/5 * * * * *'
     ttlInSeconds: 60
   updateCollectionExtraDetails:
