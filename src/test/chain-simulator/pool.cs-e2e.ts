@@ -28,16 +28,21 @@ describe('Pool e2e tests with chain simulator', () => {
         `${config.apiServiceUrl}/pool`,
       );
       const pool = response.data;
+      const expectedProperties = [
+        'txHash',
+        'nonce',
+        'receiver',
+        'gasPrice',
+        'gasLimit',
+      ];
+
       for (const tx of pool) {
-        expect(tx).toHaveProperty('receiver');
-        expect(tx).toHaveProperty('txHash');
-        expect(tx).toHaveProperty('nonce');
-        expect(tx).toHaveProperty('gasPrice');
-        expect(tx).toHaveProperty('gasLimit');
+        for (const property of expectedProperties) {
+          expect(tx).toHaveProperty(property);
+        }
       }
     });
   });
-
 
   describe('GET /pool/:txhash', () => {
     it('should return status code 200 and the transaction', async () => {
