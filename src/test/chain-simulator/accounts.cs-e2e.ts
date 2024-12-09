@@ -1325,21 +1325,34 @@ describe('Accounts e2e tests with chain simulator', () => {
     it('should return transfers with withLogs parameter', async () => {
       const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transfers?withLogs=true`);
       expect(response.status).toBe(200);
+
       const hasLogs = response.data.some((transfer: any) => transfer.logs);
       expect(hasLogs).toBe(true);
 
-      const transferWithLogs = response.data.find((transfer: any) => transfer.logs);
-      expect(transferWithLogs.logs).toHaveProperty('events');
-      expect(transferWithLogs.logs).toHaveProperty('address');
-      expect(Array.isArray(transferWithLogs.logs.events)).toBe(true);
+      const hasValidLogs = response.data.some((transfer: any) => {
+        if (!transfer.logs) {
+          return false;
+        }
 
-      if (transferWithLogs.logs.events && transferWithLogs.logs.events.length > 0) {
-        const event = transferWithLogs.logs.events[0];
-        expect(event).toHaveProperty('address');
-        expect(event).toHaveProperty('identifier');
-        expect(event).toHaveProperty('topics');
-        expect(event).toHaveProperty('data');
-      }
+        const hasRequiredLogProps = ['events', 'address'].every(prop =>
+          Object.prototype.hasOwnProperty.call(transfer.logs, prop)
+        );
+        if (!hasRequiredLogProps) {
+          return false;
+        }
+
+        if (!Array.isArray(transfer.logs.events)) {
+          return false;
+        }
+
+        return transfer.logs.events.some((event: any) =>
+          ['address', 'identifier', 'topics', 'data'].every(prop =>
+            Object.prototype.hasOwnProperty.call(event, prop)
+          )
+        );
+      });
+
+      expect(hasValidLogs).toBe(true);
     });
 
     it('should return transfers with withOperations parameter', async () => {
