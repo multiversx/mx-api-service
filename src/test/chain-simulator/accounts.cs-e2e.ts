@@ -294,7 +294,10 @@ describe('Accounts e2e tests with chain simulator', () => {
     it('should return results by owner parameter', async () => {
       const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/roles/collections?owner=${config.aliceAddress}`);
       expect(response.status).toBe(200);
-      expect(response.data).toBeGreaterThanOrEqual(1);
+
+      for (const collection of response.data) {
+        expect(collection.owner).toBe(config.aliceAddress);
+      }
     });
 
     it('should return results by canCreate parameter', async () => {
