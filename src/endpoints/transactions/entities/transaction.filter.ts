@@ -29,4 +29,5 @@ export class TransactionFilter {
   isRelayed?: boolean;
   relayer?: string;
   round?: number;
+  withRelayedScresults?: boolean;
 }

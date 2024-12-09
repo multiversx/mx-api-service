@@ -49,6 +49,7 @@ export class TransactionController {
   @ApiQuery({ name: 'withBlockInfo', description: 'Returns sender / receiver block details', required: false, type: Boolean })
   @ApiQuery({ name: 'isRelayed', description: 'Returns relayed transactions details', required: false, type: Boolean })
   @ApiQuery({ name: 'withActionTransferValue', description: 'Returns value in USD and EGLD for transferred tokens within the action attribute', required: false })
+  @ApiQuery({ name: 'withRelayedScresults', description: 'If set to true, will include smart contract results that resemble relayed transactions', required: false, type: Boolean })
   getTransactions(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
@@ -75,6 +76,7 @@ export class TransactionController {
     @Query('withBlockInfo', new ParseBoolPipe) withBlockInfo?: boolean,
     @Query('isRelayed', new ParseBoolPipe) isRelayed?: boolean,
     @Query('withActionTransferValue', ParseBoolPipe) withActionTransferValue?: boolean,
+    @Query('withRelayedScresults', ParseBoolPipe) withRelayedScresults?: boolean,
   ) {
     const options = TransactionQueryOptions.applyDefaultOptions(size, { withScResults, withOperations, withLogs, withScamInfo, withUsername, withBlockInfo, withActionTransferValue });
 
@@ -94,6 +96,7 @@ export class TransactionController {
       order,
       isRelayed,
       round,
+      withRelayedScresults: withRelayedScresults,
     }),
       new QueryPagination({ from, size }),
       options,
@@ -119,6 +122,7 @@ export class TransactionController {
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
   @ApiQuery({ name: 'round', description: 'Round number', required: false })
   @ApiQuery({ name: 'isRelayed', description: 'Returns relayed transactions details', required: false, type: Boolean })
+  @ApiQuery({ name: 'withRelayedScresults', description: 'If set to true, will include smart contract results that resemble relayed transactions', required: false, type: Boolean })
   getTransactionCount(
     @Query('sender', ParseAddressAndMetachainPipe) sender?: string,
     @Query('receiver', ParseAddressArrayPipe) receiver?: string[],
@@ -134,6 +138,7 @@ export class TransactionController {
     @Query('after', ParseIntPipe) after?: number,
     @Query('round', ParseIntPipe) round?: number,
     @Query('isRelayed', new ParseBoolPipe) isRelayed?: boolean,
+    @Query('withRelayedScresults', ParseBoolPipe) withRelayedScresults?: boolean,
   ): Promise<number> {
     return this.transactionService.getTransactionCount(new TransactionFilter({
       sender,
@@ -150,6 +155,7 @@ export class TransactionController {
       condition,
       isRelayed,
       round,
+      withRelayedScresults: withRelayedScresults,
     }));
   }
 
@@ -170,6 +176,7 @@ export class TransactionController {
     @Query('after', ParseIntPipe) after?: number,
     @Query('round', new ParseIntPipe) round?: number,
     @Query('isRelayed', new ParseBoolPipe) isRelayed?: boolean,
+    @Query('withRelayedScresults', ParseBoolPipe) withRelayedScresults?: boolean,
   ): Promise<number> {
     return this.transactionService.getTransactionCount(new TransactionFilter({
       sender,
@@ -186,6 +193,7 @@ export class TransactionController {
       condition,
       isRelayed,
       round,
+      withRelayedScresults: withRelayedScresults,
     }));
   }
 
@@ -249,4 +257,3 @@ export class TransactionController {
     return await this.transactionService.decodeTransaction(transaction);
   }
 }
-
