@@ -103,5 +103,16 @@ describe('Events e2e tests with chain simulator', () => {
       expect(response.status).toBe(200);
       expect(response.data).toBeGreaterThan(1);
     });
+
+    it('should return different results for different from/size parameters', async () => {
+      const firstSet = await axios.get(`${config.apiServiceUrl}/events?from=0&size=2`);
+      const secondSet = await axios.get(`${config.apiServiceUrl}/events?from=1&size=2`);
+
+      expect(firstSet.status).toBe(200);
+      expect(secondSet.status).toBe(200);
+
+      expect(firstSet.data).not.toEqual(secondSet.data);
+      expect(firstSet.data[1]).toEqual(secondSet.data[0]);
+    });
   });
 });
