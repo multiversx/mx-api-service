@@ -269,7 +269,7 @@ export class TokenController {
       round,
       withRelayedScresults,
     });
-    transactionFilter.validate(size);
+    TransactionFilter.validate(transactionFilter, size);
 
     return await this.transactionService.getTransactions(
       transactionFilter,

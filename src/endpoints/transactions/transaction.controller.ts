@@ -98,7 +98,7 @@ export class TransactionController {
       round,
       withRelayedScresults: withRelayedScresults,
     });
-    transactionFilter.validate(size);
+    TransactionFilter.validate(transactionFilter, size);
     return this.transactionService.getTransactions(transactionFilter,
       new QueryPagination({ from, size }),
       options,

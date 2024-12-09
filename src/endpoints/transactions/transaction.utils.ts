@@ -28,7 +28,6 @@ export class TransactionUtils {
       sender: filter.sender,
       receivers: filter.receivers,
       condition: QueryConditionOptions.should,
-      validate: (_size: number) => {},
     };
 
     return JSON.stringify(filter) === JSON.stringify(filterToCompareWith);
