@@ -294,6 +294,7 @@ describe('Accounts e2e tests with chain simulator', () => {
     it('should return results by owner parameter', async () => {
       const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/roles/collections?owner=${config.aliceAddress}`);
       expect(response.status).toBe(200);
+      expect(response.data).toBeGreaterThanOrEqual(1);
     });
 
     it('should return results by canCreate parameter', async () => {
@@ -1190,9 +1191,12 @@ describe('Accounts e2e tests with chain simulator', () => {
 
   describe('GET /accounts/:address/transfers', () => {
     it('should return transfers for a given address', async () => {
+      const countResponse = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transfers/count`);
+      const expectedCount = countResponse.data;
+
       const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transfers`);
       expect(response.status).toBe(200);
-      expect(response.data.length).toBeGreaterThanOrEqual(1);
+      expect(response.data.length).toStrictEqual(expectedCount);
     });
 
     it('should support pagination', async () => {
@@ -1202,9 +1206,12 @@ describe('Accounts e2e tests with chain simulator', () => {
     });
 
     it('should return transfers with sender parameter', async () => {
+      const countResponse = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transfers/count?sender=${config.aliceAddress}`);
+      const expectedCount = countResponse.data;
+
       const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transfers?sender=${config.aliceAddress}`);
       expect(response.status).toBe(200);
-      expect(response.data.length).toBeGreaterThanOrEqual(1);
+      expect(response.data.length).toStrictEqual(expectedCount);
 
       for (const transfer of response.data) {
         expect(transfer.sender).toBe(config.aliceAddress);
@@ -1225,11 +1232,16 @@ describe('Accounts e2e tests with chain simulator', () => {
     it('should return transfers with token parameter', async () => {
       const accountTokens = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/tokens`);
       const token = accountTokens.data[0].identifier;
+
+      const countResponse = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transfers/count?token=${token}`);
+      const expectedCount = countResponse.data;
+
       const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transfers?token=${token}`);
       expect(response.status).toBe(200);
-      expect(response.data.length).toBeGreaterThanOrEqual(1);
+      expect(response.data.length).toStrictEqual(expectedCount);
 
       for (const transfer of response.data) {
+        expect(transfer.identifier).toBe(token);
         expect(transfer.function).toBe('ESDTTransfer');
       }
     });
@@ -1303,7 +1315,7 @@ describe('Accounts e2e tests with chain simulator', () => {
       expect(response.data.length).toBeGreaterThanOrEqual(1);
 
       for (const transfer of response.data) {
-        expect(transfer.receiver).toBe('erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u');
+        expect(transfer.sender === config.aliceAddress || transfer.receiver === config.aliceAddress).toBe(true);
       }
     });
 
@@ -1312,6 +1324,17 @@ describe('Accounts e2e tests with chain simulator', () => {
       expect(response.status).toBe(200);
       const hasLogs = response.data.some((transfer: any) => transfer.logs);
       expect(hasLogs).toBe(true);
+
+      const transferWithLogs = response.data.find((transfer: any) => transfer.logs);
+      expect(transferWithLogs.logs).toHaveProperty('events');
+      expect(transferWithLogs.logs).toHaveProperty('address');
+      expect(Array.isArray(transferWithLogs.logs.events)).toBe(true);
+
+      const event = transferWithLogs.logs.events[0];
+      expect(event).toHaveProperty('address');
+      expect(event).toHaveProperty('identifier');
+      expect(event).toHaveProperty('topics');
+      expect(event).toHaveProperty('data');
     });
 
     it('should return transfers with withOperations parameter', async () => {
@@ -1320,6 +1343,19 @@ describe('Accounts e2e tests with chain simulator', () => {
       expect(response.data.length).toBeGreaterThanOrEqual(1);
       const hasOperations = response.data.some((transfer: any) => transfer.operations && transfer.operations.length > 0);
       expect(hasOperations).toBe(true);
+
+      const transferWithOperations = response.data.find((transfer: any) => transfer.operations && transfer.operations.length > 0);
+      expect(transferWithOperations.operations).toBeDefined();
+      expect(Array.isArray(transferWithOperations.operations)).toBe(true);
+      expect(transferWithOperations.operations.length).toBeGreaterThan(0);
+
+      const operation = transferWithOperations.operations[0];
+      expect(operation).toHaveProperty('id');
+      expect(operation).toHaveProperty('action');
+      expect(operation).toHaveProperty('type');
+      expect(operation).toHaveProperty('sender');
+      expect(operation).toHaveProperty('receiver');
+      expect(operation).toHaveProperty('value');
     });
 
     it('should return transfers with expected properties', async () => {
