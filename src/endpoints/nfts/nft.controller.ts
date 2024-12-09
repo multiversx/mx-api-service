@@ -297,6 +297,7 @@ export class NftController {
   @ApiQuery({ name: 'withLogs', description: 'Return logs for transactions', required: false, type: Boolean })
   @ApiQuery({ name: 'withScamInfo', description: 'Returns scam information', required: false, type: Boolean })
   @ApiQuery({ name: 'withUsername', description: 'Integrates username in assets for all addresses present in the transactions', required: false, type: Boolean })
+  @ApiQuery({ name: 'withRelayedScresults', description: 'If set to true, will include smart contract results that resemble relayed transactions', required: false, type: Boolean })
   async getNftTransactions(
     @Param('identifier', ParseNftPipe) identifier: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
@@ -317,10 +318,11 @@ export class NftController {
     @Query('withLogs', new ParseBoolPipe) withLogs?: boolean,
     @Query('withScamInfo', new ParseBoolPipe) withScamInfo?: boolean,
     @Query('withUsername', new ParseBoolPipe) withUsername?: boolean,
+    @Query('withRelayedScresults', ParseBoolPipe) withRelayedScresults?: boolean,
   ) {
     const options = TransactionQueryOptions.applyDefaultOptions(size, { withScResults, withOperations, withLogs, withScamInfo, withUsername });
 
-    return await this.transactionService.getTransactions(new TransactionFilter({
+    const transactionFilter = new TransactionFilter({
       sender,
       receivers: receiver,
       token: identifier,
@@ -333,7 +335,11 @@ export class NftController {
       before,
       after,
       order,
-    }), new QueryPagination({ from, size }), options);
+      withRelayedScresults,
+    });
+    transactionFilter.validate(size);
+
+    return await this.transactionService.getTransactions(transactionFilter, new QueryPagination({ from, size }), options);
   }
 
   @Get("/nfts/:identifier/transactions/count")
@@ -349,6 +355,7 @@ export class NftController {
   @ApiQuery({ name: 'status', description: 'Status of the transaction (success / pending / invalid / fail)', required: false, enum: TransactionStatus })
   @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
+  @ApiQuery({ name: 'withRelayedScresults', description: 'If set to true, will include smart contract results that resemble relayed transactions', required: false, type: Boolean })
   async getNftTransactionsCount(
     @Param('identifier', ParseNftPipe) identifier: string,
     @Query('sender', ParseAddressPipe) sender?: string,
@@ -360,6 +367,7 @@ export class NftController {
     @Query('status', new ParseEnumPipe(TransactionStatus)) status?: TransactionStatus,
     @Query('before', ParseIntPipe) before?: number,
     @Query('after', ParseIntPipe) after?: number,
+    @Query('withRelayedScresults', ParseBoolPipe) withRelayedScresults?: boolean,
   ) {
 
     return await this.transactionService.getTransactionCount(new TransactionFilter({
@@ -373,6 +381,7 @@ export class NftController {
       status,
       before,
       after,
+      withRelayedScresults,
     }));
   }
 

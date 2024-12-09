@@ -80,7 +80,7 @@ export class TransactionController {
   ) {
     const options = TransactionQueryOptions.applyDefaultOptions(size, { withScResults, withOperations, withLogs, withScamInfo, withUsername, withBlockInfo, withActionTransferValue });
 
-    return this.transactionService.getTransactions(new TransactionFilter({
+    const transactionFilter = new TransactionFilter({
       sender,
       receivers: receiver,
       token,
@@ -97,7 +97,9 @@ export class TransactionController {
       isRelayed,
       round,
       withRelayedScresults: withRelayedScresults,
-    }),
+    });
+    transactionFilter.validate(size);
+    return this.transactionService.getTransactions(transactionFilter,
       new QueryPagination({ from, size }),
       options,
       undefined,
