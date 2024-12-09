@@ -26,6 +26,7 @@ export class TransactionFilter {
   isRelayed?: boolean;
   relayer?: string;
   round?: number;
+  withRefunds?: boolean;
   withRelayedScresults?: boolean;
 
   constructor(init?: Partial<TransactionFilter>) {
