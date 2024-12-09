@@ -1286,7 +1286,7 @@ function createNftFilter(options: NftFilter = {}) {
   });
 }
 
-function createTransactionFilter(options: TransactionFilter = {}) {
+function createTransactionFilter(options: any) {
   return new TransactionFilter({
     sender: options.sender,
     receivers: options.receivers,
@@ -1299,5 +1299,6 @@ function createTransactionFilter(options: TransactionFilter = {}) {
     before: options.before,
     after: options.after,
     functions: options.functions,
+    validate: (_size: number) => {},
   });
 }
