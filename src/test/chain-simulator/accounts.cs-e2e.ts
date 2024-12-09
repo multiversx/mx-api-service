@@ -1399,47 +1399,66 @@ describe('Accounts e2e tests with chain simulator', () => {
 
   describe('GET /accounts/:address/transfers/count', () => {
     it('should return the total number of transfers for a given address', async () => {
+      const accountTransfers = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transfers`);
+      const expectedCount = accountTransfers.data.length;
+
       const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transfers/count`);
       expect(response.status).toBe(200);
       expect(typeof response.data).toBe('number');
-      expect(response.data).toBeGreaterThanOrEqual(1);
+      expect(response.data).toStrictEqual(expectedCount);
     });
 
     it('should return the total number of transfers for a given address with sender parameter', async () => {
+      const accountSenderTransfers = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transfers?sender=${config.aliceAddress}`);
+      const expectedCount = accountSenderTransfers.data.length;
+
       const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transfers/count?sender=${config.aliceAddress}`);
       expect(response.status).toBe(200);
       expect(typeof response.data).toBe('number');
-      expect(response.data).toBeGreaterThanOrEqual(1);
+      expect(response.data).toStrictEqual(expectedCount);
     });
 
     it('should return the total number of transfers for a given address with receiver parameter', async () => {
+      const accountReceiverTransfers = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transfers?receiver=${config.aliceAddress}`);
+      const expectedCount = accountReceiverTransfers.data.length;
+
       const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transfers/count?receiver=${config.aliceAddress}`);
       expect(response.status).toBe(200);
       expect(typeof response.data).toBe('number');
-      expect(response.data).toBeGreaterThanOrEqual(1);
+      expect(response.data).toStrictEqual(expectedCount);
     });
 
     it('should return the total number of transfers for a given address with token parameter', async () => {
       const accountTokens = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/tokens`);
       const token = accountTokens.data[0].identifier;
+
+      const accountTokenTransfers = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transfers?token=${token}`);
+      const expectedCount = accountTokenTransfers.data.length;
+
       const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transfers/count?token=${token}`);
       expect(response.status).toBe(200);
       expect(typeof response.data).toBe('number');
-      expect(response.data).toBeGreaterThanOrEqual(1);
+      expect(response.data).toStrictEqual(expectedCount);
     });
 
     it('should return the total number of transfers for a given address with senderShard parameter', async () => {
+      const accountSenderShardTransfers = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transfers?senderShard=1`);
+      const expectedCount = accountSenderShardTransfers.data.length;
+
       const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transfers/count?senderShard=1`);
       expect(response.status).toBe(200);
       expect(typeof response.data).toBe('number');
-      expect(response.data).toBeGreaterThanOrEqual(1);
+      expect(response.data).toStrictEqual(expectedCount);
     });
 
     it('should return the total number of transfers for a given address with receiverShard parameter', async () => {
+      const accountReceiverShardTransfers = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transfers?receiverShard=4294967295`);
+      const expectedCount = accountReceiverShardTransfers.data.length;
+
       const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transfers/count?receiverShard=4294967295`);
       expect(response.status).toBe(200);
       expect(typeof response.data).toBe('number');
-      expect(response.data).toBeGreaterThanOrEqual(1);
+      expect(response.data).toStrictEqual(expectedCount);
     });
 
     it('should return the total number of transfers for a given address with miniBlockHash parameter', async () => {
@@ -1460,10 +1479,13 @@ describe('Accounts e2e tests with chain simulator', () => {
     });
 
     it('should return the total number of transfers for a given address with status parameter', async () => {
+      const accountSuccessTransfers = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transfers?status=success`);
+      const expectedCount = accountSuccessTransfers.data.length;
+
       const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transfers/count?status=success`);
       expect(response.status).toBe(200);
       expect(typeof response.data).toBe('number');
-      expect(response.data).toBeGreaterThanOrEqual(1);
+      expect(response.data).toStrictEqual(expectedCount);
     });
 
     it('should return the total number of transfers for a given address with round parameter', async () => {
@@ -1476,17 +1498,23 @@ describe('Accounts e2e tests with chain simulator', () => {
     });
 
     it('should return the total number of transfers for a given address with senderOrReceiver parameter', async () => {
+      const accountSenderOrReceiverTransfers = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transfers?senderOrReceiver=${config.aliceAddress}`);
+      const expectedCount = accountSenderOrReceiverTransfers.data.length;
+
       const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transfers/count?senderOrReceiver=${config.aliceAddress}`);
       expect(response.status).toBe(200);
       expect(typeof response.data).toBe('number');
-      expect(response.data).toBeGreaterThanOrEqual(1);
+      expect(response.data).toStrictEqual(expectedCount);
     });
 
     it('should return the total number for a given status', async () => {
+      const accountSuccessTransfers = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transfers?status=success`);
+      const expectedCount = accountSuccessTransfers.data.length;
+
       const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transfers/count?status=success`);
       expect(response.status).toBe(200);
       expect(typeof response.data).toBe('number');
-      expect(response.data).toBeGreaterThanOrEqual(1);
+      expect(response.data).toStrictEqual(expectedCount);
     });
   });
 });
