@@ -309,12 +309,16 @@ export class ElasticIndexerHelper {
         smartContractResultConditions.push(QueryType.Match('sender', filter.address));
       }
 
+      let mustNotQueries: AbstractQuery[] = [
+        QueryType.Exists('canBeIgnored'),
+      ];
+      if (filter.withRefunds) {
+        mustNotQueries = [];
+      }
       elasticQuery = elasticQuery.withCondition(QueryConditionOptions.should, QueryType.Must([
         QueryType.Match('type', 'unsigned'),
         QueryType.Should(smartContractResultConditions),
-      ], [
-        QueryType.Exists('canBeIgnored'),
-      ]))
+      ], mustNotQueries))
         .withCondition(QueryConditionOptions.should, QueryType.Must([
           QueryType.Should([QueryType.Match('type', 'normal')]),
           QueryType.Should([
