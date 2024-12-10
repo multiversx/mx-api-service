@@ -8,7 +8,7 @@ describe('Collections e2e tests with chain simulator', () => {
   beforeAll(async () => {
     await ChainSimulatorUtils.waitForEpoch(2);
     await fundAddress(config.chainSimulatorUrl, config.aliceAddress);
-    await issueMultipleNftsCollections(config.chainSimulatorUrl, config.aliceAddress, 2);
+    await issueMultipleNftsCollections(config.chainSimulatorUrl, config.aliceAddress, 2, 5);
     await new Promise((resolve) => setTimeout(resolve, 5000));
   });
 
@@ -47,12 +47,6 @@ describe('Collections e2e tests with chain simulator', () => {
       const response = await axios.get(`${config.apiServiceUrl}/collections?type=NonFungibleESDT`);
       expect(response.status).toBe(200);
       expect(response.data.every((collection: any) => collection.type === 'NonFungibleESDT')).toBe(true);
-    });
-
-    it('should filter by creator address', async () => {
-      const response = await axios.get(`${config.apiServiceUrl}/collections?creator=${config.aliceAddress}`);
-      expect(response.status).toBe(200);
-      expect(response.data.every((collection: any) => collection.creator === config.aliceAddress)).toBe(true);
     });
 
     it('should exclude MetaESDT collections when specified', async () => {

@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { AddressUtils } from "@multiversx/sdk-nestjs-common";
 
 const VM_TYPE = '0500';
 const CODE_METADATA = '0100';
@@ -281,6 +282,7 @@ export async function issueMultipleNftsCollections(
   chainSimulatorUrl: string,
   issuer: string,
   numCollections: number,
+  numNfts: number,
 ) {
   const nftCollectionIdentifiers = [];
   for (let i = 1; i <= numCollections; i++) {
@@ -302,15 +304,18 @@ export async function issueMultipleNftsCollections(
 
   // Set roles for each collection
   for (const tokenIdentifier of nftCollectionIdentifiers) {
-    const roles = ['ESDTRoleNFTCreate', 'ESDTRoleNFTBurn'];
     const dataFields = [
       'setSpecialRole',
       Buffer.from(tokenIdentifier).toString('hex'),
-      Buffer.from(issuer).toString('hex'),
-      ...roles.map(role => Buffer.from(role).toString('hex')),
+      AddressUtils.bech32Decode(issuer),
+      Buffer.from('ESDTRoleNFTCreate').toString('hex'),
+      Buffer.from('ESDTRoleNFTBurn').toString('hex'),
+      Buffer.from('ESDTRoleNFTUpdateAttributes').toString('hex'),
+      Buffer.from('ESDTRoleNFTAddURI').toString('hex'),
+      Buffer.from('ESDTTransferRole').toString('hex'),
     ];
 
-    await sendTransaction(
+    const txHash = await sendTransaction(
       new SendTransactionArgs({
         chainSimulatorUrl,
         sender: issuer,
@@ -322,8 +327,52 @@ export async function issueMultipleNftsCollections(
     );
 
     console.log(
-      `Set roles ${roles.join(', ')} for collection ${tokenIdentifier} to address ${issuer}`
+      `Set special roles for collection ${tokenIdentifier}. tx hash: ${txHash}`
     );
+
+    // Wait a bit after setting roles before creating NFT
+    await new Promise(resolve => setTimeout(resolve, 5000));
+
+    // Create multiple NFTs for each collection
+    for (let j = 1; j <= numNfts; j++) {
+      // Create NFT with updated format
+      const nftCreateDataFields = [
+        'ESDTNFTCreate',
+        Buffer.from(tokenIdentifier).toString('hex'),
+        '01', // Initial quantity
+        Buffer.from(`TestNFT${j}`).toString('hex'), // Name
+        '0064', // Royalties (100 = 1%)
+        Buffer.from('TestHash').toString('hex'), // Hash
+        Buffer.from(`tags:test,example;description:Test NFT ${j}`).toString('hex'), // Attributes
+        Buffer.from('https://example.com/nft.png').toString('hex'), // URI 1
+        Buffer.from('https://example.com/nft.json').toString('hex'), // URI 2
+      ];
+
+      const createTxHash = await sendTransaction(
+        new SendTransactionArgs({
+          chainSimulatorUrl,
+          sender: issuer,
+          receiver: issuer,
+          dataField: nftCreateDataFields.join('@'),
+          value: '0',
+          gasLimit: 100000000,
+        })
+      );
+
+      // Check transaction status
+      const txResponse = await axios.get(
+        `${chainSimulatorUrl}/transaction/${createTxHash}?withResults=true`
+      );
+
+      if (txResponse?.data?.data?.status === 'fail') {
+        console.error(`Failed to create NFT ${j} for collection ${tokenIdentifier}. tx hash: ${createTxHash}`);
+        console.error('Error:', txResponse?.data?.data?.logs?.events[0]?.topics[1]);
+      } else {
+        console.log(
+          `Created NFT ${j} for collection ${tokenIdentifier}. tx hash: ${createTxHash}`
+        );
+      }
+    }
   }
 
   return nftCollectionIdentifiers;
