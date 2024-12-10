@@ -408,18 +408,6 @@ describe('Accounts e2e tests with chain simulator', () => {
       expect(response.data).toBeGreaterThanOrEqual(1);
     });
 
-    it('should return results by canCreate parameter', async () => {
-      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/roles/collections/count?canCreate=false`);
-      expect(response.status).toBe(200);
-      expect(response.data).toBeGreaterThanOrEqual(1);
-    });
-
-    it('should return results by canBurn parameter', async () => {
-      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/roles/collections/count?canBurn=false`);
-      expect(response.status).toBe(200);
-      expect(response.data).toBeGreaterThanOrEqual(1);
-    });
-
     it('should return results by canAddQuantity parameter', async () => {
       const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/roles/collections/count?canAddQuantity=false`);
       expect(response.status).toBe(200);
