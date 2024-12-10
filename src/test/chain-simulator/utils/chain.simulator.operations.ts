@@ -224,7 +224,7 @@ export class DeployScArgs {
   }
 }
 
-export async function issueNftCollection(args: IssueNftArgs): Promise<string> {
+export async function issueCollection(args: IssueNftArgs, type: 'NonFungible' | 'SemiFungible'): Promise<string> {
   const properties = [
     'canFreeze',
     'canWipe',
@@ -236,7 +236,7 @@ export async function issueNftCollection(args: IssueNftArgs): Promise<string> {
   ];
 
   const dataFields = [
-    'issueNonFungible',
+    `issue${type}`,
     Buffer.from(args.tokenName).toString('hex'),
     Buffer.from(args.tokenTicker).toString('hex'),
   ];
@@ -262,20 +262,28 @@ export async function issueNftCollection(args: IssueNftArgs): Promise<string> {
     `${args.chainSimulatorUrl}/transaction/${txHash}?withResults=true`
   );
 
-  const nftIssueLog = txResponse?.data?.data?.transaction?.logs?.events?.find(
-    (event: { identifier: string }) => event.identifier === 'issueNonFungible'
+  const issueLog = txResponse?.data?.data?.transaction?.logs?.events?.find(
+    (event: { identifier: string }) => event.identifier === `issue${type}`
   );
 
   const tokenIdentifier = Buffer.from(
-    nftIssueLog.topics[0],
+    issueLog.topics[0],
     'base64'
   ).toString();
 
   console.log(
-    `Issued NFT collection with ticker ${args.tokenTicker}. tx hash: ${txHash}. identifier: ${tokenIdentifier}`
+    `Issued ${type} collection with ticker ${args.tokenTicker}. tx hash: ${txHash}. identifier: ${tokenIdentifier}`
   );
 
   return tokenIdentifier;
+}
+
+export async function issueNftCollection(args: IssueNftArgs): Promise<string> {
+  return await issueCollection(args, 'NonFungible');
+}
+
+export async function issueSftCollection(args: IssueNftArgs): Promise<string> {
+  return await issueCollection(args, 'SemiFungible');
 }
 
 export async function issueMultipleNftsCollections(
@@ -283,36 +291,67 @@ export async function issueMultipleNftsCollections(
   issuer: string,
   numCollections: number,
   numNfts: number,
+  collectionType: 'nft' | 'sft' | 'both' = 'nft' // Default to NFT for backward compatibility
 ) {
   const nftCollectionIdentifiers = [];
   for (let i = 1; i <= numCollections; i++) {
-    const tokenName = `NFTCollection${i}`;
-    const tokenTicker = `NFT${i}`;
-    const tokenIdentifier = await issueNftCollection(
-      new IssueNftArgs({
-        chainSimulatorUrl,
-        issuer,
-        tokenName,
-        tokenTicker,
-      }),
-    );
-    nftCollectionIdentifiers.push(tokenIdentifier);
+    if (collectionType === 'nft' || collectionType === 'both') {
+      const nftTokenName = `NFTCollection${i}`;
+      const nftTokenTicker = `NFT${i}`;
+      const nftTokenIdentifier = await issueNftCollection(
+        new IssueNftArgs({
+          chainSimulatorUrl,
+          issuer,
+          tokenName: nftTokenName,
+          tokenTicker: nftTokenTicker,
+        }),
+      );
+      nftCollectionIdentifiers.push({ identifier: nftTokenIdentifier, type: 'nft' });
+    }
+
+    if (collectionType === 'sft' || collectionType === 'both') {
+      const sftTokenName = `SFTCollection${i}`;
+      const sftTokenTicker = `SFT${i}`;
+      const sftTokenIdentifier = await issueSftCollection(
+        new IssueNftArgs({
+          chainSimulatorUrl,
+          issuer,
+          tokenName: sftTokenName,
+          tokenTicker: sftTokenTicker,
+        }),
+      );
+      nftCollectionIdentifiers.push({ identifier: sftTokenIdentifier, type: 'sft' });
+    }
   }
 
   // Wait a bit before setting roles
   await new Promise(resolve => setTimeout(resolve, 5000));
 
   // Set roles for each collection
-  for (const tokenIdentifier of nftCollectionIdentifiers) {
+  for (const { identifier: tokenIdentifier, type } of nftCollectionIdentifiers) {
+    const roles = [];
+    if (type === 'sft') {
+      roles.push(
+        Buffer.from('ESDTRoleNFTCreate').toString('hex'),
+        Buffer.from('ESDTRoleNFTBurn').toString('hex'),
+        Buffer.from('ESDTRoleNFTAddQuantity').toString('hex'),
+        Buffer.from('ESDTTransferRole').toString('hex')
+      );
+    } else {
+      roles.push(
+        Buffer.from('ESDTRoleNFTCreate').toString('hex'),
+        Buffer.from('ESDTRoleNFTBurn').toString('hex'),
+        Buffer.from('ESDTRoleNFTUpdateAttributes').toString('hex'),
+        Buffer.from('ESDTRoleNFTAddURI').toString('hex'),
+        Buffer.from('ESDTTransferRole').toString('hex')
+      );
+    }
+
     const dataFields = [
       'setSpecialRole',
       Buffer.from(tokenIdentifier).toString('hex'),
       AddressUtils.bech32Decode(issuer),
-      Buffer.from('ESDTRoleNFTCreate').toString('hex'),
-      Buffer.from('ESDTRoleNFTBurn').toString('hex'),
-      Buffer.from('ESDTRoleNFTUpdateAttributes').toString('hex'),
-      Buffer.from('ESDTRoleNFTAddURI').toString('hex'),
-      Buffer.from('ESDTTransferRole').toString('hex'),
+      ...roles,
     ];
 
     const txHash = await sendTransaction(
@@ -333,19 +372,18 @@ export async function issueMultipleNftsCollections(
     // Wait a bit after setting roles before creating NFT
     await new Promise(resolve => setTimeout(resolve, 5000));
 
-    // Create multiple NFTs for each collection
+    // Create multiple NFT's / SFT's for each collection
     for (let j = 1; j <= numNfts; j++) {
-      // Create NFT with updated format
       const nftCreateDataFields = [
         'ESDTNFTCreate',
         Buffer.from(tokenIdentifier).toString('hex'),
-        '01', // Initial quantity
-        Buffer.from(`TestNFT${j}`).toString('hex'), // Name
-        '0064', // Royalties (100 = 1%)
-        Buffer.from('TestHash').toString('hex'), // Hash
-        Buffer.from(`tags:test,example;description:Test NFT ${j}`).toString('hex'), // Attributes
-        Buffer.from('https://example.com/nft.png').toString('hex'), // URI 1
-        Buffer.from('https://example.com/nft.json').toString('hex'), // URI 2
+        type === 'sft' ? '0a' : '01',
+        Buffer.from(`Test${type === 'sft' ? 'SFT' : 'NFT'}${j}`).toString('hex'),
+        '0064',
+        Buffer.from('TestHash').toString('hex'),
+        Buffer.from(`tags:test,example;description:Test ${type === 'sft' ? 'SFT' : 'NFT'} ${j}`).toString('hex'),
+        Buffer.from('https://example.com/nft.png').toString('hex'),
+        Buffer.from('https://example.com/nft.json').toString('hex'),
       ];
 
       const createTxHash = await sendTransaction(
@@ -369,13 +407,13 @@ export async function issueMultipleNftsCollections(
         console.error('Error:', txResponse?.data?.data?.logs?.events[0]?.topics[1]);
       } else {
         console.log(
-          `Created NFT ${j} for collection ${tokenIdentifier}. tx hash: ${createTxHash}`
+          `Created ${type === 'sft' ? 'SFT' : 'NFT'}${j} for collection ${tokenIdentifier}. tx hash: ${createTxHash}`
         );
       }
     }
   }
 
-  return nftCollectionIdentifiers;
+  return nftCollectionIdentifiers.map(x => x.identifier);
 }
 
 export class IssueNftArgs {
@@ -388,3 +426,126 @@ export class IssueNftArgs {
     Object.assign(this, options);
   }
 }
+
+export async function issueMultipleMetaESDTCollections(
+  chainSimulatorUrl: string,
+  issuer: string,
+  numberOfCollections: number,
+  tokensPerCollection: number
+): Promise<string[]> {
+  const metaEsdtCollectionIdentifiers: { identifier: string }[] = [];
+
+  for (let i = 0; i < numberOfCollections; i++) {
+    const tokenName = `MetaESDTCollection${i}`;
+    const tokenTicker = `META${i}`;
+
+    const txHash = await sendTransaction(
+      new SendTransactionArgs({
+        chainSimulatorUrl: chainSimulatorUrl,
+        sender: issuer,
+        receiver: ESDT_ADDRESS,
+        value: '50000000000000000',
+        gasLimit: 60000000,
+        dataField: [
+          'registerMetaESDT',
+          Buffer.from(tokenName).toString('hex'),
+          Buffer.from(tokenTicker).toString('hex'),
+          '12', // number of decimals
+          Buffer.from('canFreeze').toString('hex'),
+          Buffer.from('true').toString('hex'),
+          Buffer.from('canWipe').toString('hex'),
+          Buffer.from('true').toString('hex'),
+          Buffer.from('canPause').toString('hex'),
+          Buffer.from('true').toString('hex'),
+          Buffer.from('canTransferNFTCreateRole').toString('hex'),
+          Buffer.from('true').toString('hex'),
+          Buffer.from('canChangeOwner').toString('hex'),
+          Buffer.from('true').toString('hex'),
+          Buffer.from('canUpgrade').toString('hex'),
+          Buffer.from('true').toString('hex'),
+          Buffer.from('canAddSpecialRoles').toString('hex'),
+          Buffer.from('true').toString('hex'),
+        ].join('@'),
+      }),
+    );
+
+    const txResponse = await axios.get(
+      `${chainSimulatorUrl}/transaction/${txHash}?withResults=true`,
+    );
+
+    const esdtIssueLog = txResponse?.data?.data?.transaction?.logs?.events?.find(
+      (event: { identifier: string }) => event.identifier === 'registerMetaESDT',
+    );
+
+    if (esdtIssueLog) {
+      const tokenIdentifier = Buffer.from(
+        esdtIssueLog.topics[0],
+        'base64',
+      ).toString();
+
+      metaEsdtCollectionIdentifiers.push({ identifier: tokenIdentifier });
+
+      console.log(
+        `Issued MetaESDT collection ${tokenName}. tx hash: ${txHash}. identifier: ${tokenIdentifier}`,
+      );
+
+      // Set special roles for the MetaESDT collection
+      const setRolesTxHash = await sendTransaction(
+        new SendTransactionArgs({
+          chainSimulatorUrl: chainSimulatorUrl,
+          sender: issuer,
+          receiver: ESDT_ADDRESS,
+          value: '0',
+          gasLimit: 60000000,
+          dataField: [
+            'setSpecialRole',
+            Buffer.from(tokenIdentifier).toString('hex'),
+            AddressUtils.bech32Decode(issuer),
+            Buffer.from('ESDTRoleNFTCreate').toString('hex'),
+            Buffer.from('ESDTRoleNFTBurn').toString('hex'),
+            Buffer.from('ESDTRoleNFTAddQuantity').toString('hex'),
+          ].join('@'),
+        }),
+      );
+
+      console.log(
+        `Set special roles for collection ${tokenIdentifier}. tx hash: ${setRolesTxHash}`
+      );
+
+      // Wait a bit after setting roles
+      await new Promise(resolve => setTimeout(resolve, 5000));
+
+      // Create MetaESDT tokens for this collection
+      for (let j = 1; j <= tokensPerCollection; j++) {
+        const createTxHash = await sendTransaction(
+          new SendTransactionArgs({
+            chainSimulatorUrl,
+            sender: issuer,
+            receiver: issuer,
+            dataField: [
+              'ESDTNFTCreate',
+              Buffer.from(tokenIdentifier).toString('hex'),
+              '0a', // Initial quantity (10)
+              Buffer.from(`TestMetaESDT${j}`).toString('hex'),
+              '0064', // Royalties (100 = 1%)
+              Buffer.from('TestHash').toString('hex'),
+              Buffer.from(`tags:test,example;description:Test MetaESDT ${j}`).toString('hex'),
+              Buffer.from('https://example.com/nft.png').toString('hex'),
+              Buffer.from('https://example.com/nft.json').toString('hex'),
+            ].join('@'),
+            value: '0',
+            gasLimit: 100000000,
+          })
+        );
+
+        console.log(
+          `Created MetaESDT${j} for collection ${tokenIdentifier}. tx hash: ${createTxHash}`
+        );
+      }
+    }
+  }
+
+  return metaEsdtCollectionIdentifiers.map(x => x.identifier);
+}
+
+
