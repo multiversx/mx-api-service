@@ -376,7 +376,7 @@ describe('NFTs e2e tests with chain simulator', () => {
 
       const response = await axios.get(`${config.apiServiceUrl}/nfts/${identifier}/supply`);
       expect(response.status).toBe(200);
-      expect(response.data).toStrictEqual({ supply: nfts.data[0].supply });
+      expect(response.data).toStrictEqual({ supply: "10" });
     });
 
     it('should return the nft supply', async () => {
@@ -385,7 +385,7 @@ describe('NFTs e2e tests with chain simulator', () => {
 
       const response = await axios.get(`${config.apiServiceUrl}/nfts/${identifier}/supply`);
       expect(response.status).toBe(200);
-      expect(response.data).toStrictEqual({ supply: nfts.data[0].supply });
+      expect(response.data).toStrictEqual({ supply: "1" });
     });
   });
 });
