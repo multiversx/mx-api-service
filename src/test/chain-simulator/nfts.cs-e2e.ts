@@ -265,6 +265,16 @@ describe('NFTs e2e tests with chain simulator', () => {
       nfts = await axios.get(`${config.apiServiceUrl}/nfts?size=10000`);
     });
 
+    it('should have nfts count / list greater than 0', async () => {
+      const countResponse = await axios.get(`${config.apiServiceUrl}/nfts/c`);
+      expect(countResponse.status).toBe(200);
+      expect(countResponse.data).toBeGreaterThan(0);
+
+      const nftsResponse = await axios.get(`${config.apiServiceUrl}/nfts/c`);
+      expect(nftsResponse.status).toBe(200);
+      expect(nftsResponse.data.length).toBeGreaterThan(0);
+    });
+
     it('should return the total number of nfts', async () => {
       const response = await axios.get(`${config.apiServiceUrl}/nfts/c`);
       expect(response.status).toBe(200);
