@@ -1197,6 +1197,8 @@ describe('Accounts e2e tests with chain simulator', () => {
       const countResponse = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transfers/count`);
       const expectedCount = countResponse.data;
 
+      expect(expectedCount).toBeGreaterThan(0);
+
       const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transfers`);
       expect(response.status).toBe(200);
       expect(response.data.length).toStrictEqual(expectedCount);
