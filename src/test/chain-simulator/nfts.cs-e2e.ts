@@ -388,5 +388,72 @@ describe('NFTs e2e tests with chain simulator', () => {
       expect(response.data).toStrictEqual({ supply: "1" });
     });
   });
+
+  describe('GET /nfts/:identifier/accounts', () => {
+    it('should return the nft accounts', async () => {
+      const nfts = await axios.get(`${config.apiServiceUrl}/nfts?size=1&type=${NftType.SemiFungibleESDT}`);
+      const identifier = nfts.data[0].identifier;
+
+      const response = await axios.get(`${config.apiServiceUrl}/nfts/${identifier}/accounts`);
+      expect(response.status).toBe(200);
+      expect(response.data).toStrictEqual([{
+        address: "erd1qyu5wthldzr8wx5c9ucg8kjagg0jfs53s8nr3zpz3hypefsdd8ssycr6th",
+        balance: "10",
+      }]);
+    });
+
+    it('should return the nft accounts with pagination', async () => {
+      const nfts = await axios.get(`${config.apiServiceUrl}/nfts?size=1&type=${NftType.SemiFungibleESDT}`);
+      const identifier = nfts.data[0].identifier;
+
+      const response = await axios.get(`${config.apiServiceUrl}/nfts/${identifier}/accounts?from=0&size=1`);
+      expect(response.status).toBe(200);
+      expect(response.data).toStrictEqual([{
+        address: "erd1qyu5wthldzr8wx5c9ucg8kjagg0jfs53s8nr3zpz3hypefsdd8ssycr6th",
+        balance: "10",
+      }]);
+    });
+
+    it('should return the nft accounts based on identifier', async () => {
+      const nfts = await axios.get(`${config.apiServiceUrl}/nfts?size=1&type=${NftType.SemiFungibleESDT}`);
+      const identifier = nfts.data[0].identifier;
+
+      const response = await axios.get(`${config.apiServiceUrl}/nfts/${identifier}/accounts`);
+      expect(response.status).toBe(200);
+      expect(response.data).toStrictEqual([{
+        address: "erd1qyu5wthldzr8wx5c9ucg8kjagg0jfs53s8nr3zpz3hypefsdd8ssycr6th",
+        balance: "10",
+      }]);
+    });
+
+    it('should return 400 Bad Request for invalid identifier', async () => {
+      const invalidIdentifier = 'invalid-identifier';
+
+      const response = await axios.get(`${config.apiServiceUrl}/nfts/${invalidIdentifier}/accounts`)
+        .catch(err => err.response);
+
+      expect(response.status).toBe(400);
+    });
+  });
+
+  describe('GET /nfts/:identifier/accounts/count', () => {
+    it('should return the nft accounts count', async () => {
+      const nfts = await axios.get(`${config.apiServiceUrl}/nfts?size=1&type=${NftType.SemiFungibleESDT}`);
+      const identifier = nfts.data[0].identifier;
+
+      const response = await axios.get(`${config.apiServiceUrl}/nfts/${identifier}/accounts/count`);
+      expect(response.status).toBe(200);
+      expect(response.data).toStrictEqual(1);
+    });
+
+    it('should return 400 Bad Request for invalid identifier', async () => {
+      const invalidIdentifier = 'invalid-identifier';
+
+      const response = await axios.get(`${config.apiServiceUrl}/nfts/${invalidIdentifier}/accounts/count`)
+        .catch(err => err.response);
+
+      expect(response.status).toBe(400);
+    });
+  });
 });
 
