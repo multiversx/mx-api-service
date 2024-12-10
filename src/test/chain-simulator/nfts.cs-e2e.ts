@@ -1,0 +1,254 @@
+import axios from "axios";
+import { config } from "./config/env.config";
+import { ChainSimulatorUtils } from "./utils/test.utils";
+import { NftType } from 'src/common/indexer/entities/nft.type';
+import { NftSubType } from "src/endpoints/nfts/entities/nft.sub.type";
+import { fundAddress, issueMultipleNftsCollections } from "./utils/chain.simulator.operations";
+
+describe('NFTs e2e tests with chain simulator', () => {
+  beforeAll(async () => {
+    await ChainSimulatorUtils.waitForEpoch(2);
+    await fundAddress(config.chainSimulatorUrl, config.aliceAddress);
+    await issueMultipleNftsCollections(config.chainSimulatorUrl, config.aliceAddress, 2, 5, 'both');
+    // await issueMultipleMetaESDTCollections(config.chainSimulatorUrl, config.aliceAddress, 2, 5);
+    await new Promise((resolve) => setTimeout(resolve, 5000));
+  });
+
+  describe('GET /nfts', () => {
+    it('should return status code 200', async () => {
+      const response = await axios.get(`${config.apiServiceUrl}/nfts`);
+      expect(response.status).toBe(200);
+      expect(response.data).toBeInstanceOf(Array);
+    });
+
+    it('should return all nfts paginated', async () => {
+      const response = await axios.get(`${config.apiServiceUrl}/nfts?size=5`);
+      expect(response.status).toBe(200);
+      expect(response.data).toBeInstanceOf(Array);
+      expect(response.data.length).toStrictEqual(5);
+    });
+
+    it('should return different paginated results for different from values', async () => {
+      const firstSet = await axios.get(`${config.apiServiceUrl}/nfts?from=0&size=5`);
+      const secondSet = await axios.get(`${config.apiServiceUrl}/nfts?from=5&size=5`);
+      expect(firstSet.status).toBe(200);
+      expect(secondSet.status).toBe(200);
+      expect(firstSet.data.length).toStrictEqual(5);
+      expect(secondSet.data.length).toStrictEqual(5);
+      expect(firstSet.data).not.toStrictEqual(secondSet.data);
+    });
+
+    it('should return nfts filtered by identifiers', async () => {
+      const nfts = await axios.get(`${config.apiServiceUrl}/nfts?size=2`);
+      const identifiers = nfts.data.map((nft: any) => nft.identifier);
+
+      const response = await axios.get(`${config.apiServiceUrl}/nfts?identifiers=${identifiers[0]},${identifiers[1]}`);
+      expect(response.status).toBe(200);
+      expect(response.data).toBeInstanceOf(Array);
+      expect(response.data.length).toStrictEqual(2);
+      expect(response.data.every((nft: any) => identifiers.includes(nft.identifier))).toBe(true);
+    });
+
+
+    it('should return nfts filtered by different type combinations', async () => {
+      // Test NonFungibleESDT filter
+      const nonFungibleResponse = await axios.get(`${config.apiServiceUrl}/nfts?type=${NftType.NonFungibleESDT}`);
+      expect(nonFungibleResponse.status).toBe(200);
+      expect(nonFungibleResponse.data).toBeInstanceOf(Array);
+      expect(nonFungibleResponse.data.every((nft: any) => nft.type === NftType.NonFungibleESDT)).toBe(true);
+
+      // Test SemiFungibleESDT filter  
+      const semiFungibleResponse = await axios.get(`${config.apiServiceUrl}/nfts?type=${NftType.SemiFungibleESDT}`);
+      expect(semiFungibleResponse.status).toBe(200);
+      expect(semiFungibleResponse.data).toBeInstanceOf(Array);
+      expect(semiFungibleResponse.data.every((nft: any) => nft.type === NftType.SemiFungibleESDT)).toBe(true);
+
+      // Test combined NonFungible and SemiFungible filter
+      const combinedResponse = await axios.get(`${config.apiServiceUrl}/nfts?type=${NftType.NonFungibleESDT},${NftType.SemiFungibleESDT}`);
+      expect(combinedResponse.status).toBe(200);
+      expect(combinedResponse.data).toBeInstanceOf(Array);
+      expect(combinedResponse.data.every((nft: any) =>
+        [NftType.NonFungibleESDT, NftType.SemiFungibleESDT].includes(nft.type)
+      )).toBe(true);
+    });
+
+    it('should return nfts filtered by different subType combinations', async () => {
+      // Test NonFungibleESDTv2 filter
+      const nonFungibleV2Response = await axios.get(`${config.apiServiceUrl}/nfts?subType=${NftSubType.NonFungibleESDTv2}`);
+      expect(nonFungibleV2Response.status).toBe(200);
+      expect(nonFungibleV2Response.data).toBeInstanceOf(Array);
+      expect(nonFungibleV2Response.data.every((nft: any) => nft.subType === NftSubType.NonFungibleESDTv2)).toBe(true);
+
+      // Test SemiFungibleESDT filter
+      const semiFungibleResponse = await axios.get(`${config.apiServiceUrl}/nfts?subType=${NftSubType.SemiFungibleESDT}`);
+      expect(semiFungibleResponse.status).toBe(200);
+      expect(semiFungibleResponse.data).toBeInstanceOf(Array);
+      expect(semiFungibleResponse.data.every((nft: any) => nft.subType === NftSubType.SemiFungibleESDT)).toBe(true);
+
+      // Test combined NonFungibleESDTv2 and SemiFungibleESDT filter
+      const combinedResponse = await axios.get(`${config.apiServiceUrl}/nfts?subType=${NftSubType.NonFungibleESDTv2},${NftSubType.SemiFungibleESDT}`);
+      expect(combinedResponse.status).toBe(200);
+      expect(combinedResponse.data).toBeInstanceOf(Array);
+      expect(combinedResponse.data.every((nft: any) =>
+        [NftSubType.NonFungibleESDTv2, NftSubType.SemiFungibleESDT].includes(nft.subType)
+      )).toBe(true);
+    });
+
+    it('should return nfts filtered by collection', async () => {
+      const collections = await axios.get(`${config.apiServiceUrl}/collections?size=1`);
+      const collection = collections.data.map((collection: any) => collection.collection);
+
+      const response = await axios.get(`${config.apiServiceUrl}/nfts?collection=${collection[0]}`);
+      expect(response.status).toBe(200);
+      expect(response.data).toBeInstanceOf(Array);
+      expect(response.data.every((nft: any) => nft.collection === collection[0])).toBe(true);
+    });
+
+    it('should return nfts filtered by collections', async () => {
+      const collections = await axios.get(`${config.apiServiceUrl}/collections?size=2`);
+      const collection = collections.data.map((collection: any) => collection.collection);
+
+      const response = await axios.get(`${config.apiServiceUrl}/nfts?collections=${collection[0]},${collection[1]}`);
+      expect(response.status).toBe(200);
+      expect(response.data).toBeInstanceOf(Array);
+      expect(response.data.every((nft: any) => collection.includes(nft.collection))).toBe(true);
+    });
+
+    it('should return nfts filtered by name', async () => {
+      const nfts = await axios.get(`${config.apiServiceUrl}/nfts?size=2`);
+      const name = nfts.data.map((nft: any) => nft.name);
+
+      const response = await axios.get(`${config.apiServiceUrl}/nfts?name=${name[0]}`);
+      expect(response.data).toBeInstanceOf(Array);
+      expect(response.data.every((nft: any) => nft.name === name[0])).toBe(true);
+    });
+
+    it('should return nfts filtered by tags', async () => {
+      const response = await axios.get(`${config.apiServiceUrl}/nfts?tags=test,example`);
+      expect(response.status).toBe(200);
+      expect(response.data).toBeInstanceOf(Array);
+      expect(response.data.every((nft: any) =>
+        nft.tags.includes('test') && nft.tags.includes('example')
+      )).toBe(true);
+    });
+
+    it('should return nfts filtered by isWhitelistedStorage', async () => {
+      const response = await axios.get(`${config.apiServiceUrl}/nfts?isWhitelistedStorage=false`);
+      expect(response.status).toBe(200);
+      expect(response.data).toBeInstanceOf(Array);
+      expect(response.data.every((nft: any) => nft.isWhitelistedStorage === false)).toBe(true);
+    });
+
+    it('should return nfts filtered by hasUris', async () => {
+      const response = await axios.get(`${config.apiServiceUrl}/nfts?hasUris=true`);
+      expect(response.status).toBe(200);
+      expect(response.data).toBeInstanceOf(Array);
+      expect(response.data.every((nft: any) => nft.uris.length > 0)).toBe(true);
+    });
+
+    it('should return nfts with owner field defined only for NonFungibleESDT type', async () => {
+      const response = await axios.get(`${config.apiServiceUrl}/nfts?withOwner=true&type=${NftType.NonFungibleESDT}`);
+      expect(response.status).toBe(200);
+      expect(response.data).toBeInstanceOf(Array);
+      expect(response.data.every((nft: any) => nft.type === 'NonFungibleESDT')).toBe(true);
+      expect(response.data.every((nft: any) => nft.owner !== undefined)).toBe(true);
+    });
+
+    it('should return nfts with owner field undefined', async () => {
+      const response = await axios.get(`${config.apiServiceUrl}/nfts?withOwner=false`);
+      expect(response.status).toBe(200);
+      expect(response.data).toBeInstanceOf(Array);
+      expect(response.data.every((nft: any) => nft.owner === undefined)).toBe(true);
+    });
+
+    it('should return nfts with supply field defined only for SemiFungibleESDT type', async () => {
+      const response = await axios.get(`${config.apiServiceUrl}/nfts?withSupply=true&type=${NftType.SemiFungibleESDT}`);
+      expect(response.status).toBe(200);
+      expect(response.data).toBeInstanceOf(Array);
+      expect(response.data.every((nft: any) => nft.type === 'SemiFungibleESDT')).toBe(true);
+      expect(response.data.every((nft: any) => nft.supply !== undefined)).toBe(true);
+    });
+
+    it('should return nfts with supply field undefined', async () => {
+      const response = await axios.get(`${config.apiServiceUrl}/nfts?withSupply=false`);
+      expect(response.status).toBe(200);
+      expect(response.data).toBeInstanceOf(Array);
+      expect(response.data.every((nft: any) => nft.supply === undefined)).toBe(true);
+    });
+  });
+
+  describe('GET /nfts/count', () => {
+    let nfts: any;
+
+    beforeAll(async () => {
+      nfts = await axios.get(`${config.apiServiceUrl}/nfts?size=10000`);
+    });
+
+    it('should return the total number of nfts', async () => {
+      const response = await axios.get(`${config.apiServiceUrl}/nfts/count`);
+      expect(response.status).toBe(200);
+      expect(response.data).toStrictEqual(nfts.data.length);
+    });
+
+    it('should return the total number of nfts filtered by type', async () => {
+      const nftsByTypeNFT = nfts.data.filter((nft: any) => nft.type === NftType.NonFungibleESDT);
+      const responseNFT = await axios.get(`${config.apiServiceUrl}/nfts/count?type=${NftType.NonFungibleESDT}`);
+      expect(responseNFT.status).toBe(200);
+      expect(responseNFT.data).toStrictEqual(nftsByTypeNFT.length);
+
+      const nftsByTypeSFT = nfts.data.filter((nft: any) => nft.type === NftType.SemiFungibleESDT);
+      const responseSFT = await axios.get(`${config.apiServiceUrl}/nfts/count?type=${NftType.SemiFungibleESDT}`);
+      expect(responseSFT.status).toBe(200);
+      expect(responseSFT.data).toStrictEqual(nftsByTypeSFT.length);
+    });
+
+    it('should return the total number of nfts filtered by subType', async () => {
+      const nftsBySubTypeNFT = nfts.data.filter((nft: any) => nft.subType === NftSubType.NonFungibleESDTv2);
+      const responseNFT = await axios.get(`${config.apiServiceUrl}/nfts/count?subType=${NftSubType.NonFungibleESDTv2}`);
+      expect(responseNFT.status).toBe(200);
+      expect(responseNFT.data).toStrictEqual(nftsBySubTypeNFT.length);
+
+      const nftsBySubTypeSFT = nfts.data.filter((nft: any) => nft.subType === NftSubType.SemiFungibleESDT);
+      const responseSFT = await axios.get(`${config.apiServiceUrl}/nfts/count?subType=${NftSubType.SemiFungibleESDT}`);
+      expect(responseSFT.status).toBe(200);
+      expect(responseSFT.data).toStrictEqual(nftsBySubTypeSFT.length);
+    });
+
+    it('should return the total number of nfts filtered by identifiers', async () => {
+      const identifiers = nfts.data.map((nft: any) => nft.identifier);
+      const response = await axios.get(`${config.apiServiceUrl}/nfts/count?identifiers=${identifiers[0]},${identifiers[1]}`);
+      expect(response.status).toBe(200);
+      expect(response.data).toStrictEqual(2);
+    });
+
+    it('should return the total number of nfts filtered by collection', async () => {
+      const collections = await axios.get(`${config.apiServiceUrl}/collections?size=1`);
+      const collection = collections.data.map((collection: any) => collection.collection);
+
+      const nftsByCollection = nfts.data.filter((nft: any) => nft.collection === collection[0]);
+      const response = await axios.get(`${config.apiServiceUrl}/nfts/count?collection=${collection[0]}`);
+      expect(response.status).toBe(200);
+      expect(response.data).toStrictEqual(nftsByCollection.length);
+    });
+
+    it('should return the total number of nfts filtered by collections', async () => {
+      const collections = await axios.get(`${config.apiServiceUrl}/collections?size=2`);
+      const collection = collections.data.map((collection: any) => collection.collection);
+
+      const nftsByCollections = nfts.data.filter((nft: any) =>
+        collection.includes(nft.collection)
+      );
+      const response = await axios.get(`${config.apiServiceUrl}/nfts/count?collections=${collection[0]},${collection[1]}`);
+      expect(response.status).toBe(200);
+      expect(response.data).toStrictEqual(nftsByCollections.length);
+    });
+
+    it('should return the total number of nfts filtered by isWhitelistedStorage', async () => {
+      const nftsWhitelisted = nfts.data.filter((nft: any) => nft.isWhitelistedStorage === false);
+      const response = await axios.get(`${config.apiServiceUrl}/nfts/count?isWhitelistedStorage=false`);
+      expect(response.status).toBe(200);
+      expect(response.data).toStrictEqual(nftsWhitelisted.length);
+    });
+  });
+});
+
