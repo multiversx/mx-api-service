@@ -1204,6 +1204,16 @@ describe('Accounts e2e tests with chain simulator', () => {
       expect(response.data.length).toStrictEqual(expectedCount);
     });
 
+    it('should have transfers count / list greater than 0', async () => {
+      const countResponse = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transfers/count`);
+      expect(countResponse.status).toBe(200);
+      expect(countResponse.data).toBeGreaterThan(0);
+
+      const transfersResponse = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transfers`);
+      expect(transfersResponse.status).toBe(200);
+      expect(transfersResponse.data.length).toBeGreaterThan(0);
+    });
+
     it('should support pagination', async () => {
       const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transfers?size=2`);
       expect(response.status).toBe(200);
