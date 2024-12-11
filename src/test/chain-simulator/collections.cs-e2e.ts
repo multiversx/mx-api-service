@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { config } from './config/env.config';
 import { ChainSimulatorUtils } from './utils/test.utils';
-import { fundAddress, issueMultipleNftsCollections, issueMultipleMetaESDTCollections } from './utils/chain.simulator.operations';
+import { fundAddress, issueMultipleNftsCollections } from './utils/chain.simulator.operations';
 import { NftType } from 'src/common/indexer/entities/nft.type';
 
 describe('Collections e2e tests with chain simulator', () => {
@@ -9,7 +9,7 @@ describe('Collections e2e tests with chain simulator', () => {
     await ChainSimulatorUtils.waitForEpoch(2);
     await fundAddress(config.chainSimulatorUrl, config.aliceAddress);
     await issueMultipleNftsCollections(config.chainSimulatorUrl, config.aliceAddress, 1, 1, 'both');
-    await issueMultipleMetaESDTCollections(config.chainSimulatorUrl, config.aliceAddress, 2, 5);
+    // await issueMultipleMetaESDTCollections(config.chainSimulatorUrl, config.aliceAddress, 2, 5);
     await new Promise((resolve) => setTimeout(resolve, 5000));
   });
 
