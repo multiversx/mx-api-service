@@ -1,5 +1,4 @@
 import axios from "axios";
-import { ChainSimulatorUtils } from "./utils/test.utils";
 import { config } from "./config/env.config";
 
 describe('Hello endpoint e2e tests with chain simulator', () => {
