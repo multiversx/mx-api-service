@@ -1187,7 +1187,7 @@ describe('Accounts e2e tests with chain simulator', () => {
 
       expect(expectedCount).toBeGreaterThan(0);
 
-      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transfers`);
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transfers?size=500`);
       expect(response.status).toBe(200);
       expect(response.data.length).toStrictEqual(expectedCount);
     });
@@ -1212,7 +1212,7 @@ describe('Accounts e2e tests with chain simulator', () => {
       const countResponse = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transfers/count?sender=${config.aliceAddress}`);
       const expectedCount = countResponse.data;
 
-      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transfers?sender=${config.aliceAddress}`);
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transfers?sender=${config.aliceAddress}&size=500`);
       expect(response.status).toBe(200);
       expect(response.data.length).toStrictEqual(expectedCount);
 
@@ -1415,7 +1415,7 @@ describe('Accounts e2e tests with chain simulator', () => {
 
   describe('GET /accounts/:address/transfers/count', () => {
     it('should return the total number of transfers for a given address', async () => {
-      const accountTransfers = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transfers`);
+      const accountTransfers = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transfers?size=500`);
       const expectedCount = accountTransfers.data.length;
 
       const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transfers/count`);
@@ -1425,7 +1425,7 @@ describe('Accounts e2e tests with chain simulator', () => {
     });
 
     it('should return the total number of transfers for a given address with sender parameter', async () => {
-      const accountSenderTransfers = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transfers?sender=${config.aliceAddress}`);
+      const accountSenderTransfers = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transfers?sender=${config.aliceAddress}&size=500`);
       const expectedCount = accountSenderTransfers.data.length;
 
       const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transfers/count?sender=${config.aliceAddress}`);
@@ -1435,7 +1435,7 @@ describe('Accounts e2e tests with chain simulator', () => {
     });
 
     it('should return the total number of transfers for a given address with receiver parameter', async () => {
-      const accountReceiverTransfers = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transfers?receiver=${config.aliceAddress}`);
+      const accountReceiverTransfers = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transfers?receiver=${config.aliceAddress}&size=500`);
       const expectedCount = accountReceiverTransfers.data.length;
 
       const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transfers/count?receiver=${config.aliceAddress}`);
@@ -1458,7 +1458,7 @@ describe('Accounts e2e tests with chain simulator', () => {
     });
 
     it('should return the total number of transfers for a given address with senderShard parameter', async () => {
-      const accountSenderShardTransfers = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transfers?senderShard=1`);
+      const accountSenderShardTransfers = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transfers?senderShard=1&size=500`);
       const expectedCount = accountSenderShardTransfers.data.length;
 
       const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transfers/count?senderShard=1`);
@@ -1495,7 +1495,7 @@ describe('Accounts e2e tests with chain simulator', () => {
     });
 
     it('should return the total number of transfers for a given address with status parameter', async () => {
-      const accountSuccessTransfers = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transfers?status=success`);
+      const accountSuccessTransfers = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transfers?status=success&size=500`);
       const expectedCount = accountSuccessTransfers.data.length;
 
       const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transfers/count?status=success`);
@@ -1514,7 +1514,7 @@ describe('Accounts e2e tests with chain simulator', () => {
     });
 
     it('should return the total number of transfers for a given address with senderOrReceiver parameter', async () => {
-      const accountSenderOrReceiverTransfers = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transfers?senderOrReceiver=${config.aliceAddress}`);
+      const accountSenderOrReceiverTransfers = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transfers?senderOrReceiver=${config.aliceAddress}&size=500`);
       const expectedCount = accountSenderOrReceiverTransfers.data.length;
 
       const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transfers/count?senderOrReceiver=${config.aliceAddress}`);
@@ -1524,7 +1524,7 @@ describe('Accounts e2e tests with chain simulator', () => {
     });
 
     it('should return the total number for a given status', async () => {
-      const accountSuccessTransfers = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transfers?status=success`);
+      const accountSuccessTransfers = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transfers?status=success&size=500`);
       const expectedCount = accountSuccessTransfers.data.length;
 
       const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transfers/count?status=success`);
