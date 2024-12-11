@@ -865,6 +865,7 @@ export class AccountController {
   @ApiQuery({ name: 'senderOrReceiver', description: 'One address that current address interacted with', required: false })
   @ApiQuery({ name: 'isRelayed', description: 'Returns isRelayed transactions details', required: false, type: Boolean })
   @ApiQuery({ name: 'withActionTransferValue', description: 'Returns value in USD and EGLD for transferred tokens within the action attribute', required: false })
+  @ApiQuery({ name: 'withRelayedScresults', description: 'If set to true, will include smart contract results that resemble relayed transactions', required: false, type: Boolean })
   async getAccountTransactions(
     @Param('address', ParseAddressPipe) address: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
@@ -892,10 +893,11 @@ export class AccountController {
     @Query('senderOrReceiver', ParseAddressPipe) senderOrReceiver?: string,
     @Query('isRelayed', new ParseBoolPipe) isRelayed?: boolean,
     @Query('withActionTransferValue', ParseBoolPipe) withActionTransferValue?: boolean,
+    @Query('withRelayedScresults', ParseBoolPipe) withRelayedScresults?: boolean,
   ) {
     const options = TransactionQueryOptions.applyDefaultOptions(size, { withScResults, withOperations, withLogs, withScamInfo, withUsername, withBlockInfo, withActionTransferValue });
 
-    return await this.transactionService.getTransactions(new TransactionFilter({
+    const transactionFilter = new TransactionFilter({
       sender,
       receivers: receiver,
       token,
@@ -911,7 +913,10 @@ export class AccountController {
       senderOrReceiver,
       isRelayed,
       round,
-    }), new QueryPagination({ from, size }), options, address, fields);
+      withRelayedScresults,
+    });
+    TransactionFilter.validate(transactionFilter, size);
+    return await this.transactionService.getTransactions(transactionFilter, new QueryPagination({ from, size }), options, address, fields);
   }
 
   @Get("/accounts/:address/transactions/count")
@@ -931,6 +936,7 @@ export class AccountController {
   @ApiQuery({ name: 'round', description: 'Round number', required: false })
   @ApiQuery({ name: 'senderOrReceiver', description: 'One address that current address interacted with', required: false })
   @ApiQuery({ name: 'isRelayed', description: 'Returns isRelayed transactions details', required: false, type: Boolean })
+  @ApiQuery({ name: 'withRelayedScresults', description: 'If set to true, will include smart contract results that resemble relayed transactions', required: false, type: Boolean })
   async getAccountTransactionsCount(
     @Param('address', ParseAddressPipe) address: string,
     @Query('sender', ParseAddressPipe) sender?: string,
@@ -947,6 +953,7 @@ export class AccountController {
     @Query('round', ParseIntPipe) round?: number,
     @Query('senderOrReceiver', ParseAddressPipe) senderOrReceiver?: string,
     @Query('isRelayed', new ParseBoolPipe) isRelayed?: boolean,
+    @Query('withRelayedScresults', ParseBoolPipe) withRelayedScresults?: boolean,
   ): Promise<number> {
 
     return await this.transactionService.getTransactionCount(new TransactionFilter({
@@ -964,6 +971,7 @@ export class AccountController {
       senderOrReceiver,
       isRelayed,
       round,
+      withRelayedScresults,
     }), address);
   }
 
@@ -995,6 +1003,7 @@ export class AccountController {
   @ApiQuery({ name: 'withLogs', description: 'Return logs for transfers. When "withLogs" parameter is applied, complexity estimation is 200', required: false })
   @ApiQuery({ name: 'withOperations', description: 'Return operations for transfers. When "withOperations" parameter is applied, complexity estimation is 200', required: false })
   @ApiQuery({ name: 'withActionTransferValue', description: 'Returns value in USD and EGLD for transferred tokens within the action attribute', required: false })
+  @ApiQuery({ name: 'withRefunds', description: 'Include refund transactions', required: false })
   async getAccountTransfers(
     @Param('address', ParseAddressPipe) address: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
@@ -1021,6 +1030,7 @@ export class AccountController {
     @Query('withLogs', new ParseBoolPipe) withLogs?: boolean,
     @Query('withOperations', new ParseBoolPipe) withOperations?: boolean,
     @Query('withActionTransferValue', ParseBoolPipe) withActionTransferValue?: boolean,
+    @Query('withRefunds', ParseBoolPipe) withRefunds?: boolean,
   ): Promise<Transaction[]> {
     const options = TransactionQueryOptions.applyDefaultOptions(
       size, { withScamInfo, withUsername, withBlockInfo, withOperations, withLogs, withActionTransferValue });
@@ -1042,6 +1052,7 @@ export class AccountController {
       senderOrReceiver,
       relayer,
       round,
+      withRefunds,
     }),
       new QueryPagination({ from, size }),
       options,
@@ -1065,6 +1076,7 @@ export class AccountController {
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
   @ApiQuery({ name: 'round', description: 'Round number', required: false })
   @ApiQuery({ name: 'senderOrReceiver', description: 'One address that current address interacted with', required: false })
+  @ApiQuery({ name: 'withRefunds', description: 'Include refund transactions', required: false })
   async getAccountTransfersCount(
     @Param('address', ParseAddressPipe) address: string,
     @Query('sender', ParseAddressArrayPipe) sender?: string[],
@@ -1080,6 +1092,7 @@ export class AccountController {
     @Query('after', ParseIntPipe) after?: number,
     @Query('round', ParseIntPipe) round?: number,
     @Query('senderOrReceiver', ParseAddressPipe) senderOrReceiver?: string,
+    @Query('withRefunds', ParseBoolPipe) withRefunds?: boolean,
   ): Promise<number> {
     return await this.transferService.getTransfersCount(new TransactionFilter({
       address,
@@ -1096,6 +1109,7 @@ export class AccountController {
       after,
       senderOrReceiver,
       round,
+      withRefunds,
     }));
   }
 
@@ -1116,6 +1130,7 @@ export class AccountController {
     @Query('after', ParseIntPipe) after?: number,
     @Query('round', ParseIntPipe) round?: number,
     @Query('senderOrReceiver', ParseAddressPipe) senderOrReceiver?: string,
+    @Query('withRefunds', ParseBoolPipe) withRefunds?: boolean,
   ): Promise<number> {
     return await this.transferService.getTransfersCount(new TransactionFilter({
       address,
@@ -1132,6 +1147,7 @@ export class AccountController {
       after,
       senderOrReceiver,
       round,
+      withRefunds,
     }));
   }
 

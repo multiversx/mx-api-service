@@ -336,6 +336,7 @@ export class CollectionController {
   @ApiQuery({ name: 'withLogs', description: 'Return logs for transactions', required: false, type: Boolean })
   @ApiQuery({ name: 'withScamInfo', description: 'Returns scam information', required: false, type: Boolean })
   @ApiQuery({ name: 'withUsername', description: 'Integrates username in assets for all addresses present in the transactions', required: false, type: Boolean })
+  @ApiQuery({ name: 'withRelayedScresults', description: 'If set to true, will include smart contract results that resemble relayed transactions', required: false, type: Boolean })
   async getCollectionTransactions(
     @Param('collection', ParseCollectionPipe) identifier: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
@@ -357,6 +358,7 @@ export class CollectionController {
     @Query('withLogs', new ParseBoolPipe) withLogs?: boolean,
     @Query('withScamInfo', new ParseBoolPipe) withScamInfo?: boolean,
     @Query('withUsername', new ParseBoolPipe) withUsername?: boolean,
+    @Query('withRelayedScresults', ParseBoolPipe) withRelayedScresults?: boolean,
   ) {
     const options = TransactionQueryOptions.applyDefaultOptions(size, { withScResults, withOperations, withLogs, withScamInfo, withUsername });
 
@@ -365,7 +367,7 @@ export class CollectionController {
       throw new HttpException('Collection not found', HttpStatus.NOT_FOUND);
     }
 
-    return await this.transactionService.getTransactions(new TransactionFilter({
+    const transactionFilter = new TransactionFilter({
       sender,
       receivers: receiver,
       token: identifier,
@@ -379,7 +381,11 @@ export class CollectionController {
       after,
       order,
       round,
-    }), new QueryPagination({ from, size }), options);
+      withRelayedScresults,
+    });
+    TransactionFilter.validate(transactionFilter, size);
+
+    return await this.transactionService.getTransactions(transactionFilter, new QueryPagination({ from, size }), options);
   }
 
   @Get("/collections/:collection/transactions/count")
@@ -396,6 +402,7 @@ export class CollectionController {
   @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
   @ApiQuery({ name: 'round', description: 'Filter by round number', required: false })
+  @ApiQuery({ name: 'withRelayedScresults', description: 'If set to true, will include smart contract results that resemble relayed transactions', required: false, type: Boolean })
   async getCollectionTransactionsCount(
     @Param('collection', ParseCollectionPipe) identifier: string,
     @Query('sender', ParseAddressPipe) sender?: string,
@@ -408,6 +415,7 @@ export class CollectionController {
     @Query('before', ParseIntPipe) before?: number,
     @Query('after', ParseIntPipe) after?: number,
     @Query('round', ParseIntPipe) round?: number,
+    @Query('withRelayedScresults', ParseBoolPipe) withRelayedScresults?: boolean,
   ) {
     const isCollection = await this.collectionService.isCollection(identifier);
     if (!isCollection) {
@@ -426,6 +434,7 @@ export class CollectionController {
       before,
       after,
       round,
+      withRelayedScresults,
     }));
   }
 
