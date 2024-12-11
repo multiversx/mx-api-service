@@ -1,19 +1,9 @@
 import axios from "axios";
 import { config } from "./config/env.config";
-import { ChainSimulatorUtils } from "./utils/test.utils";
 import { NftType } from 'src/common/indexer/entities/nft.type';
 import { NftSubType } from "src/endpoints/nfts/entities/nft.sub.type";
-import { fundAddress, issueMultipleNftsCollections } from "./utils/chain.simulator.operations";
 
 describe('NFTs e2e tests with chain simulator', () => {
-  beforeAll(async () => {
-    await ChainSimulatorUtils.waitForEpoch(2);
-    await fundAddress(config.chainSimulatorUrl, config.aliceAddress);
-    await issueMultipleNftsCollections(config.chainSimulatorUrl, config.aliceAddress, 2, 5, 'both');
-    // await issueMultipleMetaESDTCollections(config.chainSimulatorUrl, config.aliceAddress, 2, 5);
-    await new Promise((resolve) => setTimeout(resolve, 5000));
-  });
-
   describe('GET /nfts', () => {
     it('should return status code 200', async () => {
       const response = await axios.get(`${config.apiServiceUrl}/nfts`);

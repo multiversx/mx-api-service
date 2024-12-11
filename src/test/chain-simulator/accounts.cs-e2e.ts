@@ -1,14 +1,7 @@
 import axios from "axios";
 import { config } from "./config/env.config";
-import { ChainSimulatorUtils } from "./utils/test.utils";
 
 describe('Accounts e2e tests with chain simulator', () => {
-  beforeAll(async () => {
-    await ChainSimulatorUtils.waitForEpoch(2);
-    await ChainSimulatorUtils.deployPingPongSc(config.aliceAddress);
-    await new Promise((resolve) => setTimeout(resolve, 20000));
-  });
-
   describe('GET /accounts with query parameters', () => {
     it('should return paginated results with from and size parameters', async () => {
       const response = await axios.get(`${config.apiServiceUrl}/accounts?from=0&size=5`);
