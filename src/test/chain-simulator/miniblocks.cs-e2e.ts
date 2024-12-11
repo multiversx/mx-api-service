@@ -1,16 +1,7 @@
 import axios from 'axios';
 import { config } from './config/env.config';
-import { ChainSimulatorUtils } from './utils/test.utils';
 
 describe('Miniblocks e2e tests with chain simulator', () => {
-  beforeAll(async () => {
-    await ChainSimulatorUtils.waitForEpoch(2);
-  });
-
-  beforeEach(() => {
-    jest.clearAllMocks();
-  });
-
   describe('GET /miniblocks', () => {
     it('should return status code 200', async () => {
       const response = await axios.get(`${config.apiServiceUrl}/miniblocks`);

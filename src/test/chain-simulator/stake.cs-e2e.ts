@@ -1,12 +1,7 @@
 import axios from "axios";
 import { config } from "./config/env.config";
-import { ChainSimulatorUtils } from "./utils/test.utils";
 
 describe('Stake e2e tests with chain simulator', () => {
-  beforeAll(async () => {
-    await ChainSimulatorUtils.waitForEpoch(2);
-  });
-
   describe('GET /stake', () => {
     let stakeResponse: any;
 

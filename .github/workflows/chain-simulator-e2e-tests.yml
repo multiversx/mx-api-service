@@ -49,6 +49,9 @@ jobs:
         run: |
           npm run start:mainnet:e2e &
           sleep 10 # Wait a little more to ensure the API is fully up
+      
+      - name: Prepare Test Data
+        run: npm run prepare:test-data
 
       - name: Run e2e tests
         run: npm run test:cs-e2e

@@ -1,19 +1,7 @@
 import axios from 'axios';
 import { config } from './config/env.config';
-import { ChainSimulatorUtils } from './utils/test.utils';
-import { fundAddress } from './utils/chain.simulator.operations';
 
 describe('Pool e2e tests with chain simulator', () => {
-  beforeAll(async () => {
-    await ChainSimulatorUtils.waitForEpoch(2);
-    await fundAddress(config.chainSimulatorUrl, config.aliceAddress);
-    await new Promise((resolve) => setTimeout(resolve, 20000));
-  });
-
-  beforeEach(() => {
-    jest.clearAllMocks();
-  });
-
   describe('GET /pool', () => {
     it('should return status code 200', async () => {
       const response = await axios.get(`${config.apiServiceUrl}/pool`);

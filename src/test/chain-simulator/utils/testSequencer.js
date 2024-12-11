@@ -5,6 +5,7 @@ class CustomSequencer extends Sequencer {
     const orderPath = [
       'tokens.cs-e2e.ts',
       'collections.cs-e2e.ts',
+      'nfts.cs-e2e.ts',
       'network.cs-e2e.ts',
       'hello.cs-e2e.ts',
       'blocks.cs-e2e.ts',
