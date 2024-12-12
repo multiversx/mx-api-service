@@ -478,5 +478,421 @@ describe('Collections e2e tests with chain simulator', () => {
       }
     });
   });
+
+  describe('GET /collections/:collection/transactions', () => {
+    it('should return transactions for a collection of type NFT', async () => {
+      const collectionNFT = await axios.get(`${config.apiServiceUrl}/collections?size=1&type=NonFungibleESDT`);
+      const collectionNFTDetails = collectionNFT.data.map((collection: any) => collection.collection);
+
+      const response = await axios.get(`${config.apiServiceUrl}/collections/${collectionNFTDetails[0]}/transactions`);
+
+      expect(response.status).toBe(200);
+      expect(response.data.length).toStrictEqual(5);
+    });
+
+    it('should return transactions for a collection of type SFT', async () => {
+      const collectionSFT = await axios.get(`${config.apiServiceUrl}/collections?size=1&type=SemiFungibleESDT`);
+      const collectionSFTDetails = collectionSFT.data.map((collection: any) => collection.collection);
+
+      const response = await axios.get(`${config.apiServiceUrl}/collections/${collectionSFTDetails[0]}/transactions`);
+
+      expect(response.status).toBe(200);
+      expect(response.data.length).toStrictEqual(5);
+    });
+
+    it('should return transactions for a collection of type MetaESDT', async () => {
+      const collectionMetaESDT = await axios.get(`${config.apiServiceUrl}/collections?size=1&type=MetaESDT`);
+      const collectionMetaESDTDetails = collectionMetaESDT.data.map((collection: any) => collection.collection);
+
+      const response = await axios.get(`${config.apiServiceUrl}/collections/${collectionMetaESDTDetails[0]}/transactions`);
+
+      expect(response.status).toBe(200);
+      expect(response.data.length).toStrictEqual(5);
+    });
+
+    it('should return transactions for a collection of type NFT and contains properties', async () => {
+      const collectionNFT = await axios.get(`${config.apiServiceUrl}/collections?size=1&type=NonFungibleESDT`);
+      const collectionNFTDetails = collectionNFT.data.map((collection: any) => collection.collection);
+
+      const response = await axios.get(`${config.apiServiceUrl}/collections/${collectionNFTDetails[0]}/transactions`);
+
+      expect(response.status).toBe(200);
+
+      const expectedProps = [
+        'txHash',
+        'gasLimit',
+        'gasPrice',
+        'gasUsed',
+        'miniBlockHash',
+        'nonce',
+        'receiver',
+        'receiverShard',
+        'round',
+        'sender',
+        'senderShard',
+        'signature',
+        'status',
+        'value',
+        'fee',
+        'timestamp',
+        'data',
+        'function',
+        'action',
+      ];
+
+      for (const transaction of response.data) {
+        for (const prop of expectedProps) {
+          expect(transaction).toHaveProperty(prop);
+        }
+      }
+    });
+
+    it('should return transactions for a collection of type NFT with a specific sender', async () => {
+      const collectionNFT = await axios.get(`${config.apiServiceUrl}/collections?size=1&type=NonFungibleESDT`);
+      const collectionNFTDetails = collectionNFT.data.map((collection: any) => collection.collection);
+
+      const response = await axios.get(`${config.apiServiceUrl}/collections/${collectionNFTDetails[0]}/transactions?sender=${config.aliceAddress}`);
+
+      expect(response.status).toBe(200);
+      expect(response.data.length).toStrictEqual(5);
+
+      for (const transaction of response.data) {
+        expect(transaction.sender).toStrictEqual(config.aliceAddress);
+      }
+    });
+
+    it('should return transactions for a collection of type NFT with a specific receiver', async () => {
+      const collectionNFT = await axios.get(`${config.apiServiceUrl}/collections?size=1&type=NonFungibleESDT`);
+      const collectionNFTDetails = collectionNFT.data.map((collection: any) => collection.collection);
+
+      const response = await axios.get(`${config.apiServiceUrl}/collections/${collectionNFTDetails[0]}/transactions?receiver=${config.aliceAddress}`);
+
+      expect(response.status).toBe(200);
+      expect(response.data.length).toStrictEqual(5);
+
+      for (const transaction of response.data) {
+        expect(transaction.receiver).toStrictEqual(config.aliceAddress);
+      }
+    });
+
+    it('should return transactions for a collection of type NFT with a specific senderShard', async () => {
+      const collectionNFT = await axios.get(`${config.apiServiceUrl}/collections?size=1&type=NonFungibleESDT`);
+      const collectionNFTDetails = collectionNFT.data.map((collection: any) => collection.collection);
+
+      const response = await axios.get(`${config.apiServiceUrl}/collections/${collectionNFTDetails[0]}/transactions?senderShard=1`);
+
+      expect(response.status).toBe(200);
+      expect(response.data.length).toStrictEqual(5);
+
+      for (const transaction of response.data) {
+        expect(transaction.senderShard).toStrictEqual(1);
+      }
+    });
+
+    it('should return transactions for a collection of type NFT with a specific receiverShard', async () => {
+      const collectionNFT = await axios.get(`${config.apiServiceUrl}/collections?size=1&type=NonFungibleESDT`);
+      const collectionNFTDetails = collectionNFT.data.map((collection: any) => collection.collection);
+
+      const response = await axios.get(`${config.apiServiceUrl}/collections/${collectionNFTDetails[0]}/transactions?receiverShard=1`);
+
+      expect(response.status).toBe(200);
+      expect(response.data.length).toStrictEqual(5);
+
+      for (const transaction of response.data) {
+        expect(transaction.receiverShard).toStrictEqual(1);
+      }
+    });
+
+    it('should return transactions for a collection of type NFT with a specific miniBlockHash', async () => {
+      const collectionNFT = await axios.get(`${config.apiServiceUrl}/collections?size=1&type=NonFungibleESDT`);
+      const collectionNFTDetails = collectionNFT.data.map((collection: any) => collection.collection);
+      const txCollectionMiniBlockHash = await axios.get(`${config.apiServiceUrl}/collections/${collectionNFTDetails[0]}/transactions`);
+      const miniBlockHash = txCollectionMiniBlockHash.data.map((transaction: any) => transaction.miniBlockHash);
+
+      const response = await axios.get(`${config.apiServiceUrl}/collections/${collectionNFTDetails[0]}/transactions?miniBlockHash=${miniBlockHash[0]}`);
+
+      expect(response.status).toBe(200);
+      expect(response.data.length).toStrictEqual(1);
+
+      for (const transaction of response.data) {
+        expect(transaction.miniBlockHash).toStrictEqual(miniBlockHash[0]);
+      }
+    });
+
+    it('should return transactions for a collection of type NFT with a specific hashes', async () => {
+      const collectionNFT = await axios.get(`${config.apiServiceUrl}/collections?size=1&type=NonFungibleESDT`);
+      const collectionNFTDetails = collectionNFT.data.map((collection: any) => collection.collection);
+
+      const txCollectionHashes = await axios.get(`${config.apiServiceUrl}/collections/${collectionNFTDetails[0]}/transactions`);
+      const hashes = txCollectionHashes.data.map((transaction: any) => transaction.txHash);
+
+      const response = await axios.get(`${config.apiServiceUrl}/collections/${collectionNFTDetails[0]}/transactions?hashes=${hashes[0]},${hashes[1]}`);
+
+      expect(response.status).toBe(200);
+      expect(response.data.length).toStrictEqual(2);
+
+      const returnedHashes = response.data.map((transaction: any) => transaction.txHash);
+      expect(returnedHashes).toContain(hashes[0]);
+      expect(returnedHashes).toContain(hashes[1]);
+    });
+
+    it('should return transactions for a collection of type NFT with a specific status', async () => {
+      const collectionNFT = await axios.get(`${config.apiServiceUrl}/collections?size=1&type=NonFungibleESDT`);
+      const collectionNFTDetails = collectionNFT.data.map((collection: any) => collection.collection);
+
+      const response = await axios.get(`${config.apiServiceUrl}/collections/${collectionNFTDetails[0]}/transactions?status=success`);
+
+      expect(response.status).toBe(200);
+      expect(response.data.length).toStrictEqual(5);
+
+      for (const transaction of response.data) {
+        expect(transaction.status).toStrictEqual('success');
+      }
+    });
+
+    it('should return transactions for a collection of type NFT with a specific function', async () => {
+      const collectionNFT = await axios.get(`${config.apiServiceUrl}/collections?size=1&type=NonFungibleESDT`);
+      const collectionNFTDetails = collectionNFT.data.map((collection: any) => collection.collection);
+
+      const response = await axios.get(`${config.apiServiceUrl}/collections/${collectionNFTDetails[0]}/transactions?function=ESDTNFTCreate`);
+
+      expect(response.status).toBe(200);
+      expect(response.data.length).toStrictEqual(5);
+
+      for (const transaction of response.data) {
+        expect(transaction.function).toStrictEqual('ESDTNFTCreate');
+      }
+    });
+
+    it('should return transactions for a collection of type NFT with a specific before', async () => {
+      const collectionNFT = await axios.get(`${config.apiServiceUrl}/collections?size=1&type=NonFungibleESDT`);
+      const collectionNFTDetails = collectionNFT.data.map((collection: any) => collection.collection);
+
+      const txCollectionBefore = await axios.get(`${config.apiServiceUrl}/collections/${collectionNFTDetails[0]}/transactions`);
+      const before = txCollectionBefore.data.map((transaction: any) => transaction.timestamp);
+
+      const response = await axios.get(`${config.apiServiceUrl}/collections/${collectionNFTDetails[0]}/transactions?before=${before[1]}`);
+
+      expect(response.status).toBe(200);
+      expect(response.data.length).toStrictEqual(4);
+
+      const returnedTimestamps = response.data.map((transaction: any) => transaction.timestamp);
+      expect(returnedTimestamps).toContain(before[1]);
+    });
+
+    it('should return transactions for a collection of type NFT with a specific after', async () => {
+      const collectionNFT = await axios.get(`${config.apiServiceUrl}/collections?size=1&type=NonFungibleESDT`);
+      const collectionNFTDetails = collectionNFT.data.map((collection: any) => collection.collection);
+
+      const txCollectionAfter = await axios.get(`${config.apiServiceUrl}/collections/${collectionNFTDetails[0]}/transactions`);
+      const after = txCollectionAfter.data.map((transaction: any) => transaction.timestamp);
+
+      const response = await axios.get(`${config.apiServiceUrl}/collections/${collectionNFTDetails[0]}/transactions?after=${after[1]}`);
+
+      expect(response.status).toBe(200);
+      expect(response.data.length).toStrictEqual(2);
+
+      const returnedTimestamps = response.data.map((transaction: any) => transaction.timestamp);
+      expect(returnedTimestamps).toContain(after[1]);
+    });
+
+    it('should return transactions for a collection of type NFT with a specific round', async () => {
+      const collectionNFT = await axios.get(`${config.apiServiceUrl}/collections?size=1&type=NonFungibleESDT`);
+      const collectionNFTDetails = collectionNFT.data.map((collection: any) => collection.collection);
+
+      const txCollectionRound = await axios.get(`${config.apiServiceUrl}/collections/${collectionNFTDetails[0]}/transactions`);
+      const round = txCollectionRound.data.map((transaction: any) => transaction.round);
+
+      const response = await axios.get(`${config.apiServiceUrl}/collections/${collectionNFTDetails[0]}/transactions?round=${round[1]}`);
+
+      expect(response.status).toBe(200);
+      expect(response.data.length).toStrictEqual(1);
+
+      for (const transaction of response.data) {
+        expect(transaction.round).toStrictEqual(round[1]);
+      }
+    });
+
+    it('should return transactions for a collection of type NFT paginated', async () => {
+      const collectionNFT = await axios.get(`${config.apiServiceUrl}/collections?size=1&type=NonFungibleESDT`);
+      const collectionNFTDetails = collectionNFT.data.map((collection: any) => collection.collection);
+
+      const response = await axios.get(`${config.apiServiceUrl}/collections/${collectionNFTDetails[0]}/transactions?from=0&size=1`);
+
+      expect(response.status).toBe(200);
+      expect(response.data.length).toStrictEqual(1);
+    });
+
+    it('should return different transactions when using different pagination parameters', async () => {
+      const collectionNFT = await axios.get(`${config.apiServiceUrl}/collections?size=1&type=NonFungibleESDT`);
+      const collectionNFTDetails = collectionNFT.data.map((collection: any) => collection.collection);
+
+      const firstPage = await axios.get(`${config.apiServiceUrl}/collections/${collectionNFTDetails[0]}/transactions?from=0&size=1`);
+      const secondPage = await axios.get(`${config.apiServiceUrl}/collections/${collectionNFTDetails[0]}/transactions?from=1&size=2`);
+
+      expect(firstPage.status).toBe(200);
+      expect(secondPage.status).toBe(200);
+
+      expect(firstPage.data.length).toStrictEqual(1);
+      expect(secondPage.data.length).toStrictEqual(2);
+
+      const firstPageHash = firstPage.data[0].txHash;
+      const secondPageHashes = secondPage.data.map((tx: any) => tx.txHash);
+
+      expect(secondPageHashes).not.toContain(firstPageHash);
+    });
+
+    it('should return transactions for a collection of type NFT with operations when withOperations is true', async () => {
+      const collectionNFT = await axios.get(`${config.apiServiceUrl}/collections?size=1&type=NonFungibleESDT`);
+      const collectionNFTDetails = collectionNFT.data.map((collection: any) => collection.collection);
+
+      const response = await axios.get(`${config.apiServiceUrl}/collections/${collectionNFTDetails[0]}/transactions?withOperations=true`);
+
+      expect(response.status).toBe(200);
+      expect(response.data.length).toStrictEqual(5);
+
+      for (const transaction of response.data) {
+        expect(transaction.operations).toBeDefined();
+      }
+    });
+
+    it('should throw 400 bad request when withOperations=true and size=51', async () => {
+      const collectionNFT = await axios.get(`${config.apiServiceUrl}/collections?size=1&type=NonFungibleESDT`);
+      const collectionNFTDetails = collectionNFT.data.map((collection: any) => collection.collection);
+
+      try {
+        await axios.get(`${config.apiServiceUrl}/collections/${collectionNFTDetails[0]}/transactions?withOperations=true&size=51`);
+        fail('Should have thrown 400 error');
+      } catch (error: any) {
+        expect(error.response.status).toBe(400);
+      }
+    });
+
+    it('should return transactions for a collection of type NFT with operations when withLogs is true', async () => {
+      const collectionNFT = await axios.get(`${config.apiServiceUrl}/collections?size=1&type=NonFungibleESDT`);
+      const collectionNFTDetails = collectionNFT.data.map((collection: any) => collection.collection);
+
+      const response = await axios.get(`${config.apiServiceUrl}/collections/${collectionNFTDetails[0]}/transactions?withLogs=true`);
+
+      expect(response.status).toBe(200);
+      expect(response.data.length).toStrictEqual(5);
+
+      for (const transaction of response.data) {
+        expect(transaction.logs).toBeDefined();
+      }
+    });
+
+    it('should throw 400 bad request when withLogs=true and size=51', async () => {
+      const collectionNFT = await axios.get(`${config.apiServiceUrl}/collections?size=1&type=NonFungibleESDT`);
+      const collectionNFTDetails = collectionNFT.data.map((collection: any) => collection.collection);
+
+      try {
+        await axios.get(`${config.apiServiceUrl}/collections/${collectionNFTDetails[0]}/transactions?withLogs=true&size=51`);
+        fail('Should have thrown 400 error');
+      } catch (error: any) {
+        expect(error.response.status).toBe(400);
+      }
+    });
+  });
+
+  describe('GET /collections/:collection/transactions/count', () => {
+    it('should return the count of transactions for a collection of type NFT', async () => {
+      const collectionNFT = await axios.get(`${config.apiServiceUrl}/collections?size=1&type=NonFungibleESDT`);
+      const collectionNFTDetails = collectionNFT.data.map((collection: any) => collection.collection);
+
+      const response = await axios.get(`${config.apiServiceUrl}/collections/${collectionNFTDetails[0]}/transactions/count`);
+
+      expect(response.status).toBe(200);
+      expect(response.data).toStrictEqual(5);
+    });
+
+    it('should return the count of transactions for a collection of type NFT with a specific sender', async () => {
+      const collectionNFT = await axios.get(`${config.apiServiceUrl}/collections?size=1&type=NonFungibleESDT`);
+      const collectionNFTDetails = collectionNFT.data.map((collection: any) => collection.collection);
+
+      const response = await axios.get(`${config.apiServiceUrl}/collections/${collectionNFTDetails[0]}/transactions/count?sender=${config.aliceAddress}`);
+
+      expect(response.status).toBe(200);
+      expect(response.data).toStrictEqual(5);
+    });
+
+    it('should return the count of transactions for a collection of type NFT with a specific receiver', async () => {
+      const collectionNFT = await axios.get(`${config.apiServiceUrl}/collections?size=1&type=NonFungibleESDT`);
+      const collectionNFTDetails = collectionNFT.data.map((collection: any) => collection.collection);
+
+      const response = await axios.get(`${config.apiServiceUrl}/collections/${collectionNFTDetails[0]}/transactions/count?receiver=${config.aliceAddress}`);
+
+      expect(response.status).toBe(200);
+      expect(response.data).toStrictEqual(5);
+    });
+
+    it('should return the count of transactions for a collection of type NFT with a specific senderShard', async () => {
+      const collectionNFT = await axios.get(`${config.apiServiceUrl}/collections?size=1&type=NonFungibleESDT`);
+      const collectionNFTDetails = collectionNFT.data.map((collection: any) => collection.collection);
+
+      const response = await axios.get(`${config.apiServiceUrl}/collections/${collectionNFTDetails[0]}/transactions/count?senderShard=1`);
+
+      expect(response.status).toBe(200);
+      expect(response.data).toStrictEqual(5);
+    });
+
+    it('should return the count of transactions for a collection of type NFT with a specific receiverShard', async () => {
+      const collectionNFT = await axios.get(`${config.apiServiceUrl}/collections?size=1&type=NonFungibleESDT`);
+      const collectionNFTDetails = collectionNFT.data.map((collection: any) => collection.collection);
+
+      const response = await axios.get(`${config.apiServiceUrl}/collections/${collectionNFTDetails[0]}/transactions/count?receiverShard=1`);
+
+      expect(response.status).toBe(200);
+      expect(response.data).toStrictEqual(5);
+    });
+
+    it('should return the count of transactions for a collection of type NFT with a specific miniBlockHash', async () => {
+      const collectionNFT = await axios.get(`${config.apiServiceUrl}/collections?size=1&type=NonFungibleESDT`);
+      const collectionNFTDetails = collectionNFT.data.map((collection: any) => collection.collection);
+      const txCollectionMiniBlockHash = await axios.get(`${config.apiServiceUrl}/collections/${collectionNFTDetails[0]}/transactions`);
+      const miniBlockHash = txCollectionMiniBlockHash.data.map((transaction: any) => transaction.miniBlockHash);
+
+      const response = await axios.get(`${config.apiServiceUrl}/collections/${collectionNFTDetails[0]}/transactions/count?miniBlockHash=${miniBlockHash[0]}`);
+
+      expect(response.status).toBe(200);
+      expect(response.data).toStrictEqual(1);
+    });
+
+    it('should return the count of transactions for a collection of type NFT with a specific hashes', async () => {
+      const collectionNFT = await axios.get(`${config.apiServiceUrl}/collections?size=1&type=NonFungibleESDT`);
+      const collectionNFTDetails = collectionNFT.data.map((collection: any) => collection.collection);
+
+      const txCollectionHashes = await axios.get(`${config.apiServiceUrl}/collections/${collectionNFTDetails[0]}/transactions`);
+      const hashes = txCollectionHashes.data.map((transaction: any) => transaction.txHash);
+
+      const response = await axios.get(`${config.apiServiceUrl}/collections/${collectionNFTDetails[0]}/transactions/count?hashes=${hashes[0]},${hashes[1]}`);
+
+      expect(response.status).toBe(200);
+      expect(response.data).toStrictEqual(2);
+    });
+
+    it('should return the count of transactions for a collection of type NFT with a specific status', async () => {
+      const collectionNFT = await axios.get(`${config.apiServiceUrl}/collections?size=1&type=NonFungibleESDT`);
+      const collectionNFTDetails = collectionNFT.data.map((collection: any) => collection.collection);
+
+      const response = await axios.get(`${config.apiServiceUrl}/collections/${collectionNFTDetails[0]}/transactions/count?status=success`);
+
+      expect(response.status).toBe(200);
+      expect(response.data).toStrictEqual(5);
+    });
+
+    it('should return the count of transaction for a collection of type NFT with a specific round', async () => {
+      const collectionNFT = await axios.get(`${config.apiServiceUrl}/collections?size=1&type=NonFungibleESDT`);
+      const collectionNFTDetails = collectionNFT.data.map((collection: any) => collection.collection);
+
+      const txCollectionRound = await axios.get(`${config.apiServiceUrl}/collections/${collectionNFTDetails[0]}/transactions`);
+      const round = txCollectionRound.data.map((transaction: any) => transaction.round);
+
+      const response = await axios.get(`${config.apiServiceUrl}/collections/${collectionNFTDetails[0]}/transactions/count?round=${round[1]}`);
+
+      expect(response.status).toBe(200);
+      expect(response.data).toStrictEqual(1);
+    });
+  });
 });
 
