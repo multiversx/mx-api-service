@@ -1674,7 +1674,7 @@ describe('Accounts e2e tests with chain simulator', () => {
       expect(response.status).toBe(200);
 
       for (const nft of response.data) {
-        expect(nft.tags).toContain(nftTags);
+        expect(nft.tags).toEqual(nftTags);
       }
     });
 
