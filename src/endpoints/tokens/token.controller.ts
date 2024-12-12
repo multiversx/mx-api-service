@@ -59,7 +59,7 @@ export class TokenController {
     @Query('identifiers', ParseArrayPipe) identifiers?: string[],
     @Query('sort', new ParseEnumPipe(TokenSort)) sort?: TokenSort,
     @Query('order', new ParseEnumPipe(SortOrder)) order?: SortOrder,
-    @Query('includeMetaESDT', new ParseBoolPipe) includeMetaESDT?: boolean,
+    @Query('includeMetaESDT', ParseBoolPipe) includeMetaESDT?: boolean,
     @Query('mexPairType', new ParseEnumArrayPipe(MexPairType)) mexPairType?: MexPairType[],
     @Query('priceSource', new ParseEnumPipe(TokenAssetsPriceSourceType)) priceSource?: TokenAssetsPriceSourceType,
   ): Promise<TokenDetailed[]> {
@@ -87,7 +87,7 @@ export class TokenController {
     @Query('type', new ParseEnumPipe(TokenType)) type?: TokenType,
     @Query('identifier', ParseTokenPipe) identifier?: string,
     @Query('identifiers', ParseArrayPipe) identifiers?: string[],
-    @Query('includeMetaESDT', new ParseBoolPipe) includeMetaESDT?: boolean,
+    @Query('includeMetaESDT', ParseBoolPipe) includeMetaESDT?: boolean,
     @Query('mexPairType', new ParseEnumArrayPipe(MexPairType)) mexPairType?: MexPairType[],
     @Query('priceSource', new ParseEnumPipe(TokenAssetsPriceSourceType)) priceSource?: TokenAssetsPriceSourceType,
   ): Promise<number> {
@@ -102,7 +102,7 @@ export class TokenController {
     @Query('type', new ParseEnumPipe(TokenType)) type?: TokenType,
     @Query('identifier', ParseTokenPipe) identifier?: string,
     @Query('identifiers', ParseArrayPipe) identifiers?: string[],
-    @Query('includeMetaESDT', new ParseBoolPipe) includeMetaESDT?: boolean,
+    @Query('includeMetaESDT', ParseBoolPipe) includeMetaESDT?: boolean,
     @Query('mexPairType', new ParseEnumArrayPipe(MexPairType)) mexPairType?: MexPairType[],
     @Query('priceSource', new ParseEnumPipe(TokenAssetsPriceSourceType)) priceSource?: TokenAssetsPriceSourceType,
   ): Promise<number> {
@@ -116,7 +116,7 @@ export class TokenController {
   @ApiNotFoundResponse({ description: 'Token not found' })
   async getToken(
     @Param('identifier', ParseTokenPipe) identifier: string,
-    @Query('denominated', new ParseBoolPipe) denominated?: boolean,
+    @Query('denominated', ParseBoolPipe) denominated?: boolean,
   ): Promise<TokenDetailed> {
     const supplyOptions = { denominated };
     const token = await this.tokenService.getToken(identifier, supplyOptions);
@@ -134,7 +134,7 @@ export class TokenController {
   @ApiNotFoundResponse({ description: 'Token not found' })
   async getTokenSupply(
     @Param('identifier', ParseTokenPipe) identifier: string,
-    @Query('denominated', new ParseBoolPipe) denominated?: boolean,
+    @Query('denominated', ParseBoolPipe) denominated?: boolean,
   ): Promise<TokenSupplyResult> {
     const isToken = await this.tokenService.isToken(identifier);
     if (!isToken) {
@@ -237,12 +237,12 @@ export class TokenController {
     @Query('round', ParseIntPipe) round?: number,
     @Query('order', new ParseEnumPipe(SortOrder)) order?: SortOrder,
     @Query('fields', ParseArrayPipe) fields?: string[],
-    @Query('withScResults', new ParseBoolPipe) withScResults?: boolean,
-    @Query('withOperations', new ParseBoolPipe) withOperations?: boolean,
-    @Query('withLogs', new ParseBoolPipe) withLogs?: boolean,
-    @Query('withScamInfo', new ParseBoolPipe) withScamInfo?: boolean,
-    @Query('withUsername', new ParseBoolPipe) withUsername?: boolean,
-    @Query('withBlockInfo', new ParseBoolPipe) withBlockInfo?: boolean,
+    @Query('withScResults', ParseBoolPipe) withScResults?: boolean,
+    @Query('withOperations', ParseBoolPipe) withOperations?: boolean,
+    @Query('withLogs', ParseBoolPipe) withLogs?: boolean,
+    @Query('withScamInfo', ParseBoolPipe) withScamInfo?: boolean,
+    @Query('withUsername', ParseBoolPipe) withUsername?: boolean,
+    @Query('withBlockInfo', ParseBoolPipe) withBlockInfo?: boolean,
     @Query('withActionTransferValue', ParseBoolPipe) withActionTransferValue?: boolean,
     @Query('withRelayedScresults', ParseBoolPipe) withRelayedScresults?: boolean,
   ) {
@@ -411,9 +411,9 @@ export class TokenController {
     @Query('round', ParseIntPipe) round?: number,
     @Query('fields', ParseArrayPipe) fields?: string[],
     @Query('order', new ParseEnumPipe(SortOrder)) order?: SortOrder,
-    @Query('withScamInfo', new ParseBoolPipe) withScamInfo?: boolean,
-    @Query('withUsername', new ParseBoolPipe) withUsername?: boolean,
-    @Query('withBlockInfo', new ParseBoolPipe) withBlockInfo?: boolean,
+    @Query('withScamInfo', ParseBoolPipe) withScamInfo?: boolean,
+    @Query('withUsername', ParseBoolPipe) withUsername?: boolean,
+    @Query('withBlockInfo', ParseBoolPipe) withBlockInfo?: boolean,
     @Query('withActionTransferValue', ParseBoolPipe) withActionTransferValue?: boolean,
   ): Promise<Transaction[]> {
     const isToken = await this.tokenService.isToken(identifier);
