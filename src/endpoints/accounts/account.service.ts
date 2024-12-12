@@ -328,6 +328,24 @@ export class AccountService {
 
     const verifiedAccounts = await this.cachingService.get<string[]>(CacheInfo.VerifiedAccounts.key);
 
+    if (options.addresses && options.addresses.length > 0) {
+      const gatewayResponse: any = await this.gatewayService.getAccountsBulk(options.addresses);
+      const finalAccounts: Record<string, AccountDetailed> = {};
+
+      for (const address in gatewayResponse) {
+        if (gatewayResponse.hasOwnProperty(address)) {
+          finalAccounts[address] = gatewayResponse[address] as AccountDetailed;
+        }
+      }
+
+      for (const account of accounts) {
+        const gatewayAccount = finalAccounts[account.address];
+        if (gatewayAccount) {
+          account.balance = gatewayAccount.balance;
+        }
+      }
+    }
+
     for (const account of accounts) {
       account.shard = AddressUtils.computeShard(AddressUtils.bech32Decode(account.address), shardCount);
       account.assets = assets[account.address];
@@ -357,8 +375,6 @@ export class AccountService {
       if (verifiedAccounts && verifiedAccounts.includes(account.address)) {
         account.isVerified = true;
       }
-
-
     }
 
     return accounts;
