@@ -1,5 +1,7 @@
 import axios from "axios";
 import { config } from "./config/env.config";
+import { NftType } from "src/endpoints/nfts/entities/nft.type";
+import { NftSubType } from "src/endpoints/nfts/entities/nft.sub.type";
 
 describe('Accounts e2e tests with chain simulator', () => {
   describe('GET /accounts with query parameters', () => {
@@ -1524,6 +1526,179 @@ describe('Accounts e2e tests with chain simulator', () => {
       expect(response.status).toBe(200);
       expect(typeof response.data).toBe('number');
       expect(response.data).toStrictEqual(expectedCount);
+    });
+  });
+
+  describe('GET /accounts/:address/nfts', () => {
+    it('should return accounts nfts', async () => {
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/nfts`);
+      expect(response.status).toBe(200);
+      expect(response.data.length).toStrictEqual(25);
+    });
+
+    it('should return accounts nfts paginated', async () => {
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/nfts?from=0&size=10`);
+      expect(response.status).toBe(200);
+      expect(response.data.length).toStrictEqual(10);
+    });
+
+    it('should return different results for different from values', async () => {
+      const firstResponse = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/nfts?from=0&size=1`);
+      const secondResponse = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/nfts?from=1&size=1`);
+
+      expect(firstResponse.status).toBe(200);
+      expect(secondResponse.status).toBe(200);
+      expect(firstResponse.data.length).toBe(1);
+      expect(secondResponse.data.length).toBe(1);
+      expect(firstResponse.data[0].identifier).not.toBe(secondResponse.data[0].identifier);
+    });
+
+    it('should return accounts nfts for a size > 25', async () => {
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/nfts?size=26`);
+      expect(response.status).toBe(200);
+      expect(response.data.length).toStrictEqual(26);
+    });
+
+    it('should return accounts nfts filtered by search parameter', async () => {
+      const accountNfts = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/nfts?size=1`);
+      const nft = accountNfts.data[0];
+
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/nfts?search=${nft.identifier}`);
+      expect(response.status).toBe(200);
+      expect(response.data.length).toStrictEqual(1);
+      expect(response.data[0].identifier).toStrictEqual(nft.identifier);
+    });
+
+    it('should return accounts nfts filtered by identifiers parameter', async () => {
+      const accountNfts = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/nfts?size=2`);
+      const nfts = accountNfts.data;
+      const firstNft = nfts[0].identifier;
+      const secondNft = nfts[1].identifier;
+
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/nfts?identifiers=${firstNft},${secondNft}`);
+      expect(response.status).toBe(200);
+      expect(response.data.length).toStrictEqual(2);
+      expect(response.data[0].identifier).toStrictEqual(firstNft);
+      expect(response.data[1].identifier).toStrictEqual(secondNft);
+    });
+
+    it('should return accounts nfts filtered by type parameter', async () => {
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/nfts?type=${NftType.NonFungibleESDT}`);
+      expect(response.status).toBe(200);
+
+      for (const nft of response.data) {
+        expect(nft.type).toStrictEqual(NftType.NonFungibleESDT);
+      }
+    });
+
+    it('should return accounts sfts filtered by type parameter', async () => {
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/nfts?type=${NftType.SemiFungibleESDT}`);
+      expect(response.status).toBe(200);
+
+      for (const nft of response.data) {
+        expect(nft.type).toStrictEqual(NftType.SemiFungibleESDT);
+      }
+    });
+
+    it('should return accounts MetaESDTs filtered by type parameter', async () => {
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/nfts?type=${NftType.MetaESDT}`);
+      expect(response.status).toBe(200);
+
+      for (const nft of response.data) {
+        expect(nft.type).toStrictEqual(NftType.MetaESDT);
+      }
+    });
+
+    it('should return accounts nftsV2 filtered by subType parameter', async () => {
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/nfts?subType=${NftSubType.NonFungibleESDTv2}`);
+      expect(response.status).toBe(200);
+
+      for (const nft of response.data) {
+        expect(nft.subType).toStrictEqual(NftSubType.NonFungibleESDTv2);
+      }
+    });
+
+    it('should return accounts sft filtered by subType parameter', async () => {
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/nfts?subType=${NftSubType.SemiFungibleESDT}`);
+      expect(response.status).toBe(200);
+
+      for (const nft of response.data) {
+        expect(nft.subType).toStrictEqual(NftSubType.SemiFungibleESDT);
+      }
+    });
+
+    it('should return accounts MetaESDTs filtered by subType parameter', async () => {
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/nfts?subType=${NftSubType.MetaESDT}`);
+      expect(response.status).toBe(200);
+
+      for (const nft of response.data) {
+        expect(nft.subType).toStrictEqual(NftSubType.MetaESDT);
+      }
+    });
+
+    it('should return accounts nfts filtered by collection parameter', async () => {
+      const accountCollections = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/collections`);
+      const collection = accountCollections.data[0].collection;
+
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/nfts?collection=${collection}`);
+      expect(response.status).toBe(200);
+      expect(response.data.length).toStrictEqual(5);
+    });
+
+    it('should return accounts nfts filtered by collections parameter', async () => {
+      const accountCollections = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/collections?size=2`);
+      const collections = accountCollections.data.map((c: any) => c.collection).join(',');
+
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/nfts?collections=${collections}`);
+      expect(response.status).toBe(200);
+      expect(response.data.length).toStrictEqual(10);
+    });
+
+    it('should return accounts nfts filtered by name parameter', async () => {
+      const accountNfts = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/nfts?size=1`);
+      const nftName = accountNfts.data[0].name;
+
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/nfts?name=${nftName}`);
+      expect(response.status).toBe(200);
+
+      for (const nft of response.data) {
+        expect(nft.name).toStrictEqual(nftName);
+      }
+    });
+
+    it('should return accounts nfts filtered by tags parameter', async () => {
+      const accountNfts = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/nfts?size=1`);
+      const nftTags = accountNfts.data[0].tags;
+
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/nfts?tags=${nftTags}`);
+      expect(response.status).toBe(200);
+
+      for (const nft of response.data) {
+        expect(nft.tags).toContain(nftTags);
+      }
+    });
+
+    it('should return accounts nfts filtered by creator parameter', async () => {
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/nfts?creator=${config.aliceAddress}`);
+      expect(response.status).toBe(200);
+
+      for (const nft of response.data) {
+        expect(nft.creator).toStrictEqual(config.aliceAddress);
+      }
+    });
+
+    it('should return accounts nfts filtered by hasUris parameter', async () => {
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/nfts?hasUris=true`);
+      expect(response.status).toBe(200);
+
+      for (const nft of response.data) {
+        expect(nft.uris).toBeDefined();
+        expect(nft.uris.length).toBeGreaterThan(0);
+        expect(nft.uris).toEqual([
+          "aHR0cHM6Ly9leGFtcGxlLmNvbS9uZnQucG5n",
+          "aHR0cHM6Ly9leGFtcGxlLmNvbS9uZnQuanNvbg=="
+        ]);
+      }
     });
   });
 });
