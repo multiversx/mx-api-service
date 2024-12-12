@@ -364,10 +364,18 @@ describe('Collections e2e tests with chain simulator', () => {
     });
 
     it('should return nfts count for a collection with identifiers', async () => {
-      const collectionsIdentifiers = await axios.get(`${config.apiServiceUrl}/collections?size=2&type=NonFungibleESDT`);
+      const collectionsIdentifiers = await axios
+        .get(`${config.apiServiceUrl}/collections?size=1&type=NonFungibleESDT`);
+
       const collection = collectionsIdentifiers.data.map((collection: any) => collection.collection);
 
-      const response = await axios.get(`${config.apiServiceUrl}/collections/${collection[0]}/nfts/count?identifiers=${[collection[0], collection[1]]}`);
+      const collectionNft = await axios
+        .get(`${config.apiServiceUrl}/collections/${collection}/nfts`);
+
+      const collectionNftIdentifiers = collectionNft.data.map((nft: any) => nft.identifier);
+
+      const response = await axios
+        .get(`${config.apiServiceUrl}/collections/${collection[0]}/nfts/count?identifiers=${[collectionNftIdentifiers[0], collectionNftIdentifiers[1]]}`);
 
       expect(response.status).toBe(200);
       expect(response.data).toStrictEqual(2);
