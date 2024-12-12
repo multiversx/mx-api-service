@@ -436,7 +436,7 @@ describe('Collections e2e tests with chain simulator', () => {
 
       for (const account of response.data) {
         expect(account.address).toBe(config.aliceAddress);
-        expect(account.balance).toStrictEqual(1);
+        expect(account.balance).toStrictEqual("1");
       }
     });
 
@@ -451,7 +451,7 @@ describe('Collections e2e tests with chain simulator', () => {
 
       for (const account of response.data) {
         expect(account.address).toBe(config.aliceAddress);
-        expect(account.balance).toStrictEqual(1);
+        expect(account.balance).toStrictEqual("1");
       }
     });
 
@@ -466,7 +466,7 @@ describe('Collections e2e tests with chain simulator', () => {
 
       for (const account of response.data) {
         expect(account.address).toBe(config.aliceAddress);
-        expect(account.balance).toStrictEqual(1);
+        expect(account.balance).toStrictEqual("1");
       }
     });
   });
