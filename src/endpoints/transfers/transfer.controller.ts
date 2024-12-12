@@ -65,12 +65,12 @@ export class TransferController {
     @Query('order', new ParseEnumPipe(SortOrder)) order?: SortOrder,
     @Query('fields', ParseArrayPipe) fields?: string[],
     @Query('relayer', ParseAddressPipe) relayer?: string,
-    @Query('isRelayed', new ParseBoolPipe) isRelayed?: boolean,
-    @Query('withScamInfo', new ParseBoolPipe) withScamInfo?: boolean,
-    @Query('withUsername', new ParseBoolPipe) withUsername?: boolean,
-    @Query('withBlockInfo', new ParseBoolPipe) withBlockInfo?: boolean,
-    @Query('withLogs', new ParseBoolPipe) withLogs?: boolean,
-    @Query('withOperations', new ParseBoolPipe) withOperations?: boolean,
+    @Query('isRelayed', ParseBoolPipe) isRelayed?: boolean,
+    @Query('withScamInfo', ParseBoolPipe) withScamInfo?: boolean,
+    @Query('withUsername', ParseBoolPipe) withUsername?: boolean,
+    @Query('withBlockInfo', ParseBoolPipe) withBlockInfo?: boolean,
+    @Query('withLogs', ParseBoolPipe) withLogs?: boolean,
+    @Query('withOperations', ParseBoolPipe) withOperations?: boolean,
     @Query('withActionTransferValue', ParseBoolPipe) withActionTransferValue?: boolean,
     @Query('withRefunds', ParseBoolPipe) withRefunds?: boolean,
   ): Promise<Transaction[]> {
@@ -132,7 +132,7 @@ export class TransferController {
     @Query('before', ParseIntPipe) before?: number,
     @Query('after', ParseIntPipe) after?: number,
     @Query('round', ParseIntPipe) round?: number,
-    @Query('isRelayed', new ParseBoolPipe) isRelayed?: boolean,
+    @Query('isRelayed', ParseBoolPipe) isRelayed?: boolean,
     @Query('withRefunds', ParseBoolPipe) withRefunds?: boolean,
   ): Promise<number> {
     return await this.transferService.getTransfersCount(new TransactionFilter({
