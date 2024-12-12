@@ -25,7 +25,7 @@ async function prepareTestData() {
     await ChainSimulatorUtils.deployPingPongSc(config.aliceAddress);
     console.log('✓ Deployed PingPong smart contract');
 
-    await new Promise((resolve) => setTimeout(resolve, 20000));
+    await new Promise((resolve) => setTimeout(resolve, 23000));
 
     console.log('Test data preparation completed successfully!');
   } catch (error) {
