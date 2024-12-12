@@ -134,6 +134,7 @@ describe('Token Service', () => {
           provide: DataApiService,
           useValue: {
             getEsdtTokenPrice: jest.fn(),
+            getEgldPrice: jest.fn(),
           },
         },
         {
@@ -236,6 +237,27 @@ describe('Token Service', () => {
         marketCap: 39400951.72791124,
         supply: '946536241555565591724502',
         circulatingSupply: '946536241555565591724502',
+      }));
+    });
+
+    it('should return token case insensitive', async () => {
+      const data = require('../../mocks/tokens.mock.json');
+
+      tokenService.getAllTokens = jest.fn().mockResolvedValue(data);
+
+      tokenService.applyTickerFromAssets = jest.fn().mockResolvedValue(undefined);
+      tokenService.applySupply = jest.fn().mockResolvedValue(undefined);
+      tokenService.getTokenRoles = jest.fn().mockResolvedValue([]);
+
+      const result = await tokenService.getToken('wEglD-bd4D79');
+      expect(tokenService.getAllTokens).toHaveBeenCalledTimes(1);
+      expect(tokenService.applyTickerFromAssets).toHaveBeenCalledTimes(1);
+      expect(tokenService.applySupply).toHaveBeenCalledTimes(1);
+      expect(tokenService.getTokenRoles).toHaveBeenCalledTimes(1);
+      expect(result).toEqual(expect.objectContaining({
+        identifier: 'WEGLD-bd4d79',
+        type: 'FungibleESDT',
+        price: 41.626458658528016,
       }));
     });
 
@@ -669,6 +691,7 @@ describe('Token Service', () => {
         jest.spyOn(tokenService as any, 'applyMexPairTradesCount').mockImplementation(() => Promise.resolve());
         jest.spyOn(cacheService as any, 'batchApplyAll').mockImplementation(() => Promise.resolve());
         jest.spyOn(dataApiService, 'getEsdtTokenPrice').mockResolvedValue(100);
+        jest.spyOn(dataApiService, 'getEgldPrice').mockResolvedValue(100);
         jest.spyOn(tokenService as any, 'fetchTokenDataFromUrl').mockResolvedValue(100);
         jest.spyOn(esdtService, 'getTokenSupply').mockResolvedValue(mockTokenSupply as EsdtSupply);
 
@@ -689,13 +712,14 @@ describe('Token Service', () => {
           expect(assetsService.getTokenAssets).toHaveBeenCalledWith(mockToken.identifier);
           mockToken.name = mockTokenAssets.name;
         });
-        expect(assetsService.getTokenAssets).toHaveBeenCalledTimes(mockTokens.length);
+        expect(assetsService.getTokenAssets).toHaveBeenCalledTimes(mockTokens.length + 1); // add 1 for EGLD-000000
 
 
         expect((collectionService as any).getNftCollections).toHaveBeenCalledWith(expect.anything(), { type: [TokenType.MetaESDT] });
         mockNftCollections.forEach(collection => {
           mockTokens.push(new TokenDetailed({
             type: TokenType.MetaESDT,
+            subType: collection.subType,
             identifier: collection.collection,
             name: collection.name,
             timestamp: collection.timestamp,
@@ -741,6 +765,24 @@ describe('Token Service', () => {
           token => token.isLowLiquidity ? 0 : (token.marketCap ?? 0),
           token => token.transactions ?? 0,
         );
+
+        mockTokens.push(new TokenDetailed({
+          identifier: 'EGLD-000000',
+          name: 'EGLD',
+          canPause: false,
+          canUpgrade: false,
+          canWipe: false,
+          price: 100,
+          decimals: 18,
+          isLowLiquidity: false,
+          marketCap: 0,
+          circulatingSupply: '0',
+          supply: '0',
+          assets: {
+            name: 'mockName',
+          } as TokenAssets,
+        }));
+
         expect(result).toEqual(mockTokens);
       });
     });

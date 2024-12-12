@@ -30,6 +30,7 @@ export class GatewayService {
     GatewayComponentRequest.addressNftByNonce,
     GatewayComponentRequest.vmQuery,
     GatewayComponentRequest.transactionPool,
+    GatewayComponentRequest.guardianData,
   ]);
 
   private readonly deepHistoryRequestsSet: Set<String> = new Set([
@@ -92,6 +93,11 @@ export class GatewayService {
   async getAddressDetails(address: string): Promise<Account> {
     const result = await this.get(`address/${address}`, GatewayComponentRequest.addressDetails);
     return result;
+  }
+
+  async getAccountsBulk(addresses: string[]): Promise<Account[]> {
+    const result = await this.create('address/bulk', GatewayComponentRequest.addressesBulk, addresses);
+    return result.accounts;
   }
 
   async getEsdtSupply(identifier: string): Promise<EsdtSupply> {
@@ -166,7 +172,7 @@ export class GatewayService {
   }
 
   async getTransactionPool(): Promise<TxPoolGatewayResponse> {
-    return await this.get(`transaction/pool?fields=nonce,sender,receiver,gaslimit,gasprice,receiverusername,data,value`, GatewayComponentRequest.transactionPool);
+    return await this.get(`transaction/pool?fields=*`, GatewayComponentRequest.transactionPool);
   }
 
   async getTransaction(txHash: string): Promise<Transaction | undefined> {
