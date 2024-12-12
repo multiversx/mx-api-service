@@ -1,12 +1,7 @@
 import axios from "axios";
-import { ChainSimulatorUtils } from "./utils/test.utils";
 import { config } from "./config/env.config";
 
 describe('Transactions e2e tests with chain simulator', () => {
-  beforeAll(async () => {
-    await ChainSimulatorUtils.waitForEpoch(2);
-  });
-
   describe('GET /transactions', () => {
     it('should return status code 200 and a list of transactions', async () => {
       const response = await axios.get(`${config.apiServiceUrl}/transactions`);
