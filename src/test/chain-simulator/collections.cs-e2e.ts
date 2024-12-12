@@ -311,7 +311,7 @@ describe('Collections e2e tests with chain simulator', () => {
       expect(response.data.length).toStrictEqual(5);
       expect(response.data.owner).toBeUndefined();
 
-      expect(response.data.every((nft: any) => nft.supply === 10)).toBe(true);
+      expect(response.data.every((nft: any) => nft.supply === "10")).toBe(true);
       expect(response.data.every((nft: any) => nft.type === NftType.SemiFungibleESDT)).toBe(true);
     });
   });
