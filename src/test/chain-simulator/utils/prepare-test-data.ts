@@ -13,11 +13,11 @@ async function prepareTestData() {
     await fundAddress(config.chainSimulatorUrl, config.aliceAddress);
     console.log('✓ Funded address');
 
-    await issueMultipleNftsCollections(config.chainSimulatorUrl, config.aliceAddress, 2, 5, 'both');
-    console.log('✓ Issued NFT collections');
-
     await issueMultipleEsdts(config.chainSimulatorUrl, config.aliceAddress, 5);
     console.log('✓ Issued ESDTs');
+
+    await issueMultipleNftsCollections(config.chainSimulatorUrl, config.aliceAddress, 2, 5, 'both');
+    console.log('✓ Issued NFT collections');
 
     await issueMultipleMetaESDTCollections(config.chainSimulatorUrl, config.aliceAddress, 2, 5);
     console.log('✓ Issued Meta-ESDT collections');
