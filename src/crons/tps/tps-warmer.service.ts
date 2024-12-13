@@ -47,7 +47,10 @@ export class TpsWarmerService {
     const shardCount = await this.protocolService.getShardCount();
     const metaChainShardId = this.apiConfigService.getMetaChainShardId();
 
-    const shards = [...Array.from({ length: shardCount }, (_, i) => i), metaChainShardId];
+    const shards = [...Array.from({ length: shardCount }, (_, i) => i)];
+    if (!this.apiConfigService.isSovereignActive()) {
+      shards.push(metaChainShardId);
+    }
 
     await Promise.all(shards.map(shardId => this.processTpsForShard(shardId)));
   }
