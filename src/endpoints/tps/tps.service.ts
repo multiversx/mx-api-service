@@ -63,7 +63,10 @@ export class TpsService {
 
   async getTransactionCount(): Promise<number> {
     const totalShards = await this.protocolService.getShardCount();
-    const shardIds = [...Array.from({ length: totalShards }, (_, i) => i), this.apiConfigService.getMetaChainShardId()];
+    const shardIds = [...Array.from({ length: totalShards }, (_, i) => i)];
+    if (!this.apiConfigService.isSovereignActive()) {
+      shardIds.push(this.apiConfigService.getMetaChainShardId());
+    }
 
     let totalTransactions = 0;
 

@@ -52,7 +52,10 @@ export class ProtocolService {
       result.push(i);
     }
 
-    result.push(metaChainShardId);
+    if (!this.apiConfigService.isSovereignActive()) {
+      result.push(metaChainShardId);
+    }
+
     return result;
   }
 
