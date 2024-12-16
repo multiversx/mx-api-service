@@ -1759,7 +1759,7 @@ describe('Accounts e2e tests with chain simulator', () => {
       const accountNfts = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/nfts?size=1&type=${NftType.NonFungibleESDT}`);
       const nft = accountNfts.data[0];
 
-      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/nfts/count?search=${nft.identifier}`);
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/nfts/count?search=${nft.name}`);
       expect(response.status).toBe(200);
       expect(response.data).toBeGreaterThanOrEqual(1);
     });
@@ -1851,7 +1851,7 @@ describe('Accounts e2e tests with chain simulator', () => {
       const accountNfts = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/nfts?size=2&type=${NftType.NonFungibleESDT}`);
       const nft = accountNfts.data[0];
 
-      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/nfts/c?search=${nft.identifier}`);
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/nfts/c?search=${nft.name}`);
       expect(response.status).toBe(200);
       expect(response.data).toBeGreaterThanOrEqual(1);
     });
