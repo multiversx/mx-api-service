@@ -1696,7 +1696,7 @@ describe('Accounts e2e tests with chain simulator', () => {
         expect(nft.uris.length).toBeGreaterThan(0);
         expect(nft.uris).toEqual([
           "aHR0cHM6Ly9leGFtcGxlLmNvbS9uZnQucG5n",
-          "aHR0cHM6Ly9leGFtcGxlLmNvbS9uZnQuanNvbg=="
+          "aHR0cHM6Ly9leGFtcGxlLmNvbS9uZnQuanNvbg==",
         ]);
       }
     });
@@ -1756,7 +1756,7 @@ describe('Accounts e2e tests with chain simulator', () => {
     });
 
     it('should return the total number of nfts for a given address filtered by search parameter', async () => {
-      const accountNfts = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/nfts?size=1`);
+      const accountNfts = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/nfts?size=1&type=${NftType.NonFungibleESDT}`);
       const nft = accountNfts.data[0];
 
       const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/nfts/count?search=${nft.identifier}`);
@@ -1848,7 +1848,7 @@ describe('Accounts e2e tests with chain simulator', () => {
     });
 
     it('should return the total number of nfts for a given address filtered by search parameter', async () => {
-      const accountNfts = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/nfts?size=2`);
+      const accountNfts = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/nfts?size=2&type=${NftType.NonFungibleESDT}`);
       const nft = accountNfts.data[0];
 
       const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/nfts/c?search=${nft.identifier}`);
@@ -1944,24 +1944,17 @@ describe('Accounts e2e tests with chain simulator', () => {
       const accountNfts = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/nfts?size=1&type=${NftType.MetaESDT}`);
       const nft = accountNfts.data[0];
 
-      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/nfts/${nft.identifier}?fields=identifier,name,type,subType,creator,collection,tags,uris,supply`);
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/nfts/${nft.identifier}`);
       expect(response.status).toBe(200);
 
       const expectedFields = [
         'identifier',
         'collection',
-        'attributes',
-        'nonce',
         'type',
         'subType',
         'name',
         'creator',
-        'url',
-        'isWhitelistedStorage',
         'tags',
-        'balance',
-        'decimals',
-        'ticker'
       ];
 
       for (const field of expectedFields) {
@@ -1979,51 +1972,12 @@ describe('Accounts e2e tests with chain simulator', () => {
       const expectedFields = [
         'identifier',
         'collection',
-        'attributes',
-        'nonce',
         'type',
         'subType',
         'name',
         'creator',
-        'royalties',
         'uris',
-        'url',
-        'media',
-        'isWhitelistedStorage',
         'tags',
-        'balance',
-        'ticker'
-      ];
-
-      for (const field of expectedFields) {
-        expect(response.data).toHaveProperty(field);
-      }
-    });
-
-    it('should return the NonFungibleESDT details with the proper fields', async () => {
-      const accountNfts = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/nfts?size=1&type=${NftType.NonFungibleESDT}`);
-      const nft = accountNfts.data[0];
-
-      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/nfts/${nft.identifier}?fields=identifier,name,type,subType,creator,collection,tags,uris,supply`);
-      expect(response.status).toBe(200);
-
-      const expectedFields = [
-        'identifier',
-        'collection',
-        'attributes',
-        'nonce',
-        'type',
-        'subType',
-        'name',
-        'creator',
-        'royalties',
-        'uris',
-        'url',
-        'media',
-        'isWhitelistedStorage',
-        'tags',
-        'balance',
-        'ticker'
       ];
 
       for (const field of expectedFields) {

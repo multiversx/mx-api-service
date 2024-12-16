@@ -619,7 +619,7 @@ describe('Collections e2e tests with chain simulator', () => {
       }
     });
 
-    it('should return transactions for a collection of type NFT with a specific hashes', async () => {
+    it('should return transactions for a collection of type NFT with specific hashes', async () => {
       const collectionNFT = await axios.get(`${config.apiServiceUrl}/collections?size=1&type=NonFungibleESDT`);
       const collectionNFTDetails = collectionNFT.data.map((collection: any) => collection.collection);
 
@@ -1035,7 +1035,7 @@ describe('Collections e2e tests with chain simulator', () => {
       }
     });
 
-    it('should return transfers for a collection of type NFT with a specific hashes', async () => {
+    it('should return transfers for a collection of type NFT with specific hashes', async () => {
       const collectionNFT = await axios.get(`${config.apiServiceUrl}/collections?size=1&type=NonFungibleESDT`);
       const collectionNFTDetails = collectionNFT.data.map((collection: any) => collection.collection);
 
