@@ -1,12 +1,7 @@
 import axios from 'axios';
 import { config } from "./config/env.config";
-import { ChainSimulatorUtils } from "./utils/test.utils";
 
 describe('Shards e2e tests with chain simulator', () => {
-  beforeAll(async () => {
-    await ChainSimulatorUtils.waitForEpoch(2);
-  });
-
   describe('GET /shards', () => {
     it('should return status code 200 and a list of shards', async () => {
       const response = await axios.get(`${config.apiServiceUrl}/shards`);
@@ -15,6 +10,7 @@ describe('Shards e2e tests with chain simulator', () => {
       expect(response.data).toBeInstanceOf(Array);
     });
   });
+
   describe('GET /shards with pagination', () => {
     it('should return status code 200 and paginated shards with default values', async () => {
       const response = await axios.get(`${config.apiServiceUrl}/shards`);

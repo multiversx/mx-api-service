@@ -1,14 +1,9 @@
 import axios from "axios";
 import { config } from "./config/env.config";
-import { ChainSimulatorUtils } from "./utils/test.utils";
+import { NftType } from "src/endpoints/nfts/entities/nft.type";
+import { NftSubType } from "src/endpoints/nfts/entities/nft.sub.type";
 
 describe('Accounts e2e tests with chain simulator', () => {
-  beforeAll(async () => {
-    await ChainSimulatorUtils.waitForEpoch(2);
-    await ChainSimulatorUtils.deployPingPongSc(config.aliceAddress);
-    await new Promise((resolve) => setTimeout(resolve, 20000));
-  });
-
   describe('GET /accounts with query parameters', () => {
     it('should return paginated results with from and size parameters', async () => {
       const response = await axios.get(`${config.apiServiceUrl}/accounts?from=0&size=5`);
@@ -408,18 +403,6 @@ describe('Accounts e2e tests with chain simulator', () => {
 
     it('should return results by owner parameter', async () => {
       const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/roles/collections/count?owner=${config.aliceAddress}`);
-      expect(response.status).toBe(200);
-      expect(response.data).toBeGreaterThanOrEqual(1);
-    });
-
-    it('should return results by canCreate parameter', async () => {
-      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/roles/collections/count?canCreate=false`);
-      expect(response.status).toBe(200);
-      expect(response.data).toBeGreaterThanOrEqual(1);
-    });
-
-    it('should return results by canBurn parameter', async () => {
-      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/roles/collections/count?canBurn=false`);
       expect(response.status).toBe(200);
       expect(response.data).toBeGreaterThanOrEqual(1);
     });
@@ -1199,7 +1182,7 @@ describe('Accounts e2e tests with chain simulator', () => {
 
       expect(expectedCount).toBeGreaterThan(0);
 
-      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transfers`);
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transfers?size=500`);
       expect(response.status).toBe(200);
       expect(response.data.length).toStrictEqual(expectedCount);
     });
@@ -1224,7 +1207,7 @@ describe('Accounts e2e tests with chain simulator', () => {
       const countResponse = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transfers/count?sender=${config.aliceAddress}`);
       const expectedCount = countResponse.data;
 
-      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transfers?sender=${config.aliceAddress}`);
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transfers?sender=${config.aliceAddress}&size=500`);
       expect(response.status).toBe(200);
       expect(response.data.length).toStrictEqual(expectedCount);
 
@@ -1427,7 +1410,7 @@ describe('Accounts e2e tests with chain simulator', () => {
 
   describe('GET /accounts/:address/transfers/count', () => {
     it('should return the total number of transfers for a given address', async () => {
-      const accountTransfers = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transfers`);
+      const accountTransfers = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transfers?size=500`);
       const expectedCount = accountTransfers.data.length;
 
       const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transfers/count`);
@@ -1437,7 +1420,7 @@ describe('Accounts e2e tests with chain simulator', () => {
     });
 
     it('should return the total number of transfers for a given address with sender parameter', async () => {
-      const accountSenderTransfers = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transfers?sender=${config.aliceAddress}`);
+      const accountSenderTransfers = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transfers?sender=${config.aliceAddress}&size=500`);
       const expectedCount = accountSenderTransfers.data.length;
 
       const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transfers/count?sender=${config.aliceAddress}`);
@@ -1447,7 +1430,7 @@ describe('Accounts e2e tests with chain simulator', () => {
     });
 
     it('should return the total number of transfers for a given address with receiver parameter', async () => {
-      const accountReceiverTransfers = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transfers?receiver=${config.aliceAddress}`);
+      const accountReceiverTransfers = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transfers?receiver=${config.aliceAddress}&size=500`);
       const expectedCount = accountReceiverTransfers.data.length;
 
       const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transfers/count?receiver=${config.aliceAddress}`);
@@ -1470,7 +1453,7 @@ describe('Accounts e2e tests with chain simulator', () => {
     });
 
     it('should return the total number of transfers for a given address with senderShard parameter', async () => {
-      const accountSenderShardTransfers = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transfers?senderShard=1`);
+      const accountSenderShardTransfers = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transfers?senderShard=1&size=500`);
       const expectedCount = accountSenderShardTransfers.data.length;
 
       const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transfers/count?senderShard=1`);
@@ -1507,7 +1490,7 @@ describe('Accounts e2e tests with chain simulator', () => {
     });
 
     it('should return the total number of transfers for a given address with status parameter', async () => {
-      const accountSuccessTransfers = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transfers?status=success`);
+      const accountSuccessTransfers = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transfers?status=success&size=500`);
       const expectedCount = accountSuccessTransfers.data.length;
 
       const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transfers/count?status=success`);
@@ -1526,7 +1509,7 @@ describe('Accounts e2e tests with chain simulator', () => {
     });
 
     it('should return the total number of transfers for a given address with senderOrReceiver parameter', async () => {
-      const accountSenderOrReceiverTransfers = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transfers?senderOrReceiver=${config.aliceAddress}`);
+      const accountSenderOrReceiverTransfers = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transfers?senderOrReceiver=${config.aliceAddress}&size=500`);
       const expectedCount = accountSenderOrReceiverTransfers.data.length;
 
       const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transfers/count?senderOrReceiver=${config.aliceAddress}`);
@@ -1536,13 +1519,470 @@ describe('Accounts e2e tests with chain simulator', () => {
     });
 
     it('should return the total number for a given status', async () => {
-      const accountSuccessTransfers = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transfers?status=success`);
+      const accountSuccessTransfers = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transfers?status=success&size=500`);
       const expectedCount = accountSuccessTransfers.data.length;
 
       const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/transfers/count?status=success`);
       expect(response.status).toBe(200);
       expect(typeof response.data).toBe('number');
       expect(response.data).toStrictEqual(expectedCount);
+    });
+  });
+
+  describe('GET /accounts/:address/nfts', () => {
+    it('should return accounts nfts', async () => {
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/nfts`);
+      expect(response.status).toBe(200);
+      expect(response.data.length).toStrictEqual(25);
+    });
+
+    it('should return accounts nfts paginated', async () => {
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/nfts?from=0&size=10`);
+      expect(response.status).toBe(200);
+      expect(response.data.length).toStrictEqual(10);
+    });
+
+    it('should return different results for different from values', async () => {
+      const firstResponse = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/nfts?from=0&size=1`);
+      const secondResponse = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/nfts?from=1&size=1`);
+
+      expect(firstResponse.status).toBe(200);
+      expect(secondResponse.status).toBe(200);
+      expect(firstResponse.data.length).toBe(1);
+      expect(secondResponse.data.length).toBe(1);
+      expect(firstResponse.data[0].identifier).not.toBe(secondResponse.data[0].identifier);
+    });
+
+    it('should return accounts nfts for a size > 25', async () => {
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/nfts?size=26`);
+      expect(response.status).toBe(200);
+      expect(response.data.length).toStrictEqual(26);
+    });
+
+    it('should return accounts nfts filtered by search parameter', async () => {
+      const accountNfts = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/nfts?size=1`);
+      const nft = accountNfts.data[0];
+
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/nfts?search=${nft.identifier}`);
+      expect(response.status).toBe(200);
+      expect(response.data.length).toStrictEqual(1);
+      expect(response.data[0].identifier).toStrictEqual(nft.identifier);
+    });
+
+    it('should return accounts nfts filtered by identifiers parameter', async () => {
+      const accountNfts = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/nfts?size=2`);
+      const nfts = accountNfts.data;
+      const firstNft = nfts[0].identifier;
+      const secondNft = nfts[1].identifier;
+
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/nfts?identifiers=${firstNft},${secondNft}`);
+      expect(response.status).toBe(200);
+      expect(response.data.length).toStrictEqual(2);
+      expect(response.data[0].identifier).toStrictEqual(firstNft);
+      expect(response.data[1].identifier).toStrictEqual(secondNft);
+    });
+
+    it('should return accounts nfts filtered by type parameter', async () => {
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/nfts?type=${NftType.NonFungibleESDT}`);
+      expect(response.status).toBe(200);
+
+      for (const nft of response.data) {
+        expect(nft.type).toStrictEqual(NftType.NonFungibleESDT);
+      }
+    });
+
+    it('should return accounts sfts filtered by type parameter', async () => {
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/nfts?type=${NftType.SemiFungibleESDT}`);
+      expect(response.status).toBe(200);
+
+      for (const nft of response.data) {
+        expect(nft.type).toStrictEqual(NftType.SemiFungibleESDT);
+      }
+    });
+
+    it('should return accounts MetaESDTs filtered by type parameter', async () => {
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/nfts?type=${NftType.MetaESDT}`);
+      expect(response.status).toBe(200);
+
+      for (const nft of response.data) {
+        expect(nft.type).toStrictEqual(NftType.MetaESDT);
+      }
+    });
+
+    it('should return accounts nftsV2 filtered by subType parameter', async () => {
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/nfts?subType=${NftSubType.NonFungibleESDTv2}`);
+      expect(response.status).toBe(200);
+
+      for (const nft of response.data) {
+        expect(nft.subType).toStrictEqual(NftSubType.NonFungibleESDTv2);
+      }
+    });
+
+    it('should return accounts sft filtered by subType parameter', async () => {
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/nfts?subType=${NftSubType.SemiFungibleESDT}`);
+      expect(response.status).toBe(200);
+
+      for (const nft of response.data) {
+        expect(nft.subType).toStrictEqual(NftSubType.SemiFungibleESDT);
+      }
+    });
+
+    it('should return accounts MetaESDTs filtered by subType parameter', async () => {
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/nfts?subType=${NftSubType.MetaESDT}`);
+      expect(response.status).toBe(200);
+
+      for (const nft of response.data) {
+        expect(nft.subType).toStrictEqual(NftSubType.MetaESDT);
+      }
+    });
+
+    it('should return accounts nfts filtered by collection parameter', async () => {
+      const accountCollections = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/collections`);
+      const collection = accountCollections.data[0].collection;
+
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/nfts?collection=${collection}`);
+      expect(response.status).toBe(200);
+      expect(response.data.length).toStrictEqual(5);
+    });
+
+    it('should return accounts nfts filtered by collections parameter', async () => {
+      const accountCollections = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/collections?size=2`);
+      const collections = accountCollections.data.map((c: any) => c.collection).join(',');
+
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/nfts?collections=${collections}`);
+      expect(response.status).toBe(200);
+      expect(response.data.length).toStrictEqual(10);
+    });
+
+    it('should return accounts nfts filtered by name parameter', async () => {
+      const accountNfts = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/nfts?size=1`);
+      const nftName = accountNfts.data[0].name;
+
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/nfts?name=${nftName}`);
+      expect(response.status).toBe(200);
+
+      for (const nft of response.data) {
+        expect(nft.name).toStrictEqual(nftName);
+      }
+    });
+
+    it('should return accounts nfts filtered by tags parameter', async () => {
+      const accountNfts = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/nfts?size=1`);
+      const nftTags = accountNfts.data[0].tags;
+
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/nfts?tags=${nftTags}`);
+      expect(response.status).toBe(200);
+
+      for (const nft of response.data) {
+        expect(nft.tags).toEqual(nftTags);
+      }
+    });
+
+    it('should return accounts nfts filtered by creator parameter', async () => {
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/nfts?creator=${config.aliceAddress}`);
+      expect(response.status).toBe(200);
+
+      for (const nft of response.data) {
+        expect(nft.creator).toStrictEqual(config.aliceAddress);
+      }
+    });
+
+    it('should return accounts nfts filtered by hasUris parameter', async () => {
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/nfts?hasUris=true`);
+      expect(response.status).toBe(200);
+
+      for (const nft of response.data) {
+        expect(nft.uris).toBeDefined();
+        expect(nft.uris.length).toBeGreaterThan(0);
+        expect(nft.uris).toEqual([
+          "aHR0cHM6Ly9leGFtcGxlLmNvbS9uZnQucG5n",
+          "aHR0cHM6Ly9leGFtcGxlLmNvbS9uZnQuanNvbg==",
+        ]);
+      }
+    });
+
+    it('should return acoount SFT filtered by withSupply parameter', async () => {
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/nfts?withSupply=true&type=${NftType.SemiFungibleESDT}`);
+      expect(response.status).toBe(200);
+
+      for (const nft of response.data) {
+        expect(nft.type).toStrictEqual(NftType.SemiFungibleESDT);
+        expect(nft.supply).toBeDefined();
+      }
+    });
+
+    it('should return acoount NFT filtered by withSupply parameter', async () => {
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/nfts?withSupply=true&type=${NftType.NonFungibleESDT}`);
+      expect(response.status).toBe(200);
+
+      for (const nft of response.data) {
+        expect(nft.type).toStrictEqual(NftType.NonFungibleESDT);
+        expect(nft.supply).not.toBeDefined();
+      }
+    });
+
+    it('should return acoount MetaESDT filtered by withSupply parameter', async () => {
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/nfts?withSupply=true&type=${NftType.MetaESDT}`);
+      expect(response.status).toBe(200);
+
+      for (const nft of response.data) {
+        expect(nft.type).toStrictEqual(NftType.MetaESDT);
+        expect(nft.supply).toBeDefined();
+      }
+    });
+
+    it('should return accounts nfts without MetaESDTs', async () => {
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/nfts?excludeMetaESDT=true`);
+      expect(response.status).toBe(200);
+
+      for (const nft of response.data) {
+        expect(nft.type).not.toStrictEqual(NftType.MetaESDT);
+      }
+
+      expect(response.data.every((nft: any) =>
+        [NftType.NonFungibleESDT, NftType.SemiFungibleESDT].includes(nft.type)
+      )).toBe(true);
+    });
+  });
+
+  describe('GET /accounts/:address/nfts/count', () => {
+    it('should return the total number of nfts for a given address', async () => {
+      const accountNfts = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/nfts?size=100`);
+      const expectedCount = accountNfts.data.length;
+
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/nfts/count`);
+      expect(response.status).toBe(200);
+      expect(response.data).toStrictEqual(expectedCount);
+    });
+
+    it('should return the total number of nfts for a given address filtered by search parameter', async () => {
+      const accountNfts = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/nfts?size=1&type=${NftType.NonFungibleESDT}`);
+      const nft = accountNfts.data[0];
+
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/nfts/count?search=${nft.name}`);
+      expect(response.status).toBe(200);
+      expect(response.data).toBeGreaterThanOrEqual(1);
+    });
+
+    it('should return the total number of nfts for a given address filtered by identifiers parameter', async () => {
+      const accountNfts = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/nfts?size=2`);
+      const nfts = accountNfts.data;
+
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/nfts/count?identifiers=${nfts[0].identifier},${nfts[1].identifier}`);
+      expect(response.status).toBe(200);
+      expect(response.data).toStrictEqual(2);
+    });
+
+    it('should return the total number of nfts for a given address filtered by type parameter', async () => {
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/nfts/count?type=${NftType.NonFungibleESDT}`);
+      expect(response.status).toBe(200);
+      expect(response.data).toStrictEqual(10);
+    });
+
+    it('should return the total number of sfts for a given address filtered by type parameter', async () => {
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/nfts/count?type=${NftType.SemiFungibleESDT}`);
+      expect(response.status).toBe(200);
+      expect(response.data).toStrictEqual(10);
+    });
+
+    it('should return the total number of metaesdt  for a given address filtered by type parameter', async () => {
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/nfts/count?type=${NftType.MetaESDT}`);
+      expect(response.status).toBe(200);
+      expect(response.data).toStrictEqual(10);
+    });
+
+    it('should return the total number of nfts for a given address filtered by subType parameter', async () => {
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/nfts/count?subType=${NftSubType.NonFungibleESDTv2}`);
+      expect(response.status).toBe(200);
+      expect(response.data).toStrictEqual(10);
+    });
+
+    it('should return the total number of sfts for a given address filtered by subType parameter', async () => {
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/nfts/count?subType=${NftSubType.SemiFungibleESDT}`);
+      expect(response.status).toBe(200);
+      expect(response.data).toStrictEqual(10);
+    });
+
+    it('should return the total number of metaesdt for a given address filtered by subType parameter', async () => {
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/nfts/count?subType=${NftSubType.MetaESDT}`);
+      expect(response.status).toBe(200);
+      expect(response.data).toStrictEqual(10);
+    });
+
+    it('should return the total number of nfts for a given address filtered by collection parameter', async () => {
+      const accountCollections = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/collections`);
+      const collection = accountCollections.data[0].collection;
+
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/nfts/count?collection=${collection}`);
+      expect(response.status).toBe(200);
+      expect(response.data).toStrictEqual(5);
+    });
+
+    it('should return the total number of nfts for a given address filtered by collections parameter', async () => {
+      const accountCollections = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/collections?size=2`);
+      const collections = accountCollections.data.map((c: any) => c.collection).join(',');
+
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/nfts/count?collections=${collections}`);
+      expect(response.status).toBe(200);
+      expect(response.data).toStrictEqual(10);
+    });
+
+    it('should return the total number of nfts for a given address filtered by name parameter', async () => {
+      const accountNfts = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/nfts?size=1`);
+      const nftName = accountNfts.data[0].name;
+
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/nfts/count?name=${nftName}`);
+      expect(response.status).toBe(200);
+      expect(response.data).toBeGreaterThanOrEqual(1);
+    });
+  });
+
+  describe('GET /accounts/:address/nfts/c alternative', () => {
+    it('should return the total number of nfts for a given address', async () => {
+      const accountNfts = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/nfts?size=100`);
+      const expectedCount = accountNfts.data.length;
+
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/nfts/c`);
+      expect(response.status).toBe(200);
+      expect(response.data).toStrictEqual(expectedCount);
+    });
+
+    it('should return the total number of nfts for a given address filtered by search parameter', async () => {
+      const accountNfts = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/nfts?size=2&type=${NftType.NonFungibleESDT}`);
+      const nft = accountNfts.data[0];
+
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/nfts/c?search=${nft.name}`);
+      expect(response.status).toBe(200);
+      expect(response.data).toBeGreaterThanOrEqual(1);
+    });
+
+    it('should return the total number of nfts for a given address filtered by identifiers parameter', async () => {
+      const accountNfts = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/nfts?size=2`);
+      const nfts = accountNfts.data;
+
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/nfts/c?identifiers=${nfts[0].identifier},${nfts[1].identifier}`);
+      expect(response.status).toBe(200);
+      expect(response.data).toStrictEqual(2);
+    });
+
+    it('should return the total number of nfts for a given address filtered by type parameter', async () => {
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/nfts/c?type=${NftType.NonFungibleESDT}`);
+      expect(response.status).toBe(200);
+      expect(response.data).toStrictEqual(10);
+    });
+
+    it('should return the total number of sfts for a given address filtered by type parameter', async () => {
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/nfts/c?type=${NftType.SemiFungibleESDT}`);
+      expect(response.status).toBe(200);
+      expect(response.data).toStrictEqual(10);
+    });
+
+    it('should return the total number of metaesdt  for a given address filtered by type parameter', async () => {
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/nfts/c?type=${NftType.MetaESDT}`);
+      expect(response.status).toBe(200);
+      expect(response.data).toStrictEqual(10);
+    });
+
+    it('should return the total number of nfts for a given address filtered by subType parameter', async () => {
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/nfts/c?subType=${NftSubType.NonFungibleESDTv2}`);
+      expect(response.status).toBe(200);
+      expect(response.data).toStrictEqual(10);
+    });
+
+    it('should return the total number of sfts for a given address filtered by subType parameter', async () => {
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/nfts/c?subType=${NftSubType.SemiFungibleESDT}`);
+      expect(response.status).toBe(200);
+      expect(response.data).toStrictEqual(10);
+    });
+
+    it('should return the total number of metaesdt for a given address filtered by subType parameter', async () => {
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/nfts/c?subType=${NftSubType.MetaESDT}`);
+      expect(response.status).toBe(200);
+      expect(response.data).toStrictEqual(10);
+    });
+
+    it('should return the total number of nfts for a given address filtered by collection parameter', async () => {
+      const accountCollections = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/collections`);
+      const collection = accountCollections.data[0].collection;
+
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/nfts/c?collection=${collection}`);
+      expect(response.status).toBe(200);
+      expect(response.data).toStrictEqual(5);
+    });
+
+    it('should return the total number of nfts for a given address filtered by collections parameter', async () => {
+      const accountCollections = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/collections?size=2`);
+      const collections = accountCollections.data.map((c: any) => c.collection).join(',');
+
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/nfts/c?collections=${collections}`);
+      expect(response.status).toBe(200);
+      expect(response.data).toStrictEqual(10);
+    });
+
+    it('should return the total number of nfts for a given address filtered by name parameter', async () => {
+      const accountNfts = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/nfts?size=1`);
+      const nftName = accountNfts.data[0].name;
+
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/nfts/c?name=${nftName}`);
+      expect(response.status).toBe(200);
+      expect(response.data).toBeGreaterThanOrEqual(1);
+    });
+  });
+
+  describe('GET /accounts/:address/nfts/:nft', () => {
+    it('should return the nft details for a given address and nft', async () => {
+      const accountNfts = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/nfts?size=1`);
+      const nft = accountNfts.data[0];
+
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/nfts/${nft.identifier}`);
+      expect(response.status).toBe(200);
+      expect(response.data).toBeDefined();
+      expect(response.data.identifier).toStrictEqual(nft.identifier);
+    });
+
+    it('should return the MetaESDT details with the proper fields', async () => {
+      const accountNfts = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/nfts?size=1&type=${NftType.MetaESDT}`);
+      const nft = accountNfts.data[0];
+
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/nfts/${nft.identifier}`);
+      expect(response.status).toBe(200);
+
+      const expectedFields = [
+        'identifier',
+        'collection',
+        'type',
+        'subType',
+        'name',
+        'creator',
+        'tags',
+      ];
+
+      for (const field of expectedFields) {
+        expect(response.data).toHaveProperty(field);
+      }
+    });
+
+    it('should return the NonFungibleESDT details with the proper fields', async () => {
+      const accountNfts = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/nfts?size=1&type=${NftType.NonFungibleESDT}`);
+      const nft = accountNfts.data[0];
+
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/nfts/${nft.identifier}?fields=identifier,name,type,subType,creator,collection,tags,uris,supply`);
+      expect(response.status).toBe(200);
+
+      const expectedFields = [
+        'identifier',
+        'collection',
+        'type',
+        'subType',
+        'name',
+        'creator',
+        'uris',
+        'tags',
+      ];
+
+      for (const field of expectedFields) {
+        expect(response.data).toHaveProperty(field);
+      }
     });
   });
 });

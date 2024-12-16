@@ -1,23 +1,10 @@
 import axios from 'axios';
 import { config } from './config/env.config';
-import { ChainSimulatorUtils } from './utils/test.utils';
-import { fundAddress, issueMultipleEsdts } from './utils/chain.simulator.operations';
 
 const BOB_ADDRESS =
   'erd1spyavw0956vq68xj8y4tenjpq2wd5a9p2c6j8gsz7ztyrnpxrruqzu66jx';
 
 describe('Tokens e2e tests with chain simulator', () => {
-  beforeAll(async () => {
-    await ChainSimulatorUtils.waitForEpoch(2);
-    await fundAddress(config.chainSimulatorUrl, config.aliceAddress);
-    await issueMultipleEsdts(config.chainSimulatorUrl, config.aliceAddress, 5);
-    await new Promise((resolve) => setTimeout(resolve, 50000));
-  });
-
-  beforeEach(() => {
-    jest.clearAllMocks();
-  });
-
   describe('GET /tokens', () => {
     it('should return status code 200 and a list of tokens', async () => {
       const response = await axios.get(`${config.apiServiceUrl}/tokens`);
