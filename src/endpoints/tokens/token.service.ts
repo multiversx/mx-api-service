@@ -758,6 +758,7 @@ export class TokenService {
     this.logger.log(`Fetched ${tokens.length} fungible tokens`);
 
     for (const token of tokens) {
+      this.logger.log(`Fetched ${token.identifier}`);
       const assets = await this.assetsService.getTokenAssets(token.identifier);
 
       if (assets && assets.name) {
