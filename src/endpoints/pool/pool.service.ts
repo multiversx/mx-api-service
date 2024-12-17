@@ -124,7 +124,8 @@ export class PoolService {
         (!filters.receiver || transaction.receiver === filters.receiver) &&
         (!filters.type || transaction.type === filters.type) &&
         (filters.senderShard === undefined || transaction.senderShard === filters.senderShard) &&
-        (filters.receiverShard === undefined || transaction.receiverShard === filters.receiverShard)
+        (filters.receiverShard === undefined || transaction.receiverShard === filters.receiverShard) &&
+        (filters.functions === undefined || transaction.function === undefined || filters.functions.indexOf(transaction.function) > -1)
       );
     });
   }
