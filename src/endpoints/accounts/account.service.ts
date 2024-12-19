@@ -20,7 +20,6 @@ import { AddressUtils, BinaryUtils, OriginLogger } from '@multiversx/sdk-nestjs-
 import { ApiService, ApiUtils } from "@multiversx/sdk-nestjs-http";
 import { GatewayService } from 'src/common/gateway/gateway.service';
 import { IndexerService } from "src/common/indexer/indexer.service";
-import { AccountOptionalFieldOption } from './entities/account.optional.field.options';
 import { AccountAssets } from 'src/common/assets/entities/account.assets';
 import { CacheInfo } from 'src/utils/cache.info';
 import { UsernameService } from '../usernames/username.service';
@@ -74,34 +73,29 @@ export class AccountService {
     return await this.indexerService.getAccountsCount(filter);
   }
 
-  async getAccount(address: string, fields?: string[], withGuardianInfo?: boolean): Promise<AccountDetailed | null> {
+  async getAccount(address: string, withGuardianInfo?: boolean, withTxCount?: boolean, withAccountScResults?: boolean, withTimestamp?: boolean): Promise<AccountDetailed | null> {
     if (!AddressUtils.isAddressValid(address)) {
       return null;
     }
 
     const provider: Provider | undefined = await this.providerService.getProvider(address);
 
-    let txCount: number = 0;
-    let scrCount: number = 0;
+    const account = await this.getAccountRaw(address);
 
-    if (!fields || fields.length === 0 || fields.includes(AccountOptionalFieldOption.txCount)) {
-      txCount = await this.getAccountTxCount(address);
+    if (account && withTxCount === true) {
+      account.txCount = await this.getAccountTxCount(address);
     }
 
-    if (!fields || fields.length === 0 || fields.includes(AccountOptionalFieldOption.scrCount)) {
-      scrCount = await this.getAccountScResults(address);
+    if (account && withAccountScResults === true) {
+      account.scrCount = await this.getAccountScResults(address);
     }
-
-    const [account, elasticSearchAccount] = await Promise.all([
-      this.getAccountRaw(address, txCount, scrCount),
-      this.indexerService.getAccount(address),
-    ]);
 
     if (account && withGuardianInfo === true) {
       await this.applyGuardianInfo(account);
     }
 
-    if (account && elasticSearchAccount) {
+    if (account && withTimestamp) {
+      const elasticSearchAccount = await this.indexerService.getAccount(address);
       account.timestamp = elasticSearchAccount.timestamp;
     }
 
@@ -161,7 +155,7 @@ export class AccountService {
     return await this.getAccountRaw(address);
   }
 
-  async getAccountRaw(address: string, txCount: number = 0, scrCount: number = 0): Promise<AccountDetailed | null> {
+  async getAccountRaw(address: string): Promise<AccountDetailed | null> {
     const assets = await this.assetsService.getAllAccountAssets();
     try {
       const {
@@ -170,7 +164,7 @@ export class AccountService {
 
       const shardCount = await this.protocolService.getShardCount();
       const shard = AddressUtils.computeShard(AddressUtils.bech32Decode(address), shardCount);
-      let account = new AccountDetailed({ address, nonce, balance, code, codeHash, rootHash, txCount, scrCount, shard, developerReward, ownerAddress, scamInfo: undefined, assets: assets[address], ownerAssets: assets[ownerAddress], nftCollections: undefined, nfts: undefined });
+      let account = new AccountDetailed({ address, nonce, balance, code, codeHash, rootHash, shard, developerReward, ownerAddress, scamInfo: undefined, assets: assets[address], ownerAssets: assets[ownerAddress], nftCollections: undefined, nfts: undefined });
 
       const codeAttributes = AddressUtils.decodeCodeMetadata(codeMetadata);
       if (codeAttributes) {
