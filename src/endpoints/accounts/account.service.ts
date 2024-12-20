@@ -32,9 +32,9 @@ import { ProviderService } from '../providers/provider.service';
 import { KeysService } from '../keys/keys.service';
 import { NodeStatusRaw } from '../nodes/entities/node.status';
 import { AccountKeyFilter } from './entities/account.key.filter';
-import { Provider } from '../providers/entities/provider';
 import { ApplicationMostUsed } from './entities/application.most.used';
 import { AccountContract } from './entities/account.contract';
+import { Provider } from "../providers/entities/provider";
 
 @Injectable()
 export class AccountService {
@@ -78,8 +78,6 @@ export class AccountService {
       return null;
     }
 
-    const provider: Provider | undefined = await this.providerService.getProvider(address);
-
     const account = await this.getAccountRaw(address);
 
     if (account && withTxCount === true) {
@@ -99,8 +97,11 @@ export class AccountService {
       account.timestamp = elasticSearchAccount.timestamp;
     }
 
-    if (account && provider && provider.owner) {
-      account.ownerAddress = provider.owner;
+    if (AddressUtils.isSmartContractAddress(address)) {
+      const provider: Provider | undefined = await this.providerService.getProvider(address);
+      if (account && provider && provider.owner) {
+        account.ownerAddress = provider.owner;
+      }
     }
 
     return account;
