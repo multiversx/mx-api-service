@@ -5,7 +5,7 @@ export class AccountFetchOptions {
 
   withGuardianInfo?: boolean;
   withTxCount?: boolean;
-  withAccountScResults?: boolean;
+  withScrCount?: boolean;
   withTimestamp?: boolean;
   withAssets?: boolean;
 }

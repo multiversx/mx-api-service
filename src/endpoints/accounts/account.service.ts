@@ -88,7 +88,7 @@ export class AccountService {
       account.txCount = await this.getAccountTxCount(address);
     }
 
-    if (options?.withAccountScResults === true) {
+    if (options?.withScrCount === true) {
       account.scrCount = await this.getAccountScResults(address);
     }
 
