@@ -58,6 +58,7 @@ import { DeepHistoryInterceptor } from 'src/interceptors/deep-history.intercepto
 import { MexPairType } from '../mex/entities/mex.pair.type';
 import { NftSubType } from '../nfts/entities/nft.sub.type';
 import { AccountContract } from './entities/account.contract';
+import { AccountFetchOptions } from './entities/account.fetch.options';
 
 @Controller()
 @ApiTags('accounts')
@@ -194,16 +195,25 @@ export class AccountController {
   @UseInterceptors(DeepHistoryInterceptor)
   @ApiOperation({ summary: 'Account details', description: 'Returns account details for a given address' })
   @ApiQuery({ name: 'withGuardianInfo', description: 'Returns guardian data for a given address', required: false })
-  @ApiQuery({ name: 'fields', description: 'List of fields to filter by', required: false, isArray: true, style: 'form', explode: false })
+  @ApiQuery({ name: 'withTxCount', description: 'Returns the count of the transactions for a given address', required: false })
+  @ApiQuery({ name: 'withScrCount', description: 'Returns the sc results count for a given address', required: false })
+  @ApiQuery({ name: 'withTimestamp', description: 'Returns the timestamp of the last activity for a given address', required: false })
+  @ApiQuery({ name: 'withAssets', description: 'Returns the assets for a given address', required: false })
   @ApiQuery({ name: 'timestamp', description: 'Retrieve entry from timestamp', required: false, type: Number })
   @ApiOkResponse({ type: AccountDetailed })
   async getAccountDetails(
     @Param('address', ParseAddressPipe) address: string,
     @Query('withGuardianInfo', ParseBoolPipe) withGuardianInfo?: boolean,
-    @Query('fields', ParseArrayPipe) fields?: string[],
+    @Query('withTxCount', ParseBoolPipe) withTxCount?: boolean,
+    @Query('withScrCount', ParseBoolPipe) withScrCount?: boolean,
+    @Query('withTimestamp', ParseBoolPipe) withTimestamp?: boolean,
+    @Query('withAssets', ParseBoolPipe) withAssets?: boolean,
     @Query('timestamp', ParseIntPipe) _timestamp?: number,
   ): Promise<AccountDetailed> {
-    const account = await this.accountService.getAccount(address, fields, withGuardianInfo);
+    const account = await this.accountService.getAccount(
+      address,
+      new AccountFetchOptions({ withGuardianInfo, withTxCount, withScrCount, withTimestamp, withAssets }),
+    );
     if (!account) {
       throw new NotFoundException('Account not found');
     }
