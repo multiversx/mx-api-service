@@ -79,27 +79,30 @@ export class AccountService {
     }
 
     const account = await this.getAccountRaw(address);
+    if (!account) {
+      return null;
+    }
 
-    if (account && withTxCount === true) {
+    if (withTxCount === true) {
       account.txCount = await this.getAccountTxCount(address);
     }
 
-    if (account && withAccountScResults === true) {
+    if (withAccountScResults === true) {
       account.scrCount = await this.getAccountScResults(address);
     }
 
-    if (account && withGuardianInfo === true) {
+    if (withGuardianInfo === true) {
       await this.applyGuardianInfo(account);
     }
 
-    if (account && withTimestamp) {
+    if (withTimestamp) {
       const elasticSearchAccount = await this.indexerService.getAccount(address);
       account.timestamp = elasticSearchAccount.timestamp;
     }
 
     if (AddressUtils.isSmartContractAddress(address)) {
       const provider: Provider | undefined = await this.providerService.getProvider(address);
-      if (account && provider && provider.owner) {
+      if (provider && provider.owner) {
         account.ownerAddress = provider.owner;
       }
     }
