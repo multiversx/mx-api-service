@@ -34,7 +34,8 @@ import { NodeStatusRaw } from '../nodes/entities/node.status';
 import { AccountKeyFilter } from './entities/account.key.filter';
 import { ApplicationMostUsed } from './entities/application.most.used';
 import { AccountContract } from './entities/account.contract';
-import { Provider } from "../providers/entities/provider";
+import { AccountFetchOptions } from './entities/account.fetch.options';
+import { Provider } from '../providers/entities/provider';
 
 @Injectable()
 export class AccountService {
@@ -73,29 +74,29 @@ export class AccountService {
     return await this.indexerService.getAccountsCount(filter);
   }
 
-  async getAccount(address: string, withGuardianInfo?: boolean, withTxCount?: boolean, withAccountScResults?: boolean, withTimestamp?: boolean): Promise<AccountDetailed | null> {
+  async getAccount(address: string, options?: AccountFetchOptions): Promise<AccountDetailed | null> {
     if (!AddressUtils.isAddressValid(address)) {
       return null;
     }
 
-    const account = await this.getAccountRaw(address);
+    const account = await this.getAccountRaw(address, options?.withAssets);
     if (!account) {
       return null;
     }
 
-    if (withTxCount === true) {
+    if (options?.withTxCount === true) {
       account.txCount = await this.getAccountTxCount(address);
     }
 
-    if (withAccountScResults === true) {
+    if (options?.withAccountScResults === true) {
       account.scrCount = await this.getAccountScResults(address);
     }
 
-    if (withGuardianInfo === true) {
+    if (options?.withGuardianInfo === true) {
       await this.applyGuardianInfo(account);
     }
 
-    if (withTimestamp) {
+    if (options?.withTimestamp) {
       const elasticSearchAccount = await this.indexerService.getAccount(address);
       account.timestamp = elasticSearchAccount.timestamp;
     }
@@ -159,8 +160,7 @@ export class AccountService {
     return await this.getAccountRaw(address);
   }
 
-  async getAccountRaw(address: string): Promise<AccountDetailed | null> {
-    const assets = await this.assetsService.getAllAccountAssets();
+  async getAccountRaw(address: string, withAssets?: boolean): Promise<AccountDetailed | null> {
     try {
       const {
         account: { nonce, balance, code, codeHash, rootHash, developerReward, ownerAddress, codeMetadata },
@@ -168,7 +168,13 @@ export class AccountService {
 
       const shardCount = await this.protocolService.getShardCount();
       const shard = AddressUtils.computeShard(AddressUtils.bech32Decode(address), shardCount);
-      let account = new AccountDetailed({ address, nonce, balance, code, codeHash, rootHash, shard, developerReward, ownerAddress, scamInfo: undefined, assets: assets[address], ownerAssets: assets[ownerAddress], nftCollections: undefined, nfts: undefined });
+      let account = new AccountDetailed({ address, nonce, balance, code, codeHash, rootHash, shard, developerReward, ownerAddress, scamInfo: undefined, nftCollections: undefined, nfts: undefined });
+
+      if (withAssets === true) {
+        const assets = await this.assetsService.getAllAccountAssets();
+        account.assets = assets[address];
+        account.ownerAssets = assets[ownerAddress];
+      }
 
       const codeAttributes = AddressUtils.decodeCodeMetadata(codeMetadata);
       if (codeAttributes) {

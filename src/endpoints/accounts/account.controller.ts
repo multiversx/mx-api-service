@@ -58,6 +58,7 @@ import { DeepHistoryInterceptor } from 'src/interceptors/deep-history.intercepto
 import { MexPairType } from '../mex/entities/mex.pair.type';
 import { NftSubType } from '../nfts/entities/nft.sub.type';
 import { AccountContract } from './entities/account.contract';
+import { AccountFetchOptions } from './entities/account.fetch.options';
 
 @Controller()
 @ApiTags('accounts')
@@ -194,6 +195,7 @@ export class AccountController {
   @ApiQuery({ name: 'withTxCount', description: 'Returns the count fo the transactions', required: false })
   @ApiQuery({ name: 'withAccountScResults', description: 'Returns the sc results associated with the given account', required: false })
   @ApiQuery({ name: 'withTimestamp', description: 'Returns the timestamp of the last activity for the account', required: false })
+  @ApiQuery({ name: 'withAssets', description: 'Returns the assets of the account', required: false })
   @ApiQuery({ name: 'timestamp', description: 'Retrieve entry from timestamp', required: false, type: Number })
   @ApiOkResponse({ type: AccountDetailed })
   async getAccountDetails(
@@ -202,9 +204,13 @@ export class AccountController {
     @Query('withTxCount', new ParseBoolPipe) withTxCount?: boolean,
     @Query('withAccountScResults', new ParseBoolPipe) withAccountScResults?: boolean,
     @Query('withTimestamp', new ParseBoolPipe) withTimestamp?: boolean,
+    @Query('withAssets', new ParseBoolPipe) withAssets?: boolean,
     @Query('timestamp', ParseIntPipe) _timestamp?: number,
   ): Promise<AccountDetailed> {
-    const account = await this.accountService.getAccount(address, withGuardianInfo, withTxCount, withAccountScResults, withTimestamp);
+    const account = await this.accountService.getAccount(
+      address,
+      new AccountFetchOptions({ withGuardianInfo, withTxCount, withAccountScResults, withTimestamp, withAssets }),
+    );
     if (!account) {
       throw new NotFoundException('Account not found');
     }
