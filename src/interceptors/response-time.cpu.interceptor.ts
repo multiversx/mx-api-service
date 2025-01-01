@@ -28,6 +28,7 @@ export class ResponseTimeCpuInterceptor implements NestInterceptor {
         const request = context.switchToHttp().getRequest();
         const endpoint = request.url;
 
+        console.log(`${endpoint} - ${duration}ms - ${cpuUsage}ms`);
         this.metricsService.setExternalCall('response_time', duration);
         this.metricsService.setExternalCall('cpu_usage', cpuUsage);
 
