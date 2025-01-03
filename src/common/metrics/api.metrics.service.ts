@@ -113,7 +113,6 @@ export class ApiMetricsService {
       ApiMetricsService.transactionsCompletedCounter = new Counter({
         name: 'websocket_transactions_completed_total',
         help: 'Total number of completed transactions processed via websocket',
-        labelNames: ['shardId'],
       });
     }
 
@@ -121,7 +120,6 @@ export class ApiMetricsService {
       ApiMetricsService.transactionsPendingResultsCounter = new Counter({
         name: 'websocket_transactions_pending_results_total',
         help: 'Total number of transactions with pending results processed via websocket',
-        labelNames: ['shardId'],
       });
     }
 
@@ -129,7 +127,6 @@ export class ApiMetricsService {
       ApiMetricsService.batchUpdatesCounter = new Counter({
         name: 'websocket_batch_updates_total',
         help: 'Total number of batch updates processed via websocket',
-        labelNames: ['address'],
       });
     }
   }
@@ -186,18 +183,18 @@ export class ApiMetricsService {
   }
 
   @OnEvent(MetricsEvents.SetTransactionsCompleted)
-  recordTransactionsCompleted(payload: { transactions: any[], duration: number, shardId: number }) {
-    ApiMetricsService.transactionsCompletedCounter.inc({ shard: payload.shardId.toString() }, payload.transactions.length);
+  recordTransactionsCompleted(payload: { transactions: any[] }) {
+    ApiMetricsService.transactionsCompletedCounter.inc(payload.transactions.length);
   }
 
   @OnEvent(MetricsEvents.SetTransactionsPendingResults)
-  recordTransactionsPendingResults(payload: { transactions: any[], duration: number, shardId: number }) {
-    ApiMetricsService.transactionsPendingResultsCounter.inc({ shard: payload.shardId.toString() }, payload.transactions.length);
+  recordTransactionsPendingResults(payload: { transactions: any[] }) {
+    ApiMetricsService.transactionsPendingResultsCounter.inc(payload.transactions.length);
   }
 
   @OnEvent(MetricsEvents.SetBatchUpdated)
-  recordBatchUpdated(payload: { address: string, duration: number }) {
-    ApiMetricsService.batchUpdatesCounter.inc({ address: payload.address });
+  recordBatchUpdated() {
+    ApiMetricsService.batchUpdatesCounter.inc();
   }
 
   async getMetrics(): Promise<string> {
