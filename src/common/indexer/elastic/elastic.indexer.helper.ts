@@ -341,7 +341,10 @@ export class ElasticIndexerHelper {
     }
 
     if (filter.isRelayed) {
-      elasticQuery = elasticQuery.withMustMatchCondition('isRelayed', filter.isRelayed);
+      elasticQuery = elasticQuery.withMustCondition(QueryType.Should([
+        QueryType.Match('isRelayed', filter.isRelayed),
+        QueryType.Exists('relayer'),
+      ]));
     }
 
     if (filter.type) {
@@ -556,7 +559,10 @@ export class ElasticIndexerHelper {
     }
 
     if (filter.isRelayed) {
-      elasticQuery = elasticQuery.withMustMatchCondition('isRelayed', filter.isRelayed);
+      elasticQuery = elasticQuery.withMustCondition(QueryType.Should([
+        QueryType.Match('isRelayed', filter.isRelayed),
+        QueryType.Exists('relayer'),
+      ]));
     }
 
     if (filter.relayer) {
