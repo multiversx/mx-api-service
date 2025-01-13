@@ -22,9 +22,16 @@ replace_placeholder() {
   local var_name=$1
   local var_value=$2
 
-  echo "Var ${var_name} defined, replacing ${var_value} in config"
-
-  sed -i "s|${var_name}|${var_value}|g" /app/dist/config/config.yaml
+  case $var_name in
+    PLACEHOLDER_DAPP*) 
+      echo "Var ${var_name} defined, replacing ${var_value} in /app/config/dapp.config.placeholder.json"
+      sed -i "s|${var_name}|${var_value}|g" /app/config/dapp.config.placeholder.json      
+      ;;
+    *)
+      echo "Var ${var_name} defined, replacing ${var_value} in /app/dist/config/config.yaml"
+      sed -i "s|${var_name}|${var_value}|g" /app/dist/config/config.yaml      
+      ;;
+  esac
 
 }
 
@@ -41,7 +48,7 @@ for entry in $env_vars_with_defaults; do
     cp ./config/config.${MVX_ENV}.yaml /app/dist/config/config.yaml
     if [ $? -eq 0 ]; then
       echo "Config file copied successfully from config/config.${value}.yaml /app/dist/config/config.yaml"
-    fi
+    fi  
   fi  
   
   # Execute the function with the variable name and value
