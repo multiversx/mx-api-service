@@ -1,6 +1,7 @@
 #!/bin/sh
 # ENV VARIABLES 
   # MVX_ENV=devnet
+  # DAPP_CONFIG=devnet
   # REDIS_IP=127.0.0.1
   # ELASTICSEARCH_URL=https://devnet-index.multiversx.com
   # GATEWAY_URL=https://devnet-gateway.multiversx.com
@@ -16,7 +17,7 @@
   # PLACEHOLDER_DAPP_explorerAddress=http://devnet-explorer.multiversx.com
   # PLACEHOLDER_DAPP_chainId=D
 
-env_vars_with_defaults="MVX_ENV=devnet REDIS_IP=127.0.0.1 ELASTICSEARCH_URL=https://devnet-index.multiversx.com GATEWAY_URL=https://devnet-gateway.multiversx.com RABBITMQ_URL=amqp://127.0.0.1:5672 PROVIDERS_URL=https://devnet-delegation-api.multiversx.com/providers DELEGATION_URL=https://devnet-delegation-api.multiversx.com SOCKET_URL=devnet-socket-api.multiversx.com PLACEHOLDER_DAPP_id=devnet PLACEHOLDER_DAPP_name=Devnet PLACEHOLDER_DAPP_egldLabel=xEGLD PLACEHOLDER_DAPP_walletAddress=https://devnet-wallet.multiversx.com PLACEHOLDER_DAPP_apiAddress=https://devnet-api.multiversx.com PLACEHOLDER_DAPP_explorerAddress=http://devnet-explorer.multiversx.com PLACEHOLDER_DAPP_chainId=D"
+env_vars_with_defaults="MVX_ENV=devnet DAPP_CONFIG=devnet REDIS_IP=127.0.0.1 ELASTICSEARCH_URL=https://devnet-index.multiversx.com GATEWAY_URL=https://devnet-gateway.multiversx.com RABBITMQ_URL=amqp://127.0.0.1:5672 PROVIDERS_URL=https://devnet-delegation-api.multiversx.com/providers DELEGATION_URL=https://devnet-delegation-api.multiversx.com SOCKET_URL=devnet-socket-api.multiversx.com PLACEHOLDER_DAPP_id=devnet PLACEHOLDER_DAPP_name=Devnet PLACEHOLDER_DAPP_egldLabel=xEGLD PLACEHOLDER_DAPP_walletAddress=https://devnet-wallet.multiversx.com PLACEHOLDER_DAPP_apiAddress=https://devnet-api.multiversx.com PLACEHOLDER_DAPP_explorerAddress=http://devnet-explorer.multiversx.com PLACEHOLDER_DAPP_chainId=D"
 
 replace_placeholder() {
   local var_name=$1
@@ -44,13 +45,11 @@ for entry in $env_vars_with_defaults; do
   # Use the environment variable value if defined; otherwise, use the default
   eval "value=\${$var_name:-$default_value}"
 
-  if [ "$var_name" == "MVX_ENV" ]; then 
-    cp ./config/config.${MVX_ENV}.yaml /app/dist/config/config.yaml
-    if [ $? -eq 0 ]; then
-      echo "Config file copied successfully from config/config.${value}.yaml /app/dist/config/config.yaml"
-    fi  
+  cp ./config/config.placeholder.yaml /app/dist/config/config.yaml
+  if [ $? -eq 0 ]; then
+    echo "Config file copied successfully from config/config.placeholder.yaml /app/dist/config/config.yaml"
   fi  
-  
+
   # Execute the function with the variable name and value
   replace_placeholder "$var_name" "$value"  
   

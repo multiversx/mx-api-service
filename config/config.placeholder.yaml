@@ -1,4 +1,4 @@
-network: 'placeholder'
+network: 'DAPP_CONFIG'
 metaChainShardId: 4294967295
 api:
   public: true
