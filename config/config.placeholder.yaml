@@ -42,16 +42,16 @@ features:
     enabled: false
   marketplace:
     enabled: false
-    serviceUrl: 'https://devnet-nfts-graph.multiversx.com/graphql'
+    serviceUrl: 'MARKETPLACE_URL'
   exchange:
     enabled: false
-    serviceUrl: 'https://devnet-graph.xexchange.com/graphql'
+    serviceUrl: 'EXCHANGE_URL'
   dataApi:
     enabled: false
-    serviceUrl: 'https://devnet-data-api.multiversx.com'
+    serviceUrl: 'DATAAPI_URL'
   assetsFetch:
     enabled: true
-    assetesUrl: 'https://tools.multiversx.com/assets-cdn'
+    assetesUrl: 'ASSETSFETCH_URL'
   auth:
     enabled: false
     maxExpirySeconds: 86400
@@ -98,13 +98,13 @@ features:
     maxLookBehindNonces: 100
   nodesFetch:
     enabled: true
-    serviceUrl: 'https://devnet-api.multiversx.com'
+    serviceUrl: 'NODESFETCH_URL'
   tokensFetch:
     enabled: true
-    serviceUrl: 'https://devnet-api.multiversx.com'
+    serviceUrl: 'TOKENSFETCH_URL'
   providersFetch:
     enabled: true
-    serviceUrl: 'https://devnet-api.multiversx.com'
+    serviceUrl: 'PROVIDERSFETCH_URL'
 image:
   width: 600
   height: 600
