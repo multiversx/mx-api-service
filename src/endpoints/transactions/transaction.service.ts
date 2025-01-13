@@ -559,6 +559,8 @@ export class TransactionService {
         return 'v1';
       } else if (decodedData.startsWith('relayedTxV2@')) {
         return 'v2';
+      } else if (transaction.relayer) {
+        return 'v3';
       }
     }
 
