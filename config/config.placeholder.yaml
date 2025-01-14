@@ -98,13 +98,13 @@ features:
     enabled: false
     maxLookBehindNonces: 100
   nodesFetch:
-    enabled: MVX_NODESFETCH
+    enabled: MVX_NODESFETCH_ENABLE
     serviceUrl: 'MVX_NODESFETCH_URL'
   tokensFetch:
-    enabled: MVX_TOKENSFETCH
+    enabled: MVX_TOKENSFETCH_ENABLE
     serviceUrl: 'MVX_TOKENSFETCH_URL'
   providersFetch:
-    enabled: MVX_PROVIDERSFETCH
+    enabled: MVX_PROVIDERSFETCH_ENABLE
     serviceUrl: 'MVX_PROVIDERSFETCH_URL'
 image:
   width: 600
