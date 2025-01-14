@@ -71,7 +71,7 @@ features:
     enabled: MVX_TRANSACTIONPROCESSOR
     maxLookBehind: 100
   transactionCompleted:
-    enabled: false
+    enabled: MVX_transactionCompleted
     maxLookBehind: 100
     logLevel: 'Error'
   transactionBatch:
