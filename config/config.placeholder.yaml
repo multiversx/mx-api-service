@@ -1,4 +1,5 @@
-network: 'DAPP_CONFIG'
+network: 'testnet'
+dappNetwork: 'DAPP_CONFIG'
 metaChainShardId: 4294967295
 api:
   public: MVX_API_PUBLIC
