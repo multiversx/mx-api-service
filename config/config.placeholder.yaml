@@ -62,7 +62,7 @@ features:
       - ''
     jwtSecret: ''
   stakingV4:
-    enabled: false
+    enabled: MVX_STAKINGV4
     cronExpression: '*/5 * * * * *'
     activationEpoch: 1043
   nodeEpochsLeft:
@@ -148,7 +148,7 @@ caching:
   cacheTtl: 6
   processTtl: 600
   poolLimit: 50
-  cacheDuration: 3
+  cacheDuration: MVX_CACHING_cacheDuration
 keepAliveTimeout:
   downstream: 61000
   upstream: 60000
