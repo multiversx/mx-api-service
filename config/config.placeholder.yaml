@@ -1,13 +1,13 @@
 network: 'DAPP_CONFIG'
 metaChainShardId: 4294967295
 api:
-  public: true
+  public: MVX_API_PUBLIC
   publicPort: 3001
-  private: true
+  private: MVX_API_PRIVATE
   privatePort: 4001
   websocket: true
 cron:
-  cacheWarmer: true
+  cacheWarmer: MVX_CACHEWARMER
   fastWarm: true
   queueWorker: true
   elasticUpdater: false
@@ -21,9 +21,9 @@ flags:
   collectionPropertiesFromGateway: false
 features:
   eventsNotifier:
-    enabled: false
+    enabled: MVX_EVENTS_NOTIFIER
     port: 5674
-    url: 'amqp://guest:guest@127.0.0.1:5673'
+    url: 'MVX_EVENTS_NOTIFIER_RABBIT_URL'
     exchange: 'all_events'
     queue: 'api-process-logs-and-events'
   guestCaching:
@@ -67,7 +67,7 @@ features:
   nodeEpochsLeft:
     enabled: false
   transactionProcessor:
-    enabled: false
+    enabled: MVX_TRANSACTIONPROCESSOR
     maxLookBehind: 100
   transactionCompleted:
     enabled: false
