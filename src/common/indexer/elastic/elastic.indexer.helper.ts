@@ -340,11 +340,14 @@ export class ElasticIndexerHelper {
       elasticQuery = elasticQuery.withMustMatchCondition('relayerAddr', filter.relayer);
     }
 
-    if (filter.isRelayed) {
-      elasticQuery = elasticQuery.withMustCondition(QueryType.Should([
-        QueryType.Match('isRelayed', filter.isRelayed),
-        QueryType.Exists('relayer'),
-      ]));
+    const relayedConditions = QueryType.Should([
+      QueryType.Match('isRelayed', filter.isRelayed),
+      QueryType.Exists('relayer'),
+    ]);
+    if (filter.isRelayed === true) {
+      elasticQuery = elasticQuery.withMustCondition(relayedConditions);
+    } else if (filter.isRelayed === false){
+      elasticQuery = elasticQuery.withMustNotCondition(relayedConditions);
     }
 
     if (filter.type) {
@@ -558,11 +561,14 @@ export class ElasticIndexerHelper {
       elasticQuery = elasticQuery.withMustMatchCondition('tokens', filter.token, QueryOperator.AND);
     }
 
-    if (filter.isRelayed) {
-      elasticQuery = elasticQuery.withMustCondition(QueryType.Should([
-        QueryType.Match('isRelayed', filter.isRelayed),
-        QueryType.Exists('relayer'),
-      ]));
+    const relayedConditions = QueryType.Should([
+      QueryType.Match('isRelayed', filter.isRelayed),
+      QueryType.Exists('relayer'),
+    ]);
+    if (filter.isRelayed === true) {
+      elasticQuery = elasticQuery.withMustCondition(relayedConditions);
+    } else if (filter.isRelayed === false){
+      elasticQuery = elasticQuery.withMustNotCondition(relayedConditions);
     }
 
     if (filter.relayer) {
