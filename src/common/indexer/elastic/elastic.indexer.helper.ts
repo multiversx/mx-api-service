@@ -316,17 +316,23 @@ export class ElasticIndexerHelper {
       if (filter.withRefunds) {
         mustNotQueries = [];
       }
+
+      const shouldConditions = [
+        QueryType.Match('sender', filter.address),
+        QueryType.Match('receiver', filter.address),
+        QueryType.Match('receivers', filter.address),
+      ];
+      if (filter.withTxsRelayedByAddress) {
+        shouldConditions.push(QueryType.Match('relayer', filter.address));
+      }
+
       elasticQuery = elasticQuery.withCondition(QueryConditionOptions.should, QueryType.Must([
         QueryType.Match('type', 'unsigned'),
         QueryType.Should(smartContractResultConditions),
       ], mustNotQueries))
         .withCondition(QueryConditionOptions.should, QueryType.Must([
           QueryType.Should([QueryType.Match('type', 'normal')]),
-          QueryType.Should([
-            QueryType.Match('sender', filter.address),
-            QueryType.Match('receiver', filter.address),
-            QueryType.Match('receivers', filter.address),
-          ]),
+          QueryType.Should(shouldConditions),
         ]));
     }
 
@@ -334,8 +340,16 @@ export class ElasticIndexerHelper {
       elasticQuery = elasticQuery.withMustMatchCondition('relayerAddr', filter.relayer);
     }
 
-    if (filter.isRelayed) {
-      elasticQuery = elasticQuery.withMustMatchCondition('isRelayed', filter.isRelayed);
+    if (filter.isRelayed !== undefined) {
+      const relayedConditions = QueryType.Should([
+        QueryType.Match('isRelayed', true),
+        QueryType.Exists('relayer'),
+      ]);
+      if (filter.isRelayed === true) {
+        elasticQuery = elasticQuery.withMustCondition(relayedConditions);
+      } else if (filter.isRelayed === false) {
+        elasticQuery = elasticQuery.withMustNotCondition(relayedConditions);
+      }
     }
 
     if (filter.type) {
@@ -549,8 +563,20 @@ export class ElasticIndexerHelper {
       elasticQuery = elasticQuery.withMustMatchCondition('tokens', filter.token, QueryOperator.AND);
     }
 
-    if (filter.isRelayed) {
-      elasticQuery = elasticQuery.withMustMatchCondition('isRelayed', filter.isRelayed);
+    if (filter.isRelayed !== undefined) {
+      const relayedConditions = QueryType.Should([
+        QueryType.Match('isRelayed', true),
+        QueryType.Exists('relayer'),
+      ]);
+      if (filter.isRelayed === true) {
+        elasticQuery = elasticQuery.withMustCondition(relayedConditions);
+      } else if (filter.isRelayed === false) {
+        elasticQuery = elasticQuery.withMustNotCondition(relayedConditions);
+      }
+    }
+
+    if (filter.relayer) {
+      elasticQuery = elasticQuery.withShouldCondition(QueryType.Match('relayer', filter.relayer));
     }
 
     if (filter.round) {
