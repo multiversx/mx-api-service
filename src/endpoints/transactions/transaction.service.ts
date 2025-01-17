@@ -210,6 +210,7 @@ export class TransactionService {
 
     if (transaction !== null) {
       transaction.price = await this.getTransactionPrice(transaction);
+      transaction.relayedVersion = this.extractRelayedVersion(transaction);
 
       await this.processTransactions([transaction], { withScamInfo: true, withUsername: true, withActionTransferValue });
 
