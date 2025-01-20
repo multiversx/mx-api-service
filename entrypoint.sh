@@ -1,46 +1,65 @@
 #!/bin/sh
 # ENV VARIABLES 
-  # MVX_ENV             - defines what config to copy (default devnet)  
-  # ELASTICSEARCH_URL   - defines custom elasticsearch url - eg https://devnet-index.multiversx.com
-  # GATEWAY_URL         - defines custom gateway url - eg https://devnet-gateway.multiversx.com
-  # REDIS_IP            - defines redis ip - default 127.0.0.1 
+  # MVX_ENV=devnet
+  # DAPP_CONFIG=devnet
+  # REDIS_IP=127.0.0.1
+  # ELASTICSEARCH_URL=https://devnet-index.multiversx.com
+  # GATEWAY_URL=https://devnet-gateway.multiversx.com
+  # RABBITMQ_URL=amqp://127.0.0.1:5672
+  # PROVIDERS_URL=https://devnet-delegation-api.multiversx.com/providers
+  # DELEGATION_URL=https://devnet-delegation-api.multiversx.com
+  # SOCKET_URL=devnet-socket-api.multiversx.com
+  # NODESFETCH_URL= https://devnet-api.multiversx.com
+  # TOKENSFETCH_URL= https://devnet-api.multiversx.com
+  # PROVIDERSFETCH_URL= https://devnet-api.multiversx.com
+  # DATAAPI_URL=https://devnet-data-api.multiversx.com
+  # EXCHANGE_URL=https://devnet-graph.xexchange.com/graphql
+  # MARKETPLACE_URL=https://devnet-nfts-graph.multiversx.com/graphql
+  # ASSETSFETCH_URL=https://tools.multiversx.com/assets-cdn
+  # PLACEHOLDER_DAPP_id=devnet
+  # PLACEHOLDER_DAPP_name=Devnet
+  # PLACEHOLDER_DAPP_egldLabel=xEGLD
+  # PLACEHOLDER_DAPP_walletAddress=https://devnet-wallet.multiversx.com
+  # PLACEHOLDER_DAPP_apiAddress=https://devnet-api.multiversx.com
+  # PLACEHOLDER_DAPP_explorerAddress=http://devnet-explorer.multiversx.com
+  # PLACEHOLDER_DAPP_chainId=D
 
-# CHECK IF ENV IS DEFINED
-if [ -n "$MVX_ENV" ] && [ "$MVX_ENV" = "devnet" ]; then
-    # Copy config file
-    cp ./config/config.${MVX_ENV}.yaml /app/dist/config/config.yaml
+env_vars_with_defaults="MVX_ENV=devnet DAPP_CONFIG=devnet REDIS_IP=127.0.0.1 ELASTICSEARCH_URL=https://devnet-index.multiversx.com GATEWAY_URL=https://devnet-gateway.multiversx.com RABBITMQ_URL=amqp://127.0.0.1:5672 PROVIDERS_URL=https://devnet-delegation-api.multiversx.com/providers   DATAAPI_URL=https://devnet-data-api.multiversx.com EXCHANGE_URL=https://devnet-graph.xexchange.com/graphql MARKETPLACE_URL=https://devnet-nfts-graph.multiversx.com/graphql ASSETSFETCH_URL=https://tools.multiversx.com/assets-cdn DELEGATION_URL=https://devnet-delegation-api.multiversx.com SOCKET_URL=devnet-socket-api.multiversx.com NODESFETCH_URL=https://devnet-api.multiversx.com TOKENSFETCH_URL=https://devnet-api.multiversx.com PROVIDERSFETCH_URL=https://devnet-api.multiversx.com PLACEHOLDER_DAPP_id=devnet PLACEHOLDER_DAPP_name=Devnet PLACEHOLDER_DAPP_egldLabel=xEGLD PLACEHOLDER_DAPP_walletAddress=https://devnet-wallet.multiversx.com PLACEHOLDER_DAPP_apiAddress=https://devnet-api.multiversx.com PLACEHOLDER_DAPP_explorerAddress=http://devnet-explorer.multiversx.com PLACEHOLDER_DAPP_chainId=D"
 
-    if [ $? -eq 0 ]; then
-        echo "Config file copied successfully from config/config.${MVX_ENV}.yaml /app/dist/config/config.yaml"
-    else
-        echo "Failed to copy the file."
-    fi
+replace_placeholder() {
+  local var_name=$1
+  local var_value=$2
 
-else
-    cp ./config/config.devnet.yaml /app/dist/config/config.yaml
+  case $var_name in
+    PLACEHOLDER_DAPP*) 
+      echo "Var ${var_name} defined, replacing ${var_value} in /app/config/dapp.config.placeholder.json"
+      sed -i "s|${var_name}|${var_value}|g" /app/config/dapp.config.placeholder.json      
+      ;;
+    *)
+      echo "Var ${var_name} defined, replacing ${var_value} in /app/dist/config/config.yaml"
+      sed -i "s|${var_name}|${var_value}|g" /app/dist/config/config.yaml      
+      ;;
+  esac
 
-    if [ $? -eq 0 ]; then
-        echo "Default config file copied successfully from config/config.devnet.yaml /app/dist/config/config.yaml"
-    else
-        echo "Failed to copy the file."
-    fi  
-fi
+}
 
-# Replaces urls if defined
-if [ -n "$REDIS_IP" ]; then
-  echo "Redis IP defined: ${REDIS_IP}, replacing in config"
-  sed -i "s|redis: '127.0.0.1'|redis: '${REDIS_IP}'|g" /app/dist/config/config.yaml
-fi
+# Loop through each environment variable
+for entry in $env_vars_with_defaults; do
+  # Split the entry into name and value
+  var_name=$(echo $entry | cut -d= -f1)
+  default_value=$(echo $entry | cut -d= -f2)
 
-if [ -n "$ELASTICSEARCH_URL" ]; then
-  echo "Elasticsearch url defined: ${ELASTICSEARCH_URL}, replacing in config"
-  sed -i "/^  elastic:/!b; n; s|.*|    - '${ELASTICSEARCH_URL}'|" /app/dist/config/config.yaml
-fi
+  # Use the environment variable value if defined; otherwise, use the default
+  eval "value=\${$var_name:-$default_value}"
 
-if [ -n "$GATEWAY_URL" ]; then
-  echo "Gateway url defined: ${GATEWAY_URL}, replacing in config"
-  sed -i "/^  gateway:/!b; n; s|.*|    - '${GATEWAY_URL}'|" /app/dist/config/config.yaml
-fi
+  cp ./config/config.placeholder.yaml /app/dist/config/config.yaml
+  if [ $? -eq 0 ]; then
+    echo "Config file copied successfully from config/config.placeholder.yaml /app/dist/config/config.yaml"
+  fi  
 
+  # Execute the function with the variable name and value
+  replace_placeholder "$var_name" "$value"  
+  
+done
 
 exec /usr/local/bin/node dist/src/main.js
