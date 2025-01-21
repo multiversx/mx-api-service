@@ -25,6 +25,7 @@ export class ElasticIndexerHelper {
   private nonFungibleEsdtTypes: NftType[] = [NftType.NonFungibleESDT, NftType.NonFungibleESDTv2, NftType.DynamicNonFungibleESDT];
   private semiFungibleEsdtTypes: NftType[] = [NftType.SemiFungibleESDT, NftType.DynamicSemiFungibleESDT];
   private metaEsdtTypes: NftType[] = [NftType.MetaESDT, NftType.DynamicMetaESDT];
+  private crossChainTransferSenderShard = 4294967293;
 
   constructor(
     private readonly apiConfigService: ApiConfigService,
@@ -529,16 +530,27 @@ export class ElasticIndexerHelper {
     let elasticQuery = ElasticQuery.create();
 
     if (!filter.withRelayedScresults) {
-      elasticQuery = elasticQuery.withMustMatchCondition('type', 'normal');
+      if (!filter.withCrossChainTransfers) {
+        elasticQuery = elasticQuery.withMustMatchCondition('type', 'normal');
+      } else {
+        elasticQuery = elasticQuery.withShouldCondition([
+          QueryType.Match('type', 'normal'),
+          QueryType.Match('senderShard', this.crossChainTransferSenderShard),
+        ]);
+      }
     } else {
-      elasticQuery = elasticQuery.withShouldCondition([
+      const shouldConditions = [
         QueryType.Match('type', 'normal'),
         QueryType.Must([
           QueryType.Exists('relayerAddr'),
           QueryType.Match('type', 'unsigned'),
           new ScriptQuery(`doc['originalTxHash'].size() > 0 && doc['prevTxHash'].size() > 0 && doc['originalTxHash'].value == doc['prevTxHash'].value`),
         ]),
-      ]);
+      ];
+      if (filter.withCrossChainTransfers) {
+        shouldConditions.push(QueryType.Match('senderShard', this.crossChainTransferSenderShard));
+      }
+      elasticQuery = elasticQuery.withShouldCondition(shouldConditions);
     }
 
     elasticQuery = elasticQuery.withMustMatchCondition('senderShard', filter.senderShard)
