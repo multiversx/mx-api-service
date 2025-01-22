@@ -46,9 +46,6 @@ export class TransactionActionService {
   }
 
   async getTransactionAction(transaction: Transaction, applyValue: boolean = false): Promise<TransactionAction | undefined> {
-    if (transaction.txHash === '8537cde573855199b4bd2e01c4c6792c52f6cfaf2416e476b7ef32d4131c3f5a') {
-      console.log('aqui');
-    }
     const metadata = await this.getTransactionMetadata(transaction, applyValue);
 
     const recognizers = await this.getRecognizers();
