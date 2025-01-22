@@ -34,4 +34,5 @@ export interface Transaction {
   relayer: string;
   relayerSignature: string;
   isRelayed: boolean;
+  isScCall: boolean;
 }
