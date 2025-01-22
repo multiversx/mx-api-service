@@ -424,6 +424,14 @@ export class ElasticIndexerHelper {
       elasticQuery = elasticQuery.withMustMatchCondition('round', filter.round);
     }
 
+    if (filter.isScCall !== undefined) {
+      if (filter.isScCall) {
+        elasticQuery = elasticQuery.withMustCondition(QueryType.Match('isScCall', true));
+      } else {
+        elasticQuery = elasticQuery.withMustNotCondition(QueryType.Match('isScCall', true));
+      }
+    }
+
     return elasticQuery;
   }
 
