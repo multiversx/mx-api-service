@@ -17,7 +17,7 @@ import { TokenTransferProperties } from "../../tokens/entities/token.transfer.pr
 export class TransactionActionService {
   private recognizers: TransactionActionRecognizerInterface[] = [];
   private readonly logger = new OriginLogger(TransactionActionService.name);
-  private readonly esdtSystemAccountAddress = 'erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u';
+  private crossChainTransferSenderShard = 4294967293;
 
   constructor(
     private readonly mexRecognizer: TransactionActionMexRecognizerService,
@@ -46,6 +46,9 @@ export class TransactionActionService {
   }
 
   async getTransactionAction(transaction: Transaction, applyValue: boolean = false): Promise<TransactionAction | undefined> {
+    if (transaction.txHash === '8537cde573855199b4bd2e01c4c6792c52f6cfaf2416e476b7ef32d4131c3f5a') {
+      console.log('aqui');
+    }
     const metadata = await this.getTransactionMetadata(transaction, applyValue);
 
     const recognizers = await this.getRecognizers();
@@ -87,6 +90,9 @@ export class TransactionActionService {
     metadata.receiver = transaction.receiver;
     metadata.timestamp = transaction.timestamp;
     metadata.value = BigInt(transaction.value);
+    if (transaction.senderShard !== undefined) {
+      metadata.senderShard = transaction.senderShard;
+    }
 
     if (transaction.data) {
       const decodedData = BinaryUtils.base64Decode(transaction.data);
@@ -175,7 +181,7 @@ export class TransactionActionService {
     sovereign cross chain transfer example: MultiESDTNFTTransfer@02@4147452d626532353731@@01314fb37062980000@42474431362d633437663436@@5d894a4a3a220000
     regular chain example:                  MultiESDTNFTTransfer@0000000000000000050000b4c094947e427d79931a8bad81316b797d238cdb3f@02@4c524f4e452d633133303234@@036f5933a0d19ae387@524f4e452d626232653639@@04493d2ce61b650000@6164644c6971756964697479@01@01
      */
-    const isSovereignCrossChainTransfer = metadata.sender === this.esdtSystemAccountAddress;
+    const isSovereignCrossChainTransfer = metadata.senderShard === this.crossChainTransferSenderShard;
     if (metadata.sender !== metadata.receiver) {
       if (!isSovereignCrossChainTransfer) {
         return undefined;
