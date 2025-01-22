@@ -137,7 +137,8 @@ export class TransactionActionService {
     try {
       if (transaction.type === TransactionType.SmartContractResult) {
         if (metadata.functionName === 'MultiESDTNFTTransfer' &&
-          metadata.functionArgs.length > 0
+          metadata.functionArgs.length > 0 &&
+          metadata.senderShard !== this.crossChainTransferSenderShard
         ) {
           // if the first argument has up to 4 hex chars (meaning it will contain up to 65536 transfers)
           // then we insert the address as the first parameter. otherwise we assume that the address
