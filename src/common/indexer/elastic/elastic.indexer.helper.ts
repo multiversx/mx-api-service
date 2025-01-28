@@ -636,11 +636,9 @@ export class ElasticIndexerHelper {
     }
 
     if (filter.isScCall !== undefined) {
-      if (filter.isScCall) {
-        elasticQuery = elasticQuery.withMustCondition(QueryType.Match('isScCall', true));
-      } else {
-        elasticQuery = elasticQuery.withMustNotCondition(QueryType.Match('isScCall', true));
-      }
+      elasticQuery = filter.isScCall
+        ? elasticQuery.withMustCondition(QueryType.Match('isScCall', true))
+        : elasticQuery.withMustNotCondition(QueryType.Match('isScCall', true));
     }
 
     return elasticQuery;
