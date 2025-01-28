@@ -882,6 +882,7 @@ export class AccountController {
   @ApiQuery({ name: 'computeScamInfo', required: false, type: Boolean })
   @ApiQuery({ name: 'senderOrReceiver', description: 'One address that current address interacted with', required: false })
   @ApiQuery({ name: 'isRelayed', description: 'Returns isRelayed transactions details', required: false, type: Boolean })
+  @ApiQuery({ name: 'isScCall', description: 'Returns sc call transactions details', required: false, type: Boolean })
   @ApiQuery({ name: 'withActionTransferValue', description: 'Returns value in USD and EGLD for transferred tokens within the action attribute', required: false })
   @ApiQuery({ name: 'withRelayedScresults', description: 'If set to true, will include smart contract results that resemble relayed transactions', required: false, type: Boolean })
   async getAccountTransactions(
@@ -910,6 +911,7 @@ export class AccountController {
     @Query('withBlockInfo', ParseBoolPipe) withBlockInfo?: boolean,
     @Query('senderOrReceiver', ParseAddressPipe) senderOrReceiver?: string,
     @Query('isRelayed', ParseBoolPipe) isRelayed?: boolean,
+    @Query('isScCall', ParseBoolPipe) isScCall?: boolean,
     @Query('withActionTransferValue', ParseBoolPipe) withActionTransferValue?: boolean,
     @Query('withRelayedScresults', ParseBoolPipe) withRelayedScresults?: boolean,
   ) {
@@ -930,6 +932,7 @@ export class AccountController {
       order,
       senderOrReceiver,
       isRelayed,
+      isScCall,
       round,
       withRelayedScresults,
     });
@@ -954,6 +957,7 @@ export class AccountController {
   @ApiQuery({ name: 'round', description: 'Round number', required: false })
   @ApiQuery({ name: 'senderOrReceiver', description: 'One address that current address interacted with', required: false })
   @ApiQuery({ name: 'isRelayed', description: 'Returns isRelayed transactions details', required: false, type: Boolean })
+  @ApiQuery({ name: 'isScCall', description: 'Returns sc call transactions details', required: false, type: Boolean })
   @ApiQuery({ name: 'withRelayedScresults', description: 'If set to true, will include smart contract results that resemble relayed transactions', required: false, type: Boolean })
   async getAccountTransactionsCount(
     @Param('address', ParseAddressPipe) address: string,
@@ -971,6 +975,7 @@ export class AccountController {
     @Query('round', ParseIntPipe) round?: number,
     @Query('senderOrReceiver', ParseAddressPipe) senderOrReceiver?: string,
     @Query('isRelayed', ParseBoolPipe) isRelayed?: boolean,
+    @Query('isScCall', ParseBoolPipe) isScCall?: boolean,
     @Query('withRelayedScresults', ParseBoolPipe) withRelayedScresults?: boolean,
 
   ): Promise<number> {
@@ -989,6 +994,7 @@ export class AccountController {
       after,
       senderOrReceiver,
       isRelayed,
+      isScCall,
       round,
       withRelayedScresults,
     }), address);
@@ -1015,6 +1021,7 @@ export class AccountController {
   @ApiQuery({ name: 'round', description: 'Round number', required: false })
   @ApiQuery({ name: 'fields', description: 'List of fields to filter by', required: false, isArray: true, style: 'form', explode: false })
   @ApiQuery({ name: 'relayer', description: 'Address of the relayer', required: false })
+  @ApiQuery({ name: 'isScCall', description: 'Returns sc call transactions details', required: false, type: Boolean })
   @ApiQuery({ name: 'withScamInfo', description: 'Returns scam information', required: false, type: Boolean })
   @ApiQuery({ name: 'withUsername', description: 'Integrates username in assets for all addresses present in the transactions', required: false, type: Boolean })
   @ApiQuery({ name: 'withBlockInfo', description: 'Returns sender / receiver block details', required: false, type: Boolean })
@@ -1047,6 +1054,7 @@ export class AccountController {
     @Query('withUsername', ParseBoolPipe) withUsername?: boolean,
     @Query('withBlockInfo', ParseBoolPipe) withBlockInfo?: boolean,
     @Query('senderOrReceiver', ParseAddressPipe) senderOrReceiver?: string,
+    @Query('isScCall', ParseBoolPipe) isScCall?: boolean,
     @Query('withLogs', ParseBoolPipe) withLogs?: boolean,
     @Query('withOperations', ParseBoolPipe) withOperations?: boolean,
     @Query('withActionTransferValue', ParseBoolPipe) withActionTransferValue?: boolean,
@@ -1075,6 +1083,7 @@ export class AccountController {
       round,
       withRefunds,
       withTxsRelayedByAddress,
+      isScCall,
     }),
       new QueryPagination({ from, size }),
       options,
@@ -1097,6 +1106,7 @@ export class AccountController {
   @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
   @ApiQuery({ name: 'round', description: 'Round number', required: false })
+  @ApiQuery({ name: 'isScCall', description: 'Returns sc call transactions details', required: false, type: Boolean })
   @ApiQuery({ name: 'senderOrReceiver', description: 'One address that current address interacted with', required: false })
   @ApiQuery({ name: 'withRefunds', description: 'Include refund transactions', required: false })
   async getAccountTransfersCount(
@@ -1114,6 +1124,7 @@ export class AccountController {
     @Query('after', ParseIntPipe) after?: number,
     @Query('round', ParseIntPipe) round?: number,
     @Query('senderOrReceiver', ParseAddressPipe) senderOrReceiver?: string,
+    @Query('isScCall', ParseBoolPipe) isScCall?: boolean,
     @Query('withRefunds', ParseBoolPipe) withRefunds?: boolean,
   ): Promise<number> {
     return await this.transferService.getTransfersCount(new TransactionFilter({
@@ -1131,6 +1142,7 @@ export class AccountController {
       after,
       senderOrReceiver,
       round,
+      isScCall,
       withRefunds,
     }));
   }
@@ -1153,6 +1165,7 @@ export class AccountController {
     @Query('round', ParseIntPipe) round?: number,
     @Query('senderOrReceiver', ParseAddressPipe) senderOrReceiver?: string,
     @Query('withRefunds', ParseBoolPipe) withRefunds?: boolean,
+    @Query('isScCall', ParseBoolPipe) isScCall?: boolean,
   ): Promise<number> {
     return await this.transferService.getTransfersCount(new TransactionFilter({
       address,
@@ -1170,6 +1183,7 @@ export class AccountController {
       senderOrReceiver,
       round,
       withRefunds,
+      isScCall,
     }));
   }
 
