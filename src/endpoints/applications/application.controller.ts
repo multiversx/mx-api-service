@@ -3,7 +3,7 @@ import { ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from "@nestjs/swagger"
 import { ApplicationService } from "./application.service";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { ApplicationFilter } from "./entities/application.filter";
-import { ParseIntPipe } from "@multiversx/sdk-nestjs-common";
+import { ParseIntPipe, ParseBoolPipe } from "@multiversx/sdk-nestjs-common";
 import { Application } from "./entities/application";
 
 @Controller()
@@ -20,15 +20,17 @@ export class ApplicationController {
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
+  @ApiQuery({ name: 'withTxCount', description: 'Include transaction count', required: false, type: Boolean })
   async getApplications(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number,
     @Query('before', ParseIntPipe) before?: number,
     @Query('after', ParseIntPipe) after?: number,
-  ): Promise<any[]> {
+    @Query('withTxCount', new ParseBoolPipe()) withTxCount?: boolean,
+  ): Promise<Application[]> {
     return await this.applicationService.getApplications(
       new QueryPagination({ size, from }),
-      new ApplicationFilter({ before, after })
+      new ApplicationFilter({ before, after, withTxCount })
     );
   }
 

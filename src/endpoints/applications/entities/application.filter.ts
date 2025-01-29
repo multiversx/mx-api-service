@@ -5,9 +5,11 @@ export class ApplicationFilter {
 
   after?: number;
   before?: number;
+  withTxCount?: boolean;
 
   isSet(): boolean {
     return this.after !== undefined ||
-      this.before !== undefined;
+      this.before !== undefined ||
+      this.withTxCount !== undefined;
   }
 }

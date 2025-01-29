@@ -6,11 +6,16 @@ import { ApplicationFilter } from 'src/endpoints/applications/entities/applicati
 import { AssetsService } from '../../../common/assets/assets.service';
 import { AccountAssetsSocial } from '../../../common/assets/entities/account.assets.social';
 import { AccountAssets } from '../../../common/assets/entities/account.assets';
+import { Application } from 'src/endpoints/applications/entities/application';
+import { GatewayService } from 'src/common/gateway/gateway.service';
+import { TransferService } from 'src/endpoints/transfers/transfer.service';
 
 describe('ApplicationService', () => {
   let service: ApplicationService;
   let indexerService: ElasticIndexerService;
   let assetsService: AssetsService;
+  let gatewayService: GatewayService;
+  let transferService: TransferService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -29,12 +34,26 @@ describe('ApplicationService', () => {
             getAllAccountAssets: jest.fn(),
           },
         },
+        {
+          provide: GatewayService,
+          useValue: {
+            getAddressDetails: jest.fn(),
+          },
+        },
+        {
+          provide: TransferService,
+          useValue: {
+            getTransfersCount: jest.fn(),
+          },
+        },
       ],
     }).compile();
 
     service = module.get<ApplicationService>(ApplicationService);
     indexerService = module.get<ElasticIndexerService>(ElasticIndexerService);
     assetsService = module.get<AssetsService>(AssetsService);
+    gatewayService = module.get<GatewayService>(GatewayService);
+    transferService = module.get<TransferService>(TransferService);
   });
 
   it('should be defined', () => {
@@ -80,6 +99,20 @@ describe('ApplicationService', () => {
 
       jest.spyOn(indexerService, 'getApplications').mockResolvedValue(indexResult);
       jest.spyOn(assetsService, 'getAllAccountAssets').mockResolvedValue(assets);
+      jest.spyOn(gatewayService, 'getAddressDetails').mockResolvedValue({
+        account: {
+          address: '',
+          nonce: 0,
+          balance: '0',
+          username: '',
+          code: '',
+          codeHash: '',
+          rootHash: '',
+          codeMetadata: '',
+          developerReward: '',
+          ownerAddress: '',
+        },
+      });
 
       const queryPagination = new QueryPagination();
       const filter = new ApplicationFilter();
@@ -89,13 +122,14 @@ describe('ApplicationService', () => {
       expect(indexerService.getApplications).toHaveBeenCalledTimes(1);
       expect(assetsService.getAllAccountAssets).toHaveBeenCalled();
 
-      const expectedApplications = indexResult.map(item => ({
+      const expectedApplications = indexResult.map(item => new Application({
         contract: item.address,
         deployer: item.deployer,
         owner: item.currentOwner,
         codeHash: item.initialCodeHash,
         timestamp: item.timestamp,
         assets: assets[item.address],
+        balance: '0',
       }));
 
       expect(result).toEqual(expectedApplications);
@@ -114,6 +148,53 @@ describe('ApplicationService', () => {
         .toHaveBeenCalledTimes(1);
 
       expect(result).toEqual([]);
+    });
+
+    it('should return an array of applications with tx count', async () => {
+      const indexResult = [
+        {
+          address: 'erd1qqqqqqqqqqqqqpgq8372f63glekg7zl22tmx7wzp4drql25r6avs70dmp0',
+          deployer: 'erd1j770k2n46wzfn5g63gjthhqemu9r23n9tp7seu95vpz5gk5s6avsk5aams',
+          currentOwner: 'erd1j770k2n46wzfn5g63gjthhqemu9r23n9tp7seu95vpz5gk5s6avsk5aams',
+          initialCodeHash: 'kDh8hR9vyceELMUuy6JdAg0X90+ZaLeyVQS6tPbY82s=',
+          timestamp: 1724955216,
+        },
+      ];
+
+      jest.spyOn(indexerService, 'getApplications').mockResolvedValue(indexResult);
+      jest.spyOn(assetsService, 'getAllAccountAssets').mockResolvedValue({});
+      jest.spyOn(gatewayService, 'getAddressDetails').mockResolvedValue({
+        account: {
+          address: '',
+          nonce: 0,
+          balance: '0',
+          username: '',
+          code: '',
+          codeHash: '',
+          rootHash: '',
+          codeMetadata: '',
+          developerReward: '',
+          ownerAddress: '',
+        },
+      });
+      jest.spyOn(transferService, 'getTransfersCount').mockResolvedValue(42);
+
+      const queryPagination = new QueryPagination();
+      const filter = new ApplicationFilter({ withTxCount: true });
+      const result = await service.getApplications(queryPagination, filter);
+
+      const expectedApplications = indexResult.map(item => new Application({
+        contract: item.address,
+        deployer: item.deployer,
+        owner: item.currentOwner,
+        codeHash: item.initialCodeHash,
+        timestamp: item.timestamp,
+        balance: '0',
+        txCount: 42,
+      }));
+
+      expect(result).toEqual(expectedApplications);
+      expect(transferService.getTransfersCount).toHaveBeenCalled();
     });
   });
 
