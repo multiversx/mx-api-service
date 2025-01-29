@@ -10,6 +10,7 @@ import { Application } from 'src/endpoints/applications/entities/application';
 import { GatewayService } from 'src/common/gateway/gateway.service';
 import { TransferService } from 'src/endpoints/transfers/transfer.service';
 import { CacheService } from '@multiversx/sdk-nestjs-cache';
+import { BadRequestException } from '@nestjs/common';
 
 describe('ApplicationService', () => {
   let service: ApplicationService;
@@ -211,6 +212,12 @@ describe('ApplicationService', () => {
       jest.spyOn(cacheService, 'getOrSet').mockResolvedValue([]);
       const result = await service.getApplications(queryPagination, filter);
       expect(result).toEqual([]);
+    });
+
+    it('should throw an error when size is greater than 25 and withTxCount is set', async () => {
+      const queryPagination = new QueryPagination({ size: 50 });
+      const filter = new ApplicationFilter({ withTxCount: true });
+      await expect(service.getApplications(queryPagination, filter)).rejects.toThrow(BadRequestException);
     });
   });
 

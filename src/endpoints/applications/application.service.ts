@@ -25,6 +25,8 @@ export class ApplicationService {
   ) { }
 
   async getApplications(pagination: QueryPagination, filter: ApplicationFilter): Promise<Application[]> {
+    filter.validate(pagination.size);
+
     if (!filter.isSet) {
       return await this.cacheService.getOrSet(
         CacheInfo.Applications(pagination).key,

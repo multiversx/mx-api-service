@@ -28,9 +28,10 @@ export class ApplicationController {
     @Query('after', ParseIntPipe) after?: number,
     @Query('withTxCount', new ParseBoolPipe()) withTxCount?: boolean,
   ): Promise<Application[]> {
+    const applicationFilter = new ApplicationFilter({ before, after, withTxCount });
     return await this.applicationService.getApplications(
       new QueryPagination({ size, from }),
-      new ApplicationFilter({ before, after, withTxCount })
+      applicationFilter
     );
   }
 
