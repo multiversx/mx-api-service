@@ -1,9 +1,9 @@
-import { Controller, DefaultValuePipe, Get, Query } from "@nestjs/common";
+import { Controller, DefaultValuePipe, Get, Param, Query } from "@nestjs/common";
 import { ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { ApplicationService } from "./application.service";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { ApplicationFilter } from "./entities/application.filter";
-import { ParseIntPipe, ParseBoolPipe } from "@multiversx/sdk-nestjs-common";
+import { ParseIntPipe, ParseBoolPipe, ParseAddressPipe } from "@multiversx/sdk-nestjs-common";
 import { Application } from "./entities/application";
 
 @Controller()
@@ -33,6 +33,16 @@ export class ApplicationController {
       new QueryPagination({ size, from }),
       applicationFilter
     );
+  }
+
+  @Get("applications/:address")
+  @ApiOperation({ summary: 'Application details', description: 'Returns details of a smart contract' })
+  @ApiOkResponse({ type: Application })
+  async getApplication(
+    @Param('address', ParseAddressPipe) address: string,
+    @Query('withTxCount', new ParseBoolPipe()) withTxCount?: boolean,
+  ): Promise<Application> {
+    return await this.applicationService.getApplication(address, withTxCount ?? false);
   }
 
   @Get("applications/count")

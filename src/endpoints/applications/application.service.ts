@@ -86,6 +86,36 @@ export class ApplicationService {
     return await this.elasticIndexerService.getApplicationCount(filter);
   }
 
+  async getApplication(address: string, withTxCount: boolean): Promise<Application> {
+    const indexResult = await this.elasticIndexerService.getApplication(address);
+    const assets = await this.assetsService.getAllAccountAssets();
+
+    const result = new Application({
+      contract: indexResult.address,
+      deployer: indexResult.deployer,
+      owner: indexResult.currentOwner,
+      codeHash: indexResult.initialCodeHash,
+      timestamp: indexResult.timestamp,
+      assets: assets[address],
+      balance: '0',
+      ...(withTxCount && { txCount: 0 }),
+    });
+
+    try {
+      const { account: { balance } } = await this.gatewayService.getAddressDetails(result.contract);
+      result.balance = balance;
+    } catch (error) {
+      this.logger.error(`Error when getting balance for contract ${result.contract}`, error);
+      result.balance = '0';
+    }
+
+    if (withTxCount) {
+      result.txCount = await this.getApplicationTxCount(result.contract);
+    }
+
+    return result;
+  }
+
   async getApplicationTxCount(address: string): Promise<number> {
     return await this.transferService.getTransfersCount(new TransactionFilter({ address, type: TransactionType.Transaction }));
   }
