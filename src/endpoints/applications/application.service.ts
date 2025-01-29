@@ -80,7 +80,7 @@ export class ApplicationService {
     return await this.elasticIndexerService.getApplicationCount(filter);
   }
 
-  async getApplication(address: string, withTxCount: boolean): Promise<Application> {
+  async getApplication(address: string): Promise<Application> {
     const indexResult = await this.elasticIndexerService.getApplication(address);
     const assets = await this.assetsService.getAllAccountAssets();
 
@@ -92,13 +92,10 @@ export class ApplicationService {
       timestamp: indexResult.timestamp,
       assets: assets[address],
       balance: '0',
-      ...(withTxCount && { txCount: 0 }),
+      txCount: 0,
     });
 
-    if (withTxCount) {
-      result.txCount = await this.getApplicationTxCount(result.contract);
-    }
-
+    result.txCount = await this.getApplicationTxCount(result.contract);
     result.balance = await this.getApplicationBalance(result.contract);
 
     return result;

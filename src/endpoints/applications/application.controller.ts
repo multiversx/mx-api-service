@@ -40,9 +40,8 @@ export class ApplicationController {
   @ApiOkResponse({ type: Application })
   async getApplication(
     @Param('address', ParseAddressPipe) address: string,
-    @Query('withTxCount', new ParseBoolPipe()) withTxCount?: boolean,
   ): Promise<Application> {
-    return await this.applicationService.getApplication(address, withTxCount ?? false);
+    return await this.applicationService.getApplication(address);
   }
 
   @Get("applications/count")
