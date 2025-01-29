@@ -9,6 +9,7 @@ import { AccountAssets } from '../../../common/assets/entities/account.assets';
 import { Application } from 'src/endpoints/applications/entities/application';
 import { GatewayService } from 'src/common/gateway/gateway.service';
 import { TransferService } from 'src/endpoints/transfers/transfer.service';
+import { CacheService } from '@multiversx/sdk-nestjs-cache';
 
 describe('ApplicationService', () => {
   let service: ApplicationService;
@@ -16,7 +17,7 @@ describe('ApplicationService', () => {
   let assetsService: AssetsService;
   let gatewayService: GatewayService;
   let transferService: TransferService;
-
+  let cacheService: CacheService;
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -46,6 +47,12 @@ describe('ApplicationService', () => {
             getTransfersCount: jest.fn(),
           },
         },
+        {
+          provide: CacheService,
+          useValue: {
+            getOrSet: jest.fn(),
+          },
+        },
       ],
     }).compile();
 
@@ -54,6 +61,7 @@ describe('ApplicationService', () => {
     assetsService = module.get<AssetsService>(AssetsService);
     gatewayService = module.get<GatewayService>(GatewayService);
     transferService = module.get<TransferService>(TransferService);
+    cacheService = module.get<CacheService>(CacheService);
   });
 
   it('should be defined', () => {
@@ -116,7 +124,7 @@ describe('ApplicationService', () => {
 
       const queryPagination = new QueryPagination();
       const filter = new ApplicationFilter();
-      const result = await service.getApplications(queryPagination, filter);
+      const result = await service.getApplicationsRaw(queryPagination, filter);
 
       expect(indexerService.getApplications).toHaveBeenCalledWith(filter, queryPagination);
       expect(indexerService.getApplications).toHaveBeenCalledTimes(1);
@@ -181,7 +189,7 @@ describe('ApplicationService', () => {
 
       const queryPagination = new QueryPagination();
       const filter = new ApplicationFilter({ withTxCount: true });
-      const result = await service.getApplications(queryPagination, filter);
+      const result = await service.getApplicationsRaw(queryPagination, filter);
 
       const expectedApplications = indexResult.map(item => new Application({
         contract: item.address,
@@ -195,6 +203,14 @@ describe('ApplicationService', () => {
 
       expect(result).toEqual(expectedApplications);
       expect(transferService.getTransfersCount).toHaveBeenCalled();
+    });
+
+    it('should return an empty array of applications from cache', async () => {
+      const queryPagination = new QueryPagination();
+      const filter = new ApplicationFilter();
+      jest.spyOn(cacheService, 'getOrSet').mockResolvedValue([]);
+      const result = await service.getApplications(queryPagination, filter);
+      expect(result).toEqual([]);
     });
   });
 

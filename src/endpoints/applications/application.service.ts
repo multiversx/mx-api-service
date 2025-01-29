@@ -9,6 +9,8 @@ import { TransferService } from '../transfers/transfer.service';
 import { TransactionFilter } from '../transactions/entities/transaction.filter';
 import { TransactionType } from '../transactions/entities/transaction.type';
 import { Logger } from '@nestjs/common';
+import { CacheService } from '@multiversx/sdk-nestjs-cache';
+import { CacheInfo } from 'src/utils/cache.info';
 
 @Injectable()
 export class ApplicationService {
@@ -19,9 +21,22 @@ export class ApplicationService {
     private readonly assetsService: AssetsService,
     private readonly gatewayService: GatewayService,
     private readonly transferService: TransferService,
+    private readonly cacheService: CacheService,
   ) { }
 
   async getApplications(pagination: QueryPagination, filter: ApplicationFilter): Promise<Application[]> {
+    if (!filter.isSet) {
+      return await this.cacheService.getOrSet(
+        CacheInfo.Applications(pagination).key,
+        async () => await this.getApplicationsRaw(pagination, filter),
+        CacheInfo.Applications(pagination).ttl
+      );
+    }
+
+    return await this.getApplicationsRaw(pagination, filter);
+  }
+
+  async getApplicationsRaw(pagination: QueryPagination, filter: ApplicationFilter): Promise<Application[]> {
     const elasticResults = await this.elasticIndexerService.getApplications(filter, pagination);
     const assets = await this.assetsService.getAllAccountAssets();
 
