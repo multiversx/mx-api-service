@@ -61,13 +61,7 @@ export class ApplicationService {
       const promises: Promise<void>[] = [];
 
       promises.push((async () => {
-        try {
-          const { account: { balance } } = await this.gatewayService.getAddressDetails(application.contract);
-          application.balance = balance;
-        } catch (error) {
-          this.logger.error(`Error when getting balance for contract ${application.contract}`, error);
-          application.balance = '0';
-        }
+        application.balance = await this.getApplicationBalance(application.contract);
       })());
 
       if (filter.withTxCount) {
@@ -101,22 +95,26 @@ export class ApplicationService {
       ...(withTxCount && { txCount: 0 }),
     });
 
-    try {
-      const { account: { balance } } = await this.gatewayService.getAddressDetails(result.contract);
-      result.balance = balance;
-    } catch (error) {
-      this.logger.error(`Error when getting balance for contract ${result.contract}`, error);
-      result.balance = '0';
-    }
-
     if (withTxCount) {
       result.txCount = await this.getApplicationTxCount(result.contract);
     }
 
+    result.balance = await this.getApplicationBalance(result.contract);
+
     return result;
   }
 
-  async getApplicationTxCount(address: string): Promise<number> {
+  private async getApplicationTxCount(address: string): Promise<number> {
     return await this.transferService.getTransfersCount(new TransactionFilter({ address, type: TransactionType.Transaction }));
+  }
+
+  private async getApplicationBalance(address: string): Promise<string> {
+    try {
+      const { account: { balance } } = await this.gatewayService.getAddressDetails(address);
+      return balance;
+    } catch (error) {
+      this.logger.error(`Error when getting balance for contract ${address}`, error);
+      return '0';
+    }
   }
 }
