@@ -52,6 +52,7 @@ export class TransactionController {
   @ApiQuery({ name: 'isScCall', description: 'Returns sc call transactions details', required: false, type: Boolean })
   @ApiQuery({ name: 'withActionTransferValue', description: 'Returns value in USD and EGLD for transferred tokens within the action attribute', required: false })
   @ApiQuery({ name: 'withRelayedScresults', description: 'If set to true, will include smart contract results that resemble relayed transactions', required: false, type: Boolean })
+  @ApiQuery({ name: 'withCrossChainTransfers', description: 'If set to true, will include cross chain transfer transactions', required: false, type: Boolean })
   getTransactions(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
@@ -81,6 +82,7 @@ export class TransactionController {
     @Query('isScCall', ParseBoolPipe) isScCall?: boolean,
     @Query('withActionTransferValue', ParseBoolPipe) withActionTransferValue?: boolean,
     @Query('withRelayedScresults', ParseBoolPipe) withRelayedScresults?: boolean,
+    @Query('withCrossChainTransfers', ParseBoolPipe) withCrossChainTransfers?: boolean,
   ) {
     const options = TransactionQueryOptions.applyDefaultOptions(size, { withScResults, withOperations, withLogs, withScamInfo, withUsername, withBlockInfo, withActionTransferValue });
 
@@ -102,7 +104,8 @@ export class TransactionController {
       isRelayed,
       isScCall,
       round,
-      withRelayedScresults: withRelayedScresults,
+      withRelayedScresults,
+      withCrossChainTransfers,
     });
     TransactionFilter.validate(transactionFilter, size);
     return this.transactionService.getTransactions(transactionFilter,
@@ -133,6 +136,7 @@ export class TransactionController {
   @ApiQuery({ name: 'isScCall', description: 'Returns sc call transactions details', required: false, type: Boolean })
   @ApiQuery({ name: 'relayer', description: 'Filter by a relayer address', required: false })
   @ApiQuery({ name: 'withRelayedScresults', description: 'If set to true, will include smart contract results that resemble relayed transactions', required: false, type: Boolean })
+  @ApiQuery({ name: 'withCrossChainTransfers', description: 'If set to true, will include cross chain transfer transactions', required: false, type: Boolean })
   getTransactionCount(
     @Query('sender', ParseAddressAndMetachainPipe) sender?: string,
     @Query('receiver', ParseAddressArrayPipe) receiver?: string[],
@@ -151,6 +155,7 @@ export class TransactionController {
     @Query('isRelayed', ParseBoolPipe) isRelayed?: boolean,
     @Query('isScCall', ParseBoolPipe) isScCall?: boolean,
     @Query('withRelayedScresults', ParseBoolPipe) withRelayedScresults?: boolean,
+    @Query('withCrossChainTransfers', ParseBoolPipe) withCrossChainTransfers?: boolean,
   ): Promise<number> {
     return this.transactionService.getTransactionCount(new TransactionFilter({
       sender,
@@ -169,7 +174,8 @@ export class TransactionController {
       isRelayed,
       isScCall,
       round,
-      withRelayedScresults: withRelayedScresults,
+      withRelayedScresults,
+      withCrossChainTransfers,
     }));
   }
 
@@ -193,6 +199,7 @@ export class TransactionController {
     @Query('isRelayed', ParseBoolPipe) isRelayed?: boolean,
     @Query('isScCall', ParseBoolPipe) isScCall?: boolean,
     @Query('withRelayedScresults', ParseBoolPipe) withRelayedScresults?: boolean,
+    @Query('withCrossChainTransfers', ParseBoolPipe) withCrossChainTransfers?: boolean,
   ): Promise<number> {
     return this.transactionService.getTransactionCount(new TransactionFilter({
       sender,
@@ -211,7 +218,8 @@ export class TransactionController {
       relayer,
       round,
       isScCall,
-      withRelayedScresults: withRelayedScresults,
+      withRelayedScresults,
+      withCrossChainTransfers,
     }));
   }
 

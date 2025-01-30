@@ -206,6 +206,7 @@ export class TokenController {
   @ApiQuery({ name: 'withBlockInfo', description: 'Returns sender / receiver block details', required: false, type: Boolean })
   @ApiQuery({ name: 'withActionTransferValue', description: 'Returns value in USD and EGLD for transferred tokens within the action attribute', required: false })
   @ApiQuery({ name: 'withRelayedScresults', description: 'If set to true, will include smart contract results that resemble relayed transactions', required: false, type: Boolean })
+  @ApiQuery({ name: 'withCrossChainTransfers', description: 'If set to true, will include cross chain transfer transactions', required: false, type: Boolean })
   async getTokenTransactions(
     @Param('identifier', ParseTokenPipe) identifier: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
@@ -232,6 +233,7 @@ export class TokenController {
     @Query('withBlockInfo', ParseBoolPipe) withBlockInfo?: boolean,
     @Query('withActionTransferValue', ParseBoolPipe) withActionTransferValue?: boolean,
     @Query('withRelayedScresults', ParseBoolPipe) withRelayedScresults?: boolean,
+    @Query('withCrossChainTransfers', ParseBoolPipe) withCrossChainTransfers?: boolean,
   ) {
     const options = TransactionQueryOptions.applyDefaultOptions(size, { withScResults, withOperations, withLogs, withScamInfo, withUsername, withBlockInfo, withActionTransferValue });
 
@@ -256,6 +258,7 @@ export class TokenController {
       round,
       isScCall,
       withRelayedScresults,
+      withCrossChainTransfers,
     });
     TransactionFilter.validate(transactionFilter, size);
 
@@ -284,6 +287,7 @@ export class TokenController {
   @ApiQuery({ name: 'round', description: 'Filter by round number', required: false })
   @ApiQuery({ name: 'isScCall', description: 'Returns sc call transactions details', required: false, type: Boolean })
   @ApiQuery({ name: 'withRelayedScresults', description: 'If set to true, will include smart contract results that resemble relayed transactions', required: false, type: Boolean })
+  @ApiQuery({ name: 'withCrossChainTransfers', description: 'If set to true, will include cross chain transfer transactions', required: false, type: Boolean })
   async getTokenTransactionsCount(
     @Param('identifier', ParseTokenPipe) identifier: string,
     @Query('sender', ParseAddressPipe) sender?: string,
@@ -298,6 +302,7 @@ export class TokenController {
     @Query('round', ParseIntPipe) round?: number,
     @Query('withRelayedScresults', ParseBoolPipe) withRelayedScresults?: boolean,
     @Query('isScCall', ParseBoolPipe) isScCall?: boolean,
+    @Query('withCrossChainTransfers', ParseBoolPipe) withCrossChainTransfers?: boolean,
   ) {
     return await this.transactionService.getTransactionCount(new TransactionFilter({
       sender,
@@ -313,6 +318,7 @@ export class TokenController {
       round,
       withRelayedScresults,
       isScCall,
+      withCrossChainTransfers,
     }));
   }
 

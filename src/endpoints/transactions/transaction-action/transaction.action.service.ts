@@ -10,8 +10,9 @@ import { TransactionActionEsdtNftRecognizerService } from "./recognizers/esdt/tr
 import { TokenTransferService } from "src/endpoints/tokens/token.transfer.service";
 import { TransactionType } from "src/endpoints/transactions/entities/transaction.type";
 import { MetabondingActionRecognizerService } from "./recognizers/mex/mex.metabonding.action.recognizer.service";
-import { AddressUtils, BinaryUtils, StringUtils } from "@multiversx/sdk-nestjs-common";
-import { OriginLogger } from "@multiversx/sdk-nestjs-common";
+import { AddressUtils, BinaryUtils, OriginLogger, StringUtils } from "@multiversx/sdk-nestjs-common";
+import { TokenTransferProperties } from "../../tokens/entities/token.transfer.properties";
+import { ApiConfigService } from "../../../common/api-config/api.config.service";
 
 @Injectable()
 export class TransactionActionService {
@@ -26,6 +27,7 @@ export class TransactionActionService {
     @Inject(forwardRef(() => TokenTransferService))
     private readonly tokenTransferService: TokenTransferService,
     private readonly metabondingRecognizer: MetabondingActionRecognizerService,
+    private readonly apiConfigService: ApiConfigService,
   ) { }
 
   private async getRecognizers() {
@@ -86,6 +88,9 @@ export class TransactionActionService {
     metadata.receiver = transaction.receiver;
     metadata.timestamp = transaction.timestamp;
     metadata.value = BigInt(transaction.value);
+    if (transaction.senderShard !== undefined) {
+      metadata.senderShard = transaction.senderShard;
+    }
 
     if (transaction.data) {
       const decodedData = BinaryUtils.base64Decode(transaction.data);
@@ -130,7 +135,8 @@ export class TransactionActionService {
     try {
       if (transaction.type === TransactionType.SmartContractResult) {
         if (metadata.functionName === 'MultiESDTNFTTransfer' &&
-          metadata.functionArgs.length > 0
+          metadata.functionArgs.length > 0 &&
+          metadata.senderShard !== this.apiConfigService.getCrossChainSenderShardId()
         ) {
           // if the first argument has up to 4 hex chars (meaning it will contain up to 65536 transfers)
           // then we insert the address as the first parameter. otherwise we assume that the address
@@ -170,8 +176,15 @@ export class TransactionActionService {
   }
 
   private async getMultiTransferMetadata(metadata: TransactionMetadata, applyValue: boolean = false): Promise<TransactionMetadata | undefined> {
+    /*
+    sovereign cross chain transfer example: MultiESDTNFTTransfer@02@4147452d626532353731@@01314fb37062980000@42474431362d633437663436@@5d894a4a3a220000
+    regular chain example:                  MultiESDTNFTTransfer@0000000000000000050000b4c094947e427d79931a8bad81316b797d238cdb3f@02@4c524f4e452d633133303234@@036f5933a0d19ae387@524f4e452d626232653639@@04493d2ce61b650000@6164644c6971756964697479@01@01
+     */
+    const isSovereignCrossChainTransfer = metadata.senderShard === this.apiConfigService.getCrossChainSenderShardId();
     if (metadata.sender !== metadata.receiver) {
-      return undefined;
+      if (!isSovereignCrossChainTransfer) {
+        return undefined;
+      }
     }
 
     if (metadata.functionName !== 'MultiESDTNFTTransfer') {
@@ -183,12 +196,22 @@ export class TransactionActionService {
       return undefined;
     }
 
-    if (!AddressUtils.isValidHexAddress(args[0])) {
+    if (!AddressUtils.isValidHexAddress(args[0]) && !isSovereignCrossChainTransfer) {
       return undefined;
     }
 
-    const receiver = AddressUtils.bech32Encode(args[0]);
-    const transferCount = BinaryUtils.hexToNumber(args[1]);
+    let receiver: string;
+    if (!isSovereignCrossChainTransfer) {
+      receiver = AddressUtils.bech32Encode(args[0]);
+    } else {
+      receiver = metadata.receiver;
+    }
+
+    let transferCountIndex = 1;
+    if (isSovereignCrossChainTransfer) {
+      transferCountIndex = 0;
+    }
+    const transferCount = BinaryUtils.hexToNumber(args[transferCountIndex]);
 
     const result = new TransactionMetadata();
     if (!result.transfers) {
@@ -196,14 +219,19 @@ export class TransactionActionService {
     }
 
     let index = 2;
+    if (isSovereignCrossChainTransfer) {
+      index = 1;
+    }
     for (let i = 0; i < transferCount; i++) {
       const identifier = BinaryUtils.hexToString(args[index++]);
       const nonce = args[index++];
       const value = this.parseValueFromMultiTransferValueArg(args[index++]);
 
+      let validProperties = false;
       if (nonce && nonce !== "00") {
         const properties = await this.tokenTransferService.getTokenTransferProperties({ identifier, nonce });
         if (properties) {
+          validProperties = true;
           result.transfers.push({
             value,
             properties,
@@ -212,11 +240,25 @@ export class TransactionActionService {
       } else {
         const properties = await this.tokenTransferService.getTokenTransferProperties({ identifier, timestamp: metadata.timestamp, value: value.toString(), applyValue });
         if (properties) {
+          validProperties = true;
           result.transfers.push({
             value,
             properties,
           });
         }
+      }
+
+      // TODO: might remove this after token details are indexed inside sovereign es
+      if (!validProperties) { // missing token details (decimals for example. extract transfer info - best effort)
+        result.transfers.push({
+          value,
+          properties: new TokenTransferProperties({
+            decimals: 18,
+            identifier,
+            ticker: identifier,
+            token: identifier,
+          }),
+        });
       }
     }
 
