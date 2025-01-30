@@ -197,6 +197,7 @@ export class TokenController {
   @ApiQuery({ name: 'order', description: 'Sort order (asc/desc)', required: false, enum: SortOrder })
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
+  @ApiQuery({ name: 'isScCall', description: 'Returns sc call transactions details', required: false, type: Boolean })
   @ApiQuery({ name: 'withScResults', description: 'Return scResults for transactions', required: false, type: Boolean })
   @ApiQuery({ name: 'withOperations', description: 'Return operations for transactions', required: false, type: Boolean })
   @ApiQuery({ name: 'withLogs', description: 'Return logs for transactions', required: false, type: Boolean })
@@ -222,6 +223,7 @@ export class TokenController {
     @Query('round', ParseIntPipe) round?: number,
     @Query('order', new ParseEnumPipe(SortOrder)) order?: SortOrder,
     @Query('fields', ParseArrayPipe) fields?: string[],
+    @Query('isScCall', ParseBoolPipe) isScCall?: boolean,
     @Query('withScResults', ParseBoolPipe) withScResults?: boolean,
     @Query('withOperations', ParseBoolPipe) withOperations?: boolean,
     @Query('withLogs', ParseBoolPipe) withLogs?: boolean,
@@ -252,6 +254,7 @@ export class TokenController {
       after,
       order,
       round,
+      isScCall,
       withRelayedScresults,
     });
     TransactionFilter.validate(transactionFilter, size);
@@ -279,6 +282,7 @@ export class TokenController {
   @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
   @ApiQuery({ name: 'round', description: 'Filter by round number', required: false })
+  @ApiQuery({ name: 'isScCall', description: 'Returns sc call transactions details', required: false, type: Boolean })
   @ApiQuery({ name: 'withRelayedScresults', description: 'If set to true, will include smart contract results that resemble relayed transactions', required: false, type: Boolean })
   async getTokenTransactionsCount(
     @Param('identifier', ParseTokenPipe) identifier: string,
@@ -293,6 +297,7 @@ export class TokenController {
     @Query('after', ParseIntPipe) after?: number,
     @Query('round', ParseIntPipe) round?: number,
     @Query('withRelayedScresults', ParseBoolPipe) withRelayedScresults?: boolean,
+    @Query('isScCall', ParseBoolPipe) isScCall?: boolean,
   ) {
     return await this.transactionService.getTransactionCount(new TransactionFilter({
       sender,
@@ -307,6 +312,7 @@ export class TokenController {
       after,
       round,
       withRelayedScresults,
+      isScCall,
     }));
   }
 
@@ -360,6 +366,7 @@ export class TokenController {
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
   @ApiQuery({ name: 'round', description: 'Filter by round number', required: false })
   @ApiQuery({ name: 'fields', description: 'List of fields to filter by', required: false, isArray: true, style: 'form', explode: false })
+  @ApiQuery({ name: 'isScCall', description: 'Returns sc call transactions details', required: false, type: Boolean })
   @ApiQuery({ name: 'withScamInfo', description: 'Returns scam information', required: false, type: Boolean })
   @ApiQuery({ name: 'withUsername', description: 'Integrates username in assets for all addresses present in the transactions', required: false, type: Boolean })
   @ApiQuery({ name: 'withBlockInfo', description: 'Returns sender / receiver block details', required: false, type: Boolean })
@@ -381,6 +388,7 @@ export class TokenController {
     @Query('round', ParseIntPipe) round?: number,
     @Query('fields', ParseArrayPipe) fields?: string[],
     @Query('order', new ParseEnumPipe(SortOrder)) order?: SortOrder,
+    @Query('isScCall', ParseBoolPipe) isScCall?: boolean,
     @Query('withScamInfo', ParseBoolPipe) withScamInfo?: boolean,
     @Query('withUsername', ParseBoolPipe) withUsername?: boolean,
     @Query('withBlockInfo', ParseBoolPipe) withBlockInfo?: boolean,
@@ -402,6 +410,7 @@ export class TokenController {
       after,
       order,
       round,
+      isScCall,
     }),
       new QueryPagination({ from, size }),
       options,
@@ -423,6 +432,7 @@ export class TokenController {
   @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
   @ApiQuery({ name: 'round', description: 'Filter by round number', required: false })
+  @ApiQuery({ name: 'isScCall', description: 'Returns sc call transactions details', required: false, type: Boolean })
   async getTokenTransfersCount(
     @Param('identifier', ParseTokenPipe) identifier: string,
     @Query('sender', ParseAddressArrayPipe) sender?: string[],
@@ -436,6 +446,7 @@ export class TokenController {
     @Query('before', ParseIntPipe) before?: number,
     @Query('after', ParseIntPipe) after?: number,
     @Query('round', ParseIntPipe) round?: number,
+    @Query('isScCall', ParseBoolPipe) isScCall?: boolean,
   ): Promise<number> {
     return await this.transferService.getTransfersCount(new TransactionFilter({
       senders: sender,
@@ -450,6 +461,7 @@ export class TokenController {
       before,
       after,
       round,
+      isScCall,
     }));
   }
 
@@ -468,6 +480,7 @@ export class TokenController {
     @Query('before', ParseIntPipe) before?: number,
     @Query('after', ParseIntPipe) after?: number,
     @Query('round', ParseIntPipe) round?: number,
+    @Query('isScCall', ParseBoolPipe) isScCall?: boolean,
   ): Promise<number> {
     return await this.transferService.getTransfersCount(new TransactionFilter({
       senders: sender,
@@ -482,6 +495,7 @@ export class TokenController {
       before,
       after,
       round,
+      isScCall,
     }));
   }
 

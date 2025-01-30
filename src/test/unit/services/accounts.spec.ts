@@ -429,6 +429,7 @@ describe('Account Service', () => {
         version: 2,
         relayer: '',
         isRelayed: false,
+        isScCall: true,
         relayerSignature: '',
       });
 

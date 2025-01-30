@@ -424,6 +424,12 @@ export class ElasticIndexerHelper {
       elasticQuery = elasticQuery.withMustMatchCondition('round', filter.round);
     }
 
+    if (filter.isScCall !== undefined) {
+      elasticQuery = filter.isScCall
+        ? elasticQuery.withMustCondition(QueryType.Match('isScCall', true))
+        : elasticQuery.withMustNotCondition(QueryType.Match('isScCall', true));
+    }
+
     return elasticQuery;
   }
 
@@ -627,6 +633,12 @@ export class ElasticIndexerHelper {
           QueryType.Match('sender', filter.senderOrReceiver),
           QueryType.Match('receiver', filter.senderOrReceiver),
         ]));
+    }
+
+    if (filter.isScCall !== undefined) {
+      elasticQuery = filter.isScCall
+        ? elasticQuery.withMustCondition(QueryType.Match('isScCall', true))
+        : elasticQuery.withMustNotCondition(QueryType.Match('isScCall', true));
     }
 
     return elasticQuery;
