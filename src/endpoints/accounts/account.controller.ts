@@ -879,6 +879,7 @@ export class AccountController {
   @ApiQuery({ name: 'isRelayed', description: 'Returns isRelayed transactions details', required: false, type: Boolean })
   @ApiQuery({ name: 'withActionTransferValue', description: 'Returns value in USD and EGLD for transferred tokens within the action attribute', required: false })
   @ApiQuery({ name: 'withRelayedScresults', description: 'If set to true, will include smart contract results that resemble relayed transactions', required: false, type: Boolean })
+  @ApiQuery({ name: 'withCrossChainTransfers', description: 'If set to true, will include cross chain transfer transactions', required: false, type: Boolean })
   async getAccountTransactions(
     @Param('address', ParseAddressPipe) address: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
@@ -907,6 +908,7 @@ export class AccountController {
     @Query('isRelayed', ParseBoolPipe) isRelayed?: boolean,
     @Query('withActionTransferValue', ParseBoolPipe) withActionTransferValue?: boolean,
     @Query('withRelayedScresults', ParseBoolPipe) withRelayedScresults?: boolean,
+    @Query('withCrossChainTransfers', ParseBoolPipe) withCrossChainTransfers?: boolean,
   ) {
     const options = TransactionQueryOptions.applyDefaultOptions(size, { withScResults, withOperations, withLogs, withScamInfo, withUsername, withBlockInfo, withActionTransferValue });
 
@@ -927,6 +929,7 @@ export class AccountController {
       isRelayed,
       round,
       withRelayedScresults,
+      withCrossChainTransfers,
     });
     TransactionFilter.validate(transactionFilter, size);
     return await this.transactionService.getTransactions(transactionFilter, new QueryPagination({ from, size }), options, address, fields);
@@ -950,6 +953,7 @@ export class AccountController {
   @ApiQuery({ name: 'senderOrReceiver', description: 'One address that current address interacted with', required: false })
   @ApiQuery({ name: 'isRelayed', description: 'Returns isRelayed transactions details', required: false, type: Boolean })
   @ApiQuery({ name: 'withRelayedScresults', description: 'If set to true, will include smart contract results that resemble relayed transactions', required: false, type: Boolean })
+  @ApiQuery({ name: 'withCrossChainTransfers', description: 'If set to true, will include cross chain transfer transactions', required: false, type: Boolean })
   async getAccountTransactionsCount(
     @Param('address', ParseAddressPipe) address: string,
     @Query('sender', ParseAddressPipe) sender?: string,
@@ -967,7 +971,7 @@ export class AccountController {
     @Query('senderOrReceiver', ParseAddressPipe) senderOrReceiver?: string,
     @Query('isRelayed', ParseBoolPipe) isRelayed?: boolean,
     @Query('withRelayedScresults', ParseBoolPipe) withRelayedScresults?: boolean,
-
+    @Query('withCrossChainTransfers', ParseBoolPipe) withCrossChainTransfers?: boolean,
   ): Promise<number> {
 
     return await this.transactionService.getTransactionCount(new TransactionFilter({
@@ -986,6 +990,7 @@ export class AccountController {
       isRelayed,
       round,
       withRelayedScresults,
+      withCrossChainTransfers,
     }), address);
   }
 

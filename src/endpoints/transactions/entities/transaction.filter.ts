@@ -29,6 +29,7 @@ export class TransactionFilter {
   withRefunds?: boolean;
   withRelayedScresults?: boolean;
   withTxsRelayedByAddress?: boolean;
+  withCrossChainTransfers?: boolean;
 
   constructor(init?: Partial<TransactionFilter>) {
     Object.assign(this, init);
