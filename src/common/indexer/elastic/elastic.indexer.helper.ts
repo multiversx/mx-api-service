@@ -25,7 +25,6 @@ export class ElasticIndexerHelper {
   private nonFungibleEsdtTypes: NftType[] = [NftType.NonFungibleESDT, NftType.NonFungibleESDTv2, NftType.DynamicNonFungibleESDT];
   private semiFungibleEsdtTypes: NftType[] = [NftType.SemiFungibleESDT, NftType.DynamicSemiFungibleESDT];
   private metaEsdtTypes: NftType[] = [NftType.MetaESDT, NftType.DynamicMetaESDT];
-  private crossChainTransferSenderShard = 4294967293;
 
   constructor(
     private readonly apiConfigService: ApiConfigService,
@@ -535,7 +534,7 @@ export class ElasticIndexerHelper {
       } else {
         elasticQuery = elasticQuery.withShouldCondition([
           QueryType.Match('type', 'normal'),
-          QueryType.Match('senderShard', this.crossChainTransferSenderShard),
+          QueryType.Match('senderShard', this.apiConfigService.getCrossChainSenderShardId()),
         ]);
       }
     } else {
@@ -548,7 +547,7 @@ export class ElasticIndexerHelper {
         ]),
       ];
       if (filter.withCrossChainTransfers) {
-        shouldConditions.push(QueryType.Match('senderShard', this.crossChainTransferSenderShard));
+        shouldConditions.push(QueryType.Match('senderShard', this.apiConfigService.getCrossChainSenderShardId()));
       }
       elasticQuery = elasticQuery.withShouldCondition(shouldConditions);
     }

@@ -100,6 +100,14 @@ describe('BlsService', () => {
   });
 
   describe('getPublicKeysRaw', () => {
+    it('should return undefined if getPublicKeys returns undefined', async () => {
+      jest.spyOn(indexerService, 'getPublicKeys').mockResolvedValue(undefined);
+
+      const result = await blsService['getPublicKeysRaw'](0, 1);
+
+      expect(result).toBeUndefined();
+    });
+
     it('should return public keys if getPublicKeys returns an array', async () => {
       const publicKeys = ['publicKey1', 'publicKey2'];
       jest.spyOn(indexerService, 'getPublicKeys').mockResolvedValue(publicKeys);

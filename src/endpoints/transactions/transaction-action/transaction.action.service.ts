@@ -12,12 +12,12 @@ import { TransactionType } from "src/endpoints/transactions/entities/transaction
 import { MetabondingActionRecognizerService } from "./recognizers/mex/mex.metabonding.action.recognizer.service";
 import { AddressUtils, BinaryUtils, OriginLogger, StringUtils } from "@multiversx/sdk-nestjs-common";
 import { TokenTransferProperties } from "../../tokens/entities/token.transfer.properties";
+import { ApiConfigService } from "../../../common/api-config/api.config.service";
 
 @Injectable()
 export class TransactionActionService {
   private recognizers: TransactionActionRecognizerInterface[] = [];
   private readonly logger = new OriginLogger(TransactionActionService.name);
-  private crossChainTransferSenderShard = 4294967293;
 
   constructor(
     private readonly mexRecognizer: TransactionActionMexRecognizerService,
@@ -27,6 +27,7 @@ export class TransactionActionService {
     @Inject(forwardRef(() => TokenTransferService))
     private readonly tokenTransferService: TokenTransferService,
     private readonly metabondingRecognizer: MetabondingActionRecognizerService,
+    private readonly apiConfigService: ApiConfigService,
   ) { }
 
   private async getRecognizers() {
@@ -135,7 +136,7 @@ export class TransactionActionService {
       if (transaction.type === TransactionType.SmartContractResult) {
         if (metadata.functionName === 'MultiESDTNFTTransfer' &&
           metadata.functionArgs.length > 0 &&
-          metadata.senderShard !== this.crossChainTransferSenderShard
+          metadata.senderShard !== this.apiConfigService.getCrossChainSenderShardId()
         ) {
           // if the first argument has up to 4 hex chars (meaning it will contain up to 65536 transfers)
           // then we insert the address as the first parameter. otherwise we assume that the address
@@ -179,7 +180,7 @@ export class TransactionActionService {
     sovereign cross chain transfer example: MultiESDTNFTTransfer@02@4147452d626532353731@@01314fb37062980000@42474431362d633437663436@@5d894a4a3a220000
     regular chain example:                  MultiESDTNFTTransfer@0000000000000000050000b4c094947e427d79931a8bad81316b797d238cdb3f@02@4c524f4e452d633133303234@@036f5933a0d19ae387@524f4e452d626232653639@@04493d2ce61b650000@6164644c6971756964697479@01@01
      */
-    const isSovereignCrossChainTransfer = metadata.senderShard === this.crossChainTransferSenderShard;
+    const isSovereignCrossChainTransfer = metadata.senderShard === this.apiConfigService.getCrossChainSenderShardId();
     if (metadata.sender !== metadata.receiver) {
       if (!isSovereignCrossChainTransfer) {
         return undefined;
