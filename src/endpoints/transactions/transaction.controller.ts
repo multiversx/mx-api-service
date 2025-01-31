@@ -49,6 +49,7 @@ export class TransactionController {
   @ApiQuery({ name: 'withBlockInfo', description: 'Returns sender / receiver block details', required: false, type: Boolean })
   @ApiQuery({ name: 'relayer', description: 'Search by a relayer address', required: false })
   @ApiQuery({ name: 'isRelayed', description: 'Returns relayed transactions details', required: false, type: Boolean })
+  @ApiQuery({ name: 'isScCall', description: 'Returns sc call transactions details', required: false, type: Boolean })
   @ApiQuery({ name: 'withActionTransferValue', description: 'Returns value in USD and EGLD for transferred tokens within the action attribute', required: false })
   @ApiQuery({ name: 'withRelayedScresults', description: 'If set to true, will include smart contract results that resemble relayed transactions', required: false, type: Boolean })
   @ApiQuery({ name: 'withCrossChainTransfers', description: 'If set to true, will include cross chain transfer transactions', required: false, type: Boolean })
@@ -78,6 +79,7 @@ export class TransactionController {
     @Query('withUsername', ParseBoolPipe) withUsername?: boolean,
     @Query('withBlockInfo', ParseBoolPipe) withBlockInfo?: boolean,
     @Query('isRelayed', ParseBoolPipe) isRelayed?: boolean,
+    @Query('isScCall', ParseBoolPipe) isScCall?: boolean,
     @Query('withActionTransferValue', ParseBoolPipe) withActionTransferValue?: boolean,
     @Query('withRelayedScresults', ParseBoolPipe) withRelayedScresults?: boolean,
     @Query('withCrossChainTransfers', ParseBoolPipe) withCrossChainTransfers?: boolean,
@@ -100,6 +102,7 @@ export class TransactionController {
       order,
       relayer,
       isRelayed,
+      isScCall,
       round,
       withRelayedScresults,
       withCrossChainTransfers,
@@ -130,6 +133,7 @@ export class TransactionController {
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
   @ApiQuery({ name: 'round', description: 'Round number', required: false })
   @ApiQuery({ name: 'isRelayed', description: 'Returns relayed transactions details', required: false, type: Boolean })
+  @ApiQuery({ name: 'isScCall', description: 'Returns sc call transactions details', required: false, type: Boolean })
   @ApiQuery({ name: 'relayer', description: 'Filter by a relayer address', required: false })
   @ApiQuery({ name: 'withRelayedScresults', description: 'If set to true, will include smart contract results that resemble relayed transactions', required: false, type: Boolean })
   @ApiQuery({ name: 'withCrossChainTransfers', description: 'If set to true, will include cross chain transfer transactions', required: false, type: Boolean })
@@ -149,6 +153,7 @@ export class TransactionController {
     @Query('round', ParseIntPipe) round?: number,
     @Query('relayer', ParseAddressPipe) relayer?: string,
     @Query('isRelayed', ParseBoolPipe) isRelayed?: boolean,
+    @Query('isScCall', ParseBoolPipe) isScCall?: boolean,
     @Query('withRelayedScresults', ParseBoolPipe) withRelayedScresults?: boolean,
     @Query('withCrossChainTransfers', ParseBoolPipe) withCrossChainTransfers?: boolean,
   ): Promise<number> {
@@ -167,6 +172,7 @@ export class TransactionController {
       condition,
       relayer,
       isRelayed,
+      isScCall,
       round,
       withRelayedScresults,
       withCrossChainTransfers,
@@ -191,6 +197,7 @@ export class TransactionController {
     @Query('round', ParseIntPipe) round?: number,
     @Query('relayer', ParseAddressPipe) relayer?: string,
     @Query('isRelayed', ParseBoolPipe) isRelayed?: boolean,
+    @Query('isScCall', ParseBoolPipe) isScCall?: boolean,
     @Query('withRelayedScresults', ParseBoolPipe) withRelayedScresults?: boolean,
     @Query('withCrossChainTransfers', ParseBoolPipe) withCrossChainTransfers?: boolean,
   ): Promise<number> {
@@ -210,6 +217,7 @@ export class TransactionController {
       isRelayed,
       relayer,
       round,
+      isScCall,
       withRelayedScresults,
       withCrossChainTransfers,
     }));

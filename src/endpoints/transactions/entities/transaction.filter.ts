@@ -23,6 +23,7 @@ export class TransactionFilter {
   type?: TransactionType;
   tokens?: string[];
   senderOrReceiver?: string;
+  isScCall?: boolean;
   isRelayed?: boolean;
   relayer?: string;
   round?: number;

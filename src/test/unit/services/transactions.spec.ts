@@ -187,6 +187,7 @@ describe('TransactionService', () => {
         version: 1,
         relayer: 'erd1sdrjn0uuulydacwjam3v5afl427ptk797fpcujpfcsakfck8aqjquq9afc',
         isRelayed: true,
+        isScCall: true,
         relayerSignature: 'bc51e9032332740d60c404d4bf553ae225ca77a70ad799a1cdfc6e73609be8ec62e89ac6e2c2621ffbfb89e6fab620c137010662f3ebea9c422c9f1dbec04a03',
       },
       {
@@ -227,6 +228,7 @@ describe('TransactionService', () => {
         version: 1,
         relayer: 'erd1sdrjn0uuulydacwjam3v5afl427ptk797fpcujpfcsakfck8aqjquq9afc',
         isRelayed: true,
+        isScCall: true,
         relayerSignature: 'bc51e9032332740d60c404d4bf553ae225ca77a70ad799a1cdfc6e73609be8ec62e89ac6e2c2621ffbfb89e6fab620c137010662f3ebea9c422c9f1dbec04a03',
       },
     ];
