@@ -327,6 +327,15 @@ export class ApiConfigService {
     return isCronActive;
   }
 
+  isSovereignActive(): boolean {
+    const isSovereignActiveFlag = this.configService.get<boolean>('features.sovereign.enabled');
+    if (isSovereignActiveFlag === undefined) {
+      return false;
+    }
+
+    return isSovereignActiveFlag;
+  }
+
   isEventsNotifierFeatureActive(): boolean {
     const isEventsNotifierActive = this.configService.get<boolean>('features.eventsNotifier.enabled');
     if (isEventsNotifierActive === undefined) {
