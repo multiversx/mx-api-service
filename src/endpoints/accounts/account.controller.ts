@@ -58,6 +58,7 @@ import { DeepHistoryInterceptor } from 'src/interceptors/deep-history.intercepto
 import { MexPairType } from '../mex/entities/mex.pair.type';
 import { NftSubType } from '../nfts/entities/nft.sub.type';
 import { AccountContract } from './entities/account.contract';
+import { AccountFetchOptions } from './entities/account.fetch.options';
 
 @Controller()
 @ApiTags('accounts')
@@ -146,6 +147,7 @@ export class AccountController {
   @ApiQuery({ name: 'isSmartContract', description: 'Return total smart contracts count', required: false })
   @ApiQuery({ name: 'name', description: 'Filter accounts by assets name', required: false })
   @ApiQuery({ name: 'tags', description: 'Filter accounts by assets tags', required: false })
+  @ApiQuery({ name: 'search', description: 'Search by account address, assets name', required: false })
   @ApiQuery({ name: 'excludeTags', description: 'Exclude specific tags from result', required: false })
   @ApiQuery({ name: 'hasAssets', description: 'Returns a list of accounts that have assets', required: false })
   async getAccountsCount(
@@ -155,6 +157,7 @@ export class AccountController {
     @Query("tags", ParseArrayPipe) tags?: string[],
     @Query("excludeTags", ParseArrayPipe) excludeTags?: string[],
     @Query("hasAssets", ParseBoolPipe) hasAssets?: boolean,
+    @Query("search") search?: string,
   ): Promise<number> {
     return await this.accountService.getAccountsCount(
       new AccountQueryOptions(
@@ -165,6 +168,7 @@ export class AccountController {
           tags,
           excludeTags,
           hasAssets,
+          search,
         }));
   }
 
@@ -177,6 +181,7 @@ export class AccountController {
     @Query("tags", ParseArrayPipe) tags?: string[],
     @Query("excludeTags", ParseArrayPipe) excludeTags?: string[],
     @Query("hasAssets", ParseBoolPipe) hasAssets?: boolean,
+    @Query("search") search?: string,
   ): Promise<number> {
     return await this.accountService.getAccountsCount(
       new AccountQueryOptions(
@@ -187,6 +192,7 @@ export class AccountController {
           tags,
           excludeTags,
           hasAssets,
+          search,
         }));
   }
 
@@ -194,16 +200,25 @@ export class AccountController {
   @UseInterceptors(DeepHistoryInterceptor)
   @ApiOperation({ summary: 'Account details', description: 'Returns account details for a given address' })
   @ApiQuery({ name: 'withGuardianInfo', description: 'Returns guardian data for a given address', required: false })
-  @ApiQuery({ name: 'fields', description: 'List of fields to filter by', required: false, isArray: true, style: 'form', explode: false })
+  @ApiQuery({ name: 'withTxCount', description: 'Returns the count of the transactions for a given address', required: false })
+  @ApiQuery({ name: 'withScrCount', description: 'Returns the sc results count for a given address', required: false })
+  @ApiQuery({ name: 'withTimestamp', description: 'Returns the timestamp of the last activity for a given address', required: false })
+  @ApiQuery({ name: 'withAssets', description: 'Returns the assets for a given address', required: false })
   @ApiQuery({ name: 'timestamp', description: 'Retrieve entry from timestamp', required: false, type: Number })
   @ApiOkResponse({ type: AccountDetailed })
   async getAccountDetails(
     @Param('address', ParseAddressPipe) address: string,
     @Query('withGuardianInfo', ParseBoolPipe) withGuardianInfo?: boolean,
-    @Query('fields', ParseArrayPipe) fields?: string[],
+    @Query('withTxCount', ParseBoolPipe) withTxCount?: boolean,
+    @Query('withScrCount', ParseBoolPipe) withScrCount?: boolean,
+    @Query('withTimestamp', ParseBoolPipe) withTimestamp?: boolean,
+    @Query('withAssets', ParseBoolPipe) withAssets?: boolean,
     @Query('timestamp', ParseIntPipe) _timestamp?: number,
   ): Promise<AccountDetailed> {
-    const account = await this.accountService.getAccount(address, fields, withGuardianInfo);
+    const account = await this.accountService.getAccount(
+      address,
+      new AccountFetchOptions({ withGuardianInfo, withTxCount, withScrCount, withTimestamp, withAssets }),
+    );
     if (!account) {
       throw new NotFoundException('Account not found');
     }
@@ -867,6 +882,7 @@ export class AccountController {
   @ApiQuery({ name: 'computeScamInfo', required: false, type: Boolean })
   @ApiQuery({ name: 'senderOrReceiver', description: 'One address that current address interacted with', required: false })
   @ApiQuery({ name: 'isRelayed', description: 'Returns isRelayed transactions details', required: false, type: Boolean })
+  @ApiQuery({ name: 'isScCall', description: 'Returns sc call transactions details', required: false, type: Boolean })
   @ApiQuery({ name: 'withActionTransferValue', description: 'Returns value in USD and EGLD for transferred tokens within the action attribute', required: false })
   @ApiQuery({ name: 'withRelayedScresults', description: 'If set to true, will include smart contract results that resemble relayed transactions', required: false, type: Boolean })
   async getAccountTransactions(
@@ -895,6 +911,7 @@ export class AccountController {
     @Query('withBlockInfo', ParseBoolPipe) withBlockInfo?: boolean,
     @Query('senderOrReceiver', ParseAddressPipe) senderOrReceiver?: string,
     @Query('isRelayed', ParseBoolPipe) isRelayed?: boolean,
+    @Query('isScCall', ParseBoolPipe) isScCall?: boolean,
     @Query('withActionTransferValue', ParseBoolPipe) withActionTransferValue?: boolean,
     @Query('withRelayedScresults', ParseBoolPipe) withRelayedScresults?: boolean,
   ) {
@@ -915,6 +932,7 @@ export class AccountController {
       order,
       senderOrReceiver,
       isRelayed,
+      isScCall,
       round,
       withRelayedScresults,
     });
@@ -939,6 +957,7 @@ export class AccountController {
   @ApiQuery({ name: 'round', description: 'Round number', required: false })
   @ApiQuery({ name: 'senderOrReceiver', description: 'One address that current address interacted with', required: false })
   @ApiQuery({ name: 'isRelayed', description: 'Returns isRelayed transactions details', required: false, type: Boolean })
+  @ApiQuery({ name: 'isScCall', description: 'Returns sc call transactions details', required: false, type: Boolean })
   @ApiQuery({ name: 'withRelayedScresults', description: 'If set to true, will include smart contract results that resemble relayed transactions', required: false, type: Boolean })
   async getAccountTransactionsCount(
     @Param('address', ParseAddressPipe) address: string,
@@ -956,6 +975,7 @@ export class AccountController {
     @Query('round', ParseIntPipe) round?: number,
     @Query('senderOrReceiver', ParseAddressPipe) senderOrReceiver?: string,
     @Query('isRelayed', ParseBoolPipe) isRelayed?: boolean,
+    @Query('isScCall', ParseBoolPipe) isScCall?: boolean,
     @Query('withRelayedScresults', ParseBoolPipe) withRelayedScresults?: boolean,
 
   ): Promise<number> {
@@ -974,6 +994,7 @@ export class AccountController {
       after,
       senderOrReceiver,
       isRelayed,
+      isScCall,
       round,
       withRelayedScresults,
     }), address);
@@ -1000,6 +1021,7 @@ export class AccountController {
   @ApiQuery({ name: 'round', description: 'Round number', required: false })
   @ApiQuery({ name: 'fields', description: 'List of fields to filter by', required: false, isArray: true, style: 'form', explode: false })
   @ApiQuery({ name: 'relayer', description: 'Address of the relayer', required: false })
+  @ApiQuery({ name: 'isScCall', description: 'Returns sc call transactions details', required: false, type: Boolean })
   @ApiQuery({ name: 'withScamInfo', description: 'Returns scam information', required: false, type: Boolean })
   @ApiQuery({ name: 'withUsername', description: 'Integrates username in assets for all addresses present in the transactions', required: false, type: Boolean })
   @ApiQuery({ name: 'withBlockInfo', description: 'Returns sender / receiver block details', required: false, type: Boolean })
@@ -1008,6 +1030,7 @@ export class AccountController {
   @ApiQuery({ name: 'withOperations', description: 'Return operations for transfers. When "withOperations" parameter is applied, complexity estimation is 200', required: false })
   @ApiQuery({ name: 'withActionTransferValue', description: 'Returns value in USD and EGLD for transferred tokens within the action attribute', required: false })
   @ApiQuery({ name: 'withRefunds', description: 'Include refund transactions', required: false })
+  @ApiQuery({ name: 'withTxsRelayedByAddress', description: 'Include transactions that were relayed by the address', required: false })
   async getAccountTransfers(
     @Param('address', ParseAddressPipe) address: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
@@ -1031,10 +1054,12 @@ export class AccountController {
     @Query('withUsername', ParseBoolPipe) withUsername?: boolean,
     @Query('withBlockInfo', ParseBoolPipe) withBlockInfo?: boolean,
     @Query('senderOrReceiver', ParseAddressPipe) senderOrReceiver?: string,
+    @Query('isScCall', ParseBoolPipe) isScCall?: boolean,
     @Query('withLogs', ParseBoolPipe) withLogs?: boolean,
     @Query('withOperations', ParseBoolPipe) withOperations?: boolean,
     @Query('withActionTransferValue', ParseBoolPipe) withActionTransferValue?: boolean,
     @Query('withRefunds', ParseBoolPipe) withRefunds?: boolean,
+    @Query('withTxsRelayedByAddress', ParseBoolPipe) withTxsRelayedByAddress?: boolean,
   ): Promise<Transaction[]> {
     const options = TransactionQueryOptions.applyDefaultOptions(
       size, { withScamInfo, withUsername, withBlockInfo, withOperations, withLogs, withActionTransferValue });
@@ -1057,6 +1082,8 @@ export class AccountController {
       relayer,
       round,
       withRefunds,
+      withTxsRelayedByAddress,
+      isScCall,
     }),
       new QueryPagination({ from, size }),
       options,
@@ -1065,7 +1092,7 @@ export class AccountController {
   }
 
   @Get("/accounts/:address/transfers/count")
-  @ApiOperation({ summary: 'Account transfer count', description: 'Return total count of tranfers triggerred by a user account (type = Transaction), as well as transfers triggerred by smart contracts (type = SmartContractResult)' })
+  @ApiOperation({ summary: 'Account transfer count', description: 'Return total count of transfers triggerred by a user account (type = Transaction), as well as transfers triggerred by smart contracts (type = SmartContractResult)' })
   @ApiOkResponse({ type: Number })
   @ApiQuery({ name: 'sender', description: 'Address of the transfer sender', required: false })
   @ApiQuery({ name: 'receiver', description: 'Search by multiple receiver addresses, comma-separated', required: false })
@@ -1079,6 +1106,7 @@ export class AccountController {
   @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
   @ApiQuery({ name: 'round', description: 'Round number', required: false })
+  @ApiQuery({ name: 'isScCall', description: 'Returns sc call transactions details', required: false, type: Boolean })
   @ApiQuery({ name: 'senderOrReceiver', description: 'One address that current address interacted with', required: false })
   @ApiQuery({ name: 'withRefunds', description: 'Include refund transactions', required: false })
   async getAccountTransfersCount(
@@ -1096,6 +1124,7 @@ export class AccountController {
     @Query('after', ParseIntPipe) after?: number,
     @Query('round', ParseIntPipe) round?: number,
     @Query('senderOrReceiver', ParseAddressPipe) senderOrReceiver?: string,
+    @Query('isScCall', ParseBoolPipe) isScCall?: boolean,
     @Query('withRefunds', ParseBoolPipe) withRefunds?: boolean,
   ): Promise<number> {
     return await this.transferService.getTransfersCount(new TransactionFilter({
@@ -1113,6 +1142,7 @@ export class AccountController {
       after,
       senderOrReceiver,
       round,
+      isScCall,
       withRefunds,
     }));
   }
@@ -1135,6 +1165,7 @@ export class AccountController {
     @Query('round', ParseIntPipe) round?: number,
     @Query('senderOrReceiver', ParseAddressPipe) senderOrReceiver?: string,
     @Query('withRefunds', ParseBoolPipe) withRefunds?: boolean,
+    @Query('isScCall', ParseBoolPipe) isScCall?: boolean,
   ): Promise<number> {
     return await this.transferService.getTransfersCount(new TransactionFilter({
       address,
@@ -1152,6 +1183,7 @@ export class AccountController {
       senderOrReceiver,
       round,
       withRefunds,
+      isScCall,
     }));
   }
 

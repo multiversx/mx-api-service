@@ -40,6 +40,7 @@ export class TransferController {
   @ApiQuery({ name: 'function', description: 'Filter transfers by function name', required: false })
   @ApiQuery({ name: 'relayer', description: 'Filter by relayer address', required: false })
   @ApiQuery({ name: 'isRelayed', description: 'Returns relayed transactions details', required: false, type: Boolean })
+  @ApiQuery({ name: 'isScCall', description: 'Returns sc call transactions details', required: false, type: Boolean })
   @ApiQuery({ name: 'withScamInfo', description: 'Returns scam information', required: false, type: Boolean })
   @ApiQuery({ name: 'withUsername', description: 'Integrates username in assets for all addresses present in the transactions', required: false, type: Boolean })
   @ApiQuery({ name: 'withBlockInfo', description: 'Returns sender / receiver block details', required: false, type: Boolean })
@@ -66,6 +67,7 @@ export class TransferController {
     @Query('fields', ParseArrayPipe) fields?: string[],
     @Query('relayer', ParseAddressPipe) relayer?: string,
     @Query('isRelayed', ParseBoolPipe) isRelayed?: boolean,
+    @Query('isScCall', ParseBoolPipe) isScCall?: boolean,
     @Query('withScamInfo', ParseBoolPipe) withScamInfo?: boolean,
     @Query('withUsername', ParseBoolPipe) withUsername?: boolean,
     @Query('withBlockInfo', ParseBoolPipe) withBlockInfo?: boolean,
@@ -95,6 +97,7 @@ export class TransferController {
       isRelayed,
       round,
       withRefunds,
+      isScCall,
     }),
       new QueryPagination({ from, size }),
       options,
@@ -117,7 +120,9 @@ export class TransferController {
   @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
   @ApiQuery({ name: 'round', description: 'Round number', required: false })
+  @ApiQuery({ name: 'relayer', description: 'Filter by the relayer address', required: false })
   @ApiQuery({ name: 'isRelayed', description: 'Returns relayed transactions details', required: false, type: Boolean })
+  @ApiQuery({ name: 'isScCall', description: 'Returns sc call transactions details', required: false, type: Boolean })
   @ApiQuery({ name: 'withRefunds', description: 'Include refund transactions', required: false })
   async getAccountTransfersCount(
     @Query('sender', ParseAddressArrayPipe) sender?: string[],
@@ -132,7 +137,9 @@ export class TransferController {
     @Query('before', ParseIntPipe) before?: number,
     @Query('after', ParseIntPipe) after?: number,
     @Query('round', ParseIntPipe) round?: number,
+    @Query('relayer', ParseAddressPipe) relayer?: string,
     @Query('isRelayed', ParseBoolPipe) isRelayed?: boolean,
+    @Query('isScCall', ParseBoolPipe) isScCall?: boolean,
     @Query('withRefunds', ParseBoolPipe) withRefunds?: boolean,
   ): Promise<number> {
     return await this.transferService.getTransfersCount(new TransactionFilter({
@@ -147,9 +154,11 @@ export class TransferController {
       status,
       before,
       after,
+      relayer,
       isRelayed,
       round,
       withRefunds,
+      isScCall,
     }));
   }
 
@@ -168,6 +177,9 @@ export class TransferController {
     @Query('before', ParseIntPipe) before?: number,
     @Query('after', ParseIntPipe) after?: number,
     @Query('round', ParseIntPipe) round?: number,
+    @Query('relayer', ParseAddressPipe) relayer?: string,
+    @Query('isRelayed', ParseBoolPipe) isRelayed?: boolean,
+    @Query('isScCall', ParseBoolPipe) isScCall?: boolean,
     @Query('withRefunds', ParseBoolPipe) withRefunds?: boolean,
   ): Promise<number> {
     return await this.transferService.getTransfersCount(new TransactionFilter({
@@ -183,7 +195,10 @@ export class TransferController {
       before,
       after,
       round,
+      relayer,
+      isRelayed,
       withRefunds,
+      isScCall,
     }));
   }
 }
