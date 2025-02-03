@@ -23,11 +23,13 @@ export class TransactionFilter {
   type?: TransactionType;
   tokens?: string[];
   senderOrReceiver?: string;
+  isScCall?: boolean;
   isRelayed?: boolean;
   relayer?: string;
   round?: number;
   withRefunds?: boolean;
   withRelayedScresults?: boolean;
+  withTxsRelayedByAddress?: boolean;
 
   constructor(init?: Partial<TransactionFilter>) {
     Object.assign(this, init);
