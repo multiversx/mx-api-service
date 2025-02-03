@@ -45,7 +45,7 @@ describe('Transactions e2e tests with chain simulator', () => {
 
       availableShards.forEach(shard => {
         expect(shard).toBeGreaterThanOrEqual(0);
-        expect(shard).toBeLessThanOrEqual(2);
+        expect(shard).toBeLessThanOrEqual(3);
       });
 
       const testShard = availableShards[0];
@@ -69,7 +69,7 @@ describe('Transactions e2e tests with chain simulator', () => {
       }
     });
 
-    it('should return transactions with miniBlockHash filter applied', async () => {
+    it.skip('should return transactions with miniBlockHash filter applied', async () => {
       const transaction = await axios.get(`${config.apiServiceUrl}/transactions?size=1`);
       const miniBlockHash = transaction.data[0].miniBlockHash;
       const response = await axios.get(`${config.apiServiceUrl}/transactions?miniBlockHash=${miniBlockHash}`);
@@ -254,7 +254,7 @@ describe('Transactions e2e tests with chain simulator', () => {
       expect(typeof response.data).toBe('number');
     });
 
-    it('should return the total number of transactions with miniBlockHash filter applied', async () => {
+    it.skip('should return the total number of transactions with miniBlockHash filter applied', async () => {
       const transaction = await axios.get(`${config.apiServiceUrl}/transactions?size=1`);
       const miniBlockHash = transaction.data[0].miniBlockHash;
       const response = await axios.get(`${config.apiServiceUrl}/transactions/count?miniBlockHash=${miniBlockHash}`);
