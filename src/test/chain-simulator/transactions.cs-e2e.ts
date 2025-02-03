@@ -35,14 +35,26 @@ describe('Transactions e2e tests with chain simulator', () => {
       }
     });
 
-    it('should return transactions with senderShard filter applied', async () => {
-      const senderShard = 0;
-      const response = await axios.get(`${config.apiServiceUrl}/transactions?senderShard=${senderShard}`);
+    it('should correctly filter transactions by senderShard', async () => {
+      const allTransactions = await axios.get(`${config.apiServiceUrl}/transactions`);
+      expect(allTransactions.status).toBe(200);
+      expect(allTransactions.data.length).toBeGreaterThan(0);
+
+      const availableShards = [...new Set(allTransactions.data.map((tx: { senderShard: number }) => tx.senderShard))];
+      expect(availableShards.length).toBeGreaterThan(0);
+
+      availableShards.forEach(shard => {
+        expect(shard).toBeGreaterThanOrEqual(0);
+        expect(shard).toBeLessThanOrEqual(2);
+      });
+
+      const testShard = availableShards[0];
+      const response = await axios.get(`${config.apiServiceUrl}/transactions?senderShard=${testShard}`);
       expect(response.status).toBe(200);
-      expect(response.data.length).toBeGreaterThanOrEqual(1);
+      expect(response.data.length).toBeGreaterThan(0);
 
       for (const transaction of response.data) {
-        expect(transaction.senderShard).toBe(senderShard);
+        expect(transaction.senderShard).toBe(testShard);
       }
     });
 
