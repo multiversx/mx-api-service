@@ -35,15 +35,6 @@ export class ApplicationController {
     );
   }
 
-  @Get("applications/:address")
-  @ApiOperation({ summary: 'Application details', description: 'Returns details of a smart contract' })
-  @ApiOkResponse({ type: Application })
-  async getApplication(
-    @Param('address', ParseAddressPipe) address: string,
-  ): Promise<Application> {
-    return await this.applicationService.getApplication(address);
-  }
-
   @Get("applications/count")
   @ApiOperation({ summary: 'Applications count', description: 'Returns total number of smart contracts' })
   @ApiOkResponse({ type: Number })
@@ -56,5 +47,14 @@ export class ApplicationController {
     const filter = new ApplicationFilter({ before, after });
 
     return await this.applicationService.getApplicationsCount(filter);
+  }
+
+  @Get("applications/:address")
+  @ApiOperation({ summary: 'Application details', description: 'Returns details of a smart contract' })
+  @ApiOkResponse({ type: Application })
+  async getApplication(
+    @Param('address', ParseAddressPipe) address: string,
+  ): Promise<Application> {
+    return await this.applicationService.getApplication(address);
   }
 }
