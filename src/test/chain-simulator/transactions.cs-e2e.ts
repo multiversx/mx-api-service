@@ -208,6 +208,33 @@ describe('Transactions e2e tests with chain simulator', () => {
         }
       }
     });
+
+    it('should return transactions filtered by isScCall parameter', async () => {
+      const response = await axios.get(`${config.apiServiceUrl}/transactions?isScCall=true`);
+      expect(response.status).toBe(200);
+
+      for (const transaction of response.data) {
+        expect(transaction.isScCall).toBe(true);
+      }
+    });
+
+    it('should return transactions without isScCall field when isScCall parameter is not provided', async () => {
+      const response = await axios.get(`${config.apiServiceUrl}/transactions`);
+      expect(response.status).toBe(200);
+
+      for (const transaction of response.data) {
+        expect(transaction.isScCall).toBeUndefined();
+      }
+    });
+
+    it('should return transactions without isScCall field when isScCall parameter is false', async () => {
+      const response = await axios.get(`${config.apiServiceUrl}/transactions?isScCall=false`);
+      expect(response.status).toBe(200);
+
+      for (const transaction of response.data) {
+        expect(transaction.isScCall).toBeUndefined();
+      }
+    });
   });
 
   describe('GET /transactions/count', () => {
