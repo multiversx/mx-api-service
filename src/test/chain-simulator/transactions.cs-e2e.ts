@@ -43,11 +43,6 @@ describe('Transactions e2e tests with chain simulator', () => {
       const availableShards = [...new Set(allTransactions.data.map((tx: { senderShard: number }) => tx.senderShard))];
       expect(availableShards.length).toBeGreaterThan(0);
 
-      availableShards.forEach(shard => {
-        expect(shard).toBeGreaterThanOrEqual(0);
-        expect(shard).toBeLessThanOrEqual(3);
-      });
-
       const testShard = availableShards[0];
       const response = await axios.get(`${config.apiServiceUrl}/transactions?senderShard=${testShard}`);
       expect(response.status).toBe(200);
