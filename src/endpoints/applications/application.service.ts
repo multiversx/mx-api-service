@@ -57,21 +57,17 @@ export class ApplicationService {
       ...(filter.withTxCount && { txCount: 0 }),
     }));
 
-    await Promise.all(applications.map(async (application) => {
-      const promises: Promise<void>[] = [];
+    const balancePromises = applications.map(application =>
+      this.getApplicationBalance(application.contract)
+        .then(balance => { application.balance = balance; })
+    );
+    await Promise.all(balancePromises);
 
-      promises.push((async () => {
-        application.balance = await this.getApplicationBalance(application.contract);
-      })());
-
-      if (filter.withTxCount) {
-        promises.push((async () => {
-          application.txCount = await this.getApplicationTxCount(application.contract);
-        })());
+    if (filter.withTxCount) {
+      for (const application of applications) {
+        application.txCount = await this.getApplicationTxCount(application.contract);
       }
-
-      await Promise.all(promises);
-    }));
+    }
 
     return applications;
   }
