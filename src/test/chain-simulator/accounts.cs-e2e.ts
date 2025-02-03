@@ -123,14 +123,17 @@ describe('Accounts e2e tests with chain simulator', () => {
       expect(response.data.balance).toBeDefined();
       expect(response.data.shard).toBeDefined();
       expect(response.data.nonce).toBeDefined();
-      expect(response.data.txCount).toBeDefined();
-      expect(response.data.scrCount).toBeDefined();
 
       expect(typeof response.data.balance).toBe('string');
       expect(typeof response.data.shard).toBe('number');
       expect(typeof response.data.nonce).toBe('number');
       expect(typeof response.data.txCount).toBe('number');
       expect(typeof response.data.scrCount).toBe('number');
+
+      const responseWithDetails = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}?withScrCount=true&withTxCount=true`);
+      expect(responseWithDetails.status).toBe(200);
+      expect(responseWithDetails.data.txCount).toBeDefined();
+      expect(responseWithDetails.data.scrCount).toBeDefined();
     });
 
     it('should return 400 for non-existent / invalid address', async () => {
