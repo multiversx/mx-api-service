@@ -127,8 +127,6 @@ describe('Accounts e2e tests with chain simulator', () => {
       expect(typeof response.data.balance).toBe('string');
       expect(typeof response.data.shard).toBe('number');
       expect(typeof response.data.nonce).toBe('number');
-      expect(typeof response.data.txCount).toBe('number');
-      expect(typeof response.data.scrCount).toBe('number');
 
       const responseWithDetails = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}?withScrCount=true&withTxCount=true`);
       expect(responseWithDetails.status).toBe(200);
