@@ -1,7 +1,10 @@
 name: Chain simulator e2e tests workflow
 
 on:
+  push:
+    branches: [main, development]
   pull_request:
+    branches: [main, development]
 
 jobs:
   test-chainsimulator-e2e:
