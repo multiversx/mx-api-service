@@ -974,6 +974,10 @@ export class ElasticIndexerService implements IndexerInterface {
     return await this.elasticService.getList('scdeploys', 'address', elasticQuery);
   }
 
+  async getApplication(address: string): Promise<any> {
+    return await this.elasticService.getItem('scdeploys', 'address', address);
+  }
+
   async getApplicationCount(filter: ApplicationFilter): Promise<number> {
     const elasticQuery = this.indexerHelper.buildApplicationFilter(filter);
 

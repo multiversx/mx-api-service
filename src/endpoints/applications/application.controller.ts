@@ -1,9 +1,9 @@
-import { Controller, DefaultValuePipe, Get, Query } from "@nestjs/common";
+import { Controller, DefaultValuePipe, Get, Param, Query } from "@nestjs/common";
 import { ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { ApplicationService } from "./application.service";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { ApplicationFilter } from "./entities/application.filter";
-import { ParseIntPipe } from "@multiversx/sdk-nestjs-common";
+import { ParseIntPipe, ParseBoolPipe, ParseAddressPipe } from "@multiversx/sdk-nestjs-common";
 import { Application } from "./entities/application";
 
 @Controller()
@@ -20,15 +20,18 @@ export class ApplicationController {
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
+  @ApiQuery({ name: 'withTxCount', description: 'Include transaction count', required: false, type: Boolean })
   async getApplications(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number,
     @Query('before', ParseIntPipe) before?: number,
     @Query('after', ParseIntPipe) after?: number,
-  ): Promise<any[]> {
+    @Query('withTxCount', new ParseBoolPipe()) withTxCount?: boolean,
+  ): Promise<Application[]> {
+    const applicationFilter = new ApplicationFilter({ before, after, withTxCount });
     return await this.applicationService.getApplications(
       new QueryPagination({ size, from }),
-      new ApplicationFilter({ before, after })
+      applicationFilter
     );
   }
 
@@ -44,5 +47,14 @@ export class ApplicationController {
     const filter = new ApplicationFilter({ before, after });
 
     return await this.applicationService.getApplicationsCount(filter);
+  }
+
+  @Get("applications/:address")
+  @ApiOperation({ summary: 'Application details', description: 'Returns details of a smart contract' })
+  @ApiOkResponse({ type: Application })
+  async getApplication(
+    @Param('address', ParseAddressPipe) address: string,
+  ): Promise<Application> {
+    return await this.applicationService.getApplication(address);
   }
 }

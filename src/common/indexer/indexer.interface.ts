@@ -188,6 +188,8 @@ export interface IndexerInterface {
 
   getApplicationCount(filter: ApplicationFilter): Promise<number>
 
+  getApplication(address: string): Promise<any>
+
   getAddressesWithTransfersLast24h(): Promise<string[]>
 
   getEvents(pagination: QueryPagination, filter: EventsFilter): Promise<Events[]>
