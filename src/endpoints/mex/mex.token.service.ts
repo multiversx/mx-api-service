@@ -2,7 +2,6 @@ import { BadRequestException, forwardRef, Inject, Injectable } from "@nestjs/com
 import { CacheInfo } from "src/utils/cache.info";
 import { MexToken } from "./entities/mex.token";
 import { MexPairService } from "./mex.pair.service";
-import { MexPairState } from "./entities/mex.pair.state";
 import { MexPair } from "./entities/mex.pair";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { MexFarmService } from "./mex.farm.service";
