@@ -11,6 +11,7 @@ import request = require('supertest');
 import { PublicAppModule } from "src/public.app.module";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { MexPairExchange } from "src/endpoints/mex/entities/mex.pair.exchange";
+import { MexPairsFilter } from 'src/endpoints/mex/entities/mex.pairs..filter';
 
 describe('MexController', () => {
   let app: INestApplication;
@@ -68,7 +69,7 @@ describe('MexController', () => {
         .expect(200);
 
       expect(mexPairServiceMocks.getMexPairs).toHaveBeenCalledWith(
-        0, 25, { "exchange": undefined, "includeFarms": false }
+        0, 25, new MexPairsFilter({ exchange: undefined, includeFarms: false })
       );
     });
 
@@ -81,7 +82,7 @@ describe('MexController', () => {
         .expect(200);
 
       expect(mexPairServiceMocks.getMexPairs).toHaveBeenCalledWith(
-        0, 5, { "exchange": undefined, "includeFarms": false }
+        0, 5, new MexPairsFilter({ exchange: undefined, includeFarms: false })
       );
     });
 
@@ -94,7 +95,7 @@ describe('MexController', () => {
         .expect(200);
 
       expect(mexPairServiceMocks.getMexPairs).toHaveBeenCalledWith(
-        0, 5, { "exchange": MexPairExchange.xexchange, "includeFarms": false }
+        0, 5, new MexPairsFilter({ exchange: MexPairExchange.xexchange, includeFarms: false })
       );
     });
 
@@ -107,7 +108,7 @@ describe('MexController', () => {
         .expect(200);
 
       expect(mexPairServiceMocks.getMexPairs).toHaveBeenCalledWith(
-        0, 5, { "exchange": MexPairExchange.unknown, "includeFarms": false }
+        0, 5, new MexPairsFilter({ exchange: MexPairExchange.unknown, includeFarms: false })
       );
     });
 
@@ -121,7 +122,7 @@ describe('MexController', () => {
         });
 
       expect(mexPairServiceMocks.getMexPairsCount).toHaveBeenCalledWith(
-        { "exchange": undefined, "includeFarms": false }
+        new MexPairsFilter({ exchange: undefined, includeFarms: false })
       );
     });
 
@@ -135,7 +136,7 @@ describe('MexController', () => {
         });
 
       expect(mexPairServiceMocks.getMexPairsCount).toHaveBeenCalledWith(
-        { "exchange": MexPairExchange.xexchange, "includeFarms": false }
+        new MexPairsFilter({ exchange: MexPairExchange.xexchange, includeFarms: false })
       );
     });
 
@@ -149,7 +150,7 @@ describe('MexController', () => {
         });
 
       expect(mexPairServiceMocks.getMexPairsCount).toHaveBeenCalledWith(
-        { "exchange": MexPairExchange.unknown, "includeFarms": false }
+        new MexPairsFilter({ exchange: MexPairExchange.unknown, includeFarms: false })
       );
     });
 

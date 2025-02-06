@@ -84,10 +84,12 @@ export class MexController {
   @Get("/mex/pairs/count")
   @ApiOperation({ summary: 'Maiar Exchange pairs count', description: 'Returns active liquidity pools count available on Maiar Exchange' })
   @ApiQuery({ name: 'exchange', description: 'Filter by exchange', required: false, enum: MexPairExchange })
+  @ApiQuery({ name: 'includeFarms', description: 'Include farms information', required: false, type: Boolean })
   async getMexPairsCount(
     @Query('exchange', new ParseEnumPipe(MexPairExchange)) exchange?: MexPairExchange,
+    @Query('includeFarms', new DefaultValuePipe(false), ParseBoolPipe) includeFarms?: boolean,
   ): Promise<number> {
-    const filter = new MexPairsFilter({ exchange });
+    const filter = new MexPairsFilter({ exchange, includeFarms });
     return await this.mexPairsService.getMexPairsCount(filter);
   }
 
