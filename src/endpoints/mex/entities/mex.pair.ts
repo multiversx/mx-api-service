@@ -76,4 +76,10 @@ export class MexPair {
 
   @ApiProperty({ type: Number, nullable: true })
   deployedAt: number | undefined = undefined;
+
+  @ApiProperty({ type: Boolean, nullable: true })
+  hasFarms?: boolean;
+
+  @ApiProperty({ type: Boolean, nullable: true })
+  hasDualFarms?: boolean;
 }

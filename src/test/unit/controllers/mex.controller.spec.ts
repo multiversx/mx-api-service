@@ -69,7 +69,7 @@ describe('MexController', () => {
         .expect(200);
 
       expect(mexPairServiceMocks.getMexPairs).toHaveBeenCalledWith(
-        0, 25, new MexPairsFilter({ exchange: undefined })
+        0, 25, new MexPairsFilter({ exchange: undefined, includeFarms: false })
       );
     });
 
@@ -82,7 +82,7 @@ describe('MexController', () => {
         .expect(200);
 
       expect(mexPairServiceMocks.getMexPairs).toHaveBeenCalledWith(
-        0, 5, new MexPairsFilter({ exchange: undefined })
+        0, 5, new MexPairsFilter({ exchange: undefined, includeFarms: false })
       );
     });
 
@@ -95,7 +95,7 @@ describe('MexController', () => {
         .expect(200);
 
       expect(mexPairServiceMocks.getMexPairs).toHaveBeenCalledWith(
-        0, 5, new MexPairsFilter({ exchange: MexPairExchange.xexchange })
+        0, 5, new MexPairsFilter({ exchange: MexPairExchange.xexchange, includeFarms: false })
       );
     });
 
@@ -108,7 +108,7 @@ describe('MexController', () => {
         .expect(200);
 
       expect(mexPairServiceMocks.getMexPairs).toHaveBeenCalledWith(
-        0, 5, new MexPairsFilter({ exchange: MexPairExchange.unknown })
+        0, 5, new MexPairsFilter({ exchange: MexPairExchange.unknown, includeFarms: false })
       );
     });
 
@@ -122,7 +122,7 @@ describe('MexController', () => {
         });
 
       expect(mexPairServiceMocks.getMexPairsCount).toHaveBeenCalledWith(
-        new MexPairsFilter({ exchange: undefined })
+        new MexPairsFilter({ exchange: undefined, includeFarms: false })
       );
     });
 
@@ -136,7 +136,7 @@ describe('MexController', () => {
         });
 
       expect(mexPairServiceMocks.getMexPairsCount).toHaveBeenCalledWith(
-        new MexPairsFilter({ exchange: MexPairExchange.xexchange })
+        new MexPairsFilter({ exchange: MexPairExchange.xexchange, includeFarms: false })
       );
     });
 
@@ -150,7 +150,7 @@ describe('MexController', () => {
         });
 
       expect(mexPairServiceMocks.getMexPairsCount).toHaveBeenCalledWith(
-        new MexPairsFilter({ exchange: MexPairExchange.unknown })
+        new MexPairsFilter({ exchange: MexPairExchange.unknown, includeFarms: false })
       );
     });
 
@@ -163,7 +163,44 @@ describe('MexController', () => {
         .get(`${path}/pairs/${baseId}/${quoteId}`)
         .expect(200);
 
-      expect(mexPairServiceMocks.getMexPair).toHaveBeenCalledWith(baseId, quoteId);
+      expect(mexPairServiceMocks.getMexPair).toHaveBeenCalledWith(baseId, quoteId, false);
+    });
+
+    it('should return mex pairs with farms information', async () => {
+      mexPairServiceMocks.getMexPairs.mockReturnValue([]);
+      await request(app.getHttpServer())
+        .get(`${path}/pairs?includeFarms=true`)
+        .expect(200);
+
+      expect(mexPairServiceMocks.getMexPairs).toHaveBeenCalledWith(
+        0, 25, new MexPairsFilter({ exchange: undefined, includeFarms: true })
+      );
+    });
+
+    it('should return mex pair with farms information', async () => {
+      mexPairServiceMocks.getMexPair.mockReturnValue({});
+      const baseId = 'MEX-455c57';
+      const quoteId = 'WEGLD-bd4d79';
+
+      await request(app.getHttpServer())
+        .get(`${path}/pairs/${baseId}/${quoteId}?includeFarms=true`)
+        .expect(200);
+
+      expect(mexPairServiceMocks.getMexPair).toHaveBeenCalledWith(baseId, quoteId, true);
+    });
+
+    it('should return total mex pairs count with farms information', async () => {
+      mexPairServiceMocks.getMexPairsCount.mockReturnValue(10);
+      await request(app.getHttpServer())
+        .get(`${path}/pairs/count?includeFarms=true`)
+        .expect(200)
+        .expect(response => {
+          expect(+response.text).toStrictEqual(10);
+        });
+
+      expect(mexPairServiceMocks.getMexPairsCount).toHaveBeenCalledWith(
+        new MexPairsFilter({ exchange: undefined, includeFarms: true })
+      );
     });
   });
 

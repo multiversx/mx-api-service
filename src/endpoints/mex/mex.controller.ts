@@ -11,7 +11,7 @@ import { MexTokenService } from "./mex.token.service";
 import { MexFarmService } from './mex.farm.service';
 import { MexFarm } from './entities/mex.farm';
 import { QueryPagination } from 'src/common/entities/query.pagination';
-import { ParseIntPipe, ParseTokenPipe, ParseEnumPipe } from '@multiversx/sdk-nestjs-common';
+import { ParseIntPipe, ParseTokenPipe, ParseEnumPipe, ParseBoolPipe } from '@multiversx/sdk-nestjs-common';
 import { MexPairExchange } from './entities/mex.pair.exchange';
 import { MexPairsFilter } from './entities/mex.pairs..filter';
 import { MexTokenChartsService } from './mex.token.charts.service';
@@ -56,12 +56,14 @@ export class MexController {
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   @ApiQuery({ name: 'exchange', description: 'Filter by exchange', required: false, enum: MexPairExchange })
+  @ApiQuery({ name: 'includeFarms', description: 'Include farms information in response', required: false, type: Boolean })
   async getMexPairs(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number,
     @Query('exchange', new ParseEnumPipe(MexPairExchange)) exchange?: MexPairExchange,
+    @Query('includeFarms', new DefaultValuePipe(false), ParseBoolPipe) includeFarms?: boolean,
   ): Promise<MexPair[]> {
-    const filter = new MexPairsFilter({ exchange });
+    const filter = new MexPairsFilter({ exchange, includeFarms });
     return await this.mexPairsService.getMexPairs(from, size, filter);
   }
 
@@ -83,10 +85,12 @@ export class MexController {
   @Get("/mex/pairs/count")
   @ApiOperation({ summary: 'Maiar Exchange pairs count', description: 'Returns active liquidity pools count available on Maiar Exchange' })
   @ApiQuery({ name: 'exchange', description: 'Filter by exchange', required: false, enum: MexPairExchange })
+  @ApiQuery({ name: 'includeFarms', description: 'Include farms information in response', required: false, type: Boolean })
   async getMexPairsCount(
     @Query('exchange', new ParseEnumPipe(MexPairExchange)) exchange?: MexPairExchange,
+    @Query('includeFarms', new DefaultValuePipe(false), ParseBoolPipe) includeFarms?: boolean,
   ): Promise<number> {
-    const filter = new MexPairsFilter({ exchange });
+    const filter = new MexPairsFilter({ exchange, includeFarms });
     return await this.mexPairsService.getMexPairsCount(filter);
   }
 
@@ -146,11 +150,13 @@ export class MexController {
   @Get("/mex/pairs/:baseId/:quoteId")
   @ApiOperation({ summary: 'xExchange pairs details', description: 'Returns liquidity pool details by providing a combination of two tokens' })
   @ApiOkResponse({ type: MexPair })
+  @ApiQuery({ name: 'includeFarms', description: 'Include farms information in response', required: false, type: Boolean })
   async getMexPair(
     @Param('baseId') baseId: string,
     @Param('quoteId') quoteId: string,
+    @Query('includeFarms', new DefaultValuePipe(false), ParseBoolPipe) includeFarms?: boolean,
   ): Promise<MexPair> {
-    const pair = await this.mexPairsService.getMexPair(baseId, quoteId);
+    const pair = await this.mexPairsService.getMexPair(baseId, quoteId, includeFarms);
     if (!pair) {
       throw new NotFoundException();
     }

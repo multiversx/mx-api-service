@@ -26,45 +26,47 @@ export class MexPairService {
   ) { }
 
   async refreshMexPairs(): Promise<void> {
-    const pairs = await this.getAllMexPairsRaw();
+    const pairs = await this.getAllMexPairsRaw(false);
     await this.cachingService.setRemote(CacheInfo.MexPairs.key, pairs, CacheInfo.MexPairs.ttl);
     await this.cachingService.setLocal(CacheInfo.MexPairs.key, pairs, Constants.oneSecond() * 30);
   }
 
   async getMexPairs(from: number, size: number, filter?: MexPairsFilter): Promise<any> {
-    let allMexPairs = await this.getAllMexPairs();
+    let allMexPairs = await this.getAllMexPairs(filter?.includeFarms ?? false);
     allMexPairs = this.applyFilters(allMexPairs, filter);
 
     return allMexPairs.slice(from, from + size);
   }
 
-
-  async getMexPair(baseId: string, quoteId: string): Promise<MexPair | undefined> {
-    const allMexPairs = await this.getAllMexPairs();
+  async getMexPair(baseId: string, quoteId: string, includeFarms: boolean = false): Promise<MexPair | undefined> {
+    const allMexPairs = await this.getAllMexPairs(includeFarms);
     return allMexPairs.find(pair => pair.baseId === baseId && pair.quoteId === quoteId);
   }
 
-  async getAllMexPairs(): Promise<MexPair[]> {
+  async getAllMexPairs(includeFarms: boolean = false): Promise<MexPair[]> {
     if (!this.apiConfigService.isExchangeEnabled()) {
       return [];
     }
 
+    const cacheKey = includeFarms ? CacheInfo.MexPairsWithFarms.key : CacheInfo.MexPairs.key;
+    const ttl = includeFarms ? CacheInfo.MexPairsWithFarms.ttl : CacheInfo.MexPairs.ttl;
+
     return await this.cachingService.getOrSet(
-      CacheInfo.MexPairs.key,
-      async () => await this.getAllMexPairsRaw(),
-      CacheInfo.MexPairs.ttl,
+      cacheKey,
+      async () => await this.getAllMexPairsRaw(includeFarms),
+      ttl,
       Constants.oneSecond() * 30,
     );
   }
 
   async getMexPairsCount(filter?: MexPairsFilter): Promise<number> {
-    const mexPairs = await this.getAllMexPairs();
+    const mexPairs = await this.getAllMexPairs(filter?.includeFarms ?? false);
     const filteredPairs = this.applyFilters(mexPairs, filter);
 
     return filteredPairs.length;
   }
 
-  async getAllMexPairsRaw(): Promise<MexPair[]> {
+  async getAllMexPairsRaw(includeFarms: boolean = false): Promise<MexPair[]> {
     try {
       const settings = await this.mexSettingService.getSettings();
       if (!settings) {
@@ -85,6 +87,10 @@ export class MexPairService {
         pagination: { first: totalPairs },
         filters: { state: MexPairStatus.active },
       };
+
+      const farmFields = includeFarms ? `
+        hasFarms
+        hasDualFarms` : '';
 
       const query = gql`
         query filteredPairs($pagination: ConnectionArgs!, $filters: PairsFilter!) {
@@ -120,6 +126,7 @@ export class MexPairService {
                 tradesCount
                 tradesCount24h
                 deployedAt
+                ${farmFields}
                 __typename
               }
             }
@@ -133,7 +140,8 @@ export class MexPairService {
       }
 
       return result.filteredPairs.edges
-        .map((edge: any) => this.getPairInfo(edge.node));
+        .map((edge: any) => this.getPairInfo(edge.node, includeFarms))
+        .filter((pair: MexPair | undefined) => pair !== undefined);
     } catch (error) {
       this.logger.error('An error occurred while getting all mex pairs');
       this.logger.error(error);
@@ -141,7 +149,7 @@ export class MexPairService {
     }
   }
 
-  private getPairInfo(pair: any): MexPair | undefined {
+  private getPairInfo(pair: any, includeFarms: boolean = false): MexPair | undefined {
     const firstTokenSymbol = pair.firstToken.identifier.split('-')[0];
     const secondTokenSymbol = pair.secondToken.identifier.split('-')[0];
     const state = this.getPairState(pair.state);
@@ -180,6 +188,10 @@ export class MexPairService {
       state,
       type,
       exchange,
+      ...(includeFarms && {
+        hasFarms: pair.hasFarms ?? false,
+        hasDualFarms: pair.hasDualFarms ?? false,
+      }),
     };
 
     if ((firstTokenSymbol === 'WEGLD' && secondTokenSymbol === 'USDC') || secondTokenSymbol === 'WEGLD') {
