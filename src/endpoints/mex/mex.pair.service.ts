@@ -73,20 +73,9 @@ export class MexPairService {
         throw new BadRequestException('Could not fetch MEX settings');
       }
 
-      const pairsLimit = gql`
-        query PairCount {
-          factory {
-            pairCount
-          }
-        }`;
-
-      const pairsLimitResult: any = await this.graphQlService.getExchangeServiceData(pairsLimit);
-      const totalPairs = pairsLimitResult?.factory?.pairCount;
-
-      const variables = {
-        pagination: { first: totalPairs },
-        filters: { state: MexPairStatus.active },
-      };
+      const allPairs: MexPair[] = [];
+      let cursor: string | null = null;
+      let hasNextPage = true;
 
       const farmFields = includeFarms ? `
         hasFarms
@@ -127,27 +116,44 @@ export class MexPairService {
                 tradesCount24h
                 deployedAt
                 ${farmFields}
-                __typename
               }
+            }
+            pageInfo {
+              hasNextPage
             }
           }
         }
       `;
 
-      const result: any = await this.graphQlService.getExchangeServiceData(query, variables);
-      if (!result) {
-        return [];
+      while (hasNextPage) {
+        const variables = {
+          pagination: { first: 25, after: cursor },
+          filters: { state: [MexPairStatus.active] },
+        };
+
+        const result: any = await this.graphQlService.getExchangeServiceData(query, variables);
+        if (!result) {
+          break;
+        }
+
+        const pairs = result.filteredPairs.edges.map((edge: any) => this.getPairInfo(edge.node, includeFarms));
+        allPairs.push(...pairs.filter((pair: MexPair | undefined) => pair !== undefined));
+
+        hasNextPage = result.filteredPairs.pageInfo.hasNextPage;
+        cursor = result.filteredPairs.edges.length > 0 ? result.filteredPairs.edges[result.filteredPairs.edges.length - 1].cursor : null;
+
+        console.log(hasNextPage);
+        console.log(result);
       }
 
-      return result.filteredPairs.edges
-        .map((edge: any) => this.getPairInfo(edge.node, includeFarms))
-        .filter((pair: MexPair | undefined) => pair !== undefined);
+      return allPairs;
     } catch (error) {
       this.logger.error('An error occurred while getting all mex pairs');
       this.logger.error(error);
       return [];
     }
   }
+
 
   private getPairInfo(pair: any, includeFarms: boolean = false): MexPair | undefined {
     const firstTokenSymbol = pair.firstToken.identifier.split('-')[0];
