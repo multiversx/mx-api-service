@@ -3,7 +3,6 @@ import { ApiConfigService } from "../api-config/api.config.service";
 import { GraphQLClient } from 'graphql-request';
 import { OriginLogger } from "@multiversx/sdk-nestjs-common";
 import fetch, { RequestInit } from 'node-fetch';
-import { ContextTracker } from "@multiversx/sdk-nestjs-common";
 
 @Injectable()
 export class GraphQlService {
@@ -15,11 +14,10 @@ export class GraphQlService {
 
   async getExchangeServiceData(query: string, variables?: any): Promise<any> {
     const exchangeServiceUrl = this.apiConfigService.getExchangeServiceUrlMandatory();
-    const origin = ContextTracker.get()?.origin ?? 'Unknown';
     const graphqlClient = new GraphQLClient(exchangeServiceUrl, {
       fetch: this.createFetchWithTimeout(60_000),
       headers: {
-        'x-request-origin': origin,
+        'origin': this.apiConfigService.getSelfUrl(),
       },
     });
 
