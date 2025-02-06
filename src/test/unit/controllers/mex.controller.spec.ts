@@ -69,7 +69,7 @@ describe('MexController', () => {
         .expect(200);
 
       expect(mexPairServiceMocks.getMexPairs).toHaveBeenCalledWith(
-        0, 25, new MexPairsFilter({ exchange: undefined, includeFarms: false })
+        0, 25, new MexPairsFilter({ exchange: undefined })
       );
     });
 
@@ -82,7 +82,7 @@ describe('MexController', () => {
         .expect(200);
 
       expect(mexPairServiceMocks.getMexPairs).toHaveBeenCalledWith(
-        0, 5, new MexPairsFilter({ exchange: undefined, includeFarms: false })
+        0, 5, new MexPairsFilter({ exchange: undefined })
       );
     });
 
@@ -95,7 +95,7 @@ describe('MexController', () => {
         .expect(200);
 
       expect(mexPairServiceMocks.getMexPairs).toHaveBeenCalledWith(
-        0, 5, new MexPairsFilter({ exchange: MexPairExchange.xexchange, includeFarms: false })
+        0, 5, new MexPairsFilter({ exchange: MexPairExchange.xexchange })
       );
     });
 
@@ -108,7 +108,7 @@ describe('MexController', () => {
         .expect(200);
 
       expect(mexPairServiceMocks.getMexPairs).toHaveBeenCalledWith(
-        0, 5, new MexPairsFilter({ exchange: MexPairExchange.unknown, includeFarms: false })
+        0, 5, new MexPairsFilter({ exchange: MexPairExchange.unknown })
       );
     });
 
@@ -122,7 +122,7 @@ describe('MexController', () => {
         });
 
       expect(mexPairServiceMocks.getMexPairsCount).toHaveBeenCalledWith(
-        new MexPairsFilter({ exchange: undefined, includeFarms: false })
+        new MexPairsFilter({ exchange: undefined })
       );
     });
 
@@ -136,7 +136,7 @@ describe('MexController', () => {
         });
 
       expect(mexPairServiceMocks.getMexPairsCount).toHaveBeenCalledWith(
-        new MexPairsFilter({ exchange: MexPairExchange.xexchange, includeFarms: false })
+        new MexPairsFilter({ exchange: MexPairExchange.xexchange })
       );
     });
 
@@ -150,7 +150,7 @@ describe('MexController', () => {
         });
 
       expect(mexPairServiceMocks.getMexPairsCount).toHaveBeenCalledWith(
-        new MexPairsFilter({ exchange: MexPairExchange.unknown, includeFarms: false })
+        new MexPairsFilter({ exchange: MexPairExchange.unknown })
       );
     });
 
