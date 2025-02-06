@@ -141,9 +141,6 @@ export class MexPairService {
 
         hasNextPage = result.filteredPairs.pageInfo.hasNextPage;
         cursor = result.filteredPairs.edges.length > 0 ? result.filteredPairs.edges[result.filteredPairs.edges.length - 1].cursor : null;
-
-        console.log(hasNextPage);
-        console.log(result);
       }
 
       return allPairs;
