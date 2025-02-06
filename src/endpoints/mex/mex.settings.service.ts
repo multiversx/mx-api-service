@@ -87,23 +87,19 @@ export class MexSettingsService {
   }
 
   public async getSettingsRaw(): Promise<MexSettings | null> {
-    const variables = {
-      offset: 0,
-      limit: 500,
-    };
-
-
-
     const query = gql`
-    query ($offset: Int, $limit: Int) {
-      pairs(offset: $offset, limit: $limit, state: "Active") {
-        address
+    query {
+      filteredPairs(pagination: {first: 500}, filters: {state: ["Active"]}) {
+        edges {
+          node {
+            address
+          }
+        }
       }
       proxy {
         address
         lockedAssetTokens {
           collection
-          __typename
         }
       }
       farms {
@@ -119,10 +115,9 @@ export class MexSettingsService {
           state
           address
         }
-     }
+      }
       wrappingInfo {
         address
-        shard
         wrappedToken {
           identifier
         }
@@ -151,12 +146,19 @@ export class MexSettingsService {
     }
     `;
 
-    const response = await this.graphQlService.getExchangeServiceData(query, variables);
+    const response = await this.graphQlService.getExchangeServiceData(query);
     if (!response) {
       return null;
     }
 
-    const settings = MexSettings.fromQueryResponse(response);
+    const transformedResponse = {
+      ...response,
+      pairs: response.filteredPairs.edges.map((edge: { node: { address: string } }) => ({
+        address: edge.node.address,
+      })),
+    };
+
+    const settings = MexSettings.fromQueryResponse(transformedResponse);
     return settings;
   }
 
