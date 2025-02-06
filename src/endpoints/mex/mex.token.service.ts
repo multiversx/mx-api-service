@@ -172,10 +172,9 @@ export class MexTokenService {
 
   private async getAllMexTokensRaw(): Promise<MexToken[]> {
     const pairs = await this.mexPairService.getAllMexPairs();
-    const filteredPairs = pairs.filter(x => x.state === MexPairState.active);
 
     const mexTokens: MexToken[] = [];
-    for (const pair of filteredPairs) {
+    for (const pair of pairs) {
       if (pair.baseSymbol === 'WEGLD' && pair.quoteSymbol === "USDC") {
         const wegldToken = new MexToken();
         wegldToken.id = pair.baseId;
@@ -184,7 +183,7 @@ export class MexTokenService {
         wegldToken.price = pair.basePrice;
         wegldToken.previous24hPrice = pair.basePrevious24hPrice;
         wegldToken.previous24hVolume = pair.volume24h;
-        wegldToken.tradesCount = this.computeTradesCountForMexToken(wegldToken, filteredPairs);
+        wegldToken.tradesCount = this.computeTradesCountForMexToken(wegldToken, pairs);
         mexTokens.push(wegldToken);
       }
 
@@ -193,7 +192,7 @@ export class MexTokenService {
         continue;
       }
 
-      mexToken.tradesCount = this.computeTradesCountForMexToken(mexToken, filteredPairs);
+      mexToken.tradesCount = this.computeTradesCountForMexToken(mexToken, pairs);
 
       mexTokens.push(mexToken);
     }
