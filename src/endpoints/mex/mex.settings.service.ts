@@ -92,23 +92,12 @@ export class MexSettingsService {
       limit: 500,
     };
 
+
+
     const query = gql`
     query ($offset: Int, $limit: Int) {
-      pairs(offset: $offset, limit: $limit) {
-        state
+      pairs(offset: $offset, limit: $limit, state: "Active") {
         address
-        firstToken {
-          name
-          identifier
-          decimals
-          __typename
-        }
-        secondToken {
-          name
-          identifier
-          decimals
-          __typename
-        } 
       }
       proxy {
         address
@@ -134,6 +123,9 @@ export class MexSettingsService {
       wrappingInfo {
         address
         shard
+        wrappedToken {
+          identifier
+        }
       }
       distribution {
         address
@@ -150,6 +142,11 @@ export class MexSettingsService {
       }
       factory {
         address
+      }
+      simpleLockEnergy {
+        baseAssetToken {
+          identifier
+        }
       }
     }
     `;
