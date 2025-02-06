@@ -102,27 +102,17 @@ export class MexPairService {
                 firstToken {
                   name
                   identifier
-                  decimals
                   previous24hPrice
                   __typename
                 }
                 secondToken {
                   name
                   identifier
-                  decimals
                   previous24hPrice
                   __typename
                 }
-                firstTokenPrice
                 firstTokenPriceUSD
-                secondTokenPrice
                 secondTokenPriceUSD
-                info {
-                  reserves0
-                  reserves1
-                  totalSupply
-                  __typename
-                }
                 state
                 type
                 lockedValueUSD

@@ -16,6 +16,9 @@ export class GraphQlService {
     const exchangeServiceUrl = this.apiConfigService.getExchangeServiceUrlMandatory();
     const graphqlClient = new GraphQLClient(exchangeServiceUrl, {
       fetch: this.createFetchWithTimeout(60_000),
+      headers: {
+        'x-request-origin': 'mx-api-service',
+      },
     });
 
     try {
