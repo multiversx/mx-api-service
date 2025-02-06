@@ -1,6 +1,6 @@
 import { MexEconomics } from './entities/mex.economics';
 import { MexToken } from './entities/mex.token';
-import { Controller, DefaultValuePipe, Get, NotFoundException, Param, Query } from "@nestjs/common";
+import { Controller, DefaultValuePipe, Get, NotFoundException, Param, ParseBoolPipe, Query } from "@nestjs/common";
 import { ApiExcludeEndpoint, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiResponse, ApiTags } from "@nestjs/swagger";
 import { MexPair } from "./entities/mex.pair";
 import { MexSettings } from "./entities/mex.settings";
@@ -60,8 +60,9 @@ export class MexController {
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number,
     @Query('exchange', new ParseEnumPipe(MexPairExchange)) exchange?: MexPairExchange,
+    @Query('includeFarms', new DefaultValuePipe(false), ParseBoolPipe) includeFarms?: boolean,
   ): Promise<MexPair[]> {
-    const filter = new MexPairsFilter({ exchange });
+    const filter = new MexPairsFilter({ exchange, includeFarms });
     return await this.mexPairsService.getMexPairs(from, size, filter);
   }
 
