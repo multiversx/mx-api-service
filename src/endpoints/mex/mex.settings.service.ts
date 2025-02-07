@@ -87,9 +87,11 @@ export class MexSettingsService {
   }
 
   public async getSettingsRaw(): Promise<MexSettings | null> {
+    const pairLimitCount = await this.getPairLimitCount();
+
     const query = gql`
     query {
-      filteredPairs(pagination: {first: 500}, filters: {state: ["Active"]}) {
+      filteredPairs(pagination: {first: ${pairLimitCount}}, filters: {state: ["Active"]}) {
         edges {
           node {
             address
@@ -164,5 +166,21 @@ export class MexSettingsService {
 
   getWegldId(): string | undefined {
     return this.wegldId;
+  }
+
+  private async getPairLimitCount(): Promise<number> {
+    const pairsLimit = gql`
+    query PairCount {
+      factory {
+        pairCount
+      }
+    }`;
+
+    const response = await this.graphQlService.getExchangeServiceData(pairsLimit);
+    if (!response) {
+      return 500;
+    }
+
+    return response.factory.pairCount;
   }
 }
