@@ -145,7 +145,7 @@ export class MexPairService {
 
       return allPairs;
     } catch (error) {
-      this.logger.error('An error occurred while getting all mex pairs');
+      this.logger.error('An error occurred while getting all mex pairs from the exchange');
       this.logger.error(error);
       return [];
     }
