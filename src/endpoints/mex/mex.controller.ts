@@ -31,10 +31,8 @@ export class MexController {
 
   @Get("/mex/settings")
   @ApiExcludeEndpoint()
-  @ApiResponse({
-    status: 200,
-    description: 'The settings of the xExchange',
-  })
+  @ApiResponse({ status: 200, description: 'The settings of the xExchange' })
+  @ApiNotFoundResponse({ description: 'MEX settings not found' })
   async getMexSettings(): Promise<MexSettings> {
     const settings = await this.mexSettingsService.getSettings();
     if (!settings) {
@@ -150,6 +148,7 @@ export class MexController {
   @Get("/mex/pairs/:baseId/:quoteId")
   @ApiOperation({ summary: 'xExchange pairs details', description: 'Returns liquidity pool details by providing a combination of two tokens' })
   @ApiOkResponse({ type: MexPair })
+  @ApiNotFoundResponse({ description: 'Pair not found' })
   @ApiQuery({ name: 'includeFarms', description: 'Include farms information in response', required: false, type: Boolean })
   async getMexPair(
     @Param('baseId') baseId: string,
@@ -158,13 +157,16 @@ export class MexController {
   ): Promise<MexPair> {
     const pair = await this.mexPairsService.getMexPair(baseId, quoteId, includeFarms);
     if (!pair) {
-      throw new NotFoundException();
+      throw new NotFoundException('Pair not found');
     }
 
     return pair;
   }
 
   @Get('mex/tokens/prices/hourly/:identifier')
+  @ApiOperation({ summary: 'xExchange token prices hourly', description: 'Returns token prices hourly' })
+  @ApiOkResponse({ type: [MexTokenChart] })
+  @ApiNotFoundResponse({ description: 'Price not available for given token identifier' })
   async getTokenPricesHourResolution(
     @Param('identifier', ParseTokenPipe) identifier: string): Promise<MexTokenChart[] | undefined> {
     const charts = await this.mexTokenChartsService.getTokenPricesHourResolution(identifier);
@@ -176,6 +178,9 @@ export class MexController {
   }
 
   @Get('mex/tokens/prices/daily/:identifier')
+  @ApiOperation({ summary: 'xExchange token prices daily', description: 'Returns token prices daily' })
+  @ApiOkResponse({ type: [MexTokenChart] })
+  @ApiNotFoundResponse({ description: 'Price not available for given token identifier' })
   async getTokenPricesDayResolution(
     @Param('identifier', ParseTokenPipe) identifier: string,
     @Query('after') after: string): Promise<MexTokenChart[] | undefined> {
