@@ -12,7 +12,7 @@ import { OriginLogger } from "@multiversx/sdk-nestjs-common";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { MexTokenType } from "./entities/mex.token.type";
 import { GraphQlService } from "src/common/graphql/graphql.service";
-import { gql } from "graphql-request";
+import { tokensQuery } from "./graphql/tokens.query";
 
 @Injectable()
 export class MexTokenService {
@@ -259,16 +259,7 @@ export class MexTokenService {
         throw new BadRequestException('Could not fetch MEX tokens');
       }
 
-      const query = gql`
-        query tokens {
-          tokens {
-            identifier
-            type
-          }
-        }
-      `;
-
-      const result: any = await this.graphQlService.getExchangeServiceData(query);
+      const result: any = await this.graphQlService.getExchangeServiceData(tokensQuery);
       if (!result || !result.tokens) {
         return [];
       }

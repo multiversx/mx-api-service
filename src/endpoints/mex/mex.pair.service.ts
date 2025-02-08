@@ -1,7 +1,6 @@
 import { Constants } from '@multiversx/sdk-nestjs-common';
 import { CacheService } from '@multiversx/sdk-nestjs-cache';
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { gql } from 'graphql-request';
 import { CacheInfo } from 'src/utils/cache.info';
 import { GraphQlService } from 'src/common/graphql/graphql.service';
 import { MexPair } from './entities/mex.pair';
@@ -13,6 +12,7 @@ import { ApiConfigService } from 'src/common/api-config/api.config.service';
 import { MexPairExchange } from './entities/mex.pair.exchange';
 import { MexPairsFilter } from './entities/mex.pairs..filter';
 import { MexPairStatus } from './entities/mex.pair.status';
+import { filteredPairsQuery } from './graphql/filtered.pairs.query';
 
 @Injectable()
 export class MexPairService {
@@ -77,61 +77,15 @@ export class MexPairService {
       let cursor: string | null = null;
       let hasNextPage = true;
 
-      const farmFields = includeFarms ? `
-        hasFarms
-        hasDualFarms` : '';
-
-      const query = gql`
-        query filteredPairs($pagination: ConnectionArgs!, $filters: PairsFilter!) {
-          filteredPairs(pagination: $pagination, filters: $filters) {
-            edges {
-              cursor
-              node {
-                address
-                liquidityPoolToken {
-                  identifier
-                  name
-                  __typename
-                }
-                liquidityPoolTokenPriceUSD
-                firstToken {
-                  name
-                  identifier
-                  previous24hPrice
-                  __typename
-                }
-                secondToken {
-                  name
-                  identifier
-                  previous24hPrice
-                  __typename
-                }
-                firstTokenPriceUSD
-                secondTokenPriceUSD
-                state
-                type
-                lockedValueUSD
-                volumeUSD24h
-                tradesCount
-                tradesCount24h
-                deployedAt
-                ${farmFields}
-              }
-            }
-            pageInfo {
-              hasNextPage
-            }
-          }
-        }
-      `;
-
       while (hasNextPage) {
         const variables = {
           pagination: { first: 25, after: cursor },
           filters: { state: [MexPairStatus.active] },
         };
 
+        const query = filteredPairsQuery(includeFarms);
         const result: any = await this.graphQlService.getExchangeServiceData(query, variables);
+
         if (!result) {
           break;
         }

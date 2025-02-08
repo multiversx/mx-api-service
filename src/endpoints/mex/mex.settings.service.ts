@@ -1,13 +1,14 @@
 import { Constants } from "@multiversx/sdk-nestjs-common";
 import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { Injectable } from "@nestjs/common";
-import { gql } from "graphql-request";
 import { CacheInfo } from "src/utils/cache.info";
 import { GraphQlService } from "src/common/graphql/graphql.service";
 import { TransactionMetadata } from "../transactions/transaction-action/entities/transaction.metadata";
 import { TransactionMetadataTransfer } from "../transactions/transaction-action/entities/transaction.metadata.transfer";
 import { MexSettings } from "./entities/mex.settings";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
+import { settingsQuery } from "./graphql/settings.query";
+import { pairCountQuery } from "./graphql/pairs.count.query";
 
 @Injectable()
 export class MexSettingsService {
@@ -88,67 +89,7 @@ export class MexSettingsService {
 
   public async getSettingsRaw(): Promise<MexSettings | null> {
     const pairLimitCount = await this.getPairLimitCount();
-
-    const query = gql`
-    query {
-      filteredPairs(pagination: {first: ${pairLimitCount}}, filters: {state: ["Active"]}) {
-        edges {
-          node {
-            address
-          }
-        }
-      }
-      proxy {
-        address
-        lockedAssetTokens {
-          collection
-        }
-      }
-      farms {
-        ... on FarmModelV1_2 {
-          state
-          address
-        }
-        ... on FarmModelV1_3 {
-          state
-          address
-        }
-        ... on FarmModelV2 {
-          state
-          address
-        }
-      }
-      wrappingInfo {
-        address
-        wrappedToken {
-          identifier
-        }
-      }
-      distribution {
-        address
-      }
-      lockedAssetFactory {
-        address
-      }
-      stakingFarms {
-        state
-        address
-      }
-      stakingProxies {
-        address
-      }
-      factory {
-        address
-      }
-      simpleLockEnergy {
-        baseAssetToken {
-          identifier
-        }
-      }
-    }
-    `;
-
-    const response = await this.graphQlService.getExchangeServiceData(query);
+    const response = await this.graphQlService.getExchangeServiceData(settingsQuery(pairLimitCount));
     if (!response) {
       return null;
     }
@@ -169,14 +110,7 @@ export class MexSettingsService {
   }
 
   private async getPairLimitCount(): Promise<number> {
-    const pairsLimit = gql`
-    query PairCount {
-      factory {
-        pairCount
-      }
-    }`;
-
-    const response = await this.graphQlService.getExchangeServiceData(pairsLimit);
+    const response = await this.graphQlService.getExchangeServiceData(pairCountQuery);
     if (!response) {
       return 500;
     }
