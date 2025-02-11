@@ -24,7 +24,7 @@ This is an Multiversx project built on Nest.js framework.
 ### `npm run start:prod`
 
 ​
-Runs the app in the production mode .
+Runs the app in the production mode.
 Make requests to [http://localhost:3001](http://localhost:3001).
 
 ## Running the app
