@@ -348,7 +348,7 @@ export class NftService {
       const elasticNftData = elasticNft.data;
       if (elasticNftData) {
         nft.name = elasticNftData.name;
-        nft.hash = elasticNftData.hash;
+        nft.hash = BinaryUtils.base64Decode(elasticNftData.hash);
         nft.creator = elasticNftData.creator;
         nft.royalties = elasticNftData.royalties ? elasticNftData.royalties / 100 : undefined; // 10.000 => 100%
         nft.attributes = elasticNftData.attributes;
