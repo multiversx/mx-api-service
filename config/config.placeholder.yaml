@@ -100,7 +100,7 @@ features:
     enabled: true
     serviceUrl: 'NODESFETCH_URL'
   tokensFetch:
-    enabled: true
+    enabled: 'TOKENSFETCH_ENABLED'
     serviceUrl: 'TOKENSFETCH_URL'
   providersFetch:
     enabled: true
