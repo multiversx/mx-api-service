@@ -33,6 +33,33 @@ describe('Applications e2e tests with chain simulator', () => {
       }
     });
 
+    it('should return applications with txCount field if withTxCount query param is true', async () => {
+      const response = await axios.get(`${config.apiServiceUrl}/applications?withTxCount=true`);
+      expect(response.status).toBe(200);
+      expect(response.data).toBeInstanceOf(Array);
+      expect(response.data[0]).toHaveProperty('txCount');
+    });
+  });
+
+  describe('GET /applications/:address', () => {
+    it('should return status code 200 and an application', async () => {
+      const application = await axios.get(`${config.apiServiceUrl}/applications`);
+      const response = await axios.get(`${config.apiServiceUrl}/applications/${application.data[0].contract}`);
+      expect(response.status).toBe(200);
+      expect(response.data).toBeInstanceOf(Object);
+    });
+
+    it('should return application details with txCount and balance fields', async () => {
+      const application = await axios.get(`${config.apiServiceUrl}/applications`);
+      const response = await axios.get(`${config.apiServiceUrl}/applications/${application.data[0].contract}`);
+      expect(response.status).toBe(200);
+      expect(response.data).toBeInstanceOf(Object);
+      expect(response.data).toHaveProperty('txCount');
+      expect(response.data).toHaveProperty('balance');
+    });
+  });
+
+  describe('GET /applications/count', () => {
     it('should return the number of applications', async () => {
       const response = await axios.get(`${config.apiServiceUrl}/applications/count`);
       expect(response.status).toBe(200);
