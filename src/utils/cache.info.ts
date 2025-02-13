@@ -697,7 +697,7 @@ export class CacheInfo {
   static Applications(queryPagination: QueryPagination): CacheInfo {
     return {
       key: `applications:${queryPagination.from}:${queryPagination.size}`,
-      ttl: Constants.oneHour(),
+      ttl: Constants.oneMinute(),
     };
   }
 

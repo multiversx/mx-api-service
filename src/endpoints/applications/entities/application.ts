@@ -23,4 +23,10 @@ export class Application {
 
   @ApiProperty({ type: AccountAssets, nullable: true, description: 'Contract assets' })
   assets: AccountAssets | undefined = undefined;
+
+  @ApiProperty({ type: String })
+  balance: string = '0';
+
+  @ApiProperty({ type: Number, required: false })
+  txCount?: number;
 }
