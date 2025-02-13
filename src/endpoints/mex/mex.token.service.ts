@@ -2,7 +2,6 @@ import { BadRequestException, forwardRef, Inject, Injectable } from "@nestjs/com
 import { CacheInfo } from "src/utils/cache.info";
 import { MexToken } from "./entities/mex.token";
 import { MexPairService } from "./mex.pair.service";
-import { MexPairState } from "./entities/mex.pair.state";
 import { MexPair } from "./entities/mex.pair";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { MexFarmService } from "./mex.farm.service";
@@ -13,7 +12,7 @@ import { OriginLogger } from "@multiversx/sdk-nestjs-common";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { MexTokenType } from "./entities/mex.token.type";
 import { GraphQlService } from "src/common/graphql/graphql.service";
-import { gql } from "graphql-request";
+import { tokensQuery } from "./graphql/tokens.query";
 
 @Injectable()
 export class MexTokenService {
@@ -172,10 +171,9 @@ export class MexTokenService {
 
   private async getAllMexTokensRaw(): Promise<MexToken[]> {
     const pairs = await this.mexPairService.getAllMexPairs();
-    const filteredPairs = pairs.filter(x => x.state === MexPairState.active);
 
     const mexTokens: MexToken[] = [];
-    for (const pair of filteredPairs) {
+    for (const pair of pairs) {
       if (pair.baseSymbol === 'WEGLD' && pair.quoteSymbol === "USDC") {
         const wegldToken = new MexToken();
         wegldToken.id = pair.baseId;
@@ -184,7 +182,7 @@ export class MexTokenService {
         wegldToken.price = pair.basePrice;
         wegldToken.previous24hPrice = pair.basePrevious24hPrice;
         wegldToken.previous24hVolume = pair.volume24h;
-        wegldToken.tradesCount = this.computeTradesCountForMexToken(wegldToken, filteredPairs);
+        wegldToken.tradesCount = this.computeTradesCountForMexToken(wegldToken, pairs);
         mexTokens.push(wegldToken);
       }
 
@@ -193,7 +191,7 @@ export class MexTokenService {
         continue;
       }
 
-      mexToken.tradesCount = this.computeTradesCountForMexToken(mexToken, filteredPairs);
+      mexToken.tradesCount = this.computeTradesCountForMexToken(mexToken, pairs);
 
       mexTokens.push(mexToken);
     }
@@ -261,16 +259,7 @@ export class MexTokenService {
         throw new BadRequestException('Could not fetch MEX tokens');
       }
 
-      const query = gql`
-        query tokens {
-          tokens {
-            identifier
-            type
-          }
-        }
-      `;
-
-      const result: any = await this.graphQlService.getExchangeServiceData(query);
+      const result: any = await this.graphQlService.getExchangeServiceData(tokensQuery);
       if (!result || !result.tokens) {
         return [];
       }

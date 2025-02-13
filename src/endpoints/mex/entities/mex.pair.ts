@@ -68,12 +68,6 @@ export class MexPair {
   @ApiProperty({ type: String, example: 'jungledex' })
   exchange: MexPairExchange | undefined;
 
-  @ApiProperty({ type: Boolean, nullable: true })
-  hasFarms: boolean | undefined = undefined;
-
-  @ApiProperty({ type: Boolean, nullable: true })
-  hasDualFarms: boolean | undefined = undefined;
-
   @ApiProperty({ type: Number, nullable: true })
   tradesCount: number | undefined = undefined;
 
@@ -82,4 +76,10 @@ export class MexPair {
 
   @ApiProperty({ type: Number, nullable: true })
   deployedAt: number | undefined = undefined;
+
+  @ApiProperty({ type: Boolean, nullable: true })
+  hasFarms?: boolean;
+
+  @ApiProperty({ type: Boolean, nullable: true })
+  hasDualFarms?: boolean;
 }

@@ -6,6 +6,7 @@ import { MexTokenChart } from "./entities/mex.token.chart";
 import { MexTokenService } from "./mex.token.service";
 import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { CacheInfo } from "src/utils/cache.info";
+import { tokenPricesHourResolutionQuery } from "./graphql/token.prices.hour.resolution.query";
 
 @Injectable()
 export class MexTokenChartsService {
@@ -31,19 +32,8 @@ export class MexTokenChartsService {
       return undefined;
     }
 
-    const query = gql`
-      query tokenPricesHourResolution {
-        values24h(
-          series: "${tokenIdentifier}",
-          metric: "priceUSD"
-        ) {
-          timestamp
-          value
-        }
-      }
-    `;
-
     try {
+      const query = tokenPricesHourResolutionQuery(tokenIdentifier);
       const data = await this.graphQlService.getExchangeServiceData(query);
       return this.convertToMexTokenChart(data?.values24h) || [];
     } catch (error) {

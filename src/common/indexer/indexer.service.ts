@@ -447,6 +447,11 @@ export class IndexerService implements IndexerInterface {
   }
 
   @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
+  async getApplication(address: string): Promise<any> {
+    return await this.indexerInterface.getApplication(address);
+  }
+
+  @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
   async getApplicationCount(filter: ApplicationFilter): Promise<number> {
     return await this.indexerInterface.getApplicationCount(filter);
   }
