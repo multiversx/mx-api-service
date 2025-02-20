@@ -6,6 +6,8 @@ api:
   private: true
   graphql: true
 features:
+  sovereign:
+    enabled: false
   dataApi:
     enabled: false
     serviceUrl: 'https://data-api.multiversx.com'

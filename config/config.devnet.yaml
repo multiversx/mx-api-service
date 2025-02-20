@@ -21,6 +21,8 @@ flags:
   processNfts: true
   collectionPropertiesFromGateway: false
 features:
+  sovereign:
+    enabled: false
   eventsNotifier:
     enabled: false
     port: 5674
