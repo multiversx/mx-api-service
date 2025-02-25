@@ -122,7 +122,7 @@ export class TokenService {
   }
 
   async getTokens(queryPagination: QueryPagination, filter: TokenFilter): Promise<TokenDetailed[]> {
-    const {from, size} = queryPagination;
+    const { from, size } = queryPagination;
 
     let tokens = await this.getFilteredTokens(filter);
 
@@ -132,9 +132,9 @@ export class TokenService {
       this.applyTickerFromAssets(token);
     }
 
-   return tokens
-    .map(item => ApiUtils.mergeObjects(new TokenDetailed(), item))
-    .filter(t => t.identifier !== this.egldIdentifierInMultiTransfer);
+    return tokens
+      .map(item => ApiUtils.mergeObjects(new TokenDetailed(), item))
+      .filter(t => t.identifier !== this.egldIdentifierInMultiTransfer);
   }
 
   applyTickerFromAssets(token: Token) {
@@ -371,11 +371,11 @@ export class TokenService {
     if (TokenUtils.isNft(identifier)) {
       const nftData = await this.gatewayService.getAddressNft(address, identifier);
 
-      tokenWithBalance = new TokenDetailedWithBalance({...token, ...nftData});
+      tokenWithBalance = new TokenDetailedWithBalance({ ...token, ...nftData });
     } else {
       const esdtData = await this.gatewayService.getAddressEsdt(address, identifier);
 
-      tokenWithBalance = new TokenDetailedWithBalance({...token, ...esdtData});
+      tokenWithBalance = new TokenDetailedWithBalance({ ...token, ...esdtData });
     }
 
     // eslint-disable-next-line require-await
@@ -984,9 +984,9 @@ export class TokenService {
 
   private async getTotalTransactions(token: TokenDetailed): Promise<{ count: number, lastUpdatedAt: number } | undefined> {
     try {
-      const count = await this.transactionService.getTransactionCount(new TransactionFilter({tokens: [token.identifier, ...token.assets?.extraTokens ?? []]}));
+      const count = await this.transactionService.getTransactionCount(new TransactionFilter({ tokens: [token.identifier, ...token.assets?.extraTokens ?? []] }));
 
-      return {count, lastUpdatedAt: new Date().getTimeInSeconds()};
+      return { count, lastUpdatedAt: new Date().getTimeInSeconds() };
     } catch (error) {
       this.logger.error(`An unhandled error occurred when getting transaction count for token '${token.identifier}'`);
       this.logger.error(error);
@@ -1032,11 +1032,10 @@ export class TokenService {
 
   private async applyMexLiquidity(tokens: TokenDetailed[]): Promise<void> {
     try {
-      const pairs = await this.mexPairService.getAllMexPairs();
-      const filteredPairs = pairs.filter(x => x.state === MexPairState.active);
+      const allPairs = await this.mexPairService.getAllMexPairs();
 
       for (const token of tokens) {
-        const pairs = filteredPairs.filter(x => x.baseId === token.identifier || x.quoteId === token.identifier);
+        const pairs = allPairs.filter(x => x.baseId === token.identifier || x.quoteId === token.identifier);
         if (pairs.length > 0) {
           token.totalLiquidity = pairs.sum(x => x.totalValue / 2);
           token.totalVolume24h = pairs.sum(x => x.volume24h ?? 0);

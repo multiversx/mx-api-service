@@ -1,7 +1,6 @@
 import { Constants } from '@multiversx/sdk-nestjs-common';
 import { CacheService } from '@multiversx/sdk-nestjs-cache';
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { gql } from 'graphql-request';
 import { CacheInfo } from 'src/utils/cache.info';
 import { GraphQlService } from 'src/common/graphql/graphql.service';
 import { MexPair } from './entities/mex.pair';
@@ -13,6 +12,7 @@ import { ApiConfigService } from 'src/common/api-config/api.config.service';
 import { MexPairExchange } from './entities/mex.pair.exchange';
 import { MexPairsFilter } from './entities/mex.pairs..filter';
 import { MexPairStatus } from './entities/mex.pair.status';
+import { filteredPairsQuery } from './graphql/filtered.pairs.query';
 
 @Injectable()
 export class MexPairService {
@@ -26,134 +26,87 @@ export class MexPairService {
   ) { }
 
   async refreshMexPairs(): Promise<void> {
-    const pairs = await this.getAllMexPairsRaw();
+    const pairs = await this.getAllMexPairsRaw(false);
     await this.cachingService.setRemote(CacheInfo.MexPairs.key, pairs, CacheInfo.MexPairs.ttl);
     await this.cachingService.setLocal(CacheInfo.MexPairs.key, pairs, Constants.oneSecond() * 30);
   }
 
   async getMexPairs(from: number, size: number, filter?: MexPairsFilter): Promise<any> {
-    let allMexPairs = await this.getAllMexPairs();
+    let allMexPairs = await this.getAllMexPairs(filter?.includeFarms ?? false);
     allMexPairs = this.applyFilters(allMexPairs, filter);
 
     return allMexPairs.slice(from, from + size);
   }
 
-
-  async getMexPair(baseId: string, quoteId: string): Promise<MexPair | undefined> {
-    const allMexPairs = await this.getAllMexPairs();
+  async getMexPair(baseId: string, quoteId: string, includeFarms: boolean = false): Promise<MexPair | undefined> {
+    const allMexPairs = await this.getAllMexPairs(includeFarms);
     return allMexPairs.find(pair => pair.baseId === baseId && pair.quoteId === quoteId);
   }
 
-  async getAllMexPairs(): Promise<MexPair[]> {
+  async getAllMexPairs(includeFarms: boolean = false): Promise<MexPair[]> {
     if (!this.apiConfigService.isExchangeEnabled()) {
       return [];
     }
 
+    const cacheKey = includeFarms ? CacheInfo.MexPairsWithFarms.key : CacheInfo.MexPairs.key;
+    const ttl = includeFarms ? CacheInfo.MexPairsWithFarms.ttl : CacheInfo.MexPairs.ttl;
+
     return await this.cachingService.getOrSet(
-      CacheInfo.MexPairs.key,
-      async () => await this.getAllMexPairsRaw(),
-      CacheInfo.MexPairs.ttl,
+      cacheKey,
+      async () => await this.getAllMexPairsRaw(includeFarms),
+      ttl,
       Constants.oneSecond() * 30,
     );
   }
 
   async getMexPairsCount(filter?: MexPairsFilter): Promise<number> {
-    const mexPairs = await this.getAllMexPairs();
+    const mexPairs = await this.getAllMexPairs(filter?.includeFarms ?? false);
     const filteredPairs = this.applyFilters(mexPairs, filter);
 
     return filteredPairs.length;
   }
 
-  async getAllMexPairsRaw(): Promise<MexPair[]> {
+  async getAllMexPairsRaw(includeFarms: boolean = false): Promise<MexPair[]> {
     try {
       const settings = await this.mexSettingService.getSettings();
       if (!settings) {
         throw new BadRequestException('Could not fetch MEX settings');
       }
 
-      const pairsLimit = gql`
-        query PairCount {
-          factory {
-            pairCount
-          }
-        }`;
+      const allPairs: MexPair[] = [];
+      let cursor: string | null = null;
+      let hasNextPage = true;
 
-      const pairsLimitResult: any = await this.graphQlService.getExchangeServiceData(pairsLimit);
-      const totalPairs = pairsLimitResult?.factory?.pairCount;
+      while (hasNextPage) {
+        const variables = {
+          pagination: { first: 25, after: cursor },
+          filters: { state: [MexPairStatus.active] },
+        };
 
-      const variables = {
-        pagination: { first: totalPairs },
-        filters: { state: MexPairStatus.active },
-      };
+        const query = filteredPairsQuery(includeFarms);
+        const result: any = await this.graphQlService.getExchangeServiceData(query, variables);
 
-      const query = gql`
-        query filteredPairs($pagination: ConnectionArgs!, $filters: PairsFilter!) {
-          filteredPairs(pagination: $pagination, filters: $filters) {
-            edges {
-              cursor
-              node {
-                address
-                liquidityPoolToken {
-                  identifier
-                  name
-                  __typename
-                }
-                liquidityPoolTokenPriceUSD
-                firstToken {
-                  name
-                  identifier
-                  decimals
-                  previous24hPrice
-                  __typename
-                }
-                secondToken {
-                  name
-                  identifier
-                  decimals
-                  previous24hPrice
-                  __typename
-                }
-                firstTokenPrice
-                firstTokenPriceUSD
-                secondTokenPrice
-                secondTokenPriceUSD
-                info {
-                  reserves0
-                  reserves1
-                  totalSupply
-                  __typename
-                }
-                state
-                type
-                lockedValueUSD
-                volumeUSD24h
-                hasFarms
-                hasDualFarms
-                tradesCount
-                tradesCount24h
-                deployedAt
-                __typename
-              }
-            }
-          }
+        if (!result) {
+          break;
         }
-      `;
 
-      const result: any = await this.graphQlService.getExchangeServiceData(query, variables);
-      if (!result) {
-        return [];
+        const pairs = result.filteredPairs.edges.map((edge: any) => this.getPairInfo(edge.node, includeFarms));
+        allPairs.push(...pairs.filter((pair: MexPair | undefined) => pair !== undefined));
+
+        hasNextPage = result.filteredPairs.pageInfo.hasNextPage;
+        cursor = result.filteredPairs.edges.length > 0 ? result.filteredPairs.edges[result.filteredPairs.edges.length - 1].cursor : null;
       }
 
-      return result.filteredPairs.edges
-        .map((edge: any) => this.getPairInfo(edge.node));
+      return allPairs;
     } catch (error) {
-      this.logger.error('An error occurred while getting all mex pairs');
+      this.logger.error('An error occurred while getting all mex pairs from the exchange');
       this.logger.error(error);
       return [];
     }
   }
 
-  private getPairInfo(pair: any): MexPair | undefined {
+
+  private getPairInfo(pair: any, includeFarms: boolean = false): MexPair | undefined {
     const firstTokenSymbol = pair.firstToken.identifier.split('-')[0];
     const secondTokenSymbol = pair.secondToken.identifier.split('-')[0];
     const state = this.getPairState(pair.state);
@@ -178,13 +131,29 @@ export class MexPairService {
       exchange = MexPairExchange.unknown;
     }
 
+    const baseInfo = {
+      address: pair.address,
+      id: pair.liquidityPoolToken.identifier,
+      symbol: pair.liquidityPoolToken.identifier.split('-')[0],
+      name: pair.liquidityPoolToken.name,
+      price: Number(pair.liquidityPoolTokenPriceUSD),
+      totalValue: Number(pair.lockedValueUSD),
+      volume24h: Number(pair.volumeUSD24h),
+      tradesCount: Number(pair.tradesCount),
+      tradesCount24h: Number(pair.tradesCount24h),
+      deployedAt: Number(pair.deployedAt),
+      state,
+      type,
+      exchange,
+      ...(includeFarms && {
+        hasFarms: pair.hasFarms ?? false,
+        hasDualFarms: pair.hasDualFarms ?? false,
+      }),
+    };
+
     if ((firstTokenSymbol === 'WEGLD' && secondTokenSymbol === 'USDC') || secondTokenSymbol === 'WEGLD') {
       return {
-        address: pair.address,
-        id: pair.liquidityPoolToken.identifier,
-        symbol: pair.liquidityPoolToken.identifier.split('-')[0],
-        name: pair.liquidityPoolToken.name,
-        price: Number(pair.liquidityPoolTokenPriceUSD),
+        ...baseInfo,
         basePrevious24hPrice: Number(pair.firstToken.previous24hPrice),
         quotePrevious24hPrice: Number(pair.secondToken.previous24hPrice),
         baseId: pair.firstToken.identifier,
@@ -195,25 +164,11 @@ export class MexPairService {
         quotePrice: Number(pair.secondTokenPriceUSD),
         quoteSymbol: secondTokenSymbol,
         quoteName: pair.secondToken.name,
-        totalValue: Number(pair.lockedValueUSD),
-        volume24h: Number(pair.volumeUSD24h),
-        hasFarms: pair.hasFarms,
-        hasDualFarms: pair.hasDualFarms,
-        tradesCount: Number(pair.tradesCount),
-        tradesCount24h: Number(pair.tradesCount24h),
-        deployedAt: Number(pair.deployedAt),
-        state,
-        type,
-        exchange,
       };
     }
 
     return {
-      address: pair.address,
-      id: pair.liquidityPoolToken.identifier,
-      symbol: pair.liquidityPoolToken.identifier.split('-')[0],
-      name: pair.liquidityPoolToken.name,
-      price: Number(pair.liquidityPoolTokenPriceUSD),
+      ...baseInfo,
       basePrevious24hPrice: Number(pair.secondToken.previous24hPrice),
       quotePrevious24hPrice: Number(pair.firstToken.previous24hPrice),
       baseId: pair.secondToken.identifier,
@@ -224,16 +179,6 @@ export class MexPairService {
       quotePrice: Number(pair.firstTokenPriceUSD),
       quoteSymbol: firstTokenSymbol,
       quoteName: pair.firstToken.name,
-      totalValue: Number(pair.lockedValueUSD),
-      volume24h: Number(pair.volumeUSD24h),
-      hasFarms: pair.hasFarms,
-      hasDualFarms: pair.hasDualFarms,
-      tradesCount: Number(pair.tradesCount),
-      tradesCount24h: Number(pair.tradesCount24h),
-      deployedAt: Number(pair.deployedAt),
-      state,
-      type,
-      exchange,
     };
   }
 

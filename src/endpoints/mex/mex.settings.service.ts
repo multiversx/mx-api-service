@@ -1,13 +1,14 @@
 import { Constants } from "@multiversx/sdk-nestjs-common";
 import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { Injectable } from "@nestjs/common";
-import { gql } from "graphql-request";
 import { CacheInfo } from "src/utils/cache.info";
 import { GraphQlService } from "src/common/graphql/graphql.service";
 import { TransactionMetadata } from "../transactions/transaction-action/entities/transaction.metadata";
 import { TransactionMetadataTransfer } from "../transactions/transaction-action/entities/transaction.metadata.transfer";
 import { MexSettings } from "./entities/mex.settings";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
+import { settingsQuery } from "./graphql/settings.query";
+import { pairCountQuery } from "./graphql/pairs.count.query";
 
 @Injectable()
 export class MexSettingsService {
@@ -87,83 +88,33 @@ export class MexSettingsService {
   }
 
   public async getSettingsRaw(): Promise<MexSettings | null> {
-    const variables = {
-      offset: 0,
-      limit: 500,
-    };
-
-    const query = gql`
-    query ($offset: Int, $limit: Int) {
-      pairs(offset: $offset, limit: $limit) {
-        state
-        address
-        firstToken {
-          name
-          identifier
-          decimals
-          __typename
-        }
-        secondToken {
-          name
-          identifier
-          decimals
-          __typename
-        } 
-      }
-      proxy {
-        address
-        lockedAssetTokens {
-          collection
-          __typename
-        }
-      }
-      farms {
-        ... on FarmModelV1_2 {
-          state
-          address
-        }
-        ... on FarmModelV1_3 {
-          state
-          address
-        }
-        ... on FarmModelV2 {
-          state
-          address
-        }
-     }
-      wrappingInfo {
-        address
-        shard
-      }
-      distribution {
-        address
-      }
-      lockedAssetFactory {
-        address
-      }
-      stakingFarms {
-        state
-        address
-      }
-      stakingProxies {
-        address
-      }
-      factory {
-        address
-      }
-    }
-    `;
-
-    const response = await this.graphQlService.getExchangeServiceData(query, variables);
+    const pairLimitCount = await this.getPairLimitCount();
+    const response = await this.graphQlService.getExchangeServiceData(settingsQuery(pairLimitCount));
     if (!response) {
       return null;
     }
 
-    const settings = MexSettings.fromQueryResponse(response);
+    const transformedResponse = {
+      ...response,
+      pairs: response.filteredPairs.edges.map((edge: { node: { address: string } }) => ({
+        address: edge.node.address,
+      })),
+    };
+
+    const settings = MexSettings.fromQueryResponse(transformedResponse);
     return settings;
   }
 
   getWegldId(): string | undefined {
     return this.wegldId;
+  }
+
+  private async getPairLimitCount(): Promise<number> {
+    const response = await this.graphQlService.getExchangeServiceData(pairCountQuery);
+    if (!response) {
+      return 500;
+    }
+
+    return response.factory.pairCount;
   }
 }

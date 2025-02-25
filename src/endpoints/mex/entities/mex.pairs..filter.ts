@@ -5,4 +5,5 @@ export class MexPairsFilter {
     Object.assign(this, init);
   }
   exchange?: MexPairExchange;
+  includeFarms?: boolean;
 }
