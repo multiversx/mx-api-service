@@ -1,7 +1,6 @@
 import { Constants } from "@multiversx/sdk-nestjs-common";
 import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
-import { gql } from "graphql-request";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { CacheInfo } from "src/utils/cache.info";
 import { GraphQlService } from "src/common/graphql/graphql.service";
@@ -9,6 +8,8 @@ import { MexFarm } from "./entities/mex.farm";
 import { MexTokenService } from "./mex.token.service";
 import { MexStakingProxy } from "./entities/mex.staking.proxy";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
+import { farmsQuery } from "./graphql/farms.query";
+import { stakingProxyQuery } from "./graphql/staking.proxy.query";
 
 @Injectable()
 export class MexFarmService {
@@ -53,104 +54,7 @@ export class MexFarmService {
   }
 
   private async getAllMexFarmsRaw(): Promise<MexFarm[]> {
-    const query = gql`
-      query {
-        farms {
-          ... on FarmModelV1_2 {
-            version
-            address
-            farmToken {
-              collection
-              name
-              ticker
-              __typename
-            }
-            farmingToken {
-              name
-              identifier
-              decimals
-              __typename
-            }
-            farmedToken {
-              name
-              identifier
-              decimals
-              __typename
-            }
-            farmTokenPriceUSD
-            farmingTokenPriceUSD
-            farmedTokenPriceUSD
-          }
-          ... on FarmModelV1_3 {
-            version
-            address
-            farmToken {
-              collection
-              name
-              ticker
-              __typename
-            }
-            farmingToken {
-              name
-              identifier
-              decimals
-              __typename
-            }
-            farmedToken {
-              name
-              identifier
-              decimals
-              __typename
-            }
-            farmTokenPriceUSD
-            farmingTokenPriceUSD
-            farmedTokenPriceUSD
-          }
-          ... on FarmModelV2 {
-            version
-            address
-            farmToken {
-              collection
-              name
-              ticker
-              __typename
-            }
-            farmingToken {
-              name
-              identifier
-              decimals
-              __typename
-            }
-            farmedToken {
-              name
-              identifier
-              decimals
-              __typename
-            }
-            farmTokenPriceUSD
-            farmingTokenPriceUSD
-            farmedTokenPriceUSD
-          }
-        }
-        stakingFarms {
-          address
-          farmingToken {
-            name
-            identifier
-            decimals
-              __typename
-          }
-          farmToken {
-            name
-            collection
-            decimals
-              __typename
-          }
-        }
-      }
-    `;
-
-    const response: any = await this.graphQlService.getExchangeServiceData(query, {});
+    const response: any = await this.graphQlService.getExchangeServiceData(farmsQuery, {});
     if (!response) {
       return [];
     }
@@ -178,18 +82,7 @@ export class MexFarmService {
   }
 
   private async getAllStakingProxiesRaw(): Promise<MexStakingProxy[]> {
-    const query = gql`
-      query StakingProxy {
-        stakingProxies {
-          address
-          dualYieldToken {
-            name
-            collection
-          }
-        }
-      }`;
-
-    const response: any = await this.graphQlService.getExchangeServiceData(query, {});
+    const response: any = await this.graphQlService.getExchangeServiceData(stakingProxyQuery, {});
     if (!response) {
       return [];
     }

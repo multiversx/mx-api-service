@@ -338,6 +338,11 @@ export class CacheInfo {
     ttl: Constants.oneMinute() * 10,
   };
 
+  static MexPairsWithFarms: CacheInfo = {
+    key: 'mexPairsWithFarms',
+    ttl: Constants.oneMinute() * 10,
+  };
+
   static MexTokens: CacheInfo = {
     key: "mexTokens",
     ttl: Constants.oneMinute() * 10,
@@ -692,7 +697,7 @@ export class CacheInfo {
   static Applications(queryPagination: QueryPagination): CacheInfo {
     return {
       key: `applications:${queryPagination.from}:${queryPagination.size}`,
-      ttl: Constants.oneHour(),
+      ttl: Constants.oneMinute(),
     };
   }
 

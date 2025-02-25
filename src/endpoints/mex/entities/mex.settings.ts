@@ -23,7 +23,7 @@ export class MexSettings {
       ...response.proxy.map((x: any) => x.address),
     ];
     settings.pairContracts = [
-      ...response.pairs.filter((x: any) => x.state === 'Active').map((x: any) => x.address),
+      ...response.pairs.map((x: any) => x.address),
       ...response.proxy.map((x: any) => x.address),
     ];
     settings.wrapContracts = response.wrappingInfo.map((x: any) => x.address);
@@ -39,11 +39,11 @@ export class MexSettings {
     settings.lockedAssetIdentifier = lockedAssetIdentifiers.find((identifier: string) => identifier.startsWith('LKMEX'));
     settings.lockedAssetIdentifierV2 = lockedAssetIdentifiers.find((identifier: string) => identifier.startsWith('XMEX'));
 
-    const mexEgldPairs = response.pairs.filter((x: any) => x.firstToken.name === 'WrappedEGLD' && x.secondToken.name === 'MEX');
-    if (mexEgldPairs.length > 0) {
-      settings.wegldId = mexEgldPairs[0].firstToken.identifier;
-      settings.mexId = mexEgldPairs[0].secondToken.identifier;
-    }
+    const wrappedToken = response.wrappingInfo[0].wrappedToken.identifier;
+    const mexToken = response.simpleLockEnergy.baseAssetToken.identifier;
+
+    settings.wegldId = wrappedToken;
+    settings.mexId = mexToken;
 
     return settings;
   }
