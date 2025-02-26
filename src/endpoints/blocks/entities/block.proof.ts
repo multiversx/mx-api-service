@@ -1,6 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
 
 export class BlockProofDto {
+  constructor(init?: Partial<BlockProofDto>) {
+    Object.assign(this, init);
+  }
+
   @ApiProperty({
     type: String,
     description: "Bitmap representing public keys involved in the proof",
