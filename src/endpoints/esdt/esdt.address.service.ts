@@ -262,14 +262,7 @@ export class EsdtAddressService {
       nft.uris = dataSourceNft.uris ? dataSourceNft.uris.filter((x: any) => x) : [];
       nft.name = dataSourceNft.name;
       nft.timestamp = dataSourceNft.timestamp;
-      if (dataSourceNft.hash) {
-        const decodedHex = BinaryUtils.base64Decode(dataSourceNft.hash);
-        if (decodedHex.startsWith('proof:')) {
-          nft.hash = decodedHex;
-        } else {
-          nft.hash = dataSourceNft.hash;
-        }
-      }
+      nft.hash = TokenHelpers.getNftProof(dataSourceNft.hash) || '';
 
       if (nft.uris && nft.uris.length > 0) {
         try {

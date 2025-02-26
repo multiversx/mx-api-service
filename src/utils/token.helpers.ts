@@ -5,6 +5,7 @@ import { CollectionRoles } from "src/endpoints/tokens/entities/collection.roles"
 import { TokenRoles } from "src/endpoints/tokens/entities/token.roles";
 import { ApiUtils } from '@multiversx/sdk-nestjs-http';
 import '@multiversx/sdk-nestjs-common/lib/utils/extensions/string.extensions';
+import { BinaryUtils } from "@multiversx/sdk-nestjs-common";
 
 export class TokenHelpers {
   static canBool(string: string) {
@@ -95,5 +96,18 @@ export class TokenHelpers {
 
   static getCollectionIdentifier(nftIdentifier: string): string {
     return nftIdentifier.split('-').slice(0, 2).join('-');
+  }
+
+  static getNftProof(hash: string): string | undefined {
+    if (!hash) {
+      return undefined;
+    }
+
+    const decodedHex = BinaryUtils.base64Decode(hash);
+    if (decodedHex.startsWith('proof:')) {
+      return decodedHex;
+    } else {
+      return hash;
+    }
   }
 }
