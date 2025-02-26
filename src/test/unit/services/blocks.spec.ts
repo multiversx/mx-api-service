@@ -9,6 +9,7 @@ import { BlsService } from "src/endpoints/bls/bls.service";
 import { IdentitiesService } from "src/endpoints/identities/identities.service";
 import { NodeService } from "src/endpoints/nodes/node.service";
 import { CacheInfo } from "src/utils/cache.info";
+import { BlockProofDto } from "../../../endpoints/blocks/entities/block.proof";
 
 describe('Block Service', () => {
   let blockService: BlockService;
@@ -128,6 +129,15 @@ describe('Block Service', () => {
       gasPenalized: 0,
       maxGasLimit: 15000000000,
       scheduledRootHash: undefined,
+      proof: undefined,
+      previousHeaderProof: new BlockProofDto({
+        pubKeysBitmap: '7702',
+        aggregatedSignature: '50224d66a42a019991d16f25dba375b581f279d4394d4c254876c1484f61bed90fb20456f8af107c54e4eed1763e2a92',
+        headerHash: '414d526161587ae9f53453aa0392971272c48dbb3cc54a33448972d388e0deeb',
+        headerEpoch: 100,
+        headerRound: 12500,
+        headerNonce: 10500,
+      }),
     };
 
     it('should call cachingService.getOrSet with the correct arguments and return the result', async () => {
@@ -173,7 +183,7 @@ describe('Block Service', () => {
       );
     });
 
-    it('should retur current epoch', async () => {
+    it('should return current epoch', async () => {
       blockService.getBlocks = jest.fn().mockResolvedValue([block]);
 
       const result = await blockService.getCurrentEpoch();
