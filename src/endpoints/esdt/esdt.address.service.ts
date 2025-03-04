@@ -262,6 +262,7 @@ export class EsdtAddressService {
       nft.uris = dataSourceNft.uris ? dataSourceNft.uris.filter((x: any) => x) : [];
       nft.name = dataSourceNft.name;
       nft.timestamp = dataSourceNft.timestamp;
+      nft.hash = TokenHelpers.getNftProof(dataSourceNft.hash) ?? '';
 
       if (nft.uris && nft.uris.length > 0) {
         try {
