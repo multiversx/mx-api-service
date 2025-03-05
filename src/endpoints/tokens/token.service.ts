@@ -815,11 +815,13 @@ export class TokenService {
 
       if (priceSourcetype === TokenAssetsPriceSourceType.dataApi) {
         token.price = await this.dataApiService.getEsdtTokenPrice(token.identifier);
+        this.logger.log(`Applying data api price for token ${token.identifier}. Value: ${token.price}`);
       } else if (priceSourcetype === TokenAssetsPriceSourceType.customUrl && token.assets?.priceSource?.url) {
         const pathToPrice = token.assets?.priceSource?.path ?? "0.usdPrice";
         const tokenData = await this.fetchTokenDataFromUrl(token.assets.priceSource.url, pathToPrice);
 
         if (tokenData) {
+          this.logger.log(`Applying custom price for token ${token.identifier}. Value: ${JSON.stringify(tokenData)}`);
           token.price = tokenData;
         }
       }
@@ -1047,6 +1049,7 @@ export class TokenService {
           }
 
           if (price.isToken) {
+            this.logger.log(`Applying mex price for token ${token.identifier}. Value: ${price.price}`);
             token.price = price.price;
             token.marketCap = price.price * NumberUtils.denominateString(supply.circulatingSupply, token.decimals);
 
