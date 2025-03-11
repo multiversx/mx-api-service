@@ -14,6 +14,7 @@ describe('GraphQlService', () => {
     mockApiConfigService = {
       getExchangeServiceUrlMandatory: jest.fn().mockReturnValue('https://graph.xexchange.com/graphql'),
       getMarketplaceServiceUrl: jest.fn().mockReturnValue('https://nfts-graph.multiversx.com/graphql'),
+      getSelfUrl: jest.fn().mockReturnValue('https://api.multiversx.com'),
     };
 
     mockGraphQLClient = {

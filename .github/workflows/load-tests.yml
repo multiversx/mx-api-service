@@ -1,8 +1,6 @@
 name: Load Tests
 
 on:
-  push:
-    branches: [main, development]
   pull_request:
     branches: [main, development]
 
@@ -60,7 +58,7 @@ jobs:
       run: k6 run ./k6/script.js
 
     - name: Upload result file for base branch
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: base-results
         path: k6/output/summary.json
@@ -121,7 +119,7 @@ jobs:
       run: k6 run ./k6/script.js
 
     - name: Upload result file for head branch
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: head-results
         path: k6/output/summary.json
@@ -137,7 +135,7 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Download all artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           path: artifacts
 
@@ -161,7 +159,7 @@ jobs:
             head: ${{ github.event.pull_request.head.sha }}
 
       - name: Upload the report markdown
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: github.event_name == 'pull_request'
         with:
           name: report-markdown

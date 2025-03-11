@@ -31,4 +31,8 @@ export interface Transaction {
   scResults: any[];
   version: number;
   relayerAddr: string;
+  relayer: string;
+  relayerSignature: string;
+  isRelayed: boolean;
+  isScCall: boolean;
 }

@@ -31,6 +31,7 @@ export class GatewayService {
     GatewayComponentRequest.vmQuery,
     GatewayComponentRequest.transactionPool,
     GatewayComponentRequest.guardianData,
+    GatewayComponentRequest.validatorAuction,
   ]);
 
   private readonly deepHistoryRequestsSet: Set<String> = new Set([
@@ -93,6 +94,11 @@ export class GatewayService {
   async getAddressDetails(address: string): Promise<Account> {
     const result = await this.get(`address/${address}`, GatewayComponentRequest.addressDetails);
     return result;
+  }
+
+  async getAccountsBulk(addresses: string[]): Promise<Account[]> {
+    const result = await this.create('address/bulk', GatewayComponentRequest.addressesBulk, addresses);
+    return result.accounts;
   }
 
   async getEsdtSupply(identifier: string): Promise<EsdtSupply> {

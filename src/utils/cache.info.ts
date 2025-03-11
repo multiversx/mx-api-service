@@ -338,6 +338,11 @@ export class CacheInfo {
     ttl: Constants.oneMinute() * 10,
   };
 
+  static MexPairsWithFarms: CacheInfo = {
+    key: 'mexPairsWithFarms',
+    ttl: Constants.oneMinute() * 10,
+  };
+
   static MexTokens: CacheInfo = {
     key: "mexTokens",
     ttl: Constants.oneMinute() * 10,
@@ -633,11 +638,7 @@ export class CacheInfo {
     const isCurrentDate = priceDate.toISODateString() === new Date().toISODateString();
     const ttl = isCurrentDate ? Constants.oneMinute() * 5 : Constants.oneWeek();
 
-    let key = priceDate.toISODateString();
-    if (!isCurrentDate) {
-      key = priceDate.startOfDay().addDays(1).toISODateString();
-    }
-
+    const key = priceDate.toISODateString();
     return {
       key: `data-api:price:${identifier}:${key}`,
       ttl,
@@ -692,7 +693,7 @@ export class CacheInfo {
   static Applications(queryPagination: QueryPagination): CacheInfo {
     return {
       key: `applications:${queryPagination.from}:${queryPagination.size}`,
-      ttl: Constants.oneHour(),
+      ttl: Constants.oneMinute(),
     };
   }
 

@@ -42,10 +42,14 @@ import { TransferService } from "../transfers/transfer.service";
 import { MexPairService } from "../mex/mex.pair.service";
 import { MexPairState } from "../mex/entities/mex.pair.state";
 import { MexTokenType } from "../mex/entities/mex.token.type";
+import { NftSubType } from "../nfts/entities/nft.sub.type";
 
 @Injectable()
 export class TokenService {
   private readonly logger = new OriginLogger(TokenService.name);
+  private readonly nftSubTypes = [NftSubType.DynamicNonFungibleESDT, NftSubType.DynamicMetaESDT, NftSubType.NonFungibleESDTv2, NftSubType.DynamicSemiFungibleESDT];
+  private readonly egldIdentifierInMultiTransfer = 'EGLD-000000';
+
   constructor(
     private readonly esdtService: EsdtService,
     private readonly indexerService: IndexerService,
@@ -123,7 +127,9 @@ export class TokenService {
       this.applyTickerFromAssets(token);
     }
 
-    return tokens.map(item => ApiUtils.mergeObjects(new TokenDetailed(), item));
+    return tokens
+      .map(item => ApiUtils.mergeObjects(new TokenDetailed(), item))
+      .filter(t => t.identifier !== this.egldIdentifierInMultiTransfer);
   }
 
   applyTickerFromAssets(token: Token) {
@@ -139,6 +145,10 @@ export class TokenService {
 
     if (filter.type) {
       tokens = tokens.filter(token => token.type === filter.type);
+    }
+
+    if (filter.subType) {
+      tokens = tokens.filter(token => token.subType.toString() === filter.subType?.toString());
     }
 
     if (filter.search) {
@@ -398,10 +408,35 @@ export class TokenService {
         continue;
       }
 
+      if (esdt.type && this.nftSubTypes.includes(esdt.type)) {
+        switch (esdt.type as NftSubType) {
+          case NftSubType.DynamicNonFungibleESDT:
+          case NftSubType.NonFungibleESDTv2:
+            esdt.type = NftSubType.NonFungibleESDT;
+            esdt.subType = esdt.type;
+            break;
+          case NftSubType.DynamicMetaESDT:
+            esdt.type = NftType.MetaESDT;
+            esdt.subType = NftSubType.DynamicMetaESDT;
+            break;
+          case NftSubType.DynamicSemiFungibleESDT:
+            esdt.type = NftType.SemiFungibleESDT;
+            esdt.subType = NftSubType.DynamicSemiFungibleESDT;
+            break;
+          default:
+            esdt.subType = NftSubType.None;
+            break;
+        }
+      }
+
       const tokenWithBalance = {
         ...token,
         ...esdt,
       };
+
+      if (esdt.type === '') { // empty type can come from gateway
+        tokenWithBalance.type = token.type;
+      }
 
       tokensWithBalance.push(tokenWithBalance);
     }
@@ -658,8 +693,6 @@ export class TokenService {
     return result;
   }
 
-
-
   private async getLogo(identifier: string): Promise<TokenLogo | undefined> {
     const assets = await this.assetsService.getTokenAssets(identifier);
     if (!assets) {
@@ -712,7 +745,7 @@ export class TokenService {
     return await this.cachingService.getOrSet(
       CacheInfo.AllEsdtTokens.key,
       async () => await this.getAllTokensRaw(),
-      CacheInfo.AllEsdtTokens.ttl
+      CacheInfo.AllEsdtTokens.ttl,
     );
   }
 
@@ -746,6 +779,7 @@ export class TokenService {
     for (const collection of collections) {
       tokens.push(new TokenDetailed({
         type: TokenType.MetaESDT,
+        subType: collection.subType,
         identifier: collection.collection,
         name: collection.name,
         timestamp: collection.timestamp,
@@ -806,6 +840,20 @@ export class TokenService {
       token => token.isLowLiquidity ? 0 : (token.marketCap ?? 0),
       token => token.transactions ?? 0,
     );
+
+    const egldToken = new TokenDetailed({
+      identifier: this.egldIdentifierInMultiTransfer,
+      name: 'EGLD',
+      type: TokenType.FungibleESDT,
+      assets: await this.assetsService.getTokenAssets(this.egldIdentifierInMultiTransfer),
+      decimals: 18,
+      isLowLiquidity: false,
+      price: await this.dataApiService.getEgldPrice(),
+      supply: '0',
+      circulatingSupply: '0',
+      marketCap: 0,
+    });
+    tokens = [...tokens, egldToken];
 
     return tokens;
   }
@@ -969,11 +1017,10 @@ export class TokenService {
 
   private async applyMexLiquidity(tokens: TokenDetailed[]): Promise<void> {
     try {
-      const pairs = await this.mexPairService.getAllMexPairs();
-      const filteredPairs = pairs.filter(x => x.state === MexPairState.active);
+      const allPairs = await this.mexPairService.getAllMexPairs();
 
       for (const token of tokens) {
-        const pairs = filteredPairs.filter(x => x.baseId === token.identifier || x.quoteId === token.identifier);
+        const pairs = allPairs.filter(x => x.baseId === token.identifier || x.quoteId === token.identifier);
         if (pairs.length > 0) {
           token.totalLiquidity = pairs.sum(x => x.totalValue / 2);
           token.totalVolume24h = pairs.sum(x => x.volume24h ?? 0);

@@ -58,6 +58,7 @@ import { DeepHistoryInterceptor } from 'src/interceptors/deep-history.intercepto
 import { MexPairType } from '../mex/entities/mex.pair.type';
 import { NftSubType } from '../nfts/entities/nft.sub.type';
 import { AccountContract } from './entities/account.contract';
+import { AccountFetchOptions } from './entities/account.fetch.options';
 
 @Controller()
 @ApiTags('accounts')
@@ -96,26 +97,29 @@ export class AccountController {
   @ApiQuery({ name: 'excludeTags', description: 'Exclude specific tags from result', required: false })
   @ApiQuery({ name: 'hasAssets', description: 'Returns a list of accounts that have assets', required: false })
   @ApiQuery({ name: 'search', description: 'Search by account address', required: false })
+  @ApiQuery({ name: 'addresses', description: 'A comma-separated list of addresses to filter by', required: false, type: String })
   getAccounts(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number,
     @Query("ownerAddress", ParseAddressPipe) ownerAddress?: string,
     @Query("name") name?: string,
-    @Query("tags", new ParseArrayPipe()) tags?: string[],
+    @Query("tags", ParseArrayPipe) tags?: string[],
     @Query('sort', new ParseEnumPipe(AccountSort)) sort?: AccountSort,
     @Query('order', new ParseEnumPipe(SortOrder)) order?: SortOrder,
-    @Query("isSmartContract", new ParseBoolPipe) isSmartContract?: boolean,
-    @Query("withOwnerAssets", new ParseBoolPipe) withOwnerAssets?: boolean,
-    @Query("withDeployInfo", new ParseBoolPipe) withDeployInfo?: boolean,
-    @Query("withTxCount", new ParseBoolPipe) withTxCount?: boolean,
-    @Query("withScrCount", new ParseBoolPipe) withScrCount?: boolean,
-    @Query("excludeTags", new ParseArrayPipe) excludeTags?: string[],
-    @Query("hasAssets", new ParseBoolPipe) hasAssets?: boolean,
+    @Query("isSmartContract", ParseBoolPipe) isSmartContract?: boolean,
+    @Query("withOwnerAssets", ParseBoolPipe) withOwnerAssets?: boolean,
+    @Query("withDeployInfo", ParseBoolPipe) withDeployInfo?: boolean,
+    @Query("withTxCount", ParseBoolPipe) withTxCount?: boolean,
+    @Query("withScrCount", ParseBoolPipe) withScrCount?: boolean,
+    @Query("excludeTags", ParseArrayPipe) excludeTags?: string[],
+    @Query("hasAssets", ParseBoolPipe) hasAssets?: boolean,
     @Query("search") search?: string,
+    @Query("addresses", ParseAddressArrayPipe) addresses?: string[],
   ): Promise<Account[]> {
     const queryOptions = new AccountQueryOptions(
       {
         ownerAddress,
+        addresses,
         sort,
         order,
         isSmartContract,
@@ -143,15 +147,17 @@ export class AccountController {
   @ApiQuery({ name: 'isSmartContract', description: 'Return total smart contracts count', required: false })
   @ApiQuery({ name: 'name', description: 'Filter accounts by assets name', required: false })
   @ApiQuery({ name: 'tags', description: 'Filter accounts by assets tags', required: false })
+  @ApiQuery({ name: 'search', description: 'Search by account address, assets name', required: false })
   @ApiQuery({ name: 'excludeTags', description: 'Exclude specific tags from result', required: false })
   @ApiQuery({ name: 'hasAssets', description: 'Returns a list of accounts that have assets', required: false })
   async getAccountsCount(
     @Query("ownerAddress", ParseAddressPipe) ownerAddress?: string,
-    @Query("isSmartContract", new ParseBoolPipe) isSmartContract?: boolean,
+    @Query("isSmartContract", ParseBoolPipe) isSmartContract?: boolean,
     @Query("name") name?: string,
-    @Query("tags", new ParseArrayPipe()) tags?: string[],
-    @Query("excludeTags", new ParseArrayPipe) excludeTags?: string[],
-    @Query("hasAssets", new ParseBoolPipe) hasAssets?: boolean,
+    @Query("tags", ParseArrayPipe) tags?: string[],
+    @Query("excludeTags", ParseArrayPipe) excludeTags?: string[],
+    @Query("hasAssets", ParseBoolPipe) hasAssets?: boolean,
+    @Query("search") search?: string,
   ): Promise<number> {
     return await this.accountService.getAccountsCount(
       new AccountQueryOptions(
@@ -162,6 +168,7 @@ export class AccountController {
           tags,
           excludeTags,
           hasAssets,
+          search,
         }));
   }
 
@@ -169,11 +176,12 @@ export class AccountController {
   @ApiExcludeEndpoint()
   async getAccountsCountAlternative(
     @Query("ownerAddress", ParseAddressPipe) ownerAddress?: string,
-    @Query("isSmartContract", new ParseBoolPipe) isSmartContract?: boolean,
+    @Query("isSmartContract", ParseBoolPipe) isSmartContract?: boolean,
     @Query("name") name?: string,
-    @Query("tags", new ParseArrayPipe()) tags?: string[],
-    @Query("excludeTags", new ParseArrayPipe) excludeTags?: string[],
-    @Query("hasAssets", new ParseBoolPipe) hasAssets?: boolean,
+    @Query("tags", ParseArrayPipe) tags?: string[],
+    @Query("excludeTags", ParseArrayPipe) excludeTags?: string[],
+    @Query("hasAssets", ParseBoolPipe) hasAssets?: boolean,
+    @Query("search") search?: string,
   ): Promise<number> {
     return await this.accountService.getAccountsCount(
       new AccountQueryOptions(
@@ -184,6 +192,7 @@ export class AccountController {
           tags,
           excludeTags,
           hasAssets,
+          search,
         }));
   }
 
@@ -191,16 +200,25 @@ export class AccountController {
   @UseInterceptors(DeepHistoryInterceptor)
   @ApiOperation({ summary: 'Account details', description: 'Returns account details for a given address' })
   @ApiQuery({ name: 'withGuardianInfo', description: 'Returns guardian data for a given address', required: false })
-  @ApiQuery({ name: 'fields', description: 'List of fields to filter by', required: false })
+  @ApiQuery({ name: 'withTxCount', description: 'Returns the count of the transactions for a given address', required: false })
+  @ApiQuery({ name: 'withScrCount', description: 'Returns the sc results count for a given address', required: false })
+  @ApiQuery({ name: 'withTimestamp', description: 'Returns the timestamp of the last activity for a given address', required: false })
+  @ApiQuery({ name: 'withAssets', description: 'Returns the assets for a given address', required: false })
   @ApiQuery({ name: 'timestamp', description: 'Retrieve entry from timestamp', required: false, type: Number })
   @ApiOkResponse({ type: AccountDetailed })
   async getAccountDetails(
     @Param('address', ParseAddressPipe) address: string,
-    @Query('withGuardianInfo', new ParseBoolPipe) withGuardianInfo?: boolean,
-    @Query('fields', ParseArrayPipe) fields?: string[],
+    @Query('withGuardianInfo', ParseBoolPipe) withGuardianInfo?: boolean,
+    @Query('withTxCount', ParseBoolPipe) withTxCount?: boolean,
+    @Query('withScrCount', ParseBoolPipe) withScrCount?: boolean,
+    @Query('withTimestamp', ParseBoolPipe) withTimestamp?: boolean,
+    @Query('withAssets', ParseBoolPipe) withAssets?: boolean,
     @Query('timestamp', ParseIntPipe) _timestamp?: number,
   ): Promise<AccountDetailed> {
-    const account = await this.accountService.getAccount(address, fields, withGuardianInfo);
+    const account = await this.accountService.getAccount(
+      address,
+      new AccountFetchOptions({ withGuardianInfo, withTxCount, withScrCount, withTimestamp, withAssets }),
+    );
     if (!account) {
       throw new NotFoundException('Account not found');
     }
@@ -240,6 +258,7 @@ export class AccountController {
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   @ApiQuery({ name: 'type', description: 'Token type', required: false, enum: TokenType })
+  @ApiQuery({ name: 'subType', description: 'Token sub type', required: false, enum: NftSubType })
   @ApiQuery({ name: 'search', description: 'Search by collection identifier', required: false })
   @ApiQuery({ name: 'name', description: 'Search by token name', required: false })
   @ApiQuery({ name: 'identifier', description: 'Search by token identifier', required: false })
@@ -253,16 +272,17 @@ export class AccountController {
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
     @Query('type', new ParseEnumPipe(TokenType)) type?: TokenType,
+    @Query('subType', new ParseEnumPipe(NftSubType)) subType?: NftSubType,
     @Query('search') search?: string,
     @Query('name') name?: string,
     @Query('identifier') identifier?: string,
     @Query('identifiers', ParseArrayPipe) identifiers?: string[],
-    @Query('includeMetaESDT', new ParseBoolPipe) includeMetaESDT?: boolean,
+    @Query('includeMetaESDT', ParseBoolPipe) includeMetaESDT?: boolean,
     @Query('timestamp', ParseIntPipe) _timestamp?: number,
     @Query('mexPairType', new ParseEnumArrayPipe(MexPairType)) mexPairType?: MexPairType[],
   ): Promise<TokenWithBalance[]> {
     try {
-      return await this.tokenService.getTokensForAddress(address, new QueryPagination({ from, size }), new TokenFilter({ type, search, name, identifier, identifiers, includeMetaESDT, mexPairType }));
+      return await this.tokenService.getTokensForAddress(address, new QueryPagination({ from, size }), new TokenFilter({ type, subType, search, name, identifier, identifiers, includeMetaESDT, mexPairType }));
     } catch (error) {
       this.logger.error(`Error in getAccountTokens for address ${address}`);
       this.logger.error(error);
@@ -290,7 +310,7 @@ export class AccountController {
     @Query('name') name?: string,
     @Query('identifier') identifier?: string,
     @Query('identifiers', ParseArrayPipe) identifiers?: string[],
-    @Query('includeMetaESDT', new ParseBoolPipe) includeMetaESDT?: boolean,
+    @Query('includeMetaESDT', ParseBoolPipe) includeMetaESDT?: boolean,
     @Query('timestamp', ParseIntPipe) _timestamp?: number,
     @Query('mexPairType', new ParseEnumArrayPipe(MexPairType)) mexPairType?: MexPairType[],
   ): Promise<number> {
@@ -314,7 +334,7 @@ export class AccountController {
     @Query('name') name?: string,
     @Query('identifier') identifier?: string,
     @Query('identifiers', ParseArrayPipe) identifiers?: string[],
-    @Query('includeMetaESDT', new ParseBoolPipe) includeMetaESDT?: boolean,
+    @Query('includeMetaESDT', ParseBoolPipe) includeMetaESDT?: boolean,
     @Query('timestamp', ParseIntPipe) _timestamp?: number,
     @Query('mexPairType', new ParseEnumArrayPipe(MexPairType)) mexPairType?: MexPairType[],
   ): Promise<number> {
@@ -370,13 +390,13 @@ export class AccountController {
     @Query('type', new ParseEnumArrayPipe(NftType)) type?: NftType[],
     @Query('subType', new ParseEnumArrayPipe(NftSubType)) subType?: NftSubType[],
     @Query('owner', ParseAddressPipe) owner?: string,
-    @Query('canCreate', new ParseBoolPipe) canCreate?: boolean,
-    @Query('canBurn', new ParseBoolPipe) canBurn?: boolean,
-    @Query('canAddQuantity', new ParseBoolPipe) canAddQuantity?: boolean,
-    @Query('canUpdateAttributes', new ParseBoolPipe) canUpdateAttributes?: boolean,
-    @Query('canAddUri', new ParseBoolPipe) canAddUri?: boolean,
-    @Query('canTransferRole', new ParseBoolPipe) canTransferRole?: boolean,
-    @Query('excludeMetaESDT', new ParseBoolPipe) excludeMetaESDT?: boolean,
+    @Query('canCreate', ParseBoolPipe) canCreate?: boolean,
+    @Query('canBurn', ParseBoolPipe) canBurn?: boolean,
+    @Query('canAddQuantity', ParseBoolPipe) canAddQuantity?: boolean,
+    @Query('canUpdateAttributes', ParseBoolPipe) canUpdateAttributes?: boolean,
+    @Query('canAddUri', ParseBoolPipe) canAddUri?: boolean,
+    @Query('canTransferRole', ParseBoolPipe) canTransferRole?: boolean,
+    @Query('excludeMetaESDT', ParseBoolPipe) excludeMetaESDT?: boolean,
   ): Promise<NftCollectionWithRoles[]> {
     return await this.collectionService.getCollectionsWithRolesForAddress(
       address,
@@ -412,10 +432,10 @@ export class AccountController {
     @Query('type', new ParseEnumArrayPipe(NftType)) type?: NftType[],
     @Query('subType', new ParseEnumArrayPipe(NftSubType)) subType?: NftSubType[],
     @Query('owner', ParseAddressPipe) owner?: string,
-    @Query('canCreate', new ParseBoolPipe) canCreate?: boolean,
-    @Query('canBurn', new ParseBoolPipe) canBurn?: boolean,
-    @Query('canAddQuantity', new ParseBoolPipe) canAddQuantity?: boolean,
-    @Query('excludeMetaESDT', new ParseBoolPipe) excludeMetaESDT?: boolean,
+    @Query('canCreate', ParseBoolPipe) canCreate?: boolean,
+    @Query('canBurn', ParseBoolPipe) canBurn?: boolean,
+    @Query('canAddQuantity', ParseBoolPipe) canAddQuantity?: boolean,
+    @Query('excludeMetaESDT', ParseBoolPipe) excludeMetaESDT?: boolean,
   ): Promise<number> {
     return await this.collectionService.getCollectionCountForAddressWithRoles(address, new CollectionFilter({ search, type, subType, owner, canCreate, canBurn, canAddQuantity, excludeMetaESDT }));
   }
@@ -428,10 +448,10 @@ export class AccountController {
     @Query('type', new ParseEnumArrayPipe(NftType)) type?: NftType[],
     @Query('subType', new ParseEnumArrayPipe(NftSubType)) subType?: NftSubType[],
     @Query('owner', ParseAddressPipe) owner?: string,
-    @Query('canCreate', new ParseBoolPipe) canCreate?: boolean,
-    @Query('canBurn', new ParseBoolPipe) canBurn?: boolean,
-    @Query('canAddQuantity', new ParseBoolPipe) canAddQuantity?: boolean,
-    @Query('excludeMetaESDT', new ParseBoolPipe) excludeMetaESDT?: boolean,
+    @Query('canCreate', ParseBoolPipe) canCreate?: boolean,
+    @Query('canBurn', ParseBoolPipe) canBurn?: boolean,
+    @Query('canAddQuantity', ParseBoolPipe) canAddQuantity?: boolean,
+    @Query('excludeMetaESDT', ParseBoolPipe) excludeMetaESDT?: boolean,
   ): Promise<number> {
     return await this.collectionService.getCollectionCountForAddressWithRoles(address, new CollectionFilter({
       search, type, subType, owner, canCreate, canBurn, canAddQuantity, excludeMetaESDT,
@@ -469,9 +489,9 @@ export class AccountController {
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
     @Query('search') search?: string,
     @Query('owner', ParseAddressPipe) owner?: string,
-    @Query('canMint', new ParseBoolPipe) canMint?: boolean,
-    @Query('canBurn', new ParseBoolPipe) canBurn?: boolean,
-    @Query('includeMetaESDT', new ParseBoolPipe) includeMetaESDT?: boolean,
+    @Query('canMint', ParseBoolPipe) canMint?: boolean,
+    @Query('canBurn', ParseBoolPipe) canBurn?: boolean,
+    @Query('includeMetaESDT', ParseBoolPipe) includeMetaESDT?: boolean,
   ): Promise<TokenWithRoles[]> {
     return await this.tokenService.getTokensWithRolesForAddress(address, new TokenWithRolesFilter({ search, owner, canMint, canBurn, includeMetaESDT }), new QueryPagination({ from, size }));
   }
@@ -488,9 +508,9 @@ export class AccountController {
     @Param('address', ParseAddressPipe) address: string,
     @Query('search') search?: string,
     @Query('owner', ParseAddressPipe) owner?: string,
-    @Query('canMint', new ParseBoolPipe) canMint?: boolean,
-    @Query('canBurn', new ParseBoolPipe) canBurn?: boolean,
-    @Query('includeMetaESDT', new ParseBoolPipe) includeMetaESDT?: boolean,
+    @Query('canMint', ParseBoolPipe) canMint?: boolean,
+    @Query('canBurn', ParseBoolPipe) canBurn?: boolean,
+    @Query('includeMetaESDT', ParseBoolPipe) includeMetaESDT?: boolean,
   ): Promise<number> {
     return await this.tokenService.getTokensWithRolesForAddressCount(address, new TokenWithRolesFilter({ search, owner, canMint, canBurn, includeMetaESDT }));
   }
@@ -501,9 +521,9 @@ export class AccountController {
     @Param('address', ParseAddressPipe) address: string,
     @Query('search') search?: string,
     @Query('owner', ParseAddressPipe) owner?: string,
-    @Query('canMint', new ParseBoolPipe) canMint?: boolean,
-    @Query('canBurn', new ParseBoolPipe) canBurn?: boolean,
-    @Query('includeMetaESDT', new ParseBoolPipe) includeMetaESDT?: boolean,
+    @Query('canMint', ParseBoolPipe) canMint?: boolean,
+    @Query('canBurn', ParseBoolPipe) canBurn?: boolean,
+    @Query('includeMetaESDT', ParseBoolPipe) includeMetaESDT?: boolean,
   ): Promise<number> {
     return await this.tokenService.getTokensWithRolesForAddressCount(address, new TokenWithRolesFilter({ search, owner, canMint, canBurn, includeMetaESDT }));
   }
@@ -539,7 +559,7 @@ export class AccountController {
     @Query('search') search?: string,
     @Query('type', new ParseEnumArrayPipe(NftType)) type?: NftType[],
     @Query('subType', new ParseEnumArrayPipe(NftSubType)) subType?: NftSubType[],
-    @Query('excludeMetaESDT', new ParseBoolPipe) excludeMetaESDT?: boolean,
+    @Query('excludeMetaESDT', ParseBoolPipe) excludeMetaESDT?: boolean,
   ): Promise<NftCollectionAccount[]> {
     return await this.collectionService.getCollectionsForAddress(
       address,
@@ -559,7 +579,7 @@ export class AccountController {
     @Query('search') search?: string,
     @Query('type', new ParseEnumArrayPipe(NftType)) type?: NftType[],
     @Query('subType', new ParseEnumArrayPipe(NftSubType)) subType?: NftSubType[],
-    @Query('excludeMetaESDT', new ParseBoolPipe) excludeMetaESDT?: boolean,
+    @Query('excludeMetaESDT', ParseBoolPipe) excludeMetaESDT?: boolean,
   ): Promise<number> {
     return await this.collectionService.getCollectionCountForAddress(address, new CollectionFilter({ search, type, subType, excludeMetaESDT }));
   }
@@ -571,7 +591,7 @@ export class AccountController {
     @Query('search') search?: string,
     @Query('type', new ParseEnumArrayPipe(NftType)) type?: NftType[],
     @Query('subType', new ParseEnumArrayPipe(NftSubType)) subType?: NftSubType[],
-    @Query('excludeMetaESDT', new ParseBoolPipe) excludeMetaESDT?: boolean,
+    @Query('excludeMetaESDT', ParseBoolPipe) excludeMetaESDT?: boolean,
   ): Promise<number> {
     return await this.collectionService.getCollectionCountForAddress(address, new CollectionFilter({ search, type, subType, excludeMetaESDT }));
   }
@@ -613,7 +633,7 @@ export class AccountController {
   @ApiQuery({ name: 'withScamInfo', description: 'Include scam info in the response', required: false, type: Boolean })
   @ApiQuery({ name: 'computeScamInfo', description: 'Compute scam info in the response', required: false, type: Boolean })
   @ApiQuery({ name: 'excludeMetaESDT', description: 'Exclude NFTs of type "MetaESDT" in the response', required: false, type: Boolean })
-  @ApiQuery({ name: 'fields', description: 'List of fields to filter by', required: false })
+  @ApiQuery({ name: 'fields', description: 'List of fields to filter by', required: false, isArray: true, style: 'form', explode: false })
   @ApiQuery({ name: 'isScam', description: 'Filter by scam status', required: false, type: Boolean })
   @ApiQuery({ name: 'scamType', description: 'Filter by type (scam/potentialScam)', required: false })
   @ApiQuery({ name: 'timestamp', description: 'Retrieve entry from timestamp', required: false, type: Number })
@@ -630,13 +650,13 @@ export class AccountController {
     @Query('name') name?: string,
     @Query('tags', ParseArrayPipe) tags?: string[],
     @Query('creator', ParseAddressPipe) creator?: string,
-    @Query('hasUris', new ParseBoolPipe) hasUris?: boolean,
-    @Query('includeFlagged', new ParseBoolPipe) includeFlagged?: boolean,
-    @Query('withSupply', new ParseBoolPipe) withSupply?: boolean,
+    @Query('hasUris', ParseBoolPipe) hasUris?: boolean,
+    @Query('includeFlagged', ParseBoolPipe) includeFlagged?: boolean,
+    @Query('withSupply', ParseBoolPipe) withSupply?: boolean,
     @Query('source', new ParseEnumPipe(EsdtDataSource)) source?: EsdtDataSource,
-    @Query('excludeMetaESDT', new ParseBoolPipe) excludeMetaESDT?: boolean,
+    @Query('excludeMetaESDT', ParseBoolPipe) excludeMetaESDT?: boolean,
     @Query('fields', ParseArrayPipe) fields?: string[],
-    @Query('isScam', new ParseBoolPipe) isScam?: boolean,
+    @Query('isScam', ParseBoolPipe) isScam?: boolean,
     @Query('scamType', new ParseEnumPipe(ScamType)) scamType?: ScamType,
     @Query('timestamp', ParseIntPipe) _timestamp?: number,
   ): Promise<NftAccount[]> {
@@ -695,10 +715,10 @@ export class AccountController {
     @Query('name') name?: string,
     @Query('tags', ParseArrayPipe) tags?: string[],
     @Query('creator', ParseAddressPipe) creator?: string,
-    @Query('hasUris', new ParseBoolPipe) hasUris?: boolean,
-    @Query('includeFlagged', new ParseBoolPipe) includeFlagged?: boolean,
-    @Query('excludeMetaESDT', new ParseBoolPipe) excludeMetaESDT?: boolean,
-    @Query('isScam', new ParseBoolPipe) isScam?: boolean,
+    @Query('hasUris', ParseBoolPipe) hasUris?: boolean,
+    @Query('includeFlagged', ParseBoolPipe) includeFlagged?: boolean,
+    @Query('excludeMetaESDT', ParseBoolPipe) excludeMetaESDT?: boolean,
+    @Query('isScam', ParseBoolPipe) isScam?: boolean,
     @Query('scamType', new ParseEnumPipe(ScamType)) scamType?: ScamType,
     @Query('timestamp', ParseIntPipe) _timestamp?: number,
   ): Promise<number> {
@@ -734,10 +754,10 @@ export class AccountController {
     @Query('name') name?: string,
     @Query('tags', ParseArrayPipe) tags?: string[],
     @Query('creator', ParseAddressPipe) creator?: string,
-    @Query('hasUris', new ParseBoolPipe) hasUris?: boolean,
-    @Query('includeFlagged', new ParseBoolPipe) includeFlagged?: boolean,
-    @Query('excludeMetaESDT', new ParseBoolPipe) excludeMetaESDT?: boolean,
-    @Query('isScam', new ParseBoolPipe) isScam?: boolean,
+    @Query('hasUris', ParseBoolPipe) hasUris?: boolean,
+    @Query('includeFlagged', ParseBoolPipe) includeFlagged?: boolean,
+    @Query('excludeMetaESDT', ParseBoolPipe) excludeMetaESDT?: boolean,
+    @Query('isScam', ParseBoolPipe) isScam?: boolean,
     @Query('scamType', new ParseEnumPipe(ScamType)) scamType?: ScamType,
     @Query('timestamp', ParseIntPipe) _timestamp?: number,
   ): Promise<number> {
@@ -747,7 +767,7 @@ export class AccountController {
   @Get("/accounts/:address/nfts/:nft")
   @UseInterceptors(DeepHistoryInterceptor)
   @ApiOperation({ summary: 'Account NFT/SFT token details', description: 'Returns details about a specific fungible token for a given address' })
-  @ApiQuery({ name: 'fields', description: 'List of fields to filter by', required: false })
+  @ApiQuery({ name: 'fields', description: 'List of fields to filter by', required: false, isArray: true, style: 'form', explode: false })
   @ApiQuery({ name: 'extract', description: 'Extract a specific field', required: false })
   @ApiQuery({ name: 'timestamp', description: 'Retrieve entry from timestamp', required: false, type: Number })
   @ApiOkResponse({ type: NftAccount })
@@ -849,7 +869,7 @@ export class AccountController {
   @ApiQuery({ name: 'status', description: 'Status of the transaction (success / pending / invalid / fail)', required: false, enum: TransactionStatus })
   @ApiQuery({ name: 'function', description: 'Filter transactions by function name', required: false })
   @ApiQuery({ name: 'order', description: 'Sort order (asc/desc)', required: false, enum: SortOrder })
-  @ApiQuery({ name: 'fields', description: 'List of fields to filter by', required: false })
+  @ApiQuery({ name: 'fields', description: 'List of fields to filter by', required: false, isArray: true, style: 'form', explode: false })
   @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
   @ApiQuery({ name: 'round', description: 'Round number', required: false })
@@ -862,7 +882,9 @@ export class AccountController {
   @ApiQuery({ name: 'computeScamInfo', required: false, type: Boolean })
   @ApiQuery({ name: 'senderOrReceiver', description: 'One address that current address interacted with', required: false })
   @ApiQuery({ name: 'isRelayed', description: 'Returns isRelayed transactions details', required: false, type: Boolean })
+  @ApiQuery({ name: 'isScCall', description: 'Returns sc call transactions details', required: false, type: Boolean })
   @ApiQuery({ name: 'withActionTransferValue', description: 'Returns value in USD and EGLD for transferred tokens within the action attribute', required: false })
+  @ApiQuery({ name: 'withRelayedScresults', description: 'If set to true, will include smart contract results that resemble relayed transactions', required: false, type: Boolean })
   async getAccountTransactions(
     @Param('address', ParseAddressPipe) address: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
@@ -881,19 +903,21 @@ export class AccountController {
     @Query('round', ParseIntPipe) round?: number,
     @Query('order', new ParseEnumPipe(SortOrder)) order?: SortOrder,
     @Query('fields', ParseArrayPipe) fields?: string[],
-    @Query('withScResults', new ParseBoolPipe) withScResults?: boolean,
-    @Query('withOperations', new ParseBoolPipe) withOperations?: boolean,
-    @Query('withLogs', new ParseBoolPipe) withLogs?: boolean,
-    @Query('withScamInfo', new ParseBoolPipe) withScamInfo?: boolean,
-    @Query('withUsername', new ParseBoolPipe) withUsername?: boolean,
-    @Query('withBlockInfo', new ParseBoolPipe) withBlockInfo?: boolean,
+    @Query('withScResults', ParseBoolPipe) withScResults?: boolean,
+    @Query('withOperations', ParseBoolPipe) withOperations?: boolean,
+    @Query('withLogs', ParseBoolPipe) withLogs?: boolean,
+    @Query('withScamInfo', ParseBoolPipe) withScamInfo?: boolean,
+    @Query('withUsername', ParseBoolPipe) withUsername?: boolean,
+    @Query('withBlockInfo', ParseBoolPipe) withBlockInfo?: boolean,
     @Query('senderOrReceiver', ParseAddressPipe) senderOrReceiver?: string,
-    @Query('isRelayed', new ParseBoolPipe) isRelayed?: boolean,
+    @Query('isRelayed', ParseBoolPipe) isRelayed?: boolean,
+    @Query('isScCall', ParseBoolPipe) isScCall?: boolean,
     @Query('withActionTransferValue', ParseBoolPipe) withActionTransferValue?: boolean,
+    @Query('withRelayedScresults', ParseBoolPipe) withRelayedScresults?: boolean,
   ) {
     const options = TransactionQueryOptions.applyDefaultOptions(size, { withScResults, withOperations, withLogs, withScamInfo, withUsername, withBlockInfo, withActionTransferValue });
 
-    return await this.transactionService.getTransactions(new TransactionFilter({
+    const transactionFilter = new TransactionFilter({
       sender,
       receivers: receiver,
       token,
@@ -908,8 +932,12 @@ export class AccountController {
       order,
       senderOrReceiver,
       isRelayed,
+      isScCall,
       round,
-    }), new QueryPagination({ from, size }), options, address, fields);
+      withRelayedScresults,
+    });
+    TransactionFilter.validate(transactionFilter, size);
+    return await this.transactionService.getTransactions(transactionFilter, new QueryPagination({ from, size }), options, address, fields);
   }
 
   @Get("/accounts/:address/transactions/count")
@@ -929,6 +957,8 @@ export class AccountController {
   @ApiQuery({ name: 'round', description: 'Round number', required: false })
   @ApiQuery({ name: 'senderOrReceiver', description: 'One address that current address interacted with', required: false })
   @ApiQuery({ name: 'isRelayed', description: 'Returns isRelayed transactions details', required: false, type: Boolean })
+  @ApiQuery({ name: 'isScCall', description: 'Returns sc call transactions details', required: false, type: Boolean })
+  @ApiQuery({ name: 'withRelayedScresults', description: 'If set to true, will include smart contract results that resemble relayed transactions', required: false, type: Boolean })
   async getAccountTransactionsCount(
     @Param('address', ParseAddressPipe) address: string,
     @Query('sender', ParseAddressPipe) sender?: string,
@@ -944,7 +974,10 @@ export class AccountController {
     @Query('after', ParseIntPipe) after?: number,
     @Query('round', ParseIntPipe) round?: number,
     @Query('senderOrReceiver', ParseAddressPipe) senderOrReceiver?: string,
-    @Query('isRelayed', new ParseBoolPipe) isRelayed?: boolean,
+    @Query('isRelayed', ParseBoolPipe) isRelayed?: boolean,
+    @Query('isScCall', ParseBoolPipe) isScCall?: boolean,
+    @Query('withRelayedScresults', ParseBoolPipe) withRelayedScresults?: boolean,
+
   ): Promise<number> {
 
     return await this.transactionService.getTransactionCount(new TransactionFilter({
@@ -961,7 +994,9 @@ export class AccountController {
       after,
       senderOrReceiver,
       isRelayed,
+      isScCall,
       round,
+      withRelayedScresults,
     }), address);
   }
 
@@ -984,8 +1019,9 @@ export class AccountController {
   @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
   @ApiQuery({ name: 'round', description: 'Round number', required: false })
-  @ApiQuery({ name: 'fields', description: 'List of fields to filter by', required: false })
+  @ApiQuery({ name: 'fields', description: 'List of fields to filter by', required: false, isArray: true, style: 'form', explode: false })
   @ApiQuery({ name: 'relayer', description: 'Address of the relayer', required: false })
+  @ApiQuery({ name: 'isScCall', description: 'Returns sc call transactions details', required: false, type: Boolean })
   @ApiQuery({ name: 'withScamInfo', description: 'Returns scam information', required: false, type: Boolean })
   @ApiQuery({ name: 'withUsername', description: 'Integrates username in assets for all addresses present in the transactions', required: false, type: Boolean })
   @ApiQuery({ name: 'withBlockInfo', description: 'Returns sender / receiver block details', required: false, type: Boolean })
@@ -993,6 +1029,8 @@ export class AccountController {
   @ApiQuery({ name: 'withLogs', description: 'Return logs for transfers. When "withLogs" parameter is applied, complexity estimation is 200', required: false })
   @ApiQuery({ name: 'withOperations', description: 'Return operations for transfers. When "withOperations" parameter is applied, complexity estimation is 200', required: false })
   @ApiQuery({ name: 'withActionTransferValue', description: 'Returns value in USD and EGLD for transferred tokens within the action attribute', required: false })
+  @ApiQuery({ name: 'withRefunds', description: 'Include refund transactions', required: false })
+  @ApiQuery({ name: 'withTxsRelayedByAddress', description: 'Include transactions that were relayed by the address', required: false })
   async getAccountTransfers(
     @Param('address', ParseAddressPipe) address: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
@@ -1012,13 +1050,16 @@ export class AccountController {
     @Query('fields', ParseArrayPipe) fields?: string[],
     @Query('order', new ParseEnumPipe(SortOrder)) order?: SortOrder,
     @Query('relayer', ParseAddressPipe) relayer?: string,
-    @Query('withScamInfo', new ParseBoolPipe) withScamInfo?: boolean,
-    @Query('withUsername', new ParseBoolPipe) withUsername?: boolean,
-    @Query('withBlockInfo', new ParseBoolPipe) withBlockInfo?: boolean,
+    @Query('withScamInfo', ParseBoolPipe) withScamInfo?: boolean,
+    @Query('withUsername', ParseBoolPipe) withUsername?: boolean,
+    @Query('withBlockInfo', ParseBoolPipe) withBlockInfo?: boolean,
     @Query('senderOrReceiver', ParseAddressPipe) senderOrReceiver?: string,
-    @Query('withLogs', new ParseBoolPipe) withLogs?: boolean,
-    @Query('withOperations', new ParseBoolPipe) withOperations?: boolean,
+    @Query('isScCall', ParseBoolPipe) isScCall?: boolean,
+    @Query('withLogs', ParseBoolPipe) withLogs?: boolean,
+    @Query('withOperations', ParseBoolPipe) withOperations?: boolean,
     @Query('withActionTransferValue', ParseBoolPipe) withActionTransferValue?: boolean,
+    @Query('withRefunds', ParseBoolPipe) withRefunds?: boolean,
+    @Query('withTxsRelayedByAddress', ParseBoolPipe) withTxsRelayedByAddress?: boolean,
   ): Promise<Transaction[]> {
     const options = TransactionQueryOptions.applyDefaultOptions(
       size, { withScamInfo, withUsername, withBlockInfo, withOperations, withLogs, withActionTransferValue });
@@ -1040,6 +1081,9 @@ export class AccountController {
       senderOrReceiver,
       relayer,
       round,
+      withRefunds,
+      withTxsRelayedByAddress,
+      isScCall,
     }),
       new QueryPagination({ from, size }),
       options,
@@ -1048,7 +1092,7 @@ export class AccountController {
   }
 
   @Get("/accounts/:address/transfers/count")
-  @ApiOperation({ summary: 'Account transfer count', description: 'Return total count of tranfers triggerred by a user account (type = Transaction), as well as transfers triggerred by smart contracts (type = SmartContractResult)' })
+  @ApiOperation({ summary: 'Account transfer count', description: 'Return total count of transfers triggerred by a user account (type = Transaction), as well as transfers triggerred by smart contracts (type = SmartContractResult)' })
   @ApiOkResponse({ type: Number })
   @ApiQuery({ name: 'sender', description: 'Address of the transfer sender', required: false })
   @ApiQuery({ name: 'receiver', description: 'Search by multiple receiver addresses, comma-separated', required: false })
@@ -1062,7 +1106,9 @@ export class AccountController {
   @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
   @ApiQuery({ name: 'round', description: 'Round number', required: false })
+  @ApiQuery({ name: 'isScCall', description: 'Returns sc call transactions details', required: false, type: Boolean })
   @ApiQuery({ name: 'senderOrReceiver', description: 'One address that current address interacted with', required: false })
+  @ApiQuery({ name: 'withRefunds', description: 'Include refund transactions', required: false })
   async getAccountTransfersCount(
     @Param('address', ParseAddressPipe) address: string,
     @Query('sender', ParseAddressArrayPipe) sender?: string[],
@@ -1078,6 +1124,8 @@ export class AccountController {
     @Query('after', ParseIntPipe) after?: number,
     @Query('round', ParseIntPipe) round?: number,
     @Query('senderOrReceiver', ParseAddressPipe) senderOrReceiver?: string,
+    @Query('isScCall', ParseBoolPipe) isScCall?: boolean,
+    @Query('withRefunds', ParseBoolPipe) withRefunds?: boolean,
   ): Promise<number> {
     return await this.transferService.getTransfersCount(new TransactionFilter({
       address,
@@ -1094,6 +1142,8 @@ export class AccountController {
       after,
       senderOrReceiver,
       round,
+      isScCall,
+      withRefunds,
     }));
   }
 
@@ -1114,6 +1164,8 @@ export class AccountController {
     @Query('after', ParseIntPipe) after?: number,
     @Query('round', ParseIntPipe) round?: number,
     @Query('senderOrReceiver', ParseAddressPipe) senderOrReceiver?: string,
+    @Query('withRefunds', ParseBoolPipe) withRefunds?: boolean,
+    @Query('isScCall', ParseBoolPipe) isScCall?: boolean,
   ): Promise<number> {
     return await this.transferService.getTransfersCount(new TransactionFilter({
       address,
@@ -1130,6 +1182,8 @@ export class AccountController {
       after,
       senderOrReceiver,
       round,
+      withRefunds,
+      isScCall,
     }));
   }
 
