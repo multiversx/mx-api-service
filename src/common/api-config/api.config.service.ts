@@ -918,6 +918,6 @@ export class ApiConfigService {
   }
 
   getMediaRedirectFileStorageUrls(): string[] {
-    return this.configService.get<string[]>('features.mediaRedirect.fileStorageUrls') ?? [];
+    return this.configService.get<string[]>('features.mediaRedirect.storageUrls') ?? [];
   }
 }

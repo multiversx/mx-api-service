@@ -57,7 +57,7 @@ export class MediaService {
     }
 
     // fallback for nft thumbnails
-    if (uri.startsWith('nfts/thumbnail/') && uri !== this.fallbackThumbnail) {
+    if (uri.startsWith('nfts/thumbnail/') && uri !== this.fallbackThumbnail && fileStorageUrls.length > 0) {
       return `${fileStorageUrls[0]}/${this.fallbackThumbnail}`;
     }
 
