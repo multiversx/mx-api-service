@@ -448,7 +448,6 @@ export class NftService {
 
   async getNftsForAddress(address: string, queryPagination: QueryPagination, filter: NftFilter, fields?: string[], queryOptions?: NftQueryOptions, source?: EsdtDataSource): Promise<NftAccount[]> {
     let nfts = await this.esdtAddressService.getNftsForAddress(address, filter, queryPagination, source);
-
     for (const nft of nfts) {
       await this.applyAssetsAndTicker(nft, fields);
       await this.applyPriceUsd(nft, fields);
@@ -596,7 +595,7 @@ export class NftService {
   }
 
   // TODO: use this function to determine if a MetaESDT is a proof if we decide to add API filters to extract all the proofs
-  getNftProofHash(nft: Nft): string | undefined{
+  getNftProofHash(nft: Nft): string | undefined {
     const hashField = BinaryUtils.base64Decode(nft.hash);
     if (nft.type !== NftType.MetaESDT || !hashField.startsWith('proof:')) {
       return undefined;
