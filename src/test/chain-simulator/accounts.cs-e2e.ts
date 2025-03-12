@@ -1993,6 +1993,8 @@ describe('Accounts e2e tests with chain simulator', () => {
       const sendNftTx = await transferNftFromTo(config.chainSimulatorUrl, config.aliceAddress, config.bobAddress, nft.collection, nft.nonce);
 
       const transaction = await axios.get(`${config.apiServiceUrl}/transactions/${sendNftTx}`);
+      await new Promise(resolve => setTimeout(resolve, 2000));
+
       expect(transaction.status).toBe(200);
 
       const checkBobNft = await axios.get(`${config.apiServiceUrl}/accounts/${config.bobAddress}/nfts?withReceivedAt=true`);
