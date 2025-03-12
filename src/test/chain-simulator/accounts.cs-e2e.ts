@@ -2,6 +2,7 @@ import axios from "axios";
 import { config } from "./config/env.config";
 import { NftType } from "src/endpoints/nfts/entities/nft.type";
 import { NftSubType } from "src/endpoints/nfts/entities/nft.sub.type";
+import { transferNftFromTo } from "./utils/chain.simulator.operations";
 
 describe('Accounts e2e tests with chain simulator', () => {
   describe('GET /accounts with query parameters', () => {
@@ -1984,6 +1985,35 @@ describe('Accounts e2e tests with chain simulator', () => {
       for (const field of expectedFields) {
         expect(response.data).toHaveProperty(field);
       }
+    });
+
+    it('should return the NFT received at timestamp when transferred from one address to another and withReceivedAt parameter is true', async () => {
+      const accountNfts = await axios.get(`${config.apiServiceUrl}/accounts/${config.aliceAddress}/nfts?size=1&type=${NftType.NonFungibleESDT}`);
+      const nft = accountNfts.data[0];
+      const sendNftTx = await transferNftFromTo(config.chainSimulatorUrl, config.aliceAddress, config.bobAddress, nft.collection, nft.nonce);
+
+      const transaction = await axios.get(`${config.apiServiceUrl}/transactions/${sendNftTx}`);
+      expect(transaction.status).toBe(200);
+
+      const checkBobNft = await axios.get(`${config.apiServiceUrl}/accounts/${config.bobAddress}/nfts?withReceivedAt=true`);
+      const bobNft = checkBobNft.data;
+
+      expect(bobNft.length).toBeGreaterThanOrEqual(1);
+      expect(bobNft[0].receivedAt).toBeDefined();
+    });
+
+    it('should not return the NFT received at timestamp when transferred from one address to another and withReceivedAt parameter is false', async () => {
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.bobAddress}/nfts?withReceivedAt=false`);
+      const responseData = response.data;
+
+      expect(responseData.every((nft: any) => nft.receivedAt === undefined)).toBe(true);
+    });
+
+    it('should throw an error with 400 Bad Request if size parameter is greater than 25 and withReceivedAt parameter is true', async () => {
+      const response = await axios.get(`${config.apiServiceUrl}/accounts/${config.bobAddress}/nfts?withReceivedAt=true&size=30`)
+        .catch(err => err.response);
+
+      expect(response.status).toBe(400);
     });
   });
 });
