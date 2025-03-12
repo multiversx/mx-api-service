@@ -153,6 +153,8 @@ export class NftService {
       if (TokenHelpers.needsDefaultMedia(nft)) {
         nft.media = this.DEFAULT_MEDIA;
       }
+
+      this.applyRedirectMedia(nft);
     }
   }
 
@@ -276,6 +278,8 @@ export class NftService {
 
   private async applyMedia(nft: Nft) {
     nft.media = await this.nftMediaService.getMedia(nft.identifier) ?? undefined;
+
+    this.applyRedirectMedia(nft);
   }
 
   private async applyMetadata(nft: Nft) {
@@ -646,5 +650,28 @@ export class NftService {
 
   private getNftScoreElasticKey(algorithm: NftRankAlgorithm) {
     return `nft_score_${algorithm}`;
+  }
+
+  private applyRedirectMedia(nft: Nft) {
+    const isMediaRedirectFeatureEnabled = this.apiConfigService.isMediaRedirectFeatureEnabled();
+    if (!isMediaRedirectFeatureEnabled) {
+      return;
+    }
+
+    if (!nft.media || nft.media.length === 0) {
+      return;
+    }
+
+    const network = this.apiConfigService.getNetwork();
+    const defaultMediaUrl = `https://${network === 'mainnet' ? '' : `${network}-`}media.elrond.com`;
+
+    for (const media of nft.media) {
+      if (media.url) {
+        media.url = media.url.replace(defaultMediaUrl, this.apiConfigService.getMediaUrl());
+      }
+      if (media.thumbnailUrl) {
+        media.thumbnailUrl = media.thumbnailUrl.replace(defaultMediaUrl, this.apiConfigService.getMediaUrl());
+      }
+    }
   }
 }
