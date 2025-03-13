@@ -20,7 +20,7 @@ export interface GasBucket {
     /**
      * PPU of the last transaction in the bucket
      */
-    ppuEnd: number;
+    ppuEnd?: number;
 
     /**
      * Number of transactions in the bucket

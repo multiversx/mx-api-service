@@ -752,7 +752,6 @@ export class TransactionService {
       index: 0,
       gasAccumulated: 0,
       ppuBegin: 0,
-      ppuEnd: 0,
       numTransactions: 0
     };
 
@@ -778,18 +777,13 @@ export class TransactionService {
           index: currentBucket.index + 1,
           gasAccumulated: 0,
           ppuBegin: 0,
-          ppuEnd: 0,
           numTransactions: 0
         };
       }
     }
 
     // Don't forget to add the last bucket if it has transactions
-    if (currentBucket.numTransactions > 0) {
-      // For the last bucket that isn't full, use the last transaction's PPU as ppuEnd
-      currentBucket.ppuEnd = transactions[transactions.length - 1].ppu;
-      buckets.push(currentBucket);
-    }
+    buckets.push(currentBucket);
 
     // Log bucket information for debugging
     for (const bucket of buckets) {
