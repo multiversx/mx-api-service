@@ -607,7 +607,7 @@ export class TransactionService {
   async getPpuByShardIdRaw(shardId: number): Promise<PpuMetadata | null> {
     try {
       // Validate shard ID (assuming a maximum of 3 shards in the system)
-      if (shardId < 0 || shardId > 3) {
+      if (shardId < 0 || shardId > 2) {
         return null;
       }
 
