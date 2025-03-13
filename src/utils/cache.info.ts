@@ -703,4 +703,11 @@ export class CacheInfo {
       ttl: Constants.oneMinute() * 10,
     };
   }
+
+  static PpuMetadataByShard(shardId: number): CacheInfo {
+    return {
+      key: `ppuMetadata:shard:${shardId}`,
+      ttl: Constants.oneSecond() * 30,
+    };
+  };
 }

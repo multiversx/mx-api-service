@@ -31,30 +31,33 @@ export class PoolService {
   }
 
   async getPoolCount(filter: PoolFilter): Promise<number> {
-    const pool = await this.getEntirePool();
-    return this.applyFilters(pool, filter).length;
+    const pool = await this.getEntirePool(filter);
+    return pool.length;
   }
 
   async getPool(
     queryPagination: QueryPagination,
-    filter: PoolFilter,
+    filter?: PoolFilter,
   ): Promise<TransactionInPool[]> {
     if (!this.apiConfigService.isTransactionPoolEnabled()) {
       return [];
     }
 
     const { from, size } = queryPagination;
-    const entirePool = await this.getEntirePool();
-    const pool = this.applyFilters(entirePool, filter);
+    const pool = await this.getEntirePool(filter);
     return pool.slice(from, from + size);
   }
 
-  async getEntirePool(): Promise<TransactionInPool[]> {
-    return await this.cacheService.getOrSet(
+  async getEntirePool(
+    filter?: PoolFilter,
+  ): Promise<TransactionInPool[]> {
+    const pool = await this.cacheService.getOrSet(
       CacheInfo.TransactionPool.key,
       async () => await this.getTxPoolRaw(),
       CacheInfo.TransactionPool.ttl,
     );
+
+    return this.applyFilters(pool, filter);
   }
 
   async getTxPoolRaw(): Promise<TransactionInPool[]> {
@@ -117,7 +120,11 @@ export class PoolService {
     return transaction;
   }
 
-  private applyFilters(pool: TransactionInPool[], filters: PoolFilter): TransactionInPool[] {
+  private applyFilters(pool: TransactionInPool[], filters: PoolFilter | undefined): TransactionInPool[] {
+    if (!filters) {
+      return pool;
+    }
+
     return pool.filter((transaction) => {
       return (
         (!filters.sender || transaction.sender === filters.sender) &&
