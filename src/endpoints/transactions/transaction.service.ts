@@ -783,7 +783,9 @@ export class TransactionService {
     }
 
     // Don't forget to add the last bucket if it has transactions
-    buckets.push(currentBucket);
+    if (currentBucket.numTransactions > 0) {
+      buckets.push(currentBucket);
+    }
 
     // Log bucket information for debugging
     for (const bucket of buckets) {
