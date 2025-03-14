@@ -194,6 +194,7 @@ describe('Transactions e2e tests with chain simulator', () => {
         'receiver',
         'receiverShard',
         'round',
+        'epoch',
         'sender',
         'senderShard',
         'status',
