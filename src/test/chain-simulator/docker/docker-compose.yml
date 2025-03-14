@@ -20,7 +20,7 @@ services:
 
   chainsimulator:
     container_name: chainsimulator
-    image: multiversx/chainsimulator:v1.8.4-barnard-test2
+    image: multiversx/chainsimulator:v1.8.11
     command: ["--node-override-config", "./overridable-config.toml"]
     volumes:
       - ./overridable-config.toml:/multiversx/overridable-config.toml
