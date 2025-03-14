@@ -24,7 +24,7 @@ export class MediaController {
     response.setHeader('location', redirectUrl);
     response.setHeader('cache-control', 'max-age=60');
     response.setHeader('Access-Control-Allow-Origin', '*');
-    response.setHeader('Content-Security-Policy', "default-src 'self'; img-src 'self' https://*.amazonaws.com");
+    response.setHeader('Content-Security-Policy', "default-src 'self'; img-src 'self' https://*.amazonaws.com; connect-src 'self' https://*.amazonaws.com; frame-src https://*.amazonaws.com; navigate-to https://*.amazonaws.com;");
 
     return response.redirect(301, redirectUrl);
   }
