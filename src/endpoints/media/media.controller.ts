@@ -23,6 +23,7 @@ export class MediaController {
     response.statusMessage = 'Found';
     response.setHeader('location', redirectUrl);
     response.setHeader('cache-control', 'max-age=60');
-    return response.redirect(redirectUrl);
+    response.setHeader('Access-Control-Allow-Origin', '*');
+    return response.redirect(301, redirectUrl);
   }
 }
