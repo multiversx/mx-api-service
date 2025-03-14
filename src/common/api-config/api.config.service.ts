@@ -871,6 +871,10 @@ export class ApiConfigService {
     return deepHistoryUrl;
   }
 
+  getChainHrp(): string {
+    return this.configService.get<string>('chainSettings.hrp') ?? 'erd';
+  }
+
   isAssetsCdnFeatureEnabled(): boolean {
     return this.configService.get<boolean>('features.assetsFetch.enabled') ?? false;
   }

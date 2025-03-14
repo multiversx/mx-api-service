@@ -144,7 +144,7 @@ export class EsdtService {
       name,
       // @ts-ignore
       type,
-      owner: AddressUtils.bech32Encode(owner),
+      owner: AddressUtils.bech32Encode(owner, this.apiConfigService.getChainHrp()),
       decimals: parseInt(decimals.split('-').pop() ?? '0'),
       isPaused: TokenHelpers.canBool(isPaused),
       canUpgrade: TokenHelpers.canBool(canUpgrade),

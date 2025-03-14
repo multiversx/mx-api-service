@@ -87,13 +87,13 @@ export class ProtocolService {
     }
   }
 
-  async getShardIdForAddress(address: string): Promise<number | undefined> {
+  async getShardIdForAddress(address: string, hrp?: string): Promise<number | undefined> {
     if (!AddressUtils.isAddressValid(address)) {
       return undefined;
     }
 
     const shardCount = await this.getShardCount();
-    const addressHex = new Address(address).hex();
+    const addressHex = new Address(address, hrp).hex();
 
     return AddressUtils.computeShard(addressHex, shardCount);
   }

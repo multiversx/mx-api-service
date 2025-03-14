@@ -67,6 +67,8 @@ inflation:
   - 1130177
   - 924690
   - 719203
+chainSettings:
+  hrp: 'erd'
 security:
   admins:
   jwtSecret:

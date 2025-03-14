@@ -107,8 +107,8 @@ export class TransactionActionService {
         try {
           const relayedTransaction = JSON.parse(BinaryUtils.hexToString(metadata.functionArgs[0]));
           relayedTransaction.value = relayedTransaction.value.toString();
-          relayedTransaction.sender = AddressUtils.bech32Encode(BinaryUtils.base64ToHex(relayedTransaction.sender));
-          relayedTransaction.receiver = AddressUtils.bech32Encode(BinaryUtils.base64ToHex(relayedTransaction.receiver));
+          relayedTransaction.sender = AddressUtils.bech32Encode(BinaryUtils.base64ToHex(relayedTransaction.sender), this.apiConfigService.getChainHrp());
+          relayedTransaction.receiver = AddressUtils.bech32Encode(BinaryUtils.base64ToHex(relayedTransaction.receiver), this.apiConfigService.getChainHrp());
           return this.getNormalTransactionMetadata(relayedTransaction);
         } catch (error) {
           this.logger.error(`Unhandled error when interpreting relayed transaction with hash '${transaction.txHash}'`);
@@ -120,7 +120,7 @@ export class TransactionActionService {
         try {
           const relayedTransaction = new Transaction();
           relayedTransaction.sender = transaction.receiver;
-          relayedTransaction.receiver = AddressUtils.bech32Encode(metadata.functionArgs[0]);
+          relayedTransaction.receiver = AddressUtils.bech32Encode(metadata.functionArgs[0], this.apiConfigService.getChainHrp());
           relayedTransaction.data = BinaryUtils.base64Encode(BinaryUtils.hexToString(metadata.functionArgs[2]));
           relayedTransaction.value = '0';
 
@@ -202,7 +202,7 @@ export class TransactionActionService {
 
     let receiver: string;
     if (!isSovereignCrossChainTransfer) {
-      receiver = AddressUtils.bech32Encode(args[0]);
+      receiver = AddressUtils.bech32Encode(args[0], this.apiConfigService.getChainHrp());
     } else {
       receiver = metadata.receiver;
     }
@@ -309,7 +309,7 @@ export class TransactionActionService {
     const collectionIdentifier = BinaryUtils.hexToString(args[0]);
     const nonce = args[1];
     const value = BinaryUtils.hexToBigInt(args[2]);
-    const receiver = AddressUtils.bech32Encode(args[3]);
+    const receiver = AddressUtils.bech32Encode(args[3], this.apiConfigService.getChainHrp());
 
     const properties = await this.tokenTransferService.getTokenTransferProperties({ identifier: collectionIdentifier, nonce });
     if (!properties) {

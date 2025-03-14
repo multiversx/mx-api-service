@@ -15,6 +15,7 @@ import { TransactionDetailsWithResult } from "./entities/transaction.details.wit
 import { CacheInfo } from "src/utils/cache.info";
 import { TransactionService } from "../transactions/transaction.service";
 import { TransactionCreate } from "../transactions/entities/transaction.create";
+import { ApiConfigService } from "../../common/api-config/api.config.service";
 
 @Injectable()
 export class TransactionsBatchService {
@@ -23,6 +24,7 @@ export class TransactionsBatchService {
   constructor(
     private readonly cachingService: CacheService,
     private readonly transactionService: TransactionService,
+    private readonly apiConfigService: ApiConfigService,
   ) {
     this.logger = new Logger(TransactionsBatchService.name);
   }
@@ -31,6 +33,7 @@ export class TransactionsBatchService {
     if (batch.groups.length === 0) {
       return batch;
     }
+    const hrp = this.apiConfigService.getChainHrp();
 
     for (const group of batch.groups) {
       for (const item of group.items) {
@@ -39,15 +42,15 @@ export class TransactionsBatchService {
         const trans = new ErdJsTransaction({
           nonce: tx.nonce,
           value: tx.value,
-          receiver: new Address(tx.receiver),
+          receiver: new Address(tx.receiver, hrp),
           gasPrice: tx.gasPrice,
           gasLimit: tx.gasLimit,
           data: tx.data ? new TransactionPayload(BinaryUtils.base64Decode(tx.data ?? '')) : undefined,
           chainID: tx.chainID,
           version: new TransactionVersion(tx.version),
           options: tx.options ? new TransactionOptions(tx.options) : undefined,
-          guardian: tx.guardian ? new Address(tx.guardian) : undefined,
-          sender: new Address(tx.sender),
+          guardian: tx.guardian ? new Address(tx.guardian, hrp) : undefined,
+          sender: new Address(tx.sender, hrp),
         });
 
         if (tx.guardianSignature) {

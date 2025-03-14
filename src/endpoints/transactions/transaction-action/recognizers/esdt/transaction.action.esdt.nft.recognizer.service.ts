@@ -41,7 +41,7 @@ export class TransactionActionEsdtNftRecognizerService implements TransactionAct
       return undefined;
     }
 
-    const address = AddressUtils.bech32Encode(metadata.functionArgs[1]);
+    const address = AddressUtils.bech32Encode(metadata.functionArgs[1], this.apiConfigService.getChainHrp());
 
     const result = new TransactionAction();
     result.category = TransactionActionCategory.esdtNft;

@@ -508,7 +508,7 @@ export class NodeService {
 
     const [encodedOwnerBase64] = result;
 
-    return AddressUtils.bech32Encode(Buffer.from(encodedOwnerBase64, 'base64').toString('hex'));
+    return AddressUtils.bech32Encode(Buffer.from(encodedOwnerBase64, 'base64').toString('hex'), this.apiConfigService.getChainHrp());
   }
 
   async getOwnerBlses(owner: string): Promise<string[]> {
@@ -577,7 +577,7 @@ export class NodeService {
         const bls = Buffer.from(blsBase64, 'base64').toString('hex');
 
         const rewardsAddressHex = Buffer.from(rewardsAddressBase64, 'base64').toString('hex');
-        const rewardsAddress = AddressUtils.bech32Encode(rewardsAddressHex);
+        const rewardsAddress = AddressUtils.bech32Encode(rewardsAddressHex, this.apiConfigService.getChainHrp());
 
         const nonceHex = Buffer.from(nonceBase64, 'base64').toString('hex');
         const nonce = parseInt(BigInt(nonceHex ? '0x' + nonceHex : nonceHex).toString());

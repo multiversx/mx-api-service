@@ -370,7 +370,7 @@ export class ProviderService {
     }
 
     const value = providersBase64.map((providerBase64) =>
-      AddressUtils.bech32Encode(Buffer.from(providerBase64, 'base64').toString('hex'))
+      AddressUtils.bech32Encode(Buffer.from(providerBase64, 'base64').toString('hex'), this.apiConfigService.getChainHrp())
     );
 
     return value;
@@ -399,7 +399,7 @@ export class ProviderService {
       const automaticActivationBase64 = response[automaticActivationIndex];
       const checkCapOnRedelegateBase64 = response[redelegationCapIndex];
 
-      const owner = AddressUtils.bech32Encode(Buffer.from(ownerAddress, 'base64').toString('hex'));
+      const owner = AddressUtils.bech32Encode(Buffer.from(ownerAddress, 'base64').toString('hex'), this.apiConfigService.getChainHrp());
 
       const [serviceFee, delegationCap] = [
         serviceFeeBase64,
