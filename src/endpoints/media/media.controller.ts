@@ -4,6 +4,7 @@ import { Request, Response } from "express";
 import { MediaService } from "./media.service";
 import { ApiService } from "@multiversx/sdk-nestjs-http";
 import { OriginLogger } from "@multiversx/sdk-nestjs-common";
+import https from 'https';
 
 @Controller()
 @ApiTags('media')
@@ -31,6 +32,10 @@ export class MediaController {
         // @ts-ignore
         responseType: 'stream',
         timeout: 60_000, // 60 seconds timeout
+        httpsAgent: new https.Agent({ rejectUnauthorized: false }),
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36'
+        }
       });
 
       res.setHeader('content-type', response.headers['content-type']);
