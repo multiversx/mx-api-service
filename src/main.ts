@@ -35,6 +35,7 @@ import { JwtOrNativeAuthGuard } from '@multiversx/sdk-nestjs-auth';
 import { WebSocketPublisherModule } from './common/websockets/web-socket-publisher-module';
 import { IndexerService } from './common/indexer/indexer.service';
 import { NotWritableError } from './common/indexer/entities/not.writable.error';
+import { LibraryConfig } from "@multiversx/sdk-core/out";
 
 async function bootstrap() {
   const logger = new Logger('Bootstrapper');
@@ -44,6 +45,8 @@ async function bootstrap() {
 
   const apiConfigApp = await NestFactory.create(ApiConfigModule);
   const apiConfigService = apiConfigApp.get<ApiConfigService>(ApiConfigService);
+
+  LibraryConfig.DefaultAddressHrp = apiConfigService.getChainHrp() ?? 'erd';
 
   if (apiConfigService.getUseTracingFlag() === true) {
     require('dd-trace').init();

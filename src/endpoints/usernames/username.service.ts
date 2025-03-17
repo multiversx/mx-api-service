@@ -50,7 +50,7 @@ export class UsernameService {
 
       if (encodedAddress) {
         const publicKey = BinaryUtils.base64ToHex(encodedAddress);
-        return AddressUtils.bech32Encode(publicKey, this.apiConfigService.getChainHrp());
+        return AddressUtils.bech32Encode(publicKey);
       }
     } catch (error) {
       return null;

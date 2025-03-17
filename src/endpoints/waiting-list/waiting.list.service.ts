@@ -61,7 +61,7 @@ export class WaitingListService {
         const [publicKeyEncoded, valueEncoded, nonceEncoded] = array.slice(index, index + 3);
 
         const publicKey = Buffer.from(publicKeyEncoded, 'base64').toString('hex');
-        const address = AddressUtils.bech32Encode(publicKey, this.apiConfigService.getChainHrp());
+        const address = AddressUtils.bech32Encode(publicKey);
         const value = NumberUtils.numberDecode(valueEncoded);
         const nonce = parseInt(NumberUtils.numberDecode(nonceEncoded));
 

@@ -36,7 +36,7 @@ export class DeepHistoryInterceptor implements NestInterceptor {
       throw new BadRequestException('Deep history is not enabled. Timestamp query parameter in this context is unsupported');
     }
 
-    const shardId = await this.protocolService.getShardIdForAddress(address, this.apiConfigService.getChainHrp());
+    const shardId = await this.protocolService.getShardIdForAddress(address);
     if (shardId === undefined) {
       throw new BadRequestException('Could not determine shard based on the provided address');
     }

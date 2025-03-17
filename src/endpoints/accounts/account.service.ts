@@ -462,7 +462,7 @@ export class AccountService {
     );
 
     const rewardsPublicKey = Buffer.from(encodedRewardsPublicKey, 'base64').toString();
-    return AddressUtils.bech32Encode(rewardsPublicKey, this.apiConfigService.getChainHrp());
+    return AddressUtils.bech32Encode(rewardsPublicKey);
   }
 
   private async getAllNodeStates(address: string) {
