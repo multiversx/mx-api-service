@@ -33,9 +33,10 @@ describe('MediaController', () => {
 
     await request(app.getHttpServer())
       .get(`${path}/nfts/thumbnail/XPACHIEVE-5a0519-e302a15d`)
-      .expect(302)
-      .expect('location', mockUrl)
-      .expect('cache-control', 'max-age=60');
+      .expect(200)
+      .expect('content-type', 'image/jpeg')
+      .expect('cache-control', 'max-age=60')
+      .expect('Access-Control-Allow-Origin', '*');
 
     expect(mediaService.getRedirectUrl).toHaveBeenCalled();
   });
