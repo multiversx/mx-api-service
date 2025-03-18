@@ -178,6 +178,7 @@ async function bootstrap() {
   logger.log(`Guest caching enabled: ${apiConfigService.isGuestCacheFeatureActive()}`);
   logger.log(`Transaction pool enabled: ${apiConfigService.isTransactionPoolEnabled()}`);
   logger.log(`Transaction pool cache warmer enabled: ${apiConfigService.isTransactionPoolCacheWarmerEnabled()}`);
+  logger.log(`Address HRP (human readable part): ${apiConfigService.getChainHrp()}`);
 }
 
 async function configurePublicApp(publicApp: NestExpressApplication, apiConfigService: ApiConfigService) {

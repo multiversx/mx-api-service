@@ -314,6 +314,8 @@ export class NetworkService {
       marketplace: this.apiConfigService.isMarketplaceFeatureEnabled(),
       exchange: this.apiConfigService.isExchangeEnabled(),
       dataApi: this.apiConfigService.isDataApiFeatureEnabled(),
+      tokensFetch: this.apiConfigService.isTokensFetchFeatureEnabled(),
+      assetsFetch: this.apiConfigService.isAssetsCdnFeatureEnabled(),
     });
 
     let indexerVersion: string | undefined;
@@ -337,6 +339,7 @@ export class NetworkService {
       network: this.apiConfigService.getNetwork(),
       cluster: this.apiConfigService.getCluster(),
       version: apiVersion,
+      hrp: this.apiConfigService.getChainHrp(),
       indexerVersion: indexerVersion,
       gatewayVersion: gatewayVersion,
       features: features,
