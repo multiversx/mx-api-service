@@ -38,7 +38,7 @@ describe('MediaService', () => {
     it('should throw BadRequestException when media redirect feature is disabled', async () => {
       jest.spyOn(apiConfigService, 'isMediaRedirectFeatureEnabled').mockReturnValueOnce(false);
 
-      await expect(mediaService.getRedirectUrl('url')).rejects.toThrowError('Media redirect is feature disabled');
+      await expect(mediaService.getRedirectUrl('url')).rejects.toThrowError('Media redirect is not allowed');
     });
 
     it('should return redirect url for providers logos', async () => {
