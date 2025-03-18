@@ -709,5 +709,5 @@ export class CacheInfo {
       key: `ppuMetadata:shard:${shardId}`,
       ttl: Constants.oneSecond() * 30,
     };
-  };
+  }
 }
