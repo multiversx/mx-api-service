@@ -55,7 +55,7 @@ features:
   mediaRedirect:
     enabled: false
     storageUrls:
-      - 'https://s3.amazonaws.com/media.elrond.com'
+      - 'https://s3.amazonaws.com/devnet-media.elrond.com'
   auth:
     enabled: false
     maxExpirySeconds: 86400
