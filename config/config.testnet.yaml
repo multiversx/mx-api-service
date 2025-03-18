@@ -108,6 +108,10 @@ features:
   assetsFetch:
     enabled: true
     assetesUrl: 'https://tools.multiversx.com/assets-cdn'
+  mediaRedirect:
+    enabled: false
+    storageUrls:
+      - 'https://s3.amazonaws.com/media.elrond.com'
 image:
   width: 600
   height: 600
