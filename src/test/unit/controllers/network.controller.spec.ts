@@ -98,6 +98,7 @@ describe("NetworkController", () => {
         network: "mainnet",
         cluster: "mainnet-aws-fra",
         version: "v1.3.0-hotfix2-next",
+        hrp: 'erd',
         indexerVersion: "v1.4.19",
         gatewayVersion: "v1.1.44-0-g5282fa5",
         scamEngineVersion: "1.0.0",
@@ -106,6 +107,8 @@ describe("NetworkController", () => {
           marketplace: true,
           exchange: true,
           dataApi: true,
+          tokensFetch: true,
+          assetsFetch: true,
         },
       };
       networkServiceMocks.getAbout.mockResolvedValue(mockAbout);

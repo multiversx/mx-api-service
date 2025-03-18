@@ -16,4 +16,10 @@ export class FeatureConfigs {
 
   @ApiProperty({ description: 'DataApi flag activation value' })
   dataApi: boolean = false;
+
+  @ApiProperty({ description: 'External tokens fetch flag value' })
+  tokensFetch: boolean = false;
+
+  @ApiProperty({ description: 'External assets fetch flag value' })
+  assetsFetch: boolean = false;
 }
