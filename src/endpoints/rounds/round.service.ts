@@ -6,12 +6,14 @@ import { BlsService } from "src/endpoints/bls/bls.service";
 import { RoundUtils } from "@multiversx/sdk-nestjs-common";
 import { ApiUtils } from "@multiversx/sdk-nestjs-http";
 import { IndexerService } from "src/common/indexer/indexer.service";
+import { ApiConfigService } from "../../common/api-config/api.config.service";
 
 @Injectable()
 export class RoundService {
   constructor(
     private readonly indexerService: IndexerService,
     private readonly blsService: BlsService,
+    private readonly apiConfigService: ApiConfigService,
   ) { }
 
   async getRoundCount(filter: RoundFilter): Promise<number> {
@@ -19,6 +21,10 @@ export class RoundService {
   }
 
   async getRounds(filter: RoundFilter): Promise<Round[]> {
+    if (this.apiConfigService.isChainAndromedaEnabled()) {
+      filter.validator = undefined;
+    }
+
     const result = await this.indexerService.getRounds(filter) as any;
 
     for (const item of result) {
@@ -35,7 +41,11 @@ export class RoundService {
     const publicKeys = await this.blsService.getPublicKeys(shard, epoch);
 
     result.shard = result.shardId;
-    result.signers = result.signersIndexes.map((index: number) => publicKeys[index]);
+    if (!this.apiConfigService.isChainAndromedaEnabled()) {
+      result.signers = result.signersIndexes.map((index: number) => publicKeys[index]);
+    } else {
+      result.signers = publicKeys;
+    }
 
     return ApiUtils.mergeObjects(new RoundDetailed(), result);
   }

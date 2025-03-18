@@ -9,6 +9,7 @@ import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { NodeService } from "../nodes/node.service";
 import { IdentitiesService } from "../identities/identities.service";
+import { ApiConfigService } from "../../common/api-config/api.config.service";
 
 @Injectable()
 export class BlockService {
@@ -20,6 +21,7 @@ export class BlockService {
     private readonly nodeService: NodeService,
     @Inject(forwardRef(() => IdentitiesService))
     private readonly identitiesService: IdentitiesService,
+    private readonly apiConfigService: ApiConfigService,
   ) { }
 
   async getBlocksCount(filter: BlockFilter): Promise<number> {
@@ -105,11 +107,14 @@ export class BlockService {
     if (result.round > 0) {
       const publicKeys = await this.blsService.getPublicKeys(result.shardId, result.epoch);
       result.proposer = publicKeys[result.proposer];
-      result.validators = result.validators.map((validator: number) => publicKeys[validator]);
+      if (!this.apiConfigService.isChainAndromedaEnabled()) {
+        result.validators = result.validators.map((validator: number) => publicKeys[validator]);
+      } else {
+        result.validators = publicKeys;
+      }
     } else {
       result.validators = [];
     }
-
 
     const block = BlockDetailed.mergeWithElasticResponse(new BlockDetailed(), result);
     await this.applyProposerIdentity([block]);
