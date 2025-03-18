@@ -34,8 +34,8 @@ export class MediaController {
         timeout: 60_000, // 60 seconds timeout
         httpsAgent: new https.Agent({ rejectUnauthorized: false }),
         headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36'
-        }
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36',
+        },
       });
 
       res.setHeader('content-type', response.headers['content-type']);
