@@ -80,7 +80,8 @@
     "copy-e2e-mocked-mainnet-config:windows": "copy .\\config\\config.e2e-mocked.mainnet.yaml .\\config\\config.yaml",
     "start-chain-simulator": "docker compose -f \"src/test/chain-simulator/docker/docker-compose.yml\" up -d --build",
     "stop-chain-simulator": "docker compose -f \"src/test/chain-simulator/docker/docker-compose.yml\" down",
-    "prepare:test-data": "ts-node src/test/chain-simulator/utils/prepare-test-data.ts"
+    "prepare:test-data": "ts-node src/test/chain-simulator/utils/prepare-test-data.ts",
+    "test:ppu": "ts-node src/test/chain-simulator/utils/test-ppu-calculation.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.54.0",

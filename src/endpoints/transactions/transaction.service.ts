@@ -585,11 +585,6 @@ export class TransactionService {
     return undefined;
   }
 
-  /**
-   * Get price per unit metadata for a specific shard
-   * @param shardId Shard identifier
-   * @returns Price per unit metadata with different priority options
-   */
   async getPpuByShardId(shardId: number): Promise<PpuMetadata | null> {
     return await this.cachingService.getOrSet(
       CacheInfo.PpuMetadataByShard(shardId).key,
@@ -599,52 +594,31 @@ export class TransactionService {
     );
   }
 
-  /**
-   * Get price per unit metadata for a specific shard directly from the source
-   * @param shardId Shard identifier
-   * @returns Price per unit metadata with different priority options
-   */
   async getPpuByShardIdRaw(shardId: number): Promise<PpuMetadata | null> {
     try {
-      // Validate shard ID (assuming a maximum of 3 shards in the system)
       if (shardId < 0 || shardId > 2) {
         return null;
       }
 
-      // Get the latest block for the specified shard to get the last nonce
       const blocks = await this.blockService.getBlocks(
         new BlockFilter({ shard: shardId, order: SortOrder.desc }),
         new QueryPagination({ from: 0, size: 1 })
       );
 
-      // Check if we have a block for this shard
       if (!blocks || blocks.length === 0) {
         this.logger.error(`No blocks found for shard ${shardId}`);
         return null;
       }
 
-      // Get the latest block nonce
       const lastBlock = blocks[0].nonce;
-
-      // Fetch network constants from NetworkService
       const networkConstants = await this.networkService.getConstants();
-
-      // Get gas limits and modifiers from network constants
-      const MIN_GAS_LIMIT = networkConstants.minGasLimit;
-      const GAS_LIMIT_PER_BYTE = networkConstants.gasPerDataByte;
-      const GAS_PRICE_MODIFIER = Number(networkConstants.gasPriceModifier);
-
-      // Get gas bucket constants from our constants file
+      const { minGasLimit, gasPerDataByte, gasPriceModifier } = networkConstants;
+      const gasPriceModifierNumber = Number(gasPriceModifier);
       const { GAS_BUCKET_SIZE, FAST_BUCKET_INDEX, FASTER_BUCKET_INDEX } = GasBucketConstants;
 
-      // Fetch all mempool transactions for the specific shard using the pool service
-      const poolTransactions = await this.poolService.getEntirePool(
-        { senderShard: shardId }
-      );
+      const poolTransactions = await this.poolService.getEntirePool({ senderShard: shardId });
 
       if (!poolTransactions || poolTransactions.length === 0) {
-        // If no transactions are in the mempool, return default values
-        this.logger.warn(`No mempool transactions found for shard ${shardId}`);
         return new PpuMetadata({
           LastBlock: lastBlock,
           Fast: 0,
@@ -652,41 +626,23 @@ export class TransactionService {
         });
       }
 
-      // Calculate PPU for each transaction
-      const transactionsWithPpu: TransactionWithPpu[] = poolTransactions.map(tx => {
-        const data = tx.data ? BinaryUtils.base64Decode(tx.data) : '';
-        const gasLimit = Number(tx.gasLimit);
-        const gasPrice = Number(tx.gasPrice);
+      const transactionsWithPpu = this.calculatePpuForTransactions(
+        poolTransactions,
+        minGasLimit,
+        gasPerDataByte,
+        gasPriceModifierNumber
+      );
 
-        // Calculate PPU following sandbox.py algorithm
-        const dataCost = MIN_GAS_LIMIT + data.length * GAS_LIMIT_PER_BYTE;
-        const executionCost = gasLimit - dataCost;
-        const initiallyPaidFee = dataCost * gasPrice + executionCost * gasPrice * GAS_PRICE_MODIFIER;
-        const ppu = Math.floor(initiallyPaidFee / gasLimit);
-
-        return {
-          ...tx,
-          ppu,
-        };
-      });
-
-      // Sort transactions by priority
       const sortedTransactions = this.sortTransactionsByPriority(transactionsWithPpu);
-
-      // Distribute transactions into gas buckets
       const gasBuckets = this.distributeTransactionsIntoGasBuckets(sortedTransactions, GAS_BUCKET_SIZE);
 
-      // Extract Fast and Faster PPU values
-      let fastPpu = 0;
-      let fasterPpu = 0;
+      const fastPpu = gasBuckets.length > FAST_BUCKET_INDEX && gasBuckets[FAST_BUCKET_INDEX].ppuEnd
+        ? gasBuckets[FAST_BUCKET_INDEX].ppuEnd
+        : 0;
 
-      if (gasBuckets.length > FAST_BUCKET_INDEX && gasBuckets[FAST_BUCKET_INDEX].ppuEnd) {
-        fastPpu = gasBuckets[FAST_BUCKET_INDEX].ppuEnd;
-      }
-
-      if (gasBuckets.length > FASTER_BUCKET_INDEX && gasBuckets[FASTER_BUCKET_INDEX].ppuEnd) {
-        fasterPpu = gasBuckets[FASTER_BUCKET_INDEX].ppuEnd;
-      }
+      const fasterPpu = gasBuckets.length > FASTER_BUCKET_INDEX && gasBuckets[FASTER_BUCKET_INDEX].ppuEnd
+        ? gasBuckets[FASTER_BUCKET_INDEX].ppuEnd
+        : 0;
 
       return new PpuMetadata({
         LastBlock: lastBlock,
@@ -703,21 +659,28 @@ export class TransactionService {
     }
   }
 
-  /**
-   * Sort transactions by priority following the algorithm in sandbox.py
-   * @param transactions Transactions with PPU calculated
-   * @returns Sorted transactions array
-   */
-  private sortTransactionsByPriority(transactions: TransactionWithPpu[]): TransactionWithPpu[] {
-    // Clone the array to avoid modifying the original
-    const sortedTransactions = [...transactions];
+  private calculatePpuForTransactions(
+    transactions: any[],
+    minGasLimit: number,
+    gasPerDataByte: number,
+    gasPriceModifier: number
+  ): TransactionWithPpu[] {
+    return transactions.map(tx => {
+      const data = tx.data ? BinaryUtils.base64Decode(tx.data) : '';
+      const gasLimit = Number(tx.gasLimit);
+      const gasPrice = Number(tx.gasPrice);
 
-    // Sort by priority:
-    // 1. Sender and nonce (lower nonce takes precedence)
-    // 2. PPU (higher takes precedence)
-    // 3. Gas limit (higher takes precedence)
-    // 4. Transaction hash (lexicographically smaller takes precedence)
-    sortedTransactions.sort((a, b) => {
+      const dataCost = minGasLimit + data.length * gasPerDataByte;
+      const executionCost = gasLimit - dataCost;
+      const initiallyPaidFee = dataCost * gasPrice + executionCost * gasPrice * gasPriceModifier;
+      const ppu = Math.floor(initiallyPaidFee / gasLimit);
+
+      return { ...tx, ppu };
+    });
+  }
+
+  private sortTransactionsByPriority(transactions: TransactionWithPpu[]): TransactionWithPpu[] {
+    return [...transactions].sort((a, b) => {
       // Same sender - sort by nonce
       if (a.sender === b.sender) {
         return a.nonce - b.nonce;
@@ -736,58 +699,46 @@ export class TransactionService {
       // Otherwise sort by hash (lexicographically)
       return a.txHash.localeCompare(b.txHash);
     });
-
-    return sortedTransactions;
   }
 
-  /**
-   * Distribute transactions into gas buckets
-   * @param transactions Sorted transactions
-   * @param gasBucketSize Size of each gas bucket
-   * @returns Array of gas buckets
-   */
-  private distributeTransactionsIntoGasBuckets(transactions: TransactionWithPpu[], gasBucketSize: number): GasBucket[] {
+  private distributeTransactionsIntoGasBuckets(
+    transactions: TransactionWithPpu[],
+    gasBucketSize: number
+  ): GasBucket[] {
     const buckets: GasBucket[] = [];
     let currentBucket: GasBucket = {
       index: 0,
       gasAccumulated: 0,
       ppuBegin: 0,
-      numTransactions: 0
+      numTransactions: 0,
     };
 
     for (const transaction of transactions) {
       const gasLimit = Number(transaction.gasLimit);
-
-      // Add transaction to current bucket
       currentBucket.gasAccumulated += gasLimit;
       currentBucket.numTransactions += 1;
 
-      // If this is the first transaction in the bucket, set ppuBegin
       if (currentBucket.numTransactions === 1) {
         currentBucket.ppuBegin = transaction.ppu;
       }
 
-      // Check if bucket is full
       if (currentBucket.gasAccumulated >= gasBucketSize) {
         currentBucket.ppuEnd = transaction.ppu;
         buckets.push(currentBucket);
 
-        // Create new bucket
         currentBucket = {
           index: currentBucket.index + 1,
           gasAccumulated: 0,
           ppuBegin: 0,
-          numTransactions: 0
+          numTransactions: 0,
         };
       }
     }
 
-    // Don't forget to add the last bucket if it has transactions
     if (currentBucket.numTransactions > 0) {
+      currentBucket.ppuEnd = transactions[transactions.length - 1].ppu;
       buckets.push(currentBucket);
     }
-
-    // Log bucket information for debugging
     for (const bucket of buckets) {
       this.logger.log(`Bucket ${bucket.index}, gas = ${bucket.gasAccumulated}, num_txs = ${bucket.numTransactions}, ppu: ${bucket.ppuBegin} .. ${bucket.ppuEnd}`);
     }
