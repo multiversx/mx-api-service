@@ -28,7 +28,7 @@ export class MexPairService {
   async refreshMexPairs(): Promise<void> {
     const pairs = await this.getAllMexPairsRaw(false);
     await this.cachingService.setRemote(CacheInfo.MexPairs.key, pairs, CacheInfo.MexPairs.ttl);
-    await this.cachingService.setLocal(CacheInfo.MexPairs.key, pairs, Constants.oneSecond() * 30);
+    this.cachingService.setLocal(CacheInfo.MexPairs.key, pairs, Constants.oneSecond() * 30);
   }
 
   async getMexPairs(from: number, size: number, filter?: MexPairsFilter): Promise<any> {
