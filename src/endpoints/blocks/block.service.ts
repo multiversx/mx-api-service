@@ -28,7 +28,7 @@ export class BlockService {
     return await this.cachingService.getOrSet(
       CacheInfo.BlocksCount(filter).key,
       async () => await this.indexerService.getBlocksCount(filter),
-      CacheInfo.BlocksCount(filter).ttl
+      CacheInfo.BlocksCount(filter).ttl,
     );
   }
 
@@ -98,16 +98,19 @@ export class BlockService {
       validators = validators.map((index: number) => blses[index]);
     }
 
-    return { shardId, epoch, validators, ...rest, proposer };
+    return {shardId, epoch, validators, ...rest, proposer};
   }
 
   async getBlock(hash: string): Promise<BlockDetailed> {
     const result = await this.indexerService.getBlock(hash) as any;
 
+    const isChainAndromedaEnabled = this.apiConfigService.isChainAndromedaEnabled()
+      && result.epoch >= this.apiConfigService.getChainAndromedaActivationEpoch();
+
     if (result.round > 0) {
       const publicKeys = await this.blsService.getPublicKeys(result.shardId, result.epoch);
       result.proposer = publicKeys[result.proposer];
-      if (!this.apiConfigService.isChainAndromedaEnabled()) {
+      if (!isChainAndromedaEnabled) {
         result.validators = result.validators.map((validator: number) => publicKeys[validator]);
       } else {
         result.validators = publicKeys;
@@ -136,7 +139,7 @@ export class BlockService {
       CacheInfo.BlocksLatest(ttl).key,
       async () => await this.getLatestBlockRaw(),
       CacheInfo.BlocksLatest(ttl).ttl,
-      Math.round(CacheInfo.BlocksLatest(ttl).ttl / 10)
+      Math.round(CacheInfo.BlocksLatest(ttl).ttl / 10),
     );
   }
 

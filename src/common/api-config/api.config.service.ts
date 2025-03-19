@@ -862,12 +862,12 @@ export class ApiConfigService {
     return deepHistoryUrl;
   }
 
-  getChainHrp(): string {
-    return this.configService.get<string>('chainSettings.hrp') ?? 'erd';
+  isChainAndromedaEnabled(): boolean {
+    return this.configService.get<boolean>('features.chainAndromeda.enabled') ?? false;
   }
 
-  isChainAndromedaEnabled(): boolean {
-    return this.configService.get<boolean>('chainSettings.andromedaEnabled') ?? false;
+  getChainAndromedaActivationEpoch(): number {
+    return this.configService.get<number>('features.chainAndromeda.activationEpoch') ?? 99999;
   }
 
   isAssetsCdnFeatureEnabled(): boolean {

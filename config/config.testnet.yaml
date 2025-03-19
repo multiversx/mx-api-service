@@ -61,6 +61,9 @@ features:
     enabled: false
     cronExpression: '*/5 * * * * *'
     activationEpoch: 1043
+  chainAndromeda:
+    enabled: false
+    activationEpoch: 4
   nodeEpochsLeft:
     enabled: false
   transactionProcessor:
@@ -169,9 +172,6 @@ inflation:
   - 1130177
   - 924690
   - 719203
-chainSettings:
-  hrp: 'erd'
-  andromedaEnabled: false
 nftProcess:
   parallelism: 1
   maxRetries: 3

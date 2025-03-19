@@ -122,9 +122,6 @@ inflation:
   - 1130177
   - 924690
   - 719203
-chainSettings:
-  hrp: 'erd'
-  andromedaEnabled: false
 nftProcess:
   parallelism: 1
   maxRetries: 3

@@ -7,6 +7,7 @@ import { RoundUtils } from "@multiversx/sdk-nestjs-common";
 import { ApiUtils } from "@multiversx/sdk-nestjs-http";
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { ApiConfigService } from "../../common/api-config/api.config.service";
+import { BlockService } from "../blocks/block.service";
 
 @Injectable()
 export class RoundService {
@@ -14,6 +15,7 @@ export class RoundService {
     private readonly indexerService: IndexerService,
     private readonly blsService: BlsService,
     private readonly apiConfigService: ApiConfigService,
+    private readonly blockService: BlockService,
   ) { }
 
   async getRoundCount(filter: RoundFilter): Promise<number> {
@@ -21,7 +23,11 @@ export class RoundService {
   }
 
   async getRounds(filter: RoundFilter): Promise<Round[]> {
-    if (this.apiConfigService.isChainAndromedaEnabled()) {
+    const epoch = filter.epoch ? filter.epoch : await this.blockService.getCurrentEpoch();
+    const isAndromedaEnabled = this.apiConfigService.isChainAndromedaEnabled()
+      && epoch >= this.apiConfigService.getChainAndromedaActivationEpoch();
+
+    if (isAndromedaEnabled) {
       filter.validator = undefined;
     }
 
@@ -39,9 +45,11 @@ export class RoundService {
 
     const epoch = RoundUtils.roundToEpoch(round);
     const publicKeys = await this.blsService.getPublicKeys(shard, epoch);
+    const isChainAndromedaEnabled = this.apiConfigService.isChainAndromedaEnabled()
+      && epoch >= this.apiConfigService.getChainAndromedaActivationEpoch();
 
     result.shard = result.shardId;
-    if (!this.apiConfigService.isChainAndromedaEnabled()) {
+    if (!isChainAndromedaEnabled) {
       result.signers = result.signersIndexes.map((index: number) => publicKeys[index]);
     } else {
       result.signers = publicKeys;
