@@ -18,8 +18,8 @@ import { CachingUtils } from "src/utils/caching.utils";
 export class NftMediaService {
   private readonly logger = new OriginLogger(NftMediaService.name);
   private readonly IPFS_REQUEST_TIMEOUT = Constants.oneSecond() * 30 * 1000;
-  private readonly NFT_THUMBNAIL_PREFIX;
-  public static readonly NFT_THUMBNAIL_DEFAULT = 'https://media.elrond.com/nfts/thumbnail/default.png';
+  private readonly NFT_THUMBNAIL_PREFIX: string;
+  public readonly NFT_THUMBNAIL_DEFAULT: string;
 
   constructor(
     private readonly cachingService: CacheService,
@@ -28,7 +28,8 @@ export class NftMediaService {
     private readonly persistenceService: PersistenceService,
     @Inject('PUBSUB_SERVICE') private clientProxy: ClientProxy,
   ) {
-    this.NFT_THUMBNAIL_PREFIX = this.apiConfigService.getExternalMediaUrl() + '/nfts/asset';
+    this.NFT_THUMBNAIL_PREFIX = `${this.apiConfigService.getExternalMediaUrl()}/nfts/asset`;
+    this.NFT_THUMBNAIL_DEFAULT = `${this.apiConfigService.getMediaUrl()}/nfts/thumbnail/default.png`;
   }
 
   async getMedia(identifier: string): Promise<NftMedia[] | null> {
@@ -112,7 +113,7 @@ export class NftMediaService {
         nftMedia.thumbnailUrl = `${this.apiConfigService.getExternalMediaUrl()}/nfts/thumbnail/${nft.collection}-${TokenHelpers.getUrlHash(nftMedia.url)}`;
       } else {
         this.logger.log(`File size '${fileProperties.contentLength}' not accepted for NFT with identifier '${nft.identifier}'`);
-        nftMedia.thumbnailUrl = NftMediaService.NFT_THUMBNAIL_DEFAULT;
+        nftMedia.thumbnailUrl = this.NFT_THUMBNAIL_DEFAULT;
       }
 
       nftMedia.fileType = fileProperties.contentType;
