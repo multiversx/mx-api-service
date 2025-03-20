@@ -1,6 +1,6 @@
 import { OriginLogger } from "@multiversx/sdk-nestjs-common";
 import { ApiService } from "@multiversx/sdk-nestjs-http";
-import { BadRequestException, Injectable } from "@nestjs/common";
+import { Injectable } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 
 @Injectable()
@@ -17,7 +17,7 @@ export class MediaService {
   public async getRedirectUrl(uri: string): Promise<string | undefined> {
     const isFeatureEnabled = this.apiConfigService.isMediaRedirectFeatureEnabled();
     if (!isFeatureEnabled) {
-      throw new BadRequestException('Media redirect is not allowed');
+      // throw new BadRequestException('Media redirect is not allowed');
     }
 
     // providers logos
