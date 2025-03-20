@@ -655,23 +655,25 @@ export class NftService {
   private applyRedirectMedia(nft: Nft) {
     const isMediaRedirectFeatureEnabled = this.apiConfigService.isMediaRedirectFeatureEnabled();
     if (!isMediaRedirectFeatureEnabled) {
-      return;
+      // return;
     }
 
     if (!nft.media || nft.media.length === 0) {
       return;
     }
 
-    const network = this.apiConfigService.getNetwork();
-    const defaultMediaUrl = `https://${network === 'mainnet' ? '' : `${network}-`}media.elrond.com`;
+    try {
+      const network = this.apiConfigService.getNetwork();
+      const defaultMediaUrl = `https://${network === 'mainnet' ? '' : `${network}-`}media.elrond.com`;
 
-    for (const media of nft.media) {
-      if (media.url) {
-        media.url = media.url.replace(defaultMediaUrl, this.apiConfigService.getMediaUrl());
+      for (const media of nft.media) {
+        if (media.url) {
+          media.url = media.url.replace(defaultMediaUrl, this.apiConfigService.getMediaUrl());
+        }
+        if (media.thumbnailUrl) {
+          media.thumbnailUrl = media.thumbnailUrl.replace(defaultMediaUrl, this.apiConfigService.getMediaUrl());
+        }
       }
-      if (media.thumbnailUrl) {
-        media.thumbnailUrl = media.thumbnailUrl.replace(defaultMediaUrl, this.apiConfigService.getMediaUrl());
-      }
-    }
+    } catch { }
   }
 }
