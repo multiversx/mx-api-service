@@ -664,7 +664,8 @@ export class NftService {
 
     try {
       const network = this.apiConfigService.getNetwork();
-      const defaultMediaUrl = `https://${network === 'mainnet' ? '' : `${network}-`}media.elrond.com`;
+      // const defaultMediaUrl = `https://${network === 'mainnet' ? '' : `${network}-`}media.elrond.com`;
+      const defaultMediaUrl = `https://${network === 'mainnet' ? '' : `${network}-`}api.multiversx.com/media`;
 
       for (const media of nft.media) {
         if (media.url) {

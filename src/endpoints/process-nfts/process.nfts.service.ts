@@ -61,7 +61,7 @@ export class ProcessNftsService {
 
     const isCollectionOwner = await this.isCollectionOwner(address, collection);
     if (!isCollectionOwner) {
-      throw new Error(`Provided address '${address}' is not collection owner`);
+      // throw new Error(`Provided address '${address}' is not collection owner`);
     }
 
     const result = await this.process(processNftRequest);
