@@ -653,6 +653,7 @@ export class NftService {
   }
 
   private applyRedirectMedia(nft: Nft) {
+    // FIXME: This is a temporary fix to avoid breaking the API
     const isMediaRedirectFeatureEnabled = this.apiConfigService.isMediaRedirectFeatureEnabled();
     if (!isMediaRedirectFeatureEnabled) {
       // return;
@@ -675,6 +676,8 @@ export class NftService {
           media.thumbnailUrl = media.thumbnailUrl.replace(defaultMediaUrl, this.apiConfigService.getMediaUrl());
         }
       }
-    } catch { }
+    } catch {
+      // TODO: there are some cases where the nft.media is an empty object, we should investigate why
+    }
   }
 }

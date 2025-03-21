@@ -17,6 +17,7 @@ export class MediaService {
   public async getRedirectUrl(uri: string): Promise<string | undefined> {
     const isFeatureEnabled = this.apiConfigService.isMediaRedirectFeatureEnabled();
     if (!isFeatureEnabled) {
+      // TODO: throw error
       // throw new BadRequestException('Media redirect is not allowed');
     }
 
