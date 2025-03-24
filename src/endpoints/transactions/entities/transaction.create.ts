@@ -49,4 +49,10 @@ export class TransactionCreate {
 
   @ApiProperty()
   guardianSignature?: string = undefined;
+
+  @ApiProperty()
+  relayer?: string = undefined;
+
+  @ApiProperty()
+  relayerSignature?: string = undefined;
 }
