@@ -56,7 +56,7 @@ export class NftMetadataService {
       CacheInfo.NftMetadata(nft.identifier).ttl
     );
 
-    await this.clientProxy.emit('refreshCacheKey', {
+    this.clientProxy.emit('refreshCacheKey', {
       key: CacheInfo.NftMetadata(nft.identifier).key,
       ttl: CacheInfo.NftMetadata(nft.identifier).ttl,
     });
