@@ -54,7 +54,7 @@ export class NftMediaService {
       CacheInfo.NftMedia(nft.identifier).ttl
     );
 
-    await this.clientProxy.emit('refreshCacheKey', {
+    this.clientProxy.emit('refreshCacheKey', {
       key: CacheInfo.NftMedia(nft.identifier).key,
       ttl: CacheInfo.NftMedia(nft.identifier).ttl,
     });
