@@ -87,7 +87,7 @@ export class BlockService {
     if (!blses || blses.length === 0) {
       blses = await this.blsService.getPublicKeys(shardId, epoch);
       if (blses.length > 0) {
-        await this.cachingService.setLocal(CacheInfo.ShardAndEpochBlses(shardId, epoch).key, blses, CacheInfo.ShardAndEpochBlses(shardId, epoch).ttl);
+         this.cachingService.setLocal(CacheInfo.ShardAndEpochBlses(shardId, epoch).key, blses, CacheInfo.ShardAndEpochBlses(shardId, epoch).ttl);
       }
     }
 

@@ -18,13 +18,12 @@ import { EsdtDataSource } from "../esdt/entities/esdt.data.source";
 import { EsdtAddressService } from "../esdt/esdt.address.service";
 import { PersistenceService } from "src/common/persistence/persistence.service";
 import { MexTokenService } from "../mex/mex.token.service";
-import { BinaryUtils, NumberUtils, RecordUtils, BatchUtils, TokenUtils } from "@multiversx/sdk-nestjs-common";
+import { BinaryUtils, NumberUtils, RecordUtils, BatchUtils, TokenUtils, OriginLogger } from "@multiversx/sdk-nestjs-common";
 import { ApiUtils } from "@multiversx/sdk-nestjs-http";
 import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { LockedAssetService } from "../../common/locked-asset/locked-asset.service";
 import { CollectionAccount } from "../collections/entities/collection.account";
-import { OriginLogger } from "@multiversx/sdk-nestjs-common";
 import { NftRankAlgorithm } from "src/common/assets/entities/nft.rank.algorithm";
 import { NftRarity } from "./entities/nft.rarity";
 import { NftRarities } from "./entities/nft.rarities";
@@ -56,9 +55,9 @@ export class NftService {
     this.NFT_THUMBNAIL_PREFIX = this.apiConfigService.getExternalMediaUrl() + '/nfts/asset';
     this.DEFAULT_MEDIA = [
       {
-        url: NftMediaService.NFT_THUMBNAIL_DEFAULT,
-        originalUrl: NftMediaService.NFT_THUMBNAIL_DEFAULT,
-        thumbnailUrl: NftMediaService.NFT_THUMBNAIL_DEFAULT,
+        url: this.nftMediaService.NFT_THUMBNAIL_DEFAULT,
+        originalUrl: this.nftMediaService.NFT_THUMBNAIL_DEFAULT,
+        thumbnailUrl: this.nftMediaService.NFT_THUMBNAIL_DEFAULT,
         fileType: 'image/png',
         fileSize: 29512,
       },
@@ -154,6 +153,8 @@ export class NftService {
       if (TokenHelpers.needsDefaultMedia(nft)) {
         nft.media = this.DEFAULT_MEDIA;
       }
+
+      this.applyRedirectMedia(nft);
     }
   }
 
@@ -273,6 +274,8 @@ export class NftService {
 
   private async applyMedia(nft: Nft) {
     nft.media = await this.nftMediaService.getMedia(nft.identifier) ?? undefined;
+
+    this.applyRedirectMedia(nft);
   }
 
   private async applyMetadata(nft: Nft) {
@@ -345,6 +348,7 @@ export class NftService {
       const elasticNftData = elasticNft.data;
       if (elasticNftData) {
         nft.name = elasticNftData.name;
+        nft.hash = TokenHelpers.getNftProof(elasticNftData.hash) ?? '';
         nft.creator = elasticNftData.creator;
         nft.royalties = elasticNftData.royalties ? elasticNftData.royalties / 100 : undefined; // 10.000 => 100%
         nft.attributes = elasticNftData.attributes;
@@ -591,6 +595,16 @@ export class NftService {
     return await this.indexerService.getAccountsEsdtByCollection([identifier], pagination);
   }
 
+  // TODO: use this function to determine if a MetaESDT is a proof if we decide to add API filters to extract all the proofs
+  getNftProofHash(nft: Nft): string | undefined {
+    const hashField = BinaryUtils.base64Decode(nft.hash);
+    if (nft.type !== NftType.MetaESDT || !hashField.startsWith('proof:')) {
+      return undefined;
+    }
+
+    return hashField.split('proof:')[1];
+  }
+
   private getNftRarity(elasticNft: any, algorithm: NftRankAlgorithm): NftRarity | undefined {
     const score = elasticNft[this.getNftScoreElasticKey(algorithm)];
     const rank = elasticNft[this.getNftRankElasticKey(algorithm)];
@@ -632,5 +646,28 @@ export class NftService {
 
   private getNftScoreElasticKey(algorithm: NftRankAlgorithm) {
     return `nft_score_${algorithm}`;
+  }
+
+  private applyRedirectMedia(nft: Nft) {
+    const isMediaRedirectFeatureEnabled = this.apiConfigService.isMediaRedirectFeatureEnabled();
+    if (!isMediaRedirectFeatureEnabled) {
+      return;
+    }
+
+    if (!nft.media || nft.media.length === 0) {
+      return;
+    }
+
+    const network = this.apiConfigService.getNetwork();
+    const defaultMediaUrl = `https://${network === 'mainnet' ? '' : `${network}-`}media.elrond.com`;
+
+    for (const media of nft.media) {
+      if (media.url) {
+        media.url = media.url.replace(defaultMediaUrl, this.apiConfigService.getMediaUrl());
+      }
+      if (media.thumbnailUrl) {
+        media.thumbnailUrl = media.thumbnailUrl.replace(defaultMediaUrl, this.apiConfigService.getMediaUrl());
+      }
+    }
   }
 }

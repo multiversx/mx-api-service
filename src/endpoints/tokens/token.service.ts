@@ -91,7 +91,7 @@ export class TokenService {
 
     token = ApiUtils.mergeObjects(new TokenDetailed(), token);
 
-    await this.applyTickerFromAssets(token);
+    this.applyTickerFromAssets(token);
 
     await this.applySupply(token, supplyOptions);
 
@@ -391,7 +391,7 @@ export class TokenService {
 
     tokenWithBalance.identifier = token.identifier;
 
-    await this.applyTickerFromAssets(tokenWithBalance);
+    this.applyTickerFromAssets(tokenWithBalance);
 
     await this.applySupply(tokenWithBalance);
 
