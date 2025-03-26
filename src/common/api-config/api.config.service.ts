@@ -2,8 +2,8 @@ import { Constants } from '@multiversx/sdk-nestjs-common';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { DatabaseConnectionOptions } from '../persistence/entities/connection.options';
-import { LogTopic } from '@elrondnetwork/transaction-processor';
 import { StatusCheckerThresholds } from './entities/status-checker-thresholds';
+import { LogTopic } from '@multiversx/sdk-transaction-processor/lib/types/log-topic';
 
 @Injectable()
 export class ApiConfigService {

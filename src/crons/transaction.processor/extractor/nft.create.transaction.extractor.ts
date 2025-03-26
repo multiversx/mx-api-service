@@ -1,5 +1,5 @@
 import { AddressUtils, BinaryUtils, OriginLogger } from "@multiversx/sdk-nestjs-common";
-import { ShardTransaction } from "@elrondnetwork/transaction-processor";
+import { ShardTransaction } from "@multiversx/sdk-transaction-processor";
 import { Logger } from "@nestjs/common";
 import { TransactionDetailed } from "src/endpoints/transactions/entities/transaction.detailed";
 import { TransactionExtractorInterface } from "./transaction.extractor.interface";
