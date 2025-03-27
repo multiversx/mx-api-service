@@ -10,6 +10,7 @@ import { MexSettingsService } from 'src/endpoints/mex/mex.settings.service';
 import { LockedTokensInterface } from './entities/locked.tokens.interface';
 import { UnlockMileStoneModel } from './entities/unlock.milestone.model';
 import { LockedAssetAttributes, UnlockMilestone, LockedTokenAttributes } from '@multiversx/sdk-exchange';
+
 @Injectable()
 export class LockedAssetService {
   constructor(
