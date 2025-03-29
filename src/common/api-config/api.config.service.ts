@@ -863,11 +863,13 @@ export class ApiConfigService {
   }
 
   isChainAndromedaEnabled(): boolean {
-    return this.configService.get<boolean>('features.chainAndromeda.enabled') ?? false;
+    // todo: set default to false
+    return this.configService.get<boolean>('features.chainAndromeda.enabled') ?? true;
   }
 
   getChainAndromedaActivationEpoch(): number {
-    return this.configService.get<number>('features.chainAndromeda.activationEpoch') ?? 99999;
+    // todo: set value in config
+    return this.configService.get<number>('features.chainAndromeda.activationEpoch') ?? 2036;
   }
 
   isAssetsCdnFeatureEnabled(): boolean {
