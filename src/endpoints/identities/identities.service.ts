@@ -40,22 +40,35 @@ export class IdentitiesService {
     return identity ? identity.avatar : undefined;
   }
 
-  async getIdentities(queryPagination: QueryPagination, ids: string[], sort?: IdentitySortCriteria): Promise<Identity[]> {
+  async getIdentities(queryPagination: QueryPagination, ids: string[], sort?: IdentitySortCriteria[]): Promise<Identity[]> {
     const { from, size } = queryPagination;
     let identities = await this.getAllIdentities();
     if (ids.length > 0) {
       identities = identities.filter(x => x.identity && ids.includes(x.identity));
     }
 
-    switch (sort) {
-      case IdentitySortCriteria.validators:
-        identities = identities.sortedDescending(x => x.validators ?? 0);
-        break;
-      case IdentitySortCriteria.stake:
-        identities = identities.sortedDescending(x => Number(x.stake) ?? 0);
+    if (sort && sort.length > 0) {
+      for (const criterion of sort) {
+        if (Object.values(IdentitySortCriteria).includes(criterion as IdentitySortCriteria)) {
+          identities = this.applySorting(identities, criterion as IdentitySortCriteria);
+        }
+      }
     }
 
     return identities.slice(from, from + size);
+  }
+
+  private applySorting(identities: Identity[], sortCriterion: IdentitySortCriteria): Identity[] {
+    switch (sortCriterion) {
+      case IdentitySortCriteria.validators:
+        return identities.sortedDescending(x => x.validators ?? 0);
+      case IdentitySortCriteria.stake:
+        return identities.sortedDescending(x => Number(x.stake) ?? 0);
+      case IdentitySortCriteria.locked:
+        return identities.sortedDescending(x => Number(x.locked) ?? 0);
+      default:
+        return identities;
+    }
   }
 
   async getAllIdentities(): Promise<Identity[]> {
