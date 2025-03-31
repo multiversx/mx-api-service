@@ -1,5 +1,5 @@
 import { HttpStatus, Injectable } from "@nestjs/common";
-import { BinaryUtils } from "@multiversx/sdk-nestjs-common";
+import { BinaryUtils, OriginLogger } from "@multiversx/sdk-nestjs-common";
 import { ElasticService, ElasticQuery, QueryOperator, QueryType, QueryConditionOptions, ElasticSortOrder, ElasticSortProperty, TermsQuery, RangeGreaterThanOrEqual, MatchQuery } from "@multiversx/sdk-nestjs-elastic";
 import { IndexerInterface } from "../indexer.interface";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
@@ -35,6 +35,7 @@ export class ElasticIndexerService implements IndexerInterface {
   private nonFungibleEsdtTypes: NftType[] = [NftType.NonFungibleESDT, NftType.NonFungibleESDTv2, NftType.DynamicNonFungibleESDT];
   private semiFungibleEsdtTypes: NftType[] = [NftType.SemiFungibleESDT, NftType.DynamicSemiFungibleESDT];
   private metaEsdtTypes: NftType[] = [NftType.MetaESDT, NftType.DynamicMetaESDT];
+  private readonly logger = new OriginLogger(ElasticIndexerService.name);
 
   constructor(
     private readonly apiConfigService: ApiConfigService,
@@ -81,6 +82,9 @@ export class ElasticIndexerService implements IndexerInterface {
     ]);
 
     const result = await this.elasticService.getList('blocks', 'hash', elasticQuery);
+    if(filter.proposer === '22d552b1716414f1ccf777e6ca087d15603494e773cc39ec382e7ed37c335c95882b0ad9fe2e9d8759b2ac9b10342b014bd24a7b708733730373c5728e80fb58f196f34851e06203c4319223a3bc3b99d5409f17f87fb456ca3b06a182e4b809') {
+      this.logger.log(`temporary print. query: ${JSON.stringify(elasticQuery.toJson(), null, 2)}. result: ${JSON.stringify(result, null, 2)}`);
+    }
     return result;
   }
 
