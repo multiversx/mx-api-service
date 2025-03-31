@@ -1,4 +1,4 @@
-import { AddressUtils, BinaryUtils } from "@multiversx/sdk-nestjs-common";
+import { AddressUtils, BinaryUtils, OriginLogger } from "@multiversx/sdk-nestjs-common";
 import { AbstractQuery, ElasticQuery, MatchQuery, QueryConditionOptions, QueryOperator, QueryType, RangeGreaterThanOrEqual, RangeLowerThan, RangeLowerThanOrEqual } from "@multiversx/sdk-nestjs-elastic";
 import { Injectable } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
@@ -25,6 +25,7 @@ export class ElasticIndexerHelper {
   private nonFungibleEsdtTypes: NftType[] = [NftType.NonFungibleESDT, NftType.NonFungibleESDTv2, NftType.DynamicNonFungibleESDT];
   private semiFungibleEsdtTypes: NftType[] = [NftType.SemiFungibleESDT, NftType.DynamicSemiFungibleESDT];
   private metaEsdtTypes: NftType[] = [NftType.MetaESDT, NftType.DynamicMetaESDT];
+  private readonly logger = new OriginLogger(ElasticIndexerHelper.name);
 
   constructor(
     private readonly apiConfigService: ApiConfigService,
@@ -60,6 +61,7 @@ export class ElasticIndexerHelper {
 
     if (filter.proposer && filter.shard !== undefined && filter.epoch !== undefined) {
       const index = await this.blsService.getBlsIndex(filter.proposer, filter.shard, filter.epoch);
+      this.logger.log(`Filtering ES blocks query. Index: ${index}. Shard: ${filter.shard}. Epoch: ${filter.epoch}. Proposer: ${filter.proposer}`);
       const proposerQuery = QueryType.Match('proposer', index);
       queries.push(proposerQuery);
     }
