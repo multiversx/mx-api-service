@@ -9,6 +9,7 @@ import { NftMediaDb } from "./entities/nft.media.db";
 import { NftMetadataDb } from "./entities/nft.metadata.db";
 import { NftTraitSummaryDb } from "./entities/nft.trait.summary.db";
 import { PersistenceService } from "./persistence.service";
+import { AccountDetailedDb } from "./entities/account.details.db";
 
 @Global()
 @Module({})
@@ -41,6 +42,10 @@ export class PersistenceModule {
             provide: getRepositoryToken(HotSwappableSettingDb),
             useValue: {},
           },
+          {
+            provide: getRepositoryToken(AccountDetailedDb),
+            useValue: {},
+          },
           PersistenceService,
         ],
         exports: [PersistenceService],
@@ -56,7 +61,7 @@ export class PersistenceModule {
 
             const options: TypeOrmModuleOptions = {
               type: 'mongodb',
-              entities: [NftMetadataDb, NftMediaDb, NftTraitSummaryDb, KeybaseConfirmationDb, HotSwappableSettingDb],
+              entities: [NftMetadataDb, NftMediaDb, NftTraitSummaryDb, KeybaseConfirmationDb, HotSwappableSettingDb, AccountDetailedDb],
               url: apiConfigService.getDatabaseUrl(),
               keepAlive: 120000,
               sslValidate: false,
@@ -69,10 +74,10 @@ export class PersistenceModule {
           },
           inject: [ApiConfigService],
         }),
-        TypeOrmModule.forFeature([NftMetadataDb, NftMediaDb, NftTraitSummaryDb, KeybaseConfirmationDb, HotSwappableSettingDb]),
+        TypeOrmModule.forFeature([NftMetadataDb, NftMediaDb, NftTraitSummaryDb, KeybaseConfirmationDb, HotSwappableSettingDb, AccountDetailedDb]),
       ],
       providers: [PersistenceService],
-      exports: [PersistenceService, TypeOrmModule.forFeature([NftMetadataDb, NftMediaDb, NftTraitSummaryDb, KeybaseConfirmationDb, HotSwappableSettingDb])],
+      exports: [PersistenceService, TypeOrmModule.forFeature([NftMetadataDb, NftMediaDb, NftTraitSummaryDb, KeybaseConfirmationDb, HotSwappableSettingDb, AccountDetailedDb])],
     };
   }
 }

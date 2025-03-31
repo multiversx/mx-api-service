@@ -36,10 +36,11 @@ import { ApplicationMostUsed } from './entities/application.most.used';
 import { AccountContract } from './entities/account.contract';
 import { AccountFetchOptions } from './entities/account.fetch.options';
 import { Provider } from '../providers/entities/provider';
+import { PersistenceService } from 'src/common/persistence/persistence.service';
 
 @Injectable()
-export class AccountService {
-  private readonly logger = new OriginLogger(AccountService.name);
+export class AccountServiceV2 {
+  private readonly logger = new OriginLogger(AccountServiceV2.name);
 
   constructor(
     private readonly indexerService: IndexerService,
@@ -59,7 +60,8 @@ export class AccountService {
     private readonly protocolService: ProtocolService,
     @Inject(forwardRef(() => ProviderService))
     private readonly providerService: ProviderService,
-    private readonly keysService: KeysService
+    private readonly keysService: KeysService,
+    private readonly persistenceService: PersistenceService,
   ) { }
 
   async getAccountsCount(filter: AccountQueryOptions): Promise<number> {
@@ -98,9 +100,7 @@ export class AccountService {
 
     if (options?.withTimestamp) {
       const elasticSearchAccount = await this.indexerService.getAccount(address);
-      if (elasticSearchAccount) {
-        account.timestamp = elasticSearchAccount.timestamp;
-      }
+      account.timestamp = elasticSearchAccount.timestamp;
     }
 
     if (AddressUtils.isSmartContractAddress(address)) {
@@ -111,6 +111,29 @@ export class AccountService {
     }
 
     return account;
+  }
+
+  async getAccountFromDb(address: string, options?: AccountFetchOptions): Promise<AccountDetailed | null> {
+    if (!AddressUtils.isAddressValid(address)) {
+      return null;
+    }
+
+    try {
+      // First try to get account from MongoDB
+      const accountFromDb = await this.persistenceService.getAccount(address);
+
+      if (accountFromDb) {
+        console.log('Account found in DB:', accountFromDb);
+        return accountFromDb;
+      }
+
+      // If not found in DB, call getAccount with the same parameters
+      return await this.getAccount(address, options);
+    } catch (error) {
+      this.logger.error(`Error when getting account from DB for address '${address}'`);
+      this.logger.error(error);
+      return null;
+    }
   }
 
   async applyGuardianInfo(account: AccountDetailed): Promise<void> {

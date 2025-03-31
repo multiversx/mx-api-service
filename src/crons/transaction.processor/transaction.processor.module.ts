@@ -7,6 +7,8 @@ import { TransactionModule } from 'src/endpoints/transactions/transaction.module
 import { NftWorkerModule } from 'src/queue.worker/nft.worker/nft.worker.module';
 import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 import { TransactionProcessorService } from './transaction.processor.service';
+import { PersistenceModule } from 'src/common/persistence/persistence.module';
+import { AccountModule } from 'src/endpoints/accounts/account.module';
 
 @Module({
   imports: [
@@ -16,6 +18,8 @@ import { TransactionProcessorService } from './transaction.processor.service';
     NodeModule,
     NftModule,
     NftWorkerModule,
+    PersistenceModule,
+    AccountModule,
   ],
   providers: [
     DynamicModuleUtils.getPubSubService(),
