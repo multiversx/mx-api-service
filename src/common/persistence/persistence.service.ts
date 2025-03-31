@@ -13,8 +13,6 @@ import { LogPerformanceAsync } from "src/utils/log.performance.decorator";
 import { KeybaseConfirmationDb } from "./entities/keybase.confirmation.db";
 import { HotSwappableSettingDb } from "./entities/hot.swappable.setting";
 import { InjectRepository } from "@nestjs/typeorm";
-import { AccountDetailedDb } from "./entities/account.details.db";
-import { AccountDetailed } from "src/endpoints/accounts-v2/entities/account.detailed";
 
 const isPassThrough = process.env.PERSISTENCE === 'passthrough' || configuration().database?.enabled === false;
 
@@ -31,83 +29,8 @@ export class PersistenceService implements PersistenceInterface {
     private readonly keybaseConfirmationRepository: Repository<KeybaseConfirmationDb>,
     @InjectRepository(HotSwappableSettingDb)
     private readonly settingsRepository: Repository<HotSwappableSettingDb>,
-    @InjectRepository(AccountDetailedDb)
-    private readonly accountDetailedRepository: Repository<AccountDetailedDb>,
   ) { }
 
-
-
-  @LogPerformanceAsync(MetricsEvents.SetPersistenceDuration, 'accountDetailed')
-  async getAccount(address: string): Promise<AccountDetailed | null> {
-    try {
-      const accountDb = await this.accountDetailedRepository.findOne({
-        where: { address }
-      });
-
-      if (!accountDb) {
-        return null;
-      }
-
-      // Convert AccountDetailedDb to AccountDetailed and delete _id
-      const account = new AccountDetailed();
-      const { _id, ...accountWithoutId } = accountDb;
-      Object.assign(account, accountWithoutId);
-      return account;
-    } catch (error) {
-      return null;
-    }
-  }
-
-  @LogPerformanceAsync(MetricsEvents.SetPersistenceDuration, 'accountDetailed')
-  async updateAccount(accountDetailed: AccountDetailed): Promise<any | null> {
-    try {
-      // Get the current document state
-      const currentDoc = await this.accountDetailedRepository.findOne({
-        where: { address: accountDetailed.address }
-      });
-
-      // Create update object with all fields from accountDetailed
-      const updateFields: Partial<AccountDetailedDb> = {};
-
-      // Helper function to check if a value is valid for update
-      const isValidValue = (value: any): boolean => {
-        return value !== undefined && value !== null;
-      };
-
-      // Build update object with all valid fields from accountDetailed
-      Object.entries(accountDetailed).forEach(([key, value]) => {
-        if (isValidValue(value)) {
-          updateFields[key as keyof AccountDetailedDb] = value;
-        }
-      });
-
-      // If no document exists, create a new one
-      if (!currentDoc) {
-        const newAccount = this.accountDetailedRepository.create({
-          address: accountDetailed.address,
-          ...updateFields
-        });
-        return await this.accountDetailedRepository.save(newAccount);
-      }
-
-      // Update existing document with all fields from accountDetailed
-      await this.accountDetailedRepository.update(
-        { address: accountDetailed.address },
-        updateFields
-      );
-
-      // Get and return the updated document
-      return await this.accountDetailedRepository.findOne({
-        where: { address: accountDetailed.address }
-      });
-    } catch (error: any) {
-      // Handle potential duplicate key errors
-      if (error.code !== 11000) {
-        throw error;
-      }
-      return null;
-    }
-  }
 
   @PassthroughAsync(isPassThrough, null)
   @LogPerformanceAsync(MetricsEvents.SetPersistenceDuration, 'getMetadata')

@@ -36,7 +36,7 @@ import { ApplicationMostUsed } from './entities/application.most.used';
 import { AccountContract } from './entities/account.contract';
 import { AccountFetchOptions } from './entities/account.fetch.options';
 import { Provider } from '../providers/entities/provider';
-import { PersistenceService } from 'src/common/persistence/persistence.service';
+import { AccountDetailsRepository } from 'src/common/indexer/db/src';
 
 @Injectable()
 export class AccountServiceV2 {
@@ -61,7 +61,7 @@ export class AccountServiceV2 {
     @Inject(forwardRef(() => ProviderService))
     private readonly providerService: ProviderService,
     private readonly keysService: KeysService,
-    private readonly persistenceService: PersistenceService,
+    private readonly accountDetailsDepository: AccountDetailsRepository,
   ) { }
 
   async getAccountsCount(filter: AccountQueryOptions): Promise<number> {
@@ -120,10 +120,10 @@ export class AccountServiceV2 {
 
     try {
       // First try to get account from MongoDB
-      const accountFromDb = await this.persistenceService.getAccount(address);
+      const accountFromDb = await this.accountDetailsDepository.getAccount(address) as AccountDetailed;
 
       if (accountFromDb) {
-        console.log('Account found in DB:', accountFromDb);
+        // console.log('Account found in DB:', accountFromDb);
         return accountFromDb;
       }
 

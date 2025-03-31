@@ -9,6 +9,7 @@ import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 import { TransactionProcessorService } from './transaction.processor.service';
 import { PersistenceModule } from 'src/common/persistence/persistence.module';
 import { AccountModule } from 'src/endpoints/accounts/account.module';
+import { MongoDbModule } from 'src/common/indexer/db/src';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { AccountModule } from 'src/endpoints/accounts/account.module';
     NftModule,
     NftWorkerModule,
     PersistenceModule,
+    MongoDbModule,
     AccountModule,
   ],
   providers: [

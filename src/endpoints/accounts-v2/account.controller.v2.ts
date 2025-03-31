@@ -59,6 +59,7 @@ import { MexPairType } from '../mex/entities/mex.pair.type';
 import { NftSubType } from '../nfts/entities/nft.sub.type';
 import { AccountContract } from './entities/account.contract';
 import { AccountFetchOptions } from './entities/account.fetch.options';
+import { NoCache } from '@multiversx/sdk-nestjs-cache';
 
 @Controller('/v2')
 @ApiTags('accounts')
@@ -206,6 +207,7 @@ export class AccountControllerV2 {
   @ApiQuery({ name: 'withAssets', description: 'Returns the assets for a given address', required: false })
   @ApiQuery({ name: 'timestamp', description: 'Retrieve entry from timestamp', required: false, type: Number })
   @ApiOkResponse({ type: AccountDetailed })
+  @NoCache()
   async getAccountDetails(
     @Param('address', ParseAddressPipe) address: string,
     @Query('withGuardianInfo', ParseBoolPipe) withGuardianInfo?: boolean,

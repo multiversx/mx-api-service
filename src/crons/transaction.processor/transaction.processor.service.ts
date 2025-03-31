@@ -15,8 +15,8 @@ import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { AddressUtils, BinaryUtils, OriginLogger } from "@multiversx/sdk-nestjs-common";
 import { PerformanceProfiler } from "@multiversx/sdk-nestjs-monitoring";
 import { StakeFunction } from "src/endpoints/transactions/transaction-action/recognizers/staking/entities/stake.function";
-import { PersistenceService } from "src/common/persistence/persistence.service";
 import { AccountService } from "src/endpoints/accounts/account.service";
+import { AccountDetailsRepository } from "src/common/indexer/db/src";
 
 
 @Injectable()
@@ -47,7 +47,7 @@ export class TransactionProcessorService {
     @Inject('PUBSUB_SERVICE') private clientProxy: ClientProxy,
     private readonly nodeService: NodeService,
     private readonly eventEmitter: EventEmitter2,
-    private readonly persistenceService: PersistenceService,
+    private readonly accountDetailsRepository: AccountDetailsRepository,
     private readonly accountService: AccountService,
   ) { }
 
@@ -92,7 +92,7 @@ export class TransactionProcessorService {
         }
 
         for (const address of uniqueAddresses) {
-          const fieldsToUpdate = await this.persistenceService.getAccount(address)
+          const fieldsToUpdate = await this.accountDetailsRepository.getAccount(address)
             ? (addressUpdates.get(address) ?? new Set())
             : new Set(['guardianInfo', 'txCount', 'scrCount', 'timestamp', 'assets']);
 
@@ -109,7 +109,7 @@ export class TransactionProcessorService {
             const accountDetailed = await this.accountService.getAccount(address, accountFetchOptions);
             // console.log('accountDetailed ', accountDetailed);
             if (accountDetailed) {
-              await this.persistenceService.updateAccount(accountDetailed);
+              await this.accountDetailsRepository.updateAccount(accountDetailed);
             }
           }
         }
