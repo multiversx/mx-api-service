@@ -862,6 +862,14 @@ export class ApiConfigService {
     return deepHistoryUrl;
   }
 
+  isChainAndromedaEnabled(): boolean {
+    return this.configService.get<boolean>('features.chainAndromeda.enabled') ?? false;
+  }
+
+  getChainAndromedaActivationEpoch(): number {
+    return this.configService.get<number>('features.chainAndromeda.activationEpoch') ?? 99999;
+  }
+
   isAssetsCdnFeatureEnabled(): boolean {
     return this.configService.get<boolean>('features.assetsFetch.enabled') ?? false;
   }
