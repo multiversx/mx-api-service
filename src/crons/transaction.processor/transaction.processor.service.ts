@@ -16,7 +16,12 @@ import { AddressUtils, BinaryUtils, OriginLogger } from "@multiversx/sdk-nestjs-
 import { PerformanceProfiler } from "@multiversx/sdk-nestjs-monitoring";
 import { StakeFunction } from "src/endpoints/transactions/transaction-action/recognizers/staking/entities/stake.function";
 import { AccountService } from "src/endpoints/accounts/account.service";
-import { AccountDetailsRepository } from "src/common/indexer/db/src";
+import { AccountDetails, AccountDetailsRepository } from "src/common/indexer/db/src";
+import { TokenService } from "src/endpoints/tokens/token.service";
+import { QueryPagination } from "src/common/entities/query.pagination";
+import { TokenFilter } from "src/endpoints/tokens/entities/token.filter";
+import { NftService } from "src/endpoints/nfts/nft.service";
+import { NftFilter } from "src/endpoints/nfts/entities/nft.filter";
 
 
 @Injectable()
@@ -49,6 +54,8 @@ export class TransactionProcessorService {
     private readonly eventEmitter: EventEmitter2,
     private readonly accountDetailsRepository: AccountDetailsRepository,
     private readonly accountService: AccountService,
+    private readonly tokenService: TokenService,
+    private readonly nftService: NftService,
   ) { }
 
   @Cron('*/1 * * * * *')
@@ -92,8 +99,8 @@ export class TransactionProcessorService {
         }
 
         for (const address of uniqueAddresses) {
-          const fieldsToUpdate = await this.accountDetailsRepository.getAccount(address)
-            ? (addressUpdates.get(address) ?? new Set())
+          const documentExists = await this.accountDetailsRepository.getAccount(address)
+          const fieldsToUpdate = documentExists ? (addressUpdates.get(address) ?? new Set())
             : new Set(['guardianInfo', 'txCount', 'scrCount', 'timestamp', 'assets']);
 
           // Only fetch account if we need to update fields
@@ -106,10 +113,17 @@ export class TransactionProcessorService {
               withAssets: fieldsToUpdate.has('assets')
             }
             // console.log('accountFetchOptions ', accountFetchOptions);
-            const accountDetailed = await this.accountService.getAccount(address, accountFetchOptions);
+            const accountDetails = await this.accountService.getAccount(address, accountFetchOptions) as AccountDetails;
+            if (fieldsToUpdate.has('tokens') || !documentExists) {
+              accountDetails.tokens = await this.tokenService.getTokensForAddress(address, new QueryPagination({ from: 0, size: 100 }), new TokenFilter());
+            }
+
+            if (fieldsToUpdate.has('nfts') || !documentExists) {
+              accountDetails.nfts = await this.nftService.getNftsForAddress(address, new QueryPagination({ from: 0, size: 100 }), new NftFilter());
+            }
             // console.log('accountDetailed ', accountDetailed);
-            if (accountDetailed) {
-              await this.accountDetailsRepository.updateAccount(accountDetailed);
+            if (accountDetails) {
+              await this.accountDetailsRepository.updateAccount(accountDetails);
             }
           }
         }
@@ -160,7 +174,8 @@ export class TransactionProcessorService {
     if (functionName.includes('transfer') ||
       functionName.includes('mint') ||
       functionName.includes('burn')) {
-      fields.add('assets');
+      fields.add('tokens');
+      fields.add('nfts');
     }
 
     return fields;

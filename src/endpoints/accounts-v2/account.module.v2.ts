@@ -15,6 +15,7 @@ import { WaitingListModule } from "../waiting-list/waiting.list.module";
 import { AccountServiceV2 } from "./account.service.v2";
 import { ProviderModule } from "../providers/provider.module";
 import { KeysModule } from "../keys/keys.module";
+import { MongoDbModule } from "src/common/indexer/db/src";
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { KeysModule } from "../keys/keys.module";
     forwardRef(() => ProviderModule),
     UsernameModule,
     forwardRef(() => KeysModule),
+    MongoDbModule,
   ],
   providers: [
     AccountServiceV2,

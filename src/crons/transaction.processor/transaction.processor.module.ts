@@ -10,6 +10,7 @@ import { TransactionProcessorService } from './transaction.processor.service';
 import { PersistenceModule } from 'src/common/persistence/persistence.module';
 import { AccountModule } from 'src/endpoints/accounts/account.module';
 import { MongoDbModule } from 'src/common/indexer/db/src';
+import { TokenModule } from 'src/endpoints/tokens/token.module';
 
 @Module({
   imports: [
@@ -22,6 +23,8 @@ import { MongoDbModule } from 'src/common/indexer/db/src';
     PersistenceModule,
     MongoDbModule,
     AccountModule,
+    TokenModule,
+    NftModule,
   ],
   providers: [
     DynamicModuleUtils.getPubSubService(),
