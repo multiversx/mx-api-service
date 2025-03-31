@@ -564,8 +564,7 @@ export class ApiConfigService {
   }
 
   getMediaUrl(): string {
-    // const mediaUrl = this.configService.get<string>('urls.media');
-    const mediaUrl = 'https://media.elrond.com';
+    const mediaUrl = this.configService.get<string>('urls.media');
     if (!mediaUrl) {
       throw new Error('No media url present');
     }
