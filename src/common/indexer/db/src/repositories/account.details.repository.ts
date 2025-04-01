@@ -8,6 +8,43 @@ import { TokenWithBalance } from 'src/endpoints/tokens/entities/token.with.balan
 import { NftAccount } from 'src/endpoints/nfts/entities/nft.account';
 
 export class AccountDetailsRepository {
+    static readonly exclusionFields = {
+        _id: 0,
+        __v: 0,
+        updatedAt: 0,
+        createdAt: 0,
+        address: 0,
+        balance: 0,
+        nonce: 0,
+        timestamp: 0,
+        shard: 0,
+        ownerAddress: 0,
+        assets: 0,
+        deployedAt: 0,
+        deployTxHash: 0,
+        ownerAssets: 0,
+        isVerified: 0,
+        txCount: 0,
+        scrCount: 0,
+        transfersLast24h: 0,
+        code: 0,
+        codeHash: 0,
+        rootHash: 0,
+        username: 0,
+        developerReward: 0,
+        isUpgradeable: 0,
+        isReadable: 0, isPayable: 0,
+        isPayableBySmartContract: 0,
+        scamInfo: 0,
+        nftCollections: 0,
+        activeGuardianActivationEpoch: 0,
+        activeGuardianAddress: 0,
+        activeGuardianServiceUid: 0,
+        pendingGuardianActivationEpoch: 0,
+        pendingGuardianAddress: 0,
+        pendingGuardianServiceUid: 0,
+        isGuarded: 0,
+    }
     constructor(
         @InjectModel(AccountDetails.name)
         private readonly accountDetailsModel: Model<AccountDetails>
@@ -16,26 +53,44 @@ export class AccountDetailsRepository {
     @LogPerformanceAsync(MetricsEvents.SetPersistenceDuration, 'account-tokens')
     async getTokens(address: string, queryPagination: QueryPagination): Promise<TokenWithBalance[]> {
         try {
+            // TODO: add more fields in project on demand
             const result = await this.accountDetailsModel.aggregate([
                 { $match: { address } },
-                { $unwind: '$tokens' },
-                { $skip: queryPagination.from },
-                { $limit: queryPagination.size },
                 {
-                    $group: {
-                        _id: null,
-                        tokens: { $push: '$tokens' }
+                    $project: {
+                        _id: 0,
+                        tokens: {
+                            $slice: ["$tokens", queryPagination.from, queryPagination.size]
+                        },
                     }
                 },
                 {
                     $project: {
-                        _id: 0,
-                        tokens: 1
+                        "tokens.type": 1,
+                        "tokens.subType": 1,
+                        "tokens.identifier": 1,
+                        "tokens.collection": 1,
+                        "tokens.name": 1,
+                        "tokens.nonce": 1,
+                        "tokens.decimals": 1,
+                        "tokens.balance": 1,
                     }
                 }
             ]).exec();
-
-            return result[0]?.tokens || [];
+            // const result = await this.accountDetailsModel.findOne(
+            //     { address },
+            //     {
+            //         tokens: {
+            //             $slice: [queryPagination.from, queryPagination.size],
+            //         },
+            //         "tokens.balance": 0, // Exclude direct balance
+            //         ...AccountDetailsRepository.exclusionFields,
+            //     }
+            // ).lean();
+            //@ts-ignore
+            // console.log('result', result);
+            // console.log('result', result);
+            return result[0]?.tokens ?? [];
         } catch (error) {
             console.error('Error fetching tokens:', error);
             return [];
@@ -46,24 +101,36 @@ export class AccountDetailsRepository {
     @LogPerformanceAsync(MetricsEvents.SetPersistenceDuration, 'account-nfts')
     async getNfts(address: string, queryPagination: QueryPagination): Promise<NftAccount[]> {
         try {
+            // TODO: add more fields in project on demand
             const result = await this.accountDetailsModel.aggregate([
                 { $match: { address } },
-                { $unwind: '$nfts' },
-                { $skip: queryPagination.from },
-                { $limit: queryPagination.size },
                 {
-                    $group: {
-                        _id: null,
-                        tokens: { $push: '$nfts' }
+                    $project: {
+                        _id: 0,
+                        nfts: { $slice: ["$nfts", queryPagination.from, queryPagination.size] }
                     }
                 },
                 {
                     $project: {
-                        _id: 0,
-                        nfts: 1
+                        "nfts.identifier": 1,
+                        "nfts.collection": 1,
+                        "nfts.nonce": 1,
+                        "nfts.type": 1,
+                        "nfts.subType": 1,
+                        "nfts.name": 1,
                     }
                 }
             ]).exec();
+            // const result = await this.accountDetailsModel.findOne(
+            //     { address },
+            //     {
+            //         nfts: {
+            //             $slice: [queryPagination.from, queryPagination.size]
+            //         },
+            //         tokens: 0,
+            //         ...AccountDetailsRepository.exclusionFields,
+            //     }
+            // ).lean();
 
             return result[0]?.nfts || [];
         } catch (error) {
@@ -77,13 +144,14 @@ export class AccountDetailsRepository {
         try {
             const accountDb = await this.accountDetailsModel.findOne(
                 { address },
-                { _id: 0, __v: 0, tokens: 0, nfts: 0 }
-            );
+                { _id: 0, __v: 0, tokens: 0, nfts: 0, updatedAt: 0, createdAt: 0 }
+            ).lean();
             if (!accountDb) {
                 return null;
             }
             return accountDb;
         } catch (error) {
+            console.error('Error fetching account:', error);
             return null;
         }
     }
