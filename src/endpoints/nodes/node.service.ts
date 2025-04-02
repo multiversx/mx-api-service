@@ -391,7 +391,7 @@ export class NodeService {
     const currentEpoch = await this.blockService.getCurrentEpoch();
     if (this.apiConfigService.isStakingV4Enabled() && currentEpoch >= this.apiConfigService.getStakingV4ActivationEpoch()) {
       const auctions = await this.gatewayService.getValidatorAuctions();
-      await this.processAuctions(nodes, auctions);
+      this.processAuctions(nodes, auctions);
     }
 
     await this.applyNodeUnbondingPeriods(nodes);
@@ -412,8 +412,8 @@ export class NodeService {
     }
   }
 
-  async processAuctions(nodes: Node[], auctions: Auction[]) {
-    const minimumAuctionStake = await this.stakeService.getMinimumAuctionStake(auctions);
+  processAuctions(nodes: Node[], auctions: Auction[]) {
+    const minimumAuctionStake = this.stakeService.getMinimumAuctionStake(auctions);
     const dangerZoneThreshold = BigInt(minimumAuctionStake) * BigInt(105) / BigInt(100);
     for (const node of nodes) {
       let position = 1;

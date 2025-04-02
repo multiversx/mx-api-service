@@ -39,6 +39,7 @@ import { PoolController } from "./pool/pool.controller";
 import { TpsController } from "./tps/tps.controller";
 import { ApplicationController } from "./applications/application.controller";
 import { EventsController } from "./events/events.controller";
+import { AccountControllerV2 } from "./accounts-v2/account.controller.v2";
 
 @Module({})
 export class EndpointsControllersModule {
@@ -49,7 +50,7 @@ export class EndpointsControllersModule {
       ProviderController, GatewayProxyController, RoundController, SmartContractResultController, ShardController, StakeController, StakeController,
       TokenController, TransactionController, UsernameController, VmQueryController, WaitingListController,
       HealthCheckController, DappConfigController, WebsocketController, TransferController,
-      ProcessNftsPublicController, TransactionsBatchController, ApplicationController, EventsController,
+      ProcessNftsPublicController, TransactionsBatchController, ApplicationController, EventsController, AccountControllerV2,
     ];
 
     const isMarketplaceFeatureEnabled = configuration().features?.marketplace?.enabled ?? false;

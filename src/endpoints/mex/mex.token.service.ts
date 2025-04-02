@@ -31,19 +31,19 @@ export class MexTokenService {
   async refreshMexTokens(): Promise<void> {
     const tokens = await this.getAllMexTokensRaw();
     await this.cachingService.setRemote(CacheInfo.MexTokens.key, tokens, CacheInfo.MexTokens.ttl);
-    await this.cachingService.setLocal(CacheInfo.MexTokens.key, tokens, Constants.oneSecond() * 30);
+    this.cachingService.setLocal(CacheInfo.MexTokens.key, tokens, Constants.oneSecond() * 30);
 
     const tokenTypes = await this.getAllMexTokenTypesRaw();
     await this.cachingService.setRemote(CacheInfo.MexTokenTypes.key, tokenTypes, CacheInfo.MexTokenTypes.ttl);
-    await this.cachingService.setLocal(CacheInfo.MexTokenTypes.key, tokenTypes, Constants.oneSecond() * 30);
+    this.cachingService.setLocal(CacheInfo.MexTokenTypes.key, tokenTypes, Constants.oneSecond() * 30);
 
     const indexedTokens = await this.getIndexedMexTokensRaw();
     await this.cachingService.setRemote(CacheInfo.MexTokensIndexed.key, indexedTokens, CacheInfo.MexTokensIndexed.ttl);
-    await this.cachingService.setLocal(CacheInfo.MexTokensIndexed.key, indexedTokens, Constants.oneSecond() * 30);
+    this.cachingService.setLocal(CacheInfo.MexTokensIndexed.key, indexedTokens, Constants.oneSecond() * 30);
 
     const indexedPrices = await this.getMexPricesRaw();
     await this.cachingService.setRemote(CacheInfo.MexPrices.key, indexedPrices, CacheInfo.MexPrices.ttl);
-    await this.cachingService.setLocal(CacheInfo.MexPrices.key, indexedPrices, Constants.oneSecond() * 30);
+    this.cachingService.setLocal(CacheInfo.MexPrices.key, indexedPrices, Constants.oneSecond() * 30);
   }
 
   async getMexTokens(queryPagination: QueryPagination): Promise<MexToken[]> {

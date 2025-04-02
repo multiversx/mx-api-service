@@ -28,7 +28,7 @@ export class RabbitMqNftHandlerService {
       return null;
     }
 
-    await this.cachingService.setLocal(
+    this.cachingService.setLocal(
       CacheInfo.CollectionType(collectionIdentifier).key,
       type,
       CacheInfo.CollectionType(collectionIdentifier).ttl

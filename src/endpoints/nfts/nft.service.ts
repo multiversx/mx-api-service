@@ -31,6 +31,7 @@ import { SortCollectionNfts } from "../collections/entities/sort.collection.nfts
 import { TokenAssets } from "src/common/assets/entities/token.assets";
 import { ScamInfo } from "src/common/entities/scam-info.dto";
 import { NftSubType } from "./entities/nft.sub.type";
+import { AccountDetailsRepository } from "src/common/indexer/db/src";
 
 @Injectable()
 export class NftService {
@@ -51,6 +52,7 @@ export class NftService {
     private readonly esdtAddressService: EsdtAddressService,
     private readonly mexTokenService: MexTokenService,
     private readonly lockedAssetService: LockedAssetService,
+    private readonly accountDetailsRepository: AccountDetailsRepository,
   ) {
     this.NFT_THUMBNAIL_PREFIX = this.apiConfigService.getExternalMediaUrl() + '/nfts/asset';
     this.DEFAULT_MEDIA = [
@@ -446,6 +448,15 @@ export class NftService {
     return await this.indexerService.getNftCount(filter);
   }
 
+  async getNftsForAddressFromDb(address: string, queryPagination: QueryPagination, filter: NftFilter, fields?: string[], queryOptions?: NftQueryOptions, source?: EsdtDataSource): Promise<NftAccount[]> {
+    const nfts = await this.accountDetailsRepository.getNftsForAddress(address, queryPagination) as NftAccount[];
+    if (nfts && nfts.length > 0) {
+      return nfts;
+    }
+
+    return await this.getNftsForAddress(address, queryPagination, filter, fields, queryOptions, source);
+  }
+
   async getNftsForAddress(address: string, queryPagination: QueryPagination, filter: NftFilter, fields?: string[], queryOptions?: NftQueryOptions, source?: EsdtDataSource): Promise<NftAccount[]> {
     let nfts = await this.esdtAddressService.getNftsForAddress(address, filter, queryPagination, source);
 
@@ -545,6 +556,13 @@ export class NftService {
   async getNftCountForAddress(address: string, filter: NftFilter): Promise<number> {
     return await this.esdtAddressService.getNftCountForAddressFromElastic(address, filter);
   }
+  async getNftForAddressFromDb(address: string, identifier: string, fields?: string[]): Promise<NftAccount | undefined> {
+    const nft = await this.accountDetailsRepository.getNftForAddress(address, identifier) as NftAccount;
+    if (nft) {
+      return nft;
+    }
+    return await this.getNftForAddress(address, identifier, fields);
+  }
 
   async getNftForAddress(address: string, identifier: string, fields?: string[]): Promise<NftAccount | undefined> {
     const filter = new NftFilter();
@@ -596,7 +614,7 @@ export class NftService {
   }
 
   // TODO: use this function to determine if a MetaESDT is a proof if we decide to add API filters to extract all the proofs
-  getNftProofHash(nft: Nft): string | undefined{
+  getNftProofHash(nft: Nft): string | undefined {
     const hashField = BinaryUtils.base64Decode(nft.hash);
     if (nft.type !== NftType.MetaESDT || !hashField.startsWith('proof:')) {
       return undefined;

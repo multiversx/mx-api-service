@@ -36,8 +36,8 @@ export class LocalCacheController {
     status: 200,
     description: 'Key has been updated',
   })
-  async setCache(@Param('key') key: string, @Body() cacheValue: CacheValue) {
-    await this.cachingService.setLocal(key, cacheValue.value, cacheValue.ttl);
+  setCache(@Param('key') key: string, @Body() cacheValue: CacheValue) {
+    this.cachingService.setLocal(key, cacheValue.value, cacheValue.ttl);
   }
 
   @UseGuards(NativeAuthGuard, JwtAdminGuard)

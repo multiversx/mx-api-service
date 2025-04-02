@@ -46,7 +46,7 @@ export class StakeActionRecognizerService implements TransactionActionRecognizer
         providersDetails[provider.provider] = { providerName, providerAvatar };
       }
 
-      await this.cachingService.setLocal('plugins:staking:providerAddresses', providersDetails, Constants.oneHour());
+      this.cachingService.setLocal('plugins:staking:providerAddresses', providersDetails, Constants.oneHour());
     }
 
     return providersDetails;

@@ -37,11 +37,11 @@ export class MexSettingsService {
   async refreshSettings(): Promise<void> {
     const settings = await this.getSettingsRaw();
     await this.cachingService.setRemote(CacheInfo.MexSettings.key, settings, CacheInfo.MexSettings.ttl);
-    await this.cachingService.setLocal(CacheInfo.MexSettings.key, settings, Constants.oneMinute() * 10);
+    this.cachingService.setLocal(CacheInfo.MexSettings.key, settings, Constants.oneMinute() * 10);
 
     const contracts = await this.getMexContractsRaw();
     await this.cachingService.setRemote(CacheInfo.MexContracts.key, contracts, CacheInfo.MexContracts.ttl);
-    await this.cachingService.setLocal(CacheInfo.MexContracts.key, contracts, Constants.oneMinute() * 10);
+    this.cachingService.setLocal(CacheInfo.MexContracts.key, contracts, Constants.oneMinute() * 10);
   }
 
   async getSettings(): Promise<MexSettings | null> {
@@ -65,7 +65,7 @@ export class MexSettingsService {
     let contracts = await this.cachingService.getLocal<Set<string>>(CacheInfo.MexContracts.key);
     if (!contracts) {
       contracts = await this.getMexContractsRaw();
-      await this.cachingService.setLocal(CacheInfo.MexContracts.key, contracts, Constants.oneMinute() * 10);
+      this.cachingService.setLocal(CacheInfo.MexContracts.key, contracts, Constants.oneMinute() * 10);
     }
 
     return contracts;

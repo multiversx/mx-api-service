@@ -24,7 +24,7 @@ export class MexFarmService {
   async refreshMexFarms(): Promise<void> {
     const farms = await this.getAllMexFarmsRaw();
     await this.cachingService.setRemote(CacheInfo.MexFarms.key, farms, CacheInfo.MexFarms.ttl);
-    await this.cachingService.setLocal(CacheInfo.MexFarms.key, farms, Constants.oneSecond() * 30);
+    this.cachingService.setLocal(CacheInfo.MexFarms.key, farms, Constants.oneSecond() * 30);
   }
 
   async getMexFarms(pagination: QueryPagination): Promise<MexFarm[]> {

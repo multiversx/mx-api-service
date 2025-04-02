@@ -56,10 +56,10 @@ export class MexWarmerService {
 
   private async invalidateKey(key: string, data: any, ttl: number) {
     await this.cachingService.set(key, data, ttl);
-    await this.refreshCacheKey(key, ttl);
+    this.refreshCacheKey(key, ttl);
   }
 
-  private async refreshCacheKey(key: string, ttl: number) {
-    await this.clientProxy.emit('refreshCacheKey', { key, ttl });
+  private refreshCacheKey(key: string, ttl: number) {
+    this.clientProxy.emit('refreshCacheKey', { key, ttl });
   }
 }
