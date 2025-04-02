@@ -24,7 +24,6 @@ import { IndexerService } from "src/common/indexer/indexer.service";
 import { TrieOperationsTimeoutError } from "./exceptions/trie.operations.timeout.error";
 import { CacheInfo } from "src/utils/cache.info";
 import { AssetsService } from "src/common/assets/assets.service";
-import { AccountHistoryFilter } from "src/endpoints/accounts/entities/account.history.filter";
 import { NftQueryOptions } from "../nfts/entities/nft.query.options";
 
 @Injectable()
@@ -314,38 +313,21 @@ export class EsdtAddressService {
     }
 
     if (address && pagination) {
-      await this.batchFetchReceivedAtTimestamps(nftAccounts, address, pagination, options);
+      await this.batchFetchReceivedAtTimestamps(nftAccounts, address, options);
     }
 
     return nftAccounts;
   }
 
-  private async batchFetchReceivedAtTimestamps(nftAccounts: NftAccount[], address: string, pagination: QueryPagination, options?: NftQueryOptions): Promise<void> {
+  private async batchFetchReceivedAtTimestamps(nftAccounts: NftAccount[], address: string, options?: NftQueryOptions): Promise<void> {
     try {
       if (!options || !options.withReceivedAt || nftAccounts.length === 0) {
         return;
       }
 
-      const historyPagination = new QueryPagination({
-        from: pagination.from,
-        size: pagination.size,
-      });
+      const identifiers = nftAccounts.map(nft => nft.identifier);
 
-      const history = await this.indexerService.getAccountEsdtHistory(
-        address,
-        historyPagination,
-        new AccountHistoryFilter({})
-      );
-
-      const identifierToTimestamp: Record<string, number> = {};
-
-      for (const entry of history) {
-        if (entry.identifier) {
-          if (!identifierToTimestamp[entry.identifier] || entry.timestamp < identifierToTimestamp[entry.identifier]) {
-            identifierToTimestamp[entry.identifier] = entry.timestamp;
-          }
-        }
-      }
+      const identifierToTimestamp = await this.indexerService.getAccountNftReceivedTimestamps(address, identifiers);
 
       for (const nft of nftAccounts) {
         if (identifierToTimestamp[nft.identifier]) {

@@ -197,4 +197,6 @@ export interface IndexerInterface {
   getEvent(txHash: string): Promise<Events>
 
   getEventsCount(filter: EventsFilter): Promise<number>
+
+  getAccountNftReceivedTimestamps(address: string, identifiers: string[]): Promise<Record<string, number>>
 }
