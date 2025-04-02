@@ -194,6 +194,8 @@ describe('Transactions e2e tests with chain simulator', () => {
         'receiver',
         'receiverShard',
         'round',
+        // TODO: we should also validate the existence of the epoch field after upgrading the CS image
+        // 'epoch',
         'sender',
         'senderShard',
         'status',

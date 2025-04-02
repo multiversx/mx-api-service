@@ -410,7 +410,7 @@ export class EsdtAddressService {
 
     const ttl = await this.protocolService.getSecondsRemainingUntilNextRound();
 
-    await this.cachingService.setLocal(`address:${address}:esdts`, esdts, ttl);
+    this.cachingService.setLocal(`address:${address}:esdts`, esdts, ttl);
 
     return esdts;
   }
