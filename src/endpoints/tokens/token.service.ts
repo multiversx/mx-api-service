@@ -254,7 +254,7 @@ export class TokenService {
 
 
   async getTokensForAddressFromDb(address: string, queryPagination: QueryPagination, filter: TokenFilter): Promise<TokenWithBalance[]> {
-    const tokens = await this.accountDetailsRepository.getTokens(address, queryPagination) as TokenWithBalance[];
+    const tokens = await this.accountDetailsRepository.getTokensForAddress(address, queryPagination) as TokenWithBalance[];
     if (tokens && tokens.length > 0) {
       return tokens;
     }
@@ -348,6 +348,14 @@ export class TokenService {
     }
 
     return tokens;
+  }
+
+  async getTokenForAddressFromDb(address: string, identifier: string): Promise<TokenDetailedWithBalance | undefined> {
+    const token = await this.accountDetailsRepository.getTokenForAddress(address, identifier) as TokenDetailedWithBalance;
+    if (token) {
+      return token;
+    }
+    return await this.getTokenForAddress(address, identifier);
   }
 
   async getTokenForAddress(address: string, identifier: string): Promise<TokenDetailedWithBalance | undefined> {

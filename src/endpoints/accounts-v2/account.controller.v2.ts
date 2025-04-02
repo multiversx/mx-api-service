@@ -361,7 +361,7 @@ export class AccountControllerV2 {
     @Param('token', ParseTokenOrNftPipe) token: string,
     @Query('timestamp', ParseIntPipe) _timestamp?: number,
   ): Promise<TokenDetailedWithBalance> {
-    const result = await this.tokenService.getTokenForAddress(address, token);
+    const result = await this.tokenService.getTokenForAddressFromDb(address, token);
     if (!result) {
       throw new HttpException('Token for given account not found', HttpStatus.NOT_FOUND);
     }
@@ -785,7 +785,7 @@ export class AccountControllerV2 {
   ): Promise<NftAccount> {
     const actualFields = extract ? [extract] : fields;
 
-    const result = await this.nftService.getNftForAddress(address, nft, actualFields);
+    const result = await this.nftService.getNftForAddressFromDb(address, nft, actualFields);
     if (!result) {
       throw new HttpException('Token for given account not found', HttpStatus.NOT_FOUND);
     }

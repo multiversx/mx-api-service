@@ -51,7 +51,7 @@ export class AccountDetailsRepository {
     ) { }
 
     @LogPerformanceAsync(MetricsEvents.SetPersistenceDuration, 'account-tokens')
-    async getTokens(address: string, queryPagination: QueryPagination): Promise<TokenWithBalance[]> {
+    async getTokensForAddress(address: string, queryPagination: QueryPagination): Promise<TokenWithBalance[]> {
         try {
             // TODO: add more fields in project on demand
             const result = await this.accountDetailsModel.aggregate([
@@ -92,14 +92,114 @@ export class AccountDetailsRepository {
             // console.log('result', result);
             return result[0]?.tokens ?? [];
         } catch (error) {
-            console.error('Error fetching tokens:', error);
+            console.error(`Error fetching tokens for address: ${address}:`, error);
             return [];
         }
     }
 
+    @LogPerformanceAsync(MetricsEvents.SetPersistenceDuration, 'account-tokens')
+    async getTokenForAddress(address: string, identifier: string): Promise<TokenWithBalance | undefined> {
+        try {
+            // TODO: add more fields in project on demand
+            // TODO: search for token efficiently: return first occurence and use index on identifier
+            const result = await this.accountDetailsModel.aggregate([
+                { $match: { address } },
+                {
+                    $project: {
+                        _id: 0,
+                        tokens: {
+                            $filter: {
+                                input: "$tokens",
+                                as: "token",
+                                cond: { $eq: ["$$token.identifier", identifier] }
+                            }
+                        }
+                    }
+                },
+                {
+                    $project: {
+                        "tokens.type": 1,
+                        "tokens.subType": 1,
+                        "tokens.identifier": 1,
+                        "tokens.collection": 1,
+                        "tokens.name": 1,
+                        "tokens.nonce": 1,
+                        "tokens.decimals": 1,
+                        "tokens.balance": 1,
+                    }
+                }
+            ]).exec();
+            // console.log('result', result);
+            // const result = await this.accountDetailsModel.findOne(
+            //     { address },
+            //     {
+            //         tokens: {
+            //             $slice: [queryPagination.from, queryPagination.size],
+            //         },
+            //         "tokens.balance": 0, // Exclude direct balance
+            //         ...AccountDetailsRepository.exclusionFields,
+            //     }
+            // ).lean();
+            //@ts-ignore
+            // console.log('result', result);
+            // console.log('result', result);
+            // console.log(result[0].tokens)
+            return result[0]?.tokens[0] ?? undefined;
+        } catch (error) {
+            console.error(`Error fetching token with  identifier ${identifier} for address: ${address}:`, error);
+            return undefined;
+        }
+    }
 
     @LogPerformanceAsync(MetricsEvents.SetPersistenceDuration, 'account-nfts')
-    async getNfts(address: string, queryPagination: QueryPagination): Promise<NftAccount[]> {
+    async getNftForAddress(address: string, identifier: string): Promise<NftAccount | undefined> {
+        try {
+            // TODO: add more fields in project on demand
+            // TODO: search for nft efficiently: return first occurence and use index on identifier
+            const result = await this.accountDetailsModel.aggregate([
+                { $match: { address } },
+                {
+                    $project: {
+                        _id: 0,
+                        nfts: {
+                            $filter: {
+                                input: "$nfts",
+                                as: "nft",
+                                cond: { $eq: ["$$nft.identifier", identifier] }
+                            }
+                        }
+                    }
+                },
+                {
+                    $project: {
+                        "nfts.identifier": 1,
+                        "nfts.collection": 1,
+                        "nfts.nonce": 1,
+                        "nfts.type": 1,
+                        "nfts.subType": 1,
+                        "nfts.name": 1,
+                    }
+                }
+            ]).exec();
+            // const result = await this.accountDetailsModel.findOne(
+            //     { address },
+            //     {
+            //         nfts: {
+            //             $slice: [queryPagination.from, queryPagination.size]
+            //         },
+            //         tokens: 0,
+            //         ...AccountDetailsRepository.exclusionFields,
+            //     }
+            // ).lean();
+            return result[0]?.nfts[0] ?? undefined;
+        } catch (error) {
+            console.error(`Error fetching nft with  identifier ${identifier} for address: ${address}:`, error);
+            return undefined;
+        }
+    }
+
+    @LogPerformanceAsync(MetricsEvents.SetPersistenceDuration, 'account-nfts')
+    async getNftsForAddress(address: string, queryPagination: QueryPagination): Promise<NftAccount[]> {
         try {
             // TODO: add more fields in project on demand
             const result = await this.accountDetailsModel.aggregate([
@@ -134,7 +234,7 @@ export class AccountDetailsRepository {
 
             return result[0]?.nfts || [];
         } catch (error) {
-            console.error('Error fetching nfts:', error);
+            console.error(`Error fetching nfts for address: ${address}:`, error);
             return [];
         }
     }

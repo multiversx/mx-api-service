@@ -449,7 +449,7 @@ export class NftService {
   }
 
   async getNftsForAddressFromDb(address: string, queryPagination: QueryPagination, filter: NftFilter, fields?: string[], queryOptions?: NftQueryOptions, source?: EsdtDataSource): Promise<NftAccount[]> {
-    const nfts = await this.accountDetailsRepository.getNfts(address, queryPagination) as NftAccount[];
+    const nfts = await this.accountDetailsRepository.getNftsForAddress(address, queryPagination) as NftAccount[];
     if (nfts && nfts.length > 0) {
       return nfts;
     }
@@ -555,6 +555,13 @@ export class NftService {
 
   async getNftCountForAddress(address: string, filter: NftFilter): Promise<number> {
     return await this.esdtAddressService.getNftCountForAddressFromElastic(address, filter);
+  }
+  async getNftForAddressFromDb(address: string, identifier: string, fields?: string[]): Promise<NftAccount | undefined> {
+    const nft = await this.accountDetailsRepository.getNftForAddress(address, identifier) as NftAccount;
+    if (nft) {
+      return nft;
+    }
+    return await this.getNftForAddress(address, identifier, fields);
   }
 
   async getNftForAddress(address: string, identifier: string, fields?: string[]): Promise<NftAccount | undefined> {
