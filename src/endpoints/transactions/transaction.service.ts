@@ -620,9 +620,9 @@ export class TransactionService {
 
       if (!poolTransactions || poolTransactions.length === 0) {
         return new PpuMetadata({
-          LastBlock: lastBlock,
-          Fast: 0,
-          Faster: 0,
+          lastBlock: lastBlock,
+          fast: 0,
+          faster: 0,
         });
       }
 
@@ -645,9 +645,9 @@ export class TransactionService {
         : 0;
 
       return new PpuMetadata({
-        LastBlock: lastBlock,
-        Fast: fastPpu,
-        Faster: fasterPpu,
+        lastBlock: lastBlock,
+        fast: fastPpu,
+        faster: fasterPpu,
       });
     } catch (error) {
       this.logger.error(`Error getting price per unit metadata for shard ${shardId}`, {

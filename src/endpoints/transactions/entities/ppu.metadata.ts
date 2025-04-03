@@ -5,19 +5,19 @@ export class PpuMetadata {
         description: 'Last processed block number',
         example: 47428477,
     })
-    LastBlock: number = 0;
+    lastBlock: number = 0;
 
     @ApiProperty({
         description: 'Price per unit for standard (medium priority) transactions',
         example: 20000000,
     })
-    Fast: number = 0;
+    fast: number = 0;
 
     @ApiProperty({
         description: 'Price per unit for fast (high priority) transactions',
         example: 40000000,
     })
-    Faster: number = 0;
+    faster: number = 0;
 
     constructor(init?: Partial<PpuMetadata>) {
         Object.assign(this, init);
