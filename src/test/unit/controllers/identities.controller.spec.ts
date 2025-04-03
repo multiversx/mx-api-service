@@ -5,6 +5,7 @@ import { mockIdentityService } from "./services.mock/identity.services.mock";
 import { IdentitiesController } from "src/endpoints/identities/identities.controller";
 import { PublicAppModule } from "src/public.app.module";
 import { IdentitiesService } from "src/endpoints/identities/identities.service";
+import { IdentitySortCriteria } from "src/endpoints/identities/entities/identity.sort.criteria";
 
 describe('IdentityController', () => {
   let app: INestApplication;
@@ -36,6 +37,54 @@ describe('IdentityController', () => {
         .expect(response => {
           expect(response.body).toEqual(mockIdentitiesList);
           expect(response.body.length).toBe(5);
+        });
+    });
+
+    it('should properly handle single sort criteria', async () => {
+      const mockIdentitiesList = createMockIdentitiesList(5);
+      identitiesServiceMocks.getIdentities.mockResolvedValue(mockIdentitiesList);
+
+      await request(app.getHttpServer())
+        .get(`${path}?sort=validators`)
+        .expect(200)
+        .expect(() => {
+          expect(identitiesServiceMocks.getIdentities).toHaveBeenCalledWith(
+            expect.any(Object),
+            expect.any(Array),
+            [IdentitySortCriteria.validators]
+          );
+        });
+    });
+
+    it('should properly handle multiple sort criteria', async () => {
+      const mockIdentitiesList = createMockIdentitiesList(5);
+      identitiesServiceMocks.getIdentities.mockResolvedValue(mockIdentitiesList);
+
+      await request(app.getHttpServer())
+        .get(`${path}?sort=validators,locked`)
+        .expect(200)
+        .expect(() => {
+          expect(identitiesServiceMocks.getIdentities).toHaveBeenCalledWith(
+            expect.any(Object),
+            expect.any(Array),
+            [IdentitySortCriteria.validators, IdentitySortCriteria.locked]
+          );
+        });
+    });
+
+    it('should properly handle the stake sort criterion', async () => {
+      const mockIdentitiesList = createMockIdentitiesList(5);
+      identitiesServiceMocks.getIdentities.mockResolvedValue(mockIdentitiesList);
+
+      await request(app.getHttpServer())
+        .get(`${path}?sort=stake`)
+        .expect(200)
+        .expect(() => {
+          expect(identitiesServiceMocks.getIdentities).toHaveBeenCalledWith(
+            expect.any(Object),
+            expect.any(Array),
+            [IdentitySortCriteria.stake]
+          );
         });
     });
   });
