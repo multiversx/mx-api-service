@@ -48,27 +48,39 @@ export class IdentitiesService {
     }
 
     if (sort && sort.length > 0) {
-      for (const criterion of sort) {
-        if (Object.values(IdentitySortCriteria).includes(criterion as IdentitySortCriteria)) {
-          identities = this.applySorting(identities, criterion as IdentitySortCriteria);
-        }
-      }
+      identities = identities.sort((a, b) => this.compareWithCriteria(a, b, sort, 0));
     }
 
     return identities.slice(from, from + size);
   }
 
-  private applySorting(identities: Identity[], sortCriterion: IdentitySortCriteria): Identity[] {
-    switch (sortCriterion) {
-      case IdentitySortCriteria.validators:
-        return identities.sortedDescending(x => x.validators ?? 0);
-      case IdentitySortCriteria.stake:
-        return identities.sortedDescending(x => Number(x.stake) ?? 0);
-      case IdentitySortCriteria.locked:
-        return identities.sortedDescending(x => Number(x.locked) ?? 0);
-      default:
-        return identities;
+  private compareWithCriteria(a: Identity, b: Identity, criteria: IdentitySortCriteria[], currentIndex: number): number {
+    if (currentIndex >= criteria.length) {
+      return 0;
     }
+
+    const currentCriterion = criteria[currentIndex];
+    let comparison: number;
+
+    switch (currentCriterion) {
+      case IdentitySortCriteria.validators:
+        comparison = (b.validators ?? 0) - (a.validators ?? 0);
+        break;
+      case IdentitySortCriteria.stake:
+        comparison = Number(b.stake ?? '0') - Number(a.stake ?? '0');
+        break;
+      case IdentitySortCriteria.locked:
+        comparison = Number(b.locked ?? '0') - Number(a.locked ?? '0');
+        break;
+      default:
+        comparison = 0;
+    }
+
+    if (comparison === 0 && currentIndex < criteria.length - 1) {
+      return this.compareWithCriteria(a, b, criteria, currentIndex + 1);
+    }
+
+    return comparison;
   }
 
   async getAllIdentities(): Promise<Identity[]> {
