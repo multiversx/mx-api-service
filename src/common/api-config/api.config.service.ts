@@ -2,8 +2,8 @@ import { Constants } from '@multiversx/sdk-nestjs-common';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { DatabaseConnectionOptions } from '../persistence/entities/connection.options';
-import { LogTopic } from '@elrondnetwork/transaction-processor';
 import { StatusCheckerThresholds } from './entities/status-checker-thresholds';
+import { LogTopic } from '@multiversx/sdk-transaction-processor/lib/types/log-topic';
 
 @Injectable()
 export class ApiConfigService {
@@ -860,6 +860,14 @@ export class ApiConfigService {
     }
 
     return deepHistoryUrl;
+  }
+
+  isChainAndromedaEnabled(): boolean {
+    return this.configService.get<boolean>('features.chainAndromeda.enabled') ?? false;
+  }
+
+  getChainAndromedaActivationEpoch(): number {
+    return this.configService.get<number>('features.chainAndromeda.activationEpoch') ?? 99999;
   }
 
   isAssetsCdnFeatureEnabled(): boolean {

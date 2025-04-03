@@ -227,7 +227,7 @@ export class EsdtService {
       canAddSpecialRoles: elasticProperties.properties?.canAddSpecialRoles ?? false,
       canTransferNFTCreateRole: elasticProperties.properties?.canTransferNFTCreateRole ?? false,
       NFTCreateStopped: elasticProperties.properties?.NFTCreateStopped ?? false,
-      isPaused: elasticProperties.properties?.isPaused ?? false,
+      isPaused: elasticProperties.paused ?? false,
       timestamp: elasticProperties.timestamp,
     });
 
