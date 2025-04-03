@@ -3,7 +3,6 @@ import { ClientProxy } from "@nestjs/microservices";
 import { Cron } from "@nestjs/schedule";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { NodeService } from "src/endpoints/nodes/node.service";
-import { ShardTransaction, TransactionProcessor } from "@elrondnetwork/transaction-processor";
 import { CacheInfo } from "src/utils/cache.info";
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { SftChangeTransactionExtractor } from "./extractor/sft.change.transaction.extractor";
@@ -15,7 +14,7 @@ import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { BinaryUtils, OriginLogger } from "@multiversx/sdk-nestjs-common";
 import { PerformanceProfiler } from "@multiversx/sdk-nestjs-monitoring";
 import { StakeFunction } from "src/endpoints/transactions/transaction-action/recognizers/staking/entities/stake.function";
-
+import { ShardTransaction, TransactionProcessor } from "@multiversx/sdk-transaction-processor";
 
 @Injectable()
 export class TransactionProcessorService {
