@@ -548,4 +548,77 @@ export async function issueMultipleMetaESDTCollections(
   return metaEsdtCollectionIdentifiers.map(x => x.identifier);
 }
 
+export async function transferNft(args: TransferNftArgs) {
+  // Format nonce as hex string with at least 2 digits
+  const nonceHex = typeof args.nonce === 'number'
+    ? args.nonce.toString(16).padStart(2, '0')
+    : args.nonce;
 
+  // Format quantity as hex string, always specify it (even for quantity=1)
+  const quantityHex = args.quantity.toString(16).padStart(2, '0');
+
+  // Convert receiver address from bech32 to hex format
+  const receiverHex = AddressUtils.bech32Decode(args.receiver);
+
+  // Prepare data field components
+  const dataField = [
+    'ESDTNFTTransfer',
+    Buffer.from(args.collectionIdentifier).toString('hex'),
+    nonceHex,
+    quantityHex, // Always specify quantity
+    receiverHex,
+  ].join('@');
+
+  // Log the data field for debugging
+  console.log(`NFT Transfer data field: ${dataField}`);
+
+  return await sendTransaction(
+    new SendTransactionArgs({
+      chainSimulatorUrl: args.chainSimulatorUrl,
+      sender: args.sender,
+      receiver: args.sender,
+      dataField: dataField,
+      value: '0',
+      gasLimit: 1000000,
+    }),
+  );
+}
+
+export class TransferNftArgs {
+  chainSimulatorUrl: string = '';
+  sender: string = '';
+  receiver: string = '';
+  collectionIdentifier: string = '';
+  nonce: string | number = '';
+  quantity: number = 1;
+
+  constructor(options: Partial<TransferNftArgs> = {}) {
+    Object.assign(this, options);
+  }
+}
+
+export async function transferNftFromTo(
+  chainSimulatorUrl: string,
+  senderAddress: string,
+  receiverAddress: string,
+  collectionIdentifier: string,
+  nftNonce: string | number,
+  quantity: number = 1
+): Promise<string> {
+  console.log(`Transferring NFT from ${senderAddress} to ${receiverAddress}`);
+  console.log(`Collection: ${collectionIdentifier}, Nonce: ${nftNonce}, Quantity: ${quantity}`);
+
+  const txHash = await transferNft(
+    new TransferNftArgs({
+      chainSimulatorUrl,
+      sender: senderAddress,
+      receiver: receiverAddress,
+      collectionIdentifier,
+      nonce: nftNonce,
+      quantity,
+    })
+  );
+
+  console.log(`NFT transfer completed. Transaction hash: ${txHash}`);
+  return txHash;
+}

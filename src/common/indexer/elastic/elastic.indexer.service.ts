@@ -1011,4 +1011,30 @@ export class ElasticIndexerService implements IndexerInterface {
 
     return await this.elasticService.getCount('events', elasticQuery);
   }
+
+  async getAccountNftReceivedTimestamps(address: string, identifiers: string[]): Promise<Record<string, number>> {
+    if (!identifiers || identifiers.length === 0) {
+      return {};
+    }
+
+    const identifierToTimestamp: Record<string, number> = {};
+
+    const elasticQuery = ElasticQuery.create()
+      .withMustMatchCondition('address', address)
+      .withMustMultiShouldCondition(identifiers, identifier => QueryType.Match('identifier', identifier, QueryOperator.AND))
+      .withSort([{ name: 'timestamp', order: ElasticSortOrder.ascending }])
+      .withPagination({ from: 0, size: 10000 });
+
+    const history = await this.elasticService.getList('accountsesdthistory', 'address', elasticQuery);
+
+    for (const entry of history) {
+      if (entry.identifier) {
+        if (!identifierToTimestamp[entry.identifier] || entry.timestamp < identifierToTimestamp[entry.identifier]) {
+          identifierToTimestamp[entry.identifier] = entry.timestamp;
+        }
+      }
+    }
+
+    return identifierToTimestamp;
+  }
 }

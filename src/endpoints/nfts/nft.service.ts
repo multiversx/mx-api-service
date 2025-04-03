@@ -451,8 +451,7 @@ export class NftService {
   }
 
   async getNftsForAddress(address: string, queryPagination: QueryPagination, filter: NftFilter, fields?: string[], queryOptions?: NftQueryOptions, source?: EsdtDataSource): Promise<NftAccount[]> {
-    let nfts = await this.esdtAddressService.getNftsForAddress(address, filter, queryPagination, source);
-
+    let nfts = await this.esdtAddressService.getNftsForAddress(address, filter, queryPagination, source, queryOptions);
     for (const nft of nfts) {
       await this.applyAssetsAndTicker(nft, fields);
       await this.applyPriceUsd(nft, fields);
