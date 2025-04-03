@@ -184,6 +184,7 @@ export class SendTransactionArgs {
   value?: string = '0';
   gasLimit?: number = 100_000_000;
   nonceOffset?: number = 0; // useful for scenarios where a higher nonce is desired
+  gasPrice?: string;
 
   constructor(options: Partial<SendTransactionArgs> = {}) {
     Object.assign(this, options);
