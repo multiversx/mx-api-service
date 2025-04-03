@@ -616,7 +616,7 @@ export class TransactionService {
       const gasPriceModifierNumber = Number(gasPriceModifier);
       const { GAS_BUCKET_SIZE, FAST_BUCKET_INDEX, FASTER_BUCKET_INDEX } = GasBucketConstants;
 
-      const poolTransactions = await this.poolService.getEntirePool({ senderShard: shardId });
+      const poolTransactions = await this.poolService.getPoolWithFilters({ senderShard: shardId });
 
       if (!poolTransactions || poolTransactions.length === 0) {
         return new PpuMetadata({
