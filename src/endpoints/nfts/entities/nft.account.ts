@@ -15,4 +15,7 @@ export class NftAccount extends Nft {
 
   @ApiProperty({ type: Number, nullable: true, required: false })
   valueUsd: number | undefined = undefined;
+
+  @ApiProperty({ type: Number, nullable: true, required: false, description: 'Timestamp when the NFT was received by the address' })
+  receivedAt: number | undefined = undefined;
 }

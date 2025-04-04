@@ -1,4 +1,4 @@
-import { ShardTransaction } from "@elrondnetwork/transaction-processor";
+import { ShardTransaction } from "@multiversx/sdk-transaction-processor";
 import { TestingModule, Test } from "@nestjs/testing";
 import { EventEmitter2 } from "@nestjs/event-emitter";
 import { WebSocketPublisherController } from "src/common/websockets/web-socket-publisher-controller";

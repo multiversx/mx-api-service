@@ -10,6 +10,7 @@ import { IdentitiesService } from "src/endpoints/identities/identities.service";
 import { NodeService } from "src/endpoints/nodes/node.service";
 import { CacheInfo } from "src/utils/cache.info";
 import { BlockProofDto } from "../../../endpoints/blocks/entities/block.proof";
+import { ApiConfigService } from "../../../common/api-config/api.config.service";
 
 describe('Block Service', () => {
   let blockService: BlockService;
@@ -55,6 +56,13 @@ describe('Block Service', () => {
           provide: IdentitiesService,
           useValue: {
             getIdentity: jest.fn(),
+          },
+        },
+        {
+          provide: ApiConfigService,
+          useValue: {
+            isChainAndromedaEnabled: jest.fn(),
+            getChainAndromedaActivationEpoch: jest.fn(),
           },
         },
       ],

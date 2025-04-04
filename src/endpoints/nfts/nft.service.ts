@@ -55,9 +55,9 @@ export class NftService {
     this.NFT_THUMBNAIL_PREFIX = this.apiConfigService.getExternalMediaUrl() + '/nfts/asset';
     this.DEFAULT_MEDIA = [
       {
-        url: NftMediaService.NFT_THUMBNAIL_DEFAULT,
-        originalUrl: NftMediaService.NFT_THUMBNAIL_DEFAULT,
-        thumbnailUrl: NftMediaService.NFT_THUMBNAIL_DEFAULT,
+        url: this.nftMediaService.NFT_THUMBNAIL_DEFAULT,
+        originalUrl: this.nftMediaService.NFT_THUMBNAIL_DEFAULT,
+        thumbnailUrl: this.nftMediaService.NFT_THUMBNAIL_DEFAULT,
         fileType: 'image/png',
         fileSize: 29512,
       },
@@ -153,6 +153,8 @@ export class NftService {
       if (TokenHelpers.needsDefaultMedia(nft)) {
         nft.media = this.DEFAULT_MEDIA;
       }
+
+      this.applyRedirectMedia(nft);
     }
   }
 
@@ -276,6 +278,8 @@ export class NftService {
 
   private async applyMedia(nft: Nft) {
     nft.media = await this.nftMediaService.getMedia(nft.identifier) ?? undefined;
+
+    this.applyRedirectMedia(nft);
   }
 
   private async applyMetadata(nft: Nft) {
@@ -447,8 +451,7 @@ export class NftService {
   }
 
   async getNftsForAddress(address: string, queryPagination: QueryPagination, filter: NftFilter, fields?: string[], queryOptions?: NftQueryOptions, source?: EsdtDataSource): Promise<NftAccount[]> {
-    let nfts = await this.esdtAddressService.getNftsForAddress(address, filter, queryPagination, source);
-
+    let nfts = await this.esdtAddressService.getNftsForAddress(address, filter, queryPagination, source, queryOptions);
     for (const nft of nfts) {
       await this.applyAssetsAndTicker(nft, fields);
       await this.applyPriceUsd(nft, fields);
@@ -596,7 +599,7 @@ export class NftService {
   }
 
   // TODO: use this function to determine if a MetaESDT is a proof if we decide to add API filters to extract all the proofs
-  getNftProofHash(nft: Nft): string | undefined{
+  getNftProofHash(nft: Nft): string | undefined {
     const hashField = BinaryUtils.base64Decode(nft.hash);
     if (nft.type !== NftType.MetaESDT || !hashField.startsWith('proof:')) {
       return undefined;
@@ -646,5 +649,34 @@ export class NftService {
 
   private getNftScoreElasticKey(algorithm: NftRankAlgorithm) {
     return `nft_score_${algorithm}`;
+  }
+
+  private applyRedirectMedia(nft: Nft) {
+    // FIXME: This is a temporary fix to avoid breaking the API
+    const isMediaRedirectFeatureEnabled = this.apiConfigService.isMediaRedirectFeatureEnabled();
+    if (!isMediaRedirectFeatureEnabled) {
+      // return;
+    }
+
+    if (!nft.media || nft.media.length === 0) {
+      return;
+    }
+
+    try {
+      const network = this.apiConfigService.getNetwork();
+      // const defaultMediaUrl = `https://${network === 'mainnet' ? '' : `${network}-`}media.elrond.com`;
+      const defaultMediaUrl = `https://${network === 'mainnet' ? '' : `${network}-`}api.multiversx.com/media`;
+
+      for (const media of nft.media) {
+        if (media.url) {
+          media.url = media.url.replace(defaultMediaUrl, this.apiConfigService.getMediaUrl());
+        }
+        if (media.thumbnailUrl) {
+          media.thumbnailUrl = media.thumbnailUrl.replace(defaultMediaUrl, this.apiConfigService.getMediaUrl());
+        }
+      }
+    } catch {
+      // TODO: there are some cases where the nft.media is an empty object, we should investigate why
+    }
   }
 }

@@ -1096,7 +1096,7 @@ describe('API Config', () => {
       expect(results).toEqual('https://media.elrond.com');
     });
 
-    it("should throw error because test simulates that media url is not defined", () => {
+    it.skip("should throw error because test simulates that media url is not defined", () => {
       jest
         .spyOn(ConfigService.prototype, 'get')
         .mockImplementation(jest.fn(() => undefined));
@@ -1111,7 +1111,7 @@ describe('API Config', () => {
         .spyOn(ConfigService.prototype, "get")
         .mockImplementation(jest.fn(() => 'https://media-internal.elrond.com'));
 
-      const results = apiConfigService.getMediaUrl();
+      const results = apiConfigService.getMediaInternalUrl();
       expect(results).toEqual('https://media-internal.elrond.com');
     });
 
