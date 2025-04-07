@@ -12,7 +12,8 @@ import { AccountDetailsRepository } from "./repositories";
       imports: [ApiConfigModule],
       inject: [ApiConfigService],
       useFactory: (apiConfigService: ApiConfigService) => ({
-        uri: apiConfigService.getDatabaseUrl(),
+        uri: apiConfigService.getDatabaseUrl().replace(":27017", ''), // TODO: remove this hack
+        tls: true,
         tlsAllowInvalidCertificates: true,
       }),
     }),

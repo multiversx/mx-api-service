@@ -16,7 +16,7 @@ async function fetchFirstPageFromElastic(size: number) {
 
     try {
         // First request to initialize sc
-        const ELASTICSEARCH_URL = "https://devnet-index.multiversx.com";
+        const ELASTICSEARCH_URL = "https://index.multiversx.com";
         const body = {
             size,
             query: { match_all: {} },
@@ -50,20 +50,24 @@ async function scroll(url: string, scrollId: string) {
     }
 }
 async function populateAccountDetailsDb() {
-    const client = new MongoClient(MONGO_URI);
-    const iterations = 10;
+    const client = new MongoClient(MONGO_URI, {
+        tls: true,
+        tlsAllowInvalidHostnames: true,
+        tlsAllowInvalidCertificates: true,
+    });
+    const iterations = 100;
     try {
         await client.connect();
         console.log("Connected to MongoDB");
         const db = client.db(DATABASE_NAME);
         const collection = db.collection(COLLECTION_NAME);
-        const scrollSize = 10000;
+        const scrollSize = 1000;
         let addresses: any[] = [];
         let scrollId: any = null;
         for (let i = 1; i <= iterations; i++) {
             ({ addresses, scrollId } = i === 1
                 ? await fetchFirstPageFromElastic(scrollSize)
-                : await scroll("https://devnet-index.multiversx.com", scrollId));
+                : await scroll("https://index.multiversx.com", scrollId));
 
             console.log(`Fetched ${addresses.length} addresses from ElasticSearch`);
             const scAddressDocuments: any[] = [];
