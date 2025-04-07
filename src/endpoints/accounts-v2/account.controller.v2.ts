@@ -356,6 +356,7 @@ export class AccountControllerV2 {
   @ApiOkResponse({ type: TokenWithBalance })
   @ApiOperation({ summary: 'Account token details', description: 'Returns details about a specific fungible token from a given address' })
   @ApiQuery({ name: 'timestamp', description: 'Retrieve entries from timestamp', required: false, type: Number })
+  @NoCache()
   async getAccountToken(
     @Param('address', ParseAddressPipe) address: string,
     @Param('token', ParseTokenOrNftPipe) token: string,
@@ -776,6 +777,7 @@ export class AccountControllerV2 {
   @ApiQuery({ name: 'extract', description: 'Extract a specific field', required: false })
   @ApiQuery({ name: 'timestamp', description: 'Retrieve entry from timestamp', required: false, type: Number })
   @ApiOkResponse({ type: NftAccount })
+  @NoCache()
   async getAccountNft(
     @Param('address', ParseAddressPipe) address: string,
     @Param('nft', ParseNftPipe) nft: string,
