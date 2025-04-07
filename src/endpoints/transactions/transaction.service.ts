@@ -33,6 +33,15 @@ import { UsernameService } from '../usernames/username.service';
 import { MiniBlock } from 'src/common/indexer/entities/miniblock';
 import { Block } from 'src/common/indexer/entities/block';
 import { ProtocolService } from 'src/common/protocol/protocol.service';
+import { PpuMetadata } from './entities/ppu.metadata';
+import { BlockService } from '../blocks/block.service';
+import { BlockFilter } from '../blocks/entities/block.filter';
+import { SortOrder } from 'src/common/entities/sort.order';
+import { PoolService } from '../pool/pool.service';
+import { NetworkService } from 'src/endpoints/network/network.service';
+import { TransactionWithPpu } from './entities/transaction.with.ppu';
+import { GasBucket } from './entities/gas.bucket';
+import { GasBucketConstants } from './constants/gas.bucket.constants';
 
 @Injectable()
 export class TransactionService {
@@ -54,6 +63,12 @@ export class TransactionService {
     private readonly apiConfigService: ApiConfigService,
     private readonly usernameService: UsernameService,
     private readonly protocolService: ProtocolService,
+    @Inject(forwardRef(() => BlockService))
+    private readonly blockService: BlockService,
+    @Inject(forwardRef(() => PoolService))
+    private readonly poolService: PoolService,
+    @Inject(forwardRef(() => NetworkService))
+    private readonly networkService: NetworkService,
   ) { }
 
   async getTransactionCountForAddress(address: string): Promise<number> {
@@ -568,5 +583,166 @@ export class TransactionService {
     }
 
     return undefined;
+  }
+
+  async getPpuByShardId(shardId: number): Promise<PpuMetadata | null> {
+    return await this.cachingService.getOrSet(
+      CacheInfo.PpuMetadataByShard(shardId).key,
+      async () => await this.getPpuByShardIdRaw(shardId),
+      CacheInfo.PpuMetadataByShard(shardId).ttl,
+      Constants.oneSecond(),
+    );
+  }
+
+  async getPpuByShardIdRaw(shardId: number): Promise<PpuMetadata | null> {
+    try {
+      if (shardId < 0 || shardId > 2) {
+        return null;
+      }
+
+      const blocks = await this.blockService.getBlocks(
+        new BlockFilter({ shard: shardId, order: SortOrder.desc }),
+        new QueryPagination({ from: 0, size: 1 })
+      );
+
+      if (!blocks || blocks.length === 0) {
+        this.logger.error(`No blocks found for shard ${shardId}`);
+        return null;
+      }
+
+      const lastBlock = blocks[0].nonce;
+      const networkConstants = await this.networkService.getConstants();
+      const { minGasLimit, gasPerDataByte, gasPriceModifier } = networkConstants;
+      const gasPriceModifierNumber = Number(gasPriceModifier);
+      const { GAS_BUCKET_SIZE, FAST_BUCKET_INDEX, FASTER_BUCKET_INDEX } = GasBucketConstants;
+
+      const poolTransactions = await this.poolService.getPoolWithFilters({ senderShard: shardId });
+
+      if (!poolTransactions || poolTransactions.length === 0) {
+        return new PpuMetadata({
+          lastBlock: lastBlock,
+          fast: 0,
+          faster: 0,
+        });
+      }
+
+      const transactionsWithPpu = this.calculatePpuForTransactions(
+        poolTransactions,
+        minGasLimit,
+        gasPerDataByte,
+        gasPriceModifierNumber
+      );
+
+      const sortedTransactions = this.sortTransactionsByPriority(transactionsWithPpu);
+      const gasBuckets = this.distributeTransactionsIntoGasBuckets(sortedTransactions, GAS_BUCKET_SIZE);
+
+      const fastPpu = gasBuckets.length > FAST_BUCKET_INDEX && gasBuckets[FAST_BUCKET_INDEX].ppuEnd
+        ? gasBuckets[FAST_BUCKET_INDEX].ppuEnd
+        : 0;
+
+      const fasterPpu = gasBuckets.length > FASTER_BUCKET_INDEX && gasBuckets[FASTER_BUCKET_INDEX].ppuEnd
+        ? gasBuckets[FASTER_BUCKET_INDEX].ppuEnd
+        : 0;
+
+      return new PpuMetadata({
+        lastBlock: lastBlock,
+        fast: fastPpu,
+        faster: fasterPpu,
+      });
+    } catch (error) {
+      this.logger.error(`Error getting price per unit metadata for shard ${shardId}`, {
+        path: 'transactionService.getPpuByShardIdRaw',
+        shardId,
+        error,
+      });
+      return null;
+    }
+  }
+
+  private calculatePpuForTransactions(
+    transactions: any[],
+    minGasLimit: number,
+    gasPerDataByte: number,
+    gasPriceModifier: number
+  ): TransactionWithPpu[] {
+    return transactions.map(tx => {
+      const data = tx.data ? BinaryUtils.base64Decode(tx.data) : '';
+      const gasLimit = Number(tx.gasLimit);
+      const gasPrice = Number(tx.gasPrice);
+
+      const dataCost = minGasLimit + data.length * gasPerDataByte;
+      const executionCost = gasLimit - dataCost;
+      const initiallyPaidFee = dataCost * gasPrice + executionCost * gasPrice * gasPriceModifier;
+      const ppu = Math.floor(initiallyPaidFee / gasLimit);
+
+      return { ...tx, ppu };
+    });
+  }
+
+  private sortTransactionsByPriority(transactions: TransactionWithPpu[]): TransactionWithPpu[] {
+    return [...transactions].sort((a, b) => {
+      // Same sender - sort by nonce
+      if (a.sender === b.sender) {
+        return a.nonce - b.nonce;
+      }
+
+      // Different PPU - sort by PPU (descending)
+      if (a.ppu !== b.ppu) {
+        return b.ppu - a.ppu;
+      }
+
+      // Different gas limit - sort by gas limit (descending)
+      if (a.gasLimit !== b.gasLimit) {
+        return b.gasLimit - a.gasLimit;
+      }
+
+      // Otherwise sort by hash (lexicographically)
+      return a.txHash.localeCompare(b.txHash);
+    });
+  }
+
+  private distributeTransactionsIntoGasBuckets(
+    transactions: TransactionWithPpu[],
+    gasBucketSize: number
+  ): GasBucket[] {
+    const buckets: GasBucket[] = [];
+    let currentBucket: GasBucket = {
+      index: 0,
+      gasAccumulated: 0,
+      ppuBegin: 0,
+      numTransactions: 0,
+    };
+
+    for (const transaction of transactions) {
+      const gasLimit = Number(transaction.gasLimit);
+      currentBucket.gasAccumulated += gasLimit;
+      currentBucket.numTransactions += 1;
+
+      if (currentBucket.numTransactions === 1) {
+        currentBucket.ppuBegin = transaction.ppu;
+      }
+
+      if (currentBucket.gasAccumulated >= gasBucketSize) {
+        currentBucket.ppuEnd = transaction.ppu;
+        buckets.push(currentBucket);
+
+        currentBucket = {
+          index: currentBucket.index + 1,
+          gasAccumulated: 0,
+          ppuBegin: 0,
+          numTransactions: 0,
+        };
+      }
+    }
+
+    if (currentBucket.numTransactions > 0) {
+      currentBucket.ppuEnd = transactions[transactions.length - 1].ppu;
+      buckets.push(currentBucket);
+    }
+    for (const bucket of buckets) {
+      this.logger.log(`Bucket ${bucket.index}, gas = ${bucket.gasAccumulated}, num_txs = ${bucket.numTransactions}, ppu: ${bucket.ppuBegin} .. ${bucket.ppuEnd}`);
+    }
+
+    return buckets;
   }
 }

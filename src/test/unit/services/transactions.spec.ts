@@ -9,6 +9,9 @@ import { Transaction } from "src/common/indexer/entities/transaction";
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { PluginService } from "src/common/plugins/plugin.service";
 import { ProtocolService } from "src/common/protocol/protocol.service";
+import { BlockService } from "src/endpoints/blocks/block.service";
+import { NetworkService } from "src/endpoints/network/network.service";
+import { PoolService } from "src/endpoints/pool/pool.service";
 import { TokenTransferService } from "src/endpoints/tokens/token.transfer.service";
 import { TransactionFilter } from "src/endpoints/transactions/entities/transaction.filter";
 import { TransactionActionService } from "src/endpoints/transactions/transaction-action/transaction.action.service";
@@ -110,6 +113,25 @@ describe('TransactionService', () => {
             getShardCount: jest.fn(),
           },
         },
+        {
+          provide: BlockService,
+          useValue: {
+            getBlockByHash: jest.fn(),
+          },
+        },
+        {
+          provide: PoolService,
+          useValue: {
+            getPool: jest.fn(),
+          },
+        },
+        {
+          provide: NetworkService,
+          useValue: {
+            getConstants: jest.fn(),
+          },
+        },
+
       ],
     }).compile();
 

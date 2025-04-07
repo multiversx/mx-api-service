@@ -37,6 +37,7 @@ import { TpsModule } from "./tps/tps.module";
 import { ApplicationModule } from "./applications/application.module";
 import { EventsModule } from "./events/events.module";
 import { AccountModuleV2 } from "./accounts-v2/account.module.v2";
+import { MediaModule } from "./media/media.module";
 
 @Module({
   imports: [
@@ -79,13 +80,14 @@ import { AccountModuleV2 } from "./accounts-v2/account.module.v2";
     ApplicationModule,
     EventsModule,
     AccountModuleV2,
+    MediaModule,
   ],
   exports: [
     AccountModule, CollectionModule, BlockModule, DelegationModule, DelegationLegacyModule, IdentitiesModule, KeysModule,
     MiniBlockModule, NetworkModule, NftModule, NftMediaModule, TagModule, NodeModule, ProviderModule,
     RoundModule, SmartContractResultModule, ShardModule, StakeModule, TokenModule, RoundModule, TransactionModule, UsernameModule, VmQueryModule,
     WaitingListModule, EsdtModule, BlsModule, DappConfigModule, TransferModule, PoolModule, TransactionActionModule, WebsocketModule, MexModule,
-    ProcessNftsModule, NftMarketplaceModule, TransactionsBatchModule, TpsModule, ApplicationModule, EventsModule, AccountModuleV2,
+    ProcessNftsModule, NftMarketplaceModule, TransactionsBatchModule, TpsModule, ApplicationModule, EventsModule, AccountModuleV2, MediaModule,
   ],
 })
 export class EndpointsServicesModule { }

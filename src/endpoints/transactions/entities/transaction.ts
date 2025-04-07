@@ -45,6 +45,9 @@ export class Transaction {
   @ApiProperty({ type: Number })
   round: number | undefined = undefined;
 
+  @ApiProperty({ type: Number })
+  epoch: number | undefined = undefined;
+
   @ApiProperty({ type: String })
   sender: string = '';
 

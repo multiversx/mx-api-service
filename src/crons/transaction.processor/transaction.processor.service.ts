@@ -3,7 +3,6 @@ import { ClientProxy } from "@nestjs/microservices";
 import { Cron } from "@nestjs/schedule";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { NodeService } from "src/endpoints/nodes/node.service";
-import { ShardTransaction, TransactionProcessor } from "@elrondnetwork/transaction-processor";
 import { CacheInfo } from "src/utils/cache.info";
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { SftChangeTransactionExtractor } from "./extractor/sft.change.transaction.extractor";
@@ -22,7 +21,7 @@ import { QueryPagination } from "src/common/entities/query.pagination";
 import { TokenFilter } from "src/endpoints/tokens/entities/token.filter";
 import { NftService } from "src/endpoints/nfts/nft.service";
 import { NftFilter } from "src/endpoints/nfts/entities/nft.filter";
-
+import { ShardTransaction, TransactionProcessor } from "@multiversx/sdk-transaction-processor";
 
 @Injectable()
 export class TransactionProcessorService {

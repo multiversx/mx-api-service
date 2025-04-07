@@ -5,10 +5,14 @@ import { BlsService } from "src/endpoints/bls/bls.service";
 import { RoundDetailed } from "src/endpoints/rounds/entities/round.detailed";
 import { RoundFilter } from "src/endpoints/rounds/entities/round.filter";
 import { RoundService } from "src/endpoints/rounds/round.service";
+import { ApiConfigService } from "../../../common/api-config/api.config.service";
+import { BlockService } from "../../../endpoints/blocks/block.service";
 
 describe('RoundService', () => {
   let roundService: RoundService;
   let indexerService: IndexerService;
+  let blockService: BlockService;
+  let apiConfigService: ApiConfigService;
 
   beforeEach(async () => {
     const moduleRef = await Test.createTestingModule({
@@ -28,12 +32,26 @@ describe('RoundService', () => {
             getPublicKeys: jest.fn(),
           },
         },
-
+        {
+          provide: ApiConfigService,
+          useValue: {
+            isChainAndromedaEnabled: jest.fn(),
+            getChainAndromedaActivationEpoch: jest.fn(),
+          },
+        },
+        {
+          provide: BlockService,
+          useValue: {
+            getCurrentEpoch: jest.fn(),
+          },
+        },
       ],
     }).compile();
 
     roundService = moduleRef.get<RoundService>(RoundService);
     indexerService = moduleRef.get<IndexerService>(IndexerService);
+    blockService = moduleRef.get<BlockService>(BlockService);
+    apiConfigService = moduleRef.get<ApiConfigService>(ApiConfigService);
   });
 
   describe('getRoundCount', () => {
@@ -97,6 +115,74 @@ describe('RoundService', () => {
       expect(indexerService.getRounds).toHaveBeenCalledWith(filter);
       expect(result).toEqual(expectedRounds);
     });
+
+    it('should remove validator filter if Andromeda is active', async () => {
+      const filter = new RoundFilter();
+      filter.shard = 0;
+      filter.validator = 'should not exist';
+
+      jest.spyOn(blockService, 'getCurrentEpoch').mockResolvedValue(10);
+      jest.spyOn(apiConfigService, 'isChainAndromedaEnabled').mockReturnValue(true);
+      jest.spyOn(apiConfigService, 'getChainAndromedaActivationEpoch').mockReturnValue(9);
+
+      const indexerRoundsMock: Round[] = [
+        {
+          round: 1,
+          signersIndexes: [],
+          blockWasProposed: true,
+          shardId: 0,
+          epoch: 0,
+          timestamp: 1596117606,
+        },
+        {
+          round: 1,
+          signersIndexes: [],
+          blockWasProposed: true,
+          shardId: 0,
+          epoch: 0,
+          timestamp: 1596117116,
+        },
+      ];
+      jest.spyOn(indexerService, 'getRounds').mockResolvedValue(indexerRoundsMock);
+
+      await roundService.getRounds(filter);
+
+      expect(indexerService.getRounds).toHaveBeenCalledWith(new RoundFilter({ shard: 0, validator: undefined }));
+    });
+
+    it('should keep validator filter if Andromeda is active', async () => {
+      const filter = new RoundFilter();
+      filter.shard = 0;
+      filter.validator = 'should exist';
+
+      jest.spyOn(blockService, 'getCurrentEpoch').mockResolvedValue(10);
+      jest.spyOn(apiConfigService, 'isChainAndromedaEnabled').mockReturnValue(true);
+      jest.spyOn(apiConfigService, 'getChainAndromedaActivationEpoch').mockReturnValue(11);
+
+      const indexerRoundsMock: Round[] = [
+        {
+          round: 1,
+          signersIndexes: [],
+          blockWasProposed: true,
+          shardId: 0,
+          epoch: 0,
+          timestamp: 1596117606,
+        },
+        {
+          round: 1,
+          signersIndexes: [],
+          blockWasProposed: true,
+          shardId: 0,
+          epoch: 0,
+          timestamp: 1596117116,
+        },
+      ];
+      jest.spyOn(indexerService, 'getRounds').mockResolvedValue(indexerRoundsMock);
+
+      await roundService.getRounds(filter);
+
+      expect(indexerService.getRounds).toHaveBeenCalledWith(new RoundFilter({ shard: 0, validator: 'should exist' }));
+    });
   });
 
   describe('getRound', () => {
@@ -113,14 +199,14 @@ describe('RoundService', () => {
       };
 
       const expectedRound: RoundDetailed =
-      {
-        round: 10,
-        signers: [],
-        blockWasProposed: true,
-        shard: 0,
-        epoch: 0,
-        timestamp: 1596117606,
-      };
+        {
+          round: 10,
+          signers: [],
+          blockWasProposed: true,
+          shard: 0,
+          epoch: 0,
+          timestamp: 1596117606,
+        };
 
       jest.spyOn(indexerService, 'getRound').mockResolvedValue(indexerRoundMock);
 
