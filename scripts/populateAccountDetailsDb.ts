@@ -8,20 +8,19 @@ const fs = require('fs');
 const MONGO_URI = "mongodb://root:secret@localhost:27017"; // Replace with your MongoDB URI
 const DATABASE_NAME = "api"; // Replace with your database name
 const COLLECTION_NAME = "account-details";
+const ELASTICSEARCH_URL = "https://index.multiversx.com";
 
-
-async function fetchFirstPageFromElastic(size: number) {
+async function fetchFirstPageFromElastic(url: string, size: number) {
     let addresses: any[] = [];
     let scrollId = null;
 
     try {
         // First request to initialize sc
-        const ELASTICSEARCH_URL = "https://index.multiversx.com";
         const body = {
             size,
             query: { match_all: {} },
         }
-        let response: any = await axios.post(`${ELASTICSEARCH_URL}/accounts/_search?scroll=5m`, body);
+        let response: any = await axios.post(`${url}/accounts/_search?scroll=5m`, body);
         scrollId = response.data._scroll_id;
         addresses = response.data.hits.hits.map((hit: any) => hit._source.address);
         // Fetch next batches
@@ -61,13 +60,14 @@ async function populateAccountDetailsDb() {
         console.log("Connected to MongoDB");
         const db = client.db(DATABASE_NAME);
         const collection = db.collection(COLLECTION_NAME);
+        await collection.createIndex({ address: 1 }, { unique: true });
         const scrollSize = 1000;
         let addresses: any[] = [];
         let scrollId: any = null;
         for (let i = 1; i <= iterations; i++) {
             ({ addresses, scrollId } = i === 1
-                ? await fetchFirstPageFromElastic(scrollSize)
-                : await scroll("https://index.multiversx.com", scrollId));
+                ? await fetchFirstPageFromElastic(ELASTICSEARCH_URL, scrollSize)
+                : await scroll(ELASTICSEARCH_URL, scrollId));
 
             console.log(`Fetched ${addresses.length} addresses from ElasticSearch`);
             const scAddressDocuments: any[] = [];
