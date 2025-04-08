@@ -565,6 +565,7 @@ export class ApiConfigService {
 
   getMediaUrl(): string {
     const mediaUrl = this.configService.get<string>('urls.media');
+    console.log(`mediaUrl: ${mediaUrl}`);
     if (!mediaUrl) {
       throw new Error('No media url present');
     }

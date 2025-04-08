@@ -55,7 +55,7 @@ export class NftExtendedAttributesService {
   private async getExtendedAttributesFromIpfs(metadata: string): Promise<any> {
     const ipfsUri = `https://ipfs.io/ipfs/${metadata}`;
     const processedIpfsUri = TokenHelpers.computeNftUri(ipfsUri, this.apiConfigService.getMediaUrl() + '/nfts/asset');
-
+    console.log(`processedIpfsUri: ${processedIpfsUri}`);
     let result: any;
     let data: any;
 
