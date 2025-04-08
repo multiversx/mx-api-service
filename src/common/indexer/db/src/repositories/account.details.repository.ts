@@ -244,7 +244,7 @@ export class AccountDetailsRepository {
         try {
             const accountDb = await this.accountDetailsModel.findOne(
                 { address },
-                { _id: 0, __v: 0, tokens: 0, nfts: 0, updatedAt: 0, createdAt: 0 }
+                { _id: 0, __v: 0, tokens: 0, nfts: 0, updatedAt: 0, createdAt: 0, code: 0 }
             ).lean();
             if (!accountDb) {
                 return null;
