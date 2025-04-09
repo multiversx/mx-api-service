@@ -50,7 +50,7 @@ export class MexTokenChartsService {
     );
   }
 
-  async getTokenPricesDayResolutionRaw(tokenIdentifier: string, after: string): Promise<MexTokenChart[] | undefined> {
+  async getTokenPricesDayResolutionRaw(tokenIdentifier: string, after?: string): Promise<MexTokenChart[] | undefined> {
     const isMexToken = await this.isMexToken(tokenIdentifier);
     if (!isMexToken) {
       return undefined;
@@ -61,7 +61,7 @@ export class MexTokenChartsService {
         latestCompleteValues(
           series: "${tokenIdentifier}",
           metric: "priceUSD",
-          start: "${after}"
+          ${after ? `, start: "${after}"` : ''}
         ) {
           timestamp
           value
