@@ -59,8 +59,6 @@ import { MexPairType } from '../mex/entities/mex.pair.type';
 import { NftSubType } from '../nfts/entities/nft.sub.type';
 import { AccountContract } from './entities/account.contract';
 import { AccountFetchOptions } from './entities/account.fetch.options';
-import { NoCache } from '@multiversx/sdk-nestjs-cache';
-
 @Controller('/v2')
 @ApiTags('accounts')
 export class AccountControllerV2 {
@@ -207,7 +205,7 @@ export class AccountControllerV2 {
   @ApiQuery({ name: 'withAssets', description: 'Returns the assets for a given address', required: false })
   @ApiQuery({ name: 'timestamp', description: 'Retrieve entry from timestamp', required: false, type: Number })
   @ApiOkResponse({ type: AccountDetailed })
-  @NoCache()
+  // @NoCache()
   async getAccountDetails(
     @Param('address', ParseAddressPipe) address: string,
     @Query('withGuardianInfo', ParseBoolPipe) withGuardianInfo?: boolean,
@@ -269,7 +267,7 @@ export class AccountControllerV2 {
   @ApiQuery({ name: 'timestamp', description: 'Retrieve entries from timestamp', required: false, type: Number })
   @ApiQuery({ name: 'mexPairType', description: 'Token Mex Pair', required: false, enum: MexPairType })
   @ApiOkResponse({ type: [TokenWithBalance] })
-  @NoCache()
+  // @NoCache()
   async getAccountTokens(
     @Param('address', ParseAddressPipe) address: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
@@ -356,7 +354,7 @@ export class AccountControllerV2 {
   @ApiOkResponse({ type: TokenWithBalance })
   @ApiOperation({ summary: 'Account token details', description: 'Returns details about a specific fungible token from a given address' })
   @ApiQuery({ name: 'timestamp', description: 'Retrieve entries from timestamp', required: false, type: Number })
-  @NoCache()
+  // @NoCache()
   async getAccountToken(
     @Param('address', ParseAddressPipe) address: string,
     @Param('token', ParseTokenOrNftPipe) token: string,
@@ -641,7 +639,7 @@ export class AccountControllerV2 {
   @ApiQuery({ name: 'isScam', description: 'Filter by scam status', required: false, type: Boolean })
   @ApiQuery({ name: 'scamType', description: 'Filter by type (scam/potentialScam)', required: false })
   @ApiQuery({ name: 'timestamp', description: 'Retrieve entry from timestamp', required: false, type: Number })
-  @NoCache()
+  // @NoCache()
   async getAccountNfts(
     @Param('address', ParseAddressPipe) address: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
@@ -709,7 +707,7 @@ export class AccountControllerV2 {
   @ApiQuery({ name: 'scamType', description: 'Filter by type (scam/potentialScam)', required: false })
   @ApiQuery({ name: 'timestamp', description: 'Retrieve entry from timestamp', required: false, type: Number })
   @ApiOkResponse({ type: Number })
-  @NoCache()
+  // @NoCache()
   async getNftCount(
     @Param('address', ParseAddressPipe) address: string,
     @Query('identifiers', ParseNftArrayPipe) identifiers?: string[],
@@ -777,7 +775,7 @@ export class AccountControllerV2 {
   @ApiQuery({ name: 'extract', description: 'Extract a specific field', required: false })
   @ApiQuery({ name: 'timestamp', description: 'Retrieve entry from timestamp', required: false, type: Number })
   @ApiOkResponse({ type: NftAccount })
-  @NoCache()
+  // @NoCache()
   async getAccountNft(
     @Param('address', ParseAddressPipe) address: string,
     @Param('nft', ParseNftPipe) nft: string,
