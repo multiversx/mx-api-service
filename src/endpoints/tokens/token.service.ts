@@ -34,8 +34,6 @@ import { MexTokenService } from "../mex/mex.token.service";
 import { CollectionService } from "../collections/collection.service";
 import { NftType } from "../nfts/entities/nft.type";
 import { TokenType } from "src/common/indexer/entities";
-import { TokenAssetsPriceSourceType } from "src/common/assets/entities/token.assets.price.source.type";
-import { DataApiService } from "src/common/data-api/data-api.service";
 import { TrieOperationsTimeoutError } from "../esdt/exceptions/trie.operations.timeout.error";
 import { TokenSupplyOptions } from "./entities/token.supply.options";
 import { TransferService } from "../transfers/transfer.service";
@@ -43,6 +41,7 @@ import { MexPairService } from "../mex/mex.pair.service";
 import { MexPairState } from "../mex/entities/mex.pair.state";
 import { MexTokenType } from "../mex/entities/mex.token.type";
 import { NftSubType } from "../nfts/entities/nft.sub.type";
+import { TokenPriceService } from "./token.price/token.price.service";
 
 @Injectable()
 export class TokenService {
@@ -65,9 +64,9 @@ export class TokenService {
     @Inject(forwardRef(() => MexTokenService))
     private readonly mexTokenService: MexTokenService,
     private readonly collectionService: CollectionService,
-    private readonly dataApiService: DataApiService,
     private readonly mexPairService: MexPairService,
     private readonly apiService: ApiService,
+    private readonly tokenPriceService: TokenPriceService,
   ) { }
 
   async isToken(identifier: string): Promise<boolean> {
@@ -798,7 +797,7 @@ export class TokenService {
     await this.batchProcessTokens(tokens);
 
     await this.applyMexLiquidity(tokens.filter(x => x.type !== TokenType.MetaESDT));
-    await this.applyMexPrices(tokens.filter(x => x.type !== TokenType.MetaESDT));
+    await this.tokenPriceService.applyMexPrices(tokens.filter(x => x.type !== TokenType.MetaESDT));
     await this.applyMexPairType(tokens.filter(x => x.type !== TokenType.MetaESDT));
     await this.applyMexPairTradesCount(tokens.filter(x => x.type !== TokenType.MetaESDT));
 
@@ -810,30 +809,7 @@ export class TokenService {
       CacheInfo.EsdtAssets('').ttl,
     );
 
-    for (const token of tokens) {
-      const priceSourcetype = token.assets?.priceSource?.type;
-
-      if (priceSourcetype === TokenAssetsPriceSourceType.dataApi) {
-        token.price = await this.dataApiService.getEsdtTokenPrice(token.identifier);
-      } else if (priceSourcetype === TokenAssetsPriceSourceType.customUrl && token.assets?.priceSource?.url) {
-        const pathToPrice = token.assets?.priceSource?.path ?? "0.usdPrice";
-        const tokenData = await this.fetchTokenDataFromUrl(token.assets.priceSource.url, pathToPrice);
-
-        if (tokenData) {
-          token.price = tokenData;
-        }
-      }
-
-      if (token.price) {
-        const supply = await this.esdtService.getTokenSupply(token.identifier);
-        token.supply = supply.totalSupply;
-        token.circulatingSupply = supply.circulatingSupply;
-
-        if (token.circulatingSupply) {
-          token.marketCap = token.price * NumberUtils.denominateString(token.circulatingSupply, token.decimals);
-        }
-      }
-    }
+    await this.tokenPriceService.applyTokenPrices(tokens);
 
     tokens = tokens.sortedDescending(
       token => token.assets ? 1 : 0,
@@ -848,7 +824,7 @@ export class TokenService {
       assets: await this.assetsService.getTokenAssets(this.egldIdentifierInMultiTransfer),
       decimals: 18,
       isLowLiquidity: false,
-      price: await this.dataApiService.getEgldPrice(),
+      price: await this.tokenPriceService.getEgldPrice(),
       supply: '0',
       circulatingSupply: '0',
       marketCap: 0,
@@ -857,43 +833,6 @@ export class TokenService {
 
     return tokens;
   }
-
-  private extractData(data: any, path: string): any {
-    const keys = path.split('.');
-    let result: any = data;
-
-    for (const key of keys) {
-      if (result === undefined || result === null) {
-        return undefined;
-      }
-
-      result = !isNaN(Number(key)) ? result[Number(key)] : result[key];
-    }
-
-    return result;
-  }
-
-  private async fetchTokenDataFromUrl(url: string, path: string): Promise<any> {
-    try {
-      const result = await this.apiService.get(url);
-
-      if (!result || !result.data) {
-        this.logger.error(`Invalid response received from URL: ${url}`);
-        return;
-      }
-
-      const extractedValue = this.extractData(result.data, path);
-      if (!extractedValue) {
-        this.logger.error(`No valid data found at URL: ${url}`);
-        return;
-      }
-
-      return extractedValue;
-    } catch (error) {
-      this.logger.error(`Failed to fetch token data from URL: ${url}`, error);
-    }
-  }
-
 
   private async getTokenAssetsRaw(identifier: string): Promise<TokenAssets | undefined> {
     return await this.assetsService.getTokenAssets(identifier);
@@ -1028,40 +967,6 @@ export class TokenService {
       }
     } catch (error) {
       this.logger.error('Could not apply mex liquidity');
-      this.logger.error(error);
-    }
-  }
-
-  private async applyMexPrices(tokens: TokenDetailed[]): Promise<void> {
-    const LOW_LIQUIDITY_THRESHOLD = 0.005;
-
-    try {
-      const indexedTokens = await this.mexTokenService.getMexPricesRaw();
-      for (const token of tokens) {
-        const price = indexedTokens[token.identifier];
-        if (price) {
-          const supply = await this.esdtService.getTokenSupply(token.identifier);
-
-          if (token.assets && token.identifier.split('-')[0] === 'EGLDUSDC') {
-            price.price = price.price / (10 ** 12) * 2;
-          }
-
-          if (price.isToken) {
-            token.price = price.price;
-            token.marketCap = price.price * NumberUtils.denominateString(supply.circulatingSupply, token.decimals);
-
-            if (token.totalLiquidity && token.marketCap && (token.totalLiquidity / token.marketCap < LOW_LIQUIDITY_THRESHOLD)) {
-              token.isLowLiquidity = true;
-              token.lowLiquidityThresholdPercent = LOW_LIQUIDITY_THRESHOLD * 100;
-            }
-          }
-
-          token.supply = supply.totalSupply;
-          token.circulatingSupply = supply.circulatingSupply;
-        }
-      }
-    } catch (error) {
-      this.logger.error('Could not apply mex tokens prices');
       this.logger.error(error);
     }
   }

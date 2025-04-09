@@ -9,6 +9,7 @@ import { MexModule } from "../mex/mex.module";
 import { CollectionModule } from "../collections/collection.module";
 import { PluginModule } from "src/plugins/plugin.module";
 import { TransferModule } from "../transfers/transfer.module";
+import { TokenPriceModule } from "./token.price/token.price.module";
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { TransferModule } from "../transfers/transfer.module";
     forwardRef(() => MexModule.forRoot()),
     forwardRef(() => CollectionModule),
     forwardRef(() => PluginModule),
+    forwardRef(() => TokenPriceModule),
   ],
   providers: [
     TokenService, TokenTransferService,
