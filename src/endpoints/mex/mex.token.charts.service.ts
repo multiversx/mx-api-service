@@ -42,26 +42,28 @@ export class MexTokenChartsService {
     }
   }
 
-  async getTokenPricesDayResolution(tokenIdentifier: string, after: string): Promise<MexTokenChart[] | undefined> {
+  async getTokenPricesDayResolution(tokenIdentifier: string, after?: string, before?: string): Promise<MexTokenChart[] | undefined> {
     return await this.cachingService.getOrSet(
-      CacheInfo.TokenDailyChart(tokenIdentifier, after).key,
-      async () => await this.getTokenPricesDayResolutionRaw(tokenIdentifier, after),
-      CacheInfo.TokenDailyChart(tokenIdentifier, after).ttl,
+      CacheInfo.TokenDailyChart(tokenIdentifier, after, before).key,
+      async () => await this.getTokenPricesDayResolutionRaw(tokenIdentifier, after, before),
+      CacheInfo.TokenDailyChart(tokenIdentifier, after, before).ttl,
     );
   }
 
-  async getTokenPricesDayResolutionRaw(tokenIdentifier: string, after?: string): Promise<MexTokenChart[] | undefined> {
+  async getTokenPricesDayResolutionRaw(tokenIdentifier: string, after?: string, before?: string): Promise<MexTokenChart[] | undefined> {
     const isMexToken = await this.isMexToken(tokenIdentifier);
     if (!isMexToken) {
       return undefined;
     }
 
+    const shouldFetchAllData = before && !after;
+
     const query = gql`
       query tokenPriceDayResolution {
         latestCompleteValues(
           series: "${tokenIdentifier}",
-          metric: "priceUSD",
-          ${after ? `, start: "${after}"` : ''}
+          metric: "priceUSD"
+          ${!shouldFetchAllData && after ? `, start: "${after}"` : ''}
         ) {
           timestamp
           value
@@ -71,11 +73,37 @@ export class MexTokenChartsService {
 
     try {
       const data = await this.graphQlService.getExchangeServiceData(query);
-      return this.convertToMexTokenChart(data?.latestCompleteValues) || [];
+      const charts = this.convertToMexTokenChart(data?.latestCompleteValues) || [];
+
+      return this.filterDataByTimeWindow(charts, after, before);
     } catch (error) {
       this.logger.error(`An error occurred while fetching daily token prices for ${tokenIdentifier}`, error);
       return [];
     }
+  }
+
+  private filterDataByTimeWindow(data: MexTokenChart[], after?: string, before?: string): MexTokenChart[] {
+    if (!data || data.length === 0) {
+      return [];
+    }
+
+    let filteredData = data;
+
+    if (after) {
+      const afterTimestamp = parseInt(after);
+      if (!isNaN(afterTimestamp)) {
+        filteredData = filteredData.filter(item => item.timestamp >= afterTimestamp);
+      }
+    }
+
+    if (before) {
+      const beforeTimestamp = parseInt(before);
+      if (!isNaN(beforeTimestamp)) {
+        filteredData = filteredData.filter(item => item.timestamp <= beforeTimestamp);
+      }
+    }
+
+    return filteredData;
   }
 
   private convertToMexTokenChart(data: { timestamp: string; value: string }[]): MexTokenChart[] {

@@ -183,8 +183,10 @@ export class MexController {
   @ApiNotFoundResponse({ description: 'Price not available for given token identifier' })
   async getTokenPricesDayResolution(
     @Param('identifier', ParseTokenPipe) identifier: string,
-    @Query('after') after: string): Promise<MexTokenChart[] | undefined> {
-    const charts = await this.mexTokenChartsService.getTokenPricesDayResolution(identifier, after);
+    @Query('after') after: string,
+    @Query('before') before: string
+  ): Promise<MexTokenChart[] | undefined> {
+    const charts = await this.mexTokenChartsService.getTokenPricesDayResolution(identifier, after, before);
     if (!charts) {
       throw new NotFoundException('Price not available for given token identifier');
     }

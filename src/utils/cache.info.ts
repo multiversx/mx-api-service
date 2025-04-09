@@ -162,9 +162,16 @@ export class CacheInfo {
     };
   }
 
-  static TokenDailyChart(tokenIdentifier: string, after: string): CacheInfo {
+  static TokenDailyChart(tokenIdentifier: string, after?: string, before?: string): CacheInfo {
+    const keyParts = [`tokenDailyChart:${tokenIdentifier}`];
+    if (after) {
+      keyParts.push(`after:${after}`);
+    }
+    if (before) {
+      keyParts.push(`before:${before}`);
+    }
     return {
-      key: `tokenDailyChart:${tokenIdentifier}:${after}`,
+      key: keyParts.join(':'),
       ttl: Constants.oneDay(),
     };
   }
