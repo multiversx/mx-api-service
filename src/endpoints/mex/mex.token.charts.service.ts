@@ -56,14 +56,12 @@ export class MexTokenChartsService {
       return undefined;
     }
 
-    const shouldFetchAllData = before && !after;
-
     const query = gql`
       query tokenPriceDayResolution {
         latestCompleteValues(
           series: "${tokenIdentifier}",
           metric: "priceUSD"
-          ${!shouldFetchAllData && after ? `, start: "${after}"` : ''}
+          ${after ? `, start: "${after}"` : ''}
         ) {
           timestamp
           value
