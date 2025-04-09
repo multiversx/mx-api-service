@@ -79,14 +79,13 @@ describe('MexTokenChartsService', () => {
     });
   });
 
-  describe('getTokenPricesDayResolutionRaw', () => {
+  describe('getTokenPricesDayResolution', () => {
     it('should return an array of MexTokenChart when data is available', async () => {
       const mockToken: MexToken = { id: 'TOKEN-123456', symbol: 'TEST', name: 'Test Token' } as MexToken;
-
       const mockData = {
-        latestCompleteValues: [
-          { timestamp: '2023-05-01 00:00:00', value: '1.5' },
-          { timestamp: '2023-05-02 00:00:00', value: '1.6' },
+        values24h: [
+          { timestamp: '2023-05-08 00:00:00', value: '1.5' },
+          { timestamp: '2023-05-09 00:00:00', value: '1.6' },
         ],
       };
 
@@ -94,22 +93,97 @@ describe('MexTokenChartsService', () => {
       jest.spyOn(mexTokenService, 'getMexTokenByIdentifier').mockResolvedValue(mockToken);
       jest.spyOn(mexTokenChartsService as any, 'isMexToken').mockReturnValue(true);
 
-      const result = await mexTokenChartsService.getTokenPricesDayResolutionRaw('TOKEN-123456', '1683561648');
+      const result = await mexTokenChartsService.getTokenPricesDayResolution('TOKEN-123456', '2023-05-08', '2023-05-09');
 
       if (result) {
         expect(result).toHaveLength(2);
         expect(result[0]).toBeInstanceOf(MexTokenChart);
-        expect(result[0].timestamp).toBe(Math.floor(new Date('2023-05-01 00:00:00').getTime() / 1000));
+        expect(result[0].timestamp).toBe(Math.floor(new Date('2023-05-08 00:00:00').getTime() / 1000));
         expect(result[0].value).toBe(1.5);
+        expect(result[1].timestamp).toBe(Math.floor(new Date('2023-05-09 00:00:00').getTime() / 1000));
+        expect(result[1].value).toBe(1.6);
       }
     });
 
-    it('should return an empty array when no data is available', async () => {
+    it('should return undefined when no data is available', async () => {
       jest.spyOn(graphQlService, 'getExchangeServiceData').mockResolvedValue({});
       jest.spyOn(mexTokenChartsService as any, 'isMexToken').mockReturnValue(true);
-      const result = await mexTokenChartsService.getTokenPricesDayResolutionRaw('TOKEN-123456', '1683561648');
 
-      expect(result).toEqual([]);
+      const result = await mexTokenChartsService.getTokenPricesDayResolution('TOKEN-123456', '2023-05-08', '2023-05-09');
+
+      expect(result).toBeUndefined();
+    });
+
+    it('should return undefined when token is not a MEX token', async () => {
+      jest.spyOn(mexTokenChartsService as any, 'isMexToken').mockReturnValue(false);
+
+      const result = await mexTokenChartsService.getTokenPricesDayResolution('TOKEN-123456', '2023-05-08', '2023-05-09');
+
+      expect(result).toBeUndefined();
+    });
+
+    it('should filter data based on after date', async () => {
+      const mockToken: MexToken = { id: 'TOKEN-123456', symbol: 'TEST', name: 'Test Token' } as MexToken;
+      const mockData = {
+        values24h: [
+          { timestamp: '2023-05-07 00:00:00', value: '1.4' },
+          { timestamp: '2023-05-08 00:00:00', value: '1.5' },
+          { timestamp: '2023-05-09 00:00:00', value: '1.6' },
+        ],
+      };
+
+      jest.spyOn(graphQlService, 'getExchangeServiceData').mockResolvedValue(mockData);
+      jest.spyOn(mexTokenService, 'getMexTokenByIdentifier').mockResolvedValue(mockToken);
+      jest.spyOn(mexTokenChartsService as any, 'isMexToken').mockReturnValue(true);
+
+      const result = await mexTokenChartsService.getTokenPricesDayResolution('TOKEN-123456', '2023-05-08', '2023-05-09');
+
+      if (result) {
+        expect(result).toHaveLength(2);
+        expect(result[0].timestamp).toBe(Math.floor(new Date('2023-05-08 00:00:00').getTime() / 1000));
+        expect(result[1].timestamp).toBe(Math.floor(new Date('2023-05-09 00:00:00').getTime() / 1000));
+      }
+    });
+
+    it('should filter data based on before date', async () => {
+      const mockToken: MexToken = { id: 'TOKEN-123456', symbol: 'TEST', name: 'Test Token' } as MexToken;
+      const mockData = {
+        values24h: [
+          { timestamp: '2023-05-08 00:00:00', value: '1.5' },
+          { timestamp: '2023-05-09 00:00:00', value: '1.6' },
+          { timestamp: '2023-05-10 00:00:00', value: '1.7' },
+        ],
+      };
+
+      jest.spyOn(graphQlService, 'getExchangeServiceData').mockResolvedValue(mockData);
+      jest.spyOn(mexTokenService, 'getMexTokenByIdentifier').mockResolvedValue(mockToken);
+      jest.spyOn(mexTokenChartsService as any, 'isMexToken').mockReturnValue(true);
+
+      const result = await mexTokenChartsService.getTokenPricesDayResolution('TOKEN-123456', '2023-05-08', '2023-05-09');
+
+      if (result) {
+        expect(result).toHaveLength(2);
+        expect(result[0].timestamp).toBe(Math.floor(new Date('2023-05-08 00:00:00').getTime() / 1000));
+        expect(result[1].timestamp).toBe(Math.floor(new Date('2023-05-09 00:00:00').getTime() / 1000));
+      }
+    });
+
+    it('should return empty array when no data falls within date range', async () => {
+      const mockToken: MexToken = { id: 'TOKEN-123456', symbol: 'TEST', name: 'Test Token' } as MexToken;
+      const mockData = {
+        values24h: [
+          { timestamp: '2023-05-10 00:00:00', value: '1.7' },
+          { timestamp: '2023-05-11 00:00:00', value: '1.8' },
+        ],
+      };
+
+      jest.spyOn(graphQlService, 'getExchangeServiceData').mockResolvedValue(mockData);
+      jest.spyOn(mexTokenService, 'getMexTokenByIdentifier').mockResolvedValue(mockToken);
+      jest.spyOn(mexTokenChartsService as any, 'isMexToken').mockReturnValue(true);
+
+      const result = await mexTokenChartsService.getTokenPricesDayResolution('TOKEN-123456', '2023-05-08', '2023-05-09');
+
+      expect(result).toBeUndefined();
     });
   });
 
