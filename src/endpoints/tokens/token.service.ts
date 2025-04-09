@@ -49,6 +49,7 @@ export class TokenService {
   private readonly logger = new OriginLogger(TokenService.name);
   private readonly nftSubTypes = [NftSubType.DynamicNonFungibleESDT, NftSubType.DynamicMetaESDT, NftSubType.NonFungibleESDTv2, NftSubType.DynamicSemiFungibleESDT];
   private readonly egldIdentifierInMultiTransfer = 'EGLD-000000';
+  private readonly LOW_LIQUIDITY_THRESHOLD = 0.005;
 
   constructor(
     private readonly esdtService: EsdtService,
@@ -653,7 +654,7 @@ export class TokenService {
     await this.batchProcessTokens(tokens);
 
     await this.applyMexLiquidity(tokens.filter(x => x.type !== TokenType.MetaESDT));
-    await this.tokenPriceService.applyMexPrices(tokens.filter(x => x.type !== TokenType.MetaESDT));
+    await this.applyMexPrices(tokens.filter(x => x.type !== TokenType.MetaESDT));
     await this.applyMexPairType(tokens.filter(x => x.type !== TokenType.MetaESDT));
     await this.applyMexPairTradesCount(tokens.filter(x => x.type !== TokenType.MetaESDT));
 
@@ -707,6 +708,38 @@ export class TokenService {
       }
     } catch (error) {
       this.logger.error('Could not apply mex pair types');
+      this.logger.error(error);
+    }
+  }
+
+  private async applyMexPrices(tokens: TokenDetailed[]): Promise<void> {
+    try {
+      const indexedTokens = await this.mexTokenService.getMexPricesRaw();
+      for (const token of tokens) {
+        const price = indexedTokens[token.identifier];
+        if (price) {
+          const supply = await this.esdtService.getTokenSupply(token.identifier);
+
+          if (token.assets && token.identifier.split('-')[0] === 'EGLDUSDC') {
+            price.price = price.price / (10 ** 12) * 2;
+          }
+
+          if (price.isToken) {
+            token.price = price.price;
+            token.marketCap = price.price * NumberUtils.denominateString(supply.circulatingSupply, token.decimals);
+
+            if (token.totalLiquidity && token.marketCap && (token.totalLiquidity / token.marketCap < this.LOW_LIQUIDITY_THRESHOLD)) {
+              token.isLowLiquidity = true;
+              token.lowLiquidityThresholdPercent = this.LOW_LIQUIDITY_THRESHOLD * 100;
+            }
+          }
+
+          token.supply = supply.totalSupply;
+          token.circulatingSupply = supply.circulatingSupply;
+        }
+      }
+    } catch (error) {
+      this.logger.error('Could not apply mex tokens prices');
       this.logger.error(error);
     }
   }
