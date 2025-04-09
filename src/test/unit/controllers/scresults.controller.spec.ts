@@ -9,11 +9,14 @@ import { SmartContractResultFilter } from "src/endpoints/sc-results/entities/sma
 import { ConfigModule } from "@nestjs/config";
 import { PublicAppModule } from "src/public.app.module";
 import { SmartContractResultOptions } from "src/endpoints/sc-results/entities/smart.contract.result.options";
+import { PoolService } from "src/endpoints/pool/pool.service";
+import { mockPoolService } from "./services.mock/pool.services.mock";
 
 describe('CollectionController', () => {
   let app: INestApplication;
   const path = '/results';
   const scResultsServiceMocks = mockScResultsService();
+  const poolServiceMocks = mockPoolService();
 
   beforeEach(async () => {
     jest.resetAllMocks();
@@ -24,6 +27,7 @@ describe('CollectionController', () => {
       ],
     })
       .overrideProvider(SmartContractResultService).useValue(scResultsServiceMocks)
+      .overrideProvider(PoolService).useValue(poolServiceMocks)
       .compile();
 
     app = moduleFixture.createNestApplication();

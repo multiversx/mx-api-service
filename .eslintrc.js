@@ -28,6 +28,7 @@ module.exports = {
     "semi": ["error"],
     "comma-dangle": ["error", "always-multiline"],
     "eol-last": ["error"],
+    "@typescript-eslint/await-thenable": "error",
   },
   ignorePatterns: ['.eslintrc.js'],
 };

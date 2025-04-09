@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { LockedAssetAttributes, UnlockMilestone, LockedTokenAttributes } from '@elrondnetwork/erdjs-dex';
 import { ApiConfigService } from '../api-config/api.config.service';
 import { VmQueryService } from '../../endpoints/vm.query/vm.query.service';
 import { CacheInfo } from '../../utils/cache.info';
@@ -10,6 +9,7 @@ import { GatewayService } from '../gateway/gateway.service';
 import { MexSettingsService } from 'src/endpoints/mex/mex.settings.service';
 import { LockedTokensInterface } from './entities/locked.tokens.interface';
 import { UnlockMileStoneModel } from './entities/unlock.milestone.model';
+import { LockedAssetAttributes, UnlockMilestone, LockedTokenAttributes } from '@multiversx/sdk-exchange';
 
 @Injectable()
 export class LockedAssetService {

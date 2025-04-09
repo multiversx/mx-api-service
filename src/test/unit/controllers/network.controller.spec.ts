@@ -36,6 +36,7 @@ describe("NetworkController", () => {
         minGasLimit: 50000,
         minGasPrice: 1000000000,
         minTransactionVersion: 1,
+        gasPriceModifier: "0.000000000000000000",
       };
       networkServiceMocks.getConstants.mockResolvedValue(mockConstants);
 

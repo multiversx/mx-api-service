@@ -24,6 +24,7 @@ import { IndexerService } from "src/common/indexer/indexer.service";
 import { TrieOperationsTimeoutError } from "./exceptions/trie.operations.timeout.error";
 import { CacheInfo } from "src/utils/cache.info";
 import { AssetsService } from "src/common/assets/assets.service";
+import { NftQueryOptions } from "../nfts/entities/nft.query.options";
 
 @Injectable()
 export class EsdtAddressService {
@@ -46,16 +47,16 @@ export class EsdtAddressService {
     this.NFT_THUMBNAIL_PREFIX = this.apiConfigService.getExternalMediaUrl() + '/nfts/asset';
   }
 
-  async getNftsForAddress(address: string, filter: NftFilter, pagination: QueryPagination, source?: EsdtDataSource): Promise<NftAccount[]> {
+  async getNftsForAddress(address: string, filter: NftFilter, pagination: QueryPagination, source?: EsdtDataSource, options?: NftQueryOptions): Promise<NftAccount[]> {
     if (filter.identifiers && filter.identifiers.length === 1) {
-      return await this.getNftsForAddressFromGatewayWithElasticFallback(address, filter, pagination);
+      return await this.getNftsForAddressFromGatewayWithElasticFallback(address, filter, pagination, options);
     }
 
     if (source === EsdtDataSource.elastic || AddressUtils.isSmartContractAddress(address)) {
-      return await this.getNftsForAddressFromElastic(address, filter, pagination);
+      return await this.getNftsForAddressFromElastic(address, filter, pagination, options);
     }
 
-    return await this.getNftsForAddressFromGatewayWithElasticFallback(address, filter, pagination);
+    return await this.getNftsForAddressFromGatewayWithElasticFallback(address, filter, pagination, options);
   }
 
   async getNftCountForAddressFromElastic(address: string, filter: NftFilter): Promise<number> {
@@ -66,7 +67,7 @@ export class EsdtAddressService {
     return await this.indexerService.getCollectionCountForAddress(address, filter);
   }
 
-  private async getNftsForAddressFromElastic(address: string, filter: NftFilter, pagination: QueryPagination): Promise<NftAccount[]> {
+  private async getNftsForAddressFromElastic(address: string, filter: NftFilter, pagination: QueryPagination, options?: NftQueryOptions): Promise<NftAccount[]> {
     const esdts = await this.indexerService.getNftsForAddress(address, filter, pagination) as any;
     const gatewayNfts: GatewayNft[] = [];
 
@@ -93,7 +94,7 @@ export class EsdtAddressService {
 
     const nfts: GatewayNft[] = Object.values(gatewayNfts).map(x => x as any).filter(x => x.tokenIdentifier.split('-').length === 3);
 
-    const nftAccounts: NftAccount[] = await this.mapToNftAccount(nfts);
+    const nftAccounts: NftAccount[] = await this.mapToNftAccount(nfts, address, pagination, options);
 
     return nftAccounts;
   }
@@ -190,25 +191,25 @@ export class EsdtAddressService {
     }
   }
 
-  private async getNftsForAddressFromGatewayWithElasticFallback(address: string, filter: NftFilter, pagination: QueryPagination): Promise<NftAccount[]> {
+  private async getNftsForAddressFromGatewayWithElasticFallback(address: string, filter: NftFilter, pagination: QueryPagination, options?: NftQueryOptions): Promise<NftAccount[]> {
     const isTrieTimeout = await this.cachingService.get<boolean>(CacheInfo.AddressEsdtTrieTimeout(address).key);
     if (isTrieTimeout) {
-      return await this.getNftsForAddressFromElastic(address, filter, pagination);
+      return await this.getNftsForAddressFromElastic(address, filter, pagination, options);
     }
 
     try {
-      return await this.getNftsForAddressFromGateway(address, filter, pagination);
+      return await this.getNftsForAddressFromGateway(address, filter, pagination, options);
     } catch (error) {
       if (error instanceof TrieOperationsTimeoutError) {
         await this.cachingService.set(CacheInfo.AddressEsdtTrieTimeout(address).key, true, CacheInfo.AddressEsdtTrieTimeout(address).ttl);
-        return await this.getNftsForAddressFromElastic(address, filter, pagination);
+        return await this.getNftsForAddressFromElastic(address, filter, pagination, options);
       }
 
       throw error;
     }
   }
 
-  private async getNftsForAddressFromGateway(address: string, filter: NftFilter, pagination: QueryPagination): Promise<NftAccount[]> {
+  private async getNftsForAddressFromGateway(address: string, filter: NftFilter, pagination: QueryPagination, options?: NftQueryOptions): Promise<NftAccount[]> {
     let esdts: Record<string, any> = {};
 
     if (filter.identifiers && filter.identifiers.length === 1) {
@@ -244,12 +245,12 @@ export class EsdtAddressService {
     const collator = new Intl.Collator('en', { sensitivity: 'base' });
     nfts.sort((a: GatewayNft, b: GatewayNft) => collator.compare(a.tokenIdentifier, b.tokenIdentifier));
 
-    const nftAccounts: NftAccount[] = await this.mapToNftAccount(nfts);
+    const nftAccounts: NftAccount[] = await this.mapToNftAccount(nfts, address, pagination, options);
 
     return this.filterEsdtsForAddressFromGateway(filter, pagination, nftAccounts);
   }
 
-  private async mapToNftAccount(nfts: GatewayNft[]): Promise<NftAccount[]> {
+  private async mapToNftAccount(nfts: GatewayNft[], address?: string, pagination?: QueryPagination, options?: NftQueryOptions): Promise<NftAccount[]> {
     const nftAccounts: NftAccount[] = [];
 
     for (const dataSourceNft of nfts) {
@@ -311,7 +312,31 @@ export class EsdtAddressService {
       nftAccounts.push(nft);
     }
 
+    if (address && pagination) {
+      await this.batchFetchReceivedAtTimestamps(nftAccounts, address, options);
+    }
+
     return nftAccounts;
+  }
+
+  private async batchFetchReceivedAtTimestamps(nftAccounts: NftAccount[], address: string, options?: NftQueryOptions): Promise<void> {
+    try {
+      if (!options || !options.withReceivedAt || nftAccounts.length === 0) {
+        return;
+      }
+
+      const identifiers = nftAccounts.map(nft => nft.identifier);
+
+      const identifierToTimestamp = await this.indexerService.getAccountNftReceivedTimestamps(address, identifiers);
+
+      for (const nft of nftAccounts) {
+        if (identifierToTimestamp[nft.identifier]) {
+          nft.receivedAt = identifierToTimestamp[nft.identifier];
+        }
+      }
+    } catch (error) {
+      this.logger.error('Error in batchFetchReceivedAtTimestamps', error);
+    }
   }
 
   private async getAllEsdtsForAddressFromGatewayRaw(address: string): Promise<{ [key: string]: any }> {
@@ -367,7 +392,7 @@ export class EsdtAddressService {
 
     const ttl = await this.protocolService.getSecondsRemainingUntilNextRound();
 
-    await this.cachingService.setLocal(`address:${address}:esdts`, esdts, ttl);
+    this.cachingService.setLocal(`address:${address}:esdts`, esdts, ttl);
 
     return esdts;
   }

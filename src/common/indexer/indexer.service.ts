@@ -474,4 +474,9 @@ export class IndexerService implements IndexerInterface {
   async getEventsCount(filter: EventsFilter): Promise<number> {
     return await this.indexerInterface.getEventsCount(filter);
   }
+
+  @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
+  async getAccountNftReceivedTimestamps(address: string, identifiers: string[]): Promise<Record<string, number>> {
+    return await this.indexerInterface.getAccountNftReceivedTimestamps(address, identifiers);
+  }
 }

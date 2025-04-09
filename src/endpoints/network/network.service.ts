@@ -66,6 +66,7 @@ export class NetworkService {
     const minGasLimit = networkConfig.erd_min_gas_limit;
     const minGasPrice = networkConfig.erd_min_gas_price;
     const minTransactionVersion = networkConfig.erd_min_transaction_version;
+    const gasPriceModifier = networkConfig.erd_gas_price_modifier;
 
     return {
       chainId,
@@ -73,6 +74,7 @@ export class NetworkService {
       minGasLimit,
       minGasPrice,
       minTransactionVersion,
+      gasPriceModifier,
     };
   }
 

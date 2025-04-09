@@ -1,5 +1,5 @@
 import { CacheService } from "@multiversx/sdk-nestjs-cache";
-import { ShardTransaction, TransactionProcessor } from "@elrondnetwork/transaction-processor";
+import { ShardTransaction, TransactionProcessor } from "@multiversx/sdk-transaction-processor";
 import { Inject, Injectable, Logger } from "@nestjs/common";
 import { ClientProxy } from "@nestjs/microservices";
 import { Cron } from "@nestjs/schedule";
