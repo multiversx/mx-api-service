@@ -25,6 +25,7 @@ import { ParseArrayPipeOptions } from "@multiversx/sdk-nestjs-common/lib/pipes/e
 import { MexPairType } from "../mex/entities/mex.pair.type";
 import { TokenAssetsPriceSourceType } from "src/common/assets/entities/token.assets.price.source.type";
 import { TokenRolesService } from "./token.roles/token.roles.service";
+import { TokenSupplyService } from "./token.supply/token.supply.service";
 
 @Controller()
 @ApiTags('tokens')
@@ -34,6 +35,7 @@ export class TokenController {
     private readonly tokenRolesService: TokenRolesService,
     private readonly transactionService: TransactionService,
     private readonly transferService: TransferService,
+    private readonly tokenSupplyService: TokenSupplyService,
   ) { }
 
   @Get("/tokens")
@@ -143,7 +145,7 @@ export class TokenController {
       throw new HttpException('Token not found', HttpStatus.NOT_FOUND);
     }
 
-    const getSupplyResult = await this.tokenService.getTokenSupply(identifier, { denominated });
+    const getSupplyResult = await this.tokenSupplyService.getTokenSupply(identifier, { denominated });
     if (!getSupplyResult) {
       throw new NotFoundException('Token not found');
     }

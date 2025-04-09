@@ -11,6 +11,7 @@ import { PluginModule } from "src/plugins/plugin.module";
 import { TransferModule } from "../transfers/transfer.module";
 import { TokenPriceModule } from "./token.price/token.price.module";
 import { TokenRolesModule } from "./token.roles/token.roles.module";
+import { TokenSupplyModule } from "./token.supply/token.supply.module";
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { TokenRolesModule } from "./token.roles/token.roles.module";
     forwardRef(() => PluginModule),
     forwardRef(() => TokenPriceModule),
     forwardRef(() => TokenRolesModule),
+    forwardRef(() => TokenSupplyModule),
   ],
   providers: [
     TokenService, TokenTransferService,
