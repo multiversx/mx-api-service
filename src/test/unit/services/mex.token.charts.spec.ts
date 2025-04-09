@@ -94,7 +94,7 @@ describe('MexTokenChartsService', () => {
       jest.spyOn(mexTokenService, 'getMexTokenByIdentifier').mockResolvedValue(mockToken);
       jest.spyOn(mexTokenChartsService as any, 'isMexToken').mockReturnValue(true);
 
-      const result = await mexTokenChartsService.getTokenPricesDayResolutionRaw('TOKEN-123456', '1683561648');
+      const result = await mexTokenChartsService.getTokenPricesDayResolutionRaw('TOKEN-123456');
 
       if (result) {
         expect(result).toHaveLength(2);
@@ -107,7 +107,7 @@ describe('MexTokenChartsService', () => {
     it('should return an empty array when no data is available', async () => {
       jest.spyOn(graphQlService, 'getExchangeServiceData').mockResolvedValue({});
       jest.spyOn(mexTokenChartsService as any, 'isMexToken').mockReturnValue(true);
-      const result = await mexTokenChartsService.getTokenPricesDayResolutionRaw('TOKEN-123456', '1683561648');
+      const result = await mexTokenChartsService.getTokenPricesDayResolutionRaw('TOKEN-123456');
 
       expect(result).toEqual([]);
     });
