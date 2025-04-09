@@ -24,12 +24,14 @@ import { TokenType } from "src/common/indexer/entities";
 import { ParseArrayPipeOptions } from "@multiversx/sdk-nestjs-common/lib/pipes/entities/parse.array.options";
 import { MexPairType } from "../mex/entities/mex.pair.type";
 import { TokenAssetsPriceSourceType } from "src/common/assets/entities/token.assets.price.source.type";
+import { TokenRolesService } from "./token.roles/token.roles.service";
 
 @Controller()
 @ApiTags('tokens')
 export class TokenController {
   constructor(
     private readonly tokenService: TokenService,
+    private readonly tokenRolesService: TokenRolesService,
     private readonly transactionService: TransactionService,
     private readonly transferService: TransferService,
   ) { }
@@ -348,7 +350,7 @@ export class TokenController {
       throw new HttpException('Token not found', HttpStatus.NOT_FOUND);
     }
 
-    const roles = await this.tokenService.getTokenRoles(identifier);
+    const roles = await this.tokenRolesService.getTokenRoles(identifier);
     if (!roles) {
       throw new HttpException('Token roles not found', HttpStatus.NOT_FOUND);
     }
@@ -369,7 +371,7 @@ export class TokenController {
       throw new NotFoundException('Token not found');
     }
 
-    const roles = await this.tokenService.getTokenRolesForIdentifierAndAddress(identifier, address);
+    const roles = await this.tokenRolesService.getTokenRolesForIdentifierAndAddress(identifier, address);
     if (!roles) {
       throw new NotFoundException('Token not found');
     }

@@ -42,6 +42,7 @@ import { MexPairState } from "../mex/entities/mex.pair.state";
 import { MexTokenType } from "../mex/entities/mex.token.type";
 import { NftSubType } from "../nfts/entities/nft.sub.type";
 import { TokenPriceService } from "./token.price/token.price.service";
+import { TokenRolesService } from "./token.roles/token.roles.service";
 
 @Injectable()
 export class TokenService {
@@ -67,6 +68,7 @@ export class TokenService {
     private readonly mexPairService: MexPairService,
     private readonly apiService: ApiService,
     private readonly tokenPriceService: TokenPriceService,
+    private readonly tokenRolesService: TokenRolesService,
   ) { }
 
   async isToken(identifier: string): Promise<boolean> {
@@ -77,7 +79,7 @@ export class TokenService {
 
   async getToken(rawIdentifier: string, supplyOptions?: TokenSupplyOptions): Promise<TokenDetailed | undefined> {
     const tokens = await this.getAllTokens();
-    const identifier = this.normalizeIdentifierCase(rawIdentifier);
+    const identifier = TokenHelpers.normalizeIdentifierCase(rawIdentifier);
     let token = tokens.find(x => x.identifier === identifier);
 
     if (!TokenUtils.isToken(identifier)) {
@@ -94,25 +96,9 @@ export class TokenService {
 
     await this.applySupply(token, supplyOptions);
 
-    if (token.type === TokenType.FungibleESDT) {
-      token.roles = await this.getTokenRoles(identifier);
-    } else if (token.type === TokenType.MetaESDT) {
-      const elasticCollection = await this.indexerService.getCollection(identifier);
-      if (elasticCollection) {
-        await this.collectionService.applyCollectionRoles(token, elasticCollection);
-      }
-    }
+    await this.tokenRolesService.applyTokenRoles(token);
 
     return token;
-  }
-
-  normalizeIdentifierCase(identifier: string): string {
-    const [ticker, randomSequence] = identifier.split("-");
-    if (!ticker || !randomSequence) {
-      return identifier.toUpperCase();
-    }
-
-    return `${ticker.toUpperCase()}-${randomSequence.toLowerCase()}`;
   }
 
   async getTokens(queryPagination: QueryPagination, filter: TokenFilter): Promise<TokenDetailed[]> {
@@ -481,65 +467,6 @@ export class TokenService {
 
     const count = await this.indexerService.getTokenAccountsCount(identifier);
     return count;
-  }
-
-  private async getTokenRolesFromElastic(identifier: string): Promise<TokenRoles[] | undefined> {
-    const token = await this.indexerService.getToken(identifier);
-    if (!token) {
-      return undefined;
-    }
-
-    if (!token.roles) {
-      return [];
-    }
-
-    const roles: TokenRoles[] = [];
-    for (const role of Object.keys(token.roles)) {
-      const addresses = token.roles[role].distinct();
-
-      for (const address of addresses) {
-        let addressRole = roles.find((addressRole) => addressRole.address === address);
-        if (!addressRole) {
-          addressRole = new TokenRoles();
-          addressRole.address = address;
-          roles.push(addressRole);
-        }
-
-        TokenHelpers.setTokenRole(addressRole, role);
-      }
-    }
-
-    return roles;
-  }
-
-  async getTokenRoles(identifier: string): Promise<TokenRoles[] | undefined> {
-    return await this.getTokenRolesFromElastic(identifier);
-  }
-
-  async getTokenRolesForIdentifierAndAddress(identifier: string, address: string): Promise<TokenRoles | undefined> {
-    const token = await this.indexerService.getToken(identifier);
-
-    if (!token) {
-      return undefined;
-    }
-
-    if (!token.roles) {
-      return undefined;
-    }
-
-    const addressRoles: TokenRoles = new TokenRoles();
-    addressRoles.address = address;
-    for (const role of Object.keys(token.roles)) {
-      const addresses = token.roles[role].distinct();
-      if (addresses.includes(address)) {
-        TokenHelpers.setTokenRole(addressRoles, role);
-      }
-    }
-
-    //@ts-ignore
-    delete addressRoles.address;
-
-    return addressRoles;
   }
 
   async applySupply(token: TokenDetailed, supplyOptions?: TokenSupplyOptions): Promise<void> {

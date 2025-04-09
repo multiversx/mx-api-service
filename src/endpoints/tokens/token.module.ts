@@ -10,6 +10,7 @@ import { CollectionModule } from "../collections/collection.module";
 import { PluginModule } from "src/plugins/plugin.module";
 import { TransferModule } from "../transfers/transfer.module";
 import { TokenPriceModule } from "./token.price/token.price.module";
+import { TokenRolesModule } from "./token.roles/token.roles.module";
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { TokenPriceModule } from "./token.price/token.price.module";
     forwardRef(() => CollectionModule),
     forwardRef(() => PluginModule),
     forwardRef(() => TokenPriceModule),
+    forwardRef(() => TokenRolesModule),
   ],
   providers: [
     TokenService, TokenTransferService,
