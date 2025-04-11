@@ -29,18 +29,22 @@ import { ApplicationFilter } from "src/endpoints/applications/entities/applicati
 import { NftType } from "../entities/nft.type";
 import { EventsFilter } from "src/endpoints/events/entities/events.filter";
 import { Events } from "../entities/events";
+import { EsCircuitBreakerProxy } from "./circuit.breaker.proxy";
 
 @Injectable()
 export class ElasticIndexerService implements IndexerInterface {
   private nonFungibleEsdtTypes: NftType[] = [NftType.NonFungibleESDT, NftType.NonFungibleESDTv2, NftType.DynamicNonFungibleESDT];
   private semiFungibleEsdtTypes: NftType[] = [NftType.SemiFungibleESDT, NftType.DynamicSemiFungibleESDT];
   private metaEsdtTypes: NftType[] = [NftType.MetaESDT, NftType.DynamicMetaESDT];
+  private elasticService: EsCircuitBreakerProxy;
 
   constructor(
     private readonly apiConfigService: ApiConfigService,
-    private readonly elasticService: ElasticService,
+    elasticService: ElasticService,
     private readonly indexerHelper: ElasticIndexerHelper,
-  ) { }
+  ) {
+    this.elasticService = new EsCircuitBreakerProxy(elasticService);
+  }
 
   async getAccountsCount(filter: AccountQueryOptions): Promise<number> {
     const query = this.indexerHelper.buildAccountFilterQuery(filter);
