@@ -1,24 +1,34 @@
 import { OriginLogger } from "@multiversx/sdk-nestjs-common";
 import { ElasticQuery, ElasticService } from "@multiversx/sdk-nestjs-elastic";
+import { ServiceUnavailableException } from "@nestjs/common";
+import { ApiConfigService } from "../../api-config/api.config.service";
 
 export class EsCircuitBreakerProxy {
-  private readonly TIMEOUT_MS = 1000; // 1 second timeout
-  private readonly FAILURE_THRESHOLD = 5; // Number of failures before circuit opens
-  private readonly RESET_TIMEOUT_MS = 30000; // 30 seconds before attempting to reset
   private failureCount = 0;
   private lastFailureTime = 0;
   private isCircuitOpen = false;
   private readonly logger = new OriginLogger(EsCircuitBreakerProxy.name);
+  private readonly enabled: boolean = false;
+  private readonly config: { durationThresholdMs: number, failureCountThreshold: number, resetTimeoutMs: number };
 
   constructor(
+    readonly apiConfigService: ApiConfigService,
     private readonly elasticService: ElasticService,
-  ) { }
+  ) {
+    this.enabled = apiConfigService.isElasticCircuitBreakerEnabled();
+    this.config = apiConfigService.getElasticCircuitBreakerConfig();
+    this.logger.log(`ES Circuit Breaker. Enabled: ${this.enabled}. Duration threshold: ${this.config.durationThresholdMs}ms. 
+    FailureCountThreshold: ${this.config.failureCountThreshold}ms. FailureCountThreshold: ${this.config.failureCountThreshold}`);
+  }
 
   private async withCircuitBreaker<T>(operation: () => Promise<T>): Promise<T> {
+    if (!this.enabled) {
+      return operation();
+    }
+
     if (this.isCircuitOpen) {
       const now = Date.now();
-      if (now - this.lastFailureTime < this.RESET_TIMEOUT_MS) {
-        this.logger.log('Circuit is open, rejecting request');
+      if (now - this.lastFailureTime < this.config.resetTimeoutMs) {
         throw new Error('Circuit breaker is open');
       }
       this.logger.log('Circuit is half-open, attempting reset');
@@ -27,7 +37,7 @@ export class EsCircuitBreakerProxy {
 
     try {
       const timeoutPromise = new Promise<never>((_, reject) => {
-        setTimeout(() => reject(new Error('Operation timed out')), this.TIMEOUT_MS);
+        setTimeout(() => reject(new Error('Operation timed out')), this.config.durationThresholdMs);
       });
 
       const result = await Promise.race([operation(), timeoutPromise]);
@@ -37,12 +47,15 @@ export class EsCircuitBreakerProxy {
       this.failureCount++;
       this.lastFailureTime = Date.now();
 
-      if (this.failureCount >= this.FAILURE_THRESHOLD) {
+      if (this.failureCount >= this.config.failureCountThreshold) {
+        if (!this.isCircuitOpen) {
+          this.logger.log('Circuit breaker opened due to multiple failures');
+        }
+
         this.isCircuitOpen = true;
-        this.logger.log('Circuit breaker opened due to multiple failures');
       }
 
-      throw error;
+      throw new ServiceUnavailableException();
     }
   }
 

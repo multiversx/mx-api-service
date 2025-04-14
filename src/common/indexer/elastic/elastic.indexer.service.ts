@@ -43,7 +43,7 @@ export class ElasticIndexerService implements IndexerInterface {
     elasticService: ElasticService,
     private readonly indexerHelper: ElasticIndexerHelper,
   ) {
-    this.elasticService = new EsCircuitBreakerProxy(elasticService);
+    this.elasticService = new EsCircuitBreakerProxy(apiConfigService, elasticService);
   }
 
   async getAccountsCount(filter: AccountQueryOptions): Promise<number> {
