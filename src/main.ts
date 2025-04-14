@@ -222,7 +222,7 @@ async function configurePublicApp(publicApp: NestExpressApplication, apiConfigSe
   globalInterceptors.push(new LoggingInterceptor(metricsService));
 
   const getUseRequestCachingFlag = await settingsService.getUseRequestCachingFlag();
-  const cacheDuration = apiConfigService.getCacheDuration();
+  const cacheDuration = 1;
   if (getUseRequestCachingFlag) {
     const cachingInterceptor = new CachingInterceptor(
       cachingService,

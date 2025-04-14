@@ -2,7 +2,7 @@ import { OriginLogger } from "@multiversx/sdk-nestjs-common";
 import { ElasticQuery, ElasticService } from "@multiversx/sdk-nestjs-elastic";
 
 export class EsCircuitBreakerProxy {
-  private readonly TIMEOUT_MS = 5000; // 5 seconds timeout
+  private readonly TIMEOUT_MS = 1000; // 1 second timeout
   private readonly FAILURE_THRESHOLD = 5; // Number of failures before circuit opens
   private readonly RESET_TIMEOUT_MS = 30000; // 30 seconds before attempting to reset
   private failureCount = 0;
