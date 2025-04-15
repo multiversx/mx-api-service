@@ -96,33 +96,26 @@ def modify_yaml_variable(data, variable_name, new_value):
         return
 
 # Modify the value in the JSON structure based on the variable name
-def modify_json_variable(data, variable_name, new_value):
-    keys = variable_name[5:].split('_')  # Remove 'DAPP_' prefix
+def modify_yaml_variable(data, variable_name, new_value):
+    keys = variable_name[4:].split('_')  # Remove 'CFG_' prefix
     sub_data = data
-    
-    # Traverse the JSON structure using the keys to reach the variable and modify its value
+
+    # Traverse and create missing keys
     for key in keys[:-1]:
-        if key in sub_data:
-            sub_data = sub_data[key]
-        else:
-            print(f"Key '{key}' not found in the JSON structure.")
-            return
-    
-    # Check if the value is a JSON array (list) and parse it
+        if key not in sub_data or not isinstance(sub_data[key], dict):
+            sub_data[key] = {}  # Create intermediate dict if not present
+        sub_data = sub_data[key]
+
     final_key = keys[-1]
-    if final_key in sub_data:
-        # If the new value is a string representing a JSON array, parse it
-        if isinstance(new_value, str) and new_value.startswith('[') and new_value.endswith(']'):
-            try:
-                # Parse the string as a JSON array
-                sub_data[final_key] = json.loads(new_value)
-            except json.JSONDecodeError:
-                print(f"Error decoding JSON array in value: {new_value}")
-        else:
-            sub_data[final_key] = new_value
+    # Handle array separately
+    if isinstance(new_value, str) and new_value.startswith('arr:'):
+        try:
+            sub_data[final_key] = json.loads(new_value[4:])
+        except json.JSONDecodeError:
+            print(f"Error decoding JSON array in value: {new_value}")
+            return
     else:
-        print(f"Key '{final_key}' not found at the end of the path.")
-        return
+        sub_data[final_key] = new_value
 
 # Main function
 def main():
