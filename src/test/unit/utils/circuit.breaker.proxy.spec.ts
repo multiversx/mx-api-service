@@ -1,7 +1,7 @@
 import { ElasticService } from "@multiversx/sdk-nestjs-elastic";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
-import { EsCircuitBreakerProxy } from "src/common/indexer/elastic/circuit.breaker.proxy";
 import { ElasticQuery } from "@multiversx/sdk-nestjs-elastic";
+import { EsCircuitBreakerProxy } from "../../../common/indexer/elastic/circuit-breaker/circuit.breaker.proxy.service";
 
 describe('EsCircuitBreakerProxy', () => {
   let proxy: EsCircuitBreakerProxy;
