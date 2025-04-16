@@ -33,7 +33,7 @@ export class EsCircuitBreakerProxy {
         this.isCircuitOpen = false;
         this.failureCount = 0;
       } else {
-        throw new Error('Circuit breaker is open');
+        throw new ServiceUnavailableException();
       }
     }
 

@@ -68,7 +68,7 @@ describe('EsCircuitBreakerProxy', () => {
 
       await expect(proxy.getCount('test', new ElasticQuery()))
         .rejects
-        .toThrow('Circuit breaker is open');
+        .toThrow('Service Unavailable');
     });
 
     it('should reject requests when circuit is open', async () => {
@@ -77,7 +77,7 @@ describe('EsCircuitBreakerProxy', () => {
 
       await expect(proxy.getCount('test', new ElasticQuery()))
         .rejects
-        .toThrow('Circuit breaker is open');
+        .toThrow('Service Unavailable');
     });
 
     it('should attempt to reset circuit after reset timeout', async () => {

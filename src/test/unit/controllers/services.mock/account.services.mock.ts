@@ -76,6 +76,7 @@ export const mockApiConfigService = () => ({
   getProcessTtl: jest.fn().mockReturnValue(''),
   getExternalMediaUrl: jest.fn().mockReturnValue(''),
   getMediaUrl: jest.fn().mockReturnValue(''),
+  isElasticCircuitBreakerEnabled: jest.fn().mockReturnValue(false),
   getConfig: jest.fn(),
 });
 
