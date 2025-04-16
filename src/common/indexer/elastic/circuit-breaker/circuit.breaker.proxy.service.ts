@@ -1,8 +1,9 @@
 import { OriginLogger } from "@multiversx/sdk-nestjs-common";
 import { ElasticQuery, ElasticService } from "@multiversx/sdk-nestjs-elastic";
-import { ServiceUnavailableException } from "@nestjs/common";
-import { ApiConfigService } from "../../api-config/api.config.service";
+import { Injectable, ServiceUnavailableException } from "@nestjs/common";
+import { ApiConfigService } from "../../../api-config/api.config.service";
 
+@Injectable()
 export class EsCircuitBreakerProxy {
   private failureCount = 0;
   private lastFailureTime = 0;

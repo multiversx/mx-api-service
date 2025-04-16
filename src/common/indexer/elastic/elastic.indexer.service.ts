@@ -1,6 +1,6 @@
 import { HttpStatus, Injectable } from "@nestjs/common";
 import { BinaryUtils } from "@multiversx/sdk-nestjs-common";
-import { ElasticService, ElasticQuery, QueryOperator, QueryType, QueryConditionOptions, ElasticSortOrder, ElasticSortProperty, TermsQuery, RangeGreaterThanOrEqual, MatchQuery } from "@multiversx/sdk-nestjs-elastic";
+import { ElasticQuery, QueryOperator, QueryType, QueryConditionOptions, ElasticSortOrder, ElasticSortProperty, TermsQuery, RangeGreaterThanOrEqual, MatchQuery } from "@multiversx/sdk-nestjs-elastic";
 import { IndexerInterface } from "../indexer.interface";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { CollectionFilter } from "src/endpoints/collections/entities/collection.filter";
@@ -29,22 +29,19 @@ import { ApplicationFilter } from "src/endpoints/applications/entities/applicati
 import { NftType } from "../entities/nft.type";
 import { EventsFilter } from "src/endpoints/events/entities/events.filter";
 import { Events } from "../entities/events";
-import { EsCircuitBreakerProxy } from "./circuit.breaker.proxy";
+import { EsCircuitBreakerProxy } from "./circuit-breaker/circuit.breaker.proxy.service";
 
 @Injectable()
 export class ElasticIndexerService implements IndexerInterface {
   private nonFungibleEsdtTypes: NftType[] = [NftType.NonFungibleESDT, NftType.NonFungibleESDTv2, NftType.DynamicNonFungibleESDT];
   private semiFungibleEsdtTypes: NftType[] = [NftType.SemiFungibleESDT, NftType.DynamicSemiFungibleESDT];
   private metaEsdtTypes: NftType[] = [NftType.MetaESDT, NftType.DynamicMetaESDT];
-  private elasticService: EsCircuitBreakerProxy;
 
   constructor(
     private readonly apiConfigService: ApiConfigService,
-    elasticService: ElasticService,
+    private readonly elasticService: EsCircuitBreakerProxy,
     private readonly indexerHelper: ElasticIndexerHelper,
-  ) {
-    this.elasticService = new EsCircuitBreakerProxy(apiConfigService, elasticService);
-  }
+  ) { }
 
   async getAccountsCount(filter: AccountQueryOptions): Promise<number> {
     const query = this.indexerHelper.buildAccountFilterQuery(filter);
