@@ -8,7 +8,7 @@ export class EsCircuitBreakerProxy {
   private lastFailureTime = 0;
   private isCircuitOpen = false;
   private readonly logger = new OriginLogger(EsCircuitBreakerProxy.name);
-  private readonly enabled: boolean = false;
+  private readonly enabled: boolean;
   private readonly config: { durationThresholdMs: number, failureCountThreshold: number, resetTimeoutMs: number };
 
   constructor(
@@ -28,11 +28,13 @@ export class EsCircuitBreakerProxy {
 
     if (this.isCircuitOpen) {
       const now = Date.now();
-      if (now - this.lastFailureTime < this.config.resetTimeoutMs) {
+      if (now - this.lastFailureTime >= this.config.resetTimeoutMs) {
+        this.logger.log('Circuit is half-open, attempting reset');
+        this.isCircuitOpen = false;
+        this.failureCount = 0;
+      } else {
         throw new Error('Circuit breaker is open');
       }
-      this.logger.log('Circuit is half-open, attempting reset');
-      this.isCircuitOpen = false;
     }
 
     try {
