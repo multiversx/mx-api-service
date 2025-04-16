@@ -114,8 +114,8 @@ export class NftQueueController {
       }
 
       nft.media = await this.nftMediaService.getMedia(nft.identifier) ?? undefined;
-      console.log(`nft.media: '${JSON.stringify(nft.media)}'`);
-      console.log(`nft settings: '${JSON.stringify(settings)}'`);
+      this.logger.log(`nft.media: '${JSON.stringify(nft.media)}'`);
+      this.logger.log(`nft settings: '${JSON.stringify(settings)}'`);
 
       if (settings.forceRefreshMedia || !nft.media) {
         this.logger.log(`Started Refreshing media for NFT with identifier '${nft.identifier}'`);
