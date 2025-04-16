@@ -9,6 +9,9 @@ import { MexModule } from "../mex/mex.module";
 import { CollectionModule } from "../collections/collection.module";
 import { PluginModule } from "src/plugins/plugin.module";
 import { TransferModule } from "../transfers/transfer.module";
+import { TokenPriceModule } from "./token.price/token.price.module";
+import { TokenRolesModule } from "./token.roles/token.roles.module";
+import { TokenSupplyModule } from "./token.supply/token.supply.module";
 
 @Module({
   imports: [
@@ -20,6 +23,9 @@ import { TransferModule } from "../transfers/transfer.module";
     forwardRef(() => MexModule.forRoot()),
     forwardRef(() => CollectionModule),
     forwardRef(() => PluginModule),
+    forwardRef(() => TokenPriceModule),
+    forwardRef(() => TokenRolesModule),
+    forwardRef(() => TokenSupplyModule),
   ],
   providers: [
     TokenService, TokenTransferService,

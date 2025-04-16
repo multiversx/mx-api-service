@@ -13,7 +13,6 @@ import { GatewayService } from "src/common/gateway/gateway.service";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { TokenProperties } from "./entities/token.properties";
 import { TokenRoles } from "./entities/token.roles";
-import { TokenSupplyResult } from "./entities/token.supply.result";
 import { TokenDetailedWithBalance } from "./entities/token.detailed.with.balance";
 import { SortOrder } from "src/common/entities/sort.order";
 import { TokenSort } from "./entities/token.sort";
@@ -34,8 +33,6 @@ import { MexTokenService } from "../mex/mex.token.service";
 import { CollectionService } from "../collections/collection.service";
 import { NftType } from "../nfts/entities/nft.type";
 import { TokenType } from "src/common/indexer/entities";
-import { TokenAssetsPriceSourceType } from "src/common/assets/entities/token.assets.price.source.type";
-import { DataApiService } from "src/common/data-api/data-api.service";
 import { TrieOperationsTimeoutError } from "../esdt/exceptions/trie.operations.timeout.error";
 import { TokenSupplyOptions } from "./entities/token.supply.options";
 import { TransferService } from "../transfers/transfer.service";
@@ -43,12 +40,16 @@ import { MexPairService } from "../mex/mex.pair.service";
 import { MexPairState } from "../mex/entities/mex.pair.state";
 import { MexTokenType } from "../mex/entities/mex.token.type";
 import { NftSubType } from "../nfts/entities/nft.sub.type";
+import { TokenPriceService } from "./token.price/token.price.service";
+import { TokenRolesService } from "./token.roles/token.roles.service";
+import { TokenSupplyService } from "./token.supply/token.supply.service";
 
 @Injectable()
 export class TokenService {
   private readonly logger = new OriginLogger(TokenService.name);
   private readonly nftSubTypes = [NftSubType.DynamicNonFungibleESDT, NftSubType.DynamicMetaESDT, NftSubType.NonFungibleESDTv2, NftSubType.DynamicSemiFungibleESDT];
   private readonly egldIdentifierInMultiTransfer = 'EGLD-000000';
+  private readonly LOW_LIQUIDITY_THRESHOLD = 0.005;
 
   constructor(
     private readonly esdtService: EsdtService,
@@ -65,9 +66,11 @@ export class TokenService {
     @Inject(forwardRef(() => MexTokenService))
     private readonly mexTokenService: MexTokenService,
     private readonly collectionService: CollectionService,
-    private readonly dataApiService: DataApiService,
     private readonly mexPairService: MexPairService,
     private readonly apiService: ApiService,
+    private readonly tokenPriceService: TokenPriceService,
+    private readonly tokenRolesService: TokenRolesService,
+    private readonly tokenSupplyService: TokenSupplyService,
   ) { }
 
   async isToken(identifier: string): Promise<boolean> {
@@ -78,7 +81,7 @@ export class TokenService {
 
   async getToken(rawIdentifier: string, supplyOptions?: TokenSupplyOptions): Promise<TokenDetailed | undefined> {
     const tokens = await this.getAllTokens();
-    const identifier = this.normalizeIdentifierCase(rawIdentifier);
+    const identifier = TokenHelpers.normalizeIdentifierCase(rawIdentifier);
     let token = tokens.find(x => x.identifier === identifier);
 
     if (!TokenUtils.isToken(identifier)) {
@@ -93,27 +96,11 @@ export class TokenService {
 
     this.applyTickerFromAssets(token);
 
-    await this.applySupply(token, supplyOptions);
+    await this.tokenSupplyService.applySupply(token, supplyOptions);
 
-    if (token.type === TokenType.FungibleESDT) {
-      token.roles = await this.getTokenRoles(identifier);
-    } else if (token.type === TokenType.MetaESDT) {
-      const elasticCollection = await this.indexerService.getCollection(identifier);
-      if (elasticCollection) {
-        await this.collectionService.applyCollectionRoles(token, elasticCollection);
-      }
-    }
+    await this.tokenRolesService.applyTokenRoles(token);
 
     return token;
-  }
-
-  normalizeIdentifierCase(identifier: string): string {
-    const [ticker, randomSequence] = identifier.split("-");
-    if (!ticker || !randomSequence) {
-      return identifier.toUpperCase();
-    }
-
-    return `${ticker.toUpperCase()}-${randomSequence.toLowerCase()}`;
   }
 
   async getTokens(queryPagination: QueryPagination, filter: TokenFilter): Promise<TokenDetailed[]> {
@@ -382,7 +369,7 @@ export class TokenService {
 
     this.applyTickerFromAssets(tokenWithBalance);
 
-    await this.applySupply(tokenWithBalance);
+    await this.tokenSupplyService.applySupply(tokenWithBalance);
 
     return tokenWithBalance;
   }
@@ -482,137 +469,6 @@ export class TokenService {
 
     const count = await this.indexerService.getTokenAccountsCount(identifier);
     return count;
-  }
-
-  private async getTokenRolesFromElastic(identifier: string): Promise<TokenRoles[] | undefined> {
-    const token = await this.indexerService.getToken(identifier);
-    if (!token) {
-      return undefined;
-    }
-
-    if (!token.roles) {
-      return [];
-    }
-
-    const roles: TokenRoles[] = [];
-    for (const role of Object.keys(token.roles)) {
-      const addresses = token.roles[role].distinct();
-
-      for (const address of addresses) {
-        let addressRole = roles.find((addressRole) => addressRole.address === address);
-        if (!addressRole) {
-          addressRole = new TokenRoles();
-          addressRole.address = address;
-          roles.push(addressRole);
-        }
-
-        TokenHelpers.setTokenRole(addressRole, role);
-      }
-    }
-
-    return roles;
-  }
-
-  async getTokenRoles(identifier: string): Promise<TokenRoles[] | undefined> {
-    return await this.getTokenRolesFromElastic(identifier);
-  }
-
-  async getTokenRolesForIdentifierAndAddress(identifier: string, address: string): Promise<TokenRoles | undefined> {
-    const token = await this.indexerService.getToken(identifier);
-
-    if (!token) {
-      return undefined;
-    }
-
-    if (!token.roles) {
-      return undefined;
-    }
-
-    const addressRoles: TokenRoles = new TokenRoles();
-    addressRoles.address = address;
-    for (const role of Object.keys(token.roles)) {
-      const addresses = token.roles[role].distinct();
-      if (addresses.includes(address)) {
-        TokenHelpers.setTokenRole(addressRoles, role);
-      }
-    }
-
-    //@ts-ignore
-    delete addressRoles.address;
-
-    return addressRoles;
-  }
-
-  async applySupply(token: TokenDetailed, supplyOptions?: TokenSupplyOptions): Promise<void> {
-    const supply = await this.esdtService.getTokenSupply(token.identifier);
-    const denominated = supplyOptions && supplyOptions.denominated;
-
-    if (denominated === true) {
-      token.supply = NumberUtils.denominate(BigInt(supply.totalSupply), token.decimals);
-      token.circulatingSupply = NumberUtils.denominate(BigInt(supply.circulatingSupply), token.decimals);
-    } else if (denominated === false) {
-      token.supply = supply.totalSupply;
-      token.circulatingSupply = supply.circulatingSupply;
-    } else {
-      token.supply = NumberUtils.denominate(BigInt(supply.totalSupply), token.decimals).toFixed();
-      token.circulatingSupply = NumberUtils.denominate(BigInt(supply.circulatingSupply), token.decimals).toFixed();
-    }
-
-    if (supply.minted) {
-      token.minted = supply.minted;
-    }
-
-    if (supply.burned) {
-      token.burnt = supply.burned;
-    }
-
-    if (supply.initialMinted) {
-      token.initialMinted = supply.initialMinted;
-    }
-  }
-
-  async getTokenSupply(identifier: string, supplyOptions?: TokenSupplyOptions): Promise<TokenSupplyResult | undefined> {
-    let totalSupply: string | number;
-    let circulatingSupply: string | number;
-
-    const properties = await this.getTokenProperties(identifier);
-    if (!properties) {
-      return undefined;
-    }
-
-    const result = await this.esdtService.getTokenSupply(identifier);
-    const denominated = supplyOptions && supplyOptions.denominated;
-
-    if (denominated === true) {
-      totalSupply = NumberUtils.denominateString(result.totalSupply, properties.decimals);
-      circulatingSupply = NumberUtils.denominateString(result.circulatingSupply, properties.decimals);
-    } else if (denominated === false) {
-      totalSupply = result.totalSupply;
-      circulatingSupply = result.circulatingSupply;
-    } else {
-      totalSupply = NumberUtils.denominateString(result.totalSupply, properties.decimals).toFixed();
-      circulatingSupply = NumberUtils.denominateString(result.circulatingSupply, properties.decimals).toFixed();
-    }
-
-    let lockedAccounts = result.lockedAccounts;
-    if (lockedAccounts !== undefined) {
-      lockedAccounts = JSON.parse(JSON.stringify(lockedAccounts));
-      if (denominated === true) {
-        // @ts-ignore
-        for (const lockedAccount of lockedAccounts) {
-          lockedAccount.balance = NumberUtils.denominateString(lockedAccount.balance.toString(), properties.decimals);
-        }
-      }
-    }
-
-    return {
-      supply: totalSupply,
-      circulatingSupply: circulatingSupply,
-      minted: denominated === true && result.minted ? NumberUtils.denominateString(result.minted, properties.decimals) : result.minted,
-      burnt: denominated === true && result.burned ? NumberUtils.denominateString(result.burned, properties.decimals) : result.burned,
-      initialMinted: denominated === true && result.initialMinted ? NumberUtils.denominateString(result.initialMinted, properties.decimals) : result.initialMinted,
-      lockedAccounts: lockedAccounts?.sortedDescending(account => Number(account.balance)),
-    };
   }
 
   async getTokenProperties(identifier: string): Promise<TokenProperties | undefined> {
@@ -810,30 +666,7 @@ export class TokenService {
       CacheInfo.EsdtAssets('').ttl,
     );
 
-    for (const token of tokens) {
-      const priceSourcetype = token.assets?.priceSource?.type;
-
-      if (priceSourcetype === TokenAssetsPriceSourceType.dataApi) {
-        token.price = await this.dataApiService.getEsdtTokenPrice(token.identifier);
-      } else if (priceSourcetype === TokenAssetsPriceSourceType.customUrl && token.assets?.priceSource?.url) {
-        const pathToPrice = token.assets?.priceSource?.path ?? "0.usdPrice";
-        const tokenData = await this.fetchTokenDataFromUrl(token.assets.priceSource.url, pathToPrice);
-
-        if (tokenData) {
-          token.price = tokenData;
-        }
-      }
-
-      if (token.price) {
-        const supply = await this.esdtService.getTokenSupply(token.identifier);
-        token.supply = supply.totalSupply;
-        token.circulatingSupply = supply.circulatingSupply;
-
-        if (token.circulatingSupply) {
-          token.marketCap = token.price * NumberUtils.denominateString(token.circulatingSupply, token.decimals);
-        }
-      }
-    }
+    await this.tokenPriceService.applyTokenPrices(tokens);
 
     tokens = tokens.sortedDescending(
       token => token.assets ? 1 : 0,
@@ -848,7 +681,7 @@ export class TokenService {
       assets: await this.assetsService.getTokenAssets(this.egldIdentifierInMultiTransfer),
       decimals: 18,
       isLowLiquidity: false,
-      price: await this.dataApiService.getEgldPrice(),
+      price: await this.tokenPriceService.getEgldPrice(),
       supply: '0',
       circulatingSupply: '0',
       marketCap: 0,
@@ -857,43 +690,6 @@ export class TokenService {
 
     return tokens;
   }
-
-  private extractData(data: any, path: string): any {
-    const keys = path.split('.');
-    let result: any = data;
-
-    for (const key of keys) {
-      if (result === undefined || result === null) {
-        return undefined;
-      }
-
-      result = !isNaN(Number(key)) ? result[Number(key)] : result[key];
-    }
-
-    return result;
-  }
-
-  private async fetchTokenDataFromUrl(url: string, path: string): Promise<any> {
-    try {
-      const result = await this.apiService.get(url);
-
-      if (!result || !result.data) {
-        this.logger.error(`Invalid response received from URL: ${url}`);
-        return;
-      }
-
-      const extractedValue = this.extractData(result.data, path);
-      if (!extractedValue) {
-        this.logger.error(`No valid data found at URL: ${url}`);
-        return;
-      }
-
-      return extractedValue;
-    } catch (error) {
-      this.logger.error(`Failed to fetch token data from URL: ${url}`, error);
-    }
-  }
-
 
   private async getTokenAssetsRaw(identifier: string): Promise<TokenAssets | undefined> {
     return await this.assetsService.getTokenAssets(identifier);
@@ -912,6 +708,38 @@ export class TokenService {
       }
     } catch (error) {
       this.logger.error('Could not apply mex pair types');
+      this.logger.error(error);
+    }
+  }
+
+  private async applyMexPrices(tokens: TokenDetailed[]): Promise<void> {
+    try {
+      const indexedTokens = await this.mexTokenService.getMexPricesRaw();
+      for (const token of tokens) {
+        const price = indexedTokens[token.identifier];
+        if (price) {
+          const supply = await this.esdtService.getTokenSupply(token.identifier);
+
+          if (token.assets && token.identifier.split('-')[0] === 'EGLDUSDC') {
+            price.price = price.price / (10 ** 12) * 2;
+          }
+
+          if (price.isToken) {
+            token.price = price.price;
+            token.marketCap = price.price * NumberUtils.denominateString(supply.circulatingSupply, token.decimals);
+
+            if (token.totalLiquidity && token.marketCap && (token.totalLiquidity / token.marketCap < this.LOW_LIQUIDITY_THRESHOLD)) {
+              token.isLowLiquidity = true;
+              token.lowLiquidityThresholdPercent = this.LOW_LIQUIDITY_THRESHOLD * 100;
+            }
+          }
+
+          token.supply = supply.totalSupply;
+          token.circulatingSupply = supply.circulatingSupply;
+        }
+      }
+    } catch (error) {
+      this.logger.error('Could not apply mex tokens prices');
       this.logger.error(error);
     }
   }
@@ -1028,40 +856,6 @@ export class TokenService {
       }
     } catch (error) {
       this.logger.error('Could not apply mex liquidity');
-      this.logger.error(error);
-    }
-  }
-
-  private async applyMexPrices(tokens: TokenDetailed[]): Promise<void> {
-    const LOW_LIQUIDITY_THRESHOLD = 0.005;
-
-    try {
-      const indexedTokens = await this.mexTokenService.getMexPricesRaw();
-      for (const token of tokens) {
-        const price = indexedTokens[token.identifier];
-        if (price) {
-          const supply = await this.esdtService.getTokenSupply(token.identifier);
-
-          if (token.assets && token.identifier.split('-')[0] === 'EGLDUSDC') {
-            price.price = price.price / (10 ** 12) * 2;
-          }
-
-          if (price.isToken) {
-            token.price = price.price;
-            token.marketCap = price.price * NumberUtils.denominateString(supply.circulatingSupply, token.decimals);
-
-            if (token.totalLiquidity && token.marketCap && (token.totalLiquidity / token.marketCap < LOW_LIQUIDITY_THRESHOLD)) {
-              token.isLowLiquidity = true;
-              token.lowLiquidityThresholdPercent = LOW_LIQUIDITY_THRESHOLD * 100;
-            }
-          }
-
-          token.supply = supply.totalSupply;
-          token.circulatingSupply = supply.circulatingSupply;
-        }
-      }
-    } catch (error) {
-      this.logger.error('Could not apply mex tokens prices');
       this.logger.error(error);
     }
   }

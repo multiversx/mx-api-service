@@ -31,6 +31,9 @@ import { NftCollection } from "src/endpoints/collections/entities/nft.collection
 import { EsdtSupply } from "src/endpoints/esdt/entities/esdt.supply";
 import { TokenDetailed } from "src/endpoints/tokens/entities/token.detailed";
 import { NumberUtils } from "@multiversx/sdk-nestjs-common";
+import { TokenPriceService } from "src/endpoints/tokens/token.price/token.price.service";
+import { TokenSupplyService } from "src/endpoints/tokens/token.supply/token.supply.service";
+import { TokenRolesService } from "src/endpoints/tokens/token.roles/token.roles.service";
 
 describe('Token Service', () => {
   let tokenService: TokenService;
@@ -42,6 +45,9 @@ describe('Token Service', () => {
   let apiConfigService: ApiConfigService;
   let cacheService: CacheService;
   let dataApiService: DataApiService;
+  let tokenSupplyService: TokenSupplyService;
+  let tokenRolesService: TokenRolesService;
+  let tokenPriceService: TokenPriceService;
 
   beforeEach(async () => {
     const moduleRef = await Test.createTestingModule({
@@ -155,6 +161,28 @@ describe('Token Service', () => {
             get: jest.fn(),
           },
         },
+        {
+          provide: TokenPriceService,
+          useValue: {
+            getTokenPrice: jest.fn(),
+            applyTokenPrices: jest.fn(),
+            getEgldPrice: jest.fn(),
+            fetchTokenDataFromUrl: jest.fn(),
+          },
+        },
+        {
+          provide: TokenSupplyService,
+          useValue: {
+            getTokenSupply: jest.fn(),
+          },
+        },
+        {
+          provide: TokenRolesService,
+          useValue: {
+            getTokenRoles: jest.fn(),
+            applyTokenRoles: jest.fn(),
+          },
+        },
       ],
     }).compile();
 
@@ -167,6 +195,9 @@ describe('Token Service', () => {
     apiService = moduleRef.get<ApiService>(ApiService);
     apiConfigService = moduleRef.get<ApiConfigService>(ApiConfigService);
     dataApiService = moduleRef.get<DataApiService>(DataApiService);
+    tokenSupplyService = moduleRef.get<TokenSupplyService>(TokenSupplyService);
+    tokenRolesService = moduleRef.get<TokenRolesService>(TokenRolesService);
+    tokenPriceService = moduleRef.get<TokenPriceService>(TokenPriceService);
   });
 
   afterEach(() => {
@@ -201,14 +232,14 @@ describe('Token Service', () => {
       tokenService.getAllTokens = jest.fn().mockResolvedValue(data);
 
       tokenService.applyTickerFromAssets = jest.fn().mockResolvedValue(undefined);
-      tokenService.applySupply = jest.fn().mockResolvedValue(undefined);
-      tokenService.getTokenRoles = jest.fn().mockResolvedValue([]);
+      tokenSupplyService.applySupply = jest.fn().mockResolvedValue(undefined);
+      tokenRolesService.getTokenRoles = jest.fn().mockResolvedValue([]);
 
       const result = await tokenService.getToken('WEGLD-bd4d79');
       expect(tokenService.getAllTokens).toHaveBeenCalledTimes(1);
       expect(tokenService.applyTickerFromAssets).toHaveBeenCalledTimes(1);
-      expect(tokenService.applySupply).toHaveBeenCalledTimes(1);
-      expect(tokenService.getTokenRoles).toHaveBeenCalledTimes(1);
+      expect(tokenSupplyService.applySupply).toHaveBeenCalledTimes(1);
+      expect(tokenRolesService.applyTokenRoles).toHaveBeenCalledTimes(1);
       expect(result).toEqual(expect.objectContaining({
         identifier: 'WEGLD-bd4d79',
         type: 'FungibleESDT',
@@ -246,14 +277,14 @@ describe('Token Service', () => {
       tokenService.getAllTokens = jest.fn().mockResolvedValue(data);
 
       tokenService.applyTickerFromAssets = jest.fn().mockResolvedValue(undefined);
-      tokenService.applySupply = jest.fn().mockResolvedValue(undefined);
-      tokenService.getTokenRoles = jest.fn().mockResolvedValue([]);
+      tokenSupplyService.applySupply = jest.fn().mockResolvedValue(undefined);
+      tokenRolesService.getTokenRoles = jest.fn().mockResolvedValue([]);
 
       const result = await tokenService.getToken('wEglD-bd4D79');
       expect(tokenService.getAllTokens).toHaveBeenCalledTimes(1);
       expect(tokenService.applyTickerFromAssets).toHaveBeenCalledTimes(1);
-      expect(tokenService.applySupply).toHaveBeenCalledTimes(1);
-      expect(tokenService.getTokenRoles).toHaveBeenCalledTimes(1);
+      expect(tokenSupplyService.applySupply).toHaveBeenCalledTimes(1);
+      expect(tokenRolesService.applyTokenRoles).toHaveBeenCalledTimes(1);
       expect(result).toEqual(expect.objectContaining({
         identifier: 'WEGLD-bd4d79',
         type: 'FungibleESDT',
@@ -264,15 +295,15 @@ describe('Token Service', () => {
     it('should return undefined if identifier does not exist in getAllTokens', async () => {
       tokenService.getAllTokens = jest.fn().mockResolvedValue([]);
       tokenService.applyTickerFromAssets = jest.fn().mockResolvedValue(undefined);
-      tokenService.applySupply = jest.fn().mockResolvedValue(undefined);
-      tokenService.getTokenRoles = jest.fn().mockResolvedValue(undefined);
+      tokenSupplyService.applySupply = jest.fn().mockResolvedValue(undefined);
+      tokenRolesService.getTokenRoles = jest.fn().mockResolvedValue(undefined);
 
       const result = await tokenService.getToken('token-1234');
 
       expect(tokenService.getAllTokens).toHaveBeenCalledTimes(1);
       expect(tokenService.applyTickerFromAssets).not.toHaveBeenCalled();
-      expect(tokenService.applySupply).not.toHaveBeenCalled();
-      expect(tokenService.getTokenRoles).not.toHaveBeenCalled();
+      expect(tokenSupplyService.applySupply).not.toHaveBeenCalled();
+      expect(tokenRolesService.getTokenRoles).not.toHaveBeenCalled();
       expect(result).toBeUndefined();
     });
 
@@ -281,15 +312,15 @@ describe('Token Service', () => {
       tokenService.getAllTokens = jest.fn().mockResolvedValue(data);
 
       tokenService.applyTickerFromAssets = jest.fn().mockResolvedValue(undefined);
-      tokenService.applySupply = jest.fn().mockResolvedValue(undefined);
-      tokenService.getTokenRoles = jest.fn().mockResolvedValue(undefined);
+      tokenSupplyService.applySupply = jest.fn().mockResolvedValue(undefined);
+      tokenRolesService.getTokenRoles = jest.fn().mockResolvedValue(undefined);
 
       const result = await tokenService.getToken('invalid-token');
 
       expect(tokenService.getAllTokens).toHaveBeenCalledTimes(1);
       expect(tokenService.applyTickerFromAssets).not.toHaveBeenCalled();
-      expect(tokenService.applySupply).not.toHaveBeenCalled();
-      expect(tokenService.getTokenRoles).not.toHaveBeenCalled();
+      expect(tokenSupplyService.applySupply).not.toHaveBeenCalled();
+      expect(tokenRolesService.getTokenRoles).not.toHaveBeenCalled();
       expect(result).toBeUndefined();
     });
 
@@ -298,14 +329,15 @@ describe('Token Service', () => {
       tokenService.getAllTokens = jest.fn().mockResolvedValue(data);
 
       tokenService.applyTickerFromAssets = jest.fn().mockResolvedValue(undefined);
-      tokenService.applySupply = jest.fn().mockResolvedValue(undefined);
-      tokenService.getTokenRoles = jest.fn().mockResolvedValue(undefined);
+      tokenSupplyService.applySupply = jest.fn().mockResolvedValue(undefined);
+      tokenRolesService.getTokenRoles = jest.fn().mockResolvedValue(undefined);
 
       const result = await tokenService.getToken('token1');
 
       expect(tokenService.getAllTokens).toHaveBeenCalledTimes(1);
       expect(tokenService.applyTickerFromAssets).toHaveBeenCalledTimes(0);
-      expect(tokenService.applySupply).toHaveBeenCalledTimes(0);
+      expect(tokenSupplyService.applySupply).toHaveBeenCalledTimes(0);
+      expect(tokenRolesService.getTokenRoles).toHaveBeenCalledTimes(0);
       expect(result).toBeUndefined();
     });
   });
@@ -686,13 +718,13 @@ describe('Token Service', () => {
 
         jest.spyOn(tokenService as any, 'batchProcessTokens').mockImplementation(() => Promise.resolve());
         jest.spyOn(tokenService as any, 'applyMexLiquidity').mockImplementation(() => Promise.resolve());
-        jest.spyOn(tokenService as any, 'applyMexPrices').mockImplementation(() => Promise.resolve());
+        jest.spyOn(Object.getPrototypeOf(tokenService), 'applyMexPrices').mockImplementation(() => Promise.resolve());
         jest.spyOn(tokenService as any, 'applyMexPairType').mockImplementation(() => Promise.resolve());
         jest.spyOn(tokenService as any, 'applyMexPairTradesCount').mockImplementation(() => Promise.resolve());
         jest.spyOn(cacheService as any, 'batchApplyAll').mockImplementation(() => Promise.resolve());
         jest.spyOn(dataApiService, 'getEsdtTokenPrice').mockResolvedValue(100);
-        jest.spyOn(dataApiService, 'getEgldPrice').mockResolvedValue(100);
-        jest.spyOn(tokenService as any, 'fetchTokenDataFromUrl').mockResolvedValue(100);
+        jest.spyOn(tokenPriceService, 'getEgldPrice').mockResolvedValue(100);
+        jest.spyOn(tokenPriceService as any, 'fetchTokenDataFromUrl').mockResolvedValue(100);
         jest.spyOn(esdtService, 'getTokenSupply').mockResolvedValue(mockTokenSupply as EsdtSupply);
 
         // eslint-disable-next-line require-await

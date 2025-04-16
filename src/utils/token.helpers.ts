@@ -110,4 +110,13 @@ export class TokenHelpers {
       return hash;
     }
   }
+
+  static normalizeIdentifierCase(identifier: string): string {
+    const [ticker, randomSequence] = identifier.split("-");
+    if (!ticker || !randomSequence) {
+      return identifier.toUpperCase();
+    }
+
+    return `${ticker.toUpperCase()}-${randomSequence.toLowerCase()}`;
+  }
 }
