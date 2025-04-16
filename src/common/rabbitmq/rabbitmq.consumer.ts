@@ -22,7 +22,6 @@ export class RabbitMqConsumer {
     deadLetterExchange: configuration().features?.eventsNotifier?.dlx ?? 'api-process-logs-and-events-dlx',
   })
   async consumeEvents(rawEvents: any) {
-    console.log(rawEvents);
     try {
       const events = rawEvents?.events;
       if (events) {
