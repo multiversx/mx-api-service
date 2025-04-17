@@ -6,7 +6,7 @@ import { NftWorkerService } from 'src/queue.worker/nft.worker/nft.worker.service
 import { CacheInfo } from '../../utils/cache.info';
 import { NotifierEvent } from './entities/notifier.event';
 import { CacheService } from "@multiversx/sdk-nestjs-cache";
-import { BinaryUtils, OriginLogger } from '@multiversx/sdk-nestjs-common';
+import { BinaryUtils, OriginLogger, TokenUtils } from '@multiversx/sdk-nestjs-common';
 import { IndexerService } from '../indexer/indexer.service';
 
 @Injectable()
@@ -74,7 +74,10 @@ export class RabbitMqNftHandlerService {
   public async handleNftCreateEvent(event: NotifierEvent): Promise<boolean> {
     const identifier = this.getNftIdentifier(event.topics);
 
-    const collectionIdentifier = identifier.split('-').slice(0, 2).join('-');
+    let collectionIdentifier = identifier.split('-').slice(0, 2).join('-');
+    if (TokenUtils.isSovereignIdentifier(identifier)) {
+      collectionIdentifier = identifier.split('-').slice(0, 3).join('-');
+    }
     const collectionType = await this.getCollectionType(collectionIdentifier);
     if (collectionType === NftType.MetaESDT) {
       return false;
