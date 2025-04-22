@@ -18,6 +18,12 @@ export class TokenHelpers {
     uri = ApiUtils.replaceUri(uri, 'https://gateway.pinata.cloud/ipfs', prefix);
     uri = ApiUtils.replaceUri(uri, 'https://dweb.link/ipfs', prefix);
     uri = ApiUtils.replaceUri(uri, 'ipfs:/', prefix);
+    uri = ApiUtils.replaceUri(uri, 'https://media.elrond.com/nfts/asset', prefix);
+    uri = ApiUtils.replaceUri(uri, 'https://devnet-media.elrond.com/nfts/asset', prefix);
+    uri = ApiUtils.replaceUri(uri, 'https://testnet-media.elrond.com/nfts/asset', prefix);
+    uri = ApiUtils.replaceUri(uri, 'https://api.multiversx.com/media/nfts/asset', prefix);
+    uri = ApiUtils.replaceUri(uri, 'https://devnet-api.multiversx.com/media/nfts/asset', prefix);
+    uri = ApiUtils.replaceUri(uri, 'https://testnet-api.multiversx.com/media/nfts/asset', prefix);
     uri = uri.replace(/https\:\/\/\w*\.mypinata\.cloud\/ipfs/, prefix);
 
     if (uri.endsWith('.ipfs.dweb.link')) {

@@ -920,12 +920,4 @@ export class ApiConfigService {
   getCacheDuration(): number {
     return this.configService.get<number>('caching.cacheDuration') ?? 3;
   }
-
-  isMediaRedirectFeatureEnabled(): boolean {
-    return this.configService.get<boolean>('features.mediaRedirect.enabled') ?? false;
-  }
-
-  getMediaRedirectFileStorageUrls(): string[] {
-    return this.configService.get<string[]>('features.mediaRedirect.storageUrls') ?? [];
-  }
 }
