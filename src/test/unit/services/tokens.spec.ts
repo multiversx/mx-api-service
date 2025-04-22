@@ -31,6 +31,7 @@ import { NftCollection } from "src/endpoints/collections/entities/nft.collection
 import { EsdtSupply } from "src/endpoints/esdt/entities/esdt.supply";
 import { TokenDetailed } from "src/endpoints/tokens/entities/token.detailed";
 import { NumberUtils } from "@multiversx/sdk-nestjs-common";
+import { TokenAssetsPriceSourceType } from "../../../common/assets/entities/token.assets.price.source.type";
 
 describe('Token Service', () => {
   let tokenService: TokenService;
@@ -592,6 +593,25 @@ describe('Token Service', () => {
       expect(result).toBeGreaterThanOrEqual(261151384.6163954);
       expect(getAllTokensMock).toHaveBeenCalledTimes(1);
     });
+
+    it('should not include custom priced tokens in market cap', async () => {
+      const mockTokens = JSON.parse(fs.readFileSync(path.join(__dirname, '../../mocks/tokens.mock.json'), 'utf-8'));
+      const getAllTokensMock = jest.spyOn(tokenService, 'getAllTokens').mockResolvedValue(mockTokens);
+
+      const result = await tokenService.getTokenMarketCapRaw();
+      expect(result).toBeGreaterThanOrEqual(261151384.6163954);
+      expect(getAllTokensMock).toHaveBeenCalledTimes(1);
+
+      const secondToken = mockTokens[1];
+      secondToken.assets.priceSource = {type: 'customUrl'};
+      const newExpectedMarketCap = result - secondToken.marketCap;
+      mockTokens[1] = secondToken;
+
+      jest.spyOn(tokenService, 'getAllTokens').mockResolvedValue(mockTokens);
+
+      const newResult = await tokenService.getTokenMarketCapRaw();
+      expect(newResult).toBe(newExpectedMarketCap);
+    });
   });
 
   describe('getAllTokens', () => {
@@ -785,6 +805,106 @@ describe('Token Service', () => {
 
         expect(result).toEqual(mockTokens);
       });
+    });
+
+    it('adjusts the order depending on the price source', async () => {
+      jest.spyOn(tokenService['apiConfigService'], 'isTokensFetchFeatureEnabled').mockReturnValue(false);
+      jest.spyOn(tokenService['esdtService'], 'getAllFungibleTokenProperties').mockResolvedValue([
+        new TokenProperties({ identifier: 'token1' }),
+        new TokenProperties({ identifier: 'token2' }), // <- will have custom price source
+        new TokenProperties({ identifier: 'token3' }),
+        new TokenProperties({ identifier: 'token4' }),
+        new TokenProperties({ identifier: 'token5' }),
+      ]);
+
+      // Only token2 has a custom price source
+      // eslint-disable-next-line require-await
+      jest.spyOn(tokenService['assetsService'], 'getTokenAssets').mockImplementation(async (identifier: string) => {
+        if (identifier === 'token2') {
+          return new TokenAssets({
+            name: `Token ${identifier}`,
+            priceSource: {
+              type: TokenAssetsPriceSourceType.customUrl,
+              path: '0.usdPrice',
+              url: 'url',
+            },
+          });
+        }
+        return new TokenAssets({
+          name: `Token ${identifier}`,
+          // No priceSource
+        });
+      });
+
+      jest.spyOn(tokenService['collectionService'], 'getNftCollections').mockResolvedValue([]);
+
+      jest.spyOn(tokenService['dataApiService'], 'getEgldPrice').mockResolvedValue(0);
+      jest.spyOn(tokenService['dataApiService'], 'getEsdtTokenPrice').mockResolvedValue(1);
+      jest.spyOn(tokenService['esdtService'], 'getTokenSupply').mockResolvedValue({
+        minted: '1000000',
+        initialMinted: '1000000',
+        burned: '0',
+        totalSupply: '1000000',
+        circulatingSupply: '1000000',
+        lockedAccounts: undefined,
+      });
+
+      // Fake other dependencies
+      jest.spyOn(tokenService as any, 'applyMexLiquidity').mockResolvedValue(undefined);
+      jest.spyOn(tokenService as any, 'applyMexPrices').mockResolvedValue(undefined);
+      jest.spyOn(tokenService as any, 'applyMexPairType').mockResolvedValue(undefined);
+      jest.spyOn(tokenService as any, 'applyMexPairTradesCount').mockResolvedValue(undefined);
+      jest.spyOn(tokenService['apiService'] as any, 'get').mockResolvedValue({data: [{usdPrice: 1.0}]});
+      jest.spyOn(tokenService['cachingService'], 'batchApplyAll').mockImplementation(
+        // eslint-disable-next-line require-await
+        async (...args: unknown[]) => {
+          const tokens = args[0] as TokenDetailed[];
+          const apply = args[3] as (token: TokenDetailed, assets: TokenAssets, fromGetter: boolean) => void;
+
+          for (const token of tokens) {
+            if (token.identifier === 'token2') {
+              apply(token, new TokenAssets({
+                name: `Token ${token.identifier}`,
+                priceSource: {
+                  type: TokenAssetsPriceSourceType.customUrl,
+                  path: '0.usdPrice',
+                  url: 'url',
+                },
+              }), true);
+            } else {
+              apply(token, new TokenAssets({
+                name: `Token ${token.identifier}`,
+                // No priceSource
+              }), true);
+            }
+          }
+        }
+      );
+
+      // eslint-disable-next-line require-await
+      jest.spyOn(tokenService as any, 'batchProcessTokens').mockImplementation(async (tokens: any) => {
+        const marketCaps = {
+          token1: 500,
+          token2: 400,
+          token3: 300,
+          token4: 200,
+          token5: 100,
+        };
+        for (const token of tokens) {
+          token.price = 1;
+          token.decimals = 18;
+          token.isLowLiquidity = false;
+          token.transactions = 10;
+          // @ts-ignore
+          token.marketCap = marketCaps[token.identifier];
+        }
+      });
+
+      const result = await tokenService.getAllTokensRaw();
+      const sortedIdentifiers = result.map(t => t.identifier);
+
+      // token2 (custom source) should be last
+      expect(sortedIdentifiers.slice(0, 5)).toEqual(['token5', 'token4', 'token3', 'token1', 'token2']);
     });
 
     it('should return values from cache', async () => {
