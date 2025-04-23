@@ -447,6 +447,11 @@ export class IndexerService implements IndexerInterface {
   }
 
   @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
+  async getApplicationsBulkBalance(addresses: string[], pagination: QueryPagination): Promise<Record<string, { address: string, balance: string }>> {
+    return await this.indexerInterface.getApplicationsBulkBalance(addresses, pagination);
+  }
+
+  @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
   async getApplication(address: string): Promise<any> {
     return await this.indexerInterface.getApplication(address);
   }

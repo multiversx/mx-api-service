@@ -985,6 +985,23 @@ export class ElasticIndexerService implements IndexerInterface {
     return await this.elasticService.getCount('scdeploys', elasticQuery);
   }
 
+  async getApplicationsBulkBalance(addresses: string[], pagination: QueryPagination): Promise<Record<string, { address: string, balance: string }>> {
+    const elasticQuery = ElasticQuery.create()
+      .withMustMultiShouldCondition(addresses, address => QueryType.Match('address', address, QueryOperator.AND))
+      .withFields(['address', 'balance', 'balanceNum'])
+      .withPagination(pagination);
+
+    const results = await this.elasticService.getList('accounts', 'address', elasticQuery);
+
+    return results.reduce((acc: Record<string, { address: string, balance: string }>, item: any) => {
+      acc[item.address] = {
+        address: item.address,
+        balance: item.balance || '0',
+      };
+      return acc;
+    }, {});
+  }
+
   async getAddressesWithTransfersLast24h(): Promise<string[]> {
     const elasticQuery = ElasticQuery.create()
       .withFields(['address'])
