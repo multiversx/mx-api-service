@@ -807,7 +807,7 @@ describe('Token Service', () => {
       });
     });
 
-    it('adjusts the order depending on the price source', async () => {
+    it('adjusts the order depending on the price source and market cap', async () => {
       jest.spyOn(tokenService['apiConfigService'], 'isTokensFetchFeatureEnabled').mockReturnValue(false);
       jest.spyOn(tokenService['esdtService'], 'getAllFungibleTokenProperties').mockResolvedValue([
         new TokenProperties({ identifier: 'token1' }),
@@ -890,21 +890,24 @@ describe('Token Service', () => {
           token4: 200,
           token5: 100,
         };
-        for (const token of tokens) {
-          token.price = 1;
+        for (const [index, token] of tokens.entries()) {
           token.decimals = 18;
           token.isLowLiquidity = false;
           token.transactions = 10;
+          if (index === 3) {
+            continue; // make one of the tokens (token4) not to have any price or market cap at all
+          }
           // @ts-ignore
           token.marketCap = marketCaps[token.identifier];
+          token.price = 1;
         }
       });
 
       const result = await tokenService.getAllTokensRaw();
       const sortedIdentifiers = result.map(t => t.identifier);
 
-      // token2 (custom source) should be last
-      expect(sortedIdentifiers.slice(0, 5)).toEqual(['token5', 'token4', 'token3', 'token1', 'token2']);
+      // token2 has custom price source, token4 does not have price/market cap at all
+      expect(sortedIdentifiers.slice(0, 5)).toEqual(['token5', 'token3', 'token1', 'token2', 'token4']);
     });
 
     it('should return values from cache', async () => {
