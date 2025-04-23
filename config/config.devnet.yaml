@@ -83,11 +83,6 @@ features:
   transactionBatch:
     enabled: true
     maxLookBehind: 100
-  elasticCircuitBreaker:
-    enabled: false
-    durationThresholdMs: 5000
-    failureCountThreshold: 5
-    resetTimeoutMs: 30000
   statusChecker:
     enabled: false
     thresholds:

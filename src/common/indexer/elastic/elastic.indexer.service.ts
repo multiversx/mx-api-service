@@ -1,6 +1,6 @@
 import { HttpStatus, Injectable } from "@nestjs/common";
 import { BinaryUtils } from "@multiversx/sdk-nestjs-common";
-import { ElasticQuery, QueryOperator, QueryType, QueryConditionOptions, ElasticSortOrder, ElasticSortProperty, TermsQuery, RangeGreaterThanOrEqual, MatchQuery } from "@multiversx/sdk-nestjs-elastic";
+import { ElasticService, ElasticQuery, QueryOperator, QueryType, QueryConditionOptions, ElasticSortOrder, ElasticSortProperty, TermsQuery, RangeGreaterThanOrEqual, MatchQuery } from "@multiversx/sdk-nestjs-elastic";
 import { IndexerInterface } from "../indexer.interface";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { CollectionFilter } from "src/endpoints/collections/entities/collection.filter";
@@ -29,7 +29,6 @@ import { ApplicationFilter } from "src/endpoints/applications/entities/applicati
 import { NftType } from "../entities/nft.type";
 import { EventsFilter } from "src/endpoints/events/entities/events.filter";
 import { Events } from "../entities/events";
-import { EsCircuitBreakerProxy } from "./circuit-breaker/circuit.breaker.proxy.service";
 
 @Injectable()
 export class ElasticIndexerService implements IndexerInterface {
@@ -39,7 +38,7 @@ export class ElasticIndexerService implements IndexerInterface {
 
   constructor(
     private readonly apiConfigService: ApiConfigService,
-    private readonly elasticService: EsCircuitBreakerProxy,
+    private readonly elasticService: ElasticService,
     private readonly indexerHelper: ElasticIndexerHelper,
   ) { }
 
