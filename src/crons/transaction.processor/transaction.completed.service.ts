@@ -1,5 +1,4 @@
 import { CacheService } from "@multiversx/sdk-nestjs-cache";
-import { LogTopic, TransactionProcessor } from "@elrondnetwork/transaction-processor";
 import { Inject, Injectable, Logger } from "@nestjs/common";
 import { ClientProxy } from "@nestjs/microservices";
 import { Cron } from "@nestjs/schedule";
@@ -8,6 +7,8 @@ import { CacheInfo } from "src/utils/cache.info";
 import { LogMetricsEvent } from "src/common/entities/log.metrics.event";
 import { EventEmitter2 } from "@nestjs/event-emitter";
 import { MetricsEvents } from "src/utils/metrics-events.constants";
+import { TransactionProcessor } from "@multiversx/sdk-transaction-processor";
+import { LogTopic } from "@multiversx/sdk-transaction-processor/lib/types/log-topic";
 
 @Injectable()
 export class TransactionCompletedService {

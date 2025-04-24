@@ -1,4 +1,5 @@
 export enum IdentitySortCriteria {
     validators = 'validators',
-    stake = 'stake'
+    stake = 'stake',
+    locked = 'locked'
 }

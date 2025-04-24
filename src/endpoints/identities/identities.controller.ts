@@ -1,4 +1,4 @@
-import { ParseArrayPipe, ParseEnumPipe } from "@multiversx/sdk-nestjs-common";
+import { ParseArrayPipe, ParseEnumArrayPipe } from "@multiversx/sdk-nestjs-common";
 import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Param, ParseIntPipe, Query, Res } from "@nestjs/common";
 import { ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { Identity } from "./entities/identity";
@@ -18,12 +18,12 @@ export class IdentitiesController {
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   @ApiQuery({ name: 'identities', description: 'Filter by comma-separated list of identities', required: false })
-  @ApiQuery({ name: 'sort', description: 'Sort criteria (validators)', required: false, enum: IdentitySortCriteria })
+  @ApiQuery({ name: 'sort', description: 'Sort criteria (comma-separated list: validators,stake,locked)', required: false })
   async getIdentities(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(10000), ParseIntPipe) size: number,
     @Query('identities', ParseArrayPipe) identities: string[] = [],
-    @Query('sort', new ParseEnumPipe(IdentitySortCriteria)) sort?: IdentitySortCriteria,
+    @Query('sort', new ParseEnumArrayPipe(IdentitySortCriteria)) sort?: IdentitySortCriteria[],
   ): Promise<Identity[]> {
     return await this.identitiesService.getIdentities(new QueryPagination({ from, size }), identities, sort);
   }

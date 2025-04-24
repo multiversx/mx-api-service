@@ -14,8 +14,8 @@ export class DappConfigController {
   @ApiOperation({ summary: 'Dapp configuration', description: 'Returns configuration used in dapps' })
   @ApiOkResponse({ type: DappConfig })
   @ApiNotFoundResponse({ description: 'Network configuration not found' })
-  getDappConfiguration(): DappConfig {
-    const configuration = this.dappConfigService.getDappConfiguration();
+  async getDappConfiguration(): Promise<DappConfig | undefined> {
+    const configuration = await this.dappConfigService.getDappConfiguration();
     if (!configuration) {
       throw new NotFoundException(`Network configuration not found`);
     }

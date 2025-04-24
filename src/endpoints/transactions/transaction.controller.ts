@@ -14,6 +14,7 @@ import { TransactionStatus } from './entities/transaction.status';
 import { TransactionQueryOptions } from './entities/transactions.query.options';
 import { TransactionService } from './transaction.service';
 import { ParseArrayPipeOptions } from '@multiversx/sdk-nestjs-common/lib/pipes/entities/parse.array.options';
+import { PpuMetadata } from './entities/ppu.metadata';
 
 @Controller()
 @ApiTags('transactions')
@@ -281,5 +282,21 @@ export class TransactionController {
     }
 
     return await this.transactionService.decodeTransaction(transaction);
+  }
+
+  @Get('/transactions/ppu/:shardId')
+  @ApiOperation({ summary: 'Price per unit by shard', description: 'Returns price per unit metadata for a specific shard' })
+  @ApiOkResponse({ type: PpuMetadata })
+  @ApiNotFoundResponse({ description: 'Price per unit data for shard not found' })
+  async getPpuByShardId(
+    @Param('shardId', ParseIntPipe) shardId: number,
+  ): Promise<PpuMetadata> {
+    const ppuMetadata = await this.transactionService.getPpuByShardId(shardId);
+
+    if (ppuMetadata === null) {
+      throw new NotFoundException(`Price per unit data for shard ${shardId} not found`);
+    }
+
+    return ppuMetadata;
   }
 }

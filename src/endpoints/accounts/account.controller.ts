@@ -637,6 +637,7 @@ export class AccountController {
   @ApiQuery({ name: 'isScam', description: 'Filter by scam status', required: false, type: Boolean })
   @ApiQuery({ name: 'scamType', description: 'Filter by type (scam/potentialScam)', required: false })
   @ApiQuery({ name: 'timestamp', description: 'Retrieve entry from timestamp', required: false, type: Number })
+  @ApiQuery({ name: 'withReceivedAt', description: 'Include receivedAt timestamp in the response (when the NFT was received by the address)', required: false, type: Boolean })
   async getAccountNfts(
     @Param('address', ParseAddressPipe) address: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
@@ -659,7 +660,12 @@ export class AccountController {
     @Query('isScam', ParseBoolPipe) isScam?: boolean,
     @Query('scamType', new ParseEnumPipe(ScamType)) scamType?: ScamType,
     @Query('timestamp', ParseIntPipe) _timestamp?: number,
+    @Query('withReceivedAt', ParseBoolPipe) withReceivedAt?: boolean,
   ): Promise<NftAccount[]> {
+    // Validăm opțiunile de interogare
+    const queryOptions = new NftQueryOptions({ withSupply, withReceivedAt });
+    queryOptions.validate(size);
+
     return await this.nftService.getNftsForAddress(
       address,
       new QueryPagination({ from, size }),
@@ -680,8 +686,8 @@ export class AccountController {
         scamType,
       }),
       fields,
-      new NftQueryOptions({ withSupply }),
-      source
+      queryOptions,
+      source,
     );
   }
 

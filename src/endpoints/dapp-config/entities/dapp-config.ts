@@ -43,4 +43,7 @@ export class DappConfig {
 
   @ApiProperty({ type: String, example: '1' })
   chainId: string = '';
+
+  @ApiProperty({ type: Number, example: 6000 })
+  refreshRate: number = 0;
 }
