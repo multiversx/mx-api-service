@@ -194,6 +194,10 @@ export interface IndexerInterface {
 
   getAddressesWithTransfersLast24h(): Promise<string[]>
 
+  getApplicationsWithTransfersLast24h(): Promise<string[]>
+
+  setApplicationTransfersLast24h(address: string, transfersLast24h: number): Promise<void>
+
   getEvents(pagination: QueryPagination, filter: EventsFilter): Promise<Events[]>
 
   getEvent(txHash: string): Promise<Events>

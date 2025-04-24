@@ -955,6 +955,12 @@ export class ElasticIndexerService implements IndexerInterface {
     });
   }
 
+  async setApplicationTransfersLast24h(address: string, transfersLast24h: number): Promise<void> {
+    return await this.elasticService.setCustomValues('scdeploys', address, {
+      transfersLast24h,
+    });
+  }
+
   async getBlockByTimestampAndShardId(timestamp: number, shardId: number): Promise<Block | undefined> {
     const elasticQuery = ElasticQuery.create()
       .withRangeFilter('timestamp', new RangeGreaterThanOrEqual(timestamp))
@@ -1009,6 +1015,16 @@ export class ElasticIndexerService implements IndexerInterface {
       .withMustExistCondition('api_transfersLast24h');
 
     const result = await this.elasticService.getList('accounts', 'address', elasticQuery);
+    return result.map(x => x.address);
+  }
+
+  async getApplicationsWithTransfersLast24h(): Promise<string[]> {
+    const elasticQuery = ElasticQuery.create()
+      .withFields(['address'])
+      .withPagination({ from: 0, size: 10000 })
+      .withMustExistCondition('api_transfersLast24h');
+
+    const result = await this.elasticService.getList('scdeploys', 'address', elasticQuery);
     return result.map(x => x.address);
   }
 

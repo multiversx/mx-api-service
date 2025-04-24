@@ -34,6 +34,7 @@ import * as JsonDiff from "json-diff";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { StakeService } from "src/endpoints/stake/stake.service";
 import { ApplicationMostUsed } from "src/endpoints/accounts/entities/application.most.used";
+import { ApplicationFilter } from "src/endpoints/applications/entities/application.filter";
 
 @Injectable()
 export class CacheWarmerService {
@@ -98,6 +99,10 @@ export class CacheWarmerService {
         const handleUpdateAccountExtraDetails = new CronJob(CronExpression.EVERY_MINUTE, async () => await this.handleUpdateAccountTransfersLast24h());
         this.schedulerRegistry.addCronJob('handleUpdateAccountTransfersLast24h', handleUpdateAccountExtraDetails);
         handleUpdateAccountExtraDetails.start();
+
+        const handleUpdateApplicationExtraDetails = new CronJob(CronExpression.EVERY_MINUTE, async () => await this.handleUpdateApplicationTransfersLast24h());
+        this.schedulerRegistry.addCronJob('handleUpdateApplicationTransfersLast24h', handleUpdateApplicationExtraDetails);
+        handleUpdateApplicationExtraDetails.start();
       }
 
       const handleUpdateAccountAssetsCronJob = new CronJob(CronExpression.EVERY_MINUTE, async () => await this.handleUpdateAccountAssets());
@@ -400,6 +405,37 @@ export class CacheWarmerService {
         if (account && account.api_transfersLast24h !== newTransfersLast24h) {
           this.logger.log(`Setting transferLast24h to ${newTransfersLast24h} for account with address '${address}'`);
           await this.indexerService.setAccountTransfersLast24h(address, newTransfersLast24h);
+        }
+      }
+    }
+  }
+
+  @Lock({ name: 'Elastic updater: Update application transfersLast24h', verbose: true })
+  async handleUpdateApplicationTransfersLast24h() {
+    const batchSize = 100;
+    const mostUsed = await this.accountService.getApplicationMostUsedRaw();
+    const mostUsedIndexedApps = await this.indexerService.getApplicationsWithTransfersLast24h();
+
+    const allAppsToUpdate = [...mostUsed.map(item => item.address), ...mostUsedIndexedApps].distinct();
+    const mostUsedDictionary = mostUsed.toRecord<ApplicationMostUsed>(item => item.address);
+
+    const batches = BatchUtils.splitArrayIntoChunks(allAppsToUpdate, batchSize);
+    for (const batch of batches) {
+      const applications = await this.indexerService.getApplications(
+        new ApplicationFilter(),
+        new QueryPagination({ from: 0, size: batchSize })
+      );
+
+      const filteredApplications = applications.filter(app => batch.includes(app.address));
+      const applicationsDictionary = filteredApplications.toRecord<any>(app => app.address);
+
+      for (const address of batch) {
+        const application = applicationsDictionary[address];
+        const newTransfersLast24h = mostUsedDictionary[address]?.transfers24H ?? 0;
+
+        if (application && application.api_transfersLast24h !== newTransfersLast24h) {
+          this.logger.log(`Setting transferLast24h to ${newTransfersLast24h} for application with address '${address}'`);
+          await this.indexerService.setApplicationTransfersLast24h(address, newTransfersLast24h);
         }
       }
     }

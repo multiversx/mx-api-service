@@ -466,6 +466,17 @@ export class IndexerService implements IndexerInterface {
     return await this.indexerInterface.getAddressesWithTransfersLast24h();
   }
 
+  @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
+  async getApplicationsWithTransfersLast24h(): Promise<string[]> {
+    return await this.indexerInterface.getApplicationsWithTransfersLast24h();
+  }
+
+  @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
+  async setApplicationTransfersLast24h(address: string, transfersLast24h: number): Promise<void> {
+    return await this.indexerInterface.setApplicationTransfersLast24h(address, transfersLast24h);
+  }
+
+  @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
   async getEvents(pagination: QueryPagination, filter: EventsFilter): Promise<Events[]> {
     return await this.indexerInterface.getEvents(pagination, filter);
   }
