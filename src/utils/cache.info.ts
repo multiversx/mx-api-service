@@ -162,9 +162,9 @@ export class CacheInfo {
     };
   }
 
-  static TokenDailyChart(tokenIdentifier: string, after: string): CacheInfo {
+  static TokenDailyChart(tokenIdentifier: string): CacheInfo {
     return {
-      key: `tokenDailyChart:${tokenIdentifier}:${after}`,
+      key: `tokenDailyChart:${tokenIdentifier}`,
       ttl: Constants.oneDay(),
     };
   }

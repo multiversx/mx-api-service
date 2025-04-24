@@ -7,7 +7,8 @@ import { LogTopic } from '@multiversx/sdk-transaction-processor/lib/types/log-to
 
 @Injectable()
 export class ApiConfigService {
-  constructor(private readonly configService: ConfigService) { }
+  constructor(private readonly configService: ConfigService) {
+  }
 
   getConfig<T>(configKey: string): T | undefined {
     return this.configService.get<T>(configKey);
@@ -387,6 +388,23 @@ export class ApiConfigService {
     }
 
     return isApiActive;
+  }
+
+  isElasticCircuitBreakerEnabled(): boolean {
+    const isEnabled = this.configService.get<boolean>('features.elasticCircuitBreaker.enabled');
+    return isEnabled !== undefined ? isEnabled : false;
+  }
+
+  getElasticCircuitBreakerConfig(): {
+    durationThresholdMs: number,
+    failureCountThreshold: number,
+    resetTimeoutMs: number
+  } {
+    return {
+      durationThresholdMs: this.configService.get<number>('features.elasticCircuitBreaker.durationThresholdMs') ?? 5000,
+      failureCountThreshold: this.configService.get<number>('features.elasticCircuitBreaker.failureCountThreshold') ?? 5000,
+      resetTimeoutMs: this.configService.get<number>('features.elasticCircuitBreaker.resetTimeoutMs') ?? 5000,
+    };
   }
 
   getIsWebsocketApiActive(): boolean {
