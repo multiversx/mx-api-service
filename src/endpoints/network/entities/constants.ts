@@ -19,4 +19,7 @@ export class NetworkConstants {
 
   @ApiProperty({ description: 'Minimum transaction version' })
   minTransactionVersion: number = 0;
+
+  @ApiProperty({ description: 'Gas price modifier' })
+  gasPriceModifier: string = '';
 }

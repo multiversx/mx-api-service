@@ -1,5 +1,5 @@
 import { OriginLogger } from "@multiversx/sdk-nestjs-common";
-import { ShardTransaction } from "@elrondnetwork/transaction-processor";
+import { ShardTransaction } from "@multiversx/sdk-transaction-processor";
 import { Controller } from "@nestjs/common";
 import { EventPattern } from "@nestjs/microservices";
 import { WebSocketPublisherService } from "src/common/websockets/web-socket-publisher-service";

@@ -2,12 +2,13 @@ import { Constants } from '@multiversx/sdk-nestjs-common';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { DatabaseConnectionOptions } from '../persistence/entities/connection.options';
-import { LogTopic } from '@elrondnetwork/transaction-processor';
 import { StatusCheckerThresholds } from './entities/status-checker-thresholds';
+import { LogTopic } from '@multiversx/sdk-transaction-processor/lib/types/log-topic';
 
 @Injectable()
 export class ApiConfigService {
-  constructor(private readonly configService: ConfigService) { }
+  constructor(private readonly configService: ConfigService) {
+  }
 
   getConfig<T>(configKey: string): T | undefined {
     return this.configService.get<T>(configKey);
@@ -387,6 +388,23 @@ export class ApiConfigService {
     }
 
     return isApiActive;
+  }
+
+  isElasticCircuitBreakerEnabled(): boolean {
+    const isEnabled = this.configService.get<boolean>('features.elasticCircuitBreaker.enabled');
+    return isEnabled !== undefined ? isEnabled : false;
+  }
+
+  getElasticCircuitBreakerConfig(): {
+    durationThresholdMs: number,
+    failureCountThreshold: number,
+    resetTimeoutMs: number
+  } {
+    return {
+      durationThresholdMs: this.configService.get<number>('features.elasticCircuitBreaker.durationThresholdMs') ?? 5000,
+      failureCountThreshold: this.configService.get<number>('features.elasticCircuitBreaker.failureCountThreshold') ?? 5000,
+      resetTimeoutMs: this.configService.get<number>('features.elasticCircuitBreaker.resetTimeoutMs') ?? 5000,
+    };
   }
 
   getIsWebsocketApiActive(): boolean {
@@ -875,6 +893,14 @@ export class ApiConfigService {
     return this.configService.get<string>('chainSettings.hrp') ?? 'erd';
   }
 
+  isChainAndromedaEnabled(): boolean {
+    return this.configService.get<boolean>('features.chainAndromeda.enabled') ?? false;
+  }
+
+  getChainAndromedaActivationEpoch(): number {
+    return this.configService.get<number>('features.chainAndromeda.activationEpoch') ?? 99999;
+  }
+
   isAssetsCdnFeatureEnabled(): boolean {
     return this.configService.get<boolean>('features.assetsFetch.enabled') ?? false;
   }
@@ -924,5 +950,13 @@ export class ApiConfigService {
 
   getCacheDuration(): number {
     return this.configService.get<number>('caching.cacheDuration') ?? 3;
+  }
+
+  isMediaRedirectFeatureEnabled(): boolean {
+    return this.configService.get<boolean>('features.mediaRedirect.enabled') ?? false;
+  }
+
+  getMediaRedirectFileStorageUrls(): string[] {
+    return this.configService.get<string[]>('features.mediaRedirect.storageUrls') ?? [];
   }
 }

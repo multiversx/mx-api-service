@@ -34,6 +34,9 @@ export class UsernameService {
   }
 
   async getUsernameForAddress(address: string): Promise<string | null> {
+    if (!this.apiConfigService.getMaiarIdUrl()) {
+      return null;
+    }
     return await this.cachingService.getOrSet(
       CacheInfo.Username(address).key,
       async () => await this.getUsernameForAddressRaw(address),

@@ -63,6 +63,9 @@ features:
     enabled: false
     cronExpression: '*/5 * * * * *'
     activationEpoch: 1391
+  chainAndromeda:
+    enabled: false
+    activationEpoch: 4
   nodeEpochsLeft:
     enabled: false
   transactionProcessor:
@@ -78,6 +81,11 @@ features:
   deepHistory:
     enabled: false
     url: ''
+  elasticCircuitBreaker:
+    enabled: false
+    durationThresholdMs: 5000
+    failureCountThreshold: 5
+    resetTimeoutMs: 30000
   statusChecker:
     enabled: false
     thresholds:
@@ -110,6 +118,10 @@ features:
   assetsFetch:
     enabled: true
     assetesUrl: 'https://tools.multiversx.com/assets-cdn'
+  mediaRedirect:
+    enabled: false
+    storageUrls:
+      - 'https://s3.amazonaws.com/media.elrond.com'
 image:
   width: 600
   height: 600

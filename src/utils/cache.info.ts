@@ -162,9 +162,9 @@ export class CacheInfo {
     };
   }
 
-  static TokenDailyChart(tokenIdentifier: string, after: string): CacheInfo {
+  static TokenDailyChart(tokenIdentifier: string): CacheInfo {
     return {
-      key: `tokenDailyChart:${tokenIdentifier}:${after}`,
+      key: `tokenDailyChart:${tokenIdentifier}`,
       ttl: Constants.oneDay(),
     };
   }
@@ -638,11 +638,7 @@ export class CacheInfo {
     const isCurrentDate = priceDate.toISODateString() === new Date().toISODateString();
     const ttl = isCurrentDate ? Constants.oneMinute() * 5 : Constants.oneWeek();
 
-    let key = priceDate.toISODateString();
-    if (!isCurrentDate) {
-      key = priceDate.startOfDay().addDays(1).toISODateString();
-    }
-
+    const key = priceDate.toISODateString();
     return {
       key: `data-api:price:${identifier}:${key}`,
       ttl,
@@ -705,6 +701,13 @@ export class CacheInfo {
     return {
       key: `deepHistoryBlock:${timestamp}:${shardId}`,
       ttl: Constants.oneMinute() * 10,
+    };
+  }
+
+  static PpuMetadataByShard(shardId: number): CacheInfo {
+    return {
+      key: `ppuMetadata:shard:${shardId}`,
+      ttl: Constants.oneSecond() * 30,
     };
   }
 }

@@ -91,7 +91,7 @@ export class TokenService {
 
     token = ApiUtils.mergeObjects(new TokenDetailed(), token);
 
-    await this.applyTickerFromAssets(token);
+    this.applyTickerFromAssets(token);
 
     await this.applySupply(token, supplyOptions);
 
@@ -391,7 +391,7 @@ export class TokenService {
 
     tokenWithBalance.identifier = token.identifier;
 
-    await this.applyTickerFromAssets(tokenWithBalance);
+    this.applyTickerFromAssets(tokenWithBalance);
 
     await this.applySupply(tokenWithBalance);
 
@@ -748,7 +748,7 @@ export class TokenService {
 
     const tokens = await this.getAllTokens();
     for (const token of tokens) {
-      if (token.price && token.marketCap && !token.isLowLiquidity) {
+      if (token.price && token.marketCap && !token.isLowLiquidity && token.assets?.priceSource?.type !== TokenAssetsPriceSourceType.customUrl) {
         totalMarketCap += token.marketCap;
       }
     }
@@ -852,7 +852,8 @@ export class TokenService {
 
     tokens = tokens.sortedDescending(
       token => token.assets ? 1 : 0,
-      token => token.isLowLiquidity ? 0 : (token.marketCap ?? 0),
+      token => token.marketCap ? 1 : 0,
+      token => token.isLowLiquidity || token.assets?.priceSource?.type === TokenAssetsPriceSourceType.customUrl ? 0 : (token.marketCap ?? 0),
       token => token.transactions ?? 0,
     );
 

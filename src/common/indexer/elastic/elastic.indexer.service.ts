@@ -1,6 +1,6 @@
 import { HttpStatus, Injectable } from "@nestjs/common";
 import { BinaryUtils } from "@multiversx/sdk-nestjs-common";
-import { ElasticService, ElasticQuery, QueryOperator, QueryType, QueryConditionOptions, ElasticSortOrder, ElasticSortProperty, TermsQuery, RangeGreaterThanOrEqual, MatchQuery } from "@multiversx/sdk-nestjs-elastic";
+import { ElasticQuery, QueryOperator, QueryType, QueryConditionOptions, ElasticSortOrder, ElasticSortProperty, TermsQuery, RangeGreaterThanOrEqual, MatchQuery } from "@multiversx/sdk-nestjs-elastic";
 import { IndexerInterface } from "../indexer.interface";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { CollectionFilter } from "src/endpoints/collections/entities/collection.filter";
@@ -29,6 +29,7 @@ import { ApplicationFilter } from "src/endpoints/applications/entities/applicati
 import { NftType } from "../entities/nft.type";
 import { EventsFilter } from "src/endpoints/events/entities/events.filter";
 import { Events } from "../entities/events";
+import { EsCircuitBreakerProxy } from "./circuit-breaker/circuit.breaker.proxy.service";
 
 @Injectable()
 export class ElasticIndexerService implements IndexerInterface {
@@ -38,7 +39,7 @@ export class ElasticIndexerService implements IndexerInterface {
 
   constructor(
     private readonly apiConfigService: ApiConfigService,
-    private readonly elasticService: ElasticService,
+    private readonly elasticService: EsCircuitBreakerProxy,
     private readonly indexerHelper: ElasticIndexerHelper,
   ) { }
 
@@ -890,7 +891,7 @@ export class ElasticIndexerService implements IndexerInterface {
   async getAllFungibleTokens(): Promise<any[]> {
     const query = ElasticQuery.create()
       .withMustMatchCondition('type', TokenType.FungibleESDT)
-      .withFields(["name", "type", "currentOwner", "numDecimals", "properties", "timestamp", "ownersHistory"])
+      .withFields(["name", "type", "currentOwner", "numDecimals", "properties", "timestamp", "ownersHistory", "paused"])
       .withMustNotExistCondition('identifier')
       .withPagination({ from: 0, size: 1000 });
 
@@ -1010,5 +1011,31 @@ export class ElasticIndexerService implements IndexerInterface {
     const elasticQuery = this.indexerHelper.buildEventsFilter(filter);
 
     return await this.elasticService.getCount('events', elasticQuery);
+  }
+
+  async getAccountNftReceivedTimestamps(address: string, identifiers: string[]): Promise<Record<string, number>> {
+    if (!identifiers || identifiers.length === 0) {
+      return {};
+    }
+
+    const identifierToTimestamp: Record<string, number> = {};
+
+    const elasticQuery = ElasticQuery.create()
+      .withMustMatchCondition('address', address)
+      .withMustMultiShouldCondition(identifiers, identifier => QueryType.Match('identifier', identifier, QueryOperator.AND))
+      .withSort([{ name: 'timestamp', order: ElasticSortOrder.ascending }])
+      .withPagination({ from: 0, size: 10000 });
+
+    const history = await this.elasticService.getList('accountsesdthistory', 'address', elasticQuery);
+
+    for (const entry of history) {
+      if (entry.identifier) {
+        if (!identifierToTimestamp[entry.identifier] || entry.timestamp < identifierToTimestamp[entry.identifier]) {
+          identifierToTimestamp[entry.identifier] = entry.timestamp;
+        }
+      }
+    }
+
+    return identifierToTimestamp;
   }
 }

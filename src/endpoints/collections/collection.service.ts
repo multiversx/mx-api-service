@@ -248,8 +248,8 @@ export class CollectionService {
     }
   }
 
-  async getNftCollectionRoles(elasticCollection: any): Promise<CollectionRoles[]> {
-    return await this.getNftCollectionRolesFromElasticResponse(elasticCollection);
+  getNftCollectionRoles(elasticCollection: any): CollectionRoles[] {
+    return this.getNftCollectionRolesFromElasticResponse(elasticCollection);
   }
 
   async getNftCollectionRolesFromGateway(elasticCollection: any): Promise<CollectionRoles[]> {

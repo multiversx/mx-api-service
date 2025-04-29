@@ -10,7 +10,7 @@ import { ProviderService } from "./provider.service";
     forwardRef(() => KeybaseModule),
     forwardRef(() => NodeModule),
     VmQueryModule,
-    IdentitiesModule,
+    forwardRef(() => IdentitiesModule),
   ],
   providers: [
     ProviderService,
