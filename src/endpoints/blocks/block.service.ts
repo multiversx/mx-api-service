@@ -86,10 +86,11 @@ export class BlockService {
     let { proposer, validators } = item;
 
     let blses: any = await this.cachingService.getLocal(CacheInfo.ShardAndEpochBlses(shardId, epoch).key);
-    if (!blses) {
+    if (!blses || blses.length === 0) {
       blses = await this.blsService.getPublicKeys(shardId, epoch);
-
-      this.cachingService.setLocal(CacheInfo.ShardAndEpochBlses(shardId, epoch).key, blses, CacheInfo.ShardAndEpochBlses(shardId, epoch).ttl);
+      if (blses.length > 0) {
+         this.cachingService.setLocal(CacheInfo.ShardAndEpochBlses(shardId, epoch).key, blses, CacheInfo.ShardAndEpochBlses(shardId, epoch).ttl);
+      }
     }
 
     proposer = blses[proposer];

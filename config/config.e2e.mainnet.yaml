@@ -1,5 +1,6 @@
 network: 'mainnet'
 metaChainShardId: 4294967295
+crossChainSenderShardId: 4294967293
 api:
   public: true
   publicPort: 3001
@@ -181,3 +182,5 @@ inflation:
 nftProcess:
   parallelism: 1
   maxRetries: 3
+chainSettings:
+  hrp: 'erd'

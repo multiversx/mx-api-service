@@ -573,6 +573,15 @@ export class ApiConfigService {
     return metaChainShardId;
   }
 
+  getCrossChainSenderShardId(): number {
+    const crossChainSenderShardId = this.configService.get<number>('crossChainSenderShardId');
+    if (crossChainSenderShardId === undefined) {
+      throw new Error('No crossChainSenderShardId present');
+    }
+
+    return crossChainSenderShardId;
+  }
+
   getRateLimiterSecret(): string | undefined {
     return this.configService.get<string>('rateLimiterSecret');
   }
@@ -883,6 +892,10 @@ export class ApiConfigService {
     }
 
     return deepHistoryUrl;
+  }
+
+  getChainHrp(): string {
+    return this.configService.get<string>('chainSettings.hrp') ?? 'erd';
   }
 
   isChainAndromedaEnabled(): boolean {

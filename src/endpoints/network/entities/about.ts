@@ -22,6 +22,9 @@ export class About {
   version: string = '';
 
   @ApiProperty({ type: String })
+  hrp: string = 'erd';
+
+  @ApiProperty({ type: String })
   indexerVersion: string | undefined = undefined;
 
   @ApiProperty({ type: String })
