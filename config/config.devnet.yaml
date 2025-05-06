@@ -134,7 +134,6 @@ urls:
   providers: 'https://devnet-delegation-api.multiversx.com/providers'
   delegation: 'https://devnet-delegation-api.multiversx.com'
   media: 'https://devnet-media.elrond.com'
-  nftThumbnails: 'https://devnet-media.elrond.com/nfts/thumbnail'
   tmp: '/tmp'
   ipfs: 'https://ipfs.io/ipfs'
   socket: 'devnet-socket-api.multiversx.com'

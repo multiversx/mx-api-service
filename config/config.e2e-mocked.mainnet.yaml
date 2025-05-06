@@ -34,7 +34,6 @@ urls:
   providers: 'https://internal-delegation-api.multiversx.com/providers'
   delegation: 'https://delegation-api.multiversx.com'
   media: 'https://media.elrond.com'
-  nftThumbnails: 'https://media.elrond.com/nfts/thumbnail'
   maiarId: 'https://id-api.multiversx.com'
 database:
   enabled: false
