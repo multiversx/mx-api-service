@@ -893,7 +893,9 @@ export class ApiConfigService {
   }
 
   getAssetsCdnUrl(): string {
-    return this.configService.get<string>('features.assetsFetch.assetesUrl') ?? 'https://tools.multiversx.com/assets-cdn';
+    return this.configService.get<string>('features.assetsFetch.assetsUrl')
+      ?? this.configService.get<string>('features.assetsFetch.assetesUrl')
+      ?? 'https://tools.multiversx.com/assets-cdn';
   }
 
   isTokensFetchFeatureEnabled(): boolean {

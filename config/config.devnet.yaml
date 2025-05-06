@@ -51,7 +51,7 @@ features:
     serviceUrl: 'https://devnet-data-api.multiversx.com'
   assetsFetch:
     enabled: true
-    assetesUrl: 'https://tools.multiversx.com/assets-cdn'
+    assetsUrl: 'https://tools.multiversx.com/assets-cdn'
   mediaRedirect:
     enabled: false
     storageUrls:
@@ -112,7 +112,7 @@ features:
     enabled: true
     serviceUrl: 'https://devnet-api.multiversx.com'
   tokensFetch:
-    enabled: true
+    enabled: false
     serviceUrl: 'https://devnet-api.multiversx.com'
   providersFetch:
     enabled: true
