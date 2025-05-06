@@ -587,8 +587,6 @@ export class ApiConfigService {
       throw new Error('No media url present');
     }
 
-    console.log('Media URL:', mediaUrl);
-
     return mediaUrl;
   }
 
