@@ -108,14 +108,14 @@ features:
     enabled: true
     serviceUrl: 'https://testnet-api.multiversx.com'
   tokensFetch:
-    enabled: true
+    enabled: false
     serviceUrl: 'https://testnet-api.multiversx.com'
   providersFetch:
     enabled: true
     serviceUrl: 'https://testnet-api.multiversx.com'
   assetsFetch:
     enabled: true
-    assetesUrl: 'https://tools.multiversx.com/assets-cdn'
+    assetsUrl: 'https://tools.multiversx.com/assets-cdn'
   mediaRedirect:
     enabled: false
     storageUrls:
