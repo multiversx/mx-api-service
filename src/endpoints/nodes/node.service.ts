@@ -374,8 +374,11 @@ export class NodeService {
   }
 
   async getAllNodesRaw(): Promise<Node[]> {
+    this.logger.log(`Fetching all nodes raw. nodes fetch enabled=${this.apiConfigService.isNodesFetchFeatureEnabled()}`);
     if (this.apiConfigService.isNodesFetchFeatureEnabled()) {
-      return await this.getAllNodesFromApi();
+      // todo: revert this - fix configs
+      const apiNodes = await this.getAllNodesFromApi();
+      this.logger.log(`apiNodes length: ${apiNodes.length}`);
     }
 
     const nodes = await this.getHeartbeatValidatorsAndQueue();
