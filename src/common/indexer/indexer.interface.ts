@@ -186,11 +186,17 @@ export interface IndexerInterface {
 
   getApplications(filter: ApplicationFilter, pagination: QueryPagination): Promise<any[]>
 
+  getApplicationsBulkBalance(addresses: string[], pagination: QueryPagination): Promise<Record<string, { address: string, balance: string }>>
+
   getApplicationCount(filter: ApplicationFilter): Promise<number>
 
   getApplication(address: string): Promise<any>
 
   getAddressesWithTransfersLast24h(): Promise<string[]>
+
+  getApplicationsWithTransfersLast24h(): Promise<string[]>
+
+  setApplicationTransfersLast24h(address: string, transfersLast24h: number): Promise<void>
 
   getEvents(pagination: QueryPagination, filter: EventsFilter): Promise<Events[]>
 

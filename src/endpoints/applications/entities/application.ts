@@ -29,4 +29,7 @@ export class Application {
 
   @ApiProperty({ type: Number, required: false })
   txCount?: number;
+
+  @ApiProperty({ type: Boolean, required: false, description: 'Whether the application is verified' })
+  isVerified?: boolean;
 }
