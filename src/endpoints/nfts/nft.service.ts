@@ -333,7 +333,11 @@ export class NftService {
       const nft = new Nft();
       nft.identifier = elasticNft.identifier;
       nft.collection = elasticNft.token;
+
       nft.nonce = parseInt('0x' + nft.identifier.split('-')[2]);
+      if (TokenUtils.isSovereignIdentifier(nft.identifier)) {
+        nft.nonce = parseInt('0x' + nft.identifier.split('-')[3]);
+      }
       nft.timestamp = elasticNft.timestamp;
 
       if (elasticNft.nft_scamInfoType && elasticNft.nft_scamInfoType !== 'none') {

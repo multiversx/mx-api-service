@@ -23,6 +23,7 @@ export class AWSService {
       Key: path,
       Body: buffer,
       ContentType: type,
+      ACL: 'public-read',
     });
 
     return this.getItemPath(path);
