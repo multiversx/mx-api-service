@@ -603,15 +603,6 @@ export class ApiConfigService {
     return mediaUrl;
   }
 
-  getNftThumbnailsUrl(): string {
-    const nftThumbnailsUrl = this.configService.get<string>('urls.nftThumbnails');
-    if (!nftThumbnailsUrl) {
-      throw new Error('No nft thumbnails url present');
-    }
-
-    return nftThumbnailsUrl;
-  }
-
   getSecurityAdmins(): string[] {
     const admins = this.configService.get<string[]>('features.auth.admins') ?? this.configService.get<string[]>('security.admins');
     if (admins === undefined) {
@@ -937,13 +928,5 @@ export class ApiConfigService {
 
   getCacheDuration(): number {
     return this.configService.get<number>('caching.cacheDuration') ?? 3;
-  }
-
-  isMediaRedirectFeatureEnabled(): boolean {
-    return this.configService.get<boolean>('features.mediaRedirect.enabled') ?? false;
-  }
-
-  getMediaRedirectFileStorageUrls(): string[] {
-    return this.configService.get<string[]>('features.mediaRedirect.storageUrls') ?? [];
   }
 }

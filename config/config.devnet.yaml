@@ -52,10 +52,6 @@ features:
   assetsFetch:
     enabled: true
     assetesUrl: 'https://tools.multiversx.com/assets-cdn'
-  mediaRedirect:
-    enabled: false
-    storageUrls:
-      - 'https://s3.amazonaws.com/devnet-media.elrond.com'
   auth:
     enabled: false
     maxExpirySeconds: 86400
@@ -138,7 +134,6 @@ urls:
   providers: 'https://devnet-delegation-api.multiversx.com/providers'
   delegation: 'https://devnet-delegation-api.multiversx.com'
   media: 'https://devnet-media.elrond.com'
-  nftThumbnails: 'https://devnet-media.elrond.com/nfts/thumbnail'
   tmp: '/tmp'
   ipfs: 'https://ipfs.io/ipfs'
   socket: 'devnet-socket-api.multiversx.com'

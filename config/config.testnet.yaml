@@ -116,10 +116,6 @@ features:
   assetsFetch:
     enabled: true
     assetesUrl: 'https://tools.multiversx.com/assets-cdn'
-  mediaRedirect:
-    enabled: false
-    storageUrls:
-      - 'https://s3.amazonaws.com/testnet-media.elrond.com'
 image:
   width: 600
   height: 600
@@ -141,7 +137,6 @@ urls:
   providers: 'https://testnet-delegation-api.multiversx.com/providers'
   delegation: 'https://testnet-delegation-api.multiversx.com'
   media: 'https://testnet-media.elrond.com'
-  nftThumbnails: 'https://testnet-media.elrond.com/nfts/thumbnail'
   tmp: '/tmp'
   ipfs: 'https://ipfs.io/ipfs'
   socket: 'testnet-socket-api.multiversx.com'
