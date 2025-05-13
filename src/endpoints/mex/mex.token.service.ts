@@ -171,6 +171,19 @@ export class MexTokenService {
 
   private async getAllMexTokensRaw(): Promise<MexToken[]> {
     const pairs = await this.mexPairService.getAllMexPairs();
+    const tokenVolumes: Record<string, number> = {};
+
+    for (const pair of pairs) {
+      if (!tokenVolumes[pair.baseId]) {
+        tokenVolumes[pair.baseId] = 0;
+      }
+      tokenVolumes[pair.baseId] += Number(pair.volume24h || 0);
+
+      if (!tokenVolumes[pair.quoteId]) {
+        tokenVolumes[pair.quoteId] = 0;
+      }
+      tokenVolumes[pair.quoteId] += Number(pair.volume24h || 0);
+    }
 
     const mexTokens: MexToken[] = [];
     for (const pair of pairs) {
@@ -181,7 +194,7 @@ export class MexTokenService {
         wegldToken.name = pair.baseName;
         wegldToken.price = pair.basePrice;
         wegldToken.previous24hPrice = pair.basePrevious24hPrice;
-        wegldToken.previous24hVolume = pair.volume24h;
+        wegldToken.previous24hVolume = tokenVolumes[pair.baseId];
         wegldToken.tradesCount = this.computeTradesCountForMexToken(wegldToken, pairs);
         mexTokens.push(wegldToken);
       }
@@ -191,6 +204,7 @@ export class MexTokenService {
         continue;
       }
 
+      mexToken.previous24hVolume = tokenVolumes[mexToken.id];
       mexToken.tradesCount = this.computeTradesCountForMexToken(mexToken, pairs);
 
       mexTokens.push(mexToken);
@@ -207,7 +221,7 @@ export class MexTokenService {
         name: pair.quoteName,
         price: pair.quotePrice,
         previous24hPrice: pair.quotePrevious24hPrice,
-        previous24hVolume: pair.volume24h,
+        previous24hVolume: 0,
         tradesCount: 0,
       };
     }
@@ -219,7 +233,7 @@ export class MexTokenService {
         name: pair.baseName,
         price: pair.basePrice,
         previous24hPrice: pair.basePrevious24hPrice,
-        previous24hVolume: pair.volume24h,
+        previous24hVolume: 0,
         tradesCount: 0,
       };
     }
@@ -231,7 +245,7 @@ export class MexTokenService {
         name: pair.quoteName,
         price: pair.quotePrice,
         previous24hPrice: pair.quotePrevious24hPrice,
-        previous24hVolume: pair.volume24h,
+        previous24hVolume: 0,
         tradesCount: 0,
       };
     }
