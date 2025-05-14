@@ -367,7 +367,14 @@ export class EsdtService {
   }
 
   async getTokenSupply(identifier: string): Promise<EsdtSupply> {
-    const { supply, minted, burned, initialMinted } = await this.gatewayService.getEsdtSupply(identifier);
+    let { supply, minted, burned, initialMinted } = await this.gatewayService.getEsdtSupply(identifier);
+
+    if (identifier === 'USDC-c76f1f') {
+      minted = minted;
+      supply = (BigInt(supply) + BigInt('149999999999980000829852')).toString();
+      burned = (BigInt(burned) - BigInt('149999999999980000829852')).toString();
+      initialMinted = initialMinted;
+    }
 
     const isCollectionOrToken = identifier.split('-').length === 2;
     if (isCollectionOrToken) {
