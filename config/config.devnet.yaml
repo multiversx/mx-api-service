@@ -109,13 +109,13 @@ features:
     enabled: false
     maxLookBehindNonces: 100
   nodesFetch:
-    enabled: true
+    enabled: false
     serviceUrl: 'https://devnet-api.multiversx.com'
   tokensFetch:
     enabled: false
     serviceUrl: 'https://devnet-api.multiversx.com'
   providersFetch:
-    enabled: true
+    enabled: false
     serviceUrl: 'https://devnet-api.multiversx.com'
 image:
   width: 600

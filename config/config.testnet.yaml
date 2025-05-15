@@ -105,13 +105,13 @@ features:
     enabled: false
     maxLookBehindNonces: 100
   nodesFetch:
-    enabled: true
+    enabled: false
     serviceUrl: 'https://testnet-api.multiversx.com'
   tokensFetch:
     enabled: false
     serviceUrl: 'https://testnet-api.multiversx.com'
   providersFetch:
-    enabled: true
+    enabled: false
     serviceUrl: 'https://testnet-api.multiversx.com'
   assetsFetch:
     enabled: true
