@@ -652,31 +652,28 @@ export class NftService {
   }
 
   private applyRedirectMedia(nft: Nft) {
-    // FIXME: This is a temporary fix to avoid breaking the API
-    const isMediaRedirectFeatureEnabled = this.apiConfigService.isMediaRedirectFeatureEnabled();
-    if (!isMediaRedirectFeatureEnabled) {
-      // return;
-    }
-
-    if (!nft.media || nft.media.length === 0) {
+    if (!nft.media || !Array.isArray(nft.media) || nft.media.length === 0) {
       return;
     }
 
     try {
       const network = this.apiConfigService.getNetwork();
-      // const defaultMediaUrl = `https://${network === 'mainnet' ? '' : `${network}-`}media.elrond.com`;
-      const defaultMediaUrl = `https://${network === 'mainnet' ? '' : `${network}-`}api.multiversx.com/media`;
+      const defaultMediaUrl = `https://${network === 'mainnet' ? '' : `${network}-`}media.elrond.com`;
+      const defaultApiMediaUrl = `https://${network === 'mainnet' ? '' : `${network}-`}api.multiversx.com/media`;
 
       for (const media of nft.media) {
         if (media.url) {
-          media.url = media.url.replace(defaultMediaUrl, this.apiConfigService.getMediaUrl());
+          media.url = ApiUtils.replaceUri(media.url, defaultMediaUrl, this.apiConfigService.getMediaUrl());
+          media.url = ApiUtils.replaceUri(media.url, defaultApiMediaUrl, this.apiConfigService.getMediaUrl());
         }
         if (media.thumbnailUrl) {
-          media.thumbnailUrl = media.thumbnailUrl.replace(defaultMediaUrl, this.apiConfigService.getMediaUrl());
+          media.thumbnailUrl = ApiUtils.replaceUri(media.thumbnailUrl, defaultMediaUrl, this.apiConfigService.getMediaUrl());
+          media.thumbnailUrl = ApiUtils.replaceUri(media.thumbnailUrl, defaultApiMediaUrl, this.apiConfigService.getMediaUrl());
         }
       }
-    } catch {
-      // TODO: there are some cases where the nft.media is an empty object, we should investigate why
+    } catch (error) {
+      this.logger.error(`Error when applying redirect media for NFT with identifier '${nft.identifier}'`);
+      this.logger.error(error);
     }
   }
 }

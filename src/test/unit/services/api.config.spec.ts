@@ -1125,25 +1125,6 @@ describe('API Config', () => {
     });
   });
 
-  describe("getNftThumbnailsUrl", () => {
-    it("should return nft thumbnails url", () => {
-      jest
-        .spyOn(ConfigService.prototype, "get")
-        .mockImplementation(jest.fn(() => 'https://media.elrond.com/nfts/thumbnail'));
-
-      const results = apiConfigService.getNftThumbnailsUrl();
-      expect(results).toEqual('https://media.elrond.com/nfts/thumbnail');
-    });
-
-    it("should throw error because test simulates that nft thumbnails urls are not defined", () => {
-      jest
-        .spyOn(ConfigService.prototype, 'get')
-        .mockImplementation(jest.fn(() => undefined));
-
-      expect(() => apiConfigService.getNftThumbnailsUrl()).toThrowError('No nft thumbnails url present');
-    });
-  });
-
   describe("getSecurityAdmins", () => {
     it("should return nft thumbnails url", () => {
       jest

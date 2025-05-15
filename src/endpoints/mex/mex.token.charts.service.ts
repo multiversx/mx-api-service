@@ -42,15 +42,15 @@ export class MexTokenChartsService {
     }
   }
 
-  async getTokenPricesDayResolution(tokenIdentifier: string, after: string): Promise<MexTokenChart[] | undefined> {
+  async getTokenPricesDayResolution(tokenIdentifier: string): Promise<MexTokenChart[] | undefined> {
     return await this.cachingService.getOrSet(
-      CacheInfo.TokenDailyChart(tokenIdentifier, after).key,
-      async () => await this.getTokenPricesDayResolutionRaw(tokenIdentifier, after),
-      CacheInfo.TokenDailyChart(tokenIdentifier, after).ttl,
+      CacheInfo.TokenDailyChart(tokenIdentifier).key,
+      async () => await this.getTokenPricesDayResolutionRaw(tokenIdentifier),
+      CacheInfo.TokenDailyChart(tokenIdentifier).ttl,
     );
   }
 
-  async getTokenPricesDayResolutionRaw(tokenIdentifier: string, after: string): Promise<MexTokenChart[] | undefined> {
+  async getTokenPricesDayResolutionRaw(tokenIdentifier: string): Promise<MexTokenChart[] | undefined> {
     const isMexToken = await this.isMexToken(tokenIdentifier);
     if (!isMexToken) {
       return undefined;
@@ -61,7 +61,6 @@ export class MexTokenChartsService {
         latestCompleteValues(
           series: "${tokenIdentifier}",
           metric: "priceUSD",
-          start: "${after}"
         ) {
           timestamp
           value

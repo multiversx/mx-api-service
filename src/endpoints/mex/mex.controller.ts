@@ -178,13 +178,15 @@ export class MexController {
   }
 
   @Get('mex/tokens/prices/daily/:identifier')
-  @ApiOperation({ summary: 'xExchange token prices daily', description: 'Returns token prices daily' })
+  @ApiOperation({
+    summary: 'xExchange token prices daily',
+    description: 'Returns token prices daily, ordered by timestamp in ascending order. The entries represent the latest complete daily values for the given token series.',
+  })
   @ApiOkResponse({ type: [MexTokenChart] })
   @ApiNotFoundResponse({ description: 'Price not available for given token identifier' })
   async getTokenPricesDayResolution(
-    @Param('identifier', ParseTokenPipe) identifier: string,
-    @Query('after') after: string): Promise<MexTokenChart[] | undefined> {
-    const charts = await this.mexTokenChartsService.getTokenPricesDayResolution(identifier, after);
+    @Param('identifier', ParseTokenPipe) identifier: string): Promise<MexTokenChart[] | undefined> {
+    const charts = await this.mexTokenChartsService.getTokenPricesDayResolution(identifier);
     if (!charts) {
       throw new NotFoundException('Price not available for given token identifier');
     }
