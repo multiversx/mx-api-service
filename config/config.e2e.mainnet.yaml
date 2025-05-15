@@ -80,6 +80,11 @@ features:
   deepHistory:
     enabled: false
     url: ''
+  elasticCircuitBreaker:
+    enabled: false
+    durationThresholdMs: 5000
+    failureCountThreshold: 5
+    resetTimeoutMs: 30000
   statusChecker:
     enabled: false
     thresholds:
@@ -133,7 +138,6 @@ urls:
   providers: 'https://delegation-api.multiversx.com/providers'
   delegation: 'https://delegation-api.multiversx.com'
   media: 'https://media.elrond.com'
-  nftThumbnails: 'https://media.elrond.com/nfts/thumbnail'
   tmp: '/tmp'
   ipfs: 'https://ipfs.io/ipfs'
   socket: 'socket-api-fra.multiversx.com'

@@ -7,7 +7,8 @@ import { LogTopic } from '@multiversx/sdk-transaction-processor/lib/types/log-to
 
 @Injectable()
 export class ApiConfigService {
-  constructor(private readonly configService: ConfigService) { }
+  constructor(private readonly configService: ConfigService) {
+  }
 
   getConfig<T>(configKey: string): T | undefined {
     return this.configService.get<T>(configKey);
@@ -389,6 +390,23 @@ export class ApiConfigService {
     return isApiActive;
   }
 
+  isElasticCircuitBreakerEnabled(): boolean {
+    const isEnabled = this.configService.get<boolean>('features.elasticCircuitBreaker.enabled');
+    return isEnabled !== undefined ? isEnabled : false;
+  }
+
+  getElasticCircuitBreakerConfig(): {
+    durationThresholdMs: number,
+    failureCountThreshold: number,
+    resetTimeoutMs: number
+  } {
+    return {
+      durationThresholdMs: this.configService.get<number>('features.elasticCircuitBreaker.durationThresholdMs') ?? 5000,
+      failureCountThreshold: this.configService.get<number>('features.elasticCircuitBreaker.failureCountThreshold') ?? 5000,
+      resetTimeoutMs: this.configService.get<number>('features.elasticCircuitBreaker.resetTimeoutMs') ?? 5000,
+    };
+  }
+
   getIsWebsocketApiActive(): boolean {
     return this.configService.get<boolean>('api.websocket') ?? true;
   }
@@ -583,15 +601,6 @@ export class ApiConfigService {
     }
 
     return mediaUrl;
-  }
-
-  getNftThumbnailsUrl(): string {
-    const nftThumbnailsUrl = this.configService.get<string>('urls.nftThumbnails');
-    if (!nftThumbnailsUrl) {
-      throw new Error('No nft thumbnails url present');
-    }
-
-    return nftThumbnailsUrl;
   }
 
   getSecurityAdmins(): string[] {
@@ -919,13 +928,5 @@ export class ApiConfigService {
 
   getCacheDuration(): number {
     return this.configService.get<number>('caching.cacheDuration') ?? 3;
-  }
-
-  isMediaRedirectFeatureEnabled(): boolean {
-    return this.configService.get<boolean>('features.mediaRedirect.enabled') ?? false;
-  }
-
-  getMediaRedirectFileStorageUrls(): string[] {
-    return this.configService.get<string[]>('features.mediaRedirect.storageUrls') ?? [];
   }
 }
