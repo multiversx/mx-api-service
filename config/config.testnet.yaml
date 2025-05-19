@@ -125,6 +125,7 @@ aws:
   s3Secret: ''
   s3Bucket: 'testnet-media.elrond.com'
   s3Region: ''
+  # s3Endpoint: ''
 urls:
   self: 'https://testnet-api.multiversx.com'
   elastic:
