@@ -559,6 +559,10 @@ export class ApiConfigService {
     return s3Region;
   }
 
+  getAwsS3Endpoint(): string | undefined {
+    return this.configService.get<string>('aws.s3Endpoint');
+  }
+
   getMetaChainShardId(): number {
     const metaChainShardId = this.configService.get<number>('metaChainShardId');
     if (metaChainShardId === undefined) {
