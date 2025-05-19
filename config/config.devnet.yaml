@@ -122,7 +122,7 @@ aws:
   s3Secret: ''
   s3Bucket: 'devnet-media.elrond.com'
   s3Region: ''
-  # s3Endpoint: ''
+  s3Endpoint: ''
 urls:
   self: 'https://devnet-api.multiversx.com'
   elastic:

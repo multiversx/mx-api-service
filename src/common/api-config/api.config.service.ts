@@ -560,7 +560,8 @@ export class ApiConfigService {
   }
 
   getAwsS3Endpoint(): string | undefined {
-    return this.configService.get<string>('aws.s3Endpoint');
+    const s3Endpoint = this.configService.get<string>('aws.s3Endpoint');
+    return s3Endpoint && s3Endpoint.length > 0 ? s3Endpoint : undefined;
   }
 
   getMetaChainShardId(): number {
