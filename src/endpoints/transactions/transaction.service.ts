@@ -361,6 +361,7 @@ export class TransactionService {
 
         transaction.pendingResults = await this.getPendingResults(transaction);
         if (transaction.pendingResults === true) {
+          this.logger.log(`Updating transaction status to pending due to pending results. tx hash=${transaction.txHash}`);
           transaction.status = TransactionStatus.pending;
         }
       } catch (error) {

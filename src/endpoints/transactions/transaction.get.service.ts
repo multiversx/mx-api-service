@@ -65,6 +65,8 @@ export class TransactionGetService {
     try {
       transaction = await this.indexerService.getTransaction(txHash);
 
+      // todo: remove this
+      this.logger.log(`Indexer get transaction: ${txHash}. indexer status: ${transaction.status}`);
       if (!transaction) {
         return null;
       }
