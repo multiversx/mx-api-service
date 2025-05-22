@@ -82,8 +82,8 @@ export class BlockService {
   }
 
   async computeProposerAndValidators(item: any) {
-    const { shardId, epoch, searchOrder, ...rest } = item;
-    let { proposer, proposerBlsKey, validators } = item;
+    const { shardId, epoch, searchOrder, proposerBlsKey, ...rest } = item;
+    let { proposer, validators } = item;
 
     let blses: any = await this.cachingService.getLocal(CacheInfo.ShardAndEpochBlses(shardId, epoch).key);
     if (!blses) {
@@ -92,7 +92,11 @@ export class BlockService {
       this.cachingService.setLocal(CacheInfo.ShardAndEpochBlses(shardId, epoch).key, blses, CacheInfo.ShardAndEpochBlses(shardId, epoch).ttl);
     }
 
-    proposer = proposerBlsKey;
+    if (proposerBlsKey) {
+      proposer = proposerBlsKey;
+    } else {
+      proposer = blses[proposer];
+    }
 
     if (validators) {
       validators = validators.map((index: number) => blses[index]);
@@ -109,7 +113,11 @@ export class BlockService {
 
     if (result.round > 0) {
       const publicKeys = await this.blsService.getPublicKeys(result.shardId, result.epoch);
-      result.proposer = result.proposerBlsKey;
+      if (result.proposerBlsKey) {
+        result.proposer = result.proposerBlsKey;
+      } else {
+        result.proposer = publicKeys[result.proposer];
+      }
       if (!isChainAndromedaEnabled) {
         result.validators = result.validators.map((validator: number) => publicKeys[validator]);
       } else {
