@@ -83,22 +83,9 @@ export class BlockService {
 
   async computeProposerAndValidators(item: any) {
     const { shardId, epoch, searchOrder, ...rest } = item;
-    let { proposer, validators } = item;
+    let { proposerBlsKey, validators } = item;
 
-    let blses: any = await this.cachingService.getLocal(CacheInfo.ShardAndEpochBlses(shardId, epoch).key);
-    if (!blses) {
-      blses = await this.blsService.getPublicKeys(shardId, epoch);
-
-      this.cachingService.setLocal(CacheInfo.ShardAndEpochBlses(shardId, epoch).key, blses, CacheInfo.ShardAndEpochBlses(shardId, epoch).ttl);
-    }
-
-    proposer = blses[proposer];
-
-    if (validators) {
-      validators = validators.map((index: number) => blses[index]);
-    }
-
-    return {shardId, epoch, validators, ...rest, proposer};
+    return { shardId, epoch, validators, ...rest, proposerBlsKey };
   }
 
   async getBlock(hash: string): Promise<BlockDetailed> {
