@@ -4,22 +4,18 @@ import { Application } from './entities/application';
 import { QueryPagination } from 'src/common/entities/query.pagination';
 import { ApplicationFilter } from './entities/application.filter';
 import { AssetsService } from '../../common/assets/assets.service';
-import { GatewayService } from 'src/common/gateway/gateway.service';
 import { TransferService } from '../transfers/transfer.service';
 import { TransactionFilter } from '../transactions/entities/transaction.filter';
 import { TransactionType } from '../transactions/entities/transaction.type';
-import { Logger } from '@nestjs/common';
 import { CacheService } from '@multiversx/sdk-nestjs-cache';
 import { CacheInfo } from 'src/utils/cache.info';
 
 @Injectable()
 export class ApplicationService {
-  private readonly logger = new Logger(ApplicationService.name);
 
   constructor(
     private readonly elasticIndexerService: ElasticIndexerService,
     private readonly assetsService: AssetsService,
-    private readonly gatewayService: GatewayService,
     private readonly transferService: TransferService,
     private readonly cacheService: CacheService,
   ) { }
@@ -40,11 +36,14 @@ export class ApplicationService {
 
   async getApplicationsRaw(pagination: QueryPagination, filter: ApplicationFilter): Promise<Application[]> {
     const elasticResults = await this.elasticIndexerService.getApplications(filter, pagination);
-    const assets = await this.assetsService.getAllAccountAssets();
 
     if (!elasticResults) {
       return [];
     }
+
+    const assets = await this.assetsService.getAllAccountAssets();
+    const verifiedAccounts = await this.cacheService.get<string[]>(CacheInfo.VerifiedAccounts.key) || [];
+    const balances = await this.elasticIndexerService.getApplicationsBulkBalance(elasticResults.map(item => item.address), pagination);
 
     const applications = elasticResults.map(item => new Application({
       contract: item.address,
@@ -53,15 +52,11 @@ export class ApplicationService {
       codeHash: item.initialCodeHash,
       timestamp: item.timestamp,
       assets: assets[item.address],
-      balance: '0',
+      balance: balances[item.address]?.balance || '0',
+      isVerified: verifiedAccounts.includes(item.address),
       ...(filter.withTxCount && { txCount: 0 }),
     }));
 
-    const balancePromises = applications.map(application =>
-      this.getApplicationBalance(application.contract)
-        .then(balance => { application.balance = balance; })
-    );
-    await Promise.all(balancePromises);
 
     if (filter.withTxCount) {
       for (const application of applications) {
@@ -79,6 +74,10 @@ export class ApplicationService {
   async getApplication(address: string): Promise<Application> {
     const indexResult = await this.elasticIndexerService.getApplication(address);
     const assets = await this.assetsService.getAllAccountAssets();
+    const verifiedAccounts = await this.cacheService.get<string[]>(CacheInfo.VerifiedAccounts.key) || [];
+
+    const pagination = new QueryPagination({ from: 0, size: 1 });
+    const balances = await this.elasticIndexerService.getApplicationsBulkBalance([address], pagination);
 
     const result = new Application({
       contract: indexResult.address,
@@ -87,27 +86,17 @@ export class ApplicationService {
       codeHash: indexResult.initialCodeHash,
       timestamp: indexResult.timestamp,
       assets: assets[address],
-      balance: '0',
+      balance: balances[address]?.balance || '0',
       txCount: 0,
+      isVerified: verifiedAccounts.includes(address),
     });
 
     result.txCount = await this.getApplicationTxCount(result.contract);
-    result.balance = await this.getApplicationBalance(result.contract);
 
     return result;
   }
 
   private async getApplicationTxCount(address: string): Promise<number> {
     return await this.transferService.getTransfersCount(new TransactionFilter({ address, type: TransactionType.Transaction }));
-  }
-
-  private async getApplicationBalance(address: string): Promise<string> {
-    try {
-      const { account: { balance } } = await this.gatewayService.getAddressDetails(address);
-      return balance;
-    } catch (error) {
-      this.logger.error(`Error when getting balance for contract ${address}`, error);
-      return '0';
-    }
   }
 }
