@@ -83,9 +83,11 @@ export class BlockService {
 
   async computeProposerAndValidators(item: any) {
     const { shardId, epoch, searchOrder, ...rest } = item;
-    let { proposerBlsKey, validators } = item;
+    let { proposer, proposerBlsKey, validators } = item;
 
-    return { shardId, epoch, validators, ...rest, proposerBlsKey };
+    proposer = proposerBlsKey;
+
+    return { shardId, epoch, validators, ...rest, proposer };
   }
 
   async getBlock(hash: string): Promise<BlockDetailed> {
