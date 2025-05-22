@@ -15,6 +15,7 @@ export class AWSService {
         secretAccessKey: this.apiConfigService.getAwsS3Secret(),
       },
       region: this.apiConfigService.getAwsS3Region(),
+      endpoint: this.apiConfigService.getAwsS3Endpoint(),
     });
 
     await s3.putObject({
@@ -22,6 +23,7 @@ export class AWSService {
       Key: path,
       Body: buffer,
       ContentType: type,
+      ACL: "public-read",
     });
 
     return this.getItemPath(path);
