@@ -109,7 +109,7 @@ export class BlockService {
 
     if (result.round > 0) {
       const publicKeys = await this.blsService.getPublicKeys(result.shardId, result.epoch);
-      result.proposer = publicKeys[result.proposer];
+      result.proposer = result.proposerBlsKey;
       if (!isChainAndromedaEnabled) {
         result.validators = result.validators.map((validator: number) => publicKeys[validator]);
       } else {
