@@ -85,7 +85,18 @@ export class BlockService {
     const { shardId, epoch, searchOrder, ...rest } = item;
     let { proposer, proposerBlsKey, validators } = item;
 
+    let blses: any = await this.cachingService.getLocal(CacheInfo.ShardAndEpochBlses(shardId, epoch).key);
+    if (!blses) {
+      blses = await this.blsService.getPublicKeys(shardId, epoch);
+
+      this.cachingService.setLocal(CacheInfo.ShardAndEpochBlses(shardId, epoch).key, blses, CacheInfo.ShardAndEpochBlses(shardId, epoch).ttl);
+    }
+
     proposer = proposerBlsKey;
+
+    if (validators) {
+      validators = validators.map((index: number) => blses[index]);
+    }
 
     return { shardId, epoch, validators, ...rest, proposer };
   }
