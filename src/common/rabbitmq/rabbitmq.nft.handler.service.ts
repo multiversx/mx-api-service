@@ -8,6 +8,7 @@ import { NotifierEvent } from './entities/notifier.event';
 import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { BinaryUtils, OriginLogger } from '@multiversx/sdk-nestjs-common';
 import { IndexerService } from '../indexer/indexer.service';
+import { NftSubType } from 'src/endpoints/nfts/entities/nft.sub.type';
 
 @Injectable()
 export class RabbitMqNftHandlerService {
@@ -62,13 +63,37 @@ export class RabbitMqNftHandlerService {
     nft.attributes = attributes;
 
     try {
-      await this.nftWorkerService.addProcessNftQueueJob(nft, new ProcessNftSettings({ forceRefreshMetadata: true }));
+      const isDynamicNft = this.isDynamicNftType(nft.subType);
+
+      if (isDynamicNft) {
+        this.logger.log(`Processing dynamic NFT with identifier '${identifier}', forcing refresh of metadata and media`);
+
+        await this.nftWorkerService.addProcessNftQueueJob(nft, new ProcessNftSettings({
+          forceRefreshMetadata: true,
+          forceRefreshMedia: true,
+          forceRefreshThumbnail: true,
+        }));
+      } else {
+        await this.nftWorkerService.addProcessNftQueueJob(nft, new ProcessNftSettings({ forceRefreshMetadata: true }));
+      }
     } catch (error) {
       this.logger.error(`An unhandled error occurred when processing NFT update attributes event for NFT with identifier '${identifier}'`);
       this.logger.error(error);
     } finally {
       return true;
     }
+  }
+
+  private isDynamicNftType(subType?: NftSubType): boolean {
+    if (subType) {
+      return [
+        NftSubType.DynamicNonFungibleESDT,
+        NftSubType.DynamicSemiFungibleESDT,
+        NftSubType.DynamicMetaESDT,
+      ].includes(subType);
+    }
+
+    return false;
   }
 
   public async handleNftCreateEvent(event: NotifierEvent): Promise<boolean> {
@@ -92,6 +117,21 @@ export class RabbitMqNftHandlerService {
     }
 
     try {
+      const isDynamicNft = this.isDynamicNftType(nft.subType);
+
+      if (isDynamicNft) {
+        this.logger.log(`Processing dynamic NFT creation with identifier '${identifier}', forcing full refresh`);
+
+        await this.nftWorkerService.addProcessNftQueueJob(nft, new ProcessNftSettings({
+          uploadAsset: true,
+          forceRefreshMetadata: true,
+          forceRefreshMedia: true,
+          forceRefreshThumbnail: true,
+        }));
+
+        return true;
+      }
+
       const needsProcessing = await this.nftWorkerService.needsProcessing(nft, new ProcessNftSettings());
       if (needsProcessing) {
         await this.nftWorkerService.addProcessNftQueueJob(nft, new ProcessNftSettings({ uploadAsset: true }));
@@ -100,6 +140,62 @@ export class RabbitMqNftHandlerService {
       return true;
     } catch (error) {
       this.logger.error(`An unhandled error occurred when processing NFT Create event for NFT with identifier '${identifier}'`);
+      this.logger.error(error);
+      return false;
+    }
+  }
+
+  public async handleNftBurnEvent(event: NotifierEvent): Promise<boolean> {
+    const identifier = this.getNftIdentifier(event.topics);
+
+    this.logger.log(`Detected 'ESDTNFTBurn' event for NFT with identifier '${identifier}'`);
+
+    try {
+      await this.cachingService.delete(`nft:${identifier}`);
+      this.logger.log(`Cache invalidated for NFT with identifier '${identifier}'`);
+      return true;
+    } catch (error) {
+      this.logger.error(`An unhandled error occurred when processing NFT Burn event for NFT with identifier '${identifier}'`);
+      this.logger.error(error);
+      return false;
+    }
+  }
+
+  public async handleNftMetadataEvent(event: NotifierEvent): Promise<boolean> {
+    const identifier = this.getNftIdentifier(event.topics);
+
+    this.logger.log(`Detected '${event.identifier}' event for NFT with identifier '${identifier}'`);
+
+    const nft = await this.nftService.getSingleNft(identifier);
+    if (!nft) {
+      this.logger.log(`Could not fetch NFT details for NFT with identifier '${identifier}'`);
+      return false;
+    }
+
+    try {
+      await this.nftWorkerService.addProcessNftQueueJob(nft, new ProcessNftSettings({
+        forceRefreshMetadata: true,
+        forceRefreshMedia: true,
+      }));
+      return true;
+    } catch (error) {
+      this.logger.error(`An unhandled error occurred when processing '${event.identifier}' event for NFT with identifier '${identifier}'`);
+      this.logger.error(error);
+      return false;
+    }
+  }
+
+  public async handleNftModifyCreatorEvent(event: NotifierEvent): Promise<boolean> {
+    const identifier = this.getNftIdentifier(event.topics);
+
+    this.logger.log(`Detected 'ESDTModifyCreator' event for NFT with identifier '${identifier}'`);
+
+    try {
+      await this.cachingService.delete(`nft:${identifier}`);
+      this.logger.log(`Cache invalidated for NFT with identifier '${identifier}'`);
+      return true;
+    } catch (error) {
+      this.logger.error(`An unhandled error occurred when processing NFT ModifyCreator event for NFT with identifier '${identifier}'`);
       this.logger.error(error);
       return false;
     }

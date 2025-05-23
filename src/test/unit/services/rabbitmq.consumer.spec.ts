@@ -14,6 +14,9 @@ describe('RabbitMqConsumer', () => {
     const nftHandlerServiceMock = {
       handleNftCreateEvent: jest.fn(),
       handleNftUpdateAttributesEvent: jest.fn(),
+      handleNftBurnEvent: jest.fn(),
+      handleNftMetadataEvent: jest.fn(),
+      handleNftModifyCreatorEvent: jest.fn(),
     };
 
     const tokenHandlerServiceMock = {
@@ -54,10 +57,43 @@ describe('RabbitMqConsumer', () => {
       topics: [''],
     };
 
-    await service.consumeEvents({ events: [event1, event2] });
+    const event3: NotifierEvent = {
+      identifier: NotifierEventIdentifier.ESDTNFTBurn,
+      address: "erd1",
+      topics: [''],
+    };
+
+    const event4: NotifierEvent = {
+      identifier: NotifierEventIdentifier.ESDTMetaDataUpdate,
+      address: "erd1",
+      topics: [''],
+    };
+
+    const event5: NotifierEvent = {
+      identifier: NotifierEventIdentifier.ESDTModifyCreator,
+      address: "erd1",
+      topics: [''],
+    };
+
+    await service.consumeEvents({ events: [event1, event2, event3, event4, event5] });
 
     expect(nftHandlerService.handleNftCreateEvent).toHaveBeenCalledWith(event1);
     expect(tokenHandlerService.handleTransferOwnershipEvent).toHaveBeenCalledWith(event2);
+    expect(nftHandlerService.handleNftBurnEvent).toHaveBeenCalledWith(event3);
+    expect(nftHandlerService.handleNftMetadataEvent).toHaveBeenCalledWith(event4);
+    expect(nftHandlerService.handleNftModifyCreatorEvent).toHaveBeenCalledWith(event5);
+  });
+
+  it('should handle ESDTMetaDataRecreate with the metadata event handler', async () => {
+    const event: NotifierEvent = {
+      identifier: NotifierEventIdentifier.ESDTMetaDataRecreate,
+      address: "erd1",
+      topics: [''],
+    };
+
+    await service.consumeEvents({ events: [event] });
+
+    expect(nftHandlerService.handleNftMetadataEvent).toHaveBeenCalledWith(event);
   });
 
   it('should log the error when an unhandled error occurs', async () => {
