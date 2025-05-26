@@ -172,7 +172,8 @@ export class MexTokenService {
   private async getAllMexTokensRaw(): Promise<MexToken[]> {
     const pairs = await this.mexPairService.getAllMexPairs();
 
-    const mexTokens: MexToken[] = [];
+    const tokenPoolMap: Record<string, { token: MexToken; liquidityValue: number }> = {};
+
     for (const pair of pairs) {
       if (pair.baseSymbol === 'WEGLD' && pair.quoteSymbol === "USDC") {
         const wegldToken = new MexToken();
@@ -183,7 +184,10 @@ export class MexTokenService {
         wegldToken.previous24hPrice = pair.basePrevious24hPrice;
         wegldToken.previous24hVolume = pair.volume24h;
         wegldToken.tradesCount = this.computeTradesCountForMexToken(wegldToken, pairs);
-        mexTokens.push(wegldToken);
+
+        if (!tokenPoolMap[wegldToken.id] || pair.totalValue > tokenPoolMap[wegldToken.id].liquidityValue) {
+          tokenPoolMap[wegldToken.id] = { token: wegldToken, liquidityValue: pair.totalValue };
+        }
       }
 
       const mexToken = this.getMexToken(pair);
@@ -193,10 +197,14 @@ export class MexTokenService {
 
       mexToken.tradesCount = this.computeTradesCountForMexToken(mexToken, pairs);
 
-      mexTokens.push(mexToken);
+      if (!tokenPoolMap[mexToken.id] || pair.totalValue > tokenPoolMap[mexToken.id].liquidityValue) {
+        tokenPoolMap[mexToken.id] = { token: mexToken, liquidityValue: pair.totalValue };
+      }
     }
 
-    return mexTokens.distinct(x => x.id);
+    const mexTokens = Object.values(tokenPoolMap).map(entry => entry.token);
+
+    return mexTokens;
   }
 
   private getMexToken(pair: MexPair): MexToken | null {
