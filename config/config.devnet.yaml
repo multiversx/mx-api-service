@@ -118,6 +118,9 @@ features:
   providersFetch:
     enabled: true
     serviceUrl: 'https://devnet-api.multiversx.com'
+  proofs:
+    enabled: true
+    serviceUrl: 'https://devnet-tools.multiversx.com/mx-proofs/v2'
 image:
   width: 600
   height: 600

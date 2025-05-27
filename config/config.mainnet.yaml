@@ -122,6 +122,9 @@ features:
     enabled: false
     storageUrls:
       - 'https://s3.amazonaws.com/media.elrond.com'
+  proofs:
+    enabled: true
+    serviceUrl: 'https://devnet-tools.multiversx.com/mx-proofs/v2'
 image:
   width: 600
   height: 600

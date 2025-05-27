@@ -909,6 +909,14 @@ export class ApiConfigService {
     return this.configService.get<string>('features.assetsFetch.assetesUrl') ?? 'https://tools.multiversx.com/assets-cdn';
   }
 
+  isProofsFeatureEnabled(): boolean {
+    return this.configService.get<boolean>('features.proofs.enabled') ?? false;
+  }
+
+  getProofsServiceUrl(): string {
+    return this.configService.get<string>('features.proofs.serviceUrl') ?? 'https://devnet-tools.multiversx.com/mx-proofs/v2';
+  }
+
   isTokensFetchFeatureEnabled(): boolean {
     return this.configService.get<boolean>('features.tokensFetch.enabled') ?? false;
   }

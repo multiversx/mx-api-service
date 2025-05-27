@@ -40,6 +40,7 @@ import { TpsController } from "./tps/tps.controller";
 import { ApplicationController } from "./applications/application.controller";
 import { EventsController } from "./events/events.controller";
 import { MediaController } from "./media/media.controller";
+import { ProofController } from "./proofs/proof.controller";
 
 @Module({})
 export class EndpointsControllersModule {
@@ -76,6 +77,11 @@ export class EndpointsControllersModule {
     const isTpsEnabled = configuration().features?.tps?.enabled;
     if (isTpsEnabled) {
       controllers.push(TpsController);
+    }
+
+    const isProofEnabled = configuration().features?.proofs?.enabled;
+    if (isProofEnabled) {
+      controllers.push(ProofController);
     }
 
     return {

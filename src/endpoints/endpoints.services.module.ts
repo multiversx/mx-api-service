@@ -37,6 +37,7 @@ import { TpsModule } from "./tps/tps.module";
 import { ApplicationModule } from "./applications/application.module";
 import { EventsModule } from "./events/events.module";
 import { MediaModule } from "./media/media.module";
+import { ProofModule } from "./proofs/proof.module";
 
 @Module({
   imports: [
@@ -69,6 +70,7 @@ import { MediaModule } from "./media/media.module";
     DappConfigModule,
     TransferModule,
     PoolModule,
+    ProofModule,
     TransactionActionModule,
     WebsocketModule,
     MexModule.forRoot(),
@@ -84,7 +86,7 @@ import { MediaModule } from "./media/media.module";
     AccountModule, CollectionModule, BlockModule, DelegationModule, DelegationLegacyModule, IdentitiesModule, KeysModule,
     MiniBlockModule, NetworkModule, NftModule, NftMediaModule, TagModule, NodeModule, ProviderModule,
     RoundModule, SmartContractResultModule, ShardModule, StakeModule, TokenModule, RoundModule, TransactionModule, UsernameModule, VmQueryModule,
-    WaitingListModule, EsdtModule, BlsModule, DappConfigModule, TransferModule, PoolModule, TransactionActionModule, WebsocketModule, MexModule,
+    WaitingListModule, EsdtModule, BlsModule, DappConfigModule, TransferModule, PoolModule, ProofModule, TransactionActionModule, WebsocketModule, MexModule,
     ProcessNftsModule, NftMarketplaceModule, TransactionsBatchModule, TpsModule, ApplicationModule, EventsModule, MediaModule,
   ],
 })
