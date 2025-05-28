@@ -32,4 +32,7 @@ export class Application {
 
   @ApiProperty({ type: Number, required: false })
   txCount?: number;
+
+  @ApiProperty({ type: Number, required: false, nullable: true, description: 'Number of unique users in the last 24 hours' })
+  users24h?: number | null;
 }

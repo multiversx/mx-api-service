@@ -10,7 +10,7 @@ import { Application } from "./entities/application";
 @ApiTags('applications')
 export class ApplicationController {
   constructor(
-    private readonly applicationService: ApplicationService
+    private readonly applicationService: ApplicationService,
   ) { }
 
   @Get("applications")

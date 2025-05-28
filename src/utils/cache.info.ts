@@ -710,4 +710,11 @@ export class CacheInfo {
       ttl: Constants.oneSecond() * 30,
     };
   }
+
+  static ApplicationUsersCount24h(address: string): CacheInfo {
+    return {
+      key: `app_users_24h:${address}:count`,
+      ttl: Constants.oneHour(),
+    };
+  }
 }

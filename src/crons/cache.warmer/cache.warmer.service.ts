@@ -18,7 +18,7 @@ import { MexSettingsService } from "src/endpoints/mex/mex.settings.service";
 import { MexPairService } from "src/endpoints/mex/mex.pair.service";
 import { MexFarmService } from "src/endpoints/mex/mex.farm.service";
 import { CacheService, GuestCacheWarmer } from "@multiversx/sdk-nestjs-cache";
-import { BatchUtils, Constants, Lock, OriginLogger } from "@multiversx/sdk-nestjs-common";
+import { AddressUtils, BatchUtils, Constants, Lock, OriginLogger } from "@multiversx/sdk-nestjs-common";
 import { DelegationLegacyService } from "src/endpoints/delegation.legacy/delegation.legacy.service";
 import { SettingsService } from "src/common/settings/settings.service";
 import { TokenService } from "src/endpoints/tokens/token.service";
@@ -110,6 +110,10 @@ export class CacheWarmerService {
       this.schedulerRegistry.addCronJob('handleUpdateApplicationIsVerified', handleUpdateApplicationIsVerifiedCronJob);
       handleUpdateApplicationIsVerifiedCronJob.start();
     }
+
+    const handleUpdateApplicationUsersCountCronJob = new CronJob(CronExpression.EVERY_5_MINUTES, async () => await this.handleUpdateApplicationUsersCount());
+    this.schedulerRegistry.addCronJob('handleUpdateApplicationUsersCount', handleUpdateApplicationUsersCountCronJob);
+    handleUpdateApplicationUsersCountCronJob.start();
   }
 
   private configCronJob(name: string, fastExpression: string, normalExpression: string, callback: () => Promise<void>) {
@@ -446,6 +450,53 @@ export class CacheWarmerService {
       }
     } catch (error) {
       this.logger.error(`Failed to update applications isVerified: ${error}`);
+    }
+  }
+
+  @Lock({ name: 'Elastic updater: Update application users count', verbose: true })
+  async handleUpdateApplicationUsersCount() {
+    try {
+      const now = Math.floor(Date.now() / 1000);
+      const timestamp24hAgo = now - (24 * 60 * 60);
+
+      this.logger.log(`Calculating unique users for applications in the last 24h (since ${new Date(timestamp24hAgo * 1000).toISOString()})`);
+
+      const operations = await this.indexerService.getTransfers({
+        after: timestamp24hAgo,
+      }, { from: 0, size: 10000 });
+
+      const applicationUsers: { [address: string]: Set<string> } = {};
+
+      for (const operation of operations) {
+        const receiver = operation.receiver;
+        const sender = operation.sender;
+
+        if (receiver && AddressUtils.isSmartContractAddress(receiver) &&
+          sender && !AddressUtils.isSmartContractAddress(sender)) {
+          if (!applicationUsers[receiver]) {
+            applicationUsers[receiver] = new Set();
+          }
+          applicationUsers[receiver].add(sender);
+        }
+      }
+
+      const ttl = 25 * 60 * 60; // 25 hours in seconds
+
+      for (const [applicationAddress, usersSet] of Object.entries(applicationUsers)) {
+        const redisKey = `app_users_24h:${applicationAddress}`;
+        const usersCount = usersSet.size;
+
+        // Store the count and the set in Redis
+        await this.cachingService.setRemote(redisKey, Array.from(usersSet), ttl);
+        await this.cachingService.setRemote(`${redisKey}:count`, usersCount, ttl);
+
+        this.logger.log(`Stored ${usersCount} unique users for application ${applicationAddress}`);
+      }
+
+      this.logger.log(`Processed ${Object.keys(applicationUsers).length} applications with user activity in the last 24h`);
+
+    } catch (error) {
+      this.logger.error(`Failed to update application users count: ${error}`);
     }
   }
 

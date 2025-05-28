@@ -41,7 +41,6 @@ export class ApplicationService {
   async getApplicationsRaw(pagination: QueryPagination, filter: ApplicationFilter): Promise<Application[]> {
     const elasticResults = await this.elasticIndexerService.getApplications(filter, pagination);
     const assets = await this.assetsService.getAllAccountAssets();
-
     if (!elasticResults) {
       return [];
     }
@@ -70,6 +69,10 @@ export class ApplicationService {
       }
     }
 
+    for (const application of applications) {
+      application.users24h = await this.getApplicationUsersCount24h(application.contract);
+    }
+
     return applications;
   }
 
@@ -95,6 +98,7 @@ export class ApplicationService {
 
     result.txCount = await this.getApplicationTxCount(result.contract);
     result.balance = await this.getApplicationBalance(result.contract);
+    result.users24h = await this.getApplicationUsersCount24h(result.contract);
 
     return result;
   }
@@ -110,6 +114,17 @@ export class ApplicationService {
     } catch (error) {
       this.logger.error(`Error when getting balance for contract ${address}`, error);
       return '0';
+    }
+  }
+
+  private async getApplicationUsersCount24h(address: string): Promise<number | null> {
+    try {
+      const usersCount = await this.cacheService.get<number>(CacheInfo.ApplicationUsersCount24h(address).key);
+      console.log(usersCount);
+      return usersCount ?? null;
+    } catch (error) {
+      this.logger.error(`Error getting users count for application ${address}: ${error}`);
+      return null;
     }
   }
 }
