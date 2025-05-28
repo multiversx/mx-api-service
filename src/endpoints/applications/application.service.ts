@@ -54,14 +54,11 @@ export class ApplicationService {
       assets: assets[item.address],
       isVerified: item.api_isVerified,
       balance: '0',
+      developerRewards: '0',
       ...(filter.withTxCount && { txCount: 0 }),
     }));
 
-    const balancePromises = applications.map(application =>
-      this.getApplicationBalance(application.contract)
-        .then(balance => { application.balance = balance; })
-    );
-    await Promise.all(balancePromises);
+    await this.setApplicationsBalancesAndDeveloperRewardsBulk(applications);
 
     if (filter.withTxCount) {
       for (const application of applications) {
@@ -97,11 +94,13 @@ export class ApplicationService {
       isVerified: indexResult.api_isVerified,
       assets: assets[address],
       balance: '0',
+      developerRewards: '0',
       txCount: 0,
     });
 
     result.txCount = await this.getApplicationTxCount(result.contract);
     result.balance = await this.getApplicationBalance(result.contract);
+    result.developerRewards = await this.getApplicationDeveloperReward(result.contract);
     result.users24h = await this.getApplicationUsersCount24h(result.contract);
     result.feesCaptured24h = await this.getApplicationFeesCaptured24h(result.contract);
 
@@ -156,5 +155,39 @@ export class ApplicationService {
       async () => await this.getApplicationFeesCaptured24hRaw(address),
       CacheInfo.ApplicationFeesCaptured24h(address).ttl
     );
+  }
+
+  private async getApplicationDeveloperReward(address: string): Promise<string> {
+    try {
+      const { account: { developerReward } } = await this.gatewayService.getAddressDetails(address);
+      return developerReward || '0';
+    } catch (error) {
+      this.logger.error(`Error when getting developer reward for contract ${address}`, error);
+      return '0';
+    }
+  }
+
+  private async setApplicationsBalancesAndDeveloperRewardsBulk(applications: Application[]): Promise<void> {
+    try {
+      const addresses = applications.map(app => app.contract);
+      const accounts: Record<string, any> = await this.gatewayService.getAccountsBulk(addresses);
+
+      for (const application of applications) {
+        const account = accounts[application.contract];
+        application.balance = account?.balance || '0';
+        application.developerRewards = account?.developerReward || '0';
+      }
+    } catch (error) {
+      this.logger.error(`Error getting bulk balances and developer rewards: ${error}`);
+      const balancePromises = applications.map(application =>
+        this.getApplicationBalance(application.contract)
+          .then(balance => { application.balance = balance; })
+      );
+      const developerRewardPromises = applications.map(application =>
+        this.getApplicationDeveloperReward(application.contract)
+          .then(developerReward => { application.developerRewards = developerReward; })
+      );
+      await Promise.all([...balancePromises, ...developerRewardPromises]);
+    }
   }
 }

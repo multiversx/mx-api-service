@@ -30,6 +30,9 @@ export class Application {
   @ApiProperty({ type: String })
   balance: string = '0';
 
+  @ApiProperty({ type: String })
+  developerRewards: string = '0';
+
   @ApiProperty({ type: Number, required: false })
   txCount?: number;
 
