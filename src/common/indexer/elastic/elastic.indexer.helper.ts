@@ -763,6 +763,18 @@ export class ElasticIndexerHelper {
       elasticQuery = elasticQuery.withRangeFilter('timestamp', new RangeLowerThanOrEqual(filter.before));
     }
 
+    if (filter.isVerified !== undefined) {
+      if (filter.isVerified) {
+        elasticQuery = elasticQuery.withMustExistCondition('api_isVerified');
+      } else {
+        elasticQuery = elasticQuery.withMustNotExistCondition('api_isVerified');
+      }
+    }
+
+    if (filter.addresses !== undefined && filter.addresses.length > 0) {
+      elasticQuery = elasticQuery.withMustMultiShouldCondition(filter.addresses, address => QueryType.Match('_id', address));
+    }
+
     return elasticQuery;
   }
 

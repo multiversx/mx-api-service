@@ -25,11 +25,12 @@ import { MiniBlockFilter } from "src/endpoints/miniblocks/entities/mini.block.fi
 import { AccountHistoryFilter } from "src/endpoints/accounts/entities/account.history.filter";
 import { AccountAssets } from "src/common/assets/entities/account.assets";
 import { NotWritableError } from "../entities/not.writable.error";
-import { ApplicationFilter } from "src/endpoints/applications/entities/application.filter";
+import { ApplicationFilter, UsersCountRange } from "src/endpoints/applications/entities/application.filter";
 import { NftType } from "../entities/nft.type";
 import { EventsFilter } from "src/endpoints/events/entities/events.filter";
 import { Events } from "../entities/events";
 import { EsCircuitBreakerProxy } from "./circuit-breaker/circuit.breaker.proxy.service";
+import { UsersCountUtils } from "src/utils/users.count.utils";
 
 @Injectable()
 export class ElasticIndexerService implements IndexerInterface {
@@ -955,6 +956,22 @@ export class ElasticIndexerService implements IndexerInterface {
     });
   }
 
+  async setApplicationIsVerified(address: string, isVerified: boolean): Promise<void> {
+    return await this.elasticService.setCustomValues('scdeploys', address, {
+      isVerified,
+    });
+  }
+
+  async getApplicationsWithIsVerified(): Promise<string[]> {
+    const elasticQuery = ElasticQuery.create()
+      .withFields(['address'])
+      .withPagination({ from: 0, size: 10000 })
+      .withMustExistCondition('api_isVerified');
+
+    const result = await this.elasticService.getList('scdeploys', 'address', elasticQuery);
+    return result.map(x => x.address);
+  }
+
   async getBlockByTimestampAndShardId(timestamp: number, shardId: number): Promise<Block | undefined> {
     const elasticQuery = ElasticQuery.create()
       .withRangeFilter('timestamp', new RangeGreaterThanOrEqual(timestamp))
@@ -969,7 +986,7 @@ export class ElasticIndexerService implements IndexerInterface {
   async getApplications(filter: ApplicationFilter, pagination: QueryPagination): Promise<any[]> {
     const elasticQuery = this.indexerHelper.buildApplicationFilter(filter)
       .withPagination(pagination)
-      .withFields(['address', 'deployer', 'currentOwner', 'initialCodeHash', 'timestamp'])
+      .withFields(['address', 'deployer', 'currentOwner', 'initialCodeHash', 'timestamp', 'api_isVerified'])
       .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }]);
 
     return await this.elasticService.getList('scdeploys', 'address', elasticQuery);
@@ -1037,5 +1054,94 @@ export class ElasticIndexerService implements IndexerInterface {
     }
 
     return identifierToTimestamp;
+  }
+
+  async setApplicationExtraProperties(address: string, properties: any): Promise<void> {
+    return await this.elasticService.setCustomValues('scdeploys', address, properties);
+  }
+
+  async getApplicationsWithExtraProperties(): Promise<string[]> {
+    const elasticQuery = ElasticQuery.create()
+      .withFields(['address'])
+      .withPagination({ from: 0, size: 10000 })
+      .withMustExistCondition('api_transfersLast24h');
+
+    const result = await this.elasticService.getList('scdeploys', 'address', elasticQuery);
+    return result.map(x => x.address);
+  }
+
+  async getApplicationUsersCount(applicationAddress: string, range: UsersCountRange): Promise<number> {
+    const now = Math.floor(Date.now() / 1000);
+    const secondsAgo = UsersCountUtils.getSecondsForRange(range);
+    const timestampAgo = now - secondsAgo;
+
+    const elasticQuery = ElasticQuery.create()
+      .withMustMatchCondition('receiver', applicationAddress)
+      .withRangeFilter('timestamp', new RangeGreaterThanOrEqual(timestampAgo))
+      .withMustNotCondition(QueryType.Match('sender', applicationAddress))
+      .withPagination({ from: 0, size: 0 })
+      .withExtra({
+        aggs: {
+          unique_senders: {
+            cardinality: {
+              field: 'sender',
+            },
+          },
+        },
+      });
+
+    const result = await this.elasticService.post(`${this.apiConfigService.getElasticUrl()}/operations/_search`, elasticQuery.toJson());
+
+    return result?.data?.aggregations?.unique_senders?.value || 0;
+  }
+
+  async getAllApplicationAddresses(): Promise<string[]> {
+    const elasticQuery = ElasticQuery.create()
+      .withFields(['address'])
+      .withPagination({ from: 0, size: 10000 });
+
+    const applications: any[] = [];
+
+    await this.elasticService.getScrollableList(
+      'scdeploys',
+      'address',
+      elasticQuery,
+      // @ts-ignore
+      // eslint-disable-next-line require-await
+      async (items: any[]) => {
+        applications.push(...items);
+      }
+    );
+
+    return applications.map(app => app.address);
+  }
+
+  async getApplicationFeesCaptured(applicationAddress: string, range: UsersCountRange): Promise<string> {
+    const now = Math.floor(Date.now() / 1000);
+    const secondsAgo = UsersCountUtils.getSecondsForRange(range);
+    const timestampAgo = now - secondsAgo;
+
+    const elasticQuery = ElasticQuery.create()
+      .withMustMatchCondition('receiver', applicationAddress)
+      .withRangeFilter('timestamp', new RangeGreaterThanOrEqual(timestampAgo))
+      .withMustNotCondition(QueryType.Match('sender', applicationAddress))
+      .withPagination({ from: 0, size: 0 })
+      .withExtra({
+        aggs: {
+          total_fees: {
+            sum: {
+              script: {
+                source: "if (doc['fee'].size() > 0 && doc['fee'].value != null && !doc['fee'].value.isEmpty()) { Long.parseLong(doc['fee'].value) } else { 0 }",
+                lang: "painless",
+              },
+            },
+          },
+        },
+      });
+
+    const result = await this.elasticService.post(`${this.apiConfigService.getElasticUrl()}/operations/_search`, elasticQuery.toJson());
+
+    const totalFees = result?.data?.aggregations?.total_fees?.value || 0;
+    return totalFees.toString();
   }
 }

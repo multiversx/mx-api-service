@@ -21,12 +21,24 @@ export class Application {
   @ApiProperty({ type: Number })
   timestamp: number = 0;
 
+  @ApiProperty({ type: Boolean, required: false, description: 'Is the application verified' })
+  isVerified?: boolean;
+
   @ApiProperty({ type: AccountAssets, nullable: true, description: 'Contract assets' })
   assets: AccountAssets | undefined = undefined;
 
   @ApiProperty({ type: String })
   balance: string = '0';
 
+  @ApiProperty({ type: String })
+  developerRewards: string = '0';
+
   @ApiProperty({ type: Number, required: false })
   txCount?: number;
+
+  @ApiProperty({ type: Number, required: false, nullable: true, description: 'Number of unique users in the specified time range' })
+  usersCount?: number | null;
+
+  @ApiProperty({ type: String, required: false, nullable: true, description: 'Total fees captured in the specified time range' })
+  feesCaptured?: string | null;
 }

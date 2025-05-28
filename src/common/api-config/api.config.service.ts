@@ -929,4 +929,8 @@ export class ApiConfigService {
   getCacheDuration(): number {
     return this.configService.get<number>('caching.cacheDuration') ?? 3;
   }
+
+  isUpdateApplicationExtraDetailsEnabled(): boolean {
+    return this.configService.get<boolean>('features.updateApplicationExtraDetails.enabled') ?? false;
+  }
 }
