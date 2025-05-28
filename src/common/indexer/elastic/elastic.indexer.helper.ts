@@ -763,6 +763,14 @@ export class ElasticIndexerHelper {
       elasticQuery = elasticQuery.withRangeFilter('timestamp', new RangeLowerThanOrEqual(filter.before));
     }
 
+    if (filter.isVerified !== undefined) {
+      if (filter.isVerified) {
+        elasticQuery = elasticQuery.withMustExistCondition('api_isVerified');
+      } else {
+        elasticQuery = elasticQuery.withMustNotExistCondition('api_isVerified');
+      }
+    }
+
     return elasticQuery;
   }
 

@@ -8,6 +8,7 @@ export class ApplicationFilter {
   after?: number;
   before?: number;
   withTxCount?: boolean;
+  isVerified?: boolean;
 
   validate(size: number) {
     if (this.withTxCount && size > 25) {
@@ -18,6 +19,7 @@ export class ApplicationFilter {
   isSet(): boolean {
     return this.after !== undefined ||
       this.before !== undefined ||
-      this.withTxCount !== undefined;
+      this.withTxCount !== undefined ||
+      this.isVerified !== undefined;
   }
 }

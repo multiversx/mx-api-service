@@ -955,6 +955,22 @@ export class ElasticIndexerService implements IndexerInterface {
     });
   }
 
+  async setApplicationIsVerified(address: string, isVerified: boolean): Promise<void> {
+    return await this.elasticService.setCustomValues('scdeploys', address, {
+      isVerified,
+    });
+  }
+
+  async getApplicationsWithIsVerified(): Promise<string[]> {
+    const elasticQuery = ElasticQuery.create()
+      .withFields(['address'])
+      .withPagination({ from: 0, size: 10000 })
+      .withMustExistCondition('api_isVerified');
+
+    const result = await this.elasticService.getList('scdeploys', 'address', elasticQuery);
+    return result.map(x => x.address);
+  }
+
   async getBlockByTimestampAndShardId(timestamp: number, shardId: number): Promise<Block | undefined> {
     const elasticQuery = ElasticQuery.create()
       .withRangeFilter('timestamp', new RangeGreaterThanOrEqual(timestamp))
@@ -969,7 +985,7 @@ export class ElasticIndexerService implements IndexerInterface {
   async getApplications(filter: ApplicationFilter, pagination: QueryPagination): Promise<any[]> {
     const elasticQuery = this.indexerHelper.buildApplicationFilter(filter)
       .withPagination(pagination)
-      .withFields(['address', 'deployer', 'currentOwner', 'initialCodeHash', 'timestamp'])
+      .withFields(['address', 'deployer', 'currentOwner', 'initialCodeHash', 'timestamp', 'api_isVerified'])
       .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }]);
 
     return await this.elasticService.getList('scdeploys', 'address', elasticQuery);
@@ -1037,5 +1053,19 @@ export class ElasticIndexerService implements IndexerInterface {
     }
 
     return identifierToTimestamp;
+  }
+
+  async setApplicationExtraProperties(address: string, properties: any): Promise<void> {
+    return await this.elasticService.setCustomValues('scdeploys', address, properties);
+  }
+
+  async getApplicationsWithExtraProperties(): Promise<string[]> {
+    const elasticQuery = ElasticQuery.create()
+      .withFields(['address'])
+      .withPagination({ from: 0, size: 10000 })
+      .withMustExistCondition('api_transfersLast24h');
+
+    const result = await this.elasticService.getList('scdeploys', 'address', elasticQuery);
+    return result.map(x => x.address);
   }
 }

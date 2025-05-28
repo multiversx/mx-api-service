@@ -104,6 +104,12 @@ export class CacheWarmerService {
       this.schedulerRegistry.addCronJob('handleUpdateAccountAssets', handleUpdateAccountAssetsCronJob);
       handleUpdateAccountAssetsCronJob.start();
     }
+
+    if (this.apiConfigService.isUpdateApplicationExtraDetailsEnabled()) {
+      const handleUpdateApplicationIsVerifiedCronJob = new CronJob(CronExpression.EVERY_10_MINUTES, async () => await this.handleUpdateApplicationIsVerified());
+      this.schedulerRegistry.addCronJob('handleUpdateApplicationIsVerified', handleUpdateApplicationIsVerifiedCronJob);
+      handleUpdateApplicationIsVerifiedCronJob.start();
+    }
   }
 
   private configCronJob(name: string, fastExpression: string, normalExpression: string, callback: () => Promise<void>) {
@@ -402,6 +408,44 @@ export class CacheWarmerService {
           await this.indexerService.setAccountTransfersLast24h(address, newTransfersLast24h);
         }
       }
+    }
+  }
+
+  @Lock({ name: 'Elastic updater: Update application isVerified', verbose: true })
+  async handleUpdateApplicationIsVerified() {
+    const batchSize = 100;
+
+    try {
+      const verifiedAddresses = await this.cachingService.get<string[]>(CacheInfo.VerifiedAccounts.key) || [];
+      const applicationsWithIsVerified = await this.indexerService.getApplicationsWithIsVerified();
+      const allAddressesToUpdate = [...verifiedAddresses, ...applicationsWithIsVerified].distinct();
+      const verifiedSet = new Set(verifiedAddresses);
+
+      const batches = BatchUtils.splitArrayIntoChunks(allAddressesToUpdate, batchSize);
+
+      for (const batch of batches) {
+        for (const address of batch) {
+          try {
+            const application = await this.indexerService.getApplication(address);
+
+            if (!application) {
+              continue;
+            }
+
+            const isVerified = verifiedSet.has(address);
+
+            if (application.api_isVerified !== isVerified) {
+              this.logger.log(`Setting isVerified to ${isVerified} for application with address '${address}'`);
+              await this.indexerService.setApplicationIsVerified(address, isVerified);
+              console.log(`isVerified: ${isVerified} for application with address '${address}'`);
+            }
+          } catch (error) {
+            this.logger.error(`Failed to update isVerified for application with address '${address}': ${error}`);
+          }
+        }
+      }
+    } catch (error) {
+      this.logger.error(`Failed to update applications isVerified: ${error}`);
     }
   }
 

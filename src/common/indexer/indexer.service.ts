@@ -479,4 +479,20 @@ export class IndexerService implements IndexerInterface {
   async getAccountNftReceivedTimestamps(address: string, identifiers: string[]): Promise<Record<string, number>> {
     return await this.indexerInterface.getAccountNftReceivedTimestamps(address, identifiers);
   }
+
+  async setApplicationExtraProperties(address: string, properties: any): Promise<void> {
+    return await this.indexerInterface.setApplicationExtraProperties(address, properties);
+  }
+
+  async getApplicationsWithExtraProperties(): Promise<string[]> {
+    return await this.indexerInterface.getApplicationsWithExtraProperties();
+  }
+
+  async setApplicationIsVerified(address: string, isVerified: boolean): Promise<void> {
+    return await this.indexerInterface.setApplicationIsVerified(address, isVerified);
+  }
+
+  async getApplicationsWithIsVerified(): Promise<string[]> {
+    return await this.indexerInterface.getApplicationsWithIsVerified();
+  }
 }

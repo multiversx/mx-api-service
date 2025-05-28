@@ -21,6 +21,9 @@ export class Application {
   @ApiProperty({ type: Number })
   timestamp: number = 0;
 
+  @ApiProperty({ type: Boolean, required: false, description: 'Is the application verified' })
+  isVerified?: boolean;
+
   @ApiProperty({ type: AccountAssets, nullable: true, description: 'Contract assets' })
   assets: AccountAssets | undefined = undefined;
 

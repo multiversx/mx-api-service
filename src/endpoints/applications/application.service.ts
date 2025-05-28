@@ -53,6 +53,7 @@ export class ApplicationService {
       codeHash: item.initialCodeHash,
       timestamp: item.timestamp,
       assets: assets[item.address],
+      isVerified: item.api_isVerified,
       balance: '0',
       ...(filter.withTxCount && { txCount: 0 }),
     }));
@@ -86,6 +87,7 @@ export class ApplicationService {
       owner: indexResult.currentOwner,
       codeHash: indexResult.initialCodeHash,
       timestamp: indexResult.timestamp,
+      isVerified: indexResult.api_isVerified,
       assets: assets[address],
       balance: '0',
       txCount: 0,

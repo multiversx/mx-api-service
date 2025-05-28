@@ -199,4 +199,12 @@ export interface IndexerInterface {
   getEventsCount(filter: EventsFilter): Promise<number>
 
   getAccountNftReceivedTimestamps(address: string, identifiers: string[]): Promise<Record<string, number>>
+
+  setApplicationExtraProperties(address: string, properties: any): Promise<void>
+
+  getApplicationsWithExtraProperties(): Promise<string[]>
+
+  setApplicationIsVerified(address: string, isVerified: boolean): Promise<void>
+
+  getApplicationsWithIsVerified(): Promise<string[]>
 }
