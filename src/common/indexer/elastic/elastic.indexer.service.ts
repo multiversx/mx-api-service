@@ -1068,4 +1068,52 @@ export class ElasticIndexerService implements IndexerInterface {
     const result = await this.elasticService.getList('scdeploys', 'address', elasticQuery);
     return result.map(x => x.address);
   }
+
+  async getApplicationUsersCount24h(applicationAddress: string): Promise<number> {
+    const now = Math.floor(Date.now() / 1000);
+    const timestamp24hAgo = now - (24 * 60 * 60);
+
+    const elasticQuery = ElasticQuery.create()
+      .withMustMatchCondition('receiver', applicationAddress)
+      .withRangeFilter('timestamp', new RangeGreaterThanOrEqual(timestamp24hAgo))
+      .withMustNotCondition(QueryType.Match('sender', applicationAddress))
+      .withPagination({ from: 0, size: 0 })
+      .withExtra({
+        aggs: {
+          unique_senders: {
+            cardinality: {
+              field: 'sender',
+            },
+          },
+        },
+      });
+
+    const result = await this.elasticService.post(`${this.apiConfigService.getElasticUrl()}/operations/_search`, elasticQuery.toJson());
+
+    return result?.data?.aggregations?.unique_senders?.value || 0;
+  }
+
+  async getAllApplicationAddresses(): Promise<string[]> {
+    const elasticQuery = ElasticQuery.create()
+      .withFields(['address'])
+      .withPagination({ from: 0, size: 10000 });
+
+    const applications: any[] = [];
+
+    await this.elasticService.getScrollableList(
+      'scdeploys',
+      'address',
+      elasticQuery,
+      // @ts-ignore
+      // eslint-disable-next-line require-await
+      async (items: any[]) => {
+        applications.push(...items);
+      }
+    );
+
+    const response = applications.map(app => app.address);
+    console.log(response);
+
+    return response;
+  }
 }

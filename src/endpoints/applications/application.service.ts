@@ -117,14 +117,21 @@ export class ApplicationService {
     }
   }
 
-  private async getApplicationUsersCount24h(address: string): Promise<number | null> {
+  private async getApplicationUsersCount24hRaw(address: string): Promise<number | null> {
     try {
-      const usersCount = await this.cacheService.get<number>(CacheInfo.ApplicationUsersCount24h(address).key);
-      console.log(usersCount);
-      return usersCount ?? null;
+      const usersCount = await this.elasticIndexerService.getApplicationUsersCount24h(address);
+      return usersCount;
     } catch (error) {
       this.logger.error(`Error getting users count for application ${address}: ${error}`);
       return null;
     }
+  }
+
+  private async getApplicationUsersCount24h(address: string): Promise<number | null> {
+    return await this.cacheService.getOrSet(
+      CacheInfo.ApplicationUsersCount24h(address).key,
+      async () => await this.getApplicationUsersCount24hRaw(address),
+      CacheInfo.ApplicationUsersCount24h(address).ttl
+    );
   }
 }

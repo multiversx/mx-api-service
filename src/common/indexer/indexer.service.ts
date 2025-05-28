@@ -495,4 +495,12 @@ export class IndexerService implements IndexerInterface {
   async getApplicationsWithIsVerified(): Promise<string[]> {
     return await this.indexerInterface.getApplicationsWithIsVerified();
   }
+
+  async getApplicationUsersCount24h(applicationAddress: string): Promise<number> {
+    return await this.indexerInterface.getApplicationUsersCount24h(applicationAddress);
+  }
+
+  async getAllApplicationAddresses(): Promise<string[]> {
+    return await this.indexerInterface.getAllApplicationAddresses();
+  }
 }

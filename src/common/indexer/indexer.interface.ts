@@ -207,4 +207,8 @@ export interface IndexerInterface {
   setApplicationIsVerified(address: string, isVerified: boolean): Promise<void>
 
   getApplicationsWithIsVerified(): Promise<string[]>
+
+  getApplicationUsersCount24h(applicationAddress: string): Promise<number>
+
+  getAllApplicationAddresses(): Promise<string[]>
 }

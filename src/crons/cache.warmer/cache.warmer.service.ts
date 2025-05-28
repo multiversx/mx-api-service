@@ -18,7 +18,7 @@ import { MexSettingsService } from "src/endpoints/mex/mex.settings.service";
 import { MexPairService } from "src/endpoints/mex/mex.pair.service";
 import { MexFarmService } from "src/endpoints/mex/mex.farm.service";
 import { CacheService, GuestCacheWarmer } from "@multiversx/sdk-nestjs-cache";
-import { AddressUtils, BatchUtils, Constants, Lock, OriginLogger } from "@multiversx/sdk-nestjs-common";
+import { BatchUtils, Constants, Lock, OriginLogger } from "@multiversx/sdk-nestjs-common";
 import { DelegationLegacyService } from "src/endpoints/delegation.legacy/delegation.legacy.service";
 import { SettingsService } from "src/common/settings/settings.service";
 import { TokenService } from "src/endpoints/tokens/token.service";
@@ -111,9 +111,9 @@ export class CacheWarmerService {
       handleUpdateApplicationIsVerifiedCronJob.start();
     }
 
-    const handleUpdateApplicationUsersCountCronJob = new CronJob(CronExpression.EVERY_5_MINUTES, async () => await this.handleUpdateApplicationUsersCount());
-    this.schedulerRegistry.addCronJob('handleUpdateApplicationUsersCount', handleUpdateApplicationUsersCountCronJob);
-    handleUpdateApplicationUsersCountCronJob.start();
+    const handleUpdateAllApplicationsUsersCountCronJob = new CronJob(CronExpression.EVERY_DAY_AT_2PM, async () => await this.handleUpdateAllApplicationsUsersCount());
+    this.schedulerRegistry.addCronJob('handleUpdateAllApplicationsUsersCount', handleUpdateAllApplicationsUsersCountCronJob);
+    handleUpdateAllApplicationsUsersCountCronJob.start();
   }
 
   private configCronJob(name: string, fastExpression: string, normalExpression: string, callback: () => Promise<void>) {
@@ -453,50 +453,46 @@ export class CacheWarmerService {
     }
   }
 
-  @Lock({ name: 'Elastic updater: Update application users count', verbose: true })
-  async handleUpdateApplicationUsersCount() {
+  @Lock({ name: 'Elastic updater: Update all applications users count', verbose: true })
+  async handleUpdateAllApplicationsUsersCount() {
     try {
-      const now = Math.floor(Date.now() / 1000);
-      const timestamp24hAgo = now - (24 * 60 * 60);
+      this.logger.log('Starting daily update of all applications users count...');
 
-      this.logger.log(`Calculating unique users for applications in the last 24h (since ${new Date(timestamp24hAgo * 1000).toISOString()})`);
+      const allApplicationAddresses = await this.indexerService.getAllApplicationAddresses();
+      this.logger.log(`Found ${allApplicationAddresses.length} applications to process`);
 
-      const operations = await this.indexerService.getTransfers({
-        after: timestamp24hAgo,
-      }, { from: 0, size: 10000 });
+      let processedCount = 0;
+      const batchSize = 100;
 
-      const applicationUsers: { [address: string]: Set<string> } = {};
+      for (let i = 0; i < allApplicationAddresses.length; i += batchSize) {
+        const batch = allApplicationAddresses.slice(i, i + batchSize);
 
-      for (const operation of operations) {
-        const receiver = operation.receiver;
-        const sender = operation.sender;
+        for (const applicationAddress of batch) {
+          try {
+            const usersCount = await this.indexerService.getApplicationUsersCount24h(applicationAddress);
 
-        if (receiver && AddressUtils.isSmartContractAddress(receiver) &&
-          sender && !AddressUtils.isSmartContractAddress(sender)) {
-          if (!applicationUsers[receiver]) {
-            applicationUsers[receiver] = new Set();
+            const cacheKey = CacheInfo.ApplicationUsersCount24h(applicationAddress).key;
+            const cacheTtl = CacheInfo.ApplicationUsersCount24h(applicationAddress).ttl;
+            await this.cachingService.setRemote(cacheKey, usersCount, cacheTtl);
+
+            processedCount++;
+
+            if (processedCount % 100 === 0) {
+              this.logger.log(`Processed ${processedCount}/${allApplicationAddresses.length} applications`);
+            }
+
+            await new Promise(resolve => setTimeout(resolve, 50));
+          } catch (error) {
+            this.logger.error(`Failed to process application ${applicationAddress}: ${error}`);
           }
-          applicationUsers[receiver].add(sender);
         }
+
+        await new Promise(resolve => setTimeout(resolve, 1000));
       }
 
-      const ttl = 25 * 60 * 60; // 25 hours in seconds
-
-      for (const [applicationAddress, usersSet] of Object.entries(applicationUsers)) {
-        const redisKey = `app_users_24h:${applicationAddress}`;
-        const usersCount = usersSet.size;
-
-        // Store the count and the set in Redis
-        await this.cachingService.setRemote(redisKey, Array.from(usersSet), ttl);
-        await this.cachingService.setRemote(`${redisKey}:count`, usersCount, ttl);
-
-        this.logger.log(`Stored ${usersCount} unique users for application ${applicationAddress}`);
-      }
-
-      this.logger.log(`Processed ${Object.keys(applicationUsers).length} applications with user activity in the last 24h`);
-
+      this.logger.log(`Completed daily update of applications users count. Processed ${processedCount}/${allApplicationAddresses.length} applications`);
     } catch (error) {
-      this.logger.error(`Failed to update application users count: ${error}`);
+      this.logger.error(`Failed to update all applications users count: ${error}`);
     }
   }
 
