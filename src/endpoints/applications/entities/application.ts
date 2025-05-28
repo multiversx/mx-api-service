@@ -35,4 +35,7 @@ export class Application {
 
   @ApiProperty({ type: Number, required: false, nullable: true, description: 'Number of unique users in the last 24 hours' })
   users24h?: number | null;
+
+  @ApiProperty({ type: String, required: false, nullable: true, description: 'Total fees captured in the last 24 hours' })
+  feesCaptured24h?: string | null;
 }

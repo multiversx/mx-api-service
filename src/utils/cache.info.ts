@@ -714,7 +714,14 @@ export class CacheInfo {
   static ApplicationUsersCount24h(address: string): CacheInfo {
     return {
       key: `app_users_24h:${address}:count`,
-      ttl: Constants.oneHour(),
+      ttl: Constants.oneDay(),
+    };
+  }
+
+  static ApplicationFeesCaptured24h(address: string): CacheInfo {
+    return {
+      key: `app_fees_24h:${address}:total`,
+      ttl: Constants.oneDay(),
     };
   }
 }

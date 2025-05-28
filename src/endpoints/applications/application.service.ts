@@ -73,6 +73,10 @@ export class ApplicationService {
       application.users24h = await this.getApplicationUsersCount24h(application.contract);
     }
 
+    for (const application of applications) {
+      application.feesCaptured24h = await this.getApplicationFeesCaptured24h(application.contract);
+    }
+
     return applications;
   }
 
@@ -99,6 +103,7 @@ export class ApplicationService {
     result.txCount = await this.getApplicationTxCount(result.contract);
     result.balance = await this.getApplicationBalance(result.contract);
     result.users24h = await this.getApplicationUsersCount24h(result.contract);
+    result.feesCaptured24h = await this.getApplicationFeesCaptured24h(result.contract);
 
     return result;
   }
@@ -132,6 +137,24 @@ export class ApplicationService {
       CacheInfo.ApplicationUsersCount24h(address).key,
       async () => await this.getApplicationUsersCount24hRaw(address),
       CacheInfo.ApplicationUsersCount24h(address).ttl
+    );
+  }
+
+  private async getApplicationFeesCaptured24hRaw(address: string): Promise<string | null> {
+    try {
+      const feesCaptured = await this.elasticIndexerService.getApplicationFeesCaptured24h(address);
+      return feesCaptured;
+    } catch (error) {
+      this.logger.error(`Error getting fees captured for application ${address}: ${error}`);
+      return null;
+    }
+  }
+
+  private async getApplicationFeesCaptured24h(address: string): Promise<string | null> {
+    return await this.cacheService.getOrSet(
+      CacheInfo.ApplicationFeesCaptured24h(address).key,
+      async () => await this.getApplicationFeesCaptured24hRaw(address),
+      CacheInfo.ApplicationFeesCaptured24h(address).ttl
     );
   }
 }

@@ -503,4 +503,8 @@ export class IndexerService implements IndexerInterface {
   async getAllApplicationAddresses(): Promise<string[]> {
     return await this.indexerInterface.getAllApplicationAddresses();
   }
+
+  async getApplicationFeesCaptured24h(applicationAddress: string): Promise<string> {
+    return await this.indexerInterface.getApplicationFeesCaptured24h(applicationAddress);
+  }
 }

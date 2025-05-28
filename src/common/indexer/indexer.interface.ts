@@ -211,4 +211,6 @@ export interface IndexerInterface {
   getApplicationUsersCount24h(applicationAddress: string): Promise<number>
 
   getAllApplicationAddresses(): Promise<string[]>
+
+  getApplicationFeesCaptured24h(applicationAddress: string): Promise<string>
 }

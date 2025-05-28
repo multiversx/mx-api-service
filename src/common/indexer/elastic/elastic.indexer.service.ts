@@ -1111,9 +1111,34 @@ export class ElasticIndexerService implements IndexerInterface {
       }
     );
 
-    const response = applications.map(app => app.address);
-    console.log(response);
+    return applications.map(app => app.address);
+  }
 
-    return response;
+  async getApplicationFeesCaptured24h(applicationAddress: string): Promise<string> {
+    const now = Math.floor(Date.now() / 1000);
+    const timestamp24hAgo = now - (24 * 60 * 60);
+
+    const elasticQuery = ElasticQuery.create()
+      .withMustMatchCondition('receiver', applicationAddress)
+      .withRangeFilter('timestamp', new RangeGreaterThanOrEqual(timestamp24hAgo))
+      .withMustNotCondition(QueryType.Match('sender', applicationAddress))
+      .withPagination({ from: 0, size: 0 })
+      .withExtra({
+        aggs: {
+          total_fees: {
+            sum: {
+              script: {
+                source: "Long.parseLong(doc['fee'].value)",
+                lang: "painless",
+              },
+            },
+          },
+        },
+      });
+
+    const result = await this.elasticService.post(`${this.apiConfigService.getElasticUrl()}/operations/_search`, elasticQuery.toJson());
+
+    const totalFees = result?.data?.aggregations?.total_fees?.value || 0;
+    return totalFees.toString();
   }
 }

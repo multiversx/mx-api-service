@@ -111,7 +111,7 @@ export class CacheWarmerService {
       handleUpdateApplicationIsVerifiedCronJob.start();
     }
 
-    const handleUpdateAllApplicationsUsersCountCronJob = new CronJob(CronExpression.EVERY_DAY_AT_2PM, async () => await this.handleUpdateAllApplicationsUsersCount());
+    const handleUpdateAllApplicationsUsersCountCronJob = new CronJob(CronExpression.EVERY_DAY_AT_2AM, async () => await this.handleUpdateAllApplicationsUsersCount());
     this.schedulerRegistry.addCronJob('handleUpdateAllApplicationsUsersCount', handleUpdateAllApplicationsUsersCountCronJob);
     handleUpdateAllApplicationsUsersCountCronJob.start();
   }
@@ -453,10 +453,10 @@ export class CacheWarmerService {
     }
   }
 
-  @Lock({ name: 'Elastic updater: Update all applications users count', verbose: true })
+  @Lock({ name: 'Elastic updater: Update all applications users count, fees captured', verbose: true })
   async handleUpdateAllApplicationsUsersCount() {
     try {
-      this.logger.log('Starting daily update of all applications users count...');
+      this.logger.log('Starting update of all applications users count and fees captured...');
 
       const allApplicationAddresses = await this.indexerService.getAllApplicationAddresses();
       this.logger.log(`Found ${allApplicationAddresses.length} applications to process`);
@@ -475,10 +475,15 @@ export class CacheWarmerService {
             const cacheTtl = CacheInfo.ApplicationUsersCount24h(applicationAddress).ttl;
             await this.cachingService.setRemote(cacheKey, usersCount, cacheTtl);
 
+            const feesCaptured = await this.indexerService.getApplicationFeesCaptured24h(applicationAddress);
+            const feesCacheKey = CacheInfo.ApplicationFeesCaptured24h(applicationAddress).key;
+            const feesCacheTtl = CacheInfo.ApplicationFeesCaptured24h(applicationAddress).ttl;
+            await this.cachingService.setRemote(feesCacheKey, feesCaptured, feesCacheTtl);
+
             processedCount++;
 
             if (processedCount % 100 === 0) {
-              this.logger.log(`Processed ${processedCount}/${allApplicationAddresses.length} applications`);
+              this.logger.log(`Processed ${processedCount}/${allApplicationAddresses.length} applications (users count + fees captured)`);
             }
 
             await new Promise(resolve => setTimeout(resolve, 50));
@@ -490,9 +495,9 @@ export class CacheWarmerService {
         await new Promise(resolve => setTimeout(resolve, 1000));
       }
 
-      this.logger.log(`Completed daily update of applications users count. Processed ${processedCount}/${allApplicationAddresses.length} applications`);
+      this.logger.log(`Completed update of applications metrics. Processed ${processedCount}/${allApplicationAddresses.length} applications (users count + fees captured)`);
     } catch (error) {
-      this.logger.error(`Failed to update all applications users count: ${error}`);
+      this.logger.error(`Failed to update all applications metrics: ${error}`);
     }
   }
 
