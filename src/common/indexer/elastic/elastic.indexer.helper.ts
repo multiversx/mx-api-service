@@ -771,6 +771,10 @@ export class ElasticIndexerHelper {
       }
     }
 
+    if (filter.addresses !== undefined && filter.addresses.length > 0) {
+      elasticQuery = elasticQuery.withMustMultiShouldCondition(filter.addresses, address => QueryType.Match('_id', address));
+    }
+
     return elasticQuery;
   }
 

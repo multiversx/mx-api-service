@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ElasticIndexerService } from 'src/common/indexer/elastic/elastic.indexer.service';
 import { Application } from './entities/application';
 import { QueryPagination } from 'src/common/entities/query.pagination';
-import { ApplicationFilter } from './entities/application.filter';
+import { ApplicationFilter, UsersCountRange } from './entities/application.filter';
 import { AssetsService } from '../../common/assets/assets.service';
 import { GatewayService } from 'src/common/gateway/gateway.service';
 import { TransferService } from '../transfers/transfer.service';
@@ -11,6 +11,7 @@ import { TransactionType } from '../transactions/entities/transaction.type';
 import { Logger } from '@nestjs/common';
 import { CacheService } from '@multiversx/sdk-nestjs-cache';
 import { CacheInfo } from 'src/utils/cache.info';
+import { UsersCountUtils } from 'src/utils/users.count.utils';
 
 @Injectable()
 export class ApplicationService {
@@ -67,11 +68,13 @@ export class ApplicationService {
     }
 
     for (const application of applications) {
-      application.users24h = await this.getApplicationUsersCount24h(application.contract);
+      if (filter.usersCountRange) {
+        application.usersCount = await this.getApplicationUsersCount(application.contract, filter.usersCountRange);
+      }
     }
 
     for (const application of applications) {
-      application.feesCaptured24h = await this.getApplicationFeesCaptured24h(application.contract);
+      application.feesCaptured24h = await this.getApplicationFeesCaptured(application.contract, UsersCountRange._24h);
     }
 
     return applications;
@@ -101,8 +104,8 @@ export class ApplicationService {
     result.txCount = await this.getApplicationTxCount(result.contract);
     result.balance = await this.getApplicationBalance(result.contract);
     result.developerRewards = await this.getApplicationDeveloperReward(result.contract);
-    result.users24h = await this.getApplicationUsersCount24h(result.contract);
-    result.feesCaptured24h = await this.getApplicationFeesCaptured24h(result.contract);
+    result.usersCount = await this.getApplicationUsersCount(result.contract, UsersCountRange._24h);
+    result.feesCaptured24h = await this.getApplicationFeesCaptured(result.contract, UsersCountRange._24h);
 
     return result;
   }
@@ -121,39 +124,39 @@ export class ApplicationService {
     }
   }
 
-  private async getApplicationUsersCount24hRaw(address: string): Promise<number | null> {
+  private async getApplicationUsersCountRaw(address: string, range: UsersCountRange): Promise<number | null> {
     try {
-      const usersCount = await this.elasticIndexerService.getApplicationUsersCount24h(address);
+      const usersCount = await this.elasticIndexerService.getApplicationUsersCount(address, range);
       return usersCount;
     } catch (error) {
-      this.logger.error(`Error getting users count for application ${address}: ${error}`);
+      this.logger.error(`Error getting users count for application ${address} with range ${range}: ${error}`);
       return null;
     }
   }
 
-  private async getApplicationUsersCount24h(address: string): Promise<number | null> {
+  private async getApplicationUsersCount(address: string, range: UsersCountRange): Promise<number | null> {
     return await this.cacheService.getOrSet(
-      CacheInfo.ApplicationUsersCount24h(address).key,
-      async () => await this.getApplicationUsersCount24hRaw(address),
-      CacheInfo.ApplicationUsersCount24h(address).ttl
+      CacheInfo.ApplicationUsersCount(address, range).key,
+      async () => await this.getApplicationUsersCountRaw(address, range),
+      UsersCountUtils.getTTLForRange(range)
     );
   }
 
-  private async getApplicationFeesCaptured24hRaw(address: string): Promise<string | null> {
+  private async getApplicationFeesCapturedRaw(address: string, range: UsersCountRange): Promise<string | null> {
     try {
-      const feesCaptured = await this.elasticIndexerService.getApplicationFeesCaptured24h(address);
+      const feesCaptured = await this.elasticIndexerService.getApplicationFeesCaptured(address, range);
       return feesCaptured;
     } catch (error) {
-      this.logger.error(`Error getting fees captured for application ${address}: ${error}`);
+      this.logger.error(`Error getting fees captured for application ${address} with range ${range}: ${error}`);
       return null;
     }
   }
 
-  private async getApplicationFeesCaptured24h(address: string): Promise<string | null> {
+  private async getApplicationFeesCaptured(address: string, range: UsersCountRange): Promise<string | null> {
     return await this.cacheService.getOrSet(
-      CacheInfo.ApplicationFeesCaptured24h(address).key,
-      async () => await this.getApplicationFeesCaptured24hRaw(address),
-      CacheInfo.ApplicationFeesCaptured24h(address).ttl
+      CacheInfo.ApplicationFeesCaptured(address, range).key,
+      async () => await this.getApplicationFeesCapturedRaw(address, range),
+      UsersCountUtils.getTTLForRange(range)
     );
   }
 

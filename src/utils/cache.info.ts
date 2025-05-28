@@ -711,17 +711,29 @@ export class CacheInfo {
     };
   }
 
-  static ApplicationUsersCount24h(address: string): CacheInfo {
+  static ApplicationUsersCount(address: string, range: string): CacheInfo {
+    const ttlMap: Record<string, number> = {
+      '24h': Constants.oneHour(),
+      '7d': Constants.oneDay(),
+      '30d': Constants.oneDay() * 2,
+    };
+
     return {
-      key: `app_users_24h:${address}:count`,
-      ttl: Constants.oneDay(),
+      key: `app_users_${range}:${address}:count`,
+      ttl: ttlMap[range] || Constants.oneHour(),
     };
   }
 
-  static ApplicationFeesCaptured24h(address: string): CacheInfo {
+  static ApplicationFeesCaptured(address: string, range: string): CacheInfo {
+    const ttlMap: Record<string, number> = {
+      '24h': Constants.oneHour(),
+      '7d': Constants.oneDay(),
+      '30d': Constants.oneDay() * 2,
+    };
+
     return {
-      key: `app_fees_24h:${address}:total`,
-      ttl: Constants.oneDay(),
+      key: `app_fees_${range}:${address}:total`,
+      ttl: ttlMap[range] || Constants.oneHour(),
     };
   }
 }

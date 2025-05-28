@@ -2,8 +2,8 @@ import { Controller, DefaultValuePipe, Get, Param, Query } from "@nestjs/common"
 import { ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { ApplicationService } from "./application.service";
 import { QueryPagination } from "src/common/entities/query.pagination";
-import { ApplicationFilter } from "./entities/application.filter";
-import { ParseIntPipe, ParseBoolPipe, ParseAddressPipe } from "@multiversx/sdk-nestjs-common";
+import { ApplicationFilter, UsersCountRange } from "./entities/application.filter";
+import { ParseIntPipe, ParseBoolPipe, ParseAddressPipe, ParseEnumPipe, ParseArrayPipe } from "@multiversx/sdk-nestjs-common";
 import { Application } from "./entities/application";
 
 @Controller()
@@ -22,6 +22,8 @@ export class ApplicationController {
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
   @ApiQuery({ name: 'withTxCount', description: 'Include transaction count', required: false, type: Boolean })
   @ApiQuery({ name: 'isVerified', description: 'Include verified applications', required: false, type: Boolean })
+  @ApiQuery({ name: 'usersCountRange', description: 'Time range for users count calculation', required: false, enum: UsersCountRange })
+  @ApiQuery({ name: 'addresses', description: 'Filter applications by addresses', required: false, type: [String] })
   async getApplications(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number,
@@ -29,8 +31,10 @@ export class ApplicationController {
     @Query('after', ParseIntPipe) after?: number,
     @Query('withTxCount', new ParseBoolPipe()) withTxCount?: boolean,
     @Query('isVerified', new ParseBoolPipe()) isVerified?: boolean,
+    @Query('usersCountRange', new ParseEnumPipe(UsersCountRange)) usersCountRange?: UsersCountRange,
+    @Query('addresses', new ParseArrayPipe()) addresses?: string[],
   ): Promise<Application[]> {
-    const applicationFilter = new ApplicationFilter({ before, after, withTxCount, isVerified });
+    const applicationFilter = new ApplicationFilter({ before, after, withTxCount, isVerified, usersCountRange, addresses });
     return await this.applicationService.getApplications(
       new QueryPagination({ size, from }),
       applicationFilter

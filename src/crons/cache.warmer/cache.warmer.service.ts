@@ -34,6 +34,8 @@ import * as JsonDiff from "json-diff";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { StakeService } from "src/endpoints/stake/stake.service";
 import { ApplicationMostUsed } from "src/endpoints/accounts/entities/application.most.used";
+import { UsersCountRange } from "src/endpoints/applications/entities/application.filter";
+import { UsersCountUtils } from "src/utils/users.count.utils";
 
 @Injectable()
 export class CacheWarmerService {
@@ -111,9 +113,12 @@ export class CacheWarmerService {
       handleUpdateApplicationIsVerifiedCronJob.start();
     }
 
-    const handleUpdateAllApplicationsUsersCountCronJob = new CronJob(CronExpression.EVERY_DAY_AT_2AM, async () => await this.handleUpdateAllApplicationsUsersCount());
-    this.schedulerRegistry.addCronJob('handleUpdateAllApplicationsUsersCount', handleUpdateAllApplicationsUsersCountCronJob);
-    handleUpdateAllApplicationsUsersCountCronJob.start();
+    for (const range of UsersCountUtils.getAllRanges()) {
+      const cronExpression = UsersCountUtils.getCronScheduleForRange(range);
+      const handleUpdateApplicationMetricsCronJob = new CronJob(cronExpression, async () => await this.handleUpdateApplicationMetrics(range));
+      this.schedulerRegistry.addCronJob(`handleUpdateApplicationMetrics_${range}`, handleUpdateApplicationMetricsCronJob);
+      handleUpdateApplicationMetricsCronJob.start();
+    }
   }
 
   private configCronJob(name: string, fastExpression: string, normalExpression: string, callback: () => Promise<void>) {
@@ -453,51 +458,54 @@ export class CacheWarmerService {
     }
   }
 
-  @Lock({ name: 'Elastic updater: Update all applications users count, fees captured', verbose: true })
-  async handleUpdateAllApplicationsUsersCount() {
+  @Lock({ name: 'Update application metrics', verbose: true })
+  async handleUpdateApplicationMetrics(range: UsersCountRange): Promise<void> {
+    this.logger.log(`Starting to update application metrics (users count + fees captured) for range: ${range}`);
+
     try {
-      this.logger.log('Starting update of all applications users count and fees captured...');
-
       const allApplicationAddresses = await this.indexerService.getAllApplicationAddresses();
-      this.logger.log(`Found ${allApplicationAddresses.length} applications to process`);
+      this.logger.log(`Found ${allApplicationAddresses.length} applications to process for range ${range}`);
 
-      let processedCount = 0;
-      const batchSize = 100;
+      const batchSize = 1000;
+      const batches = BatchUtils.splitArrayIntoChunks(allApplicationAddresses, batchSize);
 
-      for (let i = 0; i < allApplicationAddresses.length; i += batchSize) {
-        const batch = allApplicationAddresses.slice(i, i + batchSize);
+      for (const [index, batch] of batches.entries()) {
+        this.logger.log(`Processing batch ${index + 1}/${batches.length} for range ${range} (${batch.length} applications)`);
 
-        for (const applicationAddress of batch) {
+        const promises = batch.map(async (applicationAddress) => {
           try {
-            const usersCount = await this.indexerService.getApplicationUsersCount24h(applicationAddress);
+            const usersCount = await this.indexerService.getApplicationUsersCount(applicationAddress, range);
+            const usersCountCacheKey = CacheInfo.ApplicationUsersCount(applicationAddress, range).key;
+            const cacheTtl = UsersCountUtils.getTTLForRange(range);
+            await this.cachingService.setRemote(usersCountCacheKey, usersCount, cacheTtl);
 
-            const cacheKey = CacheInfo.ApplicationUsersCount24h(applicationAddress).key;
-            const cacheTtl = CacheInfo.ApplicationUsersCount24h(applicationAddress).ttl;
-            await this.cachingService.setRemote(cacheKey, usersCount, cacheTtl);
+            const feesCaptured = await this.indexerService.getApplicationFeesCaptured(applicationAddress, range);
+            const feesCacheKey = CacheInfo.ApplicationFeesCaptured(applicationAddress, range).key;
+            await this.cachingService.setRemote(feesCacheKey, feesCaptured, cacheTtl);
 
-            const feesCaptured = await this.indexerService.getApplicationFeesCaptured24h(applicationAddress);
-            const feesCacheKey = CacheInfo.ApplicationFeesCaptured24h(applicationAddress).key;
-            const feesCacheTtl = CacheInfo.ApplicationFeesCaptured24h(applicationAddress).ttl;
-            await this.cachingService.setRemote(feesCacheKey, feesCaptured, feesCacheTtl);
-
-            processedCount++;
-
-            if (processedCount % 100 === 0) {
-              this.logger.log(`Processed ${processedCount}/${allApplicationAddresses.length} applications (users count + fees captured)`);
-            }
-
-            await new Promise(resolve => setTimeout(resolve, 50));
+            return {
+              address: applicationAddress,
+              usersCount,
+              feesCaptured,
+              success: true,
+            };
           } catch (error) {
-            this.logger.error(`Failed to process application ${applicationAddress}: ${error}`);
+            this.logger.error(`Error processing application ${applicationAddress} for range ${range}:`, error);
+            return {
+              address: applicationAddress,
+              usersCount: 0,
+              feesCaptured: '0',
+              success: false,
+            };
           }
-        }
+        });
 
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await Promise.all(promises);
       }
 
-      this.logger.log(`Completed update of applications metrics. Processed ${processedCount}/${allApplicationAddresses.length} applications (users count + fees captured)`);
+      this.logger.log(`Completed updating application metrics for range: ${range}`);
     } catch (error) {
-      this.logger.error(`Failed to update all applications metrics: ${error}`);
+      this.logger.error(`Error in handleUpdateApplicationMetrics for range ${range}:`, error);
     }
   }
 

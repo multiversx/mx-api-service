@@ -15,7 +15,7 @@ import { QueryPagination } from "../entities/query.pagination";
 import { Account, AccountHistory, AccountTokenHistory, Block, Collection, MiniBlock, Operation, Round, ScDeploy, ScResult, Tag, Token, TokenAccount, Transaction, TransactionLog, TransactionReceipt } from "./entities";
 import { AccountAssets } from "../assets/entities/account.assets";
 import { ProviderDelegators } from "./entities/provider.delegators";
-import { ApplicationFilter } from "src/endpoints/applications/entities/application.filter";
+import { ApplicationFilter, UsersCountRange } from "src/endpoints/applications/entities/application.filter";
 import { EventsFilter } from "src/endpoints/events/entities/events.filter";
 import { Events } from "./entities/events";
 
@@ -208,9 +208,9 @@ export interface IndexerInterface {
 
   getApplicationsWithIsVerified(): Promise<string[]>
 
-  getApplicationUsersCount24h(applicationAddress: string): Promise<number>
+  getApplicationUsersCount(applicationAddress: string, range: UsersCountRange): Promise<number>
 
   getAllApplicationAddresses(): Promise<string[]>
 
-  getApplicationFeesCaptured24h(applicationAddress: string): Promise<string>
+  getApplicationFeesCaptured(applicationAddress: string, range: UsersCountRange): Promise<string>
 }

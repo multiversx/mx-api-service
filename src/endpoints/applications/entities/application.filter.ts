@@ -1,5 +1,11 @@
 import { BadRequestException } from "@nestjs/common";
 
+export enum UsersCountRange {
+  _24h = '24h',
+  _7d = '7d',
+  _30d = '30d'
+}
+
 export class ApplicationFilter {
   constructor(init?: Partial<ApplicationFilter>) {
     Object.assign(this, init);
@@ -9,6 +15,8 @@ export class ApplicationFilter {
   before?: number;
   withTxCount?: boolean;
   isVerified?: boolean;
+  addresses?: string[];
+  usersCountRange?: UsersCountRange = UsersCountRange._24h;
 
   validate(size: number) {
     if (this.withTxCount && size > 25) {
@@ -20,6 +28,8 @@ export class ApplicationFilter {
     return this.after !== undefined ||
       this.before !== undefined ||
       this.withTxCount !== undefined ||
-      this.isVerified !== undefined;
+      this.isVerified !== undefined ||
+      this.usersCountRange !== undefined ||
+      this.addresses !== undefined;
   }
 }

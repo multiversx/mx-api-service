@@ -19,7 +19,7 @@ import { MiniBlockFilter } from "src/endpoints/miniblocks/entities/mini.block.fi
 import { AccountHistoryFilter } from "src/endpoints/accounts/entities/account.history.filter";
 import { AccountAssets } from "../assets/entities/account.assets";
 import { ProviderDelegators } from "./entities/provider.delegators";
-import { ApplicationFilter } from "src/endpoints/applications/entities/application.filter";
+import { ApplicationFilter, UsersCountRange } from "src/endpoints/applications/entities/application.filter";
 import { EventsFilter } from "src/endpoints/events/entities/events.filter";
 import { Events } from "./entities/events";
 
@@ -496,15 +496,17 @@ export class IndexerService implements IndexerInterface {
     return await this.indexerInterface.getApplicationsWithIsVerified();
   }
 
-  async getApplicationUsersCount24h(applicationAddress: string): Promise<number> {
-    return await this.indexerInterface.getApplicationUsersCount24h(applicationAddress);
+  @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
+  async getApplicationUsersCount(applicationAddress: string, range: UsersCountRange): Promise<number> {
+    return await this.indexerInterface.getApplicationUsersCount(applicationAddress, range);
   }
 
   async getAllApplicationAddresses(): Promise<string[]> {
     return await this.indexerInterface.getAllApplicationAddresses();
   }
 
-  async getApplicationFeesCaptured24h(applicationAddress: string): Promise<string> {
-    return await this.indexerInterface.getApplicationFeesCaptured24h(applicationAddress);
+  @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
+  async getApplicationFeesCaptured(applicationAddress: string, range: UsersCountRange): Promise<string> {
+    return await this.indexerInterface.getApplicationFeesCaptured(applicationAddress, range);
   }
 }

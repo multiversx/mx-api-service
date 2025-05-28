@@ -25,11 +25,12 @@ import { MiniBlockFilter } from "src/endpoints/miniblocks/entities/mini.block.fi
 import { AccountHistoryFilter } from "src/endpoints/accounts/entities/account.history.filter";
 import { AccountAssets } from "src/common/assets/entities/account.assets";
 import { NotWritableError } from "../entities/not.writable.error";
-import { ApplicationFilter } from "src/endpoints/applications/entities/application.filter";
+import { ApplicationFilter, UsersCountRange } from "src/endpoints/applications/entities/application.filter";
 import { NftType } from "../entities/nft.type";
 import { EventsFilter } from "src/endpoints/events/entities/events.filter";
 import { Events } from "../entities/events";
 import { EsCircuitBreakerProxy } from "./circuit-breaker/circuit.breaker.proxy.service";
+import { UsersCountUtils } from "src/utils/users.count.utils";
 
 @Injectable()
 export class ElasticIndexerService implements IndexerInterface {
@@ -1069,13 +1070,14 @@ export class ElasticIndexerService implements IndexerInterface {
     return result.map(x => x.address);
   }
 
-  async getApplicationUsersCount24h(applicationAddress: string): Promise<number> {
+  async getApplicationUsersCount(applicationAddress: string, range: UsersCountRange): Promise<number> {
     const now = Math.floor(Date.now() / 1000);
-    const timestamp24hAgo = now - (24 * 60 * 60);
+    const secondsAgo = UsersCountUtils.getSecondsForRange(range);
+    const timestampAgo = now - secondsAgo;
 
     const elasticQuery = ElasticQuery.create()
       .withMustMatchCondition('receiver', applicationAddress)
-      .withRangeFilter('timestamp', new RangeGreaterThanOrEqual(timestamp24hAgo))
+      .withRangeFilter('timestamp', new RangeGreaterThanOrEqual(timestampAgo))
       .withMustNotCondition(QueryType.Match('sender', applicationAddress))
       .withPagination({ from: 0, size: 0 })
       .withExtra({
@@ -1114,13 +1116,14 @@ export class ElasticIndexerService implements IndexerInterface {
     return applications.map(app => app.address);
   }
 
-  async getApplicationFeesCaptured24h(applicationAddress: string): Promise<string> {
+  async getApplicationFeesCaptured(applicationAddress: string, range: UsersCountRange): Promise<string> {
     const now = Math.floor(Date.now() / 1000);
-    const timestamp24hAgo = now - (24 * 60 * 60);
+    const secondsAgo = UsersCountUtils.getSecondsForRange(range);
+    const timestampAgo = now - secondsAgo;
 
     const elasticQuery = ElasticQuery.create()
       .withMustMatchCondition('receiver', applicationAddress)
-      .withRangeFilter('timestamp', new RangeGreaterThanOrEqual(timestamp24hAgo))
+      .withRangeFilter('timestamp', new RangeGreaterThanOrEqual(timestampAgo))
       .withMustNotCondition(QueryType.Match('sender', applicationAddress))
       .withPagination({ from: 0, size: 0 })
       .withExtra({
@@ -1128,7 +1131,7 @@ export class ElasticIndexerService implements IndexerInterface {
           total_fees: {
             sum: {
               script: {
-                source: "Long.parseLong(doc['fee'].value)",
+                source: "if (doc['fee'].size() > 0 && doc['fee'].value != null && !doc['fee'].value.isEmpty()) { Long.parseLong(doc['fee'].value) } else { 0 }",
                 lang: "painless",
               },
             },
