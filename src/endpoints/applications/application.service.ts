@@ -68,15 +68,13 @@ export class ApplicationService {
     }
 
     for (const application of applications) {
-      if (filter.usersCountRange) {
-        application.usersCount = await this.getApplicationUsersCount(application.contract, filter.usersCountRange);
-      }
+      const usersRange = filter.usersCountRange || UsersCountRange._24h;
+      application.usersCount = await this.getApplicationUsersCount(application.contract, usersRange);
     }
 
     for (const application of applications) {
-      if (filter.feesRange) {
-        application.feesCaptured = await this.getApplicationFeesCaptured(application.contract, filter.feesRange);
-      }
+      const feesRange = filter.feesRange || UsersCountRange._24h;
+      application.feesCaptured = await this.getApplicationFeesCaptured(application.contract, feesRange);
     }
 
     return applications;
