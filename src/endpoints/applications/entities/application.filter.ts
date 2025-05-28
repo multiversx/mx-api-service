@@ -6,6 +6,9 @@ export enum UsersCountRange {
   _30d = '30d'
 }
 
+export type FeesRange = UsersCountRange;
+export const FeesRange = UsersCountRange;
+
 export class ApplicationFilter {
   constructor(init?: Partial<ApplicationFilter>) {
     Object.assign(this, init);
@@ -17,6 +20,7 @@ export class ApplicationFilter {
   isVerified?: boolean;
   addresses?: string[];
   usersCountRange?: UsersCountRange = UsersCountRange._24h;
+  feesRange?: FeesRange = FeesRange._24h;
 
   validate(size: number) {
     if (this.withTxCount && size > 25) {
@@ -30,6 +34,7 @@ export class ApplicationFilter {
       this.withTxCount !== undefined ||
       this.isVerified !== undefined ||
       this.usersCountRange !== undefined ||
+      this.feesRange !== undefined ||
       this.addresses !== undefined;
   }
 }

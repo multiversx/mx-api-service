@@ -74,7 +74,9 @@ export class ApplicationService {
     }
 
     for (const application of applications) {
-      application.feesCaptured24h = await this.getApplicationFeesCaptured(application.contract, UsersCountRange._24h);
+      if (filter.feesRange) {
+        application.feesCaptured = await this.getApplicationFeesCaptured(application.contract, filter.feesRange);
+      }
     }
 
     return applications;
@@ -105,8 +107,7 @@ export class ApplicationService {
     result.balance = await this.getApplicationBalance(result.contract);
     result.developerRewards = await this.getApplicationDeveloperReward(result.contract);
     result.usersCount = await this.getApplicationUsersCount(result.contract, UsersCountRange._24h);
-    result.feesCaptured24h = await this.getApplicationFeesCaptured(result.contract, UsersCountRange._24h);
-
+    result.feesCaptured = await this.getApplicationFeesCaptured(result.contract, UsersCountRange._24h);
     return result;
   }
 

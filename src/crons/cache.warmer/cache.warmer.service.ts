@@ -461,7 +461,6 @@ export class CacheWarmerService {
   @Lock({ name: 'Update application metrics', verbose: true })
   async handleUpdateApplicationMetrics(range: UsersCountRange): Promise<void> {
     this.logger.log(`Starting to update application metrics (users count + fees captured) for range: ${range}`);
-
     try {
       const allApplicationAddresses = await this.indexerService.getAllApplicationAddresses();
       this.logger.log(`Found ${allApplicationAddresses.length} applications to process for range ${range}`);
@@ -500,7 +499,11 @@ export class CacheWarmerService {
           }
         });
 
-        await Promise.all(promises);
+        const results = await Promise.all(promises);
+        const successCount = results.filter(r => r.success).length;
+        const failureCount = results.filter(r => !r.success).length;
+
+        this.logger.log(`Batch ${index + 1}/${batches.length} completed for range ${range}: ${successCount} success, ${failureCount} failures`);
       }
 
       this.logger.log(`Completed updating application metrics for range: ${range}`);

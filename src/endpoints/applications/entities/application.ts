@@ -39,6 +39,6 @@ export class Application {
   @ApiProperty({ type: Number, required: false, nullable: true, description: 'Number of unique users in the specified time range' })
   usersCount?: number | null;
 
-  @ApiProperty({ type: String, required: false, nullable: true, description: 'Total fees captured in the last 24 hours' })
-  feesCaptured24h?: string | null;
+  @ApiProperty({ type: String, required: false, nullable: true, description: 'Total fees captured in the specified time range' })
+  feesCaptured?: string | null;
 }
