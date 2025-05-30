@@ -163,12 +163,15 @@ export class NftThumbnailService {
   }
 
   async hasThumbnailGenerated(identifier: string, fileUrl: string): Promise<boolean> {
+    this.logger.log(`hasThumbnailGenerated: identifier=${identifier}, fileUrl=${fileUrl}`);
     const urlIdentifier = TokenHelpers.getThumbnailUrlIdentifier(identifier, fileUrl);
     const url = this.getFullThumbnailUrl(urlIdentifier);
+    this.logger.log(`hasThumbnailGenerated: urlIdentifier=${identifier}, fileUrl=${url}`);
 
     let hasThumbnail = true;
     // eslint-disable-next-line require-await
-    await this.apiService.head(url, { skipRedirects: true }, async (error) => {
+    const response = await this.apiService.head(url, { skipRedirects: true }, async (error) => {
+      this.logger.log(`hasThumbnailGenerated error: ${error.response}.`);
       const status = error.response?.status;
       if ([HttpStatus.FOUND, HttpStatus.NOT_FOUND, HttpStatus.FORBIDDEN].includes(status)) {
         hasThumbnail = false;
@@ -177,6 +180,8 @@ export class NftThumbnailService {
 
       return false;
     });
+
+    this.logger.log(`hasThumbnailGenerated response: ${JSON.stringify(response.data)}`);
 
     return hasThumbnail;
   }
