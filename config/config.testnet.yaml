@@ -142,7 +142,6 @@ urls:
   providers: 'https://testnet-delegation-api.multiversx.com/providers'
   delegation: 'https://testnet-delegation-api.multiversx.com'
   media: 'https://testnet-media.elrond.com'
-  nftThumbnails: 'https://testnet-media.elrond.com/nfts/thumbnail'
   tmp: '/tmp'
   ipfs: 'https://ipfs.io/ipfs'
   socket: 'testnet-socket-api.multiversx.com'

@@ -612,15 +612,6 @@ export class ApiConfigService {
     return mediaUrl;
   }
 
-  getNftThumbnailsUrl(): string {
-    const nftThumbnailsUrl = this.configService.get<string>('urls.nftThumbnails');
-    if (!nftThumbnailsUrl) {
-      throw new Error('No nft thumbnails url present');
-    }
-
-    return nftThumbnailsUrl;
-  }
-
   getSecurityAdmins(): string[] {
     const admins = this.configService.get<string[]>('features.auth.admins') ?? this.configService.get<string[]>('security.admins');
     if (admins === undefined) {
