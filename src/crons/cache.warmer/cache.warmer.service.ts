@@ -446,7 +446,6 @@ export class CacheWarmerService {
             if (application.api_isVerified !== isVerified) {
               this.logger.log(`Setting isVerified to ${isVerified} for application with address '${address}'`);
               await this.indexerService.setApplicationIsVerified(address, isVerified);
-              console.log(`isVerified: ${isVerified} for application with address '${address}'`);
             }
           } catch (error) {
             this.logger.error(`Failed to update isVerified for application with address '${address}': ${error}`);

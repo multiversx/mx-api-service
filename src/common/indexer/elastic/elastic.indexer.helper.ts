@@ -753,14 +753,19 @@ export class ElasticIndexerHelper {
   }
 
   buildApplicationFilter(filter: ApplicationFilter): ElasticQuery {
-    let elasticQuery = ElasticQuery.create();
+    let elasticQuery = ElasticQuery.create()
+      .withMustExistCondition('currentOwner');
 
-    if (filter.after) {
-      elasticQuery = elasticQuery.withRangeFilter('timestamp', new RangeGreaterThanOrEqual(filter.after));
+    if (filter.ownerAddress) {
+      elasticQuery = elasticQuery.withMustCondition(QueryType.Match('currentOwner', filter.ownerAddress, QueryOperator.AND));
     }
 
-    if (filter.before) {
-      elasticQuery = elasticQuery.withRangeFilter('timestamp', new RangeLowerThanOrEqual(filter.before));
+    if (filter.addresses !== undefined && filter.addresses.length > 0) {
+      elasticQuery = elasticQuery.withMustMultiShouldCondition(filter.addresses, address => QueryType.Match('address', address));
+    }
+
+    if (filter.search) {
+      elasticQuery = elasticQuery.withSearchWildcardCondition(filter.search, ['address']);
     }
 
     if (filter.isVerified !== undefined) {
@@ -771,8 +776,16 @@ export class ElasticIndexerHelper {
       }
     }
 
-    if (filter.addresses !== undefined && filter.addresses.length > 0) {
-      elasticQuery = elasticQuery.withMustMultiShouldCondition(filter.addresses, address => QueryType.Match('_id', address));
+    if (filter.hasAssets !== undefined) {
+      if (filter.hasAssets) {
+        elasticQuery = elasticQuery.withMustExistCondition('api_assets');
+      } else {
+        elasticQuery = elasticQuery.withMustNotExistCondition('api_assets');
+      }
+    }
+
+    if (filter.search) {
+      elasticQuery = elasticQuery.withSearchWildcardCondition(filter.search, ['address', 'api_assets.name']);
     }
 
     return elasticQuery;

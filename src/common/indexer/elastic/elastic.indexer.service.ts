@@ -25,12 +25,13 @@ import { MiniBlockFilter } from "src/endpoints/miniblocks/entities/mini.block.fi
 import { AccountHistoryFilter } from "src/endpoints/accounts/entities/account.history.filter";
 import { AccountAssets } from "src/common/assets/entities/account.assets";
 import { NotWritableError } from "../entities/not.writable.error";
-import { ApplicationFilter, UsersCountRange } from "src/endpoints/applications/entities/application.filter";
 import { NftType } from "../entities/nft.type";
 import { EventsFilter } from "src/endpoints/events/entities/events.filter";
 import { Events } from "../entities/events";
 import { EsCircuitBreakerProxy } from "./circuit-breaker/circuit.breaker.proxy.service";
 import { UsersCountUtils } from "src/utils/users.count.utils";
+import { ApplicationFilter, UsersCountRange } from "src/endpoints/applications/entities/application.filter";
+import { ApplicationSort } from "src/endpoints/applications/entities/application.sort";
 
 @Injectable()
 export class ElasticIndexerService implements IndexerInterface {
@@ -957,7 +958,7 @@ export class ElasticIndexerService implements IndexerInterface {
   }
 
   async setApplicationIsVerified(address: string, isVerified: boolean): Promise<void> {
-    return await this.elasticService.setCustomValues('scdeploys', address, {
+    return await this.elasticService.setCustomValues('accounts', address, {
       isVerified,
     });
   }
@@ -966,9 +967,10 @@ export class ElasticIndexerService implements IndexerInterface {
     const elasticQuery = ElasticQuery.create()
       .withFields(['address'])
       .withPagination({ from: 0, size: 10000 })
+      .withMustExistCondition('currentOwner')
       .withMustExistCondition('api_isVerified');
 
-    const result = await this.elasticService.getList('scdeploys', 'address', elasticQuery);
+    const result = await this.elasticService.getList('accounts', 'address', elasticQuery);
     return result.map(x => x.address);
   }
 
@@ -984,22 +986,48 @@ export class ElasticIndexerService implements IndexerInterface {
   }
 
   async getApplications(filter: ApplicationFilter, pagination: QueryPagination): Promise<any[]> {
-    const elasticQuery = this.indexerHelper.buildApplicationFilter(filter)
-      .withPagination(pagination)
-      .withFields(['address', 'deployer', 'currentOwner', 'initialCodeHash', 'timestamp', 'api_isVerified', 'deployTxHash'])
-      .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }]);
+    let elasticQuery = this.indexerHelper.buildApplicationFilter(filter);
 
-    return await this.elasticService.getList('scdeploys', 'address', elasticQuery);
+    const sortOrder: ElasticSortOrder = !filter.order || filter.order === SortOrder.desc ? ElasticSortOrder.descending : ElasticSortOrder.ascending;
+    const sort = filter.sort ?? ApplicationSort.transfersLast24h;
+
+    switch (sort) {
+      case ApplicationSort.balance:
+        elasticQuery = elasticQuery.withSort([{ name: 'balanceNum', order: sortOrder }]);
+        break;
+      case ApplicationSort.transfersLast24h:
+        if (this.apiConfigService.getAccountExtraDetailsTransfersLast24hUrl()) {
+          elasticQuery = elasticQuery.withSort([{ name: 'api_transfersLast24h', order: sortOrder }]);
+        } else {
+          elasticQuery = elasticQuery.withSort([{ name: 'timestamp', order: sortOrder }]);
+        }
+        break;
+      case ApplicationSort.timestamp:
+        elasticQuery = elasticQuery.withSort([{ name: 'timestamp', order: sortOrder }]);
+        break;
+    }
+
+    elasticQuery = elasticQuery
+      .withPagination(pagination)
+      .withFields(['address', 'balance', 'shard', 'currentOwner', 'api_transfersLast24h', 'api_assets', 'api_isVerified']);
+
+    return await this.elasticService.getList('accounts', 'address', elasticQuery);
   }
 
   async getApplication(address: string): Promise<any> {
-    return await this.elasticService.getItem('scdeploys', 'address', address);
+    const account = await this.elasticService.getItem('accounts', 'address', address);
+
+    if (account && account.currentOwner) {
+      return account;
+    }
+
+    return null;
   }
 
   async getApplicationCount(filter: ApplicationFilter): Promise<number> {
     const elasticQuery = this.indexerHelper.buildApplicationFilter(filter);
 
-    return await this.elasticService.getCount('scdeploys', elasticQuery);
+    return await this.elasticService.getCount('accounts', elasticQuery);
   }
 
   async getAddressesWithTransfersLast24h(): Promise<string[]> {
@@ -1057,16 +1085,17 @@ export class ElasticIndexerService implements IndexerInterface {
   }
 
   async setApplicationExtraProperties(address: string, properties: any): Promise<void> {
-    return await this.elasticService.setCustomValues('scdeploys', address, properties);
+    return await this.elasticService.setCustomValues('accounts', address, properties);
   }
 
   async getApplicationsWithExtraProperties(): Promise<string[]> {
     const elasticQuery = ElasticQuery.create()
       .withFields(['address'])
       .withPagination({ from: 0, size: 10000 })
+      .withMustExistCondition('currentOwner')
       .withMustExistCondition('api_transfersLast24h');
 
-    const result = await this.elasticService.getList('scdeploys', 'address', elasticQuery);
+    const result = await this.elasticService.getList('accounts', 'address', elasticQuery);
     return result.map(x => x.address);
   }
 
@@ -1098,12 +1127,13 @@ export class ElasticIndexerService implements IndexerInterface {
   async getAllApplicationAddresses(): Promise<string[]> {
     const elasticQuery = ElasticQuery.create()
       .withFields(['address'])
+      .withMustExistCondition('currentOwner') // Only smart contracts
       .withPagination({ from: 0, size: 10000 });
 
     const applications: any[] = [];
 
     await this.elasticService.getScrollableList(
-      'scdeploys',
+      'accounts',
       'address',
       elasticQuery,
       // @ts-ignore
