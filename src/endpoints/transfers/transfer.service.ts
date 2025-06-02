@@ -8,9 +8,12 @@ import { ApiUtils } from "@multiversx/sdk-nestjs-http";
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { TransactionQueryOptions } from "../transactions/entities/transactions.query.options";
 import { TransactionDetailed } from "../transactions/entities/transaction.detailed";
+import { OriginLogger } from "@multiversx/sdk-nestjs-common";
 
 @Injectable()
 export class TransferService {
+  private readonly logger = new OriginLogger(TransferService.name);
+
   constructor(
     private readonly indexerService: IndexerService,
     @Inject(forwardRef(() => TransactionService))
@@ -31,20 +34,77 @@ export class TransferService {
       }
     }
 
-    elasticTransfers.sort((a, b) => {
-      if (a.timestamp !== b.timestamp) {
-        return b.timestamp - a.timestamp;
+    return elasticTransfers.sortedDescending(
+      (item) => item.timestamp,
+      (item) => item.order
+    );
+  }
+
+  private async sortElasticTransfersByTxsOrder(elasticTransfers: any[], miniBlockHash: string): Promise<any[]> {
+    if (!miniBlockHash) {
+      return this.sortElasticTransfers(elasticTransfers);
+    }
+
+    try {
+      const block = await this.indexerService.getBlockByMiniBlockHash(miniBlockHash);
+
+      if (!block || !block.miniBlocksDetails) {
+        return this.sortElasticTransfers(elasticTransfers);
       }
 
-      return b.order - a.order;
-    });
+      const miniBlockDetails = block.miniBlocksDetails.find((mb: any) => {
+        const miniBlockIndex = block.miniBlocksHashes?.indexOf(miniBlockHash);
+        return miniBlockIndex !== -1 && mb.mbIndex === miniBlockIndex;
+      });
 
-    return elasticTransfers;
+      if (!miniBlockDetails || !miniBlockDetails.executionOrderTxsIndices || !miniBlockDetails.txsHashes) {
+        return this.sortElasticTransfers(elasticTransfers);
+      }
+
+      const txHashToOrder: Record<string, number> = {};
+      for (let i = 0; i < miniBlockDetails.txsHashes.length; i++) {
+        const txHash = miniBlockDetails.txsHashes[i];
+        const executionIndex = miniBlockDetails.executionOrderTxsIndices[i];
+        txHashToOrder[txHash] = executionIndex;
+      }
+
+      for (const elasticTransfer of elasticTransfers) {
+        const txHash = elasticTransfer.originalTxHash || elasticTransfer.txHash;
+        if (txHashToOrder.hasOwnProperty(txHash)) {
+          elasticTransfer.order = txHashToOrder[txHash];
+        } else {
+          if (elasticTransfer.originalTxHash) {
+            const transaction = elasticTransfers.find(x => x.txHash === elasticTransfer.originalTxHash);
+            if (transaction) {
+              elasticTransfer.order = (transaction.nonce * 10) + 1;
+            } else {
+              elasticTransfer.order = 0;
+            }
+          } else {
+            elasticTransfer.order = elasticTransfer.nonce * 10;
+          }
+        }
+      }
+
+      return elasticTransfers.sortedDescending(
+        (item) => item.timestamp,
+        (item) => -item.order
+      );
+
+    } catch (error) {
+      this.logger.error(`Error getting block execution order: ${error}`);
+      return this.sortElasticTransfers(elasticTransfers);
+    }
   }
 
   async getTransfers(filter: TransactionFilter, pagination: QueryPagination, queryOptions: TransactionQueryOptions, fields?: string[]): Promise<Transaction[]> {
     let elasticOperations = await this.indexerService.getTransfers(filter, pagination);
-    elasticOperations = this.sortElasticTransfers(elasticOperations);
+
+    if (queryOptions.withTxsOrder && filter.miniBlockHash) {
+      elasticOperations = await this.sortElasticTransfersByTxsOrder(elasticOperations, filter.miniBlockHash);
+    } else {
+      elasticOperations = this.sortElasticTransfers(elasticOperations);
+    }
 
     let transactions: TransactionDetailed[] = [];
 
