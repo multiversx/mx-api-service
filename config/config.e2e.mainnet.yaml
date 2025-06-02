@@ -1,5 +1,6 @@
 network: 'mainnet'
 metaChainShardId: 4294967295
+crossChainSenderShardId: 4294967293
 api:
   public: true
   publicPort: 3001
@@ -141,7 +142,6 @@ urls:
   tmp: '/tmp'
   ipfs: 'https://ipfs.io/ipfs'
   socket: 'socket-api-fra.multiversx.com'
-  maiarId: 'https://id-api.multiversx.com'
 indexer:
   type: 'elastic'
   maxPagination: 10000
@@ -180,3 +180,5 @@ inflation:
 nftProcess:
   parallelism: 1
   maxRetries: 3
+chainSettings:
+  hrp: 'erd'

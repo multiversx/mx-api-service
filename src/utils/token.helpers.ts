@@ -5,7 +5,7 @@ import { CollectionRoles } from "src/endpoints/tokens/entities/collection.roles"
 import { TokenRoles } from "src/endpoints/tokens/entities/token.roles";
 import { ApiUtils } from '@multiversx/sdk-nestjs-http';
 import '@multiversx/sdk-nestjs-common/lib/utils/extensions/string.extensions';
-import { BinaryUtils } from "@multiversx/sdk-nestjs-common";
+import { TokenUtils, BinaryUtils } from "@multiversx/sdk-nestjs-common";
 
 export class TokenHelpers {
   static canBool(string: string) {
@@ -39,7 +39,10 @@ export class TokenHelpers {
   }
 
   static getThumbnailUrlIdentifier(nftIdentifier: string, fileUrl: string) {
-    const collectionIdentifier = nftIdentifier.split('-').slice(0, 2).join('-');
+    let collectionIdentifier = nftIdentifier.split('-').slice(0, 2).join('-');
+    if (TokenUtils.isSovereignIdentifier(nftIdentifier)) {
+      collectionIdentifier = nftIdentifier.split('-').slice(0, 3).join('-');
+    }
     const urlHash = TokenHelpers.getUrlHash(fileUrl);
 
     return `${collectionIdentifier}-${urlHash}`;

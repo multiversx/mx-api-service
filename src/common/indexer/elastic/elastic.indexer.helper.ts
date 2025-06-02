@@ -535,16 +535,27 @@ export class ElasticIndexerHelper {
     let elasticQuery = ElasticQuery.create();
 
     if (!filter.withRelayedScresults) {
-      elasticQuery = elasticQuery.withMustMatchCondition('type', 'normal');
+      if (!filter.withCrossChainTransfers) {
+        elasticQuery = elasticQuery.withMustMatchCondition('type', 'normal');
+      } else {
+        elasticQuery = elasticQuery.withShouldCondition([
+          QueryType.Match('type', 'normal'),
+          QueryType.Match('senderShard', this.apiConfigService.getCrossChainSenderShardId()),
+        ]);
+      }
     } else {
-      elasticQuery = elasticQuery.withShouldCondition([
+      const shouldConditions = [
         QueryType.Match('type', 'normal'),
         QueryType.Must([
           QueryType.Exists('relayerAddr'),
           QueryType.Match('type', 'unsigned'),
           new ScriptQuery(`doc['originalTxHash'].size() > 0 && doc['prevTxHash'].size() > 0 && doc['originalTxHash'].value == doc['prevTxHash'].value`),
         ]),
-      ]);
+      ];
+      if (filter.withCrossChainTransfers) {
+        shouldConditions.push(QueryType.Match('senderShard', this.apiConfigService.getCrossChainSenderShardId()));
+      }
+      elasticQuery = elasticQuery.withShouldCondition(shouldConditions);
     }
 
     elasticQuery = elasticQuery.withMustMatchCondition('senderShard', filter.senderShard)

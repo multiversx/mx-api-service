@@ -11,6 +11,7 @@ export class TransactionMetadata {
   receiver: string = '';
   value: BigInt = BigInt(0);
   functionName?: string;
+  senderShard?: number = -1;
   functionArgs: string[] = [];
   timestamp: number = 0;
   transfers?: TransactionMetadataTransfer[];

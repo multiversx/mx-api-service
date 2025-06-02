@@ -93,6 +93,8 @@ describe('UsernameService', () => {
       const address = 'erd1qga7ze0l03chfgru0a32wxqf2226nzrxnyhzer9lmudqhjgy7ycqjjyknz';
       const cachedUsername = 'alice';
 
+      // @ts-ignore
+      jest.spyOn(service["apiConfigService"], "getMaiarIdUrl").mockReturnValue("https://id-api.com");
       const cachingServiceSpy = jest.spyOn(service['cachingService'], 'getOrSet').mockResolvedValue(cachedUsername);
 
       const result = await service.getUsernameForAddress(address);
@@ -103,6 +105,8 @@ describe('UsernameService', () => {
     it('should return null if getUsernameForAddressRaw fails', async () => {
       const address = 'erd1Invalid';
 
+      // @ts-ignore
+      jest.spyOn(service["apiConfigService"], "getMaiarIdUrl").mockReturnValue("https://id-api.com");
       const cachingServiceSpy = jest.spyOn(service['cachingService'], 'getOrSet').mockResolvedValue(null);
       jest.spyOn(service, 'getUsernameForAddressRaw').mockRejectedValue(new Error('Failed to get username'));
 
@@ -114,6 +118,8 @@ describe('UsernameService', () => {
     it('should return null when getUsernameForAddressRaw returns null', async () => {
       const address = 'erd1qga7ze0l03chfgru0a32wxqf2226nzrxnyhzer9lmudqhjgy7ycqjjyknz';
 
+      // @ts-ignore
+      jest.spyOn(service["apiConfigService"], "getMaiarIdUrl").mockReturnValue("https://id-api.com");
       const getUsernameForAddressRawMock = jest.spyOn(service as any, 'getUsernameForAddressRaw').mockResolvedValue(null);
       const cachingServiceSpy = jest.spyOn(service['cachingService'], 'getOrSet').mockImplementation((_key, func) => func());
 
@@ -121,6 +127,26 @@ describe('UsernameService', () => {
 
       expect(getUsernameForAddressRawMock).toHaveBeenCalledWith(address);
       expect(cachingServiceSpy).toHaveBeenCalledWith(expect.any(String), expect.any(Function), CacheInfo.Username(address).ttl);
+      expect(result).toBeNull();
+    });
+
+    it('should return null if ID api is empty', async () => {
+      const address = 'erd1qga7ze0l03chfgru0a32wxqf2226nzrxnyhzer9lmudqhjgy7ycqjjyknz1';
+
+      // @ts-ignore
+      jest.spyOn(service["apiConfigService"], "getMaiarIdUrl").mockReturnValue("");
+
+      const result = await service.getUsernameForAddress(address);
+      expect(result).toBeNull();
+    });
+
+    it('should return null if ID api is undefined', async () => {
+      const address = 'erd1qga7ze0l03chfgru0a32wxqf2226nzrxnyhzer9lmudqhjgy7ycqjjyknz1';
+
+      // @ts-ignore
+      jest.spyOn(service["apiConfigService"], "getMaiarIdUrl").mockReturnValue(undefined);
+
+      const result = await service.getUsernameForAddress(address);
       expect(result).toBeNull();
     });
   });

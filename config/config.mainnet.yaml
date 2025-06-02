@@ -1,5 +1,6 @@
 network: 'mainnet'
 metaChainShardId: 4294967295
+crossChainSenderShardId: 4294967293
 api:
   public: true
   publicPort: 3001
@@ -117,6 +118,10 @@ features:
   assetsFetch:
     enabled: true
     assetesUrl: 'https://tools.multiversx.com/assets-cdn'
+  mediaRedirect:
+    enabled: false
+    storageUrls:
+      - 'https://s3.amazonaws.com/media.elrond.com'
 image:
   width: 600
   height: 600
@@ -177,6 +182,8 @@ inflation:
   - 1130177
   - 924690
   - 719203
+chainSettings:
+  hrp: 'erd'
 nftProcess:
   parallelism: 1
   maxRetries: 3

@@ -205,10 +205,6 @@ export class NftService {
   async getSingleNft(identifier: string): Promise<Nft | undefined> {
     const nfts = await this.getNftsInternal(new QueryPagination({ from: 0, size: 1 }), new NftFilter(), identifier);
 
-    if (!TokenUtils.isNft(identifier)) {
-      return undefined;
-    }
-
     if (nfts.length === 0) {
       return undefined;
     }
@@ -287,7 +283,7 @@ export class NftService {
   }
 
   async isNft(identifier: string): Promise<boolean> {
-    if (identifier.split('-').length !== 3) {
+    if (!TokenUtils.isNft(identifier)) {
       return false;
     }
 
@@ -337,7 +333,11 @@ export class NftService {
       const nft = new Nft();
       nft.identifier = elasticNft.identifier;
       nft.collection = elasticNft.token;
+
       nft.nonce = parseInt('0x' + nft.identifier.split('-')[2]);
+      if (TokenUtils.isSovereignIdentifier(nft.identifier)) {
+        nft.nonce = parseInt('0x' + nft.identifier.split('-')[3]);
+      }
       nft.timestamp = elasticNft.timestamp;
 
       if (elasticNft.nft_scamInfoType && elasticNft.nft_scamInfoType !== 'none') {
@@ -572,7 +572,7 @@ export class NftService {
   }
 
   async getNftSupply(identifier: string): Promise<string | undefined> {
-    if (identifier.split('-').length !== 3) {
+    if (!TokenUtils.isNft(identifier)) {
       return undefined;
     }
 

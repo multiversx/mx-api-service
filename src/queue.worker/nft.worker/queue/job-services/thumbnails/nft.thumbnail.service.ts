@@ -163,22 +163,34 @@ export class NftThumbnailService {
   }
 
   async hasThumbnailGenerated(identifier: string, fileUrl: string): Promise<boolean> {
+    this.logger.log(`hasThumbnailGenerated: identifier=${identifier}, fileUrl=${fileUrl}`);
     const urlIdentifier = TokenHelpers.getThumbnailUrlIdentifier(identifier, fileUrl);
     const url = this.getFullThumbnailUrl(urlIdentifier);
 
-    let hasThumbnail = true;
-    // eslint-disable-next-line require-await
-    await this.apiService.head(url, { skipRedirects: true }, async (error) => {
-      const status = error.response?.status;
-      if ([HttpStatus.FOUND, HttpStatus.NOT_FOUND, HttpStatus.FORBIDDEN].includes(status)) {
-        hasThumbnail = false;
-        return true;
+    this.logger.log(`hasThumbnailGenerated: urlIdentifier=${identifier}, fileUrl=${url}`);
+    try {
+      const response = await this.apiService.head(url, { skipRedirects: true });
+
+      // Check ETag - if it matches the default image ETag, it's not a real thumbnail
+      const etag = response.headers?.['etag'];
+      if (etag === '"66b09e7683da961daefe255f5bec743d"' || etag === '66b09e7683da961daefe255f5bec743d') {
+        return false;
       }
 
-      return false;
-    });
+      // If none of the above conditions indicate a default image, assume it's real
+      return true;
 
-    return hasThumbnail;
+    } catch (error: any) {
+      this.logger.log(`hasThumbnailGenerated error: ${error.response}.`);
+      const status = error.response?.status;
+      // Traditional S3-style behavior - treat these as no thumbnail
+      if ([HttpStatus.FOUND, HttpStatus.NOT_FOUND, HttpStatus.FORBIDDEN].includes(status)) {
+        return false;
+      }
+
+      // For any other error, assume no thumbnail
+      return false;
+    }
   }
 
   async generateThumbnail(nft: Nft, fileUrl: string, fileType: string, forceRefresh: boolean = false): Promise<GenerateThumbnailResult> {

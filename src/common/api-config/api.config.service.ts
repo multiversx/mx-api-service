@@ -559,6 +559,11 @@ export class ApiConfigService {
     return s3Region;
   }
 
+  getAwsS3Endpoint(): string | undefined {
+    const s3Endpoint = this.configService.get<string>('aws.s3Endpoint');
+    return s3Endpoint ?? undefined;
+  }
+
   getMetaChainShardId(): number {
     const metaChainShardId = this.configService.get<number>('metaChainShardId');
     if (metaChainShardId === undefined) {
@@ -566,6 +571,15 @@ export class ApiConfigService {
     }
 
     return metaChainShardId;
+  }
+
+  getCrossChainSenderShardId(): number {
+    const crossChainSenderShardId = this.configService.get<number>('crossChainSenderShardId');
+    if (crossChainSenderShardId === undefined) {
+      throw new Error('No crossChainSenderShardId present');
+    }
+
+    return crossChainSenderShardId;
   }
 
   getRateLimiterSecret(): string | undefined {
@@ -871,6 +885,10 @@ export class ApiConfigService {
     return deepHistoryUrl;
   }
 
+  getChainHrp(): string {
+    return this.configService.get<string>('chainSettings.hrp') ?? 'erd';
+  }
+
   isChainAndromedaEnabled(): boolean {
     return this.configService.get<boolean>('features.chainAndromeda.enabled') ?? false;
   }
@@ -928,5 +946,13 @@ export class ApiConfigService {
 
   getCacheDuration(): number {
     return this.configService.get<number>('caching.cacheDuration') ?? 3;
+  }
+
+  isMediaRedirectFeatureEnabled(): boolean {
+    return this.configService.get<boolean>('features.mediaRedirect.enabled') ?? false;
+  }
+
+  getMediaRedirectFileStorageUrls(): string[] {
+    return this.configService.get<string[]>('features.mediaRedirect.storageUrls') ?? [];
   }
 }

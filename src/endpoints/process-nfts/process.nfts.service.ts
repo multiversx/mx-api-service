@@ -1,4 +1,4 @@
-import { AddressUtils } from "@multiversx/sdk-nestjs-common";
+import { AddressUtils, TokenUtils } from '@multiversx/sdk-nestjs-common';
 import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { Injectable } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
@@ -57,7 +57,12 @@ export class ProcessNftsService {
       throw new Error('Thumbnails have already been generated');
     }
 
-    const collection = collectionOrIdentifier.split('-').slice(0, 2).join('-');
+    const isSovereignIdentifier = TokenUtils.isSovereignIdentifier(collectionOrIdentifier);
+    let collection = collectionOrIdentifier.split('-').slice(0, 2).join('-');
+    if (isSovereignIdentifier) {
+      // sov-NFT-00aabbb-0a
+      collection = collectionOrIdentifier.split('-').slice(0, 3).join('-');
+    }
 
     const isCollectionOwner = await this.isCollectionOwner(address, collection);
     if (!isCollectionOwner) {

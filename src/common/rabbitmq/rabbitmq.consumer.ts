@@ -36,9 +36,11 @@ export class RabbitMqConsumer {
   private async handleEvent(event: NotifierEvent): Promise<void> {
     switch (event.identifier) {
       case NotifierEventIdentifier.ESDTNFTCreate:
+        this.logger.log(`Detected 'ESDTNFTCreate' event`);
         await this.nftHandlerService.handleNftCreateEvent(event);
         break;
       case NotifierEventIdentifier.ESDTNFTUpdateAttributes:
+        this.logger.log(`Detected 'ESDTNFTUpdateAttributes' event`);
         await this.nftHandlerService.handleNftUpdateAttributesEvent(event);
         break;
       case NotifierEventIdentifier.transferOwnership:
