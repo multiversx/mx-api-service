@@ -18,8 +18,11 @@ export class Application {
   @ApiProperty({ type: String })
   codeHash: string = '';
 
+  @ApiProperty({ type: String })
+  deployTxHash: string = '';
+
   @ApiProperty({ type: Number })
-  timestamp: number = 0;
+  deployedAt: number = 0;
 
   @ApiProperty({ type: Boolean, required: false, description: 'Is the application verified' })
   isVerified?: boolean;

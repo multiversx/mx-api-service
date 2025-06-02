@@ -51,7 +51,8 @@ export class ApplicationService {
       deployer: item.deployer,
       owner: item.currentOwner,
       codeHash: item.initialCodeHash,
-      timestamp: item.timestamp,
+      deployTxHash: item.deployTxHash,
+      deployedAt: item.timestamp,
       assets: assets[item.address],
       isVerified: item.api_isVerified,
       balance: '0',
@@ -67,15 +68,18 @@ export class ApplicationService {
       }
     }
 
-    for (const application of applications) {
+    await Promise.all(applications.map(async (application) => {
       const usersRange = filter.usersCountRange || UsersCountRange._24h;
-      application.usersCount = await this.getApplicationUsersCount(application.contract, usersRange);
-    }
-
-    for (const application of applications) {
       const feesRange = filter.feesRange || UsersCountRange._24h;
-      application.feesCaptured = await this.getApplicationFeesCaptured(application.contract, feesRange);
-    }
+
+      const [usersCount, feesCaptured] = await Promise.all([
+        this.getApplicationUsersCount(application.contract, usersRange),
+        this.getApplicationFeesCaptured(application.contract, feesRange),
+      ]);
+
+      application.usersCount = usersCount;
+      application.feesCaptured = feesCaptured;
+    }));
 
     return applications;
   }
@@ -93,7 +97,8 @@ export class ApplicationService {
       deployer: indexResult.deployer,
       owner: indexResult.currentOwner,
       codeHash: indexResult.initialCodeHash,
-      timestamp: indexResult.timestamp,
+      deployTxHash: indexResult.deployTxHash,
+      deployedAt: indexResult.timestamp,
       isVerified: indexResult.api_isVerified,
       assets: assets[address],
       balance: '0',

@@ -986,7 +986,7 @@ export class ElasticIndexerService implements IndexerInterface {
   async getApplications(filter: ApplicationFilter, pagination: QueryPagination): Promise<any[]> {
     const elasticQuery = this.indexerHelper.buildApplicationFilter(filter)
       .withPagination(pagination)
-      .withFields(['address', 'deployer', 'currentOwner', 'initialCodeHash', 'timestamp', 'api_isVerified'])
+      .withFields(['address', 'deployer', 'currentOwner', 'initialCodeHash', 'timestamp', 'api_isVerified', 'deployTxHash'])
       .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }]);
 
     return await this.elasticService.getList('scdeploys', 'address', elasticQuery);
