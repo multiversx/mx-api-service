@@ -83,7 +83,6 @@ urls:
   providers: 'https://devnet-old-delegation-api.multiversx.com/providers'
   delegation: 'https://devnet-old-delegation-api.multiversx.com'
   media: 'https://devnet-old-media.elrond.com'
-  nftThumbnails: 'https://devnet-old-media.elrond.com/nfts/thumbnail'
   tmp: '/tmp'
   ipfs: 'https://ipfs.io/ipfs'
   socket: 'devnet-socket-api.multiversx.com'

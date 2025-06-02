@@ -559,6 +559,11 @@ export class ApiConfigService {
     return s3Region;
   }
 
+  getAwsS3Endpoint(): string | undefined {
+    const s3Endpoint = this.configService.get<string>('aws.s3Endpoint');
+    return s3Endpoint ?? undefined;
+  }
+
   getMetaChainShardId(): number {
     const metaChainShardId = this.configService.get<number>('metaChainShardId');
     if (metaChainShardId === undefined) {
@@ -610,15 +615,6 @@ export class ApiConfigService {
     }
 
     return mediaUrl;
-  }
-
-  getNftThumbnailsUrl(): string {
-    const nftThumbnailsUrl = this.configService.get<string>('urls.nftThumbnails');
-    if (!nftThumbnailsUrl) {
-      throw new Error('No nft thumbnails url present');
-    }
-
-    return nftThumbnailsUrl;
   }
 
   getSecurityAdmins(): string[] {
