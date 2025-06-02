@@ -131,25 +131,45 @@ export class ApplicationsService {
   }
 
   async getApplicationUsersCount(applicationAddress: string, range: UsersCountRange): Promise<number> {
+    const cacheKey = CacheInfo.ApplicationUsersCount(applicationAddress, range).key;
+    const cachedValue = await this.cachingService.get<number>(cacheKey);
+
+    if (cachedValue !== null && cachedValue !== undefined) {
+      return cachedValue;
+    }
+
+    // Fallback to direct elastic call if not in cache
     return await this.elasticIndexerService.getApplicationUsersCount(applicationAddress, range);
   }
 
   async getApplicationFeesCaptured(applicationAddress: string, range: UsersCountRange): Promise<string> {
+    const cacheKey = CacheInfo.ApplicationFeesCaptured(applicationAddress, range).key;
+    const cachedValue = await this.cachingService.get<string>(cacheKey);
+
+    if (cachedValue !== null && cachedValue !== undefined) {
+      return cachedValue;
+    }
+
     return await this.elasticIndexerService.getApplicationFeesCaptured(applicationAddress, range);
   }
 
-  async getApplication(address: string): Promise<Applications> {
-    const application = await this.elasticIndexerService.getApplication(address);
-    return new Applications({
-      address: application.address,
-      balance: application.balance || '0',
+  async getApplication(address: string, usersCountRange?: UsersCountRange, feesRange?: UsersCountRange): Promise<Applications> {
+    const indexResult = await this.elasticIndexerService.getApplication(address);
+
+    const application = new Applications({
+      address: indexResult.address,
+      balance: indexResult.balance || '0',
       usersCount: 0,
       feesCaptured: '0',
       deployedAt: 0,
       deployTxHash: '',
-      isVerified: application.api_isVerified || false,
-      txCount: application.api_transfersLast24h || 0,
-      assets: application.api_assets,
+      isVerified: indexResult.api_isVerified || false,
+      txCount: indexResult.api_transfersLast24h || 0,
+      assets: indexResult.api_assets,
     });
+
+    await this.enrichApplicationData(application, new ApplicationFilter({ usersCountRange, feesRange }));
+
+    return application;
   }
 }

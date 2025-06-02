@@ -1,4 +1,4 @@
-import { Controller, DefaultValuePipe, Get, ParseIntPipe, Query } from "@nestjs/common";
+import { Controller, DefaultValuePipe, Get, Param, ParseIntPipe, Query } from "@nestjs/common";
 import { ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { SortOrder } from "src/common/entities/sort.order";
 import { QueryPagination } from "src/common/entities/query.pagination";
@@ -6,7 +6,7 @@ import { ApplicationsService } from "./applications.service";
 import { Applications } from "./entities/applications";
 import { ApplicationFilter, UsersCountRange } from "./entities/application.filter";
 import { ApplicationSort } from "./entities/application.sort";
-import { ParseAddressArrayPipe, ParseEnumPipe, ParseBoolPipe } from "@multiversx/sdk-nestjs-common";
+import { ParseAddressArrayPipe, ParseEnumPipe, ParseBoolPipe, ParseAddressPipe } from "@multiversx/sdk-nestjs-common";
 
 @Controller()
 @ApiTags('applications')
@@ -85,5 +85,18 @@ export class ApplicationsController {
     filter.validate();
 
     return await this.applicationsService.getApplicationsCount(filter);
+  }
+
+  @Get('/applications/:address')
+  @ApiOperation({ summary: 'Smart Contract Application', description: 'Returns a smart contract application' })
+  @ApiOkResponse({ type: Applications })
+  @ApiQuery({ name: 'usersCountRange', description: 'Range for users count calculation', required: false, enum: UsersCountRange })
+  @ApiQuery({ name: 'feesRange', description: 'Range for fees captured calculation', required: false, enum: UsersCountRange })
+  async getApplication(
+    @Param('address', ParseAddressPipe) address: string,
+    @Query('usersCountRange', new ParseEnumPipe(UsersCountRange)) usersCountRange?: UsersCountRange,
+    @Query('feesRange', new ParseEnumPipe(UsersCountRange)) feesRange?: UsersCountRange,
+  ): Promise<Applications> {
+    return await this.applicationsService.getApplication(address, usersCountRange, feesRange);
   }
 }
