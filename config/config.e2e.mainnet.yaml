@@ -142,10 +142,6 @@ urls:
   tmp: '/tmp'
   ipfs: 'https://ipfs.io/ipfs'
   socket: 'socket-api-fra.multiversx.com'
-  tmp: '/tmp'
-  ipfs: 'https://ipfs.io/ipfs'
-  socket: 'socket-api-fra.multiversx.com'
-  maiarId: 'https://id-api.multiversx.com'
 indexer:
   type: 'elastic'
   maxPagination: 10000
