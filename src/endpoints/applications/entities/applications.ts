@@ -23,8 +23,8 @@ export class Applications {
   @ApiProperty({ type: String })
   deployTxHash: string = '';
 
-  @ApiProperty({ type: String })
-  isVerified: string = '';
+  @ApiProperty({ type: Boolean })
+  isVerified: boolean = false;
 
   @ApiProperty({ type: Number })
   txCount: number = 0;

@@ -27,7 +27,7 @@ export class ApplicationsService {
     return await this.getApplicationsRaw(pagination, filter);
   }
 
-  private async getApplicationsRaw(pagination: QueryPagination, filter: ApplicationFilter): Promise<Applications[]> {
+  async getApplicationsRaw(pagination: QueryPagination, filter: ApplicationFilter): Promise<Applications[]> {
     const elasticResults = await this.elasticIndexerService.getApplications(filter, pagination);
     const applications = elasticResults.map(result => new Applications({
       address: result.address,
