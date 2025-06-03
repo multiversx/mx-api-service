@@ -9,13 +9,13 @@ import { MetricsEvents } from "src/utils/metrics-events.constants";
 import { TransactionProcessor } from "@multiversx/sdk-transaction-processor";
 import { LogTopic } from "@multiversx/sdk-transaction-processor/lib/types/log-topic";
 import { Lock } from "@multiversx/sdk-nestjs-common";
+import { CronMillisecond } from "./decorators/cron.millisecond.decorator";
 
 @Injectable()
 export class TransactionCompletedService {
   private transactionProcessor: TransactionProcessor = new TransactionProcessor();
   private isProcessing = false;
   private readonly logger: Logger = new Logger(TransactionCompletedService.name);
-  private intervalRef: NodeJS.Timer | undefined;
 
   constructor(
     private readonly apiConfigService: ApiConfigService,
@@ -24,22 +24,7 @@ export class TransactionCompletedService {
     private readonly eventEmitter: EventEmitter2,
   ) { }
 
-  onModuleInit() {
-    this.logger.log('Starting transaction processor loop (500ms interval)');
-    this.intervalRef = setInterval(() => {
-      this.handleNewTransactions().catch((err) => {
-        this.logger.error('Error in transaction handler', err);
-      });
-    }, 500);
-  }
-
-  onModuleDestroy() {
-    if (this.intervalRef) {
-      clearInterval(this.intervalRef);
-      this.logger.log('Stopped transaction completed loop');
-    }
-  }
-
+  @CronMillisecond(500)
   @Lock({ name: 'Completed transactions', verbose: true })
   async handleNewTransactions() {
     if (this.isProcessing) {

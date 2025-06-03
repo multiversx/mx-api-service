@@ -14,12 +14,12 @@ import { BinaryUtils, Lock, OriginLogger } from "@multiversx/sdk-nestjs-common";
 import { PerformanceProfiler } from "@multiversx/sdk-nestjs-monitoring";
 import { StakeFunction } from "src/endpoints/transactions/transaction-action/recognizers/staking/entities/stake.function";
 import { ShardTransaction, TransactionProcessor } from "@multiversx/sdk-transaction-processor";
+import { CronMillisecond } from "./decorators/cron.millisecond.decorator";
 
 @Injectable()
 export class TransactionProcessorService {
   private readonly logger = new OriginLogger(TransactionProcessorService.name);
   private transactionProcessor: TransactionProcessor = new TransactionProcessor();
-  private intervalRef: NodeJS.Timer | undefined;
 
   constructor(
     private readonly cachingService: CacheService,
@@ -29,22 +29,7 @@ export class TransactionProcessorService {
     private readonly eventEmitter: EventEmitter2,
   ) { }
 
-  onModuleInit() {
-    this.logger.log('Starting transaction processor loop (500ms interval)');
-    this.intervalRef = setInterval(() => {
-      this.handleNewTransactions().catch((err) => {
-        this.logger.error('Error in transaction handler', err);
-      });
-    }, 500);
-  }
-
-  onModuleDestroy() {
-    if (this.intervalRef) {
-      clearInterval(this.intervalRef);
-      this.logger.log('Stopped transaction processor loop');
-    }
-  }
-
+  @CronMillisecond(500)
   @Lock({ name: 'Transactions processor', verbose: true })
   async handleNewTransactions() {
     await this.transactionProcessor.start({
