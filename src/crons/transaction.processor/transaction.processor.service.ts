@@ -1,6 +1,5 @@
 import { Inject, Injectable } from "@nestjs/common";
 import { ClientProxy } from "@nestjs/microservices";
-import { Cron } from "@nestjs/schedule";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { NodeService } from "src/endpoints/nodes/node.service";
 import { CacheInfo } from "src/utils/cache.info";
@@ -11,10 +10,11 @@ import { TransferOwnershipExtractor } from "./extractor/transfer.ownership.extra
 import { MetricsEvents } from "src/utils/metrics-events.constants";
 import { LogMetricsEvent } from "src/common/entities/log.metrics.event";
 import { CacheService } from "@multiversx/sdk-nestjs-cache";
-import { BinaryUtils, OriginLogger } from "@multiversx/sdk-nestjs-common";
+import { BinaryUtils, Lock, OriginLogger } from "@multiversx/sdk-nestjs-common";
 import { PerformanceProfiler } from "@multiversx/sdk-nestjs-monitoring";
 import { StakeFunction } from "src/endpoints/transactions/transaction-action/recognizers/staking/entities/stake.function";
 import { ShardTransaction, TransactionProcessor } from "@multiversx/sdk-transaction-processor";
+import { ExtendedCron } from "./decorators/extended-cron.decorator";
 
 @Injectable()
 export class TransactionProcessorService {
@@ -29,7 +29,8 @@ export class TransactionProcessorService {
     private readonly eventEmitter: EventEmitter2,
   ) { }
 
-  @Cron('*/1 * * * * *')
+  @ExtendedCron('*/500 * * * * * *') // each 500ms
+  @Lock({ name: 'Transactions processor', verbose: true })
   async handleNewTransactions() {
     await this.transactionProcessor.start({
       gatewayUrl: this.apiConfigService.getGatewayUrl(),
