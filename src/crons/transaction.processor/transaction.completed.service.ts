@@ -9,7 +9,7 @@ import { MetricsEvents } from "src/utils/metrics-events.constants";
 import { TransactionProcessor } from "@multiversx/sdk-transaction-processor";
 import { LogTopic } from "@multiversx/sdk-transaction-processor/lib/types/log-topic";
 import { Lock } from "@multiversx/sdk-nestjs-common";
-import { CronMillisecond } from "./decorators/cron.millisecond.decorator";
+import { ExtendedCron } from "./decorators/extended-cron.decorator";
 
 @Injectable()
 export class TransactionCompletedService {
@@ -24,7 +24,7 @@ export class TransactionCompletedService {
     private readonly eventEmitter: EventEmitter2,
   ) { }
 
-  @CronMillisecond(500)
+  @ExtendedCron('*/500 * * * * * *') // each 500ms
   @Lock({ name: 'Completed transactions', verbose: true })
   async handleNewTransactions() {
     if (this.isProcessing) {

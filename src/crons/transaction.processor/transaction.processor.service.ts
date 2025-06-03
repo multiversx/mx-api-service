@@ -14,7 +14,7 @@ import { BinaryUtils, Lock, OriginLogger } from "@multiversx/sdk-nestjs-common";
 import { PerformanceProfiler } from "@multiversx/sdk-nestjs-monitoring";
 import { StakeFunction } from "src/endpoints/transactions/transaction-action/recognizers/staking/entities/stake.function";
 import { ShardTransaction, TransactionProcessor } from "@multiversx/sdk-transaction-processor";
-import { CronMillisecond } from "./decorators/cron.millisecond.decorator";
+import { ExtendedCron } from "./decorators/extended-cron.decorator";
 
 @Injectable()
 export class TransactionProcessorService {
@@ -29,7 +29,7 @@ export class TransactionProcessorService {
     private readonly eventEmitter: EventEmitter2,
   ) { }
 
-  @CronMillisecond(500)
+  @ExtendedCron('*/500 * * * * * *') // each 500ms
   @Lock({ name: 'Transactions processor', verbose: true })
   async handleNewTransactions() {
     await this.transactionProcessor.start({
