@@ -87,8 +87,8 @@ export class TransferService {
       }
 
       return elasticTransfers.sortedDescending(
-        (item) => item.timestamp,
-        (item) => -item.order
+        (item) => -item.order,
+        (item) => item.timestamp
       );
 
     } catch (error) {
