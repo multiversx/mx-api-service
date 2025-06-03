@@ -16,7 +16,7 @@ import { OriginLogger } from "@multiversx/sdk-nestjs-common";
 @Injectable()
 export class ProcessNftsService {
   private static readonly MAX_DEPTH = 10;
-  private static readonly MAXIMUM_PROCESS_RETRIES = 10; // TODO: undo to 2
+  private static readonly MAXIMUM_PROCESS_RETRIES = 2;
 
   private readonly logger = new OriginLogger(ProcessNftsService.name);
 
