@@ -33,6 +33,10 @@ describe('RabbitMqNftHandlerService', () => {
       delete: jest.fn(),
     };
 
+    const clientProxyMock = {
+      emit: jest.fn(),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         RabbitMqNftHandlerService,
@@ -40,6 +44,7 @@ describe('RabbitMqNftHandlerService', () => {
         { provide: NftWorkerService, useValue: nftWorkerServiceMock },
         { provide: IndexerService, useValue: indexerServiceMock },
         { provide: CacheService, useValue: cacheServiceMock },
+        { provide: 'PUBSUB_SERVICE', useValue: clientProxyMock },
       ],
     }).compile();
 
