@@ -1,7 +1,7 @@
 export { Account } from './account';
 export { AccountHistory } from './account.history';
 export { AccountTokenHistory } from './account.token.history';
-export { Block } from './block';
+export { Block, MiniBlockDetails } from './block';
 export { Collection } from './collection';
 export { MiniBlock } from './miniblock';
 export { Operation } from './operation';
