@@ -68,13 +68,20 @@ export class TransferService {
         txHashToOrder[txHash] = executionIndex;
       }
 
+      const txHashToTransfer: Record<string, any> = {};
+      for (const transfer of elasticTransfers) {
+        if (transfer.txHash) {
+          txHashToTransfer[transfer.txHash] = transfer;
+        }
+      }
+
       for (const elasticTransfer of elasticTransfers) {
         const txHash = elasticTransfer.originalTxHash || elasticTransfer.txHash;
         if (txHashToOrder.hasOwnProperty(txHash)) {
           elasticTransfer.order = txHashToOrder[txHash];
         } else {
           if (elasticTransfer.originalTxHash) {
-            const transaction = elasticTransfers.find(x => x.txHash === elasticTransfer.originalTxHash);
+            const transaction = txHashToTransfer[elasticTransfer.originalTxHash];
             if (transaction) {
               elasticTransfer.order = (transaction.nonce * 10) + 1;
             } else {
