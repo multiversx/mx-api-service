@@ -9,6 +9,8 @@ import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { BinaryUtils, OriginLogger } from '@multiversx/sdk-nestjs-common';
 import { IndexerService } from '../indexer/indexer.service';
 import { NftSubType } from 'src/endpoints/nfts/entities/nft.sub.type';
+import { Inject } from '@nestjs/common';
+import { ClientProxy } from '@nestjs/microservices';
 
 @Injectable()
 export class RabbitMqNftHandlerService {
@@ -19,6 +21,7 @@ export class RabbitMqNftHandlerService {
     private readonly nftService: NftService,
     private readonly indexerService: IndexerService,
     private readonly cachingService: CacheService,
+    @Inject('PUBSUB_SERVICE') private clientProxy: ClientProxy,
   ) { }
 
   private async getCollectionType(collectionIdentifier: string): Promise<NftType | null> {
@@ -151,8 +154,12 @@ export class RabbitMqNftHandlerService {
     this.logger.log(`Detected 'ESDTNFTBurn' event for NFT with identifier '${identifier}'`);
 
     try {
-      await this.cachingService.delete(`nft:${identifier}`);
-      this.logger.log(`Cache invalidated for NFT with identifier '${identifier}'`);
+      const cacheKey = `nft:${identifier}`;
+      await this.cachingService.delete(cacheKey);
+
+      this.clientProxy.emit('deleteCacheKeys', [cacheKey]);
+
+      this.logger.log(`Cache invalidated for NFT with identifier '${identifier}' across all instances`);
       return true;
     } catch (error) {
       this.logger.error(`An unhandled error occurred when processing NFT Burn event for NFT with identifier '${identifier}'`);
@@ -191,8 +198,12 @@ export class RabbitMqNftHandlerService {
     this.logger.log(`Detected 'ESDTModifyCreator' event for NFT with identifier '${identifier}'`);
 
     try {
-      await this.cachingService.delete(`nft:${identifier}`);
-      this.logger.log(`Cache invalidated for NFT with identifier '${identifier}'`);
+      const cacheKey = `nft:${identifier}`;
+      await this.cachingService.delete(cacheKey);
+
+      this.clientProxy.emit('deleteCacheKeys', [cacheKey]);
+
+      this.logger.log(`Cache invalidated for NFT with identifier '${identifier}' across all instances`);
       return true;
     } catch (error) {
       this.logger.error(`An unhandled error occurred when processing NFT ModifyCreator event for NFT with identifier '${identifier}'`);
