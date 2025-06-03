@@ -4,6 +4,7 @@ import { AccountDetailed } from "src/endpoints/accounts/entities/account.detaile
 import { About } from "src/endpoints/network/entities/about";
 import { Nft } from "src/endpoints/nfts/entities/nft";
 import { Transaction } from "src/endpoints/transactions/entities/transaction";
+import { EsdtSupply } from "../gateway/entities/esdt.supply";
 
 @Injectable()
 export class PluginService {
@@ -18,4 +19,6 @@ export class PluginService {
   async batchProcessNfts(_nfts: Nft[], _withScamInfo?: boolean): Promise<void> { }
 
   async processAbout(_about: About): Promise<void> { }
+
+  formatTokenSupply(_identifier: string, _esdtSupply: EsdtSupply) { }
 }
