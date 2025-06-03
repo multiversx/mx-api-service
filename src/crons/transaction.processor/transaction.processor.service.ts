@@ -1,6 +1,5 @@
 import { Inject, Injectable } from "@nestjs/common";
 import { ClientProxy } from "@nestjs/microservices";
-import { Cron } from "@nestjs/schedule";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { NodeService } from "src/endpoints/nodes/node.service";
 import { CacheInfo } from "src/utils/cache.info";
@@ -11,7 +10,7 @@ import { TransferOwnershipExtractor } from "./extractor/transfer.ownership.extra
 import { MetricsEvents } from "src/utils/metrics-events.constants";
 import { LogMetricsEvent } from "src/common/entities/log.metrics.event";
 import { CacheService } from "@multiversx/sdk-nestjs-cache";
-import { BinaryUtils, OriginLogger } from "@multiversx/sdk-nestjs-common";
+import { BinaryUtils, Lock, OriginLogger } from "@multiversx/sdk-nestjs-common";
 import { PerformanceProfiler } from "@multiversx/sdk-nestjs-monitoring";
 import { StakeFunction } from "src/endpoints/transactions/transaction-action/recognizers/staking/entities/stake.function";
 import { ShardTransaction, TransactionProcessor } from "@multiversx/sdk-transaction-processor";
@@ -20,6 +19,7 @@ import { ShardTransaction, TransactionProcessor } from "@multiversx/sdk-transact
 export class TransactionProcessorService {
   private readonly logger = new OriginLogger(TransactionProcessorService.name);
   private transactionProcessor: TransactionProcessor = new TransactionProcessor();
+  private intervalRef: NodeJS.Timer | undefined;
 
   constructor(
     private readonly cachingService: CacheService,
@@ -29,7 +29,23 @@ export class TransactionProcessorService {
     private readonly eventEmitter: EventEmitter2,
   ) { }
 
-  @Cron('*/1 * * * * *')
+  onModuleInit() {
+    this.logger.log('Starting transaction processor loop (500ms interval)');
+    this.intervalRef = setInterval(() => {
+      this.handleNewTransactions().catch((err) => {
+        this.logger.error('Error in transaction handler', err);
+      });
+    }, 500);
+  }
+
+  onModuleDestroy() {
+    if (this.intervalRef) {
+      clearInterval(this.intervalRef);
+      this.logger.log('Stopped transaction processor loop');
+    }
+  }
+
+  @Lock({ name: 'Transactions processor', verbose: true })
   async handleNewTransactions() {
     await this.transactionProcessor.start({
       gatewayUrl: this.apiConfigService.getGatewayUrl(),
