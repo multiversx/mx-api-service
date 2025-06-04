@@ -1,8 +1,45 @@
 import { Module } from "@nestjs/common";
 import { PluginService } from "../common/plugins/plugin.service";
+import * as fs from 'fs';
+import * as path from 'path';
+
+// Load compiled plugins
+const compiledPluginsPath = path.join(__dirname, 'compiled');
+const loadCompiledPlugins = () => {
+  const plugins = [];
+  if (fs.existsSync(compiledPluginsPath)) {
+    const entries = fs.readdirSync(compiledPluginsPath);
+    for (const entry of entries) {
+      const pluginPath = path.join(compiledPluginsPath, entry);
+      if (fs.statSync(pluginPath).isDirectory()) {
+        const distPath = path.join(pluginPath, 'dist', 'index.js');
+        if (fs.existsSync(distPath)) {
+          try {
+            const plugin = require(distPath);
+            plugins.push(plugin);
+          } catch (err) {
+            console.error(`Failed to load compiled plugin ${entry}:`, err);
+          }
+        }
+      }
+    }
+  }
+  return plugins;
+};
 
 @Module({
-  providers: [PluginService],
+  providers: [
+    {
+      provide: PluginService,
+      useFactory: () => {
+        const service = new PluginService();
+        // Load and register compiled plugins
+        const compiledPlugins = loadCompiledPlugins();
+        service.registerPlugins(compiledPlugins);
+        return service;
+      },
+    },
+  ],
   exports: [PluginService],
 })
 export class PluginModule { }
