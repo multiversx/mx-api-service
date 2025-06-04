@@ -167,6 +167,11 @@ export class IndexerService implements IndexerInterface {
   }
 
   @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
+  async getBlockByMiniBlockHash(miniBlockHash: string): Promise<Block | undefined> {
+    return await this.indexerInterface.getBlockByMiniBlockHash(miniBlockHash);
+  }
+
+  @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
   async getMiniBlock(miniBlockHash: string): Promise<MiniBlock> {
     return await this.indexerInterface.getMiniBlock(miniBlockHash);
   }
