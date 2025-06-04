@@ -74,7 +74,7 @@ export class DelegationService {
 
       return data.map((delegation: any) => new AccountDelegation({
         ...delegation,
-        userUndelegatedList: delegation.userUndelegatedList || [],
+        userUndelegatedList: delegation.userUndelegatedList ?? [],
       }));
     } catch (error) {
       this.logger.error(`Error when getting account delegation details for address ${address}`);

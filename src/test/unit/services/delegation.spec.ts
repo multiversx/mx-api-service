@@ -251,5 +251,27 @@ describe('Delegation Service', () => {
       expect(result[0].userUndelegatedList).toEqual([]);
       expect(mockGetFn).toHaveBeenCalledWith(`${apiConfigService.getDelegationUrl()}/accounts/${mockAddress}/delegations`);
     });
+
+    it('should preserve explicitly returned empty userUndelegatedList arrays from external API', async () => {
+      const mockResponseWithExplicitEmptyArray = [
+        {
+          address: 'erd1qga7ze0l03chfgru0a32wxqf2226nzrxnyhzer9lmudqhjgy7ycqjjyknz',
+          contract: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqq6nzrxnyhzer9lmudqhjgy7ycqjjyknz',
+          userUnBondable: '1000000000000000000',
+          userActiveStake: '0',
+          claimableRewards: '0',
+          userUndelegatedList: [],
+        },
+      ];
+
+      const mockGetFn = jest.fn().mockResolvedValue({ data: mockResponseWithExplicitEmptyArray });
+      jest.spyOn(apiService, 'get').mockImplementation(mockGetFn);
+
+      const result = await delegationService.getDelegationForAddress(mockAddress);
+
+      expect(result).toEqual(mockResponseWithExplicitEmptyArray);
+      expect(result[0].userUndelegatedList).toEqual([]);
+      expect(mockGetFn).toHaveBeenCalledWith(`${apiConfigService.getDelegationUrl()}/accounts/${mockAddress}/delegations`);
+    });
   });
 });
