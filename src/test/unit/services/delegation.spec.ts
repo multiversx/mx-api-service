@@ -219,5 +219,37 @@ describe('Delegation Service', () => {
       await expect(delegationService.getDelegationForAddress(mockAddress)).rejects.toThrow(mockError);
       expect(mockGetFn).toHaveBeenCalledWith(`${apiConfigService.getDelegationUrl()}/accounts/${mockAddress}/delegations`);
     });
+
+    it('should initialize empty userUndelegatedList when the field is missing from external API response', async () => {
+      const mockResponseWithMissingField = [
+        {
+          address: 'erd1qga7ze0l03chfgru0a32wxqf2226nzrxnyhzer9lmudqhjgy7ycqjjyknz',
+          contract: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqq6nzrxnyhzer9lmudqhjgy7ycqjjyknz',
+          userUnBondable: '1000000000000000000',
+          userActiveStake: '0',
+          claimableRewards: '0',
+        },
+      ];
+
+      const expectedResult = [
+        {
+          address: 'erd1qga7ze0l03chfgru0a32wxqf2226nzrxnyhzer9lmudqhjgy7ycqjjyknz',
+          contract: 'erd1qqqqqqqqqqqqqqqqqqqqqqqqqq6nzrxnyhzer9lmudqhjgy7ycqjjyknz',
+          userUnBondable: '1000000000000000000',
+          userActiveStake: '0',
+          claimableRewards: '0',
+          userUndelegatedList: [],
+        },
+      ];
+
+      const mockGetFn = jest.fn().mockResolvedValue({ data: mockResponseWithMissingField });
+      jest.spyOn(apiService, 'get').mockImplementation(mockGetFn);
+
+      const result = await delegationService.getDelegationForAddress(mockAddress);
+
+      expect(result).toEqual(expectedResult);
+      expect(result[0].userUndelegatedList).toEqual([]);
+      expect(mockGetFn).toHaveBeenCalledWith(`${apiConfigService.getDelegationUrl()}/accounts/${mockAddress}/delegations`);
+    });
   });
 });
