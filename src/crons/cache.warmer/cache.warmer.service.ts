@@ -34,6 +34,7 @@ import * as JsonDiff from "json-diff";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { StakeService } from "src/endpoints/stake/stake.service";
 import { ApplicationMostUsed } from "src/endpoints/accounts/entities/application.most.used";
+import { NftType } from '../../common/indexer/entities/nft.type';
 
 @Injectable()
 export class CacheWarmerService {
@@ -327,7 +328,13 @@ export class CacheWarmerService {
         continue;
       }
 
-      if (![TokenType.NonFungibleESDT, TokenType.SemiFungibleESDT].includes(collection.type as TokenType)) {
+      if (![
+        NftType.NonFungibleESDT,
+        NftType.SemiFungibleESDT,
+        NftType.NonFungibleESDTv2,
+        NftType.DynamicNonFungibleESDT,
+        NftType.DynamicSemiFungibleESDT,
+      ].includes(collection.type as NftType)) {
         continue;
       }
 
