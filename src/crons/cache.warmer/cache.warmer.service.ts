@@ -321,6 +321,13 @@ export class CacheWarmerService {
   @Lock({ name: 'Elastic updater: Update collection isVerified, nftCount, holderCount', verbose: true })
   async handleUpdateCollectionExtraDetails() {
     const allAssets = await this.assetsService.getAllTokenAssets();
+    const nftTypes = [
+      NftType.NonFungibleESDT,
+      NftType.SemiFungibleESDT,
+      NftType.NonFungibleESDTv2,
+      NftType.DynamicNonFungibleESDT,
+      NftType.DynamicSemiFungibleESDT,
+    ];
 
     for (const key of Object.keys(allAssets)) {
       const collection = await this.indexerService.getCollection(key);
@@ -328,13 +335,7 @@ export class CacheWarmerService {
         continue;
       }
 
-      if (![
-        NftType.NonFungibleESDT,
-        NftType.SemiFungibleESDT,
-        NftType.NonFungibleESDTv2,
-        NftType.DynamicNonFungibleESDT,
-        NftType.DynamicSemiFungibleESDT,
-      ].includes(collection.type as NftType)) {
+      if (!nftTypes.includes(collection.type as NftType)) {
         continue;
       }
 
