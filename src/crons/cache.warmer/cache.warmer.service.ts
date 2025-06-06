@@ -36,6 +36,7 @@ import { StakeService } from "src/endpoints/stake/stake.service";
 import { ApplicationMostUsed } from "src/endpoints/accounts/entities/application.most.used";
 import { UsersCountRange } from "src/endpoints/applications/entities/application.filter";
 import { UsersCountUtils } from "src/utils/users.count.utils";
+import { NftType } from '../../common/indexer/entities/nft.type';
 
 @Injectable()
 export class CacheWarmerService {
@@ -335,6 +336,13 @@ export class CacheWarmerService {
   @Lock({ name: 'Elastic updater: Update collection isVerified, nftCount, holderCount', verbose: true })
   async handleUpdateCollectionExtraDetails() {
     const allAssets = await this.assetsService.getAllTokenAssets();
+    const nftTypes = [
+      NftType.NonFungibleESDT,
+      NftType.SemiFungibleESDT,
+      NftType.NonFungibleESDTv2,
+      NftType.DynamicNonFungibleESDT,
+      NftType.DynamicSemiFungibleESDT,
+    ];
 
     for (const key of Object.keys(allAssets)) {
       const collection = await this.indexerService.getCollection(key);
@@ -342,7 +350,7 @@ export class CacheWarmerService {
         continue;
       }
 
-      if (![TokenType.NonFungibleESDT, TokenType.SemiFungibleESDT].includes(collection.type as TokenType)) {
+      if (!nftTypes.includes(collection.type as NftType)) {
         continue;
       }
 
