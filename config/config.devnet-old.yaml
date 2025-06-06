@@ -70,6 +70,7 @@ aws:
   s3Secret: ''
   s3Bucket: 'devnet-old-media.elrond.com'
   s3Region: ''
+  s3Endpoint: ''
 urls:
   self: 'https://devnet-old-api.multiversx.com'
   elastic:
