@@ -60,17 +60,17 @@ export class CollectionService {
   }
 
   private async processNftCollections(tokenCollections: Collection[]): Promise<NftCollection[]> {
-    const collectionsIdentifiers = tokenCollections.map((collection) => collection.token);
+    const collectionsIdentifiers = tokenCollections.map(collection => collection.token);
 
-    const indexedCollections: Record<string, any> = {};
+    const indexedCollections = new Map<string, any>();
     for (const collection of tokenCollections) {
-      indexedCollections[collection.token] = collection;
+      indexedCollections.set(collection.token, collection);
     }
 
     const nftCollections: NftCollection[] = await this.applyPropertiesToCollections(collectionsIdentifiers);
 
     for (const nftCollection of nftCollections) {
-      const indexedCollection = indexedCollections[nftCollection.collection];
+      const indexedCollection = indexedCollections.get(nftCollection.collection);
       if (!indexedCollection) {
         continue;
       }
@@ -116,12 +116,16 @@ export class CollectionService {
   }
 
   async applyPropertiesToCollections(collectionsIdentifiers: string[]): Promise<NftCollection[]> {
+    const [collectionsProperties, collectionsAssets] = await Promise.all([
+      this.batchGetCollectionsProperties(collectionsIdentifiers),
+      this.batchGetCollectionsAssets(collectionsIdentifiers),
+    ]);
+
     const nftCollections: NftCollection[] = [];
-    const collectionsProperties = await this.batchGetCollectionsProperties(collectionsIdentifiers);
-    const collectionsAssets = await this.batchGetCollectionsAssets(collectionsIdentifiers);
 
     for (const collectionIdentifier of collectionsIdentifiers) {
       const collectionProperties = collectionsProperties[collectionIdentifier];
+
       if (!collectionProperties) {
         continue;
       }
