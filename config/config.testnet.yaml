@@ -181,7 +181,7 @@ nftProcess:
   parallelism: 1
   maxRetries: 3
 compression:
-  enabled: false
+  enabled: true
   level: 6
   threshold: 1024
   chunkSize: 16384
