@@ -936,7 +936,7 @@ export class ApiConfigService {
   }
 
   getCompressionEnabled(): boolean {
-    return this.configService.get<boolean>('compression.enabled') ?? true;
+    return this.configService.get<boolean>('compression.enabled') ?? false;
   }
 
   getCompressionLevel(): number {
