@@ -109,7 +109,7 @@ export class CacheWarmerService {
     }
 
     if (this.apiConfigService.isUpdateApplicationExtraDetailsEnabled()) {
-      const handleUpdateApplicationIsVerifiedCronJob = new CronJob(CronExpression.EVERY_HOUR, async () => await this.handleUpdateApplicationIsVerified());
+      const handleUpdateApplicationIsVerifiedCronJob = new CronJob(CronExpression.EVERY_10_MINUTES, async () => await this.handleUpdateApplicationIsVerified());
       this.schedulerRegistry.addCronJob('handleUpdateApplicationIsVerified', handleUpdateApplicationIsVerifiedCronJob);
       handleUpdateApplicationIsVerifiedCronJob.start();
     }
