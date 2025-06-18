@@ -60,25 +60,34 @@ export class CollectionService {
   }
 
   private async processNftCollections(tokenCollections: Collection[]): Promise<NftCollection[]> {
+    const indexedCollections = new Map(
+      tokenCollections.map(collection => [collection.token, collection])
+    );
+
     const collectionsIdentifiers = tokenCollections.map(collection => collection.token);
+    const [collectionsProperties, collectionsAssets] = await Promise.all([
+      this.batchGetCollectionsProperties(collectionsIdentifiers),
+      this.batchGetCollectionsAssets(collectionsIdentifiers),
+    ]);
 
-    const indexedCollections = new Map<string, any>();
-    for (const collection of tokenCollections) {
-      indexedCollections.set(collection.token, collection);
-    }
+    const validIdentifiers = collectionsIdentifiers.filter(
+      identifier => collectionsProperties[identifier] !== undefined
+    );
 
-    const nftCollections: NftCollection[] = await this.applyPropertiesToCollections(collectionsIdentifiers);
+    return validIdentifiers.map((collectionIdentifier) => {
+      const nftCollection = this.createNftCollectionFromProperties(
+        collectionIdentifier,
+        collectionsProperties[collectionIdentifier],
+        collectionsAssets[collectionIdentifier]
+      );
 
-    for (const nftCollection of nftCollections) {
-      const indexedCollection = indexedCollections.get(nftCollection.collection);
-      if (!indexedCollection) {
-        continue;
+      const indexedCollection = indexedCollections.get(collectionIdentifier);
+      if (indexedCollection) {
+        this.applyPropertiesToCollectionFromElasticSearch(nftCollection, indexedCollection);
       }
 
-      this.applyPropertiesToCollectionFromElasticSearch(nftCollection, indexedCollection);
-    }
-
-    return nftCollections;
+      return nftCollection;
+    });
   }
 
   applyPropertiesToCollectionFromElasticSearch(nftCollection: NftCollection, indexedCollection: Collection) {
@@ -121,42 +130,48 @@ export class CollectionService {
       this.batchGetCollectionsAssets(collectionsIdentifiers),
     ]);
 
-    const nftCollections: NftCollection[] = [];
+    const validIdentifiers = collectionsIdentifiers.filter(
+      identifier => collectionsProperties[identifier] !== undefined
+    );
 
-    for (const collectionIdentifier of collectionsIdentifiers) {
-      const collectionProperties = collectionsProperties[collectionIdentifier];
+    return validIdentifiers.map((collectionIdentifier) => {
+      return this.createNftCollectionFromProperties(
+        collectionIdentifier,
+        collectionsProperties[collectionIdentifier],
+        collectionsAssets[collectionIdentifier]
+      );
+    });
+  }
 
-      if (!collectionProperties) {
-        continue;
-      }
+  private createNftCollectionFromProperties(
+    collectionIdentifier: string,
+    collectionProperties: any,
+    assets: any
+  ): NftCollection {
+    const nftCollection = new NftCollection();
 
-      const nftCollection = new NftCollection();
+    // @ts-ignore
+    nftCollection.type = collectionProperties.type;
+    nftCollection.name = collectionProperties.name;
+    nftCollection.collection = collectionIdentifier.split('-').slice(0, 2).join('-');
+    nftCollection.ticker = collectionIdentifier.split('-')[0];
+    nftCollection.canFreeze = collectionProperties.canFreeze;
+    nftCollection.canWipe = collectionProperties.canWipe;
+    nftCollection.canPause = collectionProperties.canPause;
+    nftCollection.canTransferNftCreateRole = collectionProperties.canTransferNFTCreateRole;
+    nftCollection.canChangeOwner = collectionProperties.canChangeOwner;
+    nftCollection.canUpgrade = collectionProperties.canUpgrade;
+    nftCollection.canAddSpecialRoles = collectionProperties.canAddSpecialRoles;
+    nftCollection.owner = collectionProperties.owner;
 
-      // @ts-ignore
-      nftCollection.type = collectionProperties.type;
-      nftCollection.name = collectionProperties.name;
-      nftCollection.collection = collectionIdentifier.split('-').slice(0, 2).join('-');
-      nftCollection.ticker = collectionIdentifier.split('-')[0];
-      nftCollection.canFreeze = collectionProperties.canFreeze;
-      nftCollection.canWipe = collectionProperties.canWipe;
-      nftCollection.canPause = collectionProperties.canPause;
-      nftCollection.canTransferNftCreateRole = collectionProperties.canTransferNFTCreateRole;
-      nftCollection.canChangeOwner = collectionProperties.canChangeOwner;
-      nftCollection.canUpgrade = collectionProperties.canUpgrade;
-      nftCollection.canAddSpecialRoles = collectionProperties.canAddSpecialRoles;
-      nftCollection.owner = collectionProperties.owner;
-
-      if (nftCollection.type === NftType.MetaESDT) {
-        nftCollection.decimals = collectionProperties.decimals;
-      }
-
-      nftCollection.assets = collectionsAssets[collectionIdentifier];
-      nftCollection.ticker = nftCollection.assets ? collectionIdentifier.split('-')[0] : nftCollection.collection;
-
-      nftCollections.push(nftCollection);
+    if (nftCollection.type === NftType.MetaESDT) {
+      nftCollection.decimals = collectionProperties.decimals;
     }
 
-    return nftCollections;
+    nftCollection.assets = assets;
+    nftCollection.ticker = nftCollection.assets ? collectionIdentifier.split('-')[0] : nftCollection.collection;
+
+    return nftCollection;
   }
 
   async batchGetCollectionsProperties(identifiers: string[]): Promise<{ [key: string]: TokenProperties | undefined }> {
@@ -170,13 +185,20 @@ export class CollectionService {
   async batchGetCollectionsAssets(identifiers: string[]): Promise<{ [key: string]: TokenAssets | undefined }> {
     const collectionsAssets: { [key: string]: TokenAssets | undefined } = {};
 
-    await this.cachingService.batchApplyAll(
-      identifiers,
-      identifier => CacheInfo.EsdtAssets(identifier).key,
-      identifier => this.assetsService.getTokenAssets(identifier),
-      (identifier, properties) => collectionsAssets[identifier] = properties,
-      CacheInfo.EsdtAssets('').ttl
+    const assetResults = await Promise.all(
+      identifiers.map(async (identifier) => ({
+        identifier,
+        assets: await this.cachingService.getOrSet(
+          CacheInfo.EsdtAssets(identifier).key,
+          async () => await this.assetsService.getTokenAssets(identifier),
+          CacheInfo.EsdtAssets('').ttl
+        ),
+      }))
     );
+
+    for (const { identifier, assets } of assetResults) {
+      collectionsAssets[identifier] = assets;
+    }
 
     return collectionsAssets;
   }
