@@ -938,4 +938,20 @@ export class ApiConfigService {
   isUpdateApplicationExtraDetailsEnabled(): boolean {
     return this.configService.get<boolean>('features.updateApplicationExtraDetails.enabled') ?? false;
   }
+
+  getCompressionEnabled(): boolean {
+    return this.configService.get<boolean>('compression.enabled') ?? false;
+  }
+
+  getCompressionLevel(): number {
+    return this.configService.get<number>('compression.level') ?? 6;
+  }
+
+  getCompressionThreshold(): number {
+    return this.configService.get<number>('compression.threshold') ?? 1024;
+  }
+
+  getCompressionChunkSize(): number {
+    return this.configService.get<number>('compression.chunkSize') ?? 16384;
+  }
 }
