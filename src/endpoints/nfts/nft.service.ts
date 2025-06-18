@@ -267,22 +267,28 @@ export class NftService {
       return undefined;
     }
 
-    if (nft.type && nft.type.in(
-      NftType.SemiFungibleESDT, NftType.MetaESDT,
-      NftSubType.DynamicSemiFungibleESDT, NftSubType.DynamicMetaESDT
-    )) {
-      await this.applySupply(nft);
-    }
+    const types = [
+      NftType.SemiFungibleESDT,
+      NftType.MetaESDT,
+      NftSubType.DynamicSemiFungibleESDT,
+      NftSubType.DynamicMetaESDT,
+    ];
 
-    await this.applyNftOwner(nft);
-
-    await this.applyNftAttributes(nft);
-
-    await this.applyAssetsAndTicker(nft);
+    await Promise.all([
+      (async () => {
+        if (nft.type && types.includes(nft.type as NftType | NftSubType)) {
+          await this.applySupply(nft);
+        }
+      })(),
+      this.applyAssetsAndTicker(nft),
+      this.processNft(nft),
+      (async () => {
+        await this.applyNftOwner(nft);
+        await this.applyNftAttributes(nft);
+      })(),
+    ]);
 
     await this.applyUnlockFields(nft);
-
-    await this.processNft(nft);
 
     return nft;
   }
