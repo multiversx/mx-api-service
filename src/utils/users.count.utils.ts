@@ -10,6 +10,8 @@ export class ApplicationMetricsUtils {
         return 7 * 24 * 60 * 60;
       case UsersCountRange._30d:
         return 30 * 24 * 60 * 60;
+      case UsersCountRange._allTime:
+        return 0;
       default:
         throw new Error('Invalid users count range');
     }
@@ -23,6 +25,8 @@ export class ApplicationMetricsUtils {
         return Constants.oneDay();
       case UsersCountRange._30d:
         return Constants.oneDay() * 2;
+      case UsersCountRange._allTime:
+        return Constants.oneDay() * 7;
       default:
         return Constants.oneHour();
     }
@@ -36,14 +40,16 @@ export class ApplicationMetricsUtils {
         return '0 0 */6 * * *';
       case UsersCountRange._30d:
         return '0 0 */12 * * *';
+      case UsersCountRange._allTime:
+        return '0 0 0 * * *';
       default:
         return '0 */30 * * * *';
     }
   }
 
   static getAllRanges(): UsersCountRange[] {
-    return [UsersCountRange._24h, UsersCountRange._7d, UsersCountRange._30d];
+    return [UsersCountRange._24h, UsersCountRange._7d, UsersCountRange._30d, UsersCountRange._allTime];
   }
 }
 
-export const UsersCountUtils = ApplicationMetricsUtils; 
+export const UsersCountUtils = ApplicationMetricsUtils;

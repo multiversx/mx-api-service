@@ -6,6 +6,7 @@ export enum UsersCountRange {
   _24h = '24h',
   _7d = '7d',
   _30d = '30d',
+  _allTime = 'allTime',
 }
 
 export class ApplicationFilter {

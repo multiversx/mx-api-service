@@ -1109,13 +1109,8 @@ export class ElasticIndexerService implements IndexerInterface {
   }
 
   async getApplicationUsersCount(applicationAddress: string, range: UsersCountRange): Promise<number> {
-    const now = Math.floor(Date.now() / 1000);
-    const secondsAgo = UsersCountUtils.getSecondsForRange(range);
-    const timestampAgo = now - secondsAgo;
-
     const elasticQuery = ElasticQuery.create()
       .withMustMatchCondition('receiver', applicationAddress)
-      .withRangeFilter('timestamp', new RangeGreaterThanOrEqual(timestampAgo))
       .withMustNotCondition(QueryType.Match('sender', applicationAddress))
       .withPagination({ from: 0, size: 0 })
       .withExtra({
@@ -1127,6 +1122,13 @@ export class ElasticIndexerService implements IndexerInterface {
           },
         },
       });
+
+    if (range !== UsersCountRange._allTime) {
+      const now = Math.floor(Date.now() / 1000);
+      const secondsAgo = UsersCountUtils.getSecondsForRange(range);
+      const timestampAgo = now - secondsAgo;
+      elasticQuery.withRangeFilter('timestamp', new RangeGreaterThanOrEqual(timestampAgo));
+    }
 
     const result = await this.elasticService.post(`${this.apiConfigService.getElasticUrl()}/operations/_search`, elasticQuery.toJson());
 
@@ -1156,13 +1158,8 @@ export class ElasticIndexerService implements IndexerInterface {
   }
 
   async getApplicationFeesCaptured(applicationAddress: string, range: UsersCountRange): Promise<string> {
-    const now = Math.floor(Date.now() / 1000);
-    const secondsAgo = UsersCountUtils.getSecondsForRange(range);
-    const timestampAgo = now - secondsAgo;
-
     const elasticQuery = ElasticQuery.create()
       .withMustMatchCondition('receiver', applicationAddress)
-      .withRangeFilter('timestamp', new RangeGreaterThanOrEqual(timestampAgo))
       .withMustNotCondition(QueryType.Match('sender', applicationAddress))
       .withPagination({ from: 0, size: 0 })
       .withExtra({
@@ -1177,6 +1174,13 @@ export class ElasticIndexerService implements IndexerInterface {
           },
         },
       });
+
+    if (range !== UsersCountRange._allTime) {
+      const now = Math.floor(Date.now() / 1000);
+      const secondsAgo = UsersCountUtils.getSecondsForRange(range);
+      const timestampAgo = now - secondsAgo;
+      elasticQuery.withRangeFilter('timestamp', new RangeGreaterThanOrEqual(timestampAgo));
+    }
 
     const result = await this.elasticService.post(`${this.apiConfigService.getElasticUrl()}/operations/_search`, elasticQuery.toJson());
 
