@@ -5,6 +5,7 @@ import { Applications } from "./entities/applications";
 import { ApplicationFilter, UsersCountRange } from "./entities/application.filter";
 import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { CacheInfo } from "src/utils/cache.info";
+import { GatewayService } from "src/common/gateway/gateway.service";
 
 @Injectable()
 export class ApplicationsService {
@@ -12,7 +13,8 @@ export class ApplicationsService {
 
   constructor(
     private readonly elasticIndexerService: ElasticIndexerService,
-    private readonly cachingService: CacheService
+    private readonly cachingService: CacheService,
+    private readonly gatewayService: GatewayService
   ) { }
 
   async getApplications(pagination: QueryPagination, filter: ApplicationFilter): Promise<Applications[]> {
@@ -39,6 +41,7 @@ export class ApplicationsService {
       isVerified: result.api_isVerified || false,
       txCount: result.api_transfersLast24h || 0,
       assets: result.api_assets,
+      developerReward: '',
     }));
 
     await Promise.all(applications.map(application => this.enrichApplicationData(application, filter)));
@@ -52,11 +55,11 @@ export class ApplicationsService {
 
     try {
       const deploymentDataPromise = this.getAccountDeploymentData(application.address);
-
-      const [deploymentData, usersCount, feesCaptured] = await Promise.all([
+      const [deploymentData, usersCount, feesCaptured, developerRewards] = await Promise.all([
         deploymentDataPromise,
         this.getApplicationUsersCount(application.address, usersRange),
         this.getApplicationFeesCaptured(application.address, feesRange),
+        this.getDeveloperRewards(application.address),
       ]);
 
       if (deploymentData.deployedAt) {
@@ -67,6 +70,7 @@ export class ApplicationsService {
       }
       application.usersCount = usersCount;
       application.feesCaptured = feesCaptured;
+      application.developerReward = developerRewards;
     } catch (error) {
       this.logger.error(`Failed to enrich data for application ${application.address}:`, error);
     }
@@ -171,5 +175,15 @@ export class ApplicationsService {
     await this.enrichApplicationData(application, new ApplicationFilter({ usersCountRange, feesRange }));
 
     return application;
+  }
+
+  private async getDeveloperRewards(address: string): Promise<string> {
+    try {
+      const { account: { developerReward } } = await this.gatewayService.getAddressDetails(address);
+      return developerReward;
+    } catch (error) {
+      this.logger.error(`Failed to get developer rewards for ${address}:`, error);
+      return '';
+    }
   }
 }

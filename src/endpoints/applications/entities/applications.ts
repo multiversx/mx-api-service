@@ -31,4 +31,7 @@ export class Applications {
 
   @ApiProperty({ type: Object, required: false })
   assets?: any;
+
+  @ApiProperty({ type: String })
+  developerReward: string = '';
 }
