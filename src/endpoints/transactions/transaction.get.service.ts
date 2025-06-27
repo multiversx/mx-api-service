@@ -86,9 +86,9 @@ export class TransactionGetService {
       const event = {
         identifier: source.identifier,
         address: source.logAddress || source.address,
-        data: BinaryUtils.hexToBase64(source.data ?? ''),
-        additionalData: source.additionalData?.map(d => BinaryUtils.hexToBase64(d)),
-        topics: source.topics?.map(t => BinaryUtils.hexToBase64(t)),
+        data: source.data && source.data.length > 0 ? BinaryUtils.hexToBase64(source.data ?? '') : source.data,
+        additionalData: source.additionalData?.map(d => d && d.length > 0 ? BinaryUtils.hexToBase64(d) : d),
+        topics: source.topics?.map(t => t && t.length > 0 ? BinaryUtils.hexToBase64(t) : t),
         order: source.order ?? 0,
       };
 
