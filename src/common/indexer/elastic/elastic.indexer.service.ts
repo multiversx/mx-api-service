@@ -594,14 +594,14 @@ export class ElasticIndexerService implements IndexerInterface {
   async getTransactionLogs(hashes: string[]): Promise<any[]> {
     const queries = [];
     for (const hash of hashes) {
-      queries.push(QueryType.Match('_id', hash));
+      queries.push(QueryType.Match('txHash', hash));
     }
 
     const elasticQueryLogs = ElasticQuery.create()
       .withPagination({ from: 0, size: 10000 })
       .withCondition(QueryConditionOptions.should, queries);
 
-    return await this.elasticService.getList('logs', 'id', elasticQueryLogs);
+    return await this.elasticService.getList('events', 'id', elasticQueryLogs);
   }
 
   async getTransactionScResults(txHash: string): Promise<any[]> {

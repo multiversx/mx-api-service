@@ -52,7 +52,34 @@ export class TransactionGetService {
   }
 
   private async getTransactionLogsFromElasticInternal(hashes: string[]): Promise<any[]> {
-    return await this.indexerService.getTransactionLogs(hashes);
+    const rawHits = await this.indexerService.getTransactionLogs(hashes);
+
+    const logsMap: Map<string, TransactionLog> = new Map();
+
+    for (const source of rawHits) {
+      const txHash = source.txHash;
+
+      if (!logsMap.has(txHash)) {
+        logsMap.set(txHash, new TransactionLog({
+          id: txHash,
+          address: source.address,
+          events: [],
+        }));
+      }
+
+      const event = {
+        identifier: source.identifier,
+        address: source.logAddress || source.address,
+        data: BinaryUtils.hexToBase64(source.data ?? ''),
+        additionalData: source.additionalData?.map(d => BinaryUtils.hexToBase64(d)),
+        topics: source.topics?.map(t => BinaryUtils.hexToBase64(t)),
+        order: source.order ?? 0,
+      };
+
+      logsMap.get(txHash)?.events.push(ApiUtils.mergeObjects(new TransactionLogEvent(), event));
+    }
+
+    return Array.from(logsMap.values());
   }
 
   async getTransactionScResultsFromElastic(txHash: string): Promise<SmartContractResult[]> {
