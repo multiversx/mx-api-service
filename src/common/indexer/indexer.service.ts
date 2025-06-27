@@ -302,8 +302,8 @@ export class IndexerService implements IndexerInterface {
   }
 
   @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
-  async getTransactionLogs(hashes: string[]): Promise<ElasticTransactionLogEvent[]> {
-    return await this.indexerInterface.getTransactionLogs(hashes);
+  async getTransactionLogs(hashes: string[], eventsIndex: string, txHashField: string): Promise<ElasticTransactionLogEvent[]> {
+    return await this.indexerInterface.getTransactionLogs(hashes, eventsIndex, txHashField);
   }
 
   @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)

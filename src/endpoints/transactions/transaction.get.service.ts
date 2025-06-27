@@ -20,6 +20,7 @@ import { TransactionOperationType } from "./entities/transaction.operation.type"
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { NftFilter } from "../nfts/entities/nft.filter";
 import { TokenAccount } from "src/common/indexer/entities";
+import { ApiConfigService } from "../../common/api-config/api.config.service";
 
 @Injectable()
 export class TransactionGetService {
@@ -30,6 +31,7 @@ export class TransactionGetService {
     private readonly gatewayService: GatewayService,
     @Inject(forwardRef(() => TokenTransferService))
     private readonly tokenTransferService: TokenTransferService,
+    private readonly apiConfigService: ApiConfigService,
   ) { }
 
   private async tryGetTransactionFromElasticBySenderAndNonce(sender: string, nonce: number): Promise<TransactionDetailed | undefined> {
@@ -51,8 +53,22 @@ export class TransactionGetService {
     return result.map(x => ApiUtils.mergeObjects(new TransactionLog(), x));
   }
 
-  private async getTransactionLogsFromElasticInternal(hashes: string[]): Promise<any[]> {
-    const rawHits = await this.indexerService.getTransactionLogs(hashes);
+  private async getTransactionLogsFromElasticInternal(hashes: string[]) {
+    const esMigratedIndices = this.apiConfigService.getElasticMigratedIndicesConfig();
+    const index = esMigratedIndices?.['logs'] ?? 'logs';
+    if (index === 'events') {
+      return await this.getTransactionLogsFromElasticInternalEventsIndex(hashes);
+    }
+
+    return await this.getTransactionLogsFromElasticInternalLogsIndex(hashes);
+  }
+
+  private async getTransactionLogsFromElasticInternalLogsIndex(hashes: string[]): Promise<any[]> {
+    return await this.indexerService.getTransactionLogs(hashes, 'logs', '_id');
+  }
+
+  private async getTransactionLogsFromElasticInternalEventsIndex(hashes: string[]): Promise<any[]> {
+    const rawHits = await this.indexerService.getTransactionLogs(hashes, 'events', 'txHash');
 
     const logsMap: Map<string, TransactionLog> = new Map();
 
