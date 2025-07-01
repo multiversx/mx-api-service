@@ -58,7 +58,7 @@ export class PersistenceModule {
               type: 'mongodb',
               entities: [NftMetadataDb, NftMediaDb, NftTraitSummaryDb, KeybaseConfirmationDb, HotSwappableSettingDb],
               url: apiConfigService.getDatabaseUrl(),
-              sslValidate: false,
+              tlsAllowInvalidCertificates: true,
               retryAttempts: 300,
               synchronize: true,
             };
