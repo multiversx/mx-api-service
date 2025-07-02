@@ -12,10 +12,10 @@ export class PubSubListenerController {
   ) { }
 
   @EventPattern('deleteCacheKeys')
-  async deleteCacheKey(keys: string[]) {
+  deleteCacheKey(keys: string[]) {
     for (const key of keys) {
       this.logger.log(`Deleting local cache key ${key}`);
-      await this.cachingService.deleteLocal(key);
+      this.cachingService.deleteLocal(key);
     }
   }
 

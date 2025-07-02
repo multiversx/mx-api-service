@@ -50,7 +50,7 @@ export class LocalCacheController {
     status: 404,
     description: 'Key not found',
   })
-  async delCache(@Param('key') key: string) {
-    await this.cachingService.deleteLocal(key);
+  delCache(@Param('key') key: string) {
+    this.cachingService.deleteLocal(key);
   }
 }
