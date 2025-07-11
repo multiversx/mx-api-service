@@ -338,7 +338,6 @@ export class NetworkService {
       tokensFetch: this.apiConfigService.isTokensFetchFeatureEnabled(),
       providersFetch: this.apiConfigService.isProvidersFetchFeatureEnabled(),
       assetsFetch: this.apiConfigService.isAssetsCdnFeatureEnabled(),
-      mediaRedirect: this.apiConfigService.isMediaRedirectFeatureEnabled(),
     });
 
     let indexerVersion: string | undefined;

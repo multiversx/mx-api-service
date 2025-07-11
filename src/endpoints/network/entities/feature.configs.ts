@@ -82,7 +82,4 @@ export class FeatureConfigs {
 
   @ApiProperty({ description: 'Assets fetch flag activation value' })
   assetsFetch: boolean = false;
-
-  @ApiProperty({ description: 'Media redirect flag activation value' })
-  mediaRedirect: boolean = false;
 }
