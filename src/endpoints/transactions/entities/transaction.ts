@@ -77,6 +77,9 @@ export class Transaction {
   @ApiProperty({ type: Number })
   timestamp: number = 0;
 
+  @ApiProperty({ type: Number })
+  timestampMs: number = 0;
+
   @ApiProperty({ type: String, nullable: true, required: false })
   data: string | undefined = undefined;
 
