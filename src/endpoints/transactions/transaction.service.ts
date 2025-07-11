@@ -348,6 +348,9 @@ export class TransactionService {
   }
 
   async processTransactions(transactions: Transaction[], options: { withScamInfo: boolean, withUsername: boolean, withActionTransferValue: boolean }): Promise<void> {
+
+    this.normalizeTimestampMs(transactions);
+
     try {
       await this.pluginsService.processTransactions(transactions, options.withScamInfo);
     } catch (error) {
@@ -370,6 +373,15 @@ export class TransactionService {
     }
 
     await this.applyAssets(transactions, { withUsernameAssets: options.withUsername });
+  }
+
+
+  private normalizeTimestampMs(transactions: Transaction[]): void {
+    for (const transaction of transactions) {
+      if ((!transaction.timestampMs || transaction.timestampMs === 0) && transaction.timestamp) {
+        transaction.timestampMs = transaction.timestamp * 1000;
+      }
+    }
   }
 
   private async getPendingResults(transaction: Transaction): Promise<boolean | undefined> {
