@@ -126,6 +126,7 @@ aws:
   s3Secret: ''
   s3Bucket: 'media.elrond.com'
   s3Region: ''
+  s3Endpoint: ''
 urls:
   self: 'http://localhost:3001'
   elastic:
@@ -138,7 +139,6 @@ urls:
   providers: 'https://delegation-api.multiversx.com/providers'
   delegation: 'https://delegation-api.multiversx.com'
   media: 'https://media.elrond.com'
-  nftThumbnails: 'https://media.elrond.com/nfts/thumbnail'
   tmp: '/tmp'
   ipfs: 'https://ipfs.io/ipfs'
   socket: 'socket-api-fra.multiversx.com'

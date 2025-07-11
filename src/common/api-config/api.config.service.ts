@@ -559,6 +559,11 @@ export class ApiConfigService {
     return s3Region;
   }
 
+  getAwsS3Endpoint(): string | undefined {
+    const s3Endpoint = this.configService.get<string>('aws.s3Endpoint');
+    return s3Endpoint && s3Endpoint.length > 0 ? s3Endpoint : undefined;
+  }
+
   getMetaChainShardId(): number {
     const metaChainShardId = this.configService.get<number>('metaChainShardId');
     if (metaChainShardId === undefined) {
@@ -601,15 +606,6 @@ export class ApiConfigService {
     }
 
     return mediaUrl;
-  }
-
-  getNftThumbnailsUrl(): string {
-    const nftThumbnailsUrl = this.configService.get<string>('urls.nftThumbnails');
-    if (!nftThumbnailsUrl) {
-      throw new Error('No nft thumbnails url present');
-    }
-
-    return nftThumbnailsUrl;
   }
 
   getSecurityAdmins(): string[] {
@@ -941,11 +937,19 @@ export class ApiConfigService {
     return this.configService.get<number>('caching.cacheDuration') ?? 3;
   }
 
-  isMediaRedirectFeatureEnabled(): boolean {
-    return this.configService.get<boolean>('features.mediaRedirect.enabled') ?? false;
+  getCompressionEnabled(): boolean {
+    return this.configService.get<boolean>('compression.enabled') ?? false;
   }
 
-  getMediaRedirectFileStorageUrls(): string[] {
-    return this.configService.get<string[]>('features.mediaRedirect.storageUrls') ?? [];
+  getCompressionLevel(): number {
+    return this.configService.get<number>('compression.level') ?? 6;
+  }
+
+  getCompressionThreshold(): number {
+    return this.configService.get<number>('compression.threshold') ?? 1024;
+  }
+
+  getCompressionChunkSize(): number {
+    return this.configService.get<number>('compression.chunkSize') ?? 16384;
   }
 }

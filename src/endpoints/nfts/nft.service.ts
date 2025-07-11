@@ -69,35 +69,14 @@ export class NftService {
 
     const nfts = await this.getNftsInternal({ from, size }, filter);
 
-    for (const nft of nfts) {
-      await this.applyAssetsAndTicker(nft);
-    }
+    await Promise.all([
+      this.batchApplyAssetsAndTicker(nfts),
+      this.conditionallyApplyOwners(nfts, queryOptions),
+      this.conditionallyApplySupply(nfts, queryOptions),
+      this.batchProcessNfts(nfts),
+    ]);
 
-    if (queryOptions && queryOptions.withOwner) {
-      const nftsIdentifiers = nfts.filter(x => x.type === NftType.NonFungibleESDT).map(x => x.identifier);
-
-      const accountsEsdts = await this.getAccountEsdtByIdentifiers(nftsIdentifiers, { from: 0, size: nftsIdentifiers.length });
-
-      for (const nft of nfts) {
-        if (nft.type === NftType.NonFungibleESDT) {
-          const accountEsdt = accountsEsdts.find((accountEsdt: any) => accountEsdt.identifier == nft.identifier);
-          if (accountEsdt) {
-            nft.owner = accountEsdt.address;
-          }
-        }
-      }
-    }
-
-    if (queryOptions && queryOptions.withSupply) {
-      const supplyNfts = nfts.filter(nft => nft.type.in(NftType.SemiFungibleESDT, NftType.MetaESDT));
-      await this.batchApplySupply(supplyNfts);
-    }
-
-    await this.batchProcessNfts(nfts);
-
-    for (const nft of nfts) {
-      await this.applyUnlockFields(nft);
-    }
+    await this.batchApplyUnlockFields(nfts);
 
     return nfts;
   }
@@ -107,6 +86,75 @@ export class NftService {
       this.batchApplyMedia(nfts, fields),
       this.batchApplyMetadata(nfts, fields),
     ]);
+  }
+
+  private async batchApplyAssetsAndTicker(nfts: Nft[], fields?: string[]): Promise<void> {
+    if (fields && fields.includesNone(['ticker', 'assets'])) {
+      return;
+    }
+
+    await Promise.all(
+      nfts.map(async (nft) => {
+        nft.assets = await this.assetsService.getTokenAssets(nft.identifier) ??
+          await this.assetsService.getTokenAssets(nft.collection);
+
+        if (nft.assets) {
+          nft.ticker = nft.collection.split('-')[0];
+        } else {
+          nft.ticker = nft.collection;
+        }
+      })
+    );
+  }
+
+  private async conditionallyApplyOwners(nfts: Nft[], queryOptions?: NftQueryOptions): Promise<void> {
+    if (!queryOptions?.withOwner) {
+      return;
+    }
+
+    const nftsIdentifiers = nfts.filter(x => x.type === NftType.NonFungibleESDT).map(x => x.identifier);
+
+    if (nftsIdentifiers.length === 0) {
+      return;
+    }
+
+    const accountsEsdts = await this.getAccountEsdtByIdentifiers(nftsIdentifiers, {
+      from: 0,
+      size: nftsIdentifiers.length,
+    });
+
+    const ownerMap = accountsEsdts.reduce((acc: Record<string, string>, accountEsdt: any) => {
+      acc[accountEsdt.identifier] = accountEsdt.address;
+      return acc;
+    }, {});
+
+    for (const nft of nfts) {
+      if (nft.type === NftType.NonFungibleESDT && ownerMap[nft.identifier]) {
+        nft.owner = ownerMap[nft.identifier];
+      }
+    }
+  }
+
+  private async conditionallyApplySupply(nfts: Nft[], queryOptions?: NftQueryOptions): Promise<void> {
+    if (!queryOptions?.withSupply) {
+      return;
+    }
+
+    const supplyNfts = nfts.filter(nft => nft.type.in(NftType.SemiFungibleESDT, NftType.MetaESDT));
+
+    if (supplyNfts.length > 0) {
+      await this.batchApplySupply(supplyNfts);
+    }
+  }
+
+  private async batchApplyUnlockFields(nfts: Nft[], fields?: string[]): Promise<void> {
+    if (fields && fields.includesNone(['unlockSchedule', 'unlockEpoch'])) {
+      return;
+    }
+
+    await Promise.all(
+      nfts.map(nft => this.applyUnlockFields(nft, fields))
+    );
   }
 
   private async applyNftOwner(nft: Nft): Promise<void> {
@@ -219,22 +267,28 @@ export class NftService {
       return undefined;
     }
 
-    if (nft.type && nft.type.in(
-      NftType.SemiFungibleESDT, NftType.MetaESDT,
-      NftSubType.DynamicSemiFungibleESDT, NftSubType.DynamicMetaESDT
-    )) {
-      await this.applySupply(nft);
-    }
+    const types = [
+      NftType.SemiFungibleESDT,
+      NftType.MetaESDT,
+      NftSubType.DynamicSemiFungibleESDT,
+      NftSubType.DynamicMetaESDT,
+    ];
 
-    await this.applyNftOwner(nft);
-
-    await this.applyNftAttributes(nft);
-
-    await this.applyAssetsAndTicker(nft);
+    await Promise.all([
+      (async () => {
+        if (nft.type && types.includes(nft.type as NftType | NftSubType)) {
+          await this.applySupply(nft);
+        }
+      })(),
+      this.applyAssetsAndTicker(nft),
+      this.processNft(nft),
+      (async () => {
+        await this.applyNftOwner(nft);
+        await this.applyNftAttributes(nft);
+      })(),
+    ]);
 
     await this.applyUnlockFields(nft);
-
-    await this.processNft(nft);
 
     return nft;
   }
@@ -652,31 +706,28 @@ export class NftService {
   }
 
   private applyRedirectMedia(nft: Nft) {
-    // FIXME: This is a temporary fix to avoid breaking the API
-    const isMediaRedirectFeatureEnabled = this.apiConfigService.isMediaRedirectFeatureEnabled();
-    if (!isMediaRedirectFeatureEnabled) {
-      // return;
-    }
-
-    if (!nft.media || nft.media.length === 0) {
+    if (!nft.media || !Array.isArray(nft.media) || nft.media.length === 0) {
       return;
     }
 
     try {
       const network = this.apiConfigService.getNetwork();
-      // const defaultMediaUrl = `https://${network === 'mainnet' ? '' : `${network}-`}media.elrond.com`;
-      const defaultMediaUrl = `https://${network === 'mainnet' ? '' : `${network}-`}api.multiversx.com/media`;
+      const defaultMediaUrl = `https://${network === 'mainnet' ? '' : `${network}-`}media.elrond.com`;
+      const defaultApiMediaUrl = `https://${network === 'mainnet' ? '' : `${network}-`}api.multiversx.com/media`;
 
       for (const media of nft.media) {
         if (media.url) {
-          media.url = media.url.replace(defaultMediaUrl, this.apiConfigService.getMediaUrl());
+          media.url = ApiUtils.replaceUri(media.url, defaultMediaUrl, this.apiConfigService.getMediaUrl());
+          media.url = ApiUtils.replaceUri(media.url, defaultApiMediaUrl, this.apiConfigService.getMediaUrl());
         }
         if (media.thumbnailUrl) {
-          media.thumbnailUrl = media.thumbnailUrl.replace(defaultMediaUrl, this.apiConfigService.getMediaUrl());
+          media.thumbnailUrl = ApiUtils.replaceUri(media.thumbnailUrl, defaultMediaUrl, this.apiConfigService.getMediaUrl());
+          media.thumbnailUrl = ApiUtils.replaceUri(media.thumbnailUrl, defaultApiMediaUrl, this.apiConfigService.getMediaUrl());
         }
       }
-    } catch {
-      // TODO: there are some cases where the nft.media is an empty object, we should investigate why
+    } catch (error) {
+      this.logger.error(`Error when applying redirect media for NFT with identifier '${nft.identifier}'`);
+      this.logger.error(error);
     }
   }
 }

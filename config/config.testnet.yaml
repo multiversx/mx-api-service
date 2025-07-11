@@ -116,10 +116,6 @@ features:
   assetsFetch:
     enabled: true
     assetsUrl: 'https://tools.multiversx.com/assets-cdn'
-  mediaRedirect:
-    enabled: false
-    storageUrls:
-      - 'https://s3.amazonaws.com/testnet-media.elrond.com'
 image:
   width: 600
   height: 600
@@ -129,6 +125,7 @@ aws:
   s3Secret: ''
   s3Bucket: 'testnet-media.elrond.com'
   s3Region: ''
+  s3Endpoint: ''
 urls:
   self: 'https://testnet-api.multiversx.com'
   elastic:
@@ -141,7 +138,6 @@ urls:
   providers: 'https://testnet-delegation-api.multiversx.com/providers'
   delegation: 'https://testnet-delegation-api.multiversx.com'
   media: 'https://testnet-media.elrond.com'
-  nftThumbnails: 'https://testnet-media.elrond.com/nfts/thumbnail'
   tmp: '/tmp'
   ipfs: 'https://ipfs.io/ipfs'
   socket: 'testnet-socket-api.multiversx.com'
@@ -184,3 +180,8 @@ inflation:
 nftProcess:
   parallelism: 1
   maxRetries: 3
+compression:
+  enabled: true
+  level: 6
+  threshold: 1024
+  chunkSize: 16384
