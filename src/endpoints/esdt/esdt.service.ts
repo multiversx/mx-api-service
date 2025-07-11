@@ -16,6 +16,7 @@ import { EsdtType } from "./entities/esdt.type";
 import { ElasticIndexerService } from "src/common/indexer/elastic/elastic.indexer.service";
 import { randomUUID } from "crypto";
 import { EsdtSubType } from "./entities/esdt.sub.type";
+import { PluginService } from "../../common/plugins/plugin.service";
 
 @Injectable()
 export class EsdtService {
@@ -27,6 +28,7 @@ export class EsdtService {
     private readonly cachingService: CacheService,
     private readonly vmQueryService: VmQueryService,
     private readonly indexerService: IndexerService,
+    private readonly pluginService: PluginService,
     @Inject(forwardRef(() => AssetsService))
     private readonly assetsService: AssetsService,
     private readonly elasticIndexerService: ElasticIndexerService
@@ -367,7 +369,9 @@ export class EsdtService {
   }
 
   async getTokenSupply(identifier: string): Promise<EsdtSupply> {
-    const { supply, minted, burned, initialMinted } = await this.gatewayService.getEsdtSupply(identifier);
+    const esdtSupply = await this.gatewayService.getEsdtSupply(identifier);
+    this.pluginService.formatTokenSupply(identifier, esdtSupply);
+    const { supply, minted, burned, initialMinted } = esdtSupply;
 
     const isCollectionOrToken = identifier.split('-').length === 2;
     if (isCollectionOrToken) {

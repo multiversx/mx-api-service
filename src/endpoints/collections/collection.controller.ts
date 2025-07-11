@@ -111,6 +111,7 @@ export class CollectionController {
   @ApiQuery({ name: 'canAddUri', description: 'Filter by address with canAddUri role', required: false })
   @ApiQuery({ name: 'canTransferRole', description: 'Filter by address with canTransferRole role', required: false })
   @ApiQuery({ name: 'excludeMetaESDT', description: 'Do not include collections of type "MetaESDT" in the response', required: false })
+  @ApiQuery({ name: 'subType', description: 'Filter by type (NonFungibleESDTv2/DynamicNonFungibleESDT/DynamicSemiFungibleESDT)', required: false })
   @ApiOkResponse({ type: Number })
   async getCollectionCount(
     @Query('search') search?: string,

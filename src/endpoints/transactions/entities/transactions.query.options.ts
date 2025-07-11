@@ -17,6 +17,7 @@ export class TransactionQueryOptions {
   withUsername?: boolean;
   withBlockInfo?: boolean;
   withActionTransferValue?: boolean;
+  withTxsOrder?: boolean;
 
   static applyDefaultOptions(size: number, options: TransactionQueryOptions): TransactionQueryOptions {
     if (size <= TransactionQueryOptions.SCAM_INFO_MAX_SIZE) {

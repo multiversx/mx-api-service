@@ -431,6 +431,7 @@ describe('Account Service', () => {
         isRelayed: false,
         isScCall: true,
         relayerSignature: '',
+        timestampMs: 1698322776000,
       });
 
       const result = await service.getAccountDeployedAtRaw(address);

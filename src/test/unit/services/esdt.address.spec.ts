@@ -211,7 +211,7 @@ describe('EsdtAddressService', () => {
         },
       };
 
-      jest.spyOn(cacheService, 'getLocal').mockResolvedValue(cachedEsdts);
+      jest.spyOn(cacheService, 'getLocal').mockReturnValue(cachedEsdts);
       jest.spyOn(metricsService, 'incrementCachedApiHit');
 
       const result = await service.getAllEsdtsForAddressFromGateway(address);
@@ -224,7 +224,7 @@ describe('EsdtAddressService', () => {
       const address = 'some-address';
       const ttl = 1000;
 
-      jest.spyOn(cacheService, 'getLocal').mockResolvedValueOnce(null);
+      jest.spyOn(cacheService, 'getLocal').mockReturnValueOnce(null);
       jest.spyOn(cacheService, 'setLocal');
       jest.spyOn(protocolService, 'getSecondsRemainingUntilNextRound').mockResolvedValue(ttl);
 

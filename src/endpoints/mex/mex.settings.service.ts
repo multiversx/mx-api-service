@@ -62,7 +62,7 @@ export class MexSettingsService {
   }
 
   async getMexContracts(): Promise<Set<string>> {
-    let contracts = await this.cachingService.getLocal<Set<string>>(CacheInfo.MexContracts.key);
+    let contracts = this.cachingService.getLocal<Set<string>>(CacheInfo.MexContracts.key);
     if (!contracts) {
       contracts = await this.getMexContractsRaw();
       this.cachingService.setLocal(CacheInfo.MexContracts.key, contracts, Constants.oneMinute() * 10);

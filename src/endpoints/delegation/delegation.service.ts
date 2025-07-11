@@ -71,7 +71,11 @@ export class DelegationService {
   async getDelegationForAddress(address: string): Promise<AccountDelegation[]> {
     try {
       const { data } = await this.apiService.get(`${this.apiConfigService.getDelegationUrl()}/accounts/${address}/delegations`);
-      return data;
+
+      return data.map((delegation: any) => new AccountDelegation({
+        ...delegation,
+        userUndelegatedList: delegation.userUndelegatedList ?? [],
+      }));
     } catch (error) {
       this.logger.error(`Error when getting account delegation details for address ${address}`);
       this.logger.error(error);
