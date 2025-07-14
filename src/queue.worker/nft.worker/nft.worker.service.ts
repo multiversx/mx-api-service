@@ -6,7 +6,6 @@ import { NftMetadataService } from "./queue/job-services/metadata/nft.metadata.s
 import { NftMediaService } from "./queue/job-services/media/nft.media.service";
 import { ClientProxy } from "@nestjs/microservices";
 import { NftMessage } from "./queue/entities/nft.message";
-import { NftType } from "src/endpoints/nfts/entities/nft.type";
 import { NftAssetService } from "./queue/job-services/assets/nft.asset.service";
 import { PersistenceService } from "src/common/persistence/persistence.service";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
