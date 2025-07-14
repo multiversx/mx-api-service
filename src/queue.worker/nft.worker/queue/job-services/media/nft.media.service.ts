@@ -63,10 +63,6 @@ export class NftMediaService {
   }
 
   private async getMediaRaw(nft: Nft): Promise<NftMedia[] | null> {
-    if (nft.type === NftType.MetaESDT) {
-      return null;
-    }
-
     if (!nft.uris) {
       return null;
     }

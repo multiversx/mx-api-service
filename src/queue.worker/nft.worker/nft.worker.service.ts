@@ -44,10 +44,6 @@ export class NftWorkerService {
   }
 
   async needsProcessing(nft: Nft, settings: ProcessNftSettings): Promise<boolean> {
-    if (nft.type === NftType.MetaESDT) {
-      return false;
-    }
-
     if (settings.forceRefreshMedia || settings.forceRefreshMetadata || settings.forceRefreshThumbnail) {
       return true;
     }
