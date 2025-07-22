@@ -22,6 +22,7 @@ export class AccountQueryOptions {
   excludeTags?: string[];
   hasAssets?: boolean;
   search?: string;
+  withBalance?: boolean;
 
   validate(size: number) {
     if (this.withDeployInfo && size > 25) {
@@ -53,6 +54,7 @@ export class AccountQueryOptions {
       this.excludeTags !== undefined ||
       this.hasAssets !== undefined ||
       this.search !== undefined ||
-      this.addresses !== undefined;
+      this.addresses !== undefined ||
+      this.withBalance !== undefined;
   }
 }
