@@ -94,6 +94,7 @@ export class GatewayProxyController {
 
   @Post('/address/iterate-keys')
   async iterateKeys(@Body() request: IterateKeysRequest) {
+    // eslint-disable-next-line require-await
     return await this.gatewayPost('address/iterate-keys', GatewayComponentRequest.addressIterateKeys, request, async (error) => {
       const errorMessage = error?.response?.data?.error;
       if (errorMessage && errorMessage.includes('account was not found')) {
