@@ -10,6 +10,7 @@ export enum GatewayComponentRequest {
   addressEsdtHistorical = 'addressEsdtHistorical',
   addressEsdtBalance = 'addressEsdtBalance',
   addressNfts = 'addressNfts',
+  addressIterateKeys = 'addressIterateKeys',
   nodeHeartbeat = 'nodeHeartbeat',
   getNodeWaitingEpochsLeft = 'getNodeWaitingEpochsLeft',
   validatorStatistics = 'validatorStatistics',

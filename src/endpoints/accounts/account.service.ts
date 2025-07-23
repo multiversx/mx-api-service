@@ -1,6 +1,9 @@
 import { forwardRef, HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { AccountDetailed } from './entities/account.detailed';
 import { Account } from './entities/account';
+import { IterateKeysRequestDto } from './entities/iterate-keys-request.dto';
+import { IterateKeysResponse } from 'src/common/gateway/entities/iterate-keys-response';
+import { IterateKeysRequest } from 'src/common/gateway/entities/iterate-keys-request';
 import { VmQueryService } from 'src/endpoints/vm.query/vm.query.service';
 import { ApiConfigService } from 'src/common/api-config/api.config.service';
 import { AccountDeferred } from './entities/account.deferred';
@@ -741,5 +744,15 @@ export class AccountService {
       address: item.key,
       transfers24H: item.value,
     }));
+  }
+
+  async getIterateKeys(address: string, request: IterateKeysRequestDto): Promise<IterateKeysResponse> {
+    const gatewayRequest = new IterateKeysRequest({
+      address,
+      numKeys: request.numKeys,
+      iteratorState: request.iteratorState,
+    });
+
+    return await this.gatewayService.getAddressIterateKeys(gatewayRequest);
   }
 }

@@ -3,6 +3,8 @@ import { Auction } from "./entities/auction";
 import { EsdtAddressRoles } from "./entities/esdt.roles";
 import { EsdtSupply } from "./entities/esdt.supply";
 import { GatewayComponentRequest } from "./entities/gateway.component.request";
+import { IterateKeysRequest } from "./entities/iterate-keys-request";
+import { IterateKeysResponse } from "./entities/iterate-keys-response";
 import { MetricsEvents } from "src/utils/metrics-events.constants";
 import { LogPerformanceAsync } from "src/utils/log.performance.decorator";
 import { HeartbeatStatus } from "./entities/heartbeat.status";
@@ -39,6 +41,7 @@ export class GatewayService {
     GatewayComponentRequest.addressEsdt,
     GatewayComponentRequest.addressEsdtBalance,
     GatewayComponentRequest.addressNftByNonce,
+    GatewayComponentRequest.addressIterateKeys,
     GatewayComponentRequest.vmQuery,
   ]);
 
@@ -193,6 +196,20 @@ export class GatewayService {
     const result = await this.get(`block/${shard}/by-nonce/${nonce}?withTxs=${withTxs ?? false}`, GatewayComponentRequest.blockByNonce);
 
     return result.block;
+  }
+
+  async getAddressIterateKeys(request: IterateKeysRequest): Promise<IterateKeysResponse> {
+    // eslint-disable-next-line require-await
+    const result = await this.create('address/iterate-keys', GatewayComponentRequest.addressIterateKeys, request, async (error) => {
+      const errorMessage = error?.response?.data?.error;
+      if (errorMessage && errorMessage.includes('account was not found')) {
+        return true;
+      }
+
+      return false;
+    });
+
+    return new IterateKeysResponse(result);
   }
 
   @LogPerformanceAsync(MetricsEvents.SetGatewayDuration, { argIndex: 1 })
