@@ -810,6 +810,10 @@ export class ElasticIndexerHelper {
       elasticQuery = elasticQuery.withMustMatchCondition('address', filter.address);
     }
 
+    if (filter.order) {
+      elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Match('order', filter.order));
+    }
+
     return elasticQuery;
   }
 }
