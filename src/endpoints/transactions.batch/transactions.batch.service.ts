@@ -1,5 +1,4 @@
-import { Address, Transaction as ErdJsTransaction, TransactionHash, TransactionOptions, TransactionPayload, TransactionVersion } from "@multiversx/sdk-core/out";
-import { Signature } from "@multiversx/sdk-core/out/signature";
+import { Address, Transaction as ErdJsTransaction, TransactionComputer } from "@multiversx/sdk-core/out";
 import { BinaryUtils } from "@multiversx/sdk-nestjs-common";
 import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { Injectable, Logger } from "@nestjs/common";
@@ -19,12 +18,14 @@ import { TransactionCreate } from "../transactions/entities/transaction.create";
 @Injectable()
 export class TransactionsBatchService {
   private readonly logger: Logger;
+  private readonly transactionComputer: TransactionComputer;
 
   constructor(
     private readonly cachingService: CacheService,
     private readonly transactionService: TransactionService,
   ) {
     this.logger = new Logger(TransactionsBatchService.name);
+    this.transactionComputer = new TransactionComputer();
   }
 
   async startTransactionBatch(batch: TransactionBatch, sourceIp: string): Promise<TransactionBatch> {
@@ -37,26 +38,26 @@ export class TransactionsBatchService {
         const tx = item.transaction.tx;
 
         const trans = new ErdJsTransaction({
-          nonce: tx.nonce,
-          value: tx.value,
+          nonce: BigInt(tx.nonce),
+          value: BigInt(tx.value || 0),
           receiver: new Address(tx.receiver),
-          gasPrice: tx.gasPrice,
-          gasLimit: tx.gasLimit,
-          data: tx.data ? new TransactionPayload(BinaryUtils.base64Decode(tx.data ?? '')) : undefined,
+          gasPrice: BigInt(tx.gasPrice),
+          gasLimit: BigInt(tx.gasLimit),
+          data: tx.data ? new Uint8Array(Buffer.from(BinaryUtils.base64Decode(tx.data ?? ''), 'utf8')) : new Uint8Array(),
           chainID: tx.chainID,
-          version: new TransactionVersion(tx.version),
-          options: tx.options ? new TransactionOptions(tx.options) : undefined,
+          version: tx.version,
+          options: tx.options || 0,
           guardian: tx.guardian ? new Address(tx.guardian) : undefined,
           sender: new Address(tx.sender),
         });
 
         if (tx.guardianSignature) {
-          trans.applyGuardianSignature(new Signature(tx.guardianSignature));
+          trans.guardianSignature = new Uint8Array(Buffer.from(tx.guardianSignature, 'hex'));
         }
 
-        trans.applySignature(new Signature(tx.signature));
+        trans.signature = new Uint8Array(Buffer.from(tx.signature, 'hex'));
 
-        item.transaction.hash = TransactionHash.compute(trans).toString();
+        item.transaction.hash = this.transactionComputer.computeTransactionHash(trans);
       }
     }
 

@@ -86,7 +86,7 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.54.0",
     "@golevelup/nestjs-rabbitmq": "^4.0.0",
-    "@multiversx/sdk-core": "^13.2.2",
+    "@multiversx/sdk-core": "^15.0.0",
     "@multiversx/sdk-exchange": "^0.2.21",
     "@multiversx/sdk-nestjs-auth": "6.0.0",
     "@multiversx/sdk-nestjs-cache": "6.0.0",
