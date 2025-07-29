@@ -1,4 +1,4 @@
-import { Address, Transaction as ErdJsTransaction, TransactionComputer } from "@multiversx/sdk-core/out";
+import { Address, Transaction as ErdJsTransaction, TransactionComputer } from "@multiversx/sdk-core";
 import { BinaryUtils } from "@multiversx/sdk-nestjs-common";
 import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { Injectable, Logger } from "@nestjs/common";
