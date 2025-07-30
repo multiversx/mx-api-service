@@ -93,6 +93,50 @@ describe('EventsService', () => {
       expect(result).toEqual([]);
       expect(indexerService.getEvents).toHaveBeenCalledWith(pagination, filter);
     });
+
+    it('should return events in the correct order', async () => {
+      const pagination: QueryPagination = { from: 0, size: 10 };
+      const filter: EventsFilter = new EventsFilter({ order: 1 });
+
+      const mockElasticEvents = [
+        generateMockEvent(),
+        generateMockEvent({ _id: "5d4a7cd39caf55aaaef038d2fe5fd864b01db2170253c158-1-1", identifier: 'ESDTNFTCreate' }),
+      ];
+
+      const expectedEvents = [
+        createExpectedEvent("7e3faa2a4ea5cfe8667f2e13eb27076b0452742dbe01044871c8ea109f73ebed", "transferValueOnly"),
+        createExpectedEvent("5d4a7cd39caf55aaaef038d2fe5fd864b01db2170253c158-1-1", "ESDTNFTCreate"),
+      ];
+
+      mockIndexerService.getEvents.mockResolvedValue(mockElasticEvents);
+
+      const result = await service.getEvents(pagination, filter);
+
+      expect(result).toEqual(expectedEvents);
+      expect(indexerService.getEvents).toHaveBeenCalledWith(pagination, filter);
+    });
+
+    it('should return events filtered by shard', async () => {
+      const pagination: QueryPagination = { from: 0, size: 10 };
+      const filter: EventsFilter = new EventsFilter({ shard: 1 });
+
+      const mockElasticEvents = [
+        generateMockEvent(),
+        generateMockEvent({ _id: "5d4a7cd39caf55aaaef038d2fe5fd864b01db2170253c158-1-1", identifier: 'ESDTNFTCreate' }),
+      ];
+
+      const expectedEvents = [
+        createExpectedEvent("7e3faa2a4ea5cfe8667f2e13eb27076b0452742dbe01044871c8ea109f73ebed", "transferValueOnly"),
+        createExpectedEvent("5d4a7cd39caf55aaaef038d2fe5fd864b01db2170253c158-1-1", "ESDTNFTCreate"),
+      ];
+
+      mockIndexerService.getEvents.mockResolvedValue(mockElasticEvents);
+
+      const result = await service.getEvents(pagination, filter);
+
+      expect(result).toEqual(expectedEvents);
+      expect(indexerService.getEvents).toHaveBeenCalledWith(pagination, filter);
+    });
   });
 
   describe('getEventsCount', () => {
