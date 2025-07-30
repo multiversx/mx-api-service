@@ -78,14 +78,14 @@ export class TransactionGetService {
       if (!logsMap.has(txHash)) {
         logsMap.set(txHash, new TransactionLog({
           id: txHash,
-          address: source.address,
+          address: source.logAddress,
           events: [],
         }));
       }
 
       const event = {
         identifier: source.identifier,
-        address: source.logAddress || source.address,
+        address: source.address,
         data: source.data && source.data.length > 0 ? BinaryUtils.hexToBase64(source.data ?? '') : source.data,
         additionalData: source.additionalData?.map(d => d && d.length > 0 ? BinaryUtils.hexToBase64(d) : d),
         topics: source.topics?.map(t => t && t.length > 0 ? BinaryUtils.hexToBase64(t) : t),
