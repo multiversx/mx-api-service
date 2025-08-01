@@ -372,8 +372,9 @@ export class ElasticIndexerHelper {
 
     if (filter.token === 'EGLD') {
       elasticQuery = elasticQuery.withMustNotCondition(QueryType.Match('value', '0'));
-    } else {
-      elasticQuery = elasticQuery.withMustMatchCondition('tokens', filter.token, QueryOperator.AND);
+    } else if (filter.token) {
+      const field = filter.token.split('-').length === 2 ? 'tokens' : 'identifier';
+      elasticQuery = elasticQuery.withMustMatchCondition(field, filter.token, QueryOperator.AND);
     }
 
     if (filter.tokens && filter.tokens.length > 0) {
