@@ -164,7 +164,8 @@ export class NftMediaService {
   }
 
   private isContentTypeAccepted(contentType: string): boolean {
-    return Object.values(MediaMimeTypeEnum).includes(contentType as MediaMimeTypeEnum);
+    const baseContentType = contentType.split(';')[0].trim();
+    return Object.values(MediaMimeTypeEnum).includes(baseContentType as MediaMimeTypeEnum);
   }
 
   private isFileSizeAccepted(fileSize: number): boolean {
