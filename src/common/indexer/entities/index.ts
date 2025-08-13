@@ -12,5 +12,5 @@ export { Tag } from './tag';
 export { Token } from './token';
 export { TokenAccount, TokenType } from './token.account';
 export { Transaction } from './transaction';
-export { TransactionLog, TransactionLogEvent } from './transaction.log';
+export { TransactionLog, TransactionLogEvent, ElasticTransactionLogEvent } from './transaction.log';
 export { TransactionReceipt } from './transaction.receipt';
