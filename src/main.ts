@@ -36,6 +36,7 @@ import { NotWritableError } from './common/indexer/entities/not.writable.error';
 import * as bodyParser from 'body-parser';
 import * as requestIp from 'request-ip';
 import compression from 'compression';
+import { IoAdapter } from '@nestjs/platform-socket.io';
 
 async function bootstrap() {
   const logger = new Logger('Bootstrapper');
@@ -52,6 +53,7 @@ async function bootstrap() {
 
   if (apiConfigService.getIsPublicApiActive()) {
     const publicApp = await NestFactory.create<NestExpressApplication>(PublicAppModule);
+    publicApp.useWebSocketAdapter(new IoAdapter(publicApp));
 
     await configurePublicApp(publicApp, apiConfigService);
 

@@ -11,6 +11,7 @@ import { TransactionActionModule } from "./transaction-action/transaction.action
 import { TransactionGetService } from "./transaction.get.service";
 import { TransactionPriceService } from "./transaction.price.service";
 import { TransactionService } from "./transaction.service";
+import { TransactionsGateway } from "./transaction.gateway";
 
 @Module({
   imports: [
@@ -25,10 +26,10 @@ import { TransactionService } from "./transaction.service";
     DataApiModule,
   ],
   providers: [
-    TransactionGetService, TransactionPriceService, TransactionService,
+    TransactionGetService, TransactionPriceService, TransactionService, TransactionsGateway
   ],
   exports: [
-    TransactionGetService, TransactionPriceService, TransactionService,
+    TransactionGetService, TransactionPriceService, TransactionService, TransactionsGateway
   ],
 })
 export class TransactionModule { }
