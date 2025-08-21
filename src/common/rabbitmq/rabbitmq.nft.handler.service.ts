@@ -25,7 +25,7 @@ export class RabbitMqNftHandlerService {
   ) { }
 
   private async getCollectionType(collectionIdentifier: string): Promise<NftType | null> {
-    const type = await this.cachingService.getLocal<NftType>(CacheInfo.CollectionType(collectionIdentifier).key) ??
+    const type = this.cachingService.getLocal<NftType>(CacheInfo.CollectionType(collectionIdentifier).key) ??
       await this.getCollectionTypeRaw(collectionIdentifier);
 
     if (!type) {

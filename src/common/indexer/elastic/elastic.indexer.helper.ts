@@ -1,5 +1,5 @@
 import { AddressUtils, BinaryUtils } from "@multiversx/sdk-nestjs-common";
-import { AbstractQuery, ElasticQuery, MatchQuery, QueryConditionOptions, QueryOperator, QueryType, RangeGreaterThanOrEqual, RangeLowerThan, RangeLowerThanOrEqual } from "@multiversx/sdk-nestjs-elastic";
+import { AbstractQuery, ElasticQuery, MatchQuery, QueryConditionOptions, QueryOperator, QueryType, RangeGreaterThan, RangeGreaterThanOrEqual, RangeLowerThan, RangeLowerThanOrEqual } from "@multiversx/sdk-nestjs-elastic";
 import { Injectable } from "@nestjs/common";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { QueryPagination } from "src/common/entities/query.pagination";
@@ -717,6 +717,14 @@ export class ElasticIndexerHelper {
       elasticQuery = elasticQuery.withSearchWildcardCondition(filter.search, ['address', 'api_assets.name']);
     }
 
+    if (filter.withBalance !== undefined) {
+      if (filter.withBalance) {
+        elasticQuery = elasticQuery.withRangeFilter('balanceNum', new RangeGreaterThan(0));
+      } else {
+        elasticQuery = elasticQuery.withMustCondition(QueryType.Match('balanceNum', 0));
+      }
+    }
+
     return elasticQuery;
   }
 
@@ -825,6 +833,10 @@ export class ElasticIndexerHelper {
 
     if (filter.address) {
       elasticQuery = elasticQuery.withMustMatchCondition('address', filter.address);
+    }
+
+    if (filter.order) {
+      elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Match('order', filter.order));
     }
 
     return elasticQuery;
