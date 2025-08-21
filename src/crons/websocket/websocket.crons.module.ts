@@ -3,12 +3,14 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { TransactionModule } from 'src/endpoints/transactions/transaction.module';
 import { WebsocketCronService } from './websocket.cron.service';
 import { BlockModule } from 'src/endpoints/blocks/block.module';
+import { NetworkModule } from 'src/endpoints/network/network.module';
 
 @Module({
   imports: [
     ScheduleModule.forRoot(),
     TransactionModule,
     BlockModule,
+    NetworkModule,
   ],
   providers: [
     WebsocketCronService,

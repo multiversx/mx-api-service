@@ -8,6 +8,7 @@ import { TokenModule } from "../tokens/token.module";
 import { TransactionModule } from "../transactions/transaction.module";
 import { VmQueryModule } from "../vm.query/vm.query.module";
 import { NetworkService } from "./network.service";
+import { NetworkGateway } from "./network.gateway";
 
 @Module({
   imports: [
@@ -21,10 +22,10 @@ import { NetworkService } from "./network.service";
     forwardRef(() => SmartContractResultModule),
   ],
   providers: [
-    NetworkService,
+    NetworkService, NetworkGateway,
   ],
   exports: [
-    NetworkService,
+    NetworkService, NetworkGateway,
   ],
 })
 export class NetworkModule { }
