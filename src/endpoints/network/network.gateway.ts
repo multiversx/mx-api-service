@@ -7,27 +7,19 @@ export class NetworkGateway implements OnGatewayDisconnect {
     @WebSocketServer()
     server!: Server;
 
-    private clients = new Set<string>();
-
     constructor(private readonly networkService: NetworkService) { }
 
     @SubscribeMessage('subscribeStats')
     async handleSubscription(client: Socket) {
-        this.clients.add(client.id);
+        await client.join('statsRoom');
     }
 
     async pushStats() {
         const stats = await this.networkService.getStats();
-
-        for (const clientId of this.clients) {
-            const client = this.server.sockets.sockets.get(clientId);
-            if (client) {
-                client.emit('statsUpdate', stats);
-            }
-        }
+        this.server.to('statsRoom').emit('statsUpdate', stats);
     }
 
     handleDisconnect(client: Socket) {
-        this.clients.delete(client.id);
+        console.log(`client ${client.id} disconnected`);
     }
 }

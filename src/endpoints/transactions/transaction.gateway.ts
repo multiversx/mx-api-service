@@ -10,26 +10,19 @@ export class TransactionsGateway implements OnGatewayDisconnect {
     @WebSocketServer()
     server!: Server;
 
-    // Map: filterHash -> set of clientIds
-    private filterClients = new Map<string, Set<string>>();
-    // Map: clientId -> filterHash
-    private clientFilterHash = new Map<string, string>();
-
     constructor(private readonly transactionService: TransactionService) { }
 
     @SubscribeMessage('subscribeTransactions')
     async handleSubscription(client: Socket, payload: any) {
         const filterHash = JSON.stringify(payload);
-
-        if (!this.filterClients.has(filterHash)) {
-            this.filterClients.set(filterHash, new Set());
-        }
-        this.filterClients.get(filterHash)!.add(client.id);
-        this.clientFilterHash.set(client.id, filterHash);
+        await client.join(`tx-${filterHash}`);
     }
 
     async pushTransactions() {
-        for (const [filterHash, clientIds] of this.filterClients.entries()) {
+        for (const [roomName] of this.server.sockets.adapter.rooms) {
+            if (!roomName.startsWith("tx-")) continue;
+
+            const filterHash = roomName.replace("tx-", "");
             const filter = JSON.parse(filterHash);
 
             const options = TransactionQueryOptions.applyDefaultOptions(filter.size || 25, {
@@ -73,26 +66,11 @@ export class TransactionsGateway implements OnGatewayDisconnect {
                 filter.fields || [],
             );
 
-            for (const clientId of clientIds) {
-                const client = this.server.sockets.sockets.get(clientId);
-                if (client) {
-                    client.emit('transactionUpdate', txs);
-                }
-            }
+            this.server.to(roomName).emit('transactionUpdate', txs);
         }
     }
 
     handleDisconnect(client: Socket) {
-        const filterHash = this.clientFilterHash.get(client.id);
-        if (filterHash) {
-            const set = this.filterClients.get(filterHash);
-            if (set) {
-                set.delete(client.id);
-                if (set.size === 0) {
-                    this.filterClients.delete(filterHash);
-                }
-            }
-            this.clientFilterHash.delete(client.id);
-        }
+        console.log(`client ${client.id} disconnected`);
     }
 }

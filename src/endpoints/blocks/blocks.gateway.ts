@@ -9,26 +9,19 @@ export class BlocksGateway implements OnGatewayDisconnect {
     @WebSocketServer()
     server!: Server;
 
-    // Map: filterHash -> set of clientIds
-    private filterClients = new Map<string, Set<string>>();
-    // Map: clientId -> filterHash
-    private clientFilterHash = new Map<string, string>();
-
     constructor(private readonly blockService: BlockService) { }
 
     @SubscribeMessage('subscribeBlocks')
     async handleSubscription(client: Socket, payload: any) {
         const filterHash = JSON.stringify(payload);
-
-        if (!this.filterClients.has(filterHash)) {
-            this.filterClients.set(filterHash, new Set());
-        }
-        this.filterClients.get(filterHash)!.add(client.id);
-        this.clientFilterHash.set(client.id, filterHash);
+        await client.join(`block-${filterHash}`);
     }
 
     async pushBlocks() {
-        for (const [filterHash, clientIds] of this.filterClients.entries()) {
+        for (const [roomName] of this.server.sockets.adapter.rooms) {
+            if (!roomName.startsWith("block-")) continue;
+
+            const filterHash = roomName.replace("block-", "");
             const filter = JSON.parse(filterHash);
 
             const blockFilter = new BlockFilter({
@@ -41,32 +34,17 @@ export class BlocksGateway implements OnGatewayDisconnect {
                 order: filter.order,
             });
 
-            const txs = await this.blockService.getBlocks(
+            const blocks = await this.blockService.getBlocks(
                 blockFilter,
                 new QueryPagination({ from: filter.from || 0, size: filter.size || 25 }),
                 filter.withProposerIdentity,
             );
 
-            for (const clientId of clientIds) {
-                const client = this.server.sockets.sockets.get(clientId);
-                if (client) {
-                    client.emit('blocksUpdate', txs);
-                }
-            }
+            this.server.to(roomName).emit('blocksUpdate', blocks);
         }
     }
 
     handleDisconnect(client: Socket) {
-        const filterHash = this.clientFilterHash.get(client.id);
-        if (filterHash) {
-            const set = this.filterClients.get(filterHash);
-            if (set) {
-                set.delete(client.id);
-                if (set.size === 0) {
-                    this.filterClients.delete(filterHash);
-                }
-            }
-            this.clientFilterHash.delete(client.id);
-        }
+        console.log(`client ${client.id} disconnected`);
     }
 }
