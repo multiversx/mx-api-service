@@ -28,7 +28,7 @@ export class BlocksGateway implements OnGatewayDisconnect {
     const filterHash = JSON.stringify(payload);
     await client.join(`block-${filterHash}`);
 
-    return { status: 'success' }
+    return { status: 'success' };
   }
 
   async pushBlocks() {

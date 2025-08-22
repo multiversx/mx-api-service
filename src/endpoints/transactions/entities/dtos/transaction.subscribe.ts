@@ -44,7 +44,7 @@ export class TransactionSubscribePayload {
 
     @IsOptional()
     @IsEnum(TransactionStatus)
-    status?: TransactionStatus;;
+    status?: TransactionStatus;
 
     @IsOptional()
     @IsNumber()
