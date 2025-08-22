@@ -8,8 +8,6 @@ import { PrivateAppModule } from './private.app.module';
 import { CacheWarmerModule } from './crons/cache.warmer/cache.warmer.module';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { INestApplication, Logger, NestInterceptor } from '@nestjs/common';
-import * as bodyParser from 'body-parser';
-import * as requestIp from 'request-ip';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { RedisClient } from 'redis';
 import { TransactionProcessorModule } from './crons/transaction.processor/transaction.processor.module';
@@ -36,6 +34,9 @@ import { WebSocketPublisherModule } from './common/websockets/web-socket-publish
 import { IndexerService } from './common/indexer/indexer.service';
 import { NotWritableError } from './common/indexer/entities/not.writable.error';
 import { LibraryConfig } from "@multiversx/sdk-core/out";
+import * as bodyParser from 'body-parser';
+import * as requestIp from 'request-ip';
+import compression from 'compression';
 
 async function bootstrap() {
   const logger = new Logger('Bootstrapper');
@@ -182,6 +183,21 @@ async function bootstrap() {
 }
 
 async function configurePublicApp(publicApp: NestExpressApplication, apiConfigService: ApiConfigService) {
+  if (apiConfigService.getCompressionEnabled()) {
+    publicApp.use(compression({
+      filter: (req: any, res: any) => {
+        if (req.headers['x-no-compression']) {
+          return false;
+        }
+        return compression.filter(req, res);
+      },
+      level: apiConfigService.getCompressionLevel(),
+      threshold: apiConfigService.getCompressionThreshold(),
+      memLevel: 8,
+      chunkSize: apiConfigService.getCompressionChunkSize(),
+    }));
+  }
+
   publicApp.use(bodyParser.json({ limit: '1mb' }));
   publicApp.use(requestIp.mw());
   publicApp.enableCors();
@@ -301,6 +317,10 @@ async function configurePublicApp(publicApp: NestExpressApplication, apiConfigSe
   logger.log(`Use request caching: ${await settingsService.getUseRequestCachingFlag()}`);
   logger.log(`Use request logging: ${await settingsService.getUseRequestLoggingFlag()}`);
   logger.log(`Use vm query tracing: ${await settingsService.getUseVmQueryTracingFlag()}`);
+  logger.log(`Compression enabled: ${apiConfigService.getCompressionEnabled()}`);
+  if (apiConfigService.getCompressionEnabled()) {
+    logger.log(`Compression level: ${apiConfigService.getCompressionLevel()} (threshold: ${apiConfigService.getCompressionThreshold()} bytes)`);
+  }
 }
 
 async function configureCacheWarmerApp(cacheWarmerApp: INestApplication<any>, apiConfigService: ApiConfigService): Promise<void> {

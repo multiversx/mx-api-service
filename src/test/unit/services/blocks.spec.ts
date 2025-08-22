@@ -230,7 +230,7 @@ describe('Block Service', () => {
 
       const blses = ['bls_key_0', 'bls_key_1', 'bls_key_2'];
 
-      jest.spyOn(cacheService, 'getLocal').mockImplementation(() => Promise.resolve(blses));
+      jest.spyOn(cacheService, 'getLocal').mockImplementation(() => blses);
       jest.spyOn(blsService, 'getPublicKeys').mockImplementation(() => Promise.resolve(blses));
 
       const result = await blockService.computeProposerAndValidators(inputItem);
@@ -253,8 +253,8 @@ describe('Block Service', () => {
 
       const blses = ['bls_key_0', 'bls_key_1', 'bls_key_2'];
 
-      jest.spyOn(cacheService, 'getLocal').mockImplementationOnce(() => Promise.resolve(null));
-      jest.spyOn(cacheService, 'setLocal').mockImplementation(() => Promise.resolve());
+      jest.spyOn(cacheService, 'getLocal').mockImplementationOnce(() => null);
+      jest.spyOn(cacheService, 'setLocal').mockImplementation();
       jest.spyOn(blsService, 'getPublicKeys').mockImplementation(() => Promise.resolve(blses));
 
       await blockService.computeProposerAndValidators(inputItem);

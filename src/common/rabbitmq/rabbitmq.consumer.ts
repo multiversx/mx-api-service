@@ -43,6 +43,16 @@ export class RabbitMqConsumer {
         this.logger.log(`Detected 'ESDTNFTUpdateAttributes' event`);
         await this.nftHandlerService.handleNftUpdateAttributesEvent(event);
         break;
+      case NotifierEventIdentifier.ESDTNFTBurn:
+        await this.nftHandlerService.handleNftBurnEvent(event);
+        break;
+      case NotifierEventIdentifier.ESDTMetaDataUpdate:
+      case NotifierEventIdentifier.ESDTMetaDataRecreate:
+        await this.nftHandlerService.handleNftMetadataEvent(event);
+        break;
+      case NotifierEventIdentifier.ESDTModifyCreator:
+        await this.nftHandlerService.handleNftModifyCreatorEvent(event);
+        break;
       case NotifierEventIdentifier.transferOwnership:
         await this.tokenHandlerService.handleTransferOwnershipEvent(event);
         break;

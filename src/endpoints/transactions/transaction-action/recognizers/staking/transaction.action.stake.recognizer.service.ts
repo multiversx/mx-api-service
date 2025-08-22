@@ -20,7 +20,7 @@ export class StakeActionRecognizerService implements TransactionActionRecognizer
   ) { }
 
   private async getProviders(): Promise<{ [key: string]: { providerName: string, providerAvatar: string } }> {
-    let providersDetails = await this.cachingService.getLocal<{ [key: string]: { providerName: string, providerAvatar: string } }>('plugins:staking:providerAddresses');
+    let providersDetails = this.cachingService.getLocal<{ [key: string]: { providerName: string, providerAvatar: string } }>('plugins:staking:providerAddresses');
     if (!providersDetails) {
       const providers = await this.providerService.getAllProviders();
       const identities = await this.identitiesService.getAllIdentities();

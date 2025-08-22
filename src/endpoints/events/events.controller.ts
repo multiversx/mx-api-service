@@ -25,6 +25,7 @@ export class EventsController {
   @ApiQuery({ name: 'shard', description: 'Event shard id', required: false })
   @ApiQuery({ name: 'before', description: 'Event before timestamp', required: false })
   @ApiQuery({ name: 'after', description: 'Event after timestamp', required: false })
+  @ApiQuery({ name: 'order', description: 'Event order', required: false })
   async getEvents(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
@@ -34,10 +35,11 @@ export class EventsController {
     @Query('shard', ParseIntPipe) shard: number,
     @Query('before', ParseIntPipe) before: number,
     @Query('after', ParseIntPipe) after: number,
+    @Query('order', ParseIntPipe) order: number,
   ): Promise<Events[]> {
     return await this.eventsService.getEvents(
       new QueryPagination({ from, size }),
-      new EventsFilter({ address, identifier, txHash, shard, after, before }));
+      new EventsFilter({ address, identifier, txHash, shard, after, before, order }));
   }
 
   @Get('/events/count')

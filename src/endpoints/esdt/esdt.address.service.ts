@@ -392,7 +392,7 @@ export class EsdtAddressService {
       return result;
     }
 
-    const cachedValue = await this.cachingService.getLocal<{ [key: string]: any }>(`address:${address}:esdts`);
+    const cachedValue = this.cachingService.getLocal<{ [key: string]: any }>(`address:${address}:esdts`);
 
     if (cachedValue) {
       this.metricsService.incrementCachedApiHit('Gateway.AccountEsdts');
