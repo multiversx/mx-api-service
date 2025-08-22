@@ -4,22 +4,22 @@ import { NetworkService } from './network.service';
 
 @WebSocketGateway({ cors: { origin: '*' } })
 export class NetworkGateway implements OnGatewayDisconnect {
-    @WebSocketServer()
-    server!: Server;
+  @WebSocketServer()
+  server!: Server;
 
-    constructor(private readonly networkService: NetworkService) { }
+  constructor(private readonly networkService: NetworkService) { }
 
-    @SubscribeMessage('subscribeStats')
-    async handleSubscription(client: Socket) {
-        await client.join('statsRoom');
+  @SubscribeMessage('subscribeStats')
+  async handleSubscription(client: Socket) {
+    await client.join('statsRoom');
+  }
+
+  async pushStats() {
+    if (this.server.sockets.adapter.rooms.has('statsRoom')) {
+      const stats = await this.networkService.getStats();
+      this.server.to('statsRoom').emit('statsUpdate', stats);
     }
+  }
 
-    async pushStats() {
-        if (this.server.sockets.adapter.rooms.has('statsRoom')) {
-            const stats = await this.networkService.getStats();
-            this.server.to('statsRoom').emit('statsUpdate', stats);
-        }
-    }
-
-    handleDisconnect(_client: Socket) { }
+  handleDisconnect(_client: Socket) { }
 }
