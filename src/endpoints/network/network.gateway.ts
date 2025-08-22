@@ -15,8 +15,10 @@ export class NetworkGateway implements OnGatewayDisconnect {
     }
 
     async pushStats() {
-        const stats = await this.networkService.getStats();
-        this.server.to('statsRoom').emit('statsUpdate', stats);
+        if (this.server.sockets.adapter.rooms.has('statsRoom')) {
+            const stats = await this.networkService.getStats();
+            this.server.to('statsRoom').emit('statsUpdate', stats);
+        }
     }
 
     handleDisconnect(_client: Socket) { }
