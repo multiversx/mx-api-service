@@ -1,9 +1,14 @@
-import { WebSocketGateway, WebSocketServer, SubscribeMessage, OnGatewayDisconnect } from '@nestjs/websockets';
+import { WebSocketGateway, WebSocketServer, SubscribeMessage, OnGatewayDisconnect, MessageBody, ConnectedSocket } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { BlockService } from './block.service';
 import { BlockFilter } from './entities/block.filter';
 import { QueryPagination } from 'src/common/entities/query.pagination';
+import { BlockSubscribePayload } from './entities/block.subscribe';
+import { UseFilters } from '@nestjs/common';
+import { WebsocketExceptionsFilter } from 'src/utils/ws-exceptions.filter';
+import { WsValidationPipe } from 'src/utils/ws-validation.pipe';
 
+@UseFilters(WebsocketExceptionsFilter)
 @WebSocketGateway({ cors: { origin: '*' } })
 export class BlocksGateway implements OnGatewayDisconnect {
   @WebSocketServer()
@@ -11,10 +16,16 @@ export class BlocksGateway implements OnGatewayDisconnect {
 
   constructor(private readonly blockService: BlockService) { }
 
+
   @SubscribeMessage('subscribeBlocks')
-  async handleSubscription(client: Socket, payload: any) {
+  async handleSubscription(
+    @ConnectedSocket() client: Socket,
+    @MessageBody(new WsValidationPipe()) payload: BlockSubscribePayload
+  ) {
     const filterHash = JSON.stringify(payload);
     await client.join(`block-${filterHash}`);
+
+    return { status: 'success' }
   }
 
   async pushBlocks() {
@@ -46,3 +57,4 @@ export class BlocksGateway implements OnGatewayDisconnect {
 
   handleDisconnect(_client: Socket) { }
 }
+

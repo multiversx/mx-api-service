@@ -1,10 +1,15 @@
-import { WebSocketGateway, WebSocketServer, SubscribeMessage, OnGatewayDisconnect } from '@nestjs/websockets';
+import { WebSocketGateway, WebSocketServer, SubscribeMessage, OnGatewayDisconnect, ConnectedSocket, MessageBody } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { TransactionService } from './transaction.service';
 import { TransactionFilter } from './entities/transaction.filter';
 import { QueryPagination } from 'src/common/entities/query.pagination';
 import { TransactionQueryOptions } from './entities/transactions.query.options';
+import { WsValidationPipe } from 'src/utils/ws-validation.pipe';
+import { TransactionSubscribePayload } from './entities/dtos/transaction.subscribe';
+import { WebsocketExceptionsFilter } from 'src/utils/ws-exceptions.filter';
+import { UseFilters } from '@nestjs/common';
 
+@UseFilters(WebsocketExceptionsFilter)
 @WebSocketGateway({ cors: { origin: '*' } })
 export class TransactionsGateway implements OnGatewayDisconnect {
   @WebSocketServer()
@@ -13,9 +18,13 @@ export class TransactionsGateway implements OnGatewayDisconnect {
   constructor(private readonly transactionService: TransactionService) { }
 
   @SubscribeMessage('subscribeTransactions')
-  async handleSubscription(client: Socket, payload: any) {
+  async handleSubscription(
+    @ConnectedSocket() client: Socket,
+    @MessageBody(new WsValidationPipe()) payload: TransactionSubscribePayload) {
     const filterHash = JSON.stringify(payload);
     await client.join(`tx-${filterHash}`);
+
+    return { status: 'success' };
   }
 
   async pushTransactions() {

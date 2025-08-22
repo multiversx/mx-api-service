@@ -1,7 +1,10 @@
 import { WebSocketGateway, WebSocketServer, SubscribeMessage, OnGatewayDisconnect } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { NetworkService } from './network.service';
+import { UseFilters } from '@nestjs/common';
+import { WebsocketExceptionsFilter } from 'src/utils/ws-exceptions.filter';
 
+@UseFilters(WebsocketExceptionsFilter)
 @WebSocketGateway({ cors: { origin: '*' } })
 export class NetworkGateway implements OnGatewayDisconnect {
   @WebSocketServer()
