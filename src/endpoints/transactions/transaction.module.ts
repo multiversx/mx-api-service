@@ -26,10 +26,10 @@ import { TransactionsGateway } from "./transaction.gateway";
     DataApiModule,
   ],
   providers: [
-    TransactionGetService, TransactionPriceService, TransactionService, TransactionsGateway
+    TransactionGetService, TransactionPriceService, TransactionService, TransactionsGateway,
   ],
   exports: [
-    TransactionGetService, TransactionPriceService, TransactionService, TransactionsGateway
+    TransactionGetService, TransactionPriceService, TransactionService, TransactionsGateway,
   ],
 })
 export class TransactionModule { }

@@ -44,7 +44,5 @@ export class BlocksGateway implements OnGatewayDisconnect {
         }
     }
 
-    handleDisconnect(client: Socket) {
-        console.log(`client ${client.id} disconnected`);
-    }
+    handleDisconnect(_client: Socket) { }
 }

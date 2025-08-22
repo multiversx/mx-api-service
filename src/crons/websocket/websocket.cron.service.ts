@@ -14,19 +14,16 @@ export class WebsocketCronService {
 
     @Cron('*/6 * * * * *')
     async handleTransactionsUpdate() {
-        console.log('executer websocket push transactions')
         await this.transactionsGateway.pushTransactions();
     }
 
     @Cron('*/6 * * * * *')
     async handleBlocksUpdate() {
-        console.log('executed websocket push blocks')
         await this.blocksGateway.pushBlocks();
     }
 
     @Cron('*/6 * * * * *')
     async handleStatsUpdate() {
-        console.log('executed websocket push stats')
         await this.networkGateway.pushStats();
     }
 }

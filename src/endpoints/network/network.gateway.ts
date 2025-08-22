@@ -19,7 +19,5 @@ export class NetworkGateway implements OnGatewayDisconnect {
         this.server.to('statsRoom').emit('statsUpdate', stats);
     }
 
-    handleDisconnect(client: Socket) {
-        console.log(`client ${client.id} disconnected`);
-    }
+    handleDisconnect(_client: Socket) { }
 }
