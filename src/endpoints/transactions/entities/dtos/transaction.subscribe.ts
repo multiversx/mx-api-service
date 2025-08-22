@@ -1,5 +1,8 @@
-import { IsOptional, IsString, IsArray, IsBoolean, IsNumber, IsIn } from 'class-validator';
+import { IsOptional, IsString, IsArray, IsBoolean, IsNumber, IsEnum } from 'class-validator';
 import { Type } from 'class-transformer';
+import { TransactionStatus } from '../transaction.status';
+import { QueryConditionOptions } from '@multiversx/sdk-nestjs-elastic';
+import { SortOrder } from 'src/common/entities/sort.order';
 
 export class TransactionSubscribePayload {
     @IsOptional()
@@ -40,8 +43,8 @@ export class TransactionSubscribePayload {
     hashes?: string[];
 
     @IsOptional()
-    @IsIn(['success', 'failed', 'pending'])
-    status?: string;
+    @IsEnum(TransactionStatus)
+    status?: TransactionStatus;;
 
     @IsOptional()
     @IsNumber()
@@ -54,12 +57,12 @@ export class TransactionSubscribePayload {
     after?: number;
 
     @IsOptional()
-    @IsString()
-    condition?: string;
+    @IsEnum(QueryConditionOptions)
+    condition?: QueryConditionOptions;
 
     @IsOptional()
-    @IsString()
-    order?: string;
+    @IsEnum(SortOrder)
+    order?: SortOrder;
 
     @IsOptional()
     @IsString()

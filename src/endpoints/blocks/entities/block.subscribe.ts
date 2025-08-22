@@ -1,5 +1,6 @@
 // block-subscribe.dto.ts
-import { IsOptional, IsString, IsNumber, IsArray, IsBoolean, Min, Max, IsIn } from 'class-validator';
+import { IsOptional, IsString, IsNumber, IsArray, IsBoolean, Min, Max, IsEnum } from 'class-validator';
+import { SortOrder } from 'src/common/entities/sort.order';
 
 export class BlockSubscribePayload {
     @IsOptional()
@@ -29,8 +30,8 @@ export class BlockSubscribePayload {
     hashes?: string[];
 
     @IsOptional()
-    @IsIn(['asc', 'desc'])
-    order?: 'asc' | 'desc';
+    @IsEnum(SortOrder)
+    order?: SortOrder;
 
     @IsOptional()
     @IsNumber()

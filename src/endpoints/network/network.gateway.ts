@@ -3,10 +3,13 @@ import { Server, Socket } from 'socket.io';
 import { NetworkService } from './network.service';
 import { UseFilters } from '@nestjs/common';
 import { WebsocketExceptionsFilter } from 'src/utils/ws-exceptions.filter';
+import { OriginLogger } from '@multiversx/sdk-nestjs-common';
 
 @UseFilters(WebsocketExceptionsFilter)
 @WebSocketGateway({ cors: { origin: '*' } })
 export class NetworkGateway implements OnGatewayDisconnect {
+  private readonly logger = new OriginLogger(NetworkGateway.name);
+
   @WebSocketServer()
   server!: Server;
 
@@ -19,8 +22,12 @@ export class NetworkGateway implements OnGatewayDisconnect {
 
   async pushStats() {
     if (this.server.sockets.adapter.rooms.has('statsRoom')) {
-      const stats = await this.networkService.getStats();
-      this.server.to('statsRoom').emit('statsUpdate', stats);
+      try {
+        const stats = await this.networkService.getStats();
+        this.server.to('statsRoom').emit('statsUpdate', stats);
+      } catch (error) {
+        this.logger.error(error);
+      }
     }
   }
 
