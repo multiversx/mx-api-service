@@ -12,7 +12,7 @@ import { TokenWithRolesFilter } from "src/endpoints/tokens/entities/token.with.r
 import { TransactionFilter } from "src/endpoints/transactions/entities/transaction.filter";
 import { TokenAssets } from "../assets/entities/token.assets";
 import { QueryPagination } from "../entities/query.pagination";
-import { Account, AccountHistory, AccountTokenHistory, Block, Collection, MiniBlock, Operation, Round, ScDeploy, ScResult, Tag, Token, TokenAccount, Transaction, TransactionLog, TransactionReceipt } from "./entities";
+import { Account, AccountHistory, AccountTokenHistory, Block, Collection, MiniBlock, Operation, Round, ScDeploy, ScResult, Tag, Token, TokenAccount, Transaction, ElasticTransactionLogEvent, TransactionReceipt } from "./entities";
 import { AccountAssets } from "../assets/entities/account.assets";
 import { ProviderDelegators } from "./entities/provider.delegators";
 import { ApplicationFilter } from "src/endpoints/applications/entities/application.filter";
@@ -74,6 +74,8 @@ export interface IndexerInterface {
 
   getBlock(hash: string): Promise<Block>
 
+  getBlockByMiniBlockHash(miniBlockHash: string): Promise<Block | undefined>
+
   getMiniBlock(miniBlockHash: string): Promise<MiniBlock>
 
   getMiniBlocks(pagination: QueryPagination, filter: MiniBlockFilter): Promise<MiniBlock[]>
@@ -132,7 +134,7 @@ export interface IndexerInterface {
 
   getTokensForAddress(address: string, queryPagination: QueryPagination, filter: TokenFilter): Promise<Token[]>
 
-  getTransactionLogs(hashes: string[]): Promise<TransactionLog[]>
+  getTransactionLogs(hashes: string[], eventsIndex: string, txHashField: string): Promise<ElasticTransactionLogEvent[]>
 
   getTransactionScResults(txHash: string): Promise<ScResult[]>
 

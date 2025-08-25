@@ -86,6 +86,8 @@ features:
     durationThresholdMs: 5000
     failureCountThreshold: 5
     resetTimeoutMs: 30000
+  elasticMigratedIndices:
+    logs: 'events'
   statusChecker:
     enabled: false
     thresholds:
@@ -131,6 +133,7 @@ aws:
   s3Secret: ''
   s3Bucket: 'media.elrond.com'
   s3Region: ''
+  s3Endpoint: ''
 urls:
   self: 'https://api.multiversx.com'
   elastic:
@@ -187,3 +190,8 @@ chainSettings:
 nftProcess:
   parallelism: 1
   maxRetries: 3
+compression:
+  enabled: true
+  level: 6
+  threshold: 1024
+  chunkSize: 16384

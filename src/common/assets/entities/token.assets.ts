@@ -38,6 +38,6 @@ export class TokenAssets {
   @ApiProperty({ enum: NftRankAlgorithm, nullable: true })
   preferredRankAlgorithm: NftRankAlgorithm | undefined = undefined;
 
-  @ApiProperty({ enum: TokenAssetsPriceSource, nullable: true })
+  @ApiProperty({ type: TokenAssetsPriceSource, nullable: true })
   priceSource: TokenAssetsPriceSource | undefined = undefined;
 }

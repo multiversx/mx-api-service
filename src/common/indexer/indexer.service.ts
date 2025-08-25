@@ -11,7 +11,7 @@ import { TransactionFilter } from "src/endpoints/transactions/entities/transacti
 import { MetricsEvents } from "src/utils/metrics-events.constants";
 import { TokenAssets } from "../assets/entities/token.assets";
 import { QueryPagination } from "../entities/query.pagination";
-import { Account, AccountHistory, AccountTokenHistory, Block, Collection, MiniBlock, Operation, Round, ScDeploy, ScResult, Tag, Token, TokenAccount, Transaction, TransactionLog, TransactionReceipt } from "./entities";
+import { Account, AccountHistory, AccountTokenHistory, Block, Collection, MiniBlock, Operation, Round, ScDeploy, ScResult, Tag, Token, TokenAccount, Transaction, ElasticTransactionLogEvent, TransactionReceipt } from "./entities";
 import { IndexerInterface } from "./indexer.interface";
 import { LogPerformanceAsync } from "src/utils/log.performance.decorator";
 import { AccountQueryOptions } from "src/endpoints/accounts/entities/account.query.options";
@@ -167,6 +167,11 @@ export class IndexerService implements IndexerInterface {
   }
 
   @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
+  async getBlockByMiniBlockHash(miniBlockHash: string): Promise<Block | undefined> {
+    return await this.indexerInterface.getBlockByMiniBlockHash(miniBlockHash);
+  }
+
+  @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
   async getMiniBlock(miniBlockHash: string): Promise<MiniBlock> {
     return await this.indexerInterface.getMiniBlock(miniBlockHash);
   }
@@ -297,8 +302,8 @@ export class IndexerService implements IndexerInterface {
   }
 
   @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
-  async getTransactionLogs(hashes: string[]): Promise<TransactionLog[]> {
-    return await this.indexerInterface.getTransactionLogs(hashes);
+  async getTransactionLogs(hashes: string[], eventsIndex: string, txHashField: string): Promise<ElasticTransactionLogEvent[]> {
+    return await this.indexerInterface.getTransactionLogs(hashes, eventsIndex, txHashField);
   }
 
   @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)

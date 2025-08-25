@@ -8,6 +8,7 @@ import { CollectionModule } from "../collections/collection.module";
 import { TransactionModule } from "../transactions/transaction.module";
 import { MexModule } from "../mex/mex.module";
 import { AssetsModule } from "src/common/assets/assets.module";
+import { PluginModule } from "../../plugins/plugin.module";
 
 
 @Module({
@@ -19,6 +20,7 @@ import { AssetsModule } from "src/common/assets/assets.module";
     forwardRef(() => TransactionModule),
     forwardRef(() => MexModule.forRoot()),
     forwardRef(() => AssetsModule),
+    forwardRef(() => PluginModule),
   ],
   providers: [
     EsdtService, EsdtAddressService,
