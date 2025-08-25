@@ -87,7 +87,8 @@ export class TransactionActionService {
     metadata.sender = transaction.sender;
     metadata.receiver = transaction.receiver;
     metadata.timestamp = transaction.timestamp;
-    metadata.value = BigInt(transaction.value);
+    const txValue = isNaN(Number(transaction.value)) ? '0' : transaction.value;
+    metadata.value = BigInt(txValue);
     if (transaction.senderShard !== undefined) {
       metadata.senderShard = transaction.senderShard;
     }
