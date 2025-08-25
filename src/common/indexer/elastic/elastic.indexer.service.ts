@@ -819,52 +819,101 @@ export class ElasticIndexerService implements IndexerInterface {
       }
     }
 
-    const elasticQuery = ElasticQuery.create()
-      .withMustExistCondition('identifier')
-      .withMustMatchCondition('address', address)
-      .withPagination({ from: 0, size: 0 })
-      .withMustMatchCondition('token', filter.collection, QueryOperator.AND)
-      .withMustMultiShouldCondition(filter.identifiers, identifier => QueryType.Match('token', identifier, QueryOperator.AND))
-      .withSearchWildcardCondition(filter.search, ['token', 'name'])
-      .withMustMultiShouldCondition(filterTypes, type => QueryType.Match('type', type))
-      .withMustMultiShouldCondition(filter.subType, subType => QueryType.Match('type', subType))
-      .withExtra({
-        aggs: {
-          collections: {
-            composite: {
-              size: 10000,
-              sources: [
-                {
-                  collection: {
-                    terms: {
-                      field: 'token',
-                    },
-                  },
-                },
-              ],
+    const data: { collection: string, count: number, balance: number }[] = [];
+    let afterKey: any = null;
+    let remainingToSkip = pagination.from;
+    let remainingToCollect = pagination.size;
+
+    while (data.length < pagination.size) {
+      const batchSize = Math.min(1000, remainingToSkip + remainingToCollect);
+
+      const compositeAgg: any = {
+        size: batchSize,
+        sources: [
+          {
+            collection: {
+              terms: {
+                field: 'token',
+                order: 'asc',
+              },
             },
-            aggs: {
-              balance: {
-                sum: {
-                  field: 'balanceNum',
+          },
+        ],
+      };
+
+      if (afterKey) {
+        compositeAgg.after = afterKey;
+      }
+
+      const elasticQuery = ElasticQuery.create()
+        .withMustExistCondition('identifier')
+        .withMustMatchCondition('address', address)
+        .withPagination({ from: 0, size: 0 })
+        .withMustMatchCondition('token', filter.collection, QueryOperator.AND)
+        .withMustMultiShouldCondition(filter.identifiers, identifier => QueryType.Match('token', identifier, QueryOperator.AND))
+        .withSearchWildcardCondition(filter.search, ['token', 'name'])
+        .withMustMultiShouldCondition(filterTypes, type => QueryType.Match('type', type))
+        .withMustMultiShouldCondition(filter.subType, subType => QueryType.Match('type', subType))
+        .withExtra({
+          aggs: {
+            collections: {
+              composite: compositeAgg,
+              aggs: {
+                balance: {
+                  sum: {
+                    field: 'balanceNum',
+                  },
                 },
               },
             },
           },
-        },
-      });
+        });
 
-    const result = await this.elasticService.post(`${this.apiConfigService.getElasticUrl()}/accountsesdt/_search`, elasticQuery.toJson());
+      const result = await this.elasticService.post(`${this.apiConfigService.getElasticUrl()}/accountsesdt/_search`, elasticQuery.toJson());
+      const buckets = result?.data?.aggregations?.collections?.buckets || [];
 
-    const buckets = result?.data?.aggregations?.collections?.buckets;
+      if (buckets.length === 0) {
+        break;
+      }
 
-    let data: { collection: string, count: number, balance: number }[] = buckets.map((bucket: any) => ({
-      collection: bucket.key.collection,
-      count: bucket.doc_count,
-      balance: bucket.balance.value,
-    }));
+      // Convert buckets to our format
+      const batchData: { collection: string, count: number, balance: number }[] = buckets.map((bucket: any) => ({
+        collection: bucket.key.collection,
+        count: bucket.doc_count,
+        balance: bucket.balance.value,
+      }));
 
-    data = data.slice(pagination.from, pagination.from + pagination.size);
+      if (remainingToSkip > 0) {
+        const skipFromBatch = Math.min(remainingToSkip, batchData.length);
+        remainingToSkip -= skipFromBatch;
+
+        if (remainingToSkip === 0) {
+          const collectFromBatch = Math.min(remainingToCollect, batchData.length - skipFromBatch);
+          data.push(...batchData.slice(skipFromBatch, skipFromBatch + collectFromBatch));
+          remainingToCollect -= collectFromBatch;
+        }
+      } else {
+        const collectFromBatch = Math.min(remainingToCollect, batchData.length);
+        data.push(...batchData.slice(0, collectFromBatch));
+        remainingToCollect -= collectFromBatch;
+      }
+
+      if (remainingToCollect === 0) {
+        break;
+      }
+
+      const aggregations = result?.data?.aggregations?.collections;
+      if (aggregations?.after_key) {
+        afterKey = aggregations.after_key;
+      } else {
+        break;
+      }
+
+      if (buckets.length < batchSize) {
+        break;
+      }
+    }
+
     return data;
   }
 
