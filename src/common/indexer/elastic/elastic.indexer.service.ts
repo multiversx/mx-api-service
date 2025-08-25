@@ -711,11 +711,22 @@ export class ElasticIndexerService implements IndexerInterface {
       ]);
     }
 
-    let elasticNfts = await this.elasticService.getList('tokens', 'identifier', elasticQuery);
-    if (elasticNfts.length === 0 && identifier !== undefined) {
-      elasticNfts = await this.elasticService.getList('accountsesdt', 'identifier', ElasticQuery.create().withMustMatchCondition('identifier', identifier, QueryOperator.AND));
+    if (identifier !== undefined) {
+      const [tokensResult, accountsResult] = await Promise.all([
+        this.elasticService.getList('tokens', 'identifier', elasticQuery).catch(() => []),
+        this.elasticService.getList('accountsesdt', 'identifier',
+          ElasticQuery.create()
+            .withMustMatchCondition('identifier', identifier, QueryOperator.AND)
+            .withPagination(pagination)
+        ).catch(() => [])
+      ]);
+
+      const elasticNfts = tokensResult.length > 0 ? tokensResult : accountsResult;
+      return elasticNfts;
+    } else {
+      const elasticNfts = await this.elasticService.getList('tokens', 'identifier', elasticQuery);
+      return elasticNfts;
     }
-    return elasticNfts;
   }
 
   async getTransactionBySenderAndNonce(sender: string, nonce: number): Promise<any[]> {
