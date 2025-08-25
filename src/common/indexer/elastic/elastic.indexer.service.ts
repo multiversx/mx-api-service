@@ -279,9 +279,7 @@ export class ElasticIndexerService implements IndexerInterface {
 
     const elasticOperations = await this.elasticService.getList('operations', 'txHash', elasticQuery);
 
-    for (const operation of elasticOperations) {
-      this.processTransaction(operation);
-    }
+    this.bulkProcessTransactions(elasticOperations);
 
     return elasticOperations;
   }
@@ -383,9 +381,7 @@ export class ElasticIndexerService implements IndexerInterface {
 
     const results = await this.elasticService.getList('operations', 'hash', elasticQuery);
 
-    for (const result of results) {
-      this.processTransaction(result);
-    }
+    this.bulkProcessTransactions(results);
 
     return results;
   }
@@ -548,9 +544,7 @@ export class ElasticIndexerService implements IndexerInterface {
 
     const transactions = await this.elasticService.getList('operations', 'txHash', elasticQuery);
 
-    for (const transaction of transactions) {
-      this.processTransaction(transaction);
-    }
+    this.bulkProcessTransactions(transactions);
 
     return transactions;
   }
@@ -558,6 +552,19 @@ export class ElasticIndexerService implements IndexerInterface {
   private processTransaction(transaction: any) {
     if (transaction && !transaction.function) {
       transaction.function = transaction.operation;
+    }
+  }
+
+  private bulkProcessTransactions(transactions: any[]) {
+    if (!transactions || transactions.length === 0) {
+      return;
+    }
+
+    for (let i = 0; i < transactions.length; i++) {
+      const transaction = transactions[i];
+      if (transaction && !transaction.function) {
+        transaction.function = transaction.operation;
+      }
     }
   }
 
@@ -616,9 +623,7 @@ export class ElasticIndexerService implements IndexerInterface {
 
     const results = await this.elasticService.getList('operations', 'hash', elasticQuerySc);
 
-    for (const result of results) {
-      this.processTransaction(result);
-    }
+    this.bulkProcessTransactions(results);
 
     return results;
   }
@@ -632,9 +637,11 @@ export class ElasticIndexerService implements IndexerInterface {
       return [];
     }
 
+    const maxSize = Math.min(hashes.length * 10, 1000);
+
     const elasticQuery = ElasticQuery.create()
       .withMustMatchCondition('type', 'unsigned')
-      .withPagination({ from: 0, size: 10000 })
+      .withPagination({ from: 0, size: maxSize })
       .withSort([{ name: 'timestamp', order: ElasticSortOrder.ascending }])
       .withMustMultiShouldCondition(hashes, hash => QueryType.Match('originalTxHash', hash));
 
@@ -646,8 +653,6 @@ export class ElasticIndexerService implements IndexerInterface {
       return [];
     }
 
-    const queries = identifiers.map((identifier) => QueryType.Match('identifier', identifier, QueryOperator.AND));
-
     let elasticQuery = ElasticQuery.create();
 
     if (pagination) {
@@ -657,7 +662,7 @@ export class ElasticIndexerService implements IndexerInterface {
     elasticQuery = elasticQuery
       .withSort([{ name: "balanceNum", order: ElasticSortOrder.descending }])
       .withCondition(QueryConditionOptions.mustNot, [QueryType.Match('address', 'pending')])
-      .withCondition(QueryConditionOptions.should, queries)
+      .withTerms(new TermsQuery('identifier', identifiers))
       .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }]);
 
     return await this.elasticService.getList('accountsesdt', 'identifier', elasticQuery);
