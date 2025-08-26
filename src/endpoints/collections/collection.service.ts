@@ -62,20 +62,18 @@ export class CollectionService {
   private async processNftCollections(tokenCollections: Collection[]): Promise<NftCollection[]> {
     const collectionsIdentifiers = tokenCollections.map((collection) => collection.token);
 
-    const indexedCollections: Record<string, any> = {};
+    const indexedCollections = new Map<string, Collection>();
     for (const collection of tokenCollections) {
-      indexedCollections[collection.token] = collection;
+      indexedCollections.set(collection.token, collection);
     }
 
     const nftCollections: NftCollection[] = await this.applyPropertiesToCollections(collectionsIdentifiers);
 
     for (const nftCollection of nftCollections) {
-      const indexedCollection = indexedCollections[nftCollection.collection];
-      if (!indexedCollection) {
-        continue;
+      const indexedCollection = indexedCollections.get(nftCollection.collection);
+      if (indexedCollection) {
+        this.applyPropertiesToCollectionFromElasticSearch(nftCollection, indexedCollection);
       }
-
-      this.applyPropertiesToCollectionFromElasticSearch(nftCollection, indexedCollection);
     }
 
     return nftCollections;
@@ -117,8 +115,11 @@ export class CollectionService {
 
   async applyPropertiesToCollections(collectionsIdentifiers: string[]): Promise<NftCollection[]> {
     const nftCollections: NftCollection[] = [];
-    const collectionsProperties = await this.batchGetCollectionsProperties(collectionsIdentifiers);
-    const collectionsAssets = await this.batchGetCollectionsAssets(collectionsIdentifiers);
+
+    const [collectionsProperties, collectionsAssets] = await Promise.all([
+      this.batchGetCollectionsProperties(collectionsIdentifiers),
+      this.batchGetCollectionsAssets(collectionsIdentifiers)
+    ]);
 
     for (const collectionIdentifier of collectionsIdentifiers) {
       const collectionProperties = collectionsProperties[collectionIdentifier];
@@ -126,27 +127,29 @@ export class CollectionService {
         continue;
       }
 
-      const nftCollection = new NftCollection();
+      const identifierParts = collectionIdentifier.split('-');
+      const ticker = identifierParts[0];
+      const collectionBase = identifierParts.slice(0, 2).join('-');
+      const assets = collectionsAssets[collectionIdentifier];
 
-      // @ts-ignore
-      nftCollection.type = collectionProperties.type;
-      nftCollection.name = collectionProperties.name;
-      nftCollection.collection = collectionIdentifier.split('-').slice(0, 2).join('-');
-      nftCollection.ticker = collectionIdentifier.split('-')[0];
-      nftCollection.canFreeze = collectionProperties.canFreeze;
-      nftCollection.canWipe = collectionProperties.canWipe;
-      nftCollection.canPause = collectionProperties.canPause;
-      nftCollection.canTransferNftCreateRole = collectionProperties.canTransferNFTCreateRole;
-      nftCollection.canChangeOwner = collectionProperties.canChangeOwner;
-      nftCollection.canUpgrade = collectionProperties.canUpgrade;
-      nftCollection.canAddSpecialRoles = collectionProperties.canAddSpecialRoles;
-      nftCollection.owner = collectionProperties.owner;
+      const nftCollection = new NftCollection({
+        // @ts-ignore
+        type: collectionProperties.type,
+        name: collectionProperties.name,
+        collection: collectionBase,
+        ticker: ticker,
+        canFreeze: collectionProperties.canFreeze,
+        canWipe: collectionProperties.canWipe,
+        canPause: collectionProperties.canPause,
+        canTransferNftCreateRole: collectionProperties.canTransferNFTCreateRole,
+        canChangeOwner: collectionProperties.canChangeOwner,
+        canUpgrade: collectionProperties.canUpgrade,
+        canAddSpecialRoles: collectionProperties.canAddSpecialRoles,
+        owner: collectionProperties.owner,
+        assets: assets,
+        decimals: (collectionProperties.type as any) === NftType.MetaESDT ? collectionProperties.decimals : undefined
+      });
 
-      if (nftCollection.type === NftType.MetaESDT) {
-        nftCollection.decimals = collectionProperties.decimals;
-      }
-
-      nftCollection.assets = collectionsAssets[collectionIdentifier];
       nftCollection.ticker = nftCollection.assets ? collectionIdentifier.split('-')[0] : nftCollection.collection;
 
       nftCollections.push(nftCollection);
