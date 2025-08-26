@@ -1,6 +1,6 @@
 import { HttpStatus, Injectable } from "@nestjs/common";
 import { BinaryUtils } from "@multiversx/sdk-nestjs-common";
-import { ElasticQuery, QueryOperator, QueryType, QueryConditionOptions, ElasticSortOrder, ElasticSortProperty, TermsQuery, RangeGreaterThanOrEqual, MatchQuery } from "@multiversx/sdk-nestjs-elastic";
+import { ElasticQuery, QueryOperator, QueryType, QueryConditionOptions, ElasticSortOrder, ElasticSortProperty, RangeGreaterThanOrEqual, MatchQuery } from "@multiversx/sdk-nestjs-elastic";
 import { IndexerInterface } from "../indexer.interface";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { CollectionFilter } from "src/endpoints/collections/entities/collection.filter";
@@ -336,7 +336,7 @@ export class ElasticIndexerService implements IndexerInterface {
       .withMustMatchCondition('type', 'unsigned')
       .withPagination({ from: 0, size: transactionHashes.length + 1 })
       .withSort([{ name: 'timestamp', order: ElasticSortOrder.ascending }])
-      .withTerms(new TermsQuery('originalTxHash', transactionHashes));
+      .withMustMultiShouldCondition(transactionHashes, hash => QueryType.Match('originalTxHash', hash));
 
     return await this.elasticService.getList('operations', 'scHash', elasticQuery);
   }
@@ -344,7 +344,7 @@ export class ElasticIndexerService implements IndexerInterface {
   async getAccountsForAddresses(addresses: string[]): Promise<any[]> {
     const elasticQuery: ElasticQuery = ElasticQuery.create()
       .withPagination({ from: 0, size: addresses.length + 1 })
-      .withTerms(new TermsQuery('address', addresses));
+      .withMustMultiShouldCondition(addresses, address => QueryType.Match('address', address));
 
     return await this.elasticService.getList('accounts', 'address', elasticQuery);
   }
@@ -659,11 +659,15 @@ export class ElasticIndexerService implements IndexerInterface {
       elasticQuery = elasticQuery.withPagination(pagination);
     }
 
+    const queries = identifiers.map((identifier) => QueryType.Match('identifier', identifier, QueryOperator.AND));
+
     elasticQuery = elasticQuery
-      .withSort([{ name: "balanceNum", order: ElasticSortOrder.descending }])
+      .withSort([
+        { name: "balanceNum", order: ElasticSortOrder.descending },
+        { name: 'timestamp', order: ElasticSortOrder.descending }
+      ])
       .withCondition(QueryConditionOptions.mustNot, [QueryType.Match('address', 'pending')])
-      .withTerms(new TermsQuery('identifier', identifiers))
-      .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }]);
+      .withCondition(QueryConditionOptions.should, queries);
 
     return await this.elasticService.getList('accountsesdt', 'identifier', elasticQuery);
   }
@@ -682,10 +686,12 @@ export class ElasticIndexerService implements IndexerInterface {
     }
 
     elasticQuery = elasticQuery
-      .withSort([{ name: "balanceNum", order: ElasticSortOrder.descending }])
+      .withSort([
+        { name: "balanceNum", order: ElasticSortOrder.descending },
+        { name: 'timestamp', order: ElasticSortOrder.descending }
+      ])
       .withCondition(QueryConditionOptions.mustNot, [QueryType.Match('address', 'pending')])
-      .withCondition(QueryConditionOptions.should, queries)
-      .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }]);
+      .withCondition(QueryConditionOptions.should, queries);
 
     return await this.elasticService.getList('accountsesdt', 'identifier', elasticQuery);
   }
