@@ -662,7 +662,7 @@ export class ElasticIndexerService implements IndexerInterface {
     elasticQuery = elasticQuery
       .withSort([
         { name: "balanceNum", order: ElasticSortOrder.descending },
-        { name: 'timestamp', order: ElasticSortOrder.descending }
+        { name: 'timestamp', order: ElasticSortOrder.descending },
       ])
       .withCondition(QueryConditionOptions.mustNot, [QueryType.Match('address', 'pending')])
       .withMustMultiShouldCondition(identifiers, identifier => QueryType.Match('identifier', identifier, QueryOperator.AND));
@@ -684,7 +684,7 @@ export class ElasticIndexerService implements IndexerInterface {
     elasticQuery = elasticQuery
       .withSort([
         { name: "balanceNum", order: ElasticSortOrder.descending },
-        { name: 'timestamp', order: ElasticSortOrder.descending }
+        { name: 'timestamp', order: ElasticSortOrder.descending },
       ])
       .withCondition(QueryConditionOptions.mustNot, [QueryType.Match('address', 'pending')])
       .withMustMultiShouldCondition(identifiers, identifier => QueryType.Match('collection', identifier, QueryOperator.AND));
@@ -725,7 +725,7 @@ export class ElasticIndexerService implements IndexerInterface {
           ElasticQuery.create()
             .withMustMatchCondition('identifier', identifier, QueryOperator.AND)
             .withPagination(pagination)
-        ).catch(() => [])
+        ).catch(() => []),
       ]);
 
       const elasticNfts = tokensResult.length > 0 ? tokensResult : accountsResult;

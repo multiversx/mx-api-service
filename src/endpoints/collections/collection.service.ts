@@ -118,7 +118,7 @@ export class CollectionService {
 
     const [collectionsProperties, collectionsAssets] = await Promise.all([
       this.batchGetCollectionsProperties(collectionsIdentifiers),
-      this.batchGetCollectionsAssets(collectionsIdentifiers)
+      this.batchGetCollectionsAssets(collectionsIdentifiers),
     ]);
 
     for (const collectionIdentifier of collectionsIdentifiers) {
@@ -147,7 +147,7 @@ export class CollectionService {
         canAddSpecialRoles: collectionProperties.canAddSpecialRoles,
         owner: collectionProperties.owner,
         assets: assets,
-        decimals: (collectionProperties.type as any) === NftType.MetaESDT ? collectionProperties.decimals : undefined
+        decimals: (collectionProperties.type as any) === NftType.MetaESDT ? collectionProperties.decimals : undefined,
       });
 
       nftCollection.ticker = nftCollection.assets ? collectionIdentifier.split('-')[0] : nftCollection.collection;
