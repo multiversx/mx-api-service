@@ -659,15 +659,13 @@ export class ElasticIndexerService implements IndexerInterface {
       elasticQuery = elasticQuery.withPagination(pagination);
     }
 
-    const queries = identifiers.map((identifier) => QueryType.Match('identifier', identifier, QueryOperator.AND));
-
     elasticQuery = elasticQuery
       .withSort([
         { name: "balanceNum", order: ElasticSortOrder.descending },
         { name: 'timestamp', order: ElasticSortOrder.descending }
       ])
       .withCondition(QueryConditionOptions.mustNot, [QueryType.Match('address', 'pending')])
-      .withCondition(QueryConditionOptions.should, queries);
+      .withMustMultiShouldCondition(identifiers, identifier => QueryType.Match('identifier', identifier, QueryOperator.AND));
 
     return await this.elasticService.getList('accountsesdt', 'identifier', elasticQuery);
   }
@@ -676,8 +674,6 @@ export class ElasticIndexerService implements IndexerInterface {
     if (identifiers.length === 0) {
       return [];
     }
-
-    const queries = identifiers.map((identifier) => QueryType.Match('collection', identifier, QueryOperator.AND));
 
     let elasticQuery = ElasticQuery.create();
 
@@ -691,7 +687,7 @@ export class ElasticIndexerService implements IndexerInterface {
         { name: 'timestamp', order: ElasticSortOrder.descending }
       ])
       .withCondition(QueryConditionOptions.mustNot, [QueryType.Match('address', 'pending')])
-      .withCondition(QueryConditionOptions.should, queries);
+      .withMustMultiShouldCondition(identifiers, identifier => QueryType.Match('collection', identifier, QueryOperator.AND));
 
     return await this.elasticService.getList('accountsesdt', 'identifier', elasticQuery);
   }
