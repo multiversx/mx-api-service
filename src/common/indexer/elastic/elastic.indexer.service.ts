@@ -894,7 +894,6 @@ export class ElasticIndexerService implements IndexerInterface {
         break;
       }
 
-      // Convert buckets to our format
       const batchData: { collection: string, count: number, balance: number }[] = buckets.map((bucket: any) => ({
         collection: bucket.key.collection,
         count: bucket.doc_count,
