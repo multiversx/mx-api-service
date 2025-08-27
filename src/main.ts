@@ -37,6 +37,7 @@ import * as bodyParser from 'body-parser';
 import * as requestIp from 'request-ip';
 import compression from 'compression';
 import { IoAdapter } from '@nestjs/platform-socket.io';
+import { StateChangesModule } from './state-changes/state.changes.module';
 
 async function bootstrap() {
   const logger = new Logger('Bootstrapper');
@@ -138,6 +139,11 @@ async function bootstrap() {
   if (apiConfigService.isEventsNotifierFeatureActive()) {
     const eventsNotifierApp = await NestFactory.create(RabbitMqModule.register());
     await eventsNotifierApp.listen(apiConfigService.getEventsNotifierFeaturePort());
+  }
+
+  if (apiConfigService.isStateChangesFeatureActive()) {
+    const stateChangesApp = await NestFactory.create(StateChangesModule.register());
+    await stateChangesApp.listen(apiConfigService.getStateChangesFeaturePort());
   }
 
   const pubSubApp = await NestFactory.createMicroservice<MicroserviceOptions>(

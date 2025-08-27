@@ -954,4 +954,49 @@ export class ApiConfigService {
   getCompressionChunkSize(): number {
     return this.configService.get<number>('compression.chunkSize') ?? 16384;
   }
+
+  isStateChangesFeatureActive(): boolean {
+    const isStateChangesActive = this.configService.get<boolean>('features.stateChanges.enabled');
+    if (isStateChangesActive === undefined) {
+      return false;
+    }
+
+    return isStateChangesActive;
+  }
+
+  getStateChangesFeaturePort(): number {
+    const stateChangesPort = this.configService.get<number>('features.stateChanges.port');
+    if (stateChangesPort === undefined) {
+      throw new Error('No state changes port present');
+    }
+
+    return stateChangesPort;
+  }
+
+  getStateChangesUrl(): string {
+    const url = this.configService.get<string>('features.stateChanges.url');
+    if (!url) {
+      throw new Error('No state changes url present');
+    }
+
+    return url;
+  }
+
+  getStateChangesExchange(): string {
+    const exchange = this.configService.get<string>('features.stateChanges.exchange');
+    if (!exchange) {
+      throw new Error('No state changes exchange present');
+    }
+
+    return exchange;
+  }
+
+  getStateChangesQueue(): string {
+    const queue = this.configService.get<string>('features.stateChanges.queue');
+    if (!queue) {
+      throw new Error('No state changes queue present');
+    }
+
+    return queue;
+  }
 }
