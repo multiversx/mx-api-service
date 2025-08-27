@@ -1,7 +1,6 @@
 import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { Inject, Injectable, Logger } from "@nestjs/common";
 import { ClientProxy } from "@nestjs/microservices";
-import { Cron } from "@nestjs/schedule";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { CacheInfo } from "src/utils/cache.info";
 import { LogMetricsEvent } from "src/common/entities/log.metrics.event";
@@ -9,6 +8,8 @@ import { EventEmitter2 } from "@nestjs/event-emitter";
 import { MetricsEvents } from "src/utils/metrics-events.constants";
 import { TransactionProcessor } from "@multiversx/sdk-transaction-processor";
 import { LogTopic } from "@multiversx/sdk-transaction-processor/lib/types/log-topic";
+import { Lock } from "@multiversx/sdk-nestjs-common";
+import { ExtendedCron } from "./decorators/extended-cron.decorator";
 
 @Injectable()
 export class TransactionCompletedService {
@@ -23,7 +24,8 @@ export class TransactionCompletedService {
     private readonly eventEmitter: EventEmitter2,
   ) { }
 
-  @Cron('*/1 * * * * *')
+  @ExtendedCron('*/500 * * * * * *') // each 500ms
+  @Lock({ name: 'Completed transactions', verbose: true })
   async handleNewTransactions() {
     if (this.isProcessing) {
       return;
