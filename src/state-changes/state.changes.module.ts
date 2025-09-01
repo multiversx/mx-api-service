@@ -4,10 +4,13 @@ import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 import { ApiConfigModule } from 'src/common/api-config/api.config.module';
 import { ApiConfigService } from 'src/common/api-config/api.config.service';
 import { StateChangesConsumerService } from './state.changes.consumer.service';
+import { MongoDbModule } from 'src/common/indexer/db';
 
 @Module({
     imports: [
         ApiConfigModule,
+        MongoDbModule,
+        // MongoDbRepositoriesModule,
     ],
     providers: [
         StateChangesConsumerService,

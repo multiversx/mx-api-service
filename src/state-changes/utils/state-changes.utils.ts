@@ -3,6 +3,7 @@ import { UserAccountData } from "./user_account.pb";
 import { ESDigitalToken } from "./esdt";
 import { TrieLeafData } from "./trie_leaf_data";
 import { TokenParser } from "./token.parser";
+import { AccountChanges, AccountState, EsdtState, ESDTType, StateChanges } from "../entities";
 
 
 export enum StateAccessOperation {
@@ -14,27 +15,6 @@ export enum StateAccessOperation {
     RemoveDataTrie = 16,
     GetDataTrieValue = 32,
 }
-
-export enum ESDTType {
-    // 0
-    Fungible,
-    // 1
-    NonFungible,
-    // 2
-    NonFungibleV2,
-    // 3
-    SemiFungible,
-    // 4
-    MetaFungible,
-    // 5
-    DynamicNFT,
-    // 6
-    DynamicSFT,
-    // 7
-    DynamicMeta,
-}
-
-
 
 const bech32FromHex = (hex: any) => {
     const clean = hex.startsWith("0x") ? hex.slice(2) : hex;
@@ -153,7 +133,7 @@ export function decodeStateChangesRaw(stateChanges: any) {
 
             let allDecodedEsdtData: any[] = [];
             if (!dataTrieChanges) {
-                console.log(`  Entry #${i}: empty dataTrieChanges`);
+                // console.log(`  Entry #${i}: empty dataTrieChanges`);
             } else {
                 for (const dataTrieChange of dataTrieChanges) {
                     if (dataTrieChange.version === 0) {
@@ -223,22 +203,22 @@ export function decodeStateChangesRaw(stateChanges: any) {
 }
 
 export function getFinalStates(stateChanges: Record<string, any[]>) {
-    const finalStates: Record<string, any> = {};
+    const finalStates: Record<string, StateChanges> = {};
 
 
     for (const [address, entries] of Object.entries(stateChanges)) {
-        let finalAccountState = {};
+        let finalAccountState: AccountState | undefined = undefined;
         const finalEsdtStates = {
-            Fungible: [] as any[],
-            NonFungible: [] as any[],
-            NonFungibleV2: [] as any[],
-            SemiFungible: [] as any[],
-            MetaFungible: [] as any[],
-            DynamicNFT: [] as any[],
-            DynamicSFT: [] as any[],
-            DynamicMeta: [] as any[],
+            Fungible: [] as EsdtState[],
+            NonFungible: [] as EsdtState[],
+            NonFungibleV2: [] as EsdtState[],
+            SemiFungible: [] as EsdtState[],
+            MetaFungible: [] as EsdtState[],
+            DynamicNFT: [] as EsdtState[],
+            DynamicSFT: [] as EsdtState[],
+            DynamicMeta: [] as EsdtState[],
         };
-        const finalAccountChanges = {
+        const finalAccountChanges: AccountChanges = new AccountChanges({
             nonceChanged: false,
             balanceChanged: false,
             codeHashChanged: false,
@@ -247,10 +227,12 @@ export function getFinalStates(stateChanges: Record<string, any[]>) {
             ownerAddressChanged: false,
             userNameChanged: false,
             codeMetadataChanged: false
-        };
+        });
+
         let finalNewAccount = false;
+
         for (const entry of entries) {
-            const currentAccountState = entry.accountState;
+            const currentAccountState: AccountState = entry.accountState;
             const currentEsdtStates = entry.esdtStates;
             const currentAccountChanges = entry.accountChanges;
             const currentNewAccount = entry.newAccount as boolean;
@@ -282,10 +264,10 @@ export function getFinalStates(stateChanges: Record<string, any[]>) {
         }
 
         finalStates[address] = {
-            finalAccountState,
-            finalEsdtStates,
-            finalAccountChanges,
-            finalNewAccount,
+            accountState: finalAccountState,
+            esdtState: finalEsdtStates,
+            accountChanges: finalAccountChanges,
+            isNewAccount: finalNewAccount,
         };
     }
 
