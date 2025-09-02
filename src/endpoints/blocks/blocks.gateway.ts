@@ -37,21 +37,16 @@ export class BlocksGateway implements OnGatewayDisconnect {
         if (!roomName.startsWith("block-")) continue;
 
         const filterHash = roomName.replace("block-", "");
-        const filter = JSON.parse(filterHash);
+        const filter: BlockSubscribePayload = JSON.parse(filterHash);
 
         const blockFilter = new BlockFilter({
           shard: filter.shard,
-          proposer: filter.proposer,
-          validator: filter.validator,
-          epoch: filter.epoch,
-          nonce: filter.nonce,
-          hashes: filter.hashes,
           order: filter.order,
         });
 
         const blocks = await this.blockService.getBlocks(
           blockFilter,
-          new QueryPagination({ from: filter.from || 0, size: filter.size || 25 }),
+          new QueryPagination({ from: filter.from, size: filter.size }),
           filter.withProposerIdentity,
         );
 

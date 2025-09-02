@@ -36,23 +36,9 @@ export class TransactionsGateway implements OnGatewayDisconnect {
     });
 
     const transactionFilter = new TransactionFilter({
-      sender: payload.sender,
-      receivers: payload.receiver,
-      token: payload.token,
-      functions: payload.functions,
-      senderShard: payload.senderShard,
-      receiverShard: payload.receiverShard,
-      miniBlockHash: payload.miniBlockHash,
-      hashes: payload.hashes,
-      status: payload.status,
-      before: payload.before,
-      after: payload.after,
-      condition: payload.condition,
       order: payload.order,
-      relayer: payload.relayer,
       isRelayed: payload.isRelayed,
       isScCall: payload.isScCall,
-      round: payload.round,
       withRelayedScresults: payload.withRelayedScresults,
     });
 

@@ -4,6 +4,7 @@ import { TransactionModule } from 'src/endpoints/transactions/transaction.module
 import { WebsocketCronService } from './websocket.cron.service';
 import { BlockModule } from 'src/endpoints/blocks/block.module';
 import { NetworkModule } from 'src/endpoints/network/network.module';
+import { PoolModule } from 'src/endpoints/pool/pool.module';
 
 @Module({
   imports: [
@@ -11,6 +12,7 @@ import { NetworkModule } from 'src/endpoints/network/network.module';
     TransactionModule,
     BlockModule,
     NetworkModule,
+    PoolModule,
   ],
   providers: [
     WebsocketCronService,
