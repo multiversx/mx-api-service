@@ -5,6 +5,7 @@ import { BlocksGateway } from 'src/endpoints/blocks/blocks.gateway';
 import { NetworkGateway } from 'src/endpoints/network/network.gateway';
 import { Lock } from "@multiversx/sdk-nestjs-common";
 import { PoolGateway } from 'src/endpoints/pool/pool.gateway';
+import { EventsGateway } from 'src/endpoints/events/events.gateway';
 @Injectable()
 export class WebsocketCronService {
   constructor(
@@ -12,6 +13,7 @@ export class WebsocketCronService {
     private readonly blocksGateway: BlocksGateway,
     private readonly networkGateway: NetworkGateway,
     private readonly poolGateway: PoolGateway,
+    private readonly eventsGateway: EventsGateway,
   ) { }
 
   @Cron('*/6 * * * * *')
@@ -36,5 +38,11 @@ export class WebsocketCronService {
   @Lock({ name: 'Push pool transactions to subscribers', verbose: true })
   async handlePoolTransactions() {
     await this.poolGateway.pushPool();
+  }
+
+  @Cron('*/6 * * * * *')
+  @Lock({ name: 'Push events to subscribers', verbose: true })
+  async handleEventsUpdate() {
+    await this.eventsGateway.pushEvents();
   }
 }
