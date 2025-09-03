@@ -17,7 +17,7 @@ import { EventsSubscribePayload } from '../../endpoints/events/entities/events.s
 import { QueryPagination } from 'src/common/entities/query.pagination';
 
 @UseFilters(WebsocketExceptionsFilter)
-@WebSocketGateway({ cors: { origin: '*' } })
+@WebSocketGateway({ cors: { origin: '*' }, path: '/ws/subscription' })
 export class EventsGateway implements OnGatewayDisconnect {
     private readonly logger = new OriginLogger(EventsGateway.name);
 

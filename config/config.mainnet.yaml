@@ -21,7 +21,7 @@ flags:
   collectionPropertiesFromGateway: false
 features:
   websocketSubscription:
-    enabled: true
+    enabled: false
     port: 6002
   eventsNotifier:
     enabled: false

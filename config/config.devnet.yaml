@@ -5,11 +5,11 @@ api:
   publicPort: 3001
   private: true
   privatePort: 4001
-  websocket: false
+  websocket: true
 cron:
-  cacheWarmer: false
+  cacheWarmer: true
   fastWarm: false
-  queueWorker: false
+  queueWorker: true
   elasticUpdater: false
 flags:
   useRequestCaching: true
@@ -21,7 +21,7 @@ flags:
   collectionPropertiesFromGateway: false
 features:
   websocketSubscription:
-    enabled: true
+    enabled: false
     port: 6002
   eventsNotifier:
     enabled: false
