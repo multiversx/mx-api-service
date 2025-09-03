@@ -10,7 +10,7 @@ import { WsValidationPipe } from 'src/utils/ws-validation.pipe';
 import { OriginLogger } from '@multiversx/sdk-nestjs-common';
 
 @UseFilters(WebsocketExceptionsFilter)
-@WebSocketGateway({ cors: { origin: '*' } })
+@WebSocketGateway({ cors: { origin: '*' }, path: '/ws/subscription' })
 export class BlocksGateway implements OnGatewayDisconnect {
   private readonly logger = new OriginLogger(BlocksGateway.name);
 

@@ -18,7 +18,7 @@ import { QueryPagination } from 'src/common/entities/query.pagination';
 import { PoolSubscribePayload } from '../../endpoints/pool/entities/pool.subscribe';
 
 @UseFilters(WebsocketExceptionsFilter)
-@WebSocketGateway({ cors: { origin: '*' } })
+@WebSocketGateway({ cors: { origin: '*' }, path: '/ws/subscription' })
 export class PoolGateway implements OnGatewayDisconnect {
     private readonly logger = new OriginLogger(PoolGateway.name);
 

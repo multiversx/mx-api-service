@@ -11,7 +11,7 @@ import { UseFilters } from '@nestjs/common';
 import { OriginLogger } from '@multiversx/sdk-nestjs-common';
 
 @UseFilters(WebsocketExceptionsFilter)
-@WebSocketGateway({ cors: { origin: '*' } })
+@WebSocketGateway({ cors: { origin: '*' }, path: '/ws/subscription' })
 export class TransactionsGateway implements OnGatewayDisconnect {
   private readonly logger = new OriginLogger(TransactionsGateway.name);
 
