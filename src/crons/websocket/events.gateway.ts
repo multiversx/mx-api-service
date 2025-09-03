@@ -11,10 +11,9 @@ import { UseFilters } from '@nestjs/common';
 import { WebsocketExceptionsFilter } from 'src/utils/ws-exceptions.filter';
 import { WsValidationPipe } from 'src/utils/ws-validation.pipe';
 import { OriginLogger } from '@multiversx/sdk-nestjs-common';
-
-import { EventsService } from './events.service';
-import { EventsFilter } from './entities/events.filter';
-import { EventsSubscribePayload } from './entities/events.subscribe';
+import { EventsService } from '../../endpoints/events/events.service';
+import { EventsFilter } from '../../endpoints/events/entities/events.filter';
+import { EventsSubscribePayload } from '../../endpoints/events/entities/events.subscribe';
 import { QueryPagination } from 'src/common/entities/query.pagination';
 
 @UseFilters(WebsocketExceptionsFilter)

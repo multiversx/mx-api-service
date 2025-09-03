@@ -5,7 +5,7 @@ import { BlocksGateway } from 'src/crons/websocket/blocks.gateway';
 import { NetworkGateway } from 'src/crons/websocket/network.gateway';
 import { Lock } from "@multiversx/sdk-nestjs-common";
 import { PoolGateway } from 'src/crons/websocket/pool.gateway';
-import { EventsGateway } from 'src/endpoints/events/events.gateway';
+import { EventsGateway } from 'src/crons/websocket/events.gateway';
 @Injectable()
 export class WebsocketCronService {
   constructor(

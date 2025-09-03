@@ -10,6 +10,7 @@ import { BlocksGateway } from './blocks.gateway';
 import { NetworkGateway } from './network.gateway';
 import { TransactionsGateway } from './transaction.gateway';
 import { PoolGateway } from './pool.gateway';
+import { EventsGateway } from './events.gateway';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { PoolGateway } from './pool.gateway';
     NetworkGateway,
     TransactionsGateway,
     PoolGateway,
+    EventsGateway,
   ],
 })
 export class WebsocketSubscriptionModule { }
