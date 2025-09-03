@@ -1,6 +1,6 @@
 import { WebSocketGateway, WebSocketServer, SubscribeMessage, OnGatewayDisconnect } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { NetworkService } from './network.service';
+import { NetworkService } from '../../endpoints/network/network.service';
 import { UseFilters } from '@nestjs/common';
 import { WebsocketExceptionsFilter } from 'src/utils/ws-exceptions.filter';
 import { OriginLogger } from '@multiversx/sdk-nestjs-common';

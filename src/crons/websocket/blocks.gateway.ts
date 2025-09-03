@@ -1,9 +1,9 @@
 import { WebSocketGateway, WebSocketServer, SubscribeMessage, OnGatewayDisconnect, MessageBody, ConnectedSocket } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { BlockService } from './block.service';
-import { BlockFilter } from './entities/block.filter';
+import { BlockService } from '../../endpoints/blocks/block.service';
+import { BlockFilter } from '../../endpoints/blocks/entities/block.filter';
 import { QueryPagination } from 'src/common/entities/query.pagination';
-import { BlockSubscribePayload } from './entities/block.subscribe';
+import { BlockSubscribePayload } from '../../endpoints/blocks/entities/block.subscribe';
 import { UseFilters } from '@nestjs/common';
 import { WebsocketExceptionsFilter } from 'src/utils/ws-exceptions.filter';
 import { WsValidationPipe } from 'src/utils/ws-validation.pipe';

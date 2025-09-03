@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
-import { TransactionsGateway } from '../../endpoints/transactions/transaction.gateway';
-import { BlocksGateway } from 'src/endpoints/blocks/blocks.gateway';
-import { NetworkGateway } from 'src/endpoints/network/network.gateway';
+import { TransactionsGateway } from './transaction.gateway';
+import { BlocksGateway } from 'src/crons/websocket/blocks.gateway';
+import { NetworkGateway } from 'src/crons/websocket/network.gateway';
 import { Lock } from "@multiversx/sdk-nestjs-common";
-import { PoolGateway } from 'src/endpoints/pool/pool.gateway';
+import { PoolGateway } from 'src/crons/websocket/pool.gateway';
 import { EventsGateway } from 'src/endpoints/events/events.gateway';
 @Injectable()
 export class WebsocketCronService {

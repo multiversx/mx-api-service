@@ -12,10 +12,10 @@ import { WebsocketExceptionsFilter } from 'src/utils/ws-exceptions.filter';
 import { WsValidationPipe } from 'src/utils/ws-validation.pipe';
 import { OriginLogger } from '@multiversx/sdk-nestjs-common';
 
-import { PoolService } from './pool.service';
-import { PoolFilter } from './entities/pool.filter';
+import { PoolService } from '../../endpoints/pool/pool.service';
+import { PoolFilter } from '../../endpoints/pool/entities/pool.filter';
 import { QueryPagination } from 'src/common/entities/query.pagination';
-import { PoolSubscribePayload } from './entities/pool.subscribe';
+import { PoolSubscribePayload } from '../../endpoints/pool/entities/pool.subscribe';
 
 @UseFilters(WebsocketExceptionsFilter)
 @WebSocketGateway({ cors: { origin: '*' } })

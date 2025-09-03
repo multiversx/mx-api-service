@@ -1,11 +1,11 @@
 import { WebSocketGateway, WebSocketServer, SubscribeMessage, OnGatewayDisconnect, ConnectedSocket, MessageBody } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { TransactionService } from './transaction.service';
-import { TransactionFilter } from './entities/transaction.filter';
+import { TransactionService } from '../../endpoints/transactions/transaction.service';
+import { TransactionFilter } from '../../endpoints/transactions/entities/transaction.filter';
 import { QueryPagination } from 'src/common/entities/query.pagination';
-import { TransactionQueryOptions } from './entities/transactions.query.options';
+import { TransactionQueryOptions } from '../../endpoints/transactions/entities/transactions.query.options';
 import { WsValidationPipe } from 'src/utils/ws-validation.pipe';
-import { TransactionSubscribePayload } from './entities/dtos/transaction.subscribe';
+import { TransactionSubscribePayload } from '../../endpoints/transactions/entities/dtos/transaction.subscribe';
 import { WebsocketExceptionsFilter } from 'src/utils/ws-exceptions.filter';
 import { UseFilters } from '@nestjs/common';
 import { OriginLogger } from '@multiversx/sdk-nestjs-common';
