@@ -7,9 +7,9 @@ api:
   privatePort: 4001
   websocket: false
 cron:
-  cacheWarmer: true
-  fastWarm: true
-  queueWorker: true
+  cacheWarmer: false
+  fastWarm: false
+  queueWorker: false
   elasticUpdater: false
 flags:
   useRequestCaching: true
@@ -20,6 +20,9 @@ flags:
   processNfts: true
   collectionPropertiesFromGateway: false
 features:
+  websocketSubscription:
+    enabled: true
+    port: 6002
   eventsNotifier:
     enabled: false
     port: 5674
