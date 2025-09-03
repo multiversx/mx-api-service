@@ -1,15 +1,18 @@
 import { CompetingRabbitConsumer } from "src/common/rabbitmq/rabbitmq.consumers";
-import { StateChanges } from "./entities";
+import { StateChanges, StateChangesRaw } from "./entities";
 import { decodeStateChangesRaw, getFinalStates } from "./utils/state-changes.utils";
 import { AccountDetails, AccountDetailsRepository } from "src/common/indexer/db";
 import { Injectable } from "@nestjs/common";
 import { TokenWithBalance } from "src/endpoints/tokens/entities/token.with.balance";
+import { CacheService } from "@multiversx/sdk-nestjs-cache";
+import { CacheInfo } from "src/utils/cache.info";
 // import { ApiConfigService } from "src/common/api-config/api.config.service";
 
 @Injectable()
 export class StateChangesConsumerService {
     constructor(
         // private readonly apiConfigService: ApiConfigService,
+        private readonly cacheService: CacheService,
         private readonly accountDetailsRepository: AccountDetailsRepository,
     ) { }
 
@@ -18,25 +21,29 @@ export class StateChangesConsumerService {
         queueName: 'state-changes-test',
         deadLetterExchange: 'state-changes-test_dlx',
     })
-    async consumeEvents(stateChanges: any) {
+    async consumeEvents(stateChanges: StateChangesRaw) {
+        console.log(stateChanges)
         try {
-            // console.dir(stateChanges, { depth: null })
+
             const decodedStateChanges = this.decodeStateChanges(stateChanges)
-            if (Object.keys(decodedStateChanges).length === 0) {
-                return;
+            if (Object.keys(decodedStateChanges).length !== 0) {
+                const finalStates = getFinalStates(decodedStateChanges);
+                const transformedStates = this.transformFinalStatesToDbFormat(finalStates);
+                await this.accountDetailsRepository.updateAccounts(transformedStates);
             }
 
-            const finalStates = getFinalStates(decodedStateChanges);
-            const transformedStates = this.transformFinalStatesToDbFormat(finalStates);
-            await this.accountDetailsRepository.updateAccounts(transformedStates);
-
+            this.cacheService.setRemote(
+                CacheInfo.LatestProcessedBlockTimestamp(stateChanges.shardID).key,
+                stateChanges.timestampMs,
+                CacheInfo.LatestProcessedBlockTimestamp(stateChanges.shardID).ttl,
+            );
         } catch (error) {
             console.error(`Error consuming state changes:`, error);
             throw error;
         }
     }
 
-    private decodeStateChanges(stateChanges: StateChanges) {
+    private decodeStateChanges(stateChanges: StateChangesRaw) {
         return decodeStateChangesRaw(stateChanges);
     }
 

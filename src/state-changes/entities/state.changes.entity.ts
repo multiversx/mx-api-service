@@ -29,6 +29,9 @@ export class StateAccessPerAccountRaw {
 
 export class StateChangesRaw {
     hash!: string;
+    shardID!: number;
+    nonce!: number;
+    timestampMs!: number;
     stateAccessesPerAccounts?: Map<string, { stateAccess: StateChangesRaw[] }>;
 
     constructor(init?: Partial<StateChangesRaw>) {

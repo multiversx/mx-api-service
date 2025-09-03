@@ -710,4 +710,11 @@ export class CacheInfo {
       ttl: Constants.oneSecond() * 30,
     };
   }
+
+  static LatestProcessedBlockTimestamp(shardId: number): CacheInfo {
+    return {
+      key: `latestProcessedBlock:${shardId}`,
+      ttl: Constants.oneMinute(),
+    };
+  }
 }

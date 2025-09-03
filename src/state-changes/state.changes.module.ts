@@ -10,7 +10,7 @@ import { MongoDbModule } from 'src/common/indexer/db';
     imports: [
         ApiConfigModule,
         MongoDbModule,
-        // MongoDbRepositoriesModule,
+        DynamicModuleUtils.getCacheModule(),
     ],
     providers: [
         StateChangesConsumerService,
