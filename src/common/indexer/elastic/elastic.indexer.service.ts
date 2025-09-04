@@ -750,7 +750,7 @@ export class ElasticIndexerService implements IndexerInterface {
         'data.uris',
       ])
       .withMustExistCondition('identifier')
-      .withMustMultiShouldCondition([EsdtType.NonFungibleESDT, EsdtType.SemiFungibleESDT], type => QueryType.Match('type', type))
+      .withMustMultiShouldCondition([EsdtType.NonFungibleESDT, EsdtType.SemiFungibleESDT, EsdtType.MetaESDT], type => QueryType.Match('type', type))
       .withPagination({ from: 0, size: 10000 });
 
     return await this.elasticService.getScrollableList('tokens', 'identifier', query, action);

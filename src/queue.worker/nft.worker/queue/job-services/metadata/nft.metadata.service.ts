@@ -65,7 +65,7 @@ export class NftMetadataService {
   }
 
   async getMetadataRaw(nft: Nft): Promise<any> {
-    if (!nft.attributes || nft.type === NftType.MetaESDT) {
+    if (!nft.attributes) {
       return null;
     }
 
