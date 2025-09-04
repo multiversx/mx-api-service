@@ -4,6 +4,8 @@ import { ESDigitalToken } from "./esdt";
 import { TrieLeafData } from "./trie_leaf_data";
 import { TokenParser } from "./token.parser";
 import { AccountChanges, AccountState, EsdtState, ESDTType, StateChanges } from "../entities";
+import { CacheInfo } from "src/utils/cache.info";
+import { CacheService } from "@multiversx/sdk-nestjs-cache";
 
 
 export enum StateAccessOperation {
@@ -272,4 +274,33 @@ export function getFinalStates(stateChanges: Record<string, any[]>) {
     }
 
     return finalStates;
+}
+
+export async function isDbValid(cacheService: CacheService): Promise<boolean> {
+    // TODO: do not hardcode shard IDs
+    const timestampsMs: (string | undefined)[] = await Promise.all([
+        cacheService.get(CacheInfo.LatestProcessedBlockTimestamp(1).key),
+        cacheService.get(CacheInfo.LatestProcessedBlockTimestamp(2).key),
+        // cacheService.get(CacheInfo.LatestProcessedBlockTimestamp(3).key),
+        cacheService.get(CacheInfo.LatestProcessedBlockTimestamp(4294967295).key),
+    ]) as (string | undefined)[];;
+
+    const numericValues = timestampsMs
+        .map((timestampMsRaw: string | null | undefined) =>
+            timestampMsRaw !== null && timestampMsRaw !== undefined ? Number(timestampMsRaw) : undefined
+        )
+        .filter((timestampMs: number | undefined): timestampMs is number => timestampMs !== undefined && !isNaN(timestampMs));
+
+    const minTimestamp = numericValues.length > 0 ? Math.min(...numericValues) : null;
+
+    if (minTimestamp === null) {
+        return false;
+    }
+
+    const diff = Date.now() - minTimestamp;
+    console.log('Min timestamp from cache:', minTimestamp);
+    console.log('Current timestamp:', Date.now());
+    console.group('diff', diff);
+    const blockTime = 6000;
+    return diff < blockTime;
 }

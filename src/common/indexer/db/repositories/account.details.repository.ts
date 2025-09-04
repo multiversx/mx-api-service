@@ -7,6 +7,7 @@ import { QueryPagination } from 'src/common/entities/query.pagination';
 import { TokenWithBalance } from 'src/endpoints/tokens/entities/token.with.balance';
 import { NftAccount } from 'src/endpoints/nfts/entities/nft.account';
 import { Injectable } from '@nestjs/common';
+import { AccountDetailed } from 'src/endpoints/accounts/entities/account.detailed';
 
 @Injectable()
 export class AccountDetailsRepository {
@@ -242,7 +243,7 @@ export class AccountDetailsRepository {
     }
 
     @LogPerformanceAsync(MetricsEvents.SetPersistenceDuration, 'account-details')
-    async getAccount(address: string): Promise<AccountDetails | null> {
+    async getAccount(address: string): Promise<AccountDetailed | null> {
         try {
             const accountDb = await this.accountDetailsModel.findOne(
                 { address },
@@ -251,7 +252,7 @@ export class AccountDetailsRepository {
             if (!accountDb) {
                 return null;
             }
-            return accountDb;
+            return new AccountDetailed({ ...accountDb, nonce: parseInt(accountDb.nonce) });
         } catch (error) {
             console.error('Error fetching account:', error);
             return null;

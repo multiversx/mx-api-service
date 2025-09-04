@@ -36,10 +36,12 @@ import { PoolModule } from "./pool/pool.module";
 import { TpsModule } from "./tps/tps.module";
 import { ApplicationModule } from "./applications/application.module";
 import { EventsModule } from "./events/events.module";
+import { AccountModuleV2 } from "./accounts-v2/account.module.v2";
 
 @Module({
   imports: [
     AccountModule,
+    AccountModuleV2,
     BlockModule,
     CollectionModule,
     DelegationModule,
@@ -79,7 +81,7 @@ import { EventsModule } from "./events/events.module";
     EventsModule,
   ],
   exports: [
-    AccountModule, CollectionModule, BlockModule, DelegationModule, DelegationLegacyModule, IdentitiesModule, KeysModule,
+    AccountModule, AccountModuleV2, CollectionModule, BlockModule, DelegationModule, DelegationLegacyModule, IdentitiesModule, KeysModule,
     MiniBlockModule, NetworkModule, NftModule, NftMediaModule, TagModule, NodeModule, ProviderModule,
     RoundModule, SmartContractResultModule, ShardModule, StakeModule, TokenModule, RoundModule, TransactionModule, UsernameModule, VmQueryModule,
     WaitingListModule, EsdtModule, BlsModule, DappConfigModule, TransferModule, PoolModule, TransactionActionModule, WebsocketModule, MexModule,

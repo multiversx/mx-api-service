@@ -43,6 +43,8 @@ import { MexPairService } from "../mex/mex.pair.service";
 import { MexPairState } from "../mex/entities/mex.pair.state";
 import { MexTokenType } from "../mex/entities/mex.token.type";
 import { NftSubType } from "../nfts/entities/nft.sub.type";
+import { AccountDetailsRepository } from "src/common/indexer/db";
+import { isDbValid } from "src/state-changes/utils/state-changes.utils";
 
 @Injectable()
 export class TokenService {
@@ -68,6 +70,7 @@ export class TokenService {
     private readonly dataApiService: DataApiService,
     private readonly mexPairService: MexPairService,
     private readonly apiService: ApiService,
+    private readonly accountDetailsRepository: AccountDetailsRepository,
   ) { }
 
   async isToken(identifier: string): Promise<boolean> {
@@ -250,6 +253,18 @@ export class TokenService {
     return tokens.length;
   }
 
+  async getTokensForAddressFromDb(address: string, queryPagination: QueryPagination, filter: TokenFilter): Promise<TokenWithBalance[]> {
+    const isDbUpToDate: boolean = await isDbValid(this.cachingService);
+    if (isDbUpToDate === true) {
+      const tokens = await this.accountDetailsRepository.getTokensForAddress(address, queryPagination) as TokenWithBalance[];
+      if (tokens && tokens.length > 0) {
+        return tokens;
+      }
+    }
+
+    return await this.getTokensForAddress(address, queryPagination, filter);
+  }
+
   async getTokensForAddress(address: string, queryPagination: QueryPagination, filter: TokenFilter): Promise<TokenWithBalance[]> {
     let tokens: TokenWithBalance[];
     if (AddressUtils.isSmartContractAddress(address)) {
@@ -338,6 +353,18 @@ export class TokenService {
 
     return tokens;
   }
+
+  async getTokenForAddressFromDb(address: string, identifier: string): Promise<TokenDetailedWithBalance | undefined> {
+    const isDbUpToDate: boolean = await isDbValid(this.cachingService);
+    if (isDbUpToDate === true) {
+      const token = await this.accountDetailsRepository.getTokenForAddress(address, identifier) as TokenDetailedWithBalance;
+      if (token) {
+        return token;
+      }
+    }
+    return await this.getTokenForAddress(address, identifier);
+  }
+
 
   async getTokenForAddress(address: string, identifier: string): Promise<TokenDetailedWithBalance | undefined> {
     const esdtIdentifier = identifier.split('-').slice(0, 2).join('-');
