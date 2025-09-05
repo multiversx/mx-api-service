@@ -1,7 +1,7 @@
 export { Account } from './account';
 export { AccountHistory } from './account.history';
 export { AccountTokenHistory } from './account.token.history';
-export { Block } from './block';
+export { Block, MiniBlockDetails } from './block';
 export { Collection } from './collection';
 export { MiniBlock } from './miniblock';
 export { Operation } from './operation';
@@ -12,5 +12,5 @@ export { Tag } from './tag';
 export { Token } from './token';
 export { TokenAccount, TokenType } from './token.account';
 export { Transaction } from './transaction';
-export { TransactionLog, TransactionLogEvent } from './transaction.log';
+export { TransactionLog, TransactionLogEvent, ElasticTransactionLogEvent } from './transaction.log';
 export { TransactionReceipt } from './transaction.receipt';

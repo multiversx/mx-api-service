@@ -85,6 +85,8 @@ features:
     durationThresholdMs: 5000
     failureCountThreshold: 5
     resetTimeoutMs: 30000
+  elasticMigratedIndices:
+    logs: 'events'
   statusChecker:
     enabled: false
     thresholds:
@@ -126,6 +128,7 @@ aws:
   s3Secret: ''
   s3Bucket: 'media.elrond.com'
   s3Region: ''
+  s3Endpoint: ''
 urls:
   self: 'http://localhost:3001'
   elastic:

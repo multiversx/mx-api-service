@@ -407,6 +407,10 @@ export class ApiConfigService {
     };
   }
 
+  getElasticMigratedIndicesConfig(): Record<string, string> {
+    return this.configService.get<Record<string, string>>('features.elasticMigratedIndices') ?? {};
+  }
+
   getIsWebsocketApiActive(): boolean {
     return this.configService.get<boolean>('api.websocket') ?? true;
   }
@@ -557,6 +561,11 @@ export class ApiConfigService {
     }
 
     return s3Region;
+  }
+
+  getAwsS3Endpoint(): string | undefined {
+    const s3Endpoint = this.configService.get<string>('aws.s3Endpoint');
+    return s3Endpoint && s3Endpoint.length > 0 ? s3Endpoint : undefined;
   }
 
   getMetaChainShardId(): number {
@@ -928,5 +937,21 @@ export class ApiConfigService {
 
   getCacheDuration(): number {
     return this.configService.get<number>('caching.cacheDuration') ?? 3;
+  }
+
+  getCompressionEnabled(): boolean {
+    return this.configService.get<boolean>('compression.enabled') ?? false;
+  }
+
+  getCompressionLevel(): number {
+    return this.configService.get<number>('compression.level') ?? 6;
+  }
+
+  getCompressionThreshold(): number {
+    return this.configService.get<number>('compression.threshold') ?? 1024;
+  }
+
+  getCompressionChunkSize(): number {
+    return this.configService.get<number>('compression.chunkSize') ?? 16384;
   }
 }

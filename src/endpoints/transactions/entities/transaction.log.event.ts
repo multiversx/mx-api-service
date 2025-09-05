@@ -22,5 +22,8 @@ export class TransactionLogEvent {
   data: string = '';
 
   @ApiProperty()
+  order: number = 0;
+
+  @ApiProperty()
   additionalData: string[] | undefined = undefined;
 }

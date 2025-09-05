@@ -348,6 +348,9 @@ export class TransactionService {
   }
 
   async processTransactions(transactions: Transaction[], options: { withScamInfo: boolean, withUsername: boolean, withActionTransferValue: boolean }): Promise<void> {
+
+    this.normalizeTimestampMs(transactions);
+
     try {
       await this.pluginsService.processTransactions(transactions, options.withScamInfo);
     } catch (error) {
@@ -370,6 +373,15 @@ export class TransactionService {
     }
 
     await this.applyAssets(transactions, { withUsernameAssets: options.withUsername });
+  }
+
+
+  private normalizeTimestampMs(transactions: Transaction[]): void {
+    for (const transaction of transactions) {
+      if ((!transaction.timestampMs || transaction.timestampMs === 0) && transaction.timestamp) {
+        transaction.timestampMs = transaction.timestamp * 1000;
+      }
+    }
   }
 
   private async getPendingResults(transaction: Transaction): Promise<boolean | undefined> {
@@ -454,18 +466,25 @@ export class TransactionService {
 
   private async getSmartContractResultsRaw(transactionHashes: Array<string>): Promise<Array<SmartContractResult[] | undefined>> {
     const resultsRaw = await this.indexerService.getSmartContractResults(transactionHashes) as any[];
+
+    const resultsByHash = new Map<string, any[]>();
+
     for (const result of resultsRaw) {
       result.hash = result.scHash;
-
       delete result.scHash;
+
+      const txHash = result.originalTxHash;
+      if (!resultsByHash.has(txHash)) {
+        resultsByHash.set(txHash, []);
+      }
+      resultsByHash.get(txHash)!.push(result);
     }
 
     const results: Array<SmartContractResult[] | undefined> = [];
-
     for (const transactionHash of transactionHashes) {
-      const resultRaw = resultsRaw.filter(({ originalTxHash }) => originalTxHash == transactionHash);
+      const resultRaw = resultsByHash.get(transactionHash);
 
-      if (resultRaw.length > 0) {
+      if (resultRaw && resultRaw.length > 0) {
         results.push(resultRaw.map((result: any) => ApiUtils.mergeObjects(new SmartContractResult(), result)));
       } else {
         results.push(undefined);
