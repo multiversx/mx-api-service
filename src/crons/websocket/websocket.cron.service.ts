@@ -6,15 +6,39 @@ import { NetworkGateway } from 'src/crons/websocket/network.gateway';
 import { Lock } from "@multiversx/sdk-nestjs-common";
 import { PoolGateway } from 'src/crons/websocket/pool.gateway';
 import { EventsGateway } from 'src/crons/websocket/events.gateway';
+import { WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { MetricsEvents } from 'src/utils/metrics-events.constants';
+import { Server } from 'socket.io';
 @Injectable()
+@WebSocketGateway({ cors: { origin: '*' }, path: '/ws/subscription' })
 export class WebsocketCronService {
+  @WebSocketServer()
+  server!: Server;
+
   constructor(
     private readonly transactionsGateway: TransactionsGateway,
     private readonly blocksGateway: BlocksGateway,
     private readonly networkGateway: NetworkGateway,
     private readonly poolGateway: PoolGateway,
     private readonly eventsGateway: EventsGateway,
+    private readonly eventEmitter: EventEmitter2,
   ) { }
+
+  @Cron('*/6 * * * * *')
+  async handleWebsocketMetrics() {
+    const connectedClients = this.server.sockets.sockets.size ?? 0;
+    // TODO: add more metrics in the future
+    // const subscriptions: Record<string, number> = {};
+
+    // this.server.sockets.adapter.rooms.forEach((socketsSet, roomName) => {
+    //   subscriptions[roomName] = socketsSet.size;
+    // });
+
+    this.eventEmitter.emit(MetricsEvents.SetWebsocketMetrics, {
+      connectedClients,
+    });
+  }
 
   @Cron('*/6 * * * * *')
   @Lock({ name: 'Push transactions to subscribers', verbose: true })
