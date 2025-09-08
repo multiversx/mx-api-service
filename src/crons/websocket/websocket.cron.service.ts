@@ -25,8 +25,8 @@ export class WebsocketCronService {
     private readonly eventEmitter: EventEmitter2,
   ) { }
 
-  @Cron('*/6 * * * * *')
-  async handleWebsocketMetrics() {
+  @Cron('*/5 * * * * *')
+  handleWebsocketMetrics() {
     const connectedClients = this.server.sockets.sockets.size ?? 0;
     // TODO: add more metrics in the future
     // const subscriptions: Record<string, number> = {};
