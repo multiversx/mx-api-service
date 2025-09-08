@@ -279,6 +279,7 @@ export function getFinalStates(stateChanges: Record<string, any[]>) {
 export async function isDbValid(cacheService: CacheService): Promise<boolean> {
     // TODO: do not hardcode shard IDs
     const timestampsMs: (string | undefined)[] = await Promise.all([
+        cacheService.get(CacheInfo.LatestProcessedBlockTimestamp(0).key),
         cacheService.get(CacheInfo.LatestProcessedBlockTimestamp(1).key),
         cacheService.get(CacheInfo.LatestProcessedBlockTimestamp(2).key),
         // cacheService.get(CacheInfo.LatestProcessedBlockTimestamp(3).key),

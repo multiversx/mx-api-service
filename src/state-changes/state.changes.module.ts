@@ -31,6 +31,7 @@ export class StateChangesModule {
                             type: 'fanout',
                             options: {},
                             uri: apiConfigService.getStateChangesUrl(),
+                            prefetchCount: 1,
                         };
                     },
                 }),
