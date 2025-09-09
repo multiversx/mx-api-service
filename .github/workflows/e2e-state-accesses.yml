@@ -110,4 +110,3 @@ jobs:
           done
           echo "No messages received on queue 'state_accesses_test'" >&2
           exit 1
-
