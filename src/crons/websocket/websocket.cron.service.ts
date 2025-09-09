@@ -10,6 +10,7 @@ import { WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { MetricsEvents } from 'src/utils/metrics-events.constants';
 import { Server } from 'socket.io';
+import { ExtendedCron } from "./decorators/extended-cron.decorator";
 @Injectable()
 @WebSocketGateway({ cors: { origin: '*' }, path: '/ws/subscription' })
 export class WebsocketCronService {
@@ -40,31 +41,31 @@ export class WebsocketCronService {
     });
   }
 
-  @Cron('*/6 * * * * *')
+  @ExtendedCron('*/600 * * * * * *') // each 600ms
   @Lock({ name: 'Push transactions to subscribers', verbose: true })
   async handleTransactionsUpdate() {
     await this.transactionsGateway.pushTransactions();
   }
 
-  @Cron('*/6 * * * * *')
+  @ExtendedCron('*/600 * * * * * *') // each 600ms
   @Lock({ name: 'Push blocks to subscribers', verbose: true })
   async handleBlocksUpdate() {
     await this.blocksGateway.pushBlocks();
   }
 
-  @Cron('*/6 * * * * *')
+  @ExtendedCron('*/600 * * * * * *') // each 600ms
   @Lock({ name: 'Push stats to subscribers', verbose: true })
   async handleStatsUpdate() {
     await this.networkGateway.pushStats();
   }
 
-  @Cron('*/6 * * * * *')
+  @ExtendedCron('*/600 * * * * * *') // each 600ms
   @Lock({ name: 'Push pool transactions to subscribers', verbose: true })
   async handlePoolTransactions() {
     await this.poolGateway.pushPool();
   }
 
-  @Cron('*/6 * * * * *')
+  @ExtendedCron('*/600 * * * * * *') // each 600ms
   @Lock({ name: 'Push events to subscribers', verbose: true })
   async handleEventsUpdate() {
     await this.eventsGateway.pushEvents();

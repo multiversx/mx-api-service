@@ -968,6 +968,14 @@ export class ApiConfigService {
     return this.configService.get<number>('compression.chunkSize') ?? 16384;
   }
 
+  isMediaRedirectFeatureEnabled(): boolean {
+    return this.configService.get<boolean>('features.mediaRedirect.enabled') ?? false;
+  }
+
+  getMediaRedirectFileStorageUrls(): string[] {
+    return this.configService.get<string[]>('features.mediaRedirect.storageUrls') ?? [];
+  }
+
   getIsWebsocketSubscriptionActive(): boolean {
     const isWebsocketSubscriptionActive = this.configService.get<boolean>('features.websocketSubscription.enabled');
     if (isWebsocketSubscriptionActive === undefined) {
