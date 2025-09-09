@@ -22,21 +22,27 @@ export class StateChangesConsumerService {
         deadLetterExchange: 'state-changes-test_dlx',
     })
     async consumeEvents(stateChanges: StateChangesRaw) {
-        console.log(stateChanges)
+        // console.log(stateChanges)
         try {
-
+            console.time(`processing time shard ${stateChanges.shardID}`)
             const decodedStateChanges = this.decodeStateChanges(stateChanges)
             if (Object.keys(decodedStateChanges).length !== 0) {
                 const finalStates = getFinalStates(decodedStateChanges);
                 const transformedStates = this.transformFinalStatesToDbFormat(finalStates);
+                // transformedStates.forEach(s => {
+                //     if (s.tokens && s.tokens.length > 0) console.log(s.address, s.tokens);
+                // });
+
+                // console.log(transformedStates)
                 await this.accountDetailsRepository.updateAccounts(transformedStates);
             }
 
-            this.cacheService.setRemote(
+            await this.cacheService.setRemote(
                 CacheInfo.LatestProcessedBlockTimestamp(stateChanges.shardID).key,
                 stateChanges.timestampMs,
                 CacheInfo.LatestProcessedBlockTimestamp(stateChanges.shardID).ttl,
             );
+            console.timeEnd(`processing time shard ${stateChanges.shardID}`)
         } catch (error) {
             console.error(`Error consuming state changes:`, error);
             throw error;
@@ -65,7 +71,7 @@ export class StateChangesConsumerService {
             }
 
         }
-        // console.dir(transformed, { depth: null })
+
         return transformed;
     }
 }

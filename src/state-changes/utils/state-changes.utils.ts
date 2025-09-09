@@ -71,7 +71,7 @@ function getDecodedUserAccountData(buf: any) {
 
         return {
             nonce: longToString(msg.Nonce),
-            balance: balance,
+            balance: balance.toString(),
             developerReward: devReward,
             address: address,
             ownerAddress: ownerAddress,
@@ -103,7 +103,7 @@ function getDecodedEsdtData(buf: any) {
             identifier,
             nonce,
             type: msgEsdtData.Type,
-            value: valueBigInt,
+            value: valueBigInt.toString(),
             propertiesHex: bytesToHex(msgEsdtData.Properties),
             reservedHex: bytesToHex(msgEsdtData.Reserved),
             tokenMetaData: msgEsdtData.TokenMetaData ?? null,

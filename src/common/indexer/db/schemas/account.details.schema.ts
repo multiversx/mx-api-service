@@ -88,11 +88,11 @@ export class AccountDetails {
     @Prop({ type: Array, required: false })
     nftCollections?: NftCollectionAccount[];
 
-    @Prop({ type: Array, required: false })
-    nfts?: NftAccount[];
+    @Prop({ type: Array, default: [] })
+    nfts?: NftAccount[] = [];
 
-    @Prop({ type: Array, required: false })
-    tokens?: TokenWithBalance[];
+    @Prop({ type: Array, default: [] })
+    tokens?: TokenWithBalance[] = [];
 
     @Prop({ required: false, type: Number })
     activeGuardianActivationEpoch?: number;
@@ -123,3 +123,5 @@ export class AccountDetails {
 export const AccountDetailsSchema = SchemaFactory.createForClass(AccountDetails);
 
 AccountDetailsSchema.index({ address: 1 }, { unique: true });
+AccountDetailsSchema.index({ "tokens.identifier": 1 });
+AccountDetailsSchema.index({ "nfts.identifier": 1 });
