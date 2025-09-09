@@ -39,7 +39,7 @@ jobs:
       - name: Start simulator and notifier
         run: |
           set -euxo pipefail
-          ./scripts/setup-simulator-and-notifier.sh
+          ./src/test/scripts/setup-simulator-and-notifier.sh
 
           # Build and start the simulator with its local config
           pushd mx-chain-simulator-go/cmd/chainsimulator
