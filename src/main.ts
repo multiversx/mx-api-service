@@ -37,6 +37,8 @@ import { LibraryConfig } from "@multiversx/sdk-core/out";
 import * as bodyParser from 'body-parser';
 import * as requestIp from 'request-ip';
 import compression from 'compression';
+import { IoAdapter } from '@nestjs/platform-socket.io';
+import { WebsocketSubscriptionModule } from './crons/websocket/websocket.subscription.module';
 
 async function bootstrap() {
   const logger = new Logger('Bootstrapper');
@@ -88,6 +90,13 @@ async function bootstrap() {
   if (apiConfigService.getIsTransactionProcessorCronActive()) {
     const processorApp = await NestFactory.create(TransactionProcessorModule);
     await processorApp.listen(5001);
+  }
+
+
+  if (apiConfigService.getIsWebsocketSubscriptionActive()) {
+    const websocketSubscriptionApp = await NestFactory.create(WebsocketSubscriptionModule);
+    websocketSubscriptionApp.useWebSocketAdapter(new IoAdapter(websocketSubscriptionApp));
+    await websocketSubscriptionApp.listen(apiConfigService.getWebsocketSubscriptionPort());
   }
 
   if (apiConfigService.getIsCacheWarmerCronActive()) {
@@ -171,6 +180,7 @@ async function bootstrap() {
   logger.log(`Exchange feature active: ${apiConfigService.isExchangeEnabled()}`);
   logger.log(`Marketplace feature active: ${apiConfigService.isMarketplaceFeatureEnabled()}`);
   logger.log(`Auth active: ${apiConfigService.getIsAuthActive()}`);
+  logger.log(`WebSocket subscription active: ${apiConfigService.getIsWebsocketSubscriptionActive()}`);
 
   logger.log(`Use tracing: ${apiConfigService.getUseTracingFlag()}`);
   logger.log(`Process NFTs flag: ${apiConfigService.getIsProcessNftsFlagActive()}`);
