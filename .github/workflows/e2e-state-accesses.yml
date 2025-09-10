@@ -38,29 +38,29 @@ jobs:
 
           # Start a dedicated Redis (daemonized) bound to localhost:6379
           if ! nc -z 127.0.0.1 6379; then
-            cat > redis-6379.conf <<'REDIS'
-            port 6379
-            daemonize yes
-            pidfile ./redis-6379.pid
-            bind 127.0.0.1
-            save ""
-            appendonly no
-REDIS
+            printf "%s\n" \
+              "port 6379" \
+              "daemonize yes" \
+              "pidfile ./redis-6379.pid" \
+              "bind 127.0.0.1" \
+              "save \"\"" \
+              "appendonly no" \
+              > redis-6379.conf
             redis-server redis-6379.conf
           fi
 
           # Start a dedicated Redis Sentinel on 26379 watching 127.0.0.1:6379
           if ! nc -z 127.0.0.1 26379; then
-            cat > sentinel.conf <<'SENTINEL'
-            port 26379
-            daemonize yes
-            pidfile ./redis-sentinel.pid
-            bind 127.0.0.1
-            sentinel monitor mymaster 127.0.0.1 6379 1
-            sentinel down-after-milliseconds mymaster 5000
-            sentinel failover-timeout mymaster 60000
-            sentinel parallel-syncs mymaster 1
-SENTINEL
+            printf "%s\n" \
+              "port 26379" \
+              "daemonize yes" \
+              "pidfile ./redis-sentinel.pid" \
+              "bind 127.0.0.1" \
+              "sentinel monitor mymaster 127.0.0.1 6379 1" \
+              "sentinel down-after-milliseconds mymaster 5000" \
+              "sentinel failover-timeout mymaster 60000" \
+              "sentinel parallel-syncs mymaster 1" \
+              > sentinel.conf
             redis-sentinel sentinel.conf
           fi
 
