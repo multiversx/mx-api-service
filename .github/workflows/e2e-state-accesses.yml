@@ -7,37 +7,41 @@ jobs:
   e2e:
     runs-on: ubuntu-latest
 
+    services:
+      rabbitmq:
+        image: rabbitmq:3-management
+        ports:
+          - 5672:5672
+          - 15672:15672
+        options: >-
+          --health-cmd "rabbitmq-diagnostics -q ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 30
+      mongodb:
+        image: mongo:6
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --eval 'db.runCommand({ ping: 1 })' || mongo --eval 'db.runCommand({ ping: 1 })'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 30
+
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Start project Docker Compose (DB, Redis, RabbitMQ)
+      - name: Wait for MongoDB and RabbitMQ services
         run: |
           set -euxo pipefail
-          docker compose up -d
-
-      - name: Wait for infrastructure (MySQL, MongoDB, RabbitMQ)
-        run: |
-          set -euxo pipefail
-          # Wait for essential ports
-          timeout=120; start=$(date +%s)
-          wait_port() {
-            local host=$1 port=$2 name=$3
-            echo "Waiting for $name on $host:$port"
-            while ! nc -z "$host" "$port"; do
-              now=$(date +%s)
-              if [ $((now-start)) -gt $timeout ]; then
-                echo "$name not available on $host:$port after ${timeout}s" >&2
-                docker compose ps; docker compose logs --tail=100 || true
-                exit 1
-              fi
-              sleep 2
-            done
-            echo "$name is ready"
-          }
-          wait_port 127.0.0.1 3306 MySQL
-          wait_port 127.0.0.1 27017 MongoDB
-          wait_port 127.0.0.1 5672 RabbitMQ
+          timeout=180; start=$(date +%s)
+          until nc -z 127.0.0.1 27017; do now=$(date +%s); [ $((now-start)) -gt $timeout ] && exit 1 || sleep 2; done
+          until nc -z 127.0.0.1 5672; do now=$(date +%s); [ $((now-start)) -gt $timeout ] && exit 1 || sleep 2; done
+          for i in {1..90}; do
+            if curl -sf http://127.0.0.1:15672 >/dev/null; then break; fi
+            sleep 2
+          done
 
       - name: Setup Go
         uses: actions/setup-go@v5
@@ -210,6 +214,8 @@ jobs:
         run: |
           set -euxo pipefail
           npm ci
+          # Ensure mongoose peer dependency is present for @nestjs/mongoose
+          npm i --no-save mongoose@^8
           npm run init
 
       - name: Start API (mainnet:e2e)
