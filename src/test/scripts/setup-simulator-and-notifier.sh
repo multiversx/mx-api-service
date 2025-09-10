@@ -190,6 +190,24 @@ enable_ws_connector() {
   ' "$toml_path" > "$tmp" && mv "$tmp" "$toml_path"
 }
 
+# Force Redis and Sentinel hosts to IPv4 loopback to avoid ::1 resolution issues
+patch_notifier_redis_hosts() {
+  local notifier_dir="$1"
+  local toml_path="$notifier_dir/cmd/notifier/config/config.toml"
+  if [[ ! -f "$toml_path" ]]; then
+    err "Notifier config not found: $toml_path"
+    exit 1
+  fi
+  log "Patching notifier Redis hosts in $toml_path (localhost/::1 -> 127.0.0.1; sentinel name -> mymaster)"
+  # Replace common host patterns to 127.0.0.1 and ensure sentinel/master names are set to mymaster
+  sed -i.bak \
+    -e 's/localhost/127.0.0.1/g' \
+    -e 's/\[::1\]/127.0.0.1/g' \
+    -e 's/sentinelName\s*=\s*"[^"]*"/sentinelName = "mymaster"/g' \
+    -e 's/masterName\s*=\s*"[^"]*"/masterName = "mymaster"/g' \
+    "$toml_path" || true
+}
+
 start_notifier() {
   local notifier_dir="$1"
   pushd "$notifier_dir" >/dev/null
@@ -282,6 +300,7 @@ main() {
 
   # 7) Enable WebSocketConnector in notifier config
   enable_ws_connector "$NOTIFIER_DIR"
+  patch_notifier_redis_hosts "$NOTIFIER_DIR"
 
   # 8) Ensure Redis + Sentinel are running locally for notifier
   start_redis_and_sentinel || {
