@@ -72,7 +72,7 @@ function getDecodedUserAccountData(buf: any) {
         return {
             nonce: longToString(msg.Nonce),
             balance: balance.toString(),
-            developerReward: devReward,
+            developerReward: devReward.toString(),
             address: address,
             ownerAddress: ownerAddress,
             codeHash: bytesToHex(msg.CodeHash),
@@ -134,12 +134,10 @@ export function decodeStateChangesRaw(stateChanges: any) {
             const dataTrieChanges = sa.dataTrieChanges;
 
             let allDecodedEsdtData: any[] = [];
-            if (!dataTrieChanges) {
-                // console.log(`  Entry #${i}: empty dataTrieChanges`);
-            } else {
+            if (dataTrieChanges) {
                 for (const dataTrieChange of dataTrieChanges) {
                     if (dataTrieChange.version === 0) {
-                        console.warn(`  Entry #${i}: unsupported dataTrieChanges version 0`);
+                        console.warn(`Entry #${i}: unsupported dataTrieChanges version 0`);
                     } else {
                         const bufEsdtData = Buffer.from(dataTrieChange.val, "base64");
 
@@ -149,8 +147,8 @@ export function decodeStateChangesRaw(stateChanges: any) {
                         }
                     }
                 }
-
             }
+
             if (decodedAccountData || allDecodedEsdtData.length > 0) {
                 const groupedEsdtStates = allDecodedEsdtData.reduce<Record<string, typeof allDecodedEsdtData>>(
                     (acc, state) => {
@@ -203,6 +201,112 @@ export function decodeStateChangesRaw(stateChanges: any) {
 
     return allAccounts;
 }
+
+export function decodeStateChangesFinal(stateChanges: any) {
+    const accounts = stateChanges.stateAccessesPerAccounts || {};
+    const finalStates: Record<string, StateChanges> = {};
+
+    for (const accountHex of Object.keys(accounts)) {
+        const address = bech32FromHex(accountHex);
+        const esdtOccured: Record<string, boolean> = {};
+
+        const { stateAccess = [] } = accounts[accountHex] || {};
+        const finalAccountChanges: AccountChanges = new AccountChanges({
+            nonceChanged: false,
+            balanceChanged: false,
+            codeHashChanged: false,
+            rootHashChanged: false,
+            developerRewardChanged: false,
+            ownerAddressChanged: false,
+            userNameChanged: false,
+            codeMetadataChanged: false
+        });
+
+        let finalNewAccount = false;
+
+        let finalAccountState: AccountState | undefined = undefined;
+        const finalEsdtStates = {
+            Fungible: [] as EsdtState[],
+            NonFungible: [] as EsdtState[],
+            NonFungibleV2: [] as EsdtState[],
+            SemiFungible: [] as EsdtState[],
+            MetaFungible: [] as EsdtState[],
+            DynamicNFT: [] as EsdtState[],
+            DynamicSFT: [] as EsdtState[],
+            DynamicMeta: [] as EsdtState[],
+        };
+
+        for (let i = stateAccess.length - 1; i >= 0; i--) {
+            const sa = stateAccess[i];
+
+            const currentAccountChanges = sa.accountChanges
+                || {
+                nonceChanged: false,
+                balanceChanged: false,
+                codeHashChanged: false,
+                rootHashChanged: false,
+                developerRewardChanged: false,
+                ownerAddressChanged: false,
+                userNameChanged: false,
+                codeMetadataChanged: false
+            };
+
+            (Object.entries(finalAccountChanges) as [keyof typeof finalAccountChanges, boolean][]).forEach(
+                ([key, value]) => {
+                    finalAccountChanges[key] = value || currentAccountChanges[key];
+                }
+            );
+
+            if (!finalNewAccount) {
+                const currentNewAccount = sa.accountChanges && sa.operation === StateAccessOperation.SaveAccount ? false : true;
+                finalNewAccount = currentNewAccount || finalNewAccount;
+            }
+
+            const base64AccountData = sa.mainTrieVal;
+            if (base64AccountData && !finalAccountState) {
+                const bufAccountData = Buffer.from(base64AccountData, "base64");
+                const decodedAccountData = getDecodedUserAccountData(bufAccountData);
+                if (decodedAccountData) {
+                    finalAccountState = decodedAccountData;
+                }
+            }
+
+            const dataTrieChanges = sa.dataTrieChanges;
+            if (dataTrieChanges) {
+                for (let i = dataTrieChanges.length - 1; i >= 0; i--) {
+                    const dataTrieChange = dataTrieChanges[i];
+                    if (dataTrieChange.version === 0) {
+                        console.warn(`  Entry #${i}: unsupported dataTrieChanges version 0`);
+                    } else {
+                        const bufEsdtData = Buffer.from(dataTrieChange.val, "base64");
+
+                        const decodedEsdtData = getDecodedEsdtData(bufEsdtData);
+                        if (decodedEsdtData) {
+                            const esdtId = decodedEsdtData.identifier;
+                            if (!esdtOccured[esdtId]) {
+                                const typeName = ESDTType[decodedEsdtData.type] as keyof typeof finalEsdtStates; // numeric -> string
+                                if (typeName) {
+                                    finalEsdtStates[typeName].push(decodedEsdtData);
+                                    esdtOccured[esdtId] = true;
+                                }
+                            }
+
+                        }
+                    }
+                }
+
+            }
+        }
+        finalStates[address] = {
+            accountState: finalAccountState,
+            esdtState: finalEsdtStates,
+            accountChanges: finalAccountChanges,
+            isNewAccount: finalNewAccount,
+        };
+    }
+    return finalStates;
+}
+
 
 export function getFinalStates(stateChanges: Record<string, any[]>) {
     const finalStates: Record<string, StateChanges> = {};
@@ -282,7 +386,6 @@ export async function isDbValid(cacheService: CacheService): Promise<boolean> {
         cacheService.get(CacheInfo.LatestProcessedBlockTimestamp(0).key),
         cacheService.get(CacheInfo.LatestProcessedBlockTimestamp(1).key),
         cacheService.get(CacheInfo.LatestProcessedBlockTimestamp(2).key),
-        // cacheService.get(CacheInfo.LatestProcessedBlockTimestamp(3).key),
         cacheService.get(CacheInfo.LatestProcessedBlockTimestamp(4294967295).key),
     ]) as (string | undefined)[];;
 

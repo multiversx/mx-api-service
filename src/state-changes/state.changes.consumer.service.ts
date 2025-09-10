@@ -1,12 +1,11 @@
 import { CompetingRabbitConsumer } from "src/common/rabbitmq/rabbitmq.consumers";
 import { StateChanges, StateChangesRaw } from "./entities";
-import { decodeStateChangesRaw, getFinalStates } from "./utils/state-changes.utils";
+import { decodeStateChangesFinal } from "./utils/state-changes.utils";
 import { AccountDetails, AccountDetailsRepository } from "src/common/indexer/db";
 import { Injectable } from "@nestjs/common";
 import { TokenWithBalance } from "src/endpoints/tokens/entities/token.with.balance";
 import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { CacheInfo } from "src/utils/cache.info";
-// import { ApiConfigService } from "src/common/api-config/api.config.service";
 
 @Injectable()
 export class StateChangesConsumerService {
@@ -22,20 +21,15 @@ export class StateChangesConsumerService {
         deadLetterExchange: 'state-changes-test_dlx',
     })
     async consumeEvents(stateChanges: StateChangesRaw) {
-        // console.log(stateChanges)
         try {
             console.time(`processing time shard ${stateChanges.shardID}`)
-            const decodedStateChanges = this.decodeStateChanges(stateChanges)
-            if (Object.keys(decodedStateChanges).length !== 0) {
-                const finalStates = getFinalStates(decodedStateChanges);
-                const transformedStates = this.transformFinalStatesToDbFormat(finalStates);
-                // transformedStates.forEach(s => {
-                //     if (s.tokens && s.tokens.length > 0) console.log(s.address, s.tokens);
-                // });
 
-                // console.log(transformedStates)
-                await this.accountDetailsRepository.updateAccounts(transformedStates);
-            }
+            console.time('decode time')
+            const finalStates = this.decodeStateChangesFinal(stateChanges);
+            const transformedFinalStates = this.transformFinalStatesToDbFormat(finalStates);
+            console.timeEnd('decode time')
+
+            await this.accountDetailsRepository.updateAccounts(transformedFinalStates);
 
             await this.cacheService.setRemote(
                 CacheInfo.LatestProcessedBlockTimestamp(stateChanges.shardID).key,
@@ -49,8 +43,12 @@ export class StateChangesConsumerService {
         }
     }
 
-    private decodeStateChanges(stateChanges: StateChangesRaw) {
-        return decodeStateChangesRaw(stateChanges);
+    // private decodeStateChanges(stateChanges: StateChangesRaw) {
+    //     return decodeStateChangesRaw(stateChanges);
+    // }
+
+    private decodeStateChangesFinal(stateChanges: StateChangesRaw) {
+        return decodeStateChangesFinal(stateChanges);
     }
 
     private transformFinalStatesToDbFormat(finalStates: Record<string, StateChanges>) {
