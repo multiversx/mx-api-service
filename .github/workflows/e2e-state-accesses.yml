@@ -38,11 +38,6 @@ jobs:
           wait_port 127.0.0.1 3306 MySQL
           wait_port 127.0.0.1 27017 MongoDB
           wait_port 127.0.0.1 5672 RabbitMQ
-          # RabbitMQ management API
-          for i in {1..60}; do
-            if curl -sf http://127.0.0.1:15672 >/dev/null; then break; fi
-            sleep 2
-          done
 
       - name: Setup Go
         uses: actions/setup-go@v5
