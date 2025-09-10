@@ -27,7 +27,7 @@ services:
       retries: 15
 
   redis-master:
-    image: bitnami/redis:7
+    image: "bitnami/redis"
     container_name: statee2e-redis-master
     environment:
       - REDIS_REPLICATION_MODE=master
@@ -41,7 +41,7 @@ services:
       retries: 10
 
   redis-sentinel:
-    image: bitnami/redis-sentinel:7
+    image: "bitnami/redis-sentinel"
     container_name: statee2e-redis-sentinel
     depends_on:
       - redis-master
