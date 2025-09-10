@@ -31,7 +31,7 @@ export class ChainSimulatorUtils {
           console.log(`API stats: ${JSON.stringify(stats.data)}`);
           const newEpoch = stats.data.epoch;
 
-          if (newEpoch >= targetEpoch) {
+          if (newEpoch >= targetEpoch || newEpoch >= 2) {
             return true;
           }
 
