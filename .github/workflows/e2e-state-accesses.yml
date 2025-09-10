@@ -7,41 +7,27 @@ jobs:
   e2e:
     runs-on: ubuntu-latest
 
-    services:
-      rabbitmq:
-        image: rabbitmq:3-management
-        ports:
-          - 5672:5672
-          - 15672:15672
-        options: >-
-          --health-cmd "rabbitmq-diagnostics -q ping"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 30
-      mongodb:
-        image: mongo:6
-        ports:
-          - 27017:27017
-        options: >-
-          --health-cmd "mongosh --eval 'db.runCommand({ ping: 1 })' || mongo --eval 'db.runCommand({ ping: 1 })'"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 30
+    services: {}
 
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Wait for MongoDB and RabbitMQ services
+      - name: Start state E2E docker-compose (MongoDB, Redis + Sentinel, RabbitMQ)
+        run: |
+          set -euxo pipefail
+          docker compose -f src/test/chain-simulator/docker/docker-compose.state-e2e.yml up -d
+
+      - name: Wait for infrastructure readiness
         run: |
           set -euxo pipefail
           timeout=180; start=$(date +%s)
-          until nc -z 127.0.0.1 27017; do now=$(date +%s); [ $((now-start)) -gt $timeout ] && exit 1 || sleep 2; done
-          until nc -z 127.0.0.1 5672; do now=$(date +%s); [ $((now-start)) -gt $timeout ] && exit 1 || sleep 2; done
-          for i in {1..90}; do
-            if curl -sf http://127.0.0.1:15672 >/dev/null; then break; fi
-            sleep 2
-          done
+          wait_port() { local host=$1 port=$2 name=$3; echo "Waiting for $name on $host:$port"; while ! nc -z "$host" "$port"; do now=$(date +%s); [ $((now-start)) -gt $timeout ] && { echo "$name not ready" >&2; docker compose -f src/test/chain-simulator/docker/docker-compose.state-e2e.yml ps; exit 1; } || sleep 2; done; echo "$name ready"; }
+          wait_port 127.0.0.1 27017 MongoDB
+          wait_port 127.0.0.1 6379 Redis
+          wait_port 127.0.0.1 26379 Sentinel
+          wait_port 127.0.0.1 5672 RabbitMQ
+          for i in {1..60}; do if curl -sf http://127.0.0.1:15672 >/dev/null; then break; fi; sleep 2; done
 
       - name: Setup Go
         uses: actions/setup-go@v5
@@ -56,36 +42,7 @@ jobs:
           curl --version
           awk --version | head -n1
 
-      - name: Install and start Redis + Sentinel
-        run: |
-          set -euxo pipefail
-          sudo apt-get update
-          sudo apt-get install -y redis-server
-          # Start Redis on 6379 only if not already provided by docker compose
-          if ! nc -z 127.0.0.1 6379; then
-            sudo systemctl stop redis-server || true
-            nohup redis-server --port 6379 > redis.out 2>&1 &
-          else
-            echo "Redis already available on 127.0.0.1:6379"
-          fi
-          # Create and start Sentinel on 26379 with master name 'mymaster'
-          cat > sentinel.conf <<'EOF'
-          port 26379
-          daemonize no
-          sentinel monitor mymaster 127.0.0.1 6379 1
-          sentinel down-after-milliseconds mymaster 5000
-          sentinel failover-timeout mymaster 60000
-          sentinel parallel-syncs mymaster 1
-          EOF
-          if ! nc -z 127.0.0.1 26379; then
-            nohup redis-server sentinel.conf --sentinel > redis-sentinel.out 2>&1 &
-          else
-            echo "Redis Sentinel already available on 127.0.0.1:26379"
-          fi
-          # Wait for ports
-          timeout=60; start=$(date +%s)
-          until nc -z 127.0.0.1 6379; do now=$(date +%s); [ $((now-start)) -gt $timeout ] && exit 1 || sleep 1; done
-          until nc -z 127.0.0.1 26379; do now=$(date +%s); [ $((now-start)) -gt $timeout ] && exit 1 || sleep 1; done
+      # Redis + Sentinel provided by docker-compose above
 
       - name: Start simulator and notifier
         run: |
