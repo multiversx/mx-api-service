@@ -92,20 +92,63 @@ jobs:
             sleep 1
           done
 
-          # Declare the exchange 'state_accesses' (topic for broad compatibility)
-          curl -sf -u guest:guest -H "content-type: application/json" \
-            -X PUT http://localhost:15672/api/exchanges/%2f/state_accesses \
-            -d '{"type":"topic","durable":true,"auto_delete":false,"internal":false,"arguments":{}}'
+          # Helper to get HTTP status code without failing
+          http_code() { curl -s -o /dev/null -w "%{http_code}" -u guest:guest "$1"; }
 
-          # Declare a durable queue for test
-          curl -sf -u guest:guest -H "content-type: application/json" \
-            -X PUT http://localhost:15672/api/queues/%2f/state_accesses_test \
-            -d '{"durable":true,"auto_delete":false,"arguments":{}}'
+          # Ensure exchange exists (do not override if present)
+          ex_code=$(http_code http://localhost:15672/api/exchanges/%2f/state_accesses)
+          if [ "$ex_code" != "200" ]; then
+            echo "Creating exchange 'state_accesses' (topic)"
+            out=$(curl -s -u guest:guest -H "content-type: application/json" \
+              -w "\n%{http_code}" \
+              -X PUT http://localhost:15672/api/exchanges/%2f/state_accesses \
+              -d '{"type":"topic","durable":true,"auto_delete":false,"internal":false,"arguments":{}}')
+            code=$(echo "$out" | tail -n1)
+            if [ "$code" != "201" ] && [ "$code" != "204" ]; then
+              echo "Failed to create exchange, status: $code, body:" >&2
+              echo "$out" | head -n -1 >&2
+              exit 1
+            fi
+          else
+            echo "Exchange 'state_accesses' already exists"
+          fi
 
-          # Bind the queue with a catch-all routing key
-          curl -sf -u guest:guest -H "content-type: application/json" \
-            -X POST http://localhost:15672/api/bindings/%2f/e/state_accesses/q/state_accesses_test \
-            -d '{"routing_key":"#","arguments":{}}'
+          # Ensure queue exists
+          q_code=$(http_code http://localhost:15672/api/queues/%2f/state_accesses_test)
+          if [ "$q_code" != "200" ]; then
+            echo "Creating queue 'state_accesses_test'"
+            out=$(curl -s -u guest:guest -H "content-type: application/json" \
+              -w "\n%{http_code}" \
+              -X PUT http://localhost:15672/api/queues/%2f/state_accesses_test \
+              -d '{"durable":true,"auto_delete":false,"arguments":{}}')
+            code=$(echo "$out" | tail -n1)
+            if [ "$code" != "201" ] && [ "$code" != "204" ]; then
+              echo "Failed to create queue, status: $code, body:" >&2
+              echo "$out" | head -n -1 >&2
+              exit 1
+            fi
+          else
+            echo "Queue 'state_accesses_test' already exists"
+          fi
+
+          # Ensure binding exists
+          out=$(curl -s -u guest:guest -H "content-type: application/json" \
+            http://localhost:15672/api/bindings/%2f/e/state_accesses/q/state_accesses_test)
+          if [ "${out}" = "[]" ] || [ -z "$out" ]; then
+            echo "Creating binding 'state_accesses' -> 'state_accesses_test' with routing '#'"
+            out=$(curl -s -u guest:guest -H "content-type: application/json" \
+              -w "\n%{http_code}" \
+              -X POST http://localhost:15672/api/bindings/%2f/e/state_accesses/q/state_accesses_test \
+              -d '{"routing_key":"#","arguments":{}}')
+            code=$(echo "$out" | tail -n1)
+            if [ "$code" != "201" ] && [ "$code" != "204" ]; then
+              echo "Failed to create binding, status: $code, body:" >&2
+              echo "$out" | head -n -1 >&2
+              exit 1
+            fi
+          else
+            echo "Binding already exists"
+          fi
 
       - name: Trigger block generation
         run: |
