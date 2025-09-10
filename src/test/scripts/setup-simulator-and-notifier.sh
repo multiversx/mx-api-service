@@ -100,12 +100,12 @@ patch_external_toml() {
   local tmp
   tmp="$(mktemp)"
   awk '
-    BEGIN { in=0 }
-    /^\[\[HostDriversConfig\]\]/ { in=1; print; next }
-    /^\[/ { if (in) in=0 }
+    BEGIN { inside=0 }
+    /^\[\[HostDriversConfig\]\]/ { inside=1; print; next }
+    /^\[/ { if (inside) inside=0 }
     {
-      if (in && $0 ~ /^[[:space:]]*Enabled[[:space:]]*=/) { $0="    Enabled = true" }
-      if (in && $0 ~ /^[[:space:]]*MarshallerType[[:space:]]*=/) { $0="    MarshallerType = \"gogo protobuf\"" }
+      if (inside && $0 ~ /^[[:space:]]*Enabled[[:space:]]*=/) { $0="    Enabled = true" }
+      if (inside && $0 ~ /^[[:space:]]*MarshallerType[[:space:]]*=/) { $0="    MarshallerType = \"gogo protobuf\"" }
       print
     }
   ' "$toml_path" > "$tmp" && mv "$tmp" "$toml_path"
@@ -122,11 +122,11 @@ enable_ws_connector() {
   local tmp
   tmp="$(mktemp)"
   awk '
-    BEGIN { in=0 }
-    /^\[WebSocketConnector\]/ { in=1; print; next }
-    /^\[/ { if (in) in=0 }
+    BEGIN { inside=0 }
+    /^\[WebSocketConnector\]/ { inside=1; print; next }
+    /^\[/ { if (inside) inside=0 }
     {
-      if (in && $0 ~ /^[[:space:]]*Enabled[[:space:]]*=/) { $0="Enabled = true" }
+      if (inside && $0 ~ /^[[:space:]]*Enabled[[:space:]]*=/) { $0="Enabled = true" }
       print
     }
   ' "$toml_path" > "$tmp" && mv "$tmp" "$toml_path"
