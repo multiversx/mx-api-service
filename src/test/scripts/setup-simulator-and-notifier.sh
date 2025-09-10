@@ -22,6 +22,7 @@ CHAIN_CORE_GO_COMMIT="60b4de5d3d1bb3f2a34c764f8cf353c5af8c3194"   # github.com/m
 # Endpoint check
 VERIFY_URL="${VERIFY_URL:-http://localhost:8085/network/status/0}"
 VERIFY_TIMEOUT_SEC="${VERIFY_TIMEOUT_SEC:-120}"
+LOG_SNIFF_INTERVAL_SEC="${LOG_SNIFF_INTERVAL_SEC:-10}"
 
 log() { printf "[+] %s\n" "$*" >&2; }
 err() { printf "[!] %s\n" "$*" >&2; }
@@ -160,16 +161,41 @@ start_chainsimulator() {
 
 wait_for_http_200() {
   local url="$1" timeout_sec="$2"
+  local chain_log="$3" notifier_log="$4"
   log "Waiting for 200 from $url (timeout ${timeout_sec}s)"
-  local start_ts now status code
+  local start_ts now code last_log_print=0 iter=0 tmp body_preview
   start_ts=$(date +%s)
   while true; do
-    code=$(curl -s -o /dev/null -w "%{http_code}" "$url" || true)
+    iter=$((iter+1))
+    tmp=$(mktemp)
+    code=$(curl -s -o "$tmp" -w "%{http_code}" "$url" || true)
     if [[ "$code" == "200" ]]; then
       log "Received HTTP 200 from $url"
+      # Print a short preview of the response body
+      body_preview=$(head -c 2000 "$tmp" | tr -d '\r')
+      printf "[+] %s\n%s\n" "Status body preview:" "$body_preview" >&2
+      rm -f "$tmp"
       return 0
     fi
+
+    # Periodically show the non-200 response and some logs
     now=$(date +%s)
+    if (( now - last_log_print >= LOG_SNIFF_INTERVAL_SEC )); then
+      last_log_print=$now
+      body_preview=$(head -c 2000 "$tmp" | tr -d '\r')
+      printf "[!] %s %s\n" "Non-200 status:" "$code" >&2
+      printf "[!] %s\n%s\n" "Response body (preview):" "$body_preview" >&2
+      if [[ -f "$chain_log" ]]; then
+        printf "[!] %s\n" "Tail of chainsimulator logs:" >&2
+        tail -n 60 "$chain_log" >&2 || true
+      fi
+      if [[ -f "$notifier_log" ]]; then
+        printf "[!] %s\n" "Tail of notifier logs:" >&2
+        tail -n 40 "$notifier_log" >&2 || true
+      fi
+    fi
+    rm -f "$tmp"
+
     if (( now - start_ts > timeout_sec )); then
       err "Timeout waiting for HTTP 200 from $url (last code: $code)"
       return 1
@@ -209,7 +235,9 @@ main() {
   log "ChainSimulator PID: $chainsim_pid"
 
   # 10) Verify HTTP 200 after both are up
-  if ! wait_for_http_200 "$VERIFY_URL" "$VERIFY_TIMEOUT_SEC"; then
+  local chain_log="$SIM_DIR/cmd/chainsimulator/chainsimulator.out"
+  local notifier_log="$NOTIFIER_DIR/notifier.out"
+  if ! wait_for_http_200 "$VERIFY_URL" "$VERIFY_TIMEOUT_SEC" "$chain_log" "$notifier_log"; then
     err "Verification failed. See $NOTIFIER_DIR/notifier.out for logs."
     exit 1
   fi
