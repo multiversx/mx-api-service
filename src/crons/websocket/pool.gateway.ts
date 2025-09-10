@@ -1,11 +1,4 @@
-import {
-    WebSocketGateway,
-    WebSocketServer,
-    SubscribeMessage,
-    OnGatewayDisconnect,
-    MessageBody,
-    ConnectedSocket,
-} from '@nestjs/websockets';
+import { WebSocketGateway, WebSocketServer, SubscribeMessage, MessageBody, ConnectedSocket } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { UseFilters } from '@nestjs/common';
 import { WebsocketExceptionsFilter } from 'src/utils/ws-exceptions.filter';
@@ -19,7 +12,7 @@ import { PoolSubscribePayload } from '../../endpoints/pool/entities/pool.subscri
 
 @UseFilters(WebsocketExceptionsFilter)
 @WebSocketGateway({ cors: { origin: '*' }, path: '/ws/subscription' })
-export class PoolGateway implements OnGatewayDisconnect {
+export class PoolGateway {
     private readonly logger = new OriginLogger(PoolGateway.name);
 
     @WebSocketServer()
@@ -56,6 +49,4 @@ export class PoolGateway implements OnGatewayDisconnect {
             }
         }
     }
-
-    handleDisconnect(_client: Socket) { }
 }

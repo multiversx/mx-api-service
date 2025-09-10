@@ -1,4 +1,4 @@
-import { WebSocketGateway, WebSocketServer, SubscribeMessage, OnGatewayDisconnect, MessageBody, ConnectedSocket } from '@nestjs/websockets';
+import { WebSocketGateway, WebSocketServer, SubscribeMessage, MessageBody, ConnectedSocket } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { BlockService } from '../../endpoints/blocks/block.service';
 import { BlockFilter } from '../../endpoints/blocks/entities/block.filter';
@@ -11,14 +11,13 @@ import { OriginLogger } from '@multiversx/sdk-nestjs-common';
 
 @UseFilters(WebsocketExceptionsFilter)
 @WebSocketGateway({ cors: { origin: '*' }, path: '/ws/subscription' })
-export class BlocksGateway implements OnGatewayDisconnect {
+export class BlocksGateway {
   private readonly logger = new OriginLogger(BlocksGateway.name);
 
   @WebSocketServer()
   server!: Server;
 
   constructor(private readonly blockService: BlockService) { }
-
 
   @SubscribeMessage('subscribeBlocks')
   async handleSubscription(
@@ -56,7 +55,5 @@ export class BlocksGateway implements OnGatewayDisconnect {
       }
     }
   }
-
-  handleDisconnect(_client: Socket) { }
 }
 

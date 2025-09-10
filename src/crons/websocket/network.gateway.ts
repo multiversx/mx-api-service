@@ -1,4 +1,4 @@
-import { WebSocketGateway, WebSocketServer, SubscribeMessage, OnGatewayDisconnect } from '@nestjs/websockets';
+import { WebSocketGateway, WebSocketServer, SubscribeMessage } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { NetworkService } from '../../endpoints/network/network.service';
 import { UseFilters } from '@nestjs/common';
@@ -7,7 +7,7 @@ import { OriginLogger } from '@multiversx/sdk-nestjs-common';
 
 @UseFilters(WebsocketExceptionsFilter)
 @WebSocketGateway({ cors: { origin: '*' }, path: '/ws/subscription' })
-export class NetworkGateway implements OnGatewayDisconnect {
+export class NetworkGateway {
   private readonly logger = new OriginLogger(NetworkGateway.name);
 
   @WebSocketServer()
@@ -30,6 +30,4 @@ export class NetworkGateway implements OnGatewayDisconnect {
       }
     }
   }
-
-  handleDisconnect(_client: Socket) { }
 }

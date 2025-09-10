@@ -1,4 +1,4 @@
-import { WebSocketGateway, WebSocketServer, SubscribeMessage, OnGatewayDisconnect, ConnectedSocket, MessageBody } from '@nestjs/websockets';
+import { WebSocketGateway, WebSocketServer, SubscribeMessage, ConnectedSocket, MessageBody } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { TransactionService } from '../../endpoints/transactions/transaction.service';
 import { TransactionFilter } from '../../endpoints/transactions/entities/transaction.filter';
@@ -12,7 +12,7 @@ import { OriginLogger } from '@multiversx/sdk-nestjs-common';
 
 @UseFilters(WebsocketExceptionsFilter)
 @WebSocketGateway({ cors: { origin: '*' }, path: '/ws/subscription' })
-export class TransactionsGateway implements OnGatewayDisconnect {
+export class TransactionsGateway {
   private readonly logger = new OriginLogger(TransactionsGateway.name);
 
   @WebSocketServer()
@@ -105,6 +105,4 @@ export class TransactionsGateway implements OnGatewayDisconnect {
       }
     }
   }
-
-  handleDisconnect(_client: Socket) { }
 }
