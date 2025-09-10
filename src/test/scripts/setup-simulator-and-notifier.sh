@@ -78,6 +78,17 @@ build_chainsimulator() {
   popd >/dev/null
 }
 
+dummy_run_generate_configs() {
+  local module_dir="$1"
+  local cmd_dir="$module_dir/cmd/chainsimulator"
+  pushd "$cmd_dir" >/dev/null
+  log "Dummy run to fetch/generate configs (fetch-configs-and-close)"
+  # Build binary here so relative ./config paths resolve correctly
+  go build -v .
+  ./chainsimulator --fetch-configs-and-close
+  popd >/dev/null
+}
+
 patch_external_toml() {
   local module_dir="$1"
   local toml_path="$module_dir/cmd/chainsimulator/config/node/config/external.toml"
@@ -162,16 +173,19 @@ main() {
   # 3) Build chainsimulator
   build_chainsimulator "$SIM_DIR"
 
-  # 4) Patch external.toml HostDriversConfig
+  # 4) Dummy run to ensure configs are materialized on disk
+  dummy_run_generate_configs "$SIM_DIR"
+
+  # 5) Patch external.toml HostDriversConfig
   patch_external_toml "$SIM_DIR"
 
-  # 5) Clone notifier at branch
+  # 6) Clone notifier at branch
   clone_or_update "$NOTIFIER_REPO_URL" "$NOTIFIER_DIR" "$NOTIFIER_BRANCH"
 
-  # 6) Enable WebSocketConnector in notifier config
+  # 7) Enable WebSocketConnector in notifier config
   enable_ws_connector "$NOTIFIER_DIR"
 
-  # 7) Start notifier and verify HTTP 200
+  # 8) Start notifier and verify HTTP 200
   notifier_pid=$(start_notifier "$NOTIFIER_DIR")
   log "Notifier PID: $notifier_pid"
 
@@ -185,4 +199,3 @@ main() {
 }
 
 main "$@"
-
