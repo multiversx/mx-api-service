@@ -23,7 +23,7 @@ CHAIN_CORE_GO_COMMIT="60b4de5d3d1bb3f2a34c764f8cf353c5af8c3194"   # github.com/m
 VERIFY_URL="${VERIFY_URL:-http://localhost:8085/network/status/0}"
 VERIFY_TIMEOUT_SEC="${VERIFY_TIMEOUT_SEC:-120}"
 
-log() { printf "[+] %s\n" "$*"; }
+log() { printf "[+] %s\n" "$*" >&2; }
 err() { printf "[!] %s\n" "$*" >&2; }
 
 need() {
@@ -135,9 +135,24 @@ enable_ws_connector() {
 start_notifier() {
   local notifier_dir="$1"
   pushd "$notifier_dir" >/dev/null
-  log "Starting notifier via 'make run' in background"
+  printf "[+] %s\n" "Starting notifier via 'make run' in background" >&2
   # Run in background, redirect logs
   nohup make run > notifier.out 2>&1 &
+  local pid=$!
+  popd >/dev/null
+  echo "$pid"
+}
+
+start_chainsimulator() {
+  local module_dir="$1"
+  local cmd_dir="$module_dir/cmd/chainsimulator"
+  pushd "$cmd_dir" >/dev/null
+  printf "[+] %s\n" "Starting chainsimulator in background" >&2
+  # Build if missing
+  if [[ ! -x ./chainsimulator ]]; then
+    go build -v .
+  fi
+  nohup ./chainsimulator > chainsimulator.out 2>&1 &
   local pid=$!
   popd >/dev/null
   echo "$pid"
@@ -185,17 +200,23 @@ main() {
   # 7) Enable WebSocketConnector in notifier config
   enable_ws_connector "$NOTIFIER_DIR"
 
-  # 8) Start notifier and verify HTTP 200
+  # 8) Start notifier first
   notifier_pid=$(start_notifier "$NOTIFIER_DIR")
   log "Notifier PID: $notifier_pid"
 
+  # 9) Start chain simulator next
+  chainsim_pid=$(start_chainsimulator "$SIM_DIR")
+  log "ChainSimulator PID: $chainsim_pid"
+
+  # 10) Verify HTTP 200 after both are up
   if ! wait_for_http_200 "$VERIFY_URL" "$VERIFY_TIMEOUT_SEC"; then
     err "Verification failed. See $NOTIFIER_DIR/notifier.out for logs."
     exit 1
   fi
 
-  log "All done. Notifier is running (PID $notifier_pid)."
-  log "Logs: $NOTIFIER_DIR/notifier.out"
+  log "All done. Notifier (PID $notifier_pid) and ChainSimulator (PID $chainsim_pid) are running."
+  log "Notifier logs: $NOTIFIER_DIR/notifier.out"
+  log "ChainSimulator logs: $SIM_DIR/cmd/chainsimulator/chainsimulator.out"
 }
 
 main "$@"
