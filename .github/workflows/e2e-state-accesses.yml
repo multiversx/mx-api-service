@@ -36,6 +36,29 @@ jobs:
           curl --version
           awk --version | head -n1
 
+      - name: Install and start Redis + Sentinel
+        run: |
+          set -euxo pipefail
+          sudo apt-get update
+          sudo apt-get install -y redis-server
+          # Start Redis on 6379 (it may already be active on GitHub runners)
+          sudo systemctl stop redis-server || true
+          nohup redis-server --port 6379 > redis.out 2>&1 &
+          # Create and start Sentinel on 26379 with master name 'mymaster'
+          cat > sentinel.conf <<'EOF'
+          port 26379
+          daemonize no
+          sentinel monitor mymaster 127.0.0.1 6379 1
+          sentinel down-after-milliseconds mymaster 5000
+          sentinel failover-timeout mymaster 60000
+          sentinel parallel-syncs mymaster 1
+          EOF
+          nohup redis-server sentinel.conf --sentinel > redis-sentinel.out 2>&1 &
+          # Wait for ports
+          timeout=60; start=$(date +%s)
+          until nc -z 127.0.0.1 6379; do now=$(date +%s); [ $((now-start)) -gt $timeout ] && exit 1 || sleep 1; done
+          until nc -z 127.0.0.1 26379; do now=$(date +%s); [ $((now-start)) -gt $timeout ] && exit 1 || sleep 1; done
+
       - name: Start simulator and notifier
         run: |
           set -euxo pipefail
