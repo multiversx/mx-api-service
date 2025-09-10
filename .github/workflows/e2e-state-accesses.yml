@@ -176,3 +176,104 @@ jobs:
           done
           echo "No messages received on queue 'state_accesses_test'" >&2
           exit 1
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18.x'
+          cache: 'npm'
+
+      - name: Install dependencies and init
+        run: |
+          set -euxo pipefail
+          npm ci
+          npm run init
+
+      - name: Start API (mainnet:e2e)
+        env:
+          # Ensure the API points to the local simulator and rabbitmq
+          NODE_ENV: development
+        run: |
+          set -euxo pipefail
+          # Start the API in background
+          npm run start:mainnet:e2e &
+          API_PID=$!
+          echo "API PID: ${API_PID}"
+          echo ${API_PID} > api.pid
+          # Wait until /about responds 200
+          timeout=180; start=$(date +%s)
+          until [ "$(curl -s -o /dev/null -w '%{http_code}' http://localhost:3001/about)" = "200" ]; do
+            now=$(date +%s)
+            if [ $((now-start)) -gt $timeout ]; then
+              echo "API did not become healthy on /about in ${timeout}s" >&2
+              echo "Recent API logs:" >&2
+              tail -n 200 api.out || true
+              exit 1
+            fi
+            sleep 2
+          done
+          echo "API is healthy on /about"
+
+      - name: Prepare test data
+        run: |
+          set -euxo pipefail
+          npm run prepare:test-data
+
+      - name: Compare balances between v1 and v2 endpoints (Alice & Bob)
+        run: |
+          set -euo pipefail
+          apt-get update && apt-get install -y jq >/dev/null
+
+          base="http://localhost:3001"
+          alice="erd1qyu5wthldzr8wx5c9ucg8kjagg0jfs53s8nr3zpz3hypefsdd8ssycr6th"
+          bob="erd1spyavw0956vq68xj8y4tenjpq2wd5a9p2c6j8gsz7ztyrnpxrruqzu66jx"
+
+          get_balance() {
+            local url="$1"
+            # Retry a few times in case of transient readiness
+            for i in {1..30}; do
+              resp=$(curl -sS "$url" || true)
+              if [ -n "$resp" ]; then
+                bal=$(echo "$resp" | jq -r '.balance // empty')
+                if [ -n "$bal" ] && [ "$bal" != "null" ]; then
+                  echo "$bal"; return 0
+                fi
+              fi
+              sleep 1
+            done
+            echo ""; return 1
+          }
+
+          check_address() {
+            local addr="$1"
+            v1_url="$base/accounts/$addr"
+            v2_url="$base/v2/accounts/$addr"
+            v1_bal=$(get_balance "$v1_url") || true
+            v2_bal=$(get_balance "$v2_url") || true
+            echo "Address: $addr"
+            echo "  v1: $v1_bal"
+            echo "  v2: $v2_bal"
+            if [ -z "$v1_bal" ] || [ -z "$v2_bal" ]; then
+              echo "Balance fetch failed for $addr" >&2
+              exit 1
+            fi
+            if [ "$v1_bal" != "$v2_bal" ]; then
+              echo "Balance mismatch for $addr: v1=$v1_bal v2=$v2_bal" >&2
+              exit 1
+            fi
+          }
+
+          check_address "$alice"
+          check_address "$bob"
+          echo "Balances match on both endpoints for Alice and Bob"
+
+      - name: Stop API
+        if: always()
+        run: |
+          set -euxo pipefail
+          if [ -f api.pid ]; then
+            kill "$(cat api.pid)" || true
+          else
+            # Fallback: kill by port 3001 if needed
+            pkill -f "nest start" || true
+          fi
