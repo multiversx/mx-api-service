@@ -37,6 +37,63 @@ need make
 need curl
 need awk
 
+port_open() {
+  local host="$1" port="$2"
+  (echo > /dev/tcp/$host/$port) >/dev/null 2>&1 && return 0 || return 1
+}
+
+start_redis_and_sentinel() {
+  local redis_port=6379 sentinel_port=26379
+  local have_redis_server=0
+  if command -v redis-server >/dev/null 2>&1; then have_redis_server=1; fi
+
+  if port_open 127.0.0.1 "$redis_port"; then
+    log "Redis already running on 127.0.0.1:$redis_port"
+  else
+    if [[ "$have_redis_server" -eq 1 ]]; then
+      log "Starting local Redis server on port $redis_port"
+      nohup redis-server --port "$redis_port" > redis.out 2>&1 &
+      for i in {1..60}; do
+        if port_open 127.0.0.1 "$redis_port"; then break; fi; sleep 1; done
+      if ! port_open 127.0.0.1 "$redis_port"; then
+        err "Failed to start Redis on port $redis_port"
+        return 1
+      fi
+    else
+      err "redis-server not found; please install Redis or start it manually on 127.0.0.1:$redis_port"
+      return 1
+    fi
+  fi
+
+  if port_open 127.0.0.1 "$sentinel_port"; then
+    log "Redis Sentinel already running on 127.0.0.1:$sentinel_port"
+  else
+    if [[ "$have_redis_server" -eq 1 ]]; then
+      log "Starting local Redis Sentinel on port $sentinel_port (master mymaster -> 127.0.0.1:$redis_port)"
+      local sentinel_conf
+      sentinel_conf=$(mktemp)
+      cat >"$sentinel_conf" <<EOF
+port $sentinel_port
+daemonize no
+sentinel monitor mymaster 127.0.0.1 $redis_port 1
+sentinel down-after-milliseconds mymaster 5000
+sentinel failover-timeout mymaster 60000
+sentinel parallel-syncs mymaster 1
+EOF
+      nohup redis-server "$sentinel_conf" --sentinel > redis-sentinel.out 2>&1 &
+      for i in {1..60}; do
+        if port_open 127.0.0.1 "$sentinel_port"; then break; fi; sleep 1; done
+      if ! port_open 127.0.0.1 "$sentinel_port"; then
+        err "Failed to start Redis Sentinel on port $sentinel_port"
+        return 1
+      fi
+    else
+      err "redis-server not found; cannot start Sentinel. Please start a Sentinel on 127.0.0.1:$sentinel_port with master name 'mymaster' targeting 127.0.0.1:$redis_port"
+      return 1
+    fi
+  fi
+}
+
 clone_or_update() {
   local repo_url="$1" dir="$2" branch_opt="${3:-}"
   if [[ -d "$dir/.git" ]]; then
@@ -226,15 +283,20 @@ main() {
   # 7) Enable WebSocketConnector in notifier config
   enable_ws_connector "$NOTIFIER_DIR"
 
-  # 8) Start notifier first
+  # 8) Ensure Redis + Sentinel are running locally for notifier
+  start_redis_and_sentinel || {
+    err "Redis/Sentinel setup failed; notifier may not start correctly"
+  }
+
+  # 9) Start notifier first
   notifier_pid=$(start_notifier "$NOTIFIER_DIR")
   log "Notifier PID: $notifier_pid"
 
-  # 9) Start chain simulator next
+  # 10) Start chain simulator next
   chainsim_pid=$(start_chainsimulator "$SIM_DIR")
   log "ChainSimulator PID: $chainsim_pid"
 
-  # 10) Verify HTTP 200 after both are up
+  # 11) Verify HTTP 200 after both are up
   local chain_log="$SIM_DIR/cmd/chainsimulator/chainsimulator.out"
   local notifier_log="$NOTIFIER_DIR/notifier.out"
   if ! wait_for_http_200 "$VERIFY_URL" "$VERIFY_TIMEOUT_SEC" "$chain_log" "$notifier_log"; then
