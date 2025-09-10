@@ -26,6 +26,38 @@ services:
       timeout: 5s
       retries: 15
 
+  redis-master:
+    image: bitnami/redis:7
+    container_name: statee2e-redis-master
+    environment:
+      - REDIS_REPLICATION_MODE=master
+      - ALLOW_EMPTY_PASSWORD=yes
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  redis-sentinel:
+    image: bitnami/redis-sentinel:7
+    container_name: statee2e-redis-sentinel
+    depends_on:
+      - redis-master
+    environment:
+      - REDIS_MASTER_SET=mymaster
+      - REDIS_MASTER_HOST=redis-master
+      - ALLOW_EMPTY_PASSWORD=yes
+      - REDIS_SENTINEL_DOWN_AFTER_MILLISECONDS=10000
+    ports:
+      - "26379:26379"
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli -p 26379 ping | grep PONG"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
 networks:
   default:
     name: statee2e-net
