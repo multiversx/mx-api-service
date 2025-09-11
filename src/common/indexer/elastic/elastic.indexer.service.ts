@@ -1,6 +1,6 @@
 import { HttpStatus, Injectable } from "@nestjs/common";
 import { BinaryUtils } from "@multiversx/sdk-nestjs-common";
-import { ElasticQuery, QueryOperator, QueryType, QueryConditionOptions, ElasticSortOrder, ElasticSortProperty, TermsQuery, RangeGreaterThanOrEqual, MatchQuery } from "@multiversx/sdk-nestjs-elastic";
+import { ElasticQuery, QueryOperator, QueryType, QueryConditionOptions, ElasticSortOrder, ElasticSortProperty, RangeGreaterThanOrEqual, MatchQuery } from "@multiversx/sdk-nestjs-elastic";
 import { IndexerInterface } from "../indexer.interface";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { CollectionFilter } from "src/endpoints/collections/entities/collection.filter";
@@ -281,9 +281,7 @@ export class ElasticIndexerService implements IndexerInterface {
 
     const elasticOperations = await this.elasticService.getList('operations', 'txHash', elasticQuery);
 
-    for (const operation of elasticOperations) {
-      this.processTransaction(operation);
-    }
+    this.bulkProcessTransactions(elasticOperations);
 
     return elasticOperations;
   }
@@ -340,7 +338,7 @@ export class ElasticIndexerService implements IndexerInterface {
       .withMustMatchCondition('type', 'unsigned')
       .withPagination({ from: 0, size: transactionHashes.length + 1 })
       .withSort([{ name: 'timestamp', order: ElasticSortOrder.ascending }])
-      .withTerms(new TermsQuery('originalTxHash', transactionHashes));
+      .withMustMultiShouldCondition(transactionHashes, hash => QueryType.Match('originalTxHash', hash));
 
     return await this.elasticService.getList('operations', 'scHash', elasticQuery);
   }
@@ -348,7 +346,7 @@ export class ElasticIndexerService implements IndexerInterface {
   async getAccountsForAddresses(addresses: string[]): Promise<any[]> {
     const elasticQuery: ElasticQuery = ElasticQuery.create()
       .withPagination({ from: 0, size: addresses.length + 1 })
-      .withTerms(new TermsQuery('address', addresses));
+      .withMustMultiShouldCondition(addresses, address => QueryType.Match('address', address));
 
     return await this.elasticService.getList('accounts', 'address', elasticQuery);
   }
@@ -385,9 +383,7 @@ export class ElasticIndexerService implements IndexerInterface {
 
     const results = await this.elasticService.getList('operations', 'hash', elasticQuery);
 
-    for (const result of results) {
-      this.processTransaction(result);
-    }
+    this.bulkProcessTransactions(results);
 
     return results;
   }
@@ -550,9 +546,7 @@ export class ElasticIndexerService implements IndexerInterface {
 
     const transactions = await this.elasticService.getList('operations', 'txHash', elasticQuery);
 
-    for (const transaction of transactions) {
-      this.processTransaction(transaction);
-    }
+    this.bulkProcessTransactions(transactions);
 
     return transactions;
   }
@@ -560,6 +554,19 @@ export class ElasticIndexerService implements IndexerInterface {
   private processTransaction(transaction: any) {
     if (transaction && !transaction.function) {
       transaction.function = transaction.operation;
+    }
+  }
+
+  private bulkProcessTransactions(transactions: any[]) {
+    if (!transactions || transactions.length === 0) {
+      return;
+    }
+
+    for (let i = 0; i < transactions.length; i++) {
+      const transaction = transactions[i];
+      if (transaction && !transaction.function) {
+        transaction.function = transaction.operation;
+      }
     }
   }
 
@@ -618,9 +625,7 @@ export class ElasticIndexerService implements IndexerInterface {
 
     const results = await this.elasticService.getList('operations', 'hash', elasticQuerySc);
 
-    for (const result of results) {
-      this.processTransaction(result);
-    }
+    this.bulkProcessTransactions(results);
 
     return results;
   }
@@ -634,9 +639,11 @@ export class ElasticIndexerService implements IndexerInterface {
       return [];
     }
 
+    const maxSize = Math.min(hashes.length * 10, 1000);
+
     const elasticQuery = ElasticQuery.create()
       .withMustMatchCondition('type', 'unsigned')
-      .withPagination({ from: 0, size: 10000 })
+      .withPagination({ from: 0, size: maxSize })
       .withSort([{ name: 'timestamp', order: ElasticSortOrder.ascending }])
       .withMustMultiShouldCondition(hashes, hash => QueryType.Match('originalTxHash', hash));
 
@@ -648,8 +655,6 @@ export class ElasticIndexerService implements IndexerInterface {
       return [];
     }
 
-    const queries = identifiers.map((identifier) => QueryType.Match('identifier', identifier, QueryOperator.AND));
-
     let elasticQuery = ElasticQuery.create();
 
     if (pagination) {
@@ -657,10 +662,12 @@ export class ElasticIndexerService implements IndexerInterface {
     }
 
     elasticQuery = elasticQuery
-      .withSort([{ name: "balanceNum", order: ElasticSortOrder.descending }])
+      .withSort([
+        { name: "balanceNum", order: ElasticSortOrder.descending },
+        { name: 'timestamp', order: ElasticSortOrder.descending },
+      ])
       .withCondition(QueryConditionOptions.mustNot, [QueryType.Match('address', 'pending')])
-      .withCondition(QueryConditionOptions.should, queries)
-      .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }]);
+      .withMustMultiShouldCondition(identifiers, identifier => QueryType.Match('identifier', identifier, QueryOperator.AND));
 
     return await this.elasticService.getList('accountsesdt', 'identifier', elasticQuery);
   }
@@ -670,8 +677,6 @@ export class ElasticIndexerService implements IndexerInterface {
       return [];
     }
 
-    const queries = identifiers.map((identifier) => QueryType.Match('collection', identifier, QueryOperator.AND));
-
     let elasticQuery = ElasticQuery.create();
 
     if (pagination) {
@@ -679,10 +684,12 @@ export class ElasticIndexerService implements IndexerInterface {
     }
 
     elasticQuery = elasticQuery
-      .withSort([{ name: "balanceNum", order: ElasticSortOrder.descending }])
+      .withSort([
+        { name: "balanceNum", order: ElasticSortOrder.descending },
+        { name: 'timestamp', order: ElasticSortOrder.descending },
+      ])
       .withCondition(QueryConditionOptions.mustNot, [QueryType.Match('address', 'pending')])
-      .withCondition(QueryConditionOptions.should, queries)
-      .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }]);
+      .withMustMultiShouldCondition(identifiers, identifier => QueryType.Match('collection', identifier, QueryOperator.AND));
 
     return await this.elasticService.getList('accountsesdt', 'identifier', elasticQuery);
   }
@@ -713,11 +720,22 @@ export class ElasticIndexerService implements IndexerInterface {
       ]);
     }
 
-    let elasticNfts = await this.elasticService.getList('tokens', 'identifier', elasticQuery);
-    if (elasticNfts.length === 0 && identifier !== undefined) {
-      elasticNfts = await this.elasticService.getList('accountsesdt', 'identifier', ElasticQuery.create().withMustMatchCondition('identifier', identifier, QueryOperator.AND));
+    if (identifier !== undefined) {
+      const [tokensResult, accountsResult] = await Promise.all([
+        this.elasticService.getList('tokens', 'identifier', elasticQuery).catch(() => []),
+        this.elasticService.getList('accountsesdt', 'identifier',
+          ElasticQuery.create()
+            .withMustMatchCondition('identifier', identifier, QueryOperator.AND)
+            .withPagination(pagination)
+        ).catch(() => []),
+      ]);
+
+      const elasticNfts = tokensResult.length > 0 ? tokensResult : accountsResult;
+      return elasticNfts;
+    } else {
+      const elasticNfts = await this.elasticService.getList('tokens', 'identifier', elasticQuery);
+      return elasticNfts;
     }
-    return elasticNfts;
   }
 
   async getTransactionBySenderAndNonce(sender: string, nonce: number): Promise<any[]> {
@@ -752,7 +770,7 @@ export class ElasticIndexerService implements IndexerInterface {
         'data.uris',
       ])
       .withMustExistCondition('identifier')
-      .withMustMultiShouldCondition([EsdtType.NonFungibleESDT, EsdtType.SemiFungibleESDT], type => QueryType.Match('type', type))
+      .withMustMultiShouldCondition([EsdtType.NonFungibleESDT, EsdtType.SemiFungibleESDT, EsdtType.MetaESDT], type => QueryType.Match('type', type))
       .withPagination({ from: 0, size: 10000 });
 
     return await this.elasticService.getScrollableList('tokens', 'identifier', query, action);
@@ -821,52 +839,100 @@ export class ElasticIndexerService implements IndexerInterface {
       }
     }
 
-    const elasticQuery = ElasticQuery.create()
-      .withMustExistCondition('identifier')
-      .withMustMatchCondition('address', address)
-      .withPagination({ from: 0, size: 0 })
-      .withMustMatchCondition('token', filter.collection, QueryOperator.AND)
-      .withMustMultiShouldCondition(filter.identifiers, identifier => QueryType.Match('token', identifier, QueryOperator.AND))
-      .withSearchWildcardCondition(filter.search, ['token', 'name'])
-      .withMustMultiShouldCondition(filterTypes, type => QueryType.Match('type', type))
-      .withMustMultiShouldCondition(filter.subType, subType => QueryType.Match('type', subType))
-      .withExtra({
-        aggs: {
-          collections: {
-            composite: {
-              size: 10000,
-              sources: [
-                {
-                  collection: {
-                    terms: {
-                      field: 'token',
-                    },
-                  },
-                },
-              ],
+    const data: { collection: string, count: number, balance: number }[] = [];
+    let afterKey: any = null;
+    let remainingToSkip = pagination.from;
+    let remainingToCollect = pagination.size;
+
+    while (data.length < pagination.size) {
+      const batchSize = Math.min(1000, remainingToSkip + remainingToCollect);
+
+      const compositeAgg: any = {
+        size: batchSize,
+        sources: [
+          {
+            collection: {
+              terms: {
+                field: 'token',
+                order: 'asc',
+              },
             },
-            aggs: {
-              balance: {
-                sum: {
-                  field: 'balanceNum',
+          },
+        ],
+      };
+
+      if (afterKey) {
+        compositeAgg.after = afterKey;
+      }
+
+      const elasticQuery = ElasticQuery.create()
+        .withMustExistCondition('identifier')
+        .withMustMatchCondition('address', address)
+        .withPagination({ from: 0, size: 0 })
+        .withMustMatchCondition('token', filter.collection, QueryOperator.AND)
+        .withMustMultiShouldCondition(filter.identifiers, identifier => QueryType.Match('token', identifier, QueryOperator.AND))
+        .withSearchWildcardCondition(filter.search, ['token', 'name'])
+        .withMustMultiShouldCondition(filterTypes, type => QueryType.Match('type', type))
+        .withMustMultiShouldCondition(filter.subType, subType => QueryType.Match('type', subType))
+        .withExtra({
+          aggs: {
+            collections: {
+              composite: compositeAgg,
+              aggs: {
+                balance: {
+                  sum: {
+                    field: 'balanceNum',
+                  },
                 },
               },
             },
           },
-        },
-      });
+        });
 
-    const result = await this.elasticService.post(`${this.apiConfigService.getElasticUrl()}/accountsesdt/_search`, elasticQuery.toJson());
+      const result = await this.elasticService.post(`${this.apiConfigService.getElasticUrl()}/accountsesdt/_search`, elasticQuery.toJson());
+      const buckets = result?.data?.aggregations?.collections?.buckets || [];
 
-    const buckets = result?.data?.aggregations?.collections?.buckets;
+      if (buckets.length === 0) {
+        break;
+      }
 
-    let data: { collection: string, count: number, balance: number }[] = buckets.map((bucket: any) => ({
-      collection: bucket.key.collection,
-      count: bucket.doc_count,
-      balance: bucket.balance.value,
-    }));
+      const batchData: { collection: string, count: number, balance: number }[] = buckets.map((bucket: any) => ({
+        collection: bucket.key.collection,
+        count: bucket.doc_count,
+        balance: bucket.balance.value,
+      }));
 
-    data = data.slice(pagination.from, pagination.from + pagination.size);
+      if (remainingToSkip > 0) {
+        const skipFromBatch = Math.min(remainingToSkip, batchData.length);
+        remainingToSkip -= skipFromBatch;
+
+        if (remainingToSkip === 0) {
+          const collectFromBatch = Math.min(remainingToCollect, batchData.length - skipFromBatch);
+          data.push(...batchData.slice(skipFromBatch, skipFromBatch + collectFromBatch));
+          remainingToCollect -= collectFromBatch;
+        }
+      } else {
+        const collectFromBatch = Math.min(remainingToCollect, batchData.length);
+        data.push(...batchData.slice(0, collectFromBatch));
+        remainingToCollect -= collectFromBatch;
+      }
+
+      if (remainingToCollect === 0) {
+        break;
+      }
+
+      const aggregations = result?.data?.aggregations?.collections;
+      if (aggregations?.after_key) {
+        afterKey = aggregations.after_key;
+      } else {
+        break;
+      }
+
+      if (buckets.length < batchSize) {
+        break;
+      }
+    }
+
     return data;
   }
 

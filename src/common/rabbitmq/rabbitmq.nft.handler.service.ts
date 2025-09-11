@@ -104,9 +104,6 @@ export class RabbitMqNftHandlerService {
 
     const collectionIdentifier = identifier.split('-').slice(0, 2).join('-');
     const collectionType = await this.getCollectionType(collectionIdentifier);
-    if (collectionType === NftType.MetaESDT) {
-      return false;
-    }
 
     this.logger.log(`Detected 'ESDTNFTCreate' event for NFT with identifier '${identifier}' and collection type '${collectionType}'`);
 

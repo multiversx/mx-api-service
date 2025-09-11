@@ -451,8 +451,6 @@ export class NftService {
           nft.decimals = collectionProperties.decimals;
           // @ts-ignore
           delete nft.royalties;
-          // @ts-ignore
-          delete nft.uris;
         }
       }
     }
