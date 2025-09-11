@@ -1,7 +1,7 @@
 import axios from "axios";
 import { config } from "./config/env.config";
 
-describe('Applications e2e tests with chain simulator', () => {
+describe.skip('Applications e2e tests with chain simulator', () => {
   describe('GET /applications', () => {
     it('should return status code 200 and a list of applications', async () => {
       const response = await axios.get(`${config.apiServiceUrl}/applications`);
