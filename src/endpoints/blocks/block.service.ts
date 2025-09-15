@@ -10,6 +10,7 @@ import { IndexerService } from "src/common/indexer/indexer.service";
 import { NodeService } from "../nodes/node.service";
 import { IdentitiesService } from "../identities/identities.service";
 import { ApiConfigService } from "../../common/api-config/api.config.service";
+import { ConcurrencyUtils } from "src/utils/concurrency.utils";
 
 @Injectable()
 export class BlockService {
@@ -60,13 +61,15 @@ export class BlockService {
     const nodes = await this.nodeService.getAllNodes();
     const relevantNodes = nodes.filter(node => proposerBlses.includes(node.bls) && node.identity);
 
-    const identityPromises = relevantNodes.map(async (node) => {
-      const identity = await this.identitiesService.getIdentity(node.identity!);
-      return { node, identity };
-    });
-
-    const nodeIdentities = await Promise.all(identityPromises);
-
+    const nodeIdentities = await ConcurrencyUtils.executeWithConcurrencyLimit(
+      relevantNodes,
+      async (node) => {
+        const identity = await this.identitiesService.getIdentity(node.identity!);
+        return { node, identity };
+      },
+      25,
+      'Block proposer identities'
+    );
     for (const { node, identity } of nodeIdentities) {
       if (!identity) {
         continue;
