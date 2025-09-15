@@ -34,8 +34,8 @@ export class BlockService {
 
   async getBlocks(filter: BlockFilter, queryPagination: QueryPagination, withProposerIdentity?: boolean): Promise<Block[]> {
     const result = await this.indexerService.getBlocks(filter, queryPagination);
-    const blocks = [];
-    for (const item of result) {
+
+    const blocks = await Promise.all(result.map(async (item) => {
       const blockRaw = await this.computeProposerAndValidators(item);
 
       const block = Block.mergeWithElasticResponse(new Block(), blockRaw);
@@ -44,8 +44,8 @@ export class BlockService {
         block.scheduledRootHash = blockRaw.scheduledData.rootHash;
       }
 
-      blocks.push(block);
-    }
+      return block;
+    }));
 
     if (withProposerIdentity === true) {
       await this.applyProposerIdentity(blocks);
@@ -58,17 +58,16 @@ export class BlockService {
     const proposerBlses = blocks.map(x => x.proposer);
 
     const nodes = await this.nodeService.getAllNodes();
-    for (const node of nodes) {
-      if (!proposerBlses.includes(node.bls)) {
-        continue;
-      }
+    const relevantNodes = nodes.filter(node => proposerBlses.includes(node.bls) && node.identity);
 
-      const nodeIdentity = node.identity;
-      if (!nodeIdentity) {
-        continue;
-      }
+    const identityPromises = relevantNodes.map(async (node) => {
+      const identity = await this.identitiesService.getIdentity(node.identity!);
+      return { node, identity };
+    });
 
-      const identity = await this.identitiesService.getIdentity(nodeIdentity);
+    const nodeIdentities = await Promise.all(identityPromises);
+
+    for (const { node, identity } of nodeIdentities) {
       if (!identity) {
         continue;
       }
