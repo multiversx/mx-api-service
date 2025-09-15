@@ -93,10 +93,11 @@ export class NftService {
       return;
     }
 
+    const allAssets = await this.assetsService.getAllTokenAssets();
+
     await Promise.all(
       nfts.map(async (nft) => {
-        nft.assets = await this.assetsService.getTokenAssets(nft.identifier) ??
-          await this.assetsService.getTokenAssets(nft.collection);
+        nft.assets = allAssets[nft.identifier] ?? allAssets[nft.collection];
 
         if (nft.assets) {
           nft.ticker = nft.collection.split('-')[0];
