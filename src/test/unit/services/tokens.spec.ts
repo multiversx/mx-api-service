@@ -110,6 +110,7 @@ describe('Token Service', () => {
           useValue: {
             getTokenAssets: jest.fn(),
             getAllAccountAssets: jest.fn(),
+            getAllTokenAssets: jest.fn(),
           },
         },
         {
@@ -603,7 +604,7 @@ describe('Token Service', () => {
       expect(getAllTokensMock).toHaveBeenCalledTimes(1);
 
       const secondToken = mockTokens[1];
-      secondToken.assets.priceSource = {type: 'customUrl'};
+      secondToken.assets.priceSource = { type: 'customUrl' };
       const newExpectedMarketCap = result - secondToken.marketCap;
       mockTokens[1] = secondToken;
 
@@ -854,7 +855,7 @@ describe('Token Service', () => {
       jest.spyOn(tokenService as any, 'applyMexPrices').mockResolvedValue(undefined);
       jest.spyOn(tokenService as any, 'applyMexPairType').mockResolvedValue(undefined);
       jest.spyOn(tokenService as any, 'applyMexPairTradesCount').mockResolvedValue(undefined);
-      jest.spyOn(tokenService['apiService'] as any, 'get').mockResolvedValue({data: [{usdPrice: 1.0}]});
+      jest.spyOn(tokenService['apiService'] as any, 'get').mockResolvedValue({ data: [{ usdPrice: 1.0 }] });
       jest.spyOn(tokenService['cachingService'], 'batchApplyAll').mockImplementation(
         // eslint-disable-next-line require-await
         async (...args: unknown[]) => {
