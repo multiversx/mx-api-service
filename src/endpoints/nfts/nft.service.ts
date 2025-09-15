@@ -95,17 +95,15 @@ export class NftService {
 
     const allAssets = await this.assetsService.getAllTokenAssets();
 
-    await Promise.all(
-      nfts.map(async (nft) => {
-        nft.assets = allAssets[nft.identifier] ?? allAssets[nft.collection];
+    for (const nft of nfts) {
+      nft.assets = allAssets[nft.identifier] ?? allAssets[nft.collection];
 
-        if (nft.assets) {
-          nft.ticker = nft.collection.split('-')[0];
-        } else {
-          nft.ticker = nft.collection;
-        }
-      })
-    );
+      if (nft.assets) {
+        nft.ticker = nft.collection.split('-')[0];
+      } else {
+        nft.ticker = nft.collection;
+      }
+    }
   }
 
   private async conditionallyApplyOwners(nfts: Nft[], queryOptions?: NftQueryOptions): Promise<void> {
