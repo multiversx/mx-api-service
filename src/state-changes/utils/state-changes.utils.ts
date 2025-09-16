@@ -101,13 +101,21 @@ export function decodeAccountChanges(flags: number | undefined): AccountChanges 
 }
 
 function getDecodedEsdtData(buf: any) {
+    const esdtPrefix = 'ELDRONDesdt';
     try {
         const msgTrieLeafData: TrieLeafData = TrieLeafData.decode(buf);
         const bufEsdtData = msgTrieLeafData.value;
         const msgEsdtData: ESDigitalToken = ESDigitalToken.decode(bufEsdtData);
 
         const valueBigInt: bigint = decodeMxSignMagBigInt(msgEsdtData.Value);
-        const key = Buffer.from(bytesToHex(msgTrieLeafData.key), "hex").toString().slice('ELRONDesdt'.length);
+        const keyRaw = Buffer.from(bytesToHex(msgTrieLeafData.key), "hex").toString();
+        let key = keyRaw;
+        if (keyRaw.startsWith(esdtPrefix)) {
+            key = keyRaw.slice(esdtPrefix.length);
+        } else {
+            //TODO: handle if needed
+            return null;
+        }
         const [identifier, nonce] = TokenParser.extractTokenIDAndNonceFromTokenStorageKey(key);
 
         return {
@@ -184,7 +192,7 @@ export function decodeStateChangesRaw(blockWithStateChanges: BlockWithStateChang
                     }
                 );
                 if (allDecoded[address] === undefined) allDecoded[address] = [];
-                const newAccount = !sa.accountChanges && (sa.operation & StateAccessOperation.SaveAccount) ? true : false;
+                const newAccount = (sa.accountChanges === null || sa.accountChanges === undefined) && (sa.operation & StateAccessOperation.SaveAccount) ? true : false;
 
                 const accountChanges = decodeAccountChanges(sa.accountChanges);
 
@@ -238,7 +246,7 @@ export function decodeStateChangesFinal(blockWithStateChanges: BlockWithStateCha
             }
 
             if (!finalNewAccount) {
-                const currentNewAccount = !sa.accountChanges && (sa.operation & StateAccessOperation.SaveAccount) ? true : false;
+                const currentNewAccount = (sa.accountChanges === null || sa.accountChanges === undefined) && (sa.operation & StateAccessOperation.SaveAccount) ? true : false;
                 finalNewAccount = currentNewAccount || finalNewAccount;
             }
 
