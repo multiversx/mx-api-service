@@ -70,7 +70,7 @@ export class NftService {
     const nfts = await this.getNftsInternal({ from, size }, filter);
 
     await Promise.all([
-      this.batchApplyAssetsAndTicker(nfts),
+      this.conditionallyApplyAssetsAndTicker(nfts, undefined, queryOptions),
       this.conditionallyApplyOwners(nfts, queryOptions),
       this.conditionallyApplySupply(nfts, queryOptions),
       this.batchProcessNfts(nfts),
@@ -88,12 +88,15 @@ export class NftService {
     ]);
   }
 
-  private async batchApplyAssetsAndTicker(nfts: Nft[], fields?: string[]): Promise<void> {
+  private async conditionallyApplyAssetsAndTicker(nfts: Nft[], fields?: string[], queryOptions?: { withAssets?: boolean }): Promise<void> {
     if (fields && fields.includesNone(['ticker', 'assets'])) {
       return;
     }
 
     const allAssets = await this.assetsService.getAllTokenAssets();
+    if (queryOptions?.withAssets === false) {
+      return;
+    }
 
     for (const nft of nfts) {
       nft.assets = allAssets[nft.identifier] ?? allAssets[nft.collection];
