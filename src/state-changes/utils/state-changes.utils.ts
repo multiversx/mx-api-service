@@ -3,20 +3,9 @@ import { UserAccountData } from "./user_account.pb";
 import { ESDigitalToken } from "./esdt";
 import { TrieLeafData } from "./trie_leaf_data";
 import { TokenParser } from "./token.parser";
-import { AccountChanges, AccountState, EsdtState, ESDTType, StateChanges } from "../entities";
+import { AccountChanges, AccountChangesRaw, AccountState, BlockWithStateChangesRaw, EsdtState, ESDTType, StateAccessOperation, StateAccessPerAccountRaw, StateChanges } from "../entities";
 import { CacheInfo } from "src/utils/cache.info";
 import { CacheService } from "@multiversx/sdk-nestjs-cache";
-
-
-export enum StateAccessOperation {
-    NotSet = 0,
-    GetCode = 1,
-    SaveAccount = 2,
-    GetAccount = 4,
-    WriteCode = 8,
-    RemoveDataTrie = 16,
-    GetDataTrieValue = 32,
-}
 
 const bech32FromHex = (hex: any) => {
     const clean = hex.startsWith("0x") ? hex.slice(2) : hex;
@@ -86,11 +75,34 @@ function getDecodedUserAccountData(buf: any) {
     }
 }
 
+export function decodeAccountChanges(flags: number | undefined): AccountChanges {
+    if (!flags) {
+        return new AccountChanges({
+            nonceChanged: false,
+            balanceChanged: false,
+            codeHashChanged: false,
+            rootHashChanged: false,
+            developerRewardChanged: false,
+            ownerAddressChanged: false,
+            userNameChanged: false,
+            codeMetadataChanged: false,
+        });
+    }
+    return new AccountChanges({
+        nonceChanged: (flags & AccountChangesRaw.NonceChanged) !== 0,
+        balanceChanged: (flags & AccountChangesRaw.BalanceChanged) !== 0,
+        codeHashChanged: (flags & AccountChangesRaw.CodeHashChanged) !== 0,
+        rootHashChanged: (flags & AccountChangesRaw.RootHashChanged) !== 0,
+        developerRewardChanged: (flags & AccountChangesRaw.DeveloperRewardChanged) !== 0,
+        ownerAddressChanged: (flags & AccountChangesRaw.OwnerAddressChanged) !== 0,
+        userNameChanged: (flags & AccountChangesRaw.UserNameChanged) !== 0,
+        codeMetadataChanged: (flags & AccountChangesRaw.CodeMetadataChanged) !== 0,
+    });
+}
 
 function getDecodedEsdtData(buf: any) {
     try {
         const msgTrieLeafData: TrieLeafData = TrieLeafData.decode(buf);
-        // console.log(msgTrieLeafData)
         const bufEsdtData = msgTrieLeafData.value;
         const msgEsdtData: ESDigitalToken = ESDigitalToken.decode(bufEsdtData);
 
@@ -114,16 +126,16 @@ function getDecodedEsdtData(buf: any) {
     }
 }
 
-export function decodeStateChangesRaw(stateChanges: any) {
+export function decodeStateChangesRaw(blockWithStateChanges: BlockWithStateChangesRaw) {
     const allAccounts: Record<string, any[]> = {};
-    const accounts = stateChanges.stateAccessesPerAccounts || {};
+    const accounts = blockWithStateChanges.stateAccessesPerAccounts || {};
 
     for (const accountHex of Object.keys(accounts)) {
         const address = bech32FromHex(accountHex);
 
         const { stateAccess = [] } = accounts[accountHex] || {};
         const allDecoded: Record<string, any[]> = {};
-        stateAccess.forEach((sa: any, i: any) => {
+        stateAccess.forEach((sa: StateAccessPerAccountRaw, i: number) => {
 
             const base64AccountData = sa.mainTrieVal;
             let decodedAccountData: any = null
@@ -132,6 +144,7 @@ export function decodeStateChangesRaw(stateChanges: any) {
                 decodedAccountData = getDecodedUserAccountData(bufAccountData);
             }
             const dataTrieChanges = sa.dataTrieChanges;
+
 
             let allDecodedEsdtData: any[] = [];
             if (dataTrieChanges) {
@@ -171,19 +184,9 @@ export function decodeStateChangesRaw(stateChanges: any) {
                     }
                 );
                 if (allDecoded[address] === undefined) allDecoded[address] = [];
-                const newAccount = sa.accountChanges && sa.operation === StateAccessOperation.SaveAccount ? false : true;
+                const newAccount = !sa.accountChanges && (sa.operation & StateAccessOperation.SaveAccount) ? true : false;
 
-                const accountChanges = sa.accountChanges
-                    || {
-                    nonceChanged: false,
-                    balanceChanged: false,
-                    codeHashChanged: false,
-                    rootHashChanged: false,
-                    developerRewardChanged: false,
-                    ownerAddressChanged: false,
-                    userNameChanged: false,
-                    codeMetadataChanged: false
-                };
+                const accountChanges = decodeAccountChanges(sa.accountChanges);
 
                 allDecoded[address].push({
                     entry: `Entry #${i}`,
@@ -202,25 +205,16 @@ export function decodeStateChangesRaw(stateChanges: any) {
     return allAccounts;
 }
 
-export function decodeStateChangesFinal(stateChanges: any) {
-    const accounts = stateChanges.stateAccessesPerAccounts || {};
+export function decodeStateChangesFinal(blockWithStateChanges: BlockWithStateChangesRaw) {
+    const accounts = blockWithStateChanges.stateAccessesPerAccounts;
     const finalStates: Record<string, StateChanges> = {};
 
     for (const accountHex of Object.keys(accounts)) {
         const address = bech32FromHex(accountHex);
         const esdtOccured: Record<string, boolean> = {};
 
-        const { stateAccess = [] } = accounts[accountHex] || {};
-        const finalAccountChanges: AccountChanges = new AccountChanges({
-            nonceChanged: false,
-            balanceChanged: false,
-            codeHashChanged: false,
-            rootHashChanged: false,
-            developerRewardChanged: false,
-            ownerAddressChanged: false,
-            userNameChanged: false,
-            codeMetadataChanged: false
-        });
+        const { stateAccess } = accounts[accountHex] || {};
+        let finalAccountChangesRaw: AccountChangesRaw = AccountChangesRaw.NoChange;
 
         let finalNewAccount = false;
 
@@ -238,27 +232,13 @@ export function decodeStateChangesFinal(stateChanges: any) {
 
         for (let i = stateAccess.length - 1; i >= 0; i--) {
             const sa = stateAccess[i];
-
-            const currentAccountChanges = sa.accountChanges
-                || {
-                nonceChanged: false,
-                balanceChanged: false,
-                codeHashChanged: false,
-                rootHashChanged: false,
-                developerRewardChanged: false,
-                ownerAddressChanged: false,
-                userNameChanged: false,
-                codeMetadataChanged: false
-            };
-
-            (Object.entries(finalAccountChanges) as [keyof typeof finalAccountChanges, boolean][]).forEach(
-                ([key, value]) => {
-                    finalAccountChanges[key] = value || currentAccountChanges[key];
-                }
-            );
+            const currentAccountChangesRaw = sa.accountChanges;
+            if (currentAccountChangesRaw) {
+                finalAccountChangesRaw = finalAccountChangesRaw | currentAccountChangesRaw;
+            }
 
             if (!finalNewAccount) {
-                const currentNewAccount = sa.accountChanges && sa.operation === StateAccessOperation.SaveAccount ? false : true;
+                const currentNewAccount = !sa.accountChanges && (sa.operation & StateAccessOperation.SaveAccount) ? true : false;
                 finalNewAccount = currentNewAccount || finalNewAccount;
             }
 
@@ -277,7 +257,8 @@ export function decodeStateChangesFinal(stateChanges: any) {
                     const dataTrieChange = dataTrieChanges[i];
                     if (dataTrieChange.version === 0) {
                         console.warn(`  Entry #${i}: unsupported dataTrieChanges version 0`);
-                    } else {
+                    } else if (dataTrieChange.val) {
+
                         const bufEsdtData = Buffer.from(dataTrieChange.val, "base64");
 
                         const decodedEsdtData = getDecodedEsdtData(bufEsdtData);
@@ -300,7 +281,7 @@ export function decodeStateChangesFinal(stateChanges: any) {
         finalStates[address] = {
             accountState: finalAccountState,
             esdtState: finalEsdtStates,
-            accountChanges: finalAccountChanges,
+            accountChanges: decodeAccountChanges(finalAccountChangesRaw),
             isNewAccount: finalNewAccount,
         };
     }
@@ -347,7 +328,6 @@ export function getFinalStates(stateChanges: Record<string, any[]>) {
             finalNewAccount = finalNewAccount ? finalNewAccount : currentNewAccount;
 
             finalAccountState = currentAccountState;
-            // console.log(entry);
 
             (Object.entries(finalAccountChanges) as [keyof typeof finalAccountChanges, boolean][]).forEach(
                 ([key, value]) => {
@@ -366,7 +346,6 @@ export function getFinalStates(stateChanges: Record<string, any[]>) {
 
                 }
             );
-
         }
 
         finalStates[address] = {

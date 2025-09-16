@@ -1,12 +1,12 @@
 import { CompetingRabbitConsumer } from "src/common/rabbitmq/rabbitmq.consumers";
-import { StateChanges, StateChangesRaw } from "./entities";
+import { BlockWithStateChangesRaw, StateChanges } from "./entities";
 import { decodeStateChangesFinal } from "./utils/state-changes.utils";
 import { AccountDetails, AccountDetailsRepository } from "src/common/indexer/db";
 import { Injectable } from "@nestjs/common";
 import { TokenWithBalance } from "src/endpoints/tokens/entities/token.with.balance";
 import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { CacheInfo } from "src/utils/cache.info";
-
+import { NftAccount } from "src/endpoints/nfts/entities/nft.account";
 @Injectable()
 export class StateChangesConsumerService {
     constructor(
@@ -17,26 +17,25 @@ export class StateChangesConsumerService {
 
     @CompetingRabbitConsumer({
         exchange: 'state_accesses',
-        queueName: 'state-changes-test',
-        deadLetterExchange: 'state-changes-test_dlx',
+        queueName: 'state_changes_test',
+        deadLetterExchange: 'state_changes_test_dlx',
     })
-    async consumeEvents(stateChanges: StateChangesRaw) {
+    async consumeEvents(blockWithStateChanges: BlockWithStateChangesRaw) {
         try {
-            console.time(`processing time shard ${stateChanges.shardID}`)
-
+            console.time(`processing time shard ${blockWithStateChanges.shardID}`)
             console.time('decode time')
-            const finalStates = this.decodeStateChangesFinal(stateChanges);
+            const finalStates = this.decodeStateChangesFinal(blockWithStateChanges);
             const transformedFinalStates = this.transformFinalStatesToDbFormat(finalStates);
+            // console.dir(finalStates, { depth: null })
             console.timeEnd('decode time')
-
             await this.accountDetailsRepository.updateAccounts(transformedFinalStates);
 
             await this.cacheService.setRemote(
-                CacheInfo.LatestProcessedBlockTimestamp(stateChanges.shardID).key,
-                stateChanges.timestampMs,
-                CacheInfo.LatestProcessedBlockTimestamp(stateChanges.shardID).ttl,
+                CacheInfo.LatestProcessedBlockTimestamp(blockWithStateChanges.shardID).key,
+                blockWithStateChanges.timestampMs,
+                CacheInfo.LatestProcessedBlockTimestamp(blockWithStateChanges.shardID).ttl,
             );
-            console.timeEnd(`processing time shard ${stateChanges.shardID}`)
+            console.timeEnd(`processing time shard ${blockWithStateChanges.shardID}`)
         } catch (error) {
             console.error(`Error consuming state changes:`, error);
             throw error;
@@ -47,24 +46,41 @@ export class StateChangesConsumerService {
     //     return decodeStateChangesRaw(stateChanges);
     // }
 
-    private decodeStateChangesFinal(stateChanges: StateChangesRaw) {
-        return decodeStateChangesFinal(stateChanges);
+    private decodeStateChangesFinal(blockWithStateChanges: BlockWithStateChangesRaw) {
+        return decodeStateChangesFinal(blockWithStateChanges);
     }
 
     private transformFinalStatesToDbFormat(finalStates: Record<string, StateChanges>) {
         const transformed: AccountDetails[] = [];
-        for (const [_key, value] of Object.entries(finalStates)) {
-            const newAccountState = value.accountState;
-            const tokens = [...value.esdtState.Fungible]; // TODO: add other token types
+        for (const [_key, state] of Object.entries(finalStates)) {
+            const newAccountState = state.accountState;
+            const tokens = [
+                ...state.esdtState.Fungible,
+                ...state.esdtState.SemiFungible,
+                ...state.esdtState.DynamicSFT,
+                ...state.esdtState.MetaFungible,
+                ...state.esdtState.DynamicMeta
+            ];
+
+            const nfts = [
+                ...state.esdtState.NonFungible,
+                ...state.esdtState.NonFungibleV2,
+                ...state.esdtState.DynamicNFT
+            ];
 
             if (newAccountState) {
                 transformed.push(new AccountDetails({
                     ...newAccountState,
-                    tokens: tokens.map(t => new TokenWithBalance({
-                        identifier: t.identifier,
-                        nonce: parseInt(t.nonce),
-                        balance: t.value,
+                    tokens: tokens.map(token => new TokenWithBalance({
+                        identifier: token.identifier,
+                        nonce: parseInt(token.nonce),
+                        balance: token.value,
                     })),
+                    nfts: nfts.map(nft => new NftAccount({
+                        identifier: nft.identifier,
+                        nonce: parseInt(nft.nonce),
+                        // type: nft.type.toString(),
+                    }))
                 }));
             }
 
