@@ -6,141 +6,45 @@ on:
 jobs:
   e2e:
     runs-on: ubuntu-latest
-
-    services: {}
-
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Start state E2E docker-compose (MongoDB, Redis + Sentinel, RabbitMQ)
-        run: |
-          set -euxo pipefail
-          docker compose -f src/test/chain-simulator/docker/docker-compose.state-e2e.yml up -d
+      - name: Use Node.js 18.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18.x'
+          cache: 'npm'
 
-      - name: Wait for infrastructure readiness
-        run: |
-          set -euxo pipefail
-          timeout=180; start=$(date +%s)
-          wait_port() { local host=$1 port=$2 name=$3; echo "Waiting for $name on $host:$port"; while ! nc -z "$host" "$port"; do now=$(date +%s); [ $((now-start)) -gt $timeout ] && { echo "$name not ready" >&2; docker compose -f src/test/chain-simulator/docker/docker-compose.state-e2e.yml ps; exit 1; } || sleep 2; done; echo "$name ready"; }
-          wait_port 127.0.0.1 27017 MongoDB
-          wait_port 127.0.0.1 6379 Redis
-          wait_port 127.0.0.1 26379 Sentinel
-          wait_port 127.0.0.1 5672 RabbitMQ
-          for i in {1..60}; do if curl -sf http://127.0.0.1:15672 >/dev/null; then break; fi; sleep 2; done
-
-      - name: Setup Go
+      - name: Use Go 1.21
         uses: actions/setup-go@v5
         with:
           go-version: '1.21'
 
-      - name: Tools versions
+      - name: Install dependencies and init
         run: |
           set -euxo pipefail
-          go version
-          git --version
-          curl --version
-          awk --version | head -n1
+          npm ci
+          npm i --no-save mongoose@^8
+          npm run init
 
-      # Redis + Sentinel provided by docker-compose above
+      - name: Build and start chain simulator (state-changes stack)
+        run: npm run start:state-changes-cs
 
-      - name: Start simulator and notifier
+      - name: Wait for services to be ready
         run: |
-          set -euxo pipefail
-          ./src/test/scripts/setup-simulator-and-notifier.sh
+          echo "Waiting for services to be healthy..."
+          docker ps
+          sleep 20
 
-          # Build and start the simulator with its local config
-          pushd mx-chain-simulator-go/cmd/chainsimulator
-          go build -v .
-          nohup ./chainsimulator > sim.out 2>&1 &
-          popd
-
-          # Wait for notifier to be ready
-          timeout=180
-          start=$(date +%s)
-          until [ "$(curl -s -o /dev/null -w '%{http_code}' http://localhost:8085/network/status/0)" = "200" ]; do
-            now=$(date +%s)
-            if [ $((now-start)) -gt $timeout ]; then
-              echo "Notifier not ready on /network/status/0" >&2
-              exit 1
-            fi
-            sleep 2
-          done
+      - name: Print docker containers
+        run: docker ps
 
       - name: Configure RabbitMQ exchange and queue
-        run: |
-          set -euxo pipefail
-
-          # Wait for RabbitMQ management API
-          for i in {1..60}; do
-            if curl -sf -u guest:guest http://localhost:15672/api/overview >/dev/null; then break; fi
-            sleep 1
-          done
-
-          # Helper to get HTTP status code without failing
-          http_code() { curl -s -o /dev/null -w "%{http_code}" -u guest:guest "$1"; }
-
-          # Ensure exchange exists (do not override if present)
-          ex_code=$(http_code http://localhost:15672/api/exchanges/%2f/state_accesses)
-          if [ "$ex_code" != "200" ]; then
-            echo "Creating exchange 'state_accesses' (topic)"
-            out=$(curl -s -u guest:guest -H "content-type: application/json" \
-              -w "\n%{http_code}" \
-              -X PUT http://localhost:15672/api/exchanges/%2f/state_accesses \
-              -d '{"type":"topic","durable":true,"auto_delete":false,"internal":false,"arguments":{}}')
-            code=$(echo "$out" | tail -n1)
-            if [ "$code" != "201" ] && [ "$code" != "204" ]; then
-              echo "Failed to create exchange, status: $code, body:" >&2
-              echo "$out" | head -n -1 >&2
-              exit 1
-            fi
-          else
-            echo "Exchange 'state_accesses' already exists"
-          fi
-
-          # Ensure queue exists
-          q_code=$(http_code http://localhost:15672/api/queues/%2f/state_accesses_test)
-          if [ "$q_code" != "200" ]; then
-            echo "Creating queue 'state_accesses_test'"
-            out=$(curl -s -u guest:guest -H "content-type: application/json" \
-              -w "\n%{http_code}" \
-              -X PUT http://localhost:15672/api/queues/%2f/state_accesses_test \
-              -d '{"durable":true,"auto_delete":false,"arguments":{}}')
-            code=$(echo "$out" | tail -n1)
-            if [ "$code" != "201" ] && [ "$code" != "204" ]; then
-              echo "Failed to create queue, status: $code, body:" >&2
-              echo "$out" | head -n -1 >&2
-              exit 1
-            fi
-          else
-            echo "Queue 'state_accesses_test' already exists"
-          fi
-
-          # Ensure binding exists
-          out=$(curl -s -u guest:guest -H "content-type: application/json" \
-            http://localhost:15672/api/bindings/%2f/e/state_accesses/q/state_accesses_test)
-          if [ "${out}" = "[]" ] || [ -z "$out" ]; then
-            echo "Creating binding 'state_accesses' -> 'state_accesses_test' with routing '#'"
-            out=$(curl -s -u guest:guest -H "content-type: application/json" \
-              -w "\n%{http_code}" \
-              -X POST http://localhost:15672/api/bindings/%2f/e/state_accesses/q/state_accesses_test \
-              -d '{"routing_key":"#","arguments":{}}')
-            code=$(echo "$out" | tail -n1)
-            if [ "$code" != "201" ] && [ "$code" != "204" ]; then
-              echo "Failed to create binding, status: $code, body:" >&2
-              echo "$out" | head -n -1 >&2
-              exit 1
-            fi
-          else
-            echo "Binding already exists"
-          fi
+        run: npm run rabbit:setup-state-changes
 
       - name: Trigger block generation
-        run: |
-          set -euxo pipefail
-          curl --request POST \
-            --url http://localhost:8085/simulator/generate-blocks/10 \
-            --header 'Content-Type: application/json'
+        run: npm run cs:generate-blocks
 
       - name: Verify messages on queue
         run: |
@@ -161,105 +65,30 @@ jobs:
           echo "No messages received on queue 'state_accesses_test'" >&2
           exit 1
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18.x'
-          cache: 'npm'
-
-      - name: Install dependencies and init
+      - name: Start API
         run: |
-          set -euxo pipefail
-          npm ci
-          # Ensure mongoose peer dependency is present for @nestjs/mongoose
-          npm i --no-save mongoose@^8
-          npm run init
-
-      - name: Start API (mainnet:e2e)
-        env:
-          # Ensure the API points to the local simulator and rabbitmq
-          NODE_ENV: development
-        run: |
-          set -euxo pipefail
-          # Start the API in background
           npm run start:mainnet:e2e > api.out 2>&1 &
-          API_PID=$!
-          echo "API PID: ${API_PID}"
-          echo ${API_PID} > api.pid
-          # Wait until /about responds 200
           timeout=180; start=$(date +%s)
           until [ "$(curl -s -o /dev/null -w '%{http_code}' http://localhost:3001/about)" = "200" ]; do
-            now=$(date +%s)
-            if [ $((now-start)) -gt $timeout ]; then
-              echo "API did not become healthy on /about in ${timeout}s" >&2
-              echo "Recent API logs:" >&2
-              tail -n 200 api.out || true
-              exit 1
-            fi
-            sleep 2
+            now=$(date +%s); [ $((now-start)) -gt $timeout ] && { echo "API not up"; tail -n 200 api.out || true; exit 1; } || sleep 2;
           done
-          echo "API is healthy on /about"
 
-      - name: Prepare test data
-        run: |
-          set -euxo pipefail
-          npm run prepare:test-data
+      - name: Prepare Test Data
+        run: npm run prepare:test-data
 
-      - name: Compare balances between v1 and v2 endpoints (Alice & Bob)
-        run: |
-          set -euo pipefail
-          apt-get update && apt-get install -y jq >/dev/null
+      - name: Run state changes balances e2e
+        run: npm run test:state-changes-e2e
 
-          base="http://localhost:3001"
-          alice="erd1qyu5wthldzr8wx5c9ucg8kjagg0jfs53s8nr3zpz3hypefsdd8ssycr6th"
-          bob="erd1spyavw0956vq68xj8y4tenjpq2wd5a9p2c6j8gsz7ztyrnpxrruqzu66jx"
-
-          get_balance() {
-            local url="$1"
-            # Retry a few times in case of transient readiness
-            for i in {1..30}; do
-              resp=$(curl -sS "$url" || true)
-              if [ -n "$resp" ]; then
-                bal=$(echo "$resp" | jq -r '.balance // empty')
-                if [ -n "$bal" ] && [ "$bal" != "null" ]; then
-                  echo "$bal"; return 0
-                fi
-              fi
-              sleep 1
-            done
-            echo ""; return 1
-          }
-
-          check_address() {
-            local addr="$1"
-            v1_url="$base/accounts/$addr"
-            v2_url="$base/v2/accounts/$addr"
-            v1_bal=$(get_balance "$v1_url") || true
-            v2_bal=$(get_balance "$v2_url") || true
-            echo "Address: $addr"
-            echo "  v1: $v1_bal"
-            echo "  v2: $v2_bal"
-            if [ -z "$v1_bal" ] || [ -z "$v2_bal" ]; then
-              echo "Balance fetch failed for $addr" >&2
-              exit 1
-            fi
-            if [ "$v1_bal" != "$v2_bal" ]; then
-              echo "Balance mismatch for $addr: v1=$v1_bal v2=$v2_bal" >&2
-              exit 1
-            fi
-          }
-
-          check_address "$alice"
-          check_address "$bob"
-          echo "Balances match on both endpoints for Alice and Bob"
-
-      - name: Stop API
+      - name: Stop API after tests
         if: always()
         run: |
-          set -euxo pipefail
+          echo "Stopping the API..."
           if [ -f api.pid ]; then
             kill "$(cat api.pid)" || true
           else
-            # Fallback: kill by port 3001 if needed
-            pkill -f "nest start" || true
+            kill $(lsof -t -i:3001) || true
           fi
+
+      - name: Stop state-changes stack
+        if: always()
+        run: npm run stop:state-changes-cs
