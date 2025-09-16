@@ -70,7 +70,7 @@ export class NftService {
     const nfts = await this.getNftsInternal({ from, size }, filter);
 
     await Promise.all([
-      this.batchApplyAssetsAndTicker(nfts),
+      this.conditionallyApplyAssetsAndTicker(nfts, undefined, queryOptions),
       this.conditionallyApplyOwners(nfts, queryOptions),
       this.conditionallyApplySupply(nfts, queryOptions),
       this.batchProcessNfts(nfts),
@@ -88,23 +88,25 @@ export class NftService {
     ]);
   }
 
-  private async batchApplyAssetsAndTicker(nfts: Nft[], fields?: string[]): Promise<void> {
+  private async conditionallyApplyAssetsAndTicker(nfts: Nft[], fields?: string[], queryOptions?: { withAssets?: boolean }): Promise<void> {
     if (fields && fields.includesNone(['ticker', 'assets'])) {
       return;
     }
 
-    await Promise.all(
-      nfts.map(async (nft) => {
-        nft.assets = await this.assetsService.getTokenAssets(nft.identifier) ??
-          await this.assetsService.getTokenAssets(nft.collection);
+    const allAssets = await this.assetsService.getAllTokenAssets();
+    if (queryOptions?.withAssets === false) {
+      return;
+    }
 
-        if (nft.assets) {
-          nft.ticker = nft.collection.split('-')[0];
-        } else {
-          nft.ticker = nft.collection;
-        }
-      })
-    );
+    for (const nft of nfts) {
+      nft.assets = allAssets[nft.identifier] ?? allAssets[nft.collection];
+
+      if (nft.assets) {
+        nft.ticker = nft.collection.split('-')[0];
+      } else {
+        nft.ticker = nft.collection;
+      }
+    }
   }
 
   private async conditionallyApplyOwners(nfts: Nft[], queryOptions?: NftQueryOptions): Promise<void> {
@@ -451,8 +453,6 @@ export class NftService {
           nft.decimals = collectionProperties.decimals;
           // @ts-ignore
           delete nft.royalties;
-          // @ts-ignore
-          delete nft.uris;
         }
       }
     }
