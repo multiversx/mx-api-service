@@ -101,7 +101,7 @@ export function decodeAccountChanges(flags: number | undefined): AccountChanges 
 }
 
 function getDecodedEsdtData(buf: any) {
-    const esdtPrefix = 'ELDRONDesdt';
+    const esdtPrefix = 'ELRONDesdt';
     try {
         const msgTrieLeafData: TrieLeafData = TrieLeafData.decode(buf);
         const bufEsdtData = msgTrieLeafData.value;
