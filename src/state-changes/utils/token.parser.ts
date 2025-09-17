@@ -13,14 +13,14 @@ export class TokenParser {
      *   "ALC-1q2w3e"   -> ["ALC-1q2w3e", "0"] (fungible, no nonce)
      *   "ALC-2w3e4rX" -> ["ALC-2w3e4r", "X"] (non-fungible, nonce = "X")
      */
-    public static extractTokenIDAndNonceFromTokenStorageKey(
+    public static extractTokenIDAndNonceHexFromTokenStorageKey(
         tokenKey: string
     ): [string, string] {
         const token = tokenKey;
 
         const indexOfFirstHyphen = token.indexOf(this.separatorChar);
         if (indexOfFirstHyphen < 0) {
-            return [tokenKey, "0"];
+            return [tokenKey, "00"];
         }
 
         const tokenTicker = token.slice(0, indexOfFirstHyphen);
@@ -35,11 +35,11 @@ export class TokenParser {
             randomSequencePlusNonce.length === 0;
 
         if (areTickerAndRandomSequenceInvalid) {
-            return [tokenKey, "0"];
+            return [tokenKey, "00"];
         }
 
         if (randomSequencePlusNonce.length < this.esdtTickerNumRandChars + 1) {
-            return [tokenKey, "0"];
+            return [tokenKey, "00"];
         }
 
         // ALC-1q2w3eX -> X is the nonce
@@ -47,7 +47,9 @@ export class TokenParser {
 
         const numCharsSinceNonce = token.length - nonceStr.length;
         const tokenID = token.slice(0, numCharsSinceNonce);
-
-        return [tokenID, nonceStr || "0"];
+        if (nonceStr) {
+            return [tokenID, Buffer.from(nonceStr).toString('hex')]
+        }
+        return [tokenID, "00"];
     }
 }

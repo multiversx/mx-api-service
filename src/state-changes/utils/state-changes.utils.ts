@@ -116,12 +116,12 @@ function getDecodedEsdtData(buf: any) {
             //TODO: handle if needed
             return null;
         }
-        const [identifier, nonce] = TokenParser.extractTokenIDAndNonceFromTokenStorageKey(key);
+        const [identifier, nonceHex] = TokenParser.extractTokenIDAndNonceHexFromTokenStorageKey(key);
 
         return {
             address: bech32FromHex(bytesToHex(msgTrieLeafData.address)),
-            identifier,
-            nonce,
+            identifier: nonceHex !== '00' ? `${identifier}-${nonceHex}` : identifier,
+            nonce: parseInt(nonceHex, 16).toString(),
             type: msgEsdtData.Type,
             value: valueBigInt.toString(),
             propertiesHex: bytesToHex(msgEsdtData.Properties),
