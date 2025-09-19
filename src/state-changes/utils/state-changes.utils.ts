@@ -1,9 +1,8 @@
 import { Address } from "@multiversx/sdk-core/out";
 import { UserAccountData } from "./user_account.pb";
 import { ESDigitalToken } from "./esdt";
-import { TrieLeafData } from "./trie_leaf_data";
 import { TokenParser } from "./token.parser";
-import { AccountChanges, AccountChangesRaw, AccountState, BlockWithStateChangesRaw, EsdtState, ESDTType, StateAccessOperation, StateAccessPerAccountRaw, StateChanges } from "../entities";
+import { AccountChanges, AccountChangesRaw, AccountState, BlockWithStateChangesRaw, DataTrieChangeOperation, EsdtState, ESDTType, StateAccessOperation, StateAccessPerAccountRaw, StateChanges } from "../entities";
 import { CacheInfo } from "src/utils/cache.info";
 import { CacheService } from "@multiversx/sdk-nestjs-cache";
 
@@ -100,15 +99,13 @@ export function decodeAccountChanges(flags: number | undefined): AccountChanges 
     });
 }
 
-function getDecodedEsdtData(buf: any) {
+function getDecodedEsdtData(bufTrieLeafValue: any, trieLeafKey: string) {
     const esdtPrefix = 'ELRONDesdt';
     try {
-        const msgTrieLeafData: TrieLeafData = TrieLeafData.decode(buf);
-        const bufEsdtData = msgTrieLeafData.value;
-        const msgEsdtData: ESDigitalToken = ESDigitalToken.decode(bufEsdtData);
+        const msgEsdtData: ESDigitalToken = ESDigitalToken.decode(bufTrieLeafValue);
 
         const valueBigInt: bigint = decodeMxSignMagBigInt(msgEsdtData.Value);
-        const keyRaw = Buffer.from(bytesToHex(msgTrieLeafData.key), "hex").toString();
+        const keyRaw = Buffer.from(trieLeafKey, "base64").toString();
         let key = keyRaw;
         if (keyRaw.startsWith(esdtPrefix)) {
             key = keyRaw.slice(esdtPrefix.length);
@@ -119,7 +116,6 @@ function getDecodedEsdtData(buf: any) {
         const [identifier, nonceHex] = TokenParser.extractTokenIDAndNonceHexFromTokenStorageKey(key);
 
         return {
-            address: bech32FromHex(bytesToHex(msgTrieLeafData.address)),
             identifier: nonceHex !== '00' ? `${identifier}-${nonceHex}` : identifier,
             nonce: parseInt(nonceHex, 16).toString(),
             type: msgEsdtData.Type,
@@ -160,9 +156,9 @@ export function decodeStateChangesRaw(blockWithStateChanges: BlockWithStateChang
                     if (dataTrieChange.version === 0) {
                         console.warn(`Entry #${i}: unsupported dataTrieChanges version 0`);
                     } else {
-                        const bufEsdtData = Buffer.from(dataTrieChange.val, "base64");
+                        const bufTrieLeafValue = Buffer.from(dataTrieChange.val, "base64");
+                        const decodedEsdtData = getDecodedEsdtData(bufTrieLeafValue, dataTrieChange.key);
 
-                        const decodedEsdtData = getDecodedEsdtData(bufEsdtData);
                         if (decodedEsdtData) {
                             allDecodedEsdtData.push(decodedEsdtData);
                         }
@@ -242,7 +238,7 @@ export function decodeStateChangesFinal(blockWithStateChanges: BlockWithStateCha
             const sa = stateAccess[i];
             const currentAccountChangesRaw = sa.accountChanges;
             if (currentAccountChangesRaw) {
-                finalAccountChangesRaw = finalAccountChangesRaw | currentAccountChangesRaw;
+                finalAccountChangesRaw |= currentAccountChangesRaw;
             }
 
             if (!finalNewAccount) {
@@ -266,20 +262,20 @@ export function decodeStateChangesFinal(blockWithStateChanges: BlockWithStateCha
                     if (dataTrieChange.version === 0) {
                         console.warn(`  Entry #${i}: unsupported dataTrieChanges version 0`);
                     } else if (dataTrieChange.val) {
-
-                        const bufEsdtData = Buffer.from(dataTrieChange.val, "base64");
-
-                        const decodedEsdtData = getDecodedEsdtData(bufEsdtData);
+                        const bufTrieLeafValue = Buffer.from(dataTrieChange.val, "base64");
+                        const decodedEsdtData = getDecodedEsdtData(bufTrieLeafValue, dataTrieChange.key);
                         if (decodedEsdtData) {
                             const esdtId = decodedEsdtData.identifier;
                             if (!esdtOccured[esdtId]) {
                                 const typeName = ESDTType[decodedEsdtData.type] as keyof typeof finalEsdtStates; // numeric -> string
                                 if (typeName) {
+                                    if (dataTrieChange.operation === DataTrieChangeOperation.Delete) {
+                                        decodedEsdtData.value = '0';
+                                    }
                                     finalEsdtStates[typeName].push(decodedEsdtData);
                                     esdtOccured[esdtId] = true;
                                 }
                             }
-
                         }
                     }
                 }

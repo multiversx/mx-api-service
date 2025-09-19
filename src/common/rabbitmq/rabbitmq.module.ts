@@ -38,7 +38,6 @@ export class RabbitMqModule {
               type: 'fanout',
               options: {},
               uri: apiConfigService.getEventsNotifierUrl(),
-              prefetchCount: 1,
             };
           },
         }),

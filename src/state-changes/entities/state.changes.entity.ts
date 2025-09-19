@@ -33,6 +33,7 @@ export class DataTrieChange {
     key!: string;
     val!: string;
     version!: number;
+    operation!: DataTrieChangeOperation;
 }
 
 export class BlockWithStateChangesRaw {
@@ -64,7 +65,6 @@ export class AccountState {
 }
 
 export class EsdtState {
-    address!: string;
     identifier!: string;
     nonce!: string;
     type!: ESDTType;
@@ -137,4 +137,9 @@ export enum StateAccessOperation {
     WriteCode = 1 << 3,
     RemoveDataTrie = 1 << 4,
     GetDataTrieValue = 1 << 5,
+}
+
+export enum DataTrieChangeOperation {
+    NotDelete = 0,
+    Delete = 1,
 }

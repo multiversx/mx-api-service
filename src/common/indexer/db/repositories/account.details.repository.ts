@@ -322,124 +322,157 @@ export class AccountDetailsRepository {
 
                 // --- tokens ---
                 if (accountDetailed.tokens?.length) {
-                    updateOps.push({
-                        $set: {
-                            tokens: {
-                                $let: {
-                                    vars: { newTokens: accountDetailed.tokens },
-                                    in: {
-                                        $concatArrays: [
-                                            {
-                                                $map: {
-                                                    input: { $ifNull: ["$tokens", []] }, // asigurăm array gol dacă tokens nu există
-                                                    as: "t",
-                                                    in: {
-                                                        $let: {
-                                                            vars: {
-                                                                updated: {
-                                                                    $filter: {
-                                                                        input: "$$newTokens",
-                                                                        cond: { $eq: ["$$this.identifier", "$$t.identifier"] },
+                    // use reduce or partition loadash instead of 2 iterations over array with filter
+                    const tokensToRemove = accountDetailed.tokens
+                        .filter((t) => t.balance === '0')
+                        .map((t) => t.identifier);
+
+                    if (tokensToRemove.length) {
+                        updateOps.push({
+                            $pull: {
+                                tokens: { identifier: { $in: tokensToRemove } },
+                            },
+                        });
+                    }
+
+                    const tokensToUpsert = accountDetailed.tokens.filter((t) => t.balance !== '0');
+                    if (tokensToUpsert.length) {
+
+                        updateOps.push({
+                            $set: {
+                                tokens: {
+                                    $let: {
+                                        vars: { newTokens: tokensToUpsert },
+                                        in: {
+                                            $concatArrays: [
+                                                {
+                                                    $map: {
+                                                        input: { $ifNull: ["$tokens", []] }, // empty array if tokens array doesn't exist
+                                                        as: "t",
+                                                        in: {
+                                                            $let: {
+                                                                vars: {
+                                                                    updated: {
+                                                                        $filter: {
+                                                                            input: "$$newTokens",
+                                                                            cond: { $eq: ["$$this.identifier", "$$t.identifier"] },
+                                                                        },
                                                                     },
                                                                 },
+                                                                in: {
+                                                                    $cond: [
+                                                                        { $gt: [{ $size: "$$updated" }, 0] },
+                                                                        { $arrayElemAt: ["$$updated", 0] },
+                                                                        "$$t",
+                                                                    ],
+                                                                },
                                                             },
-                                                            in: {
-                                                                $cond: [
-                                                                    { $gt: [{ $size: "$$updated" }, 0] },
-                                                                    { $arrayElemAt: ["$$updated", 0] },
-                                                                    "$$t",
+                                                        },
+                                                    },
+                                                },
+                                                {
+                                                    $filter: {
+                                                        input: "$$newTokens",
+                                                        cond: {
+                                                            $not: {
+                                                                $in: [
+                                                                    "$$this.identifier",
+                                                                    {
+                                                                        $map: {
+                                                                            input: { $ifNull: ["$tokens", []] },
+                                                                            as: "t",
+                                                                            in: "$$t.identifier",
+                                                                        },
+                                                                    },
                                                                 ],
                                                             },
                                                         },
                                                     },
                                                 },
-                                            },
-                                            {
-                                                $filter: {
-                                                    input: "$$newTokens",
-                                                    cond: {
-                                                        $not: {
-                                                            $in: [
-                                                                "$$this.identifier",
-                                                                {
-                                                                    $map: {
-                                                                        input: { $ifNull: ["$tokens", []] },
-                                                                        as: "t",
-                                                                        in: "$$t.identifier",
-                                                                    },
-                                                                },
-                                                            ],
-                                                        },
-                                                    },
-                                                },
-                                            },
-                                        ],
+                                            ],
+                                        },
                                     },
                                 },
                             },
-                        },
-                    });
+                        });
+                    }
                 }
 
                 // --- nfts (analog tokens) ---
                 if (accountDetailed.nfts?.length) {
-                    updateOps.push({
-                        $set: {
-                            nfts: {
-                                $let: {
-                                    vars: { newNfts: accountDetailed.nfts },
-                                    in: {
-                                        $concatArrays: [
-                                            {
-                                                $map: {
-                                                    input: { $ifNull: ["$nfts", []] }, // asigurăm array gol dacă nfts nu există
-                                                    as: "n",
-                                                    in: {
-                                                        $let: {
-                                                            vars: {
-                                                                updated: {
-                                                                    $filter: {
-                                                                        input: "$$newNfts",
-                                                                        cond: { $eq: ["$$this.identifier", "$$n.identifier"] },
+                    // use reduce or partition loadash instead of 2 iterations over array with filter
+                    const nftsToRemove = accountDetailed.nfts
+                        .filter((n) => n.balance === '0')
+                        .map((n) => n.identifier);
+
+                    if (nftsToRemove.length) {
+                        updateOps.push({
+                            $pull: {
+                                nfts: { identifier: { $in: nftsToRemove } },
+                            },
+                        });
+                    }
+
+                    const nftsToUpsert = accountDetailed.nfts.filter((n) => n.balance !== '0');
+                    if (nftsToUpsert.length) {
+                        updateOps.push({
+                            $set: {
+                                nfts: {
+                                    $let: {
+                                        vars: { newNfts: nftsToUpsert },
+                                        in: {
+                                            $concatArrays: [
+                                                {
+                                                    $map: {
+                                                        input: { $ifNull: ["$nfts", []] }, // empty array if nfts array doesn't exist
+                                                        as: "n",
+                                                        in: {
+                                                            $let: {
+                                                                vars: {
+                                                                    updated: {
+                                                                        $filter: {
+                                                                            input: "$$newNfts",
+                                                                            cond: { $eq: ["$$this.identifier", "$$n.identifier"] },
+                                                                        },
                                                                     },
                                                                 },
+                                                                in: {
+                                                                    $cond: [
+                                                                        { $gt: [{ $size: "$$updated" }, 0] },
+                                                                        { $arrayElemAt: ["$$updated", 0] },
+                                                                        "$$n",
+                                                                    ],
+                                                                },
                                                             },
-                                                            in: {
-                                                                $cond: [
-                                                                    { $gt: [{ $size: "$$updated" }, 0] },
-                                                                    { $arrayElemAt: ["$$updated", 0] },
-                                                                    "$$n",
+                                                        },
+                                                    },
+                                                },
+                                                {
+                                                    $filter: {
+                                                        input: "$$newNfts",
+                                                        cond: {
+                                                            $not: {
+                                                                $in: [
+                                                                    "$$this.identifier",
+                                                                    {
+                                                                        $map: {
+                                                                            input: { $ifNull: ["$nfts", []] },
+                                                                            as: "n",
+                                                                            in: "$$n.identifier",
+                                                                        },
+                                                                    },
                                                                 ],
                                                             },
                                                         },
                                                     },
                                                 },
-                                            },
-                                            {
-                                                $filter: {
-                                                    input: "$$newNfts",
-                                                    cond: {
-                                                        $not: {
-                                                            $in: [
-                                                                "$$this.identifier",
-                                                                {
-                                                                    $map: {
-                                                                        input: { $ifNull: ["$nfts", []] },
-                                                                        as: "n",
-                                                                        in: "$$n.identifier",
-                                                                    },
-                                                                },
-                                                            ],
-                                                        },
-                                                    },
-                                                },
-                                            },
-                                        ],
+                                            ],
+                                        },
                                     },
                                 },
                             },
-                        },
-                    });
+                        });
+                    }
                 }
                 totalOperations += updateOps.length;
                 return {
