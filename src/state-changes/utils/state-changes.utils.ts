@@ -160,6 +160,9 @@ export function decodeStateChangesRaw(blockWithStateChanges: BlockWithStateChang
                         const decodedEsdtData = getDecodedEsdtData(bufTrieLeafValue, dataTrieChange.key);
 
                         if (decodedEsdtData) {
+                            if (dataTrieChange.operation === DataTrieChangeOperation.Delete) {
+                                decodedEsdtData.value = '0';
+                            }
                             allDecodedEsdtData.push(decodedEsdtData);
                         }
                     }
