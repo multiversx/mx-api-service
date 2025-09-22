@@ -303,42 +303,43 @@ export class AccountDetailsRepository {
         try {
             if (!accounts.length) return [];
             let totalOperations = 0;
-            const operations = accounts.map((accountDetailed) => {
-                const updateFields: any = {};
+
+            const operations: any[] = [];
+
+            for (const accountDetailed of accounts) {
+                const updatePipeline: any[] = [];
+                const pulls: any[] = [];
+
+                // --- helper ---
                 const isValidValue = (value: any): boolean =>
                     value !== undefined && value !== null;
 
+                // --- simple fields ---
+                const updateFields: any = {};
                 Object.entries(accountDetailed).forEach(([key, value]) => {
                     if (isValidValue(value) && key !== "tokens" && key !== "nfts") {
                         updateFields[key as keyof AccountDetails] = value;
                     }
                 });
-
-                const updateOps: any[] = [];
-
                 if (Object.keys(updateFields).length > 0) {
-                    updateOps.push({ $set: updateFields });
+                    updatePipeline.push({ $set: updateFields });
                 }
 
                 // --- tokens ---
-                if (accountDetailed.tokens?.length) {
-                    // use reduce or partition loadash instead of 2 iterations over array with filter
-                    const tokensToRemove = accountDetailed.tokens
-                        .filter((t) => t.balance === '0')
-                        .map((t) => t.identifier);
+                let tokensToRemove: string[] = [];
+                let tokensToUpsert: any[] = [];
 
-                    if (tokensToRemove.length) {
-                        updateOps.push({
-                            $pull: {
-                                tokens: { identifier: { $in: tokensToRemove } },
-                            },
-                        });
+                if (accountDetailed.tokens?.length) {
+                    for (const t of accountDetailed.tokens) {
+                        if (t.balance === '0') {
+                            tokensToRemove.push(t.identifier);
+                        } else {
+                            tokensToUpsert.push(t);
+                        }
                     }
 
-                    const tokensToUpsert = accountDetailed.tokens.filter((t) => t.balance !== '0');
                     if (tokensToUpsert.length) {
-
-                        updateOps.push({
+                        updatePipeline.push({
                             $set: {
                                 tokens: {
                                     $let: {
@@ -347,7 +348,7 @@ export class AccountDetailsRepository {
                                             $concatArrays: [
                                                 {
                                                     $map: {
-                                                        input: { $ifNull: ["$tokens", []] }, // empty array if tokens array doesn't exist
+                                                        input: { $ifNull: ["$tokens", []] },
                                                         as: "t",
                                                         in: {
                                                             $let: {
@@ -396,26 +397,32 @@ export class AccountDetailsRepository {
                             },
                         });
                     }
-                }
 
-                // --- nfts (analog tokens) ---
-                if (accountDetailed.nfts?.length) {
-                    // use reduce or partition loadash instead of 2 iterations over array with filter
-                    const nftsToRemove = accountDetailed.nfts
-                        .filter((n) => n.balance === '0')
-                        .map((n) => n.identifier);
-
-                    if (nftsToRemove.length) {
-                        updateOps.push({
-                            $pull: {
-                                nfts: { identifier: { $in: nftsToRemove } },
+                    if (tokensToRemove.length) {
+                        pulls.push({
+                            updateOne: {
+                                filter: { address: accountDetailed.address },
+                                update: { $pull: { tokens: { identifier: { $in: tokensToRemove } } } },
                             },
                         });
                     }
+                }
 
-                    const nftsToUpsert = accountDetailed.nfts.filter((n) => n.balance !== '0');
+                // --- nfts ---
+                let nftsToRemove: string[] = [];
+                let nftsToUpsert: any[] = [];
+
+                if (accountDetailed.nfts?.length) {
+                    for (const n of accountDetailed.nfts) {
+                        if (n.balance === '0') {
+                            nftsToRemove.push(n.identifier);
+                        } else {
+                            nftsToUpsert.push(n);
+                        }
+                    }
+
                     if (nftsToUpsert.length) {
-                        updateOps.push({
+                        updatePipeline.push({
                             $set: {
                                 nfts: {
                                     $let: {
@@ -424,7 +431,7 @@ export class AccountDetailsRepository {
                                             $concatArrays: [
                                                 {
                                                     $map: {
-                                                        input: { $ifNull: ["$nfts", []] }, // empty array if nfts array doesn't exist
+                                                        input: { $ifNull: ["$nfts", []] },
                                                         as: "n",
                                                         in: {
                                                             $let: {
@@ -473,17 +480,37 @@ export class AccountDetailsRepository {
                             },
                         });
                     }
+
+                    if (nftsToRemove.length) {
+                        pulls.push({
+                            updateOne: {
+                                filter: { address: accountDetailed.address },
+                                update: { $pull: { nfts: { identifier: { $in: nftsToRemove } } } },
+                            },
+                        });
+                    }
                 }
-                totalOperations += updateOps.length;
-                return {
-                    updateOne: {
-                        filter: { address: accountDetailed.address },
-                        update: updateOps,
-                        upsert: true,
-                    },
-                };
-            });
+
+                if (updatePipeline.length > 0) {
+                    operations.push({
+                        updateOne: {
+                            filter: { address: accountDetailed.address },
+                            update: updatePipeline, // <<--- pipeline array
+                            upsert: true,
+                        },
+                    });
+                    totalOperations++;
+                }
+
+                // --- push pulls ---
+                if (pulls.length > 0) {
+                    operations.push(...pulls);
+                    totalOperations += pulls.length;
+                }
+            }
+
             console.log('number of write operations:', totalOperations);
+
             const result = await this.accountDetailsModel.bulkWrite(operations, {
                 ordered: true,
             });
@@ -494,5 +521,4 @@ export class AccountDetailsRepository {
             throw error;
         }
     }
-
 }
