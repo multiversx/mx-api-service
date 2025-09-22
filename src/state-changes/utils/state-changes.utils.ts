@@ -2,7 +2,7 @@ import { Address } from "@multiversx/sdk-core/out";
 import { UserAccountData } from "./user_account.pb";
 import { ESDigitalToken } from "./esdt";
 import { TokenParser } from "./token.parser";
-import { AccountChanges, AccountChangesRaw, AccountState, BlockWithStateChangesRaw, DataTrieChangeOperation, EsdtState, ESDTType, StateAccessOperation, StateAccessPerAccountRaw, StateChanges } from "../entities";
+import { AccountChanges, AccountChangesRaw, AccountState, BlockWithStateChangesRaw, DataTrieChange, DataTrieChangeOperation, EsdtState, ESDTType, StateAccessOperation, StateAccessPerAccountRaw, StateChanges } from "../entities";
 import { CacheInfo } from "src/utils/cache.info";
 import { CacheService } from "@multiversx/sdk-nestjs-cache";
 
@@ -13,6 +13,7 @@ const bech32FromHex = (hex: any) => {
 const bech32FromBytes = (u8: any) => (u8 && u8.length ? Address.newFromHex(bytesToHex(u8)).toBech32() : "");
 
 const bytesToHex = (u8: any) => (u8 && u8.length ? Buffer.from(u8).toString("hex") : "");
+const bytesToBase64 = (u8: any) => (u8 && u8.length ? Buffer.from(u8).toString("base64") : "");
 // const bytesToString = (u8: any) => (u8 && u8.length ? Buffer.from(u8).toString("utf8") : "");
 const longToString = (v: any) =>
     v == null ? "" : (typeof v === "object" && typeof v.toString === "function" ? v.toString() : String(v));
@@ -63,8 +64,8 @@ function getDecodedUserAccountData(buf: any) {
             developerReward: devReward.toString(),
             address: address,
             ownerAddress: ownerAddress,
-            codeHash: bytesToHex(msg.CodeHash),
-            rootHash: bytesToHex(msg.RootHash),
+            codeHash: bytesToBase64(msg.CodeHash),
+            rootHash: bytesToBase64(msg.RootHash),
             userName: bytesToHex(msg.UserName),
             codeMetadata: bytesToHex(msg.CodeMetadata),
         };
@@ -99,33 +100,37 @@ export function decodeAccountChanges(flags: number | undefined): AccountChanges 
     });
 }
 
-function getDecodedEsdtData(bufTrieLeafValue: any, trieLeafKey: string) {
+function getDecodedEsdtData(address: string, dataTrieChange: DataTrieChange) {
+    const bufTrieLeafValue = Buffer.from(dataTrieChange.val, "base64");
     const esdtPrefix = 'ELRONDesdt';
     try {
-        const msgEsdtData: ESDigitalToken = ESDigitalToken.decode(bufTrieLeafValue);
-
-        const valueBigInt: bigint = decodeMxSignMagBigInt(msgEsdtData.Value);
-        const keyRaw = Buffer.from(trieLeafKey, "base64").toString();
+        const keyRaw = Buffer.from(dataTrieChange.key, "base64").toString();
         let key = keyRaw;
         if (keyRaw.startsWith(esdtPrefix)) {
             key = keyRaw.slice(esdtPrefix.length);
+            const msgEsdtData: ESDigitalToken = ESDigitalToken.decode(bufTrieLeafValue as Uint8Array);
+
+            const valueBigInt: bigint = decodeMxSignMagBigInt(msgEsdtData.Value);
+            const [identifier, nonceHex] = TokenParser.extractTokenIDAndNonceHexFromTokenStorageKey(key);
+
+            return {
+                identifier: nonceHex !== '00' ? `${identifier}-${nonceHex}` : identifier,
+                nonce: parseInt(nonceHex, 16).toString(),
+                type: msgEsdtData.Type,
+                value: valueBigInt.toString(),
+                propertiesHex: bytesToHex(msgEsdtData.Properties),
+                reservedHex: bytesToHex(msgEsdtData.Reserved),
+                tokenMetaData: msgEsdtData.TokenMetaData ?? null,
+            };
         } else {
             //TODO: handle if needed
+
             return null;
         }
-        const [identifier, nonceHex] = TokenParser.extractTokenIDAndNonceHexFromTokenStorageKey(key);
-
-        return {
-            identifier: nonceHex !== '00' ? `${identifier}-${nonceHex}` : identifier,
-            nonce: parseInt(nonceHex, 16).toString(),
-            type: msgEsdtData.Type,
-            value: valueBigInt.toString(),
-            propertiesHex: bytesToHex(msgEsdtData.Properties),
-            reservedHex: bytesToHex(msgEsdtData.Reserved),
-            tokenMetaData: msgEsdtData.TokenMetaData ?? null,
-        };
     } catch (e: any) {
         console.warn(`Could not decode as EsdtData: ${e.message}`);
+        console.log(address, ':')
+        console.dir(dataTrieChange)
         return null;
     }
 }
@@ -147,6 +152,7 @@ export function decodeStateChangesRaw(blockWithStateChanges: BlockWithStateChang
                 const bufAccountData = Buffer.from(base64AccountData, "base64");
                 decodedAccountData = getDecodedUserAccountData(bufAccountData);
             }
+
             const dataTrieChanges = sa.dataTrieChanges;
 
 
@@ -156,8 +162,8 @@ export function decodeStateChangesRaw(blockWithStateChanges: BlockWithStateChang
                     if (dataTrieChange.version === 0) {
                         console.warn(`Entry #${i}: unsupported dataTrieChanges version 0`);
                     } else {
-                        const bufTrieLeafValue = Buffer.from(dataTrieChange.val, "base64");
-                        const decodedEsdtData = getDecodedEsdtData(bufTrieLeafValue, dataTrieChange.key);
+
+                        const decodedEsdtData = getDecodedEsdtData(address, dataTrieChange);
 
                         if (decodedEsdtData) {
                             if (dataTrieChange.operation === DataTrieChangeOperation.Delete) {
@@ -263,10 +269,9 @@ export function decodeStateChangesFinal(blockWithStateChanges: BlockWithStateCha
                 for (let i = dataTrieChanges.length - 1; i >= 0; i--) {
                     const dataTrieChange = dataTrieChanges[i];
                     if (dataTrieChange.version === 0) {
-                        console.warn(`  Entry #${i}: unsupported dataTrieChanges version 0`);
+                        console.warn(`Unsupported dataTrieChanges version 0`);
                     } else if (dataTrieChange.val) {
-                        const bufTrieLeafValue = Buffer.from(dataTrieChange.val, "base64");
-                        const decodedEsdtData = getDecodedEsdtData(bufTrieLeafValue, dataTrieChange.key);
+                        const decodedEsdtData = getDecodedEsdtData(address, dataTrieChange);
                         if (decodedEsdtData) {
                             const esdtId = decodedEsdtData.identifier;
                             if (!esdtOccured[esdtId]) {

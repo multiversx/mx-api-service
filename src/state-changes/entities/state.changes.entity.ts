@@ -31,7 +31,7 @@ export class StateAccessPerAccountRaw {
 export class DataTrieChange {
     type!: number;
     key!: string;
-    val!: string;
+    val!: any;
     version!: number;
     operation!: DataTrieChangeOperation;
 }
