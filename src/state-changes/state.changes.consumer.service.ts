@@ -36,10 +36,6 @@ export class StateChangesConsumerService {
 
             const endDecoding = Date.now();
             const decodingDuration = endDecoding - startDecoding;
-
-            console.dir(finalStates, { depth: null })
-            // console.timeEnd('decode time')
-            this.accountDetailsRepository
             await this.accountDetailsRepository.updateAccounts(transformedFinalStates);
 
             await this.cacheService.setRemote(
@@ -52,7 +48,7 @@ export class StateChangesConsumerService {
             const duration = end - start;
             if (duration > 10) {
                 // console.dir(finalStates, { depth: null })
-                console.log(`decoding duration: ${decodingDuration}`)
+                console.log(`decoding duration: ${decodingDuration}ms`)
                 console.log(`processing time shard ${blockWithStateChanges.shardID}: ${duration}ms`);
             }
         } catch (error) {
@@ -71,12 +67,17 @@ export class StateChangesConsumerService {
 
     private transformFinalStatesToDbFormat(finalStates: Record<string, StateChanges>, shardID: number) {
         const transformed: AccountDetails[] = [];
-        for (const [_key, state] of Object.entries(finalStates)) {
+
+        for (const [_address, state] of Object.entries(finalStates)) {
+            // t1 + 0.5
+            // const accountExists = await this.accountDetailsRepository.accountExists(address);
+            // if (!accountExists) {
+            //     continue;
+            // }
             const newAccountState = state.accountState;
 
             const tokens = [
                 ...state.esdtState.Fungible,
-
             ];
 
             const nfts = [
@@ -93,6 +94,7 @@ export class StateChangesConsumerService {
                 transformed.push(new AccountDetails({
                     ...newAccountState,
                     shard: shardID,
+                    ...this.parseCodeMetadata(newAccountState.codeMetadata),
                     tokens: tokens.map(token => new TokenWithBalance({
                         identifier: token.identifier,
                         nonce: parseInt(token.nonce),
@@ -114,6 +116,26 @@ export class StateChangesConsumerService {
         }
 
         return transformed;
+    }
+
+
+
+    private parseCodeMetadata(hexStr?: string) {
+        const UPGRADEABLE = 0x01_00; // 256
+        const READABLE = 0x04_00; // 1024
+        const PAYABLE = 0x00_02; // 2
+        const PAYABLE_BY_SC = 0x00_04; // 4
+        if (!hexStr || hexStr === '') {
+            return {};
+        }
+        const value = parseInt(hexStr, 16);
+
+        return {
+            isUpgradeable: (value & UPGRADEABLE) !== 0,
+            isReadable: (value & READABLE) !== 0,
+            isPayable: (value & PAYABLE) !== 0,
+            isPayableBySmartContract: (value & PAYABLE_BY_SC) !== 0,
+        };
     }
 
     private parseEsdtType(type: ESDTType): TokenType | NftType {
@@ -157,5 +179,4 @@ export class StateChangesConsumerService {
                 return NftSubType.DynamicMetaESDT;
         }
     }
-
 }
