@@ -541,6 +541,110 @@ describe('TransactionGetService', () => {
     });
   });
 
+  describe('removeDuplicatedESDTTransferEvents', () => {
+    it('should remove duplicate ESDTTransfer events with identical content', () => {
+      const events = [
+        new TransactionLogEvent({
+          identifier: 'ESDTTransfer',
+          address: 'erd1qyu5wthldzr8wx5c9ucg8kjagg0jfs53s8nr3zpz3hypefsdd8ssycr6th',
+          topics: ['T05FLTgzYTdjMA==', '', 'CteOvFrGIAAA', 'O7KEpcfOqbXzBNR3sVA22d7LTk6wxoyr3gsDuSXrKdg='],
+          additionalData: ['', 'RVNEVFRyYW5zZmVy', 'T05FLTgzYTdjMA==', 'CteOvFrGIAAA'],
+        }),
+        new TransactionLogEvent({
+          identifier: 'writeLog',
+          address: 'erd18wegffw8e65mtucy63mmz5pkm80vknjwkrrge277pvpmjf0t98vq0wgr49',
+          topics: ['ATlHLv9ohncamC8wg9pdQh8kwpGB5jiIIo3IHKYNaeE='],
+          data: 'QDZmNmI=',
+          additionalData: ['QDZmNmI='],
+        }),
+        new TransactionLogEvent({
+          identifier: 'ESDTTransfer',
+          address: 'erd1qyu5wthldzr8wx5c9ucg8kjagg0jfs53s8nr3zpz3hypefsdd8ssycr6th',
+          topics: ['T05FLTgzYTdjMA==', '', 'CteOvFrGIAAA', 'O7KEpcfOqbXzBNR3sVA22d7LTk6wxoyr3gsDuSXrKdg='],
+          additionalData: ['', 'RVNEVFRyYW5zZmVy', 'T05FLTgzYTdjMA==', 'CteOvFrGIAAA'],
+        }),
+        new TransactionLogEvent({
+          identifier: 'completedTxEvent',
+          address: 'erd18wegffw8e65mtucy63mmz5pkm80vknjwkrrge277pvpmjf0t98vq0wgr49',
+          topics: ['RaB5PmNc/Gb1ucHpxQ8Q2XviQgobRKw0nvrlRqSpED4='],
+        }),
+      ];
+
+      service['removeDuplicatedESDTTransferEvents'](events);
+
+      expect(events.length).toBe(3);
+
+      const esdtTransferEvents = events.filter(e => e.identifier === 'ESDTTransfer');
+      expect(esdtTransferEvents.length).toBe(1);
+
+      expect(events.filter(e => e.identifier === 'writeLog').length).toBe(1);
+      expect(events.filter(e => e.identifier === 'completedTxEvent').length).toBe(1);
+    });
+
+    it('should not remove ESDTTransfer events with different content', () => {
+      const events = [
+        new TransactionLogEvent({
+          identifier: 'ESDTTransfer',
+          address: 'erd1address1',
+          topics: ['topic1', 'topic2'],
+          data: 'data1',
+          additionalData: ['additional1'],
+        }),
+        new TransactionLogEvent({
+          identifier: 'ESDTTransfer',
+          address: 'erd1address2',
+          topics: ['topic3', 'topic4'],
+          data: 'data2',
+          additionalData: ['additional2'],
+        }),
+      ];
+
+      service['removeDuplicatedESDTTransferEvents'](events);
+
+      // Should keep both events since they have different content
+      expect(events.length).toBe(2);
+      expect(events.filter(e => e.identifier === 'ESDTTransfer').length).toBe(2);
+    });
+
+    it('should do nothing when there are no ESDTTransfer events', () => {
+      const events = [
+        new TransactionLogEvent({
+          identifier: 'writeLog',
+          address: 'erd1address1',
+          topics: ['topic1'],
+          data: 'data1',
+        }),
+        new TransactionLogEvent({
+          identifier: 'completedTxEvent',
+          address: 'erd1address2',
+          topics: ['topic2'],
+          data: 'data2',
+        }),
+      ];
+
+      const originalLength = events.length;
+      service['removeDuplicatedESDTTransferEvents'](events);
+
+      expect(events.length).toBe(originalLength);
+    });
+
+    it('should do nothing when there is only one ESDTTransfer event', () => {
+      const events = [
+        new TransactionLogEvent({
+          identifier: 'ESDTTransfer',
+          address: 'erd1address1',
+          topics: ['topic1'],
+          data: 'data1',
+        }),
+      ];
+
+      service['removeDuplicatedESDTTransferEvents'](events);
+
+      expect(events.length).toBe(1);
+      expect(events[0].identifier).toBe('ESDTTransfer');
+    });
+  });
+
   describe('tryGetTransactionFromGatewayForList', () => {
     it('should return transaction when gateway returns data', async () => {
       const mockGatewayTransaction = {

@@ -21,6 +21,7 @@ import { QueryPagination } from "src/common/entities/query.pagination";
 import { NftFilter } from "../nfts/entities/nft.filter";
 import { TokenAccount } from "src/common/indexer/entities";
 import { ApiConfigService } from "../../common/api-config/api.config.service";
+import crypto from 'crypto-js';
 
 @Injectable()
 export class TransactionGetService {
@@ -155,6 +156,7 @@ export class TransactionGetService {
         const logs = await this.getTransactionLogsFromElastic(hashes);
         for (const log of logs) {
           this.alterDuplicatedTransferValueOnlyEvents(log.events);
+          this.removeDuplicatedESDTTransferEvents(log.events);
         }
 
         if (!fields || fields.length === 0 || fields.includes(TransactionOptionalFieldOption.operations)) {
@@ -198,6 +200,53 @@ export class TransactionGetService {
     ) {
       asyncCallbackEvents[0].topics[0] = BinaryUtils.hexToBase64(BinaryUtils.numberToHex(0));
     }
+  }
+
+  private removeDuplicatedESDTTransferEvents(events: TransactionLogEvent[]) {
+    const esdtTransferEvents = events.filter(x => x.identifier === 'ESDTTransfer');
+
+    if (esdtTransferEvents.length <= 1) {
+      return;
+    }
+
+    const eventGroups = new Map<string, TransactionLogEvent[]>();
+
+    for (const event of esdtTransferEvents) {
+      const contentHash = this.getEventContentHash(event);
+      if (!eventGroups.has(contentHash)) {
+        eventGroups.set(contentHash, []);
+      }
+      const group = eventGroups.get(contentHash);
+      if (group) {
+        group.push(event);
+      }
+    }
+
+    const duplicateEvents = new Set<TransactionLogEvent>();
+    for (const [, eventGroup] of eventGroups) {
+      if (eventGroup.length > 1) {
+        for (let i = 1; i < eventGroup.length; i++) {
+          duplicateEvents.add(eventGroup[i]);
+        }
+      }
+    }
+
+    for (let i = events.length - 1; i >= 0; i--) {
+      if (duplicateEvents.has(events[i])) {
+        events.splice(i, 1);
+      }
+    }
+  }
+
+  private getEventContentHash(event: TransactionLogEvent): string {
+    const content = {
+      address: event.address,
+      identifier: event.identifier,
+      topics: event.topics,
+      data: event.data,
+      additionalData: event.additionalData,
+    };
+    return crypto.MD5(JSON.stringify(content)).toString();
   }
 
   private applyUsernamesToDetailedTransaction(transaction: IndexerTransaction, transactionDetailed: TransactionDetailed) {
