@@ -186,7 +186,8 @@ export class NetworkService {
     );
 
     if (!vmQueryResult || vmQueryResult.length < 2) {
-      throw new Error(`Could not fetch getTotalStakeByType from delegation contract address '${delegationContractAddress}'`);
+      this.logger.warn(`Could not fetch getTotalStakeByType from delegation contract address '${delegationContractAddress}'`);
+      return BigInt(0);
     }
 
     const totalWaitingStakeBase64 = vmQueryResult[1];
