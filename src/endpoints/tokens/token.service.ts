@@ -93,16 +93,19 @@ export class TokenService {
 
     this.applyTickerFromAssets(token);
 
-    await this.applySupply(token, supplyOptions);
-
-    if (token.type === TokenType.FungibleESDT) {
-      token.roles = await this.getTokenRoles(identifier);
-    } else if (token.type === TokenType.MetaESDT) {
-      const elasticCollection = await this.indexerService.getCollection(identifier);
-      if (elasticCollection) {
-        await this.collectionService.applyCollectionRoles(token, elasticCollection);
-      }
-    }
+    await Promise.all([
+      this.applySupply(token, supplyOptions),
+      (async () => {
+        if (token.type === TokenType.FungibleESDT) {
+          token.roles = await this.getTokenRoles(identifier);
+        } else if (token.type === TokenType.MetaESDT) {
+          const elasticCollection = await this.indexerService.getCollection(identifier);
+          if (elasticCollection) {
+            await this.collectionService.applyCollectionRoles(token, elasticCollection);
+          }
+        }
+      })(),
+    ]);
 
     return token;
   }
@@ -775,8 +778,10 @@ export class TokenService {
 
     this.logger.log(`Fetched ${tokens.length} fungible tokens`);
 
+    const allAssets = await this.assetsService.getAllTokenAssets();
+
     for (const token of tokens) {
-      const assets = await this.assetsService.getTokenAssets(token.identifier);
+      const assets = allAssets[token.identifier];
 
       if (assets && assets.name) {
         token.name = assets.name;
@@ -812,10 +817,13 @@ export class TokenService {
 
     await this.batchProcessTokens(tokens);
 
-    await this.applyMexLiquidity(tokens.filter(x => x.type !== TokenType.MetaESDT));
-    await this.applyMexPrices(tokens.filter(x => x.type !== TokenType.MetaESDT));
-    await this.applyMexPairType(tokens.filter(x => x.type !== TokenType.MetaESDT));
-    await this.applyMexPairTradesCount(tokens.filter(x => x.type !== TokenType.MetaESDT));
+    const nonMetaEsdtTokens = tokens.filter(x => x.type !== TokenType.MetaESDT);
+    await Promise.all([
+      this.applyMexLiquidity(nonMetaEsdtTokens),
+      this.applyMexPrices(nonMetaEsdtTokens),
+      this.applyMexPairType(nonMetaEsdtTokens),
+      this.applyMexPairTradesCount(nonMetaEsdtTokens),
+    ]);
 
     await this.cachingService.batchApplyAll(
       tokens,
