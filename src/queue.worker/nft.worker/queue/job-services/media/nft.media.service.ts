@@ -8,7 +8,6 @@ import { PersistenceService } from "src/common/persistence/persistence.service";
 import { MediaMimeTypeEnum } from "src/endpoints/nfts/entities/media.mime.type";
 import { Nft } from "src/endpoints/nfts/entities/nft";
 import { NftMedia } from "src/endpoints/nfts/entities/nft.media";
-import { NftType } from "src/endpoints/nfts/entities/nft.type";
 import { TokenHelpers } from "src/utils/token.helpers";
 import { ClientProxy } from "@nestjs/microservices";
 import { OriginLogger } from "@multiversx/sdk-nestjs-common";
@@ -63,10 +62,6 @@ export class NftMediaService {
   }
 
   private async getMediaRaw(nft: Nft): Promise<NftMedia[] | null> {
-    if (nft.type === NftType.MetaESDT) {
-      return null;
-    }
-
     if (!nft.uris) {
       return null;
     }

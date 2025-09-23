@@ -70,7 +70,7 @@ export class NftService {
     const nfts = await this.getNftsInternal({ from, size }, filter);
 
     await Promise.all([
-      this.batchApplyAssetsAndTicker(nfts),
+      this.conditionallyApplyAssetsAndTicker(nfts, undefined, queryOptions),
       this.conditionallyApplyOwners(nfts, queryOptions),
       this.conditionallyApplySupply(nfts, queryOptions),
       this.batchProcessNfts(nfts),
@@ -86,6 +86,77 @@ export class NftService {
       this.batchApplyMedia(nfts, fields),
       this.batchApplyMetadata(nfts, fields),
     ]);
+  }
+
+  private async conditionallyApplyAssetsAndTicker(nfts: Nft[], fields?: string[], queryOptions?: { withAssets?: boolean }): Promise<void> {
+    if (fields && fields.includesNone(['ticker', 'assets'])) {
+      return;
+    }
+
+    const allAssets = await this.assetsService.getAllTokenAssets();
+    if (queryOptions?.withAssets === false) {
+      return;
+    }
+
+    for (const nft of nfts) {
+      nft.assets = allAssets[nft.identifier] ?? allAssets[nft.collection];
+
+      if (nft.assets) {
+        nft.ticker = nft.collection.split('-')[0];
+      } else {
+        nft.ticker = nft.collection;
+      }
+    }
+  }
+
+  private async conditionallyApplyOwners(nfts: Nft[], queryOptions?: NftQueryOptions): Promise<void> {
+    if (!queryOptions?.withOwner) {
+      return;
+    }
+
+    const nftsIdentifiers = nfts.filter(x => x.type === NftType.NonFungibleESDT).map(x => x.identifier);
+
+    if (nftsIdentifiers.length === 0) {
+      return;
+    }
+
+    const accountsEsdts = await this.getAccountEsdtByIdentifiers(nftsIdentifiers, {
+      from: 0,
+      size: nftsIdentifiers.length,
+    });
+
+    const ownerMap = accountsEsdts.reduce((acc: Record<string, string>, accountEsdt: any) => {
+      acc[accountEsdt.identifier] = accountEsdt.address;
+      return acc;
+    }, {});
+
+    for (const nft of nfts) {
+      if (nft.type === NftType.NonFungibleESDT && ownerMap[nft.identifier]) {
+        nft.owner = ownerMap[nft.identifier];
+      }
+    }
+  }
+
+  private async conditionallyApplySupply(nfts: Nft[], queryOptions?: NftQueryOptions): Promise<void> {
+    if (!queryOptions?.withSupply) {
+      return;
+    }
+
+    const supplyNfts = nfts.filter(nft => nft.type.in(NftType.SemiFungibleESDT, NftType.MetaESDT));
+
+    if (supplyNfts.length > 0) {
+      await this.batchApplySupply(supplyNfts);
+    }
+  }
+
+  private async batchApplyUnlockFields(nfts: Nft[], fields?: string[]): Promise<void> {
+    if (fields && fields.includesNone(['unlockSchedule', 'unlockEpoch'])) {
+      return;
+    }
+
+    await Promise.all(
+      nfts.map(nft => this.applyUnlockFields(nft, fields))
+    );
   }
 
   private async batchApplyAssetsAndTicker(nfts: Nft[], fields?: string[]): Promise<void> {
@@ -451,8 +522,6 @@ export class NftService {
           nft.decimals = collectionProperties.decimals;
           // @ts-ignore
           delete nft.royalties;
-          // @ts-ignore
-          delete nft.uris;
         }
       }
     }
