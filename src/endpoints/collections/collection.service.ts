@@ -169,10 +169,12 @@ export class CollectionService {
   async batchGetCollectionsAssets(identifiers: string[]): Promise<{ [key: string]: TokenAssets | undefined }> {
     const collectionsAssets: { [key: string]: TokenAssets | undefined } = {};
 
+    const allAssets = await this.assetsService.getAllTokenAssets();
+
     await this.cachingService.batchApplyAll(
       identifiers,
       identifier => CacheInfo.EsdtAssets(identifier).key,
-      identifier => this.assetsService.getTokenAssets(identifier),
+      identifier => Promise.resolve(allAssets[identifier]),
       (identifier, properties) => collectionsAssets[identifier] = properties,
       CacheInfo.EsdtAssets('').ttl
     );
