@@ -11,6 +11,7 @@ import { NetworkGateway } from './network.gateway';
 import { TransactionsGateway } from './transaction.gateway';
 import { PoolGateway } from './pool.gateway';
 import { EventsGateway } from './events.gateway';
+import { ConnectionHandler } from './connection.handler';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { EventsGateway } from './events.gateway';
   ],
   providers: [
     WebsocketCronService,
+    ConnectionHandler,
     BlocksGateway,
     NetworkGateway,
     TransactionsGateway,

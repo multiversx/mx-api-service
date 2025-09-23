@@ -1,11 +1,4 @@
-import {
-    WebSocketGateway,
-    WebSocketServer,
-    SubscribeMessage,
-    OnGatewayDisconnect,
-    MessageBody,
-    ConnectedSocket,
-} from '@nestjs/websockets';
+import { WebSocketGateway, WebSocketServer, SubscribeMessage, MessageBody, ConnectedSocket } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { UseFilters } from '@nestjs/common';
 import { WebsocketExceptionsFilter } from 'src/utils/ws-exceptions.filter';
@@ -18,7 +11,7 @@ import { QueryPagination } from 'src/common/entities/query.pagination';
 
 @UseFilters(WebsocketExceptionsFilter)
 @WebSocketGateway({ cors: { origin: '*' }, path: '/ws/subscription' })
-export class EventsGateway implements OnGatewayDisconnect {
+export class EventsGateway {
     private readonly logger = new OriginLogger(EventsGateway.name);
 
     @WebSocketServer()
@@ -60,6 +53,4 @@ export class EventsGateway implements OnGatewayDisconnect {
             }
         }
     }
-
-    handleDisconnect(_client: Socket) { }
 }
