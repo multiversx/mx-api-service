@@ -14,8 +14,9 @@ export class TokenParser {
      *   "ALC-2w3e4rX" -> ["ALC-2w3e4r", "X"] (non-fungible, nonce = "X")
      */
     public static extractTokenIDAndNonceHexFromTokenStorageKey(
-        tokenKey: string
+        tokenKeyRaw: Buffer
     ): [string, string] {
+        const tokenKey = tokenKeyRaw.toString();
         const token = tokenKey;
 
         const indexOfFirstHyphen = token.indexOf(this.separatorChar);
@@ -48,7 +49,7 @@ export class TokenParser {
         const numCharsSinceNonce = token.length - nonceStr.length;
         const tokenID = token.slice(0, numCharsSinceNonce);
         if (nonceStr) {
-            return [tokenID, Buffer.from(nonceStr).toString('hex')]
+            return [tokenID, Array.from(tokenKeyRaw.slice(tokenID.length)).map(byte => byte.toString(16).padStart(2, '0')).join('')];
         }
         return [tokenID, "00"];
     }

@@ -20,12 +20,9 @@ flags:
   processNfts: true
   collectionPropertiesFromGateway: false
 features:
-  stateChanges:
-    enabled: true
-    port: 5675
-    url: 'amqp://guest:guest@127.0.0.1:5672'
-    exchange: 'state_accesses'
-    queue: 'state-changes'
+  websocketSubscription:
+    enabled: false
+    port: 6002
   eventsNotifier:
     enabled: false
     port: 5674
@@ -37,7 +34,7 @@ features:
     hitsThreshold: 100
     ttl: 12
   transactionPool:
-    enabled: false
+    enabled: true
   transactionPoolWarmer:
     enabled: false
     cronExpression: '*/5 * * * * *'
@@ -136,7 +133,7 @@ urls:
   elastic:
     - 'https://devnet-index.multiversx.com'
   gateway:
-    - 'https://devnet-gateway.multiversx.com'
+    - 'https://k8s-devnet-gateway.multiversx.com'
   verifier: 'https://play-api.multiversx.com'
   redis: '127.0.0.1'
   rabbitmq: 'amqp://127.0.0.1:5672'

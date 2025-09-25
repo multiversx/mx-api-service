@@ -104,14 +104,14 @@ function getDecodedEsdtData(address: string, dataTrieChange: DataTrieChange) {
     const bufTrieLeafValue = Buffer.from(dataTrieChange.val, "base64");
     const esdtPrefix = 'ELRONDesdt';
     try {
-        const keyRaw = Buffer.from(dataTrieChange.key, "base64").toString();
-        let key = keyRaw;
+        const keyRawBuf = Buffer.from(dataTrieChange.key, "base64");
+        const keyRaw = keyRawBuf.toString();
         if (keyRaw.startsWith(esdtPrefix)) {
-            key = keyRaw.slice(esdtPrefix.length);
+            const keyBuf = keyRawBuf.slice(esdtPrefix.length);
             const msgEsdtData: ESDigitalToken = ESDigitalToken.decode(bufTrieLeafValue as Uint8Array);
 
             const valueBigInt: bigint = decodeMxSignMagBigInt(msgEsdtData.Value);
-            const [identifier, nonceHex] = TokenParser.extractTokenIDAndNonceHexFromTokenStorageKey(key);
+            const [identifier, nonceHex] = TokenParser.extractTokenIDAndNonceHexFromTokenStorageKey(keyBuf);
 
             return {
                 identifier: nonceHex !== '00' ? `${identifier}-${nonceHex}` : identifier,
@@ -393,9 +393,6 @@ export async function isDbValid(cacheService: CacheService): Promise<boolean> {
     }
 
     const diff = Date.now() - minTimestamp;
-    console.log('Min timestamp from cache:', minTimestamp);
-    console.log('Current timestamp:', Date.now());
-    console.group('diff', diff);
     const blockTime = 6000;
     return diff < blockTime;
 }
