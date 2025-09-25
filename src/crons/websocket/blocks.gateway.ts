@@ -25,35 +25,46 @@ export class BlocksGateway {
     @MessageBody(new WsValidationPipe()) payload: BlockSubscribePayload
   ) {
     const filterHash = JSON.stringify(payload);
-    await client.join(`block-${filterHash}`);
+    await client.join(`blocks-${filterHash}`);
 
     return { status: 'success' };
   }
 
-  async pushBlocks() {
-    for (const [roomName] of this.server.sockets.adapter.rooms) {
-      try {
-        if (!roomName.startsWith("block-")) continue;
+  async pushBlocksForRoom(roomName: string): Promise<void> {
+    if (!roomName.startsWith("blocks-")) return;
 
-        const filterHash = roomName.replace("block-", "");
-        const filter: BlockSubscribePayload = JSON.parse(filterHash);
+    try {
+      const filterHash = roomName.replace("blocks-", "");
+      const filter: BlockSubscribePayload = JSON.parse(filterHash);
 
-        const blockFilter = new BlockFilter({
-          shard: filter.shard,
-          order: filter.order,
-        });
+      const blockFilter = new BlockFilter({
+        shard: filter.shard,
+        order: filter.order,
+      });
 
-        const blocks = await this.blockService.getBlocks(
+      const [blocks, blocksCount] = await Promise.all([
+        this.blockService.getBlocks(
           blockFilter,
           new QueryPagination({ from: filter.from, size: filter.size }),
           filter.withProposerIdentity,
-        );
+        ),
+        this.blockService.getBlocksCount(blockFilter),
+      ]);
 
-        this.server.to(roomName).emit('blocksUpdate', blocks);
-      } catch (error) {
-        this.logger.error(error);
-      }
+      this.server.to(roomName).emit("blocksUpdate", { blocks, blocksCount });
+    } catch (error) {
+      this.logger.error(error);
     }
+  }
+
+  async pushBlocks(): Promise<void> {
+    const promises: Promise<void>[] = [];
+
+    for (const [roomName] of this.server.sockets.adapter.rooms) {
+      promises.push(this.pushBlocksForRoom(roomName));
+    }
+
+    await Promise.all(promises);
   }
 }
 

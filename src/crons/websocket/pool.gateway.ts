@@ -31,22 +31,42 @@ export class PoolGateway {
         return { status: 'success' };
     }
 
-    async pushPool() {
-        for (const [roomName] of this.server.sockets.adapter.rooms) {
-            try {
-                if (!roomName.startsWith("pool-")) continue;
+    async pushPoolForRoom(roomName: string): Promise<void> {
+        if (!roomName.startsWith("pool-")) return;
 
-                const filterHash = roomName.replace("pool-", "");
-                const filter: PoolSubscribePayload = JSON.parse(filterHash);
+        try {
+            const filterHash = roomName.replace("pool-", "");
+            const filter: PoolSubscribePayload = JSON.parse(filterHash);
 
-                const pool = await this.poolService.getPool(new QueryPagination({ from: filter.from, size: filter.size }), new PoolFilter({
-                    type: filter.type,
-                }));
+            const poolFilter = new PoolFilter({
+                type: filter.type,
+            });
 
-                this.server.to(roomName).emit('poolUpdate', pool);
-            } catch (error) {
-                this.logger.error(error);
-            }
+            const [pool, poolCount] = await Promise.all([
+                this.poolService.getPool(
+                    new QueryPagination({
+                        from: filter.from,
+                        size: filter.size,
+                    }),
+                    poolFilter,
+                ),
+                this.poolService.getPoolCount(poolFilter),
+            ]);
+
+            this.server.to(roomName).emit("poolUpdate", { pool, poolCount });
+        } catch (error) {
+            this.logger.error(error);
         }
     }
+
+    async pushPool(): Promise<void> {
+        const promises: Promise<void>[] = [];
+
+        for (const [roomName] of this.server.sockets.adapter.rooms) {
+            promises.push(this.pushPoolForRoom(roomName));
+        }
+
+        await Promise.all(promises);
+    }
+
 }
