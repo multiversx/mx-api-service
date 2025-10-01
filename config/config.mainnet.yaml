@@ -63,8 +63,8 @@ features:
     cronExpression: '*/5 * * * * *'
     activationEpoch: 1391
   chainAndromeda:
-    enabled: false
-    activationEpoch: 4
+    enabled: true
+    activationEpoch: 1763
   nodeEpochsLeft:
     enabled: false
   transactionProcessor:
@@ -85,6 +85,8 @@ features:
     durationThresholdMs: 5000
     failureCountThreshold: 5
     resetTimeoutMs: 30000
+  elasticMigratedIndices:
+    logs: 'events'
   statusChecker:
     enabled: false
     thresholds:

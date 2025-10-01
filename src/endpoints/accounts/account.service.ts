@@ -185,17 +185,20 @@ export class AccountService {
       }
 
       if (AddressUtils.isSmartContractAddress(address) && account.code) {
-        const deployTxHash = await this.getAccountDeployedTxHash(address);
+        const [deployTxHash, deployedAt, isVerified] = await Promise.all([
+          this.getAccountDeployedTxHash(address),
+          this.getAccountDeployedAt(address),
+          this.getAccountIsVerified(address, account.codeHash),
+        ]);
+
         if (deployTxHash) {
           account.deployTxHash = deployTxHash;
         }
 
-        const deployedAt = await this.getAccountDeployedAt(address);
         if (deployedAt) {
           account.deployedAt = deployedAt;
         }
 
-        const isVerified = await this.getAccountIsVerified(address, account.codeHash);
         if (isVerified) {
           account.isVerified = isVerified;
         }

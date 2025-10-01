@@ -84,6 +84,8 @@ features:
     durationThresholdMs: 5000
     failureCountThreshold: 5
     resetTimeoutMs: 30000
+  elasticMigratedIndices:
+    logs: 'events'
   statusChecker:
     enabled: false
     thresholds:
