@@ -50,15 +50,16 @@ export class TransactionsGateway {
     return { status: 'success' };
   }
 
-  async pushTransactions() {
-    for (const [roomName] of this.server.sockets.adapter.rooms) {
-      try {
-        if (!roomName.startsWith("tx-")) continue;
+  async pushTransactionsForRoom(roomName: string): Promise<void> {
+    if (!roomName.startsWith("tx-")) return;
 
-        const filterHash = roomName.replace("tx-", "");
-        const filter = JSON.parse(filterHash);
+    try {
+      const filterHash = roomName.replace("tx-", "");
+      const filter = JSON.parse(filterHash);
 
-        const options = TransactionQueryOptions.applyDefaultOptions(filter.size || 25, {
+      const options = TransactionQueryOptions.applyDefaultOptions(
+        filter.size || 25,
+        {
           withScResults: filter.withScResults,
           withOperations: filter.withOperations,
           withLogs: filter.withLogs,
@@ -66,43 +67,57 @@ export class TransactionsGateway {
           withUsername: filter.withUsername,
           withBlockInfo: filter.withBlockInfo,
           withActionTransferValue: filter.withActionTransferValue,
-        });
+        },
+      );
 
-        const transactionFilter = new TransactionFilter({
-          sender: filter.sender,
-          receivers: filter.receiver,
-          token: filter.token,
-          functions: filter.functions,
-          senderShard: filter.senderShard,
-          receiverShard: filter.receiverShard,
-          miniBlockHash: filter.miniBlockHash,
-          hashes: filter.hashes,
-          status: filter.status,
-          before: filter.before,
-          after: filter.after,
-          condition: filter.condition,
-          order: filter.order,
-          relayer: filter.relayer,
-          isRelayed: filter.isRelayed,
-          isScCall: filter.isScCall,
-          round: filter.round,
-          withRelayedScresults: filter.withRelayedScresults,
-        });
+      const transactionFilter = new TransactionFilter({
+        sender: filter.sender,
+        receivers: filter.receiver,
+        token: filter.token,
+        functions: filter.functions,
+        senderShard: filter.senderShard,
+        receiverShard: filter.receiverShard,
+        miniBlockHash: filter.miniBlockHash,
+        hashes: filter.hashes,
+        status: filter.status,
+        before: filter.before,
+        after: filter.after,
+        condition: filter.condition,
+        order: filter.order,
+        relayer: filter.relayer,
+        isRelayed: filter.isRelayed,
+        isScCall: filter.isScCall,
+        round: filter.round,
+        withRelayedScresults: filter.withRelayedScresults,
+      });
 
-        TransactionFilter.validate(transactionFilter, filter.size || 25);
+      TransactionFilter.validate(transactionFilter, filter.size || 25);
 
-        const txs = await this.transactionService.getTransactions(
+      const [transactions, transactionsCount] = await Promise.all([
+        this.transactionService.getTransactions(
           transactionFilter,
           new QueryPagination({ from: filter.from || 0, size: filter.size || 25 }),
           options,
           undefined,
           filter.fields || [],
-        );
+        ),
+        this.transactionService.getTransactionCount(transactionFilter),
+      ]);
 
-        this.server.to(roomName).emit('transactionUpdate', txs);
-      } catch (error) {
-        this.logger.error(error);
-      }
+      this.server.to(roomName).emit("transactionUpdate", { transactions, transactionsCount });
+    } catch (error) {
+      this.logger.error(error);
     }
   }
+
+  async pushTransactions(): Promise<void> {
+    const promises: Promise<void>[] = [];
+
+    for (const [roomName] of this.server.sockets.adapter.rooms) {
+      promises.push(this.pushTransactionsForRoom(roomName));
+    }
+
+    await Promise.all(promises);
+  }
+
 }

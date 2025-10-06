@@ -30,27 +30,41 @@ export class EventsGateway {
         return { status: 'success' };
     }
 
-    async pushEvents() {
-        for (const [roomName] of this.server.sockets.adapter.rooms) {
-            try {
-                if (!roomName.startsWith("events-")) continue;
+    async pushEventsForRoom(roomName: string): Promise<void> {
+        if (!roomName.startsWith("events-")) return;
 
-                const filterHash = roomName.replace("events-", "");
-                const filter: EventsSubscribePayload = JSON.parse(filterHash);
+        try {
+            const filterHash = roomName.replace("events-", "");
+            const filter: EventsSubscribePayload = JSON.parse(filterHash);
 
-                const eventsFilter = new EventsFilter({
-                    shard: filter.shard,
-                });
+            const eventsFilter = new EventsFilter({
+                shard: filter.shard,
+            });
 
-                const events = await this.eventsService.getEvents(
-                    new QueryPagination({ from: filter.from || 0, size: filter.size || 25 }),
+            const [events, eventsCount] = await Promise.all([
+                this.eventsService.getEvents(
+                    new QueryPagination({
+                        from: filter.from || 0,
+                        size: filter.size || 25,
+                    }),
                     eventsFilter,
-                );
+                ),
+                this.eventsService.getEventsCount(eventsFilter),
+            ]);
 
-                this.server.to(roomName).emit('eventsUpdate', events);
-            } catch (error) {
-                this.logger.error(error);
-            }
+            this.server.to(roomName).emit("eventsUpdate", { events, eventsCount });
+        } catch (error) {
+            this.logger.error(error);
         }
+    }
+
+    async pushEvents(): Promise<void> {
+        const promises: Promise<void>[] = [];
+
+        for (const [roomName] of this.server.sockets.adapter.rooms) {
+            promises.push(this.pushEventsForRoom(roomName));
+        }
+
+        await Promise.all(promises);
     }
 }
