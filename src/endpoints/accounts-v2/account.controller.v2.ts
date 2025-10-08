@@ -65,7 +65,7 @@ export class AccountControllerV2 {
   private readonly logger = new OriginLogger(AccountControllerV2.name);
 
   constructor(
-    private readonly accountService: AccountServiceV2,
+    private readonly accountServiceV2: AccountServiceV2,
     private readonly tokenService: TokenService,
     private readonly nftService: NftService,
     private readonly delegationLegacyService: DelegationLegacyService,
@@ -133,7 +133,7 @@ export class AccountControllerV2 {
         search,
       });
     queryOptions.validate(size);
-    return this.accountService.getAccounts(
+    return this.accountServiceV2.getAccounts(
       new QueryPagination({ from, size }),
       queryOptions,
     );
@@ -158,7 +158,7 @@ export class AccountControllerV2 {
     @Query("hasAssets", ParseBoolPipe) hasAssets?: boolean,
     @Query("search") search?: string,
   ): Promise<number> {
-    return await this.accountService.getAccountsCount(
+    return await this.accountServiceV2.getAccountsCount(
       new AccountQueryOptions(
         {
           ownerAddress,
@@ -182,7 +182,7 @@ export class AccountControllerV2 {
     @Query("hasAssets", ParseBoolPipe) hasAssets?: boolean,
     @Query("search") search?: string,
   ): Promise<number> {
-    return await this.accountService.getAccountsCount(
+    return await this.accountServiceV2.getAccountsCount(
       new AccountQueryOptions(
         {
           ownerAddress,
@@ -215,7 +215,7 @@ export class AccountControllerV2 {
     @Query('withAssets', ParseBoolPipe) withAssets?: boolean,
     @Query('timestamp', ParseIntPipe) _timestamp?: number,
   ): Promise<AccountDetailed> {
-    const account = await this.accountService.getAccountFromDb(
+    const account = await this.accountServiceV2.getAccount(
       address,
       new AccountFetchOptions({ withGuardianInfo, withTxCount, withScrCount, withTimestamp, withAssets }),
     );
@@ -231,7 +231,7 @@ export class AccountControllerV2 {
   @ApiOkResponse({ type: [AccountDeferred] })
   async getAccountDeferred(@Param('address', ParseAddressPipe) address: string): Promise<AccountDeferred[]> {
     try {
-      return await this.accountService.getDeferredAccount(address);
+      return await this.accountServiceV2.getDeferredAccount(address);
     } catch (error) {
       this.logger.error(`Error in getAccountDeferred for address ${address}`);
       this.logger.error(error);
@@ -244,7 +244,7 @@ export class AccountControllerV2 {
   @ApiOkResponse({ type: AccountVerification })
   async getAccountVerification(@Param('address', ParseAddressPipe) address: string): Promise<AccountVerification | null> {
     try {
-      return await this.accountService.getAccountVerification(address);
+      return await this.accountServiceV2.getAccountVerification(address);
     } catch (error) {
       this.logger.error(`Error in getAccountVerification for address ${address}`);
       this.logger.error(error);
@@ -845,7 +845,7 @@ export class AccountControllerV2 {
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
     @Query('status', new ParseEnumArrayPipe(NodeStatusRaw)) status?: NodeStatusRaw[],
   ): Promise<AccountKey[]> {
-    return await this.accountService.getKeys(
+    return await this.accountServiceV2.getKeys(
       address,
       new AccountKeyFilter({ status }),
       new QueryPagination({ from, size }));
@@ -1202,20 +1202,20 @@ export class AccountControllerV2 {
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
   ): Promise<DeployedContract[]> {
-    return this.accountService.getAccountDeploys(new QueryPagination({ from, size }), address);
+    return this.accountServiceV2.getAccountDeploys(new QueryPagination({ from, size }), address);
   }
 
   @Get("/accounts/:address/deploys/count")
   @ApiOperation({ summary: 'Account deploys count', description: 'Returns total number of deploys for a given address' })
   @ApiOkResponse({ type: Number })
   getAccountDeploysCount(@Param('address', ParseAddressPipe) address: string): Promise<number> {
-    return this.accountService.getAccountDeploysCount(address);
+    return this.accountServiceV2.getAccountDeploysCount(address);
   }
 
   @Get("/accounts/:address/deploys/c")
   @ApiExcludeEndpoint()
   getAccountDeploysCountAlternative(@Param('address', ParseAddressPipe) address: string): Promise<number> {
-    return this.accountService.getAccountDeploysCount(address);
+    return this.accountServiceV2.getAccountDeploysCount(address);
   }
 
   @Get("/accounts/:address/contracts")
@@ -1228,20 +1228,20 @@ export class AccountControllerV2 {
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
   ): Promise<AccountContract[]> {
-    return this.accountService.getAccountContracts(new QueryPagination({ from, size }), address);
+    return this.accountServiceV2.getAccountContracts(new QueryPagination({ from, size }), address);
   }
 
   @Get("/accounts/:address/contracts/count")
   @ApiOperation({ summary: 'Account contracts count', description: 'Returns total number of contracts for a given address' })
   @ApiOkResponse({ type: Number })
   getAccountContractsCount(@Param('address', ParseAddressPipe) address: string): Promise<number> {
-    return this.accountService.getAccountContractsCount(address);
+    return this.accountServiceV2.getAccountContractsCount(address);
   }
 
   @Get("/accounts/:address/contracts/c")
   @ApiExcludeEndpoint()
   getAccountContractsCountAlternative(@Param('address', ParseAddressPipe) address: string): Promise<number> {
-    return this.accountService.getAccountContractsCount(address);
+    return this.accountServiceV2.getAccountContractsCount(address);
   }
 
   @Get("/accounts/:address/upgrades")
@@ -1254,7 +1254,7 @@ export class AccountControllerV2 {
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
   ): Promise<ContractUpgrades[]> {
-    return this.accountService.getContractUpgrades(new QueryPagination({ from, size }), address);
+    return this.accountServiceV2.getContractUpgrades(new QueryPagination({ from, size }), address);
   }
 
   @Get("/accounts/:address/results")
@@ -1308,7 +1308,7 @@ export class AccountControllerV2 {
     @Query('before', ParseIntPipe) before?: number,
     @Query('after', ParseIntPipe) after?: number,
   ): Promise<AccountHistory[]> {
-    return this.accountService.getAccountHistory(
+    return this.accountServiceV2.getAccountHistory(
       address,
       new QueryPagination({ from, size }),
       new AccountHistoryFilter({ before, after }));
@@ -1324,7 +1324,7 @@ export class AccountControllerV2 {
     @Query('before', ParseIntPipe) before?: number,
     @Query('after', ParseIntPipe) after?: number,
   ): Promise<number> {
-    return this.accountService.getAccountHistoryCount(
+    return this.accountServiceV2.getAccountHistoryCount(
       address,
       new AccountHistoryFilter({ before, after }));
   }
@@ -1344,7 +1344,7 @@ export class AccountControllerV2 {
     if (!isToken) {
       throw new NotFoundException(`Token '${tokenIdentifier}' not found`);
     }
-    return this.accountService.getAccountTokenHistoryCount(
+    return this.accountServiceV2.getAccountTokenHistoryCount(
       address,
       tokenIdentifier,
       new AccountHistoryFilter({ before, after }));
@@ -1368,7 +1368,7 @@ export class AccountControllerV2 {
     @Query('identifier', ParseArrayPipe) identifier?: string[],
     @Query('token', ParseTokenPipe) token?: string,
   ): Promise<AccountEsdtHistory[]> {
-    return await this.accountService.getAccountEsdtHistory(
+    return await this.accountServiceV2.getAccountEsdtHistory(
       address,
       new QueryPagination({ from, size }),
       new AccountHistoryFilter({ before, after, identifiers: identifier, token }));
@@ -1387,7 +1387,7 @@ export class AccountControllerV2 {
     @Query('identifier', ParseArrayPipe) identifier?: string[],
     @Query('token', ParseTokenPipe) token?: string,
   ): Promise<number> {
-    return await this.accountService.getAccountEsdtHistoryCount(
+    return await this.accountServiceV2.getAccountEsdtHistoryCount(
       address,
       new AccountHistoryFilter({ before, after, identifiers: identifier, token }));
   }
@@ -1412,7 +1412,7 @@ export class AccountControllerV2 {
       throw new NotFoundException(`Token '${tokenIdentifier}' not found`);
     }
 
-    return await this.accountService.getAccountTokenHistory(
+    return await this.accountServiceV2.getAccountTokenHistory(
       address, tokenIdentifier,
       new QueryPagination({ from, size }),
       new AccountHistoryFilter({ before, after }));

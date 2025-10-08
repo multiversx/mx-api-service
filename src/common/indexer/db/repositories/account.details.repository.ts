@@ -181,6 +181,8 @@ export class AccountDetailsRepository {
                         "nfts.type": 1,
                         "nfts.subType": 1,
                         "nfts.name": 1,
+                        "nfts.balance": 1,
+                        "nfts.subtype": 1,
                     }
                 }
             ]).exec();
@@ -221,6 +223,8 @@ export class AccountDetailsRepository {
                         "nfts.type": 1,
                         "nfts.subType": 1,
                         "nfts.name": 1,
+                        "nfts.balance": 1,
+                        "nfts.subtype": 1,
                     }
                 }
             ]).exec();

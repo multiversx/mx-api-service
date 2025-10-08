@@ -2,7 +2,7 @@ import { CompetingRabbitConsumer } from "src/common/rabbitmq/rabbitmq.consumers"
 import { BlockWithStateChangesRaw, ESDTType, StateChanges } from "./entities";
 import { decodeStateChangesFinal } from "./utils/state-changes.utils";
 import { AccountDetails, AccountDetailsRepository } from "src/common/indexer/db";
-import { Injectable } from "@nestjs/common";
+import { Inject, Injectable } from "@nestjs/common";
 import { TokenWithBalance } from "src/endpoints/tokens/entities/token.with.balance";
 import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { CacheInfo } from "src/utils/cache.info";
@@ -10,6 +10,7 @@ import { NftAccount } from "src/endpoints/nfts/entities/nft.account";
 import { TokenType } from "src/common/indexer/entities";
 import { NftType } from "src/endpoints/nfts/entities/nft.type";
 import { NftSubType } from "src/endpoints/nfts/entities/nft.sub.type";
+import { ClientProxy } from "@nestjs/microservices";
 
 @Injectable()
 export class StateChangesConsumerService {
@@ -17,6 +18,7 @@ export class StateChangesConsumerService {
         // private readonly apiConfigService: ApiConfigService,
         private readonly cacheService: CacheService,
         private readonly accountDetailsRepository: AccountDetailsRepository,
+        @Inject('PUBSUB_SERVICE') private clientProxy: ClientProxy,
     ) { }
 
     @CompetingRabbitConsumer({
@@ -26,22 +28,21 @@ export class StateChangesConsumerService {
     })
     async consumeEvents(blockWithStateChanges: BlockWithStateChangesRaw) {
         try {
-            const start = Date.now(); // ms la început
-            // console.time(`processing time shard ${blockWithStateChanges.shardID}`)
-            // console.time('decode time')
-            // console.dir(blockWithStateChanges, { depth: null })
+            const start = Date.now();
+
             const startDecoding = start;
             const finalStates = this.decodeStateChangesFinal(blockWithStateChanges);
-            const transformedFinalStates = this.transformFinalStatesToDbFormat(finalStates, blockWithStateChanges.shardID);
+
+            const transformedFinalStates = this.transformFinalStatesToDbFormat(finalStates, blockWithStateChanges.shardID, blockWithStateChanges.timestampMs);
 
             const endDecoding = Date.now();
             const decodingDuration = endDecoding - startDecoding;
-            await this.accountDetailsRepository.updateAccounts(transformedFinalStates);
+            await this.updateAccounts(transformedFinalStates);
 
             await this.cacheService.setRemote(
-                CacheInfo.LatestProcessedBlockTimestamp(blockWithStateChanges.shardID).key,
+                CacheInfo.StateChangesConsumerLatestProcessedBlockTimestamp(blockWithStateChanges.shardID).key,
                 blockWithStateChanges.timestampMs,
-                CacheInfo.LatestProcessedBlockTimestamp(blockWithStateChanges.shardID).ttl,
+                CacheInfo.StateChangesConsumerLatestProcessedBlockTimestamp(blockWithStateChanges.shardID).ttl,
             );
             // console.timeEnd(`processing time shard ${blockWithStateChanges.shardID}`)
             const end = Date.now(); // ms la final
@@ -61,11 +62,33 @@ export class StateChangesConsumerService {
     //     return decodeStateChangesRaw(stateChanges);
     // }
 
+    private async updateAccounts(transformedFinalStates: AccountDetails[]) {
+        const promisesToWaitFor = [this.accountDetailsRepository.updateAccounts(transformedFinalStates)];
+
+        // set as healthy 
+        const cacheKeys = [];
+        const values = [];
+        for (const account of transformedFinalStates) {
+            cacheKeys.push(CacheInfo.AccountState(account.address).key);
+            const { tokens, nfts, ...accountWithoutAssets } = account;
+            values.push(accountWithoutAssets);
+        }
+        promisesToWaitFor.push(
+            this.cacheService.setManyRemote(
+                cacheKeys,
+                values,
+                CacheInfo.AccountState('any').ttl,
+            )
+        );
+        this.deleteLocalCache(cacheKeys);
+
+        await Promise.all(promisesToWaitFor)
+    }
     private decodeStateChangesFinal(blockWithStateChanges: BlockWithStateChangesRaw) {
         return decodeStateChangesFinal(blockWithStateChanges);
     }
 
-    private transformFinalStatesToDbFormat(finalStates: Record<string, StateChanges>, shardID: number) {
+    private transformFinalStatesToDbFormat(finalStates: Record<string, StateChanges>, shardID: number, blockTimestampMs: number) {
         const transformed: AccountDetails[] = [];
 
         for (const [_address, state] of Object.entries(finalStates)) {
@@ -91,26 +114,30 @@ export class StateChangesConsumerService {
             ];
 
             if (newAccountState) {
-                transformed.push(new AccountDetails({
-                    ...newAccountState,
-                    shard: shardID,
-                    ...this.parseCodeMetadata(newAccountState.codeMetadata),
-                    tokens: tokens.map(token => new TokenWithBalance({
-                        identifier: token.identifier,
-                        nonce: parseInt(token.nonce),
-                        balance: token.value,
-                        type: this.parseEsdtType(token.type) as TokenType,
-                        subType: NftSubType.None,
-                    })),
-                    nfts: nfts.map(nft => new NftAccount({
-                        identifier: nft.identifier,
-                        nonce: parseInt(nft.nonce),
-                        type: this.parseEsdtType(nft.type) as NftType,
-                        subType: this.parseEsdtSubtype(nft.type),
-                        collection: nft.identifier.replace(/-[^-]*$/, ''), // delete everything after last `-` character inclusive
-                        balance: nft.value,
-                    }))
-                }));
+                const parsedAccount =
+                    new AccountDetails({
+                        ...newAccountState,
+                        shard: shardID,
+                        timestamp: blockTimestampMs,
+                        ...this.parseCodeMetadata(newAccountState.codeMetadata),
+                        tokens: tokens.map(token => new TokenWithBalance({
+                            identifier: token.identifier,
+                            nonce: parseInt(token.nonce),
+                            balance: token.value,
+                            type: this.parseEsdtType(token.type) as TokenType,
+                            subType: NftSubType.None,
+                        })),
+                        nfts: nfts.map(nft => new NftAccount({
+                            identifier: nft.identifier,
+                            nonce: parseInt(nft.nonce),
+                            type: this.parseEsdtType(nft.type) as NftType,
+                            subType: this.parseEsdtSubtype(nft.type),
+                            collection: nft.identifier.replace(/-[^-]*$/, ''), // delete everything after last `-` character inclusive
+                            balance: nft.value,
+                        }))
+                    });
+                transformed.push(parsedAccount);
+                console.log(parsedAccount)
             }
 
         }
@@ -119,6 +146,9 @@ export class StateChangesConsumerService {
     }
 
 
+    private deleteLocalCache(cacheKeys: string[]) {
+        this.clientProxy.emit('deleteCacheKeys', cacheKeys);
+    }
 
     private parseCodeMetadata(hexStr?: string) {
         const UPGRADEABLE = 0x01_00; // 256

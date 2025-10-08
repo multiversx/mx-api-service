@@ -28,8 +28,8 @@ export class AccountDetails {
     @Prop({ required: true, type: Number })
     shard: number = 0;
 
-    @Prop({ required: true, type: String })
-    ownerAddress: string = '';
+    @Prop({ required: false, type: String })
+    ownerAddress?: string;
 
     @Prop({ type: Object, required: false })
     assets?: AccountAssets;
@@ -55,20 +55,20 @@ export class AccountDetails {
     @Prop({ required: false, type: Number })
     transfersLast24h?: number;
 
-    @Prop({ required: true, type: String })
-    code: string = '';
+    @Prop({ required: false, type: String })
+    code?: string;
 
-    @Prop({ required: true, type: String })
-    codeHash: string = '';
+    @Prop({ required: false, type: String })
+    codeHash?: string;
 
-    @Prop({ required: true, type: String })
-    rootHash: string = '';
+    @Prop({ required: false, type: String })
+    rootHash?: string;
 
     @Prop({ required: false, type: String })
     username?: string;
 
     @Prop({ required: true, type: String })
-    developerReward: string = '';
+    developerReward: string = '0';
 
     @Prop({ required: false, type: Boolean })
     isUpgradeable?: boolean;

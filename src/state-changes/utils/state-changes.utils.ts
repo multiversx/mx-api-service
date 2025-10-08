@@ -58,17 +58,23 @@ function getDecodedUserAccountData(buf: any) {
         const address = bech32FromBytes(msg.Address);
         const ownerAddress = bech32FromBytes(msg.OwnerAddress);
 
-        return {
+        const data: AccountState = {
             nonce: longToString(msg.Nonce),
             balance: balance.toString(),
             developerReward: devReward.toString(),
-            address: address,
-            ownerAddress: ownerAddress,
+            address,
+            ownerAddress,
             codeHash: bytesToBase64(msg.CodeHash),
             rootHash: bytesToBase64(msg.RootHash),
             userName: bytesToHex(msg.UserName),
             codeMetadata: bytesToHex(msg.CodeMetadata),
         };
+
+        const filteredData = Object.fromEntries(
+            Object.entries(data).filter(([_, v]) => v !== undefined && v !== null && v !== '')
+        ) as AccountState;
+        console.log(filteredData)
+        return filteredData;
     } catch (e: any) {
         console.warn(`Could not decode as UserAccountData: ${e.message}`);
         return null;
@@ -100,7 +106,7 @@ export function decodeAccountChanges(flags: number | undefined): AccountChanges 
     });
 }
 
-function getDecodedEsdtData(address: string, dataTrieChange: DataTrieChange) {
+export function getDecodedEsdtData(address: string, dataTrieChange: DataTrieChange) {
     const bufTrieLeafValue = Buffer.from(dataTrieChange.val, "base64");
     const esdtPrefix = 'ELRONDesdt';
     try {
@@ -112,7 +118,7 @@ function getDecodedEsdtData(address: string, dataTrieChange: DataTrieChange) {
 
             const valueBigInt: bigint = decodeMxSignMagBigInt(msgEsdtData.Value);
             const [identifier, nonceHex] = TokenParser.extractTokenIDAndNonceHexFromTokenStorageKey(keyBuf);
-
+            console.log(`key: ${dataTrieChange.key}, identifier: ${identifier}, nonceHex: ${nonceHex}, type: ${msgEsdtData.Type}, value: ${valueBigInt.toString()}`);
             return {
                 identifier: nonceHex !== '00' ? `${identifier}-${nonceHex}` : identifier,
                 nonce: parseInt(nonceHex, 16).toString(),
@@ -372,12 +378,11 @@ export function getFinalStates(stateChanges: Record<string, any[]>) {
 }
 
 export async function isDbValid(cacheService: CacheService): Promise<boolean> {
-    // TODO: do not hardcode shard IDs
     const timestampsMs: (string | undefined)[] = await Promise.all([
-        cacheService.get(CacheInfo.LatestProcessedBlockTimestamp(0).key),
-        cacheService.get(CacheInfo.LatestProcessedBlockTimestamp(1).key),
-        cacheService.get(CacheInfo.LatestProcessedBlockTimestamp(2).key),
-        cacheService.get(CacheInfo.LatestProcessedBlockTimestamp(4294967295).key),
+        cacheService.get(CacheInfo.StateChangesConsumerLatestProcessedBlockTimestamp(0).key),
+        cacheService.get(CacheInfo.StateChangesConsumerLatestProcessedBlockTimestamp(1).key),
+        cacheService.get(CacheInfo.StateChangesConsumerLatestProcessedBlockTimestamp(2).key),
+        cacheService.get(CacheInfo.StateChangesConsumerLatestProcessedBlockTimestamp(4294967295).key),
     ]) as (string | undefined)[];;
 
     const numericValues = timestampsMs
@@ -392,7 +397,14 @@ export async function isDbValid(cacheService: CacheService): Promise<boolean> {
         return false;
     }
 
+    //@ts-ignore
     const diff = Date.now() - minTimestamp;
+    // console.log('Min timestamp from cache:', minTimestamp);
+    // console.log('Current timestamp:', Date.now());
+    // console.log('diff: ', diff);
     const blockTime = 6000;
-    return diff < blockTime;
+    return diff <= blockTime;
 }
+
+
+// key: RUxST05EZXNkdFNIQVJFUy0zMzc4ZGKT, identifier: SHARES-3378db, nonceHex: efbfbd

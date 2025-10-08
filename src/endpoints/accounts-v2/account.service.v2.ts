@@ -77,66 +77,75 @@ export class AccountServiceV2 {
     return await this.indexerService.getAccountsCount(filter);
   }
 
+  private async getAccountWithFallBack(address: string, options?: AccountFetchOptions): Promise<AccountDetailed | null> {
+    //  First try to get account from MongoDB
+    const accountFromDb = await this.accountDetailsDepository.getAccount(address);
+    if (!accountFromDb) {
+      return await this.getAccountRaw(address, options?.withAssets);
+    }
+    if (options && options.withAssets === true) {
+      const assets = await this.assetsService.getAllAccountAssets();
+      accountFromDb.assets = assets[address];
+      if (accountFromDb.ownerAddress && accountFromDb.ownerAddress !== '') {
+        accountFromDb.ownerAssets = assets[accountFromDb.ownerAddress];
+      }
+    }
+    return accountFromDb;
+  }
+
   async getAccount(address: string, options?: AccountFetchOptions): Promise<AccountDetailed | null> {
     if (!AddressUtils.isAddressValid(address)) {
       return null;
     }
-
-    const account = await this.getAccountRaw(address, options?.withAssets);
-    if (!account) {
-      return null;
-    }
-
-    if (options?.withTxCount === true) {
-      account.txCount = await this.getAccountTxCount(address);
-    }
-
-    if (options?.withScrCount === true) {
-      account.scrCount = await this.getAccountScResults(address);
-    }
-
-    if (options?.withGuardianInfo === true) {
-      await this.applyGuardianInfo(account);
-    }
-
-    if (options?.withTimestamp) {
-      const elasticSearchAccount = await this.indexerService.getAccount(address);
-      account.timestamp = elasticSearchAccount.timestamp;
-    }
-
-    if (AddressUtils.isSmartContractAddress(address)) {
-      const provider: Provider | undefined = await this.providerService.getProvider(address);
-      if (provider && provider.owner) {
-        account.ownerAddress = provider.owner;
-      }
-    }
-
-    return account;
-  }
-
-  async getAccountFromDb(address: string, options?: AccountFetchOptions): Promise<AccountDetailed | null> {
-    if (!AddressUtils.isAddressValid(address)) {
-      return null;
-    }
-
+    let account = null;
     try {
       const isDbUpToDate: boolean = await isDbValid(this.cachingService);
       if (isDbUpToDate === true) {
-        // First try to get account from MongoDB
-        const accountFromDb = await this.accountDetailsDepository.getAccount(address);
+        account = await this.cachingService.getOrSet(
+          CacheInfo.AccountState(address).key,
+          async () => this.getAccountWithFallBack(address, options),
+          CacheInfo.AccountState(address).ttl,
+        )
+      } else {
+        account = await this.getAccountRaw(address, options?.withAssets);
+      }
 
-        if (accountFromDb) {
-          // console.log('Account found in DB:', accountFromDb);
-          return accountFromDb;
+      if (!account) {
+        return null;
+      }
+
+      if (options?.withTxCount === true) {
+        account.txCount = await this.getAccountTxCount(address);
+      }
+
+      if (options?.withScrCount === true) {
+        account.scrCount = await this.getAccountScResults(address);
+      }
+
+      if (options?.withGuardianInfo === true) {
+        await this.applyGuardianInfo(account);
+      }
+
+      if (options?.withTimestamp) {
+        if (!account.timestamp) {
+          const elasticSearchAccount = await this.indexerService.getAccount(address);
+          account.timestamp = elasticSearchAccount.timestamp;
         }
       }
-      // If not found in DB, call getAccount with the same parameters
-      return await this.getAccount(address, options);
+
+      if (AddressUtils.isSmartContractAddress(address) && !account.ownerAddress) {
+        const provider: Provider | undefined = await this.providerService.getProvider(address);
+        if (provider && provider.owner) {
+          account.ownerAddress = provider.owner;
+        }
+      }
     } catch (error) {
-      this.logger.error(`Error when getting account from DB for address '${address}'`);
+      this.logger.error(`Error when getting account for address '${address}'`);
       this.logger.error(error);
       return null;
     }
+
+    return account;
   }
 
   async applyGuardianInfo(account: AccountDetailed): Promise<void> {

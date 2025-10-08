@@ -53,11 +53,11 @@ export class AccountState {
     balance!: string;
     developerReward!: string;
     address!: string;
-    codeHash!: string;
+    codeHash?: string;
     rootHash!: string;
-    ownerAddress!: string;
-    userName!: string;
-    codeMetadata!: string;
+    ownerAddress?: string;
+    userName?: string;
+    codeMetadata?: string;
 
     constructor(init?: Partial<AccountState>) {
         Object.assign(this, init);
