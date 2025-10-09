@@ -140,7 +140,7 @@ export class StateChangesDecoder {
 
                 const valueBigInt: bigint = this.decodeMxSignMagBigInt(msgEsdtData.Value);
                 const [identifier, nonceHex] = TokenParser.extractTokenIDAndNonceHexFromTokenStorageKey(keyBuf);
-                console.log(`key: ${dataTrieChange.key}, identifier: ${identifier}, nonceHex: ${nonceHex}, type: ${msgEsdtData.Type}, value: ${valueBigInt.toString()}`);
+
                 return {
                     identifier: nonceHex !== '00' ? `${identifier}-${nonceHex}` : identifier,
                     nonce: parseInt(nonceHex, 16).toString(),

@@ -11,9 +11,27 @@ import { NftType } from "src/endpoints/nfts/entities/nft.type";
 import { NftSubType } from "src/endpoints/nfts/entities/nft.sub.type";
 import { ClientProxy } from "@nestjs/microservices";
 import { StateChangesDecoder } from "./utils/state-changes.decoder";
+import { AddressUtils } from "@multiversx/sdk-nestjs-common";
 
 @Injectable()
 export class StateChangesConsumerService {
+    static SYSTEM_ACCOUNTS = [
+        "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqllls0lczs7", // stakingScAddress
+        "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqplllst77y4l", // validatorScAddress
+        "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u", // esdtScAddress 
+        "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqrlllsrujgla", // governanceScAddress
+        "erd1qqqqqqqqqqqqqqqpqqqqqqqqqrlllllllllllllllllllllllllsn60f0k", // jailingAddress 
+        "erd1qqqqqqqqqqqqqqqpqqqqqqqqlllllllllllllllllllllllllllsr9gav8", // endOfEpochAddress
+        "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqylllslmq6y6", // delegationManagerScAddress
+        "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq0llllsqkarq6", // firstDelegationScAddress
+        "erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu", // contractDeployScAdress
+        "erd17rc0pu8s7rc0pu8s7rc0pu8s7rc0pu8s7rc0pu8s7rc0pu8s7rcqqkhty3", // genesisMintingAddress
+        "erd1lllllllllllllllllllllllllllllllllllllllllllllllllllsckry7t", // systemAccountAddress
+        "erd1llllllllllllllllllllllllllllllllllllllllllllllllluqq2m3f0f", // esdtGlobalSettingsAddresses[0] 
+        "erd1llllllllllllllllllllllllllllllllllllllllllllllllluqsl6e366", // esdtGlobalSettingsAddresses[1]
+        "erd1lllllllllllllllllllllllllllllllllllllllllllllllllupq9x7ny0", // esdtGlobalSettingsAddresses[2] 
+    ]
+
     constructor(
         private readonly cacheService: CacheService,
         private readonly accountDetailsRepository: AccountDetailsRepository,
@@ -62,23 +80,39 @@ export class StateChangesConsumerService {
     // }
 
     private async updateAccounts(transformedFinalStates: AccountDetails[]) {
-        const promisesToWaitFor = [this.accountDetailsRepository.updateAccounts(transformedFinalStates)];
+        const promisesToWaitFor = [this.accountDetailsRepository.updateAccounts(transformedFinalStates.filter(account => !AddressUtils.isSmartContractAddress(account.address)))];
 
-        const cacheKeys = [];
+        const walletCacheKeys = [];
+        const contractCacheKeys = [];
         const values = [];
         for (const account of transformedFinalStates) {
-            cacheKeys.push(CacheInfo.AccountState(account.address).key);
-            const { tokens, nfts, ...accountWithoutAssets } = account;
-            values.push(accountWithoutAssets);
+            if (!AddressUtils.isSmartContractAddress(account.address)) {
+                walletCacheKeys.push(CacheInfo.AccountState(account.address).key);
+                const { tokens, nfts, ...accountWithoutAssets } = account;
+                values.push(accountWithoutAssets);
+            } else {
+                contractCacheKeys.push(CacheInfo.AccountState(account.address).key);
+            }
         }
-        promisesToWaitFor.push(
-            this.cacheService.setManyRemote(
-                cacheKeys,
-                values,
-                CacheInfo.AccountState('any').ttl,
-            )
-        );
-        this.deleteLocalCache(cacheKeys);
+        if (walletCacheKeys.length > 0) {
+            promisesToWaitFor.push(
+                this.cacheService.setManyRemote(
+                    walletCacheKeys,
+                    values,
+                    CacheInfo.AccountState('any').ttl,
+                )
+            );
+        }
+
+        if (contractCacheKeys.length > 0) {
+            promisesToWaitFor.push(
+                this.cacheService.deleteManyRemote(
+                    contractCacheKeys,
+                )
+            );
+        }
+
+        this.deleteLocalCache([...walletCacheKeys, ...contractCacheKeys]);
 
         await Promise.all(promisesToWaitFor)
     }
@@ -89,7 +123,10 @@ export class StateChangesConsumerService {
     private transformFinalStatesToDbFormat(finalStates: Record<string, StateChanges>, shardID: number, blockTimestampMs: number) {
         const transformed: AccountDetails[] = [];
 
-        for (const [_address, state] of Object.entries(finalStates)) {
+        for (const [address, state] of Object.entries(finalStates)) {
+            if (StateChangesConsumerService.isSystemContractAddress(address)) {
+                continue;
+            }
             const newAccountState = state.accountState;
 
             const tokens = [
@@ -231,5 +268,9 @@ export class StateChangesConsumerService {
         const diff = Date.now() - minTimestamp;
 
         return diff <= maxLastActivityDiffMs;
+    }
+
+    static isSystemContractAddress(address: string) {
+        return StateChangesConsumerService.SYSTEM_ACCOUNTS.includes(address);
     }
 }
