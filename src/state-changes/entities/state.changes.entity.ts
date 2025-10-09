@@ -49,7 +49,7 @@ export class BlockWithStateChangesRaw {
 }
 
 export class AccountState {
-    nonce!: string;
+    nonce!: number;
     balance!: string;
     developerReward!: string;
     address!: string;

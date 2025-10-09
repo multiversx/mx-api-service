@@ -1,6 +1,5 @@
 import { CompetingRabbitConsumer } from "src/common/rabbitmq/rabbitmq.consumers";
 import { BlockWithStateChangesRaw, ESDTType, StateChanges } from "./entities";
-import { decodeStateChangesFinal } from "./utils/state-changes.utils";
 import { AccountDetails, AccountDetailsRepository } from "src/common/indexer/db";
 import { Inject, Injectable } from "@nestjs/common";
 import { TokenWithBalance } from "src/endpoints/tokens/entities/token.with.balance";
@@ -11,11 +10,11 @@ import { TokenType } from "src/common/indexer/entities";
 import { NftType } from "src/endpoints/nfts/entities/nft.type";
 import { NftSubType } from "src/endpoints/nfts/entities/nft.sub.type";
 import { ClientProxy } from "@nestjs/microservices";
+import { StateChangesDecoder } from "./utils/state-changes.decoder";
 
 @Injectable()
 export class StateChangesConsumerService {
     constructor(
-        // private readonly apiConfigService: ApiConfigService,
         private readonly cacheService: CacheService,
         private readonly accountDetailsRepository: AccountDetailsRepository,
         @Inject('PUBSUB_SERVICE') private clientProxy: ClientProxy,
@@ -44,7 +43,7 @@ export class StateChangesConsumerService {
                 blockWithStateChanges.timestampMs,
                 CacheInfo.StateChangesConsumerLatestProcessedBlockTimestamp(blockWithStateChanges.shardID).ttl,
             );
-            // console.timeEnd(`processing time shard ${blockWithStateChanges.shardID}`)
+
             const end = Date.now(); // ms la final
             const duration = end - start;
             if (duration > 10) {
@@ -65,7 +64,6 @@ export class StateChangesConsumerService {
     private async updateAccounts(transformedFinalStates: AccountDetails[]) {
         const promisesToWaitFor = [this.accountDetailsRepository.updateAccounts(transformedFinalStates)];
 
-        // set as healthy 
         const cacheKeys = [];
         const values = [];
         for (const account of transformedFinalStates) {
@@ -85,18 +83,13 @@ export class StateChangesConsumerService {
         await Promise.all(promisesToWaitFor)
     }
     private decodeStateChangesFinal(blockWithStateChanges: BlockWithStateChangesRaw) {
-        return decodeStateChangesFinal(blockWithStateChanges);
+        return StateChangesDecoder.decodeStateChangesFinal(blockWithStateChanges);
     }
 
     private transformFinalStatesToDbFormat(finalStates: Record<string, StateChanges>, shardID: number, blockTimestampMs: number) {
         const transformed: AccountDetails[] = [];
 
         for (const [_address, state] of Object.entries(finalStates)) {
-            // t1 + 0.5
-            // const accountExists = await this.accountDetailsRepository.accountExists(address);
-            // if (!accountExists) {
-            //     continue;
-            // }
             const newAccountState = state.accountState;
 
             const tokens = [
@@ -114,9 +107,10 @@ export class StateChangesConsumerService {
             ];
 
             if (newAccountState) {
+                const { codeMetadata, ...newAccountStateFiltered } = newAccountState;
                 const parsedAccount =
                     new AccountDetails({
-                        ...newAccountState,
+                        ...newAccountStateFiltered,
                         shard: shardID,
                         timestamp: blockTimestampMs,
                         ...this.parseCodeMetadata(newAccountState.codeMetadata),
@@ -137,7 +131,6 @@ export class StateChangesConsumerService {
                         }))
                     });
                 transformed.push(parsedAccount);
-                console.log(parsedAccount)
             }
 
         }
@@ -208,5 +201,35 @@ export class StateChangesConsumerService {
             case ESDTType.DynamicMeta:
                 return NftSubType.DynamicMetaESDT;
         }
+    }
+
+    static async isStateChangesConsumerHealthy(cacheService: CacheService, maxLastActivityDiffMs: number): Promise<boolean> {
+        const keys = [
+            CacheInfo.StateChangesConsumerLatestProcessedBlockTimestamp(0).key,
+            CacheInfo.StateChangesConsumerLatestProcessedBlockTimestamp(1).key,
+            CacheInfo.StateChangesConsumerLatestProcessedBlockTimestamp(2).key,
+            CacheInfo.StateChangesConsumerLatestProcessedBlockTimestamp(4294967295).key,
+        ];
+
+        let timestampsMs: (number | undefined | null)[] = cacheService.getManyLocal(keys);
+
+        // check local
+        if (timestampsMs.some(t => t == null)) {
+            timestampsMs = await cacheService.getManyRemote(keys);
+
+            // check remote
+            if (timestampsMs.some(t => t == null)) {
+                return false;
+            }
+
+            // set only if it's valid
+            cacheService.setManyLocal(keys, timestampsMs, 0.6);
+        }
+
+        const minTimestamp = Math.min(...(timestampsMs as number[]))
+
+        const diff = Date.now() - minTimestamp;
+
+        return diff <= maxLastActivityDiffMs;
     }
 }

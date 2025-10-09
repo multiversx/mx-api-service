@@ -256,7 +256,7 @@ export class AccountDetailsRepository {
             if (!accountDb) {
                 return null;
             }
-            return new AccountDetailed({ ...accountDb, nonce: parseInt(accountDb.nonce) });
+            return new AccountDetailed({ ...accountDb, nonce: accountDb.nonce });
         } catch (error) {
             console.error('Error fetching account:', error);
             return null;

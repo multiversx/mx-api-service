@@ -19,8 +19,8 @@ export class AccountDetails {
     @Prop({ required: true, type: String })
     balance: string = '';
 
-    @Prop({ required: true, type: String })
-    nonce: string = '0';
+    @Prop({ required: true, type: Number })
+    nonce: number = 0;
 
     @Prop({ required: true, type: Number })
     timestamp: number = 0;

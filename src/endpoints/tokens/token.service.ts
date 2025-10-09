@@ -44,7 +44,7 @@ import { MexPairState } from "../mex/entities/mex.pair.state";
 import { MexTokenType } from "../mex/entities/mex.token.type";
 import { NftSubType } from "../nfts/entities/nft.sub.type";
 import { AccountDetailsRepository } from "src/common/indexer/db";
-import { isDbValid } from "src/state-changes/utils/state-changes.utils";
+import { StateChangesConsumerService } from "src/state-changes/state.changes.consumer.service";
 
 @Injectable()
 export class TokenService {
@@ -254,7 +254,7 @@ export class TokenService {
   }
 
   async getTokensForAddressFromDb(address: string, queryPagination: QueryPagination, filter: TokenFilter): Promise<TokenWithBalance[]> {
-    const isDbUpToDate: boolean = await isDbValid(this.cachingService);
+    const isDbUpToDate: boolean = await StateChangesConsumerService.isStateChangesConsumerHealthy(this.cachingService, 6000)
     if (isDbUpToDate === true) {
       const tokens = await this.accountDetailsRepository.getTokensForAddress(address, queryPagination) as TokenWithBalance[];
       if (tokens && tokens.length > 0) {
@@ -355,14 +355,19 @@ export class TokenService {
   }
 
   async getTokenForAddressFromDb(address: string, identifier: string): Promise<TokenDetailedWithBalance | undefined> {
-    const isDbUpToDate: boolean = await isDbValid(this.cachingService);
+    const isDbUpToDate: boolean = await StateChangesConsumerService.isStateChangesConsumerHealthy(this.cachingService, 6000);
     if (isDbUpToDate === true) {
       const token = await this.accountDetailsRepository.getTokenForAddress(address, identifier) as TokenDetailedWithBalance;
       if (token) {
+        console.log(`found in db token: ${token.identifier}`)
         return token;
       }
     }
-    return await this.getTokenForAddress(address, identifier);
+    const token = await this.getTokenForAddress(address, identifier);
+    // if (token) {
+    //   this.dbWriterService.writeAccountToDb({ tokens: [token] });
+    // }
+    return token;
   }
 
 

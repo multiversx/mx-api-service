@@ -37,7 +37,7 @@ import { AccountContract } from './entities/account.contract';
 import { AccountFetchOptions } from './entities/account.fetch.options';
 import { Provider } from '../providers/entities/provider';
 import { AccountDetailsRepository } from 'src/common/indexer/db';
-import { isDbValid } from 'src/state-changes/utils/state-changes.utils';
+import { StateChangesConsumerService } from 'src/state-changes/state.changes.consumer.service';
 
 @Injectable()
 export class AccountServiceV2 {
@@ -99,8 +99,8 @@ export class AccountServiceV2 {
     }
     let account = null;
     try {
-      const isDbUpToDate: boolean = await isDbValid(this.cachingService);
-      if (isDbUpToDate === true) {
+      const isStateChangesConsumerHealty: boolean = await StateChangesConsumerService.isStateChangesConsumerHealthy(this.cachingService, 6000);
+      if (isStateChangesConsumerHealty === true) {
         account = await this.cachingService.getOrSet(
           CacheInfo.AccountState(address).key,
           async () => this.getAccountWithFallBack(address, options),

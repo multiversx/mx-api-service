@@ -32,7 +32,7 @@ import { TokenAssets } from "src/common/assets/entities/token.assets";
 import { ScamInfo } from "src/common/entities/scam-info.dto";
 import { NftSubType } from "./entities/nft.sub.type";
 import { AccountDetailsRepository } from "src/common/indexer/db";
-import { isDbValid } from "src/state-changes/utils/state-changes.utils";
+import { StateChangesConsumerService } from "src/state-changes/state.changes.consumer.service";
 
 @Injectable()
 export class NftService {
@@ -508,7 +508,7 @@ export class NftService {
   }
 
   async getNftsForAddressFromDb(address: string, queryPagination: QueryPagination, filter: NftFilter, fields?: string[], queryOptions?: NftQueryOptions, source?: EsdtDataSource): Promise<NftAccount[]> {
-    const isDbUpToDate: boolean = await isDbValid(this.cachingService);
+    const isDbUpToDate: boolean = await StateChangesConsumerService.isStateChangesConsumerHealthy(this.cachingService, 6000);
     if (isDbUpToDate === true) {
       const nfts = await this.accountDetailsRepository.getNftsForAddress(address, queryPagination) as NftAccount[];
       if (nfts && nfts.length > 0) {
@@ -618,10 +618,11 @@ export class NftService {
   }
 
   async getNftForAddressFromDb(address: string, identifier: string, fields?: string[]): Promise<NftAccount | undefined> {
-    const isDbUpToDate: boolean = await isDbValid(this.cachingService);
+    const isDbUpToDate: boolean = await StateChangesConsumerService.isStateChangesConsumerHealthy(this.cachingService, 6000);
     if (isDbUpToDate === true) {
       const nft = await this.accountDetailsRepository.getNftForAddress(address, identifier) as NftAccount;
       if (nft) {
+        console.log(`found in db nft: ${nft.identifier}`)
         return nft;
       }
     }
