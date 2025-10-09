@@ -67,7 +67,7 @@ features:
     activationEpoch: 1391
   chainAndromeda:
     enabled: true
-    activationEpoch: 4
+    activationEpoch: 1763
   nodeEpochsLeft:
     enabled: false
   transactionProcessor:
