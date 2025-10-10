@@ -135,7 +135,7 @@ urls:
   elastic:
     - 'https://devnet-index.multiversx.com'
   gateway:
-    - 'https://k8s-devnet-gateway.multiversx.com'
+    - 'https://devnet-gateway.multiversx.com'
   verifier: 'https://play-api.multiversx.com'
   redis: '127.0.0.1'
   rabbitmq: 'amqp://127.0.0.1:5672'
