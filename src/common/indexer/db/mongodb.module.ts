@@ -30,13 +30,13 @@ const mongoProviders = isPassThrough ? [
     {
         provide: AccountDetailsRepository,
         useValue: {
-            getTokensForAddress: async () => [],
-            getTokenForAddress: async () => undefined,
-            getNftsForAddress: async () => [],
-            getNftForAddress: async () => undefined,
-            getAccount: async () => null,
-            updateAccount: async () => null,
-            updateAccounts: async () => [],
+            getTokensForAddress: () => Promise.resolve([]),
+            getTokenForAddress: () => Promise.resolve(undefined),
+            getNftsForAddress: () => Promise.resolve([]),
+            getNftForAddress: () => Promise.resolve(undefined),
+            getAccount: () => Promise.resolve(null),
+            updateAccount: () => Promise.resolve(null),
+            updateAccounts: () => Promise.resolve([]),
         },
     },
 ] : [AccountDetailsRepository];
