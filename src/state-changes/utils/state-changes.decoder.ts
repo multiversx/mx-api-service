@@ -13,7 +13,7 @@ import {
     ESDTType,
     StateAccessOperation,
     StateAccessPerAccountRaw,
-    StateChanges
+    StateChanges,
 } from "../entities";
 
 export class StateChangesDecoder {
@@ -157,8 +157,8 @@ export class StateChangesDecoder {
             }
         } catch (e: any) {
             console.warn(`Could not decode as EsdtData: ${e.message}`);
-            console.log(address, ':')
-            console.dir(dataTrieChange)
+            console.log(address, ':');
+            console.dir(dataTrieChange);
             return null;
         }
     }
@@ -175,7 +175,7 @@ export class StateChangesDecoder {
             stateAccess.forEach((sa: StateAccessPerAccountRaw, i: number) => {
 
                 const base64AccountData = sa.mainTrieVal;
-                let decodedAccountData: any = null
+                let decodedAccountData: any = null;
                 if (base64AccountData) {
                     const bufAccountData = Buffer.from(base64AccountData, "base64");
                     decodedAccountData = this.getDecodedUserAccountData(bufAccountData);
@@ -184,7 +184,7 @@ export class StateChangesDecoder {
                 const dataTrieChanges = sa.dataTrieChanges;
 
 
-                let allDecodedEsdtData: any[] = [];
+                const allDecodedEsdtData: any[] = [];
                 if (dataTrieChanges) {
                     for (const dataTrieChange of dataTrieChanges) {
                         if (dataTrieChange.version === 0) {
@@ -353,7 +353,7 @@ export class StateChangesDecoder {
                 developerRewardChanged: false,
                 ownerAddressChanged: false,
                 userNameChanged: false,
-                codeMetadataChanged: false
+                codeMetadataChanged: false,
             });
 
             let finalNewAccount = false;

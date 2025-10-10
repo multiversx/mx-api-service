@@ -11,10 +11,11 @@ import { NftType } from "src/endpoints/nfts/entities/nft.type";
 import { NftSubType } from "src/endpoints/nfts/entities/nft.sub.type";
 import { ClientProxy } from "@nestjs/microservices";
 import { StateChangesDecoder } from "./utils/state-changes.decoder";
-import { AddressUtils } from "@multiversx/sdk-nestjs-common";
+import { AddressUtils, OriginLogger } from "@multiversx/sdk-nestjs-common";
 
 @Injectable()
 export class StateChangesConsumerService {
+    private readonly logger = new OriginLogger(StateChangesConsumerService.name);
     static SYSTEM_ACCOUNTS = [
         "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqllls0lczs7", // stakingScAddress
         "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqplllst77y4l", // validatorScAddress
@@ -30,7 +31,7 @@ export class StateChangesConsumerService {
         "erd1llllllllllllllllllllllllllllllllllllllllllllllllluqq2m3f0f", // esdtGlobalSettingsAddresses[0] 
         "erd1llllllllllllllllllllllllllllllllllllllllllllllllluqsl6e366", // esdtGlobalSettingsAddresses[1]
         "erd1lllllllllllllllllllllllllllllllllllllllllllllllllupq9x7ny0", // esdtGlobalSettingsAddresses[2] 
-    ]
+    ];
 
     constructor(
         private readonly cacheService: CacheService,
@@ -66,11 +67,11 @@ export class StateChangesConsumerService {
             const duration = end - start;
             if (duration > 10) {
                 // console.dir(finalStates, { depth: null })
-                console.log(`decoding duration: ${decodingDuration}ms`)
-                console.log(`processing time shard ${blockWithStateChanges.shardID}: ${duration}ms`);
+                this.logger.log(`decoding duration: ${decodingDuration}ms`);
+                this.logger.log(`processing time shard ${blockWithStateChanges.shardID}: ${duration}ms`);
             }
         } catch (error) {
-            console.error(`Error consuming state changes:`, error);
+            this.logger.error(`Error consuming state changes from shard ${blockWithStateChanges.shardID}:`, error);
             throw error;
         }
     }
@@ -114,7 +115,7 @@ export class StateChangesConsumerService {
 
         this.deleteLocalCache([...walletCacheKeys, ...contractCacheKeys]);
 
-        await Promise.all(promisesToWaitFor)
+        await Promise.all(promisesToWaitFor);
     }
     private decodeStateChangesFinal(blockWithStateChanges: BlockWithStateChangesRaw) {
         return StateChangesDecoder.decodeStateChangesFinal(blockWithStateChanges);
@@ -140,7 +141,7 @@ export class StateChangesConsumerService {
                 ...state.esdtState.SemiFungible,
                 ...state.esdtState.DynamicSFT,
                 ...state.esdtState.MetaFungible,
-                ...state.esdtState.DynamicMeta
+                ...state.esdtState.DynamicMeta,
             ];
 
             if (newAccountState) {
@@ -165,7 +166,7 @@ export class StateChangesConsumerService {
                             subType: this.parseEsdtSubtype(nft.type),
                             collection: nft.identifier.replace(/-[^-]*$/, ''), // delete everything after last `-` character inclusive
                             balance: nft.value,
-                        }))
+                        })),
                     });
                 transformed.push(parsedAccount);
             }
@@ -263,7 +264,7 @@ export class StateChangesConsumerService {
             cacheService.setManyLocal(keys, timestampsMs, 0.6);
         }
 
-        const minTimestamp = Math.min(...(timestampsMs as number[]))
+        const minTimestamp = Math.min(...(timestampsMs as number[]));
 
         const diff = Date.now() - minTimestamp;
 

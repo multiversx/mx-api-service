@@ -47,7 +47,7 @@ export class AccountDetailsRepository {
         pendingGuardianAddress: 0,
         pendingGuardianServiceUid: 0,
         isGuarded: 0,
-    }
+    };
     constructor(
         @InjectModel(AccountDetails.name)
         private readonly accountDetailsModel: Model<AccountDetails>
@@ -63,9 +63,9 @@ export class AccountDetailsRepository {
                     $project: {
                         _id: 0,
                         tokens: {
-                            $slice: ["$tokens", queryPagination.from, queryPagination.size]
+                            $slice: ["$tokens", queryPagination.from, queryPagination.size],
                         },
-                    }
+                    },
                 },
                 {
                     $project: {
@@ -77,22 +77,9 @@ export class AccountDetailsRepository {
                         "tokens.nonce": 1,
                         "tokens.decimals": 1,
                         "tokens.balance": 1,
-                    }
-                }
+                    },
+                },
             ]).exec();
-            // const result = await this.accountDetailsModel.findOne(
-            //     { address },
-            //     {
-            //         tokens: {
-            //             $slice: [queryPagination.from, queryPagination.size],
-            //         },
-            //         "tokens.balance": 0, // Exclude direct balance
-            //         ...AccountDetailsRepository.exclusionFields,
-            //     }
-            // ).lean();
-            //@ts-ignore
-            // console.log('result', result);
-            // console.log('result', result);
             return result[0]?.tokens ?? [];
         } catch (error) {
             console.error(`Error fetching tokens for address: ${address}:`, error);
@@ -114,10 +101,10 @@ export class AccountDetailsRepository {
                             $filter: {
                                 input: "$tokens",
                                 as: "token",
-                                cond: { $eq: ["$$token.identifier", identifier] }
-                            }
-                        }
-                    }
+                                cond: { $eq: ["$$token.identifier", identifier] },
+                            },
+                        },
+                    },
                 },
                 {
                     $project: {
@@ -129,24 +116,9 @@ export class AccountDetailsRepository {
                         "tokens.nonce": 1,
                         "tokens.decimals": 1,
                         "tokens.balance": 1,
-                    }
-                }
+                    },
+                },
             ]).exec();
-            // console.log('result', result);
-            // const result = await this.accountDetailsModel.findOne(
-            //     { address },
-            //     {
-            //         tokens: {
-            //             $slice: [queryPagination.from, queryPagination.size],
-            //         },
-            //         "tokens.balance": 0, // Exclude direct balance
-            //         ...AccountDetailsRepository.exclusionFields,
-            //     }
-            // ).lean();
-            //@ts-ignore
-            // console.log('result', result);
-            // console.log('result', result);
-            // console.log(result[0].tokens)
             return result[0]?.tokens[0] ?? undefined;
         } catch (error) {
             console.error(`Error fetching token with  identifier ${identifier} for address: ${address}:`, error);
@@ -168,10 +140,10 @@ export class AccountDetailsRepository {
                             $filter: {
                                 input: "$nfts",
                                 as: "nft",
-                                cond: { $eq: ["$$nft.identifier", identifier] }
-                            }
-                        }
-                    }
+                                cond: { $eq: ["$$nft.identifier", identifier] },
+                            },
+                        },
+                    },
                 },
                 {
                     $project: {
@@ -183,19 +155,9 @@ export class AccountDetailsRepository {
                         "nfts.name": 1,
                         "nfts.balance": 1,
                         "nfts.subtype": 1,
-                    }
-                }
+                    },
+                },
             ]).exec();
-            // const result = await this.accountDetailsModel.findOne(
-            //     { address },
-            //     {
-            //         nfts: {
-            //             $slice: [queryPagination.from, queryPagination.size]
-            //         },
-            //         tokens: 0,
-            //         ...AccountDetailsRepository.exclusionFields,
-            //     }
-            // ).lean();
             return result[0]?.nfts[0] ?? undefined;
         } catch (error) {
             console.error(`Error fetching nft with  identifier ${identifier} for address: ${address}:`, error);
@@ -212,8 +174,8 @@ export class AccountDetailsRepository {
                 {
                     $project: {
                         _id: 0,
-                        nfts: { $slice: ["$nfts", queryPagination.from, queryPagination.size] }
-                    }
+                        nfts: { $slice: ["$nfts", queryPagination.from, queryPagination.size] },
+                    },
                 },
                 {
                     $project: {
@@ -225,8 +187,8 @@ export class AccountDetailsRepository {
                         "nfts.name": 1,
                         "nfts.balance": 1,
                         "nfts.subtype": 1,
-                    }
-                }
+                    },
+                },
             ]).exec();
             // const result = await this.accountDetailsModel.findOne(
             //     { address },
@@ -288,7 +250,7 @@ export class AccountDetailsRepository {
                     new: true, // Return the updated document
                     upsert: true, // Create if doesn't exist
                     lean: true, // Return plain JavaScript object
-                    projection: { __v: 0, __id: 0, updatedAt: 0 } // Exclude __v field
+                    projection: { __v: 0, __id: 0, updatedAt: 0 }, // Exclude __v field
                 }
             );
             // console.log('updatedAccount', updatedAccount);
@@ -330,8 +292,8 @@ export class AccountDetailsRepository {
                 }
 
                 // --- tokens ---
-                let tokensToRemove: string[] = [];
-                let tokensToUpsert: any[] = [];
+                const tokensToRemove: string[] = [];
+                const tokensToUpsert: any[] = [];
 
                 if (accountDetailed.tokens?.length) {
                     for (const t of accountDetailed.tokens) {
@@ -413,8 +375,8 @@ export class AccountDetailsRepository {
                 }
 
                 // --- nfts ---
-                let nftsToRemove: string[] = [];
-                let nftsToUpsert: any[] = [];
+                const nftsToRemove: string[] = [];
+                const nftsToUpsert: any[] = [];
 
                 if (accountDetailed.nfts?.length) {
                     for (const n of accountDetailed.nfts) {

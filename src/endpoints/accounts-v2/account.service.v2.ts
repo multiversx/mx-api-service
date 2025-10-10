@@ -75,9 +75,9 @@ export class AccountServiceV2 {
       if (isStateChangesConsumerHealty === true && !StateChangesConsumerService.isSystemContractAddress(address)) {
         account = await this.cachingService.getOrSet(
           CacheInfo.AccountState(address).key,
-          async () => this.getAccountWithFallBack(address, options),
+          async () => await this.getAccountWithFallBack(address, options),
           CacheInfo.AccountState(address).ttl,
-        )
+        );
       } else {
         account = await this.getAccountRaw(address, options?.withAssets);
       }

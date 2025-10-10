@@ -31,8 +31,6 @@ import { SortCollectionNfts } from "../collections/entities/sort.collection.nfts
 import { TokenAssets } from "src/common/assets/entities/token.assets";
 import { ScamInfo } from "src/common/entities/scam-info.dto";
 import { NftSubType } from "./entities/nft.sub.type";
-import { AccountDetailsRepository } from "src/common/indexer/db";
-import { StateChangesConsumerService } from "src/state-changes/state.changes.consumer.service";
 
 @Injectable()
 export class NftService {
@@ -53,7 +51,6 @@ export class NftService {
     private readonly esdtAddressService: EsdtAddressService,
     private readonly mexTokenService: MexTokenService,
     private readonly lockedAssetService: LockedAssetService,
-    private readonly accountDetailsRepository: AccountDetailsRepository,
   ) {
     this.NFT_THUMBNAIL_PREFIX = this.apiConfigService.getExternalMediaUrl() + '/nfts/asset';
     this.DEFAULT_MEDIA = [
@@ -507,17 +504,6 @@ export class NftService {
     return await this.indexerService.getNftCount(filter);
   }
 
-  async getNftsForAddressFromDb(address: string, queryPagination: QueryPagination, filter: NftFilter, fields?: string[], queryOptions?: NftQueryOptions, source?: EsdtDataSource): Promise<NftAccount[]> {
-    const isDbUpToDate: boolean = await StateChangesConsumerService.isStateChangesConsumerHealthy(this.cachingService, 6000);
-    if (isDbUpToDate === true) {
-      const nfts = await this.accountDetailsRepository.getNftsForAddress(address, queryPagination) as NftAccount[];
-      if (nfts && nfts.length > 0) {
-        return nfts;
-      }
-    }
-    return await this.getNftsForAddress(address, queryPagination, filter, fields, queryOptions, source);
-  }
-
   async getNftsForAddress(address: string, queryPagination: QueryPagination, filter: NftFilter, fields?: string[], queryOptions?: NftQueryOptions, source?: EsdtDataSource): Promise<NftAccount[]> {
     let nfts = await this.esdtAddressService.getNftsForAddress(address, filter, queryPagination, source, queryOptions);
     for (const nft of nfts) {
@@ -615,18 +601,6 @@ export class NftService {
 
   async getNftCountForAddress(address: string, filter: NftFilter): Promise<number> {
     return await this.esdtAddressService.getNftCountForAddressFromElastic(address, filter);
-  }
-
-  async getNftForAddressFromDb(address: string, identifier: string, fields?: string[]): Promise<NftAccount | undefined> {
-    const isDbUpToDate: boolean = await StateChangesConsumerService.isStateChangesConsumerHealthy(this.cachingService, 6000);
-    if (isDbUpToDate === true) {
-      const nft = await this.accountDetailsRepository.getNftForAddress(address, identifier) as NftAccount;
-      if (nft) {
-        console.log(`found in db nft: ${nft.identifier}`)
-        return nft;
-      }
-    }
-    return await this.getNftForAddress(address, identifier, fields);
   }
 
   async getNftForAddress(address: string, identifier: string, fields?: string[]): Promise<NftAccount | undefined> {
