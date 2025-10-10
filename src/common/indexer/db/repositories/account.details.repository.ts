@@ -8,9 +8,11 @@ import { TokenWithBalance } from 'src/endpoints/tokens/entities/token.with.balan
 import { NftAccount } from 'src/endpoints/nfts/entities/nft.account';
 import { Injectable } from '@nestjs/common';
 import { AccountDetailed } from 'src/endpoints/accounts/entities/account.detailed';
+import { OriginLogger } from '@multiversx/sdk-nestjs-common';
 
 @Injectable()
 export class AccountDetailsRepository {
+    private readonly logger = new OriginLogger(AccountDetailsRepository.name);
     static readonly exclusionFields = {
         _id: 0,
         __v: 0,
@@ -190,16 +192,6 @@ export class AccountDetailsRepository {
                     },
                 },
             ]).exec();
-            // const result = await this.accountDetailsModel.findOne(
-            //     { address },
-            //     {
-            //         nfts: {
-            //             $slice: [queryPagination.from, queryPagination.size]
-            //         },
-            //         tokens: 0,
-            //         ...AccountDetailsRepository.exclusionFields,
-            //     }
-            // ).lean();
 
             return result[0]?.nfts || [];
         } catch (error) {
@@ -253,7 +245,6 @@ export class AccountDetailsRepository {
                     projection: { __v: 0, __id: 0, updatedAt: 0 }, // Exclude __v field
                 }
             );
-            // console.log('updatedAccount', updatedAccount);
             return updatedAccount;
         } catch (error: any) {
             // Handle potential duplicate key errors
@@ -475,7 +466,7 @@ export class AccountDetailsRepository {
                 }
             }
 
-            console.log('number of write operations:', totalOperations);
+            this.logger.log(`number of write operations: ${totalOperations}`);
 
             const result = await this.accountDetailsModel.bulkWrite(operations, {
                 ordered: true,

@@ -66,7 +66,6 @@ export class StateChangesConsumerService {
             const end = Date.now();
             const duration = end - start;
             if (duration > 10) {
-                // console.dir(finalStates, { depth: null })
                 this.logger.log(`decoding duration: ${decodingDuration}ms`);
                 this.logger.log(`processing time shard ${blockWithStateChanges.shardID}: ${duration}ms`);
             }
@@ -75,10 +74,6 @@ export class StateChangesConsumerService {
             throw error;
         }
     }
-
-    // private decodeStateChanges(stateChanges: StateChangesRaw) {
-    //     return decodeStateChangesRaw(stateChanges);
-    // }
 
     private async updateAccounts(transformedFinalStates: AccountDetails[]) {
         const promisesToWaitFor = [this.accountDetailsRepository.updateAccounts(transformedFinalStates.filter(account => !AddressUtils.isSmartContractAddress(account.address)))];
