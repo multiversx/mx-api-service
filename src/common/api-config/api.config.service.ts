@@ -990,13 +990,4 @@ export class ApiConfigService {
 
     return exchange;
   }
-
-  getStateChangesQueue(): string {
-    const queue = this.configService.get<string>('features.stateChanges.queue');
-    if (!queue) {
-      throw new Error('No state changes queue present');
-    }
-
-    return queue;
-  }
 }

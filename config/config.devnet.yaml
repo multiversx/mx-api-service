@@ -20,9 +20,11 @@ flags:
   processNfts: true
   collectionPropertiesFromGateway: false
 features:
-  websocketSubscription:
+  stateChanges:
     enabled: false
-    port: 6002
+    port: 5675
+    url: 'amqp://guest:guest@127.0.0.1:5672'
+    exchange: 'state_accesses'
   eventsNotifier:
     enabled: false
     port: 5674
