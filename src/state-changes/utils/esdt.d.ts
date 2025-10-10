@@ -1,7 +1,7 @@
 import * as $protobuf from "protobufjs";
 import Long = require("long");
 /** Properties of a MetaData. */
-//@ts-ignore
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface IMetaData {
 }
 
