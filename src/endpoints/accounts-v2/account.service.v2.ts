@@ -59,6 +59,9 @@ export class AccountServiceV2 {
         accountFromDb.ownerAssets = assets[accountFromDb.ownerAddress];
       }
     }
+
+    accountFromDb.username = await this.usernameService.getUsernameForAddress(address) ?? undefined;
+    await this.pluginService.processAccount(accountFromDb);
     return accountFromDb;
   }
 

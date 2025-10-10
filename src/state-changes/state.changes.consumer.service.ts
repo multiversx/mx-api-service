@@ -62,7 +62,7 @@ export class StateChangesConsumerService {
                 CacheInfo.StateChangesConsumerLatestProcessedBlockTimestamp(blockWithStateChanges.shardID).ttl,
             );
 
-            const end = Date.now(); // ms la final
+            const end = Date.now();
             const duration = end - start;
             if (duration > 10) {
                 // console.dir(finalStates, { depth: null })
