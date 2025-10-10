@@ -5,6 +5,11 @@ api:
   private: true
   graphql: true
 features:
+  stateChanges:
+    enabled: false
+    port: 5675
+    url: 'amqp://guest:guest@127.0.0.1:5672'
+    exchange: 'state_accesses'
   dataApi:
     enabled: false
     serviceUrl: 'https://data-api.multiversx.com'
