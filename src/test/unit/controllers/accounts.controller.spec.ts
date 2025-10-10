@@ -602,5 +602,3 @@ describe('AccountController', () => {
     return address.substring(0, desiredLength + 'erd1'.length);
   }
 });
-
-
