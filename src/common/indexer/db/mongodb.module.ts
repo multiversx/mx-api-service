@@ -17,7 +17,7 @@ const mongoImports = isPassThrough ? [] : [
         inject: [ApiConfigService],
         useFactory: (apiConfigService: ApiConfigService) => ({
             uri: apiConfigService.getDatabaseUrl().replace(":27017", ''), // TODO: remove this hack
-            tls: false,
+            tls: apiConfigService.isDatabaseTlsEnabled(),
             tlsAllowInvalidCertificates: true,
         }),
     }),
