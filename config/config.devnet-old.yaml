@@ -99,6 +99,7 @@ indexer:
 database:
   enabled: false
   url: 'mongodb://root:secret@127.0.0.1:27017/api?authSource=admin'
+  tls: false
   type: 'mysql'
   host: 'localhost'
   port: 3306
