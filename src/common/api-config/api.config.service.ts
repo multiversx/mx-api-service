@@ -481,6 +481,15 @@ export class ApiConfigService {
     return databaseUrl;
   }
 
+  isDatabaseTlsEnabled(): boolean {
+    const isDatabaseTlsEnabled = this.configService.get<boolean>('database.tls');
+    if (!isDatabaseTlsEnabled) {
+      throw new Error('No database.tls present');
+    }
+
+    return isDatabaseTlsEnabled;
+  }
+
   getDatabaseConnection(): any {
     return {
       host: this.getDatabaseHost(),
@@ -989,5 +998,14 @@ export class ApiConfigService {
     }
 
     return exchange;
+  }
+
+  isPubSubListenerEnabled(): boolean {
+    const isPubSubListenerEnabled = this.configService.get<boolean>('pubSubListener.enabled');
+    if (isPubSubListenerEnabled == null) {
+      return true;
+    }
+
+    return isPubSubListenerEnabled;
   }
 }

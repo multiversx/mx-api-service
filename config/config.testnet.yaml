@@ -193,3 +193,5 @@ compression:
   level: 6
   threshold: 1024
   chunkSize: 16384
+pubSubListener:
+  enabled: true

@@ -146,23 +146,25 @@ async function bootstrap() {
     await stateChangesApp.listen(apiConfigService.getStateChangesFeaturePort());
   }
 
-  const pubSubApp = await NestFactory.createMicroservice<MicroserviceOptions>(
-    PubSubListenerModule,
-    {
-      transport: Transport.REDIS,
-      options: {
-        host: apiConfigService.getRedisUrl(),
-        port: 6379,
-        retryAttempts: 100,
-        retryDelay: 1000,
-        retryStrategy: () => 1000,
+  if (apiConfigService.isPubSubListenerEnabled()) {
+    const pubSubApp = await NestFactory.createMicroservice<MicroserviceOptions>(
+      PubSubListenerModule,
+      {
+        transport: Transport.REDIS,
+        options: {
+          host: apiConfigService.getRedisUrl(),
+          port: 6379,
+          retryAttempts: 100,
+          retryDelay: 1000,
+          retryStrategy: () => 1000,
+        },
       },
-    },
-  );
-  pubSubApp.useLogger(pubSubApp.get(WINSTON_MODULE_NEST_PROVIDER));
-  pubSubApp.useWebSocketAdapter(new SocketAdapter(pubSubApp));
-  // eslint-disable-next-line @typescript-eslint/no-floating-promises
-  pubSubApp.listen();
+    );
+    pubSubApp.useLogger(pubSubApp.get(WINSTON_MODULE_NEST_PROVIDER));
+    pubSubApp.useWebSocketAdapter(new SocketAdapter(pubSubApp));
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    pubSubApp.listen();
+  }
 
   logger.log(`Public API active: ${apiConfigService.getIsPublicApiActive()}`);
   logger.log(`Private API active: ${apiConfigService.getIsPrivateApiActive()}`);

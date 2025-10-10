@@ -131,3 +131,5 @@ inflation:
 nftProcess:
   parallelism: 1
   maxRetries: 3
+pubSubListener:
+  enabled: true
