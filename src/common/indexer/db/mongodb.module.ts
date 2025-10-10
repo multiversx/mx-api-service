@@ -15,7 +15,7 @@ import { EventEmitterModule } from "@nestjs/event-emitter";
             inject: [ApiConfigService],
             useFactory: (apiConfigService: ApiConfigService) => ({
                 uri: apiConfigService.getDatabaseUrl().replace(":27017", ''), // TODO: remove this hack
-                tls: true,
+                tls: false,
                 tlsAllowInvalidCertificates: true,
             }),
         }),
