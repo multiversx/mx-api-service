@@ -482,12 +482,7 @@ export class ApiConfigService {
   }
 
   isDatabaseTlsEnabled(): boolean {
-    const isDatabaseTlsEnabled = this.configService.get<boolean>('database.tls');
-    if (!isDatabaseTlsEnabled) {
-      throw new Error('No database.tls present');
-    }
-
-    return isDatabaseTlsEnabled;
+    return this.configService.get<boolean>('database.tls') ?? false;
   }
 
   getDatabaseConnection(): any {
