@@ -41,8 +41,8 @@ export class StateChangesConsumerService {
 
     @CompetingRabbitConsumer({
         exchange: 'state_accesses',
-        queueName: 'state_changes_test-stefan',
-        deadLetterExchange: 'state_changes_test_dlx-stefan',
+        queueName: 'api_state_accesses_queue',
+        deadLetterExchange: 'api_state_accesses_queue_dlx',
     })
     async consumeEvents(blockWithStateChanges: BlockWithStateChangesRaw) {
         try {
