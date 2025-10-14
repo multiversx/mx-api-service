@@ -937,6 +937,8 @@ export class TokenService {
   }
 
   private async batchProcessTokens(tokens: TokenDetailed[]) {
+    this.logger.log(`Starting batch process for ${tokens.length} tokens`);
+
     await Promise.all([
       this.cachingService.batchApplyAll(
         tokens,
@@ -972,6 +974,8 @@ export class TokenService {
         50,
       ),
     ]);
+
+    this.logger.log(`Batch process for ${tokens.length} tokens finished`);
   }
 
   private async getAllTokensFromApi(): Promise<TokenDetailed[]> {
