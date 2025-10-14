@@ -817,6 +817,7 @@ export class TokenService {
       async token => await this.getTokenAssetsRaw(token.identifier),
       (token, assets) => token.assets = assets,
       CacheInfo.EsdtAssets('').ttl,
+      50,
     );
 
     await ConcurrencyUtils.executeWithConcurrencyLimit(
@@ -936,41 +937,41 @@ export class TokenService {
   }
 
   private async batchProcessTokens(tokens: TokenDetailed[]) {
-    await this.cachingService.batchApplyAll(
-      tokens,
-      token => CacheInfo.TokenTransactions(token.identifier).key,
-      async token => await this.getTotalTransactions(token),
-      (token, result) => {
-        token.transactions = result?.count;
-        token.transactionsLastUpdatedAt = result?.lastUpdatedAt;
-      },
-      CacheInfo.TokenTransactions('').ttl,
-      10,
-    );
-
-    await this.cachingService.batchApplyAll(
-      tokens,
-      token => CacheInfo.TokenAccounts(token.identifier).key,
-      async token => await this.getTotalAccounts(token),
-      (token, result) => {
-        token.accounts = result?.count;
-        token.accountsLastUpdatedAt = result?.lastUpdatedAt;
-      },
-      CacheInfo.TokenAccounts('').ttl,
-      10,
-    );
-
-    await this.cachingService.batchApplyAll(
-      tokens,
-      token => CacheInfo.TokenTransfers(token.identifier).key,
-      async token => await this.getTotalTransfers(token),
-      (token, result) => {
-        token.transfers = result?.count;
-        token.transfersLastUpdatedAt = result?.lastUpdatedAt;
-      },
-      CacheInfo.TokenTransfers('').ttl,
-      10,
-    );
+    await Promise.all([
+      this.cachingService.batchApplyAll(
+        tokens,
+        token => CacheInfo.TokenTransactions(token.identifier).key,
+        async token => await this.getTotalTransactions(token),
+        (token, result) => {
+          token.transactions = result?.count;
+          token.transactionsLastUpdatedAt = result?.lastUpdatedAt;
+        },
+        CacheInfo.TokenTransactions('').ttl,
+        50,
+      ),
+      this.cachingService.batchApplyAll(
+        tokens,
+        token => CacheInfo.TokenAccounts(token.identifier).key,
+        async token => await this.getTotalAccounts(token),
+        (token, result) => {
+          token.accounts = result?.count;
+          token.accountsLastUpdatedAt = result?.lastUpdatedAt;
+        },
+        CacheInfo.TokenAccounts('').ttl,
+        50,
+      ),
+      this.cachingService.batchApplyAll(
+        tokens,
+        token => CacheInfo.TokenTransfers(token.identifier).key,
+        async token => await this.getTotalTransfers(token),
+        (token, result) => {
+          token.transfers = result?.count;
+          token.transfersLastUpdatedAt = result?.lastUpdatedAt;
+        },
+        CacheInfo.TokenTransfers('').ttl,
+        50,
+      ),
+    ]);
   }
 
   private async getAllTokensFromApi(): Promise<TokenDetailed[]> {
