@@ -67,7 +67,7 @@ features:
     cronExpression: '*/5 * * * * *'
     activationEpoch: 1391
   chainAndromeda:
-    enabled: true
+    enabled: false
     activationEpoch: 4
   nodeEpochsLeft:
     enabled: false

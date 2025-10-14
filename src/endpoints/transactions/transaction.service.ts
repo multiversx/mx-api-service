@@ -477,7 +477,7 @@ export class TransactionService {
       if (!resultsByHash.has(txHash)) {
         resultsByHash.set(txHash, []);
       }
-      resultsByHash.get(txHash)!.push(result);
+      resultsByHash.get(txHash)?.push(result);
     }
 
     const results: Array<SmartContractResult[] | undefined> = [];
