@@ -156,7 +156,7 @@ export class CacheWarmerService {
     await this.invalidateKey(CacheInfo.TransactionPool.key, pool, this.apiConfigService.getTransactionPoolCacheWarmerTtlInSeconds());
   }
 
-  @Cron(CronExpression.EVERY_10_MINUTES)
+  @Cron('*/2 * * * *')
   @Lock({ name: 'All Tokens invalidations', verbose: true })
   async handleEsdtTokenInvalidations() {
     const tokens = await this.tokenService.getAllTokensRaw();
