@@ -1061,29 +1061,45 @@ export class TokenService {
 
     try {
       const indexedTokens = await this.mexTokenService.getMexPricesRaw();
-      for (const token of tokens) {
-        const price = indexedTokens[token.identifier];
-        if (price) {
-          const supply = await this.esdtService.getTokenSupply(token.identifier);
 
-          if (token.assets && token.identifier.split('-')[0] === 'EGLDUSDC') {
-            price.price = price.price / (10 ** 12) * 2;
-          }
+      const tokensWithPrices = tokens.filter(token => indexedTokens[token.identifier]);
 
-          if (price.isToken) {
-            token.price = price.price;
-            token.marketCap = price.price * NumberUtils.denominateString(supply.circulatingSupply, token.decimals);
+      this.logger.log(`Applying MEX prices for ${tokensWithPrices.length} tokens with parallel supply fetching`);
 
-            if (token.totalLiquidity && token.marketCap && (token.totalLiquidity / token.marketCap < LOW_LIQUIDITY_THRESHOLD)) {
-              token.isLowLiquidity = true;
-              token.lowLiquidityThresholdPercent = LOW_LIQUIDITY_THRESHOLD * 100;
+      await ConcurrencyUtils.executeWithConcurrencyLimit(
+        tokensWithPrices,
+        async (token) => {
+          try {
+            const price = indexedTokens[token.identifier];
+            if (!price) {
+              return;
             }
-          }
 
-          token.supply = supply.totalSupply;
-          token.circulatingSupply = supply.circulatingSupply;
-        }
-      }
+            const supply = await this.esdtService.getTokenSupply(token.identifier);
+
+            if (token.assets && token.identifier.split('-')[0] === 'EGLDUSDC') {
+              price.price = price.price / (10 ** 12) * 2;
+            }
+
+            if (price.isToken) {
+              token.price = price.price;
+              token.marketCap = price.price * NumberUtils.denominateString(supply.circulatingSupply, token.decimals);
+
+              if (token.totalLiquidity && token.marketCap && (token.totalLiquidity / token.marketCap < LOW_LIQUIDITY_THRESHOLD)) {
+                token.isLowLiquidity = true;
+                token.lowLiquidityThresholdPercent = LOW_LIQUIDITY_THRESHOLD * 100;
+              }
+            }
+
+            token.supply = supply.totalSupply;
+            token.circulatingSupply = supply.circulatingSupply;
+          } catch (error) {
+            this.logger.error(`Error applying MEX price for token ${token.identifier}: ${error}`);
+          }
+        },
+        50,
+        'MEX prices and supply'
+      );
     } catch (error) {
       this.logger.error('Could not apply mex tokens prices');
       this.logger.error(error);
