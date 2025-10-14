@@ -21,6 +21,7 @@ import { TokenWithRoles } from "./entities/token.with.roles";
 import { TokenWithRolesFilter } from "./entities/token.with.roles.filter";
 import { AddressUtils, BinaryUtils, NumberUtils, TokenUtils } from "@multiversx/sdk-nestjs-common";
 import { ApiService, ApiUtils } from "@multiversx/sdk-nestjs-http";
+import { ConcurrencyUtils } from "src/utils/concurrency.utils";
 import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { OriginLogger } from "@multiversx/sdk-nestjs-common";
@@ -818,30 +819,39 @@ export class TokenService {
       CacheInfo.EsdtAssets('').ttl,
     );
 
-    for (const token of tokens) {
-      const priceSourcetype = token.assets?.priceSource?.type;
+    await ConcurrencyUtils.executeWithConcurrencyLimit(
+      tokens,
+      async (token) => {
+        try {
+          const priceSourcetype = token.assets?.priceSource?.type;
 
-      if (priceSourcetype === TokenAssetsPriceSourceType.dataApi) {
-        token.price = await this.dataApiService.getEsdtTokenPrice(token.identifier);
-      } else if (priceSourcetype === TokenAssetsPriceSourceType.customUrl && token.assets?.priceSource?.url) {
-        const pathToPrice = token.assets?.priceSource?.path ?? "0.usdPrice";
-        const tokenData = await this.fetchTokenDataFromUrl(token.assets.priceSource.url, pathToPrice);
+          if (priceSourcetype === TokenAssetsPriceSourceType.dataApi) {
+            token.price = await this.dataApiService.getEsdtTokenPrice(token.identifier);
+          } else if (priceSourcetype === TokenAssetsPriceSourceType.customUrl && token.assets?.priceSource?.url) {
+            const pathToPrice = token.assets?.priceSource?.path ?? "0.usdPrice";
+            const tokenData = await this.fetchTokenDataFromUrl(token.assets.priceSource.url, pathToPrice);
 
-        if (tokenData) {
-          token.price = tokenData;
+            if (tokenData) {
+              token.price = tokenData;
+            }
+          }
+
+          if (token.price) {
+            const supply = await this.esdtService.getTokenSupply(token.identifier);
+            token.supply = supply.totalSupply;
+            token.circulatingSupply = supply.circulatingSupply;
+
+            if (token.circulatingSupply) {
+              token.marketCap = token.price * NumberUtils.denominateString(token.circulatingSupply, token.decimals);
+            }
+          }
+        } catch (error) {
+          this.logger.error(`Error processing price/supply for token ${token.identifier}: ${error}`);
         }
-      }
-
-      if (token.price) {
-        const supply = await this.esdtService.getTokenSupply(token.identifier);
-        token.supply = supply.totalSupply;
-        token.circulatingSupply = supply.circulatingSupply;
-
-        if (token.circulatingSupply) {
-          token.marketCap = token.price * NumberUtils.denominateString(token.circulatingSupply, token.decimals);
-        }
-      }
-    }
+      },
+      50,
+      'Token prices and supply calculation'
+    );
 
     tokens = tokens.sortedDescending(
       token => token.assets ? 1 : 0,
