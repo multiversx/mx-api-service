@@ -759,10 +759,10 @@ export class TokenService {
     }
 
     this.logger.log(`Starting to fetch all tokens`);
+    const startFungible = Date.now();
     const tokensProperties = await this.esdtService.getAllFungibleTokenProperties();
     let tokens = tokensProperties.map(properties => ApiUtils.mergeObjects(new TokenDetailed(), properties));
-
-    this.logger.log(`Fetched ${tokens.length} fungible tokens`);
+    this.logger.log(`Fetched ${tokens.length} fungible tokens in ${Date.now() - startFungible}ms`);
 
     const allAssets = await this.assetsService.getAllTokenAssets();
 
@@ -777,10 +777,9 @@ export class TokenService {
     }
 
     this.logger.log(`Starting to fetch all meta tokens`);
-
+    const startMeta = Date.now();
     const collections = await this.collectionService.getNftCollections(new QueryPagination({ from: 0, size: 10000 }), { type: [NftType.MetaESDT] });
-
-    this.logger.log(`Fetched ${collections.length} meta tokens`);
+    this.logger.log(`Fetched ${collections.length} meta tokens in ${Date.now() - startMeta}ms`);
 
     for (const collection of collections) {
       tokens.push(new TokenDetailed({
@@ -801,16 +800,23 @@ export class TokenService {
       }));
     }
 
+    const startBatchProcess = Date.now();
     await this.batchProcessTokens(tokens);
+    this.logger.log(`Batch process completed in ${Date.now() - startBatchProcess}ms`);
 
     const nonMetaEsdtTokens = tokens.filter(x => x.type !== TokenType.MetaESDT);
+    this.logger.log(`Applying MEX data for ${nonMetaEsdtTokens.length} non-meta tokens`);
+    const startMex = Date.now();
     await Promise.all([
       this.applyMexLiquidity(nonMetaEsdtTokens),
       this.applyMexPrices(nonMetaEsdtTokens),
       this.applyMexPairType(nonMetaEsdtTokens),
       this.applyMexPairTradesCount(nonMetaEsdtTokens),
     ]);
+    this.logger.log(`MEX data applied in ${Date.now() - startMex}ms`);
 
+    this.logger.log(`Fetching assets for ${tokens.length} tokens`);
+    const startAssets = Date.now();
     await this.cachingService.batchApplyAll(
       tokens,
       token => CacheInfo.EsdtAssets(token.identifier).key,
@@ -819,7 +825,10 @@ export class TokenService {
       CacheInfo.EsdtAssets('').ttl,
       50,
     );
+    this.logger.log(`Assets fetched in ${Date.now() - startAssets}ms`);
 
+    this.logger.log(`Processing price sources and supply for ${tokens.length} tokens`);
+    const startPriceSupply = Date.now();
     await ConcurrencyUtils.executeWithConcurrencyLimit(
       tokens,
       async (token) => {
@@ -853,7 +862,10 @@ export class TokenService {
       50,
       'Token prices and supply calculation'
     );
+    this.logger.log(`Price sources and supply processed in ${Date.now() - startPriceSupply}ms`);
 
+    this.logger.log(`Sorting and finalizing ${tokens.length} tokens`);
+    const startFinalize = Date.now();
     tokens = tokens.sortedDescending(
       token => token.assets ? 1 : 0,
       token => token.marketCap ? 1 : 0,
@@ -874,7 +886,9 @@ export class TokenService {
       marketCap: 0,
     });
     tokens = [...tokens, egldToken];
+    this.logger.log(`Sorting and finalization completed in ${Date.now() - startFinalize}ms`);
 
+    this.logger.log(`Total tokens processed: ${tokens.length}`);
     return tokens;
   }
 
