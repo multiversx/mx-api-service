@@ -24,8 +24,8 @@ export class EventsGateway {
         @ConnectedSocket() client: Socket,
         @MessageBody(new WsValidationPipe()) payload: EventsSubscribePayload,
     ) {
-        const filterHash = JSON.stringify(payload);
-        await client.join(`events-${filterHash}`);
+        const filterIdentifier = JSON.stringify(payload);
+        await client.join(`events-${filterIdentifier}`);
 
         return { status: 'success' };
     }
@@ -34,8 +34,8 @@ export class EventsGateway {
         if (!roomName.startsWith("events-")) return;
 
         try {
-            const filterHash = roomName.replace("events-", "");
-            const filter: EventsSubscribePayload = JSON.parse(filterHash);
+            const filterIdentifier = roomName.replace("events-", "");
+            const filter: EventsSubscribePayload = JSON.parse(filterIdentifier);
 
             const eventsFilter = new EventsFilter({
                 shard: filter.shard,

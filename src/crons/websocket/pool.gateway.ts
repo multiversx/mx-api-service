@@ -25,8 +25,8 @@ export class PoolGateway {
         @ConnectedSocket() client: Socket,
         @MessageBody(new WsValidationPipe()) payload: PoolSubscribePayload,
     ) {
-        const filterHash = JSON.stringify(payload);
-        await client.join(`pool-${filterHash}`);
+        const filterIdentifier = JSON.stringify(payload);
+        await client.join(`pool-${filterIdentifier}`);
 
         return { status: 'success' };
     }
@@ -35,8 +35,8 @@ export class PoolGateway {
         if (!roomName.startsWith("pool-")) return;
 
         try {
-            const filterHash = roomName.replace("pool-", "");
-            const filter: PoolSubscribePayload = JSON.parse(filterHash);
+            const filterIdentifier = roomName.replace("pool-", "");
+            const filter: PoolSubscribePayload = JSON.parse(filterIdentifier);
 
             const poolFilter = new PoolFilter({
                 type: filter.type,

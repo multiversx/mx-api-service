@@ -44,8 +44,8 @@ export class TransactionsGateway {
 
     TransactionFilter.validate(transactionFilter, payload.size || 25);
 
-    const filterHash = JSON.stringify(payload);
-    await client.join(`tx-${filterHash}`);
+    const filterIdentifier = JSON.stringify(payload);
+    await client.join(`tx-${filterIdentifier}`);
 
     return { status: 'success' };
   }
@@ -54,8 +54,8 @@ export class TransactionsGateway {
     if (!roomName.startsWith("tx-")) return;
 
     try {
-      const filterHash = roomName.replace("tx-", "");
-      const filter = JSON.parse(filterHash);
+      const filterIdentifier = roomName.replace("tx-", "");
+      const filter = JSON.parse(filterIdentifier);
 
       const options = TransactionQueryOptions.applyDefaultOptions(
         filter.size || 25,

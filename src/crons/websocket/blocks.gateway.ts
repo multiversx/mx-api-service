@@ -24,8 +24,8 @@ export class BlocksGateway {
     @ConnectedSocket() client: Socket,
     @MessageBody(new WsValidationPipe()) payload: BlockSubscribePayload
   ) {
-    const filterHash = JSON.stringify(payload);
-    await client.join(`blocks-${filterHash}`);
+    const filterIdentifier = JSON.stringify(payload);
+    await client.join(`blocks-${filterIdentifier}`);
 
     return { status: 'success' };
   }
@@ -34,8 +34,8 @@ export class BlocksGateway {
     if (!roomName.startsWith("blocks-")) return;
 
     try {
-      const filterHash = roomName.replace("blocks-", "");
-      const filter: BlockSubscribePayload = JSON.parse(filterHash);
+      const filterIdentifier = roomName.replace("blocks-", "");
+      const filter: BlockSubscribePayload = JSON.parse(filterIdentifier);
 
       const blockFilter = new BlockFilter({
         shard: filter.shard,
