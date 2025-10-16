@@ -1,4 +1,3 @@
-// block-subscribe.dto.ts
 import { IsOptional, IsNumber, IsBoolean, Min, Max, IsEnum, IsIn } from 'class-validator';
 import { SortOrder } from 'src/common/entities/sort.order';
 

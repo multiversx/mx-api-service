@@ -1,4 +1,3 @@
-// block-subscribe.dto.ts
 import { IsOptional, IsNumber, Min, Max, IsEnum, IsIn } from 'class-validator';
 import { TransactionType } from 'src/endpoints/transactions/entities/transaction.type';
 
