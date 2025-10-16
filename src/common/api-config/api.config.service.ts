@@ -954,4 +954,22 @@ export class ApiConfigService {
   getCompressionChunkSize(): number {
     return this.configService.get<number>('compression.chunkSize') ?? 16384;
   }
+
+  getIsWebsocketSubscriptionActive(): boolean {
+    const isWebsocketSubscriptionActive = this.configService.get<boolean>('features.websocketSubscription.enabled');
+    if (isWebsocketSubscriptionActive === undefined) {
+      throw new Error('No features.websocketSubscription.enabled flag present');
+    }
+
+    return isWebsocketSubscriptionActive;
+  }
+
+  getWebsocketSubscriptionPort(): number {
+    const port = this.configService.get<number>('features.websocketSubscription.port');
+    if (port === undefined) {
+      throw new Error('No features.websocketSubscription.port present');
+    }
+
+    return port;
+  }
 }
