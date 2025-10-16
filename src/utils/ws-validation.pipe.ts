@@ -1,4 +1,3 @@
-// ws-validation.pipe.ts
 import { Injectable, ValidationPipe, ValidationPipeOptions } from '@nestjs/common';
 import { WsException } from '@nestjs/websockets';
 
