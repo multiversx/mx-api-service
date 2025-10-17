@@ -225,6 +225,7 @@ export class CollectionController {
   @ApiQuery({ name: 'nonceAfter', description: 'Return all NFTs with given nonce after the given number', required: false, type: Number })
   @ApiQuery({ name: 'withOwner', description: 'Return owner where type = NonFungibleESDT', required: false, type: Boolean })
   @ApiQuery({ name: 'withSupply', description: 'Return supply where type = SemiFungibleESDT', required: false, type: Boolean })
+  @ApiQuery({ name: 'withAssets', description: 'Return assets information (defaults to true)', required: false, type: Boolean })
   @ApiQuery({ name: 'sort', description: 'Sorting criteria', required: false, enum: SortCollectionNfts })
   @ApiQuery({ name: 'order', description: 'Sorting order (asc / desc)', required: false, enum: SortOrder })
   async getNfts(
@@ -244,6 +245,7 @@ export class CollectionController {
     @Query('nonceAfter', ParseIntPipe) nonceAfter?: number,
     @Query('withOwner', ParseBoolPipe) withOwner?: boolean,
     @Query('withSupply', ParseBoolPipe) withSupply?: boolean,
+    @Query('withAssets', ParseBoolPipe) withAssets?: boolean,
     @Query('sort', new ParseEnumPipe(SortCollectionNfts)) sort?: SortCollectionNfts,
     @Query('order', new ParseEnumPipe(SortOrder)) order?: SortOrder,
   ): Promise<Nft[]> {
@@ -255,7 +257,7 @@ export class CollectionController {
     return await this.nftService.getNfts(
       new QueryPagination({ from, size }),
       new NftFilter({ search, identifiers, collection, name, tags, creator, hasUris, isWhitelistedStorage, isNsfw, traits, nonceBefore, nonceAfter, sort, order }),
-      new NftQueryOptions({ withOwner, withSupply }),
+      new NftQueryOptions({ withOwner, withSupply, withAssets }),
     );
   }
 

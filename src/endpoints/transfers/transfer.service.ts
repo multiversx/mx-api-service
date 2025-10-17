@@ -21,9 +21,16 @@ export class TransferService {
   ) { }
 
   private sortElasticTransfers(elasticTransfers: any[]): any[] {
+    const transactionMap = new Map<string, any>();
+    for (const transfer of elasticTransfers) {
+      if (transfer.txHash) {
+        transactionMap.set(transfer.txHash, transfer);
+      }
+    }
+
     for (const elasticTransfer of elasticTransfers) {
       if (elasticTransfer.originalTxHash) {
-        const transaction = elasticTransfers.find(x => x.txHash === elasticTransfer.originalTxHash);
+        const transaction = transactionMap.get(elasticTransfer.originalTxHash);
         if (transaction) {
           elasticTransfer.order = (transaction.nonce * 10) + 1;
         } else {

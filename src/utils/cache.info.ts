@@ -469,7 +469,7 @@ export class CacheInfo {
   static BlocksCount(filter: BlockFilter): CacheInfo {
     return {
       key: `blocks:count:${JSON.stringify(filter)}`,
-      ttl: Constants.oneMinute(),
+      ttl: Constants.oneSecond() * 6,
     };
   }
 

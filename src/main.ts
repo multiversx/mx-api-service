@@ -36,6 +36,8 @@ import { NotWritableError } from './common/indexer/entities/not.writable.error';
 import * as bodyParser from 'body-parser';
 import * as requestIp from 'request-ip';
 import compression from 'compression';
+import { IoAdapter } from '@nestjs/platform-socket.io';
+import { WebsocketSubscriptionModule } from './crons/websocket/websocket.subscription.module';
 import { StateChangesModule } from './state-changes/state.changes.module';
 
 async function bootstrap() {
@@ -86,6 +88,13 @@ async function bootstrap() {
   if (apiConfigService.getIsTransactionProcessorCronActive()) {
     const processorApp = await NestFactory.create(TransactionProcessorModule);
     await processorApp.listen(5001);
+  }
+
+
+  if (apiConfigService.getIsWebsocketSubscriptionActive()) {
+    const websocketSubscriptionApp = await NestFactory.create(WebsocketSubscriptionModule);
+    websocketSubscriptionApp.useWebSocketAdapter(new IoAdapter(websocketSubscriptionApp));
+    await websocketSubscriptionApp.listen(apiConfigService.getWebsocketSubscriptionPort());
   }
 
   if (apiConfigService.getIsCacheWarmerCronActive()) {
@@ -176,6 +185,7 @@ async function bootstrap() {
   logger.log(`Exchange feature active: ${apiConfigService.isExchangeEnabled()}`);
   logger.log(`Marketplace feature active: ${apiConfigService.isMarketplaceFeatureEnabled()}`);
   logger.log(`Auth active: ${apiConfigService.getIsAuthActive()}`);
+  logger.log(`WebSocket subscription active: ${apiConfigService.getIsWebsocketSubscriptionActive()}`);
 
   logger.log(`Use tracing: ${apiConfigService.getUseTracingFlag()}`);
   logger.log(`Process NFTs flag: ${apiConfigService.getIsProcessNftsFlagActive()}`);

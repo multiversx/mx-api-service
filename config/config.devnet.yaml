@@ -8,7 +8,7 @@ api:
   websocket: true
 cron:
   cacheWarmer: true
-  fastWarm: true
+  fastWarm: false
   queueWorker: true
   elasticUpdater: false
 flags:
@@ -20,6 +20,9 @@ flags:
   processNfts: true
   collectionPropertiesFromGateway: false
 features:
+  websocketSubscription:
+    enabled: false
+    port: 6002
   stateChanges:
     enabled: false
     port: 5675
@@ -70,7 +73,7 @@ features:
     cronExpression: '*/5 * * * * *'
     activationEpoch: 1043
   chainAndromeda:
-    enabled: false
+    enabled: true
     activationEpoch: 4
   nodeEpochsLeft:
     enabled: false
