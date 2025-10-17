@@ -20,6 +20,9 @@ flags:
   processNfts: true
   collectionPropertiesFromGateway: false
 features:
+  websocketSubscription:
+    enabled: false
+    port: 6002
   eventsNotifier:
     enabled: false
     port: 5674

@@ -20,6 +20,9 @@ flags:
   processNfts: true
   collectionPropertiesFromGateway: false
 features:
+  websocketSubscription:
+    enabled: false
+    port: 6002
   eventsNotifier:
     enabled: false
     port: 5674
@@ -63,7 +66,7 @@ features:
     cronExpression: '*/5 * * * * *'
     activationEpoch: 1391
   chainAndromeda:
-    enabled: false
+    enabled: true
     activationEpoch: 4
   nodeEpochsLeft:
     enabled: false

@@ -5,6 +5,9 @@ api:
   private: true
   graphql: true
 features:
+  websocketSubscription:
+    enabled: false
+    port: 6002
   dataApi:
     enabled: false
     serviceUrl: 'https://data-api.multiversx.com'
