@@ -848,7 +848,7 @@ export class TokenService {
               token.marketCap = token.price * NumberUtils.denominateString(token.circulatingSupply, token.decimals);
               // TODO: update this by checking the token's liquidity collateral
               if (token.marketCap > this.thresholdFaultyMarketCap) {
-                this.logger.log(`Setting token market cap to 0 due to possibly faulty market cap. Circulating supply: ${token.circulatingSupply}. Price: ${token.price}. Market cap: ${token.marketCap}`);
+                this.logger.log(`Setting token market cap to 0 due to possibly faulty market cap. Token: ${token.identifier}. Circulating supply: ${token.circulatingSupply}. Price: ${token.price}. Market cap: ${token.marketCap}`);
                 token.marketCap = 0;
               }
             }
@@ -1094,7 +1094,7 @@ export class TokenService {
               token.price = price.price;
               token.marketCap = price.price * NumberUtils.denominateString(supply.circulatingSupply, token.decimals);
               if (token.marketCap > this.thresholdFaultyMarketCap) {
-                this.logger.log(`Setting token market cap to 0 due to possibly faulty market cap. Circulating supply: ${supply.circulatingSupply}. Price: ${token.price}. Market cap: ${token.marketCap}`);
+                this.logger.log(`Setting token market cap to 0 due to possibly faulty market cap. Token: ${token.identifier}. Circulating supply: ${supply.circulatingSupply}. Price: ${token.price}. Market cap: ${token.marketCap}`);
                 token.marketCap = 0;
               }
 
