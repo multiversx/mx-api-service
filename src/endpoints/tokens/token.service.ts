@@ -50,6 +50,7 @@ export class TokenService {
   private readonly logger = new OriginLogger(TokenService.name);
   private readonly nftSubTypes = [NftSubType.DynamicNonFungibleESDT, NftSubType.DynamicMetaESDT, NftSubType.NonFungibleESDTv2, NftSubType.DynamicSemiFungibleESDT];
   private readonly egldIdentifierInMultiTransfer = 'EGLD-000000';
+  private readonly thresholdFaultyMarketCap = 10_000_000_000;
 
   constructor(
     private readonly esdtService: EsdtService,
@@ -845,6 +846,10 @@ export class TokenService {
 
             if (token.circulatingSupply) {
               token.marketCap = token.price * NumberUtils.denominateString(token.circulatingSupply, token.decimals);
+              // TODO: update this by checking the token's liquidity collateral
+              if (token.marketCap > this.thresholdFaultyMarketCap) {
+                token.marketCap = 0;
+              }
             }
           }
         } catch (error) {
@@ -1087,6 +1092,9 @@ export class TokenService {
             if (price.isToken) {
               token.price = price.price;
               token.marketCap = price.price * NumberUtils.denominateString(supply.circulatingSupply, token.decimals);
+              if (token.marketCap > this.thresholdFaultyMarketCap) {
+                token.marketCap = 0;
+              }
 
               if (token.totalLiquidity && token.marketCap && (token.totalLiquidity / token.marketCap < LOW_LIQUIDITY_THRESHOLD)) {
                 token.isLowLiquidity = true;
