@@ -667,6 +667,10 @@ export class ApiConfigService {
     return this.configService.get<string>('transaction-action.mex.microServiceUrl') ?? this.configService.get<string>('plugins.transaction-action.mex.microServiceUrl');
   }
 
+  public getIsExchangePriceFetchDisabled(): boolean {
+    return this.configService.get<boolean>('features.exchange.disablePriceFetch') ?? false;
+  }
+
   isExchangeEnabled(): boolean {
     const isExchangeEnabled = this.isExchangeEnabledInternal();
     if (isExchangeEnabled) {

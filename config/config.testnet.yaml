@@ -49,6 +49,7 @@ features:
   exchange:
     enabled: false
     serviceUrl: 'https://testnet-graph.xexchange.com/graphql'
+    disablePriceFetch: false
   dataApi:
     enabled: false
     serviceUrl: 'https://testnet-data-api.multiversx.com'

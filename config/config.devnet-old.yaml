@@ -48,6 +48,7 @@ features:
   exchange:
     enabled: false
     serviceUrl: 'https://devnet-old-graph.xexchange.com/graphql'
+    disablePriceFetch: false
   dataApi:
     enabled: false
     serviceUrl: 'https://devnet-old-data-api.multiversx.com'

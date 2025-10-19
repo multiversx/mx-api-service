@@ -172,6 +172,7 @@ export class MexTokenService {
   private async getAllMexTokensRaw(): Promise<MexToken[]> {
     const pairs = await this.mexPairService.getAllMexPairs();
     const tokenVolumes: Record<string, number> = {};
+    const disableExchangePrices = this.apiConfigService.getIsExchangePriceFetchDisabled();
 
     for (const pair of pairs) {
       if (!tokenVolumes[pair.baseId]) {
@@ -193,8 +194,8 @@ export class MexTokenService {
         wegldToken.id = pair.baseId;
         wegldToken.symbol = pair.baseSymbol;
         wegldToken.name = pair.baseName;
-        wegldToken.price = pair.basePrice;
-        wegldToken.previous24hPrice = pair.basePrevious24hPrice;
+        wegldToken.price = disableExchangePrices ? 0 : pair.price;
+        wegldToken.previous24hPrice = disableExchangePrices ? 0 : pair.basePrevious24hPrice;
         wegldToken.previous24hVolume = tokenVolumes[pair.baseId];
         wegldToken.tradesCount = this.computeTradesCountForMexToken(wegldToken, pairs);
 
@@ -222,13 +223,14 @@ export class MexTokenService {
   }
 
   private getMexToken(pair: MexPair): MexToken | null {
+    const disableExchangePrices = this.apiConfigService.getIsExchangePriceFetchDisabled();
     if (pair.baseSymbol === 'WEGLD' && pair.quoteSymbol === "USDC") {
       return {
         id: pair.quoteId,
         symbol: pair.quoteSymbol,
         name: pair.quoteName,
-        price: pair.quotePrice,
-        previous24hPrice: pair.quotePrevious24hPrice,
+        price: disableExchangePrices ? 0 : pair.quotePrice,
+        previous24hPrice: disableExchangePrices ? 0 : pair.quotePrevious24hPrice,
         previous24hVolume: 0,
         tradesCount: 0,
       };
@@ -239,8 +241,8 @@ export class MexTokenService {
         id: pair.baseId,
         symbol: pair.baseSymbol,
         name: pair.baseName,
-        price: pair.basePrice,
-        previous24hPrice: pair.basePrevious24hPrice,
+        price: disableExchangePrices ? 0 : pair.basePrice,
+        previous24hPrice: disableExchangePrices ? 0 : pair.basePrevious24hPrice,
         previous24hVolume: 0,
         tradesCount: 0,
       };
@@ -251,8 +253,8 @@ export class MexTokenService {
         id: pair.quoteId,
         symbol: pair.quoteSymbol,
         name: pair.quoteName,
-        price: pair.quotePrice,
-        previous24hPrice: pair.quotePrevious24hPrice,
+        price: disableExchangePrices ? 0 : pair.quotePrice,
+        previous24hPrice: disableExchangePrices ? 0 : pair.quotePrevious24hPrice,
         previous24hVolume: 0,
         tradesCount: 0,
       };

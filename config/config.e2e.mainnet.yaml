@@ -50,6 +50,7 @@ features:
   exchange:
     enabled: false
     serviceUrl: 'https://graph.xexchange.com/graphql'
+    disablePriceFetch: false
   dataApi:
     enabled: false
     serviceUrl: 'https://data-api.multiversx.com'
