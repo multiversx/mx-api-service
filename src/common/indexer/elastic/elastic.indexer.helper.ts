@@ -814,6 +814,10 @@ export class ElasticIndexerHelper {
       elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Match('order', filter.order));
     }
 
+    if (filter.logAddress) {
+      elasticQuery = elasticQuery.withMustMatchCondition('logAddress', filter.logAddress);
+    }
+
     return elasticQuery;
   }
 }

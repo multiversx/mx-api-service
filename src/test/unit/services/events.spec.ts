@@ -137,6 +137,30 @@ describe('EventsService', () => {
       expect(result).toEqual(expectedEvents);
       expect(indexerService.getEvents).toHaveBeenCalledWith(pagination, filter);
     });
+
+    it('should return events filtered by log address', async () => {
+      const pagination: QueryPagination = { from: 0, size: 10 };
+      const filter: EventsFilter = new EventsFilter({ logAddress: "erd1qqqqqqqqqqqqqpgq5lgsm8lsen2gv65gwtrs25js0ktx7ltgusrqeltmln" });
+
+      const mockElasticEvents = [
+        generateMockEvent(),
+      ];
+
+      const expectedEvents = [
+        createExpectedEvent("7e3faa2a4ea5cfe8667f2e13eb27076b0452742dbe01044871c8ea109f73ebed", "transferValueOnly"),
+      ];
+
+      mockIndexerService.getEvents.mockResolvedValue(mockElasticEvents);
+
+      const result = await service.getEvents(pagination, filter);
+
+      for (const event of result) {
+        expect(event.logAddress).toEqual("erd1qqqqqqqqqqqqqpgq5lgsm8lsen2gv65gwtrs25js0ktx7ltgusrqeltmln");
+      }
+
+      expect(result).toEqual(expectedEvents);
+      expect(indexerService.getEvents).toHaveBeenCalledWith(pagination, filter);
+    });
   });
 
   describe('getEventsCount', () => {

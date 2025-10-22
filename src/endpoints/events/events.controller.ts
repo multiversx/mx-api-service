@@ -20,6 +20,7 @@ export class EventsController {
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   @ApiQuery({ name: 'address', description: 'Event address', required: false })
+  @ApiQuery({ name: 'logAddress', description: 'Event log address', required: false })
   @ApiQuery({ name: 'identifier', description: 'Event identifier', required: false })
   @ApiQuery({ name: 'txHash', description: 'Event transaction hash', required: false })
   @ApiQuery({ name: 'shard', description: 'Event shard id', required: false })
@@ -30,6 +31,7 @@ export class EventsController {
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
     @Query('address', ParseAddressPipe) address: string,
+    @Query('logAddress', ParseAddressPipe) logAddress: string,
     @Query('identifier') identifier: string,
     @Query('txHash') txHash: string,
     @Query('shard', ParseIntPipe) shard: number,
@@ -39,7 +41,7 @@ export class EventsController {
   ): Promise<Events[]> {
     return await this.eventsService.getEvents(
       new QueryPagination({ from, size }),
-      new EventsFilter({ address, identifier, txHash, shard, after, before, order }));
+      new EventsFilter({ address, logAddress, identifier, txHash, shard, after, before, order }));
   }
 
   @Get('/events/count')
