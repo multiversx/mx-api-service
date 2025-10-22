@@ -12,4 +12,5 @@ export class EventsFilter {
   after: number = 0;
   order: number = 0;
   logAddress: string = '';
+  topics: string[] = [];
 }
