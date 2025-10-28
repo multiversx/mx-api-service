@@ -844,7 +844,7 @@ export class TokenService {
               const dataApiPrice = await this.dataApiService.getEsdtTokenPrice(token.identifier);
               if (dataApiPrice) {
                 token.price = dataApiPrice;
-                this.logger.log(`Applied dataAPI fallback price for ${token.identifier}`);
+                this.logger.log(`Applied dataAPI fallback for ${token.identifier} token with price ${dataApiPrice}`);
               }
             } catch (error) {
               this.logger.error(`Error applying dataAPI fallback price for token ${token.identifier}: ${error}`);
