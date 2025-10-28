@@ -99,9 +99,12 @@ export class AccountServiceV2 {
       }
 
       if (options?.withTimestamp) {
-        if (!account.timestamp) {
+        if (!account.timestamp || !account.timestampMs) {
           const elasticSearchAccount = await this.indexerService.getAccount(address);
           account.timestamp = elasticSearchAccount.timestamp;
+          if (elasticSearchAccount.timestampMs) {
+            account.timestampMs = elasticSearchAccount.timestampMs;
+          }
         }
       }
 

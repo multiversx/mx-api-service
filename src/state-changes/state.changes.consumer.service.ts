@@ -145,7 +145,8 @@ export class StateChangesConsumerService {
                     new AccountDetails({
                         ...newAccountStateFiltered,
                         shard: shardID,
-                        timestamp: blockTimestampMs,
+                        timestampMs: blockTimestampMs,
+                        timestamp: Math.floor(blockTimestampMs / 1000),
                         ...this.parseCodeMetadata(newAccountState.address, codeMetadata),
                         tokens: tokens.map(token => new TokenWithBalance({
                             identifier: token.identifier,

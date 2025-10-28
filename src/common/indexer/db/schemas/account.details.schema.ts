@@ -22,6 +22,9 @@ export class AccountDetails {
     @Prop({ required: true, type: Number })
     nonce: number = 0;
 
+    @Prop({ required: false, type: Number })
+    timestampMs: number = 0;
+
     @Prop({ required: true, type: Number })
     timestamp: number = 0;
 
