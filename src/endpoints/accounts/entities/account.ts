@@ -16,7 +16,6 @@ export class Account {
   @ApiProperty({ type: Number, description: 'Account current nonce', example: 42 })
   nonce: number = 0;
 
-
   @ApiProperty({ type: Number, description: 'Timestamp in milliseconds of the block where the account was first indexed', example: 1676979360000 })
   timestampMs: number = 0;
 
