@@ -146,7 +146,7 @@ export class StateChangesConsumerService {
                         ...newAccountStateFiltered,
                         shard: shardID,
                         timestamp: blockTimestampMs,
-                        ...this.parseCodeMetadata(newAccountState.codeMetadata),
+                        ...this.parseCodeMetadata(newAccountState.address, codeMetadata),
                         tokens: tokens.map(token => new TokenWithBalance({
                             identifier: token.identifier,
                             nonce: parseInt(token.nonce),
@@ -176,7 +176,12 @@ export class StateChangesConsumerService {
         this.clientProxy.emit('deleteCacheKeys', cacheKeys);
     }
 
-    private parseCodeMetadata(hexStr?: string) {
+    private parseCodeMetadata(address: string, hexStr?: string) {
+        // code metadata for user address refers to guardian data, should handle in the future if needed
+        if (!AddressUtils.isSmartContractAddress(address)) {
+            return {};
+        }
+
         const UPGRADEABLE = 0x01_00; // 256
         const READABLE = 0x04_00; // 1024
         const PAYABLE = 0x00_02; // 2
