@@ -846,6 +846,7 @@ export class TokenService {
                 this.logger.log(`Applied dataAPI fallback price for ${token.identifier}`);
               }
             } catch (error) {
+              this.logger.error(`Error applying dataAPI fallback price for token ${token.identifier}: ${error}`);
             }
           }
 
