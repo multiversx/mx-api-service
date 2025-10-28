@@ -711,7 +711,7 @@ describe('Token Service', () => {
         jest.spyOn(tokenService as any, 'applyMexPairType').mockImplementation(() => Promise.resolve());
         jest.spyOn(tokenService as any, 'applyMexPairTradesCount').mockImplementation(() => Promise.resolve());
         jest.spyOn(cacheService as any, 'batchApplyAll').mockImplementation(() => Promise.resolve());
-        jest.spyOn(dataApiService, 'getEsdtTokenPrice').mockResolvedValue(100);
+        jest.spyOn(dataApiService, 'getEsdtTokenPrice').mockResolvedValue(undefined);
         jest.spyOn(dataApiService, 'getEgldPrice').mockResolvedValue(100);
         jest.spyOn(tokenService as any, 'fetchTokenDataFromUrl').mockResolvedValue(100);
         jest.spyOn(esdtService, 'getTokenSupply').mockResolvedValue(mockTokenSupply as EsdtSupply);
@@ -841,7 +841,9 @@ describe('Token Service', () => {
       jest.spyOn(tokenService['collectionService'], 'getNftCollections').mockResolvedValue([]);
 
       jest.spyOn(tokenService['dataApiService'], 'getEgldPrice').mockResolvedValue(0);
-      jest.spyOn(tokenService['dataApiService'], 'getEsdtTokenPrice').mockResolvedValue(1);
+      jest.spyOn(tokenService['dataApiService'], 'getEsdtTokenPrice').mockImplementation((identifier: string) => {
+        return Promise.resolve(identifier === 'token4' ? undefined : 1);
+      });
       jest.spyOn(tokenService['esdtService'], 'getTokenSupply').mockResolvedValue({
         minted: '1000000',
         initialMinted: '1000000',
