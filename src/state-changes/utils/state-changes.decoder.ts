@@ -88,7 +88,7 @@ export class StateChangesDecoder {
                 ownerAddress,
                 codeHash: this.bytesToBase64(msg.CodeHash),
                 rootHash: this.bytesToBase64(msg.RootHash),
-                userName: this.bytesToHex(msg.UserName),
+                username: Buffer.from(this.bytesToHex(msg.UserName), 'hex').toString(),
                 codeMetadata: this.bytesToHex(msg.CodeMetadata),
             };
 

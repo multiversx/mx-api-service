@@ -56,7 +56,7 @@ export class AccountState {
     codeHash?: string;
     rootHash!: string;
     ownerAddress?: string;
-    userName?: string;
+    username?: string;
     codeMetadata?: string;
 
     constructor(init?: Partial<AccountState>) {
