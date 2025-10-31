@@ -1,6 +1,7 @@
 export interface Account {
   address: string;
   nonce: number;
+  timestampMs: number;
   timestamp: number;
   timestampMs: number;
   balance: string;

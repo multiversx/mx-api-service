@@ -839,6 +839,18 @@ export class TokenService {
             }
           }
 
+          if (!token.price && token.type === TokenType.FungibleESDT) {
+            try {
+              const dataApiPrice = await this.dataApiService.getEsdtTokenPrice(token.identifier);
+              if (dataApiPrice) {
+                token.price = dataApiPrice;
+                this.logger.log(`Applied dataAPI fallback for ${token.identifier} token with price ${dataApiPrice}`);
+              }
+            } catch (error) {
+              this.logger.error(`Error applying dataAPI fallback price for token ${token.identifier}: ${error}`);
+            }
+          }
+
           if (token.price) {
             const supply = await this.esdtService.getTokenSupply(token.identifier);
             token.supply = supply.totalSupply;
