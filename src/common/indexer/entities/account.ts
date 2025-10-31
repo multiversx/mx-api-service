@@ -3,7 +3,6 @@ export interface Account {
   nonce: number;
   timestampMs: number;
   timestamp: number;
-  timestampMs: number;
   balance: string;
   balanceNum: number;
   totalBalanceWithStake: string;
