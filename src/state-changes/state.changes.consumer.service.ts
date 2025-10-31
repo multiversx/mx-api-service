@@ -178,18 +178,23 @@ export class StateChangesConsumerService {
     }
 
     private parseCodeMetadata(address: string, hexStr?: string) {
+        if (!hexStr || hexStr === '') {
+            return {};
+        }
         // code metadata for user address refers to guardian data, should handle in the future if needed
         if (!AddressUtils.isSmartContractAddress(address)) {
-            return {};
+            const GUARDED = 0x08_00;
+            const value = parseInt(hexStr, 16);
+            return {
+                codeMetadata: hexStr, // TODO: debugging purpose, remove for production
+                isGuarded: (value & GUARDED) !== 0,
+            };
         }
 
         const UPGRADEABLE = 0x01_00; // 256
         const READABLE = 0x04_00; // 1024
         const PAYABLE = 0x00_02; // 2
         const PAYABLE_BY_SC = 0x00_04; // 4
-        if (!hexStr || hexStr === '') {
-            return {};
-        }
         const value = parseInt(hexStr, 16);
 
         return {
@@ -197,6 +202,7 @@ export class StateChangesConsumerService {
             isReadable: (value & READABLE) !== 0,
             isPayable: (value & PAYABLE) !== 0,
             isPayableBySmartContract: (value & PAYABLE_BY_SC) !== 0,
+            codeMetadata: hexStr,  // TODO: debugging purpose, remove for production
         };
     }
 
