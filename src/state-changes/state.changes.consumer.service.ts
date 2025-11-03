@@ -50,7 +50,8 @@ export class StateChangesConsumerService {
 
             const startDecoding = start;
             const finalStates = this.decodeStateChangesFinal(blockWithStateChanges);
-
+            console.log(blockWithStateChanges);
+            console.log(finalStates);
             const transformedFinalStates = this.transformFinalStatesToDbFormat(finalStates, blockWithStateChanges.shardID, blockWithStateChanges.timestampMs);
 
             const endDecoding = Date.now();
