@@ -1,18 +1,18 @@
 syntax = "proto3";
 
 message MetaData {
-    // ex: string name = 1;
-    // optional uint64 id = 2;
+  // ex: string name = 1;
+  // optional uint64 id = 2;
 }
 
 message ESDigitalToken {
-    uint32 Type = 1;
+  uint32 Type = 1;
 
-    bytes Value = 2;
+  bytes Value = 2;
 
-    bytes Properties = 3;
+  bytes Properties = 3;
 
-    MetaData TokenMetaData = 4;
+  MetaData TokenMetaData = 4;
 
-    bytes Reserved = 5;
+  bytes Reserved = 5;
 }
