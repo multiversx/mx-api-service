@@ -31,9 +31,10 @@ features:
   eventsNotifier:
     enabled: false
     port: 5674
-    url: 'amqp://guest:guest@127.0.0.1:5672'
-    exchange: 'all_events'
-    queue: 'api-process-logs-and-events'
+    rabbitUrl: 'amqp://guest:guest@127.0.0.1:5672'
+    exchange: 'state_accesses'
+    queueName: 'api_state_accesses_queue-test'
+    deadLetterExchange: 'api_state_accesses_queue_dlx'
   guestCaching:
     enabled: false
     hitsThreshold: 100

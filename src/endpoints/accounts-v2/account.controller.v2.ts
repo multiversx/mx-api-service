@@ -15,7 +15,7 @@ export class AccountControllerV2 {
     private readonly accountServiceV2: AccountServiceV2,
   ) { }
 
-  @Get("/v2/accounts/:address")
+  @Get("/accounts/v2/:address")
   @UseInterceptors(DeepHistoryInterceptor)
   @ApiOperation({ summary: 'Account details', description: 'Returns account details for a given address' })
   @ApiQuery({ name: 'withGuardianInfo', description: 'Returns guardian data for a given address', required: false })

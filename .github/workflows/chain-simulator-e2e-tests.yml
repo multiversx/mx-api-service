@@ -50,7 +50,6 @@ jobs:
 
       - run: npm ci
       - run: npm run init
-      - run: cat src/common/indexer/entities/account.ts
 
       - name: Start API
         run: |
