@@ -31,7 +31,7 @@ export class StateAccessPerAccountRaw {
 export class DataTrieChange {
     type!: number;
     key!: string;
-    val!: string;
+    val!: any;
     version!: number;
     operation!: DataTrieChangeOperation;
 }
@@ -49,15 +49,15 @@ export class BlockWithStateChangesRaw {
 }
 
 export class AccountState {
-    nonce!: string;
+    nonce!: number;
     balance!: string;
     developerReward!: string;
     address!: string;
-    codeHash!: string;
+    codeHash?: string;
     rootHash!: string;
-    ownerAddress!: string;
-    userName!: string;
-    codeMetadata!: string;
+    ownerAddress?: string;
+    username?: string;
+    codeMetadata?: string;
 
     constructor(init?: Partial<AccountState>) {
         Object.assign(this, init);

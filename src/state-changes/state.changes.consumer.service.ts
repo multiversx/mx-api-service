@@ -1,114 +1,168 @@
 import { CompetingRabbitConsumer } from "src/common/rabbitmq/rabbitmq.consumers";
 import { BlockWithStateChangesRaw, ESDTType, StateChanges } from "./entities";
-import { decodeStateChangesFinal } from "./utils/state-changes.utils";
 import { AccountDetails, AccountDetailsRepository } from "src/common/indexer/db";
-import { Injectable } from "@nestjs/common";
-import { TokenWithBalance } from "src/endpoints/tokens/entities/token.with.balance";
+import { Inject, Injectable } from "@nestjs/common";
 import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { CacheInfo } from "src/utils/cache.info";
-import { NftAccount } from "src/endpoints/nfts/entities/nft.account";
 import { TokenType } from "src/common/indexer/entities";
 import { NftType } from "src/endpoints/nfts/entities/nft.type";
 import { NftSubType } from "src/endpoints/nfts/entities/nft.sub.type";
+import { ClientProxy } from "@nestjs/microservices";
+import { StateChangesDecoder } from "./utils/state-changes.decoder";
+import { AddressUtils, OriginLogger } from "@multiversx/sdk-nestjs-common";
+import { PerformanceProfiler } from "@multiversx/sdk-nestjs-monitoring";
 
 @Injectable()
 export class StateChangesConsumerService {
+    private readonly logger = new OriginLogger(StateChangesConsumerService.name);
+    static SYSTEM_ACCOUNTS = [
+        "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqllls0lczs7", // stakingScAddress
+        "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqplllst77y4l", // validatorScAddress
+        "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u", // esdtScAddress 
+        "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqrlllsrujgla", // governanceScAddress
+        "erd1qqqqqqqqqqqqqqqpqqqqqqqqqrlllllllllllllllllllllllllsn60f0k", // jailingAddress 
+        "erd1qqqqqqqqqqqqqqqpqqqqqqqqlllllllllllllllllllllllllllsr9gav8", // endOfEpochAddress
+        "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqylllslmq6y6", // delegationManagerScAddress
+        "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq0llllsqkarq6", // firstDelegationScAddress
+        "erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu", // contractDeployScAdress
+        "erd17rc0pu8s7rc0pu8s7rc0pu8s7rc0pu8s7rc0pu8s7rc0pu8s7rcqqkhty3", // genesisMintingAddress
+        "erd1lllllllllllllllllllllllllllllllllllllllllllllllllllsckry7t", // systemAccountAddress
+        "erd1llllllllllllllllllllllllllllllllllllllllllllllllluqq2m3f0f", // esdtGlobalSettingsAddresses[0] 
+        "erd1llllllllllllllllllllllllllllllllllllllllllllllllluqsl6e366", // esdtGlobalSettingsAddresses[1]
+        "erd1lllllllllllllllllllllllllllllllllllllllllllllllllupq9x7ny0", // esdtGlobalSettingsAddresses[2] 
+    ];
+
     constructor(
-        // private readonly apiConfigService: ApiConfigService,
         private readonly cacheService: CacheService,
         private readonly accountDetailsRepository: AccountDetailsRepository,
+        @Inject('PUBSUB_SERVICE') private clientProxy: ClientProxy,
     ) { }
 
     @CompetingRabbitConsumer({
         exchange: 'state_accesses',
-        queueName: 'state_changes_test-stefan',
-        deadLetterExchange: 'state_changes_test_dlx-stefan',
+        queueName: 'api_state_accesses_queue-test',
+        deadLetterExchange: 'api_state_accesses_queue_dlx',
     })
     async consumeEvents(blockWithStateChanges: BlockWithStateChangesRaw) {
         try {
-            const start = Date.now(); // ms la început
-            // console.time(`processing time shard ${blockWithStateChanges.shardID}`)
-            // console.time('decode time')
-            // console.dir(blockWithStateChanges, { depth: null })
-            const startDecoding = start;
+            if (blockWithStateChanges.shardID === 4294967295) {
+                return; // skip meta shard
+            }
+
+            const profiler = new PerformanceProfiler('BlockStateChangesProcessing');
+            const decodingProfiler = new PerformanceProfiler('StateChangesDecoding');
             const finalStates = this.decodeStateChangesFinal(blockWithStateChanges);
-            const transformedFinalStates = this.transformFinalStatesToDbFormat(finalStates, blockWithStateChanges.shardID);
 
-            const endDecoding = Date.now();
-            const decodingDuration = endDecoding - startDecoding;
+            const transformedFinalStates = this.transformFinalStatesToDbFormat(finalStates, blockWithStateChanges.shardID, blockWithStateChanges.timestampMs);
+            decodingProfiler.stop('StateChangesDecoding');
+            this.logger.log(`Decoded state changes for block ${blockWithStateChanges.hash} on shard ${blockWithStateChanges.shardID} in ${decodingProfiler.duration} ms`);
 
-            console.dir(finalStates, { depth: null })
-            // console.timeEnd('decode time')
-            this.accountDetailsRepository
-            await this.accountDetailsRepository.updateAccounts(transformedFinalStates);
+            await this.updateAccounts(transformedFinalStates);
 
             await this.cacheService.setRemote(
-                CacheInfo.LatestProcessedBlockTimestamp(blockWithStateChanges.shardID).key,
+                CacheInfo.StateChangesConsumerLatestProcessedBlockTimestamp(blockWithStateChanges.shardID).key,
                 blockWithStateChanges.timestampMs,
-                CacheInfo.LatestProcessedBlockTimestamp(blockWithStateChanges.shardID).ttl,
+                CacheInfo.StateChangesConsumerLatestProcessedBlockTimestamp(blockWithStateChanges.shardID).ttl,
             );
-            // console.timeEnd(`processing time shard ${blockWithStateChanges.shardID}`)
-            const end = Date.now(); // ms la final
-            const duration = end - start;
-            if (duration > 10) {
-                // console.dir(finalStates, { depth: null })
-                console.log(`decoding duration: ${decodingDuration}`)
-                console.log(`processing time shard ${blockWithStateChanges.shardID}: ${duration}ms`);
-            }
+
+            profiler.stop('BlockStateChangesProcessing');
+            this.logger.log(`Processed state changes for block ${blockWithStateChanges.hash} on shard ${blockWithStateChanges.shardID} in ${profiler.duration} ms`);
         } catch (error) {
-            console.error(`Error consuming state changes:`, error);
+            this.logger.error(`Error consuming state changes from shard ${blockWithStateChanges.shardID}:`, error);
             throw error;
         }
     }
 
-    // private decodeStateChanges(stateChanges: StateChangesRaw) {
-    //     return decodeStateChangesRaw(stateChanges);
-    // }
+    private async updateAccounts(transformedFinalStates: AccountDetails[]) {
+        const promisesToWaitFor = [this.accountDetailsRepository.updateAccounts(transformedFinalStates.filter(account => !AddressUtils.isSmartContractAddress(account.address)))];
 
+        const walletCacheKeys = [];
+        const contractCacheKeys = [];
+        const values = [];
+        for (const account of transformedFinalStates) {
+            if (!AddressUtils.isSmartContractAddress(account.address)) {
+                walletCacheKeys.push(CacheInfo.AccountState(account.address).key);
+                const { tokens, nfts, ...accountWithoutAssets } = account;
+                values.push(accountWithoutAssets);
+            } else {
+                contractCacheKeys.push(CacheInfo.AccountState(account.address).key);
+            }
+        }
+        if (walletCacheKeys.length > 0) {
+            promisesToWaitFor.push(
+                this.cacheService.setManyRemote(
+                    walletCacheKeys,
+                    values,
+                    CacheInfo.AccountState('any').ttl,
+                )
+            );
+        }
+
+        if (contractCacheKeys.length > 0) {
+            promisesToWaitFor.push(
+                this.cacheService.deleteManyRemote(
+                    contractCacheKeys,
+                )
+            );
+        }
+
+        this.deleteLocalCache([...walletCacheKeys, ...contractCacheKeys]);
+
+        await Promise.all(promisesToWaitFor);
+    }
     private decodeStateChangesFinal(blockWithStateChanges: BlockWithStateChangesRaw) {
-        return decodeStateChangesFinal(blockWithStateChanges);
+        return StateChangesDecoder.decodeStateChangesFinal(blockWithStateChanges);
     }
 
-    private transformFinalStatesToDbFormat(finalStates: Record<string, StateChanges>, shardID: number) {
+    private transformFinalStatesToDbFormat(finalStates: Record<string, StateChanges>, shardID: number, blockTimestampMs: number) {
         const transformed: AccountDetails[] = [];
-        for (const [_key, state] of Object.entries(finalStates)) {
+
+        for (const [address, state] of Object.entries(finalStates)) {
+            if (StateChangesConsumerService.isSystemContractAddress(address)) {
+                continue;
+            }
             const newAccountState = state.accountState;
 
-            const tokens = [
-                ...state.esdtState.Fungible,
+            // const tokens = [
+            //     ...state.esdtState.Fungible,
+            // ];
 
-            ];
-
-            const nfts = [
-                ...state.esdtState.NonFungible,
-                ...state.esdtState.NonFungibleV2,
-                ...state.esdtState.DynamicNFT,
-                ...state.esdtState.SemiFungible,
-                ...state.esdtState.DynamicSFT,
-                ...state.esdtState.MetaFungible,
-                ...state.esdtState.DynamicMeta
-            ];
+            // const nfts = [
+            //     ...state.esdtState.NonFungible,
+            //     ...state.esdtState.NonFungibleV2,
+            //     ...state.esdtState.DynamicNFT,
+            //     ...state.esdtState.SemiFungible,
+            //     ...state.esdtState.DynamicSFT,
+            //     ...state.esdtState.MetaFungible,
+            //     ...state.esdtState.DynamicMeta,
+            // ];
 
             if (newAccountState) {
-                transformed.push(new AccountDetails({
-                    ...newAccountState,
-                    shard: shardID,
-                    tokens: tokens.map(token => new TokenWithBalance({
-                        identifier: token.identifier,
-                        nonce: parseInt(token.nonce),
-                        balance: token.value,
-                        type: this.parseEsdtType(token.type) as TokenType,
-                        subType: NftSubType.None,
-                    })),
-                    nfts: nfts.map(nft => new NftAccount({
-                        identifier: nft.identifier,
-                        nonce: parseInt(nft.nonce),
-                        type: this.parseEsdtType(nft.type) as NftType,
-                        subType: this.parseEsdtSubtype(nft.type),
-                        collection: nft.identifier.replace(/-[^-]*$/, ''), // delete everything after last `-` character inclusive
-                        balance: nft.value,
-                    }))
-                }));
+                const { codeMetadata, ...newAccountStateFiltered } = newAccountState;
+                const parsedAccount =
+                    new AccountDetails({
+                        ...newAccountStateFiltered,
+                        shard: shardID,
+                        timestampMs: blockTimestampMs,
+                        timestamp: Math.floor(blockTimestampMs / 1000),
+                        ...this.parseCodeMetadata(newAccountState.address, codeMetadata),
+                        // tokens: tokens.map(token => new TokenWithBalance({
+                        //     identifier: token.identifier,
+                        //     nonce: parseInt(token.nonce),
+                        //     balance: token.value,
+                        //     type: this.parseEsdtType(token.type) as TokenType,
+                        //     subType: NftSubType.None,
+                        // })),
+                        // nfts: nfts.map(nft => new NftAccount({
+                        //     identifier: nft.identifier,
+                        //     nonce: parseInt(nft.nonce),
+                        //     type: this.parseEsdtType(nft.type) as NftType,
+                        //     subType: this.parseEsdtSubtype(nft.type),
+                        //     collection: nft.identifier.replace(/-[^-]*$/, ''), // delete everything after last `-` character inclusive
+                        //     balance: nft.value,
+                        // })),
+                    });
+                transformed.push(parsedAccount);
             }
 
         }
@@ -116,6 +170,41 @@ export class StateChangesConsumerService {
         return transformed;
     }
 
+
+    private deleteLocalCache(cacheKeys: string[]) {
+        this.clientProxy.emit('deleteCacheKeys', cacheKeys);
+    }
+
+    private parseCodeMetadata(address: string, hexStr?: string) {
+        if (!hexStr || hexStr === '') {
+            return {};
+        }
+        // code metadata for user address refers to guardian data, should handle in the future if needed
+        if (!AddressUtils.isSmartContractAddress(address)) {
+            const GUARDED = 0x08_00;
+            const value = parseInt(hexStr, 16);
+            return {
+                // codeMetadata: hexStr, // TODO: debugging purpose, remove for production
+                isGuarded: (value & GUARDED) !== 0,
+            };
+        }
+
+        const UPGRADEABLE = 0x01_00; // 256
+        const READABLE = 0x04_00; // 1024
+        const PAYABLE = 0x00_02; // 2
+        const PAYABLE_BY_SC = 0x00_04; // 4
+        const value = parseInt(hexStr, 16);
+
+        return {
+            isUpgradeable: (value & UPGRADEABLE) !== 0,
+            isReadable: (value & READABLE) !== 0,
+            isPayable: (value & PAYABLE) !== 0,
+            isPayableBySmartContract: (value & PAYABLE_BY_SC) !== 0,
+            // codeMetadata: hexStr,  // TODO: debugging purpose, remove for production
+        };
+    }
+
+    //@ts-ignore
     private parseEsdtType(type: ESDTType): TokenType | NftType {
         switch (type) {
             case ESDTType.Fungible:
@@ -135,6 +224,7 @@ export class StateChangesConsumerService {
         }
     }
 
+    //@ts-ignore
     private parseEsdtSubtype(type: ESDTType): NftSubType {
         switch (type) {
             case ESDTType.Fungible:
@@ -158,4 +248,37 @@ export class StateChangesConsumerService {
         }
     }
 
+    static async isStateChangesConsumerHealthy(cacheService: CacheService, maxLastActivityDiffMs: number): Promise<boolean> {
+        const keys = [
+            CacheInfo.StateChangesConsumerLatestProcessedBlockTimestamp(0).key,
+            CacheInfo.StateChangesConsumerLatestProcessedBlockTimestamp(1).key,
+            CacheInfo.StateChangesConsumerLatestProcessedBlockTimestamp(2).key,
+            CacheInfo.StateChangesConsumerLatestProcessedBlockTimestamp(4294967295).key,
+        ];
+
+        let timestampsMs: (number | undefined | null)[] = cacheService.getManyLocal(keys);
+
+        // check local
+        if (timestampsMs.some(t => t == null)) {
+            timestampsMs = await cacheService.getManyRemote(keys);
+
+            // check remote
+            if (timestampsMs.some(t => t == null)) {
+                return false;
+            }
+
+            // set only if it's valid
+            cacheService.setManyLocal(keys, timestampsMs, 0.6);
+        }
+
+        const minTimestamp = Math.min(...(timestampsMs as number[]));
+
+        const diff = Date.now() - minTimestamp;
+
+        return diff <= maxLastActivityDiffMs;
+    }
+
+    static isSystemContractAddress(address: string) {
+        return StateChangesConsumerService.SYSTEM_ACCOUNTS.includes(address);
+    }
 }

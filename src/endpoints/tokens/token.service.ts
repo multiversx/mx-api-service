@@ -21,6 +21,7 @@ import { TokenWithRoles } from "./entities/token.with.roles";
 import { TokenWithRolesFilter } from "./entities/token.with.roles.filter";
 import { AddressUtils, BinaryUtils, NumberUtils, TokenUtils } from "@multiversx/sdk-nestjs-common";
 import { ApiService, ApiUtils } from "@multiversx/sdk-nestjs-http";
+import { ConcurrencyUtils } from "src/utils/concurrency.utils";
 import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { OriginLogger } from "@multiversx/sdk-nestjs-common";
@@ -43,14 +44,13 @@ import { MexPairService } from "../mex/mex.pair.service";
 import { MexPairState } from "../mex/entities/mex.pair.state";
 import { MexTokenType } from "../mex/entities/mex.token.type";
 import { NftSubType } from "../nfts/entities/nft.sub.type";
-import { AccountDetailsRepository } from "src/common/indexer/db";
-import { isDbValid } from "src/state-changes/utils/state-changes.utils";
 
 @Injectable()
 export class TokenService {
   private readonly logger = new OriginLogger(TokenService.name);
   private readonly nftSubTypes = [NftSubType.DynamicNonFungibleESDT, NftSubType.DynamicMetaESDT, NftSubType.NonFungibleESDTv2, NftSubType.DynamicSemiFungibleESDT];
   private readonly egldIdentifierInMultiTransfer = 'EGLD-000000';
+  private readonly thresholdFaultyMarketCap = 10_000_000_000;
 
   constructor(
     private readonly esdtService: EsdtService,
@@ -70,7 +70,6 @@ export class TokenService {
     private readonly dataApiService: DataApiService,
     private readonly mexPairService: MexPairService,
     private readonly apiService: ApiService,
-    private readonly accountDetailsRepository: AccountDetailsRepository,
   ) { }
 
   async isToken(identifier: string): Promise<boolean> {
@@ -96,16 +95,19 @@ export class TokenService {
 
     this.applyTickerFromAssets(token);
 
-    await this.applySupply(token, supplyOptions);
-
-    if (token.type === TokenType.FungibleESDT) {
-      token.roles = await this.getTokenRoles(identifier);
-    } else if (token.type === TokenType.MetaESDT) {
-      const elasticCollection = await this.indexerService.getCollection(identifier);
-      if (elasticCollection) {
-        await this.collectionService.applyCollectionRoles(token, elasticCollection);
-      }
-    }
+    await Promise.all([
+      this.applySupply(token, supplyOptions),
+      (async () => {
+        if (token.type === TokenType.FungibleESDT) {
+          token.roles = await this.getTokenRoles(identifier);
+        } else if (token.type === TokenType.MetaESDT) {
+          const elasticCollection = await this.indexerService.getCollection(identifier);
+          if (elasticCollection) {
+            await this.collectionService.applyCollectionRoles(token, elasticCollection);
+          }
+        }
+      })(),
+    ]);
 
     return token;
   }
@@ -253,18 +255,6 @@ export class TokenService {
     return tokens.length;
   }
 
-  async getTokensForAddressFromDb(address: string, queryPagination: QueryPagination, filter: TokenFilter): Promise<TokenWithBalance[]> {
-    const isDbUpToDate: boolean = await isDbValid(this.cachingService);
-    if (isDbUpToDate === true) {
-      const tokens = await this.accountDetailsRepository.getTokensForAddress(address, queryPagination) as TokenWithBalance[];
-      if (tokens && tokens.length > 0) {
-        return tokens;
-      }
-    }
-
-    return await this.getTokensForAddress(address, queryPagination, filter);
-  }
-
   async getTokensForAddress(address: string, queryPagination: QueryPagination, filter: TokenFilter): Promise<TokenWithBalance[]> {
     let tokens: TokenWithBalance[];
     if (AddressUtils.isSmartContractAddress(address)) {
@@ -353,18 +343,6 @@ export class TokenService {
 
     return tokens;
   }
-
-  async getTokenForAddressFromDb(address: string, identifier: string): Promise<TokenDetailedWithBalance | undefined> {
-    const isDbUpToDate: boolean = await isDbValid(this.cachingService);
-    if (isDbUpToDate === true) {
-      const token = await this.accountDetailsRepository.getTokenForAddress(address, identifier) as TokenDetailedWithBalance;
-      if (token) {
-        return token;
-      }
-    }
-    return await this.getTokenForAddress(address, identifier);
-  }
-
 
   async getTokenForAddress(address: string, identifier: string): Promise<TokenDetailedWithBalance | undefined> {
     const esdtIdentifier = identifier.split('-').slice(0, 2).join('-');
@@ -782,13 +760,15 @@ export class TokenService {
     }
 
     this.logger.log(`Starting to fetch all tokens`);
+    const startFungible = Date.now();
     const tokensProperties = await this.esdtService.getAllFungibleTokenProperties();
     let tokens = tokensProperties.map(properties => ApiUtils.mergeObjects(new TokenDetailed(), properties));
+    this.logger.log(`Fetched ${tokens.length} fungible tokens in ${Date.now() - startFungible}ms`);
 
-    this.logger.log(`Fetched ${tokens.length} fungible tokens`);
+    const allAssets = await this.assetsService.getAllTokenAssets();
 
     for (const token of tokens) {
-      const assets = await this.assetsService.getTokenAssets(token.identifier);
+      const assets = allAssets[token.identifier];
 
       if (assets && assets.name) {
         token.name = assets.name;
@@ -798,10 +778,7 @@ export class TokenService {
     }
 
     this.logger.log(`Starting to fetch all meta tokens`);
-
     const collections = await this.collectionService.getNftCollections(new QueryPagination({ from: 0, size: 10000 }), { type: [NftType.MetaESDT] });
-
-    this.logger.log(`Fetched ${collections.length} meta tokens`);
 
     for (const collection of collections) {
       tokens.push(new TokenDetailed({
@@ -824,44 +801,79 @@ export class TokenService {
 
     await this.batchProcessTokens(tokens);
 
-    await this.applyMexLiquidity(tokens.filter(x => x.type !== TokenType.MetaESDT));
-    await this.applyMexPrices(tokens.filter(x => x.type !== TokenType.MetaESDT));
-    await this.applyMexPairType(tokens.filter(x => x.type !== TokenType.MetaESDT));
-    await this.applyMexPairTradesCount(tokens.filter(x => x.type !== TokenType.MetaESDT));
+    const nonMetaEsdtTokens = tokens.filter(x => x.type !== TokenType.MetaESDT);
+    this.logger.log(`Applying MEX data for ${nonMetaEsdtTokens.length} non-meta tokens`);
 
+    await Promise.all([
+      this.applyMexLiquidity(nonMetaEsdtTokens),
+      this.applyMexPrices(nonMetaEsdtTokens),
+      this.applyMexPairType(nonMetaEsdtTokens),
+      this.applyMexPairTradesCount(nonMetaEsdtTokens),
+    ]);
+
+    this.logger.log(`Fetching assets for ${tokens.length} tokens`);
     await this.cachingService.batchApplyAll(
       tokens,
       token => CacheInfo.EsdtAssets(token.identifier).key,
       async token => await this.getTokenAssetsRaw(token.identifier),
       (token, assets) => token.assets = assets,
       CacheInfo.EsdtAssets('').ttl,
+      50,
     );
 
-    for (const token of tokens) {
-      const priceSourcetype = token.assets?.priceSource?.type;
+    this.logger.log(`Processing price sources and supply for ${tokens.length} tokens`);
+    await ConcurrencyUtils.executeWithConcurrencyLimit(
+      tokens,
+      async (token) => {
+        try {
+          const priceSourcetype = token.assets?.priceSource?.type;
 
-      if (priceSourcetype === TokenAssetsPriceSourceType.dataApi) {
-        token.price = await this.dataApiService.getEsdtTokenPrice(token.identifier);
-      } else if (priceSourcetype === TokenAssetsPriceSourceType.customUrl && token.assets?.priceSource?.url) {
-        const pathToPrice = token.assets?.priceSource?.path ?? "0.usdPrice";
-        const tokenData = await this.fetchTokenDataFromUrl(token.assets.priceSource.url, pathToPrice);
+          if (priceSourcetype === TokenAssetsPriceSourceType.dataApi) {
+            token.price = await this.dataApiService.getEsdtTokenPrice(token.identifier);
+          } else if (priceSourcetype === TokenAssetsPriceSourceType.customUrl && token.assets?.priceSource?.url) {
+            const pathToPrice = token.assets?.priceSource?.path ?? "0.usdPrice";
+            const tokenData = await this.fetchTokenDataFromUrl(token.assets.priceSource.url, pathToPrice);
 
-        if (tokenData) {
-          token.price = tokenData;
+            if (tokenData) {
+              token.price = tokenData;
+            }
+          }
+
+          if (!token.price && token.type === TokenType.FungibleESDT) {
+            try {
+              const dataApiPrice = await this.dataApiService.getEsdtTokenPrice(token.identifier);
+              if (dataApiPrice) {
+                token.price = dataApiPrice;
+                this.logger.log(`Applied dataAPI fallback for ${token.identifier} token with price ${dataApiPrice}`);
+              }
+            } catch (error) {
+              this.logger.error(`Error applying dataAPI fallback price for token ${token.identifier}: ${error}`);
+            }
+          }
+
+          if (token.price) {
+            const supply = await this.esdtService.getTokenSupply(token.identifier);
+            token.supply = supply.totalSupply;
+            token.circulatingSupply = supply.circulatingSupply;
+
+            if (token.circulatingSupply) {
+              token.marketCap = token.price * NumberUtils.denominateString(token.circulatingSupply, token.decimals);
+              // TODO: update this by checking the token's liquidity collateral
+              if (token.marketCap > this.thresholdFaultyMarketCap) {
+                this.logger.log(`Setting token market cap to 0 due to possibly faulty market cap. Token: ${token.identifier}. Circulating supply: ${token.circulatingSupply}. Price: ${token.price}. Market cap: ${token.marketCap}`);
+                token.marketCap = 0;
+              }
+            }
+          }
+        } catch (error) {
+          this.logger.error(`Error processing price/supply for token ${token.identifier}: ${error}`);
         }
-      }
+      },
+      50,
+      'Token prices and supply calculation'
+    );
 
-      if (token.price) {
-        const supply = await this.esdtService.getTokenSupply(token.identifier);
-        token.supply = supply.totalSupply;
-        token.circulatingSupply = supply.circulatingSupply;
-
-        if (token.circulatingSupply) {
-          token.marketCap = token.price * NumberUtils.denominateString(token.circulatingSupply, token.decimals);
-        }
-      }
-    }
-
+    this.logger.log(`Sorting and finalizing ${tokens.length} tokens`);
     tokens = tokens.sortedDescending(
       token => token.assets ? 1 : 0,
       token => token.marketCap ? 1 : 0,
@@ -883,6 +895,7 @@ export class TokenService {
     });
     tokens = [...tokens, egldToken];
 
+    this.logger.log(`Total tokens processed: ${tokens.length}`);
     return tokens;
   }
 
@@ -945,41 +958,45 @@ export class TokenService {
   }
 
   private async batchProcessTokens(tokens: TokenDetailed[]) {
-    await this.cachingService.batchApplyAll(
-      tokens,
-      token => CacheInfo.TokenTransactions(token.identifier).key,
-      async token => await this.getTotalTransactions(token),
-      (token, result) => {
-        token.transactions = result?.count;
-        token.transactionsLastUpdatedAt = result?.lastUpdatedAt;
-      },
-      CacheInfo.TokenTransactions('').ttl,
-      10,
-    );
+    this.logger.log(`Starting batch process for ${tokens.length} tokens`);
 
-    await this.cachingService.batchApplyAll(
-      tokens,
-      token => CacheInfo.TokenAccounts(token.identifier).key,
-      async token => await this.getTotalAccounts(token),
-      (token, result) => {
-        token.accounts = result?.count;
-        token.accountsLastUpdatedAt = result?.lastUpdatedAt;
-      },
-      CacheInfo.TokenAccounts('').ttl,
-      10,
-    );
+    await Promise.all([
+      this.cachingService.batchApplyAll(
+        tokens,
+        token => CacheInfo.TokenTransactions(token.identifier).key,
+        async token => await this.getTotalTransactions(token),
+        (token, result) => {
+          token.transactions = result?.count;
+          token.transactionsLastUpdatedAt = result?.lastUpdatedAt;
+        },
+        CacheInfo.TokenTransactions('').ttl,
+        50,
+      ),
+      this.cachingService.batchApplyAll(
+        tokens,
+        token => CacheInfo.TokenAccounts(token.identifier).key,
+        async token => await this.getTotalAccounts(token),
+        (token, result) => {
+          token.accounts = result?.count;
+          token.accountsLastUpdatedAt = result?.lastUpdatedAt;
+        },
+        CacheInfo.TokenAccounts('').ttl,
+        50,
+      ),
+      this.cachingService.batchApplyAll(
+        tokens,
+        token => CacheInfo.TokenTransfers(token.identifier).key,
+        async token => await this.getTotalTransfers(token),
+        (token, result) => {
+          token.transfers = result?.count;
+          token.transfersLastUpdatedAt = result?.lastUpdatedAt;
+        },
+        CacheInfo.TokenTransfers('').ttl,
+        50,
+      ),
+    ]);
 
-    await this.cachingService.batchApplyAll(
-      tokens,
-      token => CacheInfo.TokenTransfers(token.identifier).key,
-      async token => await this.getTotalTransfers(token),
-      (token, result) => {
-        token.transfers = result?.count;
-        token.transfersLastUpdatedAt = result?.lastUpdatedAt;
-      },
-      CacheInfo.TokenTransfers('').ttl,
-      10,
-    );
+    this.logger.log(`Batch process for ${tokens.length} tokens finished`);
   }
 
   private async getAllTokensFromApi(): Promise<TokenDetailed[]> {
@@ -1065,29 +1082,49 @@ export class TokenService {
 
     try {
       const indexedTokens = await this.mexTokenService.getMexPricesRaw();
-      for (const token of tokens) {
-        const price = indexedTokens[token.identifier];
-        if (price) {
-          const supply = await this.esdtService.getTokenSupply(token.identifier);
 
-          if (token.assets && token.identifier.split('-')[0] === 'EGLDUSDC') {
-            price.price = price.price / (10 ** 12) * 2;
-          }
+      const tokensWithPrices = tokens.filter(token => indexedTokens[token.identifier]);
 
-          if (price.isToken) {
-            token.price = price.price;
-            token.marketCap = price.price * NumberUtils.denominateString(supply.circulatingSupply, token.decimals);
+      this.logger.log(`Applying MEX prices for ${tokensWithPrices.length} tokens with parallel supply fetching`);
 
-            if (token.totalLiquidity && token.marketCap && (token.totalLiquidity / token.marketCap < LOW_LIQUIDITY_THRESHOLD)) {
-              token.isLowLiquidity = true;
-              token.lowLiquidityThresholdPercent = LOW_LIQUIDITY_THRESHOLD * 100;
+      await ConcurrencyUtils.executeWithConcurrencyLimit(
+        tokensWithPrices,
+        async (token) => {
+          try {
+            const price = indexedTokens[token.identifier];
+            if (!price) {
+              return;
             }
-          }
 
-          token.supply = supply.totalSupply;
-          token.circulatingSupply = supply.circulatingSupply;
-        }
-      }
+            const supply = await this.esdtService.getTokenSupply(token.identifier);
+
+            if (token.assets && token.identifier.split('-')[0] === 'EGLDUSDC') {
+              price.price = price.price / (10 ** 12) * 2;
+            }
+
+            if (price.isToken) {
+              token.price = price.price;
+              token.marketCap = price.price * NumberUtils.denominateString(supply.circulatingSupply, token.decimals);
+              if (token.marketCap > this.thresholdFaultyMarketCap) {
+                this.logger.log(`Setting token market cap to 0 due to possibly faulty market cap. Token: ${token.identifier}. Circulating supply: ${supply.circulatingSupply}. Price: ${token.price}. Market cap: ${token.marketCap}`);
+                token.marketCap = 0;
+              }
+
+              if (token.totalLiquidity && token.marketCap && (token.totalLiquidity / token.marketCap < LOW_LIQUIDITY_THRESHOLD)) {
+                token.isLowLiquidity = true;
+                token.lowLiquidityThresholdPercent = LOW_LIQUIDITY_THRESHOLD * 100;
+              }
+            }
+
+            token.supply = supply.totalSupply;
+            token.circulatingSupply = supply.circulatingSupply;
+          } catch (error) {
+            this.logger.error(`Error applying MEX price for token ${token.identifier}: ${error}`);
+          }
+        },
+        50,
+        'MEX prices and supply'
+      );
     } catch (error) {
       this.logger.error('Could not apply mex tokens prices');
       this.logger.error(error);

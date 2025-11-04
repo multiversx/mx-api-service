@@ -9,7 +9,6 @@ import { MexModule } from "../mex/mex.module";
 import { CollectionModule } from "../collections/collection.module";
 import { PluginModule } from "src/plugins/plugin.module";
 import { TransferModule } from "../transfers/transfer.module";
-import { MongoDbModule } from "src/common/indexer/db";
 
 @Module({
   imports: [
@@ -21,7 +20,6 @@ import { MongoDbModule } from "src/common/indexer/db";
     forwardRef(() => MexModule.forRoot()),
     forwardRef(() => CollectionModule),
     forwardRef(() => PluginModule),
-    MongoDbModule,
   ],
   providers: [
     TokenService, TokenTransferService,

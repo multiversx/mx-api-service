@@ -10,7 +10,6 @@ import { TokenModule } from "../tokens/token.module";
 import { NftExtendedAttributesService } from "./nft.extendedattributes.service";
 import { NftService } from "./nft.service";
 import { LockedAssetModule } from "../../common/locked-asset/locked-asset.module";
-import { MongoDbModule } from "src/common/indexer/db";
 
 @Module({
   imports: [
@@ -23,7 +22,6 @@ import { MongoDbModule } from "src/common/indexer/db";
     forwardRef(() => AssetsModule),
     forwardRef(() => LockedAssetModule),
     NftMediaModule,
-    MongoDbModule,
   ],
   providers: [
     NftService, NftExtendedAttributesService,

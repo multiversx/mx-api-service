@@ -20,6 +20,14 @@ flags:
   processNfts: true
   collectionPropertiesFromGateway: false
 features:
+  websocketSubscription:
+    enabled: false
+    port: 6002
+  stateChanges:
+    enabled: false
+    port: 5675
+    url: 'amqp://guest:guest@127.0.0.1:5672'
+    exchange: 'state_accesses'
   eventsNotifier:
     enabled: false
     port: 5674
@@ -63,8 +71,8 @@ features:
     cronExpression: '*/5 * * * * *'
     activationEpoch: 1391
   chainAndromeda:
-    enabled: false
-    activationEpoch: 4
+    enabled: true
+    activationEpoch: 1763
   nodeEpochsLeft:
     enabled: false
   transactionProcessor:
@@ -150,7 +158,8 @@ indexer:
   maxPagination: 10000
 database:
   enabled: false
-  url: 'mongodb://127.0.0.1:27017/api?authSource=admin'
+  url: 'mongodb://root:secret@127.0.0.1:27017/api?authSource=admin'
+  tls: false
   type: 'mysql'
   host: 'localhost'
   port: 3306
@@ -188,3 +197,5 @@ compression:
   level: 6
   threshold: 1024
   chunkSize: 16384
+pubSubListener:
+  enabled: true

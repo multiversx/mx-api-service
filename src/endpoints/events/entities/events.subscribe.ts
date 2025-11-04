@@ -1,15 +1,10 @@
-import { IsOptional, IsNumber, IsBoolean, Min, Max, IsEnum, IsIn } from 'class-validator';
-import { SortOrder } from 'src/common/entities/sort.order';
+import { IsOptional, IsNumber, Min, Max, IsIn } from 'class-validator';
 
-export class BlockSubscribePayload {
+export class EventsSubscribePayload {
     @IsOptional()
     @IsNumber()
     @Min(0)
     shard?: number;
-
-    @IsOptional()
-    @IsEnum(SortOrder)
-    order?: SortOrder;
 
     @IsOptional()
     @IsNumber()
@@ -21,8 +16,4 @@ export class BlockSubscribePayload {
     @Min(1, { message: 'minimum size is 1' })
     @Max(50, { message: 'maximum size is 50' })
     size?: number = 25;
-
-    @IsOptional()
-    @IsBoolean()
-    withProposerIdentity?: boolean;
 }

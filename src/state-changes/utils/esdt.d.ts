@@ -1,6 +1,7 @@
 import * as $protobuf from "protobufjs";
 import Long = require("long");
 /** Properties of a MetaData. */
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface IMetaData {
 }
 
@@ -44,7 +45,7 @@ export class MetaData implements IMetaData {
      * @throws {Error} If the payload is not a reader or valid buffer
      * @throws {$protobuf.util.ProtocolError} If required fields are missing
      */
-    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): MetaData;
+    public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): MetaData;
 
     /**
      * Decodes a MetaData message from the specified reader or buffer, length delimited.
@@ -53,14 +54,14 @@ export class MetaData implements IMetaData {
      * @throws {Error} If the payload is not a reader or valid buffer
      * @throws {$protobuf.util.ProtocolError} If required fields are missing
      */
-    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): MetaData;
+    public static decodeDelimited(reader: ($protobuf.Reader | Uint8Array)): MetaData;
 
     /**
      * Verifies a MetaData message.
      * @param message Plain object to verify
      * @returns `null` if valid, otherwise the reason why it is not
      */
-    public static verify(message: { [k: string]: any }): (string|null);
+    public static verify(message: { [k: string]: any }): (string | null);
 
     /**
      * Creates a MetaData message from a plain object. Also converts values to their respective internal types.
@@ -95,19 +96,19 @@ export class MetaData implements IMetaData {
 export interface IESDigitalToken {
 
     /** ESDigitalToken Type */
-    Type?: (number|null);
+    Type?: (number | null);
 
     /** ESDigitalToken Value */
-    Value?: (Uint8Array|null);
+    Value?: (Uint8Array | null);
 
     /** ESDigitalToken Properties */
-    Properties?: (Uint8Array|null);
+    Properties?: (Uint8Array | null);
 
     /** ESDigitalToken TokenMetaData */
-    TokenMetaData?: (IMetaData|null);
+    TokenMetaData?: (IMetaData | null);
 
     /** ESDigitalToken Reserved */
-    Reserved?: (Uint8Array|null);
+    Reserved?: (Uint8Array | null);
 }
 
 /** Represents a ESDigitalToken. */
@@ -129,7 +130,7 @@ export class ESDigitalToken implements IESDigitalToken {
     public Properties: Uint8Array;
 
     /** ESDigitalToken TokenMetaData. */
-    public TokenMetaData?: (IMetaData|null);
+    public TokenMetaData?: (IMetaData | null);
 
     /** ESDigitalToken Reserved. */
     public Reserved: Uint8Array;
@@ -165,7 +166,7 @@ export class ESDigitalToken implements IESDigitalToken {
      * @throws {Error} If the payload is not a reader or valid buffer
      * @throws {$protobuf.util.ProtocolError} If required fields are missing
      */
-    public static decode(reader: ($protobuf.Reader|Uint8Array), length?: number): ESDigitalToken;
+    public static decode(reader: ($protobuf.Reader | Uint8Array), length?: number): ESDigitalToken;
 
     /**
      * Decodes a ESDigitalToken message from the specified reader or buffer, length delimited.
@@ -174,14 +175,14 @@ export class ESDigitalToken implements IESDigitalToken {
      * @throws {Error} If the payload is not a reader or valid buffer
      * @throws {$protobuf.util.ProtocolError} If required fields are missing
      */
-    public static decodeDelimited(reader: ($protobuf.Reader|Uint8Array)): ESDigitalToken;
+    public static decodeDelimited(reader: ($protobuf.Reader | Uint8Array)): ESDigitalToken;
 
     /**
      * Verifies a ESDigitalToken message.
      * @param message Plain object to verify
      * @returns `null` if valid, otherwise the reason why it is not
      */
-    public static verify(message: { [k: string]: any }): (string|null);
+    public static verify(message: { [k: string]: any }): (string | null);
 
     /**
      * Creates a ESDigitalToken message from a plain object. Also converts values to their respective internal types.

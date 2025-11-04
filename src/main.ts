@@ -37,6 +37,7 @@ import * as bodyParser from 'body-parser';
 import * as requestIp from 'request-ip';
 import compression from 'compression';
 import { IoAdapter } from '@nestjs/platform-socket.io';
+import { WebsocketSubscriptionModule } from './crons/websocket/websocket.subscription.module';
 import { StateChangesModule } from './state-changes/state.changes.module';
 
 async function bootstrap() {
@@ -54,7 +55,6 @@ async function bootstrap() {
 
   if (apiConfigService.getIsPublicApiActive()) {
     const publicApp = await NestFactory.create<NestExpressApplication>(PublicAppModule);
-    publicApp.useWebSocketAdapter(new IoAdapter(publicApp));
 
     await configurePublicApp(publicApp, apiConfigService);
 
@@ -88,6 +88,13 @@ async function bootstrap() {
   if (apiConfigService.getIsTransactionProcessorCronActive()) {
     const processorApp = await NestFactory.create(TransactionProcessorModule);
     await processorApp.listen(5001);
+  }
+
+
+  if (apiConfigService.getIsWebsocketSubscriptionActive()) {
+    const websocketSubscriptionApp = await NestFactory.create(WebsocketSubscriptionModule);
+    websocketSubscriptionApp.useWebSocketAdapter(new IoAdapter(websocketSubscriptionApp));
+    await websocketSubscriptionApp.listen(apiConfigService.getWebsocketSubscriptionPort());
   }
 
   if (apiConfigService.getIsCacheWarmerCronActive()) {
@@ -146,23 +153,25 @@ async function bootstrap() {
     await stateChangesApp.listen(apiConfigService.getStateChangesFeaturePort());
   }
 
-  const pubSubApp = await NestFactory.createMicroservice<MicroserviceOptions>(
-    PubSubListenerModule,
-    {
-      transport: Transport.REDIS,
-      options: {
-        host: apiConfigService.getRedisUrl(),
-        port: 6379,
-        retryAttempts: 100,
-        retryDelay: 1000,
-        retryStrategy: () => 1000,
+  if (apiConfigService.isPubSubListenerEnabled()) {
+    const pubSubApp = await NestFactory.createMicroservice<MicroserviceOptions>(
+      PubSubListenerModule,
+      {
+        transport: Transport.REDIS,
+        options: {
+          host: apiConfigService.getRedisUrl(),
+          port: 6379,
+          retryAttempts: 100,
+          retryDelay: 1000,
+          retryStrategy: () => 1000,
+        },
       },
-    },
-  );
-  pubSubApp.useLogger(pubSubApp.get(WINSTON_MODULE_NEST_PROVIDER));
-  pubSubApp.useWebSocketAdapter(new SocketAdapter(pubSubApp));
-  // eslint-disable-next-line @typescript-eslint/no-floating-promises
-  pubSubApp.listen();
+    );
+    pubSubApp.useLogger(pubSubApp.get(WINSTON_MODULE_NEST_PROVIDER));
+    pubSubApp.useWebSocketAdapter(new SocketAdapter(pubSubApp));
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    pubSubApp.listen();
+  }
 
   logger.log(`Public API active: ${apiConfigService.getIsPublicApiActive()}`);
   logger.log(`Private API active: ${apiConfigService.getIsPrivateApiActive()}`);
@@ -176,6 +185,7 @@ async function bootstrap() {
   logger.log(`Exchange feature active: ${apiConfigService.isExchangeEnabled()}`);
   logger.log(`Marketplace feature active: ${apiConfigService.isMarketplaceFeatureEnabled()}`);
   logger.log(`Auth active: ${apiConfigService.getIsAuthActive()}`);
+  logger.log(`WebSocket subscription active: ${apiConfigService.getIsWebsocketSubscriptionActive()}`);
 
   logger.log(`Use tracing: ${apiConfigService.getUseTracingFlag()}`);
   logger.log(`Process NFTs flag: ${apiConfigService.getIsProcessNftsFlagActive()}`);

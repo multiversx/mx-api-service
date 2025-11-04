@@ -469,7 +469,7 @@ export class CacheInfo {
   static BlocksCount(filter: BlockFilter): CacheInfo {
     return {
       key: `blocks:count:${JSON.stringify(filter)}`,
-      ttl: Constants.oneMinute(),
+      ttl: Constants.oneSecond() * 6,
     };
   }
 
@@ -711,10 +711,24 @@ export class CacheInfo {
     };
   }
 
-  static LatestProcessedBlockTimestamp(shardId: number): CacheInfo {
+  static StateChangesConsumerLatestProcessedBlockTimestamp(shardId: number): CacheInfo {
     return {
       key: `latestProcessedBlock:${shardId}`,
       ttl: Constants.oneMinute(),
+    };
+  }
+
+  static AccountState(address: string): CacheInfo {
+    return {
+      key: `account-state:${address}`,
+      ttl: Constants.oneHour() * 12,
+    };
+  }
+
+  static AccountToken(address: string): CacheInfo {
+    return {
+      key: `account-token:${address}`,
+      ttl: Constants.oneHour() * 12,
     };
   }
 }

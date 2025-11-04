@@ -1,72 +1,15 @@
-import { IsOptional, IsString, IsArray, IsBoolean, IsNumber, IsEnum } from 'class-validator';
-import { Type } from 'class-transformer';
+import { IsOptional, IsString, IsArray, IsBoolean, IsNumber, IsEnum, Min, Max, IsIn } from 'class-validator';
 import { TransactionStatus } from '../transaction.status';
-import { QueryConditionOptions } from '@multiversx/sdk-nestjs-elastic';
 import { SortOrder } from 'src/common/entities/sort.order';
 
 export class TransactionSubscribePayload {
-    @IsOptional()
-    @IsString()
-    sender?: string;
-
-    @IsOptional()
-    @IsArray()
-    @IsString({ each: true })
-    receiver?: string[];
-
-    @IsOptional()
-    @IsString()
-    token?: string;
-
-    @IsOptional()
-    @IsArray()
-    @IsString({ each: true })
-    functions?: string[];
-
-    @IsOptional()
-    @IsNumber()
-    @Type(() => Number)
-    senderShard?: number;
-
-    @IsOptional()
-    @IsNumber()
-    @Type(() => Number)
-    receiverShard?: number;
-
-    @IsOptional()
-    @IsString()
-    miniBlockHash?: string;
-
-    @IsOptional()
-    @IsArray()
-    @IsString({ each: true })
-    hashes?: string[];
-
     @IsOptional()
     @IsEnum(TransactionStatus)
     status?: TransactionStatus;
 
     @IsOptional()
-    @IsNumber()
-    @Type(() => Number)
-    before?: number;
-
-    @IsOptional()
-    @IsNumber()
-    @Type(() => Number)
-    after?: number;
-
-    @IsOptional()
-    @IsEnum(QueryConditionOptions)
-    condition?: QueryConditionOptions;
-
-    @IsOptional()
     @IsEnum(SortOrder)
     order?: SortOrder;
-
-    @IsOptional()
-    @IsString()
-    relayer?: string;
 
     @IsOptional()
     @IsBoolean()
@@ -75,11 +18,6 @@ export class TransactionSubscribePayload {
     @IsOptional()
     @IsBoolean()
     isScCall?: boolean;
-
-    @IsOptional()
-    @IsNumber()
-    @Type(() => Number)
-    round?: number;
 
     @IsOptional()
     @IsBoolean()
@@ -115,13 +53,15 @@ export class TransactionSubscribePayload {
 
     @IsOptional()
     @IsNumber()
-    @Type(() => Number)
-    from?: number;
+    @IsIn([0], { message: 'from can only be 0' })
+    from?: number = 0;
 
     @IsOptional()
     @IsNumber()
-    @Type(() => Number)
-    size?: number;
+    @Min(1, { message: 'minimum size is 1' })
+    @Max(50, { message: 'maximum size is 50' })
+    size?: number = 25;
+
 
     @IsOptional()
     @IsArray()

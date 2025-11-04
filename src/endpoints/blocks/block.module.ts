@@ -3,7 +3,6 @@ import { BlsModule } from "../bls/bls.module";
 import { IdentitiesModule } from "../identities/identities.module";
 import { NodeModule } from "../nodes/node.module";
 import { BlockService } from "./block.service";
-import { BlocksGateway } from "./blocks.gateway";
 
 @Module({
   imports: [
@@ -12,10 +11,10 @@ import { BlocksGateway } from "./blocks.gateway";
     forwardRef(() => IdentitiesModule),
   ],
   providers: [
-    BlockService, BlocksGateway,
+    BlockService,
   ],
   exports: [
-    BlockService, BlocksGateway,
+    BlockService,
   ],
 })
 export class BlockModule { }

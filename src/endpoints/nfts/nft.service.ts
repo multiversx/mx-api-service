@@ -31,8 +31,6 @@ import { SortCollectionNfts } from "../collections/entities/sort.collection.nfts
 import { TokenAssets } from "src/common/assets/entities/token.assets";
 import { ScamInfo } from "src/common/entities/scam-info.dto";
 import { NftSubType } from "./entities/nft.sub.type";
-import { AccountDetailsRepository } from "src/common/indexer/db";
-import { isDbValid } from "src/state-changes/utils/state-changes.utils";
 
 @Injectable()
 export class NftService {
@@ -53,7 +51,6 @@ export class NftService {
     private readonly esdtAddressService: EsdtAddressService,
     private readonly mexTokenService: MexTokenService,
     private readonly lockedAssetService: LockedAssetService,
-    private readonly accountDetailsRepository: AccountDetailsRepository,
   ) {
     this.NFT_THUMBNAIL_PREFIX = this.apiConfigService.getExternalMediaUrl() + '/nfts/asset';
     this.DEFAULT_MEDIA = [
@@ -73,7 +70,7 @@ export class NftService {
     const nfts = await this.getNftsInternal({ from, size }, filter);
 
     await Promise.all([
-      this.batchApplyAssetsAndTicker(nfts),
+      this.conditionallyApplyAssetsAndTicker(nfts, undefined, queryOptions),
       this.conditionallyApplyOwners(nfts, queryOptions),
       this.conditionallyApplySupply(nfts, queryOptions),
       this.batchProcessNfts(nfts),
@@ -91,23 +88,25 @@ export class NftService {
     ]);
   }
 
-  private async batchApplyAssetsAndTicker(nfts: Nft[], fields?: string[]): Promise<void> {
+  private async conditionallyApplyAssetsAndTicker(nfts: Nft[], fields?: string[], queryOptions?: { withAssets?: boolean }): Promise<void> {
     if (fields && fields.includesNone(['ticker', 'assets'])) {
       return;
     }
 
-    await Promise.all(
-      nfts.map(async (nft) => {
-        nft.assets = await this.assetsService.getTokenAssets(nft.identifier) ??
-          await this.assetsService.getTokenAssets(nft.collection);
+    const allAssets = await this.assetsService.getAllTokenAssets();
+    if (queryOptions?.withAssets === false) {
+      return;
+    }
 
-        if (nft.assets) {
-          nft.ticker = nft.collection.split('-')[0];
-        } else {
-          nft.ticker = nft.collection;
-        }
-      })
-    );
+    for (const nft of nfts) {
+      nft.assets = allAssets[nft.identifier] ?? allAssets[nft.collection];
+
+      if (nft.assets) {
+        nft.ticker = nft.collection.split('-')[0];
+      } else {
+        nft.ticker = nft.collection;
+      }
+    }
   }
 
   private async conditionallyApplyOwners(nfts: Nft[], queryOptions?: NftQueryOptions): Promise<void> {
@@ -454,8 +453,6 @@ export class NftService {
           nft.decimals = collectionProperties.decimals;
           // @ts-ignore
           delete nft.royalties;
-          // @ts-ignore
-          delete nft.uris;
         }
       }
     }
@@ -505,17 +502,6 @@ export class NftService {
 
   async getNftCount(filter: NftFilter): Promise<number> {
     return await this.indexerService.getNftCount(filter);
-  }
-
-  async getNftsForAddressFromDb(address: string, queryPagination: QueryPagination, filter: NftFilter, fields?: string[], queryOptions?: NftQueryOptions, source?: EsdtDataSource): Promise<NftAccount[]> {
-    const isDbUpToDate: boolean = await isDbValid(this.cachingService);
-    if (isDbUpToDate === true) {
-      const nfts = await this.accountDetailsRepository.getNftsForAddress(address, queryPagination) as NftAccount[];
-      if (nfts && nfts.length > 0) {
-        return nfts;
-      }
-    }
-    return await this.getNftsForAddress(address, queryPagination, filter, fields, queryOptions, source);
   }
 
   async getNftsForAddress(address: string, queryPagination: QueryPagination, filter: NftFilter, fields?: string[], queryOptions?: NftQueryOptions, source?: EsdtDataSource): Promise<NftAccount[]> {
@@ -615,17 +601,6 @@ export class NftService {
 
   async getNftCountForAddress(address: string, filter: NftFilter): Promise<number> {
     return await this.esdtAddressService.getNftCountForAddressFromElastic(address, filter);
-  }
-
-  async getNftForAddressFromDb(address: string, identifier: string, fields?: string[]): Promise<NftAccount | undefined> {
-    const isDbUpToDate: boolean = await isDbValid(this.cachingService);
-    if (isDbUpToDate === true) {
-      const nft = await this.accountDetailsRepository.getNftForAddress(address, identifier) as NftAccount;
-      if (nft) {
-        return nft;
-      }
-    }
-    return await this.getNftForAddress(address, identifier, fields);
   }
 
   async getNftForAddress(address: string, identifier: string, fields?: string[]): Promise<NftAccount | undefined> {

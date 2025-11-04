@@ -481,6 +481,10 @@ export class ApiConfigService {
     return databaseUrl;
   }
 
+  isDatabaseTlsEnabled(): boolean {
+    return this.configService.get<boolean>('database.tls') ?? false;
+  }
+
   getDatabaseConnection(): any {
     return {
       host: this.getDatabaseHost(),
@@ -955,6 +959,24 @@ export class ApiConfigService {
     return this.configService.get<number>('compression.chunkSize') ?? 16384;
   }
 
+  getIsWebsocketSubscriptionActive(): boolean {
+    const isWebsocketSubscriptionActive = this.configService.get<boolean>('features.websocketSubscription.enabled');
+    if (isWebsocketSubscriptionActive === undefined) {
+      throw new Error('No features.websocketSubscription.enabled flag present');
+    }
+
+    return isWebsocketSubscriptionActive;
+  }
+
+  getWebsocketSubscriptionPort(): number {
+    const port = this.configService.get<number>('features.websocketSubscription.port');
+    if (port === undefined) {
+      throw new Error('No features.websocketSubscription.port present');
+    }
+
+    return port;
+  }
+
   isStateChangesFeatureActive(): boolean {
     const isStateChangesActive = this.configService.get<boolean>('features.stateChanges.enabled');
     if (isStateChangesActive === undefined) {
@@ -991,12 +1013,12 @@ export class ApiConfigService {
     return exchange;
   }
 
-  getStateChangesQueue(): string {
-    const queue = this.configService.get<string>('features.stateChanges.queue');
-    if (!queue) {
-      throw new Error('No state changes queue present');
+  isPubSubListenerEnabled(): boolean {
+    const isPubSubListenerEnabled = this.configService.get<boolean>('pubSubListener.enabled');
+    if (isPubSubListenerEnabled == null) {
+      return true;
     }
 
-    return queue;
+    return isPubSubListenerEnabled;
   }
 }
