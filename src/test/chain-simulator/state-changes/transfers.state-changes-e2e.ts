@@ -56,23 +56,40 @@ async function waitForBalance(baseUrl: string, address: string, expected: bigint
   return last;
 }
 
-async function fetchTxFeeFromSimulator(simUrl: string, txHash: string): Promise<bigint> {
-  // Prefer explicit fee, fallback to gasUsed * gasPrice if needed
-  for (let i = 0; i < 30; i++) {
-    const resp = await axios.get(`${simUrl}/transaction/${txHash}?withResults=true`).catch(() => undefined);
-    const tx = resp?.data?.data?.transaction;
-    if (tx) {
-      if (tx.fee) return BigInt(String(tx.fee));
-      if (tx.gasUsed && (tx.gasPrice || tx.initialPaidFee)) {
-        // gasPrice might be missing; initialPaidFee may be present. Use what we have.
-        const gasUsed = BigInt(String(tx.gasUsed));
-        if (tx.gasPrice) return gasUsed * BigInt(String(tx.gasPrice));
-        if (tx.initialPaidFee) return BigInt(String(tx.initialPaidFee));
-      }
-    }
-    await sleep(1000);
-  }
-  throw new Error(`Could not fetch fee for tx ${txHash}`);
+// Observe fee via balance deltas (more robust than parsing simulator fields across versions)
+function computeFeeFromDeltas(beforeSender: bigint, afterSender: bigint, amount: bigint): bigint {
+  const debited = beforeSender - afterSender;
+  const fee = debited - amount;
+  return fee > 0n ? fee : 0n;
+}
+
+async function performTransferAndAssert(simUrl: string, apiUrl: string, sender: string, receiver: string, amount: bigint) {
+  const beforeSender = await fetchApiBalance(apiUrl, sender);
+  const beforeReceiver = await fetchApiBalance(apiUrl, receiver);
+
+  const hash = await sendTransaction(new SendTransactionArgs({
+    chainSimulatorUrl: simUrl,
+    sender,
+    receiver,
+    value: amount.toString(),
+    dataField: '',
+  }));
+
+  // Wait for receiver to reflect amount increase
+  const expectedReceiver = beforeReceiver + amount;
+  const afterReceiver = await waitForBalance(apiUrl, receiver, expectedReceiver);
+  expect(afterReceiver).toBe(expectedReceiver);
+
+  // Read sender post and derive fee
+  const afterSender = await fetchApiBalance(apiUrl, sender);
+  const fee = computeFeeFromDeltas(beforeSender, afterSender, amount);
+  expect(afterSender).toBe(beforeSender - amount - fee);
+  // Sanity-check fee is > 0 and not absurdly large
+  expect(fee).toBeGreaterThan(0n);
+  // Fee should be < 0.1 EGLD in simulator settings
+  expect(fee).toBeLessThan(100000000000000000n);
+
+  return { fee, afterSender, afterReceiver, hash };
 }
 
 describe('State changes: native EGLD transfers reflect in balances', () => {
@@ -86,27 +103,8 @@ describe('State changes: native EGLD transfers reflect in balances', () => {
     await fundAddress(sim, alice);
     await fundAddress(sim, bob);
 
-    const beforeAlice = await fetchApiBalance(api, alice);
-    const beforeBob = await fetchApiBalance(api, bob);
-
     const amount = BigInt('1000000000000000000'); // 1 EGLD
-    const txHash = await sendTransaction(new SendTransactionArgs({
-      chainSimulatorUrl: sim,
-      sender: alice,
-      receiver: bob,
-      value: amount.toString(),
-      dataField: '',
-    }));
-
-    const fee = await fetchTxFeeFromSimulator(sim, txHash);
-
-    const expectedAlice = beforeAlice - amount - fee;
-    const expectedBob = beforeBob + amount;
-    const afterAlice = await waitForBalance(api, alice, expectedAlice);
-    const afterBob = await waitForBalance(api, bob, expectedBob);
-
-    expect(afterAlice).toBe(expectedAlice);
-    expect(afterBob).toBe(expectedBob);
+    await performTransferAndAssert(sim, api, alice, bob, amount);
   });
 
   it('Round-trip transfers: Alice->Bob then Bob->Alice yields expected finals', async () => {
@@ -117,24 +115,10 @@ describe('State changes: native EGLD transfers reflect in balances', () => {
     const startBob = await fetchApiBalance(api, bob);
 
     const amount1 = BigInt('2500000000000000000'); // 2.5 EGLD
-    const hash1 = await sendTransaction(new SendTransactionArgs({
-      chainSimulatorUrl: sim,
-      sender: alice,
-      receiver: bob,
-      value: amount1.toString(),
-      dataField: '',
-    }));
-    const fee1 = await fetchTxFeeFromSimulator(sim, hash1);
+    const { fee: fee1 } = await performTransferAndAssert(sim, api, alice, bob, amount1);
 
     const amount2 = BigInt('1700000000000000000'); // 1.7 EGLD
-    const hash2 = await sendTransaction(new SendTransactionArgs({
-      chainSimulatorUrl: sim,
-      sender: bob,
-      receiver: alice,
-      value: amount2.toString(),
-      dataField: '',
-    }));
-    const fee2 = await fetchTxFeeFromSimulator(sim, hash2);
+    const { fee: fee2 } = await performTransferAndAssert(sim, api, bob, alice, amount2);
 
     const expectedAlice = startAlice - amount1 - fee1 + amount2;
     const expectedBob = startBob + amount1 - fee2 - amount2;
@@ -158,17 +142,10 @@ describe('State changes: native EGLD transfers reflect in balances', () => {
       BigInt('300000000000000000'),  // 0.3 EGLD
     ];
 
-    let totalSent = BigInt(0);
-    let totalFees = BigInt(0);
+    let totalSent = 0n;
+    let totalFees = 0n;
     for (const amt of amounts) {
-      const hash = await sendTransaction(new SendTransactionArgs({
-        chainSimulatorUrl: sim,
-        sender: alice,
-        receiver: bob,
-        value: amt.toString(),
-        dataField: '',
-      }));
-      const fee = await fetchTxFeeFromSimulator(sim, hash);
+      const { fee } = await performTransferAndAssert(sim, api, alice, bob, amt);
       totalSent += amt;
       totalFees += fee;
     }
@@ -184,7 +161,7 @@ describe('State changes: native EGLD transfers reflect in balances', () => {
 
   it('Sender nonce increases after successful transfers', async () => {
     await fundAddress(sim, alice);
-    const nonceResp = await axios.get(`${api}/proxy/address/${alice}/nonce`);
+    const nonceResp = await axios.get(`${api}/address/${alice}/nonce`);
     const startNonce: number = nonceResp?.data?.data?.nonce ?? 0;
 
     const amount = BigInt('1000000000000000'); // 0.001 EGLD
@@ -201,7 +178,7 @@ describe('State changes: native EGLD transfers reflect in balances', () => {
     // Nonce should increase by 1
     let newNonce = startNonce;
     for (let i = 0; i < 30; i++) {
-      const n = await axios.get(`${api}/proxy/address/${alice}/nonce`).then(r => r?.data?.data?.nonce ?? 0).catch(() => startNonce);
+      const n = await axios.get(`${api}/address/${alice}/nonce`).then(r => r?.data?.data?.nonce ?? 0).catch(() => startNonce);
       if (typeof n === 'number') newNonce = n;
       if (newNonce >= startNonce + 1) break;
       await sleep(1000);

@@ -26,7 +26,7 @@ async function fetchNonce(baseUrl: string, address: string): Promise<number> {
 
 async function fetchMetaNonce(baseUrl: string): Promise<number> {
   for (let i = 0; i < 45; i++) {
-    const resp = await axios.get(`${baseUrl}/proxy/network/status/4294967295`).catch(() => undefined);
+    const resp = await axios.get(`${baseUrl}/network/status/4294967295`).catch(() => undefined);
     const n = resp?.data?.data?.status?.erd_nonce;
     if (typeof n === 'number') return n;
     await sleep(1000);
