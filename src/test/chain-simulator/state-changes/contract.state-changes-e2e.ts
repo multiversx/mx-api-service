@@ -35,7 +35,6 @@ async function fetchMetaNonce(baseUrl: string): Promise<number> {
 }
 
 describe('State changes: smart contract deploy visibility', () => {
-  const sim = config.chainSimulatorUrl;
   const api = config.apiServiceUrl;
   const deployer = config.aliceAddress;
 
@@ -81,4 +80,3 @@ describe('State changes: smart contract deploy visibility', () => {
     expect(endMeta).toBeGreaterThan(startMeta);
   });
 });
-
