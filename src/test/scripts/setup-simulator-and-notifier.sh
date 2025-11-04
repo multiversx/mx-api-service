@@ -20,7 +20,14 @@ CHAIN_GO_COMMIT="757f2de643d3d69494179cd899d92b31edfbb64a"        # github.com/m
 CHAIN_CORE_GO_COMMIT="60b4de5d3d1bb3f2a34c764f8cf353c5af8c3194"   # github.com/multiversx/mx-chain-core-go
 
 # Endpoint check
-VERIFY_URL="${VERIFY_URL:-http://localhost:8085/network/status/0}"
+# One or more candidate health URLs for the simulator; the first 200 wins
+# (different simulator versions may expose different status routes)
+VERIFY_URLS=(
+  "${VERIFY_URL:-http://localhost:8085/network/status/0}"
+  "http://localhost:8085/network/status"
+  "http://localhost:8085/simulator/health"
+  "http://localhost:8085/health"
+)
 VERIFY_TIMEOUT_SEC="${VERIFY_TIMEOUT_SEC:-120}"
 LOG_SNIFF_INTERVAL_SEC="${LOG_SNIFF_INTERVAL_SEC:-10}"
 
@@ -208,6 +215,26 @@ patch_notifier_redis_hosts() {
     "$toml_path" || true
 }
 
+# Optionally patch the WebSocketConnector path/host/port if provided via env
+patch_notifier_ws_endpoint() {
+  local notifier_dir="$1"
+  local toml_path="$notifier_dir/cmd/notifier/config/config.toml"
+  local ws_path="${NOTIFIER_WS_PATH:-}"
+  local ws_host="${NOTIFIER_WS_HOST:-127.0.0.1}"
+  local ws_port="${NOTIFIER_WS_PORT:-22111}"
+  if [[ ! -f "$toml_path" ]]; then
+    err "Notifier config not found: $toml_path"
+    exit 1
+  fi
+  if [[ -n "$ws_path" ]]; then
+    log "Patching WebSocketConnector path to '${ws_path}', host to '${ws_host}', port to '${ws_port}' in $toml_path"
+    sed -i.bak \
+      -e "s#^\([[:space:]]*Path[[:space:]]*=\).*#\1 \"${ws_path}\"#" \
+      -e "s#^\([[:space:]]*Url[[:space:]]*=\).*#\1 \"${ws_host}:${ws_port}\"#" \
+      "$toml_path" || true
+  fi
+}
+
 start_notifier() {
   local notifier_dir="$1"
   pushd "$notifier_dir" >/dev/null
@@ -234,32 +261,31 @@ start_chainsimulator() {
   echo "$pid"
 }
 
-wait_for_http_200() {
-  local url="$1" timeout_sec="$2"
+wait_for_http_200_any() {
+  local -n urls_ref=$1
+  local timeout_sec="$2"
   local chain_log="$3" notifier_log="$4"
-  log "Waiting for 200 from $url (timeout ${timeout_sec}s)"
-  local start_ts now code last_log_print=0 iter=0 tmp body_preview
+  local start_ts now code last_log_print=0 tmp body_preview url
   start_ts=$(date +%s)
+  log "Waiting for simulator to be ready on any of: ${urls_ref[*]} (timeout ${timeout_sec}s)"
   while true; do
-    iter=$((iter+1))
-    tmp=$(mktemp)
-    code=$(curl -s -o "$tmp" -w "%{http_code}" "$url" || true)
-    if [[ "$code" == "200" ]]; then
-      log "Received HTTP 200 from $url"
-      # Print a short preview of the response body
-      body_preview=$(head -c 2000 "$tmp" | tr -d '\r')
-      printf "[+] %s\n%s\n" "Status body preview:" "$body_preview" >&2
+    for url in "${urls_ref[@]}"; do
+      tmp=$(mktemp)
+      code=$(curl -s -o "$tmp" -w "%{http_code}" "$url" || true)
+      if [[ "$code" == "200" ]]; then
+        log "Received HTTP 200 from $url"
+        body_preview=$(head -c 2000 "$tmp" | tr -d '\r')
+        printf "[+] %s\n%s\n" "Status body preview:" "$body_preview" >&2
+        rm -f "$tmp"
+        return 0
+      fi
       rm -f "$tmp"
-      return 0
-    fi
+    done
 
-    # Periodically show the non-200 response and some logs
     now=$(date +%s)
     if (( now - last_log_print >= LOG_SNIFF_INTERVAL_SEC )); then
       last_log_print=$now
-      body_preview=$(head -c 2000 "$tmp" | tr -d '\r')
-      printf "[!] %s %s\n" "Non-200 status:" "$code" >&2
-      printf "[!] %s\n%s\n" "Response body (preview):" "$body_preview" >&2
+      printf "[!] %s\n" "Simulator not ready yet (no 200 from any URL)" >&2
       if [[ -f "$chain_log" ]]; then
         printf "[!] %s\n" "Tail of chainsimulator logs:" >&2
         tail -n 60 "$chain_log" >&2 || true
@@ -269,10 +295,9 @@ wait_for_http_200() {
         tail -n 40 "$notifier_log" >&2 || true
       fi
     fi
-    rm -f "$tmp"
 
     if (( now - start_ts > timeout_sec )); then
-      err "Timeout waiting for HTTP 200 from $url (last code: $code)"
+      err "Timeout waiting for HTTP 200 from any simulator status URL"
       return 1
     fi
     sleep 2
@@ -301,6 +326,7 @@ main() {
   # 7) Enable WebSocketConnector in notifier config
   enable_ws_connector "$NOTIFIER_DIR"
   patch_notifier_redis_hosts "$NOTIFIER_DIR"
+  patch_notifier_ws_endpoint "$NOTIFIER_DIR"
 
   # 8) Ensure Redis + Sentinel are running locally for notifier
   start_redis_and_sentinel || {
@@ -311,6 +337,20 @@ main() {
   notifier_pid=$(start_notifier "$NOTIFIER_DIR")
   log "Notifier PID: $notifier_pid"
 
+  # 9.1) Wait for Notifier WS port to be open before starting simulator
+  local notifier_host="127.0.0.1" notifier_port=22111
+  log "Waiting for Notifier WS ${notifier_host}:${notifier_port} to accept connections..."
+  for i in {1..60}; do
+    if port_open "$notifier_host" "$notifier_port"; then
+      log "Notifier WS is up"
+      break
+    fi
+    sleep 1
+  done
+  if ! port_open "$notifier_host" "$notifier_port"; then
+    err "Notifier WS did not open on ${notifier_host}:${notifier_port} in time"
+  fi
+
   # 10) Start chain simulator next
   chainsim_pid=$(start_chainsimulator "$SIM_DIR")
   log "ChainSimulator PID: $chainsim_pid"
@@ -318,7 +358,7 @@ main() {
   # 11) Verify HTTP 200 after both are up
   local chain_log="$SIM_DIR/cmd/chainsimulator/chainsimulator.out"
   local notifier_log="$NOTIFIER_DIR/notifier.out"
-  if ! wait_for_http_200 "$VERIFY_URL" "$VERIFY_TIMEOUT_SEC" "$chain_log" "$notifier_log"; then
+  if ! wait_for_http_200_any VERIFY_URLS "$VERIFY_TIMEOUT_SEC" "$chain_log" "$notifier_log"; then
     err "Verification failed. See $NOTIFIER_DIR/notifier.out for logs."
     exit 1
   fi

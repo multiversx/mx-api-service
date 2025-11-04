@@ -7,6 +7,7 @@ RABBIT_MGMT_PORT="${RABBIT_MGMT_PORT:-15672}"
 RABBIT_USER="${RABBIT_USER:-guest}"
 RABBIT_PASS="${RABBIT_PASS:-guest}"
 EXCHANGE_NAME="${EXCHANGE_NAME:-state_accesses}"
+EXCHANGE_TYPE="${EXCHANGE_TYPE:-fanout}"
 QUEUE_NAME="${QUEUE_NAME:-state_accesses_test}"
 ROUTING_KEY="${ROUTING_KEY:-#}"
 
@@ -24,13 +25,13 @@ http_code() {
   curl -s -o /dev/null -w "%{http_code}" -u "${RABBIT_USER}:${RABBIT_PASS}" "$1"
 }
 
-echo "[rabbit-setup] Ensuring exchange '${EXCHANGE_NAME}' exists"
+echo "[rabbit-setup] Ensuring exchange '${EXCHANGE_NAME}' exists (type='${EXCHANGE_TYPE}')"
 ex_code=$(http_code "${base}/exchanges/%2f/${EXCHANGE_NAME}")
 if [ "${ex_code}" != "200" ]; then
   out=$(curl -s -u "${RABBIT_USER}:${RABBIT_PASS}" -H "content-type: application/json" \
     -w "\n%{http_code}" \
     -X PUT "${base}/exchanges/%2f/${EXCHANGE_NAME}" \
-    -d '{"type":"topic","durable":true,"auto_delete":false,"internal":false,"arguments":{}}')
+    -d '{"type":"'"${EXCHANGE_TYPE}"'","durable":true,"auto_delete":false,"internal":false,"arguments":{}}')
   code=$(echo "$out" | tail -n1)
   if [ "$code" != "201" ] && [ "$code" != "204" ]; then
     echo "[rabbit-setup] Failed to create exchange, status: $code" >&2
@@ -77,4 +78,3 @@ else
 fi
 
 echo "[rabbit-setup] Done"
-
