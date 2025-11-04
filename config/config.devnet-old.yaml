@@ -27,8 +27,10 @@ features:
   stateChanges:
     enabled: false
     port: 5675
-    url: 'amqp://guest:guest@127.0.0.1:5672'
+    rabbitUrl: 'amqp://guest:guest@127.0.0.1:5672'
     exchange: 'state_accesses'
+    queueName: 'api_state_accesses_queue-test'
+    deadLetterExchange: 'api_state_accesses_queue_dlx'
   eventsNotifier:
     enabled: false
     port: 5674
