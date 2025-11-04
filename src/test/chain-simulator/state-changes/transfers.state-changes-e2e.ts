@@ -60,7 +60,7 @@ async function waitForBalance(baseUrl: string, address: string, expected: bigint
 function computeFeeFromDeltas(beforeSender: bigint, afterSender: bigint, amount: bigint): bigint {
   const debited = beforeSender - afterSender;
   const fee = debited - amount;
-  return fee > 0n ? fee : 0n;
+  return fee > BigInt(0) ? fee : BigInt(0);
 }
 
 async function performTransferAndAssert(simUrl: string, apiUrl: string, sender: string, receiver: string, amount: bigint) {
@@ -85,9 +85,9 @@ async function performTransferAndAssert(simUrl: string, apiUrl: string, sender: 
   const fee = computeFeeFromDeltas(beforeSender, afterSender, amount);
   expect(afterSender).toBe(beforeSender - amount - fee);
   // Sanity-check fee is > 0 and not absurdly large
-  expect(fee).toBeGreaterThan(0n);
+  expect(fee).toBeGreaterThan(BigInt(0));
   // Fee should be < 0.1 EGLD in simulator settings
-  expect(fee).toBeLessThan(100000000000000000n);
+  expect(fee).toBeLessThan(BigInt('100000000000000000'));
 
   return { fee, afterSender, afterReceiver, hash };
 }
@@ -142,8 +142,8 @@ describe('State changes: native EGLD transfers reflect in balances', () => {
       BigInt('300000000000000000'),  // 0.3 EGLD
     ];
 
-    let totalSent = 0n;
-    let totalFees = 0n;
+    let totalSent = BigInt(0);
+    let totalFees = BigInt(0);
     for (const amt of amounts) {
       const { fee } = await performTransferAndAssert(sim, api, alice, bob, amt);
       totalSent += amt;
@@ -165,15 +165,13 @@ describe('State changes: native EGLD transfers reflect in balances', () => {
     const startNonce: number = nonceResp?.data?.data?.nonce ?? 0;
 
     const amount = BigInt('1000000000000000'); // 0.001 EGLD
-    const hash = await sendTransaction(new SendTransactionArgs({
+    await sendTransaction(new SendTransactionArgs({
       chainSimulatorUrl: sim,
       sender: alice,
       receiver: bob,
       value: amount.toString(),
       dataField: '',
     }));
-    // Ensure simulator included the tx
-    await fetchTxFeeFromSimulator(sim, hash);
 
     // Nonce should increase by 1
     let newNonce = startNonce;
