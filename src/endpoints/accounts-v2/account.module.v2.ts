@@ -16,6 +16,7 @@ import { AccountServiceV2 } from "./account.service.v2";
 import { ProviderModule } from "../providers/provider.module";
 import { KeysModule } from "../keys/keys.module";
 import { MongoDbModule } from "src/common/indexer/db";
+import { AccountService } from "../accounts/account.service";
 
 @Module({
   imports: [
@@ -37,9 +38,11 @@ import { MongoDbModule } from "src/common/indexer/db";
     MongoDbModule,
   ],
   providers: [
+    AccountService,
     AccountServiceV2,
   ],
   exports: [
+    AccountService,
     AccountServiceV2,
   ],
 })

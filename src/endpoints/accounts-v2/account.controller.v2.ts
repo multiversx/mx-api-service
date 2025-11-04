@@ -1,11 +1,11 @@
 import { Controller, Get, NotFoundException, Param, Query, UseInterceptors } from '@nestjs/common';
 import { ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { AccountServiceV2 } from './account.service.v2';
-import { AccountDetailed } from './entities/account.detailed';
-import { ParseAddressPipe, ParseBoolPipe, ParseIntPipe } from '@multiversx/sdk-nestjs-common';
+import { ParseAddressPipe, ParseBoolPipe } from '@multiversx/sdk-nestjs-common';
 import { DeepHistoryInterceptor } from 'src/interceptors/deep-history.interceptor';
-import { AccountFetchOptions } from './entities/account.fetch.options';
 import { NoCache } from '@multiversx/sdk-nestjs-cache';
+import { AccountDetailed } from '../accounts/entities/account.detailed';
+import { AccountFetchOptions } from '../accounts/entities/account.fetch.options';
 
 @Controller('')
 @ApiTags('accounts')
@@ -33,7 +33,6 @@ export class AccountControllerV2 {
     @Query('withScrCount', ParseBoolPipe) withScrCount?: boolean,
     @Query('withTimestamp', ParseBoolPipe) withTimestamp?: boolean,
     @Query('withAssets', ParseBoolPipe) withAssets?: boolean,
-    @Query('timestamp', ParseIntPipe) _timestamp?: number,
   ): Promise<AccountDetailed> {
     const account = await this.accountServiceV2.getAccount(
       address,
