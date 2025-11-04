@@ -2,10 +2,8 @@ import { CompetingRabbitConsumer } from "src/common/rabbitmq/rabbitmq.consumers"
 import { BlockWithStateChangesRaw, ESDTType, StateChanges } from "./entities";
 import { AccountDetails, AccountDetailsRepository } from "src/common/indexer/db";
 import { Inject, Injectable } from "@nestjs/common";
-import { TokenWithBalance } from "src/endpoints/tokens/entities/token.with.balance";
 import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { CacheInfo } from "src/utils/cache.info";
-import { NftAccount } from "src/endpoints/nfts/entities/nft.account";
 import { TokenType } from "src/common/indexer/entities";
 import { NftType } from "src/endpoints/nfts/entities/nft.type";
 import { NftSubType } from "src/endpoints/nfts/entities/nft.sub.type";
@@ -41,7 +39,7 @@ export class StateChangesConsumerService {
 
     @CompetingRabbitConsumer({
         exchange: 'state_accesses',
-        queueName: 'api_state_accesses_queue',
+        queueName: 'api_state_accesses_queue-test',
         deadLetterExchange: 'api_state_accesses_queue_dlx',
     })
     async consumeEvents(blockWithStateChanges: BlockWithStateChangesRaw) {
@@ -50,8 +48,7 @@ export class StateChangesConsumerService {
 
             const startDecoding = start;
             const finalStates = this.decodeStateChangesFinal(blockWithStateChanges);
-            console.log(blockWithStateChanges);
-            console.log(finalStates);
+
             const transformedFinalStates = this.transformFinalStatesToDbFormat(finalStates, blockWithStateChanges.shardID, blockWithStateChanges.timestampMs);
 
             const endDecoding = Date.now();
@@ -126,19 +123,19 @@ export class StateChangesConsumerService {
             }
             const newAccountState = state.accountState;
 
-            const tokens = [
-                ...state.esdtState.Fungible,
-            ];
+            // const tokens = [
+            //     ...state.esdtState.Fungible,
+            // ];
 
-            const nfts = [
-                ...state.esdtState.NonFungible,
-                ...state.esdtState.NonFungibleV2,
-                ...state.esdtState.DynamicNFT,
-                ...state.esdtState.SemiFungible,
-                ...state.esdtState.DynamicSFT,
-                ...state.esdtState.MetaFungible,
-                ...state.esdtState.DynamicMeta,
-            ];
+            // const nfts = [
+            //     ...state.esdtState.NonFungible,
+            //     ...state.esdtState.NonFungibleV2,
+            //     ...state.esdtState.DynamicNFT,
+            //     ...state.esdtState.SemiFungible,
+            //     ...state.esdtState.DynamicSFT,
+            //     ...state.esdtState.MetaFungible,
+            //     ...state.esdtState.DynamicMeta,
+            // ];
 
             if (newAccountState) {
                 const { codeMetadata, ...newAccountStateFiltered } = newAccountState;
@@ -149,21 +146,21 @@ export class StateChangesConsumerService {
                         timestampMs: blockTimestampMs,
                         timestamp: Math.floor(blockTimestampMs / 1000),
                         ...this.parseCodeMetadata(newAccountState.address, codeMetadata),
-                        tokens: tokens.map(token => new TokenWithBalance({
-                            identifier: token.identifier,
-                            nonce: parseInt(token.nonce),
-                            balance: token.value,
-                            type: this.parseEsdtType(token.type) as TokenType,
-                            subType: NftSubType.None,
-                        })),
-                        nfts: nfts.map(nft => new NftAccount({
-                            identifier: nft.identifier,
-                            nonce: parseInt(nft.nonce),
-                            type: this.parseEsdtType(nft.type) as NftType,
-                            subType: this.parseEsdtSubtype(nft.type),
-                            collection: nft.identifier.replace(/-[^-]*$/, ''), // delete everything after last `-` character inclusive
-                            balance: nft.value,
-                        })),
+                        // tokens: tokens.map(token => new TokenWithBalance({
+                        //     identifier: token.identifier,
+                        //     nonce: parseInt(token.nonce),
+                        //     balance: token.value,
+                        //     type: this.parseEsdtType(token.type) as TokenType,
+                        //     subType: NftSubType.None,
+                        // })),
+                        // nfts: nfts.map(nft => new NftAccount({
+                        //     identifier: nft.identifier,
+                        //     nonce: parseInt(nft.nonce),
+                        //     type: this.parseEsdtType(nft.type) as NftType,
+                        //     subType: this.parseEsdtSubtype(nft.type),
+                        //     collection: nft.identifier.replace(/-[^-]*$/, ''), // delete everything after last `-` character inclusive
+                        //     balance: nft.value,
+                        // })),
                     });
                 transformed.push(parsedAccount);
             }
@@ -187,7 +184,7 @@ export class StateChangesConsumerService {
             const GUARDED = 0x08_00;
             const value = parseInt(hexStr, 16);
             return {
-                codeMetadata: hexStr, // TODO: debugging purpose, remove for production
+                // codeMetadata: hexStr, // TODO: debugging purpose, remove for production
                 isGuarded: (value & GUARDED) !== 0,
             };
         }
@@ -203,10 +200,11 @@ export class StateChangesConsumerService {
             isReadable: (value & READABLE) !== 0,
             isPayable: (value & PAYABLE) !== 0,
             isPayableBySmartContract: (value & PAYABLE_BY_SC) !== 0,
-            codeMetadata: hexStr,  // TODO: debugging purpose, remove for production
+            // codeMetadata: hexStr,  // TODO: debugging purpose, remove for production
         };
     }
 
+    //@ts-ignore
     private parseEsdtType(type: ESDTType): TokenType | NftType {
         switch (type) {
             case ESDTType.Fungible:
@@ -226,6 +224,7 @@ export class StateChangesConsumerService {
         }
     }
 
+    //@ts-ignore
     private parseEsdtSubtype(type: ESDTType): NftSubType {
         switch (type) {
             case ESDTType.Fungible:

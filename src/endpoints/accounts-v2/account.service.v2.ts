@@ -78,6 +78,9 @@ export class AccountServiceV2 {
           async () => await this.getAccountWithFallBack(address, options),
           CacheInfo.AccountState(address).ttl,
         );
+        if (account?.username) {
+          account.username = await this.usernameService.getUsernameForAddress(address) ?? undefined;
+        }
       } else {
         account = await this.getAccountRaw(address, options?.withAssets);
       }
