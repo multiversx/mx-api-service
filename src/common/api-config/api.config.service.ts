@@ -978,12 +978,7 @@ export class ApiConfigService {
   }
 
   isStateChangesFeatureActive(): boolean {
-    const isStateChangesActive = this.configService.get<boolean>('features.stateChanges.enabled');
-    if (isStateChangesActive === undefined) {
-      return false;
-    }
-
-    return isStateChangesActive;
+    return this.configService.get<boolean>('features.stateChanges.enabled') ?? false;
   }
 
   getStateChangesFeaturePort(): number {
@@ -995,10 +990,13 @@ export class ApiConfigService {
     return stateChangesPort;
   }
 
-  getStateChangesUrl(): string {
-    const url = this.configService.get<string>('features.stateChanges.url');
+  getStateChangesRabbitUrl(): string {
+    let url = this.configService.get<string>('features.stateChanges.rabbitUrl');
     if (!url) {
-      throw new Error('No state changes url present');
+      url = this.configService.get<string>('features.stateChanges.url');
+      if (!url) {
+        throw new Error('No state changes rabbit url present');
+      }
     }
 
     return url;
@@ -1011,6 +1009,24 @@ export class ApiConfigService {
     }
 
     return exchange;
+  }
+
+  getStateChangesQueueName(): string {
+    const queueName = this.configService.get<string>('features.stateChanges.queueName');
+    if (!queueName) {
+      throw new Error('No state changes queue name present');
+    }
+
+    return queueName;
+  }
+
+  getStateChangesDeadLetterExchange(): string {
+    const deadLetterExchange = this.configService.get<string>('features.stateChanges.deadLetterExchange');
+    if (!deadLetterExchange) {
+      throw new Error('No state changes dead letter exchange present');
+    }
+
+    return deadLetterExchange;
   }
 
   isPubSubListenerEnabled(): boolean {

@@ -7,35 +7,35 @@ import { StateChangesConsumerService } from './state.changes.consumer.service';
 import { MongoDbModule } from 'src/common/indexer/db';
 
 @Module({
-    imports: [
-        ApiConfigModule,
-        MongoDbModule,
-        DynamicModuleUtils.getCacheModule(),
-    ],
-    providers: [
-        StateChangesConsumerService,
-        DynamicModuleUtils.getPubSubService(),
-    ],
+  imports: [
+    ApiConfigModule,
+    MongoDbModule,
+    DynamicModuleUtils.getCacheModule(),
+  ],
+  providers: [
+    StateChangesConsumerService,
+    DynamicModuleUtils.getPubSubService(),
+  ],
 })
 export class StateChangesModule {
-    static register(): DynamicModule {
-        return {
-            module: StateChangesModule,
-            imports: [
-                RabbitMQModule.forRootAsync(RabbitMQModule, {
-                    imports: [ApiConfigModule],
-                    inject: [ApiConfigService],
-                    useFactory: (apiConfigService: ApiConfigService) => {
-                        return {
-                            name: apiConfigService.getStateChangesExchange(),
-                            type: 'fanout',
-                            options: {},
-                            uri: apiConfigService.getStateChangesUrl(),
-                            prefetchCount: 1,
-                        };
-                    },
-                }),
-            ],
-        };
-    }
+  static register(): DynamicModule {
+    return {
+      module: StateChangesModule,
+      imports: [
+        RabbitMQModule.forRootAsync(RabbitMQModule, {
+          imports: [ApiConfigModule],
+          inject: [ApiConfigService],
+          useFactory: (apiConfigService: ApiConfigService) => {
+            return {
+              name: apiConfigService.getStateChangesExchange(),
+              type: 'fanout',
+              options: {},
+              uri: apiConfigService.getStateChangesRabbitUrl(),
+              prefetchCount: 1,
+            };
+          },
+        }),
+      ],
+    };
+  }
 }
