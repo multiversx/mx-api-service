@@ -45,6 +45,17 @@ async function fetchApiBalance(baseUrl: string, address: string): Promise<bigint
   return BigInt(bal);
 }
 
+async function waitForBalance(baseUrl: string, address: string, expected: bigint, timeoutMs = 60000): Promise<bigint> {
+  const start = Date.now();
+  let last: bigint = BigInt(0);
+  while (Date.now() - start < timeoutMs) {
+    last = await fetchApiBalance(baseUrl, address);
+    if (last === expected) return last;
+    await sleep(1000);
+  }
+  return last;
+}
+
 async function fetchTxFeeFromSimulator(simUrl: string, txHash: string): Promise<bigint> {
   // Prefer explicit fee, fallback to gasUsed * gasPrice if needed
   for (let i = 0; i < 30; i++) {
@@ -89,11 +100,13 @@ describe('State changes: native EGLD transfers reflect in balances', () => {
 
     const fee = await fetchTxFeeFromSimulator(sim, txHash);
 
-    const afterAlice = await fetchApiBalance(api, alice);
-    const afterBob = await fetchApiBalance(api, bob);
+    const expectedAlice = beforeAlice - amount - fee;
+    const expectedBob = beforeBob + amount;
+    const afterAlice = await waitForBalance(api, alice, expectedAlice);
+    const afterBob = await waitForBalance(api, bob, expectedBob);
 
-    expect(afterAlice).toBe(beforeAlice - amount - fee);
-    expect(afterBob).toBe(beforeBob + amount);
+    expect(afterAlice).toBe(expectedAlice);
+    expect(afterBob).toBe(expectedBob);
   });
 
   it('Round-trip transfers: Alice->Bob then Bob->Alice yields expected finals', async () => {
@@ -123,13 +136,13 @@ describe('State changes: native EGLD transfers reflect in balances', () => {
     }));
     const fee2 = await fetchTxFeeFromSimulator(sim, hash2);
 
-    const endAlice = await fetchApiBalance(api, alice);
-    const endBob = await fetchApiBalance(api, bob);
+    const expectedAlice = startAlice - amount1 - fee1 + amount2;
+    const expectedBob = startBob + amount1 - fee2 - amount2;
+    const endAlice = await waitForBalance(api, alice, expectedAlice);
+    const endBob = await waitForBalance(api, bob, expectedBob);
 
-    // Alice: -amount1 - fee1 + amount2
-    expect(endAlice).toBe(startAlice - amount1 - fee1 + amount2);
-    // Bob:   +amount1 - fee2 - amount2
-    expect(endBob).toBe(startBob + amount1 - fee2 - amount2);
+    expect(endAlice).toBe(expectedAlice);
+    expect(endBob).toBe(expectedBob);
   });
 
   it('Multiple sequential transfers accumulate correctly (Alice->Bob x3)', async () => {
@@ -160,11 +173,39 @@ describe('State changes: native EGLD transfers reflect in balances', () => {
       totalFees += fee;
     }
 
-    const endAlice = await fetchApiBalance(api, alice);
-    const endBob = await fetchApiBalance(api, bob);
+    const expectedAlice = startAlice - totalSent - totalFees;
+    const expectedBob = startBob + totalSent;
+    const endAlice = await waitForBalance(api, alice, expectedAlice);
+    const endBob = await waitForBalance(api, bob, expectedBob);
 
-    expect(endAlice).toBe(startAlice - totalSent - totalFees);
-    expect(endBob).toBe(startBob + totalSent);
+    expect(endAlice).toBe(expectedAlice);
+    expect(endBob).toBe(expectedBob);
+  });
+
+  it('Sender nonce increases after successful transfers', async () => {
+    await fundAddress(sim, alice);
+    const nonceResp = await axios.get(`${api}/proxy/address/${alice}/nonce`);
+    const startNonce: number = nonceResp?.data?.data?.nonce ?? 0;
+
+    const amount = BigInt('1000000000000000'); // 0.001 EGLD
+    const hash = await sendTransaction(new SendTransactionArgs({
+      chainSimulatorUrl: sim,
+      sender: alice,
+      receiver: bob,
+      value: amount.toString(),
+      dataField: '',
+    }));
+    // Ensure simulator included the tx
+    await fetchTxFeeFromSimulator(sim, hash);
+
+    // Nonce should increase by 1
+    let newNonce = startNonce;
+    for (let i = 0; i < 30; i++) {
+      const n = await axios.get(`${api}/proxy/address/${alice}/nonce`).then(r => r?.data?.data?.nonce ?? 0).catch(() => startNonce);
+      if (typeof n === 'number') newNonce = n;
+      if (newNonce >= startNonce + 1) break;
+      await sleep(1000);
+    }
+    expect(newNonce).toBeGreaterThanOrEqual(startNonce + 1);
   });
 });
-

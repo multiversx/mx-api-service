@@ -60,14 +60,24 @@ describe('State changes: balances parity (v1 vs v2)', () => {
   const bob = config.bobAddress;
 
   it('Alice balance matches between v1 and v2', async () => {
-    const v1 = await fetchBalance(base, alice);
-    const v2 = await fetchBalanceV2(base, alice);
+    let v1 = await fetchBalance(base, alice);
+    let v2 = await fetchBalanceV2(base, alice);
+    for (let i = 0; i < 20 && v1 !== v2; i++) {
+      await sleep(1000);
+      v1 = await fetchBalance(base, alice);
+      v2 = await fetchBalanceV2(base, alice);
+    }
     expect(v1).toBe(v2);
   });
 
   it('Bob balance matches between v1 and v2', async () => {
-    const v1 = await fetchBalance(base, bob);
-    const v2 = await fetchBalanceV2(base, bob);
+    let v1 = await fetchBalance(base, bob);
+    let v2 = await fetchBalanceV2(base, bob);
+    for (let i = 0; i < 20 && v1 !== v2; i++) {
+      await sleep(1000);
+      v1 = await fetchBalance(base, bob);
+      v2 = await fetchBalanceV2(base, bob);
+    }
     expect(v1).toBe(v2);
   });
 });

@@ -24,7 +24,7 @@ features:
     enabled: false
     port: 6002
   stateChanges:
-    enabled: false
+    enabled: true
     port: 5675
     url: 'amqp://guest:guest@127.0.0.1:5672'
     exchange: 'state_accesses'
