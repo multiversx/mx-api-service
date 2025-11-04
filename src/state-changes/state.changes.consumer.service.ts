@@ -45,6 +45,10 @@ export class StateChangesConsumerService {
     })
     async consumeEvents(blockWithStateChanges: BlockWithStateChangesRaw) {
         try {
+            if (blockWithStateChanges.shardID === 4294967295) {
+                return; // skip meta shard
+            }
+
             const profiler = new PerformanceProfiler('BlockStateChangesProcessing');
             const decodingProfiler = new PerformanceProfiler('StateChangesDecoding');
             const finalStates = this.decodeStateChangesFinal(blockWithStateChanges);
