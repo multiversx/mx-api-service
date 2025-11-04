@@ -10,6 +10,7 @@ import { NftSubType } from "src/endpoints/nfts/entities/nft.sub.type";
 import { ClientProxy } from "@nestjs/microservices";
 import { StateChangesDecoder } from "./utils/state-changes.decoder";
 import { AddressUtils, OriginLogger } from "@multiversx/sdk-nestjs-common";
+import { PerformanceProfiler } from "@multiversx/sdk-nestjs-monitoring";
 
 @Injectable()
 export class StateChangesConsumerService {
@@ -44,15 +45,14 @@ export class StateChangesConsumerService {
     })
     async consumeEvents(blockWithStateChanges: BlockWithStateChangesRaw) {
         try {
-            const start = Date.now();
-
-            const startDecoding = start;
+            const profiler = new PerformanceProfiler('BlockStateChangesProcessing');
+            const decodingProfiler = new PerformanceProfiler('StateChangesDecoding');
             const finalStates = this.decodeStateChangesFinal(blockWithStateChanges);
 
             const transformedFinalStates = this.transformFinalStatesToDbFormat(finalStates, blockWithStateChanges.shardID, blockWithStateChanges.timestampMs);
+            decodingProfiler.stop('StateChangesDecoding');
+            this.logger.log(`Decoded state changes for block ${blockWithStateChanges.hash} on shard ${blockWithStateChanges.shardID} in ${decodingProfiler.duration} ms`);
 
-            const endDecoding = Date.now();
-            const decodingDuration = endDecoding - startDecoding;
             await this.updateAccounts(transformedFinalStates);
 
             await this.cacheService.setRemote(
@@ -61,12 +61,8 @@ export class StateChangesConsumerService {
                 CacheInfo.StateChangesConsumerLatestProcessedBlockTimestamp(blockWithStateChanges.shardID).ttl,
             );
 
-            const end = Date.now();
-            const duration = end - start;
-            if (duration > 10) {
-                this.logger.log(`decoding duration: ${decodingDuration}ms`);
-                this.logger.log(`processing time shard ${blockWithStateChanges.shardID}: ${duration}ms`);
-            }
+            profiler.stop('BlockStateChangesProcessing');
+            this.logger.log(`Processed state changes for block ${blockWithStateChanges.hash} on shard ${blockWithStateChanges.shardID} in ${profiler.duration} ms`);
         } catch (error) {
             this.logger.error(`Error consuming state changes from shard ${blockWithStateChanges.shardID}:`, error);
             throw error;
