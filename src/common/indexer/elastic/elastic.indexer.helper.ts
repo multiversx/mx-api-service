@@ -777,8 +777,12 @@ export class ElasticIndexerHelper {
   public applyFunctionFilter(elasticQuery: ElasticQuery, functions: string[]) {
     const functionConditions = [];
     for (const field of functions) {
-      functionConditions.push(QueryType.Match('function', field));
-      functionConditions.push(QueryType.Match('operation', field));
+      functionConditions.push(QueryType.Match('function', field, QueryOperator.AND));
+
+      functionConditions.push(QueryType.Must(
+        [QueryType.Match('operation', field, QueryOperator.AND)],
+        [QueryType.Exists('function')]
+      ));
     }
     return elasticQuery.withMustCondition(QueryType.Should(functionConditions));
   }
