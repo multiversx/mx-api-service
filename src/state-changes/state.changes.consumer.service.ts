@@ -17,22 +17,6 @@ import { ApiConfigService } from "src/common/api-config/api.config.service";
 @Injectable()
 export class StateChangesConsumerService {
   private readonly logger = new OriginLogger(StateChangesConsumerService.name);
-  static SYSTEM_ACCOUNTS = [
-    "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqllls0lczs7", // stakingScAddress
-    "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqplllst77y4l", // validatorScAddress
-    "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u", // esdtScAddress 
-    "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqrlllsrujgla", // governanceScAddress
-    "erd1qqqqqqqqqqqqqqqpqqqqqqqqqrlllllllllllllllllllllllllsn60f0k", // jailingAddress 
-    "erd1qqqqqqqqqqqqqqqpqqqqqqqqlllllllllllllllllllllllllllsr9gav8", // endOfEpochAddress
-    "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqylllslmq6y6", // delegationManagerScAddress
-    "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq0llllsqkarq6", // firstDelegationScAddress
-    "erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu", // contractDeployScAdress
-    "erd17rc0pu8s7rc0pu8s7rc0pu8s7rc0pu8s7rc0pu8s7rc0pu8s7rcqqkhty3", // genesisMintingAddress
-    "erd1lllllllllllllllllllllllllllllllllllllllllllllllllllsckry7t", // systemAccountAddress
-    "erd1llllllllllllllllllllllllllllllllllllllllllllllllluqq2m3f0f", // esdtGlobalSettingsAddresses[0] 
-    "erd1llllllllllllllllllllllllllllllllllllllllllllllllluqsl6e366", // esdtGlobalSettingsAddresses[1]
-    "erd1lllllllllllllllllllllllllllllllllllllllllllllllllupq9x7ny0", // esdtGlobalSettingsAddresses[2] 
-  ];
 
   constructor(
     private readonly cacheService: CacheService,
@@ -120,10 +104,7 @@ export class StateChangesConsumerService {
   private transformFinalStatesToDbFormat(finalStates: Record<string, StateChanges>, shardID: number, blockTimestampMs: number) {
     const transformed: AccountDetails[] = [];
 
-    for (const [address, state] of Object.entries(finalStates)) {
-      if (StateChangesConsumerService.isSystemContractAddress(address)) {
-        continue;
-      }
+    for (const [_address, state] of Object.entries(finalStates)) {
       const newAccountState = state.accountState;
 
       // const tokens = [
@@ -279,6 +260,6 @@ export class StateChangesConsumerService {
   }
 
   static isSystemContractAddress(address: string) {
-    return StateChangesConsumerService.SYSTEM_ACCOUNTS.includes(address);
+    return StateChangesDecoder.isSystemContractAddress(address);
   }
 }

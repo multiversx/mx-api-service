@@ -17,29 +17,49 @@ import {
 } from "../entities";
 
 export class StateChangesDecoder {
-  static bech32FromHex(hex: any) {
+  private static SYSTEM_ACCOUNTS = new Set([
+    "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqllls0lczs7", // stakingScAddress
+    "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqplllst77y4l", // validatorScAddress
+    "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u", // esdtScAddress
+    "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqrlllsrujgla", // governanceScAddress
+    "erd1qqqqqqqqqqqqqqqpqqqqqqqqqrlllllllllllllllllllllllllsn60f0k", // jailingAddress
+    "erd1qqqqqqqqqqqqqqqpqqqqqqqqlllllllllllllllllllllllllllsr9gav8", // endOfEpochAddress
+    "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqylllslmq6y6", // delegationManagerScAddress
+    "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq0llllsqkarq6", // firstDelegationScAddress
+    "erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu", // contractDeployScAddress
+    "erd17rc0pu8s7rc0pu8s7rc0pu8s7rc0pu8s7rc0pu8s7rc0pu8s7rcqqkhty3", // genesisMintingAddress
+    "erd1lllllllllllllllllllllllllllllllllllllllllllllllllllsckry7t", // systemAccountAddress
+    "erd1llllllllllllllllllllllllllllllllllllllllllllllllluqq2m3f0f", // esdtGlobalSettingsAddresses[0]
+    "erd1llllllllllllllllllllllllllllllllllllllllllllllllluqsl6e366", // esdtGlobalSettingsAddresses[1]
+    "erd1lllllllllllllllllllllllllllllllllllllllllllllllllupq9x7ny0", // esdtGlobalSettingsAddresses[2]
+  ]);
+
+  static isSystemContractAddress(address: string) {
+    return this.SYSTEM_ACCOUNTS.has(address);
+  }
+
+  private static bech32FromHex(hex: any) {
     const clean = hex.startsWith("0x") ? hex.slice(2) : hex;
     return Address.newFromHex(clean).toBech32();
   }
 
-  static bech32FromBytes(u8: any) {
+  private static bech32FromBytes(u8: any) {
     return (u8 && u8.length ? Address.newFromHex(this.bytesToHex(u8)).toBech32() : "");
   }
 
-  static bytesToHex(u8: any) {
+  private static bytesToHex(u8: any) {
     return (u8 && u8.length ? Buffer.from(u8).toString("hex") : "");
   }
 
-  static bytesToBase64(u8: any) {
+  private static bytesToBase64(u8: any) {
     return (u8 && u8.length ? Buffer.from(u8).toString("base64") : "");
   }
 
-  // const bytesToString = (u8: any) => (u8 && u8.length ? Buffer.from(u8).toString("utf8") : "");
-  static longToString(v: any) {
+  private static longToString(v: any) {
     return v == null ? "" : (typeof v === "object" && typeof v.toString === "function" ? v.toString() : String(v));
   }
 
-  static bigEndianBytesToBigInt(u8: any) {
+  private static bigEndianBytesToBigInt(u8: any) {
     let v = BigInt(0);
     for (const b of u8) {
       v = (v << BigInt(8)) + BigInt(b);
@@ -54,7 +74,7 @@ export class StateChangesDecoder {
    *  - (if present) negative => 0x01 || magnitude
    * Fallback: if first byte is not a sign marker, treat whole buffer as positive magnitude.
    */
-  static decodeMxSignMagBigInt(u8: any) {
+  private static decodeMxSignMagBigInt(u8: any) {
     if (!u8 || u8.length === 0) return BigInt(0);
 
     // canonical zero used by the serializer
@@ -71,7 +91,7 @@ export class StateChangesDecoder {
     return this.bigEndianBytesToBigInt(u8);
   }
 
-  static getDecodedUserAccountData(buf: any) {
+  private static getDecodedUserAccountData(buf: any) {
     try {
       const msg = UserAccountData.decode(buf);
 
@@ -103,7 +123,7 @@ export class StateChangesDecoder {
     }
   }
 
-  static decodeAccountChanges(flags: number | undefined): AccountChanges {
+  private static decodeAccountChanges(flags: number | undefined): AccountChanges {
     if (!flags) {
       return new AccountChanges({
         nonceChanged: false,
@@ -128,7 +148,7 @@ export class StateChangesDecoder {
     });
   }
 
-  static getDecodedEsdtData(address: string, dataTrieChange: DataTrieChange) {
+  private static getDecodedEsdtData(address: string, dataTrieChange: DataTrieChange) {
     const bufTrieLeafValue = Buffer.from(dataTrieChange.val, "base64");
     const esdtPrefix = 'ELRONDesdt';
     try {
@@ -169,6 +189,10 @@ export class StateChangesDecoder {
 
     for (const accountHex of Object.keys(accounts)) {
       const address = this.bech32FromHex(accountHex);
+
+      if (this.isSystemContractAddress(address)) {
+        continue;
+      }
 
       const { stateAccess = [] } = accounts[accountHex] || {};
       const allDecoded: Record<string, any[]> = {};
@@ -252,6 +276,11 @@ export class StateChangesDecoder {
 
     for (const accountHex of Object.keys(accounts)) {
       const address = this.bech32FromHex(accountHex);
+
+      if (this.isSystemContractAddress(address)) {
+        continue;
+      }
+
       const esdtOccured: Record<string, boolean> = {};
 
       const { stateAccess } = accounts[accountHex] || {};
