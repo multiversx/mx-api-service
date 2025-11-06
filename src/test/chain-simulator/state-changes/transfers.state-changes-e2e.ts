@@ -37,7 +37,8 @@ function pickBalance(payload: any): string | undefined {
 }
 
 async function fetchApiBalance(baseUrl: string, address: string): Promise<bigint> {
-  const url = `${baseUrl}/accounts/${address}`;
+  // Fetch direct from proxy balance endpoint to avoid cached /accounts values
+  const url = `${baseUrl}/address/${address}/balance`;
   const payload = await getJson(url);
   if (!payload) throw new Error(`No payload from ${url}`);
   const bal = pickBalance(payload);

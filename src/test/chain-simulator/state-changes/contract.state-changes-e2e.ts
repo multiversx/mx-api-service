@@ -4,9 +4,18 @@ import { ChainSimulatorUtils } from '../utils/test.utils';
 
 const sleep = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
+function pickField(payload: any, field: string): any {
+  if (!payload || typeof payload !== 'object') return undefined;
+  if (payload[field] !== undefined) return payload[field];
+  if (payload.data && payload.data[field] !== undefined) return payload.data[field];
+  if (payload.data && payload.data.account && payload.data.account[field] !== undefined) return payload.data.account[field];
+  return undefined;
+}
+
 async function fetchAccount(baseUrl: string, address: string): Promise<any> {
   for (let i = 0; i < 45; i++) {
-    const resp = await axios.get(`${baseUrl}/accounts/${address}`).catch(() => undefined);
+    // Read straight from gateway proxy to avoid indexer/depository lag
+    const resp = await axios.get(`${baseUrl}/address/${address}`).catch(() => undefined);
     const acc = resp?.data;
     if (acc) return acc;
     await sleep(1000);
@@ -49,14 +58,14 @@ describe('State changes: smart contract deploy visibility', () => {
     let account: any = null;
     for (let i = 0; i < 45; i++) {
       account = await fetchAccount(api, scAddress).catch(() => undefined);
-      const codeHash = account?.codeHash ?? account?.data?.codeHash;
-      const rootHash = account?.rootHash ?? account?.data?.rootHash;
+      const codeHash = pickField(account, 'codeHash');
+      const rootHash = pickField(account, 'rootHash');
       if (codeHash && codeHash !== '' && rootHash && rootHash !== '') break;
       await sleep(1000);
     }
 
-    const codeHash = account?.codeHash ?? account?.data?.codeHash;
-    const rootHash = account?.rootHash ?? account?.data?.rootHash;
+    const codeHash = pickField(account, 'codeHash');
+    const rootHash = pickField(account, 'rootHash');
     expect(typeof codeHash).toBe('string');
     expect(codeHash.length).toBeGreaterThan(0);
     expect(typeof rootHash).toBe('string');
