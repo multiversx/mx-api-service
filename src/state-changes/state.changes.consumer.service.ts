@@ -237,14 +237,14 @@ export class StateChangesConsumerService {
       CacheInfo.StateChangesConsumerLatestProcessedBlockTimestamp(2).key,
     ];
 
-    let timestampsMs: (number | undefined | null)[] = cacheService.getManyLocal(keys);
+    let timestampsMs: (number | undefined | null)[] | undefined = cacheService.getManyLocal(keys);
 
     // check local
-    if (timestampsMs.some(t => t == null)) {
+    if (timestampsMs == null || timestampsMs.some(t => t == null)) {
       timestampsMs = await cacheService.getManyRemote(keys);
 
       // check remote
-      if (timestampsMs.some(t => t == null)) {
+      if (timestampsMs == null || timestampsMs.some(t => t == null)) {
         return false;
       }
 

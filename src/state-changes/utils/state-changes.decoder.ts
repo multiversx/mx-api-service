@@ -354,7 +354,7 @@ export class StateChangesDecoder {
   }
 
   private static isNewAccount(stateAccess: StateAccessPerAccountRaw) {
-    return (stateAccess.accountChanges === null || stateAccess.accountChanges === undefined) &&
+    return (stateAccess.accountChanges == null) &&
       (stateAccess.operation & StateAccessOperation.SaveAccount) ? true : false;
   }
 
