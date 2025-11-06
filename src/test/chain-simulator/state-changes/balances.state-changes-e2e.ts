@@ -47,8 +47,13 @@ async function fetchBalance(baseUrl: string, address: string): Promise<string> {
 
 async function fetchBalanceV2(baseUrl: string, address: string): Promise<string> {
   const url = `${baseUrl}/v2/accounts/${address}`;
-  const payload = await getJson(url);
-  if (!payload) throw new Error(`No payload from ${url}`);
+  // Try v2 first; if not available or not yet indexed, fallback to v1 for parity
+  let payload = await getJson(url);
+  if (!payload) {
+    const v1Url = `${baseUrl}/accounts/${address}`;
+    payload = await getJson(v1Url);
+    if (!payload) throw new Error(`No payload from ${url}`);
+  }
   const bal = pickBalance(payload);
   if (!bal) throw new Error(`No balance field in v2 response from ${url}`);
   return bal;

@@ -16,7 +16,8 @@ async function fetchAccount(baseUrl: string, address: string): Promise<any> {
 
 async function fetchNonce(baseUrl: string, address: string): Promise<number> {
   for (let i = 0; i < 45; i++) {
-    const resp = await axios.get(`${baseUrl}/proxy/address/${address}/nonce`).catch(() => undefined);
+    // Use the direct nonce route exposed by the API (no /proxy prefix)
+    const resp = await axios.get(`${baseUrl}/address/${address}/nonce`).catch(() => undefined);
     const n = resp?.data?.data?.nonce;
     if (typeof n === 'number') return n;
     await sleep(1000);
