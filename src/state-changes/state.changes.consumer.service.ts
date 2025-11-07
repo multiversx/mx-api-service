@@ -40,10 +40,9 @@ export class StateChangesConsumerService {
 
       const profiler = new PerformanceProfiler('BlockStateChangesProcessing');
       const decodingProfiler = new PerformanceProfiler('StateChangesDecoding');
-      const isEsdtComputationEnabled = this.apiConfigService.isEsdtComputationEnabled();
-      const finalStates = this.decodeStateChangesFinal(blockWithStateChanges, isEsdtComputationEnabled);
 
-      const transformedFinalStates = this.transformFinalStatesToDbFormat(finalStates, blockWithStateChanges.shardID, blockWithStateChanges.timestampMs, isEsdtComputationEnabled);
+      const finalStates = this.decodeStateChangesFinal(blockWithStateChanges);
+      const transformedFinalStates = this.transformFinalStatesToDbFormat(finalStates, blockWithStateChanges.shardID, blockWithStateChanges.timestampMs);
       decodingProfiler.stop('StateChangesDecoding');
       this.logger.log(`Decoded state changes for block ${blockWithStateChanges.hash} on shard ${blockWithStateChanges.shardID} in ${decodingProfiler.duration} ms`);
 
@@ -100,7 +99,8 @@ export class StateChangesConsumerService {
 
     await Promise.all(promisesToWaitFor);
   }
-  private decodeStateChangesFinal(blockWithStateChanges: BlockWithStateChangesRaw, isEsdtComputationEnabled: boolean = false) {
+  private decodeStateChangesFinal(blockWithStateChanges: BlockWithStateChangesRaw) {
+    const isEsdtComputationEnabled = this.apiConfigService.isEsdtComputationEnabled();
     return StateChangesDecoder.decodeStateChangesFinal(blockWithStateChanges, isEsdtComputationEnabled);
   }
 
@@ -108,8 +108,8 @@ export class StateChangesConsumerService {
     finalStates: Record<string, StateChanges>,
     shardID: number,
     blockTimestampMs: number,
-    isEsdtComputationEnabled: boolean = false
   ) {
+    const isEsdtComputationEnabled = this.apiConfigService.isEsdtComputationEnabled();
     const transformed: AccountDetails[] = [];
 
     for (const [_address, state] of Object.entries(finalStates)) {
@@ -154,7 +154,6 @@ export class StateChangesConsumerService {
     };
   }
 
-  //@ts-ignore
   private transformTokens(state: StateChanges): TokenWithBalance[] {
     const fungible = state.esdtState?.Fungible ?? [];
 
@@ -169,7 +168,6 @@ export class StateChangesConsumerService {
     );
   }
 
-  //@ts-ignore
   private transformNfts(state: StateChanges): NftAccount[] {
     const {
       NonFungible,
