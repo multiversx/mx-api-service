@@ -2,7 +2,7 @@ name: Load Tests
 
 on:
   pull_request:
-    branches: [main, development]
+    branches: [main, development, feat/*, feature/*]
 
 jobs:
   test-base:
