@@ -91,9 +91,13 @@ export class StateChangesDecoder {
     return this.bigEndianBytesToBigInt(u8);
   }
 
-  private static getDecodedUserAccountData(buf: any) {
+  private static getDecodedUserAccountData(base64Value: string | null): AccountState | null {
     try {
-      const msg = UserAccountData.decode(buf);
+      if (base64Value == null || base64Value === '') {
+        return null;
+      }
+      const buf = Buffer.from(base64Value, "base64");
+      const msg = UserAccountData.decode(buf as Uint8Array);
 
       const balance = this.decodeMxSignMagBigInt(msg.Balance);
       const devReward = this.decodeMxSignMagBigInt(msg.DeveloperReward);
@@ -172,7 +176,6 @@ export class StateChangesDecoder {
         };
       } else {
         //TODO: handle if needed
-
         return null;
       }
     } catch (e: any) {
@@ -199,11 +202,7 @@ export class StateChangesDecoder {
       stateAccess.forEach((sa: StateAccessPerAccountRaw, i: number) => {
 
         const base64AccountData = sa.mainTrieVal;
-        let decodedAccountData: any = null;
-        if (base64AccountData) {
-          const bufAccountData = Buffer.from(base64AccountData, "base64");
-          decodedAccountData = this.getDecodedUserAccountData(bufAccountData);
-        }
+        const decodedAccountData = this.getDecodedUserAccountData(base64AccountData);
 
         const dataTrieChanges = sa.dataTrieChanges;
 
@@ -211,12 +210,8 @@ export class StateChangesDecoder {
         const allDecodedEsdtData: any[] = [];
         if (dataTrieChanges) {
           for (const dataTrieChange of dataTrieChanges) {
-            if (dataTrieChange.version === 0) {
-              console.warn(`Entry #${i}: unsupported dataTrieChanges version 0`);
-            } else {
-
+            if (dataTrieChange.version === 0 && dataTrieChange.val) {
               const decodedEsdtData = this.getDecodedEsdtData(address, dataTrieChange);
-
               if (decodedEsdtData) {
                 if (dataTrieChange.operation === DataTrieChangeOperation.Delete) {
                   decodedEsdtData.value = '0';
@@ -249,15 +244,13 @@ export class StateChangesDecoder {
             }
           );
           if (allDecoded[address] === undefined) allDecoded[address] = [];
-          const newAccount = (sa.accountChanges === null || sa.accountChanges === undefined) && (sa.operation & StateAccessOperation.SaveAccount) ? true : false;
-
-          const accountChanges = this.decodeAccountChanges(sa.accountChanges);
+          const newAccount = this.isNewAccount(sa);
 
           allDecoded[address].push({
             entry: `Entry #${i}`,
             accountState: decodedAccountData,
             esdtStates: groupedEsdtStates,
-            accountChanges,
+            accountChanges: this.decodeAccountChanges(sa.accountChanges),
             newAccount,
           });
         }
@@ -270,7 +263,7 @@ export class StateChangesDecoder {
     return allAccounts;
   }
 
-  static decodeStateChangesFinal(blockWithStateChanges: BlockWithStateChangesRaw) {
+  static decodeStateChangesFinal(blockWithStateChanges: BlockWithStateChangesRaw, isEsdtComputationEnabled: boolean = false) {
     const accounts = blockWithStateChanges.stateAccessesPerAccounts;
     const finalStates: Record<string, StateChanges> = {};
 
@@ -280,87 +273,97 @@ export class StateChangesDecoder {
       if (this.isSystemContractAddress(address)) {
         continue;
       }
-
-      const esdtOccured: Record<string, boolean> = {};
-
-      const { stateAccess } = accounts[accountHex] || {};
-      let finalAccountChangesRaw: AccountChangesRaw = AccountChangesRaw.NoChange;
-
-      let finalNewAccount = false;
-
-      let finalAccountState: AccountState | undefined = undefined;
-      const finalEsdtStates = {
-        Fungible: [] as EsdtState[],
-        NonFungible: [] as EsdtState[],
-        NonFungibleV2: [] as EsdtState[],
-        SemiFungible: [] as EsdtState[],
-        MetaFungible: [] as EsdtState[],
-        DynamicNFT: [] as EsdtState[],
-        DynamicSFT: [] as EsdtState[],
-        DynamicMeta: [] as EsdtState[],
-      };
-
-      for (let i = stateAccess.length - 1; i >= 0; i--) {
-        const sa = stateAccess[i];
-        const currentAccountChangesRaw = sa.accountChanges;
-        if (currentAccountChangesRaw) {
-          finalAccountChangesRaw |= currentAccountChangesRaw;
-        }
-
-        if (!finalNewAccount) {
-          const currentNewAccount = (sa.accountChanges === null || sa.accountChanges === undefined) && (sa.operation & StateAccessOperation.SaveAccount) ? true : false;
-          finalNewAccount = currentNewAccount || finalNewAccount;
-        }
-
-        const base64AccountData = sa.mainTrieVal;
-        if (base64AccountData && !finalAccountState) {
-          const bufAccountData = Buffer.from(base64AccountData, "base64");
-          const decodedAccountData = this.getDecodedUserAccountData(bufAccountData);
-          if (decodedAccountData) {
-            finalAccountState = decodedAccountData;
-          }
-        }
-
-        const dataTrieChanges = sa.dataTrieChanges;
-        if (dataTrieChanges) {
-          for (let i = dataTrieChanges.length - 1; i >= 0; i--) {
-            const dataTrieChange = dataTrieChanges[i];
-            if (dataTrieChange.version === 0) {
-              console.warn(`Unsupported dataTrieChanges version 0`);
-            } else if (dataTrieChange.val) {
-              const decodedEsdtData = this.getDecodedEsdtData(address, dataTrieChange);
-              if (decodedEsdtData) {
-                const esdtId = decodedEsdtData.identifier;
-                if (!esdtOccured[esdtId]) {
-                  const typeName = ESDTType[decodedEsdtData.type] as keyof typeof finalEsdtStates; // numeric -> string
-                  if (typeName) {
-                    if (dataTrieChange.operation === DataTrieChangeOperation.Delete) {
-                      decodedEsdtData.value = '0';
-                    }
-                    finalEsdtStates[typeName].push(decodedEsdtData);
-                    esdtOccured[esdtId] = true;
-                  }
-                }
-              }
-            }
-          }
-
-        }
-      }
-      finalStates[address] = {
-        accountState: finalAccountState,
-        esdtState: finalEsdtStates,
-        accountChanges: this.decodeAccountChanges(finalAccountChangesRaw),
-        isNewAccount: finalNewAccount,
-      };
+      const { stateAccess: accountStateAccesses } = accounts[accountHex] || {};
+      finalStates[address] = this.getAccountFinalState(address, accountStateAccesses, isEsdtComputationEnabled);
     }
+
     return finalStates;
   }
 
 
-  static getFinalStates(stateChanges: Record<string, any[]>) {
-    const finalStates: Record<string, StateChanges> = {};
+  private static getAccountFinalState(address: string, accountStateAccesses: StateAccessPerAccountRaw[], isEsdtComputationEnabled: boolean = false) {
+    let finalAccountChangesRaw: AccountChangesRaw = AccountChangesRaw.NoChange;
+    const esdtOccured: Record<string, boolean> = {};
+    let finalNewAccount = false;
 
+    let finalAccountState: AccountState | undefined = undefined;
+    const finalEsdtStates = {
+      Fungible: [] as EsdtState[],
+      NonFungible: [] as EsdtState[],
+      NonFungibleV2: [] as EsdtState[],
+      SemiFungible: [] as EsdtState[],
+      MetaFungible: [] as EsdtState[],
+      DynamicNFT: [] as EsdtState[],
+      DynamicSFT: [] as EsdtState[],
+      DynamicMeta: [] as EsdtState[],
+    };
+
+    for (let i = accountStateAccesses.length - 1; i >= 0; i--) {
+      const stateAccess = accountStateAccesses[i];
+      const currentAccountChangesRaw = stateAccess.accountChanges;
+      if (currentAccountChangesRaw) {
+        finalAccountChangesRaw |= currentAccountChangesRaw;
+      }
+
+      // if we already found it as new account, we skip the computation 
+      if (!finalNewAccount) {
+        const currentNewAccount = this.isNewAccount(stateAccess);
+        finalNewAccount = currentNewAccount || finalNewAccount;
+      }
+
+      // the final state is the first state we find when iterating backwards on state accesses array
+      if (!finalAccountState) {
+        const base64AccountData = stateAccess.mainTrieVal;
+        const decodedAccountData = this.getDecodedUserAccountData(base64AccountData);
+
+        if (decodedAccountData) {
+          finalAccountState = decodedAccountData;
+          //TODO: remove when we want to use accountChanges
+          if (!isEsdtComputationEnabled) {
+            break;
+          }
+        }
+      }
+
+      const dataTrieChanges = stateAccess.dataTrieChanges;
+      if (dataTrieChanges && isEsdtComputationEnabled) {
+        for (let i = dataTrieChanges.length - 1; i >= 0; i--) {
+          const dataTrieChange = dataTrieChanges[i];
+          if (dataTrieChange.version !== 0 && dataTrieChange.val) {
+            const decodedEsdtData = this.getDecodedEsdtData(address, dataTrieChange);
+
+            // last esdt state is the first appeareance in reverse order when iterating over account state accesses
+            if (decodedEsdtData && !esdtOccured[decodedEsdtData.identifier]) {
+              const typeName = ESDTType[decodedEsdtData.type] as keyof typeof finalEsdtStates; // numeric -> string
+
+              // double check in case some unknown type passed through
+              if (typeName) {
+                if (dataTrieChange.operation === DataTrieChangeOperation.Delete) {
+                  decodedEsdtData.value = '0';
+                }
+                finalEsdtStates[typeName].push(decodedEsdtData);
+                esdtOccured[decodedEsdtData.identifier] = true;
+              }
+            }
+          }
+        }
+      }
+    }
+    return {
+      accountState: finalAccountState,
+      esdtState: finalEsdtStates,
+      accountChanges: this.decodeAccountChanges(finalAccountChangesRaw),
+      isNewAccount: finalNewAccount,
+    };
+  }
+
+  private static isNewAccount(stateAccess: StateAccessPerAccountRaw) {
+    return (stateAccess.accountChanges == null) &&
+      (stateAccess.operation & StateAccessOperation.SaveAccount) ? true : false;
+  }
+
+  static getFinalStatesFromStateChangesRaw(stateChanges: Record<string, any[]>) {
+    const finalStates: Record<string, StateChanges> = {};
 
     for (const [address, entries] of Object.entries(stateChanges)) {
       let finalAccountState: AccountState | undefined = undefined;

@@ -1020,6 +1020,10 @@ export class ApiConfigService {
     return queueName;
   }
 
+  isEsdtComputationEnabled(): boolean {
+    return this.configService.get<boolean>('features.stateChanges.esdtEnabled') ?? false;
+  }
+
   getStateChangesDeadLetterExchange(): string {
     const deadLetterExchange = this.configService.get<string>('features.stateChanges.deadLetterExchange');
     if (!deadLetterExchange) {
