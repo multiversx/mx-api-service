@@ -73,7 +73,7 @@ describe('StateChangesConsumerService', () => {
           provide: ApiConfigService,
           useValue: {
             getMetaChainShardId: jest.fn().mockReturnValue(4294967295),
-            isEsdtComputationEnabled: jest.fn().mockReturnValue(false)
+            isEsdtComputationEnabled: jest.fn().mockReturnValue(false),
           },
         },
         {
@@ -232,7 +232,7 @@ describe('StateChangesConsumerService', () => {
             ownerAddress: 'erd1rc5p5drg26vggn6jx9puv6xlgka5n6ajm6cer554tzguwfm6v5ys2pr3pc',
             codeHash: 'hRkRk4eX3AxvdJgLHruGrel+Zb0uHudVXBHqWvfvz4Q=',
             rootHash: 'CKhf02sZIbMYtII8VbKqiLgTDEr0treTXEqIgHb1l4g=',
-            codeMetadata: '0500'
+            codeMetadata: '0500',
           },
           esdtState: {
             Fungible: [],
@@ -242,7 +242,7 @@ describe('StateChangesConsumerService', () => {
             MetaFungible: [],
             DynamicNFT: [],
             DynamicSFT: [],
-            DynamicMeta: []
+            DynamicMeta: [],
           },
           accountChanges: {
             nonceChanged: false,
@@ -252,9 +252,9 @@ describe('StateChangesConsumerService', () => {
             developerRewardChanged: true,
             ownerAddressChanged: false,
             userNameChanged: false,
-            codeMetadataChanged: false
+            codeMetadataChanged: false,
           },
-          isNewAccount: false
+          isNewAccount: false,
         },
         erd1qqqqqqqqqqqqqpgqjwls7l4jf9qwafnxual6nadaak66g5jjeyvs9dswkt: {
           accountState: {
@@ -265,7 +265,7 @@ describe('StateChangesConsumerService', () => {
             ownerAddress: 'erd1mmjkmtlz4cwl3svqtu4u9yfp3m8wqpqdykmterrleltpt4eaeyvsa68xa7',
             codeHash: 'hcDhkiRq8PB5C3g5B7OcMZ020WOj+AuOOndgSDMBZ48=',
             rootHash: 'bjwTHfuhx0bs3OJFnvcb6pcTWspG9cb370yuqVbKbQo=',
-            codeMetadata: '0100'
+            codeMetadata: '0100',
           },
           esdtState: {
             Fungible: [],
@@ -275,7 +275,7 @@ describe('StateChangesConsumerService', () => {
             MetaFungible: [],
             DynamicNFT: [],
             DynamicSFT: [],
-            DynamicMeta: []
+            DynamicMeta: [],
           },
           accountChanges: {
             nonceChanged: false,
@@ -285,9 +285,9 @@ describe('StateChangesConsumerService', () => {
             developerRewardChanged: true,
             ownerAddressChanged: false,
             userNameChanged: false,
-            codeMetadataChanged: false
+            codeMetadataChanged: false,
           },
-          isNewAccount: false
+          isNewAccount: false,
         },
         erd1vt2qedvltqvrar072ny88wh7vgxq9xvxmyqm4nf8qkzpwj6ncy5sjtgj90: {
           accountState: {
@@ -295,7 +295,7 @@ describe('StateChangesConsumerService', () => {
             balance: '59732371650000000000',
             developerReward: '0',
             address: 'erd1vt2qedvltqvrar072ny88wh7vgxq9xvxmyqm4nf8qkzpwj6ncy5sjtgj90',
-            rootHash: 's9P9Do2C9v8r3MqG3I3MkotuYpEA1qt8jNiRCE5ULBo='
+            rootHash: 's9P9Do2C9v8r3MqG3I3MkotuYpEA1qt8jNiRCE5ULBo=',
           },
           esdtState: {
             Fungible: [],
@@ -305,7 +305,7 @@ describe('StateChangesConsumerService', () => {
             MetaFungible: [],
             DynamicNFT: [],
             DynamicSFT: [],
-            DynamicMeta: []
+            DynamicMeta: [],
           },
           accountChanges: {
             nonceChanged: true,
@@ -315,9 +315,9 @@ describe('StateChangesConsumerService', () => {
             developerRewardChanged: false,
             ownerAddressChanged: false,
             userNameChanged: false,
-            codeMetadataChanged: false
+            codeMetadataChanged: false,
           },
-          isNewAccount: false
+          isNewAccount: false,
         },
         erd1mmjkmtlz4cwl3svqtu4u9yfp3m8wqpqdykmterrleltpt4eaeyvsa68xa7: {
           accountState: {
@@ -325,7 +325,7 @@ describe('StateChangesConsumerService', () => {
             balance: '391457061919320000000',
             developerReward: '0',
             address: 'erd1mmjkmtlz4cwl3svqtu4u9yfp3m8wqpqdykmterrleltpt4eaeyvsa68xa7',
-            rootHash: 'fV3JuZDrwZ8TbnlawkHGYYp1bQX0fTgefUzU7xEYLh8='
+            rootHash: 'fV3JuZDrwZ8TbnlawkHGYYp1bQX0fTgefUzU7xEYLh8=',
           },
           esdtState: {
             Fungible: [],
@@ -335,7 +335,7 @@ describe('StateChangesConsumerService', () => {
             MetaFungible: [],
             DynamicNFT: [],
             DynamicSFT: [],
-            DynamicMeta: []
+            DynamicMeta: [],
           },
           accountChanges: {
             nonceChanged: true,
@@ -345,11 +345,11 @@ describe('StateChangesConsumerService', () => {
             developerRewardChanged: false,
             ownerAddressChanged: false,
             userNameChanged: false,
-            codeMetadataChanged: false
+            codeMetadataChanged: false,
           },
-          isNewAccount: false
-        }
-      }
+          isNewAccount: false,
+        },
+      };
       const mockShardId = 1;
       const mockBlockTimestampMs = 1762356608000;
       const expectedResult = [
@@ -367,7 +367,7 @@ describe('StateChangesConsumerService', () => {
           isUpgradeable: true,
           isReadable: true,
           isPayable: false,
-          isPayableBySmartContract: false
+          isPayableBySmartContract: false,
         },
         {
           address: 'erd1qqqqqqqqqqqqqpgqjwls7l4jf9qwafnxual6nadaak66g5jjeyvs9dswkt',
@@ -383,7 +383,7 @@ describe('StateChangesConsumerService', () => {
           isUpgradeable: true,
           isReadable: false,
           isPayable: false,
-          isPayableBySmartContract: false
+          isPayableBySmartContract: false,
         },
         {
           address: 'erd1vt2qedvltqvrar072ny88wh7vgxq9xvxmyqm4nf8qkzpwj6ncy5sjtgj90',
@@ -393,7 +393,7 @@ describe('StateChangesConsumerService', () => {
           timestamp: 1762356608,
           shard: 1,
           developerReward: '0',
-          rootHash: 's9P9Do2C9v8r3MqG3I3MkotuYpEA1qt8jNiRCE5ULBo='
+          rootHash: 's9P9Do2C9v8r3MqG3I3MkotuYpEA1qt8jNiRCE5ULBo=',
         },
         {
           address: 'erd1mmjkmtlz4cwl3svqtu4u9yfp3m8wqpqdykmterrleltpt4eaeyvsa68xa7',
@@ -403,9 +403,9 @@ describe('StateChangesConsumerService', () => {
           timestamp: 1762356608,
           shard: 1,
           developerReward: '0',
-          rootHash: 'fV3JuZDrwZ8TbnlawkHGYYp1bQX0fTgefUzU7xEYLh8='
-        }
-      ]
+          rootHash: 'fV3JuZDrwZ8TbnlawkHGYYp1bQX0fTgefUzU7xEYLh8=',
+        },
+      ];
       const result = service['transformFinalStatesToDbFormat'](
         mockInput,
         mockShardId,

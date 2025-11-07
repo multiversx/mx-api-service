@@ -1,5 +1,5 @@
 import { StateChangesDecoder } from 'src/state-changes/utils/state-changes.decoder';
-import { AccountChangesRaw, DataTrieChangeOperation, StateAccessOperation } from 'src/state-changes/entities'
+import { AccountChangesRaw, DataTrieChangeOperation, StateAccessOperation } from 'src/state-changes/entities';
 
 describe('StateChangesDecoder', () => {
   beforeEach(() => {
@@ -42,7 +42,7 @@ describe('StateChangesDecoder', () => {
     });
 
     it('should decode valid UserAccountData', () => {
-      const base64Value = "EgoABtuSP3tqxyU+GiCFwOGSJGrw8HkLeDkHs5wxnTbRY6P4C446d2BIMwFnjyIgo7jh8DROSNY3jtZL6vVOdbo/PP+O+6q/7dB+r0GfmDwqIAAAAAAAAAAABQCTvw9+sklA7qZm53+p9b3ttaRSUskZMgkAIko5RBEBXgA6IN7lba/irh34wYBfK8KRIY7O4AQNJba8jH/P1hXXPckZSgIBAA=="
+      const base64Value = "EgoABtuSP3tqxyU+GiCFwOGSJGrw8HkLeDkHs5wxnTbRY6P4C446d2BIMwFnjyIgo7jh8DROSNY3jtZL6vVOdbo/PP+O+6q/7dB+r0GfmDwqIAAAAAAAAAAABQCTvw9+sklA7qZm53+p9b3ttaRSUskZMgkAIko5RBEBXgA6IN7lba/irh34wYBfK8KRIY7O4AQNJba8jH/P1hXXPckZSgIBAA==";
       const result = StateChangesDecoder['getDecodedUserAccountData'](base64Value);
 
       const expectedResult = {
@@ -53,8 +53,8 @@ describe('StateChangesDecoder', () => {
         ownerAddress: 'erd1mmjkmtlz4cwl3svqtu4u9yfp3m8wqpqdykmterrleltpt4eaeyvsa68xa7',
         codeHash: 'hcDhkiRq8PB5C3g5B7OcMZ020WOj+AuOOndgSDMBZ48=',
         rootHash: 'o7jh8DROSNY3jtZL6vVOdbo/PP+O+6q/7dB+r0GfmDw=',
-        codeMetadata: '0100'
-      }
+        codeMetadata: '0100',
+      };
       expect(result).toHaveProperty('nonce', expectedResult.nonce);
       expect(result).toHaveProperty('balance', expectedResult.balance);
       expect(result).toHaveProperty('developerReward', expectedResult.developerReward);
@@ -97,16 +97,16 @@ describe('StateChangesDecoder', () => {
         value: '135399426293137262324524632',
         propertiesHex: '',
         reservedHex: '',
-        tokenMetaData: null
-      }
+        tokenMetaData: null,
+      };
 
       const dataTrieChange = {
         type: 1,
         key: 'RUxST05EZXNkdE1FWC1hNjU5ZDA=',
         val: 'EgwAb//xm2Vec+YQplg=',
         version: 1,
-        operation: DataTrieChangeOperation.NotDelete
-      }
+        operation: DataTrieChangeOperation.NotDelete,
+      };
 
       const result = StateChangesDecoder['getDecodedEsdtData']('erd150sh7scpm4q7tdtntte975kt0cgg3r4exf8mtwurfradguzxzuqsahzma8', dataTrieChange as any);
       expect(result).toEqual(expectedResult);
@@ -147,26 +147,26 @@ describe('StateChangesDecoder', () => {
               key: 'RUxST05EZXNkdEZPWFNZLTg2ZWNmZQ==',
               val: 'EgkADeC2s6dkAAA=',
               version: 1,
-              operation: 0
+              operation: 0,
             },
             {
               type: 1,
               key: 'RUxST05EZXNkdEZPWFNZLTg2ZWNmZQ==',
               val: 'EgkADeC2s6dkAAA=',
               version: 1,
-              operation: 1
+              operation: 1,
             },
             {
               type: 1,
               key: 'dG91cm5hbWVudHMAAAACnPg=',
               val: 'AAAAApz4AAAAAGkLbEgAAAAAaQtuoAAAAAgN4Lazp2QAAAAAAAgN4Lazp2QAAAAAAAgpoiQa9iwAAABuAVv6I33/nQnW+3wmlLfavrSvstjnldid65XTjQ3nqgAAAAXwE1AptY3LtZdlBeh6mcP3eiC1CGvqqv/3e6SOTNq3cgAAAALsE8pgwEzgJ+Nk3sKxnZ6OQQ6s/5JhxCXnioUMFmdfpcqTAAAAAuwUQUO2CdnII2pbbgiyzP4TjqaZ99MUJtkS4/wxY6YkOxQAAAAC7BW8zrxROav1ST0TIld62AKhGxMYVMoJVvzDxYCXrvzY7gAAAALsFru2lwb0jw3/9QMkG67zHFB792NjLXypEOW/9DcOhiUMAAAAAuwX',
               version: 1,
-              operation: 0
-            }
+              operation: 0,
+            },
           ],
-          accountChanges: 24
-        }
-      ]
+          accountChanges: 24,
+        },
+      ];
 
       const expectedResult = {
         accountState: {
@@ -177,7 +177,7 @@ describe('StateChangesDecoder', () => {
           ownerAddress: 'erd1f74ghf83xvek0sxmjrclssat54q6z069sy63ymax6k93mqav3qtsp2rv0l',
           codeHash: '9S1Hs2tTj7zA+JLDTnD29ncfZtRsxevT36irfG9yrWI=',
           rootHash: 'ESYjuem0MgHFxhYqC7omi7mMee+Y4g6PW+NUMcU8xfc=',
-          codeMetadata: '0500'
+          codeMetadata: '0500',
         },
         esdtState: {
           Fungible: [
@@ -188,8 +188,8 @@ describe('StateChangesDecoder', () => {
               value: '0',
               propertiesHex: '',
               reservedHex: '',
-              tokenMetaData: null
-            }
+              tokenMetaData: null,
+            },
           ],
           NonFungible: [],
           NonFungibleV2: [],
@@ -197,7 +197,7 @@ describe('StateChangesDecoder', () => {
           MetaFungible: [],
           DynamicNFT: [],
           DynamicSFT: [],
-          DynamicMeta: []
+          DynamicMeta: [],
         },
         accountChanges: {
           nonceChanged: false,
@@ -207,10 +207,10 @@ describe('StateChangesDecoder', () => {
           developerRewardChanged: true,
           ownerAddressChanged: false,
           userNameChanged: false,
-          codeMetadataChanged: false
+          codeMetadataChanged: false,
         },
-        isNewAccount: false
-      }
+        isNewAccount: false,
+      };
       const result = StateChangesDecoder['getAccountFinalState']('erd1dwkr89z4mmqxxgrv0ks62pccmqsheqq3zjwpa7r7fh6v5dgnrmjs8a9wng', mockAccountStateAccesses, true);
       expect(result).toEqual(expectedResult);
     });

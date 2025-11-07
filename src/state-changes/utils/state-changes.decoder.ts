@@ -274,7 +274,7 @@ export class StateChangesDecoder {
         continue;
       }
       const { stateAccess: accountStateAccesses } = accounts[accountHex] || {};
-      finalStates[address] = this.getAccountFinalState(address, accountStateAccesses, isEsdtComputationEnabled)
+      finalStates[address] = this.getAccountFinalState(address, accountStateAccesses, isEsdtComputationEnabled);
     }
 
     return finalStates;
@@ -307,7 +307,7 @@ export class StateChangesDecoder {
 
       // if we already found it as new account, we skip the computation 
       if (!finalNewAccount) {
-        const currentNewAccount = this.isNewAccount(stateAccess)
+        const currentNewAccount = this.isNewAccount(stateAccess);
         finalNewAccount = currentNewAccount || finalNewAccount;
       }
 
