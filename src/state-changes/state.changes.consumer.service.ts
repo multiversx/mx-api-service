@@ -13,6 +13,8 @@ import { AddressUtils, OriginLogger } from "@multiversx/sdk-nestjs-common";
 import { PerformanceProfiler } from "@multiversx/sdk-nestjs-monitoring";
 import configuration from "config/configuration";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
+import { NftAccount } from "src/endpoints/nfts/entities/nft.account";
+import { TokenWithBalance } from "src/endpoints/tokens/entities/token.with.balance";
 
 @Injectable()
 export class StateChangesConsumerService {
@@ -38,9 +40,10 @@ export class StateChangesConsumerService {
 
       const profiler = new PerformanceProfiler('BlockStateChangesProcessing');
       const decodingProfiler = new PerformanceProfiler('StateChangesDecoding');
-      const finalStates = this.decodeStateChangesFinal(blockWithStateChanges);
+      const isEsdtComputationEnabled = this.apiConfigService.isEsdtComputationEnabled();
+      const finalStates = this.decodeStateChangesFinal(blockWithStateChanges, isEsdtComputationEnabled);
 
-      const transformedFinalStates = this.transformFinalStatesToDbFormat(finalStates, blockWithStateChanges.shardID, blockWithStateChanges.timestampMs);
+      const transformedFinalStates = this.transformFinalStatesToDbFormat(finalStates, blockWithStateChanges.shardID, blockWithStateChanges.timestampMs, isEsdtComputationEnabled);
       decodingProfiler.stop('StateChangesDecoding');
       this.logger.log(`Decoded state changes for block ${blockWithStateChanges.hash} on shard ${blockWithStateChanges.shardID} in ${decodingProfiler.duration} ms`);
 
@@ -97,61 +100,107 @@ export class StateChangesConsumerService {
 
     await Promise.all(promisesToWaitFor);
   }
-  private decodeStateChangesFinal(blockWithStateChanges: BlockWithStateChangesRaw) {
-    return StateChangesDecoder.decodeStateChangesFinal(blockWithStateChanges);
+  private decodeStateChangesFinal(blockWithStateChanges: BlockWithStateChangesRaw, isEsdtComputationEnabled: boolean = false) {
+    return StateChangesDecoder.decodeStateChangesFinal(blockWithStateChanges, isEsdtComputationEnabled);
   }
 
-  private transformFinalStatesToDbFormat(finalStates: Record<string, StateChanges>, shardID: number, blockTimestampMs: number) {
+  private transformFinalStatesToDbFormat(
+    finalStates: Record<string, StateChanges>,
+    shardID: number,
+    blockTimestampMs: number,
+    isEsdtComputationEnabled: boolean = false
+  ) {
     const transformed: AccountDetails[] = [];
 
     for (const [_address, state] of Object.entries(finalStates)) {
-      const newAccountState = state.accountState;
+      const baseAccount = this.parseBaseAccount(
+        state,
+        shardID,
+        blockTimestampMs
+      );
+      if (!baseAccount) continue;
 
-      // const tokens = [
-      //     ...state.esdtState.Fungible,
-      // ];
+      const parsedAccount = new AccountDetails({
+        ...baseAccount,
+      });
 
-      // const nfts = [
-      //     ...state.esdtState.NonFungible,
-      //     ...state.esdtState.NonFungibleV2,
-      //     ...state.esdtState.DynamicNFT,
-      //     ...state.esdtState.SemiFungible,
-      //     ...state.esdtState.DynamicSFT,
-      //     ...state.esdtState.MetaFungible,
-      //     ...state.esdtState.DynamicMeta,
-      // ];
-
-      if (newAccountState) {
-        const { codeMetadata, ...newAccountStateFiltered } = newAccountState;
-        const parsedAccount =
-          new AccountDetails({
-            ...newAccountStateFiltered,
-            shard: shardID,
-            timestampMs: blockTimestampMs,
-            timestamp: Math.floor(blockTimestampMs / 1000),
-            ...this.parseCodeMetadata(newAccountState.address, codeMetadata),
-            // tokens: tokens.map(token => new TokenWithBalance({
-            //     identifier: token.identifier,
-            //     nonce: parseInt(token.nonce),
-            //     balance: token.value,
-            //     type: this.parseEsdtType(token.type) as TokenType,
-            //     subType: NftSubType.None,
-            // })),
-            // nfts: nfts.map(nft => new NftAccount({
-            //     identifier: nft.identifier,
-            //     nonce: parseInt(nft.nonce),
-            //     type: this.parseEsdtType(nft.type) as NftType,
-            //     subType: this.parseEsdtSubtype(nft.type),
-            //     collection: nft.identifier.replace(/-[^-]*$/, ''), // delete everything after last `-` character inclusive
-            //     balance: nft.value,
-            // })),
-          });
-        transformed.push(parsedAccount);
+      if (isEsdtComputationEnabled) {
+        const tokens = this.transformTokens(state);
+        const nfts = this.transformNfts(state);
+        parsedAccount.tokens = tokens;
+        parsedAccount.nfts = nfts;
       }
 
+      transformed.push(parsedAccount);
     }
 
     return transformed;
+  }
+
+  private parseBaseAccount(
+    state: StateChanges,
+    shardID: number,
+    blockTimestampMs: number
+  ) {
+    if (!state.accountState) return undefined;
+    const { codeMetadata, ...filteredState } = state.accountState;
+
+    return {
+      ...filteredState,
+      shard: shardID,
+      timestampMs: blockTimestampMs,
+      timestamp: Math.floor(blockTimestampMs / 1000),
+      ...this.parseCodeMetadata(filteredState.address, codeMetadata),
+    };
+  }
+
+  //@ts-ignore
+  private transformTokens(state: StateChanges): TokenWithBalance[] {
+    const fungible = state.esdtState?.Fungible ?? [];
+
+    return fungible.map(token =>
+      new TokenWithBalance({
+        identifier: token.identifier,
+        nonce: parseInt(token.nonce),
+        balance: token.value,
+        type: this.parseEsdtType(token.type) as TokenType,
+        subType: NftSubType.None,
+      })
+    );
+  }
+
+  //@ts-ignore
+  private transformNfts(state: StateChanges): NftAccount[] {
+    const {
+      NonFungible,
+      NonFungibleV2,
+      DynamicNFT,
+      SemiFungible,
+      DynamicSFT,
+      MetaFungible,
+      DynamicMeta,
+    } = state.esdtState ?? {};
+
+    const allNfts = [
+      ...(NonFungible ?? []),
+      ...(NonFungibleV2 ?? []),
+      ...(DynamicNFT ?? []),
+      ...(SemiFungible ?? []),
+      ...(DynamicSFT ?? []),
+      ...(MetaFungible ?? []),
+      ...(DynamicMeta ?? []),
+    ];
+
+    return allNfts.map(nft =>
+      new NftAccount({
+        identifier: nft.identifier,
+        nonce: parseInt(nft.nonce),
+        type: this.parseEsdtType(nft.type) as NftType,
+        subType: this.parseEsdtSubtype(nft.type),
+        collection: nft.identifier.replace(/-[^-]*$/, ''),
+        balance: nft.value,
+      })
+    );
   }
 
 

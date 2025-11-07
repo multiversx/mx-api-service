@@ -211,7 +211,7 @@ describe('StateChangesDecoder', () => {
         },
         isNewAccount: false
       }
-      const result = StateChangesDecoder['getAccountFinalState']('erd1dwkr89z4mmqxxgrv0ks62pccmqsheqq3zjwpa7r7fh6v5dgnrmjs8a9wng', mockAccountStateAccesses);
+      const result = StateChangesDecoder['getAccountFinalState']('erd1dwkr89z4mmqxxgrv0ks62pccmqsheqq3zjwpa7r7fh6v5dgnrmjs8a9wng', mockAccountStateAccesses, true);
       expect(result).toEqual(expectedResult);
     });
   });

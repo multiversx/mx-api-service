@@ -35,6 +35,7 @@ features:
     exchange: 'state_accesses'
     queueName: 'api_state_accesses_queue-test'
     deadLetterExchange: 'api_state_accesses_queue_dlx'
+    esdtEnabled: false
   guestCaching:
     enabled: false
     hitsThreshold: 100

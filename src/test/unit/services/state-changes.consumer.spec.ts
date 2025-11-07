@@ -73,6 +73,7 @@ describe('StateChangesConsumerService', () => {
           provide: ApiConfigService,
           useValue: {
             getMetaChainShardId: jest.fn().mockReturnValue(4294967295),
+            isEsdtComputationEnabled: jest.fn().mockReturnValue(false)
           },
         },
         {

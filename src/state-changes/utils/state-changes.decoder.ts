@@ -263,7 +263,7 @@ export class StateChangesDecoder {
     return allAccounts;
   }
 
-  static decodeStateChangesFinal(blockWithStateChanges: BlockWithStateChangesRaw) {
+  static decodeStateChangesFinal(blockWithStateChanges: BlockWithStateChangesRaw, isEsdtComputationEnabled: boolean = false) {
     const accounts = blockWithStateChanges.stateAccessesPerAccounts;
     const finalStates: Record<string, StateChanges> = {};
 
@@ -274,14 +274,14 @@ export class StateChangesDecoder {
         continue;
       }
       const { stateAccess: accountStateAccesses } = accounts[accountHex] || {};
-      finalStates[address] = this.getAccountFinalState(address, accountStateAccesses)
+      finalStates[address] = this.getAccountFinalState(address, accountStateAccesses, isEsdtComputationEnabled)
     }
 
     return finalStates;
   }
 
 
-  private static getAccountFinalState(address: string, accountStateAccesses: StateAccessPerAccountRaw[]) {
+  private static getAccountFinalState(address: string, accountStateAccesses: StateAccessPerAccountRaw[], isEsdtComputationEnabled: boolean = false) {
     let finalAccountChangesRaw: AccountChangesRaw = AccountChangesRaw.NoChange;
     const esdtOccured: Record<string, boolean> = {};
     let finalNewAccount = false;
@@ -318,11 +318,14 @@ export class StateChangesDecoder {
 
         if (decodedAccountData) {
           finalAccountState = decodedAccountData;
+          if (!isEsdtComputationEnabled) {
+            break;
+          }
         }
       }
 
       const dataTrieChanges = stateAccess.dataTrieChanges;
-      if (dataTrieChanges) {
+      if (dataTrieChanges && isEsdtComputationEnabled) {
         for (let i = dataTrieChanges.length - 1; i >= 0; i--) {
           const dataTrieChange = dataTrieChanges[i];
           if (dataTrieChange.version !== 0 && dataTrieChange.val) {
