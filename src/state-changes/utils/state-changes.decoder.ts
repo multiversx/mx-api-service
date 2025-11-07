@@ -318,6 +318,7 @@ export class StateChangesDecoder {
 
         if (decodedAccountData) {
           finalAccountState = decodedAccountData;
+          //TODO: remove when we want to use accountChanges
           if (!isEsdtComputationEnabled) {
             break;
           }
