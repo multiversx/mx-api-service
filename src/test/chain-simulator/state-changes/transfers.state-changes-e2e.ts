@@ -39,12 +39,23 @@ function pickBalance(payload: any): string | undefined {
 }
 
 async function fetchApiBalance(baseUrl: string, address: string): Promise<bigint> {
-  // Fetch direct from proxy balance endpoint to avoid cached /accounts values
-  const url = `${baseUrl}/address/${address}/balance`;
+  // Fetch full account details from gateway to ensure consistent shape
+  const url = `${baseUrl}/address/${address}`;
   const payload = await getJson(url);
   if (!payload) throw new Error(`No payload from ${url}`);
   const bal = pickBalance(payload);
   if (!bal) throw new Error(`No balance field in response from ${url}`);
+  try {
+    const top = typeof payload.balance === 'string' ? payload.balance : (typeof payload.balance === 'number' ? String(payload.balance) : undefined);
+    const dataBal = typeof payload?.data?.balance === 'string' ? payload.data.balance : (typeof payload?.data?.balance === 'number' ? String(payload.data.balance) : undefined);
+    const acctBal = payload?.data?.account?.balance !== undefined ? (typeof payload.data.account.balance === 'string' ? payload.data.account.balance : String(payload.data.account.balance)) : undefined;
+    const picked = bal;
+    let pickedFrom = 'unknown';
+    if (acctBal !== undefined && picked === acctBal) pickedFrom = 'data.account.balance';
+    else if (dataBal !== undefined && picked === dataBal) pickedFrom = 'data.balance';
+    else if (top !== undefined && picked === top) pickedFrom = 'balance';
+    console.log(`[BalanceFetch] addr=${address} picked=${pickedFrom} value=${picked} candidates={balance:${top},data.balance:${dataBal},data.account.balance:${acctBal}}`);
+  } catch (_) { }
   return BigInt(bal);
 }
 
@@ -54,8 +65,13 @@ async function waitForBalance(baseUrl: string, address: string, expected: bigint
   while (Date.now() - start < timeoutMs) {
     last = await fetchApiBalance(baseUrl, address);
     if (last === expected) return last;
+    const tries = Math.floor((Date.now() - start) / 1000);
+    if (tries % 5 === 0) {
+      console.log(`[WaitForBalance] addr=${address} expected=${expected.toString()} last=${last.toString()} t=${tries}s`);
+    }
     await sleep(1000);
   }
+  console.log(`[WaitForBalance][Timeout] addr=${address} expected=${expected.toString()} last=${last.toString()} durationMs=${Date.now() - start}`);
   return last;
 }
 
@@ -69,6 +85,7 @@ function computeFeeFromDeltas(beforeSender: bigint, afterSender: bigint, amount:
 async function performTransferAndAssert(simUrl: string, apiUrl: string, sender: string, receiver: string, amount: bigint) {
   const beforeSender = await fetchApiBalance(apiUrl, sender);
   const beforeReceiver = await fetchApiBalance(apiUrl, receiver);
+  console.log(`[PreTransfer] sender=${sender} bal=${beforeSender.toString()} receiver=${receiver} bal=${beforeReceiver.toString()} amount=${amount.toString()}`);
 
   const hash = await sendTransaction(new SendTransactionArgs({
     chainSimulatorUrl: simUrl,
@@ -77,15 +94,18 @@ async function performTransferAndAssert(simUrl: string, apiUrl: string, sender: 
     value: amount.toString(),
     dataField: '',
   }));
+  console.log(`[TxSent] hash=${hash} sender=${sender} -> receiver=${receiver} amount=${amount.toString()}`);
 
   // Wait for receiver to reflect amount increase
   const expectedReceiver = beforeReceiver + amount;
   const afterReceiver = await waitForBalance(apiUrl, receiver, expectedReceiver);
+  console.log(`[PostTransferReceiver] receiver=${receiver} expected=${expectedReceiver.toString()} actual=${afterReceiver.toString()}`);
   expect(afterReceiver).toBe(expectedReceiver);
 
   // Read sender post and derive fee
   const afterSender = await fetchApiBalance(apiUrl, sender);
   const fee = computeFeeFromDeltas(beforeSender, afterSender, amount);
+  console.log(`[PostTransferSender] sender=${sender} before=${beforeSender.toString()} after=${afterSender.toString()} amount=${amount.toString()} fee=${fee.toString()}`);
   expect(afterSender).toBe(beforeSender - amount - fee);
   // Sanity-check fee is > 0 and not absurdly large
   expect(fee).toBeGreaterThan(BigInt(0));
