@@ -192,6 +192,6 @@ compression:
   threshold: 1024
   chunkSize: 16384
 customUrlHeaders:
-  - urlPattern: 'app.hatom.com'
+  - urlPattern: ''
     headers:
       x-custom-auth: ''
