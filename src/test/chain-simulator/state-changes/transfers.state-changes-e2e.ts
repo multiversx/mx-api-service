@@ -4,6 +4,7 @@ import { config } from '../config/env.config';
 import { SendTransactionArgs, fundAddress, sendTransaction } from '../utils/chain.simulator.operations';
 
 const sleep = (ms: number) => new Promise((res) => setTimeout(res, ms));
+const FUNDED_BALANCE = BigInt('100000000000000000000000');
 
 async function getJson(url: string): Promise<any | undefined> {
   for (let i = 0; i < 45; i++) {
@@ -75,6 +76,15 @@ async function waitForBalance(baseUrl: string, address: string, expected: bigint
   return last;
 }
 
+async function ensureFunded(baseUrl: string, address: string) {
+  const current = await fetchApiBalance(baseUrl, address).catch(() => undefined as any);
+  if (current !== FUNDED_BALANCE) {
+    console.log(`[EnsureFunded] waiting addr=${address} current=${current?.toString?.()} target=${FUNDED_BALANCE.toString()}`);
+  }
+  const after = await waitForBalance(baseUrl, address, FUNDED_BALANCE, 60000);
+  console.log(`[EnsureFunded] addr=${address} now=${after.toString()}`);
+}
+
 // Observe fee via balance deltas (more robust than parsing simulator fields across versions)
 function computeFeeFromDeltas(beforeSender: bigint, afterSender: bigint, amount: bigint): bigint {
   const debited = beforeSender - afterSender;
@@ -125,6 +135,8 @@ describe('State changes: native EGLD transfers reflect in balances', () => {
     // Ensure both parties have funds to simplify expectations
     await fundAddress(sim, alice);
     await fundAddress(sim, bob);
+    await ensureFunded(api, alice);
+    await ensureFunded(api, bob);
 
     const amount = BigInt('1000000000000000000'); // 1 EGLD
     await performTransferAndAssert(sim, api, alice, bob, amount);
@@ -133,6 +145,8 @@ describe('State changes: native EGLD transfers reflect in balances', () => {
   it('Round-trip transfers: Alice->Bob then Bob->Alice yields expected finals', async () => {
     await fundAddress(sim, alice);
     await fundAddress(sim, bob);
+    await ensureFunded(api, alice);
+    await ensureFunded(api, bob);
 
     const startAlice = await fetchApiBalance(api, alice);
     const startBob = await fetchApiBalance(api, bob);
@@ -155,6 +169,8 @@ describe('State changes: native EGLD transfers reflect in balances', () => {
   it('Multiple sequential transfers accumulate correctly (Alice->Bob x3)', async () => {
     await fundAddress(sim, alice);
     await fundAddress(sim, bob);
+    await ensureFunded(api, alice);
+    await ensureFunded(api, bob);
 
     const startAlice = await fetchApiBalance(api, alice);
     const startBob = await fetchApiBalance(api, bob);
