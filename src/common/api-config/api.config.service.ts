@@ -1,4 +1,4 @@
-import { Constants } from '@multiversx/sdk-nestjs-common';
+import { Constants, OriginLogger } from '@multiversx/sdk-nestjs-common';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { DatabaseConnectionOptions } from '../persistence/entities/connection.options';
@@ -7,6 +7,8 @@ import { LogTopic } from '@multiversx/sdk-transaction-processor/lib/types/log-to
 
 @Injectable()
 export class ApiConfigService {
+  private readonly logger = new OriginLogger(ApiConfigService.name);
+
   constructor(private readonly configService: ConfigService) {
   }
 
@@ -976,24 +978,38 @@ export class ApiConfigService {
   getHeadersForCustomUrl(url: string): Record<string, string> | undefined {
     let customUrlConfigs = this.configService.get<any>('customUrlHeaders');
 
+    // DEBUG: Log what we got from config
+    this.logger.log('customUrlHeaders from config:', JSON.stringify(customUrlConfigs, null, 2));
+    this.logger.log('Type:', typeof customUrlConfigs);
+    this.logger.log('Is Array:', Array.isArray(customUrlConfigs));
+    this.logger.log('URL to match:', url);
+
     if (typeof customUrlConfigs === 'string') {
       try {
         customUrlConfigs = JSON.parse(customUrlConfigs);
+        this.logger.log('After JSON.parse:', JSON.stringify(customUrlConfigs, null, 2));
       } catch (error) {
+        this.logger.log('JSON.parse failed:', error);
         return undefined;
       }
     }
 
     if (!Array.isArray(customUrlConfigs)) {
+      this.logger.log('Not an array, returning undefined');
       return undefined;
     }
 
+    this.logger.log('Is array with', customUrlConfigs.length, 'items');
+
     for (const config of customUrlConfigs) {
+      this.logger.log('Checking config:', JSON.stringify(config, null, 2));
       if (config.urlPattern && url.includes(config.urlPattern)) {
+        this.logger.log(' MATCH! Returning headers:', JSON.stringify(config.headers, null, 2));
         return config.headers;
       }
     }
 
+    console.log('No match found for URL');
     return undefined;
   }
 }
