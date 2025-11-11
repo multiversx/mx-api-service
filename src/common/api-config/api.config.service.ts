@@ -978,38 +978,59 @@ export class ApiConfigService {
   getHeadersForCustomUrl(url: string): Record<string, string> | undefined {
     let customUrlConfigs = this.configService.get<any>('customUrlHeaders');
 
-    // DEBUG: Log what we got from config
-    this.logger.log('customUrlHeaders from config:', JSON.stringify(customUrlConfigs, null, 2));
-    this.logger.log('Type:', typeof customUrlConfigs);
-    this.logger.log('Is Array:', Array.isArray(customUrlConfigs));
-    this.logger.log('URL to match:', url);
+    if (!customUrlConfigs) {
+      return undefined;
+    }
 
     if (typeof customUrlConfigs === 'string') {
       try {
         customUrlConfigs = JSON.parse(customUrlConfigs);
-        this.logger.log('After JSON.parse:', JSON.stringify(customUrlConfigs, null, 2));
       } catch (error) {
-        this.logger.log('JSON.parse failed:', error);
+        return undefined;
+      }
+    }
+
+    if (!Array.isArray(customUrlConfigs) && typeof customUrlConfigs === 'object') {
+      let workingConfig = customUrlConfigs;
+
+      while (workingConfig && workingConfig[''] && typeof workingConfig[''] === 'object') {
+        workingConfig = workingConfig[''];
+      }
+
+      const arrayValues: any[] = [];
+      for (const key in workingConfig) {
+        if (!isNaN(Number(key))) {
+          let item = workingConfig[key];
+          while (item && item[''] && typeof item[''] === 'object') {
+            item = item[''];
+          }
+          arrayValues[Number(key)] = item;
+        }
+      }
+
+      if (arrayValues.length > 0) {
+        customUrlConfigs = arrayValues.filter(item => item !== undefined);
+        this.logger.log(`Loaded ${customUrlConfigs.length} custom URL header config(s)`);
+      } else {
         return undefined;
       }
     }
 
     if (!Array.isArray(customUrlConfigs)) {
-      this.logger.log('Not an array, returning undefined');
       return undefined;
     }
 
-    this.logger.log('Is array with', customUrlConfigs.length, 'items');
-
     for (const config of customUrlConfigs) {
-      this.logger.log('Checking config:', JSON.stringify(config, null, 2));
-      if (config.urlPattern && url.includes(config.urlPattern)) {
-        this.logger.log(' MATCH! Returning headers:', JSON.stringify(config.headers, null, 2));
-        return config.headers;
+      if (config && config.urlPattern && url.includes(config.urlPattern)) {
+        let headers = config.headers;
+        if (headers && headers[''] && typeof headers[''] === 'object') {
+          headers = headers[''];
+        }
+        this.logger.log(`Found custom headers for URL pattern '${config.urlPattern}': ${JSON.stringify(headers)}`);
+        return headers;
       }
     }
 
-    console.log('No match found for URL');
     return undefined;
   }
 }
