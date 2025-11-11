@@ -974,10 +974,22 @@ export class ApiConfigService {
   }
 
   getHeadersForCustomUrl(url: string): Record<string, string> | undefined {
-    const customUrlConfigs = this.configService.get<any[]>('customUrlHeaders') ?? [];
+    let customUrlConfigs = this.configService.get<any>('customUrlHeaders');
+
+    if (typeof customUrlConfigs === 'string') {
+      try {
+        customUrlConfigs = JSON.parse(customUrlConfigs);
+      } catch (error) {
+        return undefined;
+      }
+    }
+
+    if (!Array.isArray(customUrlConfigs)) {
+      return undefined;
+    }
 
     for (const config of customUrlConfigs) {
-      if (url.includes(config.urlPattern)) {
+      if (config.urlPattern && url.includes(config.urlPattern)) {
         return config.headers;
       }
     }
