@@ -1,0 +1,371 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+# This script clones mx-chain-simulator-go and mx-chain-notifier-go, pins specific
+# dependency commits for the simulator, builds it, adjusts config files, starts
+# the notifier, and verifies the HTTP endpoint returns 200.
+
+# Requirements: git, go, make, curl, awk
+
+SIM_REPO_URL="https://github.com/multiversx/mx-chain-simulator-go"
+SIM_DIR="${SIM_DIR:-mx-chain-simulator-go}"
+
+NOTIFIER_REPO_URL="https://github.com/multiversx/mx-chain-notifier-go"
+NOTIFIER_BRANCH="${NOTIFIER_BRANCH:-state-accesses-per-account}"
+NOTIFIER_DIR="${NOTIFIER_DIR:-mx-chain-notifier-go}"
+
+# Commit pins
+CHAIN_GO_COMMIT="757f2de643d3d69494179cd899d92b31edfbb64a"        # github.com/multiversx/mx-chain-go
+CHAIN_CORE_GO_COMMIT="60b4de5d3d1bb3f2a34c764f8cf353c5af8c3194"   # github.com/multiversx/mx-chain-core-go
+
+# Endpoint check
+# One or more candidate health URLs for the simulator; the first 200 wins
+# (different simulator versions may expose different status routes)
+VERIFY_URLS=(
+  "${VERIFY_URL:-http://localhost:8085/network/status/0}"
+  "http://localhost:8085/network/status"
+  "http://localhost:8085/simulator/health"
+  "http://localhost:8085/health"
+)
+VERIFY_TIMEOUT_SEC="${VERIFY_TIMEOUT_SEC:-120}"
+LOG_SNIFF_INTERVAL_SEC="${LOG_SNIFF_INTERVAL_SEC:-10}"
+
+log() { printf "[+] %s\n" "$*" >&2; }
+err() { printf "[!] %s\n" "$*" >&2; }
+
+need() {
+  command -v "$1" >/dev/null 2>&1 || { err "Missing dependency: $1"; exit 1; }
+}
+
+need git
+need go
+need make
+need curl
+need awk
+
+port_open() {
+  local host="$1" port="$2"
+  (echo > /dev/tcp/$host/$port) >/dev/null 2>&1 && return 0 || return 1
+}
+
+start_redis_and_sentinel() {
+  local redis_port=6379 sentinel_port=26379
+  local have_redis_server=0
+  if command -v redis-server >/dev/null 2>&1; then have_redis_server=1; fi
+
+  if port_open 127.0.0.1 "$redis_port"; then
+    log "Redis already running on 127.0.0.1:$redis_port"
+  else
+    if [[ "$have_redis_server" -eq 1 ]]; then
+      log "Starting local Redis server on port $redis_port"
+      nohup redis-server --port "$redis_port" > redis.out 2>&1 &
+      for i in {1..60}; do
+        if port_open 127.0.0.1 "$redis_port"; then break; fi; sleep 1; done
+      if ! port_open 127.0.0.1 "$redis_port"; then
+        err "Failed to start Redis on port $redis_port"
+        return 1
+      fi
+    else
+      err "redis-server not found; please install Redis or start it manually on 127.0.0.1:$redis_port"
+      return 1
+    fi
+  fi
+
+  if port_open 127.0.0.1 "$sentinel_port"; then
+    log "Redis Sentinel already running on 127.0.0.1:$sentinel_port"
+  else
+    if [[ "$have_redis_server" -eq 1 ]]; then
+      log "Starting local Redis Sentinel on port $sentinel_port (master mymaster -> 127.0.0.1:$redis_port)"
+      local sentinel_conf
+      sentinel_conf=$(mktemp)
+      cat >"$sentinel_conf" <<EOF
+port $sentinel_port
+daemonize no
+sentinel monitor mymaster 127.0.0.1 $redis_port 1
+sentinel down-after-milliseconds mymaster 5000
+sentinel failover-timeout mymaster 60000
+sentinel parallel-syncs mymaster 1
+EOF
+      nohup redis-server "$sentinel_conf" --sentinel > redis-sentinel.out 2>&1 &
+      for i in {1..60}; do
+        if port_open 127.0.0.1 "$sentinel_port"; then break; fi; sleep 1; done
+      if ! port_open 127.0.0.1 "$sentinel_port"; then
+        err "Failed to start Redis Sentinel on port $sentinel_port"
+        return 1
+      fi
+    else
+      err "redis-server not found; cannot start Sentinel. Please start a Sentinel on 127.0.0.1:$sentinel_port with master name 'mymaster' targeting 127.0.0.1:$redis_port"
+      return 1
+    fi
+  fi
+}
+
+clone_or_update() {
+  local repo_url="$1" dir="$2" branch_opt="${3:-}"
+  if [[ -d "$dir/.git" ]]; then
+    log "Updating existing repo: $dir"
+    git -C "$dir" fetch --all --tags --prune
+    if [[ -n "$branch_opt" ]]; then
+      git -C "$dir" checkout "$branch_opt"
+      git -C "$dir" pull --ff-only origin "$branch_opt" || true
+    fi
+  else
+    log "Cloning $repo_url into $dir ${branch_opt:+(branch $branch_opt)}"
+    if [[ -n "$branch_opt" ]]; then
+      git clone --single-branch -b "$branch_opt" "$repo_url" "$dir"
+    else
+      git clone "$repo_url" "$dir"
+    fi
+  fi
+}
+
+pin_go_deps() {
+  local module_dir="$1"
+  pushd "$module_dir" >/dev/null
+  log "Pinning dependencies in $(pwd)"
+  # Pin exact commits using go get
+  GOFLAGS=${GOFLAGS:-} \
+  go get \
+    github.com/multiversx/mx-chain-go@"$CHAIN_GO_COMMIT" \
+    github.com/multiversx/mx-chain-core-go@"$CHAIN_CORE_GO_COMMIT"
+
+  # Ensure module graph is clean
+  go mod tidy
+  popd >/dev/null
+}
+
+build_chainsimulator() {
+  local module_dir="$1"
+  pushd "$module_dir" >/dev/null
+  log "Building chainsimulator binary"
+  go build -v ./cmd/chainsimulator
+  popd >/dev/null
+}
+
+dummy_run_generate_configs() {
+  local module_dir="$1"
+  local cmd_dir="$module_dir/cmd/chainsimulator"
+  pushd "$cmd_dir" >/dev/null
+  log "Dummy run to fetch/generate configs (fetch-configs-and-close)"
+  # Build binary here so relative ./config paths resolve correctly
+  go build -v .
+  ./chainsimulator --fetch-configs-and-close
+  popd >/dev/null
+}
+
+patch_external_toml() {
+  local module_dir="$1"
+  local toml_path="$module_dir/cmd/chainsimulator/config/node/config/external.toml"
+  if [[ ! -f "$toml_path" ]]; then
+    err "Config file not found: $toml_path"
+    exit 1
+  fi
+  log "Patching HostDriversConfig in $toml_path (Enabled=true, MarshallerType=\"gogo protobuf\")"
+  local tmp
+  tmp="$(mktemp)"
+  awk '
+    BEGIN { inside=0 }
+    /^\[\[HostDriversConfig\]\]/ { inside=1; print; next }
+    /^\[/ { if (inside) inside=0 }
+    {
+      if (inside && $0 ~ /^[[:space:]]*Enabled[[:space:]]*=/) { $0="    Enabled = true" }
+      if (inside && $0 ~ /^[[:space:]]*MarshallerType[[:space:]]*=/) { $0="    MarshallerType = \"gogo protobuf\"" }
+      print
+    }
+  ' "$toml_path" > "$tmp" && mv "$tmp" "$toml_path"
+}
+
+enable_ws_connector() {
+  local notifier_dir="$1"
+  local toml_path="$notifier_dir/cmd/notifier/config/config.toml"
+  if [[ ! -f "$toml_path" ]]; then
+    err "Notifier config not found: $toml_path"
+    exit 1
+  fi
+  log "Enabling WebSocketConnector in $toml_path"
+  local tmp
+  tmp="$(mktemp)"
+  awk '
+    BEGIN { inside=0 }
+    /^\[WebSocketConnector\]/ { inside=1; print; next }
+    /^\[/ { if (inside) inside=0 }
+    {
+      if (inside && $0 ~ /^[[:space:]]*Enabled[[:space:]]*=/) { $0="Enabled = true" }
+      print
+    }
+  ' "$toml_path" > "$tmp" && mv "$tmp" "$toml_path"
+}
+
+# Force Redis and Sentinel hosts to IPv4 loopback to avoid ::1 resolution issues
+patch_notifier_redis_hosts() {
+  local notifier_dir="$1"
+  local toml_path="$notifier_dir/cmd/notifier/config/config.toml"
+  if [[ ! -f "$toml_path" ]]; then
+    err "Notifier config not found: $toml_path"
+    exit 1
+  fi
+  log "Patching notifier Redis hosts in $toml_path (localhost/::1 -> 127.0.0.1; sentinel name -> mymaster)"
+  # Replace common host patterns to 127.0.0.1 and ensure sentinel/master names are set to mymaster
+  sed -i.bak \
+    -e 's/localhost/127.0.0.1/g' \
+    -e 's/\[::1\]/127.0.0.1/g' \
+    -e 's/sentinelName\s*=\s*"[^"]*"/sentinelName = "mymaster"/g' \
+    -e 's/masterName\s*=\s*"[^"]*"/masterName = "mymaster"/g' \
+    "$toml_path" || true
+}
+
+# Optionally patch the WebSocketConnector path/host/port if provided via env
+patch_notifier_ws_endpoint() {
+  local notifier_dir="$1"
+  local toml_path="$notifier_dir/cmd/notifier/config/config.toml"
+  local ws_path="${NOTIFIER_WS_PATH:-}"
+  local ws_host="${NOTIFIER_WS_HOST:-127.0.0.1}"
+  local ws_port="${NOTIFIER_WS_PORT:-22111}"
+  if [[ ! -f "$toml_path" ]]; then
+    err "Notifier config not found: $toml_path"
+    exit 1
+  fi
+  if [[ -n "$ws_path" ]]; then
+    log "Patching WebSocketConnector path to '${ws_path}', host to '${ws_host}', port to '${ws_port}' in $toml_path"
+    sed -i.bak \
+      -e "s#^\([[:space:]]*Path[[:space:]]*=\).*#\1 \"${ws_path}\"#" \
+      -e "s#^\([[:space:]]*Url[[:space:]]*=\).*#\1 \"${ws_host}:${ws_port}\"#" \
+      "$toml_path" || true
+  fi
+}
+
+start_notifier() {
+  local notifier_dir="$1"
+  pushd "$notifier_dir" >/dev/null
+  printf "[+] %s\n" "Starting notifier via 'make run' in background" >&2
+  # Run in background, redirect logs
+  nohup make run > notifier.out 2>&1 &
+  local pid=$!
+  popd >/dev/null
+  echo "$pid"
+}
+
+start_chainsimulator() {
+  local module_dir="$1"
+  local cmd_dir="$module_dir/cmd/chainsimulator"
+  pushd "$cmd_dir" >/dev/null
+  printf "[+] %s\n" "Starting chainsimulator in background" >&2
+  # Build if missing
+  if [[ ! -x ./chainsimulator ]]; then
+    go build -v .
+  fi
+  nohup ./chainsimulator > chainsimulator.out 2>&1 &
+  local pid=$!
+  popd >/dev/null
+  echo "$pid"
+}
+
+wait_for_http_200_any() {
+  local -n urls_ref=$1
+  local timeout_sec="$2"
+  local chain_log="$3" notifier_log="$4"
+  local start_ts now code last_log_print=0 tmp body_preview url
+  start_ts=$(date +%s)
+  log "Waiting for simulator to be ready on any of: ${urls_ref[*]} (timeout ${timeout_sec}s)"
+  while true; do
+    for url in "${urls_ref[@]}"; do
+      tmp=$(mktemp)
+      code=$(curl -s -o "$tmp" -w "%{http_code}" "$url" || true)
+      if [[ "$code" == "200" ]]; then
+        log "Received HTTP 200 from $url"
+        body_preview=$(head -c 2000 "$tmp" | tr -d '\r')
+        printf "[+] %s\n%s\n" "Status body preview:" "$body_preview" >&2
+        rm -f "$tmp"
+        return 0
+      fi
+      rm -f "$tmp"
+    done
+
+    now=$(date +%s)
+    if (( now - last_log_print >= LOG_SNIFF_INTERVAL_SEC )); then
+      last_log_print=$now
+      printf "[!] %s\n" "Simulator not ready yet (no 200 from any URL)" >&2
+      if [[ -f "$chain_log" ]]; then
+        printf "[!] %s\n" "Tail of chainsimulator logs:" >&2
+        tail -n 60 "$chain_log" >&2 || true
+      fi
+      if [[ -f "$notifier_log" ]]; then
+        printf "[!] %s\n" "Tail of notifier logs:" >&2
+        tail -n 40 "$notifier_log" >&2 || true
+      fi
+    fi
+
+    if (( now - start_ts > timeout_sec )); then
+      err "Timeout waiting for HTTP 200 from any simulator status URL"
+      return 1
+    fi
+    sleep 2
+  done
+}
+
+main() {
+  # 1) Clone simulator
+  clone_or_update "$SIM_REPO_URL" "$SIM_DIR"
+
+  # 2) Pin deps to requested commits
+  pin_go_deps "$SIM_DIR"
+
+  # 3) Build chainsimulator
+  build_chainsimulator "$SIM_DIR"
+
+  # 4) Dummy run to ensure configs are materialized on disk
+  dummy_run_generate_configs "$SIM_DIR"
+
+  # 5) Patch external.toml HostDriversConfig
+  patch_external_toml "$SIM_DIR"
+
+  # 6) Clone notifier at branch
+  clone_or_update "$NOTIFIER_REPO_URL" "$NOTIFIER_DIR" "$NOTIFIER_BRANCH"
+
+  # 7) Enable WebSocketConnector in notifier config
+  enable_ws_connector "$NOTIFIER_DIR"
+  patch_notifier_redis_hosts "$NOTIFIER_DIR"
+  patch_notifier_ws_endpoint "$NOTIFIER_DIR"
+
+  # 8) Ensure Redis + Sentinel are running locally for notifier
+  start_redis_and_sentinel || {
+    err "Redis/Sentinel setup failed; notifier may not start correctly"
+  }
+
+  # 9) Start notifier first
+  notifier_pid=$(start_notifier "$NOTIFIER_DIR")
+  log "Notifier PID: $notifier_pid"
+
+  # 9.1) Wait for Notifier WS port to be open before starting simulator
+  local notifier_host="127.0.0.1" notifier_port=22111
+  log "Waiting for Notifier WS ${notifier_host}:${notifier_port} to accept connections..."
+  for i in {1..60}; do
+    if port_open "$notifier_host" "$notifier_port"; then
+      log "Notifier WS is up"
+      break
+    fi
+    sleep 1
+  done
+  if ! port_open "$notifier_host" "$notifier_port"; then
+    err "Notifier WS did not open on ${notifier_host}:${notifier_port} in time"
+  fi
+
+  # 10) Start chain simulator next
+  chainsim_pid=$(start_chainsimulator "$SIM_DIR")
+  log "ChainSimulator PID: $chainsim_pid"
+
+  # 11) Verify HTTP 200 after both are up
+  local chain_log="$SIM_DIR/cmd/chainsimulator/chainsimulator.out"
+  local notifier_log="$NOTIFIER_DIR/notifier.out"
+  if ! wait_for_http_200_any VERIFY_URLS "$VERIFY_TIMEOUT_SEC" "$chain_log" "$notifier_log"; then
+    err "Verification failed. See $NOTIFIER_DIR/notifier.out for logs."
+    exit 1
+  fi
+
+  log "All done. Notifier (PID $notifier_pid) and ChainSimulator (PID $chainsim_pid) are running."
+  log "Notifier logs: $NOTIFIER_DIR/notifier.out"
+  log "ChainSimulator logs: $SIM_DIR/cmd/chainsimulator/chainsimulator.out"
+}
+
+main "$@"
