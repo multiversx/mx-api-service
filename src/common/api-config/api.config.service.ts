@@ -972,4 +972,16 @@ export class ApiConfigService {
 
     return port;
   }
+
+  getHeadersForCustomUrl(url: string): Record<string, string> | undefined {
+    const customUrlConfigs = this.configService.get<any[]>('customUrlHeaders') ?? [];
+
+    for (const config of customUrlConfigs) {
+      if (url.includes(config.urlPattern)) {
+        return config.headers;
+      }
+    }
+
+    return undefined;
+  }
 }
