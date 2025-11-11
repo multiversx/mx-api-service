@@ -22,17 +22,19 @@ async function getJson(url: string): Promise<any | undefined> {
 
 function pickBalance(payload: any): string | undefined {
   if (!payload || typeof payload !== 'object') return undefined;
-  if (typeof payload.balance === 'string') return payload.balance;
-  if (typeof payload.balance === 'number') return String(payload.balance);
+  // Prefer nested shapes returned by gateway/proxy
   if (payload.data) {
     if (typeof payload.data.balance === 'string') return payload.data.balance;
     if (typeof payload.data.balance === 'number') return String(payload.data.balance);
-    if (payload.data.account && payload.data.account.balance) {
+    if (payload.data.account && payload.data.account.balance !== undefined) {
       const b = payload.data.account.balance;
       if (typeof b === 'string') return b;
       if (typeof b === 'number') return String(b);
     }
   }
+  // Fallback: some environments may return balance at the top level
+  if (typeof payload.balance === 'string') return payload.balance;
+  if (typeof payload.balance === 'number') return String(payload.balance);
   return undefined;
 }
 
@@ -90,7 +92,7 @@ async function performTransferAndAssert(simUrl: string, apiUrl: string, sender: 
   // Fee should be < 0.1 EGLD in simulator settings
   expect(fee).toBeLessThan(BigInt('100000000000000000'));
 
-  return { fee, afterSender, afterReceiver, hash };
+  return {fee, afterSender, afterReceiver, hash};
 }
 
 describe('State changes: native EGLD transfers reflect in balances', () => {
@@ -116,10 +118,10 @@ describe('State changes: native EGLD transfers reflect in balances', () => {
     const startBob = await fetchApiBalance(api, bob);
 
     const amount1 = BigInt('2500000000000000000'); // 2.5 EGLD
-    const { fee: fee1 } = await performTransferAndAssert(sim, api, alice, bob, amount1);
+    const {fee: fee1} = await performTransferAndAssert(sim, api, alice, bob, amount1);
 
     const amount2 = BigInt('1700000000000000000'); // 1.7 EGLD
-    const { fee: fee2 } = await performTransferAndAssert(sim, api, bob, alice, amount2);
+    const {fee: fee2} = await performTransferAndAssert(sim, api, bob, alice, amount2);
 
     const expectedAlice = startAlice - amount1 - fee1 + amount2;
     const expectedBob = startBob + amount1 - fee2 - amount2;
@@ -146,7 +148,7 @@ describe('State changes: native EGLD transfers reflect in balances', () => {
     let totalSent = BigInt(0);
     let totalFees = BigInt(0);
     for (const amt of amounts) {
-      const { fee } = await performTransferAndAssert(sim, api, alice, bob, amt);
+      const {fee} = await performTransferAndAssert(sim, api, alice, bob, amt);
       totalSent += amt;
       totalFees += fee;
     }
