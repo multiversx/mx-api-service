@@ -9,6 +9,7 @@ import { NftAccount } from 'src/endpoints/nfts/entities/nft.account';
 import { Injectable } from '@nestjs/common';
 import { AccountDetailed } from 'src/endpoints/accounts/entities/account.detailed';
 import { OriginLogger } from '@multiversx/sdk-nestjs-common';
+import { GenericEsdtData } from '../../entities/generic.esdt.data';
 
 @Injectable()
 export class AccountDetailsRepository {
@@ -88,6 +89,35 @@ export class AccountDetailsRepository {
             return [];
         }
     }
+    async getEsdtForAddress(address: string, identifier: string): Promise<GenericEsdtData | undefined> {
+        try {
+            const result = await this.accountDetailsModel.aggregate([
+                { $match: { address } },
+                {
+                    $project: {
+                        _id: 0,
+                        tokens: {
+                            $filter: {
+                                input: "$esdts",
+                                as: "esdt",
+                                cond: { $eq: ["$$esdt.identifier", identifier] },
+                            },
+                        },
+                    },
+                },
+                {
+                    $project: {
+                        "esdts.identifier": 1,
+                        "esdts.balance": 1,
+                    },
+                },
+            ]).exec();
+            return result[0]?.esdts[0] ?? undefined;
+        } catch (error) {
+            console.error(`Error fetching esdt with  identifier ${identifier} for address: ${address}:`, error);
+            return undefined;
+        }
+    }
 
     @LogPerformanceAsync(MetricsEvents.SetPersistenceDuration, 'account-tokens')
     async getTokenForAddress(address: string, identifier: string): Promise<TokenWithBalance | undefined> {
@@ -110,13 +140,7 @@ export class AccountDetailsRepository {
                 },
                 {
                     $project: {
-                        "tokens.type": 1,
-                        "tokens.subType": 1,
                         "tokens.identifier": 1,
-                        "tokens.collection": 1,
-                        "tokens.name": 1,
-                        "tokens.nonce": 1,
-                        "tokens.decimals": 1,
                         "tokens.balance": 1,
                     },
                 },
@@ -274,46 +298,45 @@ export class AccountDetailsRepository {
                 // --- simple fields ---
                 const updateFields: any = {};
                 Object.entries(accountDetailed).forEach(([key, value]) => {
-                    if (isValidValue(value) && key !== "tokens" && key !== "nfts") {
+                    // if (isValidValue(value) && key !== "tokens" && key !== "nfts") {
+                    if (isValidValue(value) && key !== "esdts") {
                         updateFields[key as keyof AccountDetails] = value;
                     }
                 });
                 if (Object.keys(updateFields).length > 0) {
                     updatePipeline.push({ $set: updateFields });
                 }
+                const esdtsToRemove: string[] = [];
+                const esdtsToUpsert: any[] = [];
 
-                // --- tokens ---
-                const tokensToRemove: string[] = [];
-                const tokensToUpsert: any[] = [];
-
-                if (accountDetailed.tokens?.length) {
-                    for (const t of accountDetailed.tokens) {
+                if (accountDetailed.esdts?.length) {
+                    for (const t of accountDetailed.esdts) {
                         if (t.balance === '0') {
-                            tokensToRemove.push(t.identifier);
+                            esdtsToRemove.push(t.identifier);
                         } else {
-                            tokensToUpsert.push(t);
+                            esdtsToUpsert.push(t);
                         }
                     }
 
-                    if (tokensToUpsert.length) {
+                    if (esdtsToUpsert.length) {
                         updatePipeline.push({
                             $set: {
-                                tokens: {
+                                esdts: {
                                     $let: {
-                                        vars: { newTokens: tokensToUpsert },
+                                        vars: { newEsdts: esdtsToUpsert },
                                         in: {
                                             $concatArrays: [
                                                 {
                                                     $map: {
-                                                        input: { $ifNull: ["$tokens", []] },
-                                                        as: "t",
+                                                        input: { $ifNull: ["$esdts", []] },
+                                                        as: "esdt",
                                                         in: {
                                                             $let: {
                                                                 vars: {
                                                                     updated: {
                                                                         $filter: {
-                                                                            input: "$$newTokens",
-                                                                            cond: { $eq: ["$$this.identifier", "$$t.identifier"] },
+                                                                            input: "$$newEsdts",
+                                                                            cond: { $eq: ["$$this.identifier", "$$esdt.identifier"] },
                                                                         },
                                                                     },
                                                                 },
@@ -321,7 +344,7 @@ export class AccountDetailsRepository {
                                                                     $cond: [
                                                                         { $gt: [{ $size: "$$updated" }, 0] },
                                                                         { $arrayElemAt: ["$$updated", 0] },
-                                                                        "$$t",
+                                                                        "$$esdt",
                                                                     ],
                                                                 },
                                                             },
@@ -330,16 +353,16 @@ export class AccountDetailsRepository {
                                                 },
                                                 {
                                                     $filter: {
-                                                        input: "$$newTokens",
+                                                        input: "$$newEsdts",
                                                         cond: {
                                                             $not: {
                                                                 $in: [
                                                                     "$$this.identifier",
                                                                     {
                                                                         $map: {
-                                                                            input: { $ifNull: ["$tokens", []] },
-                                                                            as: "t",
-                                                                            in: "$$t.identifier",
+                                                                            input: { $ifNull: ["$esdts", []] },
+                                                                            as: "esdt",
+                                                                            in: "$$esdt.identifier",
                                                                         },
                                                                     },
                                                                 ],
@@ -355,98 +378,180 @@ export class AccountDetailsRepository {
                         });
                     }
 
-                    if (tokensToRemove.length) {
+                    if (esdtsToRemove.length) {
                         pulls.push({
                             updateOne: {
                                 filter: { address: accountDetailed.address },
-                                update: { $pull: { tokens: { identifier: { $in: tokensToRemove } } } },
+                                update: { $pull: { esdts: { identifier: { $in: esdtsToRemove } } } },
                             },
                         });
                     }
                 }
+                // --- tokens ---
+                // const tokensToRemove: string[] = [];
+                // const tokensToUpsert: any[] = [];
+
+                // if (accountDetailed.tokens?.length) {
+                //     for (const t of accountDetailed.tokens) {
+                //         if (t.balance === '0') {
+                //             tokensToRemove.push(t.identifier);
+                //         } else {
+                //             tokensToUpsert.push(t);
+                //         }
+                //     }
+
+                //     if (tokensToUpsert.length) {
+                //         updatePipeline.push({
+                //             $set: {
+                //                 tokens: {
+                //                     $let: {
+                //                         vars: { newTokens: tokensToUpsert },
+                //                         in: {
+                //                             $concatArrays: [
+                //                                 {
+                //                                     $map: {
+                //                                         input: { $ifNull: ["$tokens", []] },
+                //                                         as: "t",
+                //                                         in: {
+                //                                             $let: {
+                //                                                 vars: {
+                //                                                     updated: {
+                //                                                         $filter: {
+                //                                                             input: "$$newTokens",
+                //                                                             cond: { $eq: ["$$this.identifier", "$$t.identifier"] },
+                //                                                         },
+                //                                                     },
+                //                                                 },
+                //                                                 in: {
+                //                                                     $cond: [
+                //                                                         { $gt: [{ $size: "$$updated" }, 0] },
+                //                                                         { $arrayElemAt: ["$$updated", 0] },
+                //                                                         "$$t",
+                //                                                     ],
+                //                                                 },
+                //                                             },
+                //                                         },
+                //                                     },
+                //                                 },
+                //                                 {
+                //                                     $filter: {
+                //                                         input: "$$newTokens",
+                //                                         cond: {
+                //                                             $not: {
+                //                                                 $in: [
+                //                                                     "$$this.identifier",
+                //                                                     {
+                //                                                         $map: {
+                //                                                             input: { $ifNull: ["$tokens", []] },
+                //                                                             as: "t",
+                //                                                             in: "$$t.identifier",
+                //                                                         },
+                //                                                     },
+                //                                                 ],
+                //                                             },
+                //                                         },
+                //                                     },
+                //                                 },
+                //                             ],
+                //                         },
+                //                     },
+                //                 },
+                //             },
+                //         });
+                //     }
+
+                //     if (tokensToRemove.length) {
+                //         pulls.push({
+                //             updateOne: {
+                //                 filter: { address: accountDetailed.address },
+                //                 update: { $pull: { tokens: { identifier: { $in: tokensToRemove } } } },
+                //             },
+                //         });
+                //     }
+                // }
 
                 // --- nfts ---
-                const nftsToRemove: string[] = [];
-                const nftsToUpsert: any[] = [];
+                // const nftsToRemove: string[] = [];
+                // const nftsToUpsert: any[] = [];
 
-                if (accountDetailed.nfts?.length) {
-                    for (const n of accountDetailed.nfts) {
-                        if (n.balance === '0') {
-                            nftsToRemove.push(n.identifier);
-                        } else {
-                            nftsToUpsert.push(n);
-                        }
-                    }
+                // if (accountDetailed.nfts?.length) {
+                //     for (const n of accountDetailed.nfts) {
+                //         if (n.balance === '0') {
+                //             nftsToRemove.push(n.identifier);
+                //         } else {
+                //             nftsToUpsert.push(n);
+                //         }
+                //     }
 
-                    if (nftsToUpsert.length) {
-                        updatePipeline.push({
-                            $set: {
-                                nfts: {
-                                    $let: {
-                                        vars: { newNfts: nftsToUpsert },
-                                        in: {
-                                            $concatArrays: [
-                                                {
-                                                    $map: {
-                                                        input: { $ifNull: ["$nfts", []] },
-                                                        as: "n",
-                                                        in: {
-                                                            $let: {
-                                                                vars: {
-                                                                    updated: {
-                                                                        $filter: {
-                                                                            input: "$$newNfts",
-                                                                            cond: { $eq: ["$$this.identifier", "$$n.identifier"] },
-                                                                        },
-                                                                    },
-                                                                },
-                                                                in: {
-                                                                    $cond: [
-                                                                        { $gt: [{ $size: "$$updated" }, 0] },
-                                                                        { $arrayElemAt: ["$$updated", 0] },
-                                                                        "$$n",
-                                                                    ],
-                                                                },
-                                                            },
-                                                        },
-                                                    },
-                                                },
-                                                {
-                                                    $filter: {
-                                                        input: "$$newNfts",
-                                                        cond: {
-                                                            $not: {
-                                                                $in: [
-                                                                    "$$this.identifier",
-                                                                    {
-                                                                        $map: {
-                                                                            input: { $ifNull: ["$nfts", []] },
-                                                                            as: "n",
-                                                                            in: "$$n.identifier",
-                                                                        },
-                                                                    },
-                                                                ],
-                                                            },
-                                                        },
-                                                    },
-                                                },
-                                            ],
-                                        },
-                                    },
-                                },
-                            },
-                        });
-                    }
+                //     if (nftsToUpsert.length) {
+                //         updatePipeline.push({
+                //             $set: {
+                //                 nfts: {
+                //                     $let: {
+                //                         vars: { newNfts: nftsToUpsert },
+                //                         in: {
+                //                             $concatArrays: [
+                //                                 {
+                //                                     $map: {
+                //                                         input: { $ifNull: ["$nfts", []] },
+                //                                         as: "n",
+                //                                         in: {
+                //                                             $let: {
+                //                                                 vars: {
+                //                                                     updated: {
+                //                                                         $filter: {
+                //                                                             input: "$$newNfts",
+                //                                                             cond: { $eq: ["$$this.identifier", "$$n.identifier"] },
+                //                                                         },
+                //                                                     },
+                //                                                 },
+                //                                                 in: {
+                //                                                     $cond: [
+                //                                                         { $gt: [{ $size: "$$updated" }, 0] },
+                //                                                         { $arrayElemAt: ["$$updated", 0] },
+                //                                                         "$$n",
+                //                                                     ],
+                //                                                 },
+                //                                             },
+                //                                         },
+                //                                     },
+                //                                 },
+                //                                 {
+                //                                     $filter: {
+                //                                         input: "$$newNfts",
+                //                                         cond: {
+                //                                             $not: {
+                //                                                 $in: [
+                //                                                     "$$this.identifier",
+                //                                                     {
+                //                                                         $map: {
+                //                                                             input: { $ifNull: ["$nfts", []] },
+                //                                                             as: "n",
+                //                                                             in: "$$n.identifier",
+                //                                                         },
+                //                                                     },
+                //                                                 ],
+                //                                             },
+                //                                         },
+                //                                     },
+                //                                 },
+                //                             ],
+                //                         },
+                //                     },
+                //                 },
+                //             },
+                //         });
+                //     }
 
-                    if (nftsToRemove.length) {
-                        pulls.push({
-                            updateOne: {
-                                filter: { address: accountDetailed.address },
-                                update: { $pull: { nfts: { identifier: { $in: nftsToRemove } } } },
-                            },
-                        });
-                    }
-                }
+                //     if (nftsToRemove.length) {
+                //         pulls.push({
+                //             updateOne: {
+                //                 filter: { address: accountDetailed.address },
+                //                 update: { $pull: { nfts: { identifier: { $in: nftsToRemove } } } },
+                //             },
+                //         });
+                //     }
+                // }
 
                 if (updatePipeline.length > 0) {
                     operations.push({

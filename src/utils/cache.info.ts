@@ -725,9 +725,9 @@ export class CacheInfo {
     };
   }
 
-  static AccountToken(address: string): CacheInfo {
+  static AccountEsdt(address: string, identifier: string): CacheInfo {
     return {
-      key: `account-token:${address}`,
+      key: `account-esdt:${address}:${identifier}`,
       ttl: Constants.oneHour() * 12,
     };
   }

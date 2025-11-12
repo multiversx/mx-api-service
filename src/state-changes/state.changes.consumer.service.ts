@@ -15,6 +15,7 @@ import configuration from "config/configuration";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { NftAccount } from "src/endpoints/nfts/entities/nft.account";
 import { TokenWithBalance } from "src/endpoints/tokens/entities/token.with.balance";
+import { GenericEsdtData } from "src/common/indexer/entities/generic.esdt.data";
 
 @Injectable()
 export class StateChangesConsumerService {
@@ -65,37 +66,51 @@ export class StateChangesConsumerService {
   private async updateAccounts(transformedFinalStates: AccountDetails[]) {
     const promisesToWaitFor = [this.accountDetailsRepository.updateAccounts(transformedFinalStates.filter(account => !AddressUtils.isSmartContractAddress(account.address)))];
 
-    const walletCacheKeys = [];
+    const esdtsUpdateCacheKeys = [];
+    const esdtsDeleteCacheKeys = [];
+    const walletAccountCacheKeys = [];
     const contractCacheKeys = [];
-    const values = [];
+    const walletAccountValues = [];
+    const esdtsUpdateValues = [];
     for (const account of transformedFinalStates) {
+      const { esdts, ...accountWithoutAssets } = account;
       if (!AddressUtils.isSmartContractAddress(account.address)) {
-        walletCacheKeys.push(CacheInfo.AccountState(account.address).key);
-        const { tokens, nfts, ...accountWithoutAssets } = account;
-        values.push(accountWithoutAssets);
+        walletAccountCacheKeys.push(CacheInfo.AccountState(account.address).key);
+        walletAccountValues.push(accountWithoutAssets);
       } else {
         contractCacheKeys.push(CacheInfo.AccountState(account.address).key);
       }
+
+      if (esdts) {
+        for (const esdt of esdts) {
+          if (esdt.balance === '0') {
+            esdtsDeleteCacheKeys.push(CacheInfo.AccountEsdt(account.address, esdt.identifier).key);
+          } else {
+            esdtsUpdateCacheKeys.push(CacheInfo.AccountEsdt(account.address, esdt.identifier).key);
+            esdtsUpdateValues.push(esdt);
+          }
+        }
+      }
     }
-    if (walletCacheKeys.length > 0) {
+    if (walletAccountCacheKeys.length > 0 || esdtsUpdateCacheKeys.length > 0) {
       promisesToWaitFor.push(
         this.cacheService.setManyRemote(
-          walletCacheKeys,
-          values,
-          CacheInfo.AccountState('any').ttl,
-        )
+          [...walletAccountCacheKeys, ...esdtsUpdateCacheKeys],
+          [...walletAccountValues, ...esdtsUpdateValues],
+          CacheInfo.AccountEsdt('any', 'any').ttl,
+        ),
       );
     }
 
-    if (contractCacheKeys.length > 0) {
+    if (contractCacheKeys.length > 0 || esdtsDeleteCacheKeys.length > 0) {
       promisesToWaitFor.push(
         this.cacheService.deleteManyRemote(
-          contractCacheKeys,
+          [...contractCacheKeys, ...esdtsDeleteCacheKeys],
         )
       );
     }
 
-    this.deleteLocalCache([...walletCacheKeys, ...contractCacheKeys]);
+    this.deleteLocalCache([...walletAccountCacheKeys, ...contractCacheKeys, ...esdtsUpdateCacheKeys, ...esdtsDeleteCacheKeys]);
 
     await Promise.all(promisesToWaitFor);
   }
@@ -125,10 +140,12 @@ export class StateChangesConsumerService {
       });
 
       if (isEsdtComputationEnabled) {
-        const tokens = this.transformTokens(state);
-        const nfts = this.transformNfts(state);
-        parsedAccount.tokens = tokens;
-        parsedAccount.nfts = nfts;
+        const esdts = this.transformEsdts(state);
+        parsedAccount.esdts = esdts;
+        // const tokens = this.transformTokens(state);
+        // const nfts = this.transformNfts(state);
+        // parsedAccount.tokens = tokens;
+        // parsedAccount.nfts = nfts;
       }
 
       transformed.push(parsedAccount);
@@ -154,6 +171,26 @@ export class StateChangesConsumerService {
     };
   }
 
+  private transformEsdts(state: StateChanges) {
+    const allEsdts = [
+      ...(state.esdtState.Fungible ?? []),
+      ...(state.esdtState.NonFungible ?? []),
+      ...(state.esdtState.NonFungibleV2 ?? []),
+      ...(state.esdtState.DynamicNFT ?? []),
+      ...(state.esdtState.SemiFungible ?? []),
+      ...(state.esdtState.DynamicSFT ?? []),
+      ...(state.esdtState.MetaFungible ?? []),
+      ...(state.esdtState.DynamicMeta ?? []),
+    ];
+    return allEsdts.map(esdt =>
+      new GenericEsdtData({
+        identifier: esdt.identifier,
+        balance: esdt.value
+      })
+    )
+  }
+
+  //@ts-ignore
   private transformTokens(state: StateChanges): TokenWithBalance[] {
     const fungible = state.esdtState?.Fungible ?? [];
 
@@ -168,6 +205,7 @@ export class StateChangesConsumerService {
     );
   }
 
+  //@ts-ignore
   private transformNfts(state: StateChanges): NftAccount[] {
     const {
       NonFungible,
