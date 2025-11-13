@@ -851,18 +851,16 @@ export class TokenService {
             }
           }
 
-          if (token.price) {
-            const supply = await this.esdtService.getTokenSupply(token.identifier);
-            token.supply = supply.totalSupply;
-            token.circulatingSupply = supply.circulatingSupply;
+          const supply = await this.esdtService.getTokenSupply(token.identifier);
+          token.supply = supply.totalSupply;
+          token.circulatingSupply = supply.circulatingSupply;
 
-            if (token.circulatingSupply) {
-              token.marketCap = token.price * NumberUtils.denominateString(token.circulatingSupply, token.decimals);
-              // TODO: update this by checking the token's liquidity collateral
-              if (token.marketCap > this.thresholdFaultyMarketCap) {
-                this.logger.log(`Setting token market cap to 0 due to possibly faulty market cap. Token: ${token.identifier}. Circulating supply: ${token.circulatingSupply}. Price: ${token.price}. Market cap: ${token.marketCap}`);
-                token.marketCap = 0;
-              }
+          if (token.price && token.circulatingSupply) {
+            token.marketCap = token.price * NumberUtils.denominateString(token.circulatingSupply, token.decimals);
+            // TODO: update this by checking the token's liquidity collateral
+            if (token.marketCap > this.thresholdFaultyMarketCap) {
+              this.logger.log(`Setting token market cap to 0 due to possibly faulty market cap. Token: ${token.identifier}. Circulating supply: ${token.circulatingSupply}. Price: ${token.price}. Market cap: ${token.marketCap}`);
+              token.marketCap = 0;
             }
           }
         } catch (error) {
