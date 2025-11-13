@@ -136,6 +136,7 @@ describe('Block Service', () => {
       gasRefunded: 4932000,
       gasPenalized: 0,
       maxGasLimit: 15000000000,
+      reserved: '',
       scheduledRootHash: undefined,
       proof: undefined,
       previousHeaderProof: new BlockProofDto({
