@@ -693,7 +693,7 @@ describe('Token Service', () => {
 
       it('should return tokens from other sources when isTokensFetchFeatureEnabled is false', async () => {
         const mockTokenProperties: Partial<TokenProperties>[] = [{ identifier: 'mockIdentifier' }];
-        let mockTokens: Partial<TokenDetailed>[] = mockTokenProperties.map(properties => ApiUtils.mergeObjects(new TokenDetailed(), properties));
+        const mockTokens: Partial<TokenDetailed>[] = mockTokenProperties.map(properties => ApiUtils.mergeObjects(new TokenDetailed(), properties));
         const mockTokenAssets: Partial<TokenAssets> = { name: 'mockName' };
         const mockNftCollections: Partial<NftCollection>[] = [{ collection: 'mockCollection' }];
         const mockTokenSupply: Partial<EsdtSupply> = { totalSupply: '1000000000000000000', circulatingSupply: '500000000000000000' };
