@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { StateChangesConsumerService } from 'src/state-changes/state.changes.consumer.service';
 import { CacheService } from '@multiversx/sdk-nestjs-cache';
-import { AccountDetailsRepository } from 'src/common/indexer/db';
+import { AccountDetailsRepository, EsdtDetailsRepository } from 'src/common/indexer/db';
 import { ApiConfigService } from 'src/common/api-config/api.config.service';
 import { ClientProxy } from '@nestjs/microservices';
 import { StateChangesDecoder } from 'src/state-changes/utils/state-changes.decoder';
@@ -39,17 +39,21 @@ jest.mock('@multiversx/sdk-nestjs-common', () => ({
 jest.mock('src/common/indexer/db', () => ({
   AccountDetailsRepository: jest.fn(),
   AccountDetails: jest.fn().mockImplementation((data) => data),
+  EsdtDetailsRepository: jest.fn(),
+  EsdtDetails: jest.fn().mockImplementation((data) => data),
 }));
 
 describe('StateChangesConsumerService', () => {
   let service: StateChangesConsumerService;
   let cacheService: jest.Mocked<CacheService>;
   let accountRepo: jest.Mocked<AccountDetailsRepository>;
+  let esdtRepo: jest.Mocked<EsdtDetailsRepository>;
   let clientProxy: jest.Mocked<ClientProxy>;
   let apiConfig: jest.Mocked<ApiConfigService>;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
+      //@ts-ignore
       providers: [
         StateChangesConsumerService,
         {
@@ -67,6 +71,12 @@ describe('StateChangesConsumerService', () => {
           provide: AccountDetailsRepository,
           useValue: {
             updateAccounts: jest.fn(),
+          },
+        },
+        {
+          provide: EsdtDetailsRepository,
+          useValue: {
+            updateEsdts: jest.fn(),
           },
         },
         {
@@ -88,6 +98,7 @@ describe('StateChangesConsumerService', () => {
     service = module.get(StateChangesConsumerService);
     cacheService = module.get(CacheService);
     accountRepo = module.get(AccountDetailsRepository);
+    esdtRepo = module.get(EsdtDetailsRepository);
     clientProxy = module.get('PUBSUB_SERVICE');
     apiConfig = module.get(ApiConfigService);
   });
@@ -203,17 +214,20 @@ describe('StateChangesConsumerService', () => {
   describe('updateAccounts', () => {
     it('should update non-contract accounts and set cache', async () => {
       (AddressUtils.isSmartContractAddress as jest.Mock).mockReturnValue(false);
-      const mockAccounts = [{ address: 'erd1', tokens: [], nfts: [], balance: '10' }];
-      await service['updateAccounts'](mockAccounts as any);
+      const mockAccounts = [{ address: 'erd1', balance: '10' }];
+      const mockEsdts = [{ identifier: 'id-123456', balance: '10' }];
+      await service['updateAccounts'](mockAccounts as any, mockEsdts as any);
       expect(accountRepo.updateAccounts).toHaveBeenCalled();
+      expect(esdtRepo.updateEsdts).toHaveBeenCalled();
       expect(cacheService.setManyRemote).toHaveBeenCalled();
       expect(clientProxy.emit).toHaveBeenCalled();
     });
 
     it('should delete contract cache keys', async () => {
       (AddressUtils.isSmartContractAddress as jest.Mock).mockReturnValue(true);
-      const mockAccounts = [{ address: 'erd1sc', tokens: [], nfts: [], balance: '0' }];
-      await service['updateAccounts'](mockAccounts as any);
+      const mockAccounts = [{ address: 'erd1sc', balance: '0' }];
+      const mockEsdts = [{ identifier: 'id-123456', balance: '10' }];
+      await service['updateAccounts'](mockAccounts as any, mockEsdts as any);
       expect(cacheService.deleteManyRemote).toHaveBeenCalled();
       expect(clientProxy.emit).toHaveBeenCalled();
     });
@@ -406,17 +420,19 @@ describe('StateChangesConsumerService', () => {
           rootHash: 'fV3JuZDrwZ8TbnlawkHGYYp1bQX0fTgefUzU7xEYLh8=',
         },
       ];
-      const result = service['transformFinalStatesToDbFormat'](
+      const { transformedAccounts, transformedEsdts } = service['transformFinalStatesToDbFormat'](
         mockInput,
         mockShardId,
         mockBlockTimestampMs,
       );
-      expect(result).toEqual(expectedResult);
+      expect(transformedAccounts).toEqual(expectedResult);
+      expect(transformedEsdts.length).toBe(0);
     });
 
     it('should skip if no accountState', () => {
-      const result = service['transformFinalStatesToDbFormat']({ erd1: {} } as any, 0, Date.now());
-      expect(result.length).toBe(0);
+      const { transformedAccounts, transformedEsdts } = service['transformFinalStatesToDbFormat']({ erd1: {} } as any, 0, Date.now());
+      expect(transformedAccounts.length).toBe(0);
+      expect(transformedEsdts.length).toBe(0);
     });
   });
 

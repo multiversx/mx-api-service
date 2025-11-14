@@ -10,43 +10,6 @@ import { OriginLogger } from '@multiversx/sdk-nestjs-common';
 @Injectable()
 export class AccountDetailsRepository {
     private readonly logger = new OriginLogger(AccountDetailsRepository.name);
-    static readonly exclusionFields = {
-        _id: 0,
-        __v: 0,
-        updatedAt: 0,
-        createdAt: 0,
-        address: 0,
-        balance: 0,
-        nonce: 0,
-        timestamp: 0,
-        shard: 0,
-        ownerAddress: 0,
-        assets: 0,
-        deployedAt: 0,
-        deployTxHash: 0,
-        ownerAssets: 0,
-        isVerified: 0,
-        txCount: 0,
-        scrCount: 0,
-        transfersLast24h: 0,
-        code: 0,
-        codeHash: 0,
-        rootHash: 0,
-        username: 0,
-        developerReward: 0,
-        isUpgradeable: 0,
-        isReadable: 0, isPayable: 0,
-        isPayableBySmartContract: 0,
-        scamInfo: 0,
-        nftCollections: 0,
-        activeGuardianActivationEpoch: 0,
-        activeGuardianAddress: 0,
-        activeGuardianServiceUid: 0,
-        pendingGuardianActivationEpoch: 0,
-        pendingGuardianAddress: 0,
-        pendingGuardianServiceUid: 0,
-        isGuarded: 0,
-    };
     constructor(
         @InjectModel(AccountDetails.name)
         private readonly accountDetailsModel: Model<AccountDetails>

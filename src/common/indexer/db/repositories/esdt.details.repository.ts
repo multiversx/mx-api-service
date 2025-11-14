@@ -26,7 +26,7 @@ export class EsdtDetailsRepository {
       }
       return new EsdtDetails({ ...esdtDb });
     } catch (error) {
-      console.error('Error fetching account:', error);
+      console.error('Error fetching esdt:', error);
       return null;
     }
   }
