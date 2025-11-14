@@ -41,13 +41,25 @@ export class EsdtDetailsRepository {
       const operations: any[] = [];
 
       for (const esdtDetailed of esdts) {
+        if (esdtDetailed.balance === '0') {
+          operations.push({
+            deleteOne: {
+              filter: {
+                address: esdtDetailed.address,
+                identifier: esdtDetailed.identifier,
+              },
+            },
+          });
+
+          totalOperations++;
+          continue;
+        }
+
         const updatePipeline: any[] = [];
 
-        // --- helper ---
         const isValidValue = (value: any): boolean =>
           value != null;
 
-        // --- simple fields ---
         const updateFields: any = {};
         Object.entries(esdtDetailed).forEach(([key, value]) => {
           if (isValidValue(value)) {
@@ -62,8 +74,11 @@ export class EsdtDetailsRepository {
         if (updatePipeline.length > 0) {
           operations.push({
             updateOne: {
-              filter: { address: esdtDetailed.address, identifier: esdtDetailed.identifier },
-              update: updatePipeline, // <<--- pipeline array
+              filter: {
+                address: esdtDetailed.address,
+                identifier: esdtDetailed.identifier,
+              },
+              update: updatePipeline,
               upsert: true,
             },
           });
@@ -72,6 +87,7 @@ export class EsdtDetailsRepository {
       }
 
       this.logger.log(`number of esdts write operations: ${totalOperations}`);
+
       const result = await this.esdtDetailsModel.bulkWrite(operations, {
         ordered: true,
       });
@@ -82,4 +98,5 @@ export class EsdtDetailsRepository {
       throw error;
     }
   }
+
 }

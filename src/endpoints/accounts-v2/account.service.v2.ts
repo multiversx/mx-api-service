@@ -148,16 +148,21 @@ export class AccountServiceV2 {
       CacheInfo.AccountEsdt(address, identifier).key,
       async () => {
         const token = await this.esdtDetailsRepository.getEsdt(address, identifier);
-        if (!token) {
-          const tokenFromGateway = await this.gatewayService.getAddressEsdt(address, identifier);
-          if (tokenFromGateway) {
-            return new EsdtDetails({
-              identifier,
-              balance: tokenFromGateway.balance,
-            });
-          }
+        if (token) {
+          return new EsdtDetails({
+            identifier,
+            balance: token.balance,
+          });
         }
-        return token;
+
+        const tokenFromGateway = await this.gatewayService.getAddressEsdt(address, identifier);
+        if (tokenFromGateway) {
+          return new EsdtDetails({
+            identifier,
+            balance: tokenFromGateway.balance,
+          });
+        }
+        return undefined;
       },
       CacheInfo.AccountEsdt(address, identifier).ttl,
     );
@@ -165,6 +170,7 @@ export class AccountServiceV2 {
     if (!tokenRaw) {
       return await this.getTokenForAddress(address, identifier);
     }
+    const { balance } = tokenRaw;
     const esdtIdentifier = identifier.split('-').slice(0, 2).join('-');
     const tokens = await this.tokenService.getFilteredTokens({ identifier: esdtIdentifier, includeMetaESDT: true });
     if (!tokens.length) {
@@ -174,7 +180,7 @@ export class AccountServiceV2 {
 
     const tokenData = tokens[0];
 
-    const tokenDetailedWithBalance = new TokenDetailedWithBalance({ ...tokenData, ...tokenRaw });
+    const tokenDetailedWithBalance = new TokenDetailedWithBalance({ ...tokenData, balance });
 
     this.tokenService.applyValueUsd(tokenDetailedWithBalance);
     this.tokenService.applyTickerFromAssets(tokenDetailedWithBalance);

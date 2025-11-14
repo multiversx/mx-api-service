@@ -18,7 +18,6 @@ export class EsdtDetails {
   @Prop({ required: true, type: String })
   balance: string = '';
 
-
   constructor(init?: Partial<EsdtDetails>) {
     Object.assign(this, init);
   }
