@@ -3,7 +3,6 @@ import mongoose, { HydratedDocument } from 'mongoose';
 import { AccountAssets } from 'src/common/assets/entities/account.assets';
 import { ScamInfo } from 'src/common/entities/scam-info.dto';
 import { NftCollectionAccount } from 'src/endpoints/collections/entities/nft.collection.account';
-import { GenericEsdtData } from '../../entities/generic.esdt.data';
 
 export type AccountDetailsDocument = HydratedDocument<AccountDetails>;
 
@@ -89,15 +88,6 @@ export class AccountDetails {
 
     @Prop({ type: Array, required: false })
     nftCollections?: NftCollectionAccount[];
-
-    @Prop({ type: Array, default: [] })
-    esdts?: GenericEsdtData[] = [];
-
-    // @Prop({ type: Array, default: [] })
-    // nfts?: NftAccount[] = [];
-
-    // @Prop({ type: Array, default: [] })
-    // tokens?: TokenWithBalance[] = [];
 
     @Prop({ required: false, type: Number })
     activeGuardianActivationEpoch?: number;

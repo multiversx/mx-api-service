@@ -16,7 +16,8 @@ import { AccountFetchOptions } from '../accounts/entities/account.fetch.options'
 import { TokenService } from '../tokens/token.service';
 import { TokenDetailedWithBalance } from '../tokens/entities/token.detailed.with.balance';
 import { GatewayService } from 'src/common/gateway/gateway.service';
-import { GenericEsdtData } from 'src/common/indexer/entities/generic.esdt.data';
+import { EsdtDetailsRepository } from 'src/common/indexer/db/repositories/esdt.details.repository';
+import { EsdtDetails } from 'src/common/indexer/db/schemas/esdt.details.schema';
 
 @Injectable()
 export class AccountServiceV2 {
@@ -32,6 +33,7 @@ export class AccountServiceV2 {
     @Inject(forwardRef(() => ProviderService))
     private readonly providerService: ProviderService,
     private readonly accountDetailsDepository: AccountDetailsRepository,
+    private readonly esdtDetailsRepository: EsdtDetailsRepository,
     private readonly accountServiceV1: AccountService,
     private readonly tokenService: TokenService,
     private readonly gatewayService: GatewayService,
@@ -142,17 +144,17 @@ export class AccountServiceV2 {
   }
 
   async getTokenForAddressWithFallback(address: string, identifier: string): Promise<TokenDetailedWithBalance | undefined> {
-    let tokenRaw = await this.cachingService.getOrSet(
+    const tokenRaw = await this.cachingService.getOrSet(
       CacheInfo.AccountEsdt(address, identifier).key,
       async () => {
-        let token = await this.accountDetailsDepository.getTokenForAddress(address, identifier)
+        const token = await this.esdtDetailsRepository.getEsdt(address, identifier);
         if (!token) {
           const tokenFromGateway = await this.gatewayService.getAddressEsdt(address, identifier);
           if (tokenFromGateway) {
-            return new GenericEsdtData({
+            return new EsdtDetails({
               identifier,
               balance: tokenFromGateway.balance,
-            })
+            });
           }
         }
         return token;
@@ -170,7 +172,7 @@ export class AccountServiceV2 {
       return undefined;
     }
 
-    let tokenData = tokens[0];
+    const tokenData = tokens[0];
 
     const tokenDetailedWithBalance = new TokenDetailedWithBalance({ ...tokenData, ...tokenRaw });
 

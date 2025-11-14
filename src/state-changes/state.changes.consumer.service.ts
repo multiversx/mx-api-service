@@ -1,6 +1,6 @@
 import { CompetingRabbitConsumer } from "src/common/rabbitmq/rabbitmq.consumers";
 import { BlockWithStateChangesRaw, ESDTType, StateChanges } from "./entities";
-import { AccountDetails, AccountDetailsRepository } from "src/common/indexer/db";
+import { AccountDetails, AccountDetailsRepository, EsdtDetails, EsdtDetailsRepository } from "src/common/indexer/db";
 import { Inject, Injectable } from "@nestjs/common";
 import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { CacheInfo } from "src/utils/cache.info";
@@ -15,7 +15,6 @@ import configuration from "config/configuration";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { NftAccount } from "src/endpoints/nfts/entities/nft.account";
 import { TokenWithBalance } from "src/endpoints/tokens/entities/token.with.balance";
-import { GenericEsdtData } from "src/common/indexer/entities/generic.esdt.data";
 
 @Injectable()
 export class StateChangesConsumerService {
@@ -24,6 +23,7 @@ export class StateChangesConsumerService {
   constructor(
     private readonly cacheService: CacheService,
     private readonly accountDetailsRepository: AccountDetailsRepository,
+    private readonly esdtDetailsRepository: EsdtDetailsRepository,
     private readonly apiConfigService: ApiConfigService,
     @Inject('PUBSUB_SERVICE') private clientProxy: ClientProxy,
   ) { }
@@ -43,11 +43,11 @@ export class StateChangesConsumerService {
       const decodingProfiler = new PerformanceProfiler('StateChangesDecoding');
 
       const finalStates = this.decodeStateChangesFinal(blockWithStateChanges);
-      const transformedFinalStates = this.transformFinalStatesToDbFormat(finalStates, blockWithStateChanges.shardID, blockWithStateChanges.timestampMs);
+      const { transformedAccounts, transformedEsdts } = this.transformFinalStatesToDbFormat(finalStates, blockWithStateChanges.shardID, blockWithStateChanges.timestampMs);
       decodingProfiler.stop('StateChangesDecoding');
       this.logger.log(`Decoded state changes for block ${blockWithStateChanges.hash} on shard ${blockWithStateChanges.shardID} in ${decodingProfiler.duration} ms`);
 
-      await this.updateAccounts(transformedFinalStates);
+      await this.updateAccounts(transformedAccounts, transformedEsdts);
 
       await this.cacheService.setRemote(
         CacheInfo.StateChangesConsumerLatestProcessedBlockTimestamp(blockWithStateChanges.shardID).key,
@@ -63,8 +63,11 @@ export class StateChangesConsumerService {
     }
   }
 
-  private async updateAccounts(transformedFinalStates: AccountDetails[]) {
-    const promisesToWaitFor = [this.accountDetailsRepository.updateAccounts(transformedFinalStates.filter(account => !AddressUtils.isSmartContractAddress(account.address)))];
+  private async updateAccounts(transformedAccounts: AccountDetails[], transformedEsdts: EsdtDetails[]) {
+    const promisesToWaitFor = [
+      this.accountDetailsRepository.updateAccounts(transformedAccounts.filter(account => !AddressUtils.isSmartContractAddress(account.address))),
+      this.esdtDetailsRepository.updateEsdts(transformedEsdts.filter(esdt => !AddressUtils.isSmartContractAddress(esdt.address))),
+    ];
 
     const esdtsUpdateCacheKeys = [];
     const esdtsDeleteCacheKeys = [];
@@ -72,26 +75,25 @@ export class StateChangesConsumerService {
     const contractCacheKeys = [];
     const walletAccountValues = [];
     const esdtsUpdateValues = [];
-    for (const account of transformedFinalStates) {
-      const { esdts, ...accountWithoutAssets } = account;
+    for (const account of transformedAccounts) {
+
       if (!AddressUtils.isSmartContractAddress(account.address)) {
         walletAccountCacheKeys.push(CacheInfo.AccountState(account.address).key);
-        walletAccountValues.push(accountWithoutAssets);
+        walletAccountValues.push(account);
       } else {
         contractCacheKeys.push(CacheInfo.AccountState(account.address).key);
       }
+    }
 
-      if (esdts) {
-        for (const esdt of esdts) {
-          if (esdt.balance === '0') {
-            esdtsDeleteCacheKeys.push(CacheInfo.AccountEsdt(account.address, esdt.identifier).key);
-          } else {
-            esdtsUpdateCacheKeys.push(CacheInfo.AccountEsdt(account.address, esdt.identifier).key);
-            esdtsUpdateValues.push(esdt);
-          }
-        }
+    for (const esdt of transformedEsdts) {
+      if (esdt.balance === '0') {
+        esdtsDeleteCacheKeys.push(CacheInfo.AccountEsdt(esdt.address, esdt.identifier).key);
+      } else {
+        esdtsUpdateCacheKeys.push(CacheInfo.AccountEsdt(esdt.address, esdt.identifier).key);
+        esdtsUpdateValues.push(esdt);
       }
     }
+
     if (walletAccountCacheKeys.length > 0 || esdtsUpdateCacheKeys.length > 0) {
       promisesToWaitFor.push(
         this.cacheService.setManyRemote(
@@ -125,8 +127,8 @@ export class StateChangesConsumerService {
     blockTimestampMs: number,
   ) {
     const isEsdtComputationEnabled = this.apiConfigService.isEsdtComputationEnabled();
-    const transformed: AccountDetails[] = [];
-
+    const transformedAccounts: AccountDetails[] = [];
+    const transformedEsdts: EsdtDetails[] = [];
     for (const [_address, state] of Object.entries(finalStates)) {
       const baseAccount = this.parseBaseAccount(
         state,
@@ -138,20 +140,15 @@ export class StateChangesConsumerService {
       const parsedAccount = new AccountDetails({
         ...baseAccount,
       });
+      transformedAccounts.push(parsedAccount);
 
       if (isEsdtComputationEnabled) {
         const esdts = this.transformEsdts(state);
-        parsedAccount.esdts = esdts;
-        // const tokens = this.transformTokens(state);
-        // const nfts = this.transformNfts(state);
-        // parsedAccount.tokens = tokens;
-        // parsedAccount.nfts = nfts;
+        transformedEsdts.push(...esdts);
       }
-
-      transformed.push(parsedAccount);
     }
 
-    return transformed;
+    return { transformedAccounts, transformedEsdts };
   }
 
   private parseBaseAccount(
@@ -182,12 +179,12 @@ export class StateChangesConsumerService {
       ...(state.esdtState.MetaFungible ?? []),
       ...(state.esdtState.DynamicMeta ?? []),
     ];
-    return allEsdts.map(esdt =>
-      new GenericEsdtData({
-        identifier: esdt.identifier,
-        balance: esdt.value
-      })
-    )
+    return allEsdts.map(esdt => new EsdtDetails({
+      address: state.accountState?.address,
+      identifier: esdt.identifier,
+      balance: esdt.value,
+    })
+    );
   }
 
   //@ts-ignore
