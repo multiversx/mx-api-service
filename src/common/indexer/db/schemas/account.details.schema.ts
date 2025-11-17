@@ -118,6 +118,4 @@ export class AccountDetails {
 export const AccountDetailsSchema = SchemaFactory.createForClass(AccountDetails);
 
 AccountDetailsSchema.index({ address: 1 }, { unique: true });
-// AccountDetailsSchema.index({ "tokens.identifier": 1 });
-// AccountDetailsSchema.index({ "nfts.identifier": 1 });
 AccountDetailsSchema.index({ "esdts.identifier": 1 });

@@ -9,7 +9,7 @@ import { NftType } from "src/endpoints/nfts/entities/nft.type";
 import { NftSubType } from "src/endpoints/nfts/entities/nft.sub.type";
 import { ClientProxy } from "@nestjs/microservices";
 import { StateChangesDecoder } from "./utils/state-changes.decoder";
-import { AddressUtils, OriginLogger } from "@multiversx/sdk-nestjs-common";
+import { AddressUtils, OriginLogger, TokenUtils } from "@multiversx/sdk-nestjs-common";
 import { PerformanceProfiler } from "@multiversx/sdk-nestjs-monitoring";
 import configuration from "config/configuration";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
@@ -66,7 +66,7 @@ export class StateChangesConsumerService {
   private async updateAccounts(transformedAccounts: AccountDetails[], transformedEsdts: EsdtDetails[]) {
     const promisesToWaitFor = [
       this.accountDetailsRepository.updateAccounts(transformedAccounts.filter(account => !AddressUtils.isSmartContractAddress(account.address))),
-      this.esdtDetailsRepository.updateEsdts(transformedEsdts.filter(esdt => !AddressUtils.isSmartContractAddress(esdt.address))),
+      this.esdtDetailsRepository.updateEsdts(transformedEsdts.filter(esdt => !AddressUtils.isSmartContractAddress(esdt.address) && TokenUtils.isToken(esdt.identifier))),
     ];
 
     const esdtsUpdateCacheKeys = [];
