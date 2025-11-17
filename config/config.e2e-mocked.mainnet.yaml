@@ -8,6 +8,14 @@ features:
   websocketSubscription:
     enabled: false
     port: 6002
+  stateChanges:
+    enabled: false
+    port: 5675
+    rabbitUrl: 'amqp://guest:guest@127.0.0.1:5672'
+    exchange: 'state_accesses'
+    queueName: 'api_state_accesses_queue-test'
+    deadLetterExchange: 'api_state_accesses_queue_dlx'
+    esdtEnabled: false
   dataApi:
     enabled: false
     serviceUrl: 'https://data-api.multiversx.com'
@@ -40,7 +48,8 @@ urls:
   maiarId: 'https://id-api.multiversx.com'
 database:
   enabled: false
-  url: 'mongodb://127.0.0.1:27017/api?authSource=admin'
+  url: 'mongodb://root:secret@127.0.0.1:27017/api?authSource=admin'
+  tls: false
   host: 'localhost'
   port: 3306
   username: 'root'
@@ -79,3 +88,5 @@ test:
 transaction-action:
   mex:
     microServiceUrl: 'https://graph.xexchange.com/graphql'
+pubSubListener:
+  enabled: true

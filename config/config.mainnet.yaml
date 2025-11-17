@@ -23,12 +23,19 @@ features:
   websocketSubscription:
     enabled: false
     port: 6002
+  stateChanges:
+    enabled: false
+    port: 5675
+    url: 'amqp://guest:guest@127.0.0.1:5672'
+    exchange: 'state_accesses'
   eventsNotifier:
     enabled: false
     port: 5674
-    url: 'amqp://guest:guest@127.0.0.1:5672'
-    exchange: 'all_events'
-    queue: 'api-process-logs-and-events'
+    rabbitUrl: 'amqp://guest:guest@127.0.0.1:5672'
+    exchange: 'state_accesses'
+    queueName: 'api_state_accesses_queue-test'
+    deadLetterExchange: 'api_state_accesses_queue_dlx'
+    esdtEnabled: false
   guestCaching:
     enabled: false
     hitsThreshold: 100
@@ -153,7 +160,8 @@ indexer:
   maxPagination: 10000
 database:
   enabled: false
-  url: 'mongodb://127.0.0.1:27017/api?authSource=admin'
+  url: 'mongodb://root:secret@127.0.0.1:27017/api?authSource=admin'
+  tls: false
   type: 'mysql'
   host: 'localhost'
   port: 3306
@@ -191,3 +199,5 @@ compression:
   level: 6
   threshold: 1024
   chunkSize: 16384
+pubSubListener:
+  enabled: true

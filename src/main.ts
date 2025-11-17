@@ -38,6 +38,7 @@ import * as requestIp from 'request-ip';
 import compression from 'compression';
 import { IoAdapter } from '@nestjs/platform-socket.io';
 import { WebsocketSubscriptionModule } from './crons/websocket/websocket.subscription.module';
+import { StateChangesModule } from './state-changes/state.changes.module';
 
 async function bootstrap() {
   const logger = new Logger('Bootstrapper');
@@ -147,23 +148,30 @@ async function bootstrap() {
     await eventsNotifierApp.listen(apiConfigService.getEventsNotifierFeaturePort());
   }
 
-  const pubSubApp = await NestFactory.createMicroservice<MicroserviceOptions>(
-    PubSubListenerModule,
-    {
-      transport: Transport.REDIS,
-      options: {
-        host: apiConfigService.getRedisUrl(),
-        port: 6379,
-        retryAttempts: 100,
-        retryDelay: 1000,
-        retryStrategy: () => 1000,
+  if (apiConfigService.isStateChangesFeatureActive()) {
+    const stateChangesApp = await NestFactory.create(StateChangesModule.register());
+    await stateChangesApp.listen(apiConfigService.getStateChangesFeaturePort());
+  }
+
+  if (apiConfigService.isPubSubListenerEnabled()) {
+    const pubSubApp = await NestFactory.createMicroservice<MicroserviceOptions>(
+      PubSubListenerModule,
+      {
+        transport: Transport.REDIS,
+        options: {
+          host: apiConfigService.getRedisUrl(),
+          port: 6379,
+          retryAttempts: 100,
+          retryDelay: 1000,
+          retryStrategy: () => 1000,
+        },
       },
-    },
-  );
-  pubSubApp.useLogger(pubSubApp.get(WINSTON_MODULE_NEST_PROVIDER));
-  pubSubApp.useWebSocketAdapter(new SocketAdapter(pubSubApp));
-  // eslint-disable-next-line @typescript-eslint/no-floating-promises
-  pubSubApp.listen();
+    );
+    pubSubApp.useLogger(pubSubApp.get(WINSTON_MODULE_NEST_PROVIDER));
+    pubSubApp.useWebSocketAdapter(new SocketAdapter(pubSubApp));
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    pubSubApp.listen();
+  }
 
   logger.log(`Public API active: ${apiConfigService.getIsPublicApiActive()}`);
   logger.log(`Private API active: ${apiConfigService.getIsPrivateApiActive()}`);

@@ -481,6 +481,10 @@ export class ApiConfigService {
     return databaseUrl;
   }
 
+  isDatabaseTlsEnabled(): boolean {
+    return this.configService.get<boolean>('database.tls') ?? false;
+  }
+
   getDatabaseConnection(): any {
     return {
       host: this.getDatabaseHost(),
@@ -971,5 +975,70 @@ export class ApiConfigService {
     }
 
     return port;
+  }
+
+  isStateChangesFeatureActive(): boolean {
+    return this.configService.get<boolean>('features.stateChanges.enabled') ?? false;
+  }
+
+  getStateChangesFeaturePort(): number {
+    const stateChangesPort = this.configService.get<number>('features.stateChanges.port');
+    if (stateChangesPort === undefined) {
+      throw new Error('No state changes port present');
+    }
+
+    return stateChangesPort;
+  }
+
+  getStateChangesRabbitUrl(): string {
+    let url = this.configService.get<string>('features.stateChanges.rabbitUrl');
+    if (!url) {
+      url = this.configService.get<string>('features.stateChanges.url');
+      if (!url) {
+        throw new Error('No state changes rabbit url present');
+      }
+    }
+
+    return url;
+  }
+
+  getStateChangesExchange(): string {
+    const exchange = this.configService.get<string>('features.stateChanges.exchange');
+    if (!exchange) {
+      throw new Error('No state changes exchange present');
+    }
+
+    return exchange;
+  }
+
+  getStateChangesQueueName(): string {
+    const queueName = this.configService.get<string>('features.stateChanges.queueName');
+    if (!queueName) {
+      throw new Error('No state changes queue name present');
+    }
+
+    return queueName;
+  }
+
+  isEsdtComputationEnabled(): boolean {
+    return this.configService.get<boolean>('features.stateChanges.esdtEnabled') ?? false;
+  }
+
+  getStateChangesDeadLetterExchange(): string {
+    const deadLetterExchange = this.configService.get<string>('features.stateChanges.deadLetterExchange');
+    if (!deadLetterExchange) {
+      throw new Error('No state changes dead letter exchange present');
+    }
+
+    return deadLetterExchange;
+  }
+
+  isPubSubListenerEnabled(): boolean {
+    const isPubSubListenerEnabled = this.configService.get<boolean>('pubSubListener.enabled');
+    if (isPubSubListenerEnabled == null) {
+      return true;
+    }
+
+    return isPubSubListenerEnabled;
   }
 }
