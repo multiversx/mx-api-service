@@ -439,7 +439,7 @@ describe('StateChangesConsumerService', () => {
             balance: '1022184909233299999998',
             developerReward: '0',
             address: 'erd1vhfuv9qznn59vlasthdgsp7pzc99snzvchvcrjzhgn3cdequ7jxsvwtu50',
-            rootHash: 'i6mdSsTadb0E0H17P7rCPCTmQrtu8b4WDT20ncfVRz4='
+            rootHash: 'i6mdSsTadb0E0H17P7rCPCTmQrtu8b4WDT20ncfVRz4=',
           },
           esdtState: {
             Fungible: [
@@ -450,8 +450,8 @@ describe('StateChangesConsumerService', () => {
                 value: '9920000000',
                 propertiesHex: '',
                 reservedHex: '',
-                tokenMetaData: null
-              }
+                tokenMetaData: null,
+              },
             ],
             NonFungible: [],
             NonFungibleV2: [],
@@ -459,7 +459,7 @@ describe('StateChangesConsumerService', () => {
             MetaFungible: [],
             DynamicNFT: [],
             DynamicSFT: [],
-            DynamicMeta: []
+            DynamicMeta: [],
           },
           accountChanges: {
             nonceChanged: false,
@@ -469,9 +469,9 @@ describe('StateChangesConsumerService', () => {
             developerRewardChanged: false,
             ownerAddressChanged: false,
             userNameChanged: false,
-            codeMetadataChanged: false
+            codeMetadataChanged: false,
           },
-          isNewAccount: false
+          isNewAccount: false,
         },
         erd107uaynrvf80g4zuym4fqqh5pqzvaczdryj49zr2qew57wqe3mvusupj8xh: {
           accountState: {
@@ -479,7 +479,7 @@ describe('StateChangesConsumerService', () => {
             balance: '1050718027978784480311',
             developerReward: '0',
             address: 'erd107uaynrvf80g4zuym4fqqh5pqzvaczdryj49zr2qew57wqe3mvusupj8xh',
-            rootHash: 'U0Q3PEXqxQNGQZ07/NVNVfFlxRdyzzY04/mzEWc5czs='
+            rootHash: 'U0Q3PEXqxQNGQZ07/NVNVfFlxRdyzzY04/mzEWc5czs=',
           },
           esdtState: {
             Fungible: [
@@ -490,8 +490,8 @@ describe('StateChangesConsumerService', () => {
                 value: '49980000000',
                 propertiesHex: '',
                 reservedHex: '',
-                tokenMetaData: null
-              }
+                tokenMetaData: null,
+              },
             ],
             NonFungible: [],
             NonFungibleV2: [],
@@ -499,7 +499,7 @@ describe('StateChangesConsumerService', () => {
             MetaFungible: [],
             DynamicNFT: [],
             DynamicSFT: [],
-            DynamicMeta: []
+            DynamicMeta: [],
           },
           accountChanges: {
             nonceChanged: true,
@@ -509,10 +509,10 @@ describe('StateChangesConsumerService', () => {
             developerRewardChanged: false,
             ownerAddressChanged: false,
             userNameChanged: false,
-            codeMetadataChanged: false
+            codeMetadataChanged: false,
           },
-          isNewAccount: false
-        }
+          isNewAccount: false,
+        },
       };
 
       const mockShardId = 1;
@@ -526,7 +526,7 @@ describe('StateChangesConsumerService', () => {
           timestamp: 1763379962,
           shard: 1,
           developerReward: '0',
-          rootHash: 'i6mdSsTadb0E0H17P7rCPCTmQrtu8b4WDT20ncfVRz4='
+          rootHash: 'i6mdSsTadb0E0H17P7rCPCTmQrtu8b4WDT20ncfVRz4=',
         },
         {
           address: 'erd107uaynrvf80g4zuym4fqqh5pqzvaczdryj49zr2qew57wqe3mvusupj8xh',
@@ -536,21 +536,21 @@ describe('StateChangesConsumerService', () => {
           timestamp: 1763379962,
           shard: 1,
           developerReward: '0',
-          rootHash: 'U0Q3PEXqxQNGQZ07/NVNVfFlxRdyzzY04/mzEWc5czs='
-        }
+          rootHash: 'U0Q3PEXqxQNGQZ07/NVNVfFlxRdyzzY04/mzEWc5czs=',
+        },
       ];
 
       const esdtsExpectedResults = [
         {
           address: 'erd1vhfuv9qznn59vlasthdgsp7pzc99snzvchvcrjzhgn3cdequ7jxsvwtu50',
           identifier: 'ACCEPTED-bc0f6e',
-          balance: '9920000000'
+          balance: '9920000000',
         },
         {
           address: 'erd107uaynrvf80g4zuym4fqqh5pqzvaczdryj49zr2qew57wqe3mvusupj8xh',
           identifier: 'ACCEPTED-bc0f6e',
-          balance: '49980000000'
-        }
+          balance: '49980000000',
+        },
       ];
 
       const { transformedAccounts, transformedEsdts } = service['transformFinalStatesToDbFormat'](
