@@ -1,6 +1,6 @@
 import { CompetingRabbitConsumer } from "src/common/rabbitmq/rabbitmq.consumers";
 import { BlockWithStateChangesRaw, ESDTType, StateChanges } from "./entities";
-import { AccountDetails, AccountDetailsRepository } from "src/common/indexer/db";
+import { AccountDetails, AccountDetailsRepository, EsdtDetails, EsdtDetailsRepository } from "src/common/indexer/db";
 import { Inject, Injectable } from "@nestjs/common";
 import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { CacheInfo } from "src/utils/cache.info";
@@ -9,7 +9,7 @@ import { NftType } from "src/endpoints/nfts/entities/nft.type";
 import { NftSubType } from "src/endpoints/nfts/entities/nft.sub.type";
 import { ClientProxy } from "@nestjs/microservices";
 import { StateChangesDecoder } from "./utils/state-changes.decoder";
-import { AddressUtils, OriginLogger } from "@multiversx/sdk-nestjs-common";
+import { AddressUtils, OriginLogger, TokenUtils } from "@multiversx/sdk-nestjs-common";
 import { PerformanceProfiler } from "@multiversx/sdk-nestjs-monitoring";
 import configuration from "config/configuration";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
@@ -23,6 +23,7 @@ export class StateChangesConsumerService {
   constructor(
     private readonly cacheService: CacheService,
     private readonly accountDetailsRepository: AccountDetailsRepository,
+    private readonly esdtDetailsRepository: EsdtDetailsRepository,
     private readonly apiConfigService: ApiConfigService,
     @Inject('PUBSUB_SERVICE') private clientProxy: ClientProxy,
   ) { }
@@ -42,11 +43,11 @@ export class StateChangesConsumerService {
       const decodingProfiler = new PerformanceProfiler('StateChangesDecoding');
 
       const finalStates = this.decodeStateChangesFinal(blockWithStateChanges);
-      const transformedFinalStates = this.transformFinalStatesToDbFormat(finalStates, blockWithStateChanges.shardID, blockWithStateChanges.timestampMs);
+      const { transformedAccounts, transformedEsdts } = this.transformFinalStatesToDbFormat(finalStates, blockWithStateChanges.shardID, blockWithStateChanges.timestampMs);
       decodingProfiler.stop('StateChangesDecoding');
       this.logger.log(`Decoded state changes for block ${blockWithStateChanges.hash} on shard ${blockWithStateChanges.shardID} in ${decodingProfiler.duration} ms`);
 
-      await this.updateAccounts(transformedFinalStates);
+      await this.updateAccounts(transformedAccounts, transformedEsdts);
 
       await this.cacheService.setRemote(
         CacheInfo.StateChangesConsumerLatestProcessedBlockTimestamp(blockWithStateChanges.shardID).key,
@@ -62,40 +63,56 @@ export class StateChangesConsumerService {
     }
   }
 
-  private async updateAccounts(transformedFinalStates: AccountDetails[]) {
-    const promisesToWaitFor = [this.accountDetailsRepository.updateAccounts(transformedFinalStates.filter(account => !AddressUtils.isSmartContractAddress(account.address)))];
+  private async updateAccounts(transformedAccounts: AccountDetails[], transformedEsdts: EsdtDetails[]) {
+    const promisesToWaitFor = [
+      this.accountDetailsRepository.updateAccounts(transformedAccounts.filter(account => !AddressUtils.isSmartContractAddress(account.address))),
+      this.esdtDetailsRepository.updateEsdts(transformedEsdts.filter(esdt => !AddressUtils.isSmartContractAddress(esdt.address) && TokenUtils.isToken(esdt.identifier))),
+    ];
 
-    const walletCacheKeys = [];
+    const esdtsUpdateCacheKeys = [];
+    const esdtsDeleteCacheKeys = [];
+    const walletAccountCacheKeys = [];
     const contractCacheKeys = [];
-    const values = [];
-    for (const account of transformedFinalStates) {
+    const walletAccountValues = [];
+    const esdtsUpdateValues = [];
+    for (const account of transformedAccounts) {
+
       if (!AddressUtils.isSmartContractAddress(account.address)) {
-        walletCacheKeys.push(CacheInfo.AccountState(account.address).key);
-        const { tokens, nfts, ...accountWithoutAssets } = account;
-        values.push(accountWithoutAssets);
+        walletAccountCacheKeys.push(CacheInfo.AccountState(account.address).key);
+        walletAccountValues.push(account);
       } else {
         contractCacheKeys.push(CacheInfo.AccountState(account.address).key);
       }
     }
-    if (walletCacheKeys.length > 0) {
+
+    for (const esdt of transformedEsdts) {
+      if (esdt.balance === '0') {
+        esdtsDeleteCacheKeys.push(CacheInfo.AccountEsdt(esdt.address, esdt.identifier).key);
+      } else {
+        esdtsUpdateCacheKeys.push(CacheInfo.AccountEsdt(esdt.address, esdt.identifier).key);
+        esdtsUpdateValues.push(esdt);
+      }
+    }
+
+    if (walletAccountCacheKeys.length > 0 || esdtsUpdateCacheKeys.length > 0) {
       promisesToWaitFor.push(
         this.cacheService.setManyRemote(
-          walletCacheKeys,
-          values,
-          CacheInfo.AccountState('any').ttl,
-        )
+          [...walletAccountCacheKeys, ...esdtsUpdateCacheKeys],
+          [...walletAccountValues, ...esdtsUpdateValues],
+          CacheInfo.AccountEsdt('any', 'any').ttl,
+        ),
       );
     }
 
-    if (contractCacheKeys.length > 0) {
+    if (contractCacheKeys.length > 0 || esdtsDeleteCacheKeys.length > 0) {
       promisesToWaitFor.push(
         this.cacheService.deleteManyRemote(
-          contractCacheKeys,
+          [...contractCacheKeys, ...esdtsDeleteCacheKeys],
         )
       );
     }
 
-    this.deleteLocalCache([...walletCacheKeys, ...contractCacheKeys]);
+    this.deleteLocalCache([...walletAccountCacheKeys, ...contractCacheKeys, ...esdtsUpdateCacheKeys, ...esdtsDeleteCacheKeys]);
 
     await Promise.all(promisesToWaitFor);
   }
@@ -110,8 +127,8 @@ export class StateChangesConsumerService {
     blockTimestampMs: number,
   ) {
     const isEsdtComputationEnabled = this.apiConfigService.isEsdtComputationEnabled();
-    const transformed: AccountDetails[] = [];
-
+    const transformedAccounts: AccountDetails[] = [];
+    const transformedEsdts: EsdtDetails[] = [];
     for (const [_address, state] of Object.entries(finalStates)) {
       const baseAccount = this.parseBaseAccount(
         state,
@@ -123,18 +140,15 @@ export class StateChangesConsumerService {
       const parsedAccount = new AccountDetails({
         ...baseAccount,
       });
+      transformedAccounts.push(parsedAccount);
 
       if (isEsdtComputationEnabled) {
-        const tokens = this.transformTokens(state);
-        const nfts = this.transformNfts(state);
-        parsedAccount.tokens = tokens;
-        parsedAccount.nfts = nfts;
+        const esdts = this.transformEsdts(state);
+        transformedEsdts.push(...esdts);
       }
-
-      transformed.push(parsedAccount);
     }
 
-    return transformed;
+    return { transformedAccounts, transformedEsdts };
   }
 
   private parseBaseAccount(
@@ -154,6 +168,26 @@ export class StateChangesConsumerService {
     };
   }
 
+  private transformEsdts(state: StateChanges) {
+    const allEsdts = [
+      ...(state.esdtState.Fungible ?? []),
+      ...(state.esdtState.NonFungible ?? []),
+      ...(state.esdtState.NonFungibleV2 ?? []),
+      ...(state.esdtState.DynamicNFT ?? []),
+      ...(state.esdtState.SemiFungible ?? []),
+      ...(state.esdtState.DynamicSFT ?? []),
+      ...(state.esdtState.MetaFungible ?? []),
+      ...(state.esdtState.DynamicMeta ?? []),
+    ];
+    return allEsdts.map(esdt => new EsdtDetails({
+      address: state.accountState?.address,
+      identifier: esdt.identifier,
+      balance: esdt.value,
+    })
+    );
+  }
+
+  //@ts-ignore
   private transformTokens(state: StateChanges): TokenWithBalance[] {
     const fungible = state.esdtState?.Fungible ?? [];
 
@@ -168,6 +202,7 @@ export class StateChangesConsumerService {
     );
   }
 
+  //@ts-ignore
   private transformNfts(state: StateChanges): NftAccount[] {
     const {
       NonFungible,

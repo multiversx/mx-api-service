@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { StateChangesConsumerService } from 'src/state-changes/state.changes.consumer.service';
 import { CacheService } from '@multiversx/sdk-nestjs-cache';
-import { AccountDetailsRepository } from 'src/common/indexer/db';
+import { AccountDetailsRepository, EsdtDetailsRepository } from 'src/common/indexer/db';
 import { ApiConfigService } from 'src/common/api-config/api.config.service';
 import { ClientProxy } from '@nestjs/microservices';
 import { StateChangesDecoder } from 'src/state-changes/utils/state-changes.decoder';
@@ -18,6 +18,9 @@ jest.mock('@nestjs/microservices');
 jest.mock('@multiversx/sdk-nestjs-common', () => ({
   AddressUtils: {
     isSmartContractAddress: jest.fn(),
+  },
+  TokenUtils: {
+    isToken: jest.fn(),
   },
   OriginLogger: jest.fn().mockImplementation(() => ({
     log: jest.fn(),
@@ -39,17 +42,21 @@ jest.mock('@multiversx/sdk-nestjs-common', () => ({
 jest.mock('src/common/indexer/db', () => ({
   AccountDetailsRepository: jest.fn(),
   AccountDetails: jest.fn().mockImplementation((data) => data),
+  EsdtDetailsRepository: jest.fn(),
+  EsdtDetails: jest.fn().mockImplementation((data) => data),
 }));
 
 describe('StateChangesConsumerService', () => {
   let service: StateChangesConsumerService;
   let cacheService: jest.Mocked<CacheService>;
   let accountRepo: jest.Mocked<AccountDetailsRepository>;
+  let esdtRepo: jest.Mocked<EsdtDetailsRepository>;
   let clientProxy: jest.Mocked<ClientProxy>;
   let apiConfig: jest.Mocked<ApiConfigService>;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
+      //@ts-ignore
       providers: [
         StateChangesConsumerService,
         {
@@ -67,6 +74,12 @@ describe('StateChangesConsumerService', () => {
           provide: AccountDetailsRepository,
           useValue: {
             updateAccounts: jest.fn(),
+          },
+        },
+        {
+          provide: EsdtDetailsRepository,
+          useValue: {
+            updateEsdts: jest.fn(),
           },
         },
         {
@@ -88,6 +101,7 @@ describe('StateChangesConsumerService', () => {
     service = module.get(StateChangesConsumerService);
     cacheService = module.get(CacheService);
     accountRepo = module.get(AccountDetailsRepository);
+    esdtRepo = module.get(EsdtDetailsRepository);
     clientProxy = module.get('PUBSUB_SERVICE');
     apiConfig = module.get(ApiConfigService);
   });
@@ -203,24 +217,27 @@ describe('StateChangesConsumerService', () => {
   describe('updateAccounts', () => {
     it('should update non-contract accounts and set cache', async () => {
       (AddressUtils.isSmartContractAddress as jest.Mock).mockReturnValue(false);
-      const mockAccounts = [{ address: 'erd1', tokens: [], nfts: [], balance: '10' }];
-      await service['updateAccounts'](mockAccounts as any);
+      const mockAccounts = [{ address: 'erd1', balance: '10' }];
+      const mockEsdts = [{ identifier: 'id-123456', balance: '10' }];
+      await service['updateAccounts'](mockAccounts as any, mockEsdts as any);
       expect(accountRepo.updateAccounts).toHaveBeenCalled();
+      expect(esdtRepo.updateEsdts).toHaveBeenCalled();
       expect(cacheService.setManyRemote).toHaveBeenCalled();
       expect(clientProxy.emit).toHaveBeenCalled();
     });
 
     it('should delete contract cache keys', async () => {
       (AddressUtils.isSmartContractAddress as jest.Mock).mockReturnValue(true);
-      const mockAccounts = [{ address: 'erd1sc', tokens: [], nfts: [], balance: '0' }];
-      await service['updateAccounts'](mockAccounts as any);
+      const mockAccounts = [{ address: 'erd1sc', balance: '0' }];
+      const mockEsdts = [{ identifier: 'id-123456', balance: '10' }];
+      await service['updateAccounts'](mockAccounts as any, mockEsdts as any);
       expect(cacheService.deleteManyRemote).toHaveBeenCalled();
       expect(clientProxy.emit).toHaveBeenCalled();
     });
   });
 
   describe('transformFinalStatesToDbFormat', () => {
-    it('should transform state changes into AccountDetails', () => {
+    it('should transform state changes into AccountDetails and ignore ESDTs', () => {
       const mockInput =
       {
         erd1qqqqqqqqqqqqqpgqvg8r5yavkyhu6rmmkgqzgsduzheg2fk7v5ysrypdex: {
@@ -406,17 +423,152 @@ describe('StateChangesConsumerService', () => {
           rootHash: 'fV3JuZDrwZ8TbnlawkHGYYp1bQX0fTgefUzU7xEYLh8=',
         },
       ];
-      const result = service['transformFinalStatesToDbFormat'](
+      const { transformedAccounts, transformedEsdts } = service['transformFinalStatesToDbFormat'](
         mockInput,
         mockShardId,
         mockBlockTimestampMs,
       );
-      expect(result).toEqual(expectedResult);
+      expect(transformedAccounts).toEqual(expectedResult);
+      expect(transformedEsdts.length).toBe(0);
+    });
+
+    it('should transform state changes into AccountDetails and ESDT details', () => {
+      (apiConfig.isEsdtComputationEnabled as jest.Mock).mockReturnValue(true);
+      const mockInput =
+      {
+        erd1vhfuv9qznn59vlasthdgsp7pzc99snzvchvcrjzhgn3cdequ7jxsvwtu50: {
+          accountState: {
+            nonce: 163,
+            balance: '1022184909233299999998',
+            developerReward: '0',
+            address: 'erd1vhfuv9qznn59vlasthdgsp7pzc99snzvchvcrjzhgn3cdequ7jxsvwtu50',
+            rootHash: 'i6mdSsTadb0E0H17P7rCPCTmQrtu8b4WDT20ncfVRz4=',
+          },
+          esdtState: {
+            Fungible: [
+              {
+                identifier: 'ACCEPTED-bc0f6e',
+                nonce: '0',
+                type: 0,
+                value: '9920000000',
+                propertiesHex: '',
+                reservedHex: '',
+                tokenMetaData: null,
+              },
+            ],
+            NonFungible: [],
+            NonFungibleV2: [],
+            SemiFungible: [],
+            MetaFungible: [],
+            DynamicNFT: [],
+            DynamicSFT: [],
+            DynamicMeta: [],
+          },
+          accountChanges: {
+            nonceChanged: false,
+            balanceChanged: false,
+            codeHashChanged: false,
+            rootHashChanged: true,
+            developerRewardChanged: false,
+            ownerAddressChanged: false,
+            userNameChanged: false,
+            codeMetadataChanged: false,
+          },
+          isNewAccount: false,
+        },
+        erd107uaynrvf80g4zuym4fqqh5pqzvaczdryj49zr2qew57wqe3mvusupj8xh: {
+          accountState: {
+            nonce: 137,
+            balance: '1050718027978784480311',
+            developerReward: '0',
+            address: 'erd107uaynrvf80g4zuym4fqqh5pqzvaczdryj49zr2qew57wqe3mvusupj8xh',
+            rootHash: 'U0Q3PEXqxQNGQZ07/NVNVfFlxRdyzzY04/mzEWc5czs=',
+          },
+          esdtState: {
+            Fungible: [
+              {
+                identifier: 'ACCEPTED-bc0f6e',
+                nonce: '0',
+                type: 0,
+                value: '49980000000',
+                propertiesHex: '',
+                reservedHex: '',
+                tokenMetaData: null,
+              },
+            ],
+            NonFungible: [],
+            NonFungibleV2: [],
+            SemiFungible: [],
+            MetaFungible: [],
+            DynamicNFT: [],
+            DynamicSFT: [],
+            DynamicMeta: [],
+          },
+          accountChanges: {
+            nonceChanged: true,
+            balanceChanged: true,
+            codeHashChanged: false,
+            rootHashChanged: true,
+            developerRewardChanged: false,
+            ownerAddressChanged: false,
+            userNameChanged: false,
+            codeMetadataChanged: false,
+          },
+          isNewAccount: false,
+        },
+      };
+
+      const mockShardId = 1;
+      const mockBlockTimestampMs = 1763379962000;
+      const accountsExpectedResults = [
+        {
+          address: 'erd1vhfuv9qznn59vlasthdgsp7pzc99snzvchvcrjzhgn3cdequ7jxsvwtu50',
+          balance: '1022184909233299999998',
+          nonce: 163,
+          timestampMs: 1763379962000,
+          timestamp: 1763379962,
+          shard: 1,
+          developerReward: '0',
+          rootHash: 'i6mdSsTadb0E0H17P7rCPCTmQrtu8b4WDT20ncfVRz4=',
+        },
+        {
+          address: 'erd107uaynrvf80g4zuym4fqqh5pqzvaczdryj49zr2qew57wqe3mvusupj8xh',
+          balance: '1050718027978784480311',
+          nonce: 137,
+          timestampMs: 1763379962000,
+          timestamp: 1763379962,
+          shard: 1,
+          developerReward: '0',
+          rootHash: 'U0Q3PEXqxQNGQZ07/NVNVfFlxRdyzzY04/mzEWc5czs=',
+        },
+      ];
+
+      const esdtsExpectedResults = [
+        {
+          address: 'erd1vhfuv9qznn59vlasthdgsp7pzc99snzvchvcrjzhgn3cdequ7jxsvwtu50',
+          identifier: 'ACCEPTED-bc0f6e',
+          balance: '9920000000',
+        },
+        {
+          address: 'erd107uaynrvf80g4zuym4fqqh5pqzvaczdryj49zr2qew57wqe3mvusupj8xh',
+          identifier: 'ACCEPTED-bc0f6e',
+          balance: '49980000000',
+        },
+      ];
+
+      const { transformedAccounts, transformedEsdts } = service['transformFinalStatesToDbFormat'](
+        mockInput,
+        mockShardId,
+        mockBlockTimestampMs,
+      );
+      expect(transformedAccounts).toEqual(accountsExpectedResults);
+      expect(transformedEsdts).toEqual(esdtsExpectedResults);
     });
 
     it('should skip if no accountState', () => {
-      const result = service['transformFinalStatesToDbFormat']({ erd1: {} } as any, 0, Date.now());
-      expect(result.length).toBe(0);
+      const { transformedAccounts, transformedEsdts } = service['transformFinalStatesToDbFormat']({ erd1: {} } as any, 0, Date.now());
+      expect(transformedAccounts.length).toBe(0);
+      expect(transformedEsdts.length).toBe(0);
     });
   });
 
