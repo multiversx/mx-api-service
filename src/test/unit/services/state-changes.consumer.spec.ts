@@ -434,7 +434,6 @@ describe('StateChangesConsumerService', () => {
 
     it('should transform state changes into AccountDetails and ESDT details', () => {
       (apiConfig.isEsdtComputationEnabled as jest.Mock).mockReturnValue(true);
-      ;
       const mockInput =
       {
         erd1vhfuv9qznn59vlasthdgsp7pzc99snzvchvcrjzhgn3cdequ7jxsvwtu50: {
