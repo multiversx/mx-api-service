@@ -258,7 +258,7 @@ export class NetworkService {
     let yearIndex = Math.floor(stats.epoch / epochsInYear);
     let inflationAmounts = this.apiConfigService.getInflationAmounts();
     if (stakingV5Config.enabled) {
-      yearIndex = Math.floor((stakingV5Config.activationEpoch - stats.epoch) / epochsInYear);
+      yearIndex = Math.floor((stats.epoch - stakingV5Config.activationEpoch) / epochsInYear);
       inflationAmounts = this.apiConfigService.getStakingV5InflationAmounts();
     }
 

@@ -69,7 +69,7 @@ features:
     activationEpoch: 4
   stakingV5:
     enabled: true
-    activationEpoch: 2517
+    activationEpoch: 2519
   nodeEpochsLeft:
     enabled: false
   transactionProcessor:
