@@ -851,7 +851,7 @@ export class TokenService {
             }
           }
 
-              const supply = await this.esdtService.getTokenSupply(token.identifier);
+          const supply = await this.esdtService.getTokenSupply(token.identifier);
           token.supply = supply.totalSupply;
           token.circulatingSupply = supply.circulatingSupply;
 
