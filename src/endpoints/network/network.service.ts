@@ -240,6 +240,7 @@ export class NetworkService {
     const stakingV5Config = {
       enabled: this.apiConfigService.isStakingV5Enabled() && stats.epoch >= this.apiConfigService.getStakingV5ActivationEpoch(),
       activationEpoch: this.apiConfigService.getStakingV5ActivationEpoch(),
+      inflationAmounts: this.apiConfigService.getStakingV5InflationAmounts(),
     };
 
     const stakedBalance = await this.getAuctionContractBalance();
@@ -259,7 +260,7 @@ export class NetworkService {
     let inflationAmounts = this.apiConfigService.getInflationAmounts();
     if (stakingV5Config.enabled) {
       yearIndex = Math.floor((stats.epoch - stakingV5Config.activationEpoch) / epochsInYear);
-      inflationAmounts = this.apiConfigService.getStakingV5InflationAmounts();
+      inflationAmounts = stakingV5Config.inflationAmounts;
     }
 
     if (yearIndex >= inflationAmounts.length) {
