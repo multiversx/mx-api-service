@@ -832,13 +832,13 @@ export class TokenService {
             token.price = await this.dataApiService.getEsdtTokenPrice(token.identifier);
           } else if (priceSourcetype === TokenAssetsPriceSourceType.customUrl && token.assets?.priceSource?.url) {
             const pathToPrice = token.assets?.priceSource?.path ?? "0.usdPrice";
-            const tokenData = await this.fetchTokenDataFromUrl(token.assets.priceSource.url, pathToPrice);
+            const customHeaders = this.apiConfigService.getHeadersForCustomUrl(token.assets.priceSource.url);
+            const tokenData = await this.fetchTokenDataFromUrl(token.assets.priceSource.url, pathToPrice, customHeaders);
 
             if (tokenData) {
               token.price = tokenData;
             }
           }
-
           if (!token.price && token.type === TokenType.FungibleESDT) {
             try {
               const dataApiPrice = await this.dataApiService.getEsdtTokenPrice(token.identifier);
@@ -912,9 +912,11 @@ export class TokenService {
     return result;
   }
 
-  private async fetchTokenDataFromUrl(url: string, path: string): Promise<any> {
+  private async fetchTokenDataFromUrl(url: string, path: string, customHeaders?: Record<string, string>): Promise<any> {
     try {
-      const result = await this.apiService.get(url);
+
+      this.logger.log(`Fetching token data from URL: ${url} with custom headers: ${JSON.stringify(customHeaders)}`);
+      const result = await this.apiService.get(url, customHeaders ? { headers: customHeaders } : undefined);
 
       if (!result || !result.data) {
         this.logger.error(`Invalid response received from URL: ${url}`);

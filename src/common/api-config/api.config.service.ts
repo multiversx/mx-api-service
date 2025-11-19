@@ -1,4 +1,4 @@
-import { Constants } from '@multiversx/sdk-nestjs-common';
+import { Constants, OriginLogger } from '@multiversx/sdk-nestjs-common';
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { DatabaseConnectionOptions } from '../persistence/entities/connection.options';
@@ -7,6 +7,8 @@ import { LogTopic } from '@multiversx/sdk-transaction-processor/lib/types/log-to
 
 @Injectable()
 export class ApiConfigService {
+  private readonly logger = new OriginLogger(ApiConfigService.name);
+
   constructor(private readonly configService: ConfigService) {
   }
 
@@ -971,5 +973,64 @@ export class ApiConfigService {
     }
 
     return port;
+  }
+
+  getHeadersForCustomUrl(url: string): Record<string, string> | undefined {
+    let customUrlConfigs = this.configService.get<any>('customUrlHeaders');
+
+    if (!customUrlConfigs) {
+      return undefined;
+    }
+
+    if (typeof customUrlConfigs === 'string') {
+      try {
+        customUrlConfigs = JSON.parse(customUrlConfigs);
+      } catch (error) {
+        return undefined;
+      }
+    }
+
+    if (!Array.isArray(customUrlConfigs) && typeof customUrlConfigs === 'object') {
+      let workingConfig = customUrlConfigs;
+
+      while (workingConfig && workingConfig[''] && typeof workingConfig[''] === 'object') {
+        workingConfig = workingConfig[''];
+      }
+
+      const arrayValues: any[] = [];
+      for (const key in workingConfig) {
+        if (!isNaN(Number(key))) {
+          let item = workingConfig[key];
+          while (item && item[''] && typeof item[''] === 'object') {
+            item = item[''];
+          }
+          arrayValues[Number(key)] = item;
+        }
+      }
+
+      if (arrayValues.length > 0) {
+        customUrlConfigs = arrayValues.filter(item => item !== undefined);
+        this.logger.log(`Loaded ${customUrlConfigs.length} custom URL header config(s)`);
+      } else {
+        return undefined;
+      }
+    }
+
+    if (!Array.isArray(customUrlConfigs)) {
+      return undefined;
+    }
+
+    for (const config of customUrlConfigs) {
+      if (config && config.urlPattern && url.includes(config.urlPattern)) {
+        let headers = config.headers;
+        if (headers && headers[''] && typeof headers[''] === 'object') {
+          headers = headers[''];
+        }
+        this.logger.log(`Found custom headers for URL pattern '${config.urlPattern}': ${JSON.stringify(headers)}`);
+        return headers;
+      }
+    }
+
+    return undefined;
   }
 }
