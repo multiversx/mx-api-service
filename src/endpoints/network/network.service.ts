@@ -240,7 +240,7 @@ export class NetworkService {
     const stakingV5Config = {
       enabled: this.apiConfigService.isStakingV5Enabled() && stats.epoch >= this.apiConfigService.getStakingV5ActivationEpoch(),
       activationEpoch: this.apiConfigService.getStakingV5ActivationEpoch(),
-    }
+    };
 
     const stakedBalance = await this.getAuctionContractBalance();
 
