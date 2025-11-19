@@ -324,9 +324,11 @@ export class CacheWarmerService {
     const nftTypes = [
       NftType.NonFungibleESDT,
       NftType.SemiFungibleESDT,
+      NftType.MetaESDT,
       NftType.NonFungibleESDTv2,
       NftType.DynamicNonFungibleESDT,
       NftType.DynamicSemiFungibleESDT,
+      NftType.DynamicMetaESDT,
     ];
 
     for (const key of Object.keys(allAssets)) {

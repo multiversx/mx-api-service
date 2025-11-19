@@ -99,6 +99,9 @@ export class AccountService {
     if (options?.withTimestamp) {
       const elasticSearchAccount = await this.indexerService.getAccount(address);
       account.timestamp = elasticSearchAccount.timestamp;
+      if (elasticSearchAccount.timestampMs) {
+        account.timestampMs = elasticSearchAccount.timestampMs;
+      }
     }
 
     if (AddressUtils.isSmartContractAddress(address)) {

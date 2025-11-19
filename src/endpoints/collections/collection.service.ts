@@ -99,7 +99,7 @@ export class CollectionService {
     nftCollection.subType = indexedCollection.type as NftSubType;
     nftCollection.timestamp = indexedCollection.timestamp;
 
-    if (nftCollection.type.in(NftType.NonFungibleESDT, NftType.SemiFungibleESDT)) {
+    if (nftCollection.type.in(NftType.NonFungibleESDT, NftType.SemiFungibleESDT, NftType.MetaESDT)) {
       nftCollection.isVerified = indexedCollection.api_isVerified;
       nftCollection.nftCount = indexedCollection.api_nftCount;
       nftCollection.holderCount = indexedCollection.api_holderCount;
