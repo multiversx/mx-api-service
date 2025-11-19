@@ -186,7 +186,7 @@ inflation:
   - 924690
   - 719203
 stakingV5Inflation:
-  - 930_117
+  - 930117
 # november 2025 testnet supply: 21_242_828. first year rewards = 50% * (8.75% * supply) = 930117
 nftProcess:
   parallelism: 1

@@ -16,4 +16,7 @@ export class FeatureConfigs {
 
   @ApiProperty({ description: 'DataApi flag activation value' })
   dataApi: boolean = false;
+
+  @ApiProperty({ description: 'Staking v5 flag activation value' })
+  stakingV5: boolean = false;
 }

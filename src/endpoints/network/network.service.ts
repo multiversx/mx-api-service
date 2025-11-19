@@ -325,6 +325,7 @@ export class NetworkService {
       marketplace: this.apiConfigService.isMarketplaceFeatureEnabled(),
       exchange: this.apiConfigService.isExchangeEnabled(),
       dataApi: this.apiConfigService.isDataApiFeatureEnabled(),
+      stakingV5: this.apiConfigService.isStakingV5Enabled(),
     });
 
     let indexerVersion: string | undefined;
