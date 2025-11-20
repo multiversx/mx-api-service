@@ -54,7 +54,7 @@ features:
     serviceUrl: 'https://devnet-data-api.multiversx.com'
   assetsFetch:
     enabled: true
-    assetesUrl: 'https://tools.multiversx.com/assets-cdn'
+    assetsUrl: 'https://tools.multiversx.com/assets-cdn'
   auth:
     enabled: false
     maxExpirySeconds: 86400
@@ -110,13 +110,13 @@ features:
     enabled: false
     maxLookBehindNonces: 100
   nodesFetch:
-    enabled: true
+    enabled: false
     serviceUrl: 'https://devnet-api.multiversx.com'
   tokensFetch:
-    enabled: true
+    enabled: false
     serviceUrl: 'https://devnet-api.multiversx.com'
   providersFetch:
-    enabled: true
+    enabled: false
     serviceUrl: 'https://devnet-api.multiversx.com'
 image:
   width: 600

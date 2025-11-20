@@ -9,6 +9,7 @@ import request = require('supertest');
 import { Economics } from "src/endpoints/network/entities/economics";
 import { Stats } from "src/endpoints/network/entities/stats";
 import { About } from "src/endpoints/network/entities/about";
+import { FeatureConfigs } from "../../../endpoints/network/entities/feature.configs";
 
 describe("NetworkController", () => {
   let app: INestApplication;
@@ -102,12 +103,14 @@ describe("NetworkController", () => {
         indexerVersion: "v1.4.19",
         gatewayVersion: "v1.1.44-0-g5282fa5",
         scamEngineVersion: "1.0.0",
-        features: {
+        features: new FeatureConfigs({
           updateCollectionExtraDetails: true,
           marketplace: true,
           exchange: true,
           dataApi: true,
-        },
+          tokensFetch: false,
+          providersFetch: true,
+        }),
       };
       networkServiceMocks.getAbout.mockResolvedValue(mockAbout);
 
