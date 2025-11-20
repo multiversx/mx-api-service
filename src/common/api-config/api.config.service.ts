@@ -56,11 +56,7 @@ export class ApiConfigService {
   }
 
   getSnapshotlessGatewayUrl(): string | undefined {
-    // const gatewayUrls = this.configService.get<string[]>('urls.snapshotlessGateway') ?? this.configService.get<string[]>('urls.lightGateway');
-    // if (!gatewayUrls) {
-    //   return undefined;
-    // }
-    const gatewayUrls = this.configService.get<string[]>('urls.gateway');
+    const gatewayUrls = this.configService.get<string[]>('urls.snapshotlessGateway') ?? this.configService.get<string[]>('urls.lightGateway');
     if (!gatewayUrls) {
       return undefined;
     }
