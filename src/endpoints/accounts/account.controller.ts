@@ -1,9 +1,11 @@
-import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, NotFoundException, Param, Query, UseInterceptors } from '@nestjs/common';
+import { Controller, DefaultValuePipe, Get, HttpException, HttpStatus, NotFoundException, Param, Query, UseInterceptors, Post, Body } from '@nestjs/common';
 import { ApiExcludeEndpoint, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { AccountService } from './account.service';
 import { AccountDetailed } from './entities/account.detailed';
 import { Account } from './entities/account';
 import { AccountDeferred } from './entities/account.deferred';
+import { IterateKeysRequestDto } from './entities/iterate-keys-request.dto';
+import { IterateKeysResponseDto } from './entities/iterate-keys-response.dto';
 import { TokenService } from '../tokens/token.service';
 import { TokenWithBalance } from '../tokens/entities/token.with.balance';
 import { DelegationLegacyService } from '../delegation.legacy/delegation.legacy.service';
@@ -1427,5 +1429,37 @@ export class AccountController {
       address, tokenIdentifier,
       new QueryPagination({ from, size }),
       new AccountHistoryFilter({ before, after }));
+  }
+
+  @Post("/accounts/:address/iterate-keys")
+  @UseInterceptors(DeepHistoryInterceptor)
+  @ApiOperation({
+    summary: 'Iterate account storage keys',
+    description: 'Returns paginated account storage keys with state-based iteration. Supports deep history via timestamp query parameter.',
+  })
+  @ApiQuery({
+    name: 'timestamp',
+    description: 'Retrieve keys from specific timestamp (requires deep history)',
+    required: false,
+    type: Number,
+  })
+  @ApiOkResponse({ type: IterateKeysResponseDto })
+  async getAccountIterateKeys(
+    @Param('address', ParseAddressPipe) address: string,
+    @Body() request: IterateKeysRequestDto,
+    @Query('timestamp', ParseIntPipe) _timestamp?: number,
+  ): Promise<IterateKeysResponseDto> {
+    try {
+      const result = await this.accountService.getIterateKeys(address, request);
+      return {
+        blockInfo: result.blockInfo,
+        newIteratorState: result.newIteratorState,
+        pairs: result.pairs,
+      };
+    } catch (error) {
+      this.logger.error(`Error in getAccountIterateKeys for address ${address}`);
+      this.logger.error(error);
+      throw new HttpException('Failed to iterate keys', HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 }
