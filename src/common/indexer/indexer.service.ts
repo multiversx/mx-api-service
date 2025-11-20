@@ -19,7 +19,7 @@ import { MiniBlockFilter } from "src/endpoints/miniblocks/entities/mini.block.fi
 import { AccountHistoryFilter } from "src/endpoints/accounts/entities/account.history.filter";
 import { AccountAssets } from "../assets/entities/account.assets";
 import { ProviderDelegators } from "./entities/provider.delegators";
-import { ApplicationFilter } from "src/endpoints/applications/entities/application.filter";
+import { ApplicationFilter, UsersCountRange } from "src/endpoints/applications/entities/application.filter";
 import { EventsFilter } from "src/endpoints/events/entities/events.filter";
 import { Events } from "./entities/events";
 
@@ -483,5 +483,35 @@ export class IndexerService implements IndexerInterface {
   @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
   async getAccountNftReceivedTimestamps(address: string, identifiers: string[]): Promise<Record<string, number>> {
     return await this.indexerInterface.getAccountNftReceivedTimestamps(address, identifiers);
+  }
+
+  async setApplicationExtraProperties(address: string, properties: any): Promise<void> {
+    return await this.indexerInterface.setApplicationExtraProperties(address, properties);
+  }
+
+  async getApplicationsWithExtraProperties(): Promise<string[]> {
+    return await this.indexerInterface.getApplicationsWithExtraProperties();
+  }
+
+  async setApplicationIsVerified(address: string, isVerified: boolean): Promise<void> {
+    return await this.indexerInterface.setApplicationIsVerified(address, isVerified);
+  }
+
+  async getApplicationsWithIsVerified(): Promise<string[]> {
+    return await this.indexerInterface.getApplicationsWithIsVerified();
+  }
+
+  @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
+  async getApplicationUsersCount(applicationAddress: string, range: UsersCountRange): Promise<number> {
+    return await this.indexerInterface.getApplicationUsersCount(applicationAddress, range);
+  }
+
+  async getAllApplicationAddresses(): Promise<string[]> {
+    return await this.indexerInterface.getAllApplicationAddresses();
+  }
+
+  @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
+  async getApplicationFeesCaptured(applicationAddress: string, range: UsersCountRange): Promise<string> {
+    return await this.indexerInterface.getApplicationFeesCaptured(applicationAddress, range);
   }
 }

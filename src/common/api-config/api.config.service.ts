@@ -941,6 +941,10 @@ export class ApiConfigService {
     return this.configService.get<number>('caching.cacheDuration') ?? 3;
   }
 
+  isUpdateApplicationExtraDetailsEnabled(): boolean {
+    return this.configService.get<boolean>('features.updateApplicationExtraDetails.enabled') ?? false;
+  }
+
   getCompressionEnabled(): boolean {
     return this.configService.get<boolean>('compression.enabled') ?? false;
   }

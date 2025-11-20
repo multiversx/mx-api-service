@@ -25,11 +25,13 @@ import { MiniBlockFilter } from "src/endpoints/miniblocks/entities/mini.block.fi
 import { AccountHistoryFilter } from "src/endpoints/accounts/entities/account.history.filter";
 import { AccountAssets } from "src/common/assets/entities/account.assets";
 import { NotWritableError } from "../entities/not.writable.error";
-import { ApplicationFilter } from "src/endpoints/applications/entities/application.filter";
 import { NftType } from "../entities/nft.type";
 import { EventsFilter } from "src/endpoints/events/entities/events.filter";
 import { Events } from "../entities/events";
 import { EsCircuitBreakerProxy } from "./circuit-breaker/circuit.breaker.proxy.service";
+import { UsersCountUtils } from "src/utils/users.count.utils";
+import { ApplicationFilter, UsersCountRange } from "src/endpoints/applications/entities/application.filter";
+import { ApplicationSort } from "src/endpoints/applications/entities/application.sort";
 
 @Injectable()
 export class ElasticIndexerService implements IndexerInterface {
@@ -1030,6 +1032,23 @@ export class ElasticIndexerService implements IndexerInterface {
     });
   }
 
+  async setApplicationIsVerified(address: string, isVerified: boolean): Promise<void> {
+    return await this.elasticService.setCustomValues('accounts', address, {
+      isVerified,
+    });
+  }
+
+  async getApplicationsWithIsVerified(): Promise<string[]> {
+    const elasticQuery = ElasticQuery.create()
+      .withFields(['address'])
+      .withPagination({ from: 0, size: 10000 })
+      .withMustExistCondition('currentOwner')
+      .withMustExistCondition('api_isVerified');
+
+    const result = await this.elasticService.getList('accounts', 'address', elasticQuery);
+    return result.map(x => x.address);
+  }
+
   async getBlockByTimestampAndShardId(timestamp: number, shardId: number): Promise<Block | undefined> {
     const elasticQuery = ElasticQuery.create()
       .withRangeFilter('timestamp', new RangeGreaterThanOrEqual(timestamp))
@@ -1042,22 +1061,48 @@ export class ElasticIndexerService implements IndexerInterface {
   }
 
   async getApplications(filter: ApplicationFilter, pagination: QueryPagination): Promise<any[]> {
-    const elasticQuery = this.indexerHelper.buildApplicationFilter(filter)
-      .withPagination(pagination)
-      .withFields(['address', 'deployer', 'currentOwner', 'initialCodeHash', 'timestamp'])
-      .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }]);
+    let elasticQuery = this.indexerHelper.buildApplicationFilter(filter);
 
-    return await this.elasticService.getList('scdeploys', 'address', elasticQuery);
+    const sortOrder: ElasticSortOrder = !filter.order || filter.order === SortOrder.desc ? ElasticSortOrder.descending : ElasticSortOrder.ascending;
+    const sort = filter.sort ?? ApplicationSort.transfersLast24h;
+
+    switch (sort) {
+      case ApplicationSort.balance:
+        elasticQuery = elasticQuery.withSort([{ name: 'balanceNum', order: sortOrder }]);
+        break;
+      case ApplicationSort.transfersLast24h:
+        if (this.apiConfigService.getAccountExtraDetailsTransfersLast24hUrl()) {
+          elasticQuery = elasticQuery.withSort([{ name: 'api_transfersLast24h', order: sortOrder }]);
+        } else {
+          elasticQuery = elasticQuery.withSort([{ name: 'timestamp', order: sortOrder }]);
+        }
+        break;
+      case ApplicationSort.timestamp:
+        elasticQuery = elasticQuery.withSort([{ name: 'timestamp', order: sortOrder }]);
+        break;
+    }
+
+    elasticQuery = elasticQuery
+      .withPagination(pagination)
+      .withFields(['address', 'balance', 'shard', 'currentOwner', 'api_transfersLast24h', 'api_assets', 'api_isVerified']);
+
+    return await this.elasticService.getList('accounts', 'address', elasticQuery);
   }
 
   async getApplication(address: string): Promise<any> {
-    return await this.elasticService.getItem('scdeploys', 'address', address);
+    const account = await this.elasticService.getItem('accounts', 'address', address);
+
+    if (account && account.currentOwner) {
+      return account;
+    }
+
+    return null;
   }
 
   async getApplicationCount(filter: ApplicationFilter): Promise<number> {
     const elasticQuery = this.indexerHelper.buildApplicationFilter(filter);
 
-    return await this.elasticService.getCount('scdeploys', elasticQuery);
+    return await this.elasticService.getCount('accounts', elasticQuery);
   }
 
   async getAddressesWithTransfersLast24h(): Promise<string[]> {
@@ -1112,5 +1157,100 @@ export class ElasticIndexerService implements IndexerInterface {
     }
 
     return identifierToTimestamp;
+  }
+
+  async setApplicationExtraProperties(address: string, properties: any): Promise<void> {
+    return await this.elasticService.setCustomValues('accounts', address, properties);
+  }
+
+  async getApplicationsWithExtraProperties(): Promise<string[]> {
+    const elasticQuery = ElasticQuery.create()
+      .withFields(['address'])
+      .withPagination({ from: 0, size: 10000 })
+      .withMustExistCondition('currentOwner')
+      .withMustExistCondition('api_transfersLast24h');
+
+    const result = await this.elasticService.getList('accounts', 'address', elasticQuery);
+    return result.map(x => x.address);
+  }
+
+  async getApplicationUsersCount(applicationAddress: string, range: UsersCountRange): Promise<number> {
+    const elasticQuery = ElasticQuery.create()
+      .withMustMatchCondition('receiver', applicationAddress)
+      .withMustNotCondition(QueryType.Match('sender', applicationAddress))
+      .withPagination({ from: 0, size: 0 })
+      .withExtra({
+        aggs: {
+          unique_senders: {
+            cardinality: {
+              field: 'sender',
+            },
+          },
+        },
+      });
+
+    if (range !== UsersCountRange._allTime) {
+      const now = Math.floor(Date.now() / 1000);
+      const secondsAgo = UsersCountUtils.getSecondsForRange(range);
+      const timestampAgo = now - secondsAgo;
+      elasticQuery.withRangeFilter('timestamp', new RangeGreaterThanOrEqual(timestampAgo));
+    }
+
+    const result = await this.elasticService.post(`${this.apiConfigService.getElasticUrl()}/operations/_search`, elasticQuery.toJson());
+
+    return result?.data?.aggregations?.unique_senders?.value || 0;
+  }
+
+  async getAllApplicationAddresses(): Promise<string[]> {
+    const elasticQuery = ElasticQuery.create()
+      .withFields(['address'])
+      .withMustExistCondition('currentOwner') // Only smart contracts
+      .withPagination({ from: 0, size: 10000 });
+
+    const applications: any[] = [];
+
+    await this.elasticService.getScrollableList(
+      'accounts',
+      'address',
+      elasticQuery,
+      // @ts-ignore
+      // eslint-disable-next-line require-await
+      async (items: any[]) => {
+        applications.push(...items);
+      }
+    );
+
+    return applications.map(app => app.address);
+  }
+
+  async getApplicationFeesCaptured(applicationAddress: string, range: UsersCountRange): Promise<string> {
+    const elasticQuery = ElasticQuery.create()
+      .withMustMatchCondition('receiver', applicationAddress)
+      .withMustNotCondition(QueryType.Match('sender', applicationAddress))
+      .withPagination({ from: 0, size: 0 })
+      .withExtra({
+        aggs: {
+          total_fees: {
+            sum: {
+              script: {
+                source: "if (doc['fee'].size() > 0 && doc['fee'].value != null && !doc['fee'].value.isEmpty()) { Long.parseLong(doc['fee'].value) } else { 0 }",
+                lang: "painless",
+              },
+            },
+          },
+        },
+      });
+
+    if (range !== UsersCountRange._allTime) {
+      const now = Math.floor(Date.now() / 1000);
+      const secondsAgo = UsersCountUtils.getSecondsForRange(range);
+      const timestampAgo = now - secondsAgo;
+      elasticQuery.withRangeFilter('timestamp', new RangeGreaterThanOrEqual(timestampAgo));
+    }
+
+    const result = await this.elasticService.post(`${this.apiConfigService.getElasticUrl()}/operations/_search`, elasticQuery.toJson());
+
+    const totalFees = result?.data?.aggregations?.total_fees?.value || 0;
+    return totalFees.toString();
   }
 }
