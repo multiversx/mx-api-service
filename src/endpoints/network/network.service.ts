@@ -326,6 +326,7 @@ export class NetworkService {
       exchange: this.apiConfigService.isExchangeEnabled(),
       dataApi: this.apiConfigService.isDataApiFeatureEnabled(),
       stakingV5: this.apiConfigService.isStakingV5Enabled(),
+      stakingV5ActivationEpoch: this.apiConfigService.getStakingV5ActivationEpoch(),
     });
 
     let indexerVersion: string | undefined;

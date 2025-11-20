@@ -19,4 +19,7 @@ export class FeatureConfigs {
 
   @ApiProperty({ description: 'Staking v5 flag activation value' })
   stakingV5: boolean = false;
+
+  @ApiProperty({ description: 'Staking v5 activation epoch' })
+  stakingV5ActivationEpoch: number = 0;
 }
