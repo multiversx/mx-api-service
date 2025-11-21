@@ -183,7 +183,7 @@ inflation:
   - 924690
   - 719203
 stakingV5Inflation:
-  - 1068950
+  - 1069805
 # november 2025 devnet supply: 24_433_152. first year rewards = 50% * (8.757% * supply) = 1_069_805
 nftProcess:
   parallelism: 1
