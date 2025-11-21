@@ -366,14 +366,9 @@ export class NodeService {
   async getHeartbeatValidatorsAndQueue(): Promise<Node[]> {
     const nodes = await this.getHeartbeatAndValidators();
 
-    try {
-      const queue = await this.getQueue();
+    const queue = await this.getQueue();
 
-      this.processQueuedNodes(nodes, queue);
-    }
-    catch(error) {
-      this.logger.error(error);
-    }
+    this.processQueuedNodes(nodes, queue);
 
     return nodes;
   }

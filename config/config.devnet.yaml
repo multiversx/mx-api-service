@@ -64,12 +64,15 @@ features:
       - ''
     jwtSecret: ''
   stakingV4:
-    enabled: false
+    enabled: true
     cronExpression: '*/5 * * * * *'
     activationEpoch: 1043
   chainAndromeda:
     enabled: true
     activationEpoch: 4
+  stakingV5:
+    enabled: true
+    activationEpoch: 4817
   nodeEpochsLeft:
     enabled: false
   transactionProcessor:
@@ -179,6 +182,9 @@ inflation:
   - 1130177
   - 924690
   - 719203
+stakingV5Inflation:
+  - 1068950
+# november 2025 devnet supply: 24_433_152. first year rewards = 50% * (8.757% * supply) = 1_069_805
 nftProcess:
   parallelism: 1
   maxRetries: 3
