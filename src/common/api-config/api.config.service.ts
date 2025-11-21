@@ -592,6 +592,15 @@ export class ApiConfigService {
     return inflationAmounts;
   }
 
+  getStakingV5InflationAmounts(): number[] {
+    const inflationAmounts = this.configService.get<number[]>('stakingV5Inflation');
+    if (!inflationAmounts) {
+      throw new Error('No staking v5 inflation amounts present');
+    }
+
+    return inflationAmounts;
+  }
+
   getMediaUrl(): string {
     const mediaUrl = this.configService.get<string>('urls.media');
     if (!mediaUrl) {
@@ -888,6 +897,14 @@ export class ApiConfigService {
 
   getChainAndromedaActivationEpoch(): number {
     return this.configService.get<number>('features.chainAndromeda.activationEpoch') ?? 99999;
+  }
+
+  isStakingV5Enabled(): boolean {
+    return this.configService.get<boolean>('features.stakingV5.enabled') ?? false;
+  }
+
+  getStakingV5ActivationEpoch(): number {
+    return this.configService.get<number>('features.stakingV5.activationEpoch') ?? 99999;
   }
 
   isAssetsCdnFeatureEnabled(): boolean {
