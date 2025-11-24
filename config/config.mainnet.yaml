@@ -68,6 +68,9 @@ features:
   chainAndromeda:
     enabled: true
     activationEpoch: 1763
+  stakingV5:
+    enabled: true
+    activationEpoch: 1951
   nodeEpochsLeft:
     enabled: false
   transactionProcessor:
@@ -183,6 +186,10 @@ inflation:
   - 1130177
   - 924690
   - 719203
+stakingV5Inflation:
+  - 1262802
+# december 2025 mainnet supply: 28_840_981. first year rewards = 50% * (8.75% * supply) = 1262802
+# TODO: calculate the inflation for upcoming years based on the inflation decay
 nftProcess:
   parallelism: 1
   maxRetries: 3

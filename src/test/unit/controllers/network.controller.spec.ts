@@ -107,6 +107,8 @@ describe("NetworkController", () => {
           marketplace: true,
           exchange: true,
           dataApi: true,
+          stakingV5: true,
+          stakingV5ActivationEpoch: 37,
         },
       };
       networkServiceMocks.getAbout.mockResolvedValue(mockAbout);
