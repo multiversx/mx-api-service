@@ -68,6 +68,9 @@ export class Block {
   @ApiProperty({ type: BlockProofDto, nullable: true, required: false })
   previousHeaderProof: BlockProofDto | undefined = undefined;
 
+  @ApiProperty( { type: String })
+  reserved: string = '';
+
   @ApiProperty({ type: BlockProofDto, nullable: true, required: false })
   proof: BlockProofDto | undefined = undefined;
 

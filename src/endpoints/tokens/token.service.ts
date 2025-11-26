@@ -832,13 +832,13 @@ export class TokenService {
             token.price = await this.dataApiService.getEsdtTokenPrice(token.identifier);
           } else if (priceSourcetype === TokenAssetsPriceSourceType.customUrl && token.assets?.priceSource?.url) {
             const pathToPrice = token.assets?.priceSource?.path ?? "0.usdPrice";
-            const tokenData = await this.fetchTokenDataFromUrl(token.assets.priceSource.url, pathToPrice);
+            const customHeaders = this.apiConfigService.getHeadersForCustomUrl(token.assets.priceSource.url);
+            const tokenData = await this.fetchTokenDataFromUrl(token.assets.priceSource.url, pathToPrice, customHeaders);
 
             if (tokenData) {
               token.price = tokenData;
             }
           }
-
           if (!token.price && token.type === TokenType.FungibleESDT) {
             try {
               const dataApiPrice = await this.dataApiService.getEsdtTokenPrice(token.identifier);
@@ -851,18 +851,16 @@ export class TokenService {
             }
           }
 
-          if (token.price) {
-            const supply = await this.esdtService.getTokenSupply(token.identifier);
-            token.supply = supply.totalSupply;
-            token.circulatingSupply = supply.circulatingSupply;
+          const supply = await this.esdtService.getTokenSupply(token.identifier);
+          token.supply = supply.totalSupply;
+          token.circulatingSupply = supply.circulatingSupply;
 
-            if (token.circulatingSupply) {
-              token.marketCap = token.price * NumberUtils.denominateString(token.circulatingSupply, token.decimals);
-              // TODO: update this by checking the token's liquidity collateral
-              if (token.marketCap > this.thresholdFaultyMarketCap) {
-                this.logger.log(`Setting token market cap to 0 due to possibly faulty market cap. Token: ${token.identifier}. Circulating supply: ${token.circulatingSupply}. Price: ${token.price}. Market cap: ${token.marketCap}`);
-                token.marketCap = 0;
-              }
+          if (token.price && token.circulatingSupply) {
+            token.marketCap = token.price * NumberUtils.denominateString(token.circulatingSupply, token.decimals);
+            // TODO: update this by checking the token's liquidity collateral
+            if (token.marketCap > this.thresholdFaultyMarketCap) {
+              this.logger.log(`Setting token market cap to 0 due to possibly faulty market cap. Token: ${token.identifier}. Circulating supply: ${token.circulatingSupply}. Price: ${token.price}. Market cap: ${token.marketCap}`);
+              token.marketCap = 0;
             }
           }
         } catch (error) {
@@ -914,9 +912,11 @@ export class TokenService {
     return result;
   }
 
-  private async fetchTokenDataFromUrl(url: string, path: string): Promise<any> {
+  private async fetchTokenDataFromUrl(url: string, path: string, customHeaders?: Record<string, string>): Promise<any> {
     try {
-      const result = await this.apiService.get(url);
+
+      this.logger.log(`Fetching token data from URL: ${url} with custom headers: ${JSON.stringify(customHeaders)}`);
+      const result = await this.apiService.get(url, customHeaders ? { headers: customHeaders } : undefined);
 
       if (!result || !result.data) {
         this.logger.error(`Invalid response received from URL: ${url}`);

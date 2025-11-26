@@ -199,5 +199,9 @@ compression:
   level: 6
   threshold: 1024
   chunkSize: 16384
+customUrlHeaders:
+  - urlPattern: ''
+    headers:
+      x-custom-auth: ''
 pubSubListener:
   enabled: true
