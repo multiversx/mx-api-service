@@ -3,8 +3,6 @@ import mongoose, { HydratedDocument } from 'mongoose';
 import { AccountAssets } from 'src/common/assets/entities/account.assets';
 import { ScamInfo } from 'src/common/entities/scam-info.dto';
 import { NftCollectionAccount } from 'src/endpoints/collections/entities/nft.collection.account';
-import { NftAccount } from 'src/endpoints/nfts/entities/nft.account';
-import { TokenWithBalance } from 'src/endpoints/tokens/entities/token.with.balance';
 
 export type AccountDetailsDocument = HydratedDocument<AccountDetails>;
 
@@ -91,12 +89,6 @@ export class AccountDetails {
     @Prop({ type: Array, required: false })
     nftCollections?: NftCollectionAccount[];
 
-    @Prop({ type: Array, default: [] })
-    nfts?: NftAccount[] = [];
-
-    @Prop({ type: Array, default: [] })
-    tokens?: TokenWithBalance[] = [];
-
     @Prop({ required: false, type: Number })
     activeGuardianActivationEpoch?: number;
 
@@ -126,5 +118,4 @@ export class AccountDetails {
 export const AccountDetailsSchema = SchemaFactory.createForClass(AccountDetails);
 
 AccountDetailsSchema.index({ address: 1 }, { unique: true });
-AccountDetailsSchema.index({ "tokens.identifier": 1 });
-AccountDetailsSchema.index({ "nfts.identifier": 1 });
+AccountDetailsSchema.index({ "esdts.identifier": 1 });

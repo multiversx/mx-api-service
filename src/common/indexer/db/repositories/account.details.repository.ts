@@ -3,9 +3,6 @@ import { LogPerformanceAsync } from 'src/utils/log.performance.decorator';
 import { MetricsEvents } from 'src/utils/metrics-events.constants';
 import { AccountDetails } from '../schemas';
 import { InjectModel } from '@nestjs/mongoose';
-import { QueryPagination } from 'src/common/entities/query.pagination';
-import { TokenWithBalance } from 'src/endpoints/tokens/entities/token.with.balance';
-import { NftAccount } from 'src/endpoints/nfts/entities/nft.account';
 import { Injectable } from '@nestjs/common';
 import { AccountDetailed } from 'src/endpoints/accounts/entities/account.detailed';
 import { OriginLogger } from '@multiversx/sdk-nestjs-common';
@@ -13,192 +10,10 @@ import { OriginLogger } from '@multiversx/sdk-nestjs-common';
 @Injectable()
 export class AccountDetailsRepository {
     private readonly logger = new OriginLogger(AccountDetailsRepository.name);
-    static readonly exclusionFields = {
-        _id: 0,
-        __v: 0,
-        updatedAt: 0,
-        createdAt: 0,
-        address: 0,
-        balance: 0,
-        nonce: 0,
-        timestamp: 0,
-        shard: 0,
-        ownerAddress: 0,
-        assets: 0,
-        deployedAt: 0,
-        deployTxHash: 0,
-        ownerAssets: 0,
-        isVerified: 0,
-        txCount: 0,
-        scrCount: 0,
-        transfersLast24h: 0,
-        code: 0,
-        codeHash: 0,
-        rootHash: 0,
-        username: 0,
-        developerReward: 0,
-        isUpgradeable: 0,
-        isReadable: 0, isPayable: 0,
-        isPayableBySmartContract: 0,
-        scamInfo: 0,
-        nftCollections: 0,
-        activeGuardianActivationEpoch: 0,
-        activeGuardianAddress: 0,
-        activeGuardianServiceUid: 0,
-        pendingGuardianActivationEpoch: 0,
-        pendingGuardianAddress: 0,
-        pendingGuardianServiceUid: 0,
-        isGuarded: 0,
-    };
     constructor(
         @InjectModel(AccountDetails.name)
         private readonly accountDetailsModel: Model<AccountDetails>
     ) { }
-
-    @LogPerformanceAsync(MetricsEvents.SetPersistenceDuration, 'account-tokens')
-    async getTokensForAddress(address: string, queryPagination: QueryPagination): Promise<TokenWithBalance[]> {
-        try {
-            // TODO: add more fields in project on demand
-            const result = await this.accountDetailsModel.aggregate([
-                { $match: { address } },
-                {
-                    $project: {
-                        _id: 0,
-                        tokens: {
-                            $slice: ["$tokens", queryPagination.from, queryPagination.size],
-                        },
-                    },
-                },
-                {
-                    $project: {
-                        "tokens.type": 1,
-                        "tokens.subType": 1,
-                        "tokens.identifier": 1,
-                        "tokens.collection": 1,
-                        "tokens.name": 1,
-                        "tokens.nonce": 1,
-                        "tokens.decimals": 1,
-                        "tokens.balance": 1,
-                    },
-                },
-            ]).exec();
-            return result[0]?.tokens ?? [];
-        } catch (error) {
-            console.error(`Error fetching tokens for address: ${address}:`, error);
-            return [];
-        }
-    }
-
-    @LogPerformanceAsync(MetricsEvents.SetPersistenceDuration, 'account-tokens')
-    async getTokenForAddress(address: string, identifier: string): Promise<TokenWithBalance | undefined> {
-        try {
-            // TODO: add more fields in project on demand
-            // TODO: search for token efficiently: return first occurence and use index on identifier
-            const result = await this.accountDetailsModel.aggregate([
-                { $match: { address } },
-                {
-                    $project: {
-                        _id: 0,
-                        tokens: {
-                            $filter: {
-                                input: "$tokens",
-                                as: "token",
-                                cond: { $eq: ["$$token.identifier", identifier] },
-                            },
-                        },
-                    },
-                },
-                {
-                    $project: {
-                        "tokens.type": 1,
-                        "tokens.subType": 1,
-                        "tokens.identifier": 1,
-                        "tokens.collection": 1,
-                        "tokens.name": 1,
-                        "tokens.nonce": 1,
-                        "tokens.decimals": 1,
-                        "tokens.balance": 1,
-                    },
-                },
-            ]).exec();
-            return result[0]?.tokens[0] ?? undefined;
-        } catch (error) {
-            console.error(`Error fetching token with  identifier ${identifier} for address: ${address}:`, error);
-            return undefined;
-        }
-    }
-
-    @LogPerformanceAsync(MetricsEvents.SetPersistenceDuration, 'account-nfts')
-    async getNftForAddress(address: string, identifier: string): Promise<NftAccount | undefined> {
-        try {
-            // TODO: add more fields in project on demand
-            // TODO: search for nft efficiently: return first occurence and use index on identifier
-            const result = await this.accountDetailsModel.aggregate([
-                { $match: { address } },
-                {
-                    $project: {
-                        _id: 0,
-                        nfts: {
-                            $filter: {
-                                input: "$nfts",
-                                as: "nft",
-                                cond: { $eq: ["$$nft.identifier", identifier] },
-                            },
-                        },
-                    },
-                },
-                {
-                    $project: {
-                        "nfts.identifier": 1,
-                        "nfts.collection": 1,
-                        "nfts.nonce": 1,
-                        "nfts.type": 1,
-                        "nfts.subType": 1,
-                        "nfts.name": 1,
-                        "nfts.balance": 1,
-                        "nfts.subtype": 1,
-                    },
-                },
-            ]).exec();
-            return result[0]?.nfts[0] ?? undefined;
-        } catch (error) {
-            console.error(`Error fetching nft with  identifier ${identifier} for address: ${address}:`, error);
-            return undefined;
-        }
-    }
-
-    @LogPerformanceAsync(MetricsEvents.SetPersistenceDuration, 'account-nfts')
-    async getNftsForAddress(address: string, queryPagination: QueryPagination): Promise<NftAccount[]> {
-        try {
-            // TODO: add more fields in project on demand
-            const result = await this.accountDetailsModel.aggregate([
-                { $match: { address } },
-                {
-                    $project: {
-                        _id: 0,
-                        nfts: { $slice: ["$nfts", queryPagination.from, queryPagination.size] },
-                    },
-                },
-                {
-                    $project: {
-                        "nfts.identifier": 1,
-                        "nfts.collection": 1,
-                        "nfts.nonce": 1,
-                        "nfts.type": 1,
-                        "nfts.subType": 1,
-                        "nfts.name": 1,
-                        "nfts.balance": 1,
-                        "nfts.subtype": 1,
-                    },
-                },
-            ]).exec();
-
-            return result[0]?.nfts || [];
-        } catch (error) {
-            console.error(`Error fetching nfts for address: ${address}:`, error);
-            return [];
-        }
-    }
 
     @LogPerformanceAsync(MetricsEvents.SetPersistenceDuration, 'account-details')
     async getAccount(address: string): Promise<AccountDetailed | null> {
@@ -265,189 +80,22 @@ export class AccountDetailsRepository {
 
             for (const accountDetailed of accounts) {
                 const updatePipeline: any[] = [];
-                const pulls: any[] = [];
 
                 // --- helper ---
                 const isValidValue = (value: any): boolean =>
-                    value !== undefined && value !== null;
+                    value != null;
 
                 // --- simple fields ---
                 const updateFields: any = {};
                 Object.entries(accountDetailed).forEach(([key, value]) => {
-                    if (isValidValue(value) && key !== "tokens" && key !== "nfts") {
+                    if (isValidValue(value)) {
                         updateFields[key as keyof AccountDetails] = value;
                     }
+
                 });
                 if (Object.keys(updateFields).length > 0) {
                     updatePipeline.push({ $set: updateFields });
                 }
-
-                // --- tokens ---
-                const tokensToRemove: string[] = [];
-                const tokensToUpsert: any[] = [];
-
-                if (accountDetailed.tokens?.length) {
-                    for (const t of accountDetailed.tokens) {
-                        if (t.balance === '0') {
-                            tokensToRemove.push(t.identifier);
-                        } else {
-                            tokensToUpsert.push(t);
-                        }
-                    }
-
-                    if (tokensToUpsert.length) {
-                        updatePipeline.push({
-                            $set: {
-                                tokens: {
-                                    $let: {
-                                        vars: { newTokens: tokensToUpsert },
-                                        in: {
-                                            $concatArrays: [
-                                                {
-                                                    $map: {
-                                                        input: { $ifNull: ["$tokens", []] },
-                                                        as: "t",
-                                                        in: {
-                                                            $let: {
-                                                                vars: {
-                                                                    updated: {
-                                                                        $filter: {
-                                                                            input: "$$newTokens",
-                                                                            cond: { $eq: ["$$this.identifier", "$$t.identifier"] },
-                                                                        },
-                                                                    },
-                                                                },
-                                                                in: {
-                                                                    $cond: [
-                                                                        { $gt: [{ $size: "$$updated" }, 0] },
-                                                                        { $arrayElemAt: ["$$updated", 0] },
-                                                                        "$$t",
-                                                                    ],
-                                                                },
-                                                            },
-                                                        },
-                                                    },
-                                                },
-                                                {
-                                                    $filter: {
-                                                        input: "$$newTokens",
-                                                        cond: {
-                                                            $not: {
-                                                                $in: [
-                                                                    "$$this.identifier",
-                                                                    {
-                                                                        $map: {
-                                                                            input: { $ifNull: ["$tokens", []] },
-                                                                            as: "t",
-                                                                            in: "$$t.identifier",
-                                                                        },
-                                                                    },
-                                                                ],
-                                                            },
-                                                        },
-                                                    },
-                                                },
-                                            ],
-                                        },
-                                    },
-                                },
-                            },
-                        });
-                    }
-
-                    if (tokensToRemove.length) {
-                        pulls.push({
-                            updateOne: {
-                                filter: { address: accountDetailed.address },
-                                update: { $pull: { tokens: { identifier: { $in: tokensToRemove } } } },
-                            },
-                        });
-                    }
-                }
-
-                // --- nfts ---
-                const nftsToRemove: string[] = [];
-                const nftsToUpsert: any[] = [];
-
-                if (accountDetailed.nfts?.length) {
-                    for (const n of accountDetailed.nfts) {
-                        if (n.balance === '0') {
-                            nftsToRemove.push(n.identifier);
-                        } else {
-                            nftsToUpsert.push(n);
-                        }
-                    }
-
-                    if (nftsToUpsert.length) {
-                        updatePipeline.push({
-                            $set: {
-                                nfts: {
-                                    $let: {
-                                        vars: { newNfts: nftsToUpsert },
-                                        in: {
-                                            $concatArrays: [
-                                                {
-                                                    $map: {
-                                                        input: { $ifNull: ["$nfts", []] },
-                                                        as: "n",
-                                                        in: {
-                                                            $let: {
-                                                                vars: {
-                                                                    updated: {
-                                                                        $filter: {
-                                                                            input: "$$newNfts",
-                                                                            cond: { $eq: ["$$this.identifier", "$$n.identifier"] },
-                                                                        },
-                                                                    },
-                                                                },
-                                                                in: {
-                                                                    $cond: [
-                                                                        { $gt: [{ $size: "$$updated" }, 0] },
-                                                                        { $arrayElemAt: ["$$updated", 0] },
-                                                                        "$$n",
-                                                                    ],
-                                                                },
-                                                            },
-                                                        },
-                                                    },
-                                                },
-                                                {
-                                                    $filter: {
-                                                        input: "$$newNfts",
-                                                        cond: {
-                                                            $not: {
-                                                                $in: [
-                                                                    "$$this.identifier",
-                                                                    {
-                                                                        $map: {
-                                                                            input: { $ifNull: ["$nfts", []] },
-                                                                            as: "n",
-                                                                            in: "$$n.identifier",
-                                                                        },
-                                                                    },
-                                                                ],
-                                                            },
-                                                        },
-                                                    },
-                                                },
-                                            ],
-                                        },
-                                    },
-                                },
-                            },
-                        });
-                    }
-
-                    if (nftsToRemove.length) {
-                        pulls.push({
-                            updateOne: {
-                                filter: { address: accountDetailed.address },
-                                update: { $pull: { nfts: { identifier: { $in: nftsToRemove } } } },
-                            },
-                        });
-                    }
-                }
-
                 if (updatePipeline.length > 0) {
                     operations.push({
                         updateOne: {
@@ -458,16 +106,9 @@ export class AccountDetailsRepository {
                     });
                     totalOperations++;
                 }
-
-                // --- push pulls ---
-                if (pulls.length > 0) {
-                    operations.push(...pulls);
-                    totalOperations += pulls.length;
-                }
             }
 
-            this.logger.log(`number of write operations: ${totalOperations}`);
-
+            this.logger.log(`number of accounts write operations: ${totalOperations}`);
             const result = await this.accountDetailsModel.bulkWrite(operations, {
                 ordered: true,
             });

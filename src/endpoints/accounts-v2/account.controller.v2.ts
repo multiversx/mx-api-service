@@ -1,11 +1,12 @@
-import { Controller, Get, NotFoundException, Param, Query, UseInterceptors } from '@nestjs/common';
+import { Controller, Get, HttpException, HttpStatus, NotFoundException, Param, Query, UseInterceptors } from '@nestjs/common';
 import { ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { AccountServiceV2 } from './account.service.v2';
-import { ParseAddressPipe, ParseBoolPipe } from '@multiversx/sdk-nestjs-common';
+import { ParseAddressPipe, ParseBoolPipe, ParseTokenOrNftPipe } from '@multiversx/sdk-nestjs-common';
 import { DeepHistoryInterceptor } from 'src/interceptors/deep-history.interceptor';
 import { NoCache } from '@multiversx/sdk-nestjs-cache';
 import { AccountDetailed } from '../accounts/entities/account.detailed';
 import { AccountFetchOptions } from '../accounts/entities/account.fetch.options';
+import { TokenDetailedWithBalance } from '../tokens/entities/token.detailed.with.balance';
 
 @Controller('')
 @ApiTags('accounts')
@@ -43,5 +44,22 @@ export class AccountControllerV2 {
     }
 
     return account;
+  }
+
+  @Get("/accounts/v2/:address/tokens/:token")
+  @UseInterceptors(DeepHistoryInterceptor)
+  @ApiOkResponse({ type: TokenDetailedWithBalance })
+  @ApiOperation({ summary: 'Account token details', description: 'Returns details about a specific fungible token from a given address' })
+  @NoCache()
+  async getAccountToken(
+    @Param('address', ParseAddressPipe) address: string,
+    @Param('token', ParseTokenOrNftPipe) token: string,
+  ): Promise<TokenDetailedWithBalance> {
+    const result = await this.accountServiceV2.getTokenForAddress(address, token);
+    if (!result) {
+      throw new HttpException('Token for given account not found', HttpStatus.NOT_FOUND);
+    }
+
+    return result;
   }
 }

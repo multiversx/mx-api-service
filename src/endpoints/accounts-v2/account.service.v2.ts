@@ -2,7 +2,7 @@ import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { PluginService } from 'src/common/plugins/plugin.service';
 import { AssetsService } from 'src/common/assets/assets.service';
 import { CacheService } from "@multiversx/sdk-nestjs-cache";
-import { AddressUtils, OriginLogger } from '@multiversx/sdk-nestjs-common';
+import { AddressUtils, OriginLogger, TokenUtils } from '@multiversx/sdk-nestjs-common';
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { CacheInfo } from 'src/utils/cache.info';
 import { UsernameService } from '../usernames/username.service';
@@ -13,6 +13,11 @@ import { StateChangesConsumerService } from 'src/state-changes/state.changes.con
 import { AccountService } from '../accounts/account.service';
 import { AccountDetailed } from '../accounts/entities/account.detailed';
 import { AccountFetchOptions } from '../accounts/entities/account.fetch.options';
+import { TokenService } from '../tokens/token.service';
+import { TokenDetailedWithBalance } from '../tokens/entities/token.detailed.with.balance';
+import { GatewayService } from 'src/common/gateway/gateway.service';
+import { EsdtDetailsRepository } from 'src/common/indexer/db/repositories/esdt.details.repository';
+import { EsdtDetails } from 'src/common/indexer/db/schemas/esdt.details.schema';
 
 @Injectable()
 export class AccountServiceV2 {
@@ -28,7 +33,10 @@ export class AccountServiceV2 {
     @Inject(forwardRef(() => ProviderService))
     private readonly providerService: ProviderService,
     private readonly accountDetailsDepository: AccountDetailsRepository,
+    private readonly esdtDetailsRepository: EsdtDetailsRepository,
     private readonly accountServiceV1: AccountService,
+    private readonly tokenService: TokenService,
+    private readonly gatewayService: GatewayService,
   ) { }
 
   private async getAccountWithFallBack(address: string, options?: AccountFetchOptions): Promise<AccountDetailed | null> {
@@ -60,8 +68,8 @@ export class AccountServiceV2 {
     }
     let account = null;
     try {
-      const isStateChangesConsumerHealty: boolean = await StateChangesConsumerService.isStateChangesConsumerHealthy(this.cachingService, 6000);
-      if (isStateChangesConsumerHealty === true && !StateChangesConsumerService.isSystemContractAddress(address)) {
+      const isStateChangesConsumerHealthy: boolean = await StateChangesConsumerService.isStateChangesConsumerHealthy(this.cachingService, 6000);
+      if (isStateChangesConsumerHealthy === true && !StateChangesConsumerService.isSystemContractAddress(address)) {
         account = await this.cachingService.getOrSet(
           CacheInfo.AccountState(address).key,
           async () => await this.getAccountWithFallBack(address, options),
@@ -115,5 +123,69 @@ export class AccountServiceV2 {
     }
 
     return account;
+  }
+
+  async getTokenForAddress(address: string, identifier: string): Promise<TokenDetailedWithBalance | undefined> {
+    if (!TokenUtils.isToken(identifier) && !TokenUtils.isNft(identifier)) {
+      return undefined;
+    }
+    try {
+      let tokenDetailedWithBalance: TokenDetailedWithBalance | undefined;
+      const isStateChangesConsumerHealthy: boolean = await StateChangesConsumerService.isStateChangesConsumerHealthy(this.cachingService, 6000);
+      if (isStateChangesConsumerHealthy === true && !StateChangesConsumerService.isSystemContractAddress(address)) {
+        tokenDetailedWithBalance = await this.getTokenForAddressWithFallback(address, identifier);
+      } else {
+        tokenDetailedWithBalance = await this.tokenService.getTokenForAddress(address, identifier);
+      }
+      return tokenDetailedWithBalance;
+    } catch (err) {
+      return undefined;
+    }
+  }
+
+  async getTokenForAddressWithFallback(address: string, identifier: string): Promise<TokenDetailedWithBalance | undefined> {
+    const tokenRaw = await this.cachingService.getOrSet(
+      CacheInfo.AccountEsdt(address, identifier).key,
+      async () => {
+        const token = await this.esdtDetailsRepository.getEsdt(address, identifier);
+        if (token) {
+          return new EsdtDetails({
+            identifier,
+            balance: token.balance,
+          });
+        }
+
+        const tokenFromGateway = await this.gatewayService.getAddressEsdt(address, identifier);
+        if (tokenFromGateway) {
+          return new EsdtDetails({
+            identifier,
+            balance: tokenFromGateway.balance,
+          });
+        }
+        return undefined;
+      },
+      CacheInfo.AccountEsdt(address, identifier).ttl,
+    );
+
+    if (!tokenRaw) {
+      return await this.getTokenForAddress(address, identifier);
+    }
+    const { balance } = tokenRaw;
+    const esdtIdentifier = identifier.split('-').slice(0, 2).join('-');
+    const tokens = await this.tokenService.getFilteredTokens({ identifier: esdtIdentifier, includeMetaESDT: true });
+    if (!tokens.length) {
+      this.logger.log(`Error when fetching token ${identifier} details for address ${address}`);
+      return undefined;
+    }
+
+    const tokenData = tokens[0];
+
+    const tokenDetailedWithBalance = new TokenDetailedWithBalance({ ...tokenData, balance });
+
+    this.tokenService.applyValueUsd(tokenDetailedWithBalance);
+    this.tokenService.applyTickerFromAssets(tokenDetailedWithBalance);
+    await this.tokenService.applySupply(tokenDetailedWithBalance);
+
+    return tokenDetailedWithBalance;
   }
 }
