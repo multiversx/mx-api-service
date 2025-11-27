@@ -142,6 +142,13 @@ export class TransferService {
       transactions.push(transaction);
     }
 
+    const hasSenderFilter = filter.sender || (filter.senders && filter.senders.length > 0);
+    const hasReceiverFilter = filter.receivers && filter.receivers.length > 0;
+
+    if (filter.address && !hasSenderFilter && !hasReceiverFilter) {
+      transactions = this.transactionService.reorderAccountSentTransactionsByNonce(transactions, filter.address);
+    }
+
     if (queryOptions.withBlockInfo || (fields && fields.includesSome(['senderBlockHash', 'receiverBlockHash', 'senderBlockNonce', 'receiverBlockNonce']))) {
       await this.transactionService.applyBlockInfo(transactions);
     }
