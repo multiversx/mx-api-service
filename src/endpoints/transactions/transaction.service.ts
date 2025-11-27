@@ -98,6 +98,32 @@ export class TransactionService {
     return await this.indexerService.getTransactionCount(filter, address);
   }
 
+  public reorderAccountSentTransactionsByNonce(transactions: TransactionDetailed[], accountAddress: string): TransactionDetailed[] {
+    const sentPositions: number[] = [];
+    const sentTransactions: TransactionDetailed[] = [];
+
+    transactions.forEach((tx, index) => {
+      if (tx.sender === accountAddress) {
+        sentPositions.push(index);
+        sentTransactions.push(tx);
+      }
+    });
+
+    sentTransactions.sort((a, b) => {
+      const nonceA = a.nonce ?? 0;
+      const nonceB = b.nonce ?? 0;
+      return nonceB - nonceA;
+    });
+
+    const result = [...transactions];
+
+    sentPositions.forEach((position, index) => {
+      result[position] = sentTransactions[index];
+    });
+
+    return result;
+  }
+
   private getDistinctUserAddressesFromTransactions(transactions: Transaction[]): string[] {
     const allAddresses = [];
     for (const transaction of transactions) {
@@ -170,6 +196,13 @@ export class TransactionService {
 
     let transactions: TransactionDetailed[] = [];
     transactions = elasticTransactions.map(x => ApiUtils.mergeObjects(new TransactionDetailed(), x));
+
+    const hasSenderFilter = filter.sender || (filter.senders && filter.senders.length > 0);
+    const hasReceiverFilter = filter.receivers && filter.receivers.length > 0;
+
+    if (address && !hasSenderFilter && !hasReceiverFilter) {
+      transactions = this.reorderAccountSentTransactionsByNonce(transactions, address);
+    }
 
     if (filter.hashes) {
       const txHashes: string[] = filter.hashes;
