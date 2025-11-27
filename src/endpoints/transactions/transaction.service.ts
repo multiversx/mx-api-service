@@ -42,6 +42,8 @@ import { NetworkService } from 'src/endpoints/network/network.service';
 import { TransactionWithPpu } from './entities/transaction.with.ppu';
 import { GasBucket } from './entities/gas.bucket';
 import { GasBucketConstants } from './constants/gas.bucket.constants';
+import { TransactionAction } from "./transaction-action/entities/transaction.action";
+import { TransactionActionCategory } from "./transaction-action/entities/transaction.action.category";
 
 @Injectable()
 export class TransactionService {
@@ -193,7 +195,6 @@ export class TransactionService {
 
     for (const transaction of transactions) {
       transaction.type = undefined;
-      transaction.relayedVersion = this.extractRelayedVersion(transaction);
     }
 
     await this.processTransactions(transactions, {
@@ -201,6 +202,8 @@ export class TransactionService {
       withUsername: queryOptions?.withUsername ?? false,
       withActionTransferValue: queryOptions?.withActionTransferValue ?? false,
     });
+
+    this.processRelayedInfo(transactions);
 
     return transactions;
   }
@@ -225,9 +228,9 @@ export class TransactionService {
 
     if (transaction !== null) {
       transaction.price = await this.getTransactionPrice(transaction);
-      transaction.relayedVersion = this.extractRelayedVersion(transaction);
 
       await this.processTransactions([transaction], { withScamInfo: true, withUsername: true, withActionTransferValue });
+      this.processRelayedInfo([transaction]);
 
       if (transaction.pendingResults === true && transaction.results) {
         for (const result of transaction.results) {
@@ -344,6 +347,25 @@ export class TransactionService {
       this.logger.error(`Error when fetching transaction price for transaction with hash '${transaction.txHash}'`);
       this.logger.error(error);
       return;
+    }
+  }
+
+  private processRelayedInfo(transactions: TransactionDetailed[]) {
+    for (const transaction of transactions) {
+      transaction.relayedVersion = this.extractRelayedVersion(transaction);
+      if (transaction.relayedVersion && ["v1", "v2"].includes(transaction.relayedVersion)) {
+        const shouldSkip = this.apiConfigService.shouldDeprecateRelayedV1V2(transaction.epoch ?? 0);
+        if (shouldSkip) {
+          transaction.action = new TransactionAction({
+            category: TransactionActionCategory.deprecatedRelayedV1V2,
+            name: "Deprecated transaction action",
+            description: `Relayed v1/v2 transactions are deprecated`,
+          });
+        }
+      }
+      if (!transaction.isRelayed) {
+        transaction.relayedVersion = undefined;
+      }
     }
   }
 
@@ -587,7 +609,7 @@ export class TransactionService {
   }
 
   private extractRelayedVersion(transaction: TransactionDetailed): string | undefined {
-    if (transaction.isRelayed == true && transaction.data) {
+    if (transaction.data) {
       const decodedData = BinaryUtils.base64Decode(transaction.data);
 
       if (decodedData.startsWith('relayedTx@')) {
