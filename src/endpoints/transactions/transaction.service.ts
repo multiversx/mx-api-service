@@ -350,12 +350,13 @@ export class TransactionService {
     }
   }
 
-  private processRelayedInfo(transactions: TransactionDetailed[]) {
+  public processRelayedInfo(transactions: TransactionDetailed[]) {
     for (const transaction of transactions) {
       transaction.relayedVersion = this.extractRelayedVersion(transaction);
       if (transaction.relayedVersion && ["v1", "v2"].includes(transaction.relayedVersion)) {
         const shouldSkip = this.apiConfigService.shouldDeprecateRelayedV1V2(transaction.epoch ?? 0);
         if (shouldSkip) {
+          transaction.function = undefined;
           transaction.action = new TransactionAction({
             category: TransactionActionCategory.deprecatedRelayedV1V2,
             name: "Deprecated transaction action",

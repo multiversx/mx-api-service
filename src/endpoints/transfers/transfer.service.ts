@@ -157,6 +157,8 @@ export class TransferService {
       withActionTransferValue: queryOptions.withActionTransferValue ?? false,
     });
 
+    this.transactionService.processRelayedInfo(transactions);
+
     return transactions;
   }
 
