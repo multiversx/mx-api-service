@@ -73,6 +73,9 @@ features:
   stakingV5:
     enabled: true
     activationEpoch: 4817
+  deprecatedRelayedV1V2:
+    enabled: true
+    activationEpoch: 4569
   nodeEpochsLeft:
     enabled: false
   transactionProcessor:
