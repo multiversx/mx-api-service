@@ -88,10 +88,11 @@ export class WebsocketCronService {
   @Lock({ name: 'Push custom transactions to subscribers', verbose: true })
   async handleCustomTransactionsUpdate() {
     const latestRoundOnChainData = await this.getLatestRoundOnChainData();
+    latestRoundOnChainData.timestampMs = latestRoundOnChainData.timestampMs ?? latestRoundOnChainData.timestamp * 1000;
 
     let roundToProcessTimestampMs = await this.cacheService.getOrSetLocal(
       CacheInfo.WsTimestampMsToProcess().key,
-      async () => latestRoundOnChainData.timestampMs ?? latestRoundOnChainData.timestamp * 1000,
+      async () => await Promise.resolve(latestRoundOnChainData.timestampMs ?? latestRoundOnChainData.timestamp * 1000),
       CacheInfo.WsTimestampMsToProcess().ttl,
     );
 
@@ -100,7 +101,8 @@ export class WebsocketCronService {
     const pollingDelay = stats.refreshRate / 2;
     const pollingMaxAttempts = 10;
     while (roundToProcessTimestampMs <= latestRoundOnChainData.timestampMs) {
-      await this.pollUntil(async () => this.isElasticDataAvailableForTimestampMs(roundToProcessTimestampMs, stats), pollingDelay, pollingMaxAttempts);
+
+      await this.pollUntil(async () => await this.isElasticDataAvailableForTimestampMs(roundToProcessTimestampMs, stats), pollingDelay, pollingMaxAttempts);
 
       // call gateways to process logic for custom subscriptions
       await this.transactionsCustomGateway.pushTransactionsForTimestampMs(roundToProcessTimestampMs);
