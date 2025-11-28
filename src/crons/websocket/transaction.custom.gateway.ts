@@ -30,7 +30,7 @@ export class TransactionsCustomGateway {
     @ConnectedSocket() client: Socket,
     @MessageBody(new WsValidationPipe()) payload: TransactionCustomSubscribePayload) {
 
-    const filterIdentifier = RoomKeyGenerator.deterministicStringify(payload)
+    const filterIdentifier = RoomKeyGenerator.deterministicStringify(payload);
     await client.join(`custom-tx-${filterIdentifier}`);
 
     return { status: 'success' };
