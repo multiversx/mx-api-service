@@ -1,16 +1,13 @@
-import { getMetadataStorage } from 'class-validator';
+import { TransactionCustomSubscribePayload } from 'src/endpoints/transactions/entities/dtos/transaction.custom.subscribe';
 
 export class RoomKeyGenerator {
-  // Cache to avoid reading class metadata on every transaction (Performance optimization)
-  private static keysCache = new Map<Function, string[]>();
-
   public static generate(
     prefix: string,
     data: Record<string, any>,
     dtoClass: Function,
   ): string[] {
     // get allowed keys from DTO (with caching)
-    const allowedKeys = this.getOrExtractKeys(dtoClass);
+    const allowedKeys = this.getKeys(dtoClass);
 
     // extract only key-value pairs that exist in the data and are non-null
     const activeFilters: { key: string; value: any }[] = [];
@@ -60,26 +57,13 @@ export class RoomKeyGenerator {
     );
   }
 
-  private static getOrExtractKeys(targetClass: Function): string[] {
-    if (this.keysCache.has(targetClass)) {
-      return this.keysCache.get(targetClass)!;
+  private static getKeys(targetClass: Function): string[] {
+    switch (targetClass) {
+      case TransactionCustomSubscribePayload:
+        return ['function', 'receiver', 'sender'];
+      default:
+        console.warn(`RoomKeyGenerator: No manual key mapping found for class ${targetClass.name}`);
+        return []
     }
-
-    // Access class-validator storage to find decorated properties
-    const metadatas = getMetadataStorage().getTargetValidationMetadatas(
-      targetClass,
-      '',
-      false,
-      false,
-    );
-
-    const uniqueProperties = new Set(
-      metadatas.map((metadata) => metadata.propertyName),
-    );
-    const keys = Array.from(uniqueProperties);
-
-    // Save to cache
-    this.keysCache.set(targetClass, keys);
-    return keys;
   }
 }
