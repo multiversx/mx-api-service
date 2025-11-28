@@ -12,4 +12,8 @@ export class TransactionCustomSubscribePayload {
   @IsOptional()
   @IsString()
   function?: string;
+
+  public static getClassFields(): string[] {
+    return ['function', 'receiver', 'sender'];
+  }
 }

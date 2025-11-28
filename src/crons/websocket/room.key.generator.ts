@@ -60,7 +60,7 @@ export class RoomKeyGenerator {
   private static getKeys(targetClass: Function): string[] {
     switch (targetClass) {
       case TransactionCustomSubscribePayload:
-        return ['function', 'receiver', 'sender'];
+        return TransactionCustomSubscribePayload.getClassFields();
       default:
         console.warn(`RoomKeyGenerator: No manual key mapping found for class ${targetClass.name}`);
         return [];
