@@ -101,7 +101,6 @@ export class WebsocketCronService {
     const pollingDelay = stats.refreshRate / 2;
     const pollingMaxAttempts = 10;
     while (roundToProcessTimestampMs <= latestRoundOnChainData.timestampMs) {
-
       await this.pollUntil(async () => await this.isElasticDataAvailableForTimestampMs(roundToProcessTimestampMs, stats), pollingDelay, pollingMaxAttempts);
 
       // call gateways to process logic for custom subscriptions

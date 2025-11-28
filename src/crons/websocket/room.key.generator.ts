@@ -63,7 +63,7 @@ export class RoomKeyGenerator {
         return ['function', 'receiver', 'sender'];
       default:
         console.warn(`RoomKeyGenerator: No manual key mapping found for class ${targetClass.name}`);
-        return []
+        return [];
     }
   }
 }
