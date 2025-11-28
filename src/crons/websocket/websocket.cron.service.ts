@@ -18,6 +18,7 @@ import { ElasticQuery, ElasticService, QueryType } from '@multiversx/sdk-nestjs-
 import { NetworkService } from 'src/endpoints/network/network.service';
 import { Stats } from 'src/endpoints/network/entities/stats';
 import { TransactionsCustomGateway } from './transaction.custom.gateway';
+import { ConnectionHandler } from './connection.handler';
 
 @Injectable()
 @WebSocketGateway({ cors: { origin: '*' }, path: '/ws/subscription' })
@@ -37,6 +38,7 @@ export class WebsocketCronService {
     private readonly elasticService: ElasticService,
     private readonly networkService: NetworkService,
     private readonly transactionsCustomGateway: TransactionsCustomGateway,
+    private readonly connectionHandler: ConnectionHandler,
   ) { }
 
   @Cron('*/1 * * * * *')
@@ -87,6 +89,12 @@ export class WebsocketCronService {
   @Cron('*/3 * * * * *')
   @Lock({ name: 'Push custom transactions to subscribers', verbose: true })
   async handleCustomTransactionsUpdate() {
+    // TODO: add support for multiple key prefixes
+    if (this.connectionHandler.countSubscriptionsByPrefix('custom-tx-') === 0) {
+      this.cacheService.deleteLocal(CacheInfo.WsTimestampMsToProcess().key);
+      return;
+    }
+
     const latestRoundOnChainData = await this.getLatestRoundOnChainData();
     latestRoundOnChainData.timestampMs = latestRoundOnChainData.timestampMs ?? latestRoundOnChainData.timestamp * 1000;
 

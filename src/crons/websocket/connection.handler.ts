@@ -17,4 +17,19 @@ export class ConnectionHandler implements OnGatewayDisconnect, OnGatewayConnecti
     handleConnection(client: Socket, ..._args: any[]) {
         client.setMaxListeners(12);
     }
+
+    //TODO: add support for multiple key prefixes
+    countSubscriptionsByPrefix(prefix: string): number {
+        let count = 0;
+
+        const rooms = this.server.sockets.adapter.rooms;
+
+        for (const roomName of rooms.keys()) {
+            if (roomName.startsWith(prefix)) {
+                count++;
+            }
+        }
+
+        return count;
+    }
 }
