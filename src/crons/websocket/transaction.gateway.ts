@@ -7,8 +7,9 @@ import { TransactionQueryOptions } from '../../endpoints/transactions/entities/t
 import { WsValidationPipe } from 'src/utils/ws-validation.pipe';
 import { TransactionSubscribePayload } from '../../endpoints/transactions/entities/dtos/transaction.subscribe';
 import { WebsocketExceptionsFilter } from 'src/utils/ws-exceptions.filter';
-import { UseFilters } from '@nestjs/common';
+import { UseFilters, UseGuards } from '@nestjs/common';
 import { OriginLogger } from '@multiversx/sdk-nestjs-common';
+import { WsSubscriptionLimiterGuard } from 'src/utils/ws.subscription.limiter';
 
 @UseFilters(WebsocketExceptionsFilter)
 @WebSocketGateway({ cors: { origin: '*' }, path: '/ws/subscription' })
@@ -20,6 +21,7 @@ export class TransactionsGateway {
 
   constructor(private readonly transactionService: TransactionService) { }
 
+  @UseGuards(WsSubscriptionLimiterGuard)
   @SubscribeMessage('subscribeTransactions')
   async handleSubscription(
     @ConnectedSocket() client: Socket,
