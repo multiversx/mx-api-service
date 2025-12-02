@@ -1,3 +1,4 @@
+import { EventsCustomSubscribePayload } from 'src/endpoints/events/entities/events.custom.subscribe';
 import { TransactionCustomSubscribePayload } from 'src/endpoints/transactions/entities/dtos/transaction.custom.subscribe';
 
 export class RoomKeyGenerator {
@@ -61,6 +62,8 @@ export class RoomKeyGenerator {
     switch (targetClass) {
       case TransactionCustomSubscribePayload:
         return TransactionCustomSubscribePayload.getClassFields();
+      case EventsCustomSubscribePayload:
+        return EventsCustomSubscribePayload.getClassFields();
       default:
         console.warn(`RoomKeyGenerator: No manual key mapping found for class ${targetClass.name}`);
         return [];

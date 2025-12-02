@@ -14,6 +14,7 @@ import { EventsGateway } from './events.gateway';
 import { ConnectionHandler } from './connection.handler';
 import { RoundModule } from 'src/endpoints/rounds/round.module';
 import { TransactionsCustomGateway } from './transaction.custom.gateway';
+import { EventsCustomGateway } from './events.custom.gateway';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { TransactionsCustomGateway } from './transaction.custom.gateway';
     PoolGateway,
     EventsGateway,
     TransactionsCustomGateway,
+    EventsCustomGateway,
   ],
 })
 export class WebsocketSubscriptionModule { }

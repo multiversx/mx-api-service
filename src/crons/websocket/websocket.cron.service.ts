@@ -19,6 +19,7 @@ import { NetworkService } from 'src/endpoints/network/network.service';
 import { Stats } from 'src/endpoints/network/entities/stats';
 import { TransactionsCustomGateway } from './transaction.custom.gateway';
 import { ConnectionHandler } from './connection.handler';
+import { EventsCustomGateway } from './events.custom.gateway';
 
 @Injectable()
 @WebSocketGateway({ cors: { origin: '*' }, path: '/ws/subscription' })
@@ -38,6 +39,7 @@ export class WebsocketCronService {
     private readonly elasticService: ElasticService,
     private readonly networkService: NetworkService,
     private readonly transactionsCustomGateway: TransactionsCustomGateway,
+    private readonly eventsCustomGateway: EventsCustomGateway,
     private readonly connectionHandler: ConnectionHandler,
   ) { }
 
@@ -111,7 +113,10 @@ export class WebsocketCronService {
       await this.pollUntil(async () => await this.isElasticDataAvailableForTimestampMs(roundToProcessTimestampMs, stats), pollingDelay, pollingMaxAttempts);
 
       // call gateways to process logic for custom subscriptions
-      await this.transactionsCustomGateway.pushTransactionsForTimestampMs(roundToProcessTimestampMs);
+      await Promise.all([
+        this.transactionsCustomGateway.pushTransactionsForTimestampMs(roundToProcessTimestampMs),
+        this.eventsCustomGateway.pushEventsForTimestampMs(roundToProcessTimestampMs)
+      ]);
       roundToProcessTimestampMs += stats.refreshRate;
     }
     this.cacheService.setLocal(
