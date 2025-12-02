@@ -89,8 +89,7 @@ export class WebsocketCronService {
   @Cron('*/3 * * * * *')
   @Lock({ name: 'Push custom transactions to subscribers', verbose: true })
   async handleCustomTransactionsUpdate() {
-    // TODO: add support for multiple key prefixes
-    if (this.connectionHandler.countSubscriptionsByPrefix('custom-tx-') === 0) {
+    if (this.connectionHandler.hasSubscriptionsWithPrefixes([TransactionsCustomGateway.keyPrefix]) === false) {
       this.cacheService.deleteLocal(CacheInfo.WsTimestampMsToProcess().key);
       return;
     }

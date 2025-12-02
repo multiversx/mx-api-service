@@ -18,18 +18,15 @@ export class ConnectionHandler implements OnGatewayDisconnect, OnGatewayConnecti
         client.setMaxListeners(12);
     }
 
-    //TODO: add support for multiple key prefixes
-    countSubscriptionsByPrefix(prefix: string): number {
-        let count = 0;
-
+    hasSubscriptionsWithPrefixes(prefixes: string[]): boolean {
         const rooms = this.server.sockets.adapter.rooms;
 
         for (const roomName of rooms.keys()) {
-            if (roomName.startsWith(prefix)) {
-                count++;
+            if (prefixes.some(prefix => roomName.startsWith(prefix))) {
+                return true;
             }
         }
 
-        return count;
+        return false;
     }
 }

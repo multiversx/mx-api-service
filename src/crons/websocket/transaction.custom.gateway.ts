@@ -16,7 +16,7 @@ import { Transaction } from 'src/endpoints/transactions/entities/transaction';
 @WebSocketGateway({ cors: { origin: '*' }, path: '/ws/subscription' })
 export class TransactionsCustomGateway {
   private readonly logger = new OriginLogger(TransactionsCustomGateway.name);
-
+  static keyPrefix = 'custom-tx-';
   @WebSocketServer()
   server!: Server;
 
@@ -31,9 +31,25 @@ export class TransactionsCustomGateway {
     @MessageBody(new WsValidationPipe()) payload: TransactionCustomSubscribePayload) {
 
     const filterIdentifier = RoomKeyGenerator.deterministicStringify(payload);
-    await client.join(`custom-tx-${filterIdentifier}`);
-
+    if (!client.rooms.has(`${TransactionsCustomGateway.keyPrefix}${filterIdentifier}`)) {
+      await client.join(`${TransactionsCustomGateway.keyPrefix}${filterIdentifier}`);
+    }
     return { status: 'success' };
+  }
+
+  @SubscribeMessage('unsubscribeCustomTransactions')
+  async handleCustomUnsubscribe(
+    @ConnectedSocket() client: Socket,
+    @MessageBody(new WsValidationPipe()) payload: TransactionCustomSubscribePayload
+  ) {
+    const filterIdentifier = RoomKeyGenerator.deterministicStringify(payload);
+    const roomName = `${TransactionsCustomGateway.keyPrefix}${filterIdentifier}`;
+
+    if (client.rooms.has(roomName)) {
+      await client.leave(roomName);
+    }
+
+    return { status: 'unsubscribed' };
   }
 
   async pushTransactionsForTimestampMs(timestampMs: number): Promise<void> {
@@ -47,7 +63,7 @@ export class TransactionsCustomGateway {
       const txFilteredForBroadcast: Map<string, Transaction[]> = new Map();
       for (const transaction of allTransactions) {
         const roomKeys = RoomKeyGenerator.generate(
-          'custom-tx-',
+          TransactionsCustomGateway.keyPrefix,
           transaction,
           TransactionCustomSubscribePayload,
         );
@@ -62,10 +78,8 @@ export class TransactionsCustomGateway {
         }
       }
 
-      for (const [roomName] of this.server.sockets.adapter.rooms) {
-        if (txFilteredForBroadcast.has(roomName)) {
-          this.server.to(roomName).emit("customTransactionUpdate", { transactions: txFilteredForBroadcast.get(roomName), timestampMs });
-        }
+      for (const [roomName] of txFilteredForBroadcast) {
+        this.server.to(roomName).emit("customTransactionUpdate", { transactions: txFilteredForBroadcast.get(roomName), timestampMs });
       }
     } catch (error) {
       this.logger.error(error);
