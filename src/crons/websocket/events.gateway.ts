@@ -9,11 +9,13 @@ import { EventsFilter } from '../../endpoints/events/entities/events.filter';
 import { EventsSubscribePayload } from '../../endpoints/events/entities/events.subscribe';
 import { QueryPagination } from 'src/common/entities/query.pagination';
 import { WsSubscriptionLimiterGuard } from 'src/utils/ws.subscription.limiter';
+import { RoomKeyGenerator } from './room.key.generator';
 
 @UseFilters(WebsocketExceptionsFilter)
 @WebSocketGateway({ cors: { origin: '*' }, path: '/ws/subscription' })
 export class EventsGateway {
     private readonly logger = new OriginLogger(EventsGateway.name);
+    static readonly keyPrefix = 'events-';
 
     @WebSocketServer()
     server!: Server;
@@ -27,10 +29,29 @@ export class EventsGateway {
         @MessageBody(new WsValidationPipe()) payload: EventsSubscribePayload,
     ) {
         const filterIdentifier = JSON.stringify(payload);
-        await client.join(`events-${filterIdentifier}`);
+        const roomName = `${EventsGateway.keyPrefix}${filterIdentifier}`;
+        if (!client.rooms.has(roomName)) {
+            await client.join(roomName);
+        }
 
         return { status: 'success' };
     }
+
+    @SubscribeMessage('unsubscribeEvents')
+    async handleUnsubscribe(
+        @ConnectedSocket() client: Socket,
+        @MessageBody(new WsValidationPipe()) payload: EventsSubscribePayload
+    ) {
+        const filterIdentifier = RoomKeyGenerator.deterministicStringify(payload);
+        const roomName = `${EventsGateway.keyPrefix}${filterIdentifier}`;
+
+        if (client.rooms.has(roomName)) {
+            await client.leave(roomName);
+        }
+
+        return { status: 'unsubscribed' };
+    }
+
 
     async pushEventsForRoom(roomName: string): Promise<void> {
         if (!roomName.startsWith("events-")) return;

@@ -10,11 +10,13 @@ import { PoolFilter } from '../../endpoints/pool/entities/pool.filter';
 import { QueryPagination } from 'src/common/entities/query.pagination';
 import { PoolSubscribePayload } from '../../endpoints/pool/entities/pool.subscribe';
 import { WsSubscriptionLimiterGuard } from 'src/utils/ws.subscription.limiter';
+import { RoomKeyGenerator } from './room.key.generator';
 
 @UseFilters(WebsocketExceptionsFilter)
 @WebSocketGateway({ cors: { origin: '*' }, path: '/ws/subscription' })
 export class PoolGateway {
     private readonly logger = new OriginLogger(PoolGateway.name);
+    static readonly keyPrefix = 'pool-';
 
     @WebSocketServer()
     server!: Server;
@@ -27,10 +29,28 @@ export class PoolGateway {
         @ConnectedSocket() client: Socket,
         @MessageBody(new WsValidationPipe()) payload: PoolSubscribePayload,
     ) {
-        const filterIdentifier = JSON.stringify(payload);
-        await client.join(`pool-${filterIdentifier}`);
+        const filterIdentifier = RoomKeyGenerator.deterministicStringify(payload);
+        const roomName = `${PoolGateway.keyPrefix}${filterIdentifier}`;
 
+        if (!client.rooms.has(roomName)) {
+            await client.join(roomName);
+        }
         return { status: 'success' };
+    }
+
+    @SubscribeMessage('unsubscribePool')
+    async handleUnsubscribe(
+        @ConnectedSocket() client: Socket,
+        @MessageBody(new WsValidationPipe()) payload: PoolSubscribePayload
+    ) {
+        const filterIdentifier = RoomKeyGenerator.deterministicStringify(payload);
+        const roomName = `${PoolGateway.keyPrefix}${filterIdentifier}`;
+
+        if (client.rooms.has(roomName)) {
+            await client.leave(roomName);
+        }
+
+        return { status: 'unsubscribed' };
     }
 
     async pushPoolForRoom(roomName: string): Promise<void> {

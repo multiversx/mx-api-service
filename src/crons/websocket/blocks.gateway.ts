@@ -14,6 +14,7 @@ import { WsSubscriptionLimiterGuard } from 'src/utils/ws.subscription.limiter';
 @WebSocketGateway({ cors: { origin: '*' }, path: '/ws/subscription' })
 export class BlocksGateway {
   private readonly logger = new OriginLogger(BlocksGateway.name);
+  static readonly keyPrefix = 'blocks-';
 
   @WebSocketServer()
   server!: Server;
@@ -27,16 +28,35 @@ export class BlocksGateway {
     @MessageBody(new WsValidationPipe()) payload: BlockSubscribePayload
   ) {
     const filterIdentifier = JSON.stringify(payload);
-    await client.join(`blocks-${filterIdentifier}`);
+    const roomName = `${BlocksGateway.keyPrefix}${filterIdentifier}`;
+
+    if (!client.rooms.has(roomName)) {
+      await client.join(roomName);
+    }
 
     return { status: 'success' };
   }
 
+  @SubscribeMessage('unsubscribeBlocks')
+  async handleUnsubscribe(
+    @ConnectedSocket() client: Socket,
+    @MessageBody(new WsValidationPipe()) payload: BlockSubscribePayload
+  ) {
+    const filterIdentifier = JSON.stringify(payload);
+    const roomName = `${BlocksGateway.keyPrefix}${filterIdentifier}`;
+
+    if (client.rooms.has(roomName)) {
+      await client.leave(roomName);
+    }
+
+    return { status: 'unsubscribed' };
+  }
+
   async pushBlocksForRoom(roomName: string): Promise<void> {
-    if (!roomName.startsWith("blocks-")) return;
+    if (!roomName.startsWith(BlocksGateway.keyPrefix)) return;
 
     try {
-      const filterIdentifier = roomName.replace("blocks-", "");
+      const filterIdentifier = roomName.replace(BlocksGateway.keyPrefix, "");
       const filter: BlockSubscribePayload = JSON.parse(filterIdentifier);
 
       const blockFilter = new BlockFilter({

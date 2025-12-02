@@ -19,7 +19,16 @@ export class NetworkGateway {
   @UseGuards(WsSubscriptionLimiterGuard)
   @SubscribeMessage('subscribeStats')
   async handleSubscription(client: Socket) {
-    await client.join('statsRoom');
+    if (!client.rooms.has('statsRoom')) {
+      await client.join('statsRoom');
+    }
+  }
+
+  @SubscribeMessage('unsubscribeStats')
+  async handleUnsubscribe(client: Socket) {
+    if (client.rooms.has('statsRoom')) {
+      await client.leave('statsRoom');
+    }
   }
 
   async pushStats() {

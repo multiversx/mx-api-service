@@ -10,11 +10,13 @@ import { WebsocketExceptionsFilter } from 'src/utils/ws-exceptions.filter';
 import { UseFilters, UseGuards } from '@nestjs/common';
 import { OriginLogger } from '@multiversx/sdk-nestjs-common';
 import { WsSubscriptionLimiterGuard } from 'src/utils/ws.subscription.limiter';
+import { RoomKeyGenerator } from './room.key.generator';
 
 @UseFilters(WebsocketExceptionsFilter)
 @WebSocketGateway({ cors: { origin: '*' }, path: '/ws/subscription' })
 export class TransactionsGateway {
   private readonly logger = new OriginLogger(TransactionsGateway.name);
+  static readonly keyPrefix = 'tx-';
 
   @WebSocketServer()
   server!: Server;
@@ -47,16 +49,35 @@ export class TransactionsGateway {
     TransactionFilter.validate(transactionFilter, payload.size || 25);
 
     const filterIdentifier = JSON.stringify(payload);
-    await client.join(`tx-${filterIdentifier}`);
+    const roomName = `${TransactionsGateway.keyPrefix}${filterIdentifier}`;
+
+    if (!client.rooms.has(roomName)) {
+      await client.join(roomName);
+    }
 
     return { status: 'success' };
   }
 
+  @SubscribeMessage('unsubscribeTransactions')
+  async handleUnsubscribe(
+    @ConnectedSocket() client: Socket,
+    @MessageBody(new WsValidationPipe()) payload: TransactionSubscribePayload
+  ) {
+    const filterIdentifier = RoomKeyGenerator.deterministicStringify(payload);
+    const roomName = `${TransactionsGateway.keyPrefix}${filterIdentifier}`;
+
+    if (client.rooms.has(roomName)) {
+      await client.leave(roomName);
+    }
+
+    return { status: 'unsubscribed' };
+  }
+
   async pushTransactionsForRoom(roomName: string): Promise<void> {
-    if (!roomName.startsWith("tx-")) return;
+    if (!roomName.startsWith(TransactionsGateway.keyPrefix)) return;
 
     try {
-      const filterIdentifier = roomName.replace("tx-", "");
+      const filterIdentifier = roomName.replace(TransactionsGateway.keyPrefix, "");
       const filter = JSON.parse(filterIdentifier);
 
       const options = TransactionQueryOptions.applyDefaultOptions(
