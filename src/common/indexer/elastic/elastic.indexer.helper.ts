@@ -570,7 +570,7 @@ export class ElasticIndexerHelper {
       .withMustMatchCondition('miniBlockHash', filter.miniBlockHash)
       .withMustMultiShouldCondition(filter.hashes, hash => QueryType.Match('_id', hash))
       .withMustMatchCondition('status', filter.status)
-      .withMustMultiShouldCondition(filter.tokens, token => QueryType.Match('tokens', token, QueryOperator.AND))
+      .withMustMultiShouldCondition(filter.tokens, token => QueryType.Match('tokens', token, QueryOperator.AND));
 
     if (filter.before) {
       const timestampBeforeIdentifier = TimeUtils.isTimestampInSeconds(filter.before) ? 'timestamp' : 'timestampMs';
