@@ -71,6 +71,10 @@ features:
   stakingV5:
     enabled: true
     activationEpoch: 1951
+  chainSupernova:
+    enabled: false
+    activationEpoch: 2030
+    activationTimestamp: 1864749472
   deprecatedRelayedV1V2:
     enabled: true
     activationEpoch: 1918
@@ -205,7 +209,3 @@ customUrlHeaders:
   - urlPattern: ''
     headers:
       x-custom-auth: ''
-supernova:
-  activation:
-    epoch: 2030
-    timestamp: 1864749472

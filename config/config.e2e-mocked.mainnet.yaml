@@ -16,6 +16,10 @@ features:
     maxExpirySeconds: 86400
     acceptedOrigins:
       - ''
+  chainSupernova:
+    enabled: false
+    activationEpoch: 2030
+    activationTimestamp: 1864749472
 cron:
   transactionProcessor: false
   transactionProcessorMaxLookBehind: 1000
@@ -79,7 +83,3 @@ test:
 transaction-action:
   mex:
     microServiceUrl: 'https://graph.xexchange.com/graphql'
-supernova:
-  activation:
-    epoch: 2030
-    timestamp: 1864749472

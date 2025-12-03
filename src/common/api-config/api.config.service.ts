@@ -4,6 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import { DatabaseConnectionOptions } from '../persistence/entities/connection.options';
 import { StatusCheckerThresholds } from './entities/status-checker-thresholds';
 import { LogTopic } from '@multiversx/sdk-transaction-processor/lib/types/log-topic';
+import { TimeUtils } from 'src/utils/time.utils';
 
 @Injectable()
 export class ApiConfigService {
@@ -1068,19 +1069,29 @@ export class ApiConfigService {
     return undefined;
   }
 
+  isChainSupernovaEnabled(): boolean {
+    return this.configService.get<boolean>('features.chainSupernova.enabled') ?? false;
+  }
+
   getSupernovaActivationEpoch(): number {
-    const epoch = this.configService.get<number>('supernova.activation.epoch');
+    if (!this.isChainSupernovaEnabled()) {
+      return TimeUtils.TIMESTAMP_IN_SECONDS_THRESHOLD + 1;
+    }
+    const epoch = this.configService.get<number>('features.chainSupernova.activation.epoch');
     if (epoch == null) {
-      throw new Error('No supernova.activation.epoch present');
+      return TimeUtils.TIMESTAMP_IN_SECONDS_THRESHOLD + 1;
     }
 
     return epoch;
   }
 
   getSupernovaActivationTimestamp(): number {
-    const timestamp = this.configService.get<number>('supernova.activation.timestamp');
+    if (!this.isChainSupernovaEnabled()) {
+      return TimeUtils.TIMESTAMP_IN_SECONDS_THRESHOLD + 1;
+    }
+    const timestamp = this.configService.get<number>('features.chainSupernova.activation.timestamp');
     if (timestamp == null) {
-      throw new Error('No supernova.activation.timestamp present');
+      return TimeUtils.TIMESTAMP_IN_SECONDS_THRESHOLD + 1;
     }
 
     return timestamp;

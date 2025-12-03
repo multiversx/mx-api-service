@@ -71,6 +71,10 @@ features:
   stakingV5:
     enabled: true
     activationEpoch: 1951
+  chainSupernova:
+    enabled: false
+    activationEpoch: 2030
+    activationTimestamp: 1864749472
   nodeEpochsLeft:
     enabled: false
   transactionProcessor:
@@ -191,7 +195,3 @@ stakingV5Inflation:
 nftProcess:
   parallelism: 1
   maxRetries: 3
-supernova:
-  activation:
-    epoch: 2030
-    timestamp: 1864749472
