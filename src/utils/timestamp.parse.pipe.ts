@@ -21,6 +21,9 @@ export class TimestampParsePipe implements PipeTransform {
     }
 
     const normalizedInputMs = TimeUtils.isTimestampInSeconds(valNumber) ? valNumber * 1000 : valNumber;
+    if (!this.apiConfigService.isChainSupernovaEnabled()) {
+      return Math.floor(normalizedInputMs / 1000);
+    }
 
     const supernovaActivationTimestampMs = this.apiConfigService.getSupernovaActivationTimestamp() * 1000;
 
