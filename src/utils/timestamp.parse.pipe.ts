@@ -16,6 +16,10 @@ export class TimestampParsePipe implements PipeTransform {
       throw new BadRequestException('Timestamp must be a number');
     }
 
+    if (valNumber <= 0) {
+      throw new BadRequestException('Timestamp must be a positive number');
+    }
+
     const normalizedInputMs = TimeUtils.isTimestampInSeconds(valNumber) ? valNumber * 1000 : valNumber;
 
     const supernovaActivationTimestampMs = this.apiConfigService.getSupernovaActivationTimestamp() * 1000;
