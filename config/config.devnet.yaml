@@ -197,3 +197,7 @@ compression:
   level: 6
   threshold: 1024
   chunkSize: 16384
+supernova:
+  activation:
+    epoch: 2030
+    timestamp: 1764749472

@@ -30,6 +30,7 @@ import { NftType } from "../entities/nft.type";
 import { EventsFilter } from "src/endpoints/events/entities/events.filter";
 import { Events } from "../entities/events";
 import { EsCircuitBreakerProxy } from "./circuit-breaker/circuit.breaker.proxy.service";
+import { TimeUtils } from "src/utils/time.utils";
 
 @Injectable()
 export class ElasticIndexerService implements IndexerInterface {
@@ -1031,8 +1032,9 @@ export class ElasticIndexerService implements IndexerInterface {
   }
 
   async getBlockByTimestampAndShardId(timestamp: number, shardId: number): Promise<Block | undefined> {
+    const timestampIdentifier = TimeUtils.isTimestampInSeconds(timestamp) ? 'timestamp' : 'timestampMs';
     const elasticQuery = ElasticQuery.create()
-      .withRangeFilter('timestamp', new RangeGreaterThanOrEqual(timestamp))
+      .withRangeFilter(timestampIdentifier, new RangeGreaterThanOrEqual(timestamp))
       .withCondition(QueryConditionOptions.must, [QueryType.Match('shardId', shardId, QueryOperator.AND)])
       .withSort([{ name: 'timestamp', order: ElasticSortOrder.ascending }]);
 

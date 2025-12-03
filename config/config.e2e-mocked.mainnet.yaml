@@ -79,3 +79,7 @@ test:
 transaction-action:
   mex:
     microServiceUrl: 'https://graph.xexchange.com/graphql'
+supernova:
+  activation:
+    epoch: 2030
+    timestamp: 1764749472

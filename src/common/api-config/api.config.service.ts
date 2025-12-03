@@ -1067,4 +1067,22 @@ export class ApiConfigService {
 
     return undefined;
   }
+
+  getSupernovaActivationEpoch(): number {
+    const epoch = this.configService.get<number>('supernova.activation.epoch');
+    if (epoch == null) {
+      throw new Error('No supernova.activation.epoch present');
+    }
+
+    return epoch;
+  }
+
+  getSupernovaActivationTimestamp(): number {
+    const timestamp = this.configService.get<number>('supernova.activation.timestamp');
+    if (timestamp == null) {
+      throw new Error('No supernova.activation.timestamp present');
+    }
+
+    return timestamp;
+  }
 }

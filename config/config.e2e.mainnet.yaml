@@ -191,3 +191,7 @@ stakingV5Inflation:
 nftProcess:
   parallelism: 1
   maxRetries: 3
+supernova:
+  activation:
+    epoch: 2030
+    timestamp: 1764749472
