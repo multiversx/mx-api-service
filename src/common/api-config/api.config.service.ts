@@ -1074,7 +1074,7 @@ export class ApiConfigService {
   }
 
   getSupernovaActivationEpoch(): number {
-    const epoch = this.configService.get<number>('features.chainSupernova.activation.epoch');
+    const epoch = this.configService.get<number>('features.chainSupernova.activationEpoch');
     if (epoch == null) {
       return TimeUtils.TIMESTAMP_IN_SECONDS_THRESHOLD + 1;
     }
@@ -1083,7 +1083,7 @@ export class ApiConfigService {
   }
 
   getSupernovaActivationTimestamp(): number {
-    const timestamp = this.configService.get<number>('features.chainSupernova.activation.timestamp');
+    const timestamp = this.configService.get<number>('features.chainSupernova.activationTimestamp');
     if (timestamp == null) {
       return TimeUtils.TIMESTAMP_IN_SECONDS_THRESHOLD + 1;
     }
