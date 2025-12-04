@@ -5,7 +5,7 @@ import { WsException } from '@nestjs/websockets';
 
 @Injectable()
 export class WsSubscriptionLimiterGuard implements CanActivate {
-  static MAX_ROOMS = 5; // TODO: adjust limit
+  static MAX_ROOMS = 5 + 1; // TODO: adjust limit (5 subscriptions + 1 default room client id)
 
   canActivate(context: ExecutionContext): boolean {
     const client: Socket = context.switchToWs().getClient();
