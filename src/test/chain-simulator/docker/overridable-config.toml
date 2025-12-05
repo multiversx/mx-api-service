@@ -5,5 +5,4 @@ OverridableConfigTomlValues = [
     { File = "systemSmartContractsConfig.toml", Path = "ESDTSystemSCConfig.BaseIssuingCost", Value = "50000000000000000" },  # (0.05 EGLD)
     { File = "config.toml", Path = "Debug.Process.Enabled", Value = false },
     { File = "config.toml", Path = "WebServerAntiflood.WebServerAntifloodEnabled", Value = false}
-    { File = "config.toml", Path = "network", Value = "chain"}
 ]
