@@ -20,6 +20,7 @@ import { Stats } from 'src/endpoints/network/entities/stats';
 import { TransactionsCustomGateway } from './transaction.custom.gateway';
 import { ConnectionHandler } from './connection.handler';
 import { EventsCustomGateway } from './events.custom.gateway';
+import { ApiConfigService } from 'src/common/api-config/api.config.service';
 
 @Injectable()
 @WebSocketGateway({ cors: { origin: '*' }, path: '/ws/subscription' })
@@ -41,6 +42,7 @@ export class WebsocketCronService {
     private readonly transactionsCustomGateway: TransactionsCustomGateway,
     private readonly eventsCustomGateway: EventsCustomGateway,
     private readonly connectionHandler: ConnectionHandler,
+    private readonly apiConfigService: ApiConfigService,
   ) { }
 
   @Cron('*/1 * * * * *')
@@ -132,10 +134,18 @@ export class WebsocketCronService {
   }
 
   private async isElasticDataAvailableForTimestampMs(timestampMs: number, networkStats: Stats) {
-    const nextRoundTimestampMs = timestampMs + networkStats.refreshRate;
+    let nextRoundTimestampMs = timestampMs + networkStats.refreshRate;
+    let searchField = 'timestampMs';
+
+    // todo: remove after timestampMs is supported on chain simulator
+    if (this.apiConfigService.getNetwork() === 'chain') {
+      searchField = 'timestamp';
+      nextRoundTimestampMs = Math.ceil(nextRoundTimestampMs / 1000);
+    }
+
     const rounds = await this.elasticService.getCount(
       'rounds',
-      ElasticQuery.create().withMustCondition(QueryType.Match('timestampMs', nextRoundTimestampMs))
+      ElasticQuery.create().withMustCondition(QueryType.Match(searchField, nextRoundTimestampMs))
     );
 
     return rounds === networkStats.shards + 1; // +1 for metachain

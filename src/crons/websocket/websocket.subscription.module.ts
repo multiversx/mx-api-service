@@ -15,6 +15,7 @@ import { ConnectionHandler } from './connection.handler';
 import { RoundModule } from 'src/endpoints/rounds/round.module';
 import { TransactionsCustomGateway } from './transaction.custom.gateway';
 import { EventsCustomGateway } from './events.custom.gateway';
+import { ApiConfigModule } from 'src/common/api-config/api.config.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { EventsCustomGateway } from './events.custom.gateway';
     PoolModule,
     EventsModule,
     RoundModule,
+    ApiConfigModule,
   ],
   providers: [
     WebsocketCronService,
