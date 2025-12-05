@@ -117,7 +117,7 @@ export class WebsocketCronService {
       // call gateways to process logic for custom subscriptions
       await Promise.all([
         this.transactionsCustomGateway.pushTransactionsForTimestampMs(roundToProcessTimestampMs),
-        this.eventsCustomGateway.pushEventsForTimestampMs(roundToProcessTimestampMs)
+        this.eventsCustomGateway.pushEventsForTimestampMs(roundToProcessTimestampMs),
       ]);
       roundToProcessTimestampMs += stats.refreshRate;
     }
