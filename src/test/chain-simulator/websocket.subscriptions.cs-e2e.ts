@@ -27,8 +27,6 @@ const filterMap = [
 
 
 describe('Websocket subscriptions e2e tests with chain simulator', () => {
-  jest.setTimeout(100000);
-
   const clients: Socket[] = [];
 
   const connectAndSubscribe = (filterKey: string, filter: any, clientId: string) => {
