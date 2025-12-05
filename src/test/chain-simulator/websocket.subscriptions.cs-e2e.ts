@@ -10,19 +10,19 @@ const subscriptionsResponses: Map<string, any[]> = new Map();
 const filters = {
   CLIENT_1: { sender: config.aliceAddress },
   CLIENT_2: { sender: config.bobAddress },
-  CLIENT_3: { sender: config.aliceAddress, receiver: config.bobAddress }
+  CLIENT_3: { sender: config.aliceAddress, receiver: config.bobAddress },
 };
 
 const filterKeys = {
   CLIENT_1: JSON.stringify(filters.CLIENT_1),
   CLIENT_2: JSON.stringify(filters.CLIENT_2),
-  CLIENT_3: JSON.stringify(filters.CLIENT_3)
-}
+  CLIENT_3: JSON.stringify(filters.CLIENT_3),
+};
 
 const filterMap = [
   { key: filterKeys.CLIENT_1, filter: filters.CLIENT_1, clientId: "client1" },
   { key: filterKeys.CLIENT_2, filter: filters.CLIENT_2, clientId: "client2" },
-  { key: filterKeys.CLIENT_3, filter: filters.CLIENT_3, clientId: "client3" }
+  { key: filterKeys.CLIENT_3, filter: filters.CLIENT_3, clientId: "client3" },
 ];
 
 
@@ -38,7 +38,7 @@ describe('Websocket subscriptions e2e tests with chain simulator', () => {
     subscriptionsResponses.set(filterKey, receivedTxs);
 
     const client: Socket = io(WS_SERVER_URL, {
-      path: '/ws/subscription'
+      path: '/ws/subscription',
     });
     clients.push(client);
 
@@ -71,7 +71,6 @@ describe('Websocket subscriptions e2e tests with chain simulator', () => {
     console.log("--- Executing beforeAll (Setup) ---");
 
     try {
-      // 1. Setup Chain Simulator
       await fundAddress(config.chainSimulatorUrl, config.aliceAddress);
       await fundAddress(config.chainSimulatorUrl, config.bobAddress);
       await axios.post(`${config.chainSimulatorUrl}/simulator/generate-blocks/1`);
@@ -81,7 +80,7 @@ describe('Websocket subscriptions e2e tests with chain simulator', () => {
       }
 
       // await for clients to connect
-      console.log(`Awaiting for clients to connect...`)
+      console.log(`Awaiting for clients to connect...`);
       await new Promise(resolve => setTimeout(resolve, 5000));
 
       console.log("\n--- Starting Transactions ---");

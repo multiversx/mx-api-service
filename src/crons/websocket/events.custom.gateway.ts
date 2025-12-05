@@ -91,7 +91,7 @@ export class EventsCustomGateway {
       for (const [roomName] of eventsFilteredForBroadcast) {
         this.server.to(roomName).emit("customEventUpdate", {
           events: eventsFilteredForBroadcast.get(roomName),
-          timestampMs
+          timestampMs,
         });
       }
     } catch (error) {
