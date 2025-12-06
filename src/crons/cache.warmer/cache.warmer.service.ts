@@ -34,6 +34,8 @@ import * as JsonDiff from "json-diff";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { StakeService } from "src/endpoints/stake/stake.service";
 import { ApplicationMostUsed } from "src/endpoints/accounts/entities/application.most.used";
+import { UsersCountRange } from "src/endpoints/applications/entities/application.filter";
+import { UsersCountUtils } from "src/utils/users.count.utils";
 import { NftType } from '../../common/indexer/entities/nft.type';
 
 @Injectable()
@@ -104,6 +106,19 @@ export class CacheWarmerService {
       const handleUpdateAccountAssetsCronJob = new CronJob(CronExpression.EVERY_MINUTE, async () => await this.handleUpdateAccountAssets());
       this.schedulerRegistry.addCronJob('handleUpdateAccountAssets', handleUpdateAccountAssetsCronJob);
       handleUpdateAccountAssetsCronJob.start();
+    }
+
+    if (this.apiConfigService.isUpdateApplicationExtraDetailsEnabled()) {
+      const handleUpdateApplicationIsVerifiedCronJob = new CronJob(CronExpression.EVERY_10_MINUTES, async () => await this.handleUpdateApplicationIsVerified());
+      this.schedulerRegistry.addCronJob('handleUpdateApplicationIsVerified', handleUpdateApplicationIsVerifiedCronJob);
+      handleUpdateApplicationIsVerifiedCronJob.start();
+    }
+
+    for (const range of UsersCountUtils.getAllRanges()) {
+      const cronExpression = UsersCountUtils.getCronScheduleForRange(range);
+      const handleUpdateApplicationMetricsCronJob = new CronJob(cronExpression, async () => await this.handleUpdateApplicationMetrics(range));
+      this.schedulerRegistry.addCronJob(`handleUpdateApplicationMetrics_${range}`, handleUpdateApplicationMetricsCronJob);
+      handleUpdateApplicationMetricsCronJob.start();
     }
   }
 
@@ -412,6 +427,97 @@ export class CacheWarmerService {
           await this.indexerService.setAccountTransfersLast24h(address, newTransfersLast24h);
         }
       }
+    }
+  }
+
+  @Lock({ name: 'Elastic updater: Update application isVerified', verbose: true })
+  async handleUpdateApplicationIsVerified() {
+    const batchSize = 100;
+
+    try {
+      const verifiedAddresses = await this.cachingService.get<string[]>(CacheInfo.VerifiedAccounts.key) || [];
+      const applicationsWithIsVerified = await this.indexerService.getApplicationsWithIsVerified();
+      const allAddressesToUpdate = [...verifiedAddresses, ...applicationsWithIsVerified].distinct();
+      const verifiedSet = new Set(verifiedAddresses);
+
+      const batches = BatchUtils.splitArrayIntoChunks(allAddressesToUpdate, batchSize);
+
+      for (const batch of batches) {
+        for (const address of batch) {
+          try {
+            const application = await this.indexerService.getApplication(address);
+
+            if (!application) {
+              continue;
+            }
+
+            const isVerified = verifiedSet.has(address);
+
+            if (application.api_isVerified !== isVerified) {
+              this.logger.log(`Setting isVerified to ${isVerified} for application with address '${address}'`);
+              await this.indexerService.setApplicationIsVerified(address, isVerified);
+            }
+          } catch (error) {
+            this.logger.error(`Failed to update isVerified for application with address '${address}': ${error}`);
+          }
+        }
+      }
+    } catch (error) {
+      this.logger.error(`Failed to update applications isVerified: ${error}`);
+    }
+  }
+
+  @Lock({ name: 'Update application metrics', verbose: true })
+  async handleUpdateApplicationMetrics(range: UsersCountRange): Promise<void> {
+    this.logger.log(`Starting to update application metrics (users count + fees captured) for range: ${range}`);
+    try {
+      const allApplicationAddresses = await this.indexerService.getAllApplicationAddresses();
+      this.logger.log(`Found ${allApplicationAddresses.length} applications to process for range ${range}`);
+
+      const batchSize = 1000;
+      const batches = BatchUtils.splitArrayIntoChunks(allApplicationAddresses, batchSize);
+
+      for (const [index, batch] of batches.entries()) {
+        this.logger.log(`Processing batch ${index + 1}/${batches.length} for range ${range} (${batch.length} applications)`);
+
+        const promises = batch.map(async (applicationAddress) => {
+          try {
+            const usersCount = await this.indexerService.getApplicationUsersCount(applicationAddress, range);
+            const usersCountCacheKey = CacheInfo.ApplicationUsersCount(applicationAddress, range).key;
+            const cacheTtl = UsersCountUtils.getTTLForRange(range);
+            await this.cachingService.setRemote(usersCountCacheKey, usersCount, cacheTtl);
+
+            const feesCaptured = await this.indexerService.getApplicationFeesCaptured(applicationAddress, range);
+            const feesCacheKey = CacheInfo.ApplicationFeesCaptured(applicationAddress, range).key;
+            await this.cachingService.setRemote(feesCacheKey, feesCaptured, cacheTtl);
+
+            return {
+              address: applicationAddress,
+              usersCount,
+              feesCaptured,
+              success: true,
+            };
+          } catch (error) {
+            this.logger.error(`Error processing application ${applicationAddress} for range ${range}:`, error);
+            return {
+              address: applicationAddress,
+              usersCount: 0,
+              feesCaptured: '0',
+              success: false,
+            };
+          }
+        });
+
+        const results = await Promise.all(promises);
+        const successCount = results.filter(r => r.success).length;
+        const failureCount = results.filter(r => !r.success).length;
+
+        this.logger.log(`Batch ${index + 1}/${batches.length} completed for range ${range}: ${successCount} success, ${failureCount} failures`);
+      }
+
+      this.logger.log(`Completed updating application metrics for range: ${range}`);
+    } catch (error) {
+      this.logger.error(`Error in handleUpdateApplicationMetrics for range ${range}:`, error);
     }
   }
 

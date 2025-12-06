@@ -15,7 +15,7 @@ import { QueryPagination } from "../entities/query.pagination";
 import { Account, AccountHistory, AccountTokenHistory, Block, Collection, MiniBlock, Operation, Round, ScDeploy, ScResult, Tag, Token, TokenAccount, Transaction, ElasticTransactionLogEvent, TransactionReceipt } from "./entities";
 import { AccountAssets } from "../assets/entities/account.assets";
 import { ProviderDelegators } from "./entities/provider.delegators";
-import { ApplicationFilter } from "src/endpoints/applications/entities/application.filter";
+import { ApplicationFilter, UsersCountRange } from "src/endpoints/applications/entities/application.filter";
 import { EventsFilter } from "src/endpoints/events/entities/events.filter";
 import { Events } from "./entities/events";
 
@@ -201,4 +201,18 @@ export interface IndexerInterface {
   getEventsCount(filter: EventsFilter): Promise<number>
 
   getAccountNftReceivedTimestamps(address: string, identifiers: string[]): Promise<Record<string, number>>
+
+  setApplicationExtraProperties(address: string, properties: any): Promise<void>
+
+  getApplicationsWithExtraProperties(): Promise<string[]>
+
+  setApplicationIsVerified(address: string, isVerified: boolean): Promise<void>
+
+  getApplicationsWithIsVerified(): Promise<string[]>
+
+  getApplicationUsersCount(applicationAddress: string, range: UsersCountRange): Promise<number>
+
+  getAllApplicationAddresses(): Promise<string[]>
+
+  getApplicationFeesCaptured(applicationAddress: string, range: UsersCountRange): Promise<string>
 }
