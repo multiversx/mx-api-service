@@ -244,6 +244,27 @@ export class CacheInfo {
     };
   }
 
+  static CollectionTraits(identifier: string): CacheInfo {
+    return {
+      key: `collectionTraits:${identifier}`,
+      ttl: Constants.oneMinute() * 10,
+    };
+  }
+
+  static CollectionRoles(identifier: string): CacheInfo {
+    return {
+      key: `collectionRoles:${identifier}`,
+      ttl: Constants.oneMinute() * 5,
+    };
+  }
+
+  static CollectionLogo(identifier: string): CacheInfo {
+    return {
+      key: `collectionLogo:${identifier}`,
+      ttl: Constants.oneHour(),
+    };
+  }
+
   static EsdtAddressesRoles(identifier: string): CacheInfo {
     return {
       key: `esdt:roles:${identifier}`,

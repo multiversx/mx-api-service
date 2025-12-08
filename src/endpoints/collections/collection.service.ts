@@ -29,6 +29,7 @@ import { CollectionLogo } from "./entities/collection.logo";
 import { ScamInfo } from "src/common/entities/scam-info.dto";
 import { NftType as ElasticNftType } from "src/common/indexer/entities/nft.type";
 import { NftSubType } from "../nfts/entities/nft.sub.type";
+import { ConcurrencyUtils } from "src/utils/concurrency.utils";
 
 @Injectable()
 export class CollectionService {
@@ -159,24 +160,46 @@ export class CollectionService {
   }
 
   async batchGetCollectionsProperties(identifiers: string[]): Promise<{ [key: string]: TokenProperties | undefined }> {
-    if (this.apiConfigService.getCollectionPropertiesFromGateway()) {
-      return await this.getCollectionProperties(identifiers);
+    const result: { [key: string]: TokenProperties | undefined } = {};
+    const chunks = this.splitIntoChunks(identifiers, 300);
+
+    const chunkResults = await ConcurrencyUtils.executeWithConcurrencyLimit(
+      chunks,
+      async (chunk) => {
+        if (this.apiConfigService.getCollectionPropertiesFromGateway()) {
+          return await this.getCollectionProperties(chunk);
+        }
+        return await this.getEsdtProperties(chunk);
+      },
+      4,
+      'CollectionService.batchGetCollectionsProperties'
+    );
+
+    for (const chunkResult of chunkResults) {
+      Object.assign(result, chunkResult);
     }
 
-    return await this.getEsdtProperties(identifiers);
+    return result;
   }
 
   async batchGetCollectionsAssets(identifiers: string[]): Promise<{ [key: string]: TokenAssets | undefined }> {
     const collectionsAssets: { [key: string]: TokenAssets | undefined } = {};
-
     const allAssets = await this.assetsService.getAllTokenAssets();
+    const chunks = this.splitIntoChunks(identifiers, 300);
 
-    await this.cachingService.batchApplyAll(
-      identifiers,
-      identifier => CacheInfo.EsdtAssets(identifier).key,
-      identifier => Promise.resolve(allAssets[identifier]),
-      (identifier, properties) => collectionsAssets[identifier] = properties,
-      CacheInfo.EsdtAssets('').ttl
+    await ConcurrencyUtils.executeWithConcurrencyLimit(
+      chunks,
+      async (chunk) => {
+        await this.cachingService.batchApplyAll(
+          chunk,
+          identifier => CacheInfo.EsdtAssets(identifier).key,
+          identifier => Promise.resolve(allAssets[identifier]),
+          (identifier, properties) => collectionsAssets[identifier] = properties,
+          CacheInfo.EsdtAssets('').ttl
+        );
+      },
+      4,
+      'CollectionService.batchGetCollectionsAssets'
     );
 
     return collectionsAssets;
@@ -230,7 +253,7 @@ export class CollectionService {
 
     this.applyPropertiesToCollectionFromElasticSearch(collectionDetailed, elasticCollection);
 
-    collectionDetailed.traits = await this.persistenceService.getCollectionTraits(identifier) ?? [];
+    collectionDetailed.traits = await this.getCollectionTraitsCached(identifier);
 
     await this.applyCollectionRoles(collectionDetailed, elasticCollection);
 
@@ -238,7 +261,7 @@ export class CollectionService {
   }
 
   async applyCollectionRoles(collection: NftCollectionDetailed | TokenDetailed, elasticCollection: any) {
-    collection.roles = await this.getNftCollectionRolesFromGateway(elasticCollection);
+    collection.roles = await this.getCollectionRolesCached(elasticCollection.token, elasticCollection);
     const isTransferProhibitedByDefault = collection.roles?.some(x => x.canTransfer === true) === true;
     collection.canTransfer = !isTransferProhibitedByDefault;
     if (collection.canTransfer) {
@@ -383,7 +406,7 @@ export class CollectionService {
   }
 
   async getLogoPng(identifier: string): Promise<string | undefined> {
-    const collectionLogo = await this.getCollectionLogo(identifier);
+    const collectionLogo = await this.getCollectionLogoCached(identifier);
     if (!collectionLogo) {
       return;
     }
@@ -392,7 +415,7 @@ export class CollectionService {
   }
 
   async getLogoSvg(identifier: string): Promise<string | undefined> {
-    const collectionLogo = await this.getCollectionLogo(identifier);
+    const collectionLogo = await this.getCollectionLogoCached(identifier);
     if (!collectionLogo) {
       return;
     }
@@ -426,5 +449,41 @@ export class CollectionService {
     );
 
     return collectionsProperties;
+  }
+
+  private splitIntoChunks<T>(items: T[], chunkSize: number): T[][] {
+    if (chunkSize <= 0) {
+      return [items];
+    }
+
+    const chunks: T[][] = [];
+    for (let i = 0; i < items.length; i += chunkSize) {
+      chunks.push(items.slice(i, i + chunkSize));
+    }
+    return chunks;
+  }
+
+  private async getCollectionTraitsCached(identifier: string): Promise<any[]> {
+    return await this.cachingService.getOrSet(
+      CacheInfo.CollectionTraits(identifier).key,
+      async () => await this.persistenceService.getCollectionTraits(identifier) ?? [],
+      CacheInfo.CollectionTraits(identifier).ttl,
+    );
+  }
+
+  private async getCollectionRolesCached(identifier: string, elasticCollection: any): Promise<CollectionRoles[]> {
+    return await this.cachingService.getOrSet(
+      CacheInfo.CollectionRoles(identifier).key,
+      async () => await this.getNftCollectionRolesFromGateway(elasticCollection),
+      CacheInfo.CollectionRoles(identifier).ttl,
+    );
+  }
+
+  private async getCollectionLogoCached(identifier: string): Promise<CollectionLogo | undefined> {
+    return await this.cachingService.getOrSet(
+      CacheInfo.CollectionLogo(identifier).key,
+      async () => await this.getCollectionLogo(identifier),
+      CacheInfo.CollectionLogo(identifier).ttl,
+    );
   }
 }
