@@ -65,20 +65,33 @@ export class NftService {
   }
 
   async getNfts(queryPagination: QueryPagination, filter: NftFilter, queryOptions?: NftQueryOptions): Promise<Nft[]> {
-    const { from, size } = queryPagination;
+    const executeGetNfts = async (): Promise<Nft[]> => {
+      const { from, size } = queryPagination;
 
-    const nfts = await this.getNftsInternal({ from, size }, filter);
+      const nfts = await this.getNftsInternal({ from, size }, filter);
 
-    await Promise.all([
-      this.conditionallyApplyAssetsAndTicker(nfts, undefined, queryOptions),
-      this.conditionallyApplyOwners(nfts, queryOptions),
-      this.conditionallyApplySupply(nfts, queryOptions),
-      this.batchProcessNfts(nfts),
-    ]);
+      await Promise.all([
+        this.conditionallyApplyAssetsAndTicker(nfts, undefined, queryOptions),
+        this.conditionallyApplyOwners(nfts, queryOptions),
+        this.conditionallyApplySupply(nfts, queryOptions),
+        this.batchProcessNfts(nfts),
+      ]);
 
-    await this.batchApplyUnlockFields(nfts);
+      await this.batchApplyUnlockFields(nfts);
 
-    return nfts;
+      return nfts;
+    };
+
+    if (this.isCacheableNftList(filter, queryOptions)) {
+      const cacheInfo = CacheInfo.Nfts(queryPagination);
+      return await this.cachingService.getOrSet(
+        cacheInfo.key,
+        executeGetNfts,
+        cacheInfo.ttl,
+      );
+    }
+
+    return await executeGetNfts();
   }
 
   private async batchProcessNfts(nfts: Nft[], fields?: string[]) {
@@ -501,6 +514,14 @@ export class NftService {
   }
 
   async getNftCount(filter: NftFilter): Promise<number> {
+    if (this.isCacheableNftCount(filter)) {
+      return await this.cachingService.getOrSet(
+        CacheInfo.NftsCount.key,
+        async () => await this.indexerService.getNftCount(filter),
+        CacheInfo.NftsCount.ttl,
+      );
+    }
+
     return await this.indexerService.getNftCount(filter);
   }
 
@@ -729,5 +750,40 @@ export class NftService {
       this.logger.error(`Error when applying redirect media for NFT with identifier '${nft.identifier}'`);
       this.logger.error(error);
     }
+  }
+
+  private isDefaultNftFilter(filter: NftFilter): boolean {
+    return !filter.search &&
+      !(filter.identifiers && filter.identifiers.length > 0) &&
+      !(filter.type && filter.type.length > 0) &&
+      !(filter.subType && filter.subType.length > 0) &&
+      !filter.collection &&
+      !(filter.collections && filter.collections.length > 0) &&
+      !(filter.tags && filter.tags.length > 0) &&
+      !filter.name &&
+      !filter.creator &&
+      filter.hasUris === undefined &&
+      filter.includeFlagged === undefined &&
+      filter.before === undefined &&
+      filter.after === undefined &&
+      filter.nonceBefore === undefined &&
+      filter.nonceAfter === undefined &&
+      filter.isWhitelistedStorage === undefined &&
+      filter.isNsfw === undefined &&
+      filter.isScam === undefined &&
+      filter.scamType === undefined &&
+      !filter.traits &&
+      filter.excludeMetaESDT === undefined &&
+      filter.sort === undefined &&
+      filter.order === undefined;
+  }
+
+  private isCacheableNftList(filter: NftFilter, queryOptions?: NftQueryOptions): boolean {
+    const hasHeavyOptions = queryOptions?.withOwner || queryOptions?.withSupply;
+    return !hasHeavyOptions && this.isDefaultNftFilter(filter);
+  }
+
+  private isCacheableNftCount(filter: NftFilter): boolean {
+    return this.isDefaultNftFilter(filter);
   }
 }

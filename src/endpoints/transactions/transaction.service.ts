@@ -95,6 +95,15 @@ export class TransactionService {
       return this.getTransactionCountForAddress(filter.sender ?? '');
     }
 
+    if (this.isCacheableTransactionCount(filter, address)) {
+      return await this.cachingService.getOrSet(
+        CacheInfo.TransactionsCount.key,
+        async () => await this.indexerService.getTransactionCount(filter, address),
+        CacheInfo.TransactionsCount.ttl,
+        Constants.oneSecond(),
+      );
+    }
+
     return await this.indexerService.getTransactionCount(filter, address);
   }
 
@@ -192,53 +201,67 @@ export class TransactionService {
   }
 
   async getTransactions(filter: TransactionFilter, pagination: QueryPagination, queryOptions?: TransactionQueryOptions, address?: string, fields?: string[]): Promise<Transaction[]> {
-    const elasticTransactions = await this.indexerService.getTransactions(filter, pagination, address);
+    const computeTransactions = async (): Promise<Transaction[]> => {
+      const elasticTransactions = await this.indexerService.getTransactions(filter, pagination, address);
 
-    let transactions: TransactionDetailed[] = [];
-    transactions = elasticTransactions.map(x => ApiUtils.mergeObjects(new TransactionDetailed(), x));
+      let transactions: TransactionDetailed[] = [];
+      transactions = elasticTransactions.map(x => ApiUtils.mergeObjects(new TransactionDetailed(), x));
 
-    const hasSenderFilter = filter.sender || (filter.senders && filter.senders.length > 0);
-    const hasReceiverFilter = filter.receivers && filter.receivers.length > 0;
+      const hasSenderFilter = filter.sender || (filter.senders && filter.senders.length > 0);
+      const hasReceiverFilter = filter.receivers && filter.receivers.length > 0;
 
-    if (address && !hasSenderFilter && !hasReceiverFilter) {
-      transactions = this.reorderAccountSentTransactionsByNonce(transactions, address);
-    }
+      if (address && !hasSenderFilter && !hasReceiverFilter) {
+        transactions = this.reorderAccountSentTransactionsByNonce(transactions, address);
+      }
 
-    if (filter.hashes) {
-      const txHashes: string[] = filter.hashes;
-      const elasticHashes = elasticTransactions.map(({ txHash }: any) => txHash);
-      const missingHashes: string[] = txHashes.except(elasticHashes);
+      if (filter.hashes) {
+        const txHashes: string[] = filter.hashes;
+        const elasticHashes = elasticTransactions.map(({ txHash }: any) => txHash);
+        const missingHashes: string[] = txHashes.except(elasticHashes);
 
-      const gatewayTransactions = await Promise.all(missingHashes.map((txHash) => this.transactionGetService.tryGetTransactionFromGatewayForList(txHash)));
-      for (const gatewayTransaction of gatewayTransactions) {
-        if (gatewayTransaction) {
-          transactions.push(ApiUtils.mergeObjects(new TransactionDetailed(), gatewayTransaction));
+        const gatewayTransactions = await Promise.all(missingHashes.map((txHash) => this.transactionGetService.tryGetTransactionFromGatewayForList(txHash)));
+        for (const gatewayTransaction of gatewayTransactions) {
+          if (gatewayTransaction) {
+            transactions.push(ApiUtils.mergeObjects(new TransactionDetailed(), gatewayTransaction));
+          }
         }
       }
+
+      if ((queryOptions && queryOptions.withBlockInfo) || (fields && fields.includesSome(['senderBlockHash', 'receiverBlockHash', 'senderBlockNonce', 'receiverBlockNonce']))) {
+        await this.applyBlockInfo(transactions);
+      }
+
+      if (queryOptions && (queryOptions.withScResults || queryOptions.withOperations || queryOptions.withLogs)) {
+        queryOptions.withScResultLogs = queryOptions.withLogs;
+        transactions = await this.getExtraDetailsForTransactions(elasticTransactions, transactions, queryOptions);
+      }
+
+      for (const transaction of transactions) {
+        transaction.type = undefined;
+      }
+
+      await this.processTransactions(transactions, {
+        withScamInfo: queryOptions?.withScamInfo ?? false,
+        withUsername: queryOptions?.withUsername ?? false,
+        withActionTransferValue: queryOptions?.withActionTransferValue ?? false,
+      });
+
+      this.processRelayedInfo(transactions);
+
+      return transactions;
+    };
+
+    if (this.isCacheableTransactionList(filter, queryOptions, fields, address)) {
+      const cacheInfo = CacheInfo.Transactions(pagination);
+      return await this.cachingService.getOrSet(
+        cacheInfo.key,
+        computeTransactions,
+        cacheInfo.ttl,
+        Constants.oneSecond(),
+      );
     }
 
-    if ((queryOptions && queryOptions.withBlockInfo) || (fields && fields.includesSome(['senderBlockHash', 'receiverBlockHash', 'senderBlockNonce', 'receiverBlockNonce']))) {
-      await this.applyBlockInfo(transactions);
-    }
-
-    if (queryOptions && (queryOptions.withScResults || queryOptions.withOperations || queryOptions.withLogs)) {
-      queryOptions.withScResultLogs = queryOptions.withLogs;
-      transactions = await this.getExtraDetailsForTransactions(elasticTransactions, transactions, queryOptions);
-    }
-
-    for (const transaction of transactions) {
-      transaction.type = undefined;
-    }
-
-    await this.processTransactions(transactions, {
-      withScamInfo: queryOptions?.withScamInfo ?? false,
-      withUsername: queryOptions?.withUsername ?? false,
-      withActionTransferValue: queryOptions?.withActionTransferValue ?? false,
-    });
-
-    this.processRelayedInfo(transactions);
-
-    return transactions;
+    return await computeTransactions();
   }
 
   private getAssetsFromUsername(username: string | null | undefined): AccountAssets | undefined {
@@ -819,5 +842,53 @@ export class TransactionService {
     }
 
     return buckets;
+  }
+
+  private isEmptyTransactionFilter(filter: TransactionFilter): boolean {
+    return !filter.address &&
+      !filter.sender &&
+      !(filter.senders && filter.senders.length > 0) &&
+      !(filter.receivers && filter.receivers.length > 0) &&
+      !filter.token &&
+      !(filter.tokens && filter.tokens.length > 0) &&
+      !(filter.functions && filter.functions.length > 0) &&
+      filter.senderShard === undefined &&
+      filter.receiverShard === undefined &&
+      !filter.miniBlockHash &&
+      !(filter.hashes && filter.hashes.length > 0) &&
+      filter.status === undefined &&
+      filter.before === undefined &&
+      filter.after === undefined &&
+      filter.condition === undefined &&
+      filter.order === undefined &&
+      filter.senderOrReceiver === undefined &&
+      filter.isScCall === undefined &&
+      filter.isRelayed === undefined &&
+      filter.relayer === undefined &&
+      filter.round === undefined &&
+      filter.withRefunds === undefined &&
+      filter.withRelayedScresults === undefined &&
+      filter.withTxsRelayedByAddress === undefined;
+  }
+
+  private isCacheableTransactionList(filter: TransactionFilter, queryOptions?: TransactionQueryOptions, fields?: string[], address?: string): boolean {
+    const hasFieldSelection = Array.isArray(fields) && fields.length > 0;
+    if (address || hasFieldSelection || !this.isEmptyTransactionFilter(filter) || !queryOptions) {
+      return false;
+    }
+
+    const hasNonDefaultOptions = queryOptions.withScResults ||
+      queryOptions.withBlockInfo ||
+      queryOptions.withActionTransferValue ||
+      queryOptions.withUsername ||
+      queryOptions.withTxsOrder ||
+      queryOptions.withOperations === false ||
+      queryOptions.withLogs === false;
+
+    return !hasNonDefaultOptions;
+  }
+
+  private isCacheableTransactionCount(filter: TransactionFilter, address?: string): boolean {
+    return !address && this.isEmptyTransactionFilter(filter);
   }
 }

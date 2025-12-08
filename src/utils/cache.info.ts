@@ -105,6 +105,18 @@ export class CacheInfo {
     };
   }
 
+  static Transactions(queryPagination: QueryPagination): CacheInfo {
+    return {
+      key: `transactions:${queryPagination.from}:${queryPagination.size}`,
+      ttl: Constants.oneSecond() * 6,
+    };
+  }
+
+  static TransactionsCount: CacheInfo = {
+    key: 'transactions:count',
+    ttl: Constants.oneSecond() * 6,
+  };
+
   static IdentityProfilesKeybases: CacheInfo = {
     key: 'identityProfilesKeybases',
     ttl: Constants.oneHour(),
@@ -172,6 +184,18 @@ export class CacheInfo {
   static TokenAssets: CacheInfo = {
     key: 'tokenAssets',
     ttl: Constants.oneDay(),
+  };
+
+  static Nfts(queryPagination: QueryPagination): CacheInfo {
+    return {
+      key: `nfts:${queryPagination.from}:${queryPagination.size}`,
+      ttl: Constants.oneSecond() * 6,
+    };
+  }
+
+  static NftsCount: CacheInfo = {
+    key: 'nfts:count',
+    ttl: Constants.oneSecond() * 6,
   };
 
   static CollectionRanks: CacheInfo = {
