@@ -19,7 +19,6 @@ import { Events } from 'src/endpoints/events/entities/events';
 export class EventsCustomGateway {
   private readonly logger = new OriginLogger(EventsCustomGateway.name);
 
-  // Prefix distinct pentru camerele de evenimente pentru a nu se suprapune cu txs
   static keyPrefix = 'custom-events-';
 
   @WebSocketServer()
