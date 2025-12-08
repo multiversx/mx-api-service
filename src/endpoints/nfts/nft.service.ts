@@ -31,6 +31,7 @@ import { SortCollectionNfts } from "../collections/entities/sort.collection.nfts
 import { TokenAssets } from "src/common/assets/entities/token.assets";
 import { ScamInfo } from "src/common/entities/scam-info.dto";
 import { NftSubType } from "./entities/nft.sub.type";
+import { ConcurrencyUtils } from "src/utils/concurrency.utils";
 
 @Injectable()
 export class NftService {
@@ -127,21 +128,15 @@ export class NftService {
       return;
     }
 
-    const nftsIdentifiers = nfts.filter(x => x.type === NftType.NonFungibleESDT).map(x => x.identifier);
+    const nftsIdentifiers = nfts
+      .filter(x => x.type === NftType.NonFungibleESDT)
+      .map(x => x.identifier);
 
     if (nftsIdentifiers.length === 0) {
       return;
     }
 
-    const accountsEsdts = await this.getAccountEsdtByIdentifiers(nftsIdentifiers, {
-      from: 0,
-      size: nftsIdentifiers.length,
-    });
-
-    const ownerMap = accountsEsdts.reduce((acc: Record<string, string>, accountEsdt: any) => {
-      acc[accountEsdt.identifier] = accountEsdt.address;
-      return acc;
-    }, {});
+    const ownerMap = await this.getOwnersBulk(nftsIdentifiers);
 
     for (const nft of nfts) {
       if (nft.type === NftType.NonFungibleESDT && ownerMap[nft.identifier]) {
@@ -193,6 +188,29 @@ export class NftService {
       (nft, value) => nft.supply = value.totalSupply,
       CacheInfo.TokenSupply('').ttl,
     );
+  }
+
+  private async getOwnersBulk(identifiers: string[], chunkSize: number = 512, concurrencyLimit: number = 4): Promise<Record<string, string>> {
+    if (identifiers.length === 0) {
+      return {};
+    }
+
+    const chunks = BatchUtils.splitArrayIntoChunks(identifiers.distinct(), chunkSize);
+    const results = await ConcurrencyUtils.executeWithConcurrencyLimit(
+      chunks,
+      async (chunk) => await this.getAccountEsdtByIdentifiers(chunk, { from: 0, size: chunk.length }),
+      concurrencyLimit,
+      'NftService.getOwnersBulk'
+    );
+
+    const ownerMap: Record<string, string> = {};
+    for (const chunkResult of results) {
+      for (const accountEsdt of chunkResult ?? []) {
+        ownerMap[accountEsdt.identifier] = accountEsdt.address;
+      }
+    }
+
+    return ownerMap;
   }
 
   private async batchApplyMedia(nfts: Nft[], fields?: string[]) {
@@ -570,15 +588,18 @@ export class NftService {
   }
 
   private async getNftsInternalByIdentifiers(identifiers: string[]): Promise<Nft[]> {
-    const chunks = BatchUtils.splitArrayIntoChunks(identifiers, 1024);
-    const result: Nft[] = [];
-    for (const identifiers of chunks) {
-      const internalNfts = await this.getNftsInternal(new QueryPagination({ from: 0, size: identifiers.length }), new NftFilter({ identifiers }));
+    const chunks = BatchUtils.splitArrayIntoChunks(identifiers, 512);
+    const results = await ConcurrencyUtils.executeWithConcurrencyLimit(
+      chunks,
+      async (chunk) => await this.getNftsInternal(
+        new QueryPagination({ from: 0, size: chunk.length }),
+        new NftFilter({ identifiers: chunk })
+      ),
+      4,
+      'NftService.getNftsInternalByIdentifiers'
+    );
 
-      result.push(...internalNfts);
-    }
-
-    return result;
+    return results.flat();
   }
 
   private async applyPriceUsd(nft: NftAccount, fields?: string[]) {
