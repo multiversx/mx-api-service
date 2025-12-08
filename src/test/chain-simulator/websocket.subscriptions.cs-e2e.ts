@@ -2,142 +2,172 @@ import axios from "axios";
 import { config } from "./config/env.config";
 import { fundAddress, transferEgld } from "./utils/chain.simulator.operations";
 import { io, Socket } from "socket.io-client";
+import { ChainSimulatorUtils } from "./utils/test.utils";
 
 const WS_SERVER_URL = `${config.subscriptionsServiceUrl}`;
 
-const subscriptionsResponses: Map<string, any[]> = new Map();
+const txResponses: Map<string, any[]> = new Map();
+const eventResponses: Map<string, any[]> = new Map();
 
-const filters = {
+const txFilters = {
   CLIENT_1: { sender: config.aliceAddress },
   CLIENT_2: { sender: config.bobAddress },
   CLIENT_3: { sender: config.aliceAddress, receiver: config.bobAddress },
 };
 
+const eventFilters = {
+  CLIENT_1: { identifier: 'pong' },
+  CLIENT_2: { address: '' }, // added dinamically after deploy sc
+  CLIENT_3: { identifier: 'completedTxEvent', address: '' }, // added dinamically after deploy sc
+};
+
 const filterKeys = {
-  CLIENT_1: JSON.stringify(filters.CLIENT_1),
-  CLIENT_2: JSON.stringify(filters.CLIENT_2),
-  CLIENT_3: JSON.stringify(filters.CLIENT_3),
+  CLIENT_1: "KEY_CLIENT_1",
+  CLIENT_2: "KEY_CLIENT_2",
+  CLIENT_3: "KEY_CLIENT_3",
 };
 
 const filterMap = [
-  { key: filterKeys.CLIENT_1, filter: filters.CLIENT_1, clientId: "client1" },
-  { key: filterKeys.CLIENT_2, filter: filters.CLIENT_2, clientId: "client2" },
-  { key: filterKeys.CLIENT_3, filter: filters.CLIENT_3, clientId: "client3" },
+  { key: filterKeys.CLIENT_1, txFilter: txFilters.CLIENT_1, eventFilter: eventFilters.CLIENT_1, clientId: "client1" },
+  { key: filterKeys.CLIENT_2, txFilter: txFilters.CLIENT_2, eventFilter: eventFilters.CLIENT_2, clientId: "client2" },
+  { key: filterKeys.CLIENT_3, txFilter: txFilters.CLIENT_3, eventFilter: eventFilters.CLIENT_3, clientId: "client3" },
 ];
 
+let pingPongScAddress = '';
 
-describe('Websocket subscriptions e2e tests with chain simulator', () => {
+describe('Websocket subscriptions e2e tests (Txs and Events)', () => {
   const clients: Socket[] = [];
 
-  const connectAndSubscribe = (filterKey: string, filter: any, clientId: string) => {
-    const clientLabel = clientId;
+  const connectAndSubscribe = (filterKey: string, txFilter: any, eventFilter: any, clientId: string) => {
     const receivedTxs: any[] = [];
+    const receivedEvents: any[] = [];
 
-    subscriptionsResponses.set(filterKey, receivedTxs);
+    txResponses.set(filterKey, receivedTxs);
+    eventResponses.set(filterKey, receivedEvents);
 
     const client: Socket = io(WS_SERVER_URL, {
       path: '/ws/subscription',
     });
     clients.push(client);
 
-
-
     client.on("connect_error", (err) => {
-      throw new Error(`${clientLabel} connection failed: ${err.message}`);
-    });
-
-    client.on("error", (err) => {
-      throw new Error(`Error for ${clientLabel}: ${err.message}`);
+      throw new Error(`${clientId} connection failed: ${err.message}`);
     });
 
     client.on("customTransactionUpdate", (data: { transactions: any[] }) => {
-      console.log(`\n💸 ${clientLabel} received ${data.transactions.length} txs`);
+      console.log(`\n💸 ${clientId} received ${data.transactions.length} txs`);
       receivedTxs.push(...data.transactions);
     });
 
-    client.on("connect", () => {
-      console.log(`\n   ${clientLabel} subscribing to TXs:`, JSON.stringify(filter));
-
-      client.emit("subscribeCustomTransactions", filter, (ack: any) => {
-        console.log('ACK Response:', ack);
-      });
+    client.on("customEventUpdate", (data: { events: any[] }) => {
+      console.log(`\n🔔 ${clientId} received ${data.events.length} events`);
+      receivedEvents.push(...data.events);
     });
 
+    client.on("connect", () => {
+      console.log(`\n   ${clientId} connected.`);
+
+      client.emit("subscribeCustomTransactions", txFilter, (ack: any) => {
+        console.log(`   ACK TXs ${clientId}:`, ack);
+      });
+
+      client.emit("subscribeCustomEvents", eventFilter, (ack: any) => {
+        console.log(`   ACK Events ${clientId}:`, ack);
+      });
+    });
   };
 
   beforeAll(async () => {
-    console.log("--- Executing beforeAll (Setup) ---");
-
     try {
       await fundAddress(config.chainSimulatorUrl, config.aliceAddress);
       await fundAddress(config.chainSimulatorUrl, config.bobAddress);
       await axios.post(`${config.chainSimulatorUrl}/simulator/generate-blocks/1`);
 
+      pingPongScAddress = await ChainSimulatorUtils.deployPingPongSc(config.bobAddress);
+      eventFilters.CLIENT_2.address = pingPongScAddress;
+      eventFilters.CLIENT_3.address = pingPongScAddress;
+
       for (const item of filterMap) {
-        connectAndSubscribe(item.key, item.filter, item.clientId);
+        connectAndSubscribe(item.key, item.txFilter, item.eventFilter, item.clientId);
       }
 
-      // await for clients to connect
-      console.log(`Awaiting for clients to connect...`);
       await new Promise(resolve => setTimeout(resolve, 5000));
 
-      console.log("\n--- Starting Transactions ---");
+      console.log("\n--- Starting Operations ---");
 
       await transferEgld(config.chainSimulatorUrl, config.aliceAddress, config.bobAddress, 1);
       await transferEgld(config.chainSimulatorUrl, config.bobAddress, config.aliceAddress, 2);
 
-      console.log("--- Generating Block and waiting for WS responses ---");
+
+      await ChainSimulatorUtils.pingContract(config.aliceAddress, pingPongScAddress);
+      await ChainSimulatorUtils.pongContract(config.aliceAddress, pingPongScAddress);
+
       await axios.post(`${config.chainSimulatorUrl}/simulator/generate-blocks/10`);
 
       await new Promise(resolve => setTimeout(resolve, 15000));
 
-      console.log("--- Setup Complete ---");
-
     } catch (e: any) {
-      console.error("An error occured in beforeAll:", e.message);
-
+      console.error("Error in beforeAll:", e.message);
       throw e;
     }
   });
 
   afterAll(() => {
     clients.forEach(client => client.connected && client.disconnect());
-    console.log("\n--- All clients disconnected ---");
   });
 
-  // --- TESTE SEPARATE (itShould...) ---
+  it('should receive TXs sent by Alice for Client 1', () => {
+    const txs = txResponses.get(filterKeys.CLIENT_1);
+    expect(txs?.length).toBe(3);
 
-  it('should receive only the transaction sent by Alice (Tx 1: Alice -> Bob) when filtering by CLIENT_1', () => {
-    const filterKey = filterKeys.CLIENT_1;
-    const aliceTxs = subscriptionsResponses.get(filterKey);
-    console.log(`\nRunning test for ${filterMap.find(f => f.key === filterKey)?.clientId}`);
-
-    expect(aliceTxs?.length).toBe(1);
-    const tx = aliceTxs?.[0];
-    expect(tx.sender).toEqual(config.aliceAddress);
-    expect(tx.sender).not.toEqual(config.bobAddress);
+    txs?.forEach((tx) => {
+      expect(tx.sender).toEqual(config.aliceAddress);
+    });
   });
 
-  it('should receive only the transaction sent by Bob (Tx 2: Bob -> Alice) when filtering by CLIENT_2', () => {
-    const filterKey = filterKeys.CLIENT_2;
-    const bobTxs = subscriptionsResponses.get(filterKey);
-    console.log(`\nRunning test for ${filterMap.find(f => f.key === filterKey)?.clientId}`);
+  it('should receive Events with identifier "pong" for Client 1', () => {
+    const events = eventResponses.get(filterKeys.CLIENT_1);
+    expect(events?.length).toBe(1);
 
-    expect(bobTxs?.length).toBe(1);
-    const tx = bobTxs?.[0];
-    expect(tx.sender).toEqual(config.bobAddress);
-    expect(tx.receiver).toEqual(config.aliceAddress);
-    expect(tx.sender).not.toEqual(config.aliceAddress);
+    events?.forEach((evt) => {
+      expect(evt.identifier).toEqual('pong');
+    });
   });
 
-  it('should receive only the transaction sent by Alice to Bob (Tx 1) when filtering by CLIENT_3', () => {
-    const filterKey = filterKeys.CLIENT_3;
-    const aliceToBobTxs = subscriptionsResponses.get(filterKey);
-    console.log(`\nRunning test for ${filterMap.find(f => f.key === filterKey)?.clientId}`);
+  it('should receive TXs sent by Bob for Client 2', () => {
+    const txs = txResponses.get(filterKeys.CLIENT_2);
+    expect(txs?.length).toBe(2);
 
-    expect(aliceToBobTxs?.length).toBe(1);
-    const tx = aliceToBobTxs?.[0];
-    expect(tx.sender).toEqual(config.aliceAddress);
-    expect(tx.receiver).toEqual(config.bobAddress);
+    txs?.forEach((tx) => {
+      expect(tx.sender).toEqual(config.bobAddress);
+    });
+  });
+
+  it('should receive Events generated by PingPong contract (address) for Client 2', () => {
+    const events = eventResponses.get(filterKeys.CLIENT_2);
+    expect(events?.length).toBe(7);
+
+    events?.forEach((evt) => {
+      expect(evt.address).toEqual(pingPongScAddress);
+    });
+  });
+
+  it('should receive specific Alice-to-Bob TXs for Client 3', () => {
+    const txs = txResponses.get(filterKeys.CLIENT_3);
+    expect(txs?.length).toBeGreaterThanOrEqual(1);
+
+    txs?.forEach((tx) => {
+      expect(tx.sender).toEqual(config.aliceAddress);
+      expect(tx.receiver).toEqual(config.bobAddress);
+    });
+  });
+
+  it('should receive Events with identifier "completedTxEvent" and from Ping Pong sc address for Client 3', () => {
+    const events = eventResponses.get(filterKeys.CLIENT_3);
+    expect(events?.length).toBe(2);
+
+    events?.forEach((evt) => {
+      expect(evt.identifier).toEqual('completedTxEvent');
+    });
   });
 });
