@@ -45,21 +45,6 @@ export class WebsocketCronService {
     private readonly apiConfigService: ApiConfigService,
   ) { }
 
-  @Cron('*/1 * * * * *')
-  handleWebsocketMetrics() {
-    const connectedClients = this.server.sockets.sockets.size ?? 0;
-    // TODO: add more metrics in the future
-    // const subscriptions: Record<string, number> = {};
-
-    // this.server.sockets.adapter.rooms.forEach((socketsSet, roomName) => {
-    //   subscriptions[roomName] = socketsSet.size;
-    // });
-
-    this.eventEmitter.emit(MetricsEvents.SetWebsocketMetrics, {
-      connectedClients,
-    });
-  }
-
   @Cron('*/6 * * * * *')
   @Lock({ name: 'Push transactions to subscribers', verbose: true })
   async handleTransactionsUpdate() {
@@ -126,6 +111,59 @@ export class WebsocketCronService {
       roundToProcessTimestampMs,
       CacheInfo.WsTimestampMsToProcess().ttl,
     );
+  }
+
+  @Cron('*/10 * * * * *')
+  @Lock({ name: 'Push websocket subscriptions metrics', verbose: true })
+  handleWebsocketMetrics() {
+    const connectedClients = this.server.sockets.sockets.size ?? 0;
+
+    // Efficient unique-listener counts per topic
+    const adapter = this.server.sockets.adapter as any;
+    const sids: Map<string, Set<string>> = adapter?.sids ?? new Map();
+
+    const topicPrefixes: Array<{ key: string; prefix?: string; room?: string }> = [
+      { key: 'tx', prefix: TransactionsGateway.keyPrefix },
+      { key: 'customTx', prefix: TransactionsCustomGateway.keyPrefix },
+      { key: 'events', prefix: EventsGateway.keyPrefix },
+      { key: 'customEvents', prefix: EventsCustomGateway.keyPrefix },
+      { key: 'blocks', prefix: BlocksGateway.keyPrefix },
+      { key: 'pool', prefix: PoolGateway.keyPrefix },
+      { key: 'stats', room: 'statsRoom' },
+    ];
+
+    const topics: Record<string, number> = {};
+    for (const { key } of topicPrefixes) topics[key] = 0;
+
+    // Count unique sockets per prefix-based topic by scanning socket -> rooms map once
+    if (sids && sids.size > 0) {
+      for (const [, rooms] of sids) {
+        // Track whether this socket has been counted for a given topic key
+        const matched: Record<string, boolean> = {};
+
+        for (const roomName of rooms) {
+          for (const { key, prefix } of topicPrefixes) {
+            if (!prefix || matched[key]) continue;
+            if (roomName.startsWith(prefix)) {
+              topics[key] += 1;
+              matched[key] = true;
+            }
+          }
+        }
+      }
+    }
+
+    // Handle exact-room topics (like statsRoom) directly from rooms map
+    const rooms: Map<string, Set<string>> = adapter?.rooms ?? new Map();
+    const statsRoomSet = rooms.get('statsRoom');
+    if (statsRoomSet) {
+      topics['stats'] = statsRoomSet.size;
+    }
+
+    this.eventEmitter.emit(MetricsEvents.SetWebsocketMetrics, {
+      connectedClients,
+      topics,
+    });
   }
 
   private async getLatestRoundOnChainData() {
