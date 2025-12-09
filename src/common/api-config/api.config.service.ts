@@ -907,6 +907,23 @@ export class ApiConfigService {
     return this.configService.get<number>('features.stakingV5.activationEpoch') ?? 99999;
   }
 
+  isDeprecatedRelayedV1V2Enabled(): boolean {
+    return this.configService.get<boolean>('features.deprecatedRelayedV1V2.enabled') ?? false;
+  }
+
+  getDeprecatedRelayedV1V2ActivationEpoch(): number {
+    return this.configService.get<number>('features.deprecatedRelayedV1V2.activationEpoch') ?? 99999;
+  }
+
+  shouldDeprecateRelayedV1V2(epoch: number): boolean {
+    const isEnabled = this.isDeprecatedRelayedV1V2Enabled();
+    if (!isEnabled) {
+      return false;
+    }
+
+    return epoch >= this.getDeprecatedRelayedV1V2ActivationEpoch();
+  }
+
   isAssetsCdnFeatureEnabled(): boolean {
     return this.configService.get<boolean>('features.assetsFetch.enabled') ?? false;
   }
