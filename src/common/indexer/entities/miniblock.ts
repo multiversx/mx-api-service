@@ -7,6 +7,7 @@ export interface MiniBlock {
   type: string;
   procTypeD: string;
   timestamp: number;
+  timestampMs?: number;
   procTypeS: string;
   senderBlockNonce: string;
   receiverBlockNonce: string;

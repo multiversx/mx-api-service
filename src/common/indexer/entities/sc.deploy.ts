@@ -5,6 +5,7 @@ export interface ScDeploy {
   initialCodeHash: string;
   deployer: string;
   timestamp: number;
+  timestampMs?: number;
   upgrades: ScDeployUpgrade[];
 }
 
