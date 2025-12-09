@@ -54,9 +54,8 @@ export class TransactionsCustomGateway {
 
   async pushTransactionsForTimestampMs(timestampMs: number): Promise<void> {
     try {
-      const timestamp = timestampMs / 1000; // TODO: add support for timestampMs
       const allTransactions = await this.transactionService.getTransactions(
-        new TransactionFilter({ before: timestamp, after: timestamp }),
+        new TransactionFilter({ before: timestampMs, after: timestampMs }),
         new QueryPagination({ size: 10000 }) // TODO: handle pagination with more than 10k txs
       );
 

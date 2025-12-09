@@ -61,11 +61,9 @@ export class EventsCustomGateway {
 
   async pushEventsForTimestampMs(timestampMs: number): Promise<void> {
     try {
-      const timestamp = timestampMs / 1000;
-
       const allEvents = await this.eventsService.getEvents(
         new QueryPagination({ size: 10000 }),
-        new EventsFilter({ before: timestamp, after: timestamp }),
+        new EventsFilter({ before: timestampMs, after: timestampMs }),
       );
 
       const eventsFilteredForBroadcast: Map<string, Events[]> = new Map();
