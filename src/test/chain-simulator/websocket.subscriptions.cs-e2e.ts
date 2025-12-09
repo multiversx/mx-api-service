@@ -6,14 +6,22 @@ import { ChainSimulatorUtils } from "./utils/test.utils";
 
 const WS_SERVER_URL = `${config.subscriptionsServiceUrl}`;
 
-// --- Client 4 Configuration (Editable) ---
+// --- Test Configuration ---
+const verbose = false; // Set to true to see console logs
+
 const client4SubscriptionConfig = {
   pool: { from: 0, size: 25 },
   events: { from: 0, size: 25, shard: 1 },
   transactions: { from: 0, size: 25, status: 'success' },
   blocks: { from: 0, size: 25, shard: 1 },
 };
-// -----------------------------------------
+// --------------------------
+
+const log = (...args: any[]) => {
+  if (verbose) {
+    console.log(...args);
+  }
+};
 
 const txResponses: Map<string, any[]> = new Map();
 const eventResponses: Map<string, any[]> = new Map();
@@ -72,24 +80,24 @@ describe('Websocket subscriptions e2e tests (Txs and Events)', () => {
     });
 
     client.on("customTransactionUpdate", (data: { transactions: any[] }) => {
-      console.log(`\n💸 ${clientId} received ${data.transactions.length} txs`);
+      log(`\n💸 ${clientId} received ${data.transactions.length} txs`);
       receivedTxs.push(...data.transactions);
     });
 
     client.on("customEventUpdate", (data: { events: any[] }) => {
-      console.log(`\n🔔 ${clientId} received ${data.events.length} events`);
+      log(`\n🔔 ${clientId} received ${data.events.length} events`);
       receivedEvents.push(...data.events);
     });
 
     client.on("connect", () => {
-      console.log(`\n   ${clientId} connected.`);
+      log(`\n   ${clientId} connected.`);
 
       client.emit("subscribeCustomTransactions", txFilter, (ack: any) => {
-        console.log(`   ACK TXs ${clientId}:`, ack);
+        log(`   ACK TXs ${clientId}:`, ack);
       });
 
       client.emit("subscribeCustomEvents", eventFilter, (ack: any) => {
-        console.log(`   ACK Events ${clientId}:`, ack);
+        log(`   ACK Events ${clientId}:`, ack);
       });
     });
   };
@@ -111,15 +119,14 @@ describe('Websocket subscriptions e2e tests (Txs and Events)', () => {
     client.on("statsUpdate", (data: any) => generalResponses.stats.push(data));
 
     client.on("connect", () => {
-      console.log(`\n   ${clientId} connected with specific configs.`);
+      log(`\n   ${clientId} connected with specific configs.`);
 
-      // Max 5 subscriptions per client
-      client.emit("subscribePool", subConfig.pool, (ack: any) => console.log(`ACK Pool ${clientId}:`, ack));
-      client.emit("subscribeEvents", subConfig.events, (ack: any) => console.log(`ACK Events ${clientId}:`, ack));
-      client.emit("subscribeTransactions", subConfig.transactions, (ack: any) => console.log(`ACK Txs ${clientId}:`, ack));
-      client.emit("subscribeBlocks", subConfig.blocks, (ack: any) => console.log(`ACK Blocks ${clientId}:`, ack));
+      client.emit("subscribePool", subConfig.pool, (ack: any) => log(`ACK Pool ${clientId}:`, ack));
+      client.emit("subscribeEvents", subConfig.events, (ack: any) => log(`ACK Events ${clientId}:`, ack));
+      client.emit("subscribeTransactions", subConfig.transactions, (ack: any) => log(`ACK Txs ${clientId}:`, ack));
+      client.emit("subscribeBlocks", subConfig.blocks, (ack: any) => log(`ACK Blocks ${clientId}:`, ack));
 
-      client.emit("subscribeStats", (ack: any) => console.log(`ACK Stats ${clientId}:`, ack));
+      client.emit("subscribeStats", (ack: any) => log(`ACK Stats ${clientId}:`, ack));
     });
   };
 
@@ -137,12 +144,11 @@ describe('Websocket subscriptions e2e tests (Txs and Events)', () => {
         connectAndSubscribe(item.key, item.txFilter, item.eventFilter, item.clientId);
       }
 
-      // Initialize General Client (Client 4) using the top-level config
       connectAndSubscribeGeneral("client4", client4SubscriptionConfig);
 
       await new Promise(resolve => setTimeout(resolve, 5000));
 
-      console.log("\n--- Starting Operations ---");
+      log("\n--- Starting Operations ---");
 
       await transferEgld(config.chainSimulatorUrl, config.aliceAddress, config.bobAddress, 1);
       await transferEgld(config.chainSimulatorUrl, config.bobAddress, config.aliceAddress, 2);
