@@ -5,7 +5,7 @@ api:
   publicPort: 3001
   private: true
   privatePort: 4001
-  websocket: false
+  websocket: true
 cron:
   cacheWarmer: true
   fastWarm: false
