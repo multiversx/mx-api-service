@@ -6,6 +6,7 @@ import { ParseAddressPipe, ParseIntPipe } from '@multiversx/sdk-nestjs-common';
 
 import { Events } from './entities/events';
 import { EventsFilter } from './entities/events.filter';
+import { TimestampParsePipe } from 'src/utils/timestamp.parse.pipe';
 
 @Controller()
 @ApiTags('events')
@@ -24,8 +25,8 @@ export class EventsController {
   @ApiQuery({ name: 'identifier', description: 'Event identifier', required: false })
   @ApiQuery({ name: 'txHash', description: 'Event transaction hash', required: false })
   @ApiQuery({ name: 'shard', description: 'Event shard id', required: false })
-  @ApiQuery({ name: 'before', description: 'Event before timestamp', required: false })
-  @ApiQuery({ name: 'after', description: 'Event after timestamp', required: false })
+  @ApiQuery({ name: 'before', description: 'Event before timestamp or timestampMs', required: false })
+  @ApiQuery({ name: 'after', description: 'Event after timestamp or timestampMs', required: false })
   @ApiQuery({ name: 'order', description: 'Event order', required: false })
   @ApiQuery({ name: 'topics', description: 'Event topics to filter by', required: false, isArray: true })
   async getEvents(
@@ -36,8 +37,8 @@ export class EventsController {
     @Query('identifier') identifier: string,
     @Query('txHash') txHash: string,
     @Query('shard', ParseIntPipe) shard: number,
-    @Query('before', ParseIntPipe) before: number,
-    @Query('after', ParseIntPipe) after: number,
+    @Query('before', TimestampParsePipe) before: number,
+    @Query('after', TimestampParsePipe) after: number,
     @Query('order', ParseIntPipe) order: number,
     @Query('topics') topics: string | string[],
   ): Promise<Events[]> {
@@ -54,16 +55,16 @@ export class EventsController {
   @ApiQuery({ name: 'identifier', description: 'Event identifier', required: false })
   @ApiQuery({ name: 'txHash', description: 'Event transaction hash', required: false })
   @ApiQuery({ name: 'shard', description: 'Event shard id', required: false })
-  @ApiQuery({ name: 'before', description: 'Event before timestamp', required: false })
-  @ApiQuery({ name: 'after', description: 'Event after timestamp', required: false })
+  @ApiQuery({ name: 'before', description: 'Event before timestamp or timestampMs', required: false })
+  @ApiQuery({ name: 'after', description: 'Event after timestamp or timestampMs', required: false })
   @ApiQuery({ name: 'topics', description: 'Event topics to filter by', required: false, isArray: true })
   async getEventsCount(
     @Query('address', ParseAddressPipe) address: string,
     @Query('identifier') identifier: string,
     @Query('txHash') txHash: string,
     @Query('shard', ParseIntPipe) shard: number,
-    @Query('before', ParseIntPipe) before: number,
-    @Query('after', ParseIntPipe) after: number,
+    @Query('before', TimestampParsePipe) before: number,
+    @Query('after', TimestampParsePipe) after: number,
     @Query('topics') topics: string | string[],
   ): Promise<number> {
     const topicsArray = topics ? (Array.isArray(topics) ? topics : [topics]) : [];

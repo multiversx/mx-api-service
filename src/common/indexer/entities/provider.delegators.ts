@@ -4,4 +4,5 @@ export class ProviderDelegators {
   activeStake: string = '';
   activeStakeNum: number = 0;
   timestamp: number = 0;
+  timestampMs?: number;
 }

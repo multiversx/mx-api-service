@@ -10,4 +10,5 @@ export class Events {
   txOrder: number = 0;
   order: number = 0;
   timestamp: number = 0;
+  timestampMs?: number;
 }

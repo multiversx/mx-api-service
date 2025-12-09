@@ -294,5 +294,236 @@ describe('TransactionService', () => {
 
       expect(service.applyBlockInfo).toHaveBeenCalledWith(expect.any(Array));
     });
+
+    it('should reorder transactions sent by account address by nonce when address is provided', async () => {
+      const accountAddress = 'erd10v2kud9534x8resv7j2zleunakq2xkjdd8craelhjjksw6y2w36qfs8w8p';
+      const filter = new TransactionFilter();
+      const pagination = new QueryPagination();
+
+      const mockTransactions: Transaction[] = [
+        {
+          hash: 'd5a81dcf6f93c69d29d19c0db0d497839cae9ebdf45b0d6341d5e7d7b36afc41',
+          miniBlockHash: 'c30138148f350bcb1cafacfc8bcca601bd55b5c5eec21e322cbf5cf162d0bdd8',
+          nonce: 11,
+          round: 28011213,
+          value: '100000000000000000',
+          receiver: 'erd1qga7ze0l03chfgru0a32wxqf2226nzrxnyhzer9lmudqhjgy7ycqjjyknz',
+          receiverUserName: '',
+          receiverUsername: '',
+          sender: accountAddress,
+          senderUserName: '',
+          senderUsername: '',
+          receiverShard: 2,
+          senderShard: 0,
+          gasPrice: '1000000200',
+          gasLimit: '75000',
+          gasUsed: '69500',
+          fee: '69500013900000',
+          data: 'WW9pbmsuIEhlaGVoZQ==',
+          signature: 'f61f3950c151f032185fe8d7780b19d74f99dfd050969b4202966ce4d7252c6c2810439a9b9f290d21e83927e337be72361b275b3cbdc9fe09db6401c459fb07',
+          timestamp: 1764184878,
+          status: 'success',
+          searchOrder: 0,
+          hasScResults: false,
+          hasOperations: false,
+          tokens: [],
+          esdtValues: [],
+          receivers: [],
+          receiversShardIDs: [],
+          operation: 'transfer',
+          scResults: [],
+          relayerAddr: '',
+          version: 1,
+          relayer: '',
+          isRelayed: false,
+          isScCall: false,
+          relayerSignature: '',
+          timestampMs: 1764184878000,
+        },
+        {
+          hash: 'd5a81dcf6f93c69d29d19c0db0d497839cae9ebdf45b0d6341d5e7d7b36afc40',
+          miniBlockHash: '2d28a4dd003b166794707b374611c3fed119e997c8fc9b162e34a378e2aee366',
+          nonce: 12,
+          round: 28011212,
+          value: '100000000000000000',
+          receiver: 'erd1qga7ze0l03chfgru0a32wxqf2226nzrxnyhzer9lmudqhjgy7ycqjjyknz',
+          receiverUserName: '',
+          receiverUsername: '',
+          sender: accountAddress,
+          senderUserName: '',
+          senderUsername: '',
+          receiverShard: 2,
+          senderShard: 0,
+          gasPrice: '1000000200',
+          gasLimit: '75000',
+          gasUsed: '75000',
+          fee: '69555013911000',
+          data: 'WW9pbmsuIEhlaGVoZQ==',
+          signature: '3212d61815bcc09cb7513aaf53a668259ea0d33fba76f769068a727154837845f05379c3a7fdc7d6b6b5edfe90f61cac8a65dc0de6d84244235ff4fad021e50e',
+          timestamp: 1764184872,
+          status: 'invalid',
+          searchOrder: 0,
+          hasScResults: false,
+          hasOperations: false,
+          tokens: [],
+          esdtValues: [],
+          receivers: [],
+          receiversShardIDs: [],
+          operation: 'transfer',
+          scResults: [],
+          relayerAddr: '',
+          version: 1,
+          relayer: '',
+          isRelayed: false,
+          isScCall: false,
+          relayerSignature: '',
+          timestampMs: 1764184872000,
+        },
+        {
+          hash: 'abc123def456',
+          miniBlockHash: 'mini123',
+          nonce: 100,
+          round: 28011210,
+          value: '50000000000000000',
+          receiver: accountAddress,
+          receiverUserName: '',
+          receiverUsername: '',
+          sender: 'erd1qqqqqqqqqqqqqpgq7rwhny4mx6dhuzcsymrhdsv2vmvarecgh4vq687aqr',
+          senderUserName: '',
+          senderUsername: '',
+          receiverShard: 0,
+          senderShard: 1,
+          gasPrice: '1000000000',
+          gasLimit: '50000',
+          gasUsed: '50000',
+          fee: '50000000000000',
+          data: '',
+          signature: 'sig123',
+          timestamp: 1764184875,
+          status: 'success',
+          searchOrder: 0,
+          hasScResults: false,
+          hasOperations: false,
+          tokens: [],
+          esdtValues: [],
+          receivers: [],
+          receiversShardIDs: [],
+          operation: 'transfer',
+          scResults: [],
+          relayerAddr: '',
+          version: 1,
+          relayer: '',
+          isRelayed: false,
+          isScCall: false,
+          relayerSignature: '',
+          timestampMs: 1764184875000,
+        },
+      ];
+
+      jest.spyOn(indexerService, 'getTransactions').mockResolvedValue(mockTransactions);
+      jest.spyOn(assetsService, 'getAllAccountAssets').mockResolvedValue({});
+
+      const results = await service.getTransactions(filter, pagination, undefined, accountAddress);
+
+      const accountSentTxs = results.filter(tx => tx.sender === accountAddress);
+      expect(accountSentTxs).toHaveLength(2);
+      expect(accountSentTxs[0].nonce).toBe(12);
+      expect(accountSentTxs[1].nonce).toBe(11);
+    });
+
+    it('should not reorder transactions when sender or receiver filter is applied', async () => {
+      const accountAddress = 'erd10v2kud9534x8resv7j2zleunakq2xkjdd8craelhjjksw6y2w36qfs8w8p';
+      const filter = new TransactionFilter({ sender: accountAddress });
+      const pagination = new QueryPagination();
+
+      const mockTransactions: Transaction[] = [
+        {
+          hash: 'tx1hash',
+          miniBlockHash: 'mini1',
+          nonce: 11,
+          round: 1000,
+          value: '1000000',
+          receiver: 'erd1receiver',
+          receiverUserName: '',
+          receiverUsername: '',
+          sender: accountAddress,
+          senderUserName: '',
+          senderUsername: '',
+          receiverShard: 0,
+          senderShard: 0,
+          gasPrice: '1000000000',
+          gasLimit: '50000',
+          gasUsed: '50000',
+          fee: '50000000000000',
+          data: '',
+          signature: 'sig1',
+          timestamp: 1764184878,
+          status: 'success',
+          searchOrder: 0,
+          hasScResults: false,
+          hasOperations: false,
+          tokens: [],
+          esdtValues: [],
+          receivers: [],
+          receiversShardIDs: [],
+          operation: 'transfer',
+          scResults: [],
+          relayerAddr: '',
+          version: 1,
+          relayer: '',
+          isRelayed: false,
+          isScCall: false,
+          relayerSignature: '',
+          timestampMs: 1764184878000,
+        },
+        {
+          hash: 'tx2hash',
+          miniBlockHash: 'mini2',
+          nonce: 12,
+          round: 999,
+          value: '1000000',
+          receiver: 'erd1receiver',
+          receiverUserName: '',
+          receiverUsername: '',
+          sender: accountAddress,
+          senderUserName: '',
+          senderUsername: '',
+          receiverShard: 0,
+          senderShard: 0,
+          gasPrice: '1000000000',
+          gasLimit: '50000',
+          gasUsed: '50000',
+          fee: '50000000000000',
+          data: '',
+          signature: 'sig2',
+          timestamp: 1764184872,
+          status: 'success',
+          searchOrder: 0,
+          hasScResults: false,
+          hasOperations: false,
+          tokens: [],
+          esdtValues: [],
+          receivers: [],
+          receiversShardIDs: [],
+          operation: 'transfer',
+          scResults: [],
+          relayerAddr: '',
+          version: 1,
+          relayer: '',
+          isRelayed: false,
+          isScCall: false,
+          relayerSignature: '',
+          timestampMs: 1764184872000,
+        },
+      ];
+
+      jest.spyOn(indexerService, 'getTransactions').mockResolvedValue(mockTransactions);
+      jest.spyOn(assetsService, 'getAllAccountAssets').mockResolvedValue({});
+
+      const results = await service.getTransactions(filter, pagination, undefined, accountAddress);
+
+      expect(results[0].nonce).toBe(11);
+      expect(results[1].nonce).toBe(12);
+    });
   });
 });

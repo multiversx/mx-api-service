@@ -4,6 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import { DatabaseConnectionOptions } from '../persistence/entities/connection.options';
 import { StatusCheckerThresholds } from './entities/status-checker-thresholds';
 import { LogTopic } from '@multiversx/sdk-transaction-processor/lib/types/log-topic';
+import { TimeUtils } from 'src/utils/time.utils';
 
 @Injectable()
 export class ApiConfigService {
@@ -1066,5 +1067,27 @@ export class ApiConfigService {
     }
 
     return undefined;
+  }
+
+  isChainSupernovaEnabled(): boolean {
+    return this.configService.get<boolean>('features.chainSupernova.enabled') ?? false;
+  }
+
+  getSupernovaActivationEpoch(): number {
+    const epoch = this.configService.get<number>('features.chainSupernova.activationEpoch');
+    if (epoch == null) {
+      return TimeUtils.TIMESTAMP_IN_SECONDS_THRESHOLD + 1;
+    }
+
+    return epoch;
+  }
+
+  getSupernovaActivationTimestamp(): number {
+    const timestamp = this.configService.get<number>('features.chainSupernova.activationTimestamp');
+    if (timestamp == null) {
+      return TimeUtils.TIMESTAMP_IN_SECONDS_THRESHOLD + 1;
+    }
+
+    return timestamp;
   }
 }
