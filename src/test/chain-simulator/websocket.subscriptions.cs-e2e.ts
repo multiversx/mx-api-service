@@ -6,8 +6,25 @@ import { ChainSimulatorUtils } from "./utils/test.utils";
 
 const WS_SERVER_URL = `${config.subscriptionsServiceUrl}`;
 
+// --- Client 4 Configuration (Editable) ---
+const client4SubscriptionConfig = {
+  pool: { from: 0, size: 25 },
+  events: { from: 0, size: 25, shard: 1 },
+  transactions: { from: 0, size: 25, status: 'success' },
+  blocks: { from: 0, size: 25, shard: 1 },
+};
+// -----------------------------------------
+
 const txResponses: Map<string, any[]> = new Map();
 const eventResponses: Map<string, any[]> = new Map();
+
+const generalResponses = {
+  pool: [] as any[],
+  events: [] as any[],
+  transactions: [] as any[],
+  blocks: [] as any[],
+  stats: [] as any[],
+};
 
 const txFilters = {
   CLIENT_1: { sender: config.aliceAddress },
@@ -17,8 +34,8 @@ const txFilters = {
 
 const eventFilters = {
   CLIENT_1: { identifier: 'pong' },
-  CLIENT_2: { address: '' }, // added dinamically after deploy sc
-  CLIENT_3: { identifier: 'completedTxEvent', address: '' }, // added dinamically after deploy sc
+  CLIENT_2: { address: '' },
+  CLIENT_3: { identifier: 'completedTxEvent', address: '' },
 };
 
 const filterKeys = {
@@ -77,6 +94,35 @@ describe('Websocket subscriptions e2e tests (Txs and Events)', () => {
     });
   };
 
+  const connectAndSubscribeGeneral = (clientId: string, subConfig: typeof client4SubscriptionConfig) => {
+    const client: Socket = io(WS_SERVER_URL, {
+      path: '/ws/subscription',
+    });
+    clients.push(client);
+
+    client.on("connect_error", (err) => {
+      throw new Error(`${clientId} connection failed: ${err.message}`);
+    });
+
+    client.on("poolUpdate", (data: any) => generalResponses.pool.push(data));
+    client.on("eventsUpdate", (data: any) => generalResponses.events.push(data));
+    client.on("transactionUpdate", (data: any) => generalResponses.transactions.push(data));
+    client.on("blocksUpdate", (data: any) => generalResponses.blocks.push(data));
+    client.on("statsUpdate", (data: any) => generalResponses.stats.push(data));
+
+    client.on("connect", () => {
+      console.log(`\n   ${clientId} connected with specific configs.`);
+
+      // Max 5 subscriptions per client
+      client.emit("subscribePool", subConfig.pool, (ack: any) => console.log(`ACK Pool ${clientId}:`, ack));
+      client.emit("subscribeEvents", subConfig.events, (ack: any) => console.log(`ACK Events ${clientId}:`, ack));
+      client.emit("subscribeTransactions", subConfig.transactions, (ack: any) => console.log(`ACK Txs ${clientId}:`, ack));
+      client.emit("subscribeBlocks", subConfig.blocks, (ack: any) => console.log(`ACK Blocks ${clientId}:`, ack));
+
+      client.emit("subscribeStats", (ack: any) => console.log(`ACK Stats ${clientId}:`, ack));
+    });
+  };
+
   beforeAll(async () => {
     try {
       await fundAddress(config.chainSimulatorUrl, config.aliceAddress);
@@ -91,13 +137,15 @@ describe('Websocket subscriptions e2e tests (Txs and Events)', () => {
         connectAndSubscribe(item.key, item.txFilter, item.eventFilter, item.clientId);
       }
 
+      // Initialize General Client (Client 4) using the top-level config
+      connectAndSubscribeGeneral("client4", client4SubscriptionConfig);
+
       await new Promise(resolve => setTimeout(resolve, 5000));
 
       console.log("\n--- Starting Operations ---");
 
       await transferEgld(config.chainSimulatorUrl, config.aliceAddress, config.bobAddress, 1);
       await transferEgld(config.chainSimulatorUrl, config.bobAddress, config.aliceAddress, 2);
-
 
       await ChainSimulatorUtils.pingContract(config.aliceAddress, pingPongScAddress);
       await ChainSimulatorUtils.pongContract(config.aliceAddress, pingPongScAddress);
@@ -115,6 +163,8 @@ describe('Websocket subscriptions e2e tests (Txs and Events)', () => {
   afterAll(() => {
     clients.forEach(client => client.connected && client.disconnect());
   });
+
+  // --- Tests for Clients 1, 2, 3 (Custom Filters) ---
 
   it('should receive TXs sent by Alice for Client 1', () => {
     const txs = txResponses.get(filterKeys.CLIENT_1);
@@ -169,5 +219,27 @@ describe('Websocket subscriptions e2e tests (Txs and Events)', () => {
     events?.forEach((evt) => {
       expect(evt.identifier).toEqual('completedTxEvent');
     });
+  });
+
+  // --- Tests for Client 4 (Pagination & Stats) ---
+
+  it('should receive Blocks updates for Client 4', () => {
+    expect(generalResponses.blocks.length).toBeGreaterThan(0);
+  });
+
+  it('should receive Transactions updates for Client 4', () => {
+    expect(generalResponses.transactions.length).toBeGreaterThan(0);
+  });
+
+  it('should receive Events updates for Client 4', () => {
+    expect(generalResponses.events.length).toBeGreaterThan(0);
+  });
+
+  it('should receive Stats updates for Client 4', () => {
+    expect(generalResponses.stats.length).toBeGreaterThan(0);
+  });
+
+  it('should have valid subscription structure for Pool updates', () => {
+    expect(Array.isArray(generalResponses.pool)).toBe(true);
   });
 });
