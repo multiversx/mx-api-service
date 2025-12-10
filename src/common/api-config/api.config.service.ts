@@ -1010,6 +1010,14 @@ export class ApiConfigService {
     return port;
   }
 
+  getWebsocketMaxSubscriptionsPerInstance(): number {
+    return this.configService.get<number>('features.websocketSubscription.maxSubscriptionsPerInstance') ?? 10_000;
+  }
+
+  getWebsocketMaxSubscriptionsPerClient(): number {
+    return this.configService.get<number>('features.websocketSubscription.maxSubscriptionsPerClient') ?? 5;
+  }
+
   getHeadersForCustomUrl(url: string): Record<string, string> | undefined {
     let customUrlConfigs = this.configService.get<any>('customUrlHeaders');
 

@@ -19,4 +19,8 @@ export class Round {
 
   @ApiProperty({ type: Number, example: 1651148112 })
   timestamp: number = 0;
+
+  // only available for rounds after Barnard protocol upgrade
+  @ApiProperty({ type: Number, example: 1651148112000, required: false })
+  timestampMs?: number;
 }

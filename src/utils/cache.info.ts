@@ -710,4 +710,11 @@ export class CacheInfo {
       ttl: Constants.oneSecond() * 30,
     };
   }
+
+  static WsTimestampMsToProcess(): CacheInfo {
+    return {
+      key: `wsLastProcessedTimestampMs`,
+      ttl: Constants.oneMinute(),
+    };
+  }
 }

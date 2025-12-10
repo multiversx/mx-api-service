@@ -21,8 +21,10 @@ flags:
   collectionPropertiesFromGateway: false
 features:
   websocketSubscription:
-    enabled: false
+    enabled: true
     port: 6002
+    maxSubscriptionsPerInstance: 10000
+    maxSubscriptionsPerClient: 5
   eventsNotifier:
     enabled: false
     port: 5674
