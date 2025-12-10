@@ -23,6 +23,8 @@ features:
   websocketSubscription:
     enabled: false
     port: 6002
+    maxSubscriptionsPerInstance: 10000
+    maxSubscriptionsPerClient: 5
   eventsNotifier:
     enabled: false
     port: 5674
@@ -71,6 +73,10 @@ features:
   stakingV5:
     enabled: true
     activationEpoch: 1951
+  chainBarnard:
+    enabled: true
+    activationEpoch: 1820
+    activationTimestamp: 1753376544
   deprecatedRelayedV1V2:
     enabled: true
     activationEpoch: 1918
@@ -117,17 +123,17 @@ features:
     enabled: false
     maxLookBehindNonces: 100
   nodesFetch:
-    enabled: true
+    enabled: false
     serviceUrl: 'https://api.multiversx.com'
   tokensFetch:
-    enabled: true
+    enabled: false
     serviceUrl: 'https://api.multiversx.com'
   providersFetch:
-    enabled: true
+    enabled: false
     serviceUrl: 'https://api.multiversx.com'
   assetsFetch:
     enabled: true
-    assetesUrl: 'https://tools.multiversx.com/assets-cdn'
+    assetsUrl: 'https://tools.multiversx.com/assets-cdn'
 image:
   width: 600
   height: 600

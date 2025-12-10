@@ -23,6 +23,7 @@ export class ApiMetricsService {
   private static transactionsPendingResultsCounter: Counter<string>;
   private static batchUpdatesCounter: Counter<string>;
   private static subscriptionsConnectionsGauge: Gauge<string>;
+  private static subscriptionsTopicConnectionsGauge: Gauge<string>;
 
   constructor(
     private readonly apiConfigService: ApiConfigService,
@@ -37,6 +38,14 @@ export class ApiMetricsService {
       ApiMetricsService.subscriptionsConnectionsGauge = new Gauge({
         name: 'websocket_subscriptions_connections',
         help: 'Number of websocket connections for subscriptions',
+      });
+    }
+
+    if (!ApiMetricsService.subscriptionsTopicConnectionsGauge) {
+      ApiMetricsService.subscriptionsTopicConnectionsGauge = new Gauge({
+        name: 'websocket_subscriptions_topic_connections',
+        help: 'Unique websocket clients per topic',
+        labelNames: ['topic'],
       });
     }
 
@@ -191,10 +200,16 @@ export class ApiMetricsService {
   }
 
   @OnEvent(MetricsEvents.SetWebsocketMetrics)
-  setWebsocketSubscriptionsMetrics(payload: { connectedClients: number }) {
-    const { connectedClients } = payload;
+  setWebsocketSubscriptionsMetrics(payload: { connectedClients: number; topics?: Record<string, number> }) {
+    const { connectedClients, topics } = payload;
 
     ApiMetricsService.subscriptionsConnectionsGauge.set(connectedClients);
+
+    if (topics) {
+      for (const [topic, count] of Object.entries(topics)) {
+        ApiMetricsService.subscriptionsTopicConnectionsGauge.set({ topic }, count);
+      }
+    }
   }
 
 

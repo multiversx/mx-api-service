@@ -4,6 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import { DatabaseConnectionOptions } from '../persistence/entities/connection.options';
 import { StatusCheckerThresholds } from './entities/status-checker-thresholds';
 import { LogTopic } from '@multiversx/sdk-transaction-processor/lib/types/log-topic';
+import { TimeUtils } from 'src/utils/time.utils';
 
 @Injectable()
 export class ApiConfigService {
@@ -929,7 +930,9 @@ export class ApiConfigService {
   }
 
   getAssetsCdnUrl(): string {
-    return this.configService.get<string>('features.assetsFetch.assetesUrl') ?? 'https://tools.multiversx.com/assets-cdn';
+    return this.configService.get<string>('features.assetsFetch.assetsUrl')
+      ?? this.configService.get<string>('features.assetsFetch.assetesUrl') // todo: remove this in the future
+      ?? 'https://tools.multiversx.com/assets-cdn';
   }
 
   isTokensFetchFeatureEnabled(): boolean {
@@ -1009,6 +1012,14 @@ export class ApiConfigService {
     return port;
   }
 
+  getWebsocketMaxSubscriptionsPerInstance(): number {
+    return this.configService.get<number>('features.websocketSubscription.maxSubscriptionsPerInstance') ?? 10_000;
+  }
+
+  getWebsocketMaxSubscriptionsPerClient(): number {
+    return this.configService.get<number>('features.websocketSubscription.maxSubscriptionsPerClient') ?? 5;
+  }
+
   getHeadersForCustomUrl(url: string): Record<string, string> | undefined {
     let customUrlConfigs = this.configService.get<any>('customUrlHeaders');
 
@@ -1066,5 +1077,27 @@ export class ApiConfigService {
     }
 
     return undefined;
+  }
+
+  isChainBarnardEnabled(): boolean {
+    return this.configService.get<boolean>('features.chainBarnard.enabled') ?? false;
+  }
+
+  getChainBarnardActivationEpoch(): number {
+    const epoch = this.configService.get<number>('features.chainBarnard.activationEpoch');
+    if (epoch == null) {
+      return TimeUtils.TIMESTAMP_IN_SECONDS_THRESHOLD + 1;
+    }
+
+    return epoch;
+  }
+
+  getChainBarnardActivationTimestamp(): number {
+    const timestamp = this.configService.get<number>('features.chainBarnard.activationTimestamp');
+    if (timestamp == null) {
+      return TimeUtils.TIMESTAMP_IN_SECONDS_THRESHOLD + 1;
+    }
+
+    return timestamp;
   }
 }

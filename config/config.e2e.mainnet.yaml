@@ -21,8 +21,10 @@ flags:
   collectionPropertiesFromGateway: false
 features:
   websocketSubscription:
-    enabled: false
+    enabled: true
     port: 6002
+    maxSubscriptionsPerInstance: 10000
+    maxSubscriptionsPerClient: 5
   eventsNotifier:
     enabled: false
     port: 5674
@@ -71,6 +73,10 @@ features:
   stakingV5:
     enabled: true
     activationEpoch: 1951
+  chainBarnard:
+    enabled: true
+    activationEpoch: 1820
+    activationTimestamp: 1753376544
   nodeEpochsLeft:
     enabled: false
   transactionProcessor:
@@ -124,7 +130,7 @@ features:
     serviceUrl: 'https://api.multiversx.com'
   assetsFetch:
     enabled: false
-    assetesUrl: 'https://tools.multiversx.com/assets-cdn'
+    assetsUrl: 'https://tools.multiversx.com/assets-cdn'
 image:
   width: 600
   height: 600

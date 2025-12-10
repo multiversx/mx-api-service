@@ -32,6 +32,9 @@ export class NftCollection {
   @ApiProperty({ type: Number })
   timestamp: number = 0;
 
+  @ApiProperty({ type: Number, nullable: true, required: false })
+  timestampMs?: number;
+
   @ApiProperty({ type: Boolean, default: false })
   canFreeze: boolean = false;
 

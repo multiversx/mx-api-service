@@ -23,6 +23,8 @@ features:
   websocketSubscription:
     enabled: false
     port: 6002
+    maxSubscriptionsPerInstance: 10000
+    maxSubscriptionsPerClient: 5
   eventsNotifier:
     enabled: false
     port: 5674
@@ -54,7 +56,7 @@ features:
     serviceUrl: 'https://devnet-data-api.multiversx.com'
   assetsFetch:
     enabled: true
-    assetesUrl: 'https://tools.multiversx.com/assets-cdn'
+    assetsUrl: 'https://tools.multiversx.com/assets-cdn'
   auth:
     enabled: false
     maxExpirySeconds: 86400
@@ -73,6 +75,10 @@ features:
   stakingV5:
     enabled: true
     activationEpoch: 4817
+  chainBarnard:
+    enabled: true
+    activationEpoch: 3964
+    activationTimestamp: 1751460236
   deprecatedRelayedV1V2:
     enabled: true
     activationEpoch: 4569
@@ -116,13 +122,13 @@ features:
     enabled: false
     maxLookBehindNonces: 100
   nodesFetch:
-    enabled: true
+    enabled: false
     serviceUrl: 'https://devnet-api.multiversx.com'
   tokensFetch:
-    enabled: true
+    enabled: false
     serviceUrl: 'https://devnet-api.multiversx.com'
   providersFetch:
-    enabled: true
+    enabled: false
     serviceUrl: 'https://devnet-api.multiversx.com'
 image:
   width: 600

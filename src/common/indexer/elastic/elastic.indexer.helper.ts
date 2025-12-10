@@ -19,6 +19,7 @@ import { ApplicationFilter } from "src/endpoints/applications/entities/applicati
 import { NftType } from "../entities/nft.type";
 import { EventsFilter } from "src/endpoints/events/entities/events.filter";
 import { ScriptQuery } from "./script.query";
+import { TimeUtils } from "src/utils/time.utils";
 
 @Injectable()
 export class ElasticIndexerHelper {
@@ -99,7 +100,14 @@ export class ElasticIndexerHelper {
     }
 
     if (filter.before || filter.after) {
-      elasticQuery = elasticQuery.withDateRangeFilter('timestamp', filter.before, filter.after);
+      if (filter.before) {
+        const timestampBeforeIdentifier = TimeUtils.isTimestampInSeconds(filter.before) ? 'timestamp' : 'timestampMs';
+        elasticQuery = elasticQuery.withRangeFilter(timestampBeforeIdentifier, new RangeLowerThanOrEqual(filter.before));
+      }
+      if (filter.after) {
+        const timestampAfterIdentifier = TimeUtils.isTimestampInSeconds(filter.after) ? 'timestamp' : 'timestampMs';
+        elasticQuery = elasticQuery.withRangeFilter(timestampAfterIdentifier, new RangeGreaterThanOrEqual(filter.after));
+      }
     }
 
     if (filter.canCreate !== undefined) {
@@ -278,8 +286,13 @@ export class ElasticIndexerHelper {
       }
     }
 
-    if (filter.before || filter.after) {
-      elasticQuery = elasticQuery.withDateRangeFilter('timestamp', filter.before, filter.after);
+    if (filter.before) {
+      const timestampBeforeIdentifier = TimeUtils.isTimestampInSeconds(filter.before) ? 'timestamp' : 'timestampMs';
+      elasticQuery = elasticQuery.withRangeFilter(timestampBeforeIdentifier, new RangeLowerThanOrEqual(filter.before));
+    }
+    if (filter.after) {
+      const timestampAfterIdentifier = TimeUtils.isTimestampInSeconds(filter.after) ? 'timestamp' : 'timestampMs';
+      elasticQuery = elasticQuery.withRangeFilter(timestampAfterIdentifier, new RangeGreaterThanOrEqual(filter.after));
     }
 
     if (filter.nonceBefore) {
@@ -408,8 +421,13 @@ export class ElasticIndexerHelper {
       elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Match('status', filter.status));
     }
 
-    if (filter.before || filter.after) {
-      elasticQuery = elasticQuery.withDateRangeFilter('timestamp', filter.before, filter.after);
+    if (filter.before) {
+      const timestampBeforeIdentifier = TimeUtils.isTimestampInSeconds(filter.before) ? 'timestamp' : 'timestampMs';
+      elasticQuery = elasticQuery.withRangeFilter(timestampBeforeIdentifier, new RangeLowerThanOrEqual(filter.before));
+    }
+    if (filter.after) {
+      const timestampAfterIdentifier = TimeUtils.isTimestampInSeconds(filter.after) ? 'timestamp' : 'timestampMs';
+      elasticQuery = elasticQuery.withRangeFilter(timestampAfterIdentifier, new RangeGreaterThanOrEqual(filter.after));
     }
 
     if (filter.senderOrReceiver) {
@@ -552,8 +570,16 @@ export class ElasticIndexerHelper {
       .withMustMatchCondition('miniBlockHash', filter.miniBlockHash)
       .withMustMultiShouldCondition(filter.hashes, hash => QueryType.Match('_id', hash))
       .withMustMatchCondition('status', filter.status)
-      .withMustMultiShouldCondition(filter.tokens, token => QueryType.Match('tokens', token, QueryOperator.AND))
-      .withDateRangeFilter('timestamp', filter.before, filter.after);
+      .withMustMultiShouldCondition(filter.tokens, token => QueryType.Match('tokens', token, QueryOperator.AND));
+
+    if (filter.before) {
+      const timestampBeforeIdentifier = TimeUtils.isTimestampInSeconds(filter.before) ? 'timestamp' : 'timestampMs';
+      elasticQuery = elasticQuery.withRangeFilter(timestampBeforeIdentifier, new RangeLowerThanOrEqual(filter.before));
+    }
+    if (filter.after) {
+      const timestampAfterIdentifier = TimeUtils.isTimestampInSeconds(filter.after) ? 'timestamp' : 'timestampMs';
+      elasticQuery = elasticQuery.withRangeFilter(timestampAfterIdentifier, new RangeGreaterThanOrEqual(filter.after));
+    }
 
     if (filter.functions && filter.functions.length > 0) {
       if (filter.functions.length === 1 && filter.functions[0] === '') {
@@ -658,8 +684,13 @@ export class ElasticIndexerHelper {
 
     let elasticQuery = ElasticQuery.create().withCondition(QueryConditionOptions.must, mustQueries);
 
-    if (filter && (filter.before || filter.after)) {
-      elasticQuery = elasticQuery.withDateRangeFilter('timestamp', filter.before, filter.after);
+    if (filter && filter.before) {
+      const timestampBeforeIdentifier = TimeUtils.isTimestampInSeconds(filter.before) ? 'timestamp' : 'timestampMs';
+      elasticQuery = elasticQuery.withRangeFilter(timestampBeforeIdentifier, new RangeLowerThanOrEqual(filter.before));
+    }
+    if (filter && filter.after) {
+      const timestampAfterIdentifier = TimeUtils.isTimestampInSeconds(filter.after) ? 'timestamp' : 'timestampMs';
+      elasticQuery = elasticQuery.withRangeFilter(timestampAfterIdentifier, new RangeGreaterThanOrEqual(filter.after));
     }
 
     if (filter && filter.identifiers) {
@@ -764,11 +795,13 @@ export class ElasticIndexerHelper {
     let elasticQuery = ElasticQuery.create();
 
     if (filter.after) {
-      elasticQuery = elasticQuery.withRangeFilter('timestamp', new RangeGreaterThanOrEqual(filter.after));
+      const timestampIdentifier = TimeUtils.isTimestampInSeconds(filter.after) ? 'timestamp' : 'timestampMs';
+      elasticQuery = elasticQuery.withRangeFilter(timestampIdentifier, new RangeGreaterThanOrEqual(filter.after));
     }
 
     if (filter.before) {
-      elasticQuery = elasticQuery.withRangeFilter('timestamp', new RangeLowerThanOrEqual(filter.before));
+      const timestampIdentifier = TimeUtils.isTimestampInSeconds(filter.before) ? 'timestamp' : 'timestampMs';
+      elasticQuery = elasticQuery.withRangeFilter(timestampIdentifier, new RangeLowerThanOrEqual(filter.before));
     }
 
     return elasticQuery;
@@ -791,11 +824,13 @@ export class ElasticIndexerHelper {
     let elasticQuery = ElasticQuery.create();
 
     if (filter.before) {
-      elasticQuery = elasticQuery.withRangeFilter('timestamp', new RangeLowerThanOrEqual(filter.before));
+      const timestampIdentifier = TimeUtils.isTimestampInSeconds(filter.before) ? 'timestamp' : 'timestampMs';
+      elasticQuery = elasticQuery.withRangeFilter(timestampIdentifier, new RangeLowerThanOrEqual(filter.before));
     }
 
     if (filter.after) {
-      elasticQuery = elasticQuery.withRangeFilter('timestamp', new RangeGreaterThanOrEqual(filter.after));
+      const timestampIdentifier = TimeUtils.isTimestampInSeconds(filter.after) ? 'timestamp' : 'timestampMs';
+      elasticQuery = elasticQuery.withRangeFilter(timestampIdentifier, new RangeGreaterThanOrEqual(filter.after));
     }
 
     if (filter.identifier) {

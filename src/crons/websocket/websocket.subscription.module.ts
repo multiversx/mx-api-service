@@ -12,6 +12,10 @@ import { TransactionsGateway } from './transaction.gateway';
 import { PoolGateway } from './pool.gateway';
 import { EventsGateway } from './events.gateway';
 import { ConnectionHandler } from './connection.handler';
+import { RoundModule } from 'src/endpoints/rounds/round.module';
+import { TransactionsCustomGateway } from './transaction.custom.gateway';
+import { EventsCustomGateway } from './events.custom.gateway';
+import { ApiConfigModule } from 'src/common/api-config/api.config.module';
 
 @Module({
   imports: [
@@ -21,6 +25,8 @@ import { ConnectionHandler } from './connection.handler';
     NetworkModule,
     PoolModule,
     EventsModule,
+    RoundModule,
+    ApiConfigModule,
   ],
   providers: [
     WebsocketCronService,
@@ -30,6 +36,8 @@ import { ConnectionHandler } from './connection.handler';
     TransactionsGateway,
     PoolGateway,
     EventsGateway,
+    TransactionsCustomGateway,
+    EventsCustomGateway,
   ],
 })
 export class WebsocketSubscriptionModule { }

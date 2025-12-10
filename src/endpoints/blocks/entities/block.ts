@@ -47,6 +47,9 @@ export class Block {
   @ApiProperty({ type: Number })
   timestamp: number = 0;
 
+  @ApiProperty({ type: Number, nullable: true, required: false })
+  timestampMs?: number;
+
   @ApiProperty({ type: Number })
   txCount: number = 0;
 
@@ -68,7 +71,7 @@ export class Block {
   @ApiProperty({ type: BlockProofDto, nullable: true, required: false })
   previousHeaderProof: BlockProofDto | undefined = undefined;
 
-  @ApiProperty( { type: String })
+  @ApiProperty({ type: String })
   reserved: string = '';
 
   @ApiProperty({ type: BlockProofDto, nullable: true, required: false })

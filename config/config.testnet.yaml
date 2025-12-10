@@ -23,6 +23,8 @@ features:
   websocketSubscription:
     enabled: false
     port: 6002
+    maxSubscriptionsPerInstance: 10000
+    maxSubscriptionsPerClient: 5
   eventsNotifier:
     enabled: false
     port: 5674
@@ -70,6 +72,10 @@ features:
   stakingV5:
     enabled: true
     activationEpoch: 2519
+  chainBarnard:
+    enabled: false
+    activationEpoch: 2030
+    activationTimestamp: 1864749472
   deprecatedRelayedV1V2:
     enabled: true
     activationEpoch: 2038
@@ -116,17 +122,17 @@ features:
     enabled: false
     maxLookBehindNonces: 100
   nodesFetch:
-    enabled: true
+    enabled: false
     serviceUrl: 'https://testnet-api.multiversx.com'
   tokensFetch:
-    enabled: true
+    enabled: false
     serviceUrl: 'https://testnet-api.multiversx.com'
   providersFetch:
-    enabled: true
+    enabled: false
     serviceUrl: 'https://testnet-api.multiversx.com'
   assetsFetch:
     enabled: true
-    assetesUrl: 'https://tools.multiversx.com/assets-cdn'
+    assetsUrl: 'https://tools.multiversx.com/assets-cdn'
 image:
   width: 600
   height: 600

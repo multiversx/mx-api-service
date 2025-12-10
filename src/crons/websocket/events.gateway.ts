@@ -1,6 +1,6 @@
 import { WebSocketGateway, WebSocketServer, SubscribeMessage, MessageBody, ConnectedSocket } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { UseFilters } from '@nestjs/common';
+import { UseFilters, UseGuards } from '@nestjs/common';
 import { WebsocketExceptionsFilter } from 'src/utils/ws-exceptions.filter';
 import { WsValidationPipe } from 'src/utils/ws-validation.pipe';
 import { OriginLogger } from '@multiversx/sdk-nestjs-common';
@@ -8,27 +8,50 @@ import { EventsService } from '../../endpoints/events/events.service';
 import { EventsFilter } from '../../endpoints/events/entities/events.filter';
 import { EventsSubscribePayload } from '../../endpoints/events/entities/events.subscribe';
 import { QueryPagination } from 'src/common/entities/query.pagination';
+import { WsSubscriptionLimiterGuard } from 'src/utils/ws.subscription.limiter';
+import { RoomKeyGenerator } from './room.key.generator';
 
 @UseFilters(WebsocketExceptionsFilter)
 @WebSocketGateway({ cors: { origin: '*' }, path: '/ws/subscription' })
 export class EventsGateway {
     private readonly logger = new OriginLogger(EventsGateway.name);
+    static readonly keyPrefix = 'events-';
 
     @WebSocketServer()
     server!: Server;
 
     constructor(private readonly eventsService: EventsService) { }
 
+    @UseGuards(WsSubscriptionLimiterGuard)
     @SubscribeMessage('subscribeEvents')
     async handleSubscription(
         @ConnectedSocket() client: Socket,
         @MessageBody(new WsValidationPipe()) payload: EventsSubscribePayload,
     ) {
         const filterIdentifier = JSON.stringify(payload);
-        await client.join(`events-${filterIdentifier}`);
+        const roomName = `${EventsGateway.keyPrefix}${filterIdentifier}`;
+        if (!client.rooms.has(roomName)) {
+            await client.join(roomName);
+        }
 
         return { status: 'success' };
     }
+
+    @SubscribeMessage('unsubscribeEvents')
+    async handleUnsubscribe(
+        @ConnectedSocket() client: Socket,
+        @MessageBody(new WsValidationPipe()) payload: EventsSubscribePayload
+    ) {
+        const filterIdentifier = RoomKeyGenerator.deterministicStringify(payload);
+        const roomName = `${EventsGateway.keyPrefix}${filterIdentifier}`;
+
+        if (client.rooms.has(roomName)) {
+            await client.leave(roomName);
+        }
+
+        return { status: 'unsubscribed' };
+    }
+
 
     async pushEventsForRoom(roomName: string): Promise<void> {
         if (!roomName.startsWith("events-")) return;
