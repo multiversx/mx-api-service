@@ -51,6 +51,8 @@ export class TransactionsGateway {
     const filterIdentifier = JSON.stringify(payload);
     const roomName = `${TransactionsGateway.keyPrefix}${filterIdentifier}`;
 
+    console.log(`[Subscription-bughunt]. new client subscribed to room ${roomName}`);
+
     if (!client.rooms.has(roomName)) {
       await client.join(roomName);
     }
@@ -66,6 +68,8 @@ export class TransactionsGateway {
     const filterIdentifier = RoomKeyGenerator.deterministicStringify(payload);
     const roomName = `${TransactionsGateway.keyPrefix}${filterIdentifier}`;
 
+    console.log(`[Subscription-bughunt]. new client unsubscribed from room ${roomName}`);
+
     if (client.rooms.has(roomName)) {
       await client.leave(roomName);
     }
@@ -74,6 +78,7 @@ export class TransactionsGateway {
   }
 
   async pushTransactionsForRoom(roomName: string): Promise<void> {
+    console.log(`[Subscription-bughunt]. push transaction for room ${roomName}. prefix: ${TransactionsGateway.keyPrefix}`);
     if (!roomName.startsWith(TransactionsGateway.keyPrefix)) return;
 
     try {
@@ -127,6 +132,7 @@ export class TransactionsGateway {
         this.transactionService.getTransactionCount(transactionFilter),
       ]);
 
+      console.log(`[Subscription-bughunt]. push transactions for room ${roomName}. filter: ${JSON.stringify(transactionFilter)}. txs length: ${transactions.length}`);
       this.server.to(roomName).emit("transactionUpdate", { transactions, transactionsCount });
     } catch (error) {
       this.logger.error(error);
