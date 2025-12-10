@@ -317,7 +317,15 @@ export class GatewayProxyController {
     @Param('hash') hash: number,
     @Query('withTxs') withTxs?: string,
   ) {
-    return await this.gatewayGet(`block/${shard}/by-hash/${hash}`, GatewayComponentRequest.blockByHash, { withTxs });
+    // eslint-disable-next-line require-await
+    return await this.gatewayGet(`block/${shard}/by-hash/${hash}`, GatewayComponentRequest.blockByHash, { withTxs }, async (error) => {
+      const message = error.response?.data?.error;
+      if (message && (message.includes('key not found') || message.includes('getting block failed'))) {
+        throw error;
+      }
+
+      return false;
+    });
   }
 
   @Get('/block-atlas/:shard/:nonce')

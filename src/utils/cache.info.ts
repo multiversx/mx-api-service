@@ -469,7 +469,7 @@ export class CacheInfo {
   static BlocksCount(filter: BlockFilter): CacheInfo {
     return {
       key: `blocks:count:${JSON.stringify(filter)}`,
-      ttl: Constants.oneMinute(),
+      ttl: Constants.oneSecond() * 6,
     };
   }
 
@@ -708,6 +708,13 @@ export class CacheInfo {
     return {
       key: `ppuMetadata:shard:${shardId}`,
       ttl: Constants.oneSecond() * 30,
+    };
+  }
+
+  static WsTimestampMsToProcess(): CacheInfo {
+    return {
+      key: `wsLastProcessedTimestampMs`,
+      ttl: Constants.oneMinute(),
     };
   }
 }

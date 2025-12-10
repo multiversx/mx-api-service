@@ -22,6 +22,8 @@ export class ApiMetricsService {
   private static transactionsCompletedCounter: Counter<string>;
   private static transactionsPendingResultsCounter: Counter<string>;
   private static batchUpdatesCounter: Counter<string>;
+  private static subscriptionsConnectionsGauge: Gauge<string>;
+  private static subscriptionsTopicConnectionsGauge: Gauge<string>;
 
   constructor(
     private readonly apiConfigService: ApiConfigService,
@@ -31,6 +33,21 @@ export class ApiMetricsService {
     private readonly protocolService: ProtocolService,
     private readonly metricsService: MetricsService,
   ) {
+
+    if (!ApiMetricsService.subscriptionsConnectionsGauge) {
+      ApiMetricsService.subscriptionsConnectionsGauge = new Gauge({
+        name: 'websocket_subscriptions_connections',
+        help: 'Number of websocket connections for subscriptions',
+      });
+    }
+
+    if (!ApiMetricsService.subscriptionsTopicConnectionsGauge) {
+      ApiMetricsService.subscriptionsTopicConnectionsGauge = new Gauge({
+        name: 'websocket_subscriptions_topic_connections',
+        help: 'Unique websocket clients per topic',
+        labelNames: ['topic'],
+      });
+    }
 
     if (!ApiMetricsService.vmQueriesHistogram) {
       ApiMetricsService.vmQueriesHistogram = new Histogram({
@@ -181,6 +198,20 @@ export class ApiMetricsService {
     const [shardId, nonce] = payload.args;
     ApiMetricsService.lastProcessedTransactionCompletedProcessorNonce.set({ shardId }, nonce);
   }
+
+  @OnEvent(MetricsEvents.SetWebsocketMetrics)
+  setWebsocketSubscriptionsMetrics(payload: { connectedClients: number; topics?: Record<string, number> }) {
+    const { connectedClients, topics } = payload;
+
+    ApiMetricsService.subscriptionsConnectionsGauge.set(connectedClients);
+
+    if (topics) {
+      for (const [topic, count] of Object.entries(topics)) {
+        ApiMetricsService.subscriptionsTopicConnectionsGauge.set({ topic }, count);
+      }
+    }
+  }
+
 
   @OnEvent(MetricsEvents.SetTransactionsCompleted)
   recordTransactionsCompleted(payload: { transactions: any[] }) {

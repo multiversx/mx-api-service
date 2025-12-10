@@ -283,6 +283,7 @@ describe('Account Service', () => {
         address: 'erd1qga7ze0l03chfgru0a32wxqf2226nzrxnyhzer9lmudqhjgy7ycqjjyknz',
         balance: '162486906126924046',
         nonce: 45,
+        timestampMs: 0,
         timestamp: 0,
         shard: 0,
         ownerAddress: '',
@@ -431,6 +432,7 @@ describe('Account Service', () => {
         isRelayed: false,
         isScCall: true,
         relayerSignature: '',
+        timestampMs: 1698322776000,
       });
 
       const result = await service.getAccountDeployedAtRaw(address);

@@ -344,13 +344,13 @@ export class TokenTransferService {
       svgUrl: assets?.svgUrl ?? '',
     };
 
-    if (properties.type === 'FungibleESDT') {
+    if (properties.type === EsdtType.FungibleESDT) {
       result.token = identifier;
     } else {
       result.collection = identifier;
     }
 
-    if (['FungibleESDT', 'MetaESDT'].includes(properties.type)) {
+    if ([EsdtType.FungibleESDT, EsdtType.MetaESDT].includes(properties.type)) {
       result.decimals = properties.decimals;
     }
 

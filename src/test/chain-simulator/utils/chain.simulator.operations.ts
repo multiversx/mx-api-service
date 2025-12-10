@@ -623,3 +623,30 @@ export async function transferNftFromTo(
   console.log(`NFT transfer completed. Transaction hash: ${txHash}`);
   return txHash;
 }
+
+export async function transferEgld(
+  chainSimulatorUrl: string,
+  senderAddress: string,
+  receiverAddress: string,
+  amountInEgldNominated: number
+): Promise<string> {
+  const amountInEgldNominatedStr = amountInEgldNominated.toString();
+  const egldDecimals = '0'.repeat(18);
+  console.log(`Transferring ${amountInEgldNominated} EGLD from ${senderAddress} to ${receiverAddress}`);
+
+  const txHash = await sendTransaction(
+    new SendTransactionArgs({
+      chainSimulatorUrl,
+      sender: senderAddress,
+      receiver: receiverAddress,
+      value: (amountInEgldNominatedStr.concat(egldDecimals)),
+      dataField: '',
+    }),
+  );
+
+  console.log(`EGLD transfer completed. Transaction hash: ${txHash}`);
+  await axios.post(
+    `${chainSimulatorUrl}/simulator/generate-blocks-until-transaction-processed/${txHash}`,
+  );
+  return txHash;
+}

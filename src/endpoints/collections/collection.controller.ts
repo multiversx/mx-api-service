@@ -26,6 +26,7 @@ import { SortCollections } from "./entities/sort.collections";
 import { ParseArrayPipeOptions } from "@multiversx/sdk-nestjs-common/lib/pipes/entities/parse.array.options";
 import { TransferService } from "../transfers/transfer.service";
 import { NftSubType } from "../nfts/entities/nft.sub.type";
+import { TimestampParsePipe } from "src/utils/timestamp.parse.pipe";
 
 @Controller()
 @ApiTags('collections')
@@ -47,8 +48,8 @@ export class CollectionController {
   @ApiQuery({ name: 'type', description: 'Filter by type (NonFungibleESDT/SemiFungibleESDT/MetaESDT)', required: false })
   @ApiQuery({ name: 'subType', description: 'Filter by type (NonFungibleESDTv2/DynamicNonFungibleESDT/DynamicSemiFungibleESDT)', required: false })
   @ApiQuery({ name: 'creator', description: 'Filter collections where the given address has a creator role', required: false, deprecated: true })
-  @ApiQuery({ name: 'before', description: 'Return all collections before given timestamp', required: false, type: Number })
-  @ApiQuery({ name: 'after', description: 'Return all collections after given timestamp', required: false, type: Number })
+  @ApiQuery({ name: 'before', description: 'Return all collections before given timestamp or timestampMs', required: false, type: Number })
+  @ApiQuery({ name: 'after', description: 'Return all collections after given timestamp or timestampMs', required: false, type: Number })
   @ApiQuery({ name: 'canCreate', description: 'Filter by address with canCreate role', required: false })
   @ApiQuery({ name: 'canBurn', description: 'Filter by address with canBurn role', required: false })
   @ApiQuery({ name: 'canAddQuantity', description: 'Filter by address with canAddQuantity role', required: false })
@@ -66,8 +67,8 @@ export class CollectionController {
     @Query('type', new ParseEnumArrayPipe(NftType)) type?: NftType[],
     @Query('subType', new ParseEnumArrayPipe(NftSubType)) subType?: NftSubType[],
     @Query('creator', ParseAddressPipe) creator?: string,
-    @Query('before', ParseIntPipe) before?: number,
-    @Query('after', ParseIntPipe) after?: number,
+    @Query('before', TimestampParsePipe) before?: number,
+    @Query('after', TimestampParsePipe) after?: number,
     @Query('canCreate', ParseAddressPipe) canCreate?: string,
     @Query('canBurn', ParseAddressPipe) canBurn?: string,
     @Query('canAddQuantity', ParseAddressPipe) canAddQuantity?: string,
@@ -102,8 +103,8 @@ export class CollectionController {
   @ApiQuery({ name: 'search', description: 'Search by collection identifier', required: false })
   @ApiQuery({ name: 'type', description: 'Filter by type (NonFungibleESDT/SemiFungibleESDT/MetaESDT)', required: false })
   @ApiQuery({ name: 'creator', description: 'Filter collections where the given address has a creator role', required: false, deprecated: true })
-  @ApiQuery({ name: 'before', description: 'Return all collections before given timestamp', required: false, type: Number })
-  @ApiQuery({ name: 'after', description: 'Return all collections after given timestamp', required: false, type: Number })
+  @ApiQuery({ name: 'before', description: 'Return all collections before given timestamp or timestampMs', required: false, type: Number })
+  @ApiQuery({ name: 'after', description: 'Return all collections after given timestamp or timestampMs', required: false, type: Number })
   @ApiQuery({ name: 'canCreate', description: 'Filter by address with canCreate role', required: false })
   @ApiQuery({ name: 'canBurn', description: 'Filter by address with canBurn role', required: false })
   @ApiQuery({ name: 'canAddQuantity', description: 'Filter by address with canAddQuantity role', required: false })
@@ -118,8 +119,8 @@ export class CollectionController {
     @Query('type', new ParseEnumArrayPipe(NftType)) type?: NftType[],
     @Query('subType', new ParseEnumArrayPipe(NftSubType)) subType?: NftSubType[],
     @Query('creator', ParseAddressPipe) creator?: string,
-    @Query('before', ParseIntPipe) before?: number,
-    @Query('after', ParseIntPipe) after?: number,
+    @Query('before', TimestampParsePipe) before?: number,
+    @Query('after', TimestampParsePipe) after?: number,
     @Query('canCreate', ParseAddressPipe) canCreate?: string,
     @Query('canBurn', ParseAddressPipe) canBurn?: string,
     @Query('canAddQuantity', ParseAddressPipe) canAddQuantity?: string,
@@ -150,8 +151,8 @@ export class CollectionController {
     @Query('search') search?: string,
     @Query('type', new ParseEnumArrayPipe(NftType)) type?: NftType[],
     @Query('creator', ParseAddressPipe) creator?: string,
-    @Query('before', ParseIntPipe) before?: number,
-    @Query('after', ParseIntPipe) after?: number,
+    @Query('before', TimestampParsePipe) before?: number,
+    @Query('after', TimestampParsePipe) after?: number,
     @Query('canCreate', ParseAddressPipe) canCreate?: string,
     @Query('canBurn', ParseAddressPipe) canBurn?: string,
     @Query('canAddQuantity', ParseAddressPipe) canAddQuantity?: string,
@@ -225,6 +226,7 @@ export class CollectionController {
   @ApiQuery({ name: 'nonceAfter', description: 'Return all NFTs with given nonce after the given number', required: false, type: Number })
   @ApiQuery({ name: 'withOwner', description: 'Return owner where type = NonFungibleESDT', required: false, type: Boolean })
   @ApiQuery({ name: 'withSupply', description: 'Return supply where type = SemiFungibleESDT', required: false, type: Boolean })
+  @ApiQuery({ name: 'withAssets', description: 'Return assets information (defaults to true)', required: false, type: Boolean })
   @ApiQuery({ name: 'sort', description: 'Sorting criteria', required: false, enum: SortCollectionNfts })
   @ApiQuery({ name: 'order', description: 'Sorting order (asc / desc)', required: false, enum: SortOrder })
   async getNfts(
@@ -244,6 +246,7 @@ export class CollectionController {
     @Query('nonceAfter', ParseIntPipe) nonceAfter?: number,
     @Query('withOwner', ParseBoolPipe) withOwner?: boolean,
     @Query('withSupply', ParseBoolPipe) withSupply?: boolean,
+    @Query('withAssets', ParseBoolPipe) withAssets?: boolean,
     @Query('sort', new ParseEnumPipe(SortCollectionNfts)) sort?: SortCollectionNfts,
     @Query('order', new ParseEnumPipe(SortOrder)) order?: SortOrder,
   ): Promise<Nft[]> {
@@ -255,7 +258,7 @@ export class CollectionController {
     return await this.nftService.getNfts(
       new QueryPagination({ from, size }),
       new NftFilter({ search, identifiers, collection, name, tags, creator, hasUris, isWhitelistedStorage, isNsfw, traits, nonceBefore, nonceAfter, sort, order }),
-      new NftQueryOptions({ withOwner, withSupply }),
+      new NftQueryOptions({ withOwner, withSupply, withAssets }),
     );
   }
 
@@ -326,8 +329,8 @@ export class CollectionController {
   @ApiQuery({ name: 'hashes', description: 'Filter by a comma-separated list of transaction hashes', required: false })
   @ApiQuery({ name: 'status', description: 'Status of the transaction (success / pending / invalid / fail)', required: false, enum: TransactionStatus })
   @ApiQuery({ name: 'function', description: 'Filter transactions by function name', required: false })
-  @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
-  @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
+  @ApiQuery({ name: 'before', description: 'Before timestamp or timestampMs', required: false })
+  @ApiQuery({ name: 'after', description: 'After timestamp or timestampMs', required: false })
   @ApiQuery({ name: 'round', description: 'Filter by round number', required: false })
   @ApiQuery({ name: 'order', description: 'Sort order (asc/desc)', required: false, enum: SortOrder })
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
@@ -350,8 +353,8 @@ export class CollectionController {
     @Query('hashes', ParseArrayPipe) hashes?: string[],
     @Query('status', new ParseEnumPipe(TransactionStatus)) status?: TransactionStatus,
     @Query('function', new ParseArrayPipe(new ParseArrayPipeOptions({ allowEmptyString: true }))) functions?: string[],
-    @Query('before', ParseIntPipe) before?: number,
-    @Query('after', ParseIntPipe) after?: number,
+    @Query('before', TimestampParsePipe) before?: number,
+    @Query('after', TimestampParsePipe) after?: number,
     @Query('round', ParseIntPipe) round?: number,
     @Query('order', new ParseEnumPipe(SortOrder)) order?: SortOrder,
     @Query('withScResults', ParseBoolPipe) withScResults?: boolean,
@@ -400,8 +403,8 @@ export class CollectionController {
   @ApiQuery({ name: 'miniBlockHash', description: 'Filter by miniblock hash', required: false })
   @ApiQuery({ name: 'hashes', description: 'Filter by a comma-separated list of transaction hashes', required: false })
   @ApiQuery({ name: 'status', description: 'Status of the transaction (success / pending / invalid / fail)', required: false, enum: TransactionStatus })
-  @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
-  @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
+  @ApiQuery({ name: 'before', description: 'Before timestamp or timestampMs', required: false })
+  @ApiQuery({ name: 'after', description: 'After timestamp or timestampMs', required: false })
   @ApiQuery({ name: 'round', description: 'Filter by round number', required: false })
   @ApiQuery({ name: 'withRelayedScresults', description: 'If set to true, will include smart contract results that resemble relayed transactions', required: false, type: Boolean })
   async getCollectionTransactionsCount(
@@ -413,8 +416,8 @@ export class CollectionController {
     @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash?: string,
     @Query('hashes', ParseArrayPipe) hashes?: string[],
     @Query('status', new ParseEnumPipe(TransactionStatus)) status?: TransactionStatus,
-    @Query('before', ParseIntPipe) before?: number,
-    @Query('after', ParseIntPipe) after?: number,
+    @Query('before', TimestampParsePipe) before?: number,
+    @Query('after', TimestampParsePipe) after?: number,
     @Query('round', ParseIntPipe) round?: number,
     @Query('withRelayedScresults', ParseBoolPipe) withRelayedScresults?: boolean,
   ) {
@@ -452,8 +455,8 @@ export class CollectionController {
   @ApiQuery({ name: 'hashes', description: 'Filter by a comma-separated list of transaction hashes', required: false })
   @ApiQuery({ name: 'status', description: 'Status of the transaction (success / pending / invalid / fail)', required: false, enum: TransactionStatus })
   @ApiQuery({ name: 'function', description: 'Filter transactions by function name', required: false })
-  @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
-  @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
+  @ApiQuery({ name: 'before', description: 'Before timestamp or timestampMs', required: false })
+  @ApiQuery({ name: 'after', description: 'After timestamp or timestampMs', required: false })
   @ApiQuery({ name: 'round', description: 'Filter by round number', required: false })
   @ApiQuery({ name: 'order', description: 'Sort order (asc/desc)', required: false, enum: SortOrder })
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
@@ -475,8 +478,8 @@ export class CollectionController {
     @Query('hashes', ParseArrayPipe) hashes?: string[],
     @Query('status', new ParseEnumPipe(TransactionStatus)) status?: TransactionStatus,
     @Query('function', new ParseArrayPipe(new ParseArrayPipeOptions({ allowEmptyString: true }))) functions?: string[],
-    @Query('before', ParseIntPipe) before?: number,
-    @Query('after', ParseIntPipe) after?: number,
+    @Query('before', TimestampParsePipe) before?: number,
+    @Query('after', TimestampParsePipe) after?: number,
     @Query('round', ParseIntPipe) round?: number,
     @Query('order', new ParseEnumPipe(SortOrder)) order?: SortOrder,
     @Query('withScResults', ParseBoolPipe) withScResults?: boolean,
@@ -521,8 +524,8 @@ export class CollectionController {
   @ApiQuery({ name: 'hashes', description: 'Filter by a comma-separated list of transfer hashes', required: false })
   @ApiQuery({ name: 'status', description: 'Status of the transfer (success / pending / invalid / fail)', required: false, enum: TransactionStatus })
   @ApiQuery({ name: 'function', description: 'Filter transfers by function name', required: false })
-  @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
-  @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
+  @ApiQuery({ name: 'before', description: 'Before timestamp or timestampMs', required: false })
+  @ApiQuery({ name: 'after', description: 'After timestamp or timestampMs', required: false })
   @ApiQuery({ name: 'round', description: 'Filter by round number', required: false })
   async getCollectionTransfersCount(
     @Param('collection', ParseCollectionPipe) identifier: string,
@@ -534,8 +537,8 @@ export class CollectionController {
     @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash?: string,
     @Query('hashes', ParseArrayPipe) hashes?: string[],
     @Query('status', new ParseEnumPipe(TransactionStatus)) status?: TransactionStatus,
-    @Query('before', ParseIntPipe) before?: number,
-    @Query('after', ParseIntPipe) after?: number,
+    @Query('before', TimestampParsePipe) before?: number,
+    @Query('after', TimestampParsePipe) after?: number,
     @Query('round', ParseIntPipe) round?: number,
   ) {
     const isCollection = await this.collectionService.isCollection(identifier);

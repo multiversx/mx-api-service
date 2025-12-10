@@ -110,6 +110,8 @@ describe("NetworkController", () => {
           dataApi: true,
           tokensFetch: false,
           providersFetch: true,
+          stakingV5: true,
+          stakingV5ActivationEpoch: 37,
         }),
       };
       networkServiceMocks.getAbout.mockResolvedValue(mockAbout);

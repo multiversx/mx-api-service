@@ -35,4 +35,5 @@ export interface Transaction {
   relayerSignature: string;
   isRelayed: boolean;
   isScCall: boolean;
+  timestampMs: number;
 }

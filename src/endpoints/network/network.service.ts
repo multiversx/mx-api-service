@@ -186,7 +186,8 @@ export class NetworkService {
     );
 
     if (!vmQueryResult || vmQueryResult.length < 2) {
-      throw new Error(`Could not fetch getTotalStakeByType from delegation contract address '${delegationContractAddress}'`);
+      this.logger.warn(`Could not fetch getTotalStakeByType from delegation contract address '${delegationContractAddress}'`);
+      return BigInt(0);
     }
 
     const totalWaitingStakeBase64 = vmQueryResult[1];
@@ -236,6 +237,11 @@ export class NetworkService {
     if (!stake) {
       throw new Error('Global stake not available');
     }
+    const stakingV5Config = {
+      enabled: this.apiConfigService.isStakingV5Enabled() && stats.epoch >= this.apiConfigService.getStakingV5ActivationEpoch(),
+      activationEpoch: this.apiConfigService.getStakingV5ActivationEpoch(),
+      inflationAmounts: this.apiConfigService.getStakingV5InflationAmounts(),
+    };
 
     const stakedBalance = await this.getAuctionContractBalance();
 
@@ -250,9 +256,12 @@ export class NetworkService {
     const secondsInYear = 365 * 24 * 3600;
     const epochsInYear = secondsInYear / epochDuration;
 
-    const yearIndex = Math.floor(stats.epoch / epochsInYear);
-
-    const inflationAmounts = this.apiConfigService.getInflationAmounts();
+    let yearIndex = Math.floor(stats.epoch / epochsInYear);
+    let inflationAmounts = this.apiConfigService.getInflationAmounts();
+    if (stakingV5Config.enabled) {
+      yearIndex = Math.floor((stats.epoch - stakingV5Config.activationEpoch) / epochsInYear);
+      inflationAmounts = stakingV5Config.inflationAmounts;
+    }
 
     if (yearIndex >= inflationAmounts.length) {
       throw new Error(`There is no inflation information for year with index ${yearIndex}`,);
@@ -324,6 +333,8 @@ export class NetworkService {
       auth: this.apiConfigService.getIsAuthActive(),
       stakingV4: this.apiConfigService.isStakingV4Enabled(),
       chainAndromeda: this.apiConfigService.isChainAndromedaEnabled(),
+      stakingV5: this.apiConfigService.isStakingV5Enabled(),
+      stakingV5ActivationEpoch: this.apiConfigService.getStakingV5ActivationEpoch(),
       nodeEpochsLeft: this.apiConfigService.isNodeEpochsLeftEnabled(),
       transactionProcessor: this.apiConfigService.getIsTransactionProcessorCronActive(),
       transactionCompleted: this.apiConfigService.getIsTransactionCompletedCronActive(),

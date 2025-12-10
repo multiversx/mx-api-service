@@ -5,6 +5,11 @@ api:
   private: true
   graphql: true
 features:
+  websocketSubscription:
+    enabled: false
+    port: 6002
+    maxSubscriptionsPerInstance: 10000
+    maxSubscriptionsPerClient: 5
   dataApi:
     enabled: false
     serviceUrl: 'https://data-api.multiversx.com'
@@ -13,6 +18,10 @@ features:
     maxExpirySeconds: 86400
     acceptedOrigins:
       - ''
+  chainSupernova:
+    enabled: false
+    activationEpoch: 2030
+    activationTimestamp: 1864749472
 cron:
   transactionProcessor: false
   transactionProcessorMaxLookBehind: 1000

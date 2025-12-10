@@ -20,6 +20,8 @@ import { TransactionOperationType } from "./entities/transaction.operation.type"
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { NftFilter } from "../nfts/entities/nft.filter";
 import { TokenAccount } from "src/common/indexer/entities";
+import { ApiConfigService } from "../../common/api-config/api.config.service";
+import crypto from 'crypto-js';
 
 @Injectable()
 export class TransactionGetService {
@@ -30,6 +32,7 @@ export class TransactionGetService {
     private readonly gatewayService: GatewayService,
     @Inject(forwardRef(() => TokenTransferService))
     private readonly tokenTransferService: TokenTransferService,
+    private readonly apiConfigService: ApiConfigService,
   ) { }
 
   private async tryGetTransactionFromElasticBySenderAndNonce(sender: string, nonce: number): Promise<TransactionDetailed | undefined> {
@@ -51,8 +54,49 @@ export class TransactionGetService {
     return result.map(x => ApiUtils.mergeObjects(new TransactionLog(), x));
   }
 
-  private async getTransactionLogsFromElasticInternal(hashes: string[]): Promise<any[]> {
-    return await this.indexerService.getTransactionLogs(hashes);
+  private async getTransactionLogsFromElasticInternal(hashes: string[]) {
+    const esMigratedIndices = this.apiConfigService.getElasticMigratedIndicesConfig();
+    const index = esMigratedIndices?.['logs'] ?? 'logs';
+    if (index === 'events') {
+      return await this.getTransactionLogsFromElasticInternalEventsIndex(hashes);
+    }
+
+    return await this.getTransactionLogsFromElasticInternalLogsIndex(hashes);
+  }
+
+  private async getTransactionLogsFromElasticInternalLogsIndex(hashes: string[]): Promise<any[]> {
+    return await this.indexerService.getTransactionLogs(hashes, 'logs', '_id');
+  }
+
+  private async getTransactionLogsFromElasticInternalEventsIndex(hashes: string[]): Promise<any[]> {
+    const rawHits = await this.indexerService.getTransactionLogs(hashes, 'events', 'txHash');
+
+    const logsMap: Map<string, TransactionLog> = new Map();
+
+    for (const source of rawHits) {
+      const txHash = source.txHash;
+
+      if (!logsMap.has(txHash)) {
+        logsMap.set(txHash, new TransactionLog({
+          id: txHash,
+          address: source.logAddress,
+          events: [],
+        }));
+      }
+
+      const event = {
+        identifier: source.identifier,
+        address: source.address,
+        data: source.data && source.data.length > 0 ? BinaryUtils.hexToBase64(source.data ?? '') : source.data,
+        additionalData: source.additionalData?.map(d => d && d.length > 0 ? BinaryUtils.hexToBase64(d) : d),
+        topics: source.topics?.map(t => t && t.length > 0 ? BinaryUtils.hexToBase64(t) : t),
+        order: source.order ?? 0,
+      };
+
+      logsMap.get(txHash)?.events.push(ApiUtils.mergeObjects(new TransactionLogEvent(), event));
+    }
+
+    return Array.from(logsMap.values());
   }
 
   async getTransactionScResultsFromElastic(txHash: string): Promise<SmartContractResult[]> {
@@ -112,6 +156,7 @@ export class TransactionGetService {
         const logs = await this.getTransactionLogsFromElastic(hashes);
         for (const log of logs) {
           this.alterDuplicatedTransferValueOnlyEvents(log.events);
+          this.removeDuplicatedESDTTransferEvents(log.events);
         }
 
         if (!fields || fields.length === 0 || fields.includes(TransactionOptionalFieldOption.operations)) {
@@ -155,6 +200,53 @@ export class TransactionGetService {
     ) {
       asyncCallbackEvents[0].topics[0] = BinaryUtils.hexToBase64(BinaryUtils.numberToHex(0));
     }
+  }
+
+  private removeDuplicatedESDTTransferEvents(events: TransactionLogEvent[]) {
+    const esdtTransferEvents = events.filter(x => x.identifier === 'ESDTTransfer');
+
+    if (esdtTransferEvents.length <= 1) {
+      return;
+    }
+
+    const eventGroups = new Map<string, TransactionLogEvent[]>();
+
+    for (const event of esdtTransferEvents) {
+      const contentHash = this.getEventContentHash(event);
+      if (!eventGroups.has(contentHash)) {
+        eventGroups.set(contentHash, []);
+      }
+      const group = eventGroups.get(contentHash);
+      if (group) {
+        group.push(event);
+      }
+    }
+
+    const duplicateEvents = new Set<TransactionLogEvent>();
+    for (const [, eventGroup] of eventGroups) {
+      if (eventGroup.length > 1) {
+        for (let i = 1; i < eventGroup.length; i++) {
+          duplicateEvents.add(eventGroup[i]);
+        }
+      }
+    }
+
+    for (let i = events.length - 1; i >= 0; i--) {
+      if (duplicateEvents.has(events[i])) {
+        events.splice(i, 1);
+      }
+    }
+  }
+
+  private getEventContentHash(event: TransactionLogEvent): string {
+    const content = {
+      address: event.address,
+      identifier: event.identifier,
+      topics: event.topics,
+      data: event.data,
+      additionalData: event.additionalData,
+    };
+    return crypto.MD5(JSON.stringify(content)).toString();
   }
 
   private applyUsernamesToDetailedTransaction(transaction: IndexerTransaction, transactionDetailed: TransactionDetailed) {

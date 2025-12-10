@@ -10,4 +10,5 @@ export enum MetricsEvents {
   SetTransactionsCompleted = "setTransactionsCompleted",
   SetTransactionsPendingResults = "setTransactionsPendingResults",
   SetBatchUpdated = "setBatchUpdated",
+  SetWebsocketMetrics = "setWebsocketMetrics",
 }

@@ -20,6 +20,11 @@ flags:
   processNfts: true
   collectionPropertiesFromGateway: false
 features:
+  websocketSubscription:
+    enabled: false
+    port: 6002
+    maxSubscriptionsPerInstance: 10000
+    maxSubscriptionsPerClient: 5
   eventsNotifier:
     enabled: false
     port: 5674
@@ -63,8 +68,18 @@ features:
     cronExpression: '*/5 * * * * *'
     activationEpoch: 1391
   chainAndromeda:
+    enabled: true
+    activationEpoch: 1763
+  stakingV5:
+    enabled: true
+    activationEpoch: 1951
+  chainSupernova:
     enabled: false
-    activationEpoch: 4
+    activationEpoch: 2030
+    activationTimestamp: 1864749472
+  deprecatedRelayedV1V2:
+    enabled: true
+    activationEpoch: 1918
   nodeEpochsLeft:
     enabled: false
   transactionProcessor:
@@ -85,6 +100,8 @@ features:
     durationThresholdMs: 5000
     failureCountThreshold: 5
     resetTimeoutMs: 30000
+  elasticMigratedIndices:
+    logs: 'events'
   statusChecker:
     enabled: false
     thresholds:
@@ -178,6 +195,10 @@ inflation:
   - 1130177
   - 924690
   - 719203
+stakingV5Inflation:
+  - 1262802
+# december 2025 mainnet supply: 28_840_981. first year rewards = 50% * (8.75% * supply) = 1262802
+# TODO: calculate the inflation for upcoming years based on the inflation decay
 nftProcess:
   parallelism: 1
   maxRetries: 3
@@ -186,3 +207,7 @@ compression:
   level: 6
   threshold: 1024
   chunkSize: 16384
+customUrlHeaders:
+  - urlPattern: ''
+    headers:
+      x-custom-auth: ''

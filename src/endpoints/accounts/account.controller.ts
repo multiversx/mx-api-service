@@ -59,6 +59,7 @@ import { MexPairType } from '../mex/entities/mex.pair.type';
 import { NftSubType } from '../nfts/entities/nft.sub.type';
 import { AccountContract } from './entities/account.contract';
 import { AccountFetchOptions } from './entities/account.fetch.options';
+import { TimestampParsePipe } from 'src/utils/timestamp.parse.pipe';
 
 @Controller()
 @ApiTags('accounts')
@@ -150,6 +151,7 @@ export class AccountController {
   @ApiQuery({ name: 'search', description: 'Search by account address, assets name', required: false })
   @ApiQuery({ name: 'excludeTags', description: 'Exclude specific tags from result', required: false })
   @ApiQuery({ name: 'hasAssets', description: 'Returns a list of accounts that have assets', required: false })
+  @ApiQuery({ name: 'withBalance', description: 'Filter accounts by balance (true = balance > 0, false = balance = 0)', required: false, type: Boolean })
   async getAccountsCount(
     @Query("ownerAddress", ParseAddressPipe) ownerAddress?: string,
     @Query("isSmartContract", ParseBoolPipe) isSmartContract?: boolean,
@@ -158,6 +160,7 @@ export class AccountController {
     @Query("excludeTags", ParseArrayPipe) excludeTags?: string[],
     @Query("hasAssets", ParseBoolPipe) hasAssets?: boolean,
     @Query("search") search?: string,
+    @Query("withBalance", ParseBoolPipe) withBalance?: boolean,
   ): Promise<number> {
     return await this.accountService.getAccountsCount(
       new AccountQueryOptions(
@@ -169,6 +172,7 @@ export class AccountController {
           excludeTags,
           hasAssets,
           search,
+          withBalance,
         }));
   }
 
@@ -182,6 +186,7 @@ export class AccountController {
     @Query("excludeTags", ParseArrayPipe) excludeTags?: string[],
     @Query("hasAssets", ParseBoolPipe) hasAssets?: boolean,
     @Query("search") search?: string,
+    @Query("withBalance", ParseBoolPipe) withBalance?: boolean,
   ): Promise<number> {
     return await this.accountService.getAccountsCount(
       new AccountQueryOptions(
@@ -193,6 +198,7 @@ export class AccountController {
           excludeTags,
           hasAssets,
           search,
+          withBalance,
         }));
   }
 
@@ -876,8 +882,8 @@ export class AccountController {
   @ApiQuery({ name: 'function', description: 'Filter transactions by function name', required: false })
   @ApiQuery({ name: 'order', description: 'Sort order (asc/desc)', required: false, enum: SortOrder })
   @ApiQuery({ name: 'fields', description: 'List of fields to filter by', required: false, isArray: true, style: 'form', explode: false })
-  @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
-  @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
+  @ApiQuery({ name: 'before', description: 'Before timestamp or timestampMs', required: false })
+  @ApiQuery({ name: 'after', description: 'After timestamp or timestampMs', required: false })
   @ApiQuery({ name: 'round', description: 'Round number', required: false })
   @ApiQuery({ name: 'withScResults', description: 'Return scResults for transactions. When "withScresults" parameter is applied, complexity estimation is 200', required: false })
   @ApiQuery({ name: 'withOperations', description: 'Return operations for transactions. When "withOperations" parameter is applied, complexity estimation is 200', required: false })
@@ -904,8 +910,8 @@ export class AccountController {
     @Query('hashes', ParseArrayPipe) hashes?: string[],
     @Query('status', new ParseEnumPipe(TransactionStatus)) status?: TransactionStatus,
     @Query('function', new ParseArrayPipe(new ParseArrayPipeOptions({ allowEmptyString: true }))) functions?: string[],
-    @Query('before', ParseIntPipe) before?: number,
-    @Query('after', ParseIntPipe) after?: number,
+    @Query('before', TimestampParsePipe) before?: number,
+    @Query('after', TimestampParsePipe) after?: number,
     @Query('round', ParseIntPipe) round?: number,
     @Query('order', new ParseEnumPipe(SortOrder)) order?: SortOrder,
     @Query('fields', ParseArrayPipe) fields?: string[],
@@ -958,8 +964,8 @@ export class AccountController {
   @ApiQuery({ name: 'hashes', description: 'Filter by a comma-separated list of transaction hashes', required: false })
   @ApiQuery({ name: 'status', description: 'Status of the transaction (success / pending / invalid / fail)', required: false, enum: TransactionStatus })
   @ApiQuery({ name: 'function', description: 'Filter transactions by function name', required: false })
-  @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
-  @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
+  @ApiQuery({ name: 'before', description: 'Before timestamp or timestampMs', required: false })
+  @ApiQuery({ name: 'after', description: 'After timestamp or timestampMs', required: false })
   @ApiQuery({ name: 'round', description: 'Round number', required: false })
   @ApiQuery({ name: 'senderOrReceiver', description: 'One address that current address interacted with', required: false })
   @ApiQuery({ name: 'isRelayed', description: 'Returns isRelayed transactions details', required: false, type: Boolean })
@@ -976,8 +982,8 @@ export class AccountController {
     @Query('hashes', ParseArrayPipe) hashes?: string[],
     @Query('status', new ParseEnumPipe(TransactionStatus)) status?: TransactionStatus,
     @Query('function', new ParseArrayPipe(new ParseArrayPipeOptions({ allowEmptyString: true }))) functions?: string[],
-    @Query('before', ParseIntPipe) before?: number,
-    @Query('after', ParseIntPipe) after?: number,
+    @Query('before', TimestampParsePipe) before?: number,
+    @Query('after', TimestampParsePipe) after?: number,
     @Query('round', ParseIntPipe) round?: number,
     @Query('senderOrReceiver', ParseAddressPipe) senderOrReceiver?: string,
     @Query('isRelayed', ParseBoolPipe) isRelayed?: boolean,
@@ -1022,8 +1028,8 @@ export class AccountController {
   @ApiQuery({ name: 'status', description: 'Status of the transaction (success / pending / invalid / fail)', required: false, enum: TransactionStatus })
   @ApiQuery({ name: 'function', description: 'Filter transactions by function name', required: false })
   @ApiQuery({ name: 'order', description: 'Sort order (asc/desc)', required: false, enum: SortOrder })
-  @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
-  @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
+  @ApiQuery({ name: 'before', description: 'Before timestamp or timestampMs', required: false })
+  @ApiQuery({ name: 'after', description: 'After timestamp or timestampMs', required: false })
   @ApiQuery({ name: 'round', description: 'Round number', required: false })
   @ApiQuery({ name: 'fields', description: 'List of fields to filter by', required: false, isArray: true, style: 'form', explode: false })
   @ApiQuery({ name: 'relayer', description: 'Address of the relayer', required: false })
@@ -1050,8 +1056,8 @@ export class AccountController {
     @Query('hashes', ParseArrayPipe) hashes?: string[],
     @Query('status', new ParseEnumPipe(TransactionStatus)) status?: TransactionStatus,
     @Query('function', new ParseArrayPipe(new ParseArrayPipeOptions({ allowEmptyString: true }))) functions?: string[],
-    @Query('before', ParseIntPipe) before?: number,
-    @Query('after', ParseIntPipe) after?: number,
+    @Query('before', TimestampParsePipe) before?: number,
+    @Query('after', TimestampParsePipe) after?: number,
     @Query('round', ParseIntPipe) round?: number,
     @Query('fields', ParseArrayPipe) fields?: string[],
     @Query('order', new ParseEnumPipe(SortOrder)) order?: SortOrder,
@@ -1109,8 +1115,8 @@ export class AccountController {
   @ApiQuery({ name: 'hashes', description: 'Filter by a comma-separated list of transfer hashes', required: false })
   @ApiQuery({ name: 'status', description: 'Status of the transaction (success / pending / invalid / fail)', required: false, enum: TransactionStatus })
   @ApiQuery({ name: 'function', description: 'Filter transfers by function name', required: false })
-  @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
-  @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
+  @ApiQuery({ name: 'before', description: 'Before timestamp or timestampMs', required: false })
+  @ApiQuery({ name: 'after', description: 'After timestamp or timestampMs', required: false })
   @ApiQuery({ name: 'round', description: 'Round number', required: false })
   @ApiQuery({ name: 'isScCall', description: 'Returns sc call transactions details', required: false, type: Boolean })
   @ApiQuery({ name: 'senderOrReceiver', description: 'One address that current address interacted with', required: false })
@@ -1127,8 +1133,8 @@ export class AccountController {
     @Query('hashes', ParseArrayPipe) hashes?: string[],
     @Query('status', new ParseEnumPipe(TransactionStatus)) status?: TransactionStatus,
     @Query('function', new ParseArrayPipe(new ParseArrayPipeOptions({ allowEmptyString: true }))) functions?: string[],
-    @Query('before', ParseIntPipe) before?: number,
-    @Query('after', ParseIntPipe) after?: number,
+    @Query('before', TimestampParsePipe) before?: number,
+    @Query('after', TimestampParsePipe) after?: number,
     @Query('round', ParseIntPipe) round?: number,
     @Query('senderOrReceiver', ParseAddressPipe) senderOrReceiver?: string,
     @Query('isScCall', ParseBoolPipe) isScCall?: boolean,
@@ -1169,8 +1175,8 @@ export class AccountController {
     @Query('hashes', ParseArrayPipe) hashes?: string[],
     @Query('status', new ParseEnumPipe(TransactionStatus)) status?: TransactionStatus,
     @Query('function', new ParseArrayPipe(new ParseArrayPipeOptions({ allowEmptyString: true }))) functions?: string[],
-    @Query('before', ParseIntPipe) before?: number,
-    @Query('after', ParseIntPipe) after?: number,
+    @Query('before', TimestampParsePipe) before?: number,
+    @Query('after', TimestampParsePipe) after?: number,
     @Query('round', ParseIntPipe) round?: number,
     @Query('senderOrReceiver', ParseAddressPipe) senderOrReceiver?: string,
     @Query('withRefunds', ParseBoolPipe) withRefunds?: boolean,
@@ -1304,15 +1310,15 @@ export class AccountController {
   @ApiOperation({ summary: 'Account history', description: 'Return account EGLD balance history' })
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
-  @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
-  @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
+  @ApiQuery({ name: 'before', description: 'Before timestamp or timestampMs', required: false })
+  @ApiQuery({ name: 'after', description: 'After timestamp or timestampMs', required: false })
   @ApiOkResponse({ type: [AccountHistory] })
   getAccountHistory(
     @Param('address', ParseAddressPipe) address: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
-    @Query('before', ParseIntPipe) before?: number,
-    @Query('after', ParseIntPipe) after?: number,
+    @Query('before', TimestampParsePipe) before?: number,
+    @Query('after', TimestampParsePipe) after?: number,
   ): Promise<AccountHistory[]> {
     return this.accountService.getAccountHistory(
       address,
@@ -1322,13 +1328,13 @@ export class AccountController {
 
   @Get("/accounts/:address/history/count")
   @ApiOperation({ summary: 'Account history count', description: 'Return account EGLD balance history count' })
-  @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
-  @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
+  @ApiQuery({ name: 'before', description: 'Before timestamp or timestampMs', required: false })
+  @ApiQuery({ name: 'after', description: 'After timestamp or timestampMs', required: false })
   @ApiOkResponse({ type: Number })
   getAccountHistoryCount(
     @Param('address', ParseAddressPipe) address: string,
-    @Query('before', ParseIntPipe) before?: number,
-    @Query('after', ParseIntPipe) after?: number,
+    @Query('before', TimestampParsePipe) before?: number,
+    @Query('after', TimestampParsePipe) after?: number,
   ): Promise<number> {
     return this.accountService.getAccountHistoryCount(
       address,
@@ -1337,14 +1343,14 @@ export class AccountController {
 
   @Get("/accounts/:address/history/:tokenIdentifier/count")
   @ApiOperation({ summary: 'Account token history count', description: 'Return account token balance history count' })
-  @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
-  @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
+  @ApiQuery({ name: 'before', description: 'Before timestamp or timestampMs', required: false })
+  @ApiQuery({ name: 'after', description: 'After timestamp or timestampMs', required: false })
   @ApiOkResponse({ type: Number })
   async getAccountTokenHistoryCount(
     @Param('address', ParseAddressPipe) address: string,
     @Param('tokenIdentifier', ParseTokenOrNftPipe) tokenIdentifier: string,
-    @Query('before', ParseIntPipe) before?: number,
-    @Query('after', ParseIntPipe) after?: number,
+    @Query('before', TimestampParsePipe) before?: number,
+    @Query('after', TimestampParsePipe) after?: number,
   ): Promise<number> {
     const isToken = await this.tokenService.isToken(tokenIdentifier) || await this.collectionService.isCollection(tokenIdentifier) || await this.nftService.isNft(tokenIdentifier);
     if (!isToken) {
@@ -1360,8 +1366,8 @@ export class AccountController {
   @ApiOperation({ summary: 'Account esdts history', description: 'Returns account esdts balance history' })
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
-  @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
-  @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
+  @ApiQuery({ name: 'before', description: 'Before timestamp or timestampMs', required: false })
+  @ApiQuery({ name: 'after', description: 'After timestamp or timestampMs', required: false })
   @ApiQuery({ name: 'identifier', description: 'Filter by multiple esdt identifiers, comma-separated', required: false })
   @ApiQuery({ name: 'token', description: 'Token identifier', required: false })
   @ApiOkResponse({ type: [AccountEsdtHistory] })
@@ -1369,8 +1375,8 @@ export class AccountController {
     @Param('address', ParseAddressPipe) address: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
-    @Query('before', ParseIntPipe) before?: number,
-    @Query('after', ParseIntPipe) after?: number,
+    @Query('before', TimestampParsePipe) before?: number,
+    @Query('after', TimestampParsePipe) after?: number,
     @Query('identifier', ParseArrayPipe) identifier?: string[],
     @Query('token', ParseTokenPipe) token?: string,
   ): Promise<AccountEsdtHistory[]> {
@@ -1382,14 +1388,14 @@ export class AccountController {
 
   @Get("/accounts/:address/esdthistory/count")
   @ApiOperation({ summary: 'Account esdts history count', description: 'Returns account esdts balance history count' })
-  @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
-  @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
+  @ApiQuery({ name: 'before', description: 'Before timestamp or timestampMs', required: false })
+  @ApiQuery({ name: 'after', description: 'After timestamp or timestampMs', required: false })
   @ApiQuery({ name: 'identifier', description: 'Filter by multiple esdt identifiers, comma-separated', required: false })
   @ApiQuery({ name: 'token', description: 'Token identifier', required: false })
   async getAccountEsdtHistoryCount(
     @Param('address', ParseAddressPipe) address: string,
-    @Query('before', ParseIntPipe) before?: number,
-    @Query('after', ParseIntPipe) after?: number,
+    @Query('before', TimestampParsePipe) before?: number,
+    @Query('after', TimestampParsePipe) after?: number,
     @Query('identifier', ParseArrayPipe) identifier?: string[],
     @Query('token', ParseTokenPipe) token?: string,
   ): Promise<number> {
@@ -1402,16 +1408,16 @@ export class AccountController {
   @ApiOperation({ summary: 'Account token history', description: 'Returns account token balance history' })
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
-  @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
-  @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
+  @ApiQuery({ name: 'before', description: 'Before timestamp or timestampMs', required: false })
+  @ApiQuery({ name: 'after', description: 'After timestamp or timestampMs', required: false })
   @ApiOkResponse({ type: [AccountEsdtHistory] })
   async getAccountTokenHistory(
     @Param('address', ParseAddressPipe) address: string,
     @Param('tokenIdentifier', ParseTokenOrNftPipe) tokenIdentifier: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
-    @Query('before', ParseIntPipe) before?: number,
-    @Query('after', ParseIntPipe) after?: number,
+    @Query('before', TimestampParsePipe) before?: number,
+    @Query('after', TimestampParsePipe) after?: number,
   ): Promise<AccountEsdtHistory[]> {
     const isToken = await this.tokenService.isToken(tokenIdentifier) || await this.collectionService.isCollection(tokenIdentifier) || await this.nftService.isNft(tokenIdentifier);
     if (!isToken) {

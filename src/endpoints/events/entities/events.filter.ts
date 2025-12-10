@@ -10,4 +10,7 @@ export class EventsFilter {
   shard: number = 0;
   before: number = 0;
   after: number = 0;
+  order: number = 0;
+  logAddress: string = '';
+  topics: string[] = [];
 }

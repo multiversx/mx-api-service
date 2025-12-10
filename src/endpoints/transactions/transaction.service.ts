@@ -42,6 +42,8 @@ import { NetworkService } from 'src/endpoints/network/network.service';
 import { TransactionWithPpu } from './entities/transaction.with.ppu';
 import { GasBucket } from './entities/gas.bucket';
 import { GasBucketConstants } from './constants/gas.bucket.constants';
+import { TransactionAction } from "./transaction-action/entities/transaction.action";
+import { TransactionActionCategory } from "./transaction-action/entities/transaction.action.category";
 
 @Injectable()
 export class TransactionService {
@@ -94,6 +96,32 @@ export class TransactionService {
     }
 
     return await this.indexerService.getTransactionCount(filter, address);
+  }
+
+  public reorderAccountSentTransactionsByNonce(transactions: TransactionDetailed[], accountAddress: string): TransactionDetailed[] {
+    const sentPositions: number[] = [];
+    const sentTransactions: TransactionDetailed[] = [];
+
+    transactions.forEach((tx, index) => {
+      if (tx.sender === accountAddress) {
+        sentPositions.push(index);
+        sentTransactions.push(tx);
+      }
+    });
+
+    sentTransactions.sort((a, b) => {
+      const nonceA = a.nonce ?? 0;
+      const nonceB = b.nonce ?? 0;
+      return nonceB - nonceA;
+    });
+
+    const result = [...transactions];
+
+    sentPositions.forEach((position, index) => {
+      result[position] = sentTransactions[index];
+    });
+
+    return result;
   }
 
   private getDistinctUserAddressesFromTransactions(transactions: Transaction[]): string[] {
@@ -169,6 +197,13 @@ export class TransactionService {
     let transactions: TransactionDetailed[] = [];
     transactions = elasticTransactions.map(x => ApiUtils.mergeObjects(new TransactionDetailed(), x));
 
+    const hasSenderFilter = filter.sender || (filter.senders && filter.senders.length > 0);
+    const hasReceiverFilter = filter.receivers && filter.receivers.length > 0;
+
+    if (address && !hasSenderFilter && !hasReceiverFilter) {
+      transactions = this.reorderAccountSentTransactionsByNonce(transactions, address);
+    }
+
     if (filter.hashes) {
       const txHashes: string[] = filter.hashes;
       const elasticHashes = elasticTransactions.map(({ txHash }: any) => txHash);
@@ -193,7 +228,6 @@ export class TransactionService {
 
     for (const transaction of transactions) {
       transaction.type = undefined;
-      transaction.relayedVersion = this.extractRelayedVersion(transaction);
     }
 
     await this.processTransactions(transactions, {
@@ -201,6 +235,8 @@ export class TransactionService {
       withUsername: queryOptions?.withUsername ?? false,
       withActionTransferValue: queryOptions?.withActionTransferValue ?? false,
     });
+
+    this.processRelayedInfo(transactions);
 
     return transactions;
   }
@@ -225,9 +261,9 @@ export class TransactionService {
 
     if (transaction !== null) {
       transaction.price = await this.getTransactionPrice(transaction);
-      transaction.relayedVersion = this.extractRelayedVersion(transaction);
 
       await this.processTransactions([transaction], { withScamInfo: true, withUsername: true, withActionTransferValue });
+      this.processRelayedInfo([transaction]);
 
       if (transaction.pendingResults === true && transaction.results) {
         for (const result of transaction.results) {
@@ -347,7 +383,30 @@ export class TransactionService {
     }
   }
 
+  public processRelayedInfo(transactions: TransactionDetailed[]) {
+    for (const transaction of transactions) {
+      transaction.relayedVersion = this.extractRelayedVersion(transaction);
+      if (transaction.relayedVersion && ["v1", "v2"].includes(transaction.relayedVersion)) {
+        const shouldSkip = this.apiConfigService.shouldDeprecateRelayedV1V2(transaction.epoch ?? 0);
+        if (shouldSkip) {
+          transaction.function = undefined;
+          transaction.action = new TransactionAction({
+            category: TransactionActionCategory.deprecatedRelayedV1V2,
+            name: "Deprecated transaction action",
+            description: `Relayed v1/v2 transactions are deprecated`,
+          });
+        }
+      }
+      if (!transaction.isRelayed) {
+        transaction.relayedVersion = undefined;
+      }
+    }
+  }
+
   async processTransactions(transactions: Transaction[], options: { withScamInfo: boolean, withUsername: boolean, withActionTransferValue: boolean }): Promise<void> {
+
+    this.normalizeTimestampMs(transactions);
+
     try {
       await this.pluginsService.processTransactions(transactions, options.withScamInfo);
     } catch (error) {
@@ -370,6 +429,15 @@ export class TransactionService {
     }
 
     await this.applyAssets(transactions, { withUsernameAssets: options.withUsername });
+  }
+
+
+  private normalizeTimestampMs(transactions: Transaction[]): void {
+    for (const transaction of transactions) {
+      if ((!transaction.timestampMs || transaction.timestampMs === 0) && transaction.timestamp) {
+        transaction.timestampMs = transaction.timestamp * 1000;
+      }
+    }
   }
 
   private async getPendingResults(transaction: Transaction): Promise<boolean | undefined> {
@@ -454,18 +522,25 @@ export class TransactionService {
 
   private async getSmartContractResultsRaw(transactionHashes: Array<string>): Promise<Array<SmartContractResult[] | undefined>> {
     const resultsRaw = await this.indexerService.getSmartContractResults(transactionHashes) as any[];
+
+    const resultsByHash = new Map<string, any[]>();
+
     for (const result of resultsRaw) {
       result.hash = result.scHash;
-
       delete result.scHash;
+
+      const txHash = result.originalTxHash;
+      if (!resultsByHash.has(txHash)) {
+        resultsByHash.set(txHash, []);
+      }
+      resultsByHash.get(txHash)?.push(result);
     }
 
     const results: Array<SmartContractResult[] | undefined> = [];
-
     for (const transactionHash of transactionHashes) {
-      const resultRaw = resultsRaw.filter(({ originalTxHash }) => originalTxHash == transactionHash);
+      const resultRaw = resultsByHash.get(transactionHash);
 
-      if (resultRaw.length > 0) {
+      if (resultRaw && resultRaw.length > 0) {
         results.push(resultRaw.map((result: any) => ApiUtils.mergeObjects(new SmartContractResult(), result)));
       } else {
         results.push(undefined);
@@ -568,7 +643,7 @@ export class TransactionService {
   }
 
   private extractRelayedVersion(transaction: TransactionDetailed): string | undefined {
-    if (transaction.isRelayed == true && transaction.data) {
+    if (transaction.data) {
       const decodedData = BinaryUtils.base64Decode(transaction.data);
 
       if (decodedData.startsWith('relayedTx@')) {

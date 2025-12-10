@@ -41,6 +41,12 @@ export class FeatureConfigs {
   @ApiProperty({ description: 'Chain Andromeda flag activation value' })
   chainAndromeda: boolean = false;
 
+  @ApiProperty({ description: 'Staking v5 flag activation value' })
+  stakingV5: boolean = false;
+
+  @ApiProperty({ description: 'Staking v5 activation epoch' })
+  stakingV5ActivationEpoch: number = 0;
+
   @ApiProperty({ description: 'Node epochs left flag activation value' })
   nodeEpochsLeft: boolean = false;
 
