@@ -61,7 +61,7 @@ features:
     jwtSecret: ''
   nodeEpochsLeft:
     enabled: false
-  chainSupernova:
+  chainBarnard:
     enabled: false
     activationEpoch: 3964
     activationTimestamp: 1751460236

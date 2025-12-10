@@ -18,7 +18,7 @@ features:
     maxExpirySeconds: 86400
     acceptedOrigins:
       - ''
-  chainSupernova:
+  chainBarnard:
     enabled: true
     activationEpoch: 1820
     activationTimestamp: 1753376544

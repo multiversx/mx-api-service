@@ -21,11 +21,11 @@ export class TimestampParsePipe implements PipeTransform {
     }
 
     const normalizedInputMs = TimeUtils.isTimestampInSeconds(valNumber) ? valNumber * 1000 : valNumber;
-    if (!this.apiConfigService.isChainSupernovaEnabled()) {
+    if (!this.apiConfigService.isChainBarnardEnabled()) {
       return Math.floor(normalizedInputMs / 1000);
     }
 
-    const supernovaActivationTimestampMs = this.apiConfigService.getSupernovaActivationTimestamp() * 1000;
+    const supernovaActivationTimestampMs = this.apiConfigService.getChainBarnardActivationEpoch() * 1000;
 
     if (normalizedInputMs < supernovaActivationTimestampMs) {
       return Math.floor(normalizedInputMs / 1000);

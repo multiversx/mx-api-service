@@ -1077,12 +1077,12 @@ export class ApiConfigService {
     return undefined;
   }
 
-  isChainSupernovaEnabled(): boolean {
-    return this.configService.get<boolean>('features.chainSupernova.enabled') ?? false;
+  isChainBarnardEnabled(): boolean {
+    return this.configService.get<boolean>('features.chainBarnard.enabled') ?? false;
   }
 
-  getSupernovaActivationEpoch(): number {
-    const epoch = this.configService.get<number>('features.chainSupernova.activationEpoch');
+  getChainBarnardActivationEpoch(): number {
+    const epoch = this.configService.get<number>('features.chainBarnard.activationEpoch');
     if (epoch == null) {
       return TimeUtils.TIMESTAMP_IN_SECONDS_THRESHOLD + 1;
     }
@@ -1090,8 +1090,8 @@ export class ApiConfigService {
     return epoch;
   }
 
-  getSupernovaActivationTimestamp(): number {
-    const timestamp = this.configService.get<number>('features.chainSupernova.activationTimestamp');
+  geChainBarnardActivationTimestamp(): number {
+    const timestamp = this.configService.get<number>('features.chainBarnard.activationTimestamp');
     if (timestamp == null) {
       return TimeUtils.TIMESTAMP_IN_SECONDS_THRESHOLD + 1;
     }
