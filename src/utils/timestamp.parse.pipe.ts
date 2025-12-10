@@ -25,9 +25,9 @@ export class TimestampParsePipe implements PipeTransform {
       return Math.floor(normalizedInputMs / 1000);
     }
 
-    const supernovaActivationTimestampMs = this.apiConfigService.getChainBarnardActivationEpoch() * 1000;
+    const barnardActivationTimestamp = this.apiConfigService.getChainBarnardActivationEpoch() * 1000;
 
-    if (normalizedInputMs < supernovaActivationTimestampMs) {
+    if (normalizedInputMs < barnardActivationTimestamp) {
       return Math.floor(normalizedInputMs / 1000);
     } else {
       return normalizedInputMs;
