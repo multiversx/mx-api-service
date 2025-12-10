@@ -73,10 +73,10 @@ features:
   stakingV5:
     enabled: true
     activationEpoch: 1951
-  chainSupernova:
-    enabled: false
-    activationEpoch: 2030
-    activationTimestamp: 1864749472
+  chainBarnard:
+    enabled: true
+    activationEpoch: 1820
+    activationTimestamp: 1753376544
   nodeEpochsLeft:
     enabled: false
   transactionProcessor:

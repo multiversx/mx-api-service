@@ -75,10 +75,10 @@ features:
   stakingV5:
     enabled: true
     activationEpoch: 4817
-  chainSupernova:
-    enabled: false
-    activationEpoch: 2030
-    activationTimestamp: 1864749472
+  chainBarnard:
+    enabled: true
+    activationEpoch: 3964
+    activationTimestamp: 1751460236
   deprecatedRelayedV1V2:
     enabled: true
     activationEpoch: 4569
