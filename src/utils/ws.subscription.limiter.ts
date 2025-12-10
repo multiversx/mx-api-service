@@ -2,22 +2,25 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Socket } from 'socket.io';
 import { WsException } from '@nestjs/websockets';
+import { ApiConfigService } from 'src/common/api-config/api.config.service';
 
 @Injectable()
 export class WsSubscriptionLimiterGuard implements CanActivate {
-  static MAX_ROOMS_PER_CLIENT = 5 + 1; // TODO: adjust limit (5 subscriptions + 1 default room client id)
-  static MAX_ROOMS_GLOBAL = 10_000; // TODO: adjust
+  constructor(
+    private readonly apiConfigService: ApiConfigService,
+  ) { }
 
   canActivate(context: ExecutionContext): boolean {
     const client: Socket = context.switchToWs().getClient();
     const totalRoomsGlobal = client.nsp.server.sockets.adapter.rooms.size;
     const totalClientRooms = client.rooms.size;
-    if (totalRoomsGlobal >= WsSubscriptionLimiterGuard.MAX_ROOMS_GLOBAL) {
-      throw new WsException(`Maximum number of ${WsSubscriptionLimiterGuard.MAX_ROOMS_GLOBAL} global subscriptions accepted by server reached!`);
+
+    if (totalRoomsGlobal >= this.apiConfigService.getWebsocketMaxSubscriptionsPerInstance()) {
+      throw new WsException(`Maximum number of ${this.apiConfigService.getWebsocketMaxSubscriptionsPerInstance()} global subscriptions accepted by server reached!`);
     }
 
-    if (totalClientRooms >= WsSubscriptionLimiterGuard.MAX_ROOMS_PER_CLIENT) {
-      throw new WsException(`Maximum number of ${WsSubscriptionLimiterGuard.MAX_ROOMS_PER_CLIENT} subscriptions per client reached!`);
+    if (totalClientRooms >= this.apiConfigService.getWebsocketMaxSubscriptionsPerClient()) {
+      throw new WsException(`Maximum number of ${this.apiConfigService.getWebsocketMaxSubscriptionsPerClient()} subscriptions per client reached!`);
     }
 
     return true;
