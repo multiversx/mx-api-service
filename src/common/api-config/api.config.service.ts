@@ -1090,7 +1090,7 @@ export class ApiConfigService {
     return epoch;
   }
 
-  geChainBarnardActivationTimestamp(): number {
+  getChainBarnardActivationTimestamp(): number {
     const timestamp = this.configService.get<number>('features.chainBarnard.activationTimestamp');
     if (timestamp == null) {
       return TimeUtils.TIMESTAMP_IN_SECONDS_THRESHOLD + 1;
