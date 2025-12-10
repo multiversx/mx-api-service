@@ -19,7 +19,7 @@ export class WsSubscriptionLimiterGuard implements CanActivate {
       throw new WsException(`Maximum number of ${this.apiConfigService.getWebsocketMaxSubscriptionsPerInstance()} global subscriptions accepted by server reached!`);
     }
 
-    if (totalClientRooms >= this.apiConfigService.getWebsocketMaxSubscriptionsPerClient()) {
+    if (totalClientRooms >= this.apiConfigService.getWebsocketMaxSubscriptionsPerClient() + 1) { // 1 default room with client id
       throw new WsException(`Maximum number of ${this.apiConfigService.getWebsocketMaxSubscriptionsPerClient()} subscriptions per client reached!`);
     }
 
