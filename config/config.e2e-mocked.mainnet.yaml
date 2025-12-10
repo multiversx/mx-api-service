@@ -19,9 +19,9 @@ features:
     acceptedOrigins:
       - ''
   chainSupernova:
-    enabled: false
-    activationEpoch: 2030
-    activationTimestamp: 1864749472
+    enabled: true
+    activationEpoch: 1820
+    activationTimestamp: 1753376544
 cron:
   transactionProcessor: false
   transactionProcessorMaxLookBehind: 1000
