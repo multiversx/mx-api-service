@@ -15,7 +15,7 @@ export class WsSubscriptionLimiterGuard implements CanActivate {
     const totalRoomsGlobal = client.nsp.server.sockets.adapter.rooms.size;
     const totalClientRooms = client.rooms.size;
 
-    console.log(`[Subscription-bughunt] canActivate. Client totalRoomsGlobal: ${totalRoomsGlobal} / ${this.apiConfigService.getWebsocketMaxSubscriptionsPerInstance()}. totalClientRooms: ${totalClientRooms} / ${this.apiConfigService.getWebsocketMaxSubscriptionsPerClient()}`);
+    console.log(`[Subscription-bughunt] canActivate. Client ${client.id} totalRoomsGlobal: ${totalRoomsGlobal} / ${this.apiConfigService.getWebsocketMaxSubscriptionsPerInstance()}. totalClientRooms: ${totalClientRooms} / ${this.apiConfigService.getWebsocketMaxSubscriptionsPerClient()}`);
     if (totalRoomsGlobal >= this.apiConfigService.getWebsocketMaxSubscriptionsPerInstance()) {
       throw new WsException(`Maximum number of ${this.apiConfigService.getWebsocketMaxSubscriptionsPerInstance()} global subscriptions accepted by server reached!`);
     }

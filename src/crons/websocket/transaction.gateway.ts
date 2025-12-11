@@ -142,11 +142,11 @@ export class TransactionsGateway {
   async pushTransactions(): Promise<void> {
     const promises: Promise<void>[] = [];
 
+    console.log(`[Subscription-bughunt]. all rooms: ${JSON.stringify(this.server.sockets.adapter.rooms)}`);
     for (const [roomName] of this.server.sockets.adapter.rooms) {
       promises.push(this.pushTransactionsForRoom(roomName));
     }
 
     await Promise.all(promises);
   }
-
 }
