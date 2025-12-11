@@ -1,10 +1,10 @@
 import { WebSocketGateway, WebSocketServer, SubscribeMessage } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { NetworkService } from '../../endpoints/network/network.service';
-import { UseFilters, UseGuards } from '@nestjs/common';
+import { UseFilters, UseInterceptors } from '@nestjs/common';
 import { WebsocketExceptionsFilter } from 'src/utils/ws-exceptions.filter';
 import { OriginLogger } from '@multiversx/sdk-nestjs-common';
-import { WsSubscriptionLimiterGuard } from 'src/utils/ws.subscription.limiter';
+import { LockingGuardInterceptor } from 'src/utils/locking.guard.interceptor';
 
 @UseFilters(WebsocketExceptionsFilter)
 @WebSocketGateway({ cors: { origin: '*' }, path: '/ws/subscription' })
@@ -16,7 +16,7 @@ export class NetworkGateway {
 
   constructor(private readonly networkService: NetworkService) { }
 
-  @UseGuards(WsSubscriptionLimiterGuard)
+  @UseInterceptors(LockingGuardInterceptor)
   @SubscribeMessage('subscribeStats')
   async handleSubscription(client: Socket) {
     if (!client.rooms.has('statsRoom')) {

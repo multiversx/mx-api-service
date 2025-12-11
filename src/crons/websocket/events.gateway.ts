@@ -1,6 +1,6 @@
 import { WebSocketGateway, WebSocketServer, SubscribeMessage, MessageBody, ConnectedSocket } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { UseFilters, UseGuards } from '@nestjs/common';
+import { UseFilters, UseInterceptors } from '@nestjs/common';
 import { WebsocketExceptionsFilter } from 'src/utils/ws-exceptions.filter';
 import { WsValidationPipe } from 'src/utils/ws-validation.pipe';
 import { OriginLogger } from '@multiversx/sdk-nestjs-common';
@@ -8,8 +8,8 @@ import { EventsService } from '../../endpoints/events/events.service';
 import { EventsFilter } from '../../endpoints/events/entities/events.filter';
 import { EventsSubscribePayload } from '../../endpoints/events/entities/events.subscribe';
 import { QueryPagination } from 'src/common/entities/query.pagination';
-import { WsSubscriptionLimiterGuard } from 'src/utils/ws.subscription.limiter';
 import { RoomKeyGenerator } from './room.key.generator';
+import { LockingGuardInterceptor } from 'src/utils/locking.guard.interceptor';
 
 @UseFilters(WebsocketExceptionsFilter)
 @WebSocketGateway({ cors: { origin: '*' }, path: '/ws/subscription' })
@@ -22,7 +22,7 @@ export class EventsGateway {
 
     constructor(private readonly eventsService: EventsService) { }
 
-    @UseGuards(WsSubscriptionLimiterGuard)
+    @UseInterceptors(LockingGuardInterceptor)
     @SubscribeMessage('subscribeEvents')
     async handleSubscription(
         @ConnectedSocket() client: Socket,
