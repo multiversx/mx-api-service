@@ -11,6 +11,7 @@ import { TransactionCustomSubscribePayload } from 'src/endpoints/transactions/en
 import { WsSubscriptionLimiterGuard } from 'src/utils/ws.subscription.limiter';
 import { RoomKeyGenerator } from './room.key.generator';
 import { Transaction } from 'src/endpoints/transactions/entities/transaction';
+import { Lock } from '@multiversx/sdk-nestjs-common';
 
 @UseFilters(WebsocketExceptionsFilter)
 @WebSocketGateway({ cors: { origin: '*' }, path: '/ws/subscription' })
@@ -24,6 +25,7 @@ export class TransactionsCustomGateway {
     private readonly transactionService: TransactionService,
   ) { }
 
+  @Lock({ name: 'Subscribe Custom Transactions Lock', verbose: true })
   @UseGuards(WsSubscriptionLimiterGuard)
   @SubscribeMessage('subscribeCustomTransactions')
   async handleCustomSubscription(

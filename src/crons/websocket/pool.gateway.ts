@@ -11,6 +11,7 @@ import { QueryPagination } from 'src/common/entities/query.pagination';
 import { PoolSubscribePayload } from '../../endpoints/pool/entities/pool.subscribe';
 import { WsSubscriptionLimiterGuard } from 'src/utils/ws.subscription.limiter';
 import { RoomKeyGenerator } from './room.key.generator';
+import { Lock } from '@multiversx/sdk-nestjs-common';
 
 @UseFilters(WebsocketExceptionsFilter)
 @WebSocketGateway({ cors: { origin: '*' }, path: '/ws/subscription' })
@@ -23,6 +24,7 @@ export class PoolGateway {
 
     constructor(private readonly poolService: PoolService) { }
 
+    @Lock({ name: 'Subscribe Pool Lock', verbose: true })
     @UseGuards(WsSubscriptionLimiterGuard)
     @SubscribeMessage('subscribePool')
     async handleSubscription(

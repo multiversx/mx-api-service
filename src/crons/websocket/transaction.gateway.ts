@@ -11,7 +11,7 @@ import { UseFilters, UseGuards } from '@nestjs/common';
 import { OriginLogger } from '@multiversx/sdk-nestjs-common';
 import { WsSubscriptionLimiterGuard } from 'src/utils/ws.subscription.limiter';
 import { RoomKeyGenerator } from './room.key.generator';
-
+import { Lock } from '@multiversx/sdk-nestjs-common';
 @UseFilters(WebsocketExceptionsFilter)
 @WebSocketGateway({ cors: { origin: '*' }, path: '/ws/subscription' })
 export class TransactionsGateway {
@@ -23,6 +23,7 @@ export class TransactionsGateway {
 
   constructor(private readonly transactionService: TransactionService) { }
 
+  @Lock({ name: 'Subscribe Transactions Lock', verbose: true })
   @UseGuards(WsSubscriptionLimiterGuard)
   @SubscribeMessage('subscribeTransactions')
   async handleSubscription(

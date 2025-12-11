@@ -10,6 +10,7 @@ import { EventsSubscribePayload } from '../../endpoints/events/entities/events.s
 import { QueryPagination } from 'src/common/entities/query.pagination';
 import { WsSubscriptionLimiterGuard } from 'src/utils/ws.subscription.limiter';
 import { RoomKeyGenerator } from './room.key.generator';
+import { Lock } from '@multiversx/sdk-nestjs-common';
 
 @UseFilters(WebsocketExceptionsFilter)
 @WebSocketGateway({ cors: { origin: '*' }, path: '/ws/subscription' })
@@ -22,6 +23,7 @@ export class EventsGateway {
 
     constructor(private readonly eventsService: EventsService) { }
 
+    @Lock({ name: 'Subscribe Events Lock', verbose: true })
     @UseGuards(WsSubscriptionLimiterGuard)
     @SubscribeMessage('subscribeEvents')
     async handleSubscription(

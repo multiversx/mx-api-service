@@ -9,6 +9,7 @@ import { WebsocketExceptionsFilter } from 'src/utils/ws-exceptions.filter';
 import { WsValidationPipe } from 'src/utils/ws-validation.pipe';
 import { OriginLogger } from '@multiversx/sdk-nestjs-common';
 import { WsSubscriptionLimiterGuard } from 'src/utils/ws.subscription.limiter';
+import { Lock } from '@multiversx/sdk-nestjs-common';
 
 @UseFilters(WebsocketExceptionsFilter)
 @WebSocketGateway({ cors: { origin: '*' }, path: '/ws/subscription' })
@@ -21,6 +22,7 @@ export class BlocksGateway {
 
   constructor(private readonly blockService: BlockService) { }
 
+  @Lock({ name: 'Subscribe Blocks Lock', verbose: true })
   @UseGuards(WsSubscriptionLimiterGuard)
   @SubscribeMessage('subscribeBlocks')
   async handleSubscription(

@@ -12,7 +12,7 @@ import { EventsService } from 'src/endpoints/events/events.service';
 import { EventsCustomSubscribePayload } from 'src/endpoints/events/entities/events.custom.subscribe';
 import { EventsFilter } from 'src/endpoints/events/entities/events.filter';
 import { Events } from 'src/endpoints/events/entities/events';
-
+import { Lock } from '@multiversx/sdk-nestjs-common';
 
 @UseFilters(WebsocketExceptionsFilter)
 @WebSocketGateway({ cors: { origin: '*' }, path: '/ws/subscription' })
@@ -28,6 +28,7 @@ export class EventsCustomGateway {
     private readonly eventsService: EventsService,
   ) { }
 
+  @Lock({ name: 'Subscribe Custom Events Lock', verbose: true })
   @UseGuards(WsSubscriptionLimiterGuard)
   @SubscribeMessage('subscribeCustomEvents')
   async handleCustomSubscription(
