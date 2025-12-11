@@ -24,7 +24,7 @@ features:
     enabled: false
     port: 6002
     maxSubscriptionsPerInstance: 10000
-    maxSubscriptionsPerClient: 5
+    maxSubscriptionsPerClient: 10
   eventsNotifier:
     enabled: false
     port: 5674
