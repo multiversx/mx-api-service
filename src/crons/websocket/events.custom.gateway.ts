@@ -1,18 +1,16 @@
 import { WebSocketGateway, WebSocketServer, SubscribeMessage, ConnectedSocket, MessageBody } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { UseFilters, UseGuards } from '@nestjs/common';
+import { UseFilters, UseInterceptors } from '@nestjs/common';
 import { OriginLogger } from '@multiversx/sdk-nestjs-common';
-
 import { QueryPagination } from 'src/common/entities/query.pagination';
 import { WsValidationPipe } from 'src/utils/ws-validation.pipe';
 import { WebsocketExceptionsFilter } from 'src/utils/ws-exceptions.filter';
-import { WsSubscriptionLimiterGuard } from 'src/utils/ws.subscription.limiter';
 import { RoomKeyGenerator } from './room.key.generator';
 import { EventsService } from 'src/endpoints/events/events.service';
 import { EventsCustomSubscribePayload } from 'src/endpoints/events/entities/events.custom.subscribe';
 import { EventsFilter } from 'src/endpoints/events/entities/events.filter';
 import { Events } from 'src/endpoints/events/entities/events';
-
+import { LockingGuardInterceptor } from 'src/utils/locking.guard.interceptor';
 
 @UseFilters(WebsocketExceptionsFilter)
 @WebSocketGateway({ cors: { origin: '*' }, path: '/ws/subscription' })
@@ -28,7 +26,7 @@ export class EventsCustomGateway {
     private readonly eventsService: EventsService,
   ) { }
 
-  @UseGuards(WsSubscriptionLimiterGuard)
+  @UseInterceptors(LockingGuardInterceptor)
   @SubscribeMessage('subscribeCustomEvents')
   async handleCustomSubscription(
     @ConnectedSocket() client: Socket,
