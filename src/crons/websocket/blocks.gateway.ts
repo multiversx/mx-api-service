@@ -4,12 +4,11 @@ import { BlockService } from '../../endpoints/blocks/block.service';
 import { BlockFilter } from '../../endpoints/blocks/entities/block.filter';
 import { QueryPagination } from 'src/common/entities/query.pagination';
 import { BlockSubscribePayload } from '../../endpoints/blocks/entities/block.subscribe';
-import { UseFilters, UseGuards } from '@nestjs/common';
+import { UseFilters, UseInterceptors } from '@nestjs/common';
 import { WebsocketExceptionsFilter } from 'src/utils/ws-exceptions.filter';
 import { WsValidationPipe } from 'src/utils/ws-validation.pipe';
 import { OriginLogger } from '@multiversx/sdk-nestjs-common';
-import { WsSubscriptionLimiterGuard } from 'src/utils/ws.subscription.limiter';
-import { Lock } from '@multiversx/sdk-nestjs-common';
+import { LockingGuardInterceptor } from 'src/utils/locking.guard.interceptor';
 
 @UseFilters(WebsocketExceptionsFilter)
 @WebSocketGateway({ cors: { origin: '*' }, path: '/ws/subscription' })
@@ -22,8 +21,7 @@ export class BlocksGateway {
 
   constructor(private readonly blockService: BlockService) { }
 
-  @Lock({ name: 'Subscription lock', verbose: true })
-  @UseGuards(WsSubscriptionLimiterGuard)
+  @UseInterceptors(LockingGuardInterceptor)
   @SubscribeMessage('subscribeBlocks')
   async handleSubscription(
     @ConnectedSocket() client: Socket,

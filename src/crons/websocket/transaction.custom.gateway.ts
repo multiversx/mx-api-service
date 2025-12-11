@@ -5,13 +5,12 @@ import { TransactionFilter } from '../../endpoints/transactions/entities/transac
 import { QueryPagination } from 'src/common/entities/query.pagination';
 import { WsValidationPipe } from 'src/utils/ws-validation.pipe';
 import { WebsocketExceptionsFilter } from 'src/utils/ws-exceptions.filter';
-import { UseFilters, UseGuards } from '@nestjs/common';
+import { UseFilters, UseInterceptors } from '@nestjs/common';
 import { OriginLogger } from '@multiversx/sdk-nestjs-common';
 import { TransactionCustomSubscribePayload } from 'src/endpoints/transactions/entities/dtos/transaction.custom.subscribe';
-import { WsSubscriptionLimiterGuard } from 'src/utils/ws.subscription.limiter';
 import { RoomKeyGenerator } from './room.key.generator';
 import { Transaction } from 'src/endpoints/transactions/entities/transaction';
-import { Lock } from '@multiversx/sdk-nestjs-common';
+import { LockingGuardInterceptor } from 'src/utils/locking.guard.interceptor';
 
 @UseFilters(WebsocketExceptionsFilter)
 @WebSocketGateway({ cors: { origin: '*' }, path: '/ws/subscription' })
@@ -25,8 +24,7 @@ export class TransactionsCustomGateway {
     private readonly transactionService: TransactionService,
   ) { }
 
-  @Lock({ name: 'Subscription lock', verbose: true })
-  @UseGuards(WsSubscriptionLimiterGuard)
+  @UseInterceptors(LockingGuardInterceptor)
   @SubscribeMessage('subscribeCustomTransactions')
   async handleCustomSubscription(
     @ConnectedSocket() client: Socket,
