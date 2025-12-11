@@ -25,7 +25,7 @@ export class TransactionsCustomGateway {
     private readonly transactionService: TransactionService,
   ) { }
 
-  @Lock({ name: 'Subscribe Custom Transactions Lock', verbose: true })
+  @Lock({ name: 'Subscription lock', verbose: true })
   @UseGuards(WsSubscriptionLimiterGuard)
   @SubscribeMessage('subscribeCustomTransactions')
   async handleCustomSubscription(

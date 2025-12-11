@@ -23,7 +23,7 @@ export class EventsGateway {
 
     constructor(private readonly eventsService: EventsService) { }
 
-    @Lock({ name: 'Subscribe Events Lock', verbose: true })
+    @Lock({ name: 'Subscription lock', verbose: true })
     @UseGuards(WsSubscriptionLimiterGuard)
     @SubscribeMessage('subscribeEvents')
     async handleSubscription(

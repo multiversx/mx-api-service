@@ -28,7 +28,7 @@ export class EventsCustomGateway {
     private readonly eventsService: EventsService,
   ) { }
 
-  @Lock({ name: 'Subscribe Custom Events Lock', verbose: true })
+  @Lock({ name: 'Subscription lock', verbose: true })
   @UseGuards(WsSubscriptionLimiterGuard)
   @SubscribeMessage('subscribeCustomEvents')
   async handleCustomSubscription(

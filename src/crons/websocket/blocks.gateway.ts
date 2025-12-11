@@ -22,7 +22,7 @@ export class BlocksGateway {
 
   constructor(private readonly blockService: BlockService) { }
 
-  @Lock({ name: 'Subscribe Blocks Lock', verbose: true })
+  @Lock({ name: 'Subscription lock', verbose: true })
   @UseGuards(WsSubscriptionLimiterGuard)
   @SubscribeMessage('subscribeBlocks')
   async handleSubscription(

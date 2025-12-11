@@ -17,7 +17,7 @@ export class NetworkGateway {
 
   constructor(private readonly networkService: NetworkService) { }
 
-  @Lock({ name: 'Subscribe Stats Lock', verbose: true })
+  @Lock({ name: 'Subscription lock', verbose: true })
   @UseGuards(WsSubscriptionLimiterGuard)
   @SubscribeMessage('subscribeStats')
   async handleSubscription(client: Socket) {

@@ -24,7 +24,7 @@ export class PoolGateway {
 
     constructor(private readonly poolService: PoolService) { }
 
-    @Lock({ name: 'Subscribe Pool Lock', verbose: true })
+    @Lock({ name: 'Subscription lock', verbose: true })
     @UseGuards(WsSubscriptionLimiterGuard)
     @SubscribeMessage('subscribePool')
     async handleSubscription(
