@@ -95,18 +95,41 @@ export class CollectionService {
   private async processNftCollections(tokenCollections: Collection[]): Promise<NftCollection[]> {
     const collectionsIdentifiers = tokenCollections.map((collection) => collection.token);
 
-    const indexedCollections = new Map<string, Collection>();
-    for (const collection of tokenCollections) {
-      indexedCollections.set(collection.token, collection);
-    }
+    const collectionsAssets = await this.batchGetCollectionsAssets(collectionsIdentifiers);
 
-    const nftCollections: NftCollection[] = await this.applyPropertiesToCollections(collectionsIdentifiers);
+    const nftCollections: NftCollection[] = [];
 
-    for (const nftCollection of nftCollections) {
-      const indexedCollection = indexedCollections.get(nftCollection.collection);
-      if (indexedCollection) {
-        this.applyPropertiesToCollectionFromElasticSearch(nftCollection, indexedCollection);
-      }
+    for (const esCollection of tokenCollections) {
+      const identifierParts = esCollection.token.split('-');
+      const ticker = identifierParts[0];
+      const collectionBase = identifierParts.slice(0, 2).join('-');
+      const assets = collectionsAssets[esCollection.token];
+      const props = esCollection.properties;
+
+      const isMetaESDT = esCollection.type === ElasticNftType.MetaESDT || esCollection.type === ElasticNftType.DynamicMetaESDT;
+
+      const nftCollection = new NftCollection({
+        name: esCollection.name,
+        collection: collectionBase,
+        ticker: ticker,
+        owner: esCollection.currentOwner,
+        assets: assets,
+        canFreeze: props?.canFreeze,
+        canWipe: props?.canWipe,
+        canPause: props?.canPause,
+        canTransferNftCreateRole: props?.canTransferNFTCreateRole,
+        canChangeOwner: props?.canChangeOwner,
+        canUpgrade: props?.canUpgrade,
+        canAddSpecialRoles: props?.canAddSpecialRoles,
+        decimals: isMetaESDT ? esCollection.numDecimals : undefined,
+      });
+
+      nftCollection.ticker = nftCollection.assets ? ticker : nftCollection.collection;
+
+      // Apply additional ES fields (type, timestamp, counts, scamInfo)
+      this.applyPropertiesToCollectionFromElasticSearch(nftCollection, esCollection);
+
+      nftCollections.push(nftCollection);
     }
 
     return nftCollections;
@@ -144,6 +167,10 @@ export class CollectionService {
         });
       }
     }
+  }
+
+  async buildCollectionsFromElasticData(esCollections: Collection[]): Promise<NftCollection[]> {
+    return await this.processNftCollections(esCollections);
   }
 
   async applyPropertiesToCollections(collectionsIdentifiers: string[]): Promise<NftCollection[]> {
@@ -285,17 +312,13 @@ export class CollectionService {
       return undefined;
     }
 
-    const [collection] = await this.applyPropertiesToCollections([identifier]);
+    const [collection] = await this.buildCollectionsFromElasticData([elasticCollection]);
 
     if (!collection) {
       return undefined;
     }
 
     const collectionDetailed = ApiUtils.mergeObjects(new NftCollectionDetailed(), collection);
-    collectionDetailed.type = elasticCollection.type as NftType;
-    collectionDetailed.timestamp = elasticCollection.timestamp;
-
-    this.applyPropertiesToCollectionFromElasticSearch(collectionDetailed, elasticCollection);
 
     collectionDetailed.traits = await this.getCollectionTraitsCached(identifier);
 
