@@ -22,6 +22,8 @@ export class NetworkGateway {
     if (!client.rooms.has('statsRoom')) {
       await client.join('statsRoom');
     }
+
+    return { status: 'success' };
   }
 
   @SubscribeMessage('unsubscribeStats')
