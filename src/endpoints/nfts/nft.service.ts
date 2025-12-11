@@ -545,10 +545,11 @@ export class NftService {
 
   async getNftsForAddress(address: string, queryPagination: QueryPagination, filter: NftFilter, fields?: string[], queryOptions?: NftQueryOptions, source?: EsdtDataSource): Promise<NftAccount[]> {
     let nfts = await this.esdtAddressService.getNftsForAddress(address, filter, queryPagination, source, queryOptions);
-    for (const nft of nfts) {
+
+    await Promise.all(nfts.map(async (nft) => {
       await this.applyAssetsAndTicker(nft, fields);
       await this.applyPriceUsd(nft, fields);
-    }
+    }));
 
     if (queryOptions && queryOptions.withSupply) {
       const supplyNfts = nfts.filter(nft => nft.type.in(NftType.SemiFungibleESDT, NftType.MetaESDT));
@@ -580,9 +581,7 @@ export class NftService {
 
     nfts = this.applyScamFilter(nfts, filter);
 
-    for (const nft of nfts) {
-      await this.applyUnlockFields(nft, fields);
-    }
+    await Promise.all(nfts.map(nft => this.applyUnlockFields(nft, fields)));
 
     return nfts;
   }

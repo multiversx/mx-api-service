@@ -397,15 +397,20 @@ export class CollectionService {
   }
 
   async getCollectionCountForAddress(address: string, filter: CollectionFilter): Promise<number> {
-    const filterKey = JSON.stringify(filter ?? {});
-    return await this.cachingService.getOrSet(
-      CacheInfo.CollectionCountForAddress(address, filterKey).key,
-      async () => {
-        const collections = await this.getCollectionsForAddress(address, filter, new QueryPagination({ from: 0, size: 10000 }));
-        return collections.length;
-      },
-      CacheInfo.CollectionCountForAddress(address, filterKey).ttl,
-    );
+    const executeCount = async () => {
+      const collections = await this.getCollectionsForAddress(address, filter, new QueryPagination({ from: 0, size: 10000 }));
+      return collections.length;
+    };
+
+    if (this.isDefaultAddressCollectionFilter(filter)) {
+      return await this.cachingService.getOrSet(
+        CacheInfo.CollectionCountForAddress(address).key,
+        executeCount,
+        CacheInfo.CollectionCountForAddress(address).ttl,
+      );
+    }
+
+    return await executeCount();
   }
 
   async getCollectionForAddress(address: string, identifier: string): Promise<NftCollectionAccount | undefined> {
@@ -424,40 +429,66 @@ export class CollectionService {
   }
 
   async getCollectionsForAddress(address: string, filter: CollectionFilter, pagination: QueryPagination): Promise<NftCollectionAccount[]> {
-    const collectionsRaw = await this.indexerService.getCollectionsForAddress(address, filter, pagination);
+    const executeGetCollections = async (): Promise<NftCollectionAccount[]> => {
+      const collectionsRaw = await this.indexerService.getCollectionsForAddress(address, filter, pagination);
 
-    if (collectionsRaw.length === 0) {
-      return [];
-    }
-
-    const identifiers = collectionsRaw.map((x: any) => x.collection);
-    const collections = await this.getNftCollectionsByIds(identifiers);
-
-    const collectionMap = new Map<string, NftCollection>();
-    for (const collection of collections) {
-      collectionMap.set(collection.collection, collection);
-    }
-
-    const accountCollections: NftCollectionAccount[] = [];
-    for (const raw of collectionsRaw) {
-      const collection = collectionMap.get(raw.collection);
-      if (collection) {
-        const accountCollection = ApiUtils.mergeObjects(new NftCollectionAccount(), collection);
-        accountCollection.count = raw.count;
-        accountCollections.push(accountCollection);
+      if (collectionsRaw.length === 0) {
+        return [];
       }
+
+      const identifiers = collectionsRaw.map((x: any) => x.collection);
+      const collections = await this.getNftCollectionsByIds(identifiers);
+
+      const collectionMap = new Map<string, NftCollection>();
+      for (const collection of collections) {
+        collectionMap.set(collection.collection, collection);
+      }
+
+      const accountCollections: NftCollectionAccount[] = [];
+      for (const raw of collectionsRaw) {
+        const collection = collectionMap.get(raw.collection);
+        if (collection) {
+          const accountCollection = ApiUtils.mergeObjects(new NftCollectionAccount(), collection);
+          accountCollection.count = raw.count;
+          accountCollections.push(accountCollection);
+        }
+      }
+
+      return accountCollections;
+    };
+
+    if (this.isDefaultAddressCollectionFilter(filter)) {
+      const cacheInfo = CacheInfo.CollectionsForAddress(address, pagination);
+      return await this.cachingService.getOrSet(
+        cacheInfo.key,
+        executeGetCollections,
+        cacheInfo.ttl,
+      );
     }
 
-    return accountCollections;
+    return await executeGetCollections();
+  }
+
+  private isDefaultAddressCollectionFilter(filter: CollectionFilter): boolean {
+    return !filter.search &&
+      !(filter.type && filter.type.length > 0) &&
+      !(filter.subType && filter.subType.length > 0) &&
+      !filter.excludeMetaESDT &&
+      !filter.collection;
   }
 
   async getCollectionCountForAddressWithRoles(address: string, filter: CollectionFilter): Promise<number> {
-    const filterKey = JSON.stringify(filter ?? {});
-    return await this.cachingService.getOrSet(
-      CacheInfo.CollectionRolesCountForAddress(address, filterKey).key,
-      async () => await this.esdtAddressService.getCollectionCountForAddressFromElastic(address, filter),
-      CacheInfo.CollectionRolesCountForAddress(address, filterKey).ttl,
-    );
+    const executeCount = async () => await this.esdtAddressService.getCollectionCountForAddressFromElastic(address, filter);
+
+    if (this.isDefaultAddressCollectionFilter(filter)) {
+      return await this.cachingService.getOrSet(
+        CacheInfo.CollectionRolesCountForAddress(address).key,
+        executeCount,
+        CacheInfo.CollectionRolesCountForAddress(address).ttl,
+      );
+    }
+
+    return await executeCount();
   }
 
   private async getCollectionLogo(identifier: string): Promise<CollectionLogo | undefined> {

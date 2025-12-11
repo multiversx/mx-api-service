@@ -272,16 +272,16 @@ export class CacheInfo {
     };
   }
 
-  static CollectionCountForAddress(address: string, filterKey: string): CacheInfo {
+  static CollectionCountForAddress(address: string): CacheInfo {
     return {
-      key: `collectionCount:${address}:${filterKey}`,
+      key: `collectionCount:${address}`,
       ttl: Constants.oneMinute(),
     };
   }
 
-  static CollectionRolesCountForAddress(address: string, filterKey: string): CacheInfo {
+  static CollectionRolesCountForAddress(address: string): CacheInfo {
     return {
-      key: `collectionRolesCount:${address}:${filterKey}`,
+      key: `collectionRolesCount:${address}`,
       ttl: Constants.oneMinute(),
     };
   }
@@ -297,6 +297,13 @@ export class CacheInfo {
     key: 'collectionsCount',
     ttl: Constants.oneSecond() * 6,
   };
+
+  static CollectionsForAddress(address: string, pagination: QueryPagination): CacheInfo {
+    return {
+      key: `collectionsForAddress:${address}:${pagination.from}:${pagination.size}`,
+      ttl: Constants.oneSecond() * 6,
+    };
+  }
 
   static EsdtAddressesRoles(identifier: string): CacheInfo {
     return {
