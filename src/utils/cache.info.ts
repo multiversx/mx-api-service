@@ -198,11 +198,6 @@ export class CacheInfo {
     ttl: Constants.oneSecond() * 6,
   };
 
-  static CollectionRanks: CacheInfo = {
-    key: 'collectionRanks',
-    ttl: Constants.oneDay(),
-  };
-
   static AccountAssets: CacheInfo = {
     key: 'accountLabels',
     ttl: Constants.oneDay(),
@@ -264,6 +259,44 @@ export class CacheInfo {
       ttl: Constants.oneHour(),
     };
   }
+
+  static CollectionRanks: CacheInfo = {
+    key: 'collectionRanks',
+    ttl: Constants.oneDay(),
+  };
+
+  static CollectionRanksForIdentifier(identifier: string): CacheInfo {
+    return {
+      key: `collectionRanks:${identifier}`,
+      ttl: Constants.oneMinute() * 10,
+    };
+  }
+
+  static CollectionCountForAddress(address: string, filterKey: string): CacheInfo {
+    return {
+      key: `collectionCount:${address}:${filterKey}`,
+      ttl: Constants.oneMinute(),
+    };
+  }
+
+  static CollectionRolesCountForAddress(address: string, filterKey: string): CacheInfo {
+    return {
+      key: `collectionRolesCount:${address}:${filterKey}`,
+      ttl: Constants.oneMinute(),
+    };
+  }
+
+  static Collections(pagination: QueryPagination): CacheInfo {
+    return {
+      key: `collections:${pagination.from}:${pagination.size}`,
+      ttl: Constants.oneSecond() * 6,
+    };
+  }
+
+  static CollectionsCount: CacheInfo = {
+    key: 'collectionsCount',
+    ttl: Constants.oneSecond() * 6,
+  };
 
   static EsdtAddressesRoles(identifier: string): CacheInfo {
     return {

@@ -51,8 +51,40 @@ export class CollectionService {
   }
 
   async getNftCollections(pagination: QueryPagination, filter: CollectionFilter): Promise<NftCollection[]> {
-    const tokenCollections = await this.indexerService.getNftCollections(pagination, filter);
-    return await this.processNftCollections(tokenCollections);
+    const executeGetCollections = async (): Promise<NftCollection[]> => {
+      const tokenCollections = await this.indexerService.getNftCollections(pagination, filter);
+      return await this.processNftCollections(tokenCollections);
+    };
+
+    if (this.isCacheableCollectionFilter(filter)) {
+      return await this.cachingService.getOrSet(
+        CacheInfo.Collections(pagination).key,
+        executeGetCollections,
+        CacheInfo.Collections(pagination).ttl,
+      );
+    }
+
+    return await executeGetCollections();
+  }
+
+  private isCacheableCollectionFilter(filter: CollectionFilter): boolean {
+    return !filter.collection &&
+      !(filter.identifiers && filter.identifiers.length > 0) &&
+      !(filter.type && filter.type.length > 0) &&
+      !(filter.subType && filter.subType.length > 0) &&
+      !filter.search &&
+      !filter.owner &&
+      filter.before === undefined &&
+      filter.after === undefined &&
+      filter.canCreate === undefined &&
+      filter.canBurn === undefined &&
+      filter.canAddQuantity === undefined &&
+      filter.canUpdateAttributes === undefined &&
+      filter.canAddUri === undefined &&
+      filter.canTransferRole === undefined &&
+      filter.excludeMetaESDT === undefined &&
+      filter.sort === undefined &&
+      filter.order === undefined;
   }
 
   async getNftCollectionsByIds(identifiers: Array<string>): Promise<NftCollection[]> {
@@ -206,6 +238,14 @@ export class CollectionService {
   }
 
   async getNftCollectionCount(filter: CollectionFilter): Promise<number> {
+    if (this.isCacheableCollectionFilter(filter)) {
+      return await this.cachingService.getOrSet(
+        CacheInfo.CollectionsCount.key,
+        async () => await this.indexerService.getNftCollectionCount(filter),
+        CacheInfo.CollectionsCount.ttl,
+      );
+    }
+
     return await this.indexerService.getNftCollectionCount(filter);
   }
 
@@ -224,7 +264,11 @@ export class CollectionService {
       return undefined;
     }
 
-    return await this.assetsService.getCollectionRanks(identifier);
+    return await this.cachingService.getOrSet(
+      CacheInfo.CollectionRanksForIdentifier(identifier).key,
+      async () => await this.assetsService.getCollectionRanks(identifier),
+      CacheInfo.CollectionRanksForIdentifier(identifier).ttl,
+    );
   }
 
   async getNftCollection(identifier: string): Promise<NftCollectionDetailed | undefined> {
@@ -353,9 +397,15 @@ export class CollectionService {
   }
 
   async getCollectionCountForAddress(address: string, filter: CollectionFilter): Promise<number> {
-    const collections = await this.getCollectionsForAddress(address, filter, new QueryPagination({ from: 0, size: 10000 }));
-
-    return collections.length;
+    const filterKey = JSON.stringify(filter ?? {});
+    return await this.cachingService.getOrSet(
+      CacheInfo.CollectionCountForAddress(address, filterKey).key,
+      async () => {
+        const collections = await this.getCollectionsForAddress(address, filter, new QueryPagination({ from: 0, size: 10000 }));
+        return collections.length;
+      },
+      CacheInfo.CollectionCountForAddress(address, filterKey).ttl,
+    );
   }
 
   async getCollectionForAddress(address: string, identifier: string): Promise<NftCollectionAccount | undefined> {
@@ -376,16 +426,25 @@ export class CollectionService {
   async getCollectionsForAddress(address: string, filter: CollectionFilter, pagination: QueryPagination): Promise<NftCollectionAccount[]> {
     const collectionsRaw = await this.indexerService.getCollectionsForAddress(address, filter, pagination);
 
-    const collections = await this.getNftCollections(
-      new QueryPagination({ from: 0, size: collectionsRaw.length }),
-      new CollectionFilter({ identifiers: collectionsRaw.map((x: any) => x.collection) })
-    );
-    const accountCollections = collections.map(collection => ApiUtils.mergeObjects(new NftCollectionAccount(), collection));
+    if (collectionsRaw.length === 0) {
+      return [];
+    }
 
-    for (const collection of accountCollections) {
-      const item = collectionsRaw.find(x => x.collection === collection.collection);
-      if (item) {
-        collection.count = item.count;
+    const identifiers = collectionsRaw.map((x: any) => x.collection);
+    const collections = await this.getNftCollectionsByIds(identifiers);
+
+    const collectionMap = new Map<string, NftCollection>();
+    for (const collection of collections) {
+      collectionMap.set(collection.collection, collection);
+    }
+
+    const accountCollections: NftCollectionAccount[] = [];
+    for (const raw of collectionsRaw) {
+      const collection = collectionMap.get(raw.collection);
+      if (collection) {
+        const accountCollection = ApiUtils.mergeObjects(new NftCollectionAccount(), collection);
+        accountCollection.count = raw.count;
+        accountCollections.push(accountCollection);
       }
     }
 
@@ -393,7 +452,12 @@ export class CollectionService {
   }
 
   async getCollectionCountForAddressWithRoles(address: string, filter: CollectionFilter): Promise<number> {
-    return await this.esdtAddressService.getCollectionCountForAddressFromElastic(address, filter);
+    const filterKey = JSON.stringify(filter ?? {});
+    return await this.cachingService.getOrSet(
+      CacheInfo.CollectionRolesCountForAddress(address, filterKey).key,
+      async () => await this.esdtAddressService.getCollectionCountForAddressFromElastic(address, filter),
+      CacheInfo.CollectionRolesCountForAddress(address, filterKey).ttl,
+    );
   }
 
   private async getCollectionLogo(identifier: string): Promise<CollectionLogo | undefined> {
