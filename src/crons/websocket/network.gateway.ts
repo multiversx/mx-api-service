@@ -31,6 +31,8 @@ export class NetworkGateway {
     if (client.rooms.has('statsRoom')) {
       await client.leave('statsRoom');
     }
+
+    return { status: 'unsubscribed' };
   }
 
   async pushStats() {
