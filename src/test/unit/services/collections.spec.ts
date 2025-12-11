@@ -107,7 +107,9 @@ describe('CollectionService', () => {
           provide: CacheService,
           useValue: {
             get: jest.fn(),
-            getOrSet: jest.fn(),
+            getOrSet: jest.fn().mockImplementation(async (_key: string, getter: () => Promise<any>, _ttl: number) => {
+              return await getter();
+            }),
             batchGetAll: jest.fn(),
             batchApplyAll: jest.fn(),
           },
@@ -252,6 +254,7 @@ describe('CollectionService', () => {
 
       jest.spyOn(indexerService, 'getCollection').mockResolvedValue(indexerCollectionMock);
       jest.spyOn(service, 'applyPropertiesToCollections').mockResolvedValue([propertiesToCollectionsMock]);
+      jest.spyOn(service, 'getNftCollectionRolesFromGateway').mockResolvedValue([]);
 
       const result = await service.getNftCollection(identifier);
 
@@ -304,9 +307,10 @@ describe('CollectionService', () => {
     });
 
     it('should process the collection details fully', async () => {
-      const identifier = 'XDAY23TEAM';
+      const identifier = 'XDAY23TEAM-f7a346';
       jest.spyOn(indexerService, 'getCollection').mockResolvedValue(indexerCollectionMock);
       jest.spyOn(service, 'applyPropertiesToCollections').mockResolvedValue([propertiesToCollectionsMock]);
+      jest.spyOn(service, 'getNftCollectionRolesFromGateway').mockResolvedValue([]);
       const result = await service.getNftCollection(identifier);
 
       expect(result).toBeInstanceOf(NftCollectionDetailed);
