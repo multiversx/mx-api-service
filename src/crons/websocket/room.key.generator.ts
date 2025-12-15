@@ -14,10 +14,24 @@ export class RoomKeyGenerator {
     const activeFilters: { key: string; value: any }[] = [];
 
     for (const key of allowedKeys) {
-      const value = data[key];
-      // Ignore null, undefined, and empty strings
-      if (value !== undefined && value !== null && value !== '') {
-        activeFilters.push({ key, value });
+      if (key === 'token') {
+        if (data['value'] != null && data['value'] !== '' && data['value'] !== '0') {
+          activeFilters.push({ key: 'token', value: 'EGLD' });
+        }
+        const transfers = data?.action?.arguments?.transfers;
+        if (Array.isArray(transfers)) {
+          for (const transfer of transfers) {
+            if (transfer.token) {
+              activeFilters.push({ key: 'token', value: transfer.token });
+            }
+          }
+        }
+      } else {
+        const value = data[key];
+        // Ignore null, undefined, and empty strings
+        if (value !== undefined && value !== null && value !== '') {
+          activeFilters.push({ key, value });
+        }
       }
     }
 

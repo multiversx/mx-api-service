@@ -82,8 +82,8 @@ export class TransfersCustomGateway {
                 transfersFilteredForBroadcast.get(substituteRoomKey)!.push(transfer);
               }
             }
-
           }
+
           if (this.server.sockets.adapter.rooms.has(roomKey)) {
             if (!transfersFilteredForBroadcast.has(roomKey)) {
               transfersFilteredForBroadcast.set(roomKey, []);
