@@ -20,6 +20,7 @@ import { Stats } from 'src/endpoints/network/entities/stats';
 import { TransactionsCustomGateway } from './transaction.custom.gateway';
 import { ConnectionHandler } from './connection.handler';
 import { EventsCustomGateway } from './events.custom.gateway';
+import { TransfersCustomGateway } from './transfers.custom.gateway';
 
 @Injectable()
 @WebSocketGateway({ cors: { origin: '*' }, path: '/ws/subscription' })
@@ -41,6 +42,7 @@ export class WebsocketCronService {
     private readonly transactionsCustomGateway: TransactionsCustomGateway,
     private readonly eventsCustomGateway: EventsCustomGateway,
     private readonly connectionHandler: ConnectionHandler,
+    private readonly transfersCustomGateway: TransfersCustomGateway,
   ) { }
 
   @Cron('*/6 * * * * *')
@@ -74,7 +76,7 @@ export class WebsocketCronService {
   }
 
   @Cron('*/3 * * * * *')
-  @Lock({ name: 'Push custom transactions to subscribers', verbose: true })
+  @Lock({ name: 'Push custom data to subscribers', verbose: true })
   async handleCustomTransactionsUpdate() {
     if (this.connectionHandler.hasSubscriptionsWithPrefixes([TransactionsCustomGateway.keyPrefix]) === false) {
       this.cacheService.deleteLocal(CacheInfo.WsTimestampMsToProcess().key);
@@ -101,6 +103,7 @@ export class WebsocketCronService {
       await Promise.all([
         this.transactionsCustomGateway.pushTransactionsForTimestampMs(roundToProcessTimestampMs),
         this.eventsCustomGateway.pushEventsForTimestampMs(roundToProcessTimestampMs),
+        this.transfersCustomGateway.pushTransfersForTimestampMs(roundToProcessTimestampMs),
       ]);
       roundToProcessTimestampMs += stats.refreshRate;
     }

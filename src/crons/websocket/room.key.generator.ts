@@ -1,5 +1,6 @@
 import { EventsCustomSubscribePayload } from 'src/endpoints/events/entities/events.custom.subscribe';
 import { TransactionCustomSubscribePayload } from 'src/endpoints/transactions/entities/dtos/transaction.custom.subscribe';
+import { TransferCustomSubscribePayload } from 'src/endpoints/websocket/entities/transfers.custom.payload';
 
 export class RoomKeyGenerator {
   public static generate(
@@ -7,7 +8,6 @@ export class RoomKeyGenerator {
     data: Record<string, any>,
     dtoClass: Function,
   ): string[] {
-    // get allowed keys from DTO (with caching)
     const allowedKeys = this.getKeys(dtoClass);
 
     // extract only key-value pairs that exist in the data and are non-null
@@ -64,6 +64,8 @@ export class RoomKeyGenerator {
         return TransactionCustomSubscribePayload.getClassFields();
       case EventsCustomSubscribePayload:
         return EventsCustomSubscribePayload.getClassFields();
+      case TransferCustomSubscribePayload:
+        return TransferCustomSubscribePayload.getClassFields();
       default:
         console.warn(`RoomKeyGenerator: No manual key mapping found for class ${targetClass.name}`);
         return [];
