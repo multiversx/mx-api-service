@@ -15,7 +15,8 @@ export class RoomKeyGenerator {
 
     for (const key of allowedKeys) {
       if (key === 'token') {
-        if (data['value'] != null && data['value'] !== '' && data['value'] !== '0') {
+        const value = data['value'];
+        if (value != null && value !== '' && value !== '0') {
           activeFilters.push({ key: 'token', value: 'EGLD' });
         }
         const transfers = data?.action?.arguments?.transfers;
