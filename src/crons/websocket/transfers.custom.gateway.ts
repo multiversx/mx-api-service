@@ -63,6 +63,7 @@ export class TransfersCustomGateway {
       );
 
       const transfersFilteredForBroadcast: Map<string, Transaction[]> = new Map();
+
       for (const transfer of allTransfers) {
         const roomKeys = RoomKeyGenerator.generate(
           TransfersCustomGateway.keyPrefix,
