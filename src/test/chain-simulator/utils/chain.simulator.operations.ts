@@ -97,17 +97,25 @@ export async function issueEsdt(args: IssueEsdtArgs) {
 
 export async function transferEsdt(args: TransferEsdtArgs) {
   const transferValue = args.plainAmountOfTokens * 10 ** 18;
-  return await sendTransaction(
+  console.log(`Transferring ${args.plainAmountOfTokens} ${args.tokenIdentifier} from ${args.sender} to ${args.receiver}`);
+  let hexAmountOfTokens = transferValue.toString(16);
+
+  if (hexAmountOfTokens.length % 2 !== 0) {
+    hexAmountOfTokens = '0' + hexAmountOfTokens;
+  }
+  const txHash = await sendTransaction(
     new SendTransactionArgs({
       chainSimulatorUrl: args.chainSimulatorUrl,
       sender: args.sender,
       receiver: args.receiver,
       dataField: `ESDTTransfer@${Buffer.from(args.tokenIdentifier).toString(
         'hex',
-      )}@${transferValue.toString(16)}`,
+      )}@${hexAmountOfTokens}`,
       value: '0',
     }),
   );
+  console.log(`ESDT transfer completed. Transaction hash: ${txHash}`);
+  return txHash;
 }
 
 export async function sendTransaction(
