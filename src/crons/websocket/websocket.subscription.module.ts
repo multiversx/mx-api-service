@@ -16,6 +16,8 @@ import { RoundModule } from 'src/endpoints/rounds/round.module';
 import { TransactionsCustomGateway } from './transaction.custom.gateway';
 import { EventsCustomGateway } from './events.custom.gateway';
 import { ApiConfigModule } from 'src/common/api-config/api.config.module';
+import { TransfersCustomGateway } from './transfers.custom.gateway';
+import { TransferModule } from 'src/endpoints/transfers/transfer.module';
 
 @Module({
   imports: [
@@ -26,6 +28,7 @@ import { ApiConfigModule } from 'src/common/api-config/api.config.module';
     PoolModule,
     EventsModule,
     RoundModule,
+    TransferModule,
     ApiConfigModule,
   ],
   providers: [
@@ -38,6 +41,7 @@ import { ApiConfigModule } from 'src/common/api-config/api.config.module';
     EventsGateway,
     TransactionsCustomGateway,
     EventsCustomGateway,
+    TransfersCustomGateway,
   ],
 })
 export class WebsocketSubscriptionModule { }
