@@ -1,9 +1,9 @@
 import { IsOptional, IsString } from 'class-validator';
-import { MutualExclusiveFields } from 'src/utils/mutual.exclusive.fields.constraint';
+import { DisallowedFieldCombination } from 'src/utils/disallowed.field.combination.constraint';
 import { NoEmptyPayload } from 'src/utils/no.empty.payload.validator';
 
 @NoEmptyPayload({ message: `You must add at least one filter from ${TransferCustomSubscribePayload.getClassFields()}` })
-@MutualExclusiveFields()
+@DisallowedFieldCombination()
 export class TransferCustomSubscribePayload {
   @IsOptional()
   @IsString()

@@ -6,8 +6,8 @@ import {
   registerDecorator,
 } from 'class-validator';
 
-@ValidatorConstraint({ name: 'mutualExclusiveFields', async: false })
-export class MutualExclusiveFieldsConstraint
+@ValidatorConstraint({ name: 'disallowedFieldCombination', async: false })
+export class DisallowedFieldCombinationConstraint
   implements ValidatorConstraintInterface {
   validate(_value: any, args: ValidationArguments) {
     // When used as a class validator, 'value' is usually the instance itself
@@ -59,16 +59,15 @@ export class MutualExclusiveFieldsConstraint
   }
 }
 
-
-export function MutualExclusiveFields(validationOptions?: ValidationOptions) {
+export function DisallowedFieldCombination(validationOptions?: ValidationOptions) {
   return function (target: Function) {
     registerDecorator({
-      name: 'mutualExclusiveFields',
+      name: 'disallowedFieldCombination',
       target: target as Function,
       propertyName: '',
       options: validationOptions,
       constraints: [],
-      validator: MutualExclusiveFieldsConstraint,
+      validator: DisallowedFieldCombinationConstraint,
     });
   };
 }
