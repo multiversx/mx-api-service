@@ -90,16 +90,8 @@ export class TransfersCustomGateway {
             }
             transfersFilteredForBroadcast.get(roomKey)!.push(transfer);
           }
-
-          if (this.server.sockets.adapter.rooms.has(roomKey)) {
-            if (!transfersFilteredForBroadcast.has(roomKey)) {
-              transfersFilteredForBroadcast.set(roomKey, []);
-            }
-            transfersFilteredForBroadcast.get(roomKey)!.push(transfer);
-          }
         }
       }
-
 
       for (const [roomName] of transfersFilteredForBroadcast) {
         this.server.to(roomName).emit("customTransferUpdate", { transfers: transfersFilteredForBroadcast.get(roomName)?.distinct(), timestampMs });
