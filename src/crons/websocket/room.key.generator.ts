@@ -9,12 +9,14 @@ export class RoomKeyGenerator {
     dtoClass: Function,
   ): string[] {
     const allowedKeys = this.getKeys(dtoClass);
+    // Collect active filters based on allowed keys and provided data
     const activeFilters = this.collectActiveFilters(allowedKeys, data);
 
     if (activeFilters.length === 0) {
       return [];
     }
 
+    // Generate all combinations of room keys based on active filters
     return this.buildRoomKeys(prefix, activeFilters);
   }
 
