@@ -877,15 +877,15 @@ export class TransactionService {
       return false;
     }
 
-    const hasNonDefaultOptions = queryOptions.withScResults ||
+    const hasAnyEnrichmentOption = queryOptions.withScResults ||
       queryOptions.withBlockInfo ||
       queryOptions.withActionTransferValue ||
       queryOptions.withUsername ||
       queryOptions.withTxsOrder ||
-      queryOptions.withOperations === false ||
-      queryOptions.withLogs === false;
+      queryOptions.withOperations !== undefined ||
+      queryOptions.withLogs !== undefined;
 
-    return !hasNonDefaultOptions;
+    return !hasAnyEnrichmentOption;
   }
 
   private isCacheableTransactionCount(filter: TransactionFilter, address?: string): boolean {
