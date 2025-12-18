@@ -66,33 +66,33 @@ export class NftService {
   }
 
   async getNfts(queryPagination: QueryPagination, filter: NftFilter, queryOptions?: NftQueryOptions): Promise<Nft[]> {
-    const executeGetNfts = async (): Promise<Nft[]> => {
-      const { from, size } = queryPagination;
-
-      const nfts = await this.getNftsInternal({ from, size }, filter);
-
-      await Promise.all([
-        this.conditionallyApplyAssetsAndTicker(nfts, undefined, queryOptions),
-        this.conditionallyApplyOwners(nfts, queryOptions),
-        this.conditionallyApplySupply(nfts, queryOptions),
-        this.batchProcessNfts(nfts),
-      ]);
-
-      await this.batchApplyUnlockFields(nfts);
-
-      return nfts;
-    };
-
     if (this.isCacheableNftList(filter, queryOptions)) {
       const cacheInfo = CacheInfo.Nfts(queryPagination);
       return await this.cachingService.getOrSet(
         cacheInfo.key,
-        executeGetNfts,
+        () => this.fetchAndProcessNfts(queryPagination, filter, queryOptions),
         cacheInfo.ttl,
       );
     }
 
-    return await executeGetNfts();
+    return await this.fetchAndProcessNfts(queryPagination, filter, queryOptions);
+  }
+
+  private async fetchAndProcessNfts(queryPagination: QueryPagination, filter: NftFilter, queryOptions?: NftQueryOptions): Promise<Nft[]> {
+    const { from, size } = queryPagination;
+
+    const nfts = await this.getNftsInternal({ from, size }, filter);
+
+    await Promise.all([
+      this.conditionallyApplyAssetsAndTicker(nfts, undefined, queryOptions),
+      this.conditionallyApplyOwners(nfts, queryOptions),
+      this.conditionallyApplySupply(nfts, queryOptions),
+      this.batchProcessNfts(nfts),
+    ]);
+
+    await this.batchApplyUnlockFields(nfts);
+
+    return nfts;
   }
 
   private async batchProcessNfts(nfts: Nft[], fields?: string[]) {

@@ -201,67 +201,67 @@ export class TransactionService {
   }
 
   async getTransactions(filter: TransactionFilter, pagination: QueryPagination, queryOptions?: TransactionQueryOptions, address?: string, fields?: string[]): Promise<Transaction[]> {
-    const computeTransactions = async (): Promise<Transaction[]> => {
-      const elasticTransactions = await this.indexerService.getTransactions(filter, pagination, address);
-
-      let transactions: TransactionDetailed[] = [];
-      transactions = elasticTransactions.map(x => ApiUtils.mergeObjects(new TransactionDetailed(), x));
-
-      const hasSenderFilter = filter.sender || (filter.senders && filter.senders.length > 0);
-      const hasReceiverFilter = filter.receivers && filter.receivers.length > 0;
-
-      if (address && !hasSenderFilter && !hasReceiverFilter) {
-        transactions = this.reorderAccountSentTransactionsByNonce(transactions, address);
-      }
-
-      if (filter.hashes) {
-        const txHashes: string[] = filter.hashes;
-        const elasticHashes = elasticTransactions.map(({ txHash }: any) => txHash);
-        const missingHashes: string[] = txHashes.except(elasticHashes);
-
-        const gatewayTransactions = await Promise.all(missingHashes.map((txHash) => this.transactionGetService.tryGetTransactionFromGatewayForList(txHash)));
-        for (const gatewayTransaction of gatewayTransactions) {
-          if (gatewayTransaction) {
-            transactions.push(ApiUtils.mergeObjects(new TransactionDetailed(), gatewayTransaction));
-          }
-        }
-      }
-
-      if ((queryOptions && queryOptions.withBlockInfo) || (fields && fields.includesSome(['senderBlockHash', 'receiverBlockHash', 'senderBlockNonce', 'receiverBlockNonce']))) {
-        await this.applyBlockInfo(transactions);
-      }
-
-      if (queryOptions && (queryOptions.withScResults || queryOptions.withOperations || queryOptions.withLogs)) {
-        queryOptions.withScResultLogs = queryOptions.withLogs;
-        transactions = await this.getExtraDetailsForTransactions(elasticTransactions, transactions, queryOptions);
-      }
-
-      for (const transaction of transactions) {
-        transaction.type = undefined;
-      }
-
-      await this.processTransactions(transactions, {
-        withScamInfo: queryOptions?.withScamInfo ?? false,
-        withUsername: queryOptions?.withUsername ?? false,
-        withActionTransferValue: queryOptions?.withActionTransferValue ?? false,
-      });
-
-      this.processRelayedInfo(transactions);
-
-      return transactions;
-    };
-
     if (this.isCacheableTransactionList(filter, queryOptions, fields, address)) {
       const cacheInfo = CacheInfo.Transactions(pagination);
       return await this.cachingService.getOrSet(
         cacheInfo.key,
-        computeTransactions,
+        () => this.computeTransactions(filter, pagination, queryOptions, address, fields),
         cacheInfo.ttl,
         Constants.oneSecond(),
       );
     }
 
-    return await computeTransactions();
+    return await this.computeTransactions(filter, pagination, queryOptions, address, fields);
+  }
+
+  private async computeTransactions(filter: TransactionFilter, pagination: QueryPagination, queryOptions?: TransactionQueryOptions, address?: string, fields?: string[]): Promise<Transaction[]> {
+    const elasticTransactions = await this.indexerService.getTransactions(filter, pagination, address);
+
+    let transactions: TransactionDetailed[] = [];
+    transactions = elasticTransactions.map(x => ApiUtils.mergeObjects(new TransactionDetailed(), x));
+
+    const hasSenderFilter = filter.sender || (filter.senders && filter.senders.length > 0);
+    const hasReceiverFilter = filter.receivers && filter.receivers.length > 0;
+
+    if (address && !hasSenderFilter && !hasReceiverFilter) {
+      transactions = this.reorderAccountSentTransactionsByNonce(transactions, address);
+    }
+
+    if (filter.hashes) {
+      const txHashes: string[] = filter.hashes;
+      const elasticHashes = elasticTransactions.map(({ txHash }: any) => txHash);
+      const missingHashes: string[] = txHashes.except(elasticHashes);
+
+      const gatewayTransactions = await Promise.all(missingHashes.map((txHash) => this.transactionGetService.tryGetTransactionFromGatewayForList(txHash)));
+      for (const gatewayTransaction of gatewayTransactions) {
+        if (gatewayTransaction) {
+          transactions.push(ApiUtils.mergeObjects(new TransactionDetailed(), gatewayTransaction));
+        }
+      }
+    }
+
+    if ((queryOptions && queryOptions.withBlockInfo) || (fields && fields.includesSome(['senderBlockHash', 'receiverBlockHash', 'senderBlockNonce', 'receiverBlockNonce']))) {
+      await this.applyBlockInfo(transactions);
+    }
+
+    if (queryOptions && (queryOptions.withScResults || queryOptions.withOperations || queryOptions.withLogs)) {
+      queryOptions.withScResultLogs = queryOptions.withLogs;
+      transactions = await this.getExtraDetailsForTransactions(elasticTransactions, transactions, queryOptions);
+    }
+
+    for (const transaction of transactions) {
+      transaction.type = undefined;
+    }
+
+    await this.processTransactions(transactions, {
+      withScamInfo: queryOptions?.withScamInfo ?? false,
+      withUsername: queryOptions?.withUsername ?? false,
+      withActionTransferValue: queryOptions?.withActionTransferValue ?? false,
+    });
+
+    this.processRelayedInfo(transactions);
+
+    return transactions;
   }
 
   private getAssetsFromUsername(username: string | null | undefined): AccountAssets | undefined {
