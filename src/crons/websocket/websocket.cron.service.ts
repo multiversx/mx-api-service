@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Cron } from '@nestjs/schedule';
+import { Cron, Interval } from '@nestjs/schedule';
 import { TransactionsGateway } from './transaction.gateway';
 import { BlocksGateway } from 'src/crons/websocket/blocks.gateway';
 import { NetworkGateway } from 'src/crons/websocket/network.gateway';
@@ -40,31 +40,31 @@ export class WebsocketCronService {
     });
   }
 
-  @Cron('*/6 * * * * *')
+  @Interval(600)
   @Lock({ name: 'Push transactions to subscribers', verbose: true })
   async handleTransactionsUpdate() {
     await this.transactionsGateway.pushTransactions();
   }
 
-  @Cron('*/6 * * * * *')
+  @Interval(600)
   @Lock({ name: 'Push blocks to subscribers', verbose: true })
   async handleBlocksUpdate() {
     await this.blocksGateway.pushBlocks();
   }
 
-  @Cron('*/6 * * * * *')
+  @Interval(600)
   @Lock({ name: 'Push stats to subscribers', verbose: true })
   async handleStatsUpdate() {
     await this.networkGateway.pushStats();
   }
 
-  @Cron('*/6 * * * * *')
+  @Interval(600)
   @Lock({ name: 'Push pool transactions to subscribers', verbose: true })
   async handlePoolTransactions() {
     await this.poolGateway.pushPool();
   }
 
-  @Cron('*/6 * * * * *')
+  @Interval(600)
   @Lock({ name: 'Push events to subscribers', verbose: true })
   async handleEventsUpdate() {
     await this.eventsGateway.pushEvents();
