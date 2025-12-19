@@ -56,42 +56,42 @@ export class WebsocketCronService implements OnModuleInit {
       'push-transactions',
       intervalMs,
       'Push transactions to subscribers',
-      async () => await this.handleTransactionsUpdate()
+      () => this.handleTransactionsUpdate()
     );
 
     this.registerDynamicInterval(
       'push-blocks',
       intervalMs,
       'Push blocks to subscribers',
-      async () => await this.handleBlocksUpdate()
+      () => this.handleBlocksUpdate()
     );
 
     this.registerDynamicInterval(
       'push-stats',
       intervalMs,
       'Push stats to subscribers',
-      async () => await this.handleStatsUpdate()
+      () => this.handleStatsUpdate()
     );
 
     this.registerDynamicInterval(
       'push-pool',
       intervalMs,
       'Push pool transactions to subscribers',
-      async () => await this.handlePoolUpdate()
+      () => this.handlePoolUpdate()
     );
 
     this.registerDynamicInterval(
       'push-events',
       intervalMs,
       'Push events to subscribers',
-      async () => await this.handleEventsUpdate()
+      () => this.handleEventsUpdate()
     );
 
     this.registerDynamicInterval(
       'push-custom-data',
       intervalMs,
       'Push custom data to subscribers',
-      async () => await this.handleCustomDataUpdate()
+      () => this.handleCustomDataUpdate()
     );
 
 
