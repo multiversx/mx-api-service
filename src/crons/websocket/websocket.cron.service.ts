@@ -129,7 +129,7 @@ export class WebsocketCronService implements OnModuleInit {
   }
 
   async handleCustomDataUpdate() {
-    if (this.connectionHandler.hasSubscriptionsWithPrefixes([TransactionsCustomGateway.keyPrefix]) === false) {
+    if (this.connectionHandler.hasSubscriptionsWithPrefixes([TransactionsCustomGateway.keyPrefix, TransfersCustomGateway.keyPrefix, EventsCustomGateway.keyPrefix]) === false) {
       this.cacheService.deleteLocal(CacheInfo.WsTimestampMsToProcess().key);
       return;
     }
