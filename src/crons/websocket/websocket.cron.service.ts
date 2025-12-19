@@ -1,9 +1,9 @@
-import { Injectable } from '@nestjs/common';
-import { Cron } from '@nestjs/schedule';
+import { Injectable, OnModuleInit } from '@nestjs/common';
+import { Cron, SchedulerRegistry } from '@nestjs/schedule';
 import { TransactionsGateway } from './transaction.gateway';
 import { BlocksGateway } from 'src/crons/websocket/blocks.gateway';
 import { NetworkGateway } from 'src/crons/websocket/network.gateway';
-import { Lock } from "@multiversx/sdk-nestjs-common";
+import { Lock, Locker } from "@multiversx/sdk-nestjs-common";
 import { PoolGateway } from 'src/crons/websocket/pool.gateway';
 import { EventsGateway } from 'src/crons/websocket/events.gateway';
 import { WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
@@ -21,10 +21,11 @@ import { TransactionsCustomGateway } from './transaction.custom.gateway';
 import { ConnectionHandler } from './connection.handler';
 import { EventsCustomGateway } from './events.custom.gateway';
 import { TransfersCustomGateway } from './transfers.custom.gateway';
+import { ApiConfigService } from 'src/common/api-config/api.config.service';
 
 @Injectable()
 @WebSocketGateway({ cors: { origin: '*' }, path: '/ws/subscription' })
-export class WebsocketCronService {
+export class WebsocketCronService implements OnModuleInit {
   @WebSocketServer()
   server!: Server;
 
@@ -43,41 +44,91 @@ export class WebsocketCronService {
     private readonly eventsCustomGateway: EventsCustomGateway,
     private readonly connectionHandler: ConnectionHandler,
     private readonly transfersCustomGateway: TransfersCustomGateway,
+    private readonly apiConfigService: ApiConfigService,
+    private readonly schedulerRegistry: SchedulerRegistry,
   ) { }
 
-  @Cron('*/6 * * * * *')
-  @Lock({ name: 'Push transactions to subscribers', verbose: true })
+
+  onModuleInit() {
+    const intervalMs = this.apiConfigService.getWebsocketSubscriptionBroadcastIntervalMs();
+
+    this.registerDynamicInterval(
+      'push-transactions',
+      intervalMs,
+      'Push transactions to subscribers',
+      async () => await this.handleTransactionsUpdate()
+    );
+
+    this.registerDynamicInterval(
+      'push-blocks',
+      intervalMs,
+      'Push blocks to subscribers',
+      async () => await this.handleBlocksUpdate()
+    );
+
+    this.registerDynamicInterval(
+      'push-stats',
+      intervalMs,
+      'Push stats to subscribers',
+      async () => await this.handleStatsUpdate()
+    );
+
+    this.registerDynamicInterval(
+      'push-pool',
+      intervalMs,
+      'Push pool transactions to subscribers',
+      async () => await this.handlePoolUpdate()
+    );
+
+    this.registerDynamicInterval(
+      'push-events',
+      intervalMs,
+      'Push events to subscribers',
+      async () => await this.handleEventsUpdate()
+    );
+
+    this.registerDynamicInterval(
+      'push-custom-data',
+      intervalMs,
+      'Push custom data to subscribers',
+      async () => await this.handleCustomDataUpdate()
+    );
+
+
+  }
+
+  private registerDynamicInterval(name: string, ms: number, lockMessage: string, callback: () => Promise<void>) {
+    const interval = setInterval(async () => {
+      await Locker.lock(lockMessage, async () => {
+        await callback();
+      }, true);
+    }, ms);
+
+    this.schedulerRegistry.addInterval(name, interval);
+  }
+
   async handleTransactionsUpdate() {
     await this.transactionsGateway.pushTransactions();
   }
 
-  @Cron('*/6 * * * * *')
-  @Lock({ name: 'Push blocks to subscribers', verbose: true })
   async handleBlocksUpdate() {
     await this.blocksGateway.pushBlocks();
   }
 
-  @Cron('*/6 * * * * *')
-  @Lock({ name: 'Push stats to subscribers', verbose: true })
   async handleStatsUpdate() {
     await this.networkGateway.pushStats();
   }
 
-  @Cron('*/6 * * * * *')
-  @Lock({ name: 'Push pool transactions to subscribers', verbose: true })
-  async handlePoolTransactions() {
+  async handlePoolUpdate() {
     await this.poolGateway.pushPool();
   }
 
-  @Cron('*/6 * * * * *')
-  @Lock({ name: 'Push events to subscribers', verbose: true })
+
   async handleEventsUpdate() {
     await this.eventsGateway.pushEvents();
   }
 
-  @Cron('*/3 * * * * *')
-  @Lock({ name: 'Push custom data to subscribers', verbose: true })
-  async handleCustomTransactionsUpdate() {
+  async handleCustomDataUpdate() {
     if (this.connectionHandler.hasSubscriptionsWithPrefixes([TransactionsCustomGateway.keyPrefix]) === false) {
       this.cacheService.deleteLocal(CacheInfo.WsTimestampMsToProcess().key);
       return;

@@ -1012,6 +1012,10 @@ export class ApiConfigService {
     return port;
   }
 
+  getWebsocketSubscriptionBroadcastIntervalMs(): number {
+    return this.configService.get<number>('features.websocketSubscription.broadcastIntervalMs') ?? 6000;
+  }
+
   getWebsocketMaxSubscriptionsPerInstance(): number {
     return this.configService.get<number>('features.websocketSubscription.maxSubscriptionsPerInstance') ?? 10_000;
   }
