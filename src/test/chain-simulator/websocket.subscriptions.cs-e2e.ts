@@ -174,7 +174,7 @@ describe('Websocket subscriptions e2e tests', () => {
       const newAliceEsdts = await issueMultipleEsdts(config.chainSimulatorUrl, config.aliceAddress, 1);
       aliceEsdts.push(...newAliceEsdts);
 
-      await axios.post(`${config.chainSimulatorUrl}/simulator/generate-blocks/1`);
+      await axios.post(`${config.chainSimulatorUrl}/simulator/generate-blocks/10`);
 
       for (const item of filterMap) {
         if (item.key === filterKeys.CLIENT_7) {
@@ -185,7 +185,7 @@ describe('Websocket subscriptions e2e tests', () => {
 
       connectAndSubscribeGeneral("client4", client4SubscriptionConfig);
 
-      await new Promise(resolve => setTimeout(resolve, 5000));
+      await new Promise(resolve => setTimeout(resolve, 10000));
 
       log("\n--- Starting Operations ---");
 
