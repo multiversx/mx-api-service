@@ -328,7 +328,7 @@ export class NftService {
     if (!attributes || attributes.length === 0) {
       const nftsForAddress = await this.esdtAddressService.getNftsForAddress(nft.owner, new NftFilter({identifiers: [nft.identifier]}), new QueryPagination({
         from: 0,
-        size: 1
+        size: 1,
       }));
       if (nftsForAddress.length === 0) {
         return;
