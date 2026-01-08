@@ -324,12 +324,20 @@ export class NftService {
       return;
     }
 
-    const nftsForAddress = await this.esdtAddressService.getNftsForAddress(nft.owner, new NftFilter({ identifiers: [nft.identifier] }), new QueryPagination({ from: 0, size: 1 }));
-    if (nftsForAddress.length === 0) {
-      return;
+    let attributes = nft.attributes;
+    if (!attributes || attributes.length === 0) {
+      const nftsForAddress = await this.esdtAddressService.getNftsForAddress(nft.owner, new NftFilter({identifiers: [nft.identifier]}), new QueryPagination({
+        from: 0,
+        size: 1
+      }));
+      if (nftsForAddress.length === 0) {
+        return;
+      }
+
+      attributes = nftsForAddress[0].attributes;
     }
 
-    nft.attributes = nftsForAddress[0].attributes;
+    nft.attributes = attributes;
   }
 
   private async applyMedia(nft: Nft) {
