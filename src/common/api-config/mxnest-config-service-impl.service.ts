@@ -25,6 +25,9 @@ export class MxnestConfigServiceImpl implements MxnestConfigService {
   }
 
   getNativeAuthAcceptedOrigins(): string[] {
-    return this.apiConfigService.getNativeAuthAcceptedOrigins();
+    const acceptedOrigins = this.apiConfigService.getNativeAuthAcceptedOrigins();
+    console.log(`Accepted origins are: ${acceptedOrigins}`);
+
+    return acceptedOrigins;
   }
 }
