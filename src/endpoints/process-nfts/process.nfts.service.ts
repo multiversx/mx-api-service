@@ -97,6 +97,9 @@ export class ProcessNftsService {
   }
 
   private async isCollectionOwner(address: string, collection: string): Promise<boolean> {
+    if (this.apiConfigService.getSecurityAdmins().includes(address)) {
+      return true;
+    }
     const collectionOwner = await this.getCollectionNonScOwner(collection);
 
     return address === collectionOwner;
