@@ -10,6 +10,7 @@ features:
     port: 6002
     maxSubscriptionsPerInstance: 10000
     maxSubscriptionsPerClient: 10
+    broadcastIntervalMs: 6000
   dataApi:
     enabled: false
     serviceUrl: 'https://data-api.multiversx.com'
