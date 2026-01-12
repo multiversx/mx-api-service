@@ -22,6 +22,7 @@ import { GatewayService } from 'src/common/gateway/gateway.service';
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { AccountAssets } from 'src/common/assets/entities/account.assets';
 import { CacheInfo } from 'src/utils/cache.info';
+import { ConcurrencyUtils } from 'src/utils/concurrency.utils';
 import { UsernameService } from '../usernames/username.service';
 import { ContractUpgrades } from './entities/contract.upgrades';
 import { AccountVerification } from './entities/account.verification';
@@ -356,36 +357,41 @@ export class AccountService {
       }
     }
 
-    for (const account of accounts) {
-      account.shard = AddressUtils.computeShard(AddressUtils.bech32Decode(account.address), shardCount);
-      account.assets = assets[account.address];
+    await ConcurrencyUtils.executeWithConcurrencyLimit(
+      accounts,
+      async (account) => {
+        account.shard = AddressUtils.computeShard(AddressUtils.bech32Decode(account.address), shardCount);
+        account.assets = assets[account.address];
 
-      if (options.withDeployInfo && AddressUtils.isSmartContractAddress(account.address)) {
-        const [deployedAt, deployTxHash] = await Promise.all([
-          this.getAccountDeployedAt(account.address),
-          this.getAccountDeployedTxHash(account.address),
-        ]);
+        if (options.withDeployInfo && AddressUtils.isSmartContractAddress(account.address)) {
+          const [deployedAt, deployTxHash] = await Promise.all([
+            this.getAccountDeployedAt(account.address),
+            this.getAccountDeployedTxHash(account.address),
+          ]);
 
-        account.deployedAt = deployedAt;
-        account.deployTxHash = deployTxHash;
-      }
+          account.deployedAt = deployedAt;
+          account.deployTxHash = deployTxHash;
+        }
 
-      if (options.withTxCount) {
-        account.txCount = await this.getAccountTxCount(account.address);
-      }
+        if (options.withTxCount) {
+          account.txCount = await this.getAccountTxCount(account.address);
+        }
 
-      if (options.withScrCount) {
-        account.scrCount = await this.getAccountScResults(account.address);
-      }
+        if (options.withScrCount) {
+          account.scrCount = await this.getAccountScResults(account.address);
+        }
 
-      if (options.withOwnerAssets && account.ownerAddress) {
-        account.ownerAssets = assets[account.ownerAddress];
-      }
+        if (options.withOwnerAssets && account.ownerAddress) {
+          account.ownerAssets = assets[account.ownerAddress];
+        }
 
-      if (verifiedAccounts && verifiedAccounts.includes(account.address)) {
-        account.isVerified = true;
-      }
-    }
+        if (verifiedAccounts && verifiedAccounts.includes(account.address)) {
+          account.isVerified = true;
+        }
+      },
+      6,
+      'AccountService.getAccountsRaw',
+    );
 
     return accounts;
   }

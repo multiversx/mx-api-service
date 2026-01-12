@@ -67,7 +67,9 @@ describe('TransactionService', () => {
           provide: CacheService,
           useValue: {
             get: jest.fn(),
-            getOrSet: jest.fn(),
+            getOrSet: jest.fn().mockImplementation(async (_key: string, getter: () => Promise<any>, _ttl: number) => {
+              return await getter();
+            }),
             batchGetAll: jest.fn(),
           },
         },

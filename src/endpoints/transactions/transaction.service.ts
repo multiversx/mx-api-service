@@ -95,6 +95,15 @@ export class TransactionService {
       return this.getTransactionCountForAddress(filter.sender ?? '');
     }
 
+    if (this.isCacheableTransactionCount(filter, address)) {
+      return await this.cachingService.getOrSet(
+        CacheInfo.TransactionsCount.key,
+        async () => await this.indexerService.getTransactionCount(filter, address),
+        CacheInfo.TransactionsCount.ttl,
+        Constants.oneSecond(),
+      );
+    }
+
     return await this.indexerService.getTransactionCount(filter, address);
   }
 
@@ -192,6 +201,20 @@ export class TransactionService {
   }
 
   async getTransactions(filter: TransactionFilter, pagination: QueryPagination, queryOptions?: TransactionQueryOptions, address?: string, fields?: string[]): Promise<Transaction[]> {
+    if (this.isCacheableTransactionList(filter, queryOptions, fields, address)) {
+      const cacheInfo = CacheInfo.Transactions(pagination);
+      return await this.cachingService.getOrSet(
+        cacheInfo.key,
+        () => this.computeTransactions(filter, pagination, queryOptions, address, fields),
+        cacheInfo.ttl,
+        Constants.oneSecond(),
+      );
+    }
+
+    return await this.computeTransactions(filter, pagination, queryOptions, address, fields);
+  }
+
+  private async computeTransactions(filter: TransactionFilter, pagination: QueryPagination, queryOptions?: TransactionQueryOptions, address?: string, fields?: string[]): Promise<Transaction[]> {
     const elasticTransactions = await this.indexerService.getTransactions(filter, pagination, address);
 
     let transactions: TransactionDetailed[] = [];
@@ -819,5 +842,53 @@ export class TransactionService {
     }
 
     return buckets;
+  }
+
+  private isEmptyTransactionFilter(filter: TransactionFilter): boolean {
+    return !filter.address &&
+      !filter.sender &&
+      !(filter.senders && filter.senders.length > 0) &&
+      !(filter.receivers && filter.receivers.length > 0) &&
+      !filter.token &&
+      !(filter.tokens && filter.tokens.length > 0) &&
+      !(filter.functions && filter.functions.length > 0) &&
+      filter.senderShard === undefined &&
+      filter.receiverShard === undefined &&
+      !filter.miniBlockHash &&
+      !(filter.hashes && filter.hashes.length > 0) &&
+      filter.status === undefined &&
+      filter.before === undefined &&
+      filter.after === undefined &&
+      filter.condition === undefined &&
+      filter.order === undefined &&
+      filter.senderOrReceiver === undefined &&
+      filter.isScCall === undefined &&
+      filter.isRelayed === undefined &&
+      filter.relayer === undefined &&
+      filter.round === undefined &&
+      filter.withRefunds === undefined &&
+      filter.withRelayedScresults === undefined &&
+      filter.withTxsRelayedByAddress === undefined;
+  }
+
+  private isCacheableTransactionList(filter: TransactionFilter, queryOptions?: TransactionQueryOptions, fields?: string[], address?: string): boolean {
+    const hasFieldSelection = Array.isArray(fields) && fields.length > 0;
+    if (address || hasFieldSelection || !this.isEmptyTransactionFilter(filter) || !queryOptions) {
+      return false;
+    }
+
+    const hasAnyEnrichmentOption = queryOptions.withScResults ||
+      queryOptions.withBlockInfo ||
+      queryOptions.withActionTransferValue ||
+      queryOptions.withUsername ||
+      queryOptions.withTxsOrder ||
+      queryOptions.withOperations !== undefined ||
+      queryOptions.withLogs !== undefined;
+
+    return !hasAnyEnrichmentOption;
+  }
+
+  private isCacheableTransactionCount(filter: TransactionFilter, address?: string): boolean {
+    return !address && this.isEmptyTransactionFilter(filter);
   }
 }
