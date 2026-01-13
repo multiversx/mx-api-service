@@ -21,8 +21,11 @@ flags:
   collectionPropertiesFromGateway: false
 features:
   websocketSubscription:
-    enabled: false
+    enabled: true
     port: 6002
+    maxSubscriptionsPerInstance: 10000
+    maxSubscriptionsPerClient: 10
+    broadcastIntervalMs: 6000
   eventsNotifier:
     enabled: false
     port: 5674
@@ -68,6 +71,13 @@ features:
   chainAndromeda:
     enabled: true
     activationEpoch: 4
+  stakingV5:
+    enabled: true
+    activationEpoch: 1951
+  chainBarnard:
+    enabled: true
+    activationEpoch: 1820
+    activationTimestamp: 1753376544
   nodeEpochsLeft:
     enabled: false
   transactionProcessor:
@@ -121,7 +131,7 @@ features:
     serviceUrl: 'https://api.multiversx.com'
   assetsFetch:
     enabled: false
-    assetesUrl: 'https://tools.multiversx.com/assets-cdn'
+    assetsUrl: 'https://tools.multiversx.com/assets-cdn'
 image:
   width: 600
   height: 600
@@ -183,6 +193,8 @@ inflation:
   - 1130177
   - 924690
   - 719203
+stakingV5Inflation:
+  - 1262802
 nftProcess:
   parallelism: 1
   maxRetries: 3

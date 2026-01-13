@@ -4,5 +4,6 @@ export interface Round {
   blockWasProposed: boolean,
   shardId: number,
   epoch: number,
-  timestamp: number
+  timestamp: number,
+  timestampMs?: number,
 }

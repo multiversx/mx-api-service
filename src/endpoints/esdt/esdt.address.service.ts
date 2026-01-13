@@ -101,14 +101,13 @@ export class EsdtAddressService {
 
   async getCollectionsForAddress(address: string, filter: CollectionFilter, pagination: QueryPagination): Promise<NftCollectionWithRoles[]> {
     const tokenCollections = await this.indexerService.getNftCollections(pagination, filter, address);
-    const collectionsIdentifiers = tokenCollections.map((collection) => collection.token);
 
     const indexedCollections: Record<string, any> = {};
     for (const collection of tokenCollections) {
       indexedCollections[collection.token] = collection;
     }
 
-    const accountCollections = await this.collectionService.applyPropertiesToCollections(collectionsIdentifiers);
+    const accountCollections = await this.collectionService.buildCollectionsFromElasticData(tokenCollections);
 
     const collectionsWithRoles: NftCollectionWithRoles[] = [];
 

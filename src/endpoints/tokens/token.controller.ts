@@ -24,6 +24,7 @@ import { TokenType } from "src/common/indexer/entities";
 import { ParseArrayPipeOptions } from "@multiversx/sdk-nestjs-common/lib/pipes/entities/parse.array.options";
 import { MexPairType } from "../mex/entities/mex.pair.type";
 import { TokenAssetsPriceSourceType } from "src/common/assets/entities/token.assets.price.source.type";
+import { TimestampParsePipe } from "src/utils/timestamp.parse.pipe";
 
 @Controller()
 @ApiTags('tokens')
@@ -206,8 +207,8 @@ export class TokenController {
   @ApiQuery({ name: 'hashes', description: 'Filter by a comma-separated list of transaction hashes', required: false })
   @ApiQuery({ name: 'status', description: 'Status of the transaction (success / pending / invalid / fail)', required: false, enum: TransactionStatus })
   @ApiQuery({ name: 'function', description: 'Filter transactions by function name', required: false })
-  @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
-  @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
+  @ApiQuery({ name: 'before', description: 'Before timestamp or timestampMs', required: false })
+  @ApiQuery({ name: 'after', description: 'After timestamp or timestampMs', required: false })
   @ApiQuery({ name: 'round', description: 'Filter by round number', required: false })
   @ApiQuery({ name: 'order', description: 'Sort order (asc/desc)', required: false, enum: SortOrder })
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
@@ -233,8 +234,8 @@ export class TokenController {
     @Query('hashes', ParseArrayPipe) hashes?: string[],
     @Query('status', new ParseEnumPipe(TransactionStatus)) status?: TransactionStatus,
     @Query('function', new ParseArrayPipe(new ParseArrayPipeOptions({ allowEmptyString: true }))) functions?: string[],
-    @Query('before', ParseIntPipe) before?: number,
-    @Query('after', ParseIntPipe) after?: number,
+    @Query('before', TimestampParsePipe) before?: number,
+    @Query('after', TimestampParsePipe) after?: number,
     @Query('round', ParseIntPipe) round?: number,
     @Query('order', new ParseEnumPipe(SortOrder)) order?: SortOrder,
     @Query('fields', ParseArrayPipe) fields?: string[],
@@ -294,8 +295,8 @@ export class TokenController {
   @ApiQuery({ name: 'miniBlockHash', description: 'Filter by miniblock hash', required: false })
   @ApiQuery({ name: 'hashes', description: 'Filter by a comma-separated list of transaction hashes', required: false })
   @ApiQuery({ name: 'status', description: 'Status of the transaction (success / pending / invalid / fail)', required: false, enum: TransactionStatus })
-  @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
-  @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
+  @ApiQuery({ name: 'before', description: 'Before timestamp or timestampMs', required: false })
+  @ApiQuery({ name: 'after', description: 'After timestamp or timestampMs', required: false })
   @ApiQuery({ name: 'round', description: 'Filter by round number', required: false })
   @ApiQuery({ name: 'isScCall', description: 'Returns sc call transactions details', required: false, type: Boolean })
   @ApiQuery({ name: 'withRelayedScresults', description: 'If set to true, will include smart contract results that resemble relayed transactions', required: false, type: Boolean })
@@ -308,8 +309,8 @@ export class TokenController {
     @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash?: string,
     @Query('hashes', ParseArrayPipe) hashes?: string[],
     @Query('status', new ParseEnumPipe(TransactionStatus)) status?: TransactionStatus,
-    @Query('before', ParseIntPipe) before?: number,
-    @Query('after', ParseIntPipe) after?: number,
+    @Query('before', TimestampParsePipe) before?: number,
+    @Query('after', TimestampParsePipe) after?: number,
     @Query('round', ParseIntPipe) round?: number,
     @Query('withRelayedScresults', ParseBoolPipe) withRelayedScresults?: boolean,
     @Query('isScCall', ParseBoolPipe) isScCall?: boolean,
@@ -392,8 +393,8 @@ export class TokenController {
   @ApiQuery({ name: 'status', description: 'Status of the transaction (success / pending / invalid / fail)', required: false, enum: TransactionStatus })
   @ApiQuery({ name: 'function', description: 'Filter transfers by function name', required: false })
   @ApiQuery({ name: 'order', description: 'Sort order (asc/desc)', required: false, enum: SortOrder })
-  @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
-  @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
+  @ApiQuery({ name: 'before', description: 'Before timestamp or timestampMs', required: false })
+  @ApiQuery({ name: 'after', description: 'After timestamp or timestampMs', required: false })
   @ApiQuery({ name: 'round', description: 'Filter by round number', required: false })
   @ApiQuery({ name: 'fields', description: 'List of fields to filter by', required: false, isArray: true, style: 'form', explode: false })
   @ApiQuery({ name: 'isScCall', description: 'Returns sc call transactions details', required: false, type: Boolean })
@@ -413,8 +414,8 @@ export class TokenController {
     @Query('hashes', ParseArrayPipe) hashes?: string[],
     @Query('status', new ParseEnumPipe(TransactionStatus)) status?: TransactionStatus,
     @Query('function', new ParseArrayPipe(new ParseArrayPipeOptions({ allowEmptyString: true }))) functions?: string[],
-    @Query('before', ParseIntPipe) before?: number,
-    @Query('after', ParseIntPipe) after?: number,
+    @Query('before', TimestampParsePipe) before?: number,
+    @Query('after', TimestampParsePipe) after?: number,
     @Query('round', ParseIntPipe) round?: number,
     @Query('fields', ParseArrayPipe) fields?: string[],
     @Query('order', new ParseEnumPipe(SortOrder)) order?: SortOrder,
@@ -464,8 +465,8 @@ export class TokenController {
   @ApiQuery({ name: 'hashes', description: 'Filter by a comma-separated list of transfer hashes', required: false })
   @ApiQuery({ name: 'status', description: 'Status of the transaction (success / pending / invalid / fail)', required: false, enum: TransactionStatus })
   @ApiQuery({ name: 'function', description: 'Filter transfers by function name', required: false })
-  @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
-  @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
+  @ApiQuery({ name: 'before', description: 'Before timestamp or timestampMs', required: false })
+  @ApiQuery({ name: 'after', description: 'After timestamp or timestampMs', required: false })
   @ApiQuery({ name: 'round', description: 'Filter by round number', required: false })
   @ApiQuery({ name: 'isScCall', description: 'Returns sc call transactions details', required: false, type: Boolean })
   async getTokenTransfersCount(
@@ -478,8 +479,8 @@ export class TokenController {
     @Query('hashes', ParseArrayPipe) hashes?: string[],
     @Query('status', new ParseEnumPipe(TransactionStatus)) status?: TransactionStatus,
     @Query('function', new ParseArrayPipe(new ParseArrayPipeOptions({ allowEmptyString: true }))) functions?: string[],
-    @Query('before', ParseIntPipe) before?: number,
-    @Query('after', ParseIntPipe) after?: number,
+    @Query('before', TimestampParsePipe) before?: number,
+    @Query('after', TimestampParsePipe) after?: number,
     @Query('round', ParseIntPipe) round?: number,
     @Query('isScCall', ParseBoolPipe) isScCall?: boolean,
   ): Promise<number> {
@@ -517,8 +518,8 @@ export class TokenController {
     @Query('hashes', ParseArrayPipe) hashes?: string[],
     @Query('status', new ParseEnumPipe(TransactionStatus)) status?: TransactionStatus,
     @Query('function', new ParseArrayPipe(new ParseArrayPipeOptions({ allowEmptyString: true }))) functions?: string[],
-    @Query('before', ParseIntPipe) before?: number,
-    @Query('after', ParseIntPipe) after?: number,
+    @Query('before', TimestampParsePipe) before?: number,
+    @Query('after', TimestampParsePipe) after?: number,
     @Query('round', ParseIntPipe) round?: number,
     @Query('isScCall', ParseBoolPipe) isScCall?: boolean,
   ): Promise<number> {

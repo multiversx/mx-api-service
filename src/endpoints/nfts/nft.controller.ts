@@ -20,6 +20,7 @@ import { Transaction } from '../transactions/entities/transaction';
 import { ScamType } from 'src/common/entities/scam-type.enum';
 import { TransferService } from '../transfers/transfer.service';
 import { NftSubType } from './entities/nft.sub.type';
+import { TimestampParsePipe } from 'src/utils/timestamp.parse.pipe';
 
 @Controller()
 @ApiTags('nfts')
@@ -52,8 +53,8 @@ export class NftController {
   @ApiQuery({ name: 'isScam', description: 'Filter by scam status', required: false, type: Boolean })
   @ApiQuery({ name: 'scamType', description: 'Filter by type (scam/potentialScam)', required: false })
   @ApiQuery({ name: 'traits', description: 'Filter NFTs by traits. Key-value format (<key1>:<value1>;<key2>:<value2>)', required: false, type: Boolean })
-  @ApiQuery({ name: 'before', description: 'Return all NFTs before given timestamp', required: false, type: Number })
-  @ApiQuery({ name: 'after', description: 'Return all NFTs after given timestamp', required: false, type: Number })
+  @ApiQuery({ name: 'before', description: 'Return all NFTs before given timestamp or timestampMs', required: false, type: Number })
+  @ApiQuery({ name: 'after', description: 'Return all NFTs after given timestamp or timestampMs', required: false, type: Number })
   @ApiQuery({ name: 'withOwner', description: 'Return owner where type = NonFungibleESDT', required: false, type: Boolean })
   @ApiQuery({ name: 'withSupply', description: 'Return supply where type = SemiFungibleESDT', required: false, type: Boolean })
   async getNfts(
@@ -74,8 +75,8 @@ export class NftController {
     @Query('isScam', ParseBoolPipe) isScam?: boolean,
     @Query('scamType', new ParseEnumPipe(ScamType)) scamType?: ScamType,
     @Query('traits', ParseRecordPipe) traits?: Record<string, string>,
-    @Query('before', ParseIntPipe) before?: number,
-    @Query('after', ParseIntPipe) after?: number,
+    @Query('before', TimestampParsePipe) before?: number,
+    @Query('after', TimestampParsePipe) after?: number,
     @Query('withOwner', ParseBoolPipe) withOwner?: boolean,
     @Query('withSupply', ParseBoolPipe) withSupply?: boolean,
   ): Promise<Nft[]> {
@@ -120,8 +121,8 @@ export class NftController {
   @ApiQuery({ name: 'hasUris', description: 'Return all NFTs that have one or more uris', required: false, type: Boolean })
   @ApiQuery({ name: 'isNsfw', description: 'Filter by NSFW status', required: false, type: Boolean })
   @ApiQuery({ name: 'traits', description: 'Filter NFTs by traits. Key-value format (<key1>:<value1>;<key2>:<value2>)', required: false, type: Boolean })
-  @ApiQuery({ name: 'before', description: 'Return all NFTs before given timestamp', required: false, type: Number })
-  @ApiQuery({ name: 'after', description: 'Return all NFTs after given timestamp', required: false, type: Number })
+  @ApiQuery({ name: 'before', description: 'Return all NFTs before given timestamp or timestampMs', required: false, type: Number })
+  @ApiQuery({ name: 'after', description: 'Return all NFTs after given timestamp or timestampMs', required: false, type: Number })
   @ApiQuery({ name: 'isScam', description: 'Filter by scam status', required: false, type: Boolean })
   @ApiQuery({ name: 'scamType', description: 'Filter by type (scam/potentialScam)', required: false })
   async getNftCount(
@@ -138,8 +139,8 @@ export class NftController {
     @Query('hasUris', ParseBoolPipe) hasUris?: boolean,
     @Query('isNsfw', ParseBoolPipe) isNsfw?: boolean,
     @Query('traits', ParseRecordPipe) traits?: Record<string, string>,
-    @Query('before', ParseIntPipe) before?: number,
-    @Query('after', ParseIntPipe) after?: number,
+    @Query('before', TimestampParsePipe) before?: number,
+    @Query('after', TimestampParsePipe) after?: number,
     @Query('isScam', ParseBoolPipe) isScam?: boolean,
     @Query('scamType', new ParseEnumPipe(ScamType)) scamType?: ScamType,
   ): Promise<number> {
@@ -181,8 +182,8 @@ export class NftController {
     @Query('hasUris', ParseBoolPipe) hasUris?: boolean,
     @Query('isNsfw', ParseBoolPipe) isNsfw?: boolean,
     @Query('traits', ParseRecordPipe) traits?: Record<string, string>,
-    @Query('before', ParseIntPipe) before?: number,
-    @Query('after', ParseIntPipe) after?: number,
+    @Query('before', TimestampParsePipe) before?: number,
+    @Query('after', TimestampParsePipe) after?: number,
     @Query('isScam', ParseBoolPipe) isScam?: boolean,
     @Query('scamType', new ParseEnumPipe(ScamType)) scamType?: ScamType,
   ): Promise<number> {
@@ -287,8 +288,8 @@ export class NftController {
   @ApiQuery({ name: 'hashes', description: 'Filter by a comma-separated list of transaction hashes', required: false })
   @ApiQuery({ name: 'status', description: 'Status of the transaction (success / pending / invalid / fail)', required: false, enum: TransactionStatus })
   @ApiQuery({ name: 'function', description: 'Filter transactions by function name', required: false })
-  @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
-  @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
+  @ApiQuery({ name: 'before', description: 'Before timestamp or timestampMs', required: false })
+  @ApiQuery({ name: 'after', description: 'After timestamp or timestampMs', required: false })
   @ApiQuery({ name: 'order', description: 'Sort order (asc/desc)', required: false, enum: SortOrder })
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
@@ -310,8 +311,8 @@ export class NftController {
     @Query('hashes', ParseArrayPipe) hashes?: string[],
     @Query('status', new ParseEnumPipe(TransactionStatus)) status?: TransactionStatus,
     @Query('function', ParseArrayPipe) functions?: string[],
-    @Query('before', ParseIntPipe) before?: number,
-    @Query('after', ParseIntPipe) after?: number,
+    @Query('before', TimestampParsePipe) before?: number,
+    @Query('after', TimestampParsePipe) after?: number,
     @Query('order', new ParseEnumPipe(SortOrder)) order?: SortOrder,
 
     @Query('withScResults', ParseBoolPipe) withScResults?: boolean,
@@ -354,8 +355,8 @@ export class NftController {
   @ApiQuery({ name: 'miniBlockHash', description: 'Filter by miniblock hash', required: false })
   @ApiQuery({ name: 'hashes', description: 'Filter by a comma-separated list of transaction hashes', required: false })
   @ApiQuery({ name: 'status', description: 'Status of the transaction (success / pending / invalid / fail)', required: false, enum: TransactionStatus })
-  @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
-  @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
+  @ApiQuery({ name: 'before', description: 'Before timestamp or timestampMs', required: false })
+  @ApiQuery({ name: 'after', description: 'After timestamp or timestampMs', required: false })
   @ApiQuery({ name: 'withRelayedScresults', description: 'If set to true, will include smart contract results that resemble relayed transactions', required: false, type: Boolean })
   async getNftTransactionsCount(
     @Param('identifier', ParseNftPipe) identifier: string,
@@ -366,8 +367,8 @@ export class NftController {
     @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash?: string,
     @Query('hashes', ParseArrayPipe) hashes?: string[],
     @Query('status', new ParseEnumPipe(TransactionStatus)) status?: TransactionStatus,
-    @Query('before', ParseIntPipe) before?: number,
-    @Query('after', ParseIntPipe) after?: number,
+    @Query('before', TimestampParsePipe) before?: number,
+    @Query('after', TimestampParsePipe) after?: number,
     @Query('withRelayedScresults', ParseBoolPipe) withRelayedScresults?: boolean,
   ) {
 
@@ -399,8 +400,8 @@ export class NftController {
   @ApiQuery({ name: 'hashes', description: 'Filter by a comma-separated list of transfer hashes', required: false })
   @ApiQuery({ name: 'status', description: 'Status of the transfer (success / pending / invalid / fail)', required: false, enum: TransactionStatus })
   @ApiQuery({ name: 'function', description: 'Filter transfers by function name', required: false })
-  @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
-  @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
+  @ApiQuery({ name: 'before', description: 'Before timestamp or timestampMs', required: false })
+  @ApiQuery({ name: 'after', description: 'After timestamp or timestampMs', required: false })
   @ApiQuery({ name: 'order', description: 'Sort order (asc/desc)', required: false, enum: SortOrder })
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
@@ -421,8 +422,8 @@ export class NftController {
     @Query('hashes', ParseArrayPipe) hashes?: string[],
     @Query('status', new ParseEnumPipe(TransactionStatus)) status?: TransactionStatus,
     @Query('function', ParseArrayPipe) functions?: string[],
-    @Query('before', ParseIntPipe) before?: number,
-    @Query('after', ParseIntPipe) after?: number,
+    @Query('before', TimestampParsePipe) before?: number,
+    @Query('after', TimestampParsePipe) after?: number,
     @Query('order', new ParseEnumPipe(SortOrder)) order?: SortOrder,
     @Query('withScResults', ParseBoolPipe) withScResults?: boolean,
     @Query('withOperations', ParseBoolPipe) withOperations?: boolean,
@@ -459,8 +460,8 @@ export class NftController {
   @ApiQuery({ name: 'miniBlockHash', description: 'Filter by miniblock hash', required: false })
   @ApiQuery({ name: 'hashes', description: 'Filter by a comma-separated list of transfers hashes', required: false })
   @ApiQuery({ name: 'status', description: 'Status of the transfers (success / pending / invalid / fail)', required: false, enum: TransactionStatus })
-  @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
-  @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
+  @ApiQuery({ name: 'before', description: 'Before timestamp or timestampMs', required: false })
+  @ApiQuery({ name: 'after', description: 'After timestamp or timestampMs', required: false })
   async getNftTransfersCount(
     @Param('identifier', ParseNftPipe) identifier: string,
     @Query('sender', ParseAddressPipe) sender?: string,
@@ -470,8 +471,8 @@ export class NftController {
     @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash?: string,
     @Query('hashes', ParseArrayPipe) hashes?: string[],
     @Query('status', new ParseEnumPipe(TransactionStatus)) status?: TransactionStatus,
-    @Query('before', ParseIntPipe) before?: number,
-    @Query('after', ParseIntPipe) after?: number,
+    @Query('before', TimestampParsePipe) before?: number,
+    @Query('after', TimestampParsePipe) after?: number,
   ) {
 
     return await this.transferService.getTransfersCount(new TransactionFilter({
