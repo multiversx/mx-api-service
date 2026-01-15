@@ -179,6 +179,7 @@ export class WebsocketCronService implements OnModuleInit {
       { key: 'customTx', prefix: TransactionsCustomGateway.keyPrefix },
       { key: 'events', prefix: EventsGateway.keyPrefix },
       { key: 'customEvents', prefix: EventsCustomGateway.keyPrefix },
+      { key: 'customTransfers', prefix: TransfersCustomGateway.keyPrefix },
       { key: 'blocks', prefix: BlocksGateway.keyPrefix },
       { key: 'pool', prefix: PoolGateway.keyPrefix },
       { key: 'stats', room: 'statsRoom' },
