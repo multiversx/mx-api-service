@@ -15,7 +15,7 @@ export class ConnectionHandler implements OnGatewayDisconnect, OnGatewayConnecti
     handleDisconnect(_client: Socket) { }
 
     handleConnection(client: Socket, ..._args: any[]) {
-        client.setMaxListeners(17);
+        client.setMaxListeners(20);
     }
 
     hasSubscriptionsWithPrefixes(prefixes: string[]): boolean {
