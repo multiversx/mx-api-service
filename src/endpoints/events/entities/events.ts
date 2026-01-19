@@ -39,4 +39,7 @@ export class Events {
 
   @ApiProperty({ description: "Event timestamp." })
   timestamp: number = 0;
+
+  @ApiProperty({ description: "Event timestamp in milliseconds.", nullable: true, required: false })
+  timestampMs?: number;
 }

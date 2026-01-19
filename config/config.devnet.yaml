@@ -23,6 +23,9 @@ features:
   websocketSubscription:
     enabled: false
     port: 6002
+    maxSubscriptionsPerInstance: 10000
+    maxSubscriptionsPerClient: 10
+    broadcastIntervalMs: 6000
   stateChanges:
     enabled: false
     port: 5675
@@ -62,7 +65,7 @@ features:
     serviceUrl: 'https://devnet-data-api.multiversx.com'
   assetsFetch:
     enabled: true
-    assetesUrl: 'https://tools.multiversx.com/assets-cdn'
+    assetsUrl: 'https://tools.multiversx.com/assets-cdn'
   auth:
     enabled: false
     maxExpirySeconds: 86400
@@ -72,12 +75,22 @@ features:
       - ''
     jwtSecret: ''
   stakingV4:
-    enabled: false
+    enabled: true
     cronExpression: '*/5 * * * * *'
     activationEpoch: 1043
   chainAndromeda:
     enabled: true
     activationEpoch: 4
+  stakingV5:
+    enabled: true
+    activationEpoch: 4817
+  chainBarnard:
+    enabled: true
+    activationEpoch: 3964
+    activationTimestamp: 1751460236
+  deprecatedRelayedV1V2:
+    enabled: true
+    activationEpoch: 4569
   nodeEpochsLeft:
     enabled: false
   transactionProcessor:
@@ -118,13 +131,13 @@ features:
     enabled: false
     maxLookBehindNonces: 100
   nodesFetch:
-    enabled: true
+    enabled: false
     serviceUrl: 'https://devnet-api.multiversx.com'
   tokensFetch:
-    enabled: true
+    enabled: false
     serviceUrl: 'https://devnet-api.multiversx.com'
   providersFetch:
-    enabled: true
+    enabled: false
     serviceUrl: 'https://devnet-api.multiversx.com'
 image:
   width: 600
@@ -188,6 +201,10 @@ inflation:
   - 1130177
   - 924690
   - 719203
+stakingV5Inflation:
+  - 1069805
+# november 2025 devnet supply: 24_433_152. first year rewards = 50% * (8.757% * supply) = 1_069_805
+# TODO: calculate the inflation for upcoming years based on the inflation decay
 nftProcess:
   parallelism: 1
   maxRetries: 3
@@ -196,6 +213,7 @@ compression:
   level: 6
   threshold: 1024
   chunkSize: 16384
+
 pubSubListener:
   enabled: true
   

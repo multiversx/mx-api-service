@@ -10,6 +10,7 @@ import { TransactionStatus } from "../transactions/entities/transaction.status";
 import { TransactionQueryOptions } from "../transactions/entities/transactions.query.options";
 import { TransferService } from "./transfer.service";
 import { ParseArrayPipeOptions } from "@multiversx/sdk-nestjs-common/lib/pipes/entities/parse.array.options";
+import { TimestampParsePipe } from "src/utils/timestamp.parse.pipe";
 
 @Controller()
 @ApiTags('transfers')
@@ -34,8 +35,8 @@ export class TransferController {
   @ApiQuery({ name: 'status', description: 'Status of the transaction (success / pending / invalid / fail)', required: false, enum: TransactionStatus })
   @ApiQuery({ name: 'order', description: 'Sort order (asc/desc)', required: false, enum: SortOrder })
   @ApiQuery({ name: 'fields', description: 'List of fields to filter by', required: false, isArray: true, style: 'form', explode: false })
-  @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
-  @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
+  @ApiQuery({ name: 'before', description: 'Before timestamp or timestampMs', required: false })
+  @ApiQuery({ name: 'after', description: 'After timestamp or timestampMs', required: false })
   @ApiQuery({ name: 'round', description: 'Round number', required: false })
   @ApiQuery({ name: 'function', description: 'Filter transfers by function name', required: false })
   @ApiQuery({ name: 'relayer', description: 'Filter by relayer address', required: false })
@@ -61,8 +62,8 @@ export class TransferController {
     @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash?: string,
     @Query('hashes', ParseArrayPipe) hashes?: string[],
     @Query('status', new ParseEnumPipe(TransactionStatus)) status?: TransactionStatus,
-    @Query('before', ParseIntPipe) before?: number,
-    @Query('after', ParseIntPipe) after?: number,
+    @Query('before', TimestampParsePipe) before?: number,
+    @Query('after', TimestampParsePipe) after?: number,
     @Query('round', ParseIntPipe) round?: number,
     @Query('order', new ParseEnumPipe(SortOrder)) order?: SortOrder,
     @Query('fields', ParseArrayPipe) fields?: string[],
@@ -119,8 +120,8 @@ export class TransferController {
   @ApiQuery({ name: 'hashes', description: 'Filter by a comma-separated list of transfer hashes', required: false })
   @ApiQuery({ name: 'status', description: 'Status of the transaction (success / pending / invalid / fail)', required: false, enum: TransactionStatus })
   @ApiQuery({ name: 'function', description: 'Filter transfers by function name', required: false })
-  @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
-  @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
+  @ApiQuery({ name: 'before', description: 'Before timestamp or timestampMs', required: false })
+  @ApiQuery({ name: 'after', description: 'After timestamp or timestampMs', required: false })
   @ApiQuery({ name: 'round', description: 'Round number', required: false })
   @ApiQuery({ name: 'relayer', description: 'Filter by the relayer address', required: false })
   @ApiQuery({ name: 'isRelayed', description: 'Returns relayed transactions details', required: false, type: Boolean })
@@ -136,8 +137,8 @@ export class TransferController {
     @Query('hashes', ParseArrayPipe) hashes?: string[],
     @Query('status', new ParseEnumPipe(TransactionStatus)) status?: TransactionStatus,
     @Query('function', new ParseArrayPipe(new ParseArrayPipeOptions({ allowEmptyString: true }))) functions?: string[],
-    @Query('before', ParseIntPipe) before?: number,
-    @Query('after', ParseIntPipe) after?: number,
+    @Query('before', TimestampParsePipe) before?: number,
+    @Query('after', TimestampParsePipe) after?: number,
     @Query('round', ParseIntPipe) round?: number,
     @Query('relayer', ParseAddressPipe) relayer?: string,
     @Query('isRelayed', ParseBoolPipe) isRelayed?: boolean,
@@ -176,8 +177,8 @@ export class TransferController {
     @Query('hashes', ParseArrayPipe) hashes?: string[],
     @Query('status', new ParseEnumPipe(TransactionStatus)) status?: TransactionStatus,
     @Query('function', new ParseArrayPipe(new ParseArrayPipeOptions({ allowEmptyString: true }))) functions?: string[],
-    @Query('before', ParseIntPipe) before?: number,
-    @Query('after', ParseIntPipe) after?: number,
+    @Query('before', TimestampParsePipe) before?: number,
+    @Query('after', TimestampParsePipe) after?: number,
     @Query('round', ParseIntPipe) round?: number,
     @Query('relayer', ParseAddressPipe) relayer?: string,
     @Query('isRelayed', ParseBoolPipe) isRelayed?: boolean,

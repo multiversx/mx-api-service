@@ -4,6 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import { DatabaseConnectionOptions } from '../persistence/entities/connection.options';
 import { StatusCheckerThresholds } from './entities/status-checker-thresholds';
 import { LogTopic } from '@multiversx/sdk-transaction-processor/lib/types/log-topic';
+import { TimeUtils } from 'src/utils/time.utils';
 
 @Injectable()
 export class ApiConfigService {
@@ -596,6 +597,15 @@ export class ApiConfigService {
     return inflationAmounts;
   }
 
+  getStakingV5InflationAmounts(): number[] {
+    const inflationAmounts = this.configService.get<number[]>('stakingV5Inflation');
+    if (!inflationAmounts) {
+      throw new Error('No staking v5 inflation amounts present');
+    }
+
+    return inflationAmounts;
+  }
+
   getMediaUrl(): string {
     const mediaUrl = this.configService.get<string>('urls.media');
     if (!mediaUrl) {
@@ -894,12 +904,39 @@ export class ApiConfigService {
     return this.configService.get<number>('features.chainAndromeda.activationEpoch') ?? 99999;
   }
 
+  isStakingV5Enabled(): boolean {
+    return this.configService.get<boolean>('features.stakingV5.enabled') ?? false;
+  }
+
+  getStakingV5ActivationEpoch(): number {
+    return this.configService.get<number>('features.stakingV5.activationEpoch') ?? 99999;
+  }
+
+  isDeprecatedRelayedV1V2Enabled(): boolean {
+    return this.configService.get<boolean>('features.deprecatedRelayedV1V2.enabled') ?? false;
+  }
+
+  getDeprecatedRelayedV1V2ActivationEpoch(): number {
+    return this.configService.get<number>('features.deprecatedRelayedV1V2.activationEpoch') ?? 99999;
+  }
+
+  shouldDeprecateRelayedV1V2(epoch: number): boolean {
+    const isEnabled = this.isDeprecatedRelayedV1V2Enabled();
+    if (!isEnabled) {
+      return false;
+    }
+
+    return epoch >= this.getDeprecatedRelayedV1V2ActivationEpoch();
+  }
+
   isAssetsCdnFeatureEnabled(): boolean {
     return this.configService.get<boolean>('features.assetsFetch.enabled') ?? false;
   }
 
   getAssetsCdnUrl(): string {
-    return this.configService.get<string>('features.assetsFetch.assetesUrl') ?? 'https://tools.multiversx.com/assets-cdn';
+    return this.configService.get<string>('features.assetsFetch.assetsUrl')
+      ?? this.configService.get<string>('features.assetsFetch.assetesUrl') // todo: remove this in the future
+      ?? 'https://tools.multiversx.com/assets-cdn';
   }
 
   isTokensFetchFeatureEnabled(): boolean {
@@ -979,6 +1016,18 @@ export class ApiConfigService {
     return port;
   }
 
+  getWebsocketSubscriptionBroadcastIntervalMs(): number {
+    return this.configService.get<number>('features.websocketSubscription.broadcastIntervalMs') ?? 6000;
+  }
+
+  getWebsocketMaxSubscriptionsPerInstance(): number {
+    return this.configService.get<number>('features.websocketSubscription.maxSubscriptionsPerInstance') ?? 10_000;
+  }
+
+  getWebsocketMaxSubscriptionsPerClient(): number {
+    return this.configService.get<number>('features.websocketSubscription.maxSubscriptionsPerClient') ?? 5;
+  }
+
   getHeadersForCustomUrl(url: string): Record<string, string> | undefined {
     let customUrlConfigs = this.configService.get<any>('customUrlHeaders');
 
@@ -1036,6 +1085,28 @@ export class ApiConfigService {
     }
 
     return undefined;
+  }
+
+  isChainBarnardEnabled(): boolean {
+    return this.configService.get<boolean>('features.chainBarnard.enabled') ?? false;
+  }
+
+  getChainBarnardActivationEpoch(): number {
+    const epoch = this.configService.get<number>('features.chainBarnard.activationEpoch');
+    if (epoch == null) {
+      return TimeUtils.TIMESTAMP_IN_SECONDS_THRESHOLD + 1;
+    }
+
+    return epoch;
+  }
+
+  getChainBarnardActivationTimestamp(): number {
+    const timestamp = this.configService.get<number>('features.chainBarnard.activationTimestamp');
+    if (timestamp == null) {
+      return TimeUtils.TIMESTAMP_IN_SECONDS_THRESHOLD + 1;
+    }
+
+    return timestamp;
   }
 
   isStateChangesFeatureActive(): boolean {

@@ -23,6 +23,9 @@ features:
   websocketSubscription:
     enabled: false
     port: 6002
+    maxSubscriptionsPerInstance: 10000
+    maxSubscriptionsPerClient: 10
+    broadcastIntervalMs: 6000
   stateChanges:
     enabled: false
     port: 5675
@@ -69,12 +72,22 @@ features:
       - ''
     jwtSecret: ''
   stakingV4:
-    enabled: false
+    enabled: true
     cronExpression: '*/5 * * * * *'
     activationEpoch: 1043
   chainAndromeda:
     enabled: true
     activationEpoch: 4
+  stakingV5:
+    enabled: true
+    activationEpoch: 2519
+  chainBarnard:
+    enabled: false
+    activationEpoch: 2030
+    activationTimestamp: 1864749472
+  deprecatedRelayedV1V2:
+    enabled: true
+    activationEpoch: 2038
   nodeEpochsLeft:
     enabled: false
   transactionProcessor:
@@ -118,17 +131,17 @@ features:
     enabled: false
     maxLookBehindNonces: 100
   nodesFetch:
-    enabled: true
+    enabled: false
     serviceUrl: 'https://testnet-api.multiversx.com'
   tokensFetch:
-    enabled: true
+    enabled: false
     serviceUrl: 'https://testnet-api.multiversx.com'
   providersFetch:
-    enabled: true
+    enabled: false
     serviceUrl: 'https://testnet-api.multiversx.com'
   assetsFetch:
     enabled: true
-    assetesUrl: 'https://tools.multiversx.com/assets-cdn'
+    assetsUrl: 'https://tools.multiversx.com/assets-cdn'
 image:
   width: 600
   height: 600
@@ -191,6 +204,10 @@ inflation:
   - 1130177
   - 924690
   - 719203
+stakingV5Inflation:
+  - 930117
+# november 2025 testnet supply: 21_242_828. first year rewards = 50% * (8.75% * supply) = 930117
+# TODO: calculate the inflation for upcoming years based on the inflation decay
 nftProcess:
   parallelism: 1
   maxRetries: 3

@@ -5,6 +5,7 @@ import { QueryPagination } from "src/common/entities/query.pagination";
 import { ApplicationFilter } from "./entities/application.filter";
 import { ParseIntPipe, ParseBoolPipe, ParseAddressPipe } from "@multiversx/sdk-nestjs-common";
 import { Application } from "./entities/application";
+import { TimestampParsePipe } from "src/utils/timestamp.parse.pipe";
 
 @Controller()
 @ApiTags('applications')
@@ -18,14 +19,14 @@ export class ApplicationController {
   @ApiOkResponse({ type: [Application] })
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
-  @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
-  @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
+  @ApiQuery({ name: 'before', description: 'Before timestamp or timestampMs', required: false })
+  @ApiQuery({ name: 'after', description: 'After timestamp or timestampMs', required: false })
   @ApiQuery({ name: 'withTxCount', description: 'Include transaction count', required: false, type: Boolean })
   async getApplications(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number,
-    @Query('before', ParseIntPipe) before?: number,
-    @Query('after', ParseIntPipe) after?: number,
+    @Query('before', TimestampParsePipe) before?: number,
+    @Query('after', TimestampParsePipe) after?: number,
     @Query('withTxCount', new ParseBoolPipe()) withTxCount?: boolean,
   ): Promise<Application[]> {
     const applicationFilter = new ApplicationFilter({ before, after, withTxCount });
@@ -41,8 +42,8 @@ export class ApplicationController {
   @ApiQuery({ name: 'before', description: 'Before timestamp', required: false })
   @ApiQuery({ name: 'after', description: 'After timestamp', required: false })
   async getApplicationsCount(
-    @Query('before', ParseIntPipe) before?: number,
-    @Query('after', ParseIntPipe) after?: number,
+    @Query('before', TimestampParsePipe) before?: number,
+    @Query('after', TimestampParsePipe) after?: number,
   ): Promise<number> {
     const filter = new ApplicationFilter({ before, after });
 

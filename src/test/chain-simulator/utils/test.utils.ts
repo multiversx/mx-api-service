@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { config } from '../config/env.config';
-import { DeployScArgs } from './chain.simulator.operations';
+import { DeployScArgs, sendTransaction, SendTransactionArgs } from './chain.simulator.operations';
 import { fundAddress } from './chain.simulator.operations';
 import { deploySc } from './chain.simulator.operations';
 import fs from 'fs';
@@ -95,5 +95,24 @@ export class ChainSimulatorUtils {
       console.error('Error deploying ping pong SC:', error);
       throw error;
     }
+  }
+
+  public static async pingContract(sender: string, scAddress: string) {
+    await sendTransaction(new SendTransactionArgs({
+      chainSimulatorUrl: config.chainSimulatorUrl,
+      sender,
+      receiver: scAddress,
+      value: '1000000000000000000',
+      dataField: 'ping',
+    }));
+  }
+
+  public static async pongContract(sender: string, scAddress: string) {
+    await sendTransaction(new SendTransactionArgs({
+      chainSimulatorUrl: config.chainSimulatorUrl,
+      sender,
+      receiver: scAddress,
+      dataField: 'pong',
+    }));
   }
 }

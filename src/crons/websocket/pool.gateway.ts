@@ -1,34 +1,55 @@
 import { WebSocketGateway, WebSocketServer, SubscribeMessage, MessageBody, ConnectedSocket } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { UseFilters } from '@nestjs/common';
+import { UseFilters, UseInterceptors } from '@nestjs/common';
 import { WebsocketExceptionsFilter } from 'src/utils/ws-exceptions.filter';
 import { WsValidationPipe } from 'src/utils/ws-validation.pipe';
 import { OriginLogger } from '@multiversx/sdk-nestjs-common';
-
 import { PoolService } from '../../endpoints/pool/pool.service';
 import { PoolFilter } from '../../endpoints/pool/entities/pool.filter';
 import { QueryPagination } from 'src/common/entities/query.pagination';
 import { PoolSubscribePayload } from '../../endpoints/pool/entities/pool.subscribe';
+import { RoomKeyGenerator } from './room.key.generator';
+import { LockingGuardInterceptor } from 'src/utils/locking.guard.interceptor';
 
 @UseFilters(WebsocketExceptionsFilter)
 @WebSocketGateway({ cors: { origin: '*' }, path: '/ws/subscription' })
 export class PoolGateway {
     private readonly logger = new OriginLogger(PoolGateway.name);
+    static readonly keyPrefix = 'pool-';
 
     @WebSocketServer()
     server!: Server;
 
     constructor(private readonly poolService: PoolService) { }
 
+    @UseInterceptors(LockingGuardInterceptor)
     @SubscribeMessage('subscribePool')
     async handleSubscription(
         @ConnectedSocket() client: Socket,
         @MessageBody(new WsValidationPipe()) payload: PoolSubscribePayload,
     ) {
-        const filterIdentifier = JSON.stringify(payload);
-        await client.join(`pool-${filterIdentifier}`);
+        const filterIdentifier = RoomKeyGenerator.deterministicStringify(payload);
+        const roomName = `${PoolGateway.keyPrefix}${filterIdentifier}`;
 
+        if (!client.rooms.has(roomName)) {
+            await client.join(roomName);
+        }
         return { status: 'success' };
+    }
+
+    @SubscribeMessage('unsubscribePool')
+    async handleUnsubscribe(
+        @ConnectedSocket() client: Socket,
+        @MessageBody(new WsValidationPipe()) payload: PoolSubscribePayload
+    ) {
+        const filterIdentifier = RoomKeyGenerator.deterministicStringify(payload);
+        const roomName = `${PoolGateway.keyPrefix}${filterIdentifier}`;
+
+        if (client.rooms.has(roomName)) {
+            await client.leave(roomName);
+        }
+
+        return { status: 'unsubscribed' };
     }
 
     async pushPoolForRoom(roomName: string): Promise<void> {

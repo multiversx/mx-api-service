@@ -12,6 +12,7 @@ export interface Block {
   size: number;
   sizeTxs: number;
   timestamp: number;
+  timestampMs?: number;
   stateRootHash: string;
   prevHash: string;
   shardId: number;

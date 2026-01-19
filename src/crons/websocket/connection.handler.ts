@@ -15,6 +15,18 @@ export class ConnectionHandler implements OnGatewayDisconnect, OnGatewayConnecti
     handleDisconnect(_client: Socket) { }
 
     handleConnection(client: Socket, ..._args: any[]) {
-        client.setMaxListeners(12);
+        client.setMaxListeners(20);
+    }
+
+    hasSubscriptionsWithPrefixes(prefixes: string[]): boolean {
+        const rooms = this.server.sockets.adapter.rooms;
+
+        for (const roomName of rooms.keys()) {
+            if (prefixes.some(prefix => roomName.startsWith(prefix))) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

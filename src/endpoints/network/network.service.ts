@@ -237,6 +237,11 @@ export class NetworkService {
     if (!stake) {
       throw new Error('Global stake not available');
     }
+    const stakingV5Config = {
+      enabled: this.apiConfigService.isStakingV5Enabled() && stats.epoch >= this.apiConfigService.getStakingV5ActivationEpoch(),
+      activationEpoch: this.apiConfigService.getStakingV5ActivationEpoch(),
+      inflationAmounts: this.apiConfigService.getStakingV5InflationAmounts(),
+    };
 
     const stakedBalance = await this.getAuctionContractBalance();
 
@@ -251,9 +256,12 @@ export class NetworkService {
     const secondsInYear = 365 * 24 * 3600;
     const epochsInYear = secondsInYear / epochDuration;
 
-    const yearIndex = Math.floor(stats.epoch / epochsInYear);
-
-    const inflationAmounts = this.apiConfigService.getInflationAmounts();
+    let yearIndex = Math.floor(stats.epoch / epochsInYear);
+    let inflationAmounts = this.apiConfigService.getInflationAmounts();
+    if (stakingV5Config.enabled) {
+      yearIndex = Math.floor((stats.epoch - stakingV5Config.activationEpoch) / epochsInYear);
+      inflationAmounts = stakingV5Config.inflationAmounts;
+    }
 
     if (yearIndex >= inflationAmounts.length) {
       throw new Error(`There is no inflation information for year with index ${yearIndex}`,);
@@ -313,10 +321,34 @@ export class NetworkService {
     }
 
     const features = new FeatureConfigs({
+      eventsNotifier: this.apiConfigService.isEventsNotifierFeatureActive(),
+      guestCaching: this.apiConfigService.isGuestCacheFeatureActive(),
+      transactionPool: this.apiConfigService.isTransactionPoolEnabled(),
+      transactionPoolWarmer: this.apiConfigService.getIsCacheWarmerCronActive(),
       updateCollectionExtraDetails: this.apiConfigService.isUpdateCollectionExtraDetailsEnabled(),
+      updateAccountsExtraDetails: this.apiConfigService.isUpdateAccountExtraDetailsEnabled(),
       marketplace: this.apiConfigService.isMarketplaceFeatureEnabled(),
       exchange: this.apiConfigService.isExchangeEnabled(),
       dataApi: this.apiConfigService.isDataApiFeatureEnabled(),
+      auth: this.apiConfigService.getIsAuthActive(),
+      stakingV4: this.apiConfigService.isStakingV4Enabled(),
+      chainAndromeda: this.apiConfigService.isChainAndromedaEnabled(),
+      stakingV5: this.apiConfigService.isStakingV5Enabled(),
+      stakingV5ActivationEpoch: this.apiConfigService.getStakingV5ActivationEpoch(),
+      nodeEpochsLeft: this.apiConfigService.isNodeEpochsLeftEnabled(),
+      transactionProcessor: this.apiConfigService.getIsTransactionProcessorCronActive(),
+      transactionCompleted: this.apiConfigService.getIsTransactionCompletedCronActive(),
+      transactionBatch: this.apiConfigService.getIsTransactionBatchCronActive(),
+      deepHistory: this.apiConfigService.isDeepHistoryGatewayEnabled(),
+      elasticCircuitBreaker: this.apiConfigService.isElasticCircuitBreakerEnabled(),
+      statusChecker: this.apiConfigService.getIsApiStatusCheckerActive(),
+      nftScamInfo: this.apiConfigService.getIsNftScamInfoEnabled(),
+      processNfts: this.apiConfigService.getIsProcessNftsFlagActive(),
+      tps: this.apiConfigService.isTpsEnabled(),
+      nodesFetch: this.apiConfigService.isNodesFetchFeatureEnabled(),
+      tokensFetch: this.apiConfigService.isTokensFetchFeatureEnabled(),
+      providersFetch: this.apiConfigService.isProvidersFetchFeatureEnabled(),
+      assetsFetch: this.apiConfigService.isAssetsCdnFeatureEnabled(),
     });
 
     let indexerVersion: string | undefined;

@@ -97,17 +97,25 @@ export async function issueEsdt(args: IssueEsdtArgs) {
 
 export async function transferEsdt(args: TransferEsdtArgs) {
   const transferValue = args.plainAmountOfTokens * 10 ** 18;
-  return await sendTransaction(
+  console.log(`Transferring ${args.plainAmountOfTokens} ${args.tokenIdentifier} from ${args.sender} to ${args.receiver}`);
+  let hexAmountOfTokens = transferValue.toString(16);
+
+  if (hexAmountOfTokens.length % 2 !== 0) {
+    hexAmountOfTokens = '0' + hexAmountOfTokens;
+  }
+  const txHash = await sendTransaction(
     new SendTransactionArgs({
       chainSimulatorUrl: args.chainSimulatorUrl,
       sender: args.sender,
       receiver: args.receiver,
       dataField: `ESDTTransfer@${Buffer.from(args.tokenIdentifier).toString(
         'hex',
-      )}@${transferValue.toString(16)}`,
+      )}@${hexAmountOfTokens}`,
       value: '0',
     }),
   );
+  console.log(`ESDT transfer completed. Transaction hash: ${txHash}`);
+  return txHash;
 }
 
 export async function sendTransaction(
@@ -621,5 +629,32 @@ export async function transferNftFromTo(
   );
 
   console.log(`NFT transfer completed. Transaction hash: ${txHash}`);
+  return txHash;
+}
+
+export async function transferEgld(
+  chainSimulatorUrl: string,
+  senderAddress: string,
+  receiverAddress: string,
+  amountInEgldNominated: number
+): Promise<string> {
+  const amountInEgldNominatedStr = amountInEgldNominated.toString();
+  const egldDecimals = '0'.repeat(18);
+  console.log(`Transferring ${amountInEgldNominated} EGLD from ${senderAddress} to ${receiverAddress}`);
+
+  const txHash = await sendTransaction(
+    new SendTransactionArgs({
+      chainSimulatorUrl,
+      sender: senderAddress,
+      receiver: receiverAddress,
+      value: (amountInEgldNominatedStr.concat(egldDecimals)),
+      dataField: '',
+    }),
+  );
+
+  console.log(`EGLD transfer completed. Transaction hash: ${txHash}`);
+  await axios.post(
+    `${chainSimulatorUrl}/simulator/generate-blocks-until-transaction-processed/${txHash}`,
+  );
   return txHash;
 }

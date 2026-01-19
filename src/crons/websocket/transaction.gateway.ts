@@ -7,19 +7,22 @@ import { TransactionQueryOptions } from '../../endpoints/transactions/entities/t
 import { WsValidationPipe } from 'src/utils/ws-validation.pipe';
 import { TransactionSubscribePayload } from '../../endpoints/transactions/entities/dtos/transaction.subscribe';
 import { WebsocketExceptionsFilter } from 'src/utils/ws-exceptions.filter';
-import { UseFilters } from '@nestjs/common';
+import { UseFilters, UseInterceptors } from '@nestjs/common';
 import { OriginLogger } from '@multiversx/sdk-nestjs-common';
-
+import { RoomKeyGenerator } from './room.key.generator';
+import { LockingGuardInterceptor } from 'src/utils/locking.guard.interceptor';
 @UseFilters(WebsocketExceptionsFilter)
 @WebSocketGateway({ cors: { origin: '*' }, path: '/ws/subscription' })
 export class TransactionsGateway {
   private readonly logger = new OriginLogger(TransactionsGateway.name);
+  static readonly keyPrefix = 'tx-';
 
   @WebSocketServer()
   server!: Server;
 
   constructor(private readonly transactionService: TransactionService) { }
 
+  @UseInterceptors(LockingGuardInterceptor)
   @SubscribeMessage('subscribeTransactions')
   async handleSubscription(
     @ConnectedSocket() client: Socket,
@@ -45,16 +48,35 @@ export class TransactionsGateway {
     TransactionFilter.validate(transactionFilter, payload.size || 25);
 
     const filterIdentifier = JSON.stringify(payload);
-    await client.join(`tx-${filterIdentifier}`);
+    const roomName = `${TransactionsGateway.keyPrefix}${filterIdentifier}`;
+
+    if (!client.rooms.has(roomName)) {
+      await client.join(roomName);
+    }
 
     return { status: 'success' };
   }
 
+  @SubscribeMessage('unsubscribeTransactions')
+  async handleUnsubscribe(
+    @ConnectedSocket() client: Socket,
+    @MessageBody(new WsValidationPipe()) payload: TransactionSubscribePayload
+  ) {
+    const filterIdentifier = RoomKeyGenerator.deterministicStringify(payload);
+    const roomName = `${TransactionsGateway.keyPrefix}${filterIdentifier}`;
+
+    if (client.rooms.has(roomName)) {
+      await client.leave(roomName);
+    }
+
+    return { status: 'unsubscribed' };
+  }
+
   async pushTransactionsForRoom(roomName: string): Promise<void> {
-    if (!roomName.startsWith("tx-")) return;
+    if (!roomName.startsWith(TransactionsGateway.keyPrefix)) return;
 
     try {
-      const filterIdentifier = roomName.replace("tx-", "");
+      const filterIdentifier = roomName.replace(TransactionsGateway.keyPrefix, "");
       const filter = JSON.parse(filterIdentifier);
 
       const options = TransactionQueryOptions.applyDefaultOptions(
