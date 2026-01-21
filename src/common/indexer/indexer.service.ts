@@ -168,7 +168,7 @@ export class IndexerService implements IndexerInterface {
 
   @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
   async getExecutionResults(hash: string): Promise<Block> {
-    return await this.indexerInterface.getBlock(hash);
+    return await this.indexerInterface.getExecutionResults(hash);
   }
 
   @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)

@@ -131,7 +131,7 @@ export class BlockService {
         result.proposer = publicKeys[result.proposer];
       }
       if (!isChainAndromedaEnabled) {
-        result.validators = result.validators.map((validator: number) => publicKeys[validator]);
+        result.validators = result.validators?.map((validator: number) => publicKeys[validator]);
       } else {
         result.validators = publicKeys;
       }
