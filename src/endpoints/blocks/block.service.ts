@@ -11,6 +11,7 @@ import { NodeService } from "../nodes/node.service";
 import { IdentitiesService } from "../identities/identities.service";
 import { ApiConfigService } from "../../common/api-config/api.config.service";
 import { ConcurrencyUtils } from "src/utils/concurrency.utils";
+import { ApiUtils } from "@multiversx/sdk-nestjs-http";
 
 @Injectable()
 export class BlockService {
@@ -109,10 +110,18 @@ export class BlockService {
   }
 
   async getBlock(hash: string): Promise<BlockDetailed> {
-    const result = await this.indexerService.getBlock(hash) as any;
+    let result = await this.indexerService.getBlock(hash) as any;
 
     const isChainAndromedaEnabled = this.apiConfigService.isChainAndromedaEnabled()
       && result.epoch >= this.apiConfigService.getChainAndromedaActivationEpoch();
+
+    const isSupernovaEnabled = result.epoch >= await this.getSupernovaEnableEpoch();
+    if (isSupernovaEnabled) {
+      const executionResults = await this.indexerService.getExecutionResults(hash);
+      if (executionResults) {
+        result = ApiUtils.mergeObjects(result, executionResults);
+      }
+    }
 
     if (result.round > 0) {
       const publicKeys = await this.blsService.getPublicKeys(result.shardId, result.epoch);
@@ -160,5 +169,10 @@ export class BlockService {
       return undefined;
     }
     return blocks[0];
+  }
+
+  async getSupernovaEnableEpoch(): Promise<number> {
+    // TODO: fetch it from proxy /network/enable-epochs -> erd_supernova_enable_epoch
+    return await Promise.resolve(2);
   }
 }
