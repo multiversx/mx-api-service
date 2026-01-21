@@ -12,6 +12,7 @@ import { IdentitiesService } from "../identities/identities.service";
 import { ApiConfigService } from "../../common/api-config/api.config.service";
 import { ConcurrencyUtils } from "src/utils/concurrency.utils";
 import { ApiUtils } from "@multiversx/sdk-nestjs-http";
+import { GatewayService } from "../../common/gateway/gateway.service";
 
 @Injectable()
 export class BlockService {
@@ -24,6 +25,7 @@ export class BlockService {
     @Inject(forwardRef(() => IdentitiesService))
     private readonly identitiesService: IdentitiesService,
     private readonly apiConfigService: ApiConfigService,
+    private readonly gatewayService: GatewayService,
   ) { }
 
   async getBlocksCount(filter: BlockFilter): Promise<number> {
@@ -115,7 +117,8 @@ export class BlockService {
     const isChainAndromedaEnabled = this.apiConfigService.isChainAndromedaEnabled()
       && result.epoch >= this.apiConfigService.getChainAndromedaActivationEpoch();
 
-    const isSupernovaEnabled = result.epoch >= await this.getSupernovaEnableEpoch();
+    const supernovaEnableEpoch = await this.getSupernovaEnableEpoch();
+    const isSupernovaEnabled = supernovaEnableEpoch !== -1 && result.epoch >= supernovaEnableEpoch;
     if (isSupernovaEnabled) {
       const executionResults = await this.indexerService.getExecutionResults(hash);
       if (executionResults) {
@@ -172,7 +175,15 @@ export class BlockService {
   }
 
   async getSupernovaEnableEpoch(): Promise<number> {
-    // TODO: fetch it from proxy /network/enable-epochs -> erd_supernova_enable_epoch
-    return await Promise.resolve(2);
+    const enableEpochs = await this.getNetworkEnableEpochs();
+    return enableEpochs["erd_supernova_enable_epoch"] ?? -1;
+  }
+
+  async getNetworkEnableEpochs(): Promise<Record<string, number>> {
+    return await this.cachingService.getOrSet(
+      CacheInfo.NetworkEnableEpochs.key,
+      async () => this.gatewayService.getNetworkEnableEpochs(),
+      CacheInfo.NetworkEnableEpochs.ttl,
+    )
   }
 }
