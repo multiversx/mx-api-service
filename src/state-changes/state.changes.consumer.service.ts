@@ -38,6 +38,7 @@ export class StateChangesConsumerService {
       if (blockWithStateChanges.shardID === this.apiConfigService.getMetaChainShardId()) {
         return; // skip meta shard
       }
+      console.log(`Consuming state changes for block ${blockWithStateChanges.hash} on shard ${blockWithStateChanges.shardID}`);
       const stateChangesDebugging = StateChangesDecoder.decodeStateChangesRaw(blockWithStateChanges);
       console.dir(stateChangesDebugging, { depth: null });
 
