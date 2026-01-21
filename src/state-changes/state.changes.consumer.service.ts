@@ -38,6 +38,8 @@ export class StateChangesConsumerService {
       if (blockWithStateChanges.shardID === this.apiConfigService.getMetaChainShardId()) {
         return; // skip meta shard
       }
+      const stateChangesDebugging = StateChangesDecoder.decodeStateChangesRaw(blockWithStateChanges);
+      console.dir(stateChangesDebugging, { depth: null });
 
       const profiler = new PerformanceProfiler('BlockStateChangesProcessing');
       const decodingProfiler = new PerformanceProfiler('StateChangesDecoding');
