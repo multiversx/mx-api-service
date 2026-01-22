@@ -11,6 +11,7 @@ import { NodeService } from "src/endpoints/nodes/node.service";
 import { CacheInfo } from "src/utils/cache.info";
 import { BlockProofDto } from "../../../endpoints/blocks/entities/block.proof";
 import { ApiConfigService } from "../../../common/api-config/api.config.service";
+import { GatewayService } from "../../../common/gateway/gateway.service";
 
 describe('Block Service', () => {
   let blockService: BlockService;
@@ -63,6 +64,12 @@ describe('Block Service', () => {
           useValue: {
             isChainAndromedaEnabled: jest.fn(),
             getChainAndromedaActivationEpoch: jest.fn(),
+          },
+        },
+        {
+          provide: GatewayService,
+          useValue: {
+            getNetworkEnableEpochs: jest.fn(),
           },
         },
       ],

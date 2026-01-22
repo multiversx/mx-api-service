@@ -182,8 +182,8 @@ export class BlockService {
   async getNetworkEnableEpochs(): Promise<Record<string, number>> {
     return await this.cachingService.getOrSet(
       CacheInfo.NetworkEnableEpochs.key,
-      async () => this.gatewayService.getNetworkEnableEpochs(),
+      async () => await this.gatewayService.getNetworkEnableEpochs(),
       CacheInfo.NetworkEnableEpochs.ttl,
-    )
+    );
   }
 }
