@@ -91,6 +91,16 @@ export class GatewayService {
     });
   }
 
+  async getNetworkEnableEpochs(): Promise<Record<string,number>> {
+    const result = await this.get(`network/enable-epochs`, GatewayComponentRequest.networkEnableEpochs);
+    return result.enableEpochs;
+  }
+
+  async getNetworkEnableEpochsV2(): Promise<Record<string,number>> {
+    const result = await this.get(`network/enable-epochs-v2`, GatewayComponentRequest.networkEnableEpochsV2);
+    return result.enableEpochs;
+  }
+
   async getAddressDetails(address: string): Promise<Account> {
     const result = await this.get(`address/${address}`, GatewayComponentRequest.addressDetails);
     return result;

@@ -251,6 +251,10 @@ export class ElasticIndexerService implements IndexerInterface {
     return await this.elasticService.getItem('blocks', 'hash', hash);
   }
 
+  async getExecutionResults(hash: string): Promise<Block> {
+    return await this.elasticService.getItem('executionresults', 'hash', hash);
+  }
+
   async getBlockByMiniBlockHash(miniBlockHash: string): Promise<Block | undefined> {
     const elasticQuery = ElasticQuery.create()
       .withCondition(QueryConditionOptions.must, [QueryType.Match('miniBlocksHashes', miniBlockHash)])
