@@ -39,6 +39,7 @@ export class StateChangesConsumerService {
         return; // skip meta shard
       }
       console.log(`Consuming state changes for block ${blockWithStateChanges.hash} on shard ${blockWithStateChanges.shardID}`);
+      console.dir(blockWithStateChanges.stateAccessesPerAccounts, { depth: null });
       const stateChangesDebugging = StateChangesDecoder.decodeStateChangesRaw(blockWithStateChanges);
       console.dir(stateChangesDebugging, { depth: null });
 
