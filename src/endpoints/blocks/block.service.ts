@@ -11,6 +11,8 @@ import { NodeService } from "../nodes/node.service";
 import { IdentitiesService } from "../identities/identities.service";
 import { ApiConfigService } from "../../common/api-config/api.config.service";
 import { ConcurrencyUtils } from "src/utils/concurrency.utils";
+import { ApiUtils } from "@multiversx/sdk-nestjs-http";
+import { GatewayService } from "../../common/gateway/gateway.service";
 
 @Injectable()
 export class BlockService {
@@ -23,6 +25,7 @@ export class BlockService {
     @Inject(forwardRef(() => IdentitiesService))
     private readonly identitiesService: IdentitiesService,
     private readonly apiConfigService: ApiConfigService,
+    private readonly gatewayService: GatewayService,
   ) { }
 
   async getBlocksCount(filter: BlockFilter): Promise<number> {
@@ -109,10 +112,19 @@ export class BlockService {
   }
 
   async getBlock(hash: string): Promise<BlockDetailed> {
-    const result = await this.indexerService.getBlock(hash) as any;
+    let result = await this.indexerService.getBlock(hash) as any;
 
     const isChainAndromedaEnabled = this.apiConfigService.isChainAndromedaEnabled()
       && result.epoch >= this.apiConfigService.getChainAndromedaActivationEpoch();
+
+    const supernovaEnableEpoch = await this.getSupernovaEnableEpoch();
+    const isSupernovaEnabled = supernovaEnableEpoch !== -1 && result.epoch >= supernovaEnableEpoch;
+    if (isSupernovaEnabled) {
+      const executionResults = await this.indexerService.getExecutionResults(hash);
+      if (executionResults) {
+        result = ApiUtils.mergeObjects(result, executionResults);
+      }
+    }
 
     if (result.round > 0) {
       const publicKeys = await this.blsService.getPublicKeys(result.shardId, result.epoch);
@@ -122,7 +134,7 @@ export class BlockService {
         result.proposer = publicKeys[result.proposer];
       }
       if (!isChainAndromedaEnabled) {
-        result.validators = result.validators.map((validator: number) => publicKeys[validator]);
+        result.validators = result.validators?.map((validator: number) => publicKeys[validator]);
       } else {
         result.validators = publicKeys;
       }
@@ -160,5 +172,18 @@ export class BlockService {
       return undefined;
     }
     return blocks[0];
+  }
+
+  async getSupernovaEnableEpoch(): Promise<number> {
+    const enableEpochs = await this.getNetworkEnableEpochs();
+    return enableEpochs["erd_supernova_enable_epoch"] ?? -1;
+  }
+
+  async getNetworkEnableEpochs(): Promise<Record<string, number>> {
+    return await this.cachingService.getOrSet(
+      CacheInfo.NetworkEnableEpochs.key,
+      async () => await this.gatewayService.getNetworkEnableEpochs(),
+      CacheInfo.NetworkEnableEpochs.ttl,
+    );
   }
 }

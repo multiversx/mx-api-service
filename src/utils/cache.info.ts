@@ -418,6 +418,11 @@ export class CacheInfo {
     ttl: Constants.oneMinute() * 10,
   };
 
+  static NetworkEnableEpochs: CacheInfo = {
+    key: "networkEnableEpochs",
+    ttl: Constants.oneHour() * 10,
+  };
+
   static MexPairs: CacheInfo = {
     key: "mexPairs",
     ttl: Constants.oneMinute() * 10,

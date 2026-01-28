@@ -1,5 +1,7 @@
 export enum GatewayComponentRequest {
   networkConfig = 'networkConfig',
+  networkEnableEpochs = 'networkEnableEpochs',
+  networkEnableEpochsV2 = 'networkEnableEpochsV2',
   networkStatus = 'networkStatus',
   networkEsdt = 'networkEsdt',
   networkEconomics = 'networkEconomics',

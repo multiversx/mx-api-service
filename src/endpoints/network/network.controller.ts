@@ -1,14 +1,16 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, InternalServerErrorException } from '@nestjs/common';
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { NetworkConstants } from './entities/constants';
 import { Economics } from './entities/economics';
 import { NetworkService } from './network.service';
 import { Stats } from 'src/endpoints/network/entities/stats';
 import { About } from './entities/about';
+import { OriginLogger } from '@multiversx/sdk-nestjs-common';
 
 @Controller()
 @ApiTags('network')
 export class NetworkController {
+  private readonly logger = new OriginLogger(NetworkController.name);
   constructor(
     private readonly networkService: NetworkService
   ) { }
@@ -31,8 +33,14 @@ export class NetworkController {
   @ApiOperation({ summary: 'Network statistics', description: 'Returns general network statistics' })
   @ApiOkResponse({ type: Stats })
   async getStats(): Promise<Stats> {
-    return await this.networkService.getStats();
+    try {
+      return await this.networkService.getStats();
+    } catch (error) {
+      this.logger.error('Error fetching network stats', error);
+      throw new InternalServerErrorException('Failed to fetch network statistics');
+    }
   }
+
 
   @Get("/about")
   @ApiOperation({ summary: 'About', description: 'Returns general information about API deployment' })
