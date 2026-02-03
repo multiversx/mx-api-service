@@ -80,7 +80,12 @@
     "copy-e2e-mocked-mainnet-config:windows": "copy .\\config\\config.e2e-mocked.mainnet.yaml .\\config\\config.yaml",
     "start-chain-simulator": "docker compose -f \"src/test/chain-simulator/docker/docker-compose.yml\" up -d --build",
     "stop-chain-simulator": "docker compose -f \"src/test/chain-simulator/docker/docker-compose.yml\" down",
+    "start:state-changes-cs": "docker compose -f \"src/test/chain-simulator/docker/docker-compose.state-e2e.yml\" up -d && bash src/test/scripts/setup-simulator-and-notifier.sh",
+    "stop:state-changes-cs": "bash src/test/scripts/stop-custom-cs.sh && docker compose -f \"src/test/chain-simulator/docker/docker-compose.state-e2e.yml\" down -v",
+    "rabbit:setup-state-changes": "bash src/test/scripts/setup-rabbit-state.sh",
+    "cs:generate-blocks": "bash src/test/scripts/generate-blocks.sh",
     "prepare:test-data": "ts-node src/test/chain-simulator/utils/prepare-test-data.ts",
+    "test:state-changes-e2e": "jest --config ./src/test/jest-state-changes-e2e.json --runInBand --detectOpenHandles --forceExit",
     "test:ppu": "ts-node src/test/chain-simulator/utils/test-ppu-calculation.ts"
   },
   "dependencies": {

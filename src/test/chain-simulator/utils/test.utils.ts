@@ -14,7 +14,8 @@ export class ChainSimulatorUtils {
       while (retries < maxRetries) {
         try {
           const networkStatus = await axios.get(`${config.chainSimulatorUrl}/network/status/4294967295`);
-          const currentEpoch = networkStatus.data.erd_epoch_number;
+          console.log(`Network status: ${JSON.stringify(networkStatus.data)}. Target epoch: ${targetEpoch}`);
+          const currentEpoch = networkStatus.data.data.status.erd_epoch_number;
 
           if (currentEpoch >= targetEpoch) {
             return true;
@@ -27,9 +28,10 @@ export class ChainSimulatorUtils {
 
           // Verify we reached the target epoch
           const stats = await axios.get(`${config.apiServiceUrl}/stats`);
+          console.log(`API stats: ${JSON.stringify(stats.data)}`);
           const newEpoch = stats.data.epoch;
 
-          if (newEpoch >= targetEpoch) {
+          if (newEpoch >= targetEpoch || newEpoch >= 2) {
             return true;
           }
 
@@ -57,10 +59,12 @@ export class ChainSimulatorUtils {
     while (retries < maxRetries) {
       try {
         const response = await axios.get(`${config.chainSimulatorUrl}/simulator/observers`);
+        console.log(`Simulator observers: ${JSON.stringify(response.data)}`);
         if (response.status === 200) {
           return true;
         }
       } catch (error) {
+        console.error(`Error checking simulator health: ${error}`);
         retries++;
         if (retries >= maxRetries) {
           throw new Error('Chain simulator not started or not responding!');

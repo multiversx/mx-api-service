@@ -16,6 +16,12 @@ export async function fundAddress(chainSimulatorUrl: string, address: string) {
     },
   ];
   await axios.post(`${chainSimulatorUrl}/simulator/set-state`, payload);
+  // Ensure state change is finalized and propagated by generating a block
+  try {
+    await axios.post(`${chainSimulatorUrl}/simulator/generate-blocks/1`);
+  } catch (_) {
+    // best-effort; some simulator versions may not require this endpoint
+  }
 }
 
 export async function getNonce(

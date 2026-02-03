@@ -1,0 +1,94 @@
+name: E2E State Accesses
+
+on:
+  pull_request:
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 18.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18.x'
+          cache: 'npm'
+
+      - name: Use Go 1.21
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.21'
+
+      - name: Install dependencies and init
+        run: |
+          set -euxo pipefail
+          npm ci
+          npm i --no-save mongoose@^8
+          npm run init
+
+      - name: Build and start chain simulator (state-changes stack)
+        run: npm run start:state-changes-cs
+
+      - name: Wait for services to be ready
+        run: |
+          echo "Waiting for services to be healthy..."
+          docker ps
+          sleep 20
+
+      - name: Print docker containers
+        run: docker ps
+
+      - name: Configure RabbitMQ exchange and queue
+        run: npm run rabbit:setup-state-changes
+
+      - name: Trigger block generation
+        run: npm run cs:generate-blocks
+
+      - name: Verify messages on queue
+        run: |
+          set -euxo pipefail
+          # Poll the queue until messages are received
+          for i in {1..60}; do
+            body=$(curl -s -u guest:guest -H "content-type: application/json" \
+              -X POST http://localhost:15672/api/queues/%2f/state_accesses_test/get \
+              -d '{"count":10,"ackmode":"ack_requeue_true","encoding":"auto","truncate":50000}')
+            # Non-empty array indicates at least one message
+            if [ "$body" != "[]" ] && [ -n "$body" ]; then
+              echo "Received messages on 'state_accesses_test' queue"
+              echo "$body" | head -c 2000
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "No messages received on queue 'state_accesses_test'" >&2
+          exit 1
+
+      - name: Start API
+        run: |
+          npm run start:mainnet:e2e > api.out 2>&1 &
+          timeout=180; start=$(date +%s)
+          until [ "$(curl -s -o /dev/null -w '%{http_code}' http://localhost:3001/about)" = "200" ]; do
+            now=$(date +%s); [ $((now-start)) -gt $timeout ] && { echo "API not up"; tail -n 200 api.out || true; exit 1; } || sleep 2;
+          done
+
+      - name: Prepare Test Data
+        run: npm run prepare:test-data
+
+      - name: Run state changes balances e2e
+        run: npm run test:state-changes-e2e
+
+      - name: Stop API after tests
+        if: always()
+        run: |
+          echo "Stopping the API..."
+          if [ -f api.pid ]; then
+            kill "$(cat api.pid)" || true
+          else
+            kill $(lsof -t -i:3001) || true
+          fi
+
+      - name: Stop state-changes stack
+        if: always()
+        run: npm run stop:state-changes-cs
