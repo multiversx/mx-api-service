@@ -24,7 +24,9 @@ export class MexModule {
     ];
 
     const isExchangeEnabled = configuration().features?.exchange?.enabled ?? false;
-    if (isExchangeEnabled) {
+    const isCacheWarmerEnabled = configuration().cron?.cacheWarmer ?? false;
+    // Enable MEX cron only when both Exchange and CacheWarmer flags are enabled
+    if (isExchangeEnabled && isCacheWarmerEnabled) {
       providers.push(MexWarmerService);
     }
 
