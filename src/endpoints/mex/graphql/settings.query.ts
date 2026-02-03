@@ -1,14 +1,8 @@
 import { gql } from "graphql-request";
 
-export const settingsQuery = (pairLimitCount: number) => gql`
+// Base settings query without pairs to avoid heavy responses per page.
+export const settingsBaseQuery = gql`
 query {
-  filteredPairs(pagination: {first: ${pairLimitCount}}, filters: {state: ["Active"]}) {
-    edges {
-      node {
-        address
-      }
-    }
-  }
   proxy {
     address
     lockedAssetTokens {
@@ -57,4 +51,21 @@ query {
     }
   }
 }
+`;
+
+// Minimal paginated pairs query for addresses only.
+export const paginatedPairsAddressesQuery = gql`
+  query paginatedPairs($pagination: ConnectionArgs!, $filters: PairsFilter!) {
+    filteredPairs(pagination: $pagination, filters: $filters) {
+      edges {
+        cursor
+        node {
+          address
+        }
+      }
+      pageInfo {
+        hasNextPage
+      }
+    }
+  }
 `;
