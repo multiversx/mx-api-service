@@ -286,14 +286,13 @@ async function configurePublicApp(publicApp: NestExpressApplication, apiConfigSe
   );
 
   const documentBuilder = new DocumentBuilder()
-    .setTitle('Multiversx API')
+    .setTitle('Clawpi API')
     .setDescription(description)
-    .setVersion('1.8.0')
-    .setExternalDoc('Find out more about Multiversx API', 'https://docs.multiversx.com/sdk-and-tools/rest-api/rest-api/');
+    .setVersion('1.8.0');
 
   const config = documentBuilder.build();
   const options = {
-    customSiteTitle: 'Multiversx API',
+    customSiteTitle: 'Clawpi API',
     customCss: `.topbar-wrapper img
           {
             content:url(\'/img/mvx-ledger-icon-mint.png\'); width:100px; height:auto;
