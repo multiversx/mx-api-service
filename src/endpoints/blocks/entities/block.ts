@@ -74,6 +74,12 @@ export class Block {
   @ApiProperty({ type: String })
   reserved: string = '';
 
+  @ApiProperty({ type: String })
+  lastExecutionResultHash: string = '';
+
+  @ApiProperty({ type: Number })
+  lastExecutionResultNonce: number = 0;
+
   @ApiProperty({ type: BlockProofDto, nullable: true, required: false })
   proof: BlockProofDto | undefined = undefined;
 

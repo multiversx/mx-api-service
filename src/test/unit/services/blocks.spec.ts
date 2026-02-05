@@ -146,6 +146,8 @@ describe('Block Service', () => {
       reserved: '',
       scheduledRootHash: undefined,
       proof: undefined,
+      lastExecutionResultHash: '414d526161587ae9f53453aa0392971272c48dbb3cc54a33448972d388e0deeb',
+      lastExecutionResultNonce: 14553814,
       previousHeaderProof: new BlockProofDto({
         pubKeysBitmap: '7702',
         aggregatedSignature: '50224d66a42a019991d16f25dba375b581f279d4394d4c254876c1484f61bed90fb20456f8af107c54e4eed1763e2a92',
