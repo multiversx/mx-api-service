@@ -12,10 +12,13 @@ import { IdentitiesService } from "../identities/identities.service";
 import { ApiConfigService } from "../../common/api-config/api.config.service";
 import { ConcurrencyUtils } from "src/utils/concurrency.utils";
 import { ApiUtils } from "@multiversx/sdk-nestjs-http";
+import { OriginLogger } from "@multiversx/sdk-nestjs-common";
 import { GatewayService } from "../../common/gateway/gateway.service";
 
 @Injectable()
 export class BlockService {
+  private readonly logger = new OriginLogger(BlockService.name);
+
   constructor(
     private readonly indexerService: IndexerService,
     private readonly cachingService: CacheService,
@@ -39,6 +42,17 @@ export class BlockService {
   async getBlocks(filter: BlockFilter, queryPagination: QueryPagination, withProposerIdentity?: boolean): Promise<Block[]> {
     const result = await this.indexerService.getBlocks(filter, queryPagination);
 
+    // If Supernova is enabled for any of these blocks, bulk fetch execution results and merge them
+    const execMap = await this.fetchExecutionResultsForBlocks(result as any[]);
+    if (execMap.size > 0) {
+      for (const item of result as any[]) {
+        const er = execMap.get(item.hash);
+        if (er) {
+          ApiUtils.mergeObjects(item, er);
+        }
+      }
+    }
+
     const blocks = await Promise.all(result.map(async (item) => {
       const blockRaw = await this.computeProposerAndValidators(item);
 
@@ -56,6 +70,43 @@ export class BlockService {
     }
 
     return blocks;
+  }
+
+  private async fetchExecutionResultsForBlocks(items: any[]): Promise<Map<string, any>> {
+    const map = new Map<string, any>();
+    if (!items || items.length === 0) {
+      return map;
+    }
+
+    const supernovaEnableEpoch = await this.getSupernovaEnableEpoch();
+    if (supernovaEnableEpoch === -1) {
+      return map;
+    }
+
+    const eligible = items.filter((r: any) => (r?.epoch ?? -1) >= supernovaEnableEpoch);
+    if (eligible.length === 0) {
+      return map;
+    }
+
+    const hashes = eligible.map((r: any) => r.hash).filter(Boolean);
+    if (hashes.length === 0) {
+      return map;
+    }
+
+    try {
+      const executionResults = await this.indexerService.getExecutionResultsForHashes(hashes);
+      for (const er of executionResults as any[]) {
+        if (er?.hash) {
+          map.set(er.hash, er);
+        }
+      }
+      this.logger.log(`Applied executionresults for ${map.size} blocks out of ${eligible.length}.`);
+    } catch {
+      // Keep endpoint resilient if executionresults index is unavailable
+      return map;
+    }
+
+    return map;
   }
 
   private async applyProposerIdentity(blocks: Block[]): Promise<void> {
@@ -176,7 +227,7 @@ export class BlockService {
 
   async getSupernovaEnableEpoch(): Promise<number> {
     const enableEpochs = await this.getNetworkEnableEpochs();
-    return enableEpochs["erd_supernova_enable_epoch"] ?? -1;
+    return enableEpochs?.["erd_supernova_enable_epoch"] ?? -1;
   }
 
   async getNetworkEnableEpochs(): Promise<Record<string, number>> {
