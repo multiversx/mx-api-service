@@ -12,13 +12,10 @@ import { IdentitiesService } from "../identities/identities.service";
 import { ApiConfigService } from "../../common/api-config/api.config.service";
 import { ConcurrencyUtils } from "src/utils/concurrency.utils";
 import { ApiUtils } from "@multiversx/sdk-nestjs-http";
-import { OriginLogger } from "@multiversx/sdk-nestjs-common";
 import { GatewayService } from "../../common/gateway/gateway.service";
 
 @Injectable()
 export class BlockService {
-  private readonly logger = new OriginLogger(BlockService.name);
-
   constructor(
     private readonly indexerService: IndexerService,
     private readonly cachingService: CacheService,
@@ -99,7 +96,6 @@ export class BlockService {
           map.set(er.hash, er);
         }
       }
-      this.logger.log(`Applied executionresults for ${map.size} blocks out of ${eligible.length}.`);
     } catch {
       return map;
     }
