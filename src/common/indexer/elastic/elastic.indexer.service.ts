@@ -264,7 +264,6 @@ export class ElasticIndexerService implements IndexerInterface {
       .withPagination({ from: 0, size: hashes.length + 1 })
       .withShouldCondition(hashes.map(h => QueryType.Match('_id', h)));
 
-    // Map _id into "hash" on the response objects for easy joining
     return await this.elasticService.getList('executionresults', 'hash', elasticQuery);
   }
 

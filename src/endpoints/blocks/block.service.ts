@@ -42,13 +42,12 @@ export class BlockService {
   async getBlocks(filter: BlockFilter, queryPagination: QueryPagination, withProposerIdentity?: boolean): Promise<Block[]> {
     const result = await this.indexerService.getBlocks(filter, queryPagination);
 
-    // If Supernova is enabled for any of these blocks, bulk fetch execution results and merge them
-    const execMap = await this.fetchExecutionResultsForBlocks(result as any[]);
-    if (execMap.size > 0) {
+    const executionResultsMap = await this.fetchExecutionResultsForBlocks(result as any[]);
+    if (executionResultsMap.size > 0) {
       for (const item of result as any[]) {
-        const er = execMap.get(item.hash);
-        if (er) {
-          ApiUtils.mergeObjects(item, er);
+        const executionResult = executionResultsMap.get(item.hash);
+        if (executionResult) {
+          ApiUtils.mergeObjects(item, executionResult);
         }
       }
     }
@@ -102,7 +101,6 @@ export class BlockService {
       }
       this.logger.log(`Applied executionresults for ${map.size} blocks out of ${eligible.length}.`);
     } catch {
-      // Keep endpoint resilient if executionresults index is unavailable
       return map;
     }
 
