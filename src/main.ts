@@ -60,6 +60,7 @@ async function bootstrap() {
     await publicApp.listen(apiConfigService.getPublicApiPort());
 
     if (apiConfigService.getIsWebsocketApiActive()) {
+      console.log(`=====getIsWebsocketApiActive: ${apiConfigService.getIsWebsocketApiActive()}`);
       const websocketPublisherApp = await NestFactory.createMicroservice<MicroserviceOptions>(
         WebSocketPublisherModule,
         {
