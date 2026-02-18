@@ -64,11 +64,14 @@ export class WebSocketPublisherService {
         const eioVersion = parsed.searchParams.get('EIO') ?? '';
         const remote = req?.socket?.remoteAddress ?? '';
         const xff = req?.headers?.['x-forwarded-for'] ?? '';
+        const host = req?.headers?.['host'] ?? '';
+        const cookie = (req?.headers?.['cookie'] as string | undefined) ?? '';
+        const shortCookie = cookie.length > 200 ? cookie.substring(0, 200) + '…' : cookie;
         const clients = (eio as any).clients ?? {};
         const hasSid = sid ? !!clients[sid] : false;
         const willLikely400 = !!sid && !hasSid; // indicative of "Session ID unknown"
         this.logger.log(
-          `[eio:headers] method=${method} url=${parsed.pathname} sid=${sid} sidKnown=${hasSid} transport=${transport} EIO=${eioVersion} ip=${remote} xff=${xff} likely400=${willLikely400}`,
+          `[eio:headers] method=${method} url=${parsed.pathname} sid=${sid} sidKnown=${hasSid} transport=${transport} EIO=${eioVersion} host=${host} ip=${remote} xff=${xff} cookie=${shortCookie} likely400=${willLikely400}`,
         );
       } catch (err) {
         this.logger.error(`[eio:headers:error] ${(err as any)?.message ?? err}`);
@@ -79,12 +82,30 @@ export class WebSocketPublisherService {
     (server as any).on('connection_error', (err: any) => {
       this.logger.error(`[sio:connection_error] code=${err?.data?.code ?? err?.code} message=${err?.message ?? ''}`);
     });
+
+    // Engine.IO connection errors (e.g., unknown session id on follow-up requests)
+    eio.on('connection_error', (err: any) => {
+      try {
+        const req = (err as any)?.req;
+        const urlStr = req?.url ?? '';
+        const parsed = new URL(urlStr, 'http://localhost');
+        const sid = parsed.searchParams.get('sid') ?? '';
+        const transport = parsed.searchParams.get('transport') ?? '';
+        const code = (err as any)?.code ?? (err as any)?.data?.code;
+        const message = (err as any)?.message ?? (err as any)?.data?.message;
+        const remote = req?.socket?.remoteAddress ?? '';
+        const xff = req?.headers?.['x-forwarded-for'] ?? '';
+        this.logger.error(`[eio:connection_error] sid=${sid} transport=${transport} code=${code} message=${message} ip=${remote} xff=${xff}`);
+      } catch (e) {
+        this.logger.error(`[eio:connection_error] ${e}`);
+      }
+    });
   }
 
   async handleDisconnect(socket: Socket) {
     const { addresses, error } = this.getAddressesFromSocketQuery(socket);
     this.logger.log(
-      `[disconnect] socketId=${socket.id} roomsBefore=${JSON.stringify(Array.from(socket.rooms))} queryAddresses=${JSON.stringify(addresses)} error=${error ?? 'none'}`,
+      `[disconnect] socketId=${socket.id} eioSid=${(socket as any).conn?.id ?? ''} roomsBefore=${JSON.stringify(Array.from(socket.rooms))} queryAddresses=${JSON.stringify(addresses)} error=${error ?? 'none'}`,
     );
     if (error) {
       socket.emit('error', error);
@@ -101,12 +122,19 @@ export class WebSocketPublisherService {
   async handleConnection(socket: Socket) {
     const { addresses, error } = this.getAddressesFromSocketQuery(socket);
     this.logger.log(
-      `[connect] socketId=${socket.id} xff=${socket.handshake.headers['x-forwarded-for'] ?? ''} ip=${socket.handshake.address ?? ''} transports=${JSON.stringify(socket.conn.transport?.name)} queryAddresses=${JSON.stringify(addresses)} error=${error ?? 'none'}`,
+      `[connect] socketId=${socket.id} eioSid=${(socket as any).conn?.id ?? ''} xff=${socket.handshake.headers['x-forwarded-for'] ?? ''} ip=${socket.handshake.address ?? ''} transports=${JSON.stringify(socket.conn.transport?.name)} queryAddresses=${JSON.stringify(addresses)} error=${error ?? 'none'}`,
     );
     if (error) {
       socket.emit('error', error);
       return;
     }
+
+    // capture rooms before they are cleared by Socket.IO
+    socket.on('disconnecting', (reason) => {
+      this.logger.log(
+        `[disconnecting] socketId=${socket.id} eioSid=${(socket as any).conn?.id ?? ''} reason=${reason} rooms=${JSON.stringify(Array.from(socket.rooms))}`,
+      );
+    });
 
     await socket.join(addresses);
     this.logger.log(
