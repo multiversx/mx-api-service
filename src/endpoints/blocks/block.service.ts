@@ -12,10 +12,12 @@ import { IdentitiesService } from "../identities/identities.service";
 import { ApiConfigService } from "../../common/api-config/api.config.service";
 import { ConcurrencyUtils } from "src/utils/concurrency.utils";
 import { ApiUtils } from "@multiversx/sdk-nestjs-http";
+import { OriginLogger } from "@multiversx/sdk-nestjs-common";
 import { GatewayService } from "../../common/gateway/gateway.service";
 
 @Injectable()
 export class BlockService {
+  private readonly logger = new OriginLogger(BlockService.name);
   constructor(
     private readonly indexerService: IndexerService,
     private readonly cachingService: CacheService,
@@ -71,32 +73,43 @@ export class BlockService {
   private async fetchExecutionResultsForBlocks(items: any[]): Promise<Map<string, any>> {
     const map = new Map<string, any>();
     if (!items || items.length === 0) {
+      this.logger.log(`fetchExecutionResultsForBlocks: no items provided`);
       return map;
     }
 
     const supernovaEnableEpoch = await this.getSupernovaEnableEpoch();
     if (supernovaEnableEpoch === -1) {
+      this.logger.log(`fetchExecutionResultsForBlocks: Supernova disabled (enable epoch = -1)`);
       return map;
     }
 
     const eligible = items.filter((r: any) => (r?.epoch ?? -1) >= supernovaEnableEpoch);
+    const allEpochs = items.map((r: any) => r?.epoch ?? -1);
+    const minEpoch = Math.min(...allEpochs);
+    const maxEpoch = Math.max(...allEpochs);
+    this.logger.log(`fetchExecutionResultsForBlocks: Supernova enable epoch=${supernovaEnableEpoch}, items=${items.length}, eligible=${eligible.length}, epochs[min=${minEpoch}, max=${maxEpoch}]`);
     if (eligible.length === 0) {
       return map;
     }
 
     const hashes = eligible.map((r: any) => r.hash).filter(Boolean);
     if (hashes.length === 0) {
+      this.logger.log(`fetchExecutionResultsForBlocks: no eligible hashes found`);
       return map;
     }
 
     try {
+      const sample = hashes.slice(0, 3);
+      this.logger.log(`fetchExecutionResultsForBlocks: querying executionresults for ${hashes.length} hashes (sample=${sample.join(',')}${hashes.length > sample.length ? ', ...' : ''})`);
       const executionResults = await this.indexerService.getExecutionResultsForHashes(hashes);
+      this.logger.log(`fetchExecutionResultsForBlocks: received ${executionResults?.length ?? 0} executionresults`);
       for (const er of executionResults as any[]) {
         if (er?.hash) {
           map.set(er.hash, er);
         }
       }
     } catch {
+      this.logger.error(`fetchExecutionResultsForBlocks: error while fetching executionresults for ${hashes.length} hashes`);
       return map;
     }
 
@@ -164,8 +177,10 @@ export class BlockService {
 
     const supernovaEnableEpoch = await this.getSupernovaEnableEpoch();
     const isSupernovaEnabled = supernovaEnableEpoch !== -1 && result.epoch >= supernovaEnableEpoch;
+    this.logger.log(`getBlock: hash=${hash}, epoch=${result?.epoch}, supernovaEnableEpoch=${supernovaEnableEpoch}, isSupernovaEnabled=${isSupernovaEnabled}`);
     if (isSupernovaEnabled) {
       const executionResults = await this.indexerService.getExecutionResults(hash);
+      this.logger.log(`getBlock: executionresults ${executionResults ? 'found' : 'not found'} for hash=${hash}`);
       if (executionResults) {
         result = ApiUtils.mergeObjects(result, executionResults);
       }
