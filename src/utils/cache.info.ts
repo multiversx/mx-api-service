@@ -5,7 +5,7 @@ import { TpsInterval } from "src/endpoints/tps/entities/tps.interval";
 
 export class CacheInfo {
   key: string = "";
-  ttl: number = Constants.oneSecond() * 1;
+  ttl: number = Constants.oneSecond();
 
   static About: CacheInfo = {
     key: 'about',
@@ -101,7 +101,7 @@ export class CacheInfo {
   static TxCount(address: string): CacheInfo {
     return {
       key: `txCount:${address}`,
-      ttl: Constants.oneSecond() * 30,
+      ttl: Constants.oneSecond() * 5,
     };
   }
 
@@ -574,7 +574,7 @@ export class CacheInfo {
 
   private static computeBlocksLatestTtl(ttl?: number): number {
     if (ttl === undefined || ttl <= Constants.oneMinute() * 5) {
-      return Constants.oneSecond() * 12;
+      return Constants.oneSecond() * 2;
     }
 
     if (ttl <= Constants.oneHour()) {
