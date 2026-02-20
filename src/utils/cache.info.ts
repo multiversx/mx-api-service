@@ -189,13 +189,13 @@ export class CacheInfo {
   static Nfts(queryPagination: QueryPagination): CacheInfo {
     return {
       key: `nfts:${queryPagination.from}:${queryPagination.size}`,
-      ttl: Constants.oneSecond(),
+      ttl: Constants.oneSecond() * 6,
     };
   }
 
   static NftsCount: CacheInfo = {
     key: 'nfts:count',
-    ttl: Constants.oneSecond(),
+    ttl: Constants.oneSecond() * 6,
   };
 
   static AccountAssets: CacheInfo = {
@@ -289,19 +289,19 @@ export class CacheInfo {
   static Collections(pagination: QueryPagination): CacheInfo {
     return {
       key: `collections:${pagination.from}:${pagination.size}`,
-      ttl: Constants.oneSecond(),
+      ttl: Constants.oneSecond() * 6,
     };
   }
 
   static CollectionsCount: CacheInfo = {
     key: 'collectionsCount',
-    ttl: Constants.oneSecond(),
+    ttl: Constants.oneSecond() * 6,
   };
 
   static CollectionsForAddress(address: string, pagination: QueryPagination): CacheInfo {
     return {
       key: `collectionsForAddress:${address}:${pagination.from}:${pagination.size}`,
-      ttl: Constants.oneSecond(),
+      ttl: Constants.oneSecond() * 6,
     };
   }
 
