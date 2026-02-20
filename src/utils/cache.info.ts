@@ -5,7 +5,7 @@ import { TpsInterval } from "src/endpoints/tps/entities/tps.interval";
 
 export class CacheInfo {
   key: string = "";
-  ttl: number = Constants.oneSecond() * 6;
+  ttl: number = Constants.oneSecond() * 1;
 
   static About: CacheInfo = {
     key: 'about',
@@ -54,7 +54,7 @@ export class CacheInfo {
 
   static TransactionPool: CacheInfo = {
     key: 'txpool',
-    ttl: Constants.oneSecond() * 1,
+    ttl: Constants.oneSecond(),
   };
 
   static ApplicationMostUsed: CacheInfo = {
@@ -108,13 +108,13 @@ export class CacheInfo {
   static Transactions(queryPagination: QueryPagination): CacheInfo {
     return {
       key: `transactions:${queryPagination.from}:${queryPagination.size}`,
-      ttl: Constants.oneSecond() * 1,
+      ttl: Constants.oneSecond(),
     };
   }
 
   static TransactionsCount: CacheInfo = {
     key: 'transactions:count',
-    ttl: Constants.oneSecond() * 1,
+    ttl: Constants.oneSecond(),
   };
 
   static IdentityProfilesKeybases: CacheInfo = {
@@ -189,13 +189,13 @@ export class CacheInfo {
   static Nfts(queryPagination: QueryPagination): CacheInfo {
     return {
       key: `nfts:${queryPagination.from}:${queryPagination.size}`,
-      ttl: Constants.oneSecond() * 6,
+      ttl: Constants.oneSecond(),
     };
   }
 
   static NftsCount: CacheInfo = {
     key: 'nfts:count',
-    ttl: Constants.oneSecond() * 6,
+    ttl: Constants.oneSecond(),
   };
 
   static AccountAssets: CacheInfo = {
@@ -289,19 +289,19 @@ export class CacheInfo {
   static Collections(pagination: QueryPagination): CacheInfo {
     return {
       key: `collections:${pagination.from}:${pagination.size}`,
-      ttl: Constants.oneSecond() * 1,
+      ttl: Constants.oneSecond(),
     };
   }
 
   static CollectionsCount: CacheInfo = {
     key: 'collectionsCount',
-    ttl: Constants.oneSecond() * 1,
+    ttl: Constants.oneSecond(),
   };
 
   static CollectionsForAddress(address: string, pagination: QueryPagination): CacheInfo {
     return {
       key: `collectionsForAddress:${address}:${pagination.from}:${pagination.size}`,
-      ttl: Constants.oneSecond() * 1,
+      ttl: Constants.oneSecond(),
     };
   }
 
@@ -559,7 +559,7 @@ export class CacheInfo {
   static BlocksCount(filter: BlockFilter): CacheInfo {
     return {
       key: `blocks:count:${JSON.stringify(filter)}`,
-      ttl: Constants.oneSecond() * 1,
+      ttl: Constants.oneSecond(),
     };
   }
 
