@@ -419,8 +419,8 @@ export class CacheInfo {
   };
 
   static NetworkEnableEpochs: CacheInfo = {
-    key: "networkEnableEpochs",
-    ttl: Constants.oneHour() * 10,
+    key: "gatewayNetworkEnableEpochs",
+    ttl: Constants.oneMinute() * 5,
   };
 
   static MexPairs: CacheInfo = {
