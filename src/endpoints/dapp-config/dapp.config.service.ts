@@ -25,10 +25,10 @@ export class DappConfigService {
     const chainId = networkConfig.erd_chain_id;
 
     const overrides: Partial<DappConfig> = {};
-    if (refreshRate !== undefined && refreshRate !== null) {
+    if (refreshRate != null) {
       overrides.refreshRate = refreshRate;
     }
-    if (chainId) {
+    if (chainId != null) {
       overrides.chainId = chainId;
     }
 
