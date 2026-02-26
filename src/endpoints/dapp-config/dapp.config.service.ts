@@ -22,15 +22,20 @@ export class DappConfigService {
 
     const networkConfig = await this.gatewayService.getNetworkConfig();
     const refreshRate = networkConfig.erd_round_duration;
+    const chainId = networkConfig.erd_chain_id;
 
-    if (refreshRate) {
-      return {
-        ...this.dappConfig,
-        refreshRate,
-      };
+    const overrides: Partial<DappConfig> = {};
+    if (refreshRate !== undefined && refreshRate !== null) {
+      overrides.refreshRate = refreshRate;
+    }
+    if (chainId) {
+      overrides.chainId = chainId;
     }
 
-    return this.dappConfig;
+    return {
+      ...this.dappConfig,
+      ...overrides,
+    };
   }
 
   getDappConfigurationRaw(): DappConfig | undefined {
