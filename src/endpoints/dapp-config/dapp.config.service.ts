@@ -25,6 +25,16 @@ export class DappConfigService {
     const chainId = networkConfig.erd_chain_id;
 
     const overrides: Partial<DappConfig> = {};
+
+    //TODO: remove after battle of nodes
+    if (chainId === 'B') {
+      overrides.walletAddress = "https://bon-wallet.multiversx.com";
+      overrides.apiAddress = "https://api.battleofnodes.com";
+      overrides.explorerAddress = "https://bon-explorer.multiversx.com";
+      overrides.id = "bon";
+      overrides.name = "BattleOfNodes";
+    }
+
     if (refreshRate != null) {
       overrides.refreshRate = refreshRate;
     }
