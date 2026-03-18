@@ -1065,8 +1065,8 @@ export class ElasticIndexerService implements IndexerInterface {
       .withMustCondition(timestampQuery)
       .withCondition(QueryConditionOptions.must, [QueryType.Match('shardId', shardId, QueryOperator.AND)])
       .withSort([
-        { name: 'timestampMs', order: ElasticSortOrder.ascending },
         { name: 'timestamp', order: ElasticSortOrder.ascending },
+        { name: 'timestampMs', order: ElasticSortOrder.ascending },
       ]);
 
     const blocks: Block[] = await this.elasticService.getList('blocks', '_search', elasticQuery);
