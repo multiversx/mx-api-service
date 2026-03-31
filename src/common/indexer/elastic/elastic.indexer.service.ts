@@ -985,7 +985,7 @@ export class ElasticIndexerService implements IndexerInterface {
       .withMustMatchCondition('type', TokenType.FungibleESDT)
       .withFields(["name", "type", "currentOwner", "numDecimals", "properties", "timestamp", "ownersHistory", "paused"])
       .withMustNotExistCondition('identifier')
-      .withPagination({ from: 0, size: 1000 });
+      .withPagination({ from: 0, size: 5000 });
 
     const allTokens: any[] = [];
 
