@@ -997,7 +997,8 @@ export class ElasticIndexerService implements IndexerInterface {
       // eslint-disable-next-line require-await
       async tokens => allTokens.push(...tokens),
     );
-
+    console.log('Fetched all fungible tokens from ElasticSearch:', allTokens.length);
+    console.log(allTokens)
     return allTokens;
   }
 
