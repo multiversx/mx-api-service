@@ -29,8 +29,8 @@ jobs:
         run: |
           echo "Waiting for services to be healthy..."
           docker ps
-          docker logs chainsimulator
           sleep 60 # Wait for 60 seconds to ensure services are up
+          docker logs chainsimulator
 
       - name: Print docker containers
         run: docker ps
