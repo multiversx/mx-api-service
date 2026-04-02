@@ -62,6 +62,7 @@ export class ChainSimulatorUtils {
           return true;
         }
       } catch (error) {
+        console.error('Chain simulator health check failed:', error);
         retries++;
         if (retries >= maxRetries) {
           throw new Error('Chain simulator not started or not responding!');
