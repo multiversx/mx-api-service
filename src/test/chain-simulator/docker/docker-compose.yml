@@ -8,10 +8,6 @@ services:
       - "discovery.type=single-node"
       - "xpack.security.enabled=false"
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-    ulimits:
-      memlock:
-        soft: -1
-        hard: -1
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:9200" ]
       interval: 10s
@@ -28,7 +24,7 @@ services:
       elasticsearch:
         condition: service_healthy
     environment:
-      ELASTIC_SEARCH_URL: 'http://localhost:9200'
+      ELASTIC_SEARCH_URL: 'http://elasticsearch:9200'
     ports:
       - "8085:8085"
     healthcheck:
