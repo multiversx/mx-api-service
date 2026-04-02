@@ -36,6 +36,7 @@ export class ChainSimulatorUtils {
           retries++;
           await new Promise(resolve => setTimeout(resolve, 1000));
         } catch (error) {
+          console.error(`Error while waiting for epoch ${targetEpoch}:`, error);
           retries++;
           if (retries >= maxRetries) {
             throw new Error(`Failed to reach epoch ${targetEpoch} after ${maxRetries} retries`);
