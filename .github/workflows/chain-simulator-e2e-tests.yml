@@ -22,11 +22,12 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
 
-      - name: Build and start chain simulator
-        run: npm run start-chain-simulator
 
       - name: Set up Elasticsearch prerequisites (max_map_count)
         run: sudo sysctl -w vm.max_map_count=262144
+
+      - name: Build and start chain simulator
+        run: npm run start-chain-simulator
 
       - name: Wait for services to be ready
         run: |
