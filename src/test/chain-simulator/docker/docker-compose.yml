@@ -25,7 +25,8 @@ services:
     volumes:
       - ./overridable-config.toml:/multiversx/overridable-config.toml
     depends_on:
-      - elasticsearch
+      elasticsearch:
+        condition: service_healthy
     environment:
       ELASTIC_SEARCH_URL: 'http://localhost:9200'
     ports:
