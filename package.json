@@ -82,7 +82,7 @@
     "copy-e2e-mocked-mainnet-config:nix": "cp ./config/config.e2e-mocked.mainnet.yaml ./config/config.yaml",
     "copy-e2e-mainnet-config:windows": "copy .\\config\\config.e2e.mainnet.yaml .\\config\\config.yaml",
     "copy-e2e-mocked-mainnet-config:windows": "copy .\\config\\config.e2e-mocked.mainnet.yaml .\\config\\config.yaml",
-    "start-chain-simulator": "docker compose -f \"src/test/chain-simulator/docker/docker-compose.yml\" up -d --build --no-cache",
+    "start-chain-simulator": "docker compose -f \"src/test/chain-simulator/docker/docker-compose.yml\" build --no-cache && docker compose -f \"src/test/chain-simulator/docker/docker-compose.yml\" up -d",
     "stop-chain-simulator": "docker compose -f \"src/test/chain-simulator/docker/docker-compose.yml\" down",
     "prepare:test-data": "ts-node src/test/chain-simulator/utils/prepare-test-data.ts",
     "test:ppu": "ts-node src/test/chain-simulator/utils/test-ppu-calculation.ts"
