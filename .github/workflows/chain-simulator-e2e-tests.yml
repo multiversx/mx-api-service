@@ -25,6 +25,10 @@ jobs:
       - name: Build and start chain simulator
         run: npm run start-chain-simulator
 
+      - name: Show logs if chain simulator fails to start
+        if: failure()
+        run: docker logs es-container && docker logs chainsimulator
+
       - name: Wait for services to be ready
         run: |
           echo "Waiting for services to be healthy..."

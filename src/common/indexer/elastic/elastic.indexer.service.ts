@@ -1048,11 +1048,26 @@ export class ElasticIndexerService implements IndexerInterface {
   }
 
   async getBlockByTimestampAndShardId(timestamp: number, shardId: number): Promise<Block | undefined> {
-    const timestampIdentifier = TimeUtils.isTimestampInSeconds(timestamp) ? 'timestamp' : 'timestampMs';
+    const timestampInSeconds = TimeUtils.isTimestampInSeconds(timestamp) ? timestamp : Math.floor(timestamp / 1000);
+    const timestampInMilliseconds = TimeUtils.isTimestampInSeconds(timestamp) ? timestamp * 1000 : timestamp;
+
+    const timestampQuery = QueryType.Should([
+      QueryType.Must([
+        QueryType.Exists('timestampMs'),
+        QueryType.Range('timestampMs', new RangeGreaterThanOrEqual(timestampInMilliseconds)),
+      ]),
+      QueryType.Must([
+        QueryType.Range('timestamp', new RangeGreaterThanOrEqual(timestampInSeconds)),
+      ], [QueryType.Exists('timestampMs')]),
+    ]);
+
     const elasticQuery = ElasticQuery.create()
-      .withRangeFilter(timestampIdentifier, new RangeGreaterThanOrEqual(timestamp))
+      .withMustCondition(timestampQuery)
       .withCondition(QueryConditionOptions.must, [QueryType.Match('shardId', shardId, QueryOperator.AND)])
-      .withSort([{ name: 'timestamp', order: ElasticSortOrder.ascending }]);
+      .withSort([
+        { name: 'timestamp', order: ElasticSortOrder.ascending },
+        { name: 'timestampMs', order: ElasticSortOrder.ascending },
+      ]);
 
     const blocks: Block[] = await this.elasticService.getList('blocks', '_search', elasticQuery);
 
