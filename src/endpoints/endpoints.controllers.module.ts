@@ -39,12 +39,13 @@ import { PoolController } from "./pool/pool.controller";
 import { TpsController } from "./tps/tps.controller";
 import { ApplicationController } from "./applications/application.controller";
 import { EventsController } from "./events/events.controller";
+import { AccountControllerV2 } from "./accounts-v2/account.controller.v2";
 
 @Module({})
 export class EndpointsControllersModule {
   static forRoot(): DynamicModule {
     const controllers: Type<any>[] = [
-      AccountController, BlockController, CollectionController, DelegationController, DelegationLegacyController, IdentitiesController,
+      AccountController, AccountControllerV2, BlockController, CollectionController, DelegationController, DelegationLegacyController, IdentitiesController,
       KeysController, MiniBlockController, NetworkController, NftController, TagController, NodeController,
       ProviderController, GatewayProxyController, RoundController, SmartContractResultController, ShardController, StakeController, StakeController,
       TokenController, TransactionController, UsernameController, VmQueryController, WaitingListController,

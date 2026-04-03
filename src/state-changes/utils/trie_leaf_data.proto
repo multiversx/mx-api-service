@@ -1,0 +1,7 @@
+syntax = "proto3";
+
+message TrieLeafData {
+  bytes value = 1;
+  bytes key = 2;
+  bytes address = 3;
+}

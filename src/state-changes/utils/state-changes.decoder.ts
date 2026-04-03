@@ -1,0 +1,433 @@
+import { Address } from "@multiversx/sdk-core/out";
+import { UserAccountData } from "./user_account.pb";
+import { ESDigitalToken } from "./esdt";
+import { TokenParser } from "./token.parser";
+import {
+  AccountChanges,
+  AccountChangesRaw,
+  AccountState,
+  BlockWithStateChangesRaw,
+  DataTrieChange,
+  DataTrieChangeOperation,
+  EsdtState,
+  ESDTType,
+  StateAccessOperation,
+  StateAccessPerAccountRaw,
+  StateChanges,
+} from "../entities";
+
+export class StateChangesDecoder {
+  private static SYSTEM_ACCOUNTS = new Set([
+    "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqllls0lczs7", // stakingScAddress
+    "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqplllst77y4l", // validatorScAddress
+    "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqzllls8a5w6u", // esdtScAddress
+    "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqrlllsrujgla", // governanceScAddress
+    "erd1qqqqqqqqqqqqqqqpqqqqqqqqqrlllllllllllllllllllllllllsn60f0k", // jailingAddress
+    "erd1qqqqqqqqqqqqqqqpqqqqqqqqlllllllllllllllllllllllllllsr9gav8", // endOfEpochAddress
+    "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqylllslmq6y6", // delegationManagerScAddress
+    "erd1qqqqqqqqqqqqqqqpqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq0llllsqkarq6", // firstDelegationScAddress
+    "erd1qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq6gq4hu", // contractDeployScAddress
+    "erd17rc0pu8s7rc0pu8s7rc0pu8s7rc0pu8s7rc0pu8s7rc0pu8s7rcqqkhty3", // genesisMintingAddress
+    "erd1lllllllllllllllllllllllllllllllllllllllllllllllllllsckry7t", // systemAccountAddress
+    "erd1llllllllllllllllllllllllllllllllllllllllllllllllluqq2m3f0f", // esdtGlobalSettingsAddresses[0]
+    "erd1llllllllllllllllllllllllllllllllllllllllllllllllluqsl6e366", // esdtGlobalSettingsAddresses[1]
+    "erd1lllllllllllllllllllllllllllllllllllllllllllllllllupq9x7ny0", // esdtGlobalSettingsAddresses[2]
+  ]);
+
+  static isSystemContractAddress(address: string) {
+    return this.SYSTEM_ACCOUNTS.has(address);
+  }
+
+  private static bech32FromHex(hex: any) {
+    const clean = hex.startsWith("0x") ? hex.slice(2) : hex;
+    return Address.newFromHex(clean).toBech32();
+  }
+
+  private static bech32FromBytes(u8: any) {
+    return (u8 && u8.length ? Address.newFromHex(this.bytesToHex(u8)).toBech32() : "");
+  }
+
+  private static bytesToHex(u8: any) {
+    return (u8 && u8.length ? Buffer.from(u8).toString("hex") : "");
+  }
+
+  private static bytesToBase64(u8: any) {
+    return (u8 && u8.length ? Buffer.from(u8).toString("base64") : "");
+  }
+
+  private static longToString(v: any) {
+    return v == null ? "" : (typeof v === "object" && typeof v.toString === "function" ? v.toString() : String(v));
+  }
+
+  private static bigEndianBytesToBigInt(u8: any) {
+    let v = BigInt(0);
+    for (const b of u8) {
+      v = (v << BigInt(8)) + BigInt(b);
+    }
+    return v;
+  }
+
+  /**
+   * MultiversX custom sign & magnitude BigInt for proto:
+   *  - zero => [0x00, 0x00]
+   *  - positive non-zero => 0x00 || magnitude (big-endian)
+   *  - (if present) negative => 0x01 || magnitude
+   * Fallback: if first byte is not a sign marker, treat whole buffer as positive magnitude.
+   */
+  private static decodeMxSignMagBigInt(u8: any) {
+    if (!u8 || u8.length === 0) return BigInt(0);
+
+    // canonical zero used by the serializer
+    if (u8.length === 2 && u8[0] === 0x00 && u8[1] === 0x00) return BigInt(0);
+
+    const sign = u8[0];
+    if (sign === 0x00 || sign === 0x01) {
+      const mag = u8.slice(1);
+      const m = this.bigEndianBytesToBigInt(mag);
+      return sign === 0x01 ? -m : m;
+    }
+
+    // fallback for legacy "magnitude only" encodings
+    return this.bigEndianBytesToBigInt(u8);
+  }
+
+  private static getDecodedUserAccountData(base64Value: string | null): AccountState | null {
+    try {
+      if (base64Value == null || base64Value === '') {
+        return null;
+      }
+      const buf = Buffer.from(base64Value, "base64");
+      const msg = UserAccountData.decode(buf as Uint8Array);
+
+      const balance = this.decodeMxSignMagBigInt(msg.Balance);
+      const devReward = this.decodeMxSignMagBigInt(msg.DeveloperReward);
+      const address = this.bech32FromBytes(msg.Address);
+      const ownerAddress = this.bech32FromBytes(msg.OwnerAddress);
+
+      const data: AccountState = {
+        nonce: parseInt(this.longToString(msg.Nonce)),
+        balance: balance.toString(),
+        developerReward: devReward.toString(),
+        address,
+        ownerAddress,
+        codeHash: this.bytesToBase64(msg.CodeHash),
+        rootHash: this.bytesToBase64(msg.RootHash),
+        username: Buffer.from(this.bytesToHex(msg.UserName), 'hex').toString(),
+        codeMetadata: this.bytesToHex(msg.CodeMetadata),
+      };
+
+      const filteredData = Object.fromEntries(
+        Object.entries(data).filter(([_, v]) => v !== undefined && v !== null && v !== '')
+      ) as AccountState;
+
+      return filteredData;
+    } catch (e: any) {
+      console.warn(`Could not decode as UserAccountData: ${e.message}`);
+      return null;
+    }
+  }
+
+  private static decodeAccountChanges(flags: number | undefined): AccountChanges {
+    if (!flags) {
+      return new AccountChanges({
+        nonceChanged: false,
+        balanceChanged: false,
+        codeHashChanged: false,
+        rootHashChanged: false,
+        developerRewardChanged: false,
+        ownerAddressChanged: false,
+        userNameChanged: false,
+        codeMetadataChanged: false,
+      });
+    }
+    return new AccountChanges({
+      nonceChanged: (flags & AccountChangesRaw.NonceChanged) !== 0,
+      balanceChanged: (flags & AccountChangesRaw.BalanceChanged) !== 0,
+      codeHashChanged: (flags & AccountChangesRaw.CodeHashChanged) !== 0,
+      rootHashChanged: (flags & AccountChangesRaw.RootHashChanged) !== 0,
+      developerRewardChanged: (flags & AccountChangesRaw.DeveloperRewardChanged) !== 0,
+      ownerAddressChanged: (flags & AccountChangesRaw.OwnerAddressChanged) !== 0,
+      userNameChanged: (flags & AccountChangesRaw.UserNameChanged) !== 0,
+      codeMetadataChanged: (flags & AccountChangesRaw.CodeMetadataChanged) !== 0,
+    });
+  }
+
+  private static getDecodedEsdtData(address: string, dataTrieChange: DataTrieChange) {
+    const bufTrieLeafValue = Buffer.from(dataTrieChange.val, "base64");
+    const esdtPrefix = 'ELRONDesdt';
+    try {
+      const keyRawBuf = Buffer.from(dataTrieChange.key, "base64");
+      const keyRaw = keyRawBuf.toString();
+      if (keyRaw.startsWith(esdtPrefix)) {
+        const keyBuf = keyRawBuf.slice(esdtPrefix.length);
+        const msgEsdtData: ESDigitalToken = ESDigitalToken.decode(bufTrieLeafValue as Uint8Array);
+
+        const valueBigInt: bigint = this.decodeMxSignMagBigInt(msgEsdtData.Value);
+        const [identifier, nonceHex] = TokenParser.extractTokenIDAndNonceHexFromTokenStorageKey(keyBuf);
+
+        return {
+          identifier: nonceHex !== '00' ? `${identifier}-${nonceHex}` : identifier,
+          nonce: parseInt(nonceHex, 16).toString(),
+          type: msgEsdtData.Type,
+          value: valueBigInt.toString(),
+          propertiesHex: this.bytesToHex(msgEsdtData.Properties),
+          reservedHex: this.bytesToHex(msgEsdtData.Reserved),
+          tokenMetaData: msgEsdtData.TokenMetaData ?? null,
+        };
+      } else {
+        //TODO: handle if needed
+        return null;
+      }
+    } catch (e: any) {
+      console.warn(`Could not decode as EsdtData: ${e.message}`);
+      console.log(address, ':');
+      console.dir(dataTrieChange);
+      return null;
+    }
+  }
+
+  static decodeStateChangesRaw(blockWithStateChanges: BlockWithStateChangesRaw) {
+    const allAccounts: Record<string, any[]> = {};
+    const accounts = blockWithStateChanges.stateAccessesPerAccounts || {};
+
+    for (const accountHex of Object.keys(accounts)) {
+      const address = this.bech32FromHex(accountHex);
+
+      if (this.isSystemContractAddress(address)) {
+        continue;
+      }
+
+      const { stateAccess = [] } = accounts[accountHex] || {};
+      const allDecoded: Record<string, any[]> = {};
+      stateAccess.forEach((sa: StateAccessPerAccountRaw, i: number) => {
+
+        const base64AccountData = sa.mainTrieVal;
+        const decodedAccountData = this.getDecodedUserAccountData(base64AccountData);
+
+        const dataTrieChanges = sa.dataTrieChanges;
+
+
+        const allDecodedEsdtData: any[] = [];
+        if (dataTrieChanges) {
+          for (const dataTrieChange of dataTrieChanges) {
+            if (dataTrieChange.version === 0 && dataTrieChange.val) {
+              const decodedEsdtData = this.getDecodedEsdtData(address, dataTrieChange);
+              if (decodedEsdtData) {
+                if (dataTrieChange.operation === DataTrieChangeOperation.Delete) {
+                  decodedEsdtData.value = '0';
+                }
+                allDecodedEsdtData.push(decodedEsdtData);
+              }
+            }
+          }
+        }
+
+        if (decodedAccountData || allDecodedEsdtData.length > 0) {
+          const groupedEsdtStates = allDecodedEsdtData.reduce<Record<string, typeof allDecodedEsdtData>>(
+            (acc, state) => {
+              const typeName = ESDTType[state.type]; // numeric -> string
+              if (typeName) {
+                acc[typeName].push(state);
+              }
+
+              return acc;
+            },
+            {
+              Fungible: [],
+              NonFungible: [],
+              NonFungibleV2: [],
+              SemiFungible: [],
+              MetaFungible: [],
+              DynamicNFT: [],
+              DynamicSFT: [],
+              DynamicMeta: [],
+            }
+          );
+          if (allDecoded[address] === undefined) allDecoded[address] = [];
+          const newAccount = this.isNewAccount(sa);
+
+          allDecoded[address].push({
+            entry: `Entry #${i}`,
+            accountState: decodedAccountData,
+            esdtStates: groupedEsdtStates,
+            accountChanges: this.decodeAccountChanges(sa.accountChanges),
+            newAccount,
+          });
+        }
+      });
+      if (Object.keys(allDecoded).length === 0) continue;
+
+      allAccounts[address] = [...(allAccounts[address] || []), ...Object.values(allDecoded).flat()];
+    }
+
+    return allAccounts;
+  }
+
+  static decodeStateChangesFinal(blockWithStateChanges: BlockWithStateChangesRaw, isEsdtComputationEnabled: boolean = false) {
+    const accounts = blockWithStateChanges.stateAccessesPerAccounts;
+    const finalStates: Record<string, StateChanges> = {};
+
+    for (const accountHex of Object.keys(accounts)) {
+      const address = this.bech32FromHex(accountHex);
+
+      if (this.isSystemContractAddress(address)) {
+        continue;
+      }
+      const { stateAccess: accountStateAccesses } = accounts[accountHex] || {};
+      finalStates[address] = this.getAccountFinalState(address, accountStateAccesses, isEsdtComputationEnabled);
+    }
+
+    return finalStates;
+  }
+
+
+  private static getAccountFinalState(address: string, accountStateAccesses: StateAccessPerAccountRaw[], isEsdtComputationEnabled: boolean = false) {
+    let finalAccountChangesRaw: AccountChangesRaw = AccountChangesRaw.NoChange;
+    const esdtOccured: Record<string, boolean> = {};
+    let finalNewAccount = false;
+
+    let finalAccountState: AccountState | undefined = undefined;
+    const finalEsdtStates = {
+      Fungible: [] as EsdtState[],
+      NonFungible: [] as EsdtState[],
+      NonFungibleV2: [] as EsdtState[],
+      SemiFungible: [] as EsdtState[],
+      MetaFungible: [] as EsdtState[],
+      DynamicNFT: [] as EsdtState[],
+      DynamicSFT: [] as EsdtState[],
+      DynamicMeta: [] as EsdtState[],
+    };
+
+    for (let i = accountStateAccesses.length - 1; i >= 0; i--) {
+      const stateAccess = accountStateAccesses[i];
+      const currentAccountChangesRaw = stateAccess.accountChanges;
+      if (currentAccountChangesRaw) {
+        finalAccountChangesRaw |= currentAccountChangesRaw;
+      }
+
+      // if we already found it as new account, we skip the computation 
+      if (!finalNewAccount) {
+        const currentNewAccount = this.isNewAccount(stateAccess);
+        finalNewAccount = currentNewAccount || finalNewAccount;
+      }
+
+      // the final state is the first state we find when iterating backwards on state accesses array
+      if (!finalAccountState) {
+        const base64AccountData = stateAccess.mainTrieVal;
+        const decodedAccountData = this.getDecodedUserAccountData(base64AccountData);
+
+        if (decodedAccountData) {
+          finalAccountState = decodedAccountData;
+          //TODO: remove when we want to use accountChanges
+          if (!isEsdtComputationEnabled) {
+            break;
+          }
+        }
+      }
+
+      const dataTrieChanges = stateAccess.dataTrieChanges;
+      if (dataTrieChanges && isEsdtComputationEnabled) {
+        for (let i = dataTrieChanges.length - 1; i >= 0; i--) {
+          const dataTrieChange = dataTrieChanges[i];
+          if (dataTrieChange.version !== 0 && dataTrieChange.val) {
+            const decodedEsdtData = this.getDecodedEsdtData(address, dataTrieChange);
+
+            // last esdt state is the first appeareance in reverse order when iterating over account state accesses
+            if (decodedEsdtData && !esdtOccured[decodedEsdtData.identifier]) {
+              const typeName = ESDTType[decodedEsdtData.type] as keyof typeof finalEsdtStates; // numeric -> string
+
+              // double check in case some unknown type passed through
+              if (typeName) {
+                if (dataTrieChange.operation === DataTrieChangeOperation.Delete) {
+                  decodedEsdtData.value = '0';
+                }
+                finalEsdtStates[typeName].push(decodedEsdtData);
+                esdtOccured[decodedEsdtData.identifier] = true;
+              }
+            }
+          }
+        }
+      }
+    }
+    return {
+      accountState: finalAccountState,
+      esdtState: finalEsdtStates,
+      accountChanges: this.decodeAccountChanges(finalAccountChangesRaw),
+      isNewAccount: finalNewAccount,
+    };
+  }
+
+  private static isNewAccount(stateAccess: StateAccessPerAccountRaw) {
+    return (stateAccess.accountChanges == null) &&
+      (stateAccess.operation & StateAccessOperation.SaveAccount) ? true : false;
+  }
+
+  static getFinalStatesFromStateChangesRaw(stateChanges: Record<string, any[]>) {
+    const finalStates: Record<string, StateChanges> = {};
+
+    for (const [address, entries] of Object.entries(stateChanges)) {
+      let finalAccountState: AccountState | undefined = undefined;
+      const finalEsdtStates = {
+        Fungible: [] as EsdtState[],
+        NonFungible: [] as EsdtState[],
+        NonFungibleV2: [] as EsdtState[],
+        SemiFungible: [] as EsdtState[],
+        MetaFungible: [] as EsdtState[],
+        DynamicNFT: [] as EsdtState[],
+        DynamicSFT: [] as EsdtState[],
+        DynamicMeta: [] as EsdtState[],
+      };
+      const finalAccountChanges: AccountChanges = new AccountChanges({
+        nonceChanged: false,
+        balanceChanged: false,
+        codeHashChanged: false,
+        rootHashChanged: false,
+        developerRewardChanged: false,
+        ownerAddressChanged: false,
+        userNameChanged: false,
+        codeMetadataChanged: false,
+      });
+
+      let finalNewAccount = false;
+
+      for (const entry of entries) {
+        const currentAccountState: AccountState = entry.accountState;
+        const currentEsdtStates = entry.esdtStates;
+        const currentAccountChanges = entry.accountChanges;
+        const currentNewAccount = entry.newAccount as boolean;
+
+
+        finalNewAccount = finalNewAccount ? finalNewAccount : currentNewAccount;
+
+        finalAccountState = currentAccountState;
+
+        (Object.entries(finalAccountChanges) as [keyof typeof finalAccountChanges, boolean][]).forEach(
+          ([key, value]) => {
+            finalAccountChanges[key] = value || currentAccountChanges[key];
+          }
+        );
+
+
+        (Object.entries(currentEsdtStates) as [keyof typeof finalEsdtStates, any[]][]).forEach(
+          ([tokenType, tokenChanges]) => {
+            for (const tokenChange of tokenChanges) {
+              let index = finalEsdtStates[tokenType].findIndex((item: any) => item.key === tokenChange.key);
+              index = index !== -1 ? index : finalEsdtStates[tokenType].length;
+              finalEsdtStates[tokenType][index] = tokenChange;
+            }
+
+          }
+        );
+      }
+
+      finalStates[address] = {
+        accountState: finalAccountState,
+        esdtState: finalEsdtStates,
+        accountChanges: finalAccountChanges,
+        isNewAccount: finalNewAccount,
+      };
+    }
+
+    return finalStates;
+  }
+}

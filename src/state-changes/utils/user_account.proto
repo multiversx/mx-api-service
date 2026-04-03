@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+message UserAccountData {
+  uint64 Nonce            = 1;
+  bytes  Balance          = 2; // big.Int in Go -> bytes on the wire
+  bytes  CodeHash         = 3;
+  bytes  RootHash         = 4;
+  bytes  Address          = 5;
+  bytes  DeveloperReward  = 6; // big.Int in Go -> bytes on the wire
+  bytes  OwnerAddress     = 7;
+  bytes  UserName         = 8;
+  bytes  CodeMetadata     = 9;
+}

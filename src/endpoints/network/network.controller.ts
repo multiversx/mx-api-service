@@ -41,7 +41,6 @@ export class NetworkController {
     }
   }
 
-
   @Get("/about")
   @ApiOperation({ summary: 'About', description: 'Returns general information about API deployment' })
   @ApiOkResponse({ type: About })

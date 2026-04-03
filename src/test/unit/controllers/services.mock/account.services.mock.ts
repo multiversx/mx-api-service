@@ -78,6 +78,7 @@ export const mockApiConfigService = () => ({
   getMediaUrl: jest.fn().mockReturnValue(''),
   isElasticCircuitBreakerEnabled: jest.fn().mockReturnValue(false),
   getElasticCircuitBreakerConfig: jest.fn().mockReturnValue({}),
+  getDatabaseUrl: jest.fn().mockReturnValue(''),
   getConfig: jest.fn(),
 });
 

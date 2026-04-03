@@ -807,4 +807,25 @@ export class CacheInfo {
       ttl: Constants.oneMinute(),
     };
   }
+
+  static StateChangesConsumerLatestProcessedBlockTimestamp(shardId: number): CacheInfo {
+    return {
+      key: `latestProcessedBlock:${shardId}`,
+      ttl: Constants.oneMinute(),
+    };
+  }
+
+  static AccountState(address: string): CacheInfo {
+    return {
+      key: `account-state:${address}`,
+      ttl: Constants.oneHour() * 12,
+    };
+  }
+
+  static AccountEsdt(address: string, identifier: string): CacheInfo {
+    return {
+      key: `account-esdt:${address}:${identifier}`,
+      ttl: Constants.oneHour() * 12,
+    };
+  }
 }
