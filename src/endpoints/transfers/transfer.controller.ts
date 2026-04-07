@@ -25,6 +25,7 @@ export class TransferController {
   @ApiOkResponse({ type: [Transaction] })
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
+  @ApiQuery({ name: 'searchAfter', description: 'Base64 encoded cursor to continue from the last document', required: false })
   @ApiQuery({ name: 'sender', description: 'Search by multiple sender addresses, comma-separated', required: false })
   @ApiQuery({ name: 'receiver', description: 'Search by multiple receiver addresses, comma-separated', required: false })
   @ApiQuery({ name: 'token', description: 'Identifier of the token', required: false })
@@ -53,6 +54,7 @@ export class TransferController {
   async getAccountTransfers(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
+    @Query('searchAfter') searchAfter?: string,
     @Query('receiver', ParseAddressArrayPipe) receiver?: string[],
     @Query('sender', ParseAddressArrayPipe) sender?: string[],
     @Query('token') token?: string,
@@ -102,7 +104,7 @@ export class TransferController {
       withRefunds,
       isScCall,
     }),
-      new QueryPagination({ from, size }),
+      new QueryPagination({ from, size, searchAfter }),
       options,
       fields
     );

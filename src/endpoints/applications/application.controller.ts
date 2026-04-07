@@ -19,19 +19,21 @@ export class ApplicationController {
   @ApiOkResponse({ type: [Application] })
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
+  @ApiQuery({ name: 'searchAfter', description: 'Cursor for continuing from the previous result set', required: false })
   @ApiQuery({ name: 'before', description: 'Before timestamp or timestampMs', required: false })
   @ApiQuery({ name: 'after', description: 'After timestamp or timestampMs', required: false })
   @ApiQuery({ name: 'withTxCount', description: 'Include transaction count', required: false, type: Boolean })
   async getApplications(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number,
+    @Query('searchAfter') searchAfter?: string,
     @Query('before', TimestampParsePipe) before?: number,
     @Query('after', TimestampParsePipe) after?: number,
     @Query('withTxCount', new ParseBoolPipe()) withTxCount?: boolean,
   ): Promise<Application[]> {
     const applicationFilter = new ApplicationFilter({ before, after, withTxCount });
     return await this.applicationService.getApplications(
-      new QueryPagination({ size, from }),
+      new QueryPagination({ size, from, searchAfter }),
       applicationFilter
     );
   }

@@ -62,6 +62,7 @@ export class CollectionController {
   async getNftCollections(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
+    @Query('searchAfter') searchAfter?: string,
     @Query('search') search?: string,
     @Query('identifiers', ParseCollectionArrayPipe) identifiers?: string[],
     @Query('type', new ParseEnumArrayPipe(NftType)) type?: NftType[],
@@ -79,7 +80,7 @@ export class CollectionController {
     @Query('sort', new ParseEnumPipe(SortCollections)) sort?: SortCollections,
     @Query('order', new ParseEnumPipe(SortOrder)) order?: SortOrder,
   ): Promise<NftCollection[]> {
-    return await this.collectionService.getNftCollections(new QueryPagination({ from, size }), new CollectionFilter({
+    return await this.collectionService.getNftCollections(new QueryPagination({ from, size, searchAfter }), new CollectionFilter({
       search,
       type,
       subType,
@@ -233,6 +234,7 @@ export class CollectionController {
     @Param('collection', ParseCollectionPipe) collection: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
+    @Query('searchAfter') searchAfter?: string,
     @Query('search') search?: string,
     @Query('identifiers', ParseNftArrayPipe) identifiers?: string[],
     @Query('name') name?: string,
@@ -256,7 +258,7 @@ export class CollectionController {
     }
 
     return await this.nftService.getNfts(
-      new QueryPagination({ from, size }),
+      new QueryPagination({ from, size, searchAfter }),
       new NftFilter({ search, identifiers, collection, name, tags, creator, hasUris, isWhitelistedStorage, isNsfw, traits, nonceBefore, nonceAfter, sort, order }),
       new NftQueryOptions({ withOwner, withSupply, withAssets }),
     );
@@ -307,8 +309,9 @@ export class CollectionController {
     @Param('identifier', ParseCollectionPipe) identifier: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
+    @Query('searchAfter') searchAfter?: string,
   ): Promise<CollectionAccount[]> {
-    const owners = await this.nftService.getCollectionOwners(identifier, new QueryPagination({ from, size }));
+    const owners = await this.nftService.getCollectionOwners(identifier, new QueryPagination({ from, size, searchAfter }));
     if (!owners) {
       throw new HttpException('Collection not found', HttpStatus.NOT_FOUND);
     }
@@ -345,6 +348,7 @@ export class CollectionController {
     @Param('collection', ParseCollectionPipe) identifier: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
+    @Query('searchAfter') searchAfter?: string,
     @Query('sender', ParseAddressPipe) sender?: string,
     @Query('receiver', ParseAddressArrayPipe) receiver?: string[],
     @Query('senderShard', ParseIntPipe) senderShard?: number,
@@ -389,7 +393,7 @@ export class CollectionController {
     });
     TransactionFilter.validate(transactionFilter, size);
 
-    return await this.transactionService.getTransactions(transactionFilter, new QueryPagination({ from, size }), options);
+    return await this.transactionService.getTransactions(transactionFilter, new QueryPagination({ from, size, searchAfter }), options);
   }
 
   @Get("/collections/:collection/transactions/count")
@@ -470,6 +474,7 @@ export class CollectionController {
     @Param('collection', ParseCollectionPipe) identifier: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
+    @Query('searchAfter') searchAfter?: string,
     @Query('sender', ParseAddressPipe) sender?: string,
     @Query('receiver', ParseAddressArrayPipe) receiver?: string[],
     @Query('senderShard', ParseIntPipe) senderShard?: number,
@@ -509,7 +514,7 @@ export class CollectionController {
       after,
       order,
       round,
-    }), new QueryPagination({ from, size }), options);
+    }), new QueryPagination({ from, size, searchAfter }), options);
   }
 
   @Get("/collections/:collection/transfers/count")

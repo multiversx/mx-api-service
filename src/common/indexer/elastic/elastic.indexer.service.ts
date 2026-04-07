@@ -136,7 +136,7 @@ export class ElasticIndexerService implements IndexerInterface {
 
     query = this.buildTokenFilter(query, filter);
 
-    return await this.elasticService.getList('accountsesdt', 'token', query);
+    return await this.elasticService.getList('accountsesdt', 'token', query, queryPagination.searchAfter);
   }
 
   async getTokenAccountsCount(identifier: string): Promise<number | undefined> {
@@ -294,7 +294,7 @@ export class ElasticIndexerService implements IndexerInterface {
       .withPagination({ from: pagination.from, size: pagination.size })
       .withSort([timestamp, nonce]);
 
-    const elasticOperations = await this.elasticService.getList('operations', 'txHash', elasticQuery);
+    const elasticOperations = await this.elasticService.getList('operations', 'txHash', elasticQuery, pagination.searchAfter);
 
     this.bulkProcessTransactions(elasticOperations);
 
@@ -559,7 +559,7 @@ export class ElasticIndexerService implements IndexerInterface {
       .withPagination({ from: pagination.from, size: pagination.size })
       .withSort([timestamp, nonce]);
 
-    const transactions = await this.elasticService.getList('operations', 'txHash', elasticQuery);
+    const transactions = await this.elasticService.getList('operations', 'txHash', elasticQuery, pagination.searchAfter);
 
     this.bulkProcessTransactions(transactions);
 

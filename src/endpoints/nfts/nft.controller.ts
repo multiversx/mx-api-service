@@ -60,6 +60,7 @@ export class NftController {
   async getNfts(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
+    @Query('searchAfter') searchAfter?: string,
     @Query('search') search?: string,
     @Query('identifiers', ParseNftArrayPipe) identifiers?: string[],
     @Query('type', new ParseEnumArrayPipe(NftType)) type?: NftType[],
@@ -81,7 +82,7 @@ export class NftController {
     @Query('withSupply', ParseBoolPipe) withSupply?: boolean,
   ): Promise<Nft[]> {
     return await this.nftService.getNfts(
-      new QueryPagination({ from, size }),
+      new QueryPagination({ from, size, searchAfter }),
       new NftFilter({
         search,
         identifiers,
@@ -253,8 +254,9 @@ export class NftController {
     @Param('identifier', ParseNftPipe) identifier: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
+    @Query('searchAfter') searchAfter?: string,
   ): Promise<NftOwner[]> {
-    const owners = await this.nftService.getNftOwners(identifier, new QueryPagination({ from, size }));
+    const owners = await this.nftService.getNftOwners(identifier, new QueryPagination({ from, size, searchAfter }));
     if (owners === undefined) {
       throw new HttpException('NFT not found', HttpStatus.NOT_FOUND);
     }
@@ -303,6 +305,7 @@ export class NftController {
     @Param('identifier', ParseNftPipe) identifier: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
+    @Query('searchAfter') searchAfter?: string,
     @Query('sender', ParseAddressPipe) sender?: string,
     @Query('receiver', ParseAddressArrayPipe) receiver?: string[],
     @Query('senderShard', ParseIntPipe) senderShard?: number,
@@ -341,7 +344,7 @@ export class NftController {
     });
     TransactionFilter.validate(transactionFilter, size);
 
-    return await this.transactionService.getTransactions(transactionFilter, new QueryPagination({ from, size }), options);
+    return await this.transactionService.getTransactions(transactionFilter, new QueryPagination({ from, size, searchAfter }), options);
   }
 
   @Get("/nfts/:identifier/transactions/count")
@@ -414,6 +417,7 @@ export class NftController {
     @Param('identifier', ParseNftPipe) identifier: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
+    @Query('searchAfter') searchAfter?: string,
     @Query('sender', ParseAddressPipe) sender?: string,
     @Query('receiver', ParseAddressArrayPipe) receiver?: string[],
     @Query('senderShard', ParseIntPipe) senderShard?: number,
@@ -446,7 +450,7 @@ export class NftController {
       before,
       after,
       order,
-    }), new QueryPagination({ from, size }), options);
+    }), new QueryPagination({ from, size, searchAfter }), options);
   }
 
   @Get("/nfts/:identifier/transfers/count")

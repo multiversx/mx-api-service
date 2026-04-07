@@ -17,13 +17,15 @@ export class TagController {
   @ApiOkResponse({ type: [Tag] })
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
+  @ApiQuery({ name: 'searchAfter', description: 'Base64 encoded cursor to continue from the last document', required: false })
   @ApiQuery({ name: 'search', description: 'Search by tag name', required: false })
   async getTags(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number,
+    @Query('searchAfter') searchAfter?: string,
     @Query('search') search: string | undefined,
   ): Promise<Tag[]> {
-    return await this.nftTagsService.getNftTags(new QueryPagination({ from, size }), search);
+    return await this.nftTagsService.getNftTags(new QueryPagination({ from, size, searchAfter }), search);
   }
 
   @Get("/tags/count")

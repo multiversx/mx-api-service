@@ -40,6 +40,7 @@ export class TokenController {
   @ApiOkResponse({ type: [TokenDetailed] })
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
+  @ApiQuery({ name: 'searchAfter', description: 'Base64 encoded cursor to continue from the last document', required: false })
   @ApiQuery({ name: 'type', description: 'Token type', required: false, enum: TokenType })
   @ApiQuery({ name: 'search', description: 'Search by collection identifier', required: false })
   @ApiQuery({ name: 'name', description: 'Search by token name', required: false })
@@ -53,6 +54,7 @@ export class TokenController {
   async getTokens(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
+    @Query('searchAfter') searchAfter?: string,
     @Query('type', new ParseEnumPipe(TokenType)) type?: TokenType,
     @Query('search') search?: string,
     @Query('name') name?: string,
@@ -66,7 +68,7 @@ export class TokenController {
   ): Promise<TokenDetailed[]> {
 
     return await this.tokenService.getTokens(
-      new QueryPagination({ from, size }),
+      new QueryPagination({ from, size, searchAfter }),
       new TokenFilter({ type, search, name, identifier, identifiers, includeMetaESDT, sort, order, mexPairType, priceSource })
     );
   }
@@ -159,14 +161,15 @@ export class TokenController {
   async getTokenAccounts(
     @Param('identifier', ParseTokenPipe) identifier: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
-    @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number
+    @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number,
+    @Query('searchAfter') searchAfter?: string,
   ): Promise<TokenAccount[]> {
     const isToken = await this.tokenService.isToken(identifier);
     if (!isToken) {
       throw new HttpException('Token not found', HttpStatus.NOT_FOUND);
     }
 
-    const accounts = await this.tokenService.getTokenAccounts(new QueryPagination({ from, size }), identifier);
+    const accounts = await this.tokenService.getTokenAccounts(new QueryPagination({ from, size, searchAfter }), identifier);
     if (!accounts) {
       throw new NotFoundException('Token not found');
     }
@@ -226,6 +229,7 @@ export class TokenController {
     @Param('identifier', ParseTokenPipe) identifier: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
+    @Query('searchAfter') searchAfter?: string,
     @Query('sender', ParseAddressPipe) sender?: string,
     @Query('receiver', ParseAddressArrayPipe) receiver?: string[],
     @Query('senderShard', ParseIntPipe) senderShard?: number,
@@ -277,7 +281,7 @@ export class TokenController {
 
     return await this.transactionService.getTransactions(
       transactionFilter,
-      new QueryPagination({ from, size }),
+      new QueryPagination({ from, size, searchAfter }),
       options,
       undefined,
       fields,
@@ -406,6 +410,7 @@ export class TokenController {
     @Param('identifier', ParseTokenPipe) identifier: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
+    @Query('searchAfter') searchAfter?: string,
     @Query('sender', ParseAddressArrayPipe) sender?: string[],
     @Query('receiver', ParseAddressArrayPipe) receiver?: string[],
     @Query('senderShard', ParseIntPipe) senderShard?: number,
@@ -448,7 +453,7 @@ export class TokenController {
       round,
       isScCall,
     }),
-      new QueryPagination({ from, size }),
+      new QueryPagination({ from, size, searchAfter }),
       options,
       fields
     );

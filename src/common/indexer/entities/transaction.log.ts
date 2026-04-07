@@ -1,4 +1,6 @@
-export interface TransactionLog {
+import { ElasticSortable } from "./elastic.sortable";
+
+export interface TransactionLog extends ElasticSortable {
   id: string;
   originalTxHash: string;
   address: string;
@@ -14,7 +16,7 @@ export interface TransactionLogEvent {
   order: number;
 }
 
-export interface ElasticTransactionLogEvent {
+export interface ElasticTransactionLogEvent extends ElasticSortable {
   address: string;
   identifier: string;
   topics: string[];

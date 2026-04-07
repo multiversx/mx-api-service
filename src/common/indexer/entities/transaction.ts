@@ -1,4 +1,6 @@
-export interface Transaction {
+import { ElasticSortable } from "./elastic.sortable";
+
+export interface Transaction extends ElasticSortable {
   hash: string;
   miniBlockHash: string;
   nonce: number;

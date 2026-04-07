@@ -1,4 +1,6 @@
-export interface AccountTokenHistory {
+import { ElasticSortable } from "./elastic.sortable";
+
+export interface AccountTokenHistory extends ElasticSortable {
   address: string;
   timestamp: number;
   balance: string;

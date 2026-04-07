@@ -1,4 +1,6 @@
-export interface Account {
+import { ElasticSortable } from "./elastic.sortable";
+
+export interface Account extends ElasticSortable {
   address: string;
   nonce: number;
   timestampMs: number;

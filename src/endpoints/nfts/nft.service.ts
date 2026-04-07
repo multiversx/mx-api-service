@@ -79,9 +79,7 @@ export class NftService {
   }
 
   private async fetchAndProcessNfts(queryPagination: QueryPagination, filter: NftFilter, queryOptions?: NftQueryOptions): Promise<Nft[]> {
-    const { from, size } = queryPagination;
-
-    const nfts = await this.getNftsInternal({ from, size }, filter);
+    const nfts = await this.getNftsInternal(queryPagination, filter);
 
     await Promise.all([
       this.conditionallyApplyAssetsAndTicker(nfts, undefined, queryOptions),

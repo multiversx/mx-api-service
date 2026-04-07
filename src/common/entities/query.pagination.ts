@@ -8,4 +8,5 @@ export class QueryPagination {
 
   before?: number;
   after?: number;
+  searchAfter?: string;
 }

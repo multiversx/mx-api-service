@@ -1,6 +1,7 @@
 import { registerEnumType } from "@nestjs/graphql";
+import { ElasticSortable } from "./elastic.sortable";
 
-export interface TokenAccount {
+export interface TokenAccount extends ElasticSortable {
   identifier: string;
   address: string;
   balance: string;

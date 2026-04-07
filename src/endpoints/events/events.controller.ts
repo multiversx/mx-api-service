@@ -20,6 +20,7 @@ export class EventsController {
   @ApiOkResponse({ type: [Events] })
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
+  @ApiQuery({ name: 'searchAfter', description: 'Base64 encoded cursor to continue from the last document', required: false })
   @ApiQuery({ name: 'address', description: 'Event address', required: false })
   @ApiQuery({ name: 'logAddress', description: 'Event log address', required: false })
   @ApiQuery({ name: 'identifier', description: 'Event identifier', required: false })
@@ -32,6 +33,7 @@ export class EventsController {
   async getEvents(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
+    @Query('searchAfter') searchAfter?: string,
     @Query('address', ParseAddressPipe) address: string,
     @Query('logAddress', ParseAddressPipe) logAddress: string,
     @Query('identifier') identifier: string,
@@ -44,7 +46,7 @@ export class EventsController {
   ): Promise<Events[]> {
     const topicsArray = topics ? (Array.isArray(topics) ? topics : [topics]) : [];
     return await this.eventsService.getEvents(
-      new QueryPagination({ from, size }),
+      new QueryPagination({ from, size, searchAfter }),
       new EventsFilter({ address, logAddress, identifier, txHash, shard, after, before, order, topics: topicsArray }));
   }
 

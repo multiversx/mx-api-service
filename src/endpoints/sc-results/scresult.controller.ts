@@ -17,6 +17,7 @@ export class SmartContractResultController {
   @ApiOperation({ summary: 'Smart contract results', description: 'Returns all smart contract results available on the blockchain' })
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
+  @ApiQuery({ name: 'searchAfter', description: 'Base64 encoded cursor to continue from the last document', required: false })
   @ApiQuery({ name: 'miniBlockHash', description: 'The hash of the parent miniBlock', required: false })
   @ApiQuery({ name: 'originalTxHashes', description: 'Original transaction hashes', required: false })
   @ApiQuery({ name: 'sender', description: 'Sender address', required: false })
@@ -27,6 +28,7 @@ export class SmartContractResultController {
   getScResults(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
+    @Query('searchAfter') searchAfter?: string,
     @Query('miniBlockHash', ParseBlockHashPipe) miniBlockHash?: string,
     @Query('originalTxHashes', ParseArrayPipe, ParseTransactionHashPipe) originalTxHashes?: string[],
     @Query('sender', ParseAddressPipe) sender?: string,
@@ -35,7 +37,7 @@ export class SmartContractResultController {
     @Query('withActionTransferValue', ParseBoolPipe) withActionTransferValue?: boolean,
   ): Promise<SmartContractResult[]> {
     return this.scResultService.getScResults(
-      new QueryPagination({ from, size }),
+      new QueryPagination({ from, size, searchAfter }),
       new SmartContractResultFilter({ miniBlockHash, originalTxHashes, sender, receiver, functions }),
       new SmartContractResultOptions({ withActionTransferValue }),
     );

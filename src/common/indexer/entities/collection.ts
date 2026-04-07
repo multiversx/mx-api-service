@@ -1,3 +1,5 @@
+import { ElasticSortable } from "./elastic.sortable";
+
 export interface CollectionProperties {
   canMint?: boolean;
   canBurn?: boolean;
@@ -11,7 +13,7 @@ export interface CollectionProperties {
   canCreateMultiShard?: boolean;
 }
 
-export interface Collection {
+export interface Collection extends ElasticSortable {
   _id: string;
   name: string;
   ticker: string;

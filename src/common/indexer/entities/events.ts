@@ -1,4 +1,5 @@
 export class Events {
+  searchAfter?: string;
   _id: string = '';
   logAddress: string = '';
   identifier: string = '';

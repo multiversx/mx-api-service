@@ -20,11 +20,13 @@ export class NftMarketplaceController {
   @ApiOperation({ summary: 'Explore auctions', description: 'Returns auctions available in marketplaces ' })
   @ApiOkResponse({ type: [Auctions] })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
+  @ApiQuery({ name: 'searchAfter', description: 'Cursor for continuing from the previous result set', required: false })
   async getAuctions(
     @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number,
+    @Query('searchAfter') searchAfter?: string,
   ): Promise<Auctions[]> {
     return await this.nftMarketplaceService.getAuctions(
-      new QueryPagination({ size }),
+      new QueryPagination({ size, searchAfter }),
     );
   }
 
@@ -77,15 +79,17 @@ export class NftMarketplaceController {
   @ApiOperation({ summary: 'Account auctions', description: 'Returns account auctions for a given address' })
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
+  @ApiQuery({ name: 'searchAfter', description: 'Cursor for continuing from the previous result set', required: false })
   @ApiQuery({ name: 'status', description: 'Returns auctions with specified status', required: false })
   @ApiOkResponse({ type: Auction })
   async getAccountAuctions(
     @Param('address', ParseAddressPipe) address: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
+    @Query('searchAfter') searchAfter?: string,
     @Query('status', new ParseEnumPipe(AuctionStatus)) status?: AuctionStatus,
   ): Promise<Auction[]> {
-    const account = await this.nftMarketplaceService.getAccountAuctions(new QueryPagination({ from, size }), address, status);
+    const account = await this.nftMarketplaceService.getAccountAuctions(new QueryPagination({ from, size, searchAfter }), address, status);
     if (!account) {
       throw new NotFoundException('Account not found');
     }
@@ -116,12 +120,14 @@ export class NftMarketplaceController {
   @ApiOperation({ summary: 'Collection auctions', description: 'Returns all auctions for a specific collection ' })
   @ApiOkResponse({ type: [Auctions] })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
+  @ApiQuery({ name: 'searchAfter', description: 'Cursor for continuing from the previous result set', required: false })
   @ApiQuery({ name: 'collection', description: 'Collection identifier', required: true })
   async getCollectionAuctions(
     @Param('collection', ParseCollectionPipe) collection: string,
     @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number,
+    @Query('searchAfter') searchAfter?: string,
   ): Promise<Auctions[]> {
-    return await this.nftMarketplaceService.getCollectionAuctions(new QueryPagination({ size }), collection);
+    return await this.nftMarketplaceService.getCollectionAuctions(new QueryPagination({ size, searchAfter }), collection);
   }
 
   @Get('/collections/:collection/auctions/count')

@@ -85,6 +85,7 @@ export class AccountController {
   @ApiOkResponse({ type: [Account] })
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
+  @ApiQuery({ name: 'searchAfter', description: 'Cursor for continuing from the previous result set', required: false })
   @ApiQuery({ name: 'ownerAddress', description: 'Search by owner address', required: false })
   @ApiQuery({ name: 'sort', description: 'Sort criteria (balance / timestamp)', required: false, enum: AccountSort })
   @ApiQuery({ name: 'order', description: 'Sort order (asc/desc)', required: false, enum: SortOrder })
@@ -102,6 +103,7 @@ export class AccountController {
   getAccounts(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number,
+    @Query('searchAfter') searchAfter?: string,
     @Query("ownerAddress", ParseAddressPipe) ownerAddress?: string,
     @Query("name") name?: string,
     @Query("tags", ParseArrayPipe) tags?: string[],
@@ -136,7 +138,7 @@ export class AccountController {
       });
     queryOptions.validate(size);
     return this.accountService.getAccounts(
-      new QueryPagination({ from, size }),
+      new QueryPagination({ from, size, searchAfter }),
       queryOptions,
     );
   }
@@ -277,6 +279,7 @@ export class AccountController {
     @Param('address', ParseAddressPipe) address: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
+    @Query('searchAfter') searchAfter?: string,
     @Query('type', new ParseEnumPipe(TokenType)) type?: TokenType,
     @Query('subType', new ParseEnumPipe(NftSubType)) subType?: NftSubType,
     @Query('search') search?: string,
@@ -288,7 +291,7 @@ export class AccountController {
     @Query('mexPairType', new ParseEnumArrayPipe(MexPairType)) mexPairType?: MexPairType[],
   ): Promise<TokenWithBalance[]> {
     try {
-      return await this.tokenService.getTokensForAddress(address, new QueryPagination({ from, size }), new TokenFilter({ type, subType, search, name, identifier, identifiers, includeMetaESDT, mexPairType }));
+      return await this.tokenService.getTokensForAddress(address, new QueryPagination({ from, size, searchAfter }), new TokenFilter({ type, subType, search, name, identifier, identifiers, includeMetaESDT, mexPairType }));
     } catch (error) {
       this.logger.error(`Error in getAccountTokens for address ${address}`);
       this.logger.error(error);
@@ -392,6 +395,7 @@ export class AccountController {
     @Param('address', ParseAddressPipe) address: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
+    @Query('searchAfter') searchAfter?: string,
     @Query('search') search?: string,
     @Query('type', new ParseEnumArrayPipe(NftType)) type?: NftType[],
     @Query('subType', new ParseEnumArrayPipe(NftSubType)) subType?: NftSubType[],
@@ -418,7 +422,7 @@ export class AccountController {
         canAddUri,
         canTransferRole,
         excludeMetaESDT,
-      }), new QueryPagination({ from, size }));
+      }), new QueryPagination({ from, size, searchAfter }));
   }
 
   @Get("/accounts/:address/roles/collections/count")
@@ -493,13 +497,14 @@ export class AccountController {
     @Param('address', ParseAddressPipe) address: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
+    @Query('searchAfter') searchAfter?: string,
     @Query('search') search?: string,
     @Query('owner', ParseAddressPipe) owner?: string,
     @Query('canMint', ParseBoolPipe) canMint?: boolean,
     @Query('canBurn', ParseBoolPipe) canBurn?: boolean,
     @Query('includeMetaESDT', ParseBoolPipe) includeMetaESDT?: boolean,
   ): Promise<TokenWithRoles[]> {
-    return await this.tokenService.getTokensWithRolesForAddress(address, new TokenWithRolesFilter({ search, owner, canMint, canBurn, includeMetaESDT }), new QueryPagination({ from, size }));
+    return await this.tokenService.getTokensWithRolesForAddress(address, new TokenWithRolesFilter({ search, owner, canMint, canBurn, includeMetaESDT }), new QueryPagination({ from, size, searchAfter }));
   }
 
   @Get("/accounts/:address/roles/tokens/count")
@@ -674,7 +679,7 @@ export class AccountController {
 
     return await this.nftService.getNftsForAddress(
       address,
-      new QueryPagination({ from, size }),
+      new QueryPagination({ from, size, searchAfter }),
       new NftFilter({
         search,
         identifiers,
@@ -871,6 +876,7 @@ export class AccountController {
   @ApiOkResponse({ type: [Transaction] })
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
+  @ApiQuery({ name: 'searchAfter', description: 'Cursor for continuing from the previous result set', required: false })
   @ApiQuery({ name: 'sender', description: 'Address of the transaction sender', required: false })
   @ApiQuery({ name: 'receiver', description: 'Search by multiple receiver addresses, comma-separated', required: false })
   @ApiQuery({ name: 'token', description: 'Identifier of the token', required: false })
@@ -901,6 +907,7 @@ export class AccountController {
     @Param('address', ParseAddressPipe) address: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
+    @Query('searchAfter') searchAfter?: string,
     @Query('sender', ParseAddressPipe) sender?: string,
     @Query('receiver', ParseAddressArrayPipe) receiver?: string[],
     @Query('token') token?: string,
@@ -949,7 +956,7 @@ export class AccountController {
       withRelayedScresults,
     });
     TransactionFilter.validate(transactionFilter, size);
-    return await this.transactionService.getTransactions(transactionFilter, new QueryPagination({ from, size }), options, address, fields);
+    return await this.transactionService.getTransactions(transactionFilter, new QueryPagination({ from, size, searchAfter }), options, address, fields);
   }
 
   @Get("/accounts/:address/transactions/count")
@@ -1018,6 +1025,7 @@ export class AccountController {
   @ApplyComplexity({ target: TransactionDetailed })
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
+  @ApiQuery({ name: 'searchAfter', description: 'Cursor for continuing from the previous result set', required: false })
   @ApiQuery({ name: 'sender', description: 'Address of the transfer sender', required: false })
   @ApiQuery({ name: 'receiver', description: 'Search by multiple receiver addresses, comma-separated', required: false })
   @ApiQuery({ name: 'token', description: 'Identifier of the token', required: false })
@@ -1047,6 +1055,7 @@ export class AccountController {
     @Param('address', ParseAddressPipe) address: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
+    @Query('searchAfter') searchAfter?: string,
     @Query('sender', ParseAddressArrayPipe) sender?: string[],
     @Query('receiver', ParseAddressArrayPipe) receiver?: string[],
     @Query('token') token?: string,
@@ -1097,7 +1106,7 @@ export class AccountController {
       withTxsRelayedByAddress,
       isScCall,
     }),
-      new QueryPagination({ from, size }),
+      new QueryPagination({ from, size, searchAfter }),
       options,
       fields
     );
@@ -1213,8 +1222,9 @@ export class AccountController {
     @Param('address', ParseAddressPipe) address: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
+    @Query('searchAfter') searchAfter?: string,
   ): Promise<DeployedContract[]> {
-    return this.accountService.getAccountDeploys(new QueryPagination({ from, size }), address);
+    return this.accountService.getAccountDeploys(new QueryPagination({ from, size, searchAfter }), address);
   }
 
   @Get("/accounts/:address/deploys/count")
@@ -1239,8 +1249,9 @@ export class AccountController {
     @Param('address', ParseAddressPipe) address: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
+    @Query('searchAfter') searchAfter?: string,
   ): Promise<AccountContract[]> {
-    return this.accountService.getAccountContracts(new QueryPagination({ from, size }), address);
+    return this.accountService.getAccountContracts(new QueryPagination({ from, size, searchAfter }), address);
   }
 
   @Get("/accounts/:address/contracts/count")
@@ -1278,8 +1289,9 @@ export class AccountController {
     @Param('address', ParseAddressPipe) address: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
+    @Query('searchAfter') searchAfter?: string,
   ): Promise<SmartContractResult[]> {
-    return this.scResultService.getAccountScResults(address, new QueryPagination({ from, size }));
+    return this.scResultService.getAccountScResults(address, new QueryPagination({ from, size, searchAfter }));
   }
 
   @Get("/accounts/:address/results/count")
@@ -1317,12 +1329,13 @@ export class AccountController {
     @Param('address', ParseAddressPipe) address: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
+    @Query('searchAfter') searchAfter?: string,
     @Query('before', TimestampParsePipe) before?: number,
     @Query('after', TimestampParsePipe) after?: number,
   ): Promise<AccountHistory[]> {
     return this.accountService.getAccountHistory(
       address,
-      new QueryPagination({ from, size }),
+      new QueryPagination({ from, size, searchAfter }),
       new AccountHistoryFilter({ before, after }));
   }
 
@@ -1375,6 +1388,7 @@ export class AccountController {
     @Param('address', ParseAddressPipe) address: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
+    @Query('searchAfter') searchAfter?: string,
     @Query('before', TimestampParsePipe) before?: number,
     @Query('after', TimestampParsePipe) after?: number,
     @Query('identifier', ParseArrayPipe) identifier?: string[],
@@ -1382,7 +1396,7 @@ export class AccountController {
   ): Promise<AccountEsdtHistory[]> {
     return await this.accountService.getAccountEsdtHistory(
       address,
-      new QueryPagination({ from, size }),
+      new QueryPagination({ from, size, searchAfter }),
       new AccountHistoryFilter({ before, after, identifiers: identifier, token }));
   }
 
@@ -1416,6 +1430,7 @@ export class AccountController {
     @Param('tokenIdentifier', ParseTokenOrNftPipe) tokenIdentifier: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
+    @Query('searchAfter') searchAfter?: string,
     @Query('before', TimestampParsePipe) before?: number,
     @Query('after', TimestampParsePipe) after?: number,
   ): Promise<AccountEsdtHistory[]> {
@@ -1426,7 +1441,7 @@ export class AccountController {
 
     return await this.accountService.getAccountTokenHistory(
       address, tokenIdentifier,
-      new QueryPagination({ from, size }),
+      new QueryPagination({ from, size, searchAfter }),
       new AccountHistoryFilter({ before, after }));
   }
 }

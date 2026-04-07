@@ -1,4 +1,6 @@
-export interface MiniBlock {
+import { ElasticSortable } from "./elastic.sortable";
+
+export interface MiniBlock extends ElasticSortable {
   miniBlockHash: string;
   senderShard: number;
   receiverShard: number;
