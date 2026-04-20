@@ -33,7 +33,6 @@ export class EventsController {
   async getEvents(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
-    @Query('searchAfter') searchAfter?: string,
     @Query('address', ParseAddressPipe) address: string,
     @Query('logAddress', ParseAddressPipe) logAddress: string,
     @Query('identifier') identifier: string,
@@ -43,6 +42,7 @@ export class EventsController {
     @Query('after', TimestampParsePipe) after: number,
     @Query('order', ParseIntPipe) order: number,
     @Query('topics') topics: string | string[],
+    @Query('searchAfter') searchAfter?: string,
   ): Promise<Events[]> {
     const topicsArray = topics ? (Array.isArray(topics) ? topics : [topics]) : [];
     return await this.eventsService.getEvents(

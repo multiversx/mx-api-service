@@ -672,8 +672,8 @@ export class AccountController {
     @Query('scamType', new ParseEnumPipe(ScamType)) scamType?: ScamType,
     @Query('timestamp', ParseIntPipe) _timestamp?: number,
     @Query('withReceivedAt', ParseBoolPipe) withReceivedAt?: boolean,
+    @Query('searchAfter') searchAfter?: string,
   ): Promise<NftAccount[]> {
-    // Validăm opțiunile de interogare
     const queryOptions = new NftQueryOptions({ withSupply, withReceivedAt });
     queryOptions.validate(size);
 

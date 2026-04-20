@@ -22,8 +22,8 @@ export class TagController {
   async getTags(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number,
+    @Query('search') search: string,
     @Query('searchAfter') searchAfter?: string,
-    @Query('search') search: string | undefined,
   ): Promise<Tag[]> {
     return await this.nftTagsService.getNftTags(new QueryPagination({ from, size, searchAfter }), search);
   }
@@ -33,7 +33,7 @@ export class TagController {
   @ApiQuery({ name: 'search', description: 'Search by tag name', required: false })
   @ApiOkResponse({ type: Number })
   async getTagCount(
-    @Query('search') search: string | undefined,
+    @Query('search') search: string,
   ): Promise<number> {
     return await this.nftTagsService.getNftTagCount(search);
   }
