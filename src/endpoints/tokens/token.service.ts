@@ -29,6 +29,7 @@ import { TokenLogo } from "./entities/token.logo";
 import { AssetsService } from "src/common/assets/assets.service";
 import { CacheInfo } from "src/utils/cache.info";
 import { TokenAssets } from "src/common/assets/entities/token.assets";
+import { ArrayIndexer } from "src/utils/array.indexer";
 import { TransactionFilter } from "../transactions/entities/transaction.filter";
 import { TransactionService } from "../transactions/transaction.service";
 import { MexTokenService } from "../mex/mex.token.service";
@@ -74,14 +75,13 @@ export class TokenService {
 
   async isToken(identifier: string): Promise<boolean> {
     const tokens = await this.getAllTokens();
-    const lowercaseIdentifier = identifier.toLowerCase();
-    return tokens.find(x => x.identifier.toLowerCase() === lowercaseIdentifier) !== undefined;
+    return ArrayIndexer.getItemByKeyValue(tokens, 'identifier', this.normalizeIdentifierCase(identifier)) !== undefined;
   }
 
   async getToken(rawIdentifier: string, supplyOptions?: TokenSupplyOptions): Promise<TokenDetailed | undefined> {
     const tokens = await this.getAllTokens();
     const identifier = this.normalizeIdentifierCase(rawIdentifier);
-    let token = tokens.find(x => x.identifier === identifier);
+    let token = ArrayIndexer.getItemByKeyValue(tokens, 'identifier', identifier);
 
     if (!TokenUtils.isToken(identifier)) {
       return undefined;
@@ -280,12 +280,10 @@ export class TokenService {
 
     const allTokens = await this.getAllTokens();
 
-    const allTokensIndexed = allTokens.toRecord<TokenDetailed>(token => token.identifier);
-
     const result: TokenWithBalance[] = [];
     for (const elasticToken of elasticTokens) {
-      if (allTokensIndexed[elasticToken.token]) {
-        const token = allTokensIndexed[elasticToken.token];
+      const token = ArrayIndexer.getItemByKeyValue(allTokens, 'identifier', elasticToken.token);
+      if (token) {
 
         const tokenWithBalance: TokenWithBalance = {
           ...token,
@@ -660,7 +658,7 @@ export class TokenService {
     const result: TokenWithRoles[] = [];
 
     for (const item of tokenList) {
-      const token = allTokens.find(x => x.identifier === item.identifier);
+      const token = ArrayIndexer.getItemByKeyValue(allTokens, 'identifier', item.identifier);
       if (token) {
         this.applyTickerFromAssets(token);
 

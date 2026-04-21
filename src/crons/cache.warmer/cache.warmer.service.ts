@@ -26,7 +26,7 @@ import { IndexerService } from "src/common/indexer/indexer.service";
 import { NftService } from "src/endpoints/nfts/nft.service";
 import { AccountQueryOptions } from "src/endpoints/accounts/entities/account.query.options";
 import { Account, TokenType } from "src/common/indexer/entities";
-import { TokenDetailed } from "src/endpoints/tokens/entities/token.detailed";
+import { ArrayIndexer } from "src/utils/array.indexer";
 import { DataApiService } from "src/common/data-api/data-api.service";
 import { BlockService } from "src/endpoints/blocks/block.service";
 import { PoolService } from "src/endpoints/pool/pool.service";
@@ -277,10 +277,9 @@ export class CacheWarmerService {
   async handleTokenAssetsExtraInfoInvalidations() {
     const assets = await this.assetsService.getAllTokenAssets();
     const allTokens = await this.tokenService.getAllTokens();
-    const allTokensIndexed = allTokens.toRecord<TokenDetailed>(token => token.identifier);
 
     for (const identifier of Object.keys(assets)) {
-      const token = allTokensIndexed[identifier];
+      const token = ArrayIndexer.getItemByKeyValue(allTokens, 'identifier', identifier);
       if (!token) {
         continue;
       }
