@@ -212,3 +212,9 @@ customUrlHeaders:
   - urlPattern: ''
     headers:
       x-custom-auth: ''
+restrictedRoutes:
+  enabled: true
+  routes:
+    - '/package.json'
+    - '/docs/package.json'
+

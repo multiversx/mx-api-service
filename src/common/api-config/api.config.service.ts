@@ -1104,4 +1104,12 @@ export class ApiConfigService {
 
     return timestamp;
   }
+
+  isRestrictedRoutesEnabled(): boolean {
+    return this.configService.get<boolean>('restrictedRoutes.enabled') ?? false;
+  }
+
+  getRestrictedRoutes(): string[] {
+    return this.configService.get<string[]>('restrictedRoutes.routes') ?? [];
+  }
 }
