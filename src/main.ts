@@ -188,12 +188,12 @@ async function bootstrap() {
   logger.log(`Transaction pool enabled: ${apiConfigService.isTransactionPoolEnabled()}`);
   logger.log(`Transaction pool cache warmer enabled: ${apiConfigService.isTransactionPoolCacheWarmerEnabled()}`);
 
-  logger.log('Restricted routes enabled: ' + apiConfigService.isRestrictedRoutesEnabled());
+  logger.log(`Restricted routes enabled: ${apiConfigService.isRestrictedRoutesEnabled()}`);
 }
 
 async function configurePublicApp(publicApp: NestExpressApplication, apiConfigService: ApiConfigService) {
   if (apiConfigService.isRestrictedRoutesEnabled()) {
-    const restrictedRoutesMiddleware = new RestrictedRoutesMiddleware(apiConfigService);
+    const restrictedRoutesMiddleware = publicApp.get(RestrictedRoutesMiddleware);
     publicApp.use(restrictedRoutesMiddleware.use.bind(restrictedRoutesMiddleware));
   }
 

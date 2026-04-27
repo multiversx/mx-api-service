@@ -9,6 +9,7 @@ import { GuestCacheService } from '@multiversx/sdk-nestjs-cache';
 import { LoggingModule } from '@multiversx/sdk-nestjs-common';
 import { DynamicModuleUtils } from './utils/dynamic.module.utils';
 import { LocalCacheController } from './endpoints/caching/local.cache.controller';
+import { RestrictedRoutesMiddleware } from './utils/restricted.routes.middleware';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { LocalCacheController } from './endpoints/caching/local.cache.controller
   providers: [
     DynamicModuleUtils.getNestJsApiConfigService(),
     GuestCacheService,
+    RestrictedRoutesMiddleware,
   ],
   exports: [
     EndpointsServicesModule,
