@@ -129,3 +129,8 @@ inflation:
 nftProcess:
   parallelism: 1
   maxRetries: 3
+restrictedRoutes:
+  enabled: true
+  routes:
+    - '/package.json'
+    - '/docs/package.json'

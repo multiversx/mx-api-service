@@ -86,3 +86,8 @@ test:
 transaction-action:
   mex:
     microServiceUrl: 'https://graph.xexchange.com/graphql'
+restrictedRoutes:
+  enabled: true
+  routes:
+    - '/package.json'
+    - '/docs/package.json'
