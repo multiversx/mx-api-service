@@ -29,7 +29,7 @@ export class RabbitMqModule {
     return {
       module: RabbitMqModule,
       imports: [
-        RabbitMQModule.forRootAsync(RabbitMQModule, {
+        RabbitMQModule.forRootAsync({
           imports: [ApiConfigModule],
           inject: [ApiConfigService],
           useFactory: (apiConfigService: ApiConfigService) => {

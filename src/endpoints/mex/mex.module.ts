@@ -9,41 +9,39 @@ import { MexSettingsService } from "./mex.settings.service";
 import { MexTokenChartsService } from "./mex.token.charts.service";
 import { MexTokenService } from "./mex.token.service";
 import { MexWarmerService } from "./mex.warmer.service";
-
-@Module({})
+@Module({
+  imports: [GraphQlModule], // mutat aici
+  providers: [
+    MexEconomicsService,
+    MexSettingsService,
+    MexPairService,
+    MexTokenService,
+    MexFarmService,
+    MexTokenChartsService,
+    DynamicModuleUtils.getPubSubService(),
+  ],
+  exports: [
+    MexEconomicsService,
+    MexPairService,
+    MexSettingsService,
+    MexTokenService,
+    MexFarmService,
+    MexTokenChartsService,
+  ],
+})
 export class MexModule {
   static forRoot(): DynamicModule {
-    const providers: (Type<any> | Provider<any>)[] = [
-      DynamicModuleUtils.getPubSubService(),
-      MexEconomicsService,
-      MexSettingsService,
-      MexPairService,
-      MexTokenService,
-      MexFarmService,
-      MexTokenChartsService,
+    const dynamicProviders: (Type<any> | Provider<any>)[] = [
     ];
 
     const isExchangeEnabled = configuration().features?.exchange?.enabled ?? false;
-    const isCacheWarmerEnabled = configuration().cron?.cacheWarmer ?? false;
-    // Enable MEX cron only when both Exchange and CacheWarmer flags are enabled
-    if (isExchangeEnabled && isCacheWarmerEnabled) {
-      providers.push(MexWarmerService);
+    if (isExchangeEnabled) {
+      dynamicProviders.push(MexWarmerService);
     }
 
     return {
       module: MexModule,
-      imports: [
-        GraphQlModule,
-      ],
-      providers,
-      exports: [
-        MexEconomicsService,
-        MexPairService,
-        MexSettingsService,
-        MexTokenService,
-        MexFarmService,
-        MexTokenChartsService,
-      ],
+      providers: dynamicProviders,
     };
   }
 }

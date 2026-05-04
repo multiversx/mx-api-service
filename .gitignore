@@ -6,6 +6,7 @@
 /config/config.custom.devnet.yaml
 /config/config.custom.testnet.yaml
 /config/config.custom.mainnet.yaml
+/config/config.custom.cs-e2e.yaml
 __snapshots__
 
 # Logs
