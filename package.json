@@ -5,9 +5,6 @@
   "author": "",
   "private": true,
   "license": "UNLICENSED",
-  "engines": {
-    "node": ">=25 <26"
-  },
   "scripts": {
     "prebuild": "run-script-os",
     "prebuild:nix": "rimraf dist",
