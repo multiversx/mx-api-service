@@ -1,4 +1,4 @@
-FROM node:25-alpine AS build
+FROM node:24.14.0-alpine AS build
 
 WORKDIR /app
 RUN chown -R node:node /app
@@ -11,7 +11,7 @@ RUN npm install
 RUN npm run init
 RUN npm run build
 
-FROM node:25-alpine
+FROM node:24.14.0-alpine
 
 ENV PYTHONUNBUFFERED=1
 RUN apk add --no-cache python3 py3-pip py3-ruamel.yaml
