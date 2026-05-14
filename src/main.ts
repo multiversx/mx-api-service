@@ -90,7 +90,6 @@ async function bootstrap() {
     await processorApp.listen(5001);
   }
 
-
   if (apiConfigService.getIsWebsocketSubscriptionActive()) {
     const websocketSubscriptionApp = await NestFactory.create(WebsocketSubscriptionModule);
     websocketSubscriptionApp.useWebSocketAdapter(new IoAdapter(websocketSubscriptionApp));
