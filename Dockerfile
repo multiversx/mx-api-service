@@ -14,7 +14,7 @@ RUN npm run build
 FROM node:24.14.0-alpine
 
 ENV PYTHONUNBUFFERED=1
-RUN apk add --no-cache python3 py3-pip py3-ruamel.yaml
+RUN apk add --no-cache python3 py3-pip py3-ruamel.yaml git
 
 WORKDIR /app
 RUN chown -R node:node /app
