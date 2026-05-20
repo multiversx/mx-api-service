@@ -4,6 +4,7 @@ import { AssetsModule } from 'src/common/assets/assets.module';
 import { PersistenceModule } from 'src/common/persistence/persistence.module';
 import { EndpointsServicesModule } from 'src/endpoints/endpoints.services.module';
 import { ElasticUpdaterService } from './elastic.updater.service';
+import { ApiMetricsModule } from 'src/common/metrics/api.metrics.module';
 
 @Module({
   imports: [
@@ -11,6 +12,7 @@ import { ElasticUpdaterService } from './elastic.updater.service';
     EndpointsServicesModule,
     AssetsModule,
     forwardRef(() => PersistenceModule),
+    ApiMetricsModule,
   ],
   providers: [
     ElasticUpdaterService,

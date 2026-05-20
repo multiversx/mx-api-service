@@ -18,6 +18,7 @@ import { EventsCustomGateway } from './events.custom.gateway';
 import { ApiConfigModule } from 'src/common/api-config/api.config.module';
 import { TransfersCustomGateway } from './transfers.custom.gateway';
 import { TransferModule } from 'src/endpoints/transfers/transfer.module';
+import { ApiMetricsModule } from 'src/common/metrics/api.metrics.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { TransferModule } from 'src/endpoints/transfers/transfer.module';
     RoundModule,
     TransferModule,
     ApiConfigModule,
+    ApiMetricsModule,
   ],
   providers: [
     WebsocketCronService,
