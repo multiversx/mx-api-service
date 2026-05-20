@@ -10,6 +10,7 @@ import { LoggingModule } from '@multiversx/sdk-nestjs-common';
 import { DynamicModuleUtils } from './utils/dynamic.module.utils';
 import { LocalCacheController } from './endpoints/caching/local.cache.controller';
 import { RestrictedRoutesMiddleware } from './utils/restricted.routes.middleware';
+import { ApiMetricsModule } from './common/metrics/api.metrics.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { RestrictedRoutesMiddleware } from './utils/restricted.routes.middleware
     EndpointsServicesModule,
     EndpointsControllersModule.forRoot(),
     DynamicModuleUtils.getRedisCacheModule(),
+    ApiMetricsModule,
   ],
   controllers: [
     LocalCacheController,
