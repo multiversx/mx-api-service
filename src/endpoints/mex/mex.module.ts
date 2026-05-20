@@ -10,7 +10,7 @@ import { MexTokenChartsService } from "./mex.token.charts.service";
 import { MexTokenService } from "./mex.token.service";
 import { MexWarmerService } from "./mex.warmer.service";
 @Module({
-  imports: [GraphQlModule], // mutat aici
+  imports: [GraphQlModule],
   providers: [
     MexEconomicsService,
     MexSettingsService,

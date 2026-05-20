@@ -71,7 +71,6 @@ export class TransactionProcessorService {
       },
       setLastProcessedNonce: async (shardId, nonce) => {
         const event = new LogMetricsEvent();
-        console.log(`Emitting event to set last processed nonce for shard ${shardId} to ${nonce}`);
         event.args = [shardId, nonce];
         this.eventEmitter.emit(
           MetricsEvents.SetLastProcessedNonce,

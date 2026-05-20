@@ -11,6 +11,7 @@ import { GuestCacheWarmer } from '@multiversx/sdk-nestjs-cache';
 import { PluginModule } from 'src/plugins/plugin.module';
 import { TpsWarmerService } from '../tps/tps-warmer.service';
 import { TpsModule } from 'src/endpoints/tps/tps.module';
+import { ApiMetricsModule } from 'src/common/metrics/api.metrics.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { TpsModule } from 'src/endpoints/tps/tps.module';
     NftCronModule,
     PluginModule,
     TpsModule,
+    ApiMetricsModule,
   ],
   providers: [
     DynamicModuleUtils.getPubSubService(),

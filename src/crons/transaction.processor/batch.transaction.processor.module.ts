@@ -5,6 +5,7 @@ import { TransactionsBatchModule } from "src/endpoints/transactions.batch/transa
 import { TransactionModule } from "src/endpoints/transactions/transaction.module";
 import { DynamicModuleUtils } from "src/utils/dynamic.module.utils";
 import { BatchTransactionProcessorService } from "./batch.transaction.processor.service";
+import { ApiMetricsModule } from 'src/common/metrics/api.metrics.module';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { BatchTransactionProcessorService } from "./batch.transaction.processor.
     DynamicModuleUtils.getCacheModule(),
     TransactionsBatchModule,
     TransactionModule,
+    ApiMetricsModule,
   ],
   providers: [
     DynamicModuleUtils.getPubSubService(),
