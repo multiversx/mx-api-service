@@ -184,7 +184,6 @@ export class ApiMetricsService {
   @OnEvent(MetricsEvents.SetLastProcessedNonce)
   setLastProcessedNonce(payload: LogMetricsEvent) {
     const [shardId, nonce] = payload.args;
-    console.log(`Setting last processed nonce for shard ${shardId} to ${nonce}...`);
     ApiMetricsService.lastProcessedNonceGauge.set({ shardId }, nonce);
   }
 
