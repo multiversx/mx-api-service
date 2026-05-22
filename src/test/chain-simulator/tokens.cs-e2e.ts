@@ -44,7 +44,7 @@ describe('Tokens e2e tests with chain simulator', () => {
     it('should support pagination and return 2 tokens', async () => {
       const response = await axios.get(`${config.apiServiceUrl}/tokens?size=2`);
       const tokens = response.data;
-      console.log('Tokens response:', tokens);
+
       expect(response.status).toBe(200);
       expect(tokens.length).toBe(2);
       expect(Array.isArray(tokens)).toBe(true);
