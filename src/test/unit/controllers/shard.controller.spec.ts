@@ -6,6 +6,8 @@ import { ShardService } from "src/endpoints/shards/shard.service";
 import { mockShardService } from "./services.mock/shard.service.mock";
 import request = require('supertest');
 import { QueryPagination } from "src/common/entities/query.pagination";
+import { EventEmitter2, EventEmitterModule } from "@nestjs/event-emitter";
+import { mockEventEmitterService } from "./services.mock/event.emitter2.services.mock";
 
 describe('ShardController', () => {
   let app: INestApplication;
@@ -15,10 +17,15 @@ describe('ShardController', () => {
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
       controllers: [ShardController],
-      imports: [ShardModule],
+      imports: [
+        ShardModule,
+        EventEmitterModule.forRoot({ maxListeners: 1 })
+      ],
     })
       .overrideProvider(ShardService)
       .useValue(shardServiceMock)
+      .overrideProvider(EventEmitter2)
+      .useValue(mockEventEmitterService())
       .compile();
 
     app = moduleRef.createNestApplication();

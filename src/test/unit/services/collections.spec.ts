@@ -14,6 +14,8 @@ import { EsdtService } from "src/endpoints/esdt/esdt.service";
 import { CollectionRoles } from "src/endpoints/tokens/entities/collection.roles";
 import { TokenAssetStatus } from "src/endpoints/tokens/entities/token.asset.status";
 import { VmQueryService } from "src/endpoints/vm.query/vm.query.service";
+import { mockEventEmitterService } from "../controllers/services.mock/event.emitter2.services.mock";
+import { EventEmitter2 } from "@nestjs/event-emitter";
 
 describe('CollectionService', () => {
   let service: CollectionService;
@@ -143,6 +145,10 @@ describe('CollectionService', () => {
             processCollections: jest.fn(),
           },
         },
+        {
+          provide: EventEmitter2,
+          useValue: mockEventEmitterService(),
+        }
       ],
     }).compile();
 
