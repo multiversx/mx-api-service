@@ -19,7 +19,7 @@ describe('ShardController', () => {
       controllers: [ShardController],
       imports: [
         ShardModule,
-        EventEmitterModule.forRoot({ maxListeners: 1 })
+        EventEmitterModule.forRoot({ maxListeners: 1 }),
       ],
     })
       .overrideProvider(ShardService)

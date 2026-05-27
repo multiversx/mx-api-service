@@ -148,7 +148,7 @@ describe('CollectionService', () => {
         {
           provide: EventEmitter2,
           useValue: mockEventEmitterService(),
-        }
+        },
       ],
     }).compile();
 

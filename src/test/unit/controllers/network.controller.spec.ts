@@ -23,7 +23,7 @@ describe("NetworkController", () => {
       controllers: [NetworkController],
       imports: [
         NetworkModule,
-        EventEmitterModule.forRoot({ maxListeners: 1 })
+        EventEmitterModule.forRoot({ maxListeners: 1 }),
       ],
     })
       .overrideProvider(NetworkService)

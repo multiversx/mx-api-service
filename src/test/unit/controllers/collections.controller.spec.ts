@@ -45,7 +45,7 @@ describe('CollectionController', () => {
         TransactionModule,
         TransferModule,
         ConfigModule.forRoot({}),
-        EventEmitterModule.forRoot({ maxListeners: 1 })
+        EventEmitterModule.forRoot({ maxListeners: 1 }),
       ],
     })
       .overrideProvider(CollectionService).useValue(collectionServiceMocks)
