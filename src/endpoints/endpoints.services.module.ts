@@ -58,7 +58,6 @@ import { EventsModule } from "./events/events.module";
     ShardModule,
     StakeModule,
     TokenModule,
-    RoundModule,
     TransactionModule,
     UsernameModule,
     VmQueryModule,
@@ -81,7 +80,7 @@ import { EventsModule } from "./events/events.module";
   exports: [
     AccountModule, CollectionModule, BlockModule, DelegationModule, DelegationLegacyModule, IdentitiesModule, KeysModule,
     MiniBlockModule, NetworkModule, NftModule, NftMediaModule, TagModule, NodeModule, ProviderModule,
-    RoundModule, SmartContractResultModule, ShardModule, StakeModule, TokenModule, RoundModule, TransactionModule, UsernameModule, VmQueryModule,
+    RoundModule, SmartContractResultModule, ShardModule, StakeModule, TokenModule, TransactionModule, UsernameModule, VmQueryModule,
     WaitingListModule, EsdtModule, BlsModule, DappConfigModule, TransferModule, PoolModule, TransactionActionModule, WebsocketModule, MexModule,
     ProcessNftsModule, NftMarketplaceModule, TransactionsBatchModule, TpsModule, ApplicationModule, EventsModule,
   ],
