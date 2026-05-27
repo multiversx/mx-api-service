@@ -5,6 +5,7 @@ on:
     branches: [main, development]
   pull_request:
     branches: [main, development]
+  workflow_dispatch:
 
 jobs:
   test-chainsimulator-e2e:
