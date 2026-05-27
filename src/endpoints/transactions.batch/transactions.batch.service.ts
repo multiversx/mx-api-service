@@ -1,4 +1,4 @@
-import { Address, Transaction as ErdJsTransaction, TransactionComputer } from "@multiversx/sdk-core";
+import { Address, Transaction as TransactionFromSdk, TransactionComputer } from "@multiversx/sdk-core";
 import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { Injectable, Logger } from "@nestjs/common";
 import { TransactionBatch } from "./entities/transaction.batch";
@@ -36,7 +36,7 @@ export class TransactionsBatchService {
       for (const item of group.items) {
         const tx = item.transaction.tx;
 
-        const trans = new ErdJsTransaction({
+        const trans = new TransactionFromSdk({
           nonce: BigInt(tx.nonce),
           value: BigInt(tx.value),
           receiver: new Address(tx.receiver),
