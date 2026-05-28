@@ -207,7 +207,7 @@ describe('Websocket subscriptions e2e tests', () => {
       await axios.post(`${config.chainSimulatorUrl}/simulator/generate-blocks/10`);
 
       log("Waiting for WS messages...");
-      await new Promise(resolve => setTimeout(resolve, 30000));
+      await new Promise(resolve => setTimeout(resolve, 35000));
 
     } catch (e: any) {
       console.error("Error in beforeAll:", e.message);
