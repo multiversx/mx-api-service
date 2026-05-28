@@ -4,6 +4,8 @@ import { NftType } from "src/endpoints/nfts/entities/nft.type";
 import { NftSubType } from "src/endpoints/nfts/entities/nft.sub.type";
 import { transferNftFromTo } from "./utils/chain.simulator.operations";
 
+axios.defaults.adapter = 'fetch';
+
 describe('Accounts e2e tests with chain simulator', () => {
   describe('GET /accounts with query parameters', () => {
     it('should return paginated results with from and size parameters', async () => {
