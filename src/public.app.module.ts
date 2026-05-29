@@ -11,9 +11,11 @@ import { DynamicModuleUtils } from './utils/dynamic.module.utils';
 import { LocalCacheController } from './endpoints/caching/local.cache.controller';
 import { RestrictedRoutesMiddleware } from './utils/restricted.routes.middleware';
 import { ApiMetricsModule } from './common/metrics/api.metrics.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
+    ScheduleModule.forRoot(), // for plugins, best practice not to have crons in public API
     LoggingModule,
     EndpointsServicesModule,
     EndpointsControllersModule.forRoot(),
