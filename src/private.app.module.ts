@@ -8,11 +8,13 @@ import { LoggingModule } from '@multiversx/sdk-nestjs-common';
 import { DynamicModuleUtils } from './utils/dynamic.module.utils';
 import { ApiMetricsModule } from './common/metrics/api.metrics.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
-    LoggingModule,
+    ScheduleModule.forRoot(),
     EventEmitterModule.forRoot({ maxListeners: 1 }),
+    LoggingModule,
     ProcessNftsModule,
     ApiMetricsModule,
   ],

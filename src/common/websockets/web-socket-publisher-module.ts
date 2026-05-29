@@ -5,11 +5,13 @@ import { WebSocketPublisherController } from "./web-socket-publisher-controller"
 import { DynamicModuleUtils } from "src/utils/dynamic.module.utils";
 import { ApiMetricsModule } from 'src/common/metrics/api.metrics.module';
 import { EventEmitterModule } from "@nestjs/event-emitter";
+import { ScheduleModule } from "@nestjs/schedule";
 
 @Module({
   imports: [
-    TransactionActionModule,
+    ScheduleModule.forRoot(),
     EventEmitterModule.forRoot({ maxListeners: 1 }),
+    TransactionActionModule,
     ApiMetricsModule,
   ],
   controllers: [

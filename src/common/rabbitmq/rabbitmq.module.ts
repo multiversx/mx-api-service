@@ -9,9 +9,13 @@ import { ApiConfigService } from '../api-config/api.config.service';
 import { RabbitMqConsumer } from './rabbitmq.consumer';
 import { RabbitMqNftHandlerService } from './rabbitmq.nft.handler.service';
 import { RabbitMqTokenHandlerService } from './rabbitmq.token.handler.service';
+import { EventEmitterModule } from '@nestjs/event-emitter';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
+    ScheduleModule.forRoot(),
+    EventEmitterModule.forRoot({ maxListeners: 1 }),
     ApiConfigModule,
     NftModule,
     NftWorkerModule,

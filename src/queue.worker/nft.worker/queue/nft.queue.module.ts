@@ -5,12 +5,14 @@ import { NftModule } from 'src/endpoints/nfts/nft.module';
 import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 import { ApiMetricsModule } from 'src/common/metrics/api.metrics.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
+    ScheduleModule.forRoot(),
+    EventEmitterModule.forRoot({ maxListeners: 1 }),
     NftJobProcessorModule,
     NftModule,
-    EventEmitterModule.forRoot({ maxListeners: 1 }),
     ApiMetricsModule,
   ],
   providers: [
