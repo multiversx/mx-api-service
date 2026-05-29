@@ -5,6 +5,7 @@ import { ProtocolModule } from "src/common/protocol/protocol.module";
 import { SettingsModule } from "src/common/settings/settings.module";
 import { DynamicModuleUtils } from "src/utils/dynamic.module.utils";
 import { VmQueryService } from "./vm.query.service";
+import { EventEmitterModule } from "@nestjs/event-emitter";
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { VmQueryService } from "./vm.query.service";
     ProtocolModule,
     ApiConfigModule,
     SettingsModule,
+    EventEmitterModule.forRoot(),
   ],
   providers: [
     VmQueryService,

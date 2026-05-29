@@ -19,10 +19,12 @@ import { ApiConfigModule } from 'src/common/api-config/api.config.module';
 import { TransfersCustomGateway } from './transfers.custom.gateway';
 import { TransferModule } from 'src/endpoints/transfers/transfer.module';
 import { ApiMetricsModule } from 'src/common/metrics/api.metrics.module';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 
 @Module({
   imports: [
     ScheduleModule.forRoot(),
+    EventEmitterModule.forRoot({ maxListeners: 1 }),
     TransactionModule,
     BlockModule,
     NetworkModule,

@@ -8,10 +8,12 @@ import { NftWorkerModule } from 'src/queue.worker/nft.worker/nft.worker.module';
 import { ApiMetricsModule } from 'src/common/metrics/api.metrics.module';
 import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 import { TransactionProcessorService } from './transaction.processor.service';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 
 @Module({
   imports: [
     ScheduleModule.forRoot(),
+    EventEmitterModule.forRoot({ maxListeners: 1 }),
     TransactionModule,
     ShardModule,
     NodeModule,

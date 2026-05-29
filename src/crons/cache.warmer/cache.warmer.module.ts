@@ -12,10 +12,12 @@ import { PluginModule } from 'src/plugins/plugin.module';
 import { TpsWarmerService } from '../tps/tps-warmer.service';
 import { TpsModule } from 'src/endpoints/tps/tps.module';
 import { ApiMetricsModule } from 'src/common/metrics/api.metrics.module';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 
 @Module({
   imports: [
     ScheduleModule.forRoot(),
+    EventEmitterModule.forRoot({ maxListeners: 1 }),
     EndpointsServicesModule,
     KeybaseModule,
     MexModule.forRoot(),

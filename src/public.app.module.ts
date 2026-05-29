@@ -12,10 +12,12 @@ import { LocalCacheController } from './endpoints/caching/local.cache.controller
 import { RestrictedRoutesMiddleware } from './utils/restricted.routes.middleware';
 import { ApiMetricsModule } from './common/metrics/api.metrics.module';
 import { ScheduleModule } from '@nestjs/schedule';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 
 @Module({
   imports: [
     ScheduleModule.forRoot(), // for plugins, best practice not to have crons in public API
+    EventEmitterModule.forRoot({ maxListeners: 1 }),
     LoggingModule,
     EndpointsServicesModule,
     EndpointsControllersModule.forRoot(),
