@@ -5,6 +5,8 @@ import { mockDelegationService } from "./services.mock/delegation.services.mock"
 import { DelegationController } from "src/endpoints/delegation/delegation.controller";
 import { DelegationModule } from "src/endpoints/delegation/delegation.module";
 import { DelegationService } from "src/endpoints/delegation/delegation.service";
+import { EventEmitter2, EventEmitterModule } from "@nestjs/event-emitter";
+import { mockEventEmitterService } from "./services.mock/event.emitter2.services.mock";
 
 describe('DelegationController', () => {
   let app: INestApplication;
@@ -15,10 +17,15 @@ describe('DelegationController', () => {
     jest.resetAllMocks();
     const moduleFixture = await Test.createTestingModule({
       controllers: [DelegationController],
-      imports: [DelegationModule],
+      imports: [
+        DelegationModule,
+        EventEmitterModule.forRoot({ maxListeners: 1 }),
+      ],
     })
       .overrideProvider(DelegationService)
       .useValue(delegationServiceMocks)
+      .overrideProvider(EventEmitter2)
+      .useValue(mockEventEmitterService())
       .compile();
 
     app = moduleFixture.createNestApplication();

@@ -3,10 +3,12 @@ import { TransactionActionModule } from "src/endpoints/transactions/transaction-
 import { WebSocketPublisherService } from "./web-socket-publisher-service";
 import { WebSocketPublisherController } from "./web-socket-publisher-controller";
 import { DynamicModuleUtils } from "src/utils/dynamic.module.utils";
+import { ApiMetricsModule } from 'src/common/metrics/api.metrics.module';
 
 @Module({
   imports: [
     TransactionActionModule,
+    ApiMetricsModule,
   ],
   controllers: [
     WebSocketPublisherController,

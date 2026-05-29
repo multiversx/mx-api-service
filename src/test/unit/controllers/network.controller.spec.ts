@@ -10,6 +10,8 @@ import { Economics } from "src/endpoints/network/entities/economics";
 import { Stats } from "src/endpoints/network/entities/stats";
 import { About } from "src/endpoints/network/entities/about";
 import { FeatureConfigs } from "../../../endpoints/network/entities/feature.configs";
+import { EventEmitter2, EventEmitterModule } from "@nestjs/event-emitter";
+import { mockEventEmitterService } from "./services.mock/event.emitter2.services.mock";
 
 describe("NetworkController", () => {
   let app: INestApplication;
@@ -19,10 +21,15 @@ describe("NetworkController", () => {
     jest.resetAllMocks();
     const moduleFixture = await Test.createTestingModule({
       controllers: [NetworkController],
-      imports: [NetworkModule],
+      imports: [
+        NetworkModule,
+        EventEmitterModule.forRoot({ maxListeners: 1 }),
+      ],
     })
       .overrideProvider(NetworkService)
       .useValue(networkServiceMocks)
+      .overrideProvider(EventEmitter2)
+      .useValue(mockEventEmitterService())
       .compile();
 
     app = moduleFixture.createNestApplication();

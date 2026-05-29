@@ -264,7 +264,7 @@ export class NetworkService {
     }
 
     if (yearIndex >= inflationAmounts.length) {
-      throw new Error(`There is no inflation information for year with index ${yearIndex}`,);
+      throw new Error(`There is no inflation information for year with index ${yearIndex}`);
     }
 
     const inflation = inflationAmounts[yearIndex];
@@ -374,7 +374,7 @@ export class NetworkService {
       version: apiVersion,
       indexerVersion: indexerVersion,
       gatewayVersion: gatewayVersion,
-      features: features,
+      features: features
     });
 
     await this.pluginService.processAbout(about);

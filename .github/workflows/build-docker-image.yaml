@@ -15,12 +15,12 @@ jobs:
       attestations: write
     steps:
       - name: Check out the repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set up Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v6
         with:
-          node-version: '18'  # Specify your Node.js version
+          node-version: '24.14'  # Specify your Node.js version
 
       - name: Log in to Docker Hub
         uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a

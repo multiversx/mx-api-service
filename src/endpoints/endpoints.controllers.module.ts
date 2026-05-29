@@ -46,7 +46,7 @@ export class EndpointsControllersModule {
     const controllers: Type<any>[] = [
       AccountController, BlockController, CollectionController, DelegationController, DelegationLegacyController, IdentitiesController,
       KeysController, MiniBlockController, NetworkController, NftController, TagController, NodeController,
-      ProviderController, GatewayProxyController, RoundController, SmartContractResultController, ShardController, StakeController, StakeController,
+      ProviderController, GatewayProxyController, RoundController, SmartContractResultController, ShardController, StakeController,
       TokenController, TransactionController, UsernameController, VmQueryController, WaitingListController,
       HealthCheckController, DappConfigController, WebsocketController, TransferController,
       ProcessNftsPublicController, TransactionsBatchController, ApplicationController, EventsController,

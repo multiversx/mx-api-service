@@ -44,7 +44,7 @@ export class ProviderController {
   async getProviderAccounts(
     @Param('address', ParseAddressPipe) address: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
-    @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,): Promise<ProviderAccounts[]> {
+    @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number): Promise<ProviderAccounts[]> {
     const provider = await this.providerService.getProviderAccounts(address, new QueryPagination({ from, size }));
 
     if (provider === undefined) {
