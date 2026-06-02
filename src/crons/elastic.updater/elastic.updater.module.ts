@@ -5,10 +5,12 @@ import { PersistenceModule } from 'src/common/persistence/persistence.module';
 import { EndpointsServicesModule } from 'src/endpoints/endpoints.services.module';
 import { ElasticUpdaterService } from './elastic.updater.service';
 import { ApiMetricsModule } from 'src/common/metrics/api.metrics.module';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 
 @Module({
   imports: [
     ScheduleModule.forRoot(),
+    EventEmitterModule.forRoot({ maxListeners: 1 }),
     EndpointsServicesModule,
     AssetsModule,
     forwardRef(() => PersistenceModule),
