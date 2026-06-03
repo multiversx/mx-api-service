@@ -233,6 +233,16 @@ export class GatewayProxyController {
     return await this.gatewayGet('network/config', GatewayComponentRequest.networkConfig);
   }
 
+  @Get('/network/enable-epochs')
+  async getNetworkEnableEpochs() {
+    return await this.gatewayGet('network/enable-epochs', GatewayComponentRequest.networkEnableEpochs);
+  }
+
+  @Get('/network/enable-epochs-v2')
+  async getNetworkEnabledEpochsV2() {
+    return await this.gatewayGet('network/enable-epochs-v2', GatewayComponentRequest.networkEnableEpochsV2);
+  }
+
   @Get('/network/economics')
   async getNetworkEconomics() {
     return await this.gatewayGet('network/economics', GatewayComponentRequest.networkEconomics);

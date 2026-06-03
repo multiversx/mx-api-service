@@ -251,6 +251,22 @@ export class ElasticIndexerService implements IndexerInterface {
     return await this.elasticService.getItem('blocks', 'hash', hash);
   }
 
+  async getExecutionResults(hash: string): Promise<Block> {
+    return await this.elasticService.getItem('executionresults', 'hash', hash);
+  }
+
+  async getExecutionResultsForHashes(hashes: string[]): Promise<Block[]> {
+    if (!hashes || hashes.length === 0) {
+      return [];
+    }
+
+    const elasticQuery = ElasticQuery.create()
+      .withPagination({ from: 0, size: hashes.length + 1 })
+      .withShouldCondition(hashes.map(h => QueryType.Match('_id', h)));
+
+    return await this.elasticService.getList('executionresults', 'hash', elasticQuery);
+  }
+
   async getBlockByMiniBlockHash(miniBlockHash: string): Promise<Block | undefined> {
     const elasticQuery = ElasticQuery.create()
       .withCondition(QueryConditionOptions.must, [QueryType.Match('miniBlocksHashes', miniBlockHash)])
@@ -1032,11 +1048,26 @@ export class ElasticIndexerService implements IndexerInterface {
   }
 
   async getBlockByTimestampAndShardId(timestamp: number, shardId: number): Promise<Block | undefined> {
-    const timestampIdentifier = TimeUtils.isTimestampInSeconds(timestamp) ? 'timestamp' : 'timestampMs';
+    const timestampInSeconds = TimeUtils.isTimestampInSeconds(timestamp) ? timestamp : Math.floor(timestamp / 1000);
+    const timestampInMilliseconds = TimeUtils.isTimestampInSeconds(timestamp) ? timestamp * 1000 : timestamp;
+
+    const timestampQuery = QueryType.Should([
+      QueryType.Must([
+        QueryType.Exists('timestampMs'),
+        QueryType.Range('timestampMs', new RangeGreaterThanOrEqual(timestampInMilliseconds)),
+      ]),
+      QueryType.Must([
+        QueryType.Range('timestamp', new RangeGreaterThanOrEqual(timestampInSeconds)),
+      ], [QueryType.Exists('timestampMs')]),
+    ]);
+
     const elasticQuery = ElasticQuery.create()
-      .withRangeFilter(timestampIdentifier, new RangeGreaterThanOrEqual(timestamp))
+      .withMustCondition(timestampQuery)
       .withCondition(QueryConditionOptions.must, [QueryType.Match('shardId', shardId, QueryOperator.AND)])
-      .withSort([{ name: 'timestamp', order: ElasticSortOrder.ascending }]);
+      .withSort([
+        { name: 'timestamp', order: ElasticSortOrder.ascending },
+        { name: 'timestampMs', order: ElasticSortOrder.ascending },
+      ]);
 
     const blocks: Block[] = await this.elasticService.getList('blocks', '_search', elasticQuery);
 

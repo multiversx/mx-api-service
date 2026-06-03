@@ -23,6 +23,9 @@ import { TransactionStatus } from "src/endpoints/transactions/entities/transacti
 import { mockTransferService } from "./services.mock/transfer.services.mock";
 import { TransferService } from "src/endpoints/transfers/transfer.service";
 import { TransferModule } from "src/endpoints/transfers/transfer.module";
+import { EventEmitter2, EventEmitterModule } from "@nestjs/event-emitter";
+import { mockEventEmitterService } from "./services.mock/event.emitter2.services.mock";
+import { PersistenceModule } from "src/common/persistence/persistence.module";
 
 describe('CollectionController', () => {
   let app: INestApplication;
@@ -43,12 +46,15 @@ describe('CollectionController', () => {
         TransactionModule,
         TransferModule,
         ConfigModule.forRoot({}),
+        EventEmitterModule.forRoot({ maxListeners: 1 }),
+        PersistenceModule.forRoot(),
       ],
     })
       .overrideProvider(CollectionService).useValue(collectionServiceMocks)
       .overrideProvider(NftService).useValue(nftServiceMocks)
       .overrideProvider(TransactionService).useValue(transactionServiceMocks)
       .overrideProvider(TransferService).useValue(transferServiceMocks)
+      .overrideProvider(EventEmitter2).useValue(mockEventEmitterService())
       .compile();
 
     app = moduleFixture.createNestApplication();

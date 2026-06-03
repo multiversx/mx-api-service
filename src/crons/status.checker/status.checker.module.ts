@@ -4,11 +4,17 @@ import { ElasticIndexerService } from "src/common/indexer/elastic/elastic.indexe
 import { EndpointsServicesModule } from "src/endpoints/endpoints.services.module";
 import { DynamicModuleUtils } from "src/utils/dynamic.module.utils";
 import { StatusCheckerService } from "./status.checker.service";
+import { ApiMetricsModule } from "src/common/metrics/api.metrics.module";
+import { EventEmitterModule } from "@nestjs/event-emitter";
+import { PersistenceModule } from "src/common/persistence/persistence.module";
 
 @Module({
   imports: [
     ScheduleModule.forRoot(),
+    EventEmitterModule.forRoot({ maxListeners: 1 }),
+    PersistenceModule.forRoot(),
     EndpointsServicesModule,
+    ApiMetricsModule,
   ],
   providers: [
     DynamicModuleUtils.getPubSubService(),

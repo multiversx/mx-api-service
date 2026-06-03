@@ -25,7 +25,7 @@ features:
     port: 6002
     maxSubscriptionsPerInstance: 10000
     maxSubscriptionsPerClient: 10
-    broadcastIntervalMs: 6000
+    broadcastIntervalMs: 1000
   eventsNotifier:
     enabled: false
     port: 5674
@@ -40,8 +40,8 @@ features:
     enabled: false
   transactionPoolWarmer:
     enabled: false
-    cronExpression: '*/5 * * * * *'
-    ttlInSeconds: 60
+    cronExpression: '*/1 * * * * *'
+    ttlInSeconds: 10
   updateCollectionExtraDetails:
     enabled: false
   updateAccountExtraDetails:
@@ -207,3 +207,8 @@ compression:
   level: 6
   threshold: 1024
   chunkSize: 16384
+restrictedRoutes:
+  enabled: true
+  routes:
+    - '/package.json'
+    - '/docs/package.json'

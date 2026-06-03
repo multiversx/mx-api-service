@@ -17,7 +17,7 @@ import { TransferModule } from "../transfers/transfer.module";
     forwardRef(() => TransactionModule),
     forwardRef(() => TransferModule),
     forwardRef(() => AssetsModule),
-    forwardRef(() => MexModule.forRoot()),
+    forwardRef(() => MexModule),
     forwardRef(() => CollectionModule),
     forwardRef(() => PluginModule),
   ],

@@ -18,10 +18,15 @@ import { EventsCustomGateway } from './events.custom.gateway';
 import { ApiConfigModule } from 'src/common/api-config/api.config.module';
 import { TransfersCustomGateway } from './transfers.custom.gateway';
 import { TransferModule } from 'src/endpoints/transfers/transfer.module';
+import { ApiMetricsModule } from 'src/common/metrics/api.metrics.module';
+import { EventEmitterModule } from '@nestjs/event-emitter';
+import { PersistenceModule } from 'src/common/persistence/persistence.module';
 
 @Module({
   imports: [
     ScheduleModule.forRoot(),
+    EventEmitterModule.forRoot({ maxListeners: 1 }),
+    PersistenceModule.forRoot(),
     TransactionModule,
     BlockModule,
     NetworkModule,
@@ -30,6 +35,7 @@ import { TransferModule } from 'src/endpoints/transfers/transfer.module';
     RoundModule,
     TransferModule,
     ApiConfigModule,
+    ApiMetricsModule,
   ],
   providers: [
     WebsocketCronService,

@@ -11,19 +11,23 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [18.x]
+        node-version: [24.14.x]
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v6
 
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ matrix.node-version }}
           cache: 'npm'
 
       - name: Build and start chain simulator
         run: npm run start-chain-simulator
+
+      - name: Show logs if chain simulator fails to start
+        if: failure()
+        run: docker logs es-container && docker logs chainsimulator
 
       - name: Wait for services to be ready
         run: |

@@ -93,7 +93,7 @@ export class ProtocolService {
     }
 
     const shardCount = await this.getShardCount();
-    const addressHex = new Address(address).hex();
+    const addressHex = new Address(address).toHex();
 
     return AddressUtils.computeShard(addressHex, shardCount);
   }

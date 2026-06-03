@@ -74,6 +74,10 @@ export interface IndexerInterface {
 
   getBlock(hash: string): Promise<Block>
 
+  getExecutionResults(hash: string): Promise<Block>
+
+  getExecutionResultsForHashes(hashes: string[]): Promise<Block[]>
+
   getBlockByMiniBlockHash(miniBlockHash: string): Promise<Block | undefined>
 
   getMiniBlock(miniBlockHash: string): Promise<MiniBlock>

@@ -5,7 +5,7 @@ import { TpsInterval } from "src/endpoints/tps/entities/tps.interval";
 
 export class CacheInfo {
   key: string = "";
-  ttl: number = Constants.oneSecond() * 6;
+  ttl: number = Constants.oneSecond();
 
   static About: CacheInfo = {
     key: 'about',
@@ -54,7 +54,7 @@ export class CacheInfo {
 
   static TransactionPool: CacheInfo = {
     key: 'txpool',
-    ttl: Constants.oneSecond() * 6,
+    ttl: Constants.oneSecond(),
   };
 
   static ApplicationMostUsed: CacheInfo = {
@@ -101,20 +101,20 @@ export class CacheInfo {
   static TxCount(address: string): CacheInfo {
     return {
       key: `txCount:${address}`,
-      ttl: Constants.oneSecond() * 30,
+      ttl: Constants.oneSecond() * 5,
     };
   }
 
   static Transactions(queryPagination: QueryPagination): CacheInfo {
     return {
       key: `transactions:${queryPagination.from}:${queryPagination.size}`,
-      ttl: Constants.oneSecond() * 6,
+      ttl: Constants.oneSecond(),
     };
   }
 
   static TransactionsCount: CacheInfo = {
     key: 'transactions:count',
-    ttl: Constants.oneSecond() * 6,
+    ttl: Constants.oneSecond(),
   };
 
   static IdentityProfilesKeybases: CacheInfo = {
@@ -418,6 +418,11 @@ export class CacheInfo {
     ttl: Constants.oneMinute() * 10,
   };
 
+  static NetworkEnableEpochs: CacheInfo = {
+    key: "gatewayNetworkEnableEpochs",
+    ttl: Constants.oneMinute() * 5,
+  };
+
   static MexPairs: CacheInfo = {
     key: "mexPairs",
     ttl: Constants.oneMinute() * 10,
@@ -554,7 +559,7 @@ export class CacheInfo {
   static BlocksCount(filter: BlockFilter): CacheInfo {
     return {
       key: `blocks:count:${JSON.stringify(filter)}`,
-      ttl: Constants.oneSecond() * 6,
+      ttl: Constants.oneSecond(),
     };
   }
 
@@ -569,7 +574,7 @@ export class CacheInfo {
 
   private static computeBlocksLatestTtl(ttl?: number): number {
     if (ttl === undefined || ttl <= Constants.oneMinute() * 5) {
-      return Constants.oneSecond() * 12;
+      return Constants.oneSecond() * 2;
     }
 
     if (ttl <= Constants.oneHour()) {

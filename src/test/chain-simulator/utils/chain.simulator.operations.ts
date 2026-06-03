@@ -1,6 +1,9 @@
 import axios from 'axios';
 import { AddressUtils } from "@multiversx/sdk-nestjs-common";
 
+axios.defaults.adapter = 'fetch';
+axios.defaults.headers.common['Connection'] = 'close';
+
 const VM_TYPE = '0500';
 const CODE_METADATA = '0100';
 const SC_DEPLOY_ADDRESS =

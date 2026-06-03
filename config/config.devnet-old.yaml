@@ -38,8 +38,8 @@ features:
     enabled: true
   transactionPoolWarmer:
     enabled: true
-    cronExpression: '*/5 * * * * *'
-    ttlInSeconds: 60
+    cronExpression: '*/1 * * * * *'
+    ttlInSeconds: 10
   updateCollectionExtraDetails:
     enabled: false
   marketplace:
@@ -129,3 +129,8 @@ inflation:
 nftProcess:
   parallelism: 1
   maxRetries: 3
+restrictedRoutes:
+  enabled: true
+  routes:
+    - '/package.json'
+    - '/docs/package.json'

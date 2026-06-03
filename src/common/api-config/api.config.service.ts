@@ -1013,7 +1013,7 @@ export class ApiConfigService {
   }
 
   getWebsocketSubscriptionBroadcastIntervalMs(): number {
-    return this.configService.get<number>('features.websocketSubscription.broadcastIntervalMs') ?? 6000;
+    return this.configService.get<number>('features.websocketSubscription.broadcastIntervalMs') ?? 1000;
   }
 
   getWebsocketMaxSubscriptionsPerInstance(): number {
@@ -1103,5 +1103,13 @@ export class ApiConfigService {
     }
 
     return timestamp;
+  }
+
+  isRestrictedRoutesEnabled(): boolean {
+    return this.configService.get<boolean>('restrictedRoutes.enabled') ?? false;
+  }
+
+  getRestrictedRoutes(): string[] {
+    return this.configService.get<string[]>('restrictedRoutes.routes') ?? [];
   }
 }

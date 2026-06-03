@@ -22,15 +22,30 @@ export class DappConfigService {
 
     const networkConfig = await this.gatewayService.getNetworkConfig();
     const refreshRate = networkConfig.erd_round_duration;
+    const chainId = networkConfig.erd_chain_id;
 
-    if (refreshRate) {
-      return {
-        ...this.dappConfig,
-        refreshRate,
-      };
+    const overrides: Partial<DappConfig> = {};
+
+    //TODO: remove after battle of nodes
+    if (chainId === 'B') {
+      overrides.walletAddress = "https://bon-wallet.multiversx.com";
+      overrides.apiAddress = "https://api.battleofnodes.com";
+      overrides.explorerAddress = "https://bon-explorer.multiversx.com";
+      overrides.id = "bon";
+      overrides.name = "BattleOfNodes";
     }
 
-    return this.dappConfig;
+    if (refreshRate != null) {
+      overrides.refreshRate = refreshRate;
+    }
+    if (chainId != null) {
+      overrides.chainId = chainId;
+    }
+
+    return {
+      ...this.dappConfig,
+      ...overrides,
+    };
   }
 
   getDappConfigurationRaw(): DappConfig | undefined {
