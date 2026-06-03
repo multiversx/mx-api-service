@@ -13,11 +13,13 @@ import { TpsWarmerService } from '../tps/tps-warmer.service';
 import { TpsModule } from 'src/endpoints/tps/tps.module';
 import { ApiMetricsModule } from 'src/common/metrics/api.metrics.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
+import { PersistenceModule } from 'src/common/persistence/persistence.module';
 
 @Module({
   imports: [
     ScheduleModule.forRoot(),
     EventEmitterModule.forRoot({ maxListeners: 1 }),
+    PersistenceModule.forRoot(),
     EndpointsServicesModule,
     KeybaseModule,
     MexModule.forRoot(),

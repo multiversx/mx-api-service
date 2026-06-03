@@ -7,11 +7,13 @@ import { DynamicModuleUtils } from "src/utils/dynamic.module.utils";
 import { BatchTransactionProcessorService } from "./batch.transaction.processor.service";
 import { ApiMetricsModule } from 'src/common/metrics/api.metrics.module';
 import { EventEmitterModule } from "@nestjs/event-emitter";
+import { PersistenceModule } from "src/common/persistence/persistence.module";
 
 @Module({
   imports: [
     ScheduleModule.forRoot(),
     EventEmitterModule.forRoot({ maxListeners: 1 }),
+    PersistenceModule.forRoot(),
     ApiConfigModule,
     DynamicModuleUtils.getCacheModule(),
     TransactionsBatchModule,

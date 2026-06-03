@@ -7,6 +7,7 @@ import { DelegationModule } from "src/endpoints/delegation/delegation.module";
 import { DelegationService } from "src/endpoints/delegation/delegation.service";
 import { EventEmitter2, EventEmitterModule } from "@nestjs/event-emitter";
 import { mockEventEmitterService } from "./services.mock/event.emitter2.services.mock";
+import { PersistenceModule } from "src/common/persistence/persistence.module";
 
 describe('DelegationController', () => {
   let app: INestApplication;
@@ -20,6 +21,7 @@ describe('DelegationController', () => {
       imports: [
         DelegationModule,
         EventEmitterModule.forRoot({ maxListeners: 1 }),
+        PersistenceModule.forRoot()
       ],
     })
       .overrideProvider(DelegationService)

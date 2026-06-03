@@ -1,4 +1,4 @@
-import { forwardRef, Module } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { ScheduleModule } from '@nestjs/schedule';
 import { AssetsModule } from 'src/common/assets/assets.module';
 import { PersistenceModule } from 'src/common/persistence/persistence.module';
@@ -11,9 +11,9 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
   imports: [
     ScheduleModule.forRoot(),
     EventEmitterModule.forRoot({ maxListeners: 1 }),
+    PersistenceModule.forRoot(),
     EndpointsServicesModule,
     AssetsModule,
-    forwardRef(() => PersistenceModule),
     ApiMetricsModule,
   ],
   providers: [
