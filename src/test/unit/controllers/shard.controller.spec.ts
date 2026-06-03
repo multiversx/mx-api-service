@@ -8,6 +8,7 @@ import request = require('supertest');
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { EventEmitter2, EventEmitterModule } from "@nestjs/event-emitter";
 import { mockEventEmitterService } from "./services.mock/event.emitter2.services.mock";
+import { PersistenceModule } from "src/common/persistence/persistence.module";
 
 describe('ShardController', () => {
   let app: INestApplication;
@@ -20,6 +21,7 @@ describe('ShardController', () => {
       imports: [
         ShardModule,
         EventEmitterModule.forRoot({ maxListeners: 1 }),
+        PersistenceModule.forRoot(),
       ],
     })
       .overrideProvider(ShardService)

@@ -25,6 +25,7 @@ import { TransferService } from "src/endpoints/transfers/transfer.service";
 import { TransferModule } from "src/endpoints/transfers/transfer.module";
 import { EventEmitter2, EventEmitterModule } from "@nestjs/event-emitter";
 import { mockEventEmitterService } from "./services.mock/event.emitter2.services.mock";
+import { PersistenceModule } from "src/common/persistence/persistence.module";
 
 describe('CollectionController', () => {
   let app: INestApplication;
@@ -46,6 +47,7 @@ describe('CollectionController', () => {
         TransferModule,
         ConfigModule.forRoot({}),
         EventEmitterModule.forRoot({ maxListeners: 1 }),
+        PersistenceModule.forRoot(),
       ],
     })
       .overrideProvider(CollectionService).useValue(collectionServiceMocks)

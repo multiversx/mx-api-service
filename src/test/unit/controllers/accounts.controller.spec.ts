@@ -33,6 +33,7 @@ import { mockAccountService, mockTokenService, mockNftService, mockDelegationLeg
 import { AccountFetchOptions } from "src/endpoints/accounts/entities/account.fetch.options";
 import { EventEmitter2, EventEmitterModule } from "@nestjs/event-emitter";
 import { mockEventEmitterService } from "./services.mock/event.emitter2.services.mock";
+import { PersistenceModule } from "src/common/persistence/persistence.module";
 
 describe('AccountController', () => {
   let app: INestApplication;
@@ -59,6 +60,7 @@ describe('AccountController', () => {
         DelegationModule,
         ConfigModule.forRoot({}),
         EventEmitterModule.forRoot({ maxListeners: 1 }),
+        PersistenceModule.forRoot()
       ],
     })
       .overrideProvider(AccountService).useValue(accountServiceMocks)
