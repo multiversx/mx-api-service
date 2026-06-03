@@ -9,11 +9,13 @@ import { ApiMetricsModule } from 'src/common/metrics/api.metrics.module';
 import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 import { TransactionProcessorService } from './transaction.processor.service';
 import { EventEmitterModule } from '@nestjs/event-emitter';
+import { PersistenceModule } from 'src/common/persistence/persistence.module';
 
 @Module({
   imports: [
     ScheduleModule.forRoot(),
     EventEmitterModule.forRoot({ maxListeners: 1 }),
+    PersistenceModule.forRoot(),
     TransactionModule,
     ShardModule,
     NodeModule,

@@ -9,11 +9,13 @@ import { DynamicModuleUtils } from './utils/dynamic.module.utils';
 import { ApiMetricsModule } from './common/metrics/api.metrics.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ScheduleModule } from '@nestjs/schedule';
+import { PersistenceModule } from './common/persistence/persistence.module';
 
 @Module({
   imports: [
     ScheduleModule.forRoot(),
     EventEmitterModule.forRoot({ maxListeners: 1 }),
+    PersistenceModule.forRoot(),
     LoggingModule,
     ProcessNftsModule,
     ApiMetricsModule,

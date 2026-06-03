@@ -11,11 +11,13 @@ import { RabbitMqNftHandlerService } from './rabbitmq.nft.handler.service';
 import { RabbitMqTokenHandlerService } from './rabbitmq.token.handler.service';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ScheduleModule } from '@nestjs/schedule';
+import { PersistenceModule } from '../persistence/persistence.module';
 
 @Module({
   imports: [
     ScheduleModule.forRoot(),
     EventEmitterModule.forRoot({ maxListeners: 1 }),
+    PersistenceModule.forRoot(),
     ApiConfigModule,
     NftModule,
     NftWorkerModule,
