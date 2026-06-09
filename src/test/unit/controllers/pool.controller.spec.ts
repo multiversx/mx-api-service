@@ -8,6 +8,9 @@ import request = require('supertest');
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { PoolFilter } from "src/endpoints/pool/entities/pool.filter";
 import { TransactionType } from "src/endpoints/transactions/entities/transaction.type";
+import { EventEmitter2, EventEmitterModule } from "@nestjs/event-emitter";
+import { mockEventEmitterService } from "./services.mock/event.emitter2.services.mock";
+import { PersistenceModule } from "src/common/persistence/persistence.module";
 
 describe('PoolController', () => {
   let app: INestApplication;
@@ -19,8 +22,15 @@ describe('PoolController', () => {
     jest.resetAllMocks();
     const moduleFixture: TestingModule = await Test.createTestingModule({
       controllers: [PoolController],
-      imports: [PoolModule],
-    }).overrideProvider(PoolService).useValue(poolServiceMocks)
+      imports: [
+        PoolModule,
+        EventEmitterModule.forRoot({ maxListeners: 1 }),
+        PersistenceModule.forRoot(),
+      ],
+    }).overrideProvider(PoolService)
+      .useValue(poolServiceMocks)
+      .overrideProvider(EventEmitter2)
+      .useValue(mockEventEmitterService())
       .compile();
 
     app = moduleFixture.createNestApplication();

@@ -6,10 +6,14 @@ import { TransactionCompletedService } from './transaction.completed.service';
 import { ApiMetricsModule } from 'src/common/metrics/api.metrics.module';
 import { GatewayModule } from 'src/common/gateway/gateway.module';
 import { ProtocolModule } from 'src/common/protocol/protocol.module';
+import { EventEmitterModule } from '@nestjs/event-emitter';
+import { PersistenceModule } from 'src/common/persistence/persistence.module';
 
 @Module({
   imports: [
     ScheduleModule.forRoot(),
+    EventEmitterModule.forRoot({ maxListeners: 1 }),
+    PersistenceModule.forRoot(),
     ApiConfigModule,
     ApiMetricsModule,
     GatewayModule,

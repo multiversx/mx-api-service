@@ -31,6 +31,9 @@ import { AccountDeferred } from "src/endpoints/accounts/entities/account.deferre
 import request = require('supertest');
 import { mockAccountService, mockTokenService, mockNftService, mockDelegationLegacyService, mockWaitingListService, mockStakeService, mockTransactionService, mockSmartContractResultService, mockCollectionService, mockTransferService, mockApiConfigService, mockDelegationService } from "./services.mock/account.services.mock";
 import { AccountFetchOptions } from "src/endpoints/accounts/entities/account.fetch.options";
+import { EventEmitter2, EventEmitterModule } from "@nestjs/event-emitter";
+import { mockEventEmitterService } from "./services.mock/event.emitter2.services.mock";
+import { PersistenceModule } from "src/common/persistence/persistence.module";
 
 describe('AccountController', () => {
   let app: INestApplication;
@@ -56,6 +59,8 @@ describe('AccountController', () => {
         ApiConfigModule,
         DelegationModule,
         ConfigModule.forRoot({}),
+        EventEmitterModule.forRoot({ maxListeners: 1 }),
+        PersistenceModule.forRoot()
       ],
     })
       .overrideProvider(AccountService).useValue(accountServiceMocks)
@@ -70,11 +75,14 @@ describe('AccountController', () => {
       .overrideProvider(TransferService).useValue(mockTransferService())
       .overrideProvider(ApiConfigService).useValue(mockApiConfigService())
       .overrideProvider(DelegationService).useValue(mockDelegationService())
+      .overrideProvider(EventEmitter2).useValue(mockEventEmitterService())
       .compile();
 
     app = moduleFixture.createNestApplication();
     await app.init();
   });
+
+  afterEach(() => { jest.clearAllMocks(); });
 
   describe("GET /accounts", () => {
     it('should return the default list of 25 accounts', async () => {
