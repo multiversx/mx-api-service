@@ -8,4 +8,5 @@ export interface Round extends ElasticSortable {
   epoch: number,
   timestamp: number,
   timestampMs?: number,
+  searchAfter?: string,
 }

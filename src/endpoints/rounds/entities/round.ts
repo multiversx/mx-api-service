@@ -25,5 +25,5 @@ export class Round {
   timestampMs?: number;
 
   @ApiProperty({ type: String })
-  searchAfter?: string = '';
+  searchAfter?: string;
 }
