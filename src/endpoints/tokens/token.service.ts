@@ -372,7 +372,6 @@ export class TokenService {
       tokenWithBalance = new TokenDetailedWithBalance({ ...token, ...esdtData });
     }
 
-    // eslint-disable-next-line require-await
     const esdt = await this.gatewayService.getAddressEsdt(address, identifier);
 
     if (!esdt || esdt.balance === '0') {

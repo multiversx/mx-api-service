@@ -289,7 +289,7 @@ export class ElasticIndexerService implements IndexerInterface {
         { name: 'timestamp', order: ElasticSortOrder.descending },
         { name: 'timestampMs', order: ElasticSortOrder.descending, missing: 0 },
         { name: 'shardId', order: ElasticSortOrder.descending },
-      ])
+      ]);
 
     const result = await this.elasticService.getList('blocks', '_search', elasticQuery);
     return result.length > 0 ? result[0] : undefined;

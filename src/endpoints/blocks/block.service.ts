@@ -112,7 +112,6 @@ export class BlockService {
     const nodeIdentities = await ConcurrencyUtils.executeWithConcurrencyLimit(
       relevantNodes,
       async (node) => {
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         const identity = await this.identitiesService.getIdentity(node.identity!);
         return { node, identity };
       },
