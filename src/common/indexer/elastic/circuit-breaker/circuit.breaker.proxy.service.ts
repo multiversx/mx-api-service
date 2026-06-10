@@ -69,8 +69,6 @@ export class EsCircuitBreakerProxy {
 
   // eslint-disable-next-line require-await
   async getList(index: string, id: string, query: ElasticQuery, searchAfter?: string): Promise<any[]> {
-    //TODO: update package
-    // @ts-ignore
     return this.withCircuitBreaker(() => this.elasticService.getList(index, id, query, undefined, searchAfter));
   }
 
