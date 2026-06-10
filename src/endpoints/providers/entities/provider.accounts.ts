@@ -10,4 +10,7 @@ export class ProviderAccounts {
 
   @ApiProperty({ type: String, nullable: true, example: '9999109666430000000' })
   stake: string = '';
+
+  @ApiProperty({ type: String, nullable: true })
+  searchAfter: string = '';
 }

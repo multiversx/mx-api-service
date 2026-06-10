@@ -60,7 +60,6 @@ export class NftController {
   async getNfts(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
-    @Query('searchAfter') searchAfter?: string,
     @Query('search') search?: string,
     @Query('identifiers', ParseNftArrayPipe) identifiers?: string[],
     @Query('type', new ParseEnumArrayPipe(NftType)) type?: NftType[],
@@ -82,7 +81,7 @@ export class NftController {
     @Query('withSupply', ParseBoolPipe) withSupply?: boolean,
   ): Promise<Nft[]> {
     return await this.nftService.getNfts(
-      new QueryPagination({ from, size, searchAfter }),
+      new QueryPagination({ from, size }),
       new NftFilter({
         search,
         identifiers,

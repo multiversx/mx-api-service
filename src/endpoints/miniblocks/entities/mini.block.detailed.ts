@@ -25,4 +25,7 @@ export class MiniBlockDetailed {
 
   @ApiProperty({ type: String, example: 'TxBlock' })
   type: string = '';
+
+  @ApiProperty({ type: String, required: false })
+  searchAfter?: string;
 }

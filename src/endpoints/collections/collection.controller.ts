@@ -59,6 +59,7 @@ export class CollectionController {
   @ApiQuery({ name: 'excludeMetaESDT', description: 'Do not include collections of type "MetaESDT" in the response', required: false })
   @ApiQuery({ name: 'sort', description: 'Sorting criteria', required: false, enum: SortCollections })
   @ApiQuery({ name: 'order', description: 'Sorting order (asc / desc)', required: false, enum: SortOrder })
+  @ApiQuery({ name: 'searchAfter', description: 'Base64 encoded cursor to continue from the last document', required: false })
   async getNftCollections(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
@@ -230,6 +231,7 @@ export class CollectionController {
   @ApiQuery({ name: 'withAssets', description: 'Return assets information (defaults to true)', required: false, type: Boolean })
   @ApiQuery({ name: 'sort', description: 'Sorting criteria', required: false, enum: SortCollectionNfts })
   @ApiQuery({ name: 'order', description: 'Sorting order (asc / desc)', required: false, enum: SortOrder })
+  @ApiQuery({ name: 'searchAfter', description: 'Base64 encoded cursor to continue from the last document', required: false })
   async getNfts(
     @Param('collection', ParseCollectionPipe) collection: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
@@ -305,6 +307,7 @@ export class CollectionController {
   @ApiNotFoundResponse({ description: 'Collection not found' })
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
+  @ApiQuery({ name: 'searchAfter', description: 'Base64 encoded cursor to continue from the last document', required: false })
   async getNftAccounts(
     @Param('identifier', ParseCollectionPipe) identifier: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
@@ -344,6 +347,7 @@ export class CollectionController {
   @ApiQuery({ name: 'withScamInfo', description: 'Returns scam information', required: false, type: Boolean })
   @ApiQuery({ name: 'withUsername', description: 'Integrates username in assets for all addresses present in the transactions', required: false, type: Boolean })
   @ApiQuery({ name: 'withRelayedScresults', description: 'If set to true, will include smart contract results that resemble relayed transactions', required: false, type: Boolean })
+  @ApiQuery({ name: 'searchAfter', description: 'Base64 encoded cursor to continue from the last document', required: false })
   async getCollectionTransactions(
     @Param('collection', ParseCollectionPipe) identifier: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
@@ -470,6 +474,7 @@ export class CollectionController {
   @ApiQuery({ name: 'withLogs', description: 'Return logs for transactions', required: false, type: Boolean })
   @ApiQuery({ name: 'withScamInfo', description: 'Returns scam information', required: false, type: Boolean })
   @ApiQuery({ name: 'withUsername', description: 'Integrates username in assets for all addresses present in the transactions', required: false, type: Boolean })
+  @ApiQuery({ name: 'searchAfter', description: 'Base64 encoded cursor to continue from the last document', required: false })
   async getCollectionTransfers(
     @Param('collection', ParseCollectionPipe) identifier: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,

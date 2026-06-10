@@ -74,15 +74,16 @@ export class ElasticIndexerService implements IndexerInterface {
     const order = filter.order === SortOrder.asc ? ElasticSortOrder.ascending : ElasticSortOrder.descending;
 
     let elasticQuery = ElasticQuery.create()
-      .withPagination(queryPagination)
+      .withPagination({ from: queryPagination.from, size: queryPagination.size })
       .withCondition(QueryConditionOptions.must, await this.indexerHelper.buildElasticBlocksFilter(filter));
 
     elasticQuery = elasticQuery.withSort([
       { name: "timestamp", order: order },
+      { name: "timestampMs", order: order, missing: 0 },
       { name: "shardId", order: ElasticSortOrder.ascending },
     ]);
 
-    const result = await this.elasticService.getList('blocks', 'hash', elasticQuery);
+    const result = await this.elasticService.getList('blocks', 'hash', elasticQuery, queryPagination.searchAfter);
     return result;
   }
 
@@ -132,7 +133,14 @@ export class ElasticIndexerService implements IndexerInterface {
   async getTokensForAddress(address: string, queryPagination: QueryPagination, filter: TokenFilter): Promise<any[]> {
     let query = ElasticQuery.create()
       .withMustCondition(QueryType.Match('address', address))
-      .withPagination({ from: queryPagination.from, size: queryPagination.size });
+      .withPagination({ from: queryPagination.from, size: queryPagination.size })
+      .withSort([
+        { name: 'timestamp', order: ElasticSortOrder.descending },
+        { name: 'timestampMs', order: ElasticSortOrder.descending, missing: 0 },
+        { name: 'token', order: ElasticSortOrder.descending },
+        { name: 'tokenNonce', order: ElasticSortOrder.ascending, missing: 0 },
+        { name: 'address', order: ElasticSortOrder.descending },
+      ]);
 
     query = this.buildTokenFilter(query, filter);
 
@@ -149,12 +157,19 @@ export class ElasticIndexerService implements IndexerInterface {
 
   async getTokenAccounts(pagination: QueryPagination, identifier: string): Promise<any[]> {
     const elasticQuery: ElasticQuery = ElasticQuery.create()
-      .withPagination(pagination)
-      .withSort([{ name: "balanceNum", order: ElasticSortOrder.descending }])
+      .withPagination({ from: pagination.from, size: pagination.size })
+      .withSort([
+        { name: "balanceNum", order: ElasticSortOrder.descending },
+        { name: 'timestamp', order: ElasticSortOrder.descending },
+        { name: 'timestampMs', order: ElasticSortOrder.descending, missing: 0 },
+        { name: 'token', order: ElasticSortOrder.descending },
+        { name: 'tokenNonce', order: ElasticSortOrder.ascending, missing: 0 },
+        { name: 'address', order: ElasticSortOrder.descending },
+      ])
       .withCondition(QueryConditionOptions.must, [QueryType.Match("token", identifier, QueryOperator.AND)])
       .withCondition(QueryConditionOptions.mustNot, [QueryType.Match('address', 'pending')]);
 
-    return await this.elasticService.getList("accountsesdt", identifier, elasticQuery);
+    return await this.elasticService.getList("accountsesdt", identifier, elasticQuery, pagination.searchAfter);
   }
 
   async getTokensWithRolesForAddressCount(address: string, filter: TokenWithRolesFilter): Promise<number> {
@@ -270,7 +285,11 @@ export class ElasticIndexerService implements IndexerInterface {
   async getBlockByMiniBlockHash(miniBlockHash: string): Promise<Block | undefined> {
     const elasticQuery = ElasticQuery.create()
       .withCondition(QueryConditionOptions.must, [QueryType.Match('miniBlocksHashes', miniBlockHash)])
-      .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }]);
+      .withSort([
+        { name: 'timestamp', order: ElasticSortOrder.descending },
+        { name: 'timestampMs', order: ElasticSortOrder.descending, missing: 0 },
+        { name: 'shardId', order: ElasticSortOrder.descending },
+      ])
 
     const result = await this.elasticService.getList('blocks', '_search', elasticQuery);
     return result.length > 0 ? result[0] : undefined;
@@ -288,11 +307,13 @@ export class ElasticIndexerService implements IndexerInterface {
     const sortOrder: ElasticSortOrder = !filter.order || filter.order === SortOrder.desc ? ElasticSortOrder.descending : ElasticSortOrder.ascending;
 
     const timestamp: ElasticSortProperty = { name: 'timestamp', order: sortOrder };
+    const timestampMs: ElasticSortProperty = { name: 'timestampMs', order: sortOrder, missing: 0 };
     const nonce: ElasticSortProperty = { name: 'nonce', order: sortOrder };
+    const uuid: ElasticSortProperty = { name: 'uuid.keyword', order: sortOrder };
 
     const elasticQuery = this.indexerHelper.buildTransferFilterQuery(filter)
       .withPagination({ from: pagination.from, size: pagination.size })
-      .withSort([timestamp, nonce]);
+      .withSort([timestamp, timestampMs, nonce, uuid]);
 
     const elasticOperations = await this.elasticService.getList('operations', 'txHash', elasticQuery, pagination.searchAfter);
 
@@ -309,18 +330,23 @@ export class ElasticIndexerService implements IndexerInterface {
 
   async getRounds(filter: RoundFilter): Promise<any[]> {
     const { from, size } = filter;
+    const { searchAfter } = filter;
 
     const elasticQuery = ElasticQuery.create()
       .withPagination({ from, size })
-      .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }])
+      .withSort([
+        { name: 'timestamp', order: ElasticSortOrder.descending },
+        { name: 'timestampMs', order: ElasticSortOrder.descending, missing: 0 },
+        { name: 'shardId', order: ElasticSortOrder.descending },
+      ])
       .withCondition(filter.condition ?? QueryConditionOptions.must, await this.indexerHelper.buildElasticRoundsFilter(filter));
 
-    return await this.elasticService.getList('rounds', 'round', elasticQuery);
+    return await this.elasticService.getList('rounds', 'round', elasticQuery, searchAfter);
   }
 
   async getNftCollections(pagination: QueryPagination, filter: CollectionFilter, address?: string): Promise<any[]> {
     let elasticQuery = this.indexerHelper.buildCollectionRolesFilter(filter, address)
-      .withPagination(pagination);
+      .withPagination({ from: pagination.from, size: pagination.size });
 
     const sort = filter.sort ?? SortCollections.timestamp;
     const order = filter.order === SortOrder.asc ? ElasticSortOrder.ascending : ElasticSortOrder.descending;
@@ -329,14 +355,21 @@ export class ElasticIndexerService implements IndexerInterface {
       elasticQuery = elasticQuery.withSort([
         { name: 'api_isVerified', order },
         { name: 'api_holderCount', order },
+        { name: 'token', order },
+        { name: 'nonce', order, missing: 0 },
+        { name: 'timestamp', order },
+        { name: 'timestampMs', order, missing: 0 },
       ]);
     } else {
       elasticQuery = elasticQuery.withSort([
         { name: 'timestamp', order },
+        { name: 'timestampMs', order, missing: 0 },
+        { name: 'token', order },
+        { name: 'nonce', order, missing: 0 },
       ]);
     }
 
-    return await this.elasticService.getList('tokens', 'identifier', elasticQuery);
+    return await this.elasticService.getList('tokens', 'identifier', elasticQuery, pagination.searchAfter);
   }
 
   async getNftCollectionsByIds(identifiers: string[]): Promise<any[]> {
@@ -352,7 +385,11 @@ export class ElasticIndexerService implements IndexerInterface {
     const elasticQuery = ElasticQuery.create()
       .withMustMatchCondition('type', 'unsigned')
       .withPagination({ from: 0, size: transactionHashes.length + 1 })
-      .withSort([{ name: 'timestamp', order: ElasticSortOrder.ascending }])
+      .withSort([
+        { name: 'timestamp', order: ElasticSortOrder.ascending },
+        { name: 'timestampMs', order: ElasticSortOrder.ascending, missing: 0 },
+        { name: 'uuid.keyword', order: ElasticSortOrder.ascending },
+      ])
       .withMustMultiShouldCondition(transactionHashes, hash => QueryType.Match('originalTxHash', hash));
 
     return await this.elasticService.getList('operations', 'scHash', elasticQuery);
@@ -385,7 +422,7 @@ export class ElasticIndexerService implements IndexerInterface {
 
   async getNftTags(pagination: QueryPagination, search?: string): Promise<any[]> {
     const elasticQuery = ElasticQuery.create()
-      .withPagination(pagination)
+      .withPagination({ from: pagination.from, size: pagination.size })
       .withSearchWildcardCondition(search, ['tag'])
       .withSort([{ name: 'count', order: ElasticSortOrder.descending }]);
 
@@ -394,9 +431,14 @@ export class ElasticIndexerService implements IndexerInterface {
 
   async getScResults(pagination: QueryPagination, filter: SmartContractResultFilter): Promise<any[]> {
     const elasticQuery: ElasticQuery = this.indexerHelper.buildResultsFilterQuery(filter)
-      .withPagination(pagination);
+      .withPagination({ from: pagination.from, size: pagination.size })
+      .withSort([
+        { name: 'timestamp', order: ElasticSortOrder.descending },
+        { name: 'timestampMs', order: ElasticSortOrder.descending, missing: 0 },
+        { name: 'uuid.keyword', order: ElasticSortOrder.descending },
+      ]);
 
-    const results = await this.elasticService.getList('operations', 'hash', elasticQuery);
+    const results = await this.elasticService.getList('operations', 'hash', elasticQuery, pagination.searchAfter);
 
     this.bulkProcessTransactions(results);
 
@@ -405,8 +447,13 @@ export class ElasticIndexerService implements IndexerInterface {
 
   async getMiniBlocks(pagination: QueryPagination, filter: MiniBlockFilter): Promise<any[]> {
     let query = ElasticQuery.create()
-      .withPagination(pagination)
-      .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }]);
+      .withPagination({ from: pagination.from, size: pagination.size })
+      .withSort([
+        { name: 'timestamp', order: ElasticSortOrder.descending },
+        { name: 'timestampMs', order: ElasticSortOrder.descending, missing: 0 },
+        { name: 'senderShard', order: ElasticSortOrder.descending },
+        { name: 'receiverShard', order: ElasticSortOrder.descending },
+      ]);
 
     if (filter.hashes) {
       query = query.withShouldCondition(filter.hashes.map(hash => QueryType.Match('_id', hash)));
@@ -416,15 +463,19 @@ export class ElasticIndexerService implements IndexerInterface {
       query = query.withCondition(QueryConditionOptions.must, [QueryType.Match("type", filter.type)]);
     }
 
-    return await this.elasticService.getList('miniblocks', 'miniBlockHash', query);
+    return await this.elasticService.getList('miniblocks', 'miniBlockHash', query, pagination.searchAfter);
   }
 
   async getAccountScResults(address: string, pagination: QueryPagination): Promise<any[]> {
     const elasticQuery: ElasticQuery = this.indexerHelper.buildSmartContractResultFilterQuery(address)
-      .withPagination(pagination)
-      .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }]);
+      .withPagination({ from: pagination.from, size: pagination.size })
+      .withSort([
+        { name: 'timestamp', order: ElasticSortOrder.descending },
+        { name: 'timestampMs', order: ElasticSortOrder.descending, missing: 0 },
+        { name: 'uuid.keyword', order: ElasticSortOrder.descending },
+      ]);
 
-    return await this.elasticService.getList('operations', 'hash', elasticQuery);
+    return await this.elasticService.getList('operations', 'hash', elasticQuery, pagination.searchAfter);
   }
 
   async getAccounts(queryPagination: QueryPagination, filter: AccountQueryOptions, fields?: string[]): Promise<any[]> {
@@ -434,29 +485,46 @@ export class ElasticIndexerService implements IndexerInterface {
 
     switch (sort) {
       case AccountSort.balance:
-        elasticQuery = elasticQuery.withSort([{ name: 'balanceNum', order: sortOrder }]);
+        elasticQuery = elasticQuery.withSort([
+          { name: 'balanceNum', order: sortOrder },
+          { name: 'address', order: sortOrder },
+          { name: 'timestamp', order: sortOrder },
+          { name: 'timestampMs', order: sortOrder, missing: 0 },
+        ]);
         break;
       case AccountSort.transfersLast24h:
         if (this.apiConfigService.getAccountExtraDetailsTransfersLast24hUrl()) {
-          elasticQuery = elasticQuery.withSort([{ name: 'api_transfersLast24h', order: sortOrder }]);
+          elasticQuery = elasticQuery.withSort([
+            { name: 'api_transfersLast24h', order: sortOrder },
+            { name: 'address', order: sortOrder },
+          ]);
         } else {
           elasticQuery = elasticQuery
-            .withSort([{ name: 'timestamp', order: sortOrder }])
+            .withSort([
+              { name: 'timestamp', order: sortOrder },
+              { name: 'timestampMs', order: sortOrder, missing: 0 },
+              { name: 'address', order: sortOrder },
+            ])
             .withMustExistCondition('currentOwner');
         }
         break;
       default:
-        elasticQuery = elasticQuery.withSort([{ name: sort.toString(), order: sortOrder }]);
+        // case timestamp
+        elasticQuery = elasticQuery.withSort([
+          { name: 'timestamp', order: sortOrder },
+          { name: 'timestampMs', order: sortOrder, missing: 0 },
+          { name: 'address', order: sortOrder },
+        ]);
         break;
     }
 
-    elasticQuery = elasticQuery.withPagination(queryPagination);
+    elasticQuery = elasticQuery.withPagination({ from: queryPagination.from, size: queryPagination.size });
 
     if (fields && fields.length > 0) {
       elasticQuery = elasticQuery.withFields(fields);
     }
 
-    return await this.elasticService.getList('accounts', 'address', elasticQuery);
+    return await this.elasticService.getList('accounts', 'address', elasticQuery, queryPagination.searchAfter);
   }
 
   async getAccount(address: string): Promise<any> {
@@ -469,20 +537,29 @@ export class ElasticIndexerService implements IndexerInterface {
 
   async getAccountDeploys(pagination: QueryPagination, address: string): Promise<any[]> {
     const elasticQuery: ElasticQuery = ElasticQuery.create()
-      .withPagination(pagination)
+      .withPagination({ from: pagination.from, size: pagination.size })
       .withCondition(QueryConditionOptions.must, [QueryType.Match("deployer", address)])
-      .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }]);
+      .withSort([
+        { name: 'timestamp', order: ElasticSortOrder.descending },
+        { name: 'timestampMs', order: ElasticSortOrder.descending, missing: 0 },
+        { name: 'deployTxHash', order: ElasticSortOrder.descending },
+      ]);
 
     return await this.elasticService.getList('scdeploys', "contract", elasticQuery);
   }
 
   async getAccountContracts(pagination: QueryPagination, address: string): Promise<any[]> {
     const elasticQuery: ElasticQuery = ElasticQuery.create()
-      .withPagination(pagination)
+      .withPagination({ from: pagination.from, size: pagination.size })
       .withCondition(QueryConditionOptions.must, [QueryType.Match("currentOwner", address)])
-      .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }]);
+      .withSort([
+        { name: 'timestamp', order: ElasticSortOrder.descending },
+        { name: 'timestampMs', order: ElasticSortOrder.descending, missing: 0 },
+        { name: 'deployTxHash', order: ElasticSortOrder.descending },
+      ]);
 
-    return await this.elasticService.getList('scdeploys', "contract", elasticQuery);
+
+    return await this.elasticService.getList('scdeploys', "contract", elasticQuery, pagination.searchAfter);
   }
 
   async getAccountContractsCount(address: string): Promise<number> {
@@ -494,11 +571,16 @@ export class ElasticIndexerService implements IndexerInterface {
 
   async getProviderDelegators(address: string, pagination: QueryPagination): Promise<any[]> {
     const elasticQuery: ElasticQuery = ElasticQuery.create()
-      .withPagination(pagination)
+      .withPagination({ from: pagination.from, size: pagination.size })
       .withCondition(QueryConditionOptions.must, [QueryType.Match("contract", address)])
-      .withSort([{ name: 'activeStake', order: ElasticSortOrder.descending }]);
+      .withSort([
+        { name: 'activeStake', order: ElasticSortOrder.descending },
+        { name: 'timestamp', order: ElasticSortOrder.descending, missing: 0 },
+        { name: 'timestampMs', order: ElasticSortOrder.descending, missing: 0 },
+        { name: 'address', order: ElasticSortOrder.descending },
+      ]);
 
-    return await this.elasticService.getList("delegators", "contract", elasticQuery);
+    return await this.elasticService.getList("delegators", "contract", elasticQuery, pagination.searchAfter);
   }
 
   async getProviderDelegatorsCount(address: string): Promise<number> {
@@ -509,18 +591,27 @@ export class ElasticIndexerService implements IndexerInterface {
   }
   async getAccountHistory(address: string, pagination: QueryPagination, filter?: AccountHistoryFilter): Promise<any[]> {
     const elasticQuery: ElasticQuery = this.indexerHelper.buildAccountHistoryFilterQuery(address, undefined, filter)
-      .withPagination(pagination)
-      .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }]);
+      .withPagination({ from: pagination.from, size: pagination.size })
+      .withSort([
+        { name: 'timestamp', order: ElasticSortOrder.descending },
+        { name: 'timestampMs', order: ElasticSortOrder.descending, missing: 0 },
+        { name: 'address', order: ElasticSortOrder.descending },
+      ]);
 
-    return await this.elasticService.getList('accountshistory', 'address', elasticQuery);
+    return await this.elasticService.getList('accountshistory', 'address', elasticQuery, pagination.searchAfter);
   }
 
   async getAccountTokenHistory(address: string, tokenIdentifier: string, pagination: QueryPagination, filter: AccountHistoryFilter): Promise<any[]> {
     const elasticQuery: ElasticQuery = this.indexerHelper.buildAccountHistoryFilterQuery(address, tokenIdentifier, filter)
-      .withPagination(pagination)
-      .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }]);
+      .withPagination({ from: pagination.from, size: pagination.size })
+      .withSort([
+        { name: 'timestamp', order: ElasticSortOrder.descending },
+        { name: 'timestampMs', order: ElasticSortOrder.descending, missing: 0 },
+        { name: 'address', order: ElasticSortOrder.descending },
+        { name: 'token', order: ElasticSortOrder.descending }
+      ]);
 
-    return await this.elasticService.getList('accountsesdthistory', 'address', elasticQuery);
+    return await this.elasticService.getList('accountsesdthistory', 'address', elasticQuery, pagination.searchAfter);
   }
 
   async getAccountHistoryCount(address: string, filter?: AccountHistoryFilter): Promise<number> {
@@ -537,10 +628,15 @@ export class ElasticIndexerService implements IndexerInterface {
 
   async getAccountEsdtHistory(address: string, pagination: QueryPagination, filter: AccountHistoryFilter): Promise<any[]> {
     const elasticQuery: ElasticQuery = this.indexerHelper.buildAccountHistoryFilterQuery(address, undefined, filter)
-      .withPagination(pagination)
-      .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }]);
+      .withPagination({ from: pagination.from, size: pagination.size })
+      .withSort([
+        { name: 'timestamp', order: ElasticSortOrder.descending },
+        { name: 'timestampMs', order: ElasticSortOrder.descending, missing: 0 },
+        { name: 'address', order: ElasticSortOrder.descending },
+        { name: 'token', order: ElasticSortOrder.descending }
+      ]);
 
-    return await this.elasticService.getList('accountsesdthistory', 'address', elasticQuery);
+    return await this.elasticService.getList('accountsesdthistory', 'address', elasticQuery, pagination.searchAfter);
   }
 
   async getAccountEsdtHistoryCount(address: string, filter?: AccountHistoryFilter): Promise<number> {
@@ -553,11 +649,13 @@ export class ElasticIndexerService implements IndexerInterface {
     const sortOrder: ElasticSortOrder = !filter.order || filter.order === SortOrder.desc ? ElasticSortOrder.descending : ElasticSortOrder.ascending;
 
     const timestamp: ElasticSortProperty = { name: 'timestamp', order: sortOrder };
+    const timestampMs: ElasticSortProperty = { name: 'timestampMs', order: sortOrder, missing: 0 };
     const nonce: ElasticSortProperty = { name: 'nonce', order: sortOrder };
+    const uuid: ElasticSortProperty = { name: 'uuid.keyword', order: sortOrder };
 
     const elasticQuery = this.indexerHelper.buildTransactionFilterQuery(filter, address)
       .withPagination({ from: pagination.from, size: pagination.size })
-      .withSort([timestamp, nonce]);
+      .withSort([timestamp, timestampMs, nonce, uuid]);
 
     const transactions = await this.elasticService.getList('operations', 'txHash', elasticQuery, pagination.searchAfter);
 
@@ -631,11 +729,13 @@ export class ElasticIndexerService implements IndexerInterface {
   async getTransactionScResults(txHash: string): Promise<any[]> {
     const originalTxHashQuery = QueryType.Match('originalTxHash', txHash);
     const timestamp: ElasticSortProperty = { name: 'timestamp', order: ElasticSortOrder.ascending };
+    const timestampMs: ElasticSortProperty = { name: 'timestampMs', order: ElasticSortOrder.ascending, missing: 0 };
+    const uuid: ElasticSortProperty = { name: 'uuid.keyword', order: ElasticSortOrder.ascending };
 
     const elasticQuerySc = ElasticQuery.create()
       .withMustMatchCondition('type', 'unsigned')
       .withPagination({ from: 0, size: 100 })
-      .withSort([timestamp])
+      .withSort([timestamp, timestampMs, uuid])
       .withCondition(QueryConditionOptions.must, [originalTxHashQuery]);
 
     const results = await this.elasticService.getList('operations', 'hash', elasticQuerySc);
@@ -659,7 +759,11 @@ export class ElasticIndexerService implements IndexerInterface {
     const elasticQuery = ElasticQuery.create()
       .withMustMatchCondition('type', 'unsigned')
       .withPagination({ from: 0, size: maxSize })
-      .withSort([{ name: 'timestamp', order: ElasticSortOrder.ascending }])
+      .withSort([
+        { name: 'timestamp', order: ElasticSortOrder.ascending },
+        { name: 'timestampMs', order: ElasticSortOrder.ascending, missing: 0 },
+        { name: 'uuid.keyword', order: ElasticSortOrder.ascending }
+      ])
       .withMustMultiShouldCondition(hashes, hash => QueryType.Match('originalTxHash', hash));
 
     return await this.elasticService.getList('operations', 'scHash', elasticQuery);
@@ -673,18 +777,22 @@ export class ElasticIndexerService implements IndexerInterface {
     let elasticQuery = ElasticQuery.create();
 
     if (pagination) {
-      elasticQuery = elasticQuery.withPagination(pagination);
+      elasticQuery = elasticQuery.withPagination({ from: pagination.from, size: pagination.size });
     }
 
     elasticQuery = elasticQuery
       .withSort([
         { name: "balanceNum", order: ElasticSortOrder.descending },
         { name: 'timestamp', order: ElasticSortOrder.descending },
+        { name: 'timestampMs', order: ElasticSortOrder.descending, missing: 0 },
+        { name: 'token', order: ElasticSortOrder.descending },
+        { name: 'tokenNonce', order: ElasticSortOrder.ascending, missing: 0 },
+        { name: 'address', order: ElasticSortOrder.descending },
       ])
       .withCondition(QueryConditionOptions.mustNot, [QueryType.Match('address', 'pending')])
       .withMustMultiShouldCondition(identifiers, identifier => QueryType.Match('identifier', identifier, QueryOperator.AND));
 
-    return await this.elasticService.getList('accountsesdt', 'identifier', elasticQuery);
+    return await this.elasticService.getList('accountsesdt', 'identifier', elasticQuery, pagination?.searchAfter);
   }
 
   async getAccountsEsdtByCollection(identifiers: string[], pagination?: QueryPagination) {
@@ -695,60 +803,75 @@ export class ElasticIndexerService implements IndexerInterface {
     let elasticQuery = ElasticQuery.create();
 
     if (pagination) {
-      elasticQuery = elasticQuery.withPagination(pagination);
+      elasticQuery = elasticQuery.withPagination({ from: pagination.from, size: pagination.size });
     }
 
     elasticQuery = elasticQuery
       .withSort([
         { name: "balanceNum", order: ElasticSortOrder.descending },
         { name: 'timestamp', order: ElasticSortOrder.descending },
+        { name: 'timestampMs', order: ElasticSortOrder.descending, missing: 0 },
+        { name: 'token', order: ElasticSortOrder.descending },
+        { name: 'tokenNonce', order: ElasticSortOrder.ascending, missing: 0 },
+        { name: 'address', order: ElasticSortOrder.descending },
       ])
       .withCondition(QueryConditionOptions.mustNot, [QueryType.Match('address', 'pending')])
       .withMustMultiShouldCondition(identifiers, identifier => QueryType.Match('collection', identifier, QueryOperator.AND));
 
-    return await this.elasticService.getList('accountsesdt', 'identifier', elasticQuery);
+    return await this.elasticService.getList('accountsesdt', 'identifier', elasticQuery, pagination?.searchAfter);
   }
 
   async getNftsForAddress(address: string, filter: NftFilter, pagination: QueryPagination): Promise<any[]> {
     const elasticQuery = this.indexerHelper.buildElasticNftFilter(filter, undefined, address)
-      .withPagination(pagination)
+      .withPagination({ from: pagination.from, size: pagination.size })
       .withSort([
         { name: 'timestamp', order: ElasticSortOrder.descending },
-        { name: 'tokenNonce', order: ElasticSortOrder.descending },
+        { name: 'timestampMs', order: ElasticSortOrder.descending, missing: 0 },
+        { name: 'token', order: ElasticSortOrder.descending },
+        { name: 'tokenNonce', order: ElasticSortOrder.descending, missing: 0 },
       ]);
 
-    return await this.elasticService.getList('accountsesdt', 'identifier', elasticQuery);
+    return await this.elasticService.getList('accountsesdt', 'identifier', elasticQuery, pagination.searchAfter);
   }
 
   async getNfts(pagination: QueryPagination, filter: NftFilter, identifier?: string): Promise<any[]> {
     let elasticQuery = this.indexerHelper.buildElasticNftFilter(filter, identifier)
-      .withPagination(pagination);
+      .withPagination({ from: pagination.from, size: pagination.size });
 
     if (filter.sort) {
       elasticQuery = elasticQuery.withSort([
         { name: filter.sort, order: filter.order === SortOrder.desc ? ElasticSortOrder.descending : ElasticSortOrder.ascending },
       ]);
+      if (filter.sort === 'timestamp') {
+        elasticQuery.sort.push({ name: 'timestampMs', order: filter.order === SortOrder.desc ? ElasticSortOrder.descending : ElasticSortOrder.ascending, missing: 0 });
+      }
+      elasticQuery.sort.push(
+        { name: 'token', order: filter.order === SortOrder.desc ? ElasticSortOrder.descending : ElasticSortOrder.ascending },
+        { name: 'nonce', order: filter.order === SortOrder.desc ? ElasticSortOrder.descending : ElasticSortOrder.ascending },
+      );
     } else {
       elasticQuery = elasticQuery.withSort([
         { name: 'timestamp', order: ElasticSortOrder.descending },
-        { name: 'nonce', order: ElasticSortOrder.descending },
+        { name: 'timestampMs', order: ElasticSortOrder.descending, missing: 0 },
+        { name: 'token', order: ElasticSortOrder.descending },
+        { name: 'nonce', order: ElasticSortOrder.descending, missing: 0 },
       ]);
     }
 
     if (identifier !== undefined) {
       const [tokensResult, accountsResult] = await Promise.all([
-        this.elasticService.getList('tokens', 'identifier', elasticQuery).catch(() => []),
+        this.elasticService.getList('tokens', 'identifier', elasticQuery, pagination.searchAfter).catch(() => []),
         this.elasticService.getList('accountsesdt', 'identifier',
           ElasticQuery.create()
             .withMustMatchCondition('identifier', identifier, QueryOperator.AND)
-            .withPagination(pagination)
+            .withPagination({ from: pagination.from, size: pagination.size })
         ).catch(() => []),
       ]);
 
       const elasticNfts = tokensResult.length > 0 ? tokensResult : accountsResult;
       return elasticNfts;
     } else {
-      const elasticNfts = await this.elasticService.getList('tokens', 'identifier', elasticQuery);
+      const elasticNfts = await this.elasticService.getList('tokens', 'identifier', elasticQuery, pagination.searchAfter);
       return elasticNfts;
     }
   }
@@ -1066,7 +1189,7 @@ export class ElasticIndexerService implements IndexerInterface {
       .withCondition(QueryConditionOptions.must, [QueryType.Match('shardId', shardId, QueryOperator.AND)])
       .withSort([
         { name: 'timestamp', order: ElasticSortOrder.ascending },
-        { name: 'timestampMs', order: ElasticSortOrder.ascending },
+        { name: 'timestampMs', order: ElasticSortOrder.ascending, missing: 0 },
       ]);
 
     const blocks: Block[] = await this.elasticService.getList('blocks', '_search', elasticQuery);
@@ -1076,11 +1199,15 @@ export class ElasticIndexerService implements IndexerInterface {
 
   async getApplications(filter: ApplicationFilter, pagination: QueryPagination): Promise<any[]> {
     const elasticQuery = this.indexerHelper.buildApplicationFilter(filter)
-      .withPagination(pagination)
+      .withPagination({ from: pagination.from, size: pagination.size })
       .withFields(['address', 'deployer', 'currentOwner', 'initialCodeHash', 'timestamp'])
-      .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }]);
+      .withSort([
+        { name: 'timestamp', order: ElasticSortOrder.descending },
+        { name: 'timestampMs', order: ElasticSortOrder.descending, missing: 0 },
+        { name: 'deployTxHash', order: ElasticSortOrder.descending },
+      ]);
 
-    return await this.elasticService.getList('scdeploys', 'address', elasticQuery);
+    return await this.elasticService.getList('scdeploys', 'address', elasticQuery, pagination.searchAfter);
   }
 
   async getApplication(address: string): Promise<any> {
@@ -1105,10 +1232,14 @@ export class ElasticIndexerService implements IndexerInterface {
 
   async getEvents(pagination: QueryPagination, filter: EventsFilter): Promise<Events[]> {
     const elasticQuery = this.indexerHelper.buildEventsFilter(filter)
-      .withPagination(pagination)
-      .withSort([{ name: 'timestamp', order: ElasticSortOrder.descending }]);
+      .withPagination({ from: pagination.from, size: pagination.size })
+      .withSort([
+        { name: 'timestamp', order: ElasticSortOrder.descending },
+        { name: 'timestampMs', order: ElasticSortOrder.descending, missing: 0 },
+        { name: 'uuid.keyword', order: ElasticSortOrder.descending },
+      ]);
 
-    return await this.elasticService.getList('events', '_id', elasticQuery);
+    return await this.elasticService.getList('events', '_id', elasticQuery, pagination.searchAfter);
   }
 
   async getEvent(txHash: string): Promise<Events> {
@@ -1131,7 +1262,13 @@ export class ElasticIndexerService implements IndexerInterface {
     const elasticQuery = ElasticQuery.create()
       .withMustMatchCondition('address', address)
       .withMustMultiShouldCondition(identifiers, identifier => QueryType.Match('identifier', identifier, QueryOperator.AND))
-      .withSort([{ name: 'timestamp', order: ElasticSortOrder.ascending }])
+      .withSort([
+        { name: 'timestamp', order: ElasticSortOrder.ascending },
+        { name: 'timestampMs', order: ElasticSortOrder.ascending, missing: 0 },
+        { name: 'address', order: ElasticSortOrder.ascending },
+        { name: 'token', order: ElasticSortOrder.ascending },
+        { name: 'tokenNonce', order: ElasticSortOrder.ascending, missing: 0 },
+      ])
       .withPagination({ from: 0, size: 10000 });
 
     const history = await this.elasticService.getList('accountsesdthistory', 'address', elasticQuery);

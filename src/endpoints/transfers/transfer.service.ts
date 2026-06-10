@@ -1,4 +1,4 @@
-import { forwardRef, Inject, Injectable } from "@nestjs/common";
+import { BadRequestException, forwardRef, Inject, Injectable } from "@nestjs/common";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { TransactionFilter } from "../transactions/entities/transaction.filter";
 import { TransactionType } from "../transactions/entities/transaction.type";
@@ -115,6 +115,10 @@ export class TransferService {
     let elasticOperations = await this.indexerService.getTransfers(filter, pagination);
 
     if (queryOptions.withTxsOrder && filter.miniBlockHash) {
+      if (pagination.searchAfter) {
+        throw new BadRequestException('searchAfter pagination is not supported when withTxsOrder and miniBlockHash filters are used');
+      }
+
       elasticOperations = await this.sortElasticTransfersByTxsOrder(elasticOperations, filter.miniBlockHash);
     } else {
       elasticOperations = this.sortElasticTransfers(elasticOperations);

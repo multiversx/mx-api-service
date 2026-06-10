@@ -83,6 +83,9 @@ export class Block {
   @ApiProperty({ type: BlockProofDto, nullable: true, required: false })
   proof: BlockProofDto | undefined = undefined;
 
+  @ApiProperty({ type: String, nullable: true, required: false })
+  searchAfter?: string;
+
   static mergeWithElasticResponse<T extends Block>(newBlock: T, blockRaw: any): T {
     blockRaw.shard = blockRaw.shardId;
 

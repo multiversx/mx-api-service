@@ -51,4 +51,7 @@ export class Account {
 
   @ApiProperty({ type: Number, description: 'Transfers in the last 24 hours', required: false })
   transfersLast24h: number | undefined = undefined;
+
+  @ApiProperty({ type: String, description: 'Base64 encoded cursor to continue from the last document', required: false })
+  searchAfter?: string;
 }

@@ -23,9 +23,8 @@ export class TagController {
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number,
     @Query('search') search: string,
-    @Query('searchAfter') searchAfter?: string,
   ): Promise<Tag[]> {
-    return await this.nftTagsService.getNftTags(new QueryPagination({ from, size, searchAfter }), search);
+    return await this.nftTagsService.getNftTags(new QueryPagination({ from, size }), search);
   }
 
   @Get("/tags/count")

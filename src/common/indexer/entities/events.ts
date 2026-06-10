@@ -1,5 +1,4 @@
 export class Events {
-  searchAfter?: string;
   _id: string = '';
   logAddress: string = '';
   identifier: string = '';
@@ -12,4 +11,5 @@ export class Events {
   order: number = 0;
   timestamp: number = 0;
   timestampMs?: number;
+  searchAfter?: string;
 }

@@ -71,4 +71,7 @@ export class SmartContractResult {
 
   @ApiProperty({ type: String, nullable: true })
   status: string | undefined = undefined;
+
+  @ApiProperty({ type: String, nullable: true })
+  searchAfter?: string = undefined;
 }

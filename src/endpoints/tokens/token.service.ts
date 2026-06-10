@@ -473,6 +473,7 @@ export class TokenService {
         assets: assets[tokenAccount.address],
         attributes: tokenAccount.data?.attributes,
         identifier: tokenAccount.type === TokenType.MetaESDT ? tokenAccount.identifier : undefined,
+        searchAfter: tokenAccount.searchAfter,
       }));
     }
 
