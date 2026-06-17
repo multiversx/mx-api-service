@@ -77,7 +77,6 @@ export class NftMarketplaceController {
   @ApiOperation({ summary: 'Account auctions', description: 'Returns account auctions for a given address' })
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
-  @ApiQuery({ name: 'searchAfter', description: 'Cursor for continuing from the previous result set', required: false })
   @ApiQuery({ name: 'status', description: 'Returns auctions with specified status', required: false })
   @ApiOkResponse({ type: Auction })
   async getAccountAuctions(

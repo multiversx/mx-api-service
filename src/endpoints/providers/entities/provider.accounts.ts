@@ -12,5 +12,5 @@ export class ProviderAccounts {
   stake: string = '';
 
   @ApiProperty({ type: String, nullable: true })
-  searchAfter: string = '';
+  searchAfter?: string;
 }

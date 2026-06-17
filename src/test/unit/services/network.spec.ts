@@ -277,11 +277,9 @@ describe('NetworkService', () => {
       });
 
       jest.spyOn(ApiConfigService.prototype, 'getNetwork')
-         
         .mockImplementation(jest.fn(() => ('mainnet')));
 
       jest.spyOn(ApiConfigService.prototype, 'getCluster')
-         
         .mockImplementation(jest.fn(() => undefined));
 
       const result = await networkService.getAboutRaw();

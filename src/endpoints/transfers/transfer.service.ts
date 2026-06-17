@@ -121,7 +121,9 @@ export class TransferService {
 
       elasticOperations = await this.sortElasticTransfersByTxsOrder(elasticOperations, filter.miniBlockHash);
     } else {
-      elasticOperations = this.sortElasticTransfers(elasticOperations);
+      if (!pagination.searchAfter) {
+        elasticOperations = this.sortElasticTransfers(elasticOperations);
+      }
     }
 
     let transactions: TransactionDetailed[] = [];
@@ -149,7 +151,7 @@ export class TransferService {
     const hasSenderFilter = filter.sender || (filter.senders && filter.senders.length > 0);
     const hasReceiverFilter = filter.receivers && filter.receivers.length > 0;
 
-    if (filter.address && !hasSenderFilter && !hasReceiverFilter) {
+    if (filter.address && !hasSenderFilter && !hasReceiverFilter && pagination.searchAfter === undefined) {
       transactions = this.transactionService.reorderAccountSentTransactionsByNonce(transactions, filter.address);
     }
 

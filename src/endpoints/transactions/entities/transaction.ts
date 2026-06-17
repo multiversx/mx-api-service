@@ -120,7 +120,7 @@ export class Transaction {
   isScCall: boolean | undefined = undefined;
 
   @ApiProperty({ type: String, nullable: true, required: false })
-  searchAfter?: string | undefined = undefined;
+  searchAfter?: string | undefined;
 
   getDate(): Date | undefined {
     if (this.timestamp) {

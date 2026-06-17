@@ -545,7 +545,7 @@ export class ElasticIndexerService implements IndexerInterface {
         { name: 'deployTxHash', order: ElasticSortOrder.descending },
       ]);
 
-    return await this.elasticService.getList('scdeploys', "contract", elasticQuery);
+    return await this.elasticService.getList('scdeploys', "contract", elasticQuery, pagination.searchAfter);
   }
 
   async getAccountContracts(pagination: QueryPagination, address: string): Promise<any[]> {

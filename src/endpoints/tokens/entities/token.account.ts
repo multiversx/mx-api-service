@@ -23,5 +23,5 @@ export class TokenAccount {
   assets: AccountAssets | undefined = undefined;
 
   @ApiProperty({ type: String, nullable: true })
-  searchAfter?: string | undefined = undefined;
+  searchAfter?: string | undefined;
 }

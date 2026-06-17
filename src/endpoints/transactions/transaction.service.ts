@@ -201,7 +201,7 @@ export class TransactionService {
   }
 
   async getTransactions(filter: TransactionFilter, pagination: QueryPagination, queryOptions?: TransactionQueryOptions, address?: string, fields?: string[]): Promise<Transaction[]> {
-    if (this.isCacheableTransactionList(filter, queryOptions, fields, address)) {
+    if (this.isCacheableTransactionList(filter, queryOptions, fields, address, pagination)) {
       const cacheInfo = CacheInfo.Transactions(pagination);
       return await this.cachingService.getOrSet(
         cacheInfo.key,
@@ -223,7 +223,7 @@ export class TransactionService {
     const hasSenderFilter = filter.sender || (filter.senders && filter.senders.length > 0);
     const hasReceiverFilter = filter.receivers && filter.receivers.length > 0;
 
-    if (address && !hasSenderFilter && !hasReceiverFilter) {
+    if (address && !hasSenderFilter && !hasReceiverFilter && pagination.searchAfter === undefined) {
       transactions = this.reorderAccountSentTransactionsByNonce(transactions, address);
     }
 
@@ -871,9 +871,9 @@ export class TransactionService {
       filter.withTxsRelayedByAddress === undefined;
   }
 
-  private isCacheableTransactionList(filter: TransactionFilter, queryOptions?: TransactionQueryOptions, fields?: string[], address?: string): boolean {
+  private isCacheableTransactionList(filter: TransactionFilter, queryOptions?: TransactionQueryOptions, fields?: string[], address?: string, pagination?: QueryPagination): boolean {
     const hasFieldSelection = Array.isArray(fields) && fields.length > 0;
-    if (address || hasFieldSelection || !this.isEmptyTransactionFilter(filter) || !queryOptions) {
+    if (address || hasFieldSelection || !this.isEmptyTransactionFilter(filter) || !queryOptions || pagination?.searchAfter) {
       return false;
     }
 
