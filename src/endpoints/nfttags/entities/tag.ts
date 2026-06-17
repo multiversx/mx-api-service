@@ -10,7 +10,4 @@ export class Tag {
 
   @ApiProperty({ type: Number, nullable: true, example: 46135 })
   count: number | undefined = undefined;
-
-  @ApiProperty({ type: String, required: false })
-  searchAfter?: string;
 }
