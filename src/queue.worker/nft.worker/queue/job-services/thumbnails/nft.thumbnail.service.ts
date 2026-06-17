@@ -52,6 +52,11 @@ export class NftThumbnailService {
       ffmpeg(videoPath)
         .seek(seek)
         .takeFrames(1)
+        // Force YUV420P format to ensure compatibility with the MJPEG encoder.
+        .videoFilters('format=yuv420p')
+        // Set strictness to 'unofficial' to allow 'limited range' color inputs, 
+        // which prevents the encoder from rejecting standard video streams.
+        .outputOptions(['-strict', 'unofficial'])
         .saveToFile(outputPath)
         .on('start', (commandLine) => {
           this.logger.log('Spawned ffmpeg with command: ' + commandLine);
