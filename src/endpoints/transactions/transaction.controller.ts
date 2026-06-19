@@ -42,7 +42,7 @@ export class TransactionController {
   @ApiQuery({ name: 'fields', description: 'List of fields to filter by', required: false, isArray: true, style: 'form', explode: false })
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
-  @ApiQuery({ name: 'searchAfter', description: 'Cursor for continuing from the previous result set', required: false })
+  @ApiQuery({ name: 'searchAfter', description: 'Base64 encoded cursor to continue from the last document', required: false })
   @ApiQuery({ name: 'condition', description: 'Condition for elastic search queries', required: false, deprecated: true })
   @ApiQuery({ name: 'withScResults', description: 'Return results for transactions. When "withScResults" parameter is applied, complexity estimation is 200', required: false, type: Boolean })
   @ApiQuery({ name: 'withOperations', description: 'Return operations for transactions. When "withOperations" parameter is applied, complexity estimation is 200', required: false, type: Boolean })
