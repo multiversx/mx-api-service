@@ -72,7 +72,6 @@ export class ApiConfigService {
     }
 
     const esUrl = elasticUrls[Math.floor(Math.random() * elasticUrls.length)];
-    console.log(`Selected elastic url: ${esUrl}`);
     return esUrl;
   }
 
