@@ -71,8 +71,7 @@ export class ApiConfigService {
       throw new Error('No elastic urls present');
     }
 
-    const esUrl = elasticUrls[Math.floor(Math.random() * elasticUrls.length)];
-    return esUrl;
+    return elasticUrls[Math.floor(Math.random() * elasticUrls.length)];
   }
 
   getIpfsUrl(): string {
