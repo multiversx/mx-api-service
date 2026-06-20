@@ -84,6 +84,7 @@ export class ElasticIndexerService implements IndexerInterface {
     ]);
 
     const result = await this.elasticService.getList('blocks', 'hash', elasticQuery, queryPagination.searchAfter);
+    console.log(`elastic result for blocks: ${JSON.stringify(result)}`);
     return result;
   }
 
