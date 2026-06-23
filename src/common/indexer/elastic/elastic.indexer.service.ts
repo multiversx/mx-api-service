@@ -487,7 +487,7 @@ export class ElasticIndexerService implements IndexerInterface {
       case AccountSort.balance:
         elasticQuery = elasticQuery.withSort([
           { name: 'balanceNum', order: sortOrder },
-          { name: 'address', order: sortOrder },
+          { name: 'address.keyword', order: sortOrder },
           { name: 'timestamp', order: sortOrder },
           { name: 'timestampMs', order: sortOrder, missing: 0 },
         ]);
@@ -496,14 +496,14 @@ export class ElasticIndexerService implements IndexerInterface {
         if (this.apiConfigService.getAccountExtraDetailsTransfersLast24hUrl()) {
           elasticQuery = elasticQuery.withSort([
             { name: 'api_transfersLast24h', order: sortOrder },
-            { name: 'address', order: sortOrder },
+            { name: 'address.keyword', order: sortOrder },
           ]);
         } else {
           elasticQuery = elasticQuery
             .withSort([
               { name: 'timestamp', order: sortOrder },
               { name: 'timestampMs', order: sortOrder, missing: 0 },
-              { name: 'address', order: sortOrder },
+              { name: 'address.keyword', order: sortOrder },
             ])
             .withMustExistCondition('currentOwner');
         }
@@ -513,7 +513,7 @@ export class ElasticIndexerService implements IndexerInterface {
         elasticQuery = elasticQuery.withSort([
           { name: 'timestamp', order: sortOrder },
           { name: 'timestampMs', order: sortOrder, missing: 0 },
-          { name: 'address', order: sortOrder },
+          { name: 'address.keyword', order: sortOrder },
         ]);
         break;
     }
