@@ -54,10 +54,23 @@ export class TransactionsCustomGateway {
 
   async pushTransactionsForTimestampMs(timestampMs: number): Promise<void> {
     try {
-      const allTransactions = await this.transactionService.getTransactions(
-        new TransactionFilter({ before: timestampMs, after: timestampMs }),
-        new QueryPagination({ size: 10000 }) // TODO: handle pagination with more than 10k txs
-      );
+      const allTransactions: Transaction[] = [];
+      const size = 10000;
+      const filter = new TransactionFilter({ before: timestampMs, after: timestampMs });
+
+      let batch = await this.transactionService.getTransactions(filter, new QueryPagination({ size }));
+      allTransactions.push(...batch);
+
+      while (batch.length === size) {
+        const searchAfter = batch[batch.length - 1].searchAfter;
+        if (searchAfter == null) {
+          break;
+        }
+
+        batch = await this.transactionService.getTransactions(filter, new QueryPagination({ size, searchAfter }));
+
+        allTransactions.push(...batch);
+      }
 
       const txFilteredForBroadcast: Map<string, Transaction[]> = new Map();
       for (const transaction of allTransactions) {
