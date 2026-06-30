@@ -14,3 +14,4 @@ export { TokenAccount, TokenType } from './token.account';
 export { Transaction } from './transaction';
 export { TransactionLog, TransactionLogEvent, ElasticTransactionLogEvent } from './transaction.log';
 export { TransactionReceipt } from './transaction.receipt';
+export { AccountType } from './account.type';

@@ -11,7 +11,7 @@ import { TransactionFilter } from "src/endpoints/transactions/entities/transacti
 import { MetricsEvents } from "src/utils/metrics-events.constants";
 import { TokenAssets } from "../assets/entities/token.assets";
 import { QueryPagination } from "../entities/query.pagination";
-import { Account, AccountHistory, AccountTokenHistory, Block, Collection, MiniBlock, Operation, Round, ScDeploy, ScResult, Tag, Token, TokenAccount, Transaction, ElasticTransactionLogEvent, TransactionReceipt } from "./entities";
+import { Account, AccountHistory, AccountTokenHistory, Block, Collection, MiniBlock, Operation, Round, ScDeploy, ScResult, Tag, Token, TokenAccount, Transaction, ElasticTransactionLogEvent, TransactionReceipt, AccountType } from "./entities";
 import { IndexerInterface } from "./indexer.interface";
 import { LogPerformanceAsync } from "src/utils/log.performance.decorator";
 import { AccountQueryOptions } from "src/endpoints/accounts/entities/account.query.options";
@@ -91,13 +91,13 @@ export class IndexerService implements IndexerInterface {
   }
 
   @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
-  async getTokenAccountsCount(identifier: string): Promise<number | undefined> {
-    return await this.indexerInterface.getTokenAccountsCount(identifier);
+  async getTokenAccountsCount(identifier: string, accountType?: AccountType): Promise<number | undefined> {
+    return await this.indexerInterface.getTokenAccountsCount(identifier, accountType);
   }
 
   @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
-  async getTokenAccounts(pagination: QueryPagination, identifier: string): Promise<TokenAccount[]> {
-    return await this.indexerInterface.getTokenAccounts(pagination, identifier);
+  async getTokenAccounts(pagination: QueryPagination, identifier: string, accountType?: AccountType): Promise<TokenAccount[]> {
+    return await this.indexerInterface.getTokenAccounts(pagination, identifier, accountType);
   }
 
   @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
