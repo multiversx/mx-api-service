@@ -1022,7 +1022,7 @@ describe('CollectionController', () => {
         .get(`${path}/${collection}/transactions/count`)
         .expect(200);
       expect(transactionServiceMocks.getTransactionCount).toHaveBeenCalledWith(
-        createTransactionFilter({ token: collection, functions: [] })
+        createTransactionFilter({ token: collection })
       );
     });
 
