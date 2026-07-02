@@ -166,7 +166,7 @@ export class ElasticIndexerService implements IndexerInterface {
     if (accountType) {
       elasticQuery = accountType === AccountType.SMART_CONTRACT ?
         elasticQuery.withCondition(QueryConditionOptions.must, [QueryType.Prefix('address', contractAddressPrefix)])
-        : elasticQuery.withCondition(QueryConditionOptions.mustNot, [QueryType.Prefix('address', contractAddressPrefix)])
+        : elasticQuery.withCondition(QueryConditionOptions.mustNot, [QueryType.Prefix('address', contractAddressPrefix)]);
     }
 
     return await this.elasticService.getList("accountsesdt", identifier, elasticQuery);
