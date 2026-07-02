@@ -1036,7 +1036,7 @@ describe('CollectionController', () => {
         .get(`${path}/${collection}/transactions/count?sender=${sender}`)
         .expect(200);
       expect(transactionServiceMocks.getTransactionCount).toHaveBeenCalledWith(
-        createTransactionFilter({ token: collection, sender: sender, functions: [] })
+        createTransactionFilter({ token: collection, sender: sender })
       );
     });
 
@@ -1050,7 +1050,7 @@ describe('CollectionController', () => {
         .get(`${path}/${collection}/transactions/count?senderShard=${senderShard}`)
         .expect(200);
       expect(transactionServiceMocks.getTransactionCount).toHaveBeenCalledWith(
-        createTransactionFilter({ token: collection, senderShard: senderShard, functions: [] })
+        createTransactionFilter({ token: collection, senderShard: senderShard })
       );
     });
 
@@ -1064,7 +1064,7 @@ describe('CollectionController', () => {
         .get(`${path}/${collection}/transactions/count?receiverShard=${receiverShard}`)
         .expect(200);
       expect(transactionServiceMocks.getTransactionCount).toHaveBeenCalledWith(
-        createTransactionFilter({ token: collection, receiverShard: receiverShard, functions: [] })
+        createTransactionFilter({ token: collection, receiverShard: receiverShard })
       );
     });
 
@@ -1078,7 +1078,7 @@ describe('CollectionController', () => {
         .get(`${path}/${collection}/transactions/count?miniBlockHash=${miniBlockHash}`)
         .expect(200);
       expect(transactionServiceMocks.getTransactionCount).toHaveBeenCalledWith(
-        createTransactionFilter({ token: collection, miniBlockHash: miniBlockHash, functions: [] })
+        createTransactionFilter({ token: collection, miniBlockHash: miniBlockHash })
       );
     });
 
@@ -1092,7 +1092,7 @@ describe('CollectionController', () => {
         .get(`${path}/${collection}/transactions/count?status=${status}`)
         .expect(200);
       expect(transactionServiceMocks.getTransactionCount).toHaveBeenCalledWith(
-        createTransactionFilter({ token: collection, status: status, functions: [] })
+        createTransactionFilter({ token: collection, status: status })
       );
     });
 
@@ -1106,7 +1106,7 @@ describe('CollectionController', () => {
         .get(`${path}/${collection}/transactions/count?before=${before}`)
         .expect(200);
       expect(transactionServiceMocks.getTransactionCount).toHaveBeenCalledWith(
-        createTransactionFilter({ token: collection, before: before, functions: [] })
+        createTransactionFilter({ token: collection, before: before })
       );
     });
 
@@ -1120,7 +1120,7 @@ describe('CollectionController', () => {
         .get(`${path}/${collection}/transactions/count?after=${after}`)
         .expect(200);
       expect(transactionServiceMocks.getTransactionCount).toHaveBeenCalledWith(
-        createTransactionFilter({ token: collection, after: after, functions: [] })
+        createTransactionFilter({ token: collection, after: after })
       );
     });
   });

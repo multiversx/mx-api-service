@@ -323,7 +323,7 @@ describe('Account Service', () => {
       const result = await service.getAccountTxCount(address);
 
       expect(transferService.getTransfersCount).toHaveBeenCalledWith(new TransactionFilter(
-        { address: address, functions: [], receivers: [], senders: [], type: TransactionType.Transaction }));
+        { address: address, type: TransactionType.Transaction }));
 
       expect(transactionService.getTransactionCountForAddress).not.toHaveBeenCalled();
       expect(result).toStrictEqual(expectedTxCount);
@@ -341,7 +341,7 @@ describe('Account Service', () => {
         const result = await service.getAccountScResults(address);
 
         expect(transferService.getTransfersCount).toHaveBeenCalledWith(new TransactionFilter(
-          { address: address, functions: [], receivers: [], senders: [], type: TransactionType.SmartContractResult }));
+          { address: address, type: TransactionType.SmartContractResult }));
 
         expect(smartContractResultService.getAccountScResultsCount).not.toHaveBeenCalledWith(address);
         expect(result).toStrictEqual(expectedTxCount);
