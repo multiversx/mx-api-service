@@ -162,7 +162,7 @@ export class ElasticIndexerService implements IndexerInterface {
       .withCondition(QueryConditionOptions.must, [QueryType.Match("token", identifier, QueryOperator.AND)])
       .withCondition(QueryConditionOptions.mustNot, [QueryType.Match('address', 'pending')]);
 
-    const contractAddressPrefix = 'erd1' + 'q'.repeat(12);;
+    const contractAddressPrefix = 'erd1' + 'q'.repeat(12);
     if (accountType) {
       elasticQuery = accountType === AccountType.SMART_CONTRACT ?
         elasticQuery.withCondition(QueryConditionOptions.must, [QueryType.Prefix('address', contractAddressPrefix)])
