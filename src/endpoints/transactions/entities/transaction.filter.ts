@@ -7,10 +7,10 @@ import { BadRequestException } from "@nestjs/common";
 export class TransactionFilter {
   address?: string;
   sender?: string;
-  senders?: string[] = [];
-  receivers?: string[] = [];
+  senders?: string[];
+  receivers?: string[];
   token?: string;
-  functions?: string[] = [];
+  functions?: string[];
   senderShard?: number;
   receiverShard?: number;
   miniBlockHash?: string;

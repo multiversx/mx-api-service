@@ -4,13 +4,13 @@ export class EventsFilter {
     Object.assign(this, init);
   }
 
-  identifier: string = '';
-  address: string = '';
-  txHash: string = '';
-  shard: number = 0;
-  before: number = 0;
-  after: number = 0;
-  order: number = 0;
-  logAddress: string = '';
-  topics: string[] = [];
+  identifier?: string;
+  address?: string;
+  txHash?: string;
+  shard?: number;
+  before?: number;
+  after?: number;
+  order?: number;
+  logAddress?: string;
+  topics?: string[];
 }
