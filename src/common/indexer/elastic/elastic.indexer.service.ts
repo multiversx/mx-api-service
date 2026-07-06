@@ -143,12 +143,8 @@ export class ElasticIndexerService implements IndexerInterface {
     let elasticQuery: ElasticQuery = ElasticQuery.create()
       .withCondition(QueryConditionOptions.must, [QueryType.Match("token", identifier, QueryOperator.AND)]);
 
-
-    const contractAddressPrefix = 'erd1' + 'q'.repeat(12);;
     if (accountType) {
-      elasticQuery = accountType === AccountType.SMART_CONTRACT ?
-        elasticQuery.withCondition(QueryConditionOptions.must, [QueryType.Prefix('address', contractAddressPrefix)])
-        : elasticQuery.withCondition(QueryConditionOptions.mustNot, [QueryType.Prefix('address', contractAddressPrefix)]);
+      elasticQuery = this.indexerHelper.buildAccountTypeFilter(elasticQuery, accountType);
     }
 
     const count = await this.elasticService.getCount("accountsesdt", elasticQuery);
@@ -162,11 +158,8 @@ export class ElasticIndexerService implements IndexerInterface {
       .withCondition(QueryConditionOptions.must, [QueryType.Match("token", identifier, QueryOperator.AND)])
       .withCondition(QueryConditionOptions.mustNot, [QueryType.Match('address', 'pending')]);
 
-    const contractAddressPrefix = 'erd1' + 'q'.repeat(12);
     if (accountType) {
-      elasticQuery = accountType === AccountType.SMART_CONTRACT ?
-        elasticQuery.withCondition(QueryConditionOptions.must, [QueryType.Prefix('address', contractAddressPrefix)])
-        : elasticQuery.withCondition(QueryConditionOptions.mustNot, [QueryType.Prefix('address', contractAddressPrefix)]);
+      elasticQuery = this.indexerHelper.buildAccountTypeFilter(elasticQuery, accountType);
     }
 
     return await this.elasticService.getList("accountsesdt", identifier, elasticQuery);
