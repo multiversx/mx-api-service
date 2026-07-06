@@ -1040,7 +1040,7 @@ describe('Token Service', () => {
       expect(result).toStrictEqual(10);
       expect(indexerAccountsCountMock).toHaveBeenCalledTimes(1);
       expect(tokensPropertiesMock).toHaveBeenCalledTimes(1);
-      expect(indexerAccountsCountMock).toHaveBeenCalledWith(identifier);
+      expect(indexerAccountsCountMock).toHaveBeenCalledWith(identifier, undefined);
       expect(tokensPropertiesMock).toHaveBeenCalledWith(identifier);
     });
   });

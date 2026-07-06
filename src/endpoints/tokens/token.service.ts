@@ -34,7 +34,7 @@ import { TransactionService } from "../transactions/transaction.service";
 import { MexTokenService } from "../mex/mex.token.service";
 import { CollectionService } from "../collections/collection.service";
 import { NftType } from "../nfts/entities/nft.type";
-import { TokenType } from "src/common/indexer/entities";
+import { AccountType, TokenType } from "src/common/indexer/entities";
 import { TokenAssetsPriceSourceType } from "src/common/assets/entities/token.assets.price.source.type";
 import { DataApiService } from "src/common/data-api/data-api.service";
 import { TrieOperationsTimeoutError } from "../esdt/exceptions/trie.operations.timeout.error";
@@ -456,13 +456,13 @@ export class TokenService {
     return tokensWithBalance;
   }
 
-  async getTokenAccounts(pagination: QueryPagination, identifier: string): Promise<TokenAccount[] | undefined> {
+  async getTokenAccounts(pagination: QueryPagination, identifier: string, accountType?: AccountType): Promise<TokenAccount[] | undefined> {
     const properties = await this.getTokenProperties(identifier);
     if (!properties) {
       return undefined;
     }
 
-    const tokenAccounts = await this.indexerService.getTokenAccounts(pagination, identifier);
+    const tokenAccounts = await this.indexerService.getTokenAccounts(pagination, identifier, accountType);
     const assets = await this.assetsService.getAllAccountAssets();
     const result: TokenAccount[] = [];
 
@@ -479,13 +479,13 @@ export class TokenService {
     return result;
   }
 
-  async getTokenAccountsCount(identifier: string): Promise<number | undefined> {
+  async getTokenAccountsCount(identifier: string, accountType?: AccountType): Promise<number | undefined> {
     const properties = await this.getTokenProperties(identifier);
     if (!properties) {
       return undefined;
     }
 
-    const count = await this.indexerService.getTokenAccountsCount(identifier);
+    const count = await this.indexerService.getTokenAccountsCount(identifier, accountType);
     return count;
   }
 
