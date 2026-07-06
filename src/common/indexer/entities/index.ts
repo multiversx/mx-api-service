@@ -15,3 +15,4 @@ export { Transaction } from './transaction';
 export { TransactionLog, TransactionLogEvent, ElasticTransactionLogEvent } from './transaction.log';
 export { TransactionReceipt } from './transaction.receipt';
 export { ElasticSortable } from './elastic.sortable';
+export { AccountType } from './account.type';

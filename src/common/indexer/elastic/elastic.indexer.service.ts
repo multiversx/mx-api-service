@@ -17,7 +17,7 @@ import { TokenFilter } from "src/endpoints/tokens/entities/token.filter";
 import { Block } from "../entities/block";
 import { Tag } from "../entities/tag";
 import { ElasticIndexerHelper } from "./elastic.indexer.helper";
-import { TokenType } from "../entities";
+import { AccountType, TokenType } from "../entities";
 import { SortCollections } from "src/endpoints/collections/entities/sort.collections";
 import { AccountQueryOptions } from "src/endpoints/accounts/entities/account.query.options";
 import { AccountSort } from "src/endpoints/accounts/entities/account.sort";
@@ -147,16 +147,20 @@ export class ElasticIndexerService implements IndexerInterface {
     return await this.elasticService.getList('accountsesdt', 'token', query, queryPagination.searchAfter);
   }
 
-  async getTokenAccountsCount(identifier: string): Promise<number | undefined> {
-    const elasticQuery: ElasticQuery = ElasticQuery.create()
+  async getTokenAccountsCount(identifier: string, accountType?: AccountType): Promise<number | undefined> {
+    let elasticQuery: ElasticQuery = ElasticQuery.create()
       .withCondition(QueryConditionOptions.must, [QueryType.Match("token", identifier, QueryOperator.AND)]);
+
+    if (accountType) {
+      elasticQuery = this.indexerHelper.buildAccountTypeFilter(elasticQuery, accountType);
+    }
 
     const count = await this.elasticService.getCount("accountsesdt", elasticQuery);
     return count;
   }
 
-  async getTokenAccounts(pagination: QueryPagination, identifier: string): Promise<any[]> {
-    const elasticQuery: ElasticQuery = ElasticQuery.create()
+  async getTokenAccounts(pagination: QueryPagination, identifier: string, accountType?: AccountType): Promise<any[]> {
+    let elasticQuery: ElasticQuery = ElasticQuery.create()
       .withPagination({ from: pagination.from, size: pagination.size })
       .withSort([
         { name: "balanceNum", order: ElasticSortOrder.descending },
@@ -169,7 +173,11 @@ export class ElasticIndexerService implements IndexerInterface {
       .withCondition(QueryConditionOptions.must, [QueryType.Match("token", identifier, QueryOperator.AND)])
       .withCondition(QueryConditionOptions.mustNot, [QueryType.Match('address', 'pending')]);
 
-    return await this.elasticService.getList("accountsesdt", identifier, elasticQuery, pagination.searchAfter);
+    if (accountType) {
+      elasticQuery = this.indexerHelper.buildAccountTypeFilter(elasticQuery, accountType);
+    }
+
+    return await this.elasticService.getList("accountsesdt", identifier, elasticQuery);
   }
 
   async getTokensWithRolesForAddressCount(address: string, filter: TokenWithRolesFilter): Promise<number> {
