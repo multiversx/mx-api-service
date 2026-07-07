@@ -737,7 +737,7 @@ export class ElasticIndexerHelper {
     }
 
     if (filter.addresses !== undefined && filter.addresses.length > 0) {
-      elasticQuery = elasticQuery.withMustMultiShouldCondition(filter.addresses, address => QueryType.Match('address.keyword', address));
+      elasticQuery = elasticQuery.withMustMultiShouldCondition(filter.addresses, address => QueryType.Match('address', address));
     }
 
     if (filter.search) {
