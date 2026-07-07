@@ -710,9 +710,9 @@ export class ElasticIndexerHelper {
 
     if (filter.isSmartContract !== undefined) {
       if (filter.isSmartContract) {
-        elasticQuery = elasticQuery.withMustExistCondition('currentOwner');
+        elasticQuery = this.buildAccountTypeFilter(elasticQuery, AccountType.SMART_CONTRACT);
       } else {
-        elasticQuery = elasticQuery.withMustNotExistCondition('currentOwner');
+        elasticQuery = this.buildAccountTypeFilter(elasticQuery, AccountType.WALLET);
       }
     }
 
@@ -737,7 +737,7 @@ export class ElasticIndexerHelper {
     }
 
     if (filter.addresses !== undefined && filter.addresses.length > 0) {
-      elasticQuery = elasticQuery.withMustMultiShouldCondition(filter.addresses, address => QueryType.Match('address', address));
+      elasticQuery = elasticQuery.withMustMultiShouldCondition(filter.addresses, address => QueryType.Match('address.keyword', address));
     }
 
     if (filter.search) {
