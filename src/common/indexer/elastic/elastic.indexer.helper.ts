@@ -709,11 +709,7 @@ export class ElasticIndexerHelper {
     }
 
     if (filter.isSmartContract !== undefined) {
-      if (filter.isSmartContract) {
-        elasticQuery = elasticQuery.withMustExistCondition('currentOwner');
-      } else {
-        elasticQuery = elasticQuery.withMustNotExistCondition('currentOwner');
-      }
+      elasticQuery = this.buildAccountTypeFilter(elasticQuery, filter.isSmartContract ? AccountType.SMART_CONTRACT : AccountType.WALLET);
     }
 
     if (filter.name) {
