@@ -709,11 +709,7 @@ export class ElasticIndexerHelper {
     }
 
     if (filter.isSmartContract !== undefined) {
-      if (filter.isSmartContract) {
-        elasticQuery = this.buildAccountTypeFilter(elasticQuery, AccountType.SMART_CONTRACT);
-      } else {
-        elasticQuery = this.buildAccountTypeFilter(elasticQuery, AccountType.WALLET);
-      }
+      elasticQuery = this.buildAccountTypeFilter(elasticQuery, filter.isSmartContract ? AccountType.SMART_CONTRACT : AccountType.WALLET);
     }
 
     if (filter.name) {
