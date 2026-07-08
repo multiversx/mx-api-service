@@ -101,6 +101,7 @@ export class PoolService {
       signature: tx.signature ?? '',
       type: type ?? TransactionType.Transaction,
     });
+
     const metadata = await this.transactionActionService.getTransactionMetadata(this.poolTransactionToTransaction(transaction), false);
     if (metadata && metadata.functionName) {
       transaction.function = metadata.functionName;
