@@ -9,8 +9,6 @@ import { TransactionType } from "../transactions/entities/transaction.type";
 import { TransactionInPool } from "./entities/transaction.in.pool.dto";
 import { PoolFilter } from "./entities/pool.filter";
 import { TxInPoolFields } from "src/common/gateway/entities/tx.in.pool.fields";
-import { AddressUtils } from "@multiversx/sdk-nestjs-common";
-import { ProtocolService } from "../../common/protocol/protocol.service";
 import { TransactionActionService } from "../transactions/transaction-action/transaction.action.service";
 import { Transaction } from "../transactions/entities/transaction";
 import { ApiUtils } from "@multiversx/sdk-nestjs-http";
@@ -21,7 +19,6 @@ export class PoolService {
     private readonly gatewayService: GatewayService,
     private readonly apiConfigService: ApiConfigService,
     private readonly cacheService: CacheService,
-    private readonly protocolService: ProtocolService,
     private readonly transactionActionService: TransactionActionService,
   ) { }
 
@@ -96,21 +93,14 @@ export class PoolService {
       value: tx.value ?? '',
       gasPrice: tx.gasprice ?? 0,
       gasLimit: tx.gaslimit ?? 0,
+      senderShard: tx.sendershard ?? 0,
+      receiverShard: tx.receivershard ?? 0,
       data: tx.data ?? '',
       guardian: tx.guardian ?? '',
       guardianSignature: tx.guardiansignature ?? '',
       signature: tx.signature ?? '',
       type: type ?? TransactionType.Transaction,
     });
-
-    // TODO: after gateway's /transaction/pool returns the sendershard and receivershard correctly, remove this computation
-    const shardCount = await this.protocolService.getShardCount();
-    if (transaction.sender) {
-      transaction.senderShard = AddressUtils.computeShard(AddressUtils.bech32Decode(transaction.sender), shardCount);
-    }
-    if (transaction.receiver) {
-      transaction.receiverShard = AddressUtils.computeShard(AddressUtils.bech32Decode(transaction.receiver), shardCount);
-    }
 
     const metadata = await this.transactionActionService.getTransactionMetadata(this.poolTransactionToTransaction(transaction), false);
     if (metadata && metadata.functionName) {
