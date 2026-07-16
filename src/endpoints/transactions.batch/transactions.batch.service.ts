@@ -48,8 +48,8 @@ export class TransactionsBatchService {
           options: tx.options,
           guardian: tx.guardian ? new Address(tx.guardian) : undefined,
           sender: new Address(tx.sender),
-          signature: tx.signature ? new Uint8Array(Buffer.from(tx.signature, 'base64')) : undefined,
-          guardianSignature: tx.guardianSignature ? new Uint8Array(Buffer.from(tx.guardianSignature, 'base64')) : undefined,
+          signature: tx.signature ? new Uint8Array(Buffer.from(tx.signature, 'hex')) : undefined,
+          guardianSignature: tx.guardianSignature ? new Uint8Array(Buffer.from(tx.guardianSignature, 'hex')) : undefined,
         });
 
         item.transaction.hash = transactionComputer.computeTransactionHash(trans);
