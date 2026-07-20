@@ -34,7 +34,7 @@ export class NftAssetService {
         description: `Uploading assets to S3 for NFT with identifier '${identifier}', file url '${fileUrl}'`,
         key: CacheInfo.PendingUploadAsset(cacheIdentifier).key,
         ttl: CacheInfo.PendingUploadAsset(cacheIdentifier).ttl,
-        action: async () => await this.apiService.get(mediaUrl, { responseType: 'arraybuffer', timeout: this.API_TIMEOUT_MILLISECONDS }),
+        action: async () => await this.apiService.get(mediaUrl, { responseType: 'arraybuffer', timeout: this.API_TIMEOUT_MILLISECONDS, skipRedirects: true }),
       });
 
       const file = fileResult.data;
@@ -57,7 +57,7 @@ export class NftAssetService {
       const url = TokenHelpers.computeNftUri(media.originalUrl, prefix);
 
       // eslint-disable-next-line require-await
-      const response = await this.apiService.head(url, undefined, async (error) => {
+      const response = await this.apiService.head(url, { skipRedirects: true }, async (error) => {
         const status = error.response?.status;
         if ([HttpStatus.FOUND, HttpStatus.NOT_FOUND, HttpStatus.FORBIDDEN].includes(status)) {
           return true;
