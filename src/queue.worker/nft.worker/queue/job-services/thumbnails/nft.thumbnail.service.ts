@@ -202,7 +202,7 @@ export class NftThumbnailService {
       description: `Generating thumbnail for NFT with identifier '${nftIdentifier}', url '${fileUrl}' and url hash '${urlHash}'`,
       key: CacheInfo.PendingGenerateThumbnail(cacheIdentifier).key,
       ttl: CacheInfo.PendingGenerateThumbnail(cacheIdentifier).ttl,
-      action: async () => await this.apiService.get(fileUrl, { responseType: 'arraybuffer', timeout: this.API_TIMEOUT_MILLISECONDS }),
+      action: async () => await this.apiService.get(fileUrl, { responseType: 'arraybuffer', timeout: this.API_TIMEOUT_MILLISECONDS, skipRedirects: true }),
     });
 
     if (!fileResult) {
