@@ -44,6 +44,13 @@ describe('IP Utils', () => {
     expect(mockLookup).toHaveBeenCalledTimes(privateAddresses.length);
   });
 
+  it('returns false for localhost resolving to a private ip', async () => {
+    mockLookup.mockResolvedValueOnce({ address: '127.0.0.1', family: 4 } as any);
+
+    await expect(isSafePublicUrl('http://localhost')).resolves.toBe(false);
+    expect(mockLookup).toHaveBeenCalledWith('localhost');
+  });
+
   it('returns true for public addresses', async () => {
     mockLookup.mockResolvedValueOnce({ address: '93.184.216.34', family: 4 } as any);
 
