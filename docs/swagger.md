@@ -41,5 +41,15 @@ This API is organized around REST principles, so if you've interacted with RESTf
 
 ## Pagination
 
-* Requests that return multiple items will be paginated to 25 items by default. 
-* For a different number of items or for the next pages `?from=` and `size=` can be used.
+* Requests that return multiple items will be paginated to 25 items by default.
+* For standard offset-based pagination, you can use the following query parameters:
+    * `from`: The offset from which to start retrieving results (default: `0`).
+    * `size`: The maximum number of items to return in a single response (default: `25`).
+
+* **Cursor-Based Pagination (`searchAfter`)**:
+    * Certain endpoints (such as `/transactions` or `/transfers`) support cursor-based pagination for efficient iteration through large datasets.
+    * On supported endpoints, each individual item in the response list includes a `searchAfter` field containing a Base64-encoded cursor string.
+    * To fetch the next set of items strictly after a specific entry, copy its `searchAfter` cursor value and pass it as a query parameter in your subsequent request:
+        * Example: `?searchAfter=<base64_cursor_string>`
+    * **Important:** For the cursor-based pagination to work correctly, the `from` parameter must be set to `0` or omitted entirely from the request.
+    * Using `searchAfter` is recommended for deep pagination as it avoids performance issues associated with large offset values.
