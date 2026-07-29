@@ -177,7 +177,7 @@ export class ElasticIndexerService implements IndexerInterface {
       elasticQuery = this.indexerHelper.buildAccountTypeFilter(elasticQuery, accountType);
     }
 
-    return await this.elasticService.getList("accountsesdt", identifier, elasticQuery);
+    return await this.elasticService.getList("accountsesdt", identifier, elasticQuery, pagination.searchAfter);
   }
 
   async getTokensWithRolesForAddressCount(address: string, filter: TokenWithRolesFilter): Promise<number> {
