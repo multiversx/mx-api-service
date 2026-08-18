@@ -260,7 +260,7 @@ export class AccountController {
     }
   }
 
-  //TODO: no need for searchAfter pagination yet since no account has more than 10k tokens and we also use gateway for account addresses
+  //TODO: no need for searchAfter pagination yet since no account has more than 10k tokens and we also use gateway for account addresses fetch
   @Get("/accounts/:address/tokens")
   @UseInterceptors(DeepHistoryInterceptor)
   @ApiOperation({ summary: 'Account tokens', description: 'Returns a list of all available fungible tokens for a given address, together with their balance' })
