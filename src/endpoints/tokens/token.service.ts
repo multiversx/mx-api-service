@@ -829,7 +829,11 @@ export class TokenService {
           const priceSourcetype = token.assets?.priceSource?.type;
 
           if (priceSourcetype === TokenAssetsPriceSourceType.dataApi) {
-            token.price = await this.dataApiService.getEsdtTokenPrice(token.identifier);
+            const dataApiPrice = await this.dataApiService.getEsdtTokenPrice(token.identifier);
+            if (dataApiPrice) {
+              // keep DEX price if data api price is not available, otherwise override it
+              token.price = dataApiPrice;
+            }
           } else if (priceSourcetype === TokenAssetsPriceSourceType.customUrl && token.assets?.priceSource?.url) {
             const pathToPrice = token.assets?.priceSource?.path ?? "0.usdPrice";
             const customHeaders = this.apiConfigService.getHeadersForCustomUrl(token.assets.priceSource.url);
