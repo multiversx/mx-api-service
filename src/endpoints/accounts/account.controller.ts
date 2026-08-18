@@ -625,7 +625,7 @@ export class AccountController {
   }
 
 
-  //TODO: no need for searchAfter pagination yet since no account has more than 10k nfts and we also use gateway with elastic fallback
+  //TODO: no need for searchAfter pagination yet since no account has more than 10k nfts and we also use gateway with elastic fallback to fetch them
   @Get("/accounts/:address/nfts")
   @UseInterceptors(DeepHistoryInterceptor)
   @ApiOkResponse({ type: [NftAccount] })
