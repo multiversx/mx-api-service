@@ -260,6 +260,7 @@ export class AccountController {
     }
   }
 
+  //TODO: no need for searchAfter pagination yet since no account has more than 10k tokens and we also use gateway for account addresses
   @Get("/accounts/:address/tokens")
   @UseInterceptors(DeepHistoryInterceptor)
   @ApiOperation({ summary: 'Account tokens', description: 'Returns a list of all available fungible tokens for a given address, together with their balance' })
@@ -275,12 +276,10 @@ export class AccountController {
   @ApiQuery({ name: 'timestamp', description: 'Retrieve entries from timestamp', required: false, type: Number })
   @ApiQuery({ name: 'mexPairType', description: 'Token Mex Pair', required: false, enum: MexPairType })
   @ApiOkResponse({ type: [TokenWithBalance] })
-  // @ApiQuery({ name: 'searchAfter', description: 'Base64 encoded cursor to continue from the last document', required: false })
   async getAccountTokens(
     @Param('address', ParseAddressPipe) address: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
-    // @Query('searchAfter') searchAfter?: string,
     @Query('type', new ParseEnumPipe(TokenType)) type?: TokenType,
     @Query('subType', new ParseEnumPipe(NftSubType)) subType?: NftSubType,
     @Query('search') search?: string,
@@ -625,6 +624,8 @@ export class AccountController {
     return result;
   }
 
+
+  //TODO: no need for searchAfter pagination yet since no account has more than 10k nfts and we also use gateway with elastic fallback
   @Get("/accounts/:address/nfts")
   @UseInterceptors(DeepHistoryInterceptor)
   @ApiOkResponse({ type: [NftAccount] })
@@ -652,7 +653,6 @@ export class AccountController {
   @ApiQuery({ name: 'scamType', description: 'Filter by type (scam/potentialScam)', required: false })
   @ApiQuery({ name: 'timestamp', description: 'Retrieve entry from timestamp', required: false, type: Number })
   @ApiQuery({ name: 'withReceivedAt', description: 'Include receivedAt timestamp in the response (when the NFT was received by the address)', required: false, type: Boolean })
-  // @ApiQuery({ name: 'searchAfter', description: 'Base64 encoded cursor to continue from the last document', required: false })
   async getAccountNfts(
     @Param('address', ParseAddressPipe) address: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
@@ -676,7 +676,6 @@ export class AccountController {
     @Query('scamType', new ParseEnumPipe(ScamType)) scamType?: ScamType,
     @Query('timestamp', ParseIntPipe) _timestamp?: number,
     @Query('withReceivedAt', ParseBoolPipe) withReceivedAt?: boolean,
-    // @Query('searchAfter') searchAfter?: string,
   ): Promise<NftAccount[]> {
     const queryOptions = new NftQueryOptions({ withSupply, withReceivedAt });
     queryOptions.validate(size);
