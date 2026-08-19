@@ -133,7 +133,7 @@ export class MexController {
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   async getMexFarms(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
-    @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number
+    @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number,
   ): Promise<MexFarm[]> {
     return await this.mexFarmsService.getMexFarms(new QueryPagination({ from, size }));
   }

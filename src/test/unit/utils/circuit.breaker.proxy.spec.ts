@@ -154,7 +154,7 @@ describe('EsCircuitBreakerProxy', () => {
 
       const result = await proxy.getList('test', 'id', query);
       expect(result).toEqual(mockData);
-      expect(mockElasticService.getList).toHaveBeenCalledWith('test', 'id', query);
+      expect(mockElasticService.getList).toHaveBeenCalledWith('test', 'id', query, undefined, undefined);
     });
 
     it('should proxy getItem calls', async () => {

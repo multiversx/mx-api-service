@@ -1,4 +1,6 @@
-export interface Block {
+import { ElasticSortable } from "./elastic.sortable";
+
+export interface Block extends ElasticSortable {
   hash: string;
   nonce: number;
   round: number;

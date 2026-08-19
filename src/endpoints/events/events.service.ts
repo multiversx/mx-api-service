@@ -40,6 +40,7 @@ export class EventsService {
       txOrder: eventData.txOrder,
       order: eventData.order,
       timestamp: eventData.timestamp,
+      searchAfter: eventData.searchAfter,
     });
   }
 }

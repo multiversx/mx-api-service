@@ -1,4 +1,6 @@
-export interface ScDeploy {
+import { ElasticSortable } from "./elastic.sortable";
+
+export interface ScDeploy extends ElasticSortable {
   address: string;
   contract: string;
   deployTxHash: string;

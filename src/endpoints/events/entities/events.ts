@@ -42,4 +42,7 @@ export class Events {
 
   @ApiProperty({ description: "Event timestamp in milliseconds.", nullable: true, required: false })
   timestampMs?: number;
+
+  @ApiProperty({ description: "Base64 encoded cursor to continue from the last document.", nullable: true, required: false })
+  searchAfter?: string;
 }

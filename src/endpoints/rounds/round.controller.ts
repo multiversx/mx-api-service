@@ -21,6 +21,7 @@ export class RoundController {
   @ApiQuery({ name: 'condition', description: 'Filter by condition', required: false })
   @ApiQuery({ name: 'shard', description: 'Filter by shard identifier', required: false })
   @ApiQuery({ name: 'epoch', description: 'Filter by epoch number', required: false })
+  @ApiQuery({ name: 'searchAfter', description: 'Base64 encoded cursor to continue from the last document', required: false })
   getRounds(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number,
@@ -28,8 +29,9 @@ export class RoundController {
     @Query('condition', new ParseEnumPipe(QueryConditionOptions)) condition?: QueryConditionOptions,
     @Query("shard", ParseIntPipe) shard?: number,
     @Query("epoch", ParseIntPipe) epoch?: number,
+    @Query('searchAfter') searchAfter?: string,
   ): Promise<Round[]> {
-    return this.roundService.getRounds(new RoundFilter({ from, size, condition, validator, shard, epoch }));
+    return this.roundService.getRounds(new RoundFilter({ from, size, condition, validator, shard, epoch, searchAfter }));
   }
 
   @Get("/rounds/count")

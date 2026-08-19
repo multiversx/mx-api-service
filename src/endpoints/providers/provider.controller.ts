@@ -41,11 +41,14 @@ export class ProviderController {
   @ApiNotFoundResponse({ description: 'Provider not found' })
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
+  @ApiQuery({ name: 'searchAfter', description: 'Base64 encoded cursor to continue from the last document', required: false })
   async getProviderAccounts(
     @Param('address', ParseAddressPipe) address: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
-    @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number): Promise<ProviderAccounts[]> {
-    const provider = await this.providerService.getProviderAccounts(address, new QueryPagination({ from, size }));
+    @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
+    @Query('searchAfter') searchAfter?: string,
+  ): Promise<ProviderAccounts[]> {
+    const provider = await this.providerService.getProviderAccounts(address, new QueryPagination({ from, size, searchAfter }));
 
     if (provider === undefined) {
       throw new HttpException(`Provider '${address}' not found`, HttpStatus.NOT_FOUND);

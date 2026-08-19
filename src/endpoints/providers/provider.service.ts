@@ -497,6 +497,7 @@ export class ProviderService {
     return elasticResults.map(account => ApiUtils.mergeObjects(new ProviderAccounts(), {
       address: account.address,
       stake: account.activeStake,
+      searchAfter: account.searchAfter,
     }));
   }
 

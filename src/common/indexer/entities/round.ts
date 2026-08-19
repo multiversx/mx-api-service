@@ -1,4 +1,6 @@
-export interface Round {
+import { ElasticSortable } from "./elastic.sortable";
+
+export interface Round extends ElasticSortable {
   round: number,
   signersIndexes: number[],
   blockWasProposed: boolean,
@@ -6,4 +8,5 @@ export interface Round {
   epoch: number,
   timestamp: number,
   timestampMs?: number,
+  searchAfter?: string,
 }

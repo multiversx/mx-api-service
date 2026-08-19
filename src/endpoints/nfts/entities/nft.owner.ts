@@ -10,4 +10,7 @@ export class NftOwner {
 
   @ApiProperty({ type: String, default: '1' })
   balance: string = '';
+
+  @ApiProperty({ type: String, required: false })
+  searchAfter?: string;
 }

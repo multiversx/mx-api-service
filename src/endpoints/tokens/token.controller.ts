@@ -35,6 +35,7 @@ export class TokenController {
     private readonly transferService: TransferService,
   ) { }
 
+  //TODO: add searchAfter pagination support after tokens can't all be stored in cache
   @Get("/tokens")
   @ApiOperation({ summary: 'Tokens', description: 'Returns all tokens available on the blockchain' })
   @ApiOkResponse({ type: [TokenDetailed] })
@@ -157,18 +158,20 @@ export class TokenController {
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   @ApiQuery({ name: 'accountType', description: 'Filter by account type (smartcontract / wallet)', required: false, enum: AccountType })
+  @ApiQuery({ name: 'searchAfter', description: 'Base64 encoded cursor to continue from the last document', required: false })
   async getTokenAccounts(
     @Param('identifier', ParseTokenPipe) identifier: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number,
     @Query('accountType', new ParseEnumPipe(AccountType)) accountType?: AccountType,
+    @Query('searchAfter') searchAfter?: string,
   ): Promise<TokenAccount[]> {
     const isToken = await this.tokenService.isToken(identifier);
     if (!isToken) {
       throw new HttpException('Token not found', HttpStatus.NOT_FOUND);
     }
 
-    const accounts = await this.tokenService.getTokenAccounts(new QueryPagination({ from, size }), identifier, accountType);
+    const accounts = await this.tokenService.getTokenAccounts(new QueryPagination({ from, size, searchAfter }), identifier, accountType);
     if (!accounts) {
       throw new NotFoundException('Token not found');
     }
@@ -230,6 +233,7 @@ export class TokenController {
     @Param('identifier', ParseTokenPipe) identifier: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
+    @Query('searchAfter') searchAfter?: string,
     @Query('sender', ParseAddressPipe) sender?: string,
     @Query('receiver', ParseAddressArrayPipe) receiver?: string[],
     @Query('senderShard', ParseIntPipe) senderShard?: number,
@@ -281,7 +285,7 @@ export class TokenController {
 
     return await this.transactionService.getTransactions(
       transactionFilter,
-      new QueryPagination({ from, size }),
+      new QueryPagination({ from, size, searchAfter }),
       options,
       undefined,
       fields,
@@ -410,6 +414,7 @@ export class TokenController {
     @Param('identifier', ParseTokenPipe) identifier: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
+    @Query('searchAfter') searchAfter?: string,
     @Query('sender', ParseAddressArrayPipe) sender?: string[],
     @Query('receiver', ParseAddressArrayPipe) receiver?: string[],
     @Query('senderShard', ParseIntPipe) senderShard?: number,
@@ -452,7 +457,7 @@ export class TokenController {
       round,
       isScCall,
     }),
-      new QueryPagination({ from, size }),
+      new QueryPagination({ from, size, searchAfter }),
       options,
       fields
     );

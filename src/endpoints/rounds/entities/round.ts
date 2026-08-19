@@ -23,4 +23,7 @@ export class Round {
   // only available for rounds after Barnard protocol upgrade
   @ApiProperty({ type: Number, example: 1651148112000, required: false })
   timestampMs?: number;
+
+  @ApiProperty({ type: String, required: false })
+  searchAfter?: string;
 }

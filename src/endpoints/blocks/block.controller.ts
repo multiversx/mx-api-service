@@ -22,6 +22,7 @@ export class BlockController {
   @ApiQuery({ name: 'epoch', description: 'Filter by epoch', required: false })
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
+  @ApiQuery({ name: 'searchAfter', description: 'Base64 encoded cursor to continue from the last document', required: false })
   @ApiQuery({ name: 'nonce', description: 'Filter by nonce', required: false })
   @ApiQuery({ name: 'hashes', description: 'Search by blocks hashes, comma-separated', required: false })
   @ApiQuery({ name: 'order', description: 'Order blocks (asc/desc) by timestamp', required: false, enum: SortOrder })
@@ -29,6 +30,7 @@ export class BlockController {
   getBlocks(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query("size", new DefaultValuePipe(25), ParseIntPipe) size: number,
+    @Query('searchAfter') searchAfter?: string,
     @Query('shard', ParseIntPipe) shard?: number,
     @Query('proposer', ParseBlsHashPipe) proposer?: string,
     @Query('validator', ParseBlsHashPipe) validator?: string,
@@ -42,7 +44,7 @@ export class BlockController {
       new BlockFilter(
         { shard, proposer, validator, epoch, nonce, hashes, order }),
       new QueryPagination(
-        { from, size }), withProposerIdentity);
+        { from, size, searchAfter }), withProposerIdentity);
   }
 
   @Get("/blocks/count")

@@ -1,4 +1,6 @@
-export interface ScResult {
+import { ElasticSortable } from "./elastic.sortable";
+
+export interface ScResult extends ElasticSortable {
   scHash: string
   nonce: number;
   gasLimit: string;

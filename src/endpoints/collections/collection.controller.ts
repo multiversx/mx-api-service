@@ -59,9 +59,11 @@ export class CollectionController {
   @ApiQuery({ name: 'excludeMetaESDT', description: 'Do not include collections of type "MetaESDT" in the response', required: false })
   @ApiQuery({ name: 'sort', description: 'Sorting criteria', required: false, enum: SortCollections })
   @ApiQuery({ name: 'order', description: 'Sorting order (asc / desc)', required: false, enum: SortOrder })
+  @ApiQuery({ name: 'searchAfter', description: 'Base64 encoded cursor to continue from the last document', required: false })
   async getNftCollections(
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
+    @Query('searchAfter') searchAfter?: string,
     @Query('search') search?: string,
     @Query('identifiers', ParseCollectionArrayPipe) identifiers?: string[],
     @Query('type', new ParseEnumArrayPipe(NftType)) type?: NftType[],
@@ -79,7 +81,7 @@ export class CollectionController {
     @Query('sort', new ParseEnumPipe(SortCollections)) sort?: SortCollections,
     @Query('order', new ParseEnumPipe(SortOrder)) order?: SortOrder,
   ): Promise<NftCollection[]> {
-    return await this.collectionService.getNftCollections(new QueryPagination({ from, size }), new CollectionFilter({
+    return await this.collectionService.getNftCollections(new QueryPagination({ from, size, searchAfter }), new CollectionFilter({
       search,
       type,
       subType,
@@ -229,10 +231,12 @@ export class CollectionController {
   @ApiQuery({ name: 'withAssets', description: 'Return assets information (defaults to true)', required: false, type: Boolean })
   @ApiQuery({ name: 'sort', description: 'Sorting criteria', required: false, enum: SortCollectionNfts })
   @ApiQuery({ name: 'order', description: 'Sorting order (asc / desc)', required: false, enum: SortOrder })
+  @ApiQuery({ name: 'searchAfter', description: 'Base64 encoded cursor to continue from the last document', required: false })
   async getNfts(
     @Param('collection', ParseCollectionPipe) collection: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
+    @Query('searchAfter') searchAfter?: string,
     @Query('search') search?: string,
     @Query('identifiers', ParseNftArrayPipe) identifiers?: string[],
     @Query('name') name?: string,
@@ -256,7 +260,7 @@ export class CollectionController {
     }
 
     return await this.nftService.getNfts(
-      new QueryPagination({ from, size }),
+      new QueryPagination({ from, size, searchAfter }),
       new NftFilter({ search, identifiers, collection, name, tags, creator, hasUris, isWhitelistedStorage, isNsfw, traits, nonceBefore, nonceAfter, sort, order }),
       new NftQueryOptions({ withOwner, withSupply, withAssets }),
     );
@@ -303,12 +307,14 @@ export class CollectionController {
   @ApiNotFoundResponse({ description: 'Collection not found' })
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
+  @ApiQuery({ name: 'searchAfter', description: 'Base64 encoded cursor to continue from the last document', required: false })
   async getNftAccounts(
     @Param('identifier', ParseCollectionPipe) identifier: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
+    @Query('searchAfter') searchAfter?: string,
   ): Promise<CollectionAccount[]> {
-    const owners = await this.nftService.getCollectionOwners(identifier, new QueryPagination({ from, size }));
+    const owners = await this.nftService.getCollectionOwners(identifier, new QueryPagination({ from, size, searchAfter }));
     if (!owners) {
       throw new HttpException('Collection not found', HttpStatus.NOT_FOUND);
     }
@@ -341,10 +347,12 @@ export class CollectionController {
   @ApiQuery({ name: 'withScamInfo', description: 'Returns scam information', required: false, type: Boolean })
   @ApiQuery({ name: 'withUsername', description: 'Integrates username in assets for all addresses present in the transactions', required: false, type: Boolean })
   @ApiQuery({ name: 'withRelayedScresults', description: 'If set to true, will include smart contract results that resemble relayed transactions', required: false, type: Boolean })
+  @ApiQuery({ name: 'searchAfter', description: 'Base64 encoded cursor to continue from the last document', required: false })
   async getCollectionTransactions(
     @Param('collection', ParseCollectionPipe) identifier: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
+    @Query('searchAfter') searchAfter?: string,
     @Query('sender', ParseAddressPipe) sender?: string,
     @Query('receiver', ParseAddressArrayPipe) receiver?: string[],
     @Query('senderShard', ParseIntPipe) senderShard?: number,
@@ -389,7 +397,7 @@ export class CollectionController {
     });
     TransactionFilter.validate(transactionFilter, size);
 
-    return await this.transactionService.getTransactions(transactionFilter, new QueryPagination({ from, size }), options);
+    return await this.transactionService.getTransactions(transactionFilter, new QueryPagination({ from, size, searchAfter }), options);
   }
 
   @Get("/collections/:collection/transactions/count")
@@ -466,10 +474,12 @@ export class CollectionController {
   @ApiQuery({ name: 'withLogs', description: 'Return logs for transactions', required: false, type: Boolean })
   @ApiQuery({ name: 'withScamInfo', description: 'Returns scam information', required: false, type: Boolean })
   @ApiQuery({ name: 'withUsername', description: 'Integrates username in assets for all addresses present in the transactions', required: false, type: Boolean })
+  @ApiQuery({ name: 'searchAfter', description: 'Base64 encoded cursor to continue from the last document', required: false })
   async getCollectionTransfers(
     @Param('collection', ParseCollectionPipe) identifier: string,
     @Query('from', new DefaultValuePipe(0), ParseIntPipe) from: number,
     @Query('size', new DefaultValuePipe(25), ParseIntPipe) size: number,
+    @Query('searchAfter') searchAfter?: string,
     @Query('sender', ParseAddressPipe) sender?: string,
     @Query('receiver', ParseAddressArrayPipe) receiver?: string[],
     @Query('senderShard', ParseIntPipe) senderShard?: number,
@@ -509,7 +519,7 @@ export class CollectionController {
       after,
       order,
       round,
-    }), new QueryPagination({ from, size }), options);
+    }), new QueryPagination({ from, size, searchAfter }), options);
   }
 
   @Get("/collections/:collection/transfers/count")

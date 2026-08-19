@@ -50,4 +50,7 @@ export class TransactionDetailed extends Transaction {
 
   @ApiProperty({ type: String, nullable: true })
   relayedVersion: string | undefined = undefined;
+
+  @ApiProperty({ type: String, nullable: true })
+  searchAfter: string | undefined = undefined;
 }

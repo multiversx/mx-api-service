@@ -551,7 +551,7 @@ export class CacheInfo {
 
   static Accounts(queryPagination: QueryPagination): CacheInfo {
     return {
-      key: `accounts:${queryPagination.from}:${queryPagination.size}`,
+      key: `accounts:${queryPagination.from}:${queryPagination.size}:${queryPagination.searchAfter}`,
       ttl: Constants.oneMinute(),
     };
   }
