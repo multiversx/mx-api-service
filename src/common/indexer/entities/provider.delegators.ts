@@ -1,4 +1,5 @@
 export class ProviderDelegators {
+  searchAfter?: string;
   contract: string = '';
   address: string = '';
   activeStake: string = '';

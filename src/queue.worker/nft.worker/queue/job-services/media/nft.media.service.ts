@@ -12,6 +12,7 @@ import { TokenHelpers } from "src/utils/token.helpers";
 import { ClientProxy } from "@nestjs/microservices";
 import { OriginLogger } from "@multiversx/sdk-nestjs-common";
 import { CachingUtils } from "src/utils/caching.utils";
+import { isSafePublicUrl } from "src/utils/ip.utils";
 
 @Injectable()
 export class NftMediaService {
@@ -140,11 +141,11 @@ export class NftMediaService {
 
   private async getFilePropertiesFromHeaders(uri: string, prefix: string): Promise<{ contentType: string, contentLength: number } | null> {
     const url = this.getUrl(uri, prefix);
-    if (url.endsWith('.json')) {
+    if (url.endsWith('.json') || await isSafePublicUrl(url) === false) {
       return null;
     }
 
-    const response = await this.apiService.head(url, { timeout: this.IPFS_REQUEST_TIMEOUT });
+    const response = await this.apiService.head(url, { timeout: this.IPFS_REQUEST_TIMEOUT, skipRedirects: true });
 
     if (response.status !== HttpStatus.OK) {
       this.logger.error(`Unexpected http status code '${response.status}' while fetching file properties from url '${url}'`);

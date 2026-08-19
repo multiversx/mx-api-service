@@ -54,6 +54,7 @@ export class ApplicationService {
       timestamp: item.timestamp,
       assets: assets[item.address],
       balance: '0',
+      searchAfter: item.searchAfter,
       ...(filter.withTxCount && { txCount: 0 }),
     }));
 

@@ -117,8 +117,14 @@ export class NftThumbnailService {
   private async extractScreenshotFromVideo(buffer: Buffer, nftIdentifier: string): Promise<Buffer | undefined> {
     // we try to extract frames at 0, 10, 30 seconds, and we take the frame that has the biggest size
     // (i.e. the bigger the size, the more "crisp" an image should be, since it contains more details)
+    //
+    // Screenshots are written as PNG (RGB) rather than JPEG on purpose: the MJPEG/JPEG encoder
+    // (strict since ffmpeg 8.0) rejects limited-range ("tv") YUV videos with "Non full-range YUV
+    // is non-standard ..." and fails to open the encoder (-22). PNG has no such range constraint,
+    // so it works for every video format. The final JPEG thumbnail is produced downstream by sharp
+    // in extractThumbnailFromImage, so the intermediate format does not affect the output.
     const frames = [0, 10, 30];
-    const filePaths = frames.map(x => path.join(this.apiConfigService.getTempUrl(), `${nftIdentifier}.screenshot.${x}.jpg`));
+    const filePaths = frames.map(x => path.join(this.apiConfigService.getTempUrl(), `${nftIdentifier}.screenshot.${x}.png`));
 
     const videoPath = path.join(this.apiConfigService.getTempUrl(), nftIdentifier);
     await FileUtils.writeFile(buffer, videoPath);
@@ -196,7 +202,7 @@ export class NftThumbnailService {
       description: `Generating thumbnail for NFT with identifier '${nftIdentifier}', url '${fileUrl}' and url hash '${urlHash}'`,
       key: CacheInfo.PendingGenerateThumbnail(cacheIdentifier).key,
       ttl: CacheInfo.PendingGenerateThumbnail(cacheIdentifier).ttl,
-      action: async () => await this.apiService.get(fileUrl, { responseType: 'arraybuffer', timeout: this.API_TIMEOUT_MILLISECONDS }),
+      action: async () => await this.apiService.get(fileUrl, { responseType: 'arraybuffer', timeout: this.API_TIMEOUT_MILLISECONDS, skipRedirects: true }),
     });
 
     if (!fileResult) {

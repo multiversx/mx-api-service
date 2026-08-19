@@ -11,4 +11,5 @@ export class Events {
   order: number = 0;
   timestamp: number = 0;
   timestampMs?: number;
+  searchAfter?: string;
 }

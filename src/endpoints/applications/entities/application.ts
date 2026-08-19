@@ -29,4 +29,7 @@ export class Application {
 
   @ApiProperty({ type: Number, required: false })
   txCount?: number;
+
+  @ApiProperty({ type: String, nullable: true, required: false })
+  searchAfter?: string;
 }

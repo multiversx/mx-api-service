@@ -20,6 +20,7 @@ import { NftType } from "../entities/nft.type";
 import { EventsFilter } from "src/endpoints/events/entities/events.filter";
 import { ScriptQuery } from "./script.query";
 import { TimeUtils } from "src/utils/time.utils";
+import { AccountType } from "../entities";
 
 @Injectable()
 export class ElasticIndexerHelper {
@@ -708,11 +709,7 @@ export class ElasticIndexerHelper {
     }
 
     if (filter.isSmartContract !== undefined) {
-      if (filter.isSmartContract) {
-        elasticQuery = elasticQuery.withMustExistCondition('currentOwner');
-      } else {
-        elasticQuery = elasticQuery.withMustNotExistCondition('currentOwner');
-      }
+      elasticQuery = this.buildAccountTypeFilter(elasticQuery, filter.isSmartContract ? AccountType.SMART_CONTRACT : AccountType.WALLET);
     }
 
     if (filter.name) {
@@ -841,6 +838,15 @@ export class ElasticIndexerHelper {
         elasticQuery = elasticQuery.withMustMatchCondition('topics', topic);
       }
     }
+
+    return elasticQuery;
+  }
+
+  public buildAccountTypeFilter(elasticQuery: ElasticQuery, accountType: AccountType): ElasticQuery {
+    const contractAddressPrefix = 'erd1' + 'q'.repeat(12);
+    elasticQuery = accountType === AccountType.SMART_CONTRACT ?
+      elasticQuery.withCondition(QueryConditionOptions.must, [QueryType.Prefix('address', contractAddressPrefix)])
+      : elasticQuery.withCondition(QueryConditionOptions.mustNot, [QueryType.Prefix('address', contractAddressPrefix)]);
 
     return elasticQuery;
   }

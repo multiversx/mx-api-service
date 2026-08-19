@@ -55,12 +55,24 @@ export class TransfersCustomGateway {
 
   async pushTransfersForTimestampMs(timestampMs: number): Promise<void> {
     try {
+      const allTransfers: Transaction[] = [];
+      const size = 10000;
+      const filter = new TransactionFilter({ before: timestampMs, after: timestampMs, withTxsRelayedByAddress: true });
       const options = new TransactionQueryOptions({ withScamInfo: false, withUsername: true, withBlockInfo: false, withLogs: false, withOperations: false, withActionTransferValue: false, withTxsOrder: false });
-      const allTransfers = await this.transferService.getTransfers(
-        new TransactionFilter({ before: timestampMs, after: timestampMs, withTxsRelayedByAddress: true }),
-        new QueryPagination({ size: 10000 }), // TODO: handle pagination with more than 10k txs
-        options,
-      );
+
+      let batch = await this.transferService.getTransfers(filter, new QueryPagination({ size }), options);
+      allTransfers.push(...batch);
+
+      while (batch.length === size) {
+        const searchAfter = batch[batch.length - 1].searchAfter;
+        if (searchAfter == null) {
+          break;
+        }
+
+        batch = await this.transferService.getTransfers(filter, new QueryPagination({ size, searchAfter }), options);
+
+        allTransfers.push(...batch);
+      }
 
       const transfersFilteredForBroadcast: Map<string, Transaction[]> = new Map();
 

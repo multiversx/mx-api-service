@@ -59,10 +59,23 @@ export class EventsCustomGateway {
 
   async pushEventsForTimestampMs(timestampMs: number): Promise<void> {
     try {
-      const allEvents = await this.eventsService.getEvents(
-        new QueryPagination({ size: 10000 }),
-        new EventsFilter({ before: timestampMs, after: timestampMs }),
-      );
+      const allEvents: Events[] = [];
+      const size = 10000;
+      const filter = new EventsFilter({ before: timestampMs, after: timestampMs });
+
+      let batch = await this.eventsService.getEvents(new QueryPagination({ size }), filter);
+      allEvents.push(...batch);
+
+      while (batch.length === size) {
+        const searchAfter = batch[batch.length - 1].searchAfter;
+        if (searchAfter == null) {
+          break;
+        }
+
+        batch = await this.eventsService.getEvents(new QueryPagination({ size, searchAfter }), filter);
+
+        allEvents.push(...batch);
+      }
 
       const eventsFilteredForBroadcast: Map<string, Events[]> = new Map();
 

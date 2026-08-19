@@ -119,6 +119,9 @@ export class Transaction {
   @ApiProperty({ type: Boolean, nullable: true, required: false })
   isScCall: boolean | undefined = undefined;
 
+  @ApiProperty({ type: String, nullable: true, required: false })
+  searchAfter?: string | undefined;
+
   getDate(): Date | undefined {
     if (this.timestamp) {
       return new Date(this.timestamp * 1000);

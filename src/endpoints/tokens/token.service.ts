@@ -34,7 +34,7 @@ import { TransactionService } from "../transactions/transaction.service";
 import { MexTokenService } from "../mex/mex.token.service";
 import { CollectionService } from "../collections/collection.service";
 import { NftType } from "../nfts/entities/nft.type";
-import { TokenType } from "src/common/indexer/entities";
+import { AccountType, TokenType } from "src/common/indexer/entities";
 import { TokenAssetsPriceSourceType } from "src/common/assets/entities/token.assets.price.source.type";
 import { DataApiService } from "src/common/data-api/data-api.service";
 import { TrieOperationsTimeoutError } from "../esdt/exceptions/trie.operations.timeout.error";
@@ -372,7 +372,6 @@ export class TokenService {
       tokenWithBalance = new TokenDetailedWithBalance({ ...token, ...esdtData });
     }
 
-    // eslint-disable-next-line require-await
     const esdt = await this.gatewayService.getAddressEsdt(address, identifier);
 
     if (!esdt || esdt.balance === '0') {
@@ -456,13 +455,13 @@ export class TokenService {
     return tokensWithBalance;
   }
 
-  async getTokenAccounts(pagination: QueryPagination, identifier: string): Promise<TokenAccount[] | undefined> {
+  async getTokenAccounts(pagination: QueryPagination, identifier: string, accountType?: AccountType): Promise<TokenAccount[] | undefined> {
     const properties = await this.getTokenProperties(identifier);
     if (!properties) {
       return undefined;
     }
 
-    const tokenAccounts = await this.indexerService.getTokenAccounts(pagination, identifier);
+    const tokenAccounts = await this.indexerService.getTokenAccounts(pagination, identifier, accountType);
     const assets = await this.assetsService.getAllAccountAssets();
     const result: TokenAccount[] = [];
 
@@ -473,19 +472,20 @@ export class TokenService {
         assets: assets[tokenAccount.address],
         attributes: tokenAccount.data?.attributes,
         identifier: tokenAccount.type === TokenType.MetaESDT ? tokenAccount.identifier : undefined,
+        searchAfter: tokenAccount.searchAfter,
       }));
     }
 
     return result;
   }
 
-  async getTokenAccountsCount(identifier: string): Promise<number | undefined> {
+  async getTokenAccountsCount(identifier: string, accountType?: AccountType): Promise<number | undefined> {
     const properties = await this.getTokenProperties(identifier);
     if (!properties) {
       return undefined;
     }
 
-    const count = await this.indexerService.getTokenAccountsCount(identifier);
+    const count = await this.indexerService.getTokenAccountsCount(identifier, accountType);
     return count;
   }
 
@@ -829,7 +829,11 @@ export class TokenService {
           const priceSourcetype = token.assets?.priceSource?.type;
 
           if (priceSourcetype === TokenAssetsPriceSourceType.dataApi) {
-            token.price = await this.dataApiService.getEsdtTokenPrice(token.identifier);
+            const dataApiPrice = await this.dataApiService.getEsdtTokenPrice(token.identifier);
+            if (dataApiPrice) {
+              // keep DEX price if data api price is not available, otherwise override it
+              token.price = dataApiPrice;
+            }
           } else if (priceSourcetype === TokenAssetsPriceSourceType.customUrl && token.assets?.priceSource?.url) {
             const pathToPrice = token.assets?.priceSource?.path ?? "0.usdPrice";
             const customHeaders = this.apiConfigService.getHeadersForCustomUrl(token.assets.priceSource.url);

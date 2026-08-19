@@ -79,9 +79,7 @@ export class NftService {
   }
 
   private async fetchAndProcessNfts(queryPagination: QueryPagination, filter: NftFilter, queryOptions?: NftQueryOptions): Promise<Nft[]> {
-    const { from, size } = queryPagination;
-
-    const nfts = await this.getNftsInternal({ from, size }, filter);
+    const nfts = await this.getNftsInternal(queryPagination, filter);
 
     await Promise.all([
       this.conditionallyApplyAssetsAndTicker(nfts, undefined, queryOptions),
@@ -357,7 +355,7 @@ export class NftService {
 
     let attributes = nft.attributes;
     if (!attributes || attributes.length === 0) {
-      const nftsForAddress = await this.esdtAddressService.getNftsForAddress(nft.owner, new NftFilter({identifiers: [nft.identifier]}), new QueryPagination({
+      const nftsForAddress = await this.esdtAddressService.getNftsForAddress(nft.owner, new NftFilter({ identifiers: [nft.identifier] }), new QueryPagination({
         from: 0,
         size: 1,
       }));
@@ -414,6 +412,7 @@ export class NftService {
     return accountsEsdt.map((esdt: any) => new CollectionAccount({
       address: esdt.address,
       balance: esdt.balance,
+      searchAfter: esdt.searchAfter,
     }));
   }
 
