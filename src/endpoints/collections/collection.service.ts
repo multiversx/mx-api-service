@@ -122,6 +122,7 @@ export class CollectionService {
         canUpgrade: props?.canUpgrade,
         canAddSpecialRoles: props?.canAddSpecialRoles,
         decimals: isMetaESDT ? esCollection.numDecimals : undefined,
+        searchAfter: esCollection.searchAfter,
       });
 
       nftCollection.ticker = nftCollection.assets ? ticker : nftCollection.collection;
