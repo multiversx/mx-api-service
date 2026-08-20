@@ -188,7 +188,7 @@ export class CacheInfo {
 
   static Nfts(queryPagination: QueryPagination): CacheInfo {
     return {
-      key: `nfts:${queryPagination.from}:${queryPagination.size}`,
+      key: `nfts:${queryPagination.from}:${queryPagination.size}:${queryPagination.searchAfter}`,
       ttl: Constants.oneSecond() * 6,
     };
   }
@@ -288,7 +288,7 @@ export class CacheInfo {
 
   static Collections(pagination: QueryPagination): CacheInfo {
     return {
-      key: `collections:${pagination.from}:${pagination.size}`,
+      key: `collections:${pagination.from}:${pagination.size}:${pagination.searchAfter}`,
       ttl: Constants.oneSecond() * 6,
     };
   }
