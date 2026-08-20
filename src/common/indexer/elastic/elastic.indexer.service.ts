@@ -361,7 +361,7 @@ export class ElasticIndexerService implements IndexerInterface {
 
     if (sort === SortCollections.verifiedAndHolderCount) {
       elasticQuery = elasticQuery.withSort([
-        { name: 'api_isVerified', order, missing: "_last" },
+        { name: 'api_isVerified', order, missing: false },
         { name: 'api_holderCount', order, missing: 0 },
         { name: 'token', order },
         { name: 'nonce', order, missing: 0 },
