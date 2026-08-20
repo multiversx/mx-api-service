@@ -79,4 +79,7 @@ export class NftCollection {
 
   @ApiProperty({ type: Number, nullable: true, required: false })
   nftCount: number | undefined = undefined;
+
+  @ApiProperty({ type: String, nullable: true, required: false })
+  searchAfter: string | undefined = undefined;
 }

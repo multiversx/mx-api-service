@@ -108,4 +108,7 @@ export class Nft {
 
   @ApiProperty({ type: Number, nullable: true, required: false })
   unlockEpoch?: number | undefined = undefined;
+
+  @ApiProperty({ type: String, nullable: true, required: false })
+  searchAfter?: string | undefined = undefined;
 }
