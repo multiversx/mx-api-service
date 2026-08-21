@@ -235,7 +235,8 @@ export class TokenService {
   async getTokenCount(filter: TokenFilter): Promise<number> {
     const tokens = await this.getFilteredTokens(filter);
 
-    return tokens.length - 1; // exclude EGLD-000000, remove when EGLD-000000 is no longer manually added
+    // exclude EGLD-000000, remove when EGLD-000000 is no longer manually added
+    return tokens.filter(token => token.identifier !== 'EGLD-000000').length;
   }
 
   async getTokenCountForAddress(address: string, filter: TokenFilter): Promise<number> {
