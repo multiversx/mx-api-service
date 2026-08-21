@@ -132,9 +132,7 @@ export class TokenService {
       this.applyTickerFromAssets(token);
     }
 
-    return tokens
-      .map(item => ApiUtils.mergeObjects(new TokenDetailed(), item))
-      .filter(t => t.identifier !== this.egldIdentifierInMultiTransfer);
+    return tokens.map(item => ApiUtils.mergeObjects(new TokenDetailed(), item));
   }
 
   applyTickerFromAssets(token: Token) {
@@ -197,7 +195,7 @@ export class TokenService {
       tokens = tokens.filter(token => token.assets?.priceSource?.type === filter.priceSource);
     }
 
-    return tokens;
+    return tokens.filter(token => token.identifier !== this.egldIdentifierInMultiTransfer);
   }
 
   private sortTokens(tokens: TokenDetailed[], sort: TokenSort, order: SortOrder): TokenDetailed[] {
@@ -235,8 +233,7 @@ export class TokenService {
   async getTokenCount(filter: TokenFilter): Promise<number> {
     const tokens = await this.getFilteredTokens(filter);
 
-    // exclude EGLD-000000, remove when EGLD-000000 is no longer manually added
-    return tokens.filter(token => token.identifier !== 'EGLD-000000').length;
+    return tokens.length;
   }
 
   async getTokenCountForAddress(address: string, filter: TokenFilter): Promise<number> {
