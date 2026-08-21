@@ -132,9 +132,7 @@ export class TokenService {
       this.applyTickerFromAssets(token);
     }
 
-    return tokens
-      .map(item => ApiUtils.mergeObjects(new TokenDetailed(), item))
-      .filter(t => t.identifier !== this.egldIdentifierInMultiTransfer);
+    return tokens.map(item => ApiUtils.mergeObjects(new TokenDetailed(), item));
   }
 
   applyTickerFromAssets(token: Token) {
@@ -197,7 +195,7 @@ export class TokenService {
       tokens = tokens.filter(token => token.assets?.priceSource?.type === filter.priceSource);
     }
 
-    return tokens;
+    return tokens.filter(token => token.identifier !== this.egldIdentifierInMultiTransfer);
   }
 
   private sortTokens(tokens: TokenDetailed[], sort: TokenSort, order: SortOrder): TokenDetailed[] {
