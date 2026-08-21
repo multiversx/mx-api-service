@@ -29,6 +29,7 @@ import { TokenLogo } from "./entities/token.logo";
 import { AssetsService } from "src/common/assets/assets.service";
 import { CacheInfo } from "src/utils/cache.info";
 import { TokenAssets } from "src/common/assets/entities/token.assets";
+import { ArrayIndexer } from "src/utils/array.indexer";
 import { TransactionFilter } from "../transactions/entities/transaction.filter";
 import { TransactionService } from "../transactions/transaction.service";
 import { MexTokenService } from "../mex/mex.token.service";
@@ -74,14 +75,13 @@ export class TokenService {
 
   async isToken(identifier: string): Promise<boolean> {
     const tokens = await this.getAllTokens();
-    const lowercaseIdentifier = identifier.toLowerCase();
-    return tokens.find(x => x.identifier.toLowerCase() === lowercaseIdentifier) !== undefined;
+    return ArrayIndexer.getItemByKeyValue(tokens, 'identifier', this.normalizeIdentifierCase(identifier)) !== undefined;
   }
 
   async getToken(rawIdentifier: string, supplyOptions?: TokenSupplyOptions): Promise<TokenDetailed | undefined> {
     const tokens = await this.getAllTokens();
     const identifier = this.normalizeIdentifierCase(rawIdentifier);
-    let token = tokens.find(x => x.identifier === identifier);
+    let token = ArrayIndexer.getItemByKeyValue(tokens, 'identifier', identifier);
 
     if (!TokenUtils.isToken(identifier)) {
       return undefined;
@@ -148,53 +148,55 @@ export class TokenService {
   async getFilteredTokens(filter: TokenFilter): Promise<TokenDetailed[]> {
     let tokens = await this.getAllTokens();
 
-    if (filter.type) {
-      tokens = tokens.filter(token => token.type === filter.type);
-    }
+    // Precompute filters only once per request
+    const mexPairTypes = filter.mexPairType ?? [];
+    const searchLower = filter.search?.toLowerCase();
+    const nameLower = filter.name?.toLowerCase();
+    const identifierLower = filter.identifier?.toLowerCase();
+    const identifiersLower = filter.identifiers?.map(identifier => identifier.toLowerCase());
 
-    if (filter.subType) {
-      tokens = tokens.filter(token => token.subType.toString() === filter.subType?.toString());
-    }
+    tokens = tokens.filter(token => {
+      if (filter.type && token.type !== filter.type) {
+        return false;
+      }
 
-    if (filter.search) {
-      const searchLower = filter.search.toLowerCase();
+      if (filter.subType && token.subType.toString() !== filter.subType.toString()) {
+        return false;
+      }
 
-      tokens = tokens.filter(token => token.name.toLowerCase().includes(searchLower) || token.identifier.toLowerCase().includes(searchLower));
-    }
+      if (searchLower && !token.name.toLowerCase().includes(searchLower) && !token.identifier.toLowerCase().includes(searchLower)) {
+        return false;
+      }
 
-    if (filter.name) {
-      const nameLower = filter.name.toLowerCase();
+      if (nameLower && token.name.toLowerCase() !== nameLower) {
+        return false;
+      }
 
-      tokens = tokens.filter(token => token.name.toLowerCase() === nameLower);
-    }
+      if (identifierLower && !token.identifier.toLowerCase().includes(identifierLower)) {
+        return false;
+      }
 
-    if (filter.identifier) {
-      const identifierLower = filter.identifier.toLowerCase();
+      if (identifiersLower && !identifiersLower.includes(token.identifier.toLowerCase())) {
+        return false;
+      }
 
-      tokens = tokens.filter(token => token.identifier.toLowerCase().includes(identifierLower));
-    }
+      if (filter.includeMetaESDT !== true && token.type !== TokenType.FungibleESDT) {
+        return false;
+      }
 
-    if (filter.identifiers) {
-      const identifierArray = filter.identifiers.map(identifier => identifier.toLowerCase());
+      if (mexPairTypes.length > 0 && !mexPairTypes.includes(token.mexPairType)) {
+        return false;
+      }
 
-      tokens = tokens.filter(token => identifierArray.includes(token.identifier.toLowerCase()));
-    }
+      if (filter.priceSource && token.assets?.priceSource?.type !== filter.priceSource) {
+        return false;
+      }
 
-    if (filter.includeMetaESDT !== true) {
-      tokens = tokens.filter(token => token.type === TokenType.FungibleESDT);
-    }
+      return true;
+    });
 
     if (filter.sort) {
       tokens = this.sortTokens(tokens, filter.sort, filter.order ?? SortOrder.desc);
-    }
-
-    const mexPairTypes = filter.mexPairType ?? [];
-    if (mexPairTypes.length > 0) {
-      tokens = tokens.filter(token => mexPairTypes.includes(token.mexPairType));
-    }
-
-    if (filter.priceSource) {
-      tokens = tokens.filter(token => token.assets?.priceSource?.type === filter.priceSource);
     }
 
     return tokens;
@@ -278,12 +280,10 @@ export class TokenService {
 
     const allTokens = await this.getAllTokens();
 
-    const allTokensIndexed = allTokens.toRecord<TokenDetailed>(token => token.identifier);
-
     const result: TokenWithBalance[] = [];
     for (const elasticToken of elasticTokens) {
-      if (allTokensIndexed[elasticToken.token]) {
-        const token = allTokensIndexed[elasticToken.token];
+      const token = ArrayIndexer.getItemByKeyValue(allTokens, 'identifier', elasticToken.token);
+      if (token) {
 
         const tokenWithBalance: TokenWithBalance = {
           ...token,
@@ -658,7 +658,7 @@ export class TokenService {
     const result: TokenWithRoles[] = [];
 
     for (const item of tokenList) {
-      const token = allTokens.find(x => x.identifier === item.identifier);
+      const token = ArrayIndexer.getItemByKeyValue(allTokens, 'identifier', item.identifier);
       if (token) {
         this.applyTickerFromAssets(token);
 
