@@ -145,8 +145,8 @@ export class WebsocketCronService implements OnModuleInit {
 
     const stats = await this.networkService.getStats();
 
-    const pollingDelay = stats.refreshRate / 2;
-    const pollingMaxAttempts = 10;
+    const pollingDelay = stats.refreshRate / 10;
+    const pollingMaxAttempts = 15;
     while (roundToProcessTimestampMs <= latestRoundOnChainData.timestampMs) {
       await this.pollUntil(async () => await this.isElasticDataAvailableForTimestampMs(roundToProcessTimestampMs, stats), pollingDelay, pollingMaxAttempts);
 
