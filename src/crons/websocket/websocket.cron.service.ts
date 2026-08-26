@@ -22,6 +22,7 @@ import { ConnectionHandler } from './connection.handler';
 import { EventsCustomGateway } from './events.custom.gateway';
 import { TransfersCustomGateway } from './transfers.custom.gateway';
 import { ApiConfigService } from 'src/common/api-config/api.config.service';
+import { CustomSubscriptionsDataFetcher } from './custom.subscriptions.data.fetcher';
 
 @Injectable()
 @WebSocketGateway({ cors: { origin: '*' }, path: '/ws/subscription' })
@@ -46,6 +47,7 @@ export class WebsocketCronService implements OnModuleInit {
     private readonly transfersCustomGateway: TransfersCustomGateway,
     private readonly apiConfigService: ApiConfigService,
     private readonly schedulerRegistry: SchedulerRegistry,
+    private readonly customSubscriptionsDataFetcher: CustomSubscriptionsDataFetcher,
   ) { }
 
 
@@ -135,6 +137,7 @@ export class WebsocketCronService implements OnModuleInit {
     }
 
     const latestRoundOnChainData = await this.getLatestRoundOnChainData();
+    const statsPromise = this.networkService.getStats();
     latestRoundOnChainData.timestampMs = latestRoundOnChainData.timestampMs ?? latestRoundOnChainData.timestamp * 1000;
 
     let roundToProcessTimestampMs = await this.cacheService.getOrSetLocal(
@@ -143,26 +146,27 @@ export class WebsocketCronService implements OnModuleInit {
       CacheInfo.WsTimestampMsToProcess().ttl,
     );
 
-    const stats = await this.networkService.getStats();
+    const stats = await statsPromise;
 
     const pollingDelay = stats.refreshRate / 10;
     const pollingMaxAttempts = 15;
     while (roundToProcessTimestampMs <= latestRoundOnChainData.timestampMs) {
       await this.pollUntil(async () => await this.isElasticDataAvailableForTimestampMs(roundToProcessTimestampMs, stats), pollingDelay, pollingMaxAttempts);
 
-      // call gateways to process logic for custom subscriptions
-      await Promise.all([
-        this.transactionsCustomGateway.pushTransactionsForTimestampMs(roundToProcessTimestampMs),
-        this.eventsCustomGateway.pushEventsForTimestampMs(roundToProcessTimestampMs),
-        this.transfersCustomGateway.pushTransfersForTimestampMs(roundToProcessTimestampMs),
-      ]);
+      // fetch the round data once, then let each gateway build its own response out of it
+      const roundData = await this.customSubscriptionsDataFetcher.fetchRoundData(roundToProcessTimestampMs);
+
+      this.transfersCustomGateway.pushTransfersForTimestampMs(roundToProcessTimestampMs, roundData.transfers);
+      this.eventsCustomGateway.pushEventsForTimestampMs(roundToProcessTimestampMs, roundData.events);
+      this.transactionsCustomGateway.pushTransactionsForTimestampMs(roundToProcessTimestampMs, roundData.transactions);
+
       roundToProcessTimestampMs += stats.refreshRate;
+      this.cacheService.setLocal(
+        CacheInfo.WsTimestampMsToProcess().key,
+        roundToProcessTimestampMs,
+        CacheInfo.WsTimestampMsToProcess().ttl,
+      );
     }
-    this.cacheService.setLocal(
-      CacheInfo.WsTimestampMsToProcess().key,
-      roundToProcessTimestampMs,
-      CacheInfo.WsTimestampMsToProcess().ttl,
-    );
   }
 
   @Cron('*/10 * * * * *')

@@ -21,6 +21,7 @@ import { TransferModule } from 'src/endpoints/transfers/transfer.module';
 import { ApiMetricsModule } from 'src/common/metrics/api.metrics.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { PersistenceModule } from 'src/common/persistence/persistence.module';
+import { CustomSubscriptionsDataFetcher } from './custom.subscriptions.data.fetcher';
 
 @Module({
   imports: [
@@ -39,6 +40,7 @@ import { PersistenceModule } from 'src/common/persistence/persistence.module';
   ],
   providers: [
     WebsocketCronService,
+    CustomSubscriptionsDataFetcher,
     ConnectionHandler,
     BlocksGateway,
     NetworkGateway,
