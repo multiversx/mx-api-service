@@ -52,7 +52,7 @@ export class CustomSubscriptionsDataFetcher {
     try {
       const size = CustomSubscriptionsDataFetcher.batchSize;
       const filter = new TransactionFilter({ before: timestampMs, after: timestampMs, withTxsRelayedByAddress: true });
-      const options = new TransactionQueryOptions({ withScamInfo: false, withUsername: true, withBlockInfo: false, withLogs: false, withOperations: false, withActionTransferValue: false, withTxsOrder: false });
+      const options = new TransactionQueryOptions({ withScamInfo: false, withUsername: true, withBlockInfo: false, withLogs: false, withOperations: false, withActionTransferValue: false, withTxsOrder: false, withCanBeIgnoredFlag: true });
 
       const allTransfers: Transaction[] = [];
 
@@ -70,7 +70,7 @@ export class CustomSubscriptionsDataFetcher {
         allTransfers.push(...batch);
       }
 
-      return allTransfers;
+      return allTransfers.filter((transfer) => transfer.canBeIgnored !== true);
     } catch (error) {
       this.logger.error(`Error fetching transfers for timestamp '${timestampMs}'`);
       this.logger.error(error);
