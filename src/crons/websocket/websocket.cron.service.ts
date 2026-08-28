@@ -230,7 +230,7 @@ export class WebsocketCronService implements OnModuleInit {
       .withFields(['timestampMs', 'timestamp']);
 
     const rounds = await this.elasticService.getList('rounds', 'round', elasticQuery);
-    console.log(rounds)
+
     return rounds[0];
   }
 
