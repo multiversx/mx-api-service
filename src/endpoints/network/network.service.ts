@@ -1,11 +1,7 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { Stats } from 'src/endpoints/network/entities/stats';
 import { ApiConfigService } from 'src/common/api-config/api.config.service';
-import { AccountService } from '../accounts/account.service';
 import { BlockService } from '../blocks/block.service';
-import { BlockFilter } from '../blocks/entities/block.filter';
-import { TransactionFilter } from '../transactions/entities/transaction.filter';
-import { TransactionService } from '../transactions/transaction.service';
 import { VmQueryService } from '../vm.query/vm.query.service';
 import { NetworkConstants } from './entities/constants';
 import { Economics } from './entities/economics';
@@ -17,13 +13,11 @@ import { BinaryUtils, NumberUtils, OriginLogger } from '@multiversx/sdk-nestjs-c
 import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { About } from './entities/about';
 import { PluginService } from 'src/common/plugins/plugin.service';
-import { SmartContractResultService } from '../sc-results/scresult.service';
 import { TokenService } from '../tokens/token.service';
-import { AccountQueryOptions } from '../accounts/entities/account.query.options';
 import { DataApiService } from 'src/common/data-api/data-api.service';
 import { FeatureConfigs } from './entities/feature.configs';
 import { IndexerService } from 'src/common/indexer/indexer.service';
-import { SmartContractResultFilter } from '../sc-results/entities/smart.contract.result.filter';
+import { StatsCounts } from 'src/common/indexer/entities';
 
 @Injectable()
 export class NetworkService {
@@ -37,16 +31,10 @@ export class NetworkService {
     private readonly vmQueryService: VmQueryService,
     @Inject(forwardRef(() => BlockService))
     private readonly blockService: BlockService,
-    @Inject(forwardRef(() => AccountService))
-    private readonly accountService: AccountService,
-    @Inject(forwardRef(() => TransactionService))
-    private readonly transactionService: TransactionService,
     private readonly dataApiService: DataApiService,
     @Inject(forwardRef(() => StakeService))
     private readonly stakeService: StakeService,
     private readonly pluginService: PluginService,
-    @Inject(forwardRef(() => SmartContractResultService))
-    private readonly smartContractResultService: SmartContractResultService,
     private readonly indexerService: IndexerService,
   ) { }
 
@@ -195,23 +183,17 @@ export class NetworkService {
     return BinaryUtils.base64ToBigInt(totalWaitingStakeBase64);
   }
 
-  async getStats(): Promise<Stats> {
+  async getStats(noCache?: boolean): Promise<Stats> {
     const metaChainShard = this.apiConfigService.getMetaChainShardId();
 
     const [
       networkConfig,
       networkStatus,
-      blocksCount,
-      accountsCount,
-      transactionsCount,
-      scResultsCount,
+      counts,
     ] = await Promise.all([
       this.gatewayService.getNetworkConfig(),
       this.gatewayService.getNetworkStatus(metaChainShard),
-      this.blockService.getBlocksCount(new BlockFilter()),
-      this.accountService.getAccountsCount(new AccountQueryOptions()),
-      this.transactionService.getTransactionCount(new TransactionFilter()),
-      this.smartContractResultService.getScResultsCount(new SmartContractResultFilter()),
+      this.getStatsCounts(noCache),
     ]);
 
     const { erd_num_shards_without_meta: shards, erd_round_duration: refreshRate } = networkConfig;
@@ -219,15 +201,27 @@ export class NetworkService {
 
     return {
       shards,
-      blocks: blocksCount,
-      accounts: accountsCount,
-      transactions: transactionsCount + scResultsCount,
-      scResults: scResultsCount,
+      blocks: counts.blocks,
+      accounts: counts.accounts,
+      transactions: counts.transactions + counts.scResults,
+      scResults: counts.scResults,
       refreshRate,
       epoch,
       roundsPassed: roundsPassed % roundsPerEpoch,
       roundsPerEpoch,
     };
+  }
+
+  private async getStatsCounts(noCache?: boolean): Promise<StatsCounts> {
+    if (!noCache) {
+      return await this.cachingService.getOrSet(
+        CacheInfo.StatsCounts.key,
+        async () => await this.indexerService.getStatsCounts(),
+        CacheInfo.StatsCounts.ttl,
+      );
+    }
+
+    return await this.indexerService.getStatsCounts();
   }
 
   async getApr(): Promise<{ apr: number; topUpApr: number; baseApr: number }> {

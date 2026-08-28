@@ -11,7 +11,7 @@ import { TransactionFilter } from "src/endpoints/transactions/entities/transacti
 import { MetricsEvents } from "src/utils/metrics-events.constants";
 import { TokenAssets } from "../assets/entities/token.assets";
 import { QueryPagination } from "../entities/query.pagination";
-import { Account, AccountHistory, AccountTokenHistory, Block, Collection, MiniBlock, Operation, Round, ScDeploy, ScResult, Tag, Token, TokenAccount, Transaction, ElasticTransactionLogEvent, TransactionReceipt, AccountType } from "./entities";
+import { Account, AccountHistory, AccountTokenHistory, Block, Collection, MiniBlock, Operation, Round, ScDeploy, ScResult, Tag, Token, TokenAccount, Transaction, ElasticTransactionLogEvent, TransactionReceipt, AccountType, StatsCounts } from "./entities";
 import { IndexerInterface } from "./indexer.interface";
 import { LogPerformanceAsync } from "src/utils/log.performance.decorator";
 import { AccountQueryOptions } from "src/endpoints/accounts/entities/account.query.options";
@@ -493,5 +493,10 @@ export class IndexerService implements IndexerInterface {
   @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
   async getAccountNftReceivedTimestamps(address: string, identifiers: string[]): Promise<Record<string, number>> {
     return await this.indexerInterface.getAccountNftReceivedTimestamps(address, identifiers);
+  }
+
+  @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
+  async getStatsCounts(): Promise<StatsCounts> {
+    return await this.indexerInterface.getStatsCounts();
   }
 }
