@@ -117,6 +117,11 @@ export class CacheInfo {
     ttl: Constants.oneSecond(),
   };
 
+  static StatsCounts: CacheInfo = {
+    key: 'stats:counts',
+    ttl: Constants.oneSecond(),
+  };
+
   static IdentityProfilesKeybases: CacheInfo = {
     key: 'identityProfilesKeybases',
     ttl: Constants.oneHour(),

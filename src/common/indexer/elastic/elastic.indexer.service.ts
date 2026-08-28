@@ -17,7 +17,7 @@ import { TokenFilter } from "src/endpoints/tokens/entities/token.filter";
 import { Block } from "../entities/block";
 import { Tag } from "../entities/tag";
 import { ElasticIndexerHelper } from "./elastic.indexer.helper";
-import { AccountType, TokenType } from "../entities";
+import { AccountType, TokenType, StatsCounts } from "../entities";
 import { SortCollections } from "src/endpoints/collections/entities/sort.collections";
 import { AccountQueryOptions } from "src/endpoints/accounts/entities/account.query.options";
 import { AccountSort } from "src/endpoints/accounts/entities/account.sort";
@@ -61,6 +61,40 @@ export class ElasticIndexerService implements IndexerInterface {
       .withCondition(QueryConditionOptions.must, [QueryType.Match("deployer", address)]);
 
     return await this.elasticService.getCount('scdeploys', elasticQuery);
+  }
+
+  // The stats page needs four counts at once. They live in three different indices, so they go out
+  // as a single _msearch instead of four separate round trips.
+  async getStatsCounts(): Promise<StatsCounts> {
+    const requests: { index: string, query: ElasticQuery }[] = [
+      { index: 'blocks', query: ElasticQuery.create().withCondition(QueryConditionOptions.must, await this.indexerHelper.buildElasticBlocksFilter(new BlockFilter())) },
+      { index: 'accounts', query: this.indexerHelper.buildAccountFilterQuery(new AccountQueryOptions()) },
+      { index: 'operations', query: this.indexerHelper.buildTransactionFilterQuery(new TransactionFilter()) },
+      { index: 'operations', query: this.indexerHelper.buildResultsFilterQuery(new SmartContractResultFilter()) },
+    ];
+
+    const body = requests
+      .map(request => `${JSON.stringify({ index: request.index })}\n${JSON.stringify({ query: request.query.toJson().query, size: 0, track_total_hits: true })}\n`)
+      .join('');
+
+    // without this the sub-searches are run with a lower concurrency than four parallel requests would get
+    const result = await this.elasticService.postNdjson(`${this.apiConfigService.getElasticUrl()}/_msearch?max_concurrent_searches=${requests.length}`, body);
+
+    const counts = requests.map((request, index) => {
+      const response = result?.data?.responses?.[index];
+      if (!response || response.error) {
+        throw new Error(`Could not read the '${request.index}' count from the stats _msearch response: ${JSON.stringify(response?.error)}`);
+      }
+
+      return response.hits.total.value;
+    });
+
+    return new StatsCounts({
+      blocks: counts[0],
+      accounts: counts[1],
+      transactions: counts[2],
+      scResults: counts[3],
+    });
   }
 
   async getBlocksCount(filter: BlockFilter): Promise<number> {

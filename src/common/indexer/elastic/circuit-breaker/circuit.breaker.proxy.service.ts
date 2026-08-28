@@ -2,6 +2,7 @@ import { OriginLogger } from "@multiversx/sdk-nestjs-common";
 import { ElasticQuery, ElasticService } from "@multiversx/sdk-nestjs-elastic";
 import { Injectable, ServiceUnavailableException } from "@nestjs/common";
 import { ApiConfigService } from "../../../api-config/api.config.service";
+import { ApiService } from "@multiversx/sdk-nestjs-http";
 
 @Injectable()
 export class EsCircuitBreakerProxy {
@@ -15,6 +16,7 @@ export class EsCircuitBreakerProxy {
   constructor(
     readonly apiConfigService: ApiConfigService,
     private readonly elasticService: ElasticService,
+    private readonly apiService: ApiService,
   ) {
     this.enabled = apiConfigService.isElasticCircuitBreakerEnabled();
     this.config = apiConfigService.getElasticCircuitBreakerConfig();
@@ -100,6 +102,14 @@ export class EsCircuitBreakerProxy {
   // eslint-disable-next-line require-await
   async get(url: string): Promise<any> {
     return this.withCircuitBreaker(() => this.elasticService.get(url));
+  }
+
+  //TODO: use elasticService when it will support custom headers
+  // ElasticService.post cannot set headers, and axios mangles an ndjson body when the content type
+  // says json, so bulk endpoints such as _msearch go through the api service directly.
+  // eslint-disable-next-line require-await
+  async postNdjson(url: string, body: string): Promise<any> {
+    return this.withCircuitBreaker(() => this.apiService.post(url, body, { headers: { 'Content-Type': 'application/x-ndjson' } }));
   }
 
   // eslint-disable-next-line require-await

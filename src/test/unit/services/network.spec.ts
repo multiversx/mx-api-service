@@ -18,15 +18,13 @@ import { TokenService } from "src/endpoints/tokens/token.service";
 import { TransactionService } from "src/endpoints/transactions/transaction.service";
 import { VmQueryService } from "src/endpoints/vm.query/vm.query.service";
 import { CacheInfo } from "src/utils/cache.info";
+import { StatsCounts } from "src/common/indexer/entities";
 
 describe('NetworkService', () => {
   let networkService: NetworkService;
   let apiConfigService: ApiConfigService;
   let gatewayService: GatewayService;
-  let blockService: BlockService;
-  let accountService: AccountService;
-  let transactionService: TransactionService;
-  let smartContractResultService: SmartContractResultService;
+  let indexerService: IndexerService;
 
   beforeEach(async () => {
     const moduleRef = await Test.createTestingModule({
@@ -129,6 +127,7 @@ describe('NetworkService', () => {
           provide: IndexerService,
           useValue: {
             getIndexerVersion: jest.fn(),
+            getStatsCounts: jest.fn(),
           },
         },
       ],
@@ -137,10 +136,7 @@ describe('NetworkService', () => {
     networkService = moduleRef.get<NetworkService>(NetworkService);
     apiConfigService = moduleRef.get<ApiConfigService>(ApiConfigService);
     gatewayService = moduleRef.get<GatewayService>(GatewayService);
-    blockService = moduleRef.get<BlockService>(BlockService);
-    accountService = moduleRef.get<AccountService>(AccountService);
-    transactionService = moduleRef.get<TransactionService>(TransactionService);
-    smartContractResultService = moduleRef.get<SmartContractResultService>(SmartContractResultService);
+    indexerService = moduleRef.get<IndexerService>(IndexerService);
   });
 
   it('service should be defined', () => {
@@ -348,20 +344,21 @@ describe('NetworkService', () => {
       jest.spyOn(apiConfigService, 'getMetaChainShardId').mockReturnValue(4294967295);
       jest.spyOn(gatewayService, 'getNetworkConfig').mockResolvedValue(mockNetworkConfig);
       jest.spyOn(gatewayService, 'getNetworkStatus').mockResolvedValue(mockNetworkStatus);
-      jest.spyOn(blockService, 'getBlocksCount').mockResolvedValue(97128014);
-      jest.spyOn(accountService, 'getAccountsCount').mockResolvedValue(2429648);
-      jest.spyOn(transactionService, 'getTransactionCount').mockResolvedValue(87054604);
-      jest.spyOn(smartContractResultService, 'getScResultsCount').mockResolvedValue(271213143);
+      jest.spyOn(indexerService, 'getStatsCounts').mockResolvedValue(new StatsCounts({
+        blocks: 97128014,
+        accounts: 2429648,
+        transactions: 87054604,
+        scResults: 271213143,
+      }));
+      // the counts are read through the cache, so let the cache run its factory
+      jest.spyOn(networkService['cachingService'], 'getOrSet').mockImplementation(async (_key, factory: any) => await factory());
 
       const result = await networkService.getStats();
 
       expect(apiConfigService.getMetaChainShardId).toHaveBeenCalled();
       expect(gatewayService.getNetworkConfig).toHaveBeenCalled();
       expect(gatewayService.getNetworkStatus).toHaveBeenCalled();
-      expect(blockService.getBlocksCount).toHaveBeenCalled();
-      expect(accountService.getAccountsCount).toHaveBeenCalled();
-      expect(transactionService.getTransactionCount).toHaveBeenCalled();
-      expect(smartContractResultService.getScResultsCount).toHaveBeenCalled();
+      expect(indexerService.getStatsCounts).toHaveBeenCalledTimes(1);
 
       expect(result).toEqual(expect.objectContaining({
         shards: 3,
