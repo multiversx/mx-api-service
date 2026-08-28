@@ -2,13 +2,10 @@ import { WebSocketGateway, WebSocketServer, SubscribeMessage, ConnectedSocket, M
 import { Server, Socket } from 'socket.io';
 import { UseFilters, UseInterceptors } from '@nestjs/common';
 import { OriginLogger } from '@multiversx/sdk-nestjs-common';
-import { QueryPagination } from 'src/common/entities/query.pagination';
 import { WsValidationPipe } from 'src/utils/ws-validation.pipe';
 import { WebsocketExceptionsFilter } from 'src/utils/ws-exceptions.filter';
 import { RoomKeyGenerator } from './room.key.generator';
-import { EventsService } from 'src/endpoints/events/events.service';
 import { EventsCustomSubscribePayload } from 'src/endpoints/events/entities/events.custom.subscribe';
-import { EventsFilter } from 'src/endpoints/events/entities/events.filter';
 import { Events } from 'src/endpoints/events/entities/events';
 import { LockingGuardInterceptor } from 'src/utils/locking.guard.interceptor';
 
@@ -21,10 +18,6 @@ export class EventsCustomGateway {
 
   @WebSocketServer()
   server!: Server;
-
-  constructor(
-    private readonly eventsService: EventsService,
-  ) { }
 
   @UseInterceptors(LockingGuardInterceptor)
   @SubscribeMessage('subscribeCustomEvents')
@@ -57,29 +50,11 @@ export class EventsCustomGateway {
     return { status: 'unsubscribed' };
   }
 
-  async pushEventsForTimestampMs(timestampMs: number): Promise<void> {
+  pushEventsForTimestampMs(timestampMs: number, events: Events[]): void {
     try {
-      const allEvents: Events[] = [];
-      const size = 10000;
-      const filter = new EventsFilter({ before: timestampMs, after: timestampMs });
-
-      let batch = await this.eventsService.getEvents(new QueryPagination({ size }), filter);
-      allEvents.push(...batch);
-
-      while (batch.length === size) {
-        const searchAfter = batch[batch.length - 1].searchAfter;
-        if (searchAfter == null) {
-          break;
-        }
-
-        batch = await this.eventsService.getEvents(new QueryPagination({ size, searchAfter }), filter);
-
-        allEvents.push(...batch);
-      }
-
       const eventsFilteredForBroadcast: Map<string, Events[]> = new Map();
 
-      for (const event of allEvents) {
+      for (const event of events) {
         const roomKeys = RoomKeyGenerator.generate(
           EventsCustomGateway.keyPrefix,
           event,
