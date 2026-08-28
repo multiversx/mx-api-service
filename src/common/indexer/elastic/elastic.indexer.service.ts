@@ -88,7 +88,7 @@ export class ElasticIndexerService implements IndexerInterface {
 
       return response.hits.total.value;
     });
-    console.log(counts)
+
     return new StatsCounts({
       blocks: counts[0],
       accounts: counts[1],
