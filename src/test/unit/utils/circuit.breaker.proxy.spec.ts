@@ -33,7 +33,7 @@ describe('EsCircuitBreakerProxy', () => {
       getElasticCircuitBreakerConfig: jest.fn().mockReturnValue(defaultConfig),
     } as any;
 
-    proxy = new EsCircuitBreakerProxy(mockApiConfigService, mockElasticService);
+    proxy = new EsCircuitBreakerProxy(mockApiConfigService, mockElasticService, { post: jest.fn() } as any);
   });
 
   afterEach(() => {

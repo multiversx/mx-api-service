@@ -8,6 +8,7 @@ import { EsCircuitBreakerProxy } from "./circuit.breaker.proxy.service";
   imports: [
     ApiConfigModule,
     DynamicModuleUtils.getElasticModule(),
+    DynamicModuleUtils.getApiModule(),
   ],
   providers: [EsCircuitBreakerProxy],
   exports: [EsCircuitBreakerProxy],
