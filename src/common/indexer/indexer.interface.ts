@@ -12,7 +12,7 @@ import { TokenWithRolesFilter } from "src/endpoints/tokens/entities/token.with.r
 import { TransactionFilter } from "src/endpoints/transactions/entities/transaction.filter";
 import { TokenAssets } from "../assets/entities/token.assets";
 import { QueryPagination } from "../entities/query.pagination";
-import { Account, AccountHistory, AccountTokenHistory, Block, Collection, MiniBlock, Operation, Round, ScDeploy, ScResult, Tag, Token, TokenAccount, Transaction, ElasticTransactionLogEvent, TransactionReceipt, AccountType } from "./entities";
+import { Account, AccountHistory, AccountTokenHistory, Block, Collection, MiniBlock, Operation, Round, ScDeploy, ScResult, Tag, Token, TokenAccount, Transaction, ElasticTransactionLogEvent, TransactionReceipt, AccountType, StatsCounts } from "./entities";
 import { AccountAssets } from "../assets/entities/account.assets";
 import { ProviderDelegators } from "./entities/provider.delegators";
 import { ApplicationFilter } from "src/endpoints/applications/entities/application.filter";
@@ -27,6 +27,8 @@ export interface IndexerInterface {
   getAccountDeploysCount(address: string): Promise<number>
 
   getBlocksCount(filter: BlockFilter): Promise<number>
+
+  getStatsCounts(): Promise<StatsCounts>
 
   getBlocks(filter: BlockFilter, queryPagination: QueryPagination): Promise<Block[]>
 
