@@ -12,9 +12,7 @@ import { MetricsEvents } from 'src/utils/metrics-events.constants';
 import { Server } from 'socket.io';
 import { CacheService } from '@multiversx/sdk-nestjs-cache';
 import { CacheInfo } from 'src/utils/cache.info';
-import { RoundService } from 'src/endpoints/rounds/round.service';
-import { RoundFilter } from 'src/endpoints/rounds/entities/round.filter';
-import { ElasticQuery, ElasticService, QueryType } from '@multiversx/sdk-nestjs-elastic';
+import { ElasticQuery, ElasticService, ElasticSortOrder, QueryType } from '@multiversx/sdk-nestjs-elastic';
 import { NetworkService } from 'src/endpoints/network/network.service';
 import { Stats } from 'src/endpoints/network/entities/stats';
 import { TransactionsCustomGateway } from './transaction.custom.gateway';
@@ -38,7 +36,6 @@ export class WebsocketCronService implements OnModuleInit {
     private readonly eventsGateway: EventsGateway,
     private readonly eventEmitter: EventEmitter2,
     private readonly cacheService: CacheService,
-    private readonly roundService: RoundService,
     private readonly elasticService: ElasticService,
     private readonly networkService: NetworkService,
     private readonly transactionsCustomGateway: TransactionsCustomGateway,
@@ -136,13 +133,13 @@ export class WebsocketCronService implements OnModuleInit {
       return;
     }
 
-    const latestRoundOnChainData = await this.getLatestRoundOnChainData();
-    const statsPromise = this.networkService.getStats();
-    latestRoundOnChainData.timestampMs = latestRoundOnChainData.timestampMs ?? latestRoundOnChainData.timestamp * 1000;
+    const latestRoundOnChainTimestamp = await this.getLatestRoundOnChainTimestamp();
+    const statsPromise = this.networkService.getStats(false);
+    latestRoundOnChainTimestamp.timestampMs = latestRoundOnChainTimestamp.timestampMs ?? latestRoundOnChainTimestamp.timestamp * 1000;
 
     let roundToProcessTimestampMs = await this.cacheService.getOrSetLocal(
       CacheInfo.WsTimestampMsToProcess().key,
-      async () => await Promise.resolve(latestRoundOnChainData.timestampMs ?? latestRoundOnChainData.timestamp * 1000),
+      async () => await Promise.resolve(latestRoundOnChainTimestamp.timestampMs ?? latestRoundOnChainTimestamp.timestamp * 1000),
       CacheInfo.WsTimestampMsToProcess().ttl,
     );
 
@@ -150,7 +147,7 @@ export class WebsocketCronService implements OnModuleInit {
 
     const pollingDelay = stats.refreshRate / 10;
     const pollingMaxAttempts = 15;
-    while (roundToProcessTimestampMs <= latestRoundOnChainData.timestampMs) {
+    while (roundToProcessTimestampMs <= latestRoundOnChainTimestamp.timestampMs) {
       await this.pollUntil(async () => await this.isElasticDataAvailableForTimestampMs(roundToProcessTimestampMs, stats), pollingDelay, pollingMaxAttempts);
 
       // fetch the round data once, then let each gateway build its own response out of it
@@ -223,8 +220,17 @@ export class WebsocketCronService implements OnModuleInit {
     });
   }
 
-  private async getLatestRoundOnChainData() {
-    const rounds = await this.roundService.getRounds(new RoundFilter({ size: 1 }));
+  private async getLatestRoundOnChainTimestamp(): Promise<{ timestampMs?: number; timestamp: number }> {
+    const elasticQuery = ElasticQuery.create().
+      withSort([
+        { name: 'timestampMs', order: ElasticSortOrder.descending, missing: 0 },
+        { name: "timestamp", order: ElasticSortOrder.descending },
+      ])
+      .withPagination({ from: 0, size: 1 })
+      .withFields(['timestampMs', 'timestamp']);
+
+    const rounds = await this.elasticService.getList('rounds', 'round', elasticQuery);
+    console.log(rounds)
     return rounds[0];
   }
 
