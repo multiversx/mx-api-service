@@ -26,6 +26,7 @@ features:
     maxSubscriptionsPerInstance: 10000
     maxSubscriptionsPerClient: 10
     broadcastIntervalMs: 6000
+    compressionThreshold: 1024
   eventsNotifier:
     enabled: false
     port: 5674

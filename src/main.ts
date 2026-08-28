@@ -18,6 +18,7 @@ import { ElasticUpdaterModule } from './crons/elastic.updater/elastic.updater.mo
 import { PluginService } from './common/plugins/plugin.service';
 import { TransactionCompletedModule } from './crons/transaction.processor/transaction.completed.module';
 import { SocketAdapter } from './common/websockets/socket-adapter';
+import { SubscriptionSocketAdapter } from './common/websockets/subscription-socket-adapter';
 import { ApiConfigModule } from './common/api-config/api.config.module';
 import { CacheService, CachingInterceptor, GuestCacheInterceptor, GuestCacheService } from '@multiversx/sdk-nestjs-cache';
 import { LoggerInitializer } from '@multiversx/sdk-nestjs-common';
@@ -36,7 +37,6 @@ import { NotWritableError } from './common/indexer/entities/not.writable.error';
 import * as bodyParser from 'body-parser';
 import * as requestIp from 'request-ip';
 import compression from 'compression';
-import { IoAdapter } from '@nestjs/platform-socket.io';
 import { WebsocketSubscriptionModule } from './crons/websocket/websocket.subscription.module';
 import { RestrictedRoutesMiddleware } from './utils/restricted.routes.middleware';
 
@@ -92,7 +92,7 @@ async function bootstrap() {
 
   if (apiConfigService.getIsWebsocketSubscriptionActive()) {
     const websocketSubscriptionApp = await NestFactory.create(WebsocketSubscriptionModule);
-    websocketSubscriptionApp.useWebSocketAdapter(new IoAdapter(websocketSubscriptionApp));
+    websocketSubscriptionApp.useWebSocketAdapter(new SubscriptionSocketAdapter(websocketSubscriptionApp, apiConfigService.getWebsocketSubscriptionCompressionThreshold()));
     await websocketSubscriptionApp.listen(apiConfigService.getWebsocketSubscriptionPort());
   }
 
