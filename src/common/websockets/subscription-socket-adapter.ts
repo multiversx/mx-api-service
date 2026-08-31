@@ -2,9 +2,6 @@ import { INestApplicationContext } from '@nestjs/common';
 import { IoAdapter } from '@nestjs/platform-socket.io';
 import { ServerOptions } from 'socket.io';
 
-// engine.io enables httpCompression by default, but that only covers the long polling transport.
-// perMessageDeflate is off unless it is passed explicitly, so websocket frames - which is what
-// subscribers actually end up on - go out uncompressed.
 export class SubscriptionSocketAdapter extends IoAdapter {
   constructor(
     app: INestApplicationContext,
