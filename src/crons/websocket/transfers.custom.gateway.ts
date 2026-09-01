@@ -60,7 +60,7 @@ export class TransfersCustomGateway {
           const substitutions = TransferCustomSubscribePayload.getFieldsSubstitutions();
           for (const [key, substituteFields] of Object.entries(substitutions)) {
             for (const substituteField of substituteFields) {
-              const substituteRoomKey = roomKey.replace(`"${substituteField}":`, `"${key}":`);
+              const substituteRoomKey = RoomKeyGenerator.substitute(TransfersCustomGateway.keyPrefix, roomKey, substituteField, key);
               if (this.server.sockets.adapter.rooms.has(substituteRoomKey)) {
                 if (!transfersFilteredForBroadcast.has(substituteRoomKey)) {
                   transfersFilteredForBroadcast.set(substituteRoomKey, []);
