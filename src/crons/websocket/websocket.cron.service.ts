@@ -133,8 +133,9 @@ export class WebsocketCronService implements OnModuleInit {
       return;
     }
 
+    const statsPromise = this.networkService.getStats(true);
     const latestRoundOnChainTimestamp = await this.getLatestRoundOnChainTimestamp();
-    const statsPromise = this.networkService.getStats(false);
+
     latestRoundOnChainTimestamp.timestampMs = latestRoundOnChainTimestamp.timestampMs ?? latestRoundOnChainTimestamp.timestamp * 1000;
 
     let roundToProcessTimestampMs = await this.cacheService.getOrSetLocal(
