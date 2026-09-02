@@ -464,14 +464,10 @@ export class TransactionService {
     }
   }
 
-  // resolves the pending results for the whole page with a single batched cache read, instead of
-  // one round-trip per transaction
   private async applyPendingResults(transactions: Transaction[]): Promise<void> {
     const twentyMinutes = Constants.oneMinute() * 20 * 1000;
     const timestampLimit = (new Date().getTime() - twentyMinutes) / 1000;
 
-    // single pass: collect the recent transactions and their cache keys at the same time, instead
-    // of filtering and then mapping over the result
     const recentTransactions: Transaction[] = [];
     const keys: string[] = [];
     for (const transaction of transactions) {
