@@ -18,12 +18,16 @@ import { TransactionActionService } from "src/endpoints/transactions/transaction
 import { TransactionGetService } from "src/endpoints/transactions/transaction.get.service";
 import { TransactionPriceService } from "src/endpoints/transactions/transaction.price.service";
 import { TransactionService } from "src/endpoints/transactions/transaction.service";
+import { TransactionDetailed } from "src/endpoints/transactions/entities/transaction.detailed";
+import { TransactionStatus } from "src/endpoints/transactions/entities/transaction.status";
 import { UsernameService } from "src/endpoints/usernames/username.service";
 
 describe('TransactionService', () => {
   let service: TransactionService;
   let indexerService: IndexerService;
   let assetsService: AssetsService;
+  let cacheService: CacheService;
+  let transactionActionService: TransactionActionService;
 
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
@@ -67,6 +71,7 @@ describe('TransactionService', () => {
           provide: CacheService,
           useValue: {
             get: jest.fn(),
+            getMany: jest.fn().mockResolvedValue([]),
             getOrSet: jest.fn().mockImplementation(async (_key: string, getter: () => Promise<any>, _ttl: number) => {
               return await getter();
             }),
@@ -140,6 +145,8 @@ describe('TransactionService', () => {
     service = moduleRef.get<TransactionService>(TransactionService);
     indexerService = moduleRef.get<IndexerService>(IndexerService);
     assetsService = moduleRef.get<AssetsService>(AssetsService);
+    cacheService = moduleRef.get<CacheService>(CacheService);
+    transactionActionService = moduleRef.get<TransactionActionService>(TransactionActionService);
   });
 
   it('service should be defined', () => {
@@ -156,6 +163,110 @@ describe('TransactionService', () => {
       expect(result).toStrictEqual(200);
       expect(indexerService.getTransactionCountForAddress).toHaveBeenCalledWith(address);
       expect(indexerService.getTransactionCountForAddress).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('processTransactions - action batching', () => {
+    const options = { withScamInfo: false, withUsername: false, withActionTransferValue: false };
+
+    beforeEach(() => {
+      jest.clearAllMocks();
+      jest.spyOn(assetsService, 'getAllAccountAssets').mockResolvedValue({});
+      jest.spyOn(cacheService, 'getMany').mockResolvedValue([]);
+    });
+
+    it('should compute the action of every transaction, in batches', async () => {
+      const transactions = Array.from({ length: 60 }, (_, i) =>
+        Object.assign(new TransactionDetailed(), { txHash: `hash${i}`, timestamp: 1, value: '0', sender: 'erd1a', receiver: 'erd1b' }));
+
+      let concurrent = 0;
+      let maxConcurrent = 0;
+      jest.spyOn(transactionActionService, 'getTransactionAction').mockImplementation(async () => {
+        concurrent++;
+        maxConcurrent = Math.max(maxConcurrent, concurrent);
+        await new Promise(resolve => setImmediate(resolve));
+        concurrent--;
+        return undefined;
+      });
+
+      await service.processTransactions(transactions, options);
+
+      expect(transactionActionService.getTransactionAction).toHaveBeenCalledTimes(60);
+      expect(maxConcurrent).toBeGreaterThan(1);
+      expect(maxConcurrent).toBeLessThanOrEqual(25);
+    });
+
+    it('should keep processing the page when the action of one transaction throws', async () => {
+      const transactions = [
+        Object.assign(new TransactionDetailed(), { txHash: 'hash1', timestamp: 1, value: '0', sender: 'erd1a', receiver: 'erd1b' }),
+        Object.assign(new TransactionDetailed(), { txHash: 'hash2', timestamp: 1, value: '0', sender: 'erd1a', receiver: 'erd1b' }),
+      ];
+
+      jest.spyOn(transactionActionService, 'getTransactionAction').mockImplementation((transaction: any) => {
+        if (transaction.txHash === 'hash1') {
+          return Promise.reject(new Error('boom'));
+        }
+        return Promise.resolve({ category: 'esdtNft' } as any);
+      });
+
+      await expect(service.processTransactions(transactions, options)).resolves.toBeUndefined();
+
+      expect(transactions[0].action).toBeUndefined();
+      expect(transactions[1].action).toBeDefined();
+    });
+  });
+
+  describe('processTransactions - pending results', () => {
+    const buildTransaction = (txHash: string, timestamp: number) =>
+      Object.assign(new TransactionDetailed(), { txHash, timestamp, value: '0', sender: 'erd1a', receiver: 'erd1b' });
+
+    const options = { withScamInfo: false, withUsername: false, withActionTransferValue: false };
+
+    beforeEach(() => {
+      jest.clearAllMocks();
+      jest.spyOn(assetsService, 'getAllAccountAssets').mockResolvedValue({});
+    });
+
+    it('should read the pending results of the whole page in a single batched call', async () => {
+      const now = Math.floor(Date.now() / 1000);
+      const transactions = [buildTransaction('hash1', now), buildTransaction('hash2', now), buildTransaction('hash3', now)];
+
+      jest.spyOn(cacheService, 'getMany').mockResolvedValue([]);
+
+      await service.processTransactions(transactions, options);
+
+      expect(cacheService.getMany).toHaveBeenCalledTimes(1);
+      expect(cacheService.getMany).toHaveBeenCalledWith([
+        'transaction:pendingresults:hash1',
+        'transaction:pendingresults:hash2',
+        'transaction:pendingresults:hash3',
+      ]);
+    });
+
+    it('should mark only the transactions that have a cached pending result', async () => {
+      const now = Math.floor(Date.now() / 1000);
+      const transactions = [buildTransaction('hash1', now), buildTransaction('hash2', now)];
+
+      jest.spyOn(cacheService, 'getMany').mockResolvedValue([undefined, true]);
+
+      await service.processTransactions(transactions, options);
+
+      expect(transactions[0].pendingResults).toBeUndefined();
+      expect(transactions[0].status).not.toStrictEqual(TransactionStatus.pending);
+      expect(transactions[1].pendingResults).toStrictEqual(true);
+      expect(transactions[1].status).toStrictEqual(TransactionStatus.pending);
+    });
+
+    it('should skip transactions older than twenty minutes without querying the cache', async () => {
+      const old = Math.floor(Date.now() / 1000) - (25 * 60);
+      const transactions = [buildTransaction('hash1', old)];
+
+      jest.spyOn(cacheService, 'getMany').mockResolvedValue([]);
+
+      await service.processTransactions(transactions, options);
+
+      expect(cacheService.getMany).not.toHaveBeenCalled();
+      expect(transactions[0].pendingResults).toBeUndefined();
     });
   });
 

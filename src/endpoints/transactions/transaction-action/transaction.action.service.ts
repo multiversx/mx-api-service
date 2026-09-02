@@ -32,13 +32,21 @@ export class TransactionActionService {
     if (this.recognizers.length === 0) {
       const isMexActive = await this.mexRecognizer.isActive();
       if (isMexActive) {
-        this.recognizers.push(this.mexRecognizer);
+        this.recognizers = [
+          this.mexRecognizer,
+          this.metabondingRecognizer,
+          this.esdtNftRecognizer,
+          this.stakeRecognizer,
+          this.scCallRecognizer
+        ];
+      } else {
+        this.recognizers = [
+          this.metabondingRecognizer,
+          this.esdtNftRecognizer,
+          this.stakeRecognizer,
+          this.scCallRecognizer
+        ];
       }
-
-      this.recognizers.push(this.metabondingRecognizer);
-      this.recognizers.push(this.esdtNftRecognizer);
-      this.recognizers.push(this.stakeRecognizer);
-      this.recognizers.push(this.scCallRecognizer);
     }
 
     return this.recognizers;
