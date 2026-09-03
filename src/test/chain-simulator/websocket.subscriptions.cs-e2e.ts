@@ -234,7 +234,15 @@ describe('Websocket subscriptions e2e tests', () => {
       await axios.post(`${config.chainSimulatorUrl}/simulator/generate-blocks/10`);
 
       log("Waiting for WS messages...");
-      await new Promise(resolve => setTimeout(resolve, 35000));
+
+      // the broadcaster commits its cursor only after it sees the round that follows the one it just
+      // sent. a simulator that has stopped producing blocks never provides that round, so it times
+      // out and replays the whole window on its next tick. one block per wait step keeps it moving,
+      // which is why this is a loop of short sleeps rather than a single long one
+      for (let i = 0; i < 30; i++) {
+        await axios.post(`${config.chainSimulatorUrl}/simulator/generate-blocks/1`);
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
 
     } catch (e: any) {
       console.error("Error in beforeAll:", e.message);
