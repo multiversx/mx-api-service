@@ -99,4 +99,33 @@ describe('RoomKeyGenerator', () => {
       expect(rooms[0]).toBe('{"sender":"alice"}');
     });
   });
+
+  describe('substitute', () => {
+    it('renames a field and keeps the key sorted', () => {
+      const roomKey = 'p-' + RoomKeyGenerator.deterministicStringify({ function: 'swap', sender: 'alice' });
+
+      expect(RoomKeyGenerator.substitute('p-', roomKey, 'sender', 'address'))
+        .toBe('p-' + RoomKeyGenerator.deterministicStringify({ address: 'alice', function: 'swap' }));
+    });
+
+    // A plain string replace left the renamed field where the old one sorted, so this combination
+    // never matched the room the subscriber had actually joined.
+    it('matches the room key a subscriber with that field would have joined', () => {
+      const subscribed = 'p-' + RoomKeyGenerator.deterministicStringify({ address: 'alice', function: 'swap' });
+
+      const generated = RoomKeyGenerator.generate(
+        'p-',
+        { sender: 'alice', function: 'swap' },
+        TransactionCustomSubscribePayload,
+      ).map((roomKey) => RoomKeyGenerator.substitute('p-', roomKey, 'sender', 'address'));
+
+      expect(generated).toContain(subscribed);
+    });
+
+    it('leaves the key untouched when the field is not part of it', () => {
+      const roomKey = 'p-' + RoomKeyGenerator.deterministicStringify({ receiver: 'bob' });
+
+      expect(RoomKeyGenerator.substitute('p-', roomKey, 'sender', 'address')).toBe(roomKey);
+    });
+  });
 });

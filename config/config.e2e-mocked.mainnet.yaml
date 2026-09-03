@@ -11,6 +11,7 @@ features:
     maxSubscriptionsPerInstance: 10000
     maxSubscriptionsPerClient: 10
     broadcastIntervalMs: 6000
+    compressionThreshold: 1024
   dataApi:
     enabled: false
     serviceUrl: 'https://data-api.multiversx.com'
