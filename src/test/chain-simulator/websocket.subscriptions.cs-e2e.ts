@@ -80,6 +80,33 @@ const aliceEsdts: string[] = [];
 
 describe('Websocket subscriptions e2e tests', () => {
   const clients: Socket[] = [];
+  const connectionErrors: string[] = [];
+
+  // auto-reconnect is disabled on purpose: the subscriptions below are emitted from the 'connect'
+  // handler, so every reconnect would re-subscribe and the shared response arrays would collect the
+  // same message twice. connections are instead retried explicitly, before any operation is sent
+  const socketOptions = { path: '/ws/subscription', reconnection: false };
+
+  const waitForConnections = async (timeoutMs: number) => {
+    const deadline = Date.now() + timeoutMs;
+
+    while (Date.now() < deadline) {
+      if (clients.every(client => client.connected)) {
+        return;
+      }
+
+      for (const client of clients) {
+        if (!client.connected) {
+          client.connect();
+        }
+      }
+
+      await new Promise(resolve => setTimeout(resolve, 500));
+    }
+
+    const pending = clients.filter(client => !client.connected).length;
+    throw new Error(`${pending} of ${clients.length} websocket clients did not connect within ${timeoutMs}ms. Errors: ${connectionErrors.join('; ') || 'none reported'}`);
+  };
 
   // --- Connect Helper ---
   const connectAndSubscribe = (
@@ -97,13 +124,13 @@ describe('Websocket subscriptions e2e tests', () => {
     eventResponses.set(filterKey, receivedEvents);
     transferResponses.set(filterKey, receivedTransfers);
 
-    const client: Socket = io(WS_SERVER_URL, {
-      path: '/ws/subscription',
-    });
+    const client: Socket = io(WS_SERVER_URL, socketOptions);
     clients.push(client);
 
+    // never throw from a socket callback: it escapes as an uncaughtException that jest attributes
+    // to whichever test happens to be running, in any file. waitForConnections reports it instead
     client.on("connect_error", (err) => {
-      throw new Error(`${clientId} connection failed: ${err.message}`);
+      connectionErrors.push(`${clientId}: ${err.message}`);
     });
 
     client.on("customTransactionUpdate", (data: { transactions: any[] }) => {
@@ -137,12 +164,10 @@ describe('Websocket subscriptions e2e tests', () => {
   };
 
   const connectAndSubscribeGeneral = (clientId: string, subConfig: typeof client4SubscriptionConfig) => {
-    const client: Socket = io(WS_SERVER_URL, {
-      path: '/ws/subscription',
-    });
+    const client: Socket = io(WS_SERVER_URL, socketOptions);
     clients.push(client);
 
-    client.on("connect_error", (err) => { throw new Error(`${clientId} connection failed: ${err.message}`); });
+    client.on("connect_error", (err) => { connectionErrors.push(`${clientId}: ${err.message}`); });
 
     client.on("poolUpdate", (data: any) => generalResponses.pool.push(data));
     client.on("eventsUpdate", (data: any) => generalResponses.events.push(data));
@@ -185,6 +210,8 @@ describe('Websocket subscriptions e2e tests', () => {
 
       connectAndSubscribeGeneral("client4", client4SubscriptionConfig);
 
+      await waitForConnections(30000);
+
       await new Promise(resolve => setTimeout(resolve, 10000));
 
       log("\n--- Starting Operations ---");
@@ -216,7 +243,15 @@ describe('Websocket subscriptions e2e tests', () => {
   });
 
   afterAll(() => {
-    clients.forEach(client => client.connected && client.disconnect());
+    // unconditionally: a client that is disconnected or mid-handshake would otherwise be skipped
+    // and keep its handlers and timers alive for the rest of the run, which is shared (--runInBand)
+    for (const client of clients) {
+      client.removeAllListeners();
+      client.disconnect();
+      client.close();
+    }
+
+    clients.length = 0;
   });
 
   it('should receive TXs sent by Alice for Client 1', () => {
