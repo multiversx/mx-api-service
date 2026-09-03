@@ -126,7 +126,9 @@ export class TokenService {
 
     let tokens = await this.getFilteredTokens(filter);
 
-    tokens = tokens.slice(from, from + size);
+    if (!filter.identifiers) {
+      tokens = tokens.slice(from, from + size);
+    }
 
     for (const token of tokens) {
       this.applyTickerFromAssets(token);
