@@ -13,7 +13,7 @@ class CustomSequencer extends Sequencer {
       'delegation-legacy.cs-e2e.ts',
       'accounts.cs-e2e.ts',
       'stake.cs-e2e.ts',
-      'round.cs-e2e.ts',
+      'rounds.cs-e2e.ts',
       'results.cs-e2e.ts',
       'miniblocks.cs-e2e.ts',
     ];
