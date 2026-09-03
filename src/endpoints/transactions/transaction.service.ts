@@ -48,6 +48,7 @@ import { TransactionActionCategory } from "./transaction-action/entities/transac
 @Injectable()
 export class TransactionService {
   private readonly ACTION_BATCH_SIZE = 25;
+  private readonly PENDING_RESULTS_BATCH_SIZE = 100;
 
   private readonly logger = new OriginLogger(TransactionService.name);
 
@@ -469,36 +470,33 @@ export class TransactionService {
     const timestampLimit = (new Date().getTime() - twentyMinutes) / 1000;
 
     const recentTransactions: Transaction[] = [];
-    const keys: string[] = [];
     for (const transaction of transactions) {
       if (transaction.timestamp < timestampLimit) {
         continue;
       }
 
       recentTransactions.push(transaction);
-      keys.push(CacheInfo.TransactionPendingResults(transaction.txHash).key);
     }
 
     if (recentTransactions.length === 0) {
       return;
     }
 
-    let pendingResults: (string | undefined)[];
-    try {
-      pendingResults = await this.cachingService.getMany<string>(keys);
-    } catch (error) {
-      this.logger.error(`Unhandled error when fetching pending results for transactions with hashes '${recentTransactions.map(x => x.txHash).join(',')}'`);
-      this.logger.error(error);
-      return;
-    }
+    const batches = BatchUtils.splitArrayIntoChunks(recentTransactions, this.PENDING_RESULTS_BATCH_SIZE);
 
-    for (const [index, transaction] of recentTransactions.entries()) {
-      if (!pendingResults[index]) {
-        continue;
+    for (const batch of batches) {
+      const keys = batch.map(transaction => CacheInfo.TransactionPendingResults(transaction.txHash).key);
+
+      const pendingResults = await this.cachingService.getMany<string>(keys);
+
+      for (const [index, transaction] of batch.entries()) {
+        if (!pendingResults[index]) {
+          continue;
+        }
+
+        transaction.pendingResults = true;
+        transaction.status = TransactionStatus.pending;
       }
-
-      transaction.pendingResults = true;
-      transaction.status = TransactionStatus.pending;
     }
   }
 

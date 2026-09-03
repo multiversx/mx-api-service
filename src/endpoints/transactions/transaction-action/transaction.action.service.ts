@@ -28,25 +28,18 @@ export class TransactionActionService {
     private readonly metabondingRecognizer: MetabondingActionRecognizerService,
   ) { }
 
-  private async getRecognizers() {
+  private async getRecognizers(): Promise<TransactionActionRecognizerInterface[]> {
     if (this.recognizers.length === 0) {
       const isMexActive = await this.mexRecognizer.isActive();
-      if (isMexActive) {
-        this.recognizers = [
-          this.mexRecognizer,
-          this.metabondingRecognizer,
-          this.esdtNftRecognizer,
-          this.stakeRecognizer,
-          this.scCallRecognizer
-        ];
-      } else {
-        this.recognizers = [
-          this.metabondingRecognizer,
-          this.esdtNftRecognizer,
-          this.stakeRecognizer,
-          this.scCallRecognizer
-        ];
-      }
+
+      const recognizers = [
+        this.metabondingRecognizer,
+        this.esdtNftRecognizer,
+        this.stakeRecognizer,
+        this.scCallRecognizer,
+      ];
+
+      this.recognizers = isMexActive ? [this.mexRecognizer, ...recognizers] : recognizers;
     }
 
     return this.recognizers;

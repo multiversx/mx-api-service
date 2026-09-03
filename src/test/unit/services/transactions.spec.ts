@@ -217,8 +217,15 @@ describe('TransactionService', () => {
   });
 
   describe('processTransactions - pending results', () => {
+    const now = () => Math.floor(Date.now() / 1000);
+
     const buildTransaction = (txHash: string, timestamp: number) =>
       Object.assign(new TransactionDetailed(), { txHash, timestamp, value: '0', sender: 'erd1a', receiver: 'erd1b' });
+
+    const buildTransactions = (count: number) =>
+      Array.from({ length: count }, (_, index) => buildTransaction(`hash${index}`, now()));
+
+    const cacheMisses = (keys: string[]) => keys.map(() => null);
 
     const options = { withScamInfo: false, withUsername: false, withActionTransferValue: false };
 
@@ -229,10 +236,9 @@ describe('TransactionService', () => {
     });
 
     it('should read the pending results of the whole page in a single batched call', async () => {
-      const now = Math.floor(Date.now() / 1000);
-      const transactions = [buildTransaction('hash1', now), buildTransaction('hash2', now), buildTransaction('hash3', now)];
+      const transactions = [buildTransaction('hash1', now()), buildTransaction('hash2', now()), buildTransaction('hash3', now())];
 
-      jest.spyOn(cacheService, 'getMany').mockResolvedValue([]);
+      jest.spyOn(cacheService, 'getMany').mockImplementation((keys: string[]) => Promise.resolve(cacheMisses(keys)));
 
       await service.processTransactions(transactions, options);
 
@@ -245,10 +251,9 @@ describe('TransactionService', () => {
     });
 
     it('should mark only the transactions that have a cached pending result', async () => {
-      const now = Math.floor(Date.now() / 1000);
-      const transactions = [buildTransaction('hash1', now), buildTransaction('hash2', now)];
+      const transactions = [buildTransaction('hash1', now()), buildTransaction('hash2', now())];
 
-      jest.spyOn(cacheService, 'getMany').mockResolvedValue([undefined, true]);
+      jest.spyOn(cacheService, 'getMany').mockResolvedValue([null, 'hash2']);
 
       await service.processTransactions(transactions, options);
 
@@ -259,8 +264,7 @@ describe('TransactionService', () => {
     });
 
     it('should skip transactions older than twenty minutes without querying the cache', async () => {
-      const old = Math.floor(Date.now() / 1000) - (25 * 60);
-      const transactions = [buildTransaction('hash1', old)];
+      const transactions = [buildTransaction('hash1', now() - (25 * 60))];
 
       jest.spyOn(cacheService, 'getMany').mockResolvedValue([]);
 
@@ -269,6 +273,50 @@ describe('TransactionService', () => {
       expect(cacheService.getMany).not.toHaveBeenCalled();
       expect(transactions[0].pendingResults).toBeUndefined();
     });
+
+    it('should still look up transactions that do not have a timestamp yet', async () => {
+      // transactions served from the gateway are not in a block yet and carry no timestamp - they
+      // are exactly the pending ones, so the age check must let them through
+      const transaction = buildTransaction('hashPending', now());
+      (transaction as any).timestamp = undefined;
+
+      jest.spyOn(cacheService, 'getMany').mockResolvedValue(['hashPending']);
+
+      await service.processTransactions([transaction], options);
+
+      expect(cacheService.getMany).toHaveBeenCalledWith(['transaction:pendingresults:hashPending']);
+      expect(transaction.pendingResults).toStrictEqual(true);
+      expect(transaction.status).toStrictEqual(TransactionStatus.pending);
+    });
+
+    it('should mark the right transactions on a page mixing recent and old ones', async () => {
+      const transactions = [
+        buildTransaction('old1', now() - (25 * 60)),
+        buildTransaction('recent1', now()),
+        buildTransaction('old2', now() - (25 * 60)),
+        buildTransaction('recent2', now()),
+      ];
+
+      jest.spyOn(cacheService, 'getMany').mockResolvedValue([null, 'recent2']);
+
+      await service.processTransactions(transactions, options);
+
+      expect(cacheService.getMany).toHaveBeenCalledWith([
+        'transaction:pendingresults:recent1',
+        'transaction:pendingresults:recent2',
+      ]);
+      expect(transactions.map(x => x.pendingResults)).toStrictEqual([undefined, undefined, undefined, true]);
+    });
+
+    it('should split a large page into batches of at most 100', async () => {
+      jest.spyOn(cacheService, 'getMany').mockImplementation((keys: string[]) => Promise.resolve(cacheMisses(keys)));
+
+      await service.processTransactions(buildTransactions(250), options);
+
+      const batchSizes = (cacheService.getMany as jest.Mock).mock.calls.map(call => call[0].length);
+      expect(batchSizes).toStrictEqual([100, 100, 50]);
+    });
+
   });
 
   describe('getTransactionCount', () => {
