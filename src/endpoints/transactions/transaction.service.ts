@@ -471,19 +471,21 @@ export class TransactionService {
     const recentTransactions: Transaction[] = [];
     const keys: string[] = [];
     for (const transaction of transactions) {
-      if (transaction.timestamp >= timestampLimit) {
-        recentTransactions.push(transaction);
-        keys.push(CacheInfo.TransactionPendingResults(transaction.txHash).key);
+      if (transaction.timestamp < timestampLimit) {
+        continue;
       }
+
+      recentTransactions.push(transaction);
+      keys.push(CacheInfo.TransactionPendingResults(transaction.txHash).key);
     }
 
     if (recentTransactions.length === 0) {
       return;
     }
 
-    let pendingResults: (boolean | undefined)[];
+    let pendingResults: (string | undefined)[];
     try {
-      pendingResults = await this.cachingService.getMany<boolean>(keys);
+      pendingResults = await this.cachingService.getMany<string>(keys);
     } catch (error) {
       this.logger.error(`Unhandled error when fetching pending results for transactions with hashes '${recentTransactions.map(x => x.txHash).join(',')}'`);
       this.logger.error(error);

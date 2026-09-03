@@ -225,6 +225,7 @@ describe('TransactionService', () => {
     beforeEach(() => {
       jest.clearAllMocks();
       jest.spyOn(assetsService, 'getAllAccountAssets').mockResolvedValue({});
+      jest.spyOn(transactionActionService, 'getTransactionAction').mockResolvedValue(undefined);
     });
 
     it('should read the pending results of the whole page in a single batched call', async () => {
