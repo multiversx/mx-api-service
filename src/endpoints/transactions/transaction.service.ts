@@ -18,7 +18,7 @@ import { GatewayComponentRequest } from 'src/common/gateway/entities/gateway.com
 import { TransactionActionService } from './transaction-action/transaction.action.service';
 import { TransactionDecodeDto } from './entities/dtos/transaction.decode.dto';
 import { TransactionStatus } from './entities/transaction.status';
-import { AddressUtils, BinaryUtils, Constants, PendingExecuter } from '@multiversx/sdk-nestjs-common';
+import { AddressUtils, BatchUtils, BinaryUtils, Constants, PendingExecuter } from '@multiversx/sdk-nestjs-common';
 import { ApiUtils } from "@multiversx/sdk-nestjs-http";
 import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { TransactionUtils } from './transaction.utils';
@@ -47,6 +47,9 @@ import { TransactionActionCategory } from "./transaction-action/entities/transac
 
 @Injectable()
 export class TransactionService {
+  private readonly ACTION_BATCH_SIZE = 25;
+  private readonly PENDING_RESULTS_BATCH_SIZE = 100;
+
   private readonly logger = new OriginLogger(TransactionService.name);
 
   constructor(
@@ -437,21 +440,64 @@ export class TransactionService {
       this.logger.error(error);
     }
 
-    for (const transaction of transactions) {
-      try {
-        transaction.action = await this.transactionActionService.getTransactionAction(transaction, options.withActionTransferValue);
+    await Promise.all([
+      this.applyTransactionActions(transactions, options.withActionTransferValue),
+      this.applyPendingResults(transactions),
+    ]);
 
-        transaction.pendingResults = await this.getPendingResults(transaction);
-        if (transaction.pendingResults === true) {
-          transaction.status = TransactionStatus.pending;
-        }
+    await this.applyAssets(transactions, { withUsernameAssets: options.withUsername });
+  }
+
+  private async applyTransactionActions(transactions: Transaction[], withActionTransferValue: boolean): Promise<void> {
+    const computeAction = async (transaction: Transaction) => {
+      try {
+        transaction.action = await this.transactionActionService.getTransactionAction(transaction, withActionTransferValue);
       } catch (error) {
         this.logger.error(`Unhandled error when processing transaction for transaction with hash '${transaction.txHash}'`);
         this.logger.error(error);
       }
+    };
+
+    const batches = BatchUtils.splitArrayIntoChunks(transactions, this.ACTION_BATCH_SIZE);
+
+    for (const batch of batches) {
+      await Promise.all(batch.map(transaction => computeAction(transaction)));
+    }
+  }
+
+  private async applyPendingResults(transactions: Transaction[]): Promise<void> {
+    const twentyMinutes = Constants.oneMinute() * 20 * 1000;
+    const timestampLimit = (new Date().getTime() - twentyMinutes) / 1000;
+
+    const recentTransactions: Transaction[] = [];
+    for (const transaction of transactions) {
+      if (transaction.timestamp < timestampLimit) {
+        continue;
+      }
+
+      recentTransactions.push(transaction);
     }
 
-    await this.applyAssets(transactions, { withUsernameAssets: options.withUsername });
+    if (recentTransactions.length === 0) {
+      return;
+    }
+
+    const batches = BatchUtils.splitArrayIntoChunks(recentTransactions, this.PENDING_RESULTS_BATCH_SIZE);
+
+    for (const batch of batches) {
+      const keys = batch.map(transaction => CacheInfo.TransactionPendingResults(transaction.txHash).key);
+
+      const pendingResults = await this.cachingService.getMany<string>(keys);
+
+      for (const [index, transaction] of batch.entries()) {
+        if (!pendingResults[index]) {
+          continue;
+        }
+
+        transaction.pendingResults = true;
+        transaction.status = TransactionStatus.pending;
+      }
+    }
   }
 
 
@@ -461,21 +507,6 @@ export class TransactionService {
         transaction.timestampMs = transaction.timestamp * 1000;
       }
     }
-  }
-
-  private async getPendingResults(transaction: Transaction): Promise<boolean | undefined> {
-    const twentyMinutes = Constants.oneMinute() * 20 * 1000;
-    const timestampLimit = (new Date().getTime() - twentyMinutes) / 1000;
-    if (transaction.timestamp < timestampLimit) {
-      return undefined;
-    }
-
-    const pendingResult = await this.cachingService.get(CacheInfo.TransactionPendingResults(transaction.txHash).key);
-    if (!pendingResult) {
-      return undefined;
-    }
-
-    return true;
   }
 
   async getExtraDetailsForTransactions(elasticTransactions: any[], transactions: Transaction[], queryOptions: TransactionQueryOptions): Promise<TransactionDetailed[]> {
