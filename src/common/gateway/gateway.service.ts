@@ -218,7 +218,7 @@ export class GatewayService {
   async getRaw(url: string, component: GatewayComponentRequest, errorHandler?: (error: any) => Promise<boolean>): Promise<any> {
     const fullUrl = this.getFullUrl(component, url);
     const settings = component === GatewayComponentRequest.transactionPool ?
-      { maxContentLength: 5 * 1024 * 1024 } : // 5 MB
+      { maxContentLength: 2 * 1024 * 1024 } : // 2 MB
       new ApiSettings();
 
     return await this.apiService.get(fullUrl, settings, errorHandler);
