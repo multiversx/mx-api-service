@@ -16,7 +16,7 @@ import { Transaction } from "./entities/transaction";
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { ApiConfigService } from "../api-config/api.config.service";
 import { BinaryUtils, ContextTracker } from "@multiversx/sdk-nestjs-common";
-import { ApiService, ApiSettings } from "@multiversx/sdk-nestjs-http";
+import { ApiService } from "@multiversx/sdk-nestjs-http";
 import { GuardianResult } from "./entities/guardian.result";
 import { TransactionProcessStatus } from "./entities/transaction.process.status";
 import { TxPoolGatewayResponse } from "./entities/tx.pool.gateway.response";
@@ -91,12 +91,12 @@ export class GatewayService {
     });
   }
 
-  async getNetworkEnableEpochs(): Promise<Record<string,number>> {
+  async getNetworkEnableEpochs(): Promise<Record<string, number>> {
     const result = await this.get(`network/enable-epochs`, GatewayComponentRequest.networkEnableEpochs);
     return result.enableEpochs;
   }
 
-  async getNetworkEnableEpochsV2(): Promise<Record<string,number>> {
+  async getNetworkEnableEpochsV2(): Promise<Record<string, number>> {
     const result = await this.get(`network/enable-epochs-v2`, GatewayComponentRequest.networkEnableEpochsV2);
     return result.enableEpochs;
   }
@@ -217,8 +217,9 @@ export class GatewayService {
   @LogPerformanceAsync(MetricsEvents.SetGatewayDuration, { argIndex: 1 })
   async getRaw(url: string, component: GatewayComponentRequest, errorHandler?: (error: any) => Promise<boolean>): Promise<any> {
     const fullUrl = this.getFullUrl(component, url);
+    const maxContentLength = 5 * 1024 * 1024; // 5 MB
 
-    return await this.apiService.get(fullUrl, new ApiSettings(), errorHandler);
+    return await this.apiService.get(fullUrl, { maxContentLength }, errorHandler);
   }
 
   @LogPerformanceAsync(MetricsEvents.SetGatewayDuration, { argIndex: 1 })
@@ -233,8 +234,9 @@ export class GatewayService {
   @LogPerformanceAsync(MetricsEvents.SetGatewayDuration, { argIndex: 1 })
   async createRaw(url: string, component: GatewayComponentRequest, data: any, errorHandler?: (error: any) => Promise<boolean>): Promise<any> {
     const fullUrl = this.getFullUrl(component, url);
+    const maxContentLength = 5 * 1024 * 1024; // 5 MB
 
-    return await this.apiService.post(fullUrl, data, new ApiSettings(), errorHandler);
+    return await this.apiService.post(fullUrl, data, { maxContentLength }, errorHandler);
   }
 
   private getFullUrl(component: GatewayComponentRequest, suffix: string) {
