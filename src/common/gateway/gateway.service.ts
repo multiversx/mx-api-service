@@ -16,7 +16,7 @@ import { Transaction } from "./entities/transaction";
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { ApiConfigService } from "../api-config/api.config.service";
 import { BinaryUtils, ContextTracker } from "@multiversx/sdk-nestjs-common";
-import { ApiService } from "@multiversx/sdk-nestjs-http";
+import { ApiService, ApiSettings } from "@multiversx/sdk-nestjs-http";
 import { GuardianResult } from "./entities/guardian.result";
 import { TransactionProcessStatus } from "./entities/transaction.process.status";
 import { TxPoolGatewayResponse } from "./entities/tx.pool.gateway.response";
@@ -217,9 +217,11 @@ export class GatewayService {
   @LogPerformanceAsync(MetricsEvents.SetGatewayDuration, { argIndex: 1 })
   async getRaw(url: string, component: GatewayComponentRequest, errorHandler?: (error: any) => Promise<boolean>): Promise<any> {
     const fullUrl = this.getFullUrl(component, url);
-    const maxContentLength = 5 * 1024 * 1024; // 5 MB
+    const settings = component === GatewayComponentRequest.transactionPool ?
+      { maxContentLength: 5 * 1024 * 1024 } : // 5 MB
+      new ApiSettings();
 
-    return await this.apiService.get(fullUrl, { maxContentLength }, errorHandler);
+    return await this.apiService.get(fullUrl, settings, errorHandler);
   }
 
   @LogPerformanceAsync(MetricsEvents.SetGatewayDuration, { argIndex: 1 })
@@ -234,9 +236,8 @@ export class GatewayService {
   @LogPerformanceAsync(MetricsEvents.SetGatewayDuration, { argIndex: 1 })
   async createRaw(url: string, component: GatewayComponentRequest, data: any, errorHandler?: (error: any) => Promise<boolean>): Promise<any> {
     const fullUrl = this.getFullUrl(component, url);
-    const maxContentLength = 5 * 1024 * 1024; // 5 MB
 
-    return await this.apiService.post(fullUrl, data, { maxContentLength }, errorHandler);
+    return await this.apiService.post(fullUrl, data, new ApiSettings(), errorHandler);
   }
 
   private getFullUrl(component: GatewayComponentRequest, suffix: string) {
