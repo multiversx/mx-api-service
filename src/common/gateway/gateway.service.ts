@@ -91,12 +91,12 @@ export class GatewayService {
     });
   }
 
-  async getNetworkEnableEpochs(): Promise<Record<string,number>> {
+  async getNetworkEnableEpochs(): Promise<Record<string, number>> {
     const result = await this.get(`network/enable-epochs`, GatewayComponentRequest.networkEnableEpochs);
     return result.enableEpochs;
   }
 
-  async getNetworkEnableEpochsV2(): Promise<Record<string,number>> {
+  async getNetworkEnableEpochsV2(): Promise<Record<string, number>> {
     const result = await this.get(`network/enable-epochs-v2`, GatewayComponentRequest.networkEnableEpochsV2);
     return result.enableEpochs;
   }
@@ -217,8 +217,11 @@ export class GatewayService {
   @LogPerformanceAsync(MetricsEvents.SetGatewayDuration, { argIndex: 1 })
   async getRaw(url: string, component: GatewayComponentRequest, errorHandler?: (error: any) => Promise<boolean>): Promise<any> {
     const fullUrl = this.getFullUrl(component, url);
+    const settings = component === GatewayComponentRequest.transactionPool ?
+      { maxContentLength: 2 * 1024 * 1024 } : // 2 MB
+      new ApiSettings();
 
-    return await this.apiService.get(fullUrl, new ApiSettings(), errorHandler);
+    return await this.apiService.get(fullUrl, settings, errorHandler);
   }
 
   @LogPerformanceAsync(MetricsEvents.SetGatewayDuration, { argIndex: 1 })
