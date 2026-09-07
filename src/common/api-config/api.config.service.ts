@@ -721,6 +721,8 @@ export class ApiConfigService {
   }
 
   isTransactionPoolEnabled(): boolean {
+    return false;
+    //@ts-ignore
     return this.configService.get<boolean>('features.transactionPool.enabled') ?? false;
   }
 
