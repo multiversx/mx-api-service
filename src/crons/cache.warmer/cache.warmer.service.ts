@@ -151,6 +151,8 @@ export class CacheWarmerService {
 
   @Lock({ name: 'Transaction pool invalidation', verbose: true })
   async handleTxPoolInvalidations() {
+    return;
+    //@ts-ignore
     const pool = await this.poolService.getTxPoolRaw();
 
     await this.invalidateKey(CacheInfo.TransactionPool.key, pool, this.apiConfigService.getTransactionPoolCacheWarmerTtlInSeconds());
