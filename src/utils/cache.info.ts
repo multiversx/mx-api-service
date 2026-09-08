@@ -812,4 +812,11 @@ export class CacheInfo {
       ttl: Constants.oneMinute(),
     };
   }
+
+  static TokenIssuancePendingRequestHash(hash: string): CacheInfo {
+    return {
+      key: `tokenIssuancePendingRequestHash:${hash}`,
+      ttl: Constants.oneMinute(),
+    };
+  }
 }
