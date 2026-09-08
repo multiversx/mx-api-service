@@ -49,7 +49,9 @@ export class TransactionProcessorService {
           const invalidatedCollectionPropertiesKeys = await this.tryInvalidateCollectionProperties(transaction);
           const invalidatedStakeTopUpKey = await this.tryInvalidateStakeTopup(transaction);
 
-          this.tryHandleTokenIssuance(transaction);
+          this.tryHandleTokenIssuance(transaction).catch((error) => {
+            this.logger.error(`Error handling token issuance for transaction ${transaction.hash}: ${error.message}`);
+          });
 
           allInvalidatedKeys.push(
             ...invalidatedTokenProperties,
