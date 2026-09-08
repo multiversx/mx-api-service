@@ -44,6 +44,7 @@ import { MexPairService } from "../mex/mex.pair.service";
 import { MexPairState } from "../mex/entities/mex.pair.state";
 import { MexTokenType } from "../mex/entities/mex.token.type";
 import { NftSubType } from "../nfts/entities/nft.sub.type";
+import { NftCollection } from "../collections/entities/nft.collection";
 
 @Injectable()
 export class TokenService {
@@ -781,24 +782,104 @@ export class TokenService {
     const collections = await this.collectionService.getNftCollections(new QueryPagination({ from: 0, size: 10000 }), { type: [NftType.MetaESDT] });
 
     for (const collection of collections) {
-      tokens.push(new TokenDetailed({
-        type: TokenType.MetaESDT,
-        subType: collection.subType,
-        identifier: collection.collection,
-        name: collection.name,
-        timestamp: collection.timestamp,
-        owner: collection.owner,
-        decimals: collection.decimals,
-        canFreeze: collection.canFreeze,
-        canPause: collection.canPause,
-        canTransferNftCreateRole: collection.canTransferNftCreateRole,
-        canWipe: collection.canWipe,
-        canAddSpecialRoles: collection.canAddSpecialRoles,
-        canChangeOwner: collection.canChangeOwner,
-        canUpgrade: collection.canUpgrade,
-      }));
+      tokens.push(this.buildMetaEsdtToken(collection));
     }
 
+    await this.applyTokenDetails(tokens);
+
+    this.logger.log(`Sorting and finalizing ${tokens.length} tokens`);
+    tokens = tokens.sortedDescending(
+      token => token.assets ? 1 : 0,
+      token => token.marketCap ? 1 : 0,
+      token => token.isLowLiquidity || token.assets?.priceSource?.type === TokenAssetsPriceSourceType.customUrl ? 0 : (token.marketCap ?? 0),
+      token => token.transactions ?? 0,
+    );
+
+    tokens = [...tokens, await this.buildEgldToken()];
+
+    this.logger.log(`Total tokens processed: ${tokens.length}`);
+    return tokens;
+  }
+
+  async getTokenRaw(rawIdentifier: string): Promise<TokenDetailed | undefined> {
+    const identifier = this.normalizeIdentifierCase(rawIdentifier);
+
+    if (!TokenUtils.isToken(identifier)) {
+      return undefined;
+    }
+
+    if (identifier === this.egldIdentifierInMultiTransfer) {
+      return await this.buildEgldToken();
+    }
+
+    const token = await this.buildTokenFromProperties(identifier);
+    if (!token) {
+      return undefined;
+    }
+
+    await this.applyTokenDetails([token]);
+
+    return token;
+  }
+
+  private async buildTokenFromProperties(identifier: string): Promise<TokenDetailed | undefined> {
+    const properties = await this.esdtService.getEsdtTokenProperties(identifier);
+
+    if (properties?.type === EsdtType.FungibleESDT) {
+      const token = ApiUtils.mergeObjects(new TokenDetailed(), properties);
+      token.type = TokenType.FungibleESDT;
+
+      const assets = await this.assetsService.getTokenAssets(identifier);
+      if (assets && assets.name) {
+        token.name = assets.name;
+      }
+
+      return token;
+    }
+
+    const collection = await this.collectionService.getNftCollection(identifier);
+    if (collection && collection.type === NftType.MetaESDT) {
+      return this.buildMetaEsdtToken(collection);
+    }
+
+    return undefined;
+  }
+
+  private buildMetaEsdtToken(collection: NftCollection): TokenDetailed {
+    return new TokenDetailed({
+      type: TokenType.MetaESDT,
+      subType: collection.subType,
+      identifier: collection.collection,
+      name: collection.name,
+      timestamp: collection.timestamp,
+      owner: collection.owner,
+      decimals: collection.decimals,
+      canFreeze: collection.canFreeze,
+      canPause: collection.canPause,
+      canTransferNftCreateRole: collection.canTransferNftCreateRole,
+      canWipe: collection.canWipe,
+      canAddSpecialRoles: collection.canAddSpecialRoles,
+      canChangeOwner: collection.canChangeOwner,
+      canUpgrade: collection.canUpgrade,
+    });
+  }
+
+  private async buildEgldToken(): Promise<TokenDetailed> {
+    return new TokenDetailed({
+      identifier: this.egldIdentifierInMultiTransfer,
+      name: 'EGLD',
+      type: TokenType.FungibleESDT,
+      assets: await this.assetsService.getTokenAssets(this.egldIdentifierInMultiTransfer),
+      decimals: 18,
+      isLowLiquidity: false,
+      price: await this.dataApiService.getEgldPrice(),
+      supply: '0',
+      circulatingSupply: '0',
+      marketCap: 0,
+    });
+  }
+
+  private async applyTokenDetails(tokens: TokenDetailed[]): Promise<void> {
     await this.batchProcessTokens(tokens);
 
     const nonMetaEsdtTokens = tokens.filter(x => x.type !== TokenType.MetaESDT);
@@ -824,81 +905,58 @@ export class TokenService {
     this.logger.log(`Processing price sources and supply for ${tokens.length} tokens`);
     await ConcurrencyUtils.executeWithConcurrencyLimit(
       tokens,
-      async (token) => {
-        try {
-          const priceSourcetype = token.assets?.priceSource?.type;
-
-          if (priceSourcetype === TokenAssetsPriceSourceType.dataApi) {
-            const dataApiPrice = await this.dataApiService.getEsdtTokenPrice(token.identifier);
-            if (dataApiPrice) {
-              // keep DEX price if data api price is not available, otherwise override it
-              token.price = dataApiPrice;
-            }
-          } else if (priceSourcetype === TokenAssetsPriceSourceType.customUrl && token.assets?.priceSource?.url) {
-            const pathToPrice = token.assets?.priceSource?.path ?? "0.usdPrice";
-            const customHeaders = this.apiConfigService.getHeadersForCustomUrl(token.assets.priceSource.url);
-            const tokenData = await this.fetchTokenDataFromUrl(token.assets.priceSource.url, pathToPrice, customHeaders);
-
-            if (tokenData) {
-              token.price = tokenData;
-            }
-          }
-          if (!token.price && token.type === TokenType.FungibleESDT) {
-            try {
-              const dataApiPrice = await this.dataApiService.getEsdtTokenPrice(token.identifier);
-              if (dataApiPrice) {
-                token.price = dataApiPrice;
-                this.logger.log(`Applied dataAPI fallback for ${token.identifier} token with price ${dataApiPrice}`);
-              }
-            } catch (error) {
-              this.logger.error(`Error applying dataAPI fallback price for token ${token.identifier}: ${error}`);
-            }
-          }
-
-          const supply = await this.esdtService.getTokenSupply(token.identifier);
-          token.supply = supply.totalSupply;
-          token.circulatingSupply = supply.circulatingSupply;
-
-          if (token.price && token.circulatingSupply) {
-            token.marketCap = token.price * NumberUtils.denominateString(token.circulatingSupply, token.decimals);
-            // TODO: update this by checking the token's liquidity collateral
-            if (token.marketCap > this.thresholdFaultyMarketCap) {
-              this.logger.log(`Setting token market cap to 0 due to possibly faulty market cap. Token: ${token.identifier}. Circulating supply: ${token.circulatingSupply}. Price: ${token.price}. Market cap: ${token.marketCap}`);
-              token.marketCap = 0;
-            }
-          }
-        } catch (error) {
-          this.logger.error(`Error processing price/supply for token ${token.identifier}: ${error}`);
-        }
-      },
+      async (token) => await this.applyPriceAndSupply(token),
       50,
       'Token prices and supply calculation'
     );
+  }
 
-    this.logger.log(`Sorting and finalizing ${tokens.length} tokens`);
-    tokens = tokens.sortedDescending(
-      token => token.assets ? 1 : 0,
-      token => token.marketCap ? 1 : 0,
-      token => token.isLowLiquidity || token.assets?.priceSource?.type === TokenAssetsPriceSourceType.customUrl ? 0 : (token.marketCap ?? 0),
-      token => token.transactions ?? 0,
-    );
+  private async applyPriceAndSupply(token: TokenDetailed): Promise<void> {
+    try {
+      const priceSourcetype = token.assets?.priceSource?.type;
 
-    const egldToken = new TokenDetailed({
-      identifier: this.egldIdentifierInMultiTransfer,
-      name: 'EGLD',
-      type: TokenType.FungibleESDT,
-      assets: await this.assetsService.getTokenAssets(this.egldIdentifierInMultiTransfer),
-      decimals: 18,
-      isLowLiquidity: false,
-      price: await this.dataApiService.getEgldPrice(),
-      supply: '0',
-      circulatingSupply: '0',
-      marketCap: 0,
-    });
-    tokens = [...tokens, egldToken];
+      if (priceSourcetype === TokenAssetsPriceSourceType.dataApi) {
+        const dataApiPrice = await this.dataApiService.getEsdtTokenPrice(token.identifier);
+        if (dataApiPrice) {
+          // keep DEX price if data api price is not available, otherwise override it
+          token.price = dataApiPrice;
+        }
+      } else if (priceSourcetype === TokenAssetsPriceSourceType.customUrl && token.assets?.priceSource?.url) {
+        const pathToPrice = token.assets?.priceSource?.path ?? "0.usdPrice";
+        const customHeaders = this.apiConfigService.getHeadersForCustomUrl(token.assets.priceSource.url);
+        const tokenData = await this.fetchTokenDataFromUrl(token.assets.priceSource.url, pathToPrice, customHeaders);
 
-    this.logger.log(`Total tokens processed: ${tokens.length}`);
-    return tokens;
+        if (tokenData) {
+          token.price = tokenData;
+        }
+      }
+      if (!token.price && token.type === TokenType.FungibleESDT) {
+        try {
+          const dataApiPrice = await this.dataApiService.getEsdtTokenPrice(token.identifier);
+          if (dataApiPrice) {
+            token.price = dataApiPrice;
+            this.logger.log(`Applied dataAPI fallback for ${token.identifier} token with price ${dataApiPrice}`);
+          }
+        } catch (error) {
+          this.logger.error(`Error applying dataAPI fallback price for token ${token.identifier}: ${error}`);
+        }
+      }
+
+      const supply = await this.esdtService.getTokenSupply(token.identifier);
+      token.supply = supply.totalSupply;
+      token.circulatingSupply = supply.circulatingSupply;
+
+      if (token.price && token.circulatingSupply) {
+        token.marketCap = token.price * NumberUtils.denominateString(token.circulatingSupply, token.decimals);
+        // TODO: update this by checking the token's liquidity collateral
+        if (token.marketCap > this.thresholdFaultyMarketCap) {
+          this.logger.log(`Setting token market cap to 0 due to possibly faulty market cap. Token: ${token.identifier}. Circulating supply: ${token.circulatingSupply}. Price: ${token.price}. Market cap: ${token.marketCap}`);
+          token.marketCap = 0;
+        }
+      }
+    } catch (error) {
+      this.logger.error(`Error processing price/supply for token ${token.identifier}: ${error}`);
+    }
   }
 
   private extractData(data: any, path: string): any {
