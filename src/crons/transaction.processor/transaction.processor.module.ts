@@ -10,6 +10,7 @@ import { DynamicModuleUtils } from 'src/utils/dynamic.module.utils';
 import { TransactionProcessorService } from './transaction.processor.service';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { PersistenceModule } from 'src/common/persistence/persistence.module';
+import { TokenModule } from 'src/endpoints/tokens/token.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { PersistenceModule } from 'src/common/persistence/persistence.module';
     NftModule,
     NftWorkerModule,
     ApiMetricsModule,
+    TokenModule,
   ],
   providers: [
     DynamicModuleUtils.getPubSubService(),

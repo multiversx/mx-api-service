@@ -15,6 +15,7 @@ import { BinaryUtils, OriginLogger } from "@multiversx/sdk-nestjs-common";
 import { PerformanceProfiler } from "@multiversx/sdk-nestjs-monitoring";
 import { StakeFunction } from "src/endpoints/transactions/transaction-action/recognizers/staking/entities/stake.function";
 import { ShardTransaction, TransactionProcessor } from "@multiversx/sdk-transaction-processor";
+import { TokenService } from "src/endpoints/tokens/token.service";
 
 @Injectable()
 export class TransactionProcessorService {
@@ -27,6 +28,7 @@ export class TransactionProcessorService {
     @Inject('PUBSUB_SERVICE') private clientProxy: ClientProxy,
     private readonly nodeService: NodeService,
     private readonly eventEmitter: EventEmitter2,
+    private readonly tokenService: TokenService,
   ) { }
 
   @Cron('*/1 * * * * *')
@@ -46,6 +48,8 @@ export class TransactionProcessorService {
           const invalidatedOwnerKeys = await this.tryInvalidateOwner(transaction);
           const invalidatedCollectionPropertiesKeys = await this.tryInvalidateCollectionProperties(transaction);
           const invalidatedStakeTopUpKey = await this.tryInvalidateStakeTopup(transaction);
+
+          this.tryHandleTokenIssuance(transaction);
 
           allInvalidatedKeys.push(
             ...invalidatedTokenProperties,
@@ -151,5 +155,50 @@ export class TransactionProcessorService {
     await this.cachingService.deleteInCache(CacheInfo.StakeTopup(transaction.receiver).key);
 
     return [CacheInfo.StakeTopup(transaction.receiver).key];
+  }
+
+  async tryHandleTokenIssuance(transaction: ShardTransaction) {
+    if (transaction.status !== 'success' ||
+      !this.apiConfigService.getEsdtContractAddress().in(transaction.sender, transaction.receiver)) {
+      return;
+    }
+
+    const transactionFuncName = transaction.getDataFunctionName();
+    if (transactionFuncName === 'issue' && transaction.receiver === this.apiConfigService.getEsdtContractAddress()) {
+      this.cachingService.setLocal(
+        CacheInfo.TokenIssuancePendingRequestHash(transaction.hash).key,
+        transaction.hash,
+        CacheInfo.TokenIssuancePendingRequestHash(transaction.hash).ttl,
+      );
+    }
+    if (transactionFuncName === 'ESDTTransfer' &&
+      transaction.sender === this.apiConfigService.getEsdtContractAddress()) {
+      const txOriginalHash = transaction.originalTransactionHash;
+      if (txOriginalHash && this.cachingService.getLocal(CacheInfo.TokenIssuancePendingRequestHash(txOriginalHash).key)) {
+
+        let tokenIdentifier = undefined;
+        const dataArgs = transaction.getDataArgs();
+
+        if (dataArgs != null && dataArgs.length >= 0) {
+          tokenIdentifier = Buffer.from(dataArgs[0], 'hex').toString('utf-8');
+        }
+
+        if (tokenIdentifier) {
+          const token = await this.tokenService.getTokenRaw(tokenIdentifier);
+          if (token) {
+            this.logger.log(`Detected token issuance for token ${tokenIdentifier}`);
+            const tokens = await this.tokenService.getAllTokens();
+            const updatedTokens = [...tokens, token];
+            await this.cachingService.set(
+              CacheInfo.AllEsdtTokens.key,
+              updatedTokens.distinct(x => x.identifier),
+              CacheInfo.AllEsdtTokens.ttl
+            );
+
+            this.clientProxy.emit('deleteCacheKeys', [CacheInfo.AllEsdtTokens.key]);
+          }
+        }
+      }
+    }
   }
 }
