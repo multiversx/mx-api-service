@@ -84,7 +84,7 @@ export class TokenService {
     const identifier = this.normalizeIdentifierCase(rawIdentifier);
     let token = tokens.find(x => x.identifier === identifier);
 
-    if (!TokenUtils.isToken(identifier) && !TokenUtils.isNft(identifier)) {
+    if (!TokenUtils.isToken(identifier)) {
       return undefined;
     }
 
@@ -258,6 +258,7 @@ export class TokenService {
 
   async getTokensForAddress(address: string, queryPagination: QueryPagination, filter: TokenFilter): Promise<TokenWithBalance[]> {
     let tokens: TokenWithBalance[];
+
     if (AddressUtils.isSmartContractAddress(address)) {
       tokens = await this.getTokensForAddressFromElastic(address, queryPagination, filter);
     } else {
@@ -278,7 +279,7 @@ export class TokenService {
     const elasticTokens = await this.indexerService.getTokensForAddress(address, queryPagination, filter);
 
     const allTokens = await this.getAllTokens();
-
+    // console.log(allTokens)
     const allTokensIndexed = allTokens.toRecord<TokenDetailed>(token => token.identifier);
 
     const result: TokenWithBalance[] = [];
@@ -294,7 +295,7 @@ export class TokenService {
           attributes: elasticToken.data?.attributes,
           valueUsd: undefined,
         };
-
+        console.log(tokenWithBalance)
         this.applyValueUsd(tokenWithBalance);
 
         this.applyTickerFromAssets(tokenWithBalance);
@@ -314,6 +315,7 @@ export class TokenService {
 
   async getTokensForAddressFromGatewayWithElasticFallback(address: string, queryPagination: QueryPagination, filter: TokenFilter): Promise<TokenWithBalance[]> {
     const isTrieTimeout = await this.cachingService.get<boolean>(CacheInfo.AddressEsdtTrieTimeout(address).key);
+
     if (isTrieTimeout) {
       return await this.getTokensForAddressFromElastic(address, queryPagination, filter);
     }
@@ -1063,7 +1065,7 @@ export class TokenService {
 
   private async getAllTokensFromApi(): Promise<TokenDetailed[]> {
     try {
-      const { data } = await this.apiService.get(`${this.apiConfigService.getTokensFetchServiceUrl()}/tokens`, { params: { size: 10000 } });
+      const { data } = await this.apiService.get(`${this.apiConfigService.getTokensFetchServiceUrl()}/tokens`, { params: { size: 10000, includeMetaESDT: true } });
 
       return data;
     } catch (error) {
