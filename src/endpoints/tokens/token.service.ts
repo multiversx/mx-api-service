@@ -258,7 +258,6 @@ export class TokenService {
 
   async getTokensForAddress(address: string, queryPagination: QueryPagination, filter: TokenFilter): Promise<TokenWithBalance[]> {
     let tokens: TokenWithBalance[];
-
     if (AddressUtils.isSmartContractAddress(address)) {
       tokens = await this.getTokensForAddressFromElastic(address, queryPagination, filter);
     } else {
