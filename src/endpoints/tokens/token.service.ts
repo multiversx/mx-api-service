@@ -84,7 +84,7 @@ export class TokenService {
     const identifier = this.normalizeIdentifierCase(rawIdentifier);
     let token = tokens.find(x => x.identifier === identifier);
 
-    if (!TokenUtils.isToken(identifier)) {
+    if (!TokenUtils.isToken(identifier) && !TokenUtils.isNft(identifier)) {
       return undefined;
     }
 
