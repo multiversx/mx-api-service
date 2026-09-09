@@ -779,7 +779,7 @@ export class TokenService {
     }
 
     this.logger.log(`Starting to fetch all meta tokens`);
-    const collections = await this.collectionService.getNftCollections(new QueryPagination({ from: 0, size: 10000 }), { type: [NftType.MetaESDT] });
+    const collections = await this.collectionService.getNftCollections(new QueryPagination({ from: 0, size: 10000 }), { type: [NftType.MetaESDT], subType: [NftSubType.DynamicMetaESDT] });
 
     for (const collection of collections) {
       tokens.push(this.buildMetaEsdtToken(collection));
