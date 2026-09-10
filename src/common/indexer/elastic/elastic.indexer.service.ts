@@ -727,7 +727,7 @@ export class ElasticIndexerService implements IndexerInterface {
 
   private buildTokenFilter(query: ElasticQuery, filter: TokenFilter): ElasticQuery {
     if (filter.includeMetaESDT === true) {
-      query = query.withMustMultiShouldCondition([TokenType.FungibleESDT, TokenType.MetaESDT], type => QueryType.Match('type', type));
+      query = query.withMustMultiShouldCondition([TokenType.FungibleESDT, TokenType.MetaESDT, TokenType.DynamicMetaESDT], type => QueryType.Match('type', type));
     } else {
       query = query.withMustNotCondition(QueryType.Exists('identifier'));
     }

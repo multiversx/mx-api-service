@@ -687,7 +687,7 @@ describe('Token Service', () => {
         const result = await tokenService.getAllTokens();
 
         expect(apiConfigService.isTokensFetchFeatureEnabled).toHaveBeenCalled();
-        expect(apiService.get).toHaveBeenCalledWith(`${url}/tokens`, { params: { size: 10000 } });
+        expect(apiService.get).toHaveBeenCalledWith(`${url}/tokens`, { params: { size: 10000, includeMetaESDT: true } });
         expect(result).toEqual(mockTokens);
       });
 
