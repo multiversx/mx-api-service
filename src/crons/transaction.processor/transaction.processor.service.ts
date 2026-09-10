@@ -160,47 +160,83 @@ export class TransactionProcessorService {
   }
 
   async tryHandleTokenIssuance(transaction: ShardTransaction) {
-    if (transaction.status !== 'success' ||
-      !this.apiConfigService.getEsdtContractAddress().in(transaction.sender, transaction.receiver)) {
+    const esdtContractAddress = this.apiConfigService.getEsdtContractAddress();
+
+    if (transaction.status !== 'success' || !esdtContractAddress.in(transaction.sender, transaction.receiver)) {
       return;
     }
 
     const transactionFuncName = transaction.getDataFunctionName();
-    if (transactionFuncName === 'issue' && transaction.receiver === this.apiConfigService.getEsdtContractAddress()) {
+
+    if (transaction.receiver === esdtContractAddress &&
+      transactionFuncName && ['issue', 'registerMetaESDT'].includes(transactionFuncName)) {
       this.cachingService.setLocal(
         CacheInfo.TokenIssuancePendingRequestHash(transaction.hash).key,
-        transaction.hash,
+        transactionFuncName,
         CacheInfo.TokenIssuancePendingRequestHash(transaction.hash).ttl,
       );
+
+      return;
     }
-    if (transactionFuncName === 'ESDTTransfer' &&
-      transaction.sender === this.apiConfigService.getEsdtContractAddress()) {
-      const txOriginalHash = transaction.originalTransactionHash;
-      if (txOriginalHash && this.cachingService.getLocal(CacheInfo.TokenIssuancePendingRequestHash(txOriginalHash).key)) {
 
-        let tokenIdentifier = undefined;
-        const dataArgs = transaction.getDataArgs();
-
-        if (dataArgs != null && dataArgs.length >= 0) {
-          tokenIdentifier = Buffer.from(dataArgs[0], 'hex').toString('utf-8');
-        }
-
-        if (tokenIdentifier) {
-          const token = await this.tokenService.getTokenRaw(tokenIdentifier);
-          if (token) {
-            this.logger.log(`Detected token issuance for token ${tokenIdentifier}`);
-            const tokens = await this.tokenService.getAllTokens();
-            const updatedTokens = [...tokens, token];
-            await this.cachingService.set(
-              CacheInfo.AllEsdtTokens.key,
-              updatedTokens.distinct(x => x.identifier),
-              CacheInfo.AllEsdtTokens.ttl
-            );
-
-            this.clientProxy.emit('deleteCacheKeys', [CacheInfo.AllEsdtTokens.key]);
-          }
-        }
-      }
+    if (transaction.sender !== esdtContractAddress) {
+      return;
     }
+
+    const txOriginalHash = transaction.originalTransactionHash;
+    if (!txOriginalHash) {
+      return;
+    }
+
+    const originalTxFuncName = this.cachingService.getLocal<string>(CacheInfo.TokenIssuancePendingRequestHash(txOriginalHash).key);
+    if (!originalTxFuncName) {
+      return;
+    }
+
+    const tokenIdentifier = this.getIssuedTokenIdentifier(transaction, originalTxFuncName);
+    if (!tokenIdentifier) {
+      return;
+    }
+
+    await this.addTokenToCachedTokens(tokenIdentifier);
+  }
+
+  private getIssuedTokenIdentifier(transaction: ShardTransaction, originalTxFuncName: string): string | undefined {
+    const dataArgs = transaction.getDataArgs();
+    if (!dataArgs || dataArgs.length === 0) {
+      return undefined;
+    }
+
+    // on 'issue', the esdt contract sends the issued supply back as 'ESDTTransfer@<identifier>@<amount>'
+    if (transaction.getDataFunctionName() === 'ESDTTransfer' && originalTxFuncName === 'issue') {
+      return BinaryUtils.hexToString(dataArgs[0]);
+    }
+
+    // on 'registerMetaESDT', the esdt contract answers with '@6f6b@<identifier>', where '6f6b' is 'ok'
+    if (dataArgs[0] === BinaryUtils.stringToHex('ok') && originalTxFuncName === 'registerMetaESDT') {
+      return BinaryUtils.hexToString(dataArgs[1]);
+    }
+
+    return undefined;
+  }
+
+  private async addTokenToCachedTokens(identifier: string) {
+    const token = await this.tokenService.getTokenRaw(identifier);
+    if (!token) {
+      return;
+    }
+
+    this.logger.log(`Detected token creation for token ${identifier}`);
+
+    const tokens = await this.tokenService.getAllTokens();
+    const updatedTokens = [...tokens, token];
+
+    await this.cachingService.set(
+      CacheInfo.AllEsdtTokens.key,
+      updatedTokens.distinct(x => x.identifier),
+      CacheInfo.AllEsdtTokens.ttl,
+    );
+
+    this.clientProxy.emit('deleteCacheKeys', [CacheInfo.AllEsdtTokens.key]);
   }
 }
