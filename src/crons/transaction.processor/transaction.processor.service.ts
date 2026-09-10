@@ -198,7 +198,7 @@ export class TransactionProcessorService {
       return;
     }
 
-    await this.addTokenToCachedTokens(tokenIdentifier);
+    await this.addTokenToCachedTokens(tokenIdentifier, originalTxFuncName);
   }
 
   private getIssuedTokenIdentifier(transaction: ShardTransaction, originalTxFuncName: string): string | undefined {
@@ -220,13 +220,18 @@ export class TransactionProcessorService {
     return undefined;
   }
 
-  private async addTokenToCachedTokens(identifier: string) {
+  private async addTokenToCachedTokens(identifier: string, originalTxFuncName: string) {
     const token = await this.tokenService.getTokenRaw(identifier);
     if (!token) {
       return;
     }
+    if (originalTxFuncName === 'registerMetaESDT') {
+      this.logger.log(`Detected metaESDT collection creation ${identifier}`);
+    }
+    if (originalTxFuncName === 'issue') {
+      this.logger.log(`Detected ESDT token issuance ${identifier}`);
+    }
 
-    this.logger.log(`Detected token creation for token ${identifier}`);
 
     const tokens = await this.tokenService.getAllTokens();
     const updatedTokens = [...tokens, token];
