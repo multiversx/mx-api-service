@@ -813,7 +813,7 @@ export class TokenService {
     // processing all tokens takes tens of seconds, so re-fetch the token list and
     // process only the tokens created in the meantime, instead of waiting for the next refresh
     try {
-      const startFetch = Date.now();
+      const startFetchAndProcess = Date.now();
       const processedIdentifiers = new Set(tokens.map(token => token.identifier));
       const latestTokens = await this.fetchAllTokensWithoutDetails();
       const newTokens = latestTokens.filter(token => !processedIdentifiers.has(token.identifier));
@@ -822,13 +822,12 @@ export class TokenService {
         return;
       }
 
-      const startProcessing = Date.now();
       await this.applyTokenDetails(newTokens);
 
       tokens.push(...newTokens);
 
-      const endProcessing = Date.now();
-      this.logger.log(`Processed ${newTokens.length} tokens created while processing all tokens in ${endProcessing - startProcessing}ms (${endProcessing - startFetch}ms including re-fetch)`);
+      const endFetchAndProcess = Date.now();
+      this.logger.log(`Processed ${newTokens.length} tokens created while processing all tokens in ${endFetchAndProcess - startFetchAndProcess}ms`);
     } catch (error) {
       this.logger.error('Could not apply tokens created while processing all tokens');
       this.logger.error(error);
