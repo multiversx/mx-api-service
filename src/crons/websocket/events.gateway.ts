@@ -28,7 +28,7 @@ export class EventsGateway {
         @ConnectedSocket() client: Socket,
         @MessageBody(new WsValidationPipe()) payload: EventsSubscribePayload,
     ) {
-        const filterIdentifier = JSON.stringify(payload);
+        const filterIdentifier = RoomKeyGenerator.deterministicStringify(payload);
         const roomName = `${EventsGateway.keyPrefix}${filterIdentifier}`;
         if (!client.rooms.has(roomName)) {
             await client.join(roomName);

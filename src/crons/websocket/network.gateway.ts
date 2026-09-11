@@ -38,7 +38,7 @@ export class NetworkGateway {
   async pushStats() {
     if (this.server.sockets.adapter.rooms.has('statsRoom')) {
       try {
-        const stats = await this.networkService.getStats();
+        const stats = await this.networkService.getStats(true);
         this.server.to('statsRoom').emit('statsUpdate', stats);
       } catch (error) {
         this.logger.error(error);
