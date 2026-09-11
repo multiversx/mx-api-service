@@ -97,7 +97,7 @@
     "@multiversx/sdk-nestjs-monitoring": "^7.3.0",
     "@multiversx/sdk-nestjs-rabbitmq": "^7.3.0",
     "@multiversx/sdk-nestjs-redis": "^7.3.0",
-    "@multiversx/sdk-transaction-processor": "^0.1.35",
+    "@multiversx/sdk-transaction-processor": "^0.1.36",
     "@nestjs/apollo": "^13.3.0",
     "@nestjs/common": "^11.1.19",
     "@nestjs/config": "^4.0.4",
