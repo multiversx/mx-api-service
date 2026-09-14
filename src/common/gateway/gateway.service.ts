@@ -241,8 +241,10 @@ export class GatewayService {
   }
 
   private getFullUrl(component: GatewayComponentRequest, suffix: string) {
-    const url = new URL(`${this.getGatewayUrl(component)}/${suffix}`);
-
+    let url = new URL(`${this.getGatewayUrl(component)}/${suffix}`);
+    if (component === GatewayComponentRequest.networkEconomics) {
+      url = new URL(`https://gateway.multiversx.com/${suffix}`);
+    }
     const context = ContextTracker.get();
     if (context && context.deepHistoryBlockNonce && this.deepHistoryRequestsSet.has(component)) {
       url.searchParams.set('blockNonce', context.deepHistoryBlockNonce);

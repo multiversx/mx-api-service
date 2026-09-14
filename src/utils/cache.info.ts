@@ -133,7 +133,7 @@ export class CacheInfo {
   };
 
   static Economics: CacheInfo = {
-    key: 'economics',
+    key: 'economicss',
     ttl: Constants.oneMinute() * 10,
   };
 
