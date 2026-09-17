@@ -105,7 +105,7 @@ export class TransactionGetService {
       if (!scResult.timestampMs) {
         scResult.timestampMs = scResult.timestamp * 1000;
       }
-      return ApiUtils.mergeObjects(new SmartContractResult(), scResult)
+      return ApiUtils.mergeObjects(new SmartContractResult(), scResult);
     });
   }
 
