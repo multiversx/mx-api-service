@@ -430,6 +430,7 @@ export class ElasticIndexerService implements IndexerInterface {
       .withSort([
         { name: 'timestamp', order: ElasticSortOrder.ascending },
         { name: 'timestampMs', order: ElasticSortOrder.ascending, missing: 0 },
+        { name: 'nonce', order: ElasticSortOrder.ascending },
         { name: 'uuid.keyword', order: ElasticSortOrder.ascending },
       ])
       .withMustMultiShouldCondition(transactionHashes, hash => QueryType.Match('originalTxHash', hash));
@@ -477,6 +478,7 @@ export class ElasticIndexerService implements IndexerInterface {
       .withSort([
         { name: 'timestamp', order: ElasticSortOrder.descending },
         { name: 'timestampMs', order: ElasticSortOrder.descending, missing: 0 },
+        { name: 'nonce', order: ElasticSortOrder.descending },
         { name: 'uuid.keyword', order: ElasticSortOrder.descending },
       ]);
 
@@ -514,6 +516,7 @@ export class ElasticIndexerService implements IndexerInterface {
       .withSort([
         { name: 'timestamp', order: ElasticSortOrder.descending },
         { name: 'timestampMs', order: ElasticSortOrder.descending, missing: 0 },
+        { name: 'nonce', order: ElasticSortOrder.descending },
         { name: 'uuid.keyword', order: ElasticSortOrder.descending },
       ]);
 
@@ -805,6 +808,7 @@ export class ElasticIndexerService implements IndexerInterface {
       .withSort([
         { name: 'timestamp', order: ElasticSortOrder.ascending },
         { name: 'timestampMs', order: ElasticSortOrder.ascending, missing: 0 },
+        { name: 'nonce', order: ElasticSortOrder.ascending },
         { name: 'uuid.keyword', order: ElasticSortOrder.ascending }
       ])
       .withMustMultiShouldCondition(hashes, hash => QueryType.Match('originalTxHash', hash));
@@ -1279,6 +1283,8 @@ export class ElasticIndexerService implements IndexerInterface {
       .withSort([
         { name: 'timestamp', order: ElasticSortOrder.descending },
         { name: 'timestampMs', order: ElasticSortOrder.descending, missing: 0 },
+        { name: 'txOrder', order: ElasticSortOrder.descending, missing: 0 },
+        { name: 'order', order: ElasticSortOrder.descending, missing: 0 },
         { name: 'uuid.keyword', order: ElasticSortOrder.descending },
       ]);
 
