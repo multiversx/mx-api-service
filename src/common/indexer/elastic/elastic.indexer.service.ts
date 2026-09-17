@@ -772,12 +772,13 @@ export class ElasticIndexerService implements IndexerInterface {
     const originalTxHashQuery = QueryType.Match('originalTxHash', txHash);
     const timestamp: ElasticSortProperty = { name: 'timestamp', order: ElasticSortOrder.ascending };
     const timestampMs: ElasticSortProperty = { name: 'timestampMs', order: ElasticSortOrder.ascending, missing: 0 };
+    const nonce: ElasticSortProperty = { name: 'nonce', order: ElasticSortOrder.ascending };
     const uuid: ElasticSortProperty = { name: 'uuid.keyword', order: ElasticSortOrder.ascending };
 
     const elasticQuerySc = ElasticQuery.create()
       .withMustMatchCondition('type', 'unsigned')
       .withPagination({ from: 0, size: 100 })
-      .withSort([timestamp, timestampMs, uuid])
+      .withSort([timestamp, timestampMs, nonce, uuid])
       .withCondition(QueryConditionOptions.must, [originalTxHashQuery]);
 
     const results = await this.elasticService.getList('operations', 'hash', elasticQuerySc);
