@@ -3,7 +3,7 @@ import { Cron, SchedulerRegistry } from '@nestjs/schedule';
 import { TransactionsGateway } from './transaction.gateway';
 import { BlocksGateway } from 'src/crons/websocket/blocks.gateway';
 import { NetworkGateway } from 'src/crons/websocket/network.gateway';
-import { Lock, Locker } from "@multiversx/sdk-nestjs-common";
+import { Lock, Locker, OriginLogger } from "@multiversx/sdk-nestjs-common";
 import { PoolGateway } from 'src/crons/websocket/pool.gateway';
 import { EventsGateway } from 'src/crons/websocket/events.gateway';
 import { WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
@@ -12,9 +12,8 @@ import { MetricsEvents } from 'src/utils/metrics-events.constants';
 import { Server } from 'socket.io';
 import { CacheService } from '@multiversx/sdk-nestjs-cache';
 import { CacheInfo } from 'src/utils/cache.info';
-import { ElasticQuery, ElasticService, ElasticSortOrder, QueryType } from '@multiversx/sdk-nestjs-elastic';
-import { NetworkService } from 'src/endpoints/network/network.service';
-import { Stats } from 'src/endpoints/network/entities/stats';
+import { ElasticQuery, ElasticService, ElasticSortOrder, RangeGreaterThan } from '@multiversx/sdk-nestjs-elastic';
+import { GatewayService } from 'src/common/gateway/gateway.service';
 import { TransactionsCustomGateway } from './transaction.custom.gateway';
 import { ConnectionHandler } from './connection.handler';
 import { EventsCustomGateway } from './events.custom.gateway';
@@ -25,6 +24,9 @@ import { CustomSubscriptionsDataFetcher } from './custom.subscriptions.data.fetc
 @Injectable()
 @WebSocketGateway({ cors: { origin: '*' }, path: '/ws/subscription' })
 export class WebsocketCronService implements OnModuleInit {
+  private readonly logger = new OriginLogger(WebsocketCronService.name);
+  private static readonly maxRoundsLagMs = 5 * 60 * 1000;
+
   @WebSocketServer()
   server!: Server;
 
@@ -37,7 +39,7 @@ export class WebsocketCronService implements OnModuleInit {
     private readonly eventEmitter: EventEmitter2,
     private readonly cacheService: CacheService,
     private readonly elasticService: ElasticService,
-    private readonly networkService: NetworkService,
+    private readonly gatewayService: GatewayService,
     private readonly transactionsCustomGateway: TransactionsCustomGateway,
     private readonly eventsCustomGateway: EventsCustomGateway,
     private readonly connectionHandler: ConnectionHandler,
@@ -133,23 +135,31 @@ export class WebsocketCronService implements OnModuleInit {
       return;
     }
 
-    const statsPromise = this.networkService.getStats(true);
+    const networkConfig = await this.gatewayService.getNetworkConfig();
+    const roundDurationMs = networkConfig.erd_round_duration;
+    const shardsCount = networkConfig.erd_num_shards_without_meta + 1; // +1 for metachain
+
     const latestRoundOnChainTimestamp = await this.getLatestRoundOnChainTimestamp();
+    const latestRoundOnChainTimestampMs = latestRoundOnChainTimestamp.timestampMs ?? latestRoundOnChainTimestamp.timestamp * 1000;
 
-    latestRoundOnChainTimestamp.timestampMs = latestRoundOnChainTimestamp.timestampMs ?? latestRoundOnChainTimestamp.timestamp * 1000;
+    let roundToProcessTimestampMs = this.cacheService.getLocal<number>(CacheInfo.WsTimestampMsToProcess().key) ?? latestRoundOnChainTimestampMs;
+    if (latestRoundOnChainTimestampMs - roundToProcessTimestampMs > WebsocketCronService.maxRoundsLagMs) {
+      this.logger.warn(`Custom subscriptions are more than ${WebsocketCronService.maxRoundsLagMs}ms behind, skipping rounds from ${roundToProcessTimestampMs} to ${latestRoundOnChainTimestampMs}`);
+      roundToProcessTimestampMs = latestRoundOnChainTimestampMs;
+    }
 
-    let roundToProcessTimestampMs = await this.cacheService.getOrSetLocal(
+    // set on every tick so it does not expire while waiting for a lagging indexer
+    this.cacheService.setLocal(
       CacheInfo.WsTimestampMsToProcess().key,
-      async () => await Promise.resolve(latestRoundOnChainTimestamp.timestampMs ?? latestRoundOnChainTimestamp.timestamp * 1000),
+      roundToProcessTimestampMs,
       CacheInfo.WsTimestampMsToProcess().ttl,
     );
 
-    const stats = await statsPromise;
-
-    const pollingDelay = stats.refreshRate / 10;
+    const pollingDelay = roundDurationMs / 10;
     const pollingMaxAttempts = 15;
-    while (roundToProcessTimestampMs <= latestRoundOnChainTimestamp.timestampMs) {
-      await this.pollUntil(async () => await this.isElasticDataAvailableForTimestampMs(roundToProcessTimestampMs, stats), pollingDelay, pollingMaxAttempts);
+    while (roundToProcessTimestampMs <= latestRoundOnChainTimestampMs) {
+      const timestampMs = roundToProcessTimestampMs;
+      const nextRoundTimestampMs = await this.pollUntil(async () => await this.getNextIndexedRoundTimestampMs(timestampMs, shardsCount), pollingDelay, pollingMaxAttempts);
 
       // fetch the round data once, then let each gateway build its own response out of it
       const roundData = await this.customSubscriptionsDataFetcher.fetchRoundData(roundToProcessTimestampMs);
@@ -158,7 +168,7 @@ export class WebsocketCronService implements OnModuleInit {
       this.eventsCustomGateway.pushEventsForTimestampMs(roundToProcessTimestampMs, roundData.events);
       this.transactionsCustomGateway.pushTransactionsForTimestampMs(roundToProcessTimestampMs, roundData.transactions);
 
-      roundToProcessTimestampMs += stats.refreshRate;
+      roundToProcessTimestampMs = nextRoundTimestampMs;
       this.cacheService.setLocal(
         CacheInfo.WsTimestampMsToProcess().key,
         roundToProcessTimestampMs,
@@ -235,22 +245,36 @@ export class WebsocketCronService implements OnModuleInit {
     return rounds[0];
   }
 
-  private async isElasticDataAvailableForTimestampMs(timestampMs: number, networkStats: Stats) {
-    const nextRoundTimestampMs = timestampMs + networkStats.refreshRate;
+  // the round is considered indexed once the following round is present for all the shards
+  private async getNextIndexedRoundTimestampMs(timestampMs: number, shardsCount: number): Promise<number | undefined> {
+    const elasticQuery = ElasticQuery.create()
+      .withRangeFilter('timestampMs', new RangeGreaterThan(timestampMs))
+      .withSort([{ name: 'timestampMs', order: ElasticSortOrder.ascending }])
+      .withPagination({ from: 0, size: shardsCount })
+      .withFields(['timestampMs']);
 
-    const rounds = await this.elasticService.getCount(
-      'rounds',
-      ElasticQuery.create().withMustCondition(QueryType.Match('timestampMs', nextRoundTimestampMs))
-    );
+    const rounds = await this.elasticService.getList('rounds', 'round', elasticQuery);
+    if (rounds.length < shardsCount) {
+      return undefined;
+    }
 
-    return rounds === networkStats.shards + 1; // +1 for metachain
+    const nextRoundTimestampMs = rounds[0].timestampMs;
+    if (rounds.some(round => round.timestampMs !== nextRoundTimestampMs)) {
+      return undefined;
+    }
+
+    return nextRoundTimestampMs;
   }
 
-  async pollUntil(conditionFn: () => Promise<boolean>, intervalMs = 1000, maxAttempts = 30) {
+  async pollUntil<T>(fn: () => Promise<T | undefined>, intervalMs = 1000, maxAttempts = 30): Promise<T> {
     let attempts = 0;
-    while (!await conditionFn()) {
+    let result = await fn();
+    while (result === undefined) {
       if (++attempts >= maxAttempts) throw new Error('Polling timeout exceeded');
       await new Promise(r => setTimeout(r, intervalMs));
+      result = await fn();
     }
+
+    return result;
   }
 }
