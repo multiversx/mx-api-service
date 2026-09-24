@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { OriginLogger } from '@multiversx/sdk-nestjs-common';
 import { QueryPagination } from 'src/common/entities/query.pagination';
 import { Transaction } from 'src/endpoints/transactions/entities/transaction';
 import { TransactionDetailed } from 'src/endpoints/transactions/entities/transaction.detailed';
@@ -23,8 +22,6 @@ export class CustomSubscriptionsRoundData {
 
 @Injectable()
 export class CustomSubscriptionsDataFetcher {
-  private readonly logger = new OriginLogger(CustomSubscriptionsDataFetcher.name);
-
   private static readonly batchSize = 10000;
 
   constructor(
@@ -49,62 +46,54 @@ export class CustomSubscriptionsDataFetcher {
   }
 
   private async fetchTransfers(timestampMs: number): Promise<Transaction[]> {
-    try {
-      const size = CustomSubscriptionsDataFetcher.batchSize;
-      const filter = new TransactionFilter({ before: timestampMs, after: timestampMs, withTxsRelayedByAddress: true });
-      const options = new TransactionQueryOptions({ withScamInfo: false, withUsername: true, withBlockInfo: false, withLogs: false, withOperations: false, withActionTransferValue: false, withTxsOrder: false, withCanBeIgnoredFlag: true });
+    const size = CustomSubscriptionsDataFetcher.batchSize;
+    const filter = new TransactionFilter({ before: timestampMs, after: timestampMs, withTxsRelayedByAddress: true });
+    const options = new TransactionQueryOptions({ withScamInfo: false, withUsername: true, withBlockInfo: false, withLogs: false, withOperations: false, withActionTransferValue: false, withTxsOrder: false, withCanBeIgnoredFlag: true });
 
-      const allTransfers: Transaction[] = [];
+    const allTransfers: Transaction[] = [];
 
-      let batch = await this.transferService.getTransfers(filter, new QueryPagination({ size }), options);
-      allTransfers.push(...batch);
+    let batch = await this.transferService.getTransfers(filter, new QueryPagination({ size }), options);
+    allTransfers.push(...batch);
 
-      while (batch.length === size) {
-        const searchAfter = batch[batch.length - 1].searchAfter;
-        if (searchAfter == null) {
-          break;
-        }
-
-        batch = await this.transferService.getTransfers(filter, new QueryPagination({ size, searchAfter }), options);
-
-        allTransfers.push(...batch);
+    while (batch.length === size) {
+      const searchAfter = batch[batch.length - 1].searchAfter;
+      if (searchAfter == null) {
+        break;
       }
 
-      return allTransfers.filter((transfer) => transfer.canBeIgnored !== true);
-    } catch (error) {
-      this.logger.error(`Error fetching transfers for timestamp '${timestampMs}'`);
-      this.logger.error(error);
-      return [];
+      batch = await this.transferService.getTransfers(filter, new QueryPagination({ size, searchAfter }), options);
+
+      allTransfers.push(...batch);
     }
+
+    // the first page is re-sorted in memory, so its last item is not always the last one in elastic order
+    // and the next page can overlap with it
+    return allTransfers
+      .distinct(transfer => transfer.txHash)
+      .filter((transfer) => transfer.canBeIgnored !== true);
   }
 
   private async fetchEvents(timestampMs: number): Promise<Events[]> {
-    try {
-      const size = CustomSubscriptionsDataFetcher.batchSize;
-      const filter = new EventsFilter({ before: timestampMs, after: timestampMs });
+    const size = CustomSubscriptionsDataFetcher.batchSize;
+    const filter = new EventsFilter({ before: timestampMs, after: timestampMs });
 
-      const allEvents: Events[] = [];
+    const allEvents: Events[] = [];
 
-      let batch = await this.eventsService.getEvents(new QueryPagination({ size }), filter);
-      allEvents.push(...batch);
+    let batch = await this.eventsService.getEvents(new QueryPagination({ size }), filter);
+    allEvents.push(...batch);
 
-      while (batch.length === size) {
-        const searchAfter = batch[batch.length - 1].searchAfter;
-        if (searchAfter == null) {
-          break;
-        }
-
-        batch = await this.eventsService.getEvents(new QueryPagination({ size, searchAfter }), filter);
-
-        allEvents.push(...batch);
+    while (batch.length === size) {
+      const searchAfter = batch[batch.length - 1].searchAfter;
+      if (searchAfter == null) {
+        break;
       }
 
-      return allEvents;
-    } catch (error) {
-      this.logger.error(`Error fetching events for timestamp '${timestampMs}'`);
-      this.logger.error(error);
-      return [];
+      batch = await this.eventsService.getEvents(new QueryPagination({ size, searchAfter }), filter);
+
+      allEvents.push(...batch);
     }
+
+    return allEvents;
   }
 
   // Transactions are the 'normal' subset of the operations returned for transfers. They are
