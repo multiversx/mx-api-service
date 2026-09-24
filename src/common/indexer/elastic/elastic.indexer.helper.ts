@@ -817,7 +817,7 @@ export class ElasticIndexerHelper {
       elasticQuery = elasticQuery.withMustMatchCondition('txHash', filter.txHash);
     }
 
-    if (filter.shard !== undefined && filter.shard !== null) {
+    if (filter.shard != null) {
       elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Match('shardID', filter.shard));
     }
 
