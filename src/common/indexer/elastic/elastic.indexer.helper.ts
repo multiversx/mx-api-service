@@ -825,7 +825,7 @@ export class ElasticIndexerHelper {
       elasticQuery = elasticQuery.withMustMatchCondition('address', filter.address);
     }
 
-    if (filter.order) {
+    if (filter.order != null) {
       elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Match('order', filter.order));
     }
 
