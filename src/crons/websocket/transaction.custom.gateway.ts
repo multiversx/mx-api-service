@@ -1,8 +1,5 @@
 import { WebSocketGateway, WebSocketServer, SubscribeMessage, ConnectedSocket, MessageBody } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { TransactionService } from '../../endpoints/transactions/transaction.service';
-import { TransactionFilter } from '../../endpoints/transactions/entities/transaction.filter';
-import { QueryPagination } from 'src/common/entities/query.pagination';
 import { WsValidationPipe } from 'src/utils/ws-validation.pipe';
 import { WebsocketExceptionsFilter } from 'src/utils/ws-exceptions.filter';
 import { UseFilters, UseInterceptors } from '@nestjs/common';
@@ -19,10 +16,6 @@ export class TransactionsCustomGateway {
   static keyPrefix = 'custom-tx-';
   @WebSocketServer()
   server!: Server;
-
-  constructor(
-    private readonly transactionService: TransactionService,
-  ) { }
 
   @UseInterceptors(LockingGuardInterceptor)
   @SubscribeMessage('subscribeCustomTransactions')
@@ -52,28 +45,10 @@ export class TransactionsCustomGateway {
     return { status: 'unsubscribed' };
   }
 
-  async pushTransactionsForTimestampMs(timestampMs: number): Promise<void> {
+  pushTransactionsForTimestampMs(timestampMs: number, transactions: Transaction[]): void {
     try {
-      const allTransactions: Transaction[] = [];
-      const size = 10000;
-      const filter = new TransactionFilter({ before: timestampMs, after: timestampMs });
-
-      let batch = await this.transactionService.getTransactions(filter, new QueryPagination({ size }));
-      allTransactions.push(...batch);
-
-      while (batch.length === size) {
-        const searchAfter = batch[batch.length - 1].searchAfter;
-        if (searchAfter == null) {
-          break;
-        }
-
-        batch = await this.transactionService.getTransactions(filter, new QueryPagination({ size, searchAfter }));
-
-        allTransactions.push(...batch);
-      }
-
       const txFilteredForBroadcast: Map<string, Transaction[]> = new Map();
-      for (const transaction of allTransactions) {
+      for (const transaction of transactions) {
         const roomKeys = RoomKeyGenerator.generate(
           TransactionsCustomGateway.keyPrefix,
           transaction,

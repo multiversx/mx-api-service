@@ -131,6 +131,11 @@ export class TransferService {
     for (const elasticOperation of elasticOperations) {
       const transaction = ApiUtils.mergeObjects(new TransactionDetailed(), elasticOperation);
       transaction.type = elasticOperation.type === 'normal' ? TransactionType.Transaction : TransactionType.SmartContractResult;
+
+      if (queryOptions.withCanBeIgnoredFlag) {
+        transaction.canBeIgnored = elasticOperation.canBeIgnored;
+      }
+
       if (elasticOperation.relayer) {
         transaction.relayer = elasticOperation.relayer;
         transaction.isRelayed = true;
