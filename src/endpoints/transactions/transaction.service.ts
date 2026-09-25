@@ -112,7 +112,7 @@ export class TransactionService {
   }
 
   public reorderAccountSentTransactionsByNonce(transactions: TransactionDetailed[], accountAddress: string): TransactionDetailed[] {
-    return SearchAfterUtils.sortKeepingPositions(transactions, items => this.reorderSentTransactionsByNonce(items, accountAddress));
+    return SearchAfterUtils.sortKeepingSearchAfterPositions(transactions, items => this.reorderSentTransactionsByNonce(items, accountAddress));
   }
 
   private reorderSentTransactionsByNonce(transactions: TransactionDetailed[], accountAddress: string): TransactionDetailed[] {

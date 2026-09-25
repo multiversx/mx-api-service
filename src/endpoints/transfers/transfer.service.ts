@@ -42,7 +42,7 @@ export class TransferService {
       }
     }
 
-    return SearchAfterUtils.sortKeepingPositions(elasticTransfers, items => items.sortedDescending(
+    return SearchAfterUtils.sortKeepingSearchAfterPositions(elasticTransfers, items => items.sortedDescending(
       (item) => item.timestamp,
       (item) => item.order
     ));
@@ -101,7 +101,7 @@ export class TransferService {
         }
       }
 
-      return SearchAfterUtils.sortKeepingPositions(elasticTransfers, items => items.sortedDescending(
+      return SearchAfterUtils.sortKeepingSearchAfterPositions(elasticTransfers, items => items.sortedDescending(
         (item) => -item.order,
         (item) => item.timestamp
       ));
