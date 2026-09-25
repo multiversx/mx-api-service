@@ -3,7 +3,7 @@ import { Cron, SchedulerRegistry } from '@nestjs/schedule';
 import { TransactionsGateway } from './transaction.gateway';
 import { BlocksGateway } from 'src/crons/websocket/blocks.gateway';
 import { NetworkGateway } from 'src/crons/websocket/network.gateway';
-import { Lock, Locker } from "@multiversx/sdk-nestjs-common";
+import { Lock, Locker, OriginLogger } from "@multiversx/sdk-nestjs-common";
 import { PoolGateway } from 'src/crons/websocket/pool.gateway';
 import { EventsGateway } from 'src/crons/websocket/events.gateway';
 import { WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
@@ -13,7 +13,7 @@ import { Server } from 'socket.io';
 import { CacheService } from '@multiversx/sdk-nestjs-cache';
 import { CacheInfo } from 'src/utils/cache.info';
 import { ElasticQuery, ElasticService, ElasticSortOrder, QueryType } from '@multiversx/sdk-nestjs-elastic';
-import { NetworkService } from 'src/endpoints/network/network.service';
+import { GatewayService } from 'src/common/gateway/gateway.service';
 import { Stats } from 'src/endpoints/network/entities/stats';
 import { TransactionsCustomGateway } from './transaction.custom.gateway';
 import { ConnectionHandler } from './connection.handler';
@@ -25,6 +25,9 @@ import { CustomSubscriptionsDataFetcher } from './custom.subscriptions.data.fetc
 @Injectable()
 @WebSocketGateway({ cors: { origin: '*' }, path: '/ws/subscription' })
 export class WebsocketCronService implements OnModuleInit {
+  private readonly logger = new OriginLogger(WebsocketCronService.name);
+  private static readonly maxRoundsLagMs = 5 * 60 * 1000;
+
   @WebSocketServer()
   server!: Server;
 
@@ -37,7 +40,7 @@ export class WebsocketCronService implements OnModuleInit {
     private readonly eventEmitter: EventEmitter2,
     private readonly cacheService: CacheService,
     private readonly elasticService: ElasticService,
-    private readonly networkService: NetworkService,
+    private readonly gatewayService: GatewayService,
     private readonly transactionsCustomGateway: TransactionsCustomGateway,
     private readonly eventsCustomGateway: EventsCustomGateway,
     private readonly connectionHandler: ConnectionHandler,
@@ -133,22 +136,28 @@ export class WebsocketCronService implements OnModuleInit {
       return;
     }
 
-    const statsPromise = this.networkService.getStats(true);
+    const networkConfig = await this.gatewayService.getNetworkConfig();
+    const stats = new Stats({ shards: networkConfig.erd_num_shards_without_meta, refreshRate: networkConfig.erd_round_duration });
+
     const latestRoundOnChainTimestamp = await this.getLatestRoundOnChainTimestamp();
+    const latestRoundOnChainTimestampMs = latestRoundOnChainTimestamp.timestampMs ?? latestRoundOnChainTimestamp.timestamp * 1000;
 
-    latestRoundOnChainTimestamp.timestampMs = latestRoundOnChainTimestamp.timestampMs ?? latestRoundOnChainTimestamp.timestamp * 1000;
+    let roundToProcessTimestampMs = this.cacheService.getLocal<number>(CacheInfo.WsTimestampMsToProcess().key) ?? latestRoundOnChainTimestampMs;
+    if (latestRoundOnChainTimestampMs - roundToProcessTimestampMs > WebsocketCronService.maxRoundsLagMs) {
+      this.logger.warn(`Custom subscriptions are more than ${WebsocketCronService.maxRoundsLagMs}ms behind, skipping rounds from ${roundToProcessTimestampMs} to ${latestRoundOnChainTimestampMs}`);
+      roundToProcessTimestampMs = latestRoundOnChainTimestampMs;
+    }
 
-    let roundToProcessTimestampMs = await this.cacheService.getOrSetLocal(
+    // set on every tick so it does not expire while waiting for a lagging indexer
+    this.cacheService.setLocal(
       CacheInfo.WsTimestampMsToProcess().key,
-      async () => await Promise.resolve(latestRoundOnChainTimestamp.timestampMs ?? latestRoundOnChainTimestamp.timestamp * 1000),
+      roundToProcessTimestampMs,
       CacheInfo.WsTimestampMsToProcess().ttl,
     );
 
-    const stats = await statsPromise;
-
     const pollingDelay = stats.refreshRate / 10;
     const pollingMaxAttempts = 15;
-    while (roundToProcessTimestampMs <= latestRoundOnChainTimestamp.timestampMs) {
+    while (roundToProcessTimestampMs <= latestRoundOnChainTimestampMs) {
       await this.pollUntil(async () => await this.isElasticDataAvailableForTimestampMs(roundToProcessTimestampMs, stats), pollingDelay, pollingMaxAttempts);
 
       // fetch the round data once, then let each gateway build its own response out of it
