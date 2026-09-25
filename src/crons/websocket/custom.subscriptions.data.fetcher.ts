@@ -52,20 +52,25 @@ export class CustomSubscriptionsDataFetcher {
 
   // after the last retry the round goes on without this data, so a persistent error does not block the next rounds
   private async withRetries<T>(description: string, fetch: () => Promise<T[]>): Promise<T[]> {
-    for (let retry = 0; ; retry++) {
+    const maxRetries = CustomSubscriptionsDataFetcher.maxRetries;
+
+    let lastError: unknown;
+    for (let retry = 0; retry <= maxRetries; retry++) {
+      if (retry > 0) {
+        this.logger.warn(`Could not fetch ${description}, retrying (${retry}/${maxRetries})`);
+        await new Promise(resolve => setTimeout(resolve, CustomSubscriptionsDataFetcher.retryDelayMs));
+      }
+
       try {
         return await fetch();
       } catch (error) {
-        if (retry >= CustomSubscriptionsDataFetcher.maxRetries) {
-          this.logger.error(`Could not fetch ${description} after ${CustomSubscriptionsDataFetcher.maxRetries} retries, skipping it`);
-          this.logger.error(error);
-          return [];
-        }
-
-        this.logger.warn(`Could not fetch ${description}, retrying (${retry + 1}/${CustomSubscriptionsDataFetcher.maxRetries})`);
-        await new Promise(resolve => setTimeout(resolve, CustomSubscriptionsDataFetcher.retryDelayMs));
+        lastError = error;
       }
     }
+
+    this.logger.error(`Could not fetch ${description} after ${maxRetries} retries, skipping it`);
+    this.logger.error(lastError);
+    return [];
   }
 
   private async fetchTransfers(timestampMs: number): Promise<Transaction[]> {
