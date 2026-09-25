@@ -39,7 +39,11 @@ features:
   transactionPool:
     enabled: true
   transactionPoolWarmer:
-    enabled: true
+    # off, as on mainnet and devnet: every second it resolved the action of each pending transaction and
+    # smart contract result, including the ESDTTransfer through which a token is issued, before the token
+    # is indexed. the unresolved token properties were then cached for an hour, and every later transfer
+    # of that token came back without an action. the pool is still read on request
+    enabled: false
     cronExpression: '*/1 * * * * *'
     ttlInSeconds: 10
   updateCollectionExtraDetails:

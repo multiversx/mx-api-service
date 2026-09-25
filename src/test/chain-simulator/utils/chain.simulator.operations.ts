@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { AddressUtils } from "@multiversx/sdk-nestjs-common";
+import { config } from '../config/env.config';
 
 axios.defaults.adapter = 'fetch';
 axios.defaults.headers.common['Connection'] = 'close';
@@ -71,6 +72,25 @@ export async function deploySc(args: DeployScArgs): Promise<string> {
   }
 }
 
+// the api resolves a token through its document in the tokens index, and caches the answer, including
+// the answer that the token does not exist. anything that makes the api look the token up before it is
+// indexed leaves the token unresolved for as long as that answer is cached, so an issued token is not
+// handed to the tests before it can be found there, through the same query the api runs
+export async function waitForTokenIndexed(identifier: string, timeoutMs: number = 60000) {
+  const deadline = Date.now() + timeoutMs;
+
+  while (Date.now() < deadline) {
+    const response = await axios.get(`${config.elasticUrl}/tokens/_search?q=_id:${identifier}`);
+    if (response.data?.hits?.hits?.length > 0) {
+      return;
+    }
+
+    await new Promise(resolve => setTimeout(resolve, 500));
+  }
+
+  throw new Error(`Token ${identifier} was not indexed within ${timeoutMs}ms`);
+}
+
 export async function issueEsdt(args: IssueEsdtArgs) {
   const txHash = await sendTransaction(
     new SendTransactionArgs({
@@ -99,6 +119,8 @@ export async function issueEsdt(args: IssueEsdtArgs) {
   console.log(
     `Issued token with ticker ${args.tokenTicker}. tx hash: ${txHash}. identifier: ${tokenIdentifier}`,
   );
+
+  await waitForTokenIndexed(tokenIdentifier);
   return tokenIdentifier;
 }
 
@@ -292,6 +314,7 @@ export async function issueCollection(args: IssueNftArgs, type: 'NonFungible' | 
     `Issued ${type} collection with ticker ${args.tokenTicker}. tx hash: ${txHash}. identifier: ${tokenIdentifier}`
   );
 
+  await waitForTokenIndexed(tokenIdentifier);
   return tokenIdentifier;
 }
 
@@ -501,6 +524,7 @@ export async function issueMultipleMetaESDTCollections(
       ).toString();
 
       metaEsdtCollectionIdentifiers.push({ identifier: tokenIdentifier });
+      await waitForTokenIndexed(tokenIdentifier);
 
       console.log(
         `Issued MetaESDT collection ${tokenName}. tx hash: ${txHash}. identifier: ${tokenIdentifier}`,
