@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { OriginLogger } from '@multiversx/sdk-nestjs-common';
 import { QueryPagination } from 'src/common/entities/query.pagination';
 import { Transaction } from 'src/endpoints/transactions/entities/transaction';
 import { TransactionDetailed } from 'src/endpoints/transactions/entities/transaction.detailed';
@@ -22,7 +23,11 @@ export class CustomSubscriptionsRoundData {
 
 @Injectable()
 export class CustomSubscriptionsDataFetcher {
+  private readonly logger = new OriginLogger(CustomSubscriptionsDataFetcher.name);
+
   private static readonly batchSize = 10000;
+  private static readonly maxRetries = 3;
+  private static readonly retryDelayMs = 500;
 
   constructor(
     private readonly transferService: TransferService,
@@ -34,8 +39,8 @@ export class CustomSubscriptionsDataFetcher {
   // transactions payload is derived from the transfers payload instead of being queried again.
   async fetchRoundData(timestampMs: number): Promise<CustomSubscriptionsRoundData> {
     const [transfers, events] = await Promise.all([
-      this.fetchTransfers(timestampMs),
-      this.fetchEvents(timestampMs),
+      this.withRetries(`transfers for timestamp '${timestampMs}'`, () => this.fetchTransfers(timestampMs)),
+      this.withRetries(`events for timestamp '${timestampMs}'`, () => this.fetchEvents(timestampMs)),
     ]);
 
     return new CustomSubscriptionsRoundData({
@@ -43,6 +48,24 @@ export class CustomSubscriptionsDataFetcher {
       transactions: this.extractTransactions(transfers),
       events,
     });
+  }
+
+  // after the last retry the round goes on without this data, so a persistent error does not block the next rounds
+  private async withRetries<T>(description: string, fetch: () => Promise<T[]>): Promise<T[]> {
+    for (let retry = 0; ; retry++) {
+      try {
+        return await fetch();
+      } catch (error) {
+        if (retry >= CustomSubscriptionsDataFetcher.maxRetries) {
+          this.logger.error(`Could not fetch ${description} after ${CustomSubscriptionsDataFetcher.maxRetries} retries, skipping it`);
+          this.logger.error(error);
+          return [];
+        }
+
+        this.logger.warn(`Could not fetch ${description}, retrying (${retry + 1}/${CustomSubscriptionsDataFetcher.maxRetries})`);
+        await new Promise(resolve => setTimeout(resolve, CustomSubscriptionsDataFetcher.retryDelayMs));
+      }
+    }
   }
 
   private async fetchTransfers(timestampMs: number): Promise<Transaction[]> {
