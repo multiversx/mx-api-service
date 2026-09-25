@@ -1,4 +1,4 @@
-import { BadRequestException, forwardRef, Inject, Injectable } from "@nestjs/common";
+import { forwardRef, Inject, Injectable } from "@nestjs/common";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { TransactionFilter } from "../transactions/entities/transaction.filter";
 import { TransactionType } from "../transactions/entities/transaction.type";
@@ -9,6 +9,7 @@ import { IndexerService } from "src/common/indexer/indexer.service";
 import { TransactionQueryOptions } from "../transactions/entities/transactions.query.options";
 import { TransactionDetailed } from "../transactions/entities/transaction.detailed";
 import { OriginLogger } from "@multiversx/sdk-nestjs-common";
+import { SearchAfterUtils } from "src/utils/search.after.utils";
 
 @Injectable()
 export class TransferService {
@@ -41,10 +42,10 @@ export class TransferService {
       }
     }
 
-    return elasticTransfers.sortedDescending(
+    return SearchAfterUtils.sortKeepingPositions(elasticTransfers, items => items.sortedDescending(
       (item) => item.timestamp,
       (item) => item.order
-    );
+    ));
   }
 
   private async sortElasticTransfersByTxsOrder(elasticTransfers: any[], miniBlockHash: string): Promise<any[]> {
@@ -100,10 +101,10 @@ export class TransferService {
         }
       }
 
-      return elasticTransfers.sortedDescending(
+      return SearchAfterUtils.sortKeepingPositions(elasticTransfers, items => items.sortedDescending(
         (item) => -item.order,
         (item) => item.timestamp
-      );
+      ));
 
     } catch (error) {
       this.logger.error(`Error getting block execution order: ${error}`);
@@ -115,15 +116,9 @@ export class TransferService {
     let elasticOperations = await this.indexerService.getTransfers(filter, pagination);
 
     if (queryOptions.withTxsOrder && filter.miniBlockHash) {
-      if (pagination.searchAfter) {
-        throw new BadRequestException('searchAfter pagination is not supported when withTxsOrder and miniBlockHash filters are used');
-      }
-
       elasticOperations = await this.sortElasticTransfersByTxsOrder(elasticOperations, filter.miniBlockHash);
     } else {
-      if (!pagination.searchAfter) {
-        elasticOperations = this.sortElasticTransfers(elasticOperations);
-      }
+      elasticOperations = this.sortElasticTransfers(elasticOperations);
     }
 
     let transactions: TransactionDetailed[] = [];
@@ -151,7 +146,7 @@ export class TransferService {
     const hasSenderFilter = filter.sender || (filter.senders && filter.senders.length > 0);
     const hasReceiverFilter = filter.receivers && filter.receivers.length > 0;
 
-    if (filter.address && !hasSenderFilter && !hasReceiverFilter && pagination.searchAfter === undefined) {
+    if (filter.address && !hasSenderFilter && !hasReceiverFilter) {
       transactions = this.transactionService.reorderAccountSentTransactionsByNonce(transactions, filter.address);
     }
 

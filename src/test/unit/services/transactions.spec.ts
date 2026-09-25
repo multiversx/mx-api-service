@@ -688,4 +688,19 @@ describe('TransactionService', () => {
       expect(results[1].nonce).toBe(12);
     });
   });
+  describe('reorderAccountSentTransactionsByNonce', () => {
+    it('keeps the elastic cursors on their positions', () => {
+      const address = 'erd1sender';
+      const transactions = [
+        new TransactionDetailed({ txHash: 'a', sender: address, nonce: 1, searchAfter: 'cursor-1' }),
+        new TransactionDetailed({ txHash: 'b', sender: 'erd1other', nonce: 9, searchAfter: 'cursor-2' }),
+        new TransactionDetailed({ txHash: 'c', sender: address, nonce: 2, searchAfter: 'cursor-3' }),
+      ];
+
+      const result = service.reorderAccountSentTransactionsByNonce(transactions, address);
+
+      expect(result.map(transaction => transaction.txHash)).toEqual(['c', 'b', 'a']);
+      expect(result.map(transaction => transaction.searchAfter)).toEqual(['cursor-1', 'cursor-2', 'cursor-3']);
+    });
+  });
 });

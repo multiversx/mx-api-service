@@ -44,6 +44,7 @@ import { GasBucket } from './entities/gas.bucket';
 import { GasBucketConstants } from './constants/gas.bucket.constants';
 import { TransactionAction } from "./transaction-action/entities/transaction.action";
 import { TransactionActionCategory } from "./transaction-action/entities/transaction.action.category";
+import { SearchAfterUtils } from 'src/utils/search.after.utils';
 
 @Injectable()
 export class TransactionService {
@@ -111,6 +112,10 @@ export class TransactionService {
   }
 
   public reorderAccountSentTransactionsByNonce(transactions: TransactionDetailed[], accountAddress: string): TransactionDetailed[] {
+    return SearchAfterUtils.sortKeepingPositions(transactions, items => this.reorderSentTransactionsByNonce(items, accountAddress));
+  }
+
+  private reorderSentTransactionsByNonce(transactions: TransactionDetailed[], accountAddress: string): TransactionDetailed[] {
     const sentPositions: number[] = [];
     const sentTransactions: TransactionDetailed[] = [];
 
@@ -226,7 +231,7 @@ export class TransactionService {
     const hasSenderFilter = filter.sender || (filter.senders && filter.senders.length > 0);
     const hasReceiverFilter = filter.receivers && filter.receivers.length > 0;
 
-    if (address && !hasSenderFilter && !hasReceiverFilter && pagination.searchAfter === undefined) {
+    if (address && !hasSenderFilter && !hasReceiverFilter) {
       transactions = this.reorderAccountSentTransactionsByNonce(transactions, address);
     }
 
