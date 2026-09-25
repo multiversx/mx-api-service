@@ -44,6 +44,7 @@ import { GasBucket } from './entities/gas.bucket';
 import { GasBucketConstants } from './constants/gas.bucket.constants';
 import { TransactionAction } from "./transaction-action/entities/transaction.action";
 import { TransactionActionCategory } from "./transaction-action/entities/transaction.action.category";
+import { SearchAfterUtils } from 'src/utils/search.after.utils';
 
 @Injectable()
 export class TransactionService {
@@ -110,7 +111,11 @@ export class TransactionService {
     return await this.indexerService.getTransactionCount(filter, address);
   }
 
-  public reorderAccountSentTransactionsByNonce(transactions: TransactionDetailed[], accountAddress: string): TransactionDetailed[] {
+  public reorderAccountSentTransactionsByNonce(transactions: TransactionDetailed[], accountAddress: string, order?: SortOrder): TransactionDetailed[] {
+    return SearchAfterUtils.sortKeepingSearchAfterPositions(transactions, items => this.reorderSentTransactionsByNonce(items, accountAddress, order));
+  }
+
+  private reorderSentTransactionsByNonce(transactions: TransactionDetailed[], accountAddress: string, order?: SortOrder): TransactionDetailed[] {
     const sentPositions: number[] = [];
     const sentTransactions: TransactionDetailed[] = [];
 
@@ -124,7 +129,7 @@ export class TransactionService {
     sentTransactions.sort((a, b) => {
       const nonceA = a.nonce ?? 0;
       const nonceB = b.nonce ?? 0;
-      return nonceB - nonceA;
+      return order === SortOrder.asc ? nonceA - nonceB : nonceB - nonceA;
     });
 
     const result = [...transactions];
@@ -226,8 +231,8 @@ export class TransactionService {
     const hasSenderFilter = filter.sender || (filter.senders && filter.senders.length > 0);
     const hasReceiverFilter = filter.receivers && filter.receivers.length > 0;
 
-    if (address && !hasSenderFilter && !hasReceiverFilter && pagination.searchAfter === undefined) {
-      transactions = this.reorderAccountSentTransactionsByNonce(transactions, address);
+    if (address && !hasSenderFilter && !hasReceiverFilter) {
+      transactions = this.reorderAccountSentTransactionsByNonce(transactions, address, filter.order);
     }
 
     if (filter.hashes) {

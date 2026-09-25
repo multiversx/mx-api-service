@@ -19,6 +19,7 @@ import { TransactionGetService } from "src/endpoints/transactions/transaction.ge
 import { TransactionPriceService } from "src/endpoints/transactions/transaction.price.service";
 import { TransactionService } from "src/endpoints/transactions/transaction.service";
 import { TransactionDetailed } from "src/endpoints/transactions/entities/transaction.detailed";
+import { SortOrder } from "src/common/entities/sort.order";
 import { TransactionStatus } from "src/endpoints/transactions/entities/transaction.status";
 import { UsernameService } from "src/endpoints/usernames/username.service";
 
@@ -686,6 +687,35 @@ describe('TransactionService', () => {
 
       expect(results[0].nonce).toBe(11);
       expect(results[1].nonce).toBe(12);
+    });
+  });
+  describe('reorderAccountSentTransactionsByNonce', () => {
+    it('keeps the elastic cursors on their positions', () => {
+      const address = 'erd1sender';
+      const transactions = [
+        new TransactionDetailed({ txHash: 'a', sender: address, nonce: 1, searchAfter: 'cursor-1' }),
+        new TransactionDetailed({ txHash: 'b', sender: 'erd1other', nonce: 9, searchAfter: 'cursor-2' }),
+        new TransactionDetailed({ txHash: 'c', sender: address, nonce: 2, searchAfter: 'cursor-3' }),
+      ];
+
+      const result = service.reorderAccountSentTransactionsByNonce(transactions, address);
+
+      expect(result.map(transaction => transaction.txHash)).toEqual(['c', 'b', 'a']);
+      expect(result.map(transaction => transaction.searchAfter)).toEqual(['cursor-1', 'cursor-2', 'cursor-3']);
+    });
+
+    it('orders the sent transactions by ascending nonce when the order is ascending', () => {
+      const address = 'erd1sender';
+      const transactions = [
+        new TransactionDetailed({ txHash: 'a', sender: address, nonce: 2, searchAfter: 'cursor-1' }),
+        new TransactionDetailed({ txHash: 'b', sender: 'erd1other', nonce: 9, searchAfter: 'cursor-2' }),
+        new TransactionDetailed({ txHash: 'c', sender: address, nonce: 1, searchAfter: 'cursor-3' }),
+      ];
+
+      const result = service.reorderAccountSentTransactionsByNonce(transactions, address, SortOrder.asc);
+
+      expect(result.map(transaction => transaction.txHash)).toEqual(['c', 'b', 'a']);
+      expect(result.map(transaction => transaction.searchAfter)).toEqual(['cursor-1', 'cursor-2', 'cursor-3']);
     });
   });
 });
