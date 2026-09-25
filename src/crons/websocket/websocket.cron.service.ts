@@ -97,13 +97,18 @@ export class WebsocketCronService implements OnModuleInit {
   }
 
   private registerDynamicInterval(name: string, ms: number, lockMessage: string, callback: () => Promise<void>) {
-    const interval = setInterval(async () => {
-      await Locker.lock(lockMessage, async () => {
-        await callback();
-      }, true);
-    }, ms);
+    // all the jobs share the same period, start them at different offsets so they do not hit elastic at the same time
+    const offsetMs = Math.floor(Math.random() * ms);
 
-    this.schedulerRegistry.addInterval(name, interval);
+    setTimeout(() => {
+      const interval = setInterval(async () => {
+        await Locker.lock(lockMessage, async () => {
+          await callback();
+        }, true);
+      }, ms);
+
+      this.schedulerRegistry.addInterval(name, interval);
+    }, offsetMs);
   }
 
   async handleTransactionsUpdate() {
