@@ -51,6 +51,31 @@ export class ChainSimulatorUtils {
     }
   }
 
+  // the api serves most of its data from caches the cache warmer fills on its own crons, and from an
+  // index that is refreshed on its own interval, so what the chain reports says nothing about what the
+  // api will return. wait on the api's own view instead of on a fixed interval that has to be long
+  // enough for the slowest of them
+  static async waitForApi(description: string, url: string, isReady: (data: any) => boolean, timeoutMs: number = 180000, intervalMs: number = 5000) {
+    const deadline = Date.now() + timeoutMs;
+    let last: any = 'no response yet';
+
+    while (Date.now() < deadline) {
+      try {
+        last = (await axios.get(url)).data;
+        if (isReady(last)) {
+          console.log(`✓ ${description}`);
+          return;
+        }
+      } catch (error: any) {
+        last = error.message;
+      }
+
+      await new Promise((resolve) => setTimeout(resolve, intervalMs));
+    }
+
+    throw new Error(`${description}: still not ready after ${timeoutMs}ms. ${url} last returned ${JSON.stringify(last).slice(0, 300)}`);
+  }
+
   private static async checkSimulatorHealth(maxRetries: number = 50): Promise<boolean> {
     let retries = 0;
 
