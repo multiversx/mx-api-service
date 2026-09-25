@@ -817,7 +817,7 @@ export class ElasticIndexerHelper {
       elasticQuery = elasticQuery.withMustMatchCondition('txHash', filter.txHash);
     }
 
-    if (filter.shard) {
+    if (filter.shard != null) {
       elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Match('shardID', filter.shard));
     }
 
@@ -825,7 +825,7 @@ export class ElasticIndexerHelper {
       elasticQuery = elasticQuery.withMustMatchCondition('address', filter.address);
     }
 
-    if (filter.order) {
+    if (filter.order != null) {
       elasticQuery = elasticQuery.withCondition(QueryConditionOptions.must, QueryType.Match('order', filter.order));
     }
 

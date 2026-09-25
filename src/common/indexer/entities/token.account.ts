@@ -16,9 +16,16 @@ export interface TokenAccount extends ElasticSortable {
 
 export enum TokenType {
   FungibleESDT = 'FungibleESDT',
+
   NonFungibleESDT = 'NonFungibleESDT',
+  NonFungibleESDTv2 = 'NonFungibleESDTv2',
+  DynamicNonFungibleESDT = 'DynamicNonFungibleESDT',
+
   SemiFungibleESDT = 'SemiFungibleESDT',
+  DynamicSemiFungibleESDT = 'DynamicSemiFungibleESDT',
+
   MetaESDT = 'MetaESDT',
+  DynamicMetaESDT = 'DynamicMetaESDT',
 }
 
 registerEnumType(TokenType, {

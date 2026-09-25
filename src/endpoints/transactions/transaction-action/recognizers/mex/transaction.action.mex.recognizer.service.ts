@@ -29,7 +29,7 @@ export class TransactionActionMexRecognizerService implements TransactionActionR
     }
 
     const settings = await this.mexSettingsService.getSettings();
-    return settings !== undefined;
+    return settings != null;
   }
 
   async recognize(metadata: TransactionMetadata): Promise<TransactionAction | undefined> {
