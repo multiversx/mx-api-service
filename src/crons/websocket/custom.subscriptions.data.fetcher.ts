@@ -94,11 +94,7 @@ export class CustomSubscriptionsDataFetcher {
       allTransfers.push(...batch);
     }
 
-    // the first page is re-sorted in memory, so its last item is not always the last one in elastic order
-    // and the next page can overlap with it
-    return allTransfers
-      .distinct(transfer => transfer.txHash)
-      .filter((transfer) => transfer.canBeIgnored !== true);
+    return allTransfers.filter((transfer) => transfer.canBeIgnored !== true);
   }
 
   private async fetchEvents(timestampMs: number): Promise<Events[]> {
