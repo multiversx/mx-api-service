@@ -52,4 +52,5 @@ This API is organized around REST principles, so if you've interacted with RESTf
     * To fetch the next set of items strictly after a specific entry, copy its `searchAfter` cursor value and pass it as a query parameter in your subsequent request:
         * Example: `?searchAfter=<base64_cursor_string>`
     * **Important:** For the cursor-based pagination to work correctly, the `from` parameter must be set to `0` or omitted entirely from the request.
+    * **Disclaimer:** On some endpoints (such as `/transfers` or `/accounts/{address}/transactions`), the items can be reordered after they are retrieved. In that case, consistency is only guaranteed for the `searchAfter` of the last item in the response. Continuing from an item in the middle of the list may return items that were already received or skip some of them.
     * Using `searchAfter` is recommended for deep pagination as it avoids performance issues associated with large offset values.
