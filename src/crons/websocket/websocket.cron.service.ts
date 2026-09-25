@@ -12,8 +12,9 @@ import { MetricsEvents } from 'src/utils/metrics-events.constants';
 import { Server } from 'socket.io';
 import { CacheService } from '@multiversx/sdk-nestjs-cache';
 import { CacheInfo } from 'src/utils/cache.info';
-import { ElasticQuery, ElasticService, ElasticSortOrder, RangeGreaterThan } from '@multiversx/sdk-nestjs-elastic';
+import { ElasticQuery, ElasticService, ElasticSortOrder, QueryType } from '@multiversx/sdk-nestjs-elastic';
 import { GatewayService } from 'src/common/gateway/gateway.service';
+import { Stats } from 'src/endpoints/network/entities/stats';
 import { TransactionsCustomGateway } from './transaction.custom.gateway';
 import { ConnectionHandler } from './connection.handler';
 import { EventsCustomGateway } from './events.custom.gateway';
@@ -136,8 +137,7 @@ export class WebsocketCronService implements OnModuleInit {
     }
 
     const networkConfig = await this.gatewayService.getNetworkConfig();
-    const roundDurationMs = networkConfig.erd_round_duration;
-    const shardsCount = networkConfig.erd_num_shards_without_meta + 1; // +1 for metachain
+    const stats = new Stats({ shards: networkConfig.erd_num_shards_without_meta, refreshRate: networkConfig.erd_round_duration });
 
     const latestRoundOnChainTimestamp = await this.getLatestRoundOnChainTimestamp();
     const latestRoundOnChainTimestampMs = latestRoundOnChainTimestamp.timestampMs ?? latestRoundOnChainTimestamp.timestamp * 1000;
@@ -155,11 +155,10 @@ export class WebsocketCronService implements OnModuleInit {
       CacheInfo.WsTimestampMsToProcess().ttl,
     );
 
-    const pollingDelay = roundDurationMs / 10;
+    const pollingDelay = stats.refreshRate / 10;
     const pollingMaxAttempts = 15;
     while (roundToProcessTimestampMs <= latestRoundOnChainTimestampMs) {
-      const timestampMs = roundToProcessTimestampMs;
-      const nextRoundTimestampMs = await this.pollUntil(async () => await this.getNextIndexedRoundTimestampMs(timestampMs, shardsCount), pollingDelay, pollingMaxAttempts);
+      await this.pollUntil(async () => await this.isElasticDataAvailableForTimestampMs(roundToProcessTimestampMs, stats), pollingDelay, pollingMaxAttempts);
 
       // fetch the round data once, then let each gateway build its own response out of it
       const roundData = await this.customSubscriptionsDataFetcher.fetchRoundData(roundToProcessTimestampMs);
@@ -168,7 +167,7 @@ export class WebsocketCronService implements OnModuleInit {
       this.eventsCustomGateway.pushEventsForTimestampMs(roundToProcessTimestampMs, roundData.events);
       this.transactionsCustomGateway.pushTransactionsForTimestampMs(roundToProcessTimestampMs, roundData.transactions);
 
-      roundToProcessTimestampMs = nextRoundTimestampMs;
+      roundToProcessTimestampMs += stats.refreshRate;
       this.cacheService.setLocal(
         CacheInfo.WsTimestampMsToProcess().key,
         roundToProcessTimestampMs,
@@ -245,36 +244,22 @@ export class WebsocketCronService implements OnModuleInit {
     return rounds[0];
   }
 
-  // the round is considered indexed once the following round is present for all the shards
-  private async getNextIndexedRoundTimestampMs(timestampMs: number, shardsCount: number): Promise<number | undefined> {
-    const elasticQuery = ElasticQuery.create()
-      .withRangeFilter('timestampMs', new RangeGreaterThan(timestampMs))
-      .withSort([{ name: 'timestampMs', order: ElasticSortOrder.ascending }])
-      .withPagination({ from: 0, size: shardsCount })
-      .withFields(['timestampMs']);
+  private async isElasticDataAvailableForTimestampMs(timestampMs: number, networkStats: Stats) {
+    const nextRoundTimestampMs = timestampMs + networkStats.refreshRate;
 
-    const rounds = await this.elasticService.getList('rounds', 'round', elasticQuery);
-    if (rounds.length < shardsCount) {
-      return undefined;
-    }
+    const rounds = await this.elasticService.getCount(
+      'rounds',
+      ElasticQuery.create().withMustCondition(QueryType.Match('timestampMs', nextRoundTimestampMs))
+    );
 
-    const nextRoundTimestampMs = rounds[0].timestampMs;
-    if (rounds.some(round => round.timestampMs !== nextRoundTimestampMs)) {
-      return undefined;
-    }
-
-    return nextRoundTimestampMs;
+    return rounds === networkStats.shards + 1; // +1 for metachain
   }
 
-  async pollUntil<T>(fn: () => Promise<T | undefined>, intervalMs = 1000, maxAttempts = 30): Promise<T> {
+  async pollUntil(conditionFn: () => Promise<boolean>, intervalMs = 1000, maxAttempts = 30) {
     let attempts = 0;
-    let result = await fn();
-    while (result === undefined) {
+    while (!await conditionFn()) {
       if (++attempts >= maxAttempts) throw new Error('Polling timeout exceeded');
       await new Promise(r => setTimeout(r, intervalMs));
-      result = await fn();
     }
-
-    return result;
   }
 }

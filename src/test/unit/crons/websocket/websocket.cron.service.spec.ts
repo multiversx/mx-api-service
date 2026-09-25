@@ -50,9 +50,8 @@ describe('WebsocketCronService', () => {
       dataFetcher as any,
     );
 
-    // every round up to the latest one is already indexed, the next one comes right after
-    jest.spyOn(service as any, 'getNextIndexedRoundTimestampMs')
-      .mockImplementation(async (timestampMs: any) => await Promise.resolve(timestampMs + roundDurationMs));
+    // every round up to the latest one is already indexed
+    jest.spyOn(service as any, 'isElasticDataAvailableForTimestampMs').mockResolvedValue(true);
   });
 
   const mockLatestRound = (timestampMs: number) => {
@@ -94,30 +93,5 @@ describe('WebsocketCronService', () => {
 
     expect(dataFetcher.fetchRoundData).toHaveBeenCalledTimes(1);
     expect(dataFetcher.fetchRoundData).toHaveBeenCalledWith(latest);
-  });
-
-  describe('getNextIndexedRoundTimestampMs', () => {
-    const getNext = (timestampMs: number) => {
-      (service as any).getNextIndexedRoundTimestampMs.mockRestore();
-      return (service as any).getNextIndexedRoundTimestampMs(timestampMs, shards + 1);
-    };
-
-    it('returns the next round once all shards indexed it', async () => {
-      elasticService.getList.mockResolvedValue([1600, 1600, 1600, 1600].map(timestampMs => ({ timestampMs })));
-
-      expect(await getNext(1000)).toBe(1600);
-    });
-
-    it('waits while a shard did not index the next round yet', async () => {
-      elasticService.getList.mockResolvedValue([1600, 1600, 1600, 2200].map(timestampMs => ({ timestampMs })));
-
-      expect(await getNext(1000)).toBeUndefined();
-    });
-
-    it('does not assume the round duration', async () => {
-      elasticService.getList.mockResolvedValue([7000, 7000, 7000, 7000].map(timestampMs => ({ timestampMs })));
-
-      expect(await getNext(1000)).toBe(7000);
-    });
   });
 });
