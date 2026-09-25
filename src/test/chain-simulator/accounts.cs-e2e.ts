@@ -3,6 +3,7 @@ import { config } from "./config/env.config";
 import { NftType } from "src/endpoints/nfts/entities/nft.type";
 import { NftSubType } from "src/endpoints/nfts/entities/nft.sub.type";
 import { transferNftFromTo } from "./utils/chain.simulator.operations";
+import { ChainSimulatorUtils } from "./utils/test.utils";
 
 describe('Accounts e2e tests with chain simulator', () => {
   describe('GET /accounts with query parameters', () => {
@@ -1993,9 +1994,16 @@ describe('Accounts e2e tests with chain simulator', () => {
       const sendNftTx = await transferNftFromTo(config.chainSimulatorUrl, config.aliceAddress, config.bobAddress, nft.collection, nft.nonce);
 
       const transaction = await axios.get(`${config.apiServiceUrl}/transactions/${sendNftTx}`);
-      await new Promise(resolve => setTimeout(resolve, 2000));
-
       expect(transaction.status).toBe(200);
+
+      // the transfer is processed on chain, but bob's nfts are read from the index, which catches up later
+      await ChainSimulatorUtils.waitForApi(
+        'NFT received by Bob',
+        `${config.apiServiceUrl}/accounts/${config.bobAddress}/nfts?withReceivedAt=true`,
+        nfts => nfts.length >= 1 && nfts[0].receivedAt !== undefined,
+        60000,
+        1000,
+      );
 
       const checkBobNft = await axios.get(`${config.apiServiceUrl}/accounts/${config.bobAddress}/nfts?withReceivedAt=true`);
       const bobNft = checkBobNft.data;

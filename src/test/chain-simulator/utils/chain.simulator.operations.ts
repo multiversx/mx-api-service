@@ -32,7 +32,7 @@ export async function getNonce(
     return currentNonceResponse.data.data.nonce;
   } catch (e) {
     console.error(e);
-    return 0;
+    throw e;
   }
 }
 
@@ -57,13 +57,17 @@ export async function deploySc(args: DeployScArgs): Promise<string> {
     const scDeployLog = txResponse?.data?.data?.transaction?.logs?.events?.find(
       (event: { identifier: string }) => event.identifier === 'SCDeploy',
     );
+    if (!scDeployLog) {
+      throw new Error(`SC deploy ${txHash} produced no SCDeploy event`);
+    }
+
     console.log(
-      `Deployed SC. tx hash: ${txHash}. address: ${scDeployLog?.address}`,
+      `Deployed SC. tx hash: ${txHash}. address: ${scDeployLog.address}`,
     );
-    return scDeployLog?.address;
+    return scDeployLog.address;
   } catch (e) {
     console.error(e);
-    return 'n/a';
+    throw e;
   }
 }
 
@@ -160,8 +164,9 @@ export async function sendTransaction(
     );
     return txHash;
   } catch (e) {
+    // rethrown: a placeholder result only moves the failure to some later, unrelated assertion
     console.error(e);
-    return 'n/a';
+    throw e;
   }
 }
 

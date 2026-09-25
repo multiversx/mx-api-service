@@ -23,9 +23,23 @@ const log = (...args: any[]) => {
   }
 };
 
-const txResponses: Map<string, any[]> = new Map();
-const eventResponses: Map<string, any[]> = new Map();
-const transferResponses: Map<string, any[]> = new Map(); // New: Store transfers
+// the broadcaster can push the same round twice: when it times out waiting for the following round it
+// does not advance its cursor, and replays from there on the next tick. a replayed item is identical
+// to the original, so the responses are kept by identity and only the distinct ones are counted
+const txResponses: Map<string, Map<string, any>> = new Map();
+const eventResponses: Map<string, Map<string, any>> = new Map();
+const transferResponses: Map<string, Map<string, any>> = new Map(); // New: Store transfers
+
+const txKey = (tx: any) => tx.txHash;
+const eventKey = (evt: any) => `${evt.txHash}:${evt.order}:${evt.identifier}`;
+
+const collect = (target: Map<string, any>, items: any[], key: (item: any) => string) => {
+  for (const item of items) {
+    target.set(key(item), item);
+  }
+};
+
+const received = (responses: Map<string, Map<string, any>>, filterKey: string) => [...(responses.get(filterKey)?.values() ?? [])];
 
 const generalResponses = {
   pool: [] as any[],
@@ -81,10 +95,14 @@ const aliceEsdts: string[] = [];
 describe('Websocket subscriptions e2e tests', () => {
   const clients: Socket[] = [];
   const connectionErrors: string[] = [];
+  const failedClients: Set<Socket> = new Set();
+  const subscriptions: Promise<string | undefined>[] = [];
 
   // auto-reconnect is disabled on purpose: the subscriptions below are emitted from the 'connect'
-  // handler, so every reconnect would re-subscribe and the shared response arrays would collect the
-  // same message twice. connections are instead retried explicitly, before any operation is sent
+  // handler, so every reconnect would re-subscribe. connections are instead retried explicitly, and
+  // only once connect_error says the previous attempt is over: calling connect() while a handshake is
+  // still in flight sends a second CONNECT packet, the server opens a second socket for it, and every
+  // message then arrives twice
   const socketOptions = { path: '/ws/subscription', reconnection: false };
 
   const waitForConnections = async (timeoutMs: number) => {
@@ -95,10 +113,9 @@ describe('Websocket subscriptions e2e tests', () => {
         return;
       }
 
-      for (const client of clients) {
-        if (!client.connected) {
-          client.connect();
-        }
+      for (const client of failedClients) {
+        failedClients.delete(client);
+        client.connect();
       }
 
       await new Promise(resolve => setTimeout(resolve, 500));
@@ -108,22 +125,23 @@ describe('Websocket subscriptions e2e tests', () => {
     throw new Error(`${pending} of ${clients.length} websocket clients did not connect within ${timeoutMs}ms. Errors: ${connectionErrors.join('; ') || 'none reported'}`);
   };
 
+  // a subscription that the server rejects is answered with an 'error' event and never acknowledged,
+  // so the timeout is what reports it. the failure is resolved rather than rejected, since it may come
+  // before anything awaits it and would otherwise surface as an unhandled rejection
+  const subscribe = (client: Socket, clientId: string, event: string, ...args: any[]) => {
+    const subscription = client.timeout(30000).emitWithAck(event, ...args).then(
+      (ack: any) => {
+        log(`   ACK ${event} ${clientId}:`, ack);
+        return undefined;
+      },
+      () => `${clientId}: ${event} was not acknowledged`,
+    );
+
+    subscriptions.push(subscription);
+  };
+
   // --- Connect Helper ---
-  const connectAndSubscribe = (
-    filterKey: string,
-    txFilter: any,
-    eventFilter: any,
-    transferFilter: any,
-    clientId: string
-  ) => {
-    const receivedTxs: any[] = [];
-    const receivedEvents: any[] = [];
-    const receivedTransfers: any[] = [];
-
-    txResponses.set(filterKey, receivedTxs);
-    eventResponses.set(filterKey, receivedEvents);
-    transferResponses.set(filterKey, receivedTransfers);
-
+  const connectClient = (clientId: string, onConnect: (client: Socket) => void) => {
     const client: Socket = io(WS_SERVER_URL, socketOptions);
     clients.push(client);
 
@@ -131,58 +149,80 @@ describe('Websocket subscriptions e2e tests', () => {
     // to whichever test happens to be running, in any file. waitForConnections reports it instead
     client.on("connect_error", (err) => {
       connectionErrors.push(`${clientId}: ${err.message}`);
+      failedClients.add(client);
+    });
+
+    let subscribed = false;
+    client.on("connect", () => {
+      log(`\n   ${clientId} connected.`);
+
+      if (!subscribed) {
+        subscribed = true;
+        onConnect(client);
+      }
+    });
+
+    return client;
+  };
+
+  // --- Subscribe Helpers ---
+  const connectAndSubscribe = (
+    filterKey: string,
+    txFilter: any,
+    eventFilter: any,
+    transferFilter: any,
+    clientId: string
+  ) => {
+    const receivedTxs: Map<string, any> = new Map();
+    const receivedEvents: Map<string, any> = new Map();
+    const receivedTransfers: Map<string, any> = new Map();
+
+    txResponses.set(filterKey, receivedTxs);
+    eventResponses.set(filterKey, receivedEvents);
+    transferResponses.set(filterKey, receivedTransfers);
+
+    const client = connectClient(clientId, (client) => {
+      if (txFilter) {
+        subscribe(client, clientId, "subscribeCustomTransactions", txFilter);
+      }
+      if (eventFilter) {
+        subscribe(client, clientId, "subscribeCustomEvents", eventFilter);
+      }
+      if (transferFilter) {
+        subscribe(client, clientId, "subscribeCustomTransfers", transferFilter);
+      }
     });
 
     client.on("customTransactionUpdate", (data: { transactions: any[] }) => {
       log(`\n💸 ${clientId} received ${data.transactions.length} txs`);
-      receivedTxs.push(...data.transactions);
+      collect(receivedTxs, data.transactions, txKey);
     });
 
     client.on("customEventUpdate", (data: { events: any[] }) => {
       log(`\n🔔 ${clientId} received ${data.events.length} events`);
-      receivedEvents.push(...data.events);
+      collect(receivedEvents, data.events, eventKey);
     });
 
     client.on("customTransferUpdate", (data: { transfers: any[] }) => {
       log(`\n💎 ${clientId} received ${data.transfers.length} transfers`);
-      receivedTransfers.push(...data.transfers);
-    });
-
-    client.on("connect", () => {
-      log(`\n   ${clientId} connected.`);
-
-      if (txFilter) {
-        client.emit("subscribeCustomTransactions", txFilter, (ack: any) => log(`   ACK TXs ${clientId}:`, ack));
-      }
-      if (eventFilter) {
-        client.emit("subscribeCustomEvents", eventFilter, (ack: any) => log(`   ACK Events ${clientId}:`, ack));
-      }
-      if (transferFilter) {
-        client.emit("subscribeCustomTransfers", transferFilter, (ack: any) => log(`   ACK Transfers ${clientId}:`, ack));
-      }
+      collect(receivedTransfers, data.transfers, txKey);
     });
   };
 
   const connectAndSubscribeGeneral = (clientId: string, subConfig: typeof client4SubscriptionConfig) => {
-    const client: Socket = io(WS_SERVER_URL, socketOptions);
-    clients.push(client);
-
-    client.on("connect_error", (err) => { connectionErrors.push(`${clientId}: ${err.message}`); });
+    const client = connectClient(clientId, (client) => {
+      subscribe(client, clientId, "subscribePool", subConfig.pool);
+      subscribe(client, clientId, "subscribeEvents", subConfig.events);
+      subscribe(client, clientId, "subscribeTransactions", subConfig.transactions);
+      subscribe(client, clientId, "subscribeBlocks", subConfig.blocks);
+      subscribe(client, clientId, "subscribeStats");
+    });
 
     client.on("poolUpdate", (data: any) => generalResponses.pool.push(data));
     client.on("eventsUpdate", (data: any) => generalResponses.events.push(data));
     client.on("transactionUpdate", (data: any) => generalResponses.transactions.push(data));
     client.on("blocksUpdate", (data: any) => generalResponses.blocks.push(data));
     client.on("statsUpdate", (data: any) => generalResponses.stats.push(data));
-
-    client.on("connect", () => {
-      log(`\n   ${clientId} connected with specific configs.`);
-      client.emit("subscribePool", subConfig.pool, (ack: any) => log(`ACK Pool ${clientId}:`, ack));
-      client.emit("subscribeEvents", subConfig.events, (ack: any) => log(`ACK Events ${clientId}:`, ack));
-      client.emit("subscribeTransactions", subConfig.transactions, (ack: any) => log(`ACK Txs ${clientId}:`, ack));
-      client.emit("subscribeBlocks", subConfig.blocks, (ack: any) => log(`ACK Blocks ${clientId}:`, ack));
-      client.emit("subscribeStats", (ack: any) => log(`ACK Stats ${clientId}:`, ack));
-    });
   };
 
   beforeAll(async () => {
@@ -212,6 +252,15 @@ describe('Websocket subscriptions e2e tests', () => {
 
       await waitForConnections(30000);
 
+      // every client is connected, so every 'connect' handler has run and queued its subscriptions
+      const subscriptionErrors = (await Promise.all(subscriptions)).filter(error => error !== undefined);
+      if (subscriptionErrors.length > 0) {
+        throw new Error(`Subscriptions failed: ${subscriptionErrors.join('; ')}`);
+      }
+
+      // the broadcaster starts from the latest round it sees on its first tick after the subscriptions
+      // exist, and never goes back to the ones before it. give it time to take that position before
+      // any operation produces blocks
       await new Promise(resolve => setTimeout(resolve, 10000));
 
       log("\n--- Starting Operations ---");
@@ -263,65 +312,65 @@ describe('Websocket subscriptions e2e tests', () => {
   });
 
   it('should receive TXs sent by Alice for Client 1', () => {
-    const txs = txResponses.get(filterKeys.CLIENT_1);
-    expect(txs?.length).toBe(4);
+    const txs = received(txResponses, filterKeys.CLIENT_1);
+    expect(txs.length).toBe(4);
 
-    txs?.forEach((tx) => {
+    txs.forEach((tx) => {
       expect(tx.sender).toEqual(config.aliceAddress);
     });
   });
 
   it('should receive Events with identifier "pong" for Client 1', () => {
-    const events = eventResponses.get(filterKeys.CLIENT_1);
-    expect(events?.length).toBe(1);
+    const events = received(eventResponses, filterKeys.CLIENT_1);
+    expect(events.length).toBe(1);
 
-    events?.forEach((evt) => {
+    events.forEach((evt) => {
       expect(evt.identifier).toEqual('pong');
     });
   });
 
   it('should receive TXs sent by Bob for Client 2', () => {
-    const txs = txResponses.get(filterKeys.CLIENT_2);
-    expect(txs?.length).toBe(1);
+    const txs = received(txResponses, filterKeys.CLIENT_2);
+    expect(txs.length).toBe(1);
 
-    txs?.forEach((tx) => {
+    txs.forEach((tx) => {
       expect(tx.sender).toEqual(config.bobAddress);
     });
   });
 
   it('should receive Events generated by PingPong contract (address) for Client 2', () => {
-    const events = eventResponses.get(filterKeys.CLIENT_2);
-    expect(events?.length).toBe(6);
+    const events = received(eventResponses, filterKeys.CLIENT_2);
+    expect(events.length).toBe(6);
 
-    events?.forEach((evt) => {
+    events.forEach((evt) => {
       expect(evt.address).toEqual(pingPongScAddress);
     });
   });
 
   it('should receive specific Alice-to-Bob TXs for Client 3', () => {
-    const txs = txResponses.get(filterKeys.CLIENT_3);
-    expect(txs?.length).toBeGreaterThanOrEqual(1);
-    txs?.forEach((tx) => {
+    const txs = received(txResponses, filterKeys.CLIENT_3);
+    expect(txs.length).toBeGreaterThanOrEqual(1);
+    txs.forEach((tx) => {
       expect(tx.sender).toEqual(config.aliceAddress);
       expect(tx.receiver).toEqual(config.bobAddress);
     });
   });
 
   it('should receive ANY transfer involving Alice (Client 5 - Address Filter)', () => {
-    const transfers = transferResponses.get(filterKeys.CLIENT_5);
-    expect(transfers?.length).toBeGreaterThan(0);
+    const transfers = received(transferResponses, filterKeys.CLIENT_5);
+    expect(transfers.length).toBeGreaterThan(0);
 
-    transfers?.forEach(t => {
+    transfers.forEach(t => {
       const isAliceInvolved = t.sender === config.aliceAddress || t.receiver === config.aliceAddress;
       expect(isAliceInvolved).toBe(true);
     });
   });
 
   it('should receive ONLY EGLD transfers where ALICE is involved (Client 6 - Token EGLD Filter)', () => {
-    const transfers = transferResponses.get(filterKeys.CLIENT_6);
-    expect(transfers?.length).toBeGreaterThan(0);
+    const transfers = received(transferResponses, filterKeys.CLIENT_6);
+    expect(transfers.length).toBeGreaterThan(0);
 
-    transfers?.forEach(t => {
+    transfers.forEach(t => {
       const val1 = `1${'0'.repeat(18)}`;
       const val2 = `2${'0'.repeat(18)}`;
       expect([val1, val2]).toContain(t.value);
@@ -336,10 +385,10 @@ describe('Websocket subscriptions e2e tests', () => {
   });
 
   it('should receive ONLY specific ESDT transfers (Client 7 - Dynamic Token Filter)', () => {
-    const transfers = transferResponses.get(filterKeys.CLIENT_7);
-    expect(transfers?.length).toBeGreaterThan(0);
+    const transfers = received(transferResponses, filterKeys.CLIENT_7);
+    expect(transfers.length).toBeGreaterThan(0);
 
-    transfers?.forEach(t => {
+    transfers.forEach(t => {
       const esdtTransfers = t.action?.arguments?.transfers;
       const containsAliceEsdt = esdtTransfers.filter((et: any) => et.token === aliceEsdts[0]).length > 0;
       expect(containsAliceEsdt).toBe(true);
