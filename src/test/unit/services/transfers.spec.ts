@@ -8,6 +8,7 @@ import { TransactionGetService } from "src/endpoints/transactions/transaction.ge
 import { TransactionService } from "src/endpoints/transactions/transaction.service";
 import { TransferService } from "src/endpoints/transfers/transfer.service";
 import { QueryPagination } from "src/common/entities/query.pagination";
+import { SortOrder } from "src/common/entities/sort.order";
 import { TransactionQueryOptions } from "src/endpoints/transactions/entities/transactions.query.options";
 
 describe('Transfers Service', () => {
@@ -301,6 +302,25 @@ describe('Transfers Service', () => {
 
       expect(result.map(transfer => transfer.txHash)).toEqual(['a', 'c', 'b', 'x']);
       expect(result[result.length - 1].searchAfter).toBe('cursor-4');
+    });
+
+    it('follows the requested order when it is ascending', async () => {
+      const ascendingOperations = [
+        { txHash: 'b', type: 'normal', nonce: 3, timestamp: 100, searchAfter: 'cursor-1' },
+        { txHash: 'c', type: 'normal', nonce: 4, timestamp: 100, searchAfter: 'cursor-2' },
+        { txHash: 'x', type: 'unsigned', originalTxHash: 'missing', timestamp: 100, searchAfter: 'cursor-3' },
+        { txHash: 'a', type: 'normal', nonce: 5, timestamp: 100, searchAfter: 'cursor-4' },
+      ];
+      jest.spyOn(service['indexerService'], 'getTransfers').mockResolvedValue(ascendingOperations as any);
+
+      const result = await service.getTransfers(
+        new TransactionFilter({ order: SortOrder.asc }),
+        new QueryPagination({ size: 4, searchAfter: 'cursor-0' }),
+        options(),
+      );
+
+      expect(result.map(transfer => transfer.txHash)).toEqual(['x', 'b', 'c', 'a']);
+      expect(result.map(transfer => transfer.searchAfter)).toEqual(['cursor-1', 'cursor-2', 'cursor-3', 'cursor-4']);
     });
 
     it('accepts searchAfter together with withTxsOrder and miniBlockHash', async () => {

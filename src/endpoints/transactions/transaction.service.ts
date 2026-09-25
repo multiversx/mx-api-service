@@ -111,11 +111,11 @@ export class TransactionService {
     return await this.indexerService.getTransactionCount(filter, address);
   }
 
-  public reorderAccountSentTransactionsByNonce(transactions: TransactionDetailed[], accountAddress: string): TransactionDetailed[] {
-    return SearchAfterUtils.sortKeepingSearchAfterPositions(transactions, items => this.reorderSentTransactionsByNonce(items, accountAddress));
+  public reorderAccountSentTransactionsByNonce(transactions: TransactionDetailed[], accountAddress: string, order?: SortOrder): TransactionDetailed[] {
+    return SearchAfterUtils.sortKeepingSearchAfterPositions(transactions, items => this.reorderSentTransactionsByNonce(items, accountAddress, order));
   }
 
-  private reorderSentTransactionsByNonce(transactions: TransactionDetailed[], accountAddress: string): TransactionDetailed[] {
+  private reorderSentTransactionsByNonce(transactions: TransactionDetailed[], accountAddress: string, order?: SortOrder): TransactionDetailed[] {
     const sentPositions: number[] = [];
     const sentTransactions: TransactionDetailed[] = [];
 
@@ -129,7 +129,7 @@ export class TransactionService {
     sentTransactions.sort((a, b) => {
       const nonceA = a.nonce ?? 0;
       const nonceB = b.nonce ?? 0;
-      return nonceB - nonceA;
+      return order === SortOrder.asc ? nonceA - nonceB : nonceB - nonceA;
     });
 
     const result = [...transactions];
@@ -232,7 +232,7 @@ export class TransactionService {
     const hasReceiverFilter = filter.receivers && filter.receivers.length > 0;
 
     if (address && !hasSenderFilter && !hasReceiverFilter) {
-      transactions = this.reorderAccountSentTransactionsByNonce(transactions, address);
+      transactions = this.reorderAccountSentTransactionsByNonce(transactions, address, filter.order);
     }
 
     if (filter.hashes) {
