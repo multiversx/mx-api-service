@@ -8,7 +8,7 @@ api:
   websocket: true
 cron:
   cacheWarmer: true
-  fastWarm: false
+  fastWarm: true
   queueWorker: true
   elasticUpdater: false
 flags:
@@ -39,7 +39,7 @@ features:
   transactionPool:
     enabled: true
   transactionPoolWarmer:
-    enabled: true
+    enabled: false
     cronExpression: '*/1 * * * * *'
     ttlInSeconds: 10
   updateCollectionExtraDetails:
