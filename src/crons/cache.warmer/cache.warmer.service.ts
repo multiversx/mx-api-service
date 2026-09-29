@@ -152,7 +152,6 @@ export class CacheWarmerService {
 
   @Lock({ name: 'Transaction pool invalidation', verbose: true })
   async handleTxPoolInvalidations() {
-    const ttl = this.apiConfigService.getTransactionPoolCacheWarmerTtlInSeconds();
     const pool = await this.poolService.getTxPoolRaw();
     const types = [undefined, ...Object.values(TransactionType)];
 
@@ -161,8 +160,8 @@ export class CacheWarmerService {
       : await Promise.all(types.map(type => this.gatewayService.getTransactionPoolCount(type)));
 
     await Promise.all([
-      this.invalidateKey(CacheInfo.TransactionPool.key, pool, ttl),
-      ...types.map((type, index) => this.invalidateKey(CacheInfo.TransactionPoolCount(type).key, counts[index], ttl)),
+      this.invalidateKey(CacheInfo.TransactionPool.key, pool, CacheInfo.TransactionPool.ttl),
+      ...types.map((type, index) => this.invalidateKey(CacheInfo.TransactionPoolCount(type).key, counts[index], CacheInfo.TransactionPoolCount(type).ttl)),
     ]);
   }
 

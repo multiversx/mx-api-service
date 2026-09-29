@@ -1,13 +1,13 @@
 import { NotFoundException } from "@nestjs/common";
 import { PoolGateway } from "src/crons/websocket/pool.gateway";
 import { PoolFilter } from "src/endpoints/pool/entities/pool.filter";
-import { TransactionPoolTooLarge } from "src/endpoints/pool/entities/transaction.pool.too.large";
+import { TransactionPoolTooLargeException } from "src/endpoints/pool/entities/transaction.pool.too.large.exception";
+import { PoolUpdateStatus } from "src/endpoints/pool/entities/pool.update.status";
 import { PoolController } from "src/endpoints/pool/pool.controller";
 import { TransactionType } from "src/endpoints/transactions/entities/transaction.type";
 import { TransactionService } from "src/endpoints/transactions/transaction.service";
 
 describe('Transaction pool too large', () => {
-  const tooLarge = { tooLarge: true, message: 'The transaction pool is too large to be displayed' };
   const txHash = 'e07af9835b6da5740d0f791cfe65491a562852c57d44af63fdc14be5d73f01da';
 
   let poolService: any;
@@ -27,16 +27,22 @@ describe('Transaction pool too large', () => {
       controller = new PoolController(poolService);
     });
 
-    it('should answer the pool and the transaction with a custom response', async () => {
-      expect(await controller.getTransactionPool(0, 25)).toStrictEqual(new TransactionPoolTooLarge());
-      expect(await controller.getTransactionPool(0, 25)).toEqual(tooLarge);
-      expect(await controller.getTransactionFromPool(txHash)).toEqual(tooLarge);
+    it('should answer the pool and the transaction with the too large exception', async () => {
+      await expect(controller.getTransactionPool(0, 25)).rejects.toBeInstanceOf(TransactionPoolTooLargeException);
+      await expect(controller.getTransactionFromPool(txHash)).rejects.toBeInstanceOf(TransactionPoolTooLargeException);
     });
 
-    it('should answer the counts the gateway gives and a custom response for the others', async () => {
+    it('should answer the counts the gateway gives and the too large exception for the others', async () => {
       expect(await controller.getTransactionPoolCount()).toStrictEqual(42);
       expect(await controller.getTransactionPoolCount(undefined, undefined, undefined, undefined, TransactionType.Reward)).toStrictEqual(42);
-      expect(await controller.getTransactionPoolCount('erd1qqqqqqqqqqqqqpgqp699jngundfqw07d8jzkepucvpzush6k3wvqyc44rx')).toEqual(tooLarge);
+      await expect(controller.getTransactionPoolCount('erd1qqqqqqqqqqqqqpgqp699jngundfqw07d8jzkepucvpzush6k3wvqyc44rx')).rejects.toBeInstanceOf(TransactionPoolTooLargeException);
+    });
+
+    it('should answer the too large exception as unavailable, with a code and a message', () => {
+      const exception = new TransactionPoolTooLargeException();
+
+      expect(exception.getStatus()).toStrictEqual(503);
+      expect(exception.getResponse()).toEqual({ statusCode: 503, code: 'transaction_pool_too_large', message: 'The transaction pool is too large to be displayed' });
     });
 
     it('should keep answering other failures as errors', async () => {
@@ -73,14 +79,14 @@ describe('Transaction pool too large', () => {
     it('should send a null pool with the total count', async () => {
       await gateway.pushPoolForRoom('pool-{"from":0,"size":25}');
 
-      expect(emit).toHaveBeenCalledWith('poolUpdate', { pool: null, poolCount: 42 });
+      expect(emit).toHaveBeenCalledWith('poolUpdate', { status: PoolUpdateStatus.tooLarge, pool: null, poolCount: 42 });
     });
 
     it('should send a null pool with the count of the type of the room', async () => {
       await gateway.pushPoolForRoom(`pool-{"from":0,"size":25,"type":"${TransactionType.Reward}"}`);
 
       expect(poolService.getPoolCount).toHaveBeenCalledWith(new PoolFilter({ type: TransactionType.Reward }));
-      expect(emit).toHaveBeenCalledWith('poolUpdate', { pool: null, poolCount: 42 });
+      expect(emit).toHaveBeenCalledWith('poolUpdate', { status: PoolUpdateStatus.tooLarge, pool: null, poolCount: 42 });
     });
 
     it('should send the pool when it can be read', async () => {
@@ -88,7 +94,7 @@ describe('Transaction pool too large', () => {
 
       await gateway.pushPoolForRoom('pool-{"from":0,"size":25}');
 
-      expect(emit).toHaveBeenCalledWith('poolUpdate', { pool: [{ txHash }], poolCount: 42 });
+      expect(emit).toHaveBeenCalledWith('poolUpdate', { status: PoolUpdateStatus.success, pool: [{ txHash }], poolCount: 42 });
     });
   });
 });
