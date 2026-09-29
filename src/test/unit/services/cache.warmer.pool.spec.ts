@@ -4,6 +4,7 @@ import { TransactionType } from "src/endpoints/transactions/entities/transaction
 import { CacheInfo } from "src/utils/cache.info";
 
 describe('CacheWarmerService transaction pool', () => {
+  const ttl = 10;
   const pool = [{ txHash: 'a', type: TransactionType.Transaction }];
 
   let warmer: CacheWarmerService;
@@ -25,6 +26,7 @@ describe('CacheWarmerService transaction pool', () => {
       poolService,
       gatewayService,
       cachingService,
+      apiConfigService: { getTransactionPoolCacheWarmerTtlInSeconds: () => ttl },
       clientProxy: { emit: jest.fn() },
     });
   });
@@ -33,7 +35,7 @@ describe('CacheWarmerService transaction pool', () => {
     await warmer.handleTxPoolInvalidations();
 
     expect(cachingService.set).toHaveBeenCalledTimes(1);
-    expect(cachingService.set).toHaveBeenCalledWith(CacheInfo.TransactionPool.key, pool, CacheInfo.TransactionPool.ttl);
+    expect(cachingService.set).toHaveBeenCalledWith(CacheInfo.TransactionPool.key, pool, ttl);
     expect(gatewayService.getTransactionPoolCount).not.toHaveBeenCalled();
   });
 
@@ -43,7 +45,7 @@ describe('CacheWarmerService transaction pool', () => {
     await warmer.handleTxPoolInvalidations();
 
     expect(cachingService.set).toHaveBeenCalledTimes(2);
-    expect(cachingService.set).toHaveBeenCalledWith(CacheInfo.TransactionPool.key, null, CacheInfo.TransactionPool.ttl);
-    expect(cachingService.set).toHaveBeenCalledWith(CacheInfo.TransactionPoolCount.key, 12, CacheInfo.TransactionPoolCount.ttl);
+    expect(cachingService.set).toHaveBeenCalledWith(CacheInfo.TransactionPool.key, null, ttl);
+    expect(cachingService.set).toHaveBeenCalledWith(CacheInfo.TransactionPoolCount.key, 12, ttl);
   });
 });
