@@ -12,7 +12,7 @@ import { TxInPoolFields } from "src/common/gateway/entities/tx.in.pool.fields";
 import { TransactionActionService } from "../transactions/transaction-action/transaction.action.service";
 import { Transaction } from "../transactions/entities/transaction";
 import { ApiUtils } from "@multiversx/sdk-nestjs-http";
-import { TransactionPoolTooLargeException } from "./entities/transaction.pool.too.large.exception";
+import { TransactionPoolTooLargeError } from "./entities/transaction.pool.too.large.error";
 
 @Injectable()
 export class PoolService {
@@ -79,7 +79,7 @@ export class PoolService {
     );
 
     if (pool === null) {
-      throw new TransactionPoolTooLargeException();
+      throw new TransactionPoolTooLargeError();
     }
 
     return this.applyFilters(pool, filter);

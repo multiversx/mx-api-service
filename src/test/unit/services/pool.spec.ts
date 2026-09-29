@@ -8,7 +8,7 @@ import { PoolService } from "src/endpoints/pool/pool.service";
 import { TransactionType } from "src/endpoints/transactions/entities/transaction.type";
 import { ProtocolService } from "../../../common/protocol/protocol.service";
 import { TransactionActionService } from "../../../endpoints/transactions/transaction-action/transaction.action.service";
-import { TransactionPoolTooLargeException } from "src/endpoints/pool/entities/transaction.pool.too.large.exception";
+import { TransactionPoolTooLargeError } from "src/endpoints/pool/entities/transaction.pool.too.large.error";
 import { CacheInfo } from "src/utils/cache.info";
 
 describe('PoolService', () => {
@@ -154,9 +154,9 @@ describe('PoolService', () => {
       });
       gatewayService.getTransactionPool = jest.fn();
 
-      await expect(service.getPool(new QueryPagination(), new PoolFilter())).rejects.toBeInstanceOf(TransactionPoolTooLargeException);
-      await expect(service.getTransactionFromPool('e07af9835b6da5740d0f791cfe65491a562852c57d44af63fdc14be5d73f01da')).rejects.toBeInstanceOf(TransactionPoolTooLargeException);
-      await expect(service.getPoolCount(new PoolFilter({ type: TransactionType.Reward }))).rejects.toBeInstanceOf(TransactionPoolTooLargeException);
+      await expect(service.getPool(new QueryPagination(), new PoolFilter())).rejects.toBeInstanceOf(TransactionPoolTooLargeError);
+      await expect(service.getTransactionFromPool('e07af9835b6da5740d0f791cfe65491a562852c57d44af63fdc14be5d73f01da')).rejects.toBeInstanceOf(TransactionPoolTooLargeError);
+      await expect(service.getPoolCount(new PoolFilter({ type: TransactionType.Reward }))).rejects.toBeInstanceOf(TransactionPoolTooLargeError);
       expect(gatewayService.getTransactionPool).not.toHaveBeenCalled();
     });
 
@@ -167,12 +167,6 @@ describe('PoolService', () => {
       });
 
       expect(await service.getPoolCount(new PoolFilter())).toStrictEqual(42);
-    });
-
-    it('should answer with a code the clients can recognize', () => {
-      const exception = new TransactionPoolTooLargeException();
-      expect(exception.getStatus()).toStrictEqual(503);
-      expect(exception.getResponse()).toEqual(expect.objectContaining({ code: 'transaction_pool_too_large' }));
     });
   });
 

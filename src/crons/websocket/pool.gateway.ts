@@ -10,6 +10,7 @@ import { QueryPagination } from 'src/common/entities/query.pagination';
 import { PoolSubscribePayload } from '../../endpoints/pool/entities/pool.subscribe';
 import { RoomKeyGenerator } from './room.key.generator';
 import { LockingGuardInterceptor } from 'src/utils/locking.guard.interceptor';
+import { TransactionPoolTooLargeError } from '../../endpoints/pool/entities/transaction.pool.too.large.error';
 
 @UseFilters(WebsocketExceptionsFilter)
 @WebSocketGateway({ cors: { origin: '*' }, path: '/ws/subscription' })
@@ -70,14 +71,29 @@ export class PoolGateway {
                         size: filter.size,
                     }),
                     poolFilter,
-                ),
-                this.poolService.getPoolCount(poolFilter),
+                ).catch(error => this.nullIfTooLarge(error)),
+                this.poolService.getPoolCount(poolFilter).catch(error => this.nullIfTooLarge(error)),
             ]);
+
+            if (pool === null) {
+                // the total count comes from the gateway, so it is still sent unless the room filters by type
+                this.server.to(roomName).emit("poolUpdate", { pool: [], poolCount, tooLarge: true });
+                return;
+            }
 
             this.server.to(roomName).emit("poolUpdate", { pool, poolCount });
         } catch (error) {
             this.logger.error(error);
         }
+    }
+
+    // a pool too large to be read is sent to the clients as such, instead of being logged as an error
+    private nullIfTooLarge(error: any): null {
+        if (error instanceof TransactionPoolTooLargeError) {
+            return null;
+        }
+
+        throw error;
     }
 
     async pushPool(): Promise<void> {
