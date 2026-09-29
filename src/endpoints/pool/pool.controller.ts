@@ -94,6 +94,7 @@ export class PoolController {
     @Query('type', new ParseEnumPipe(TransactionType)) type?: TransactionType,
   ): Promise<number> {
     const count = await this.poolService.getPoolCount(new PoolFilter({ sender, receiver, type }));
+
     if (count === null) {
       throw new TransactionPoolTooLargeException();
     }

@@ -30,7 +30,6 @@ import { TokenDetailed } from "src/endpoints/tokens/entities/token.detailed";
 import { DataApiService } from "src/common/data-api/data-api.service";
 import { BlockService } from "src/endpoints/blocks/block.service";
 import { PoolService } from "src/endpoints/pool/pool.service";
-import { TransactionType } from "src/endpoints/transactions/entities/transaction.type";
 import * as JsonDiff from "json-diff";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { StakeService } from "src/endpoints/stake/stake.service";
@@ -153,16 +152,17 @@ export class CacheWarmerService {
   @Lock({ name: 'Transaction pool invalidation', verbose: true })
   async handleTxPoolInvalidations() {
     const pool = await this.poolService.getTxPoolRaw();
-    const types = [undefined, ...Object.values(TransactionType)];
 
-    const counts = pool !== null
-      ? types.map(type => pool.filter(transaction => type === undefined || transaction.type === type).length)
-      : await Promise.all(types.map(type => this.gatewayService.getTransactionPoolCount(type)));
-
-    await Promise.all([
+    const invalidations = [
       this.invalidateKey(CacheInfo.TransactionPool.key, pool, CacheInfo.TransactionPool.ttl),
-      ...types.map((type, index) => this.invalidateKey(CacheInfo.TransactionPoolCount(type).key, counts[index], CacheInfo.TransactionPoolCount(type).ttl)),
-    ]);
+    ];
+
+    if (pool === null) {
+      const count = await this.gatewayService.getTransactionPoolCount();
+      invalidations.push(this.invalidateKey(CacheInfo.TransactionPoolCount.key, count, CacheInfo.TransactionPoolCount.ttl));
+    }
+
+    await Promise.all(invalidations);
   }
 
   @Cron('*/2 * * * *')

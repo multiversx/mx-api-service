@@ -101,21 +101,11 @@ describe('PoolService', () => {
     it('should count the total from the pool, so that it matches what the pool lists', async () => {
       gatewayService.getTransactionPoolCount = jest.fn();
 
-      const poolCount = await service.getPoolCount(new PoolFilter());
-      expect(poolCount).toStrictEqual(7);
-      expect(cacheService.getOrSet).toHaveBeenCalledWith(CacheInfo.TransactionPoolCount().key, expect.any(Function), CacheInfo.TransactionPoolCount().ttl);
+      expect(await service.getPoolCount(new PoolFilter())).toStrictEqual(7);
       expect(gatewayService.getTransactionPoolCount).not.toHaveBeenCalled();
     });
 
-    it('should cache the count for a type apart from the total', async () => {
-      const poolCount = await service.getPoolCount(new PoolFilter({ type: TransactionType.Reward }));
-      expect(poolCount).toStrictEqual(5);
-      expect(cacheService.getOrSet).toHaveBeenCalledWith(CacheInfo.TransactionPoolCount(TransactionType.Reward).key, expect.any(Function), CacheInfo.TransactionPoolCount(TransactionType.Reward).ttl);
-      expect(CacheInfo.TransactionPoolCount(TransactionType.Reward).key).not.toStrictEqual(CacheInfo.TransactionPoolCount().key);
-      expect(gatewayService.getTransactionPoolCount).not.toHaveBeenCalled();
-    });
-
-    it('should count the pool, without caching the count, for other filters', async () => {
+    it('should count the pool, without caching the count, for filters', async () => {
       const filter = new PoolFilter({ type: TransactionType.Transaction, senderShard: 0 });
 
       const poolCount = await service.getPoolCount(filter);
@@ -158,16 +148,16 @@ describe('PoolService', () => {
       expect(gatewayService.getTransactionPool).not.toHaveBeenCalled();
     });
 
-    it('should count the total and every type through the gateway', async () => {
-      gatewayService.getTransactionPoolCount = jest.fn().mockImplementation(async (type?: TransactionType) => await Promise.resolve(type ? 10 : 42));
+    it('should count only the total, through the gateway and cached', async () => {
+      gatewayService.getTransactionPoolCount = jest.fn().mockResolvedValue(42);
       cacheService.getOrSet = jest.fn().mockImplementation(async (key: string, createValueFunc: () => Promise<any>) => {
         return key === CacheInfo.TransactionPool.key ? null : await createValueFunc();
       });
 
       expect(await service.getPoolCount(new PoolFilter())).toStrictEqual(42);
-      expect(await service.getPoolCount(new PoolFilter({ type: TransactionType.Reward }))).toStrictEqual(10);
-      expect(gatewayService.getTransactionPoolCount).toHaveBeenCalledWith(undefined);
-      expect(gatewayService.getTransactionPoolCount).toHaveBeenCalledWith(TransactionType.Reward);
+      expect(await service.getPoolCount(new PoolFilter({ type: TransactionType.Reward }))).toBeNull();
+      expect(cacheService.getOrSet).toHaveBeenCalledWith(CacheInfo.TransactionPoolCount.key, expect.any(Function), CacheInfo.TransactionPoolCount.ttl);
+      expect(gatewayService.getTransactionPoolCount).toHaveBeenCalledTimes(1);
     });
   });
 

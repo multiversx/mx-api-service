@@ -32,26 +32,20 @@ export class PoolService {
   }
 
   async getPoolCount(filter: PoolFilter): Promise<number | null> {
-    const { type, ...otherFilters } = filter;
-    if (Object.values(otherFilters).some(value => value !== undefined)) {
-      const pool = await this.getPoolWithFilters(filter);
-      return pool === null ? null : pool.length;
-    }
-
-    return await this.cacheService.getOrSet(
-      CacheInfo.TransactionPoolCount(type).key,
-      async () => await this.getPoolCountRaw(type),
-      CacheInfo.TransactionPoolCount(type).ttl,
-    );
-  }
-
-  async getPoolCountRaw(type?: TransactionType): Promise<number> {
-    const pool = await this.getPoolWithFilters(new PoolFilter({ type }));
+    const pool = await this.getPoolWithFilters(filter);
     if (pool !== null) {
       return pool.length;
     }
 
-    return await this.gatewayService.getTransactionPoolCount(type);
+    if (Object.values(filter).some(value => value !== undefined)) {
+      return null;
+    }
+
+    return await this.cacheService.getOrSet(
+      CacheInfo.TransactionPoolCount.key,
+      async () => await this.gatewayService.getTransactionPoolCount(),
+      CacheInfo.TransactionPoolCount.ttl,
+    );
   }
 
   async getPool(

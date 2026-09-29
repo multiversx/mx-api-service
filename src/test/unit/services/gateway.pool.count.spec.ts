@@ -1,7 +1,6 @@
 import { GatewayService } from "src/common/gateway/gateway.service";
-import { TransactionType } from "src/endpoints/transactions/entities/transaction.type";
 
-describe('GatewayService transaction pool count', () => {
+describe('GatewayService transaction pool', () => {
   let gatewayService: GatewayService;
   let apiService: any;
 
@@ -17,13 +16,20 @@ describe('GatewayService transaction pool count', () => {
     Object.assign(gatewayService, { eventEmitter: { emit: jest.fn() } });
   });
 
+  it('should read a pool over the response size limit as undefined', async () => {
+    apiService.get.mockRejectedValue({ message: 'maxContentLength size of 2097152 exceeded' });
+
+    expect(await gatewayService.getTransactionPool()).toBeUndefined();
+  });
+
+  it('should keep throwing other failures of the pool', async () => {
+    apiService.get.mockRejectedValue({ message: 'connect ECONNREFUSED' });
+
+    await expect(gatewayService.getTransactionPool()).rejects.toEqual({ message: 'connect ECONNREFUSED' });
+  });
+
   it('should sum the counts of every shard', async () => {
     expect(await gatewayService.getTransactionPoolCount()).toStrictEqual(10);
     expect(apiService.get).toHaveBeenCalledWith('https://gateway/transaction/pool/count', expect.anything(), undefined);
-  });
-
-  it('should ask for the count of a type', async () => {
-    expect(await gatewayService.getTransactionPoolCount(TransactionType.SmartContractResult)).toStrictEqual(10);
-    expect(apiService.get).toHaveBeenCalledWith('https://gateway/transaction/pool/count?type=SmartContractResult', expect.anything(), undefined);
   });
 });

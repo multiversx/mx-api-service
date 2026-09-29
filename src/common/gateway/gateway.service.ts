@@ -20,7 +20,6 @@ import { ApiService, ApiSettings } from "@multiversx/sdk-nestjs-http";
 import { GuardianResult } from "./entities/guardian.result";
 import { TransactionProcessStatus } from "./entities/transaction.process.status";
 import { TxPoolGatewayResponse } from "./entities/tx.pool.gateway.response";
-import { TransactionType } from "src/endpoints/transactions/entities/transaction.type";
 
 @Injectable()
 export class GatewayService {
@@ -184,15 +183,19 @@ export class GatewayService {
   }
 
   async getTransactionPool(): Promise<TxPoolGatewayResponse | undefined> {
-    // eslint-disable-next-line require-await
-    return await this.get(`transaction/pool?fields=*`, GatewayComponentRequest.transactionPool, async (error) => {
-      return error?.message?.startsWith('maxContentLength size of') === true;
-    });
+    try {
+      return await this.get(`transaction/pool?fields=*`, GatewayComponentRequest.transactionPool);
+    } catch (error: any) {
+      if (error?.message?.startsWith('maxContentLength size of')) {
+        return undefined;
+      }
+
+      throw error;
+    }
   }
 
-  async getTransactionPoolCount(type?: TransactionType): Promise<number> {
-    const url = type ? `transaction/pool/count?type=${type}` : 'transaction/pool/count';
-    const result = await this.get(url, GatewayComponentRequest.transactionPool);
+  async getTransactionPoolCount(): Promise<number> {
+    const result = await this.get('transaction/pool/count', GatewayComponentRequest.transactionPool);
 
     return Object.values<number>(result.txPoolCounts).reduce((total, count) => total + count, 0);
   }
