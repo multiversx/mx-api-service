@@ -157,7 +157,7 @@ export class CacheWarmerService {
       this.invalidateKey(CacheInfo.TransactionPool.key, pool, CacheInfo.TransactionPool.ttl),
     ];
 
-    if (pool === null) {
+    if (pool == null) {
       const count = await this.gatewayService.getTransactionPoolCount();
       invalidations.push(this.invalidateKey(CacheInfo.TransactionPoolCount.key, count, CacheInfo.TransactionPoolCount.ttl));
     }

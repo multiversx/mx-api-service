@@ -75,7 +75,7 @@ export class PoolGateway {
                 this.poolService.getPoolCount(poolFilter),
             ]);
 
-            const status = pool === null ? PoolUpdateStatus.tooLarge : PoolUpdateStatus.success;
+            const status = pool == null ? PoolUpdateStatus.tooLarge : PoolUpdateStatus.success;
             this.server.to(roomName).emit("poolUpdate", { status, pool, poolCount });
         } catch (error) {
             this.logger.error(error);

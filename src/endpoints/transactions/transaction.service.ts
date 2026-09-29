@@ -752,7 +752,7 @@ export class TransactionService {
 
       const poolTransactions = await this.poolService.getPoolWithFilters({ senderShard: shardId });
 
-      if (poolTransactions === null) {
+      if (poolTransactions == null) {
         return null;
       }
 

@@ -24,7 +24,7 @@ export class PoolService {
 
   async getTransactionFromPool(txHash: string): Promise<TransactionInPool | undefined | null> {
     const pool = await this.getPoolWithFilters();
-    if (pool === null) {
+    if (pool == null) {
       return null;
     }
 
@@ -33,7 +33,7 @@ export class PoolService {
 
   async getPoolCount(filter: PoolFilter): Promise<number | null> {
     const pool = await this.getPoolWithFilters(filter);
-    if (pool !== null) {
+    if (pool != null) {
       return pool.length;
     }
 
@@ -58,7 +58,7 @@ export class PoolService {
 
     const { from, size } = queryPagination;
     const pool = await this.getPoolWithFilters(filter);
-    if (pool === null) {
+    if (pool == null) {
       return null;
     }
 
@@ -76,7 +76,7 @@ export class PoolService {
       true,
     );
 
-    if (pool === null) {
+    if (pool == null) {
       return null;
     }
 

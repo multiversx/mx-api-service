@@ -48,7 +48,7 @@ export class PoolController {
       functions: functions,
     }));
 
-    if (pool === null) {
+    if (pool == null) {
       throw new TransactionPoolTooLargeException();
     }
 
@@ -79,7 +79,7 @@ export class PoolController {
       type: type,
     }));
 
-    if (count === null) {
+    if (count == null) {
       throw new TransactionPoolTooLargeException();
     }
 
@@ -95,7 +95,7 @@ export class PoolController {
   ): Promise<number> {
     const count = await this.poolService.getPoolCount(new PoolFilter({ sender, receiver, type }));
 
-    if (count === null) {
+    if (count == null) {
       throw new TransactionPoolTooLargeException();
     }
 
