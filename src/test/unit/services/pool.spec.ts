@@ -122,7 +122,7 @@ describe('PoolService', () => {
 
       const poolCount = await service.getPoolCount(filter);
       expect(cacheService.getOrSet).toHaveBeenCalledTimes(1);
-      expect(cacheService.getOrSet).toHaveBeenCalledWith(CacheInfo.TransactionPool.key, expect.any(Function), CacheInfo.TransactionPool.ttl);
+      expect(cacheService.getOrSet).toHaveBeenCalledWith(CacheInfo.TransactionPool.key, expect.any(Function), CacheInfo.TransactionPool.ttl, CacheInfo.TransactionPool.ttl, true);
 
       const pool = await service.getPool(new QueryPagination({ from: 0, size: 100 }), filter);
       expect(pool.length).toBeGreaterThan(0);

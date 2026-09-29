@@ -154,22 +154,24 @@ export class CacheWarmerService {
   async handleTxPoolInvalidations() {
     const ttl = this.apiConfigService.getTransactionPoolCacheWarmerTtlInSeconds();
 
+    const warmCount = async (type?: TransactionType) => {
+      const count = await this.poolService.getPoolCountRaw(type);
+      await this.invalidateKey(CacheInfo.TransactionPoolCount(type).key, count, ttl);
+    };
+
+    const warmPool = async () => {
+      // null when the pool is too large, which is cached as well, so that requests answer that from the cache
+      const pool = await this.poolService.getTxPoolRaw();
+      await this.invalidateKey(CacheInfo.TransactionPool.key, pool, ttl);
+
+      // counted from the pool warmed above, so only once it is there
+      if (pool !== null) {
+        await Promise.all(Object.values(TransactionType).map(type => warmCount(type)));
+      }
+    };
+
     // the gateway counts the pool itself, so the total is warmed even while the pool is too large to be read
-    const count = await this.poolService.getPoolCountRaw();
-    await this.invalidateKey(CacheInfo.TransactionPoolCount().key, count, ttl);
-
-    // null when the pool is too large, which is cached as well, so that requests answer that from the cache
-    const pool = await this.poolService.getTxPoolRaw();
-    await this.invalidateKey(CacheInfo.TransactionPool.key, pool, ttl);
-    if (pool === null) {
-      return;
-    }
-
-    // counted from the pool warmed above
-    for (const type of Object.values(TransactionType)) {
-      const typeCount = await this.poolService.getPoolCountRaw(type);
-      await this.invalidateKey(CacheInfo.TransactionPoolCount(type).key, typeCount, ttl);
-    }
+    await Promise.all([warmCount(), warmPool()]);
   }
 
   @Cron('*/2 * * * *')

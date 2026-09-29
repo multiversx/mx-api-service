@@ -74,6 +74,8 @@ export class PoolService {
       CacheInfo.TransactionPool.key,
       async () => await this.getTxPoolRaw(),
       CacheInfo.TransactionPool.ttl,
+      CacheInfo.TransactionPool.ttl,
+      true, // cacheNullable: null stands for a pool too large to be read, see getTxPoolRaw
     );
 
     if (pool === null) {

@@ -49,6 +49,21 @@ describe('CacheWarmerService transaction pool', () => {
     }
   });
 
+  it('should request the total count and the pool together', async () => {
+    let releaseCount: () => void = () => { };
+    poolService.getPoolCountRaw.mockImplementationOnce(async () => await new Promise<number>(resolve => releaseCount = () => resolve(counts.total)));
+
+    const warming = warmer.handleTxPoolInvalidations();
+    await new Promise(resolve => setImmediate(resolve));
+
+    // the pool was requested while the total count is still pending
+    expect(poolService.getTxPoolRaw).toHaveBeenCalled();
+
+    releaseCount();
+    await warming;
+    expect(cachingService.set).toHaveBeenCalledWith(CacheInfo.TransactionPoolCount().key, counts.total, ttl);
+  });
+
   it('should cache the pool as null, besides the total count, while it is too large', async () => {
     poolService.getTxPoolRaw.mockResolvedValue(null);
 
