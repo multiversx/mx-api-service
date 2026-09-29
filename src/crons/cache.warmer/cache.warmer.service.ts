@@ -30,6 +30,7 @@ import { TokenDetailed } from "src/endpoints/tokens/entities/token.detailed";
 import { DataApiService } from "src/common/data-api/data-api.service";
 import { BlockService } from "src/endpoints/blocks/block.service";
 import { PoolService } from "src/endpoints/pool/pool.service";
+import { TransactionPoolTooLargeException } from "src/endpoints/pool/entities/transaction.pool.too.large.exception";
 import * as JsonDiff from "json-diff";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { StakeService } from "src/endpoints/stake/stake.service";
@@ -151,7 +152,17 @@ export class CacheWarmerService {
 
   @Lock({ name: 'Transaction pool invalidation', verbose: true })
   async handleTxPoolInvalidations() {
-    const pool = await this.poolService.getTxPoolRaw();
+    let pool;
+    try {
+      pool = await this.poolService.getTxPoolRaw();
+    } catch (error) {
+      // nothing to warm while the pool is too large, which getTxPoolRaw already remembers
+      if (error instanceof TransactionPoolTooLargeException) {
+        return;
+      }
+
+      throw error;
+    }
 
     await this.invalidateKey(CacheInfo.TransactionPool.key, pool, this.apiConfigService.getTransactionPoolCacheWarmerTtlInSeconds());
   }

@@ -2,6 +2,7 @@ import { Constants } from "@multiversx/sdk-nestjs-common";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { BlockFilter } from "src/endpoints/blocks/entities/block.filter";
 import { TpsInterval } from "src/endpoints/tps/entities/tps.interval";
+import { TransactionType } from "src/endpoints/transactions/entities/transaction.type";
 
 export class CacheInfo {
   key: string = "";
@@ -55,6 +56,18 @@ export class CacheInfo {
   static TransactionPool: CacheInfo = {
     key: 'txpool',
     ttl: Constants.oneSecond(),
+  };
+
+  static TransactionPoolCount(type?: TransactionType): CacheInfo {
+    return {
+      key: type ? `txpool:count:${type}` : 'txpool:count',
+      ttl: Constants.oneSecond(),
+    };
+  }
+
+  static TransactionPoolTooLarge: CacheInfo = {
+    key: 'txpool:tooLarge',
+    ttl: Constants.oneMinute(),
   };
 
   static ApplicationMostUsed: CacheInfo = {

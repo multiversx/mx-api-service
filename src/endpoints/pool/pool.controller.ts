@@ -1,6 +1,6 @@
 import { ParseAddressAndMetachainPipe, ParseAddressPipe, ParseEnumPipe, ParseIntPipe, ParseTransactionHashPipe, ParseArrayPipe } from "@multiversx/sdk-nestjs-common";
 import { Controller, DefaultValuePipe, Get, NotFoundException, Param, Query } from "@nestjs/common";
-import { ApiExcludeEndpoint, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from "@nestjs/swagger";
+import { ApiExcludeEndpoint, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiServiceUnavailableResponse, ApiTags } from "@nestjs/swagger";
 import { PoolService } from "./pool.service";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { TransactionInPool } from "./entities/transaction.in.pool.dto";
@@ -18,6 +18,7 @@ export class PoolController {
   @Get("/pool")
   @ApiOperation({ summary: 'Transactions pool', description: 'Returns the transactions that are currently in the memory pool.' })
   @ApiOkResponse({ type: TransactionInPool, isArray: true })
+  @ApiServiceUnavailableResponse({ description: 'The transaction pool is too large to be displayed' })
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   @ApiQuery({ name: 'sender', description: 'Search in transaction pool by a specific sender', required: false })
@@ -50,6 +51,7 @@ export class PoolController {
   @Get("/pool/count")
   @ApiOperation({ summary: 'Transactions pool count', description: 'Returns the number of transactions that are currently in the memory pool.' })
   @ApiOkResponse({ type: Number })
+  @ApiServiceUnavailableResponse({ description: 'The transaction pool is too large to be displayed' })
   @ApiQuery({ name: 'sender', description: 'Returns the number of transactions with a specific sender', required: false })
   @ApiQuery({ name: 'receiver', description: 'Search in transaction pool by a specific receiver', required: false })
   @ApiQuery({ name: 'senderShard', description: 'The shard of the sender', required: false })
@@ -85,6 +87,7 @@ export class PoolController {
   @ApiOperation({ summary: 'Transaction from pool', description: 'Returns a transaction from the memory pool.' })
   @ApiOkResponse({ type: TransactionInPool })
   @ApiNotFoundResponse({ description: 'Transaction not found' })
+  @ApiServiceUnavailableResponse({ description: 'The transaction pool is too large to be displayed' })
   async getTransactionFromPool(
     @Param('txhash', ParseTransactionHashPipe) txHash: string,
   ): Promise<TransactionInPool> {

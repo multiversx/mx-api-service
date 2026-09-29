@@ -12,6 +12,7 @@ import { TxInPoolFields } from "src/common/gateway/entities/tx.in.pool.fields";
 import { TransactionActionService } from "../transactions/transaction-action/transaction.action.service";
 import { Transaction } from "../transactions/entities/transaction";
 import { ApiUtils } from "@multiversx/sdk-nestjs-http";
+import { TransactionPoolTooLargeException } from "./entities/transaction.pool.too.large.exception";
 
 @Injectable()
 export class PoolService {
@@ -28,7 +29,31 @@ export class PoolService {
   }
 
   async getPoolCount(filter: PoolFilter): Promise<number> {
-    const pool = await this.getPoolWithFilters(filter);
+    const { type, ...otherFilters } = filter;
+    if (Object.values(otherFilters).some(value => value !== undefined)) {
+      const pool = await this.getPoolWithFilters(filter);
+      return pool.length;
+    }
+
+    // the total and the count for each type are cached on their own
+    return await this.cacheService.getOrSet(
+      CacheInfo.TransactionPoolCount(type).key,
+      async () => await this.getPoolCountRaw(type),
+      CacheInfo.TransactionPoolCount(type).ttl,
+    );
+  }
+
+  // the gateway counts the pool itself, so the total needs neither the pool nor its size limit. counts by
+  // type, and the total on gateways that do not have that endpoint yet, are taken from the pool
+  private async getPoolCountRaw(type?: TransactionType): Promise<number> {
+    if (type === undefined) {
+      const count = await this.gatewayService.getTransactionPoolCount();
+      if (count !== null) {
+        return count;
+      }
+    }
+
+    const pool = await this.getPoolWithFilters(new PoolFilter({ type }));
     return pool.length;
   }
 
@@ -57,8 +82,20 @@ export class PoolService {
     return this.applyFilters(pool, filter);
   }
 
+  // a pool found too large is remembered for a while, so that it is not downloaded again, up to the size
+  // limit, on every request until then
   async getTxPoolRaw(): Promise<TransactionInPool[]> {
+    const isTooLarge = await this.cacheService.get<boolean>(CacheInfo.TransactionPoolTooLarge.key);
+    if (isTooLarge) {
+      throw new TransactionPoolTooLargeException();
+    }
+
     const pool = await this.gatewayService.getTransactionPool();
+    if (!pool) {
+      await this.cacheService.set(CacheInfo.TransactionPoolTooLarge.key, true, CacheInfo.TransactionPoolTooLarge.ttl);
+      throw new TransactionPoolTooLargeException();
+    }
+
     return this.parseTransactions(pool);
   }
 
