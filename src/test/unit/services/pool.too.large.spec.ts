@@ -16,7 +16,7 @@ describe('Transaction pool too large', () => {
     poolService = {
       getPool: jest.fn().mockResolvedValue(null),
       getTransactionFromPool: jest.fn().mockResolvedValue(null),
-      getPoolCount: jest.fn().mockImplementation(async (filter: PoolFilter) => await Promise.resolve(filter.sender || filter.type ? null : 42)),
+      getPoolCount: jest.fn().mockImplementation(async (filter: PoolFilter) => await Promise.resolve(filter.sender ? null : 42)),
     };
   });
 
@@ -34,7 +34,7 @@ describe('Transaction pool too large', () => {
 
     it('should answer the counts the gateway gives and the too large exception for the others', async () => {
       expect(await controller.getTransactionPoolCount()).toStrictEqual(42);
-      await expect(controller.getTransactionPoolCount(undefined, undefined, undefined, undefined, TransactionType.Reward)).rejects.toBeInstanceOf(TransactionPoolTooLargeException);
+      expect(await controller.getTransactionPoolCount(undefined, undefined, undefined, undefined, TransactionType.Reward)).toStrictEqual(42);
       await expect(controller.getTransactionPoolCount('erd1qqqqqqqqqqqqqpgqp699jngundfqw07d8jzkepucvpzush6k3wvqyc44rx')).rejects.toBeInstanceOf(TransactionPoolTooLargeException);
     });
 
@@ -82,10 +82,10 @@ describe('Transaction pool too large', () => {
       expect(emit).toHaveBeenCalledWith('poolUpdate', { status: PoolUpdateStatus.tooLarge, pool: null, poolCount: 42 });
     });
 
-    it('should send a null pool with no count to a room filtered by type', async () => {
+    it('should send a null pool with the total count to a room filtered by type', async () => {
       await gateway.pushPoolForRoom(`pool-{"from":0,"size":25,"type":"${TransactionType.Reward}"}`);
 
-      expect(emit).toHaveBeenCalledWith('poolUpdate', { status: PoolUpdateStatus.tooLarge, pool: null, poolCount: null });
+      expect(emit).toHaveBeenCalledWith('poolUpdate', { status: PoolUpdateStatus.tooLarge, pool: null, poolCount: 42 });
     });
 
     it('should send the pool when it can be read', async () => {

@@ -37,7 +37,7 @@ export class PoolService {
       return pool.length;
     }
 
-    if (Object.values(filter).some(value => value !== undefined)) {
+    if (Object.entries(filter).some(([key, value]) => key !== 'type' && value !== undefined)) {
       return null;
     }
 
