@@ -752,12 +752,11 @@ export class TransactionService {
 
       const poolTransactions = await this.poolService.getPoolWithFilters({ senderShard: shardId });
 
-      // null when the pool is too large to be read, which leaves the prices unknown rather than at zero
       if (poolTransactions === null) {
         return null;
       }
 
-      if (!poolTransactions || poolTransactions.length === 0) {
+      if (poolTransactions.length === 0) {
         return new PpuMetadata({
           lastBlock: lastBlock,
           fast: 0,

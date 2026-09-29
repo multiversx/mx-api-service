@@ -51,7 +51,6 @@ export class PoolController {
       functions: functions,
     }));
 
-    // null when the pool is too large to be read
     return pool ?? new TransactionPoolTooLarge();
   }
 
@@ -81,7 +80,6 @@ export class PoolController {
       type: type,
     }));
 
-    // null when the count needs the pool and the pool is too large to be read
     return count ?? new TransactionPoolTooLarge();
   }
 
@@ -93,6 +91,7 @@ export class PoolController {
     @Query('type', new ParseEnumPipe(TransactionType)) type?: TransactionType,
   ): Promise<number | TransactionPoolTooLarge> {
     const count = await this.poolService.getPoolCount(new PoolFilter({ sender, receiver, type }));
+
     return count ?? new TransactionPoolTooLarge();
   }
 

@@ -10,7 +10,6 @@ import { QueryPagination } from 'src/common/entities/query.pagination';
 import { PoolSubscribePayload } from '../../endpoints/pool/entities/pool.subscribe';
 import { RoomKeyGenerator } from './room.key.generator';
 import { LockingGuardInterceptor } from 'src/utils/locking.guard.interceptor';
-import { PoolUpdateStatus } from '../../endpoints/pool/entities/pool.update.status';
 
 @UseFilters(WebsocketExceptionsFilter)
 @WebSocketGateway({ cors: { origin: '*' }, path: '/ws/subscription' })
@@ -75,14 +74,7 @@ export class PoolGateway {
                 this.poolService.getPoolCount(poolFilter),
             ]);
 
-            // the pool is null when it is too large to be read. the total count comes from the gateway, so it is
-            // still sent then, unless the room filters by type
-            if (pool === null) {
-                this.server.to(roomName).emit("poolUpdate", { status: PoolUpdateStatus.tooLarge, pool: [], poolCount });
-                return;
-            }
-
-            this.server.to(roomName).emit("poolUpdate", { status: PoolUpdateStatus.success, pool, poolCount });
+            this.server.to(roomName).emit("poolUpdate", { pool, poolCount });
         } catch (error) {
             this.logger.error(error);
         }

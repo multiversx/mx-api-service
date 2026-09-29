@@ -182,7 +182,6 @@ export class GatewayService {
     return new NftData(result.tokenData);
   }
 
-  // undefined when the pool is larger than the response size allowed for it in getRaw
   async getTransactionPool(): Promise<TxPoolGatewayResponse | undefined> {
     // eslint-disable-next-line require-await
     return await this.get(`transaction/pool?fields=*`, GatewayComponentRequest.transactionPool, async (error) => {

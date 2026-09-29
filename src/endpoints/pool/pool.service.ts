@@ -22,7 +22,6 @@ export class PoolService {
     private readonly transactionActionService: TransactionActionService,
   ) { }
 
-  // undefined when the transaction is not in the pool, null when the pool is too large to be read
   async getTransactionFromPool(txHash: string): Promise<TransactionInPool | undefined | null> {
     const pool = await this.getPoolWithFilters();
     if (pool === null) {
@@ -32,7 +31,6 @@ export class PoolService {
     return pool.find(tx => tx.txHash === txHash);
   }
 
-  // null when the count needs the pool and the pool is too large to be read
   async getPoolCount(filter: PoolFilter): Promise<number | null> {
     const { type, ...otherFilters } = filter;
     if (Object.values(otherFilters).some(value => value !== undefined)) {
@@ -40,7 +38,6 @@ export class PoolService {
       return pool === null ? null : pool.length;
     }
 
-    // the total and the count for each type are cached on their own
     return await this.cacheService.getOrSet(
       CacheInfo.TransactionPoolCount(type).key,
       async () => await this.getPoolCountRaw(type),
@@ -48,22 +45,23 @@ export class PoolService {
     );
   }
 
-  // counted from the pool, so that the count matches what the pool lists. only when the pool is too large to
-  // be read does the total come from the gateway, which counts the pool itself; counts by type are then null
   async getPoolCountRaw(type?: TransactionType): Promise<number | null> {
     const pool = await this.getPoolWithFilters(new PoolFilter({ type }));
     if (pool !== null) {
       return pool.length;
     }
 
-    if (type !== undefined) {
+    return await this.getPoolCountFromGateway(type);
+  }
+
+  async getPoolCountFromGateway(type?: TransactionType): Promise<number | null> {
+    if (type !== undefined && type !== TransactionType.Transaction) {
       return null;
     }
 
     return await this.gatewayService.getTransactionPoolCount();
   }
 
-  // null when the pool is too large to be read
   async getPool(
     queryPagination: QueryPagination,
     filter?: PoolFilter,
@@ -81,7 +79,6 @@ export class PoolService {
     return pool.slice(from, from + size);
   }
 
-  // null when the pool is too large to be read
   async getPoolWithFilters(
     filter?: PoolFilter,
   ): Promise<TransactionInPool[] | null> {
@@ -90,7 +87,7 @@ export class PoolService {
       async () => await this.getTxPoolRaw(),
       CacheInfo.TransactionPool.ttl,
       CacheInfo.TransactionPool.ttl,
-      true, // cacheNullable: null stands for a pool too large to be read, see getTxPoolRaw
+      true,
     );
 
     if (pool === null) {
@@ -100,8 +97,6 @@ export class PoolService {
     return this.applyFilters(pool, filter);
   }
 
-  // null only when the pool is too large to be read. it is cached like the pool itself, so that until it
-  // expires the pool is not downloaded again, up to the size limit, on every request
   async getTxPoolRaw(): Promise<TransactionInPool[] | null> {
     const pool = await this.gatewayService.getTransactionPool();
     if (!pool) {
