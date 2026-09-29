@@ -48,15 +48,19 @@ export class PoolService {
     );
   }
 
-  // the gateway counts the pool itself, so the total needs neither the pool nor its size limit. counts by
-  // type are taken from the pool
+  // counted from the pool, so that the count matches what the pool lists. only when the pool is too large to
+  // be read does the total come from the gateway, which counts the pool itself; counts by type are then null
   async getPoolCountRaw(type?: TransactionType): Promise<number | null> {
-    if (type === undefined) {
-      return await this.gatewayService.getTransactionPoolCount();
+    const pool = await this.getPoolWithFilters(new PoolFilter({ type }));
+    if (pool !== null) {
+      return pool.length;
     }
 
-    const pool = await this.getPoolWithFilters(new PoolFilter({ type }));
-    return pool === null ? null : pool.length;
+    if (type !== undefined) {
+      return null;
+    }
+
+    return await this.gatewayService.getTransactionPoolCount();
   }
 
   // null when the pool is too large to be read

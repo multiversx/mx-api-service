@@ -154,16 +154,16 @@ export class CacheWarmerService {
   async handleTxPoolInvalidations() {
     const ttl = this.apiConfigService.getTransactionPoolCacheWarmerTtlInSeconds();
 
-    // the gateway counts the pool itself, so the total is there even while the pool is too large to be read
-    const [count, pool] = await Promise.all([
-      this.poolService.getPoolCountRaw(),
-      this.poolService.getTxPoolRaw(),
-    ]);
+    // null when the pool is too large, which is cached as well, so that requests answer that from the cache
+    const pool = await this.poolService.getTxPoolRaw();
+
+    // counted from the pool, so that the total matches what the pool lists. only when the pool is too large to
+    // be read does the total come from the gateway, which counts the pool itself
+    const count = pool !== null ? pool.length : await this.gatewayService.getTransactionPoolCount();
 
     const invalidations = [
-      this.invalidateKey(CacheInfo.TransactionPoolCount().key, count, ttl),
-      // null when the pool is too large, which is cached as well, so that requests answer that from the cache
       this.invalidateKey(CacheInfo.TransactionPool.key, pool, ttl),
+      this.invalidateKey(CacheInfo.TransactionPoolCount().key, count, ttl),
     ];
 
     if (pool !== null) {
