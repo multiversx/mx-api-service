@@ -182,12 +182,12 @@ export class GatewayService {
     return new NftData(result.tokenData);
   }
 
-  async getTransactionPool(): Promise<TxPoolGatewayResponse | undefined> {
+  async getTransactionPool(): Promise<TxPoolGatewayResponse | null> {
     try {
       return await this.get(`transaction/pool?fields=*`, GatewayComponentRequest.transactionPool);
     } catch (error: any) {
       if (error?.message?.startsWith('maxContentLength size of')) {
-        return undefined;
+        return null;
       }
 
       throw error;

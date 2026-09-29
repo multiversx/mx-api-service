@@ -131,7 +131,7 @@ describe('PoolService', () => {
 
   describe('pool too large', () => {
     it('should read a pool too large for the gateway response limit as null', async () => {
-      gatewayService.getTransactionPool = jest.fn().mockResolvedValue(undefined);
+      gatewayService.getTransactionPool = jest.fn().mockResolvedValue(null);
 
       expect(await service.getTxPoolRaw()).toBeNull();
     });

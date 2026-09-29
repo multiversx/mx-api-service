@@ -16,10 +16,10 @@ describe('GatewayService transaction pool', () => {
     Object.assign(gatewayService, { eventEmitter: { emit: jest.fn() } });
   });
 
-  it('should read a pool over the response size limit as undefined', async () => {
+  it('should read a pool over the response size limit as null', async () => {
     apiService.get.mockRejectedValue({ message: 'maxContentLength size of 2097152 exceeded' });
 
-    expect(await gatewayService.getTransactionPool()).toBeUndefined();
+    expect(await gatewayService.getTransactionPool()).toBeNull();
   });
 
   it('should keep throwing other failures of the pool', async () => {

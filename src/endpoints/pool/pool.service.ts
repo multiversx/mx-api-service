@@ -81,7 +81,7 @@ export class PoolService {
 
   async getTxPoolRaw(): Promise<TransactionInPool[] | null> {
     const pool = await this.gatewayService.getTransactionPool();
-    if (!pool) {
+    if (pool == null) {
       return null;
     }
 
