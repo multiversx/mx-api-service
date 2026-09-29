@@ -30,7 +30,6 @@ import { TokenDetailed } from "src/endpoints/tokens/entities/token.detailed";
 import { DataApiService } from "src/common/data-api/data-api.service";
 import { BlockService } from "src/endpoints/blocks/block.service";
 import { PoolService } from "src/endpoints/pool/pool.service";
-import { TransactionPoolTooLargeException } from "src/endpoints/pool/entities/transaction.pool.too.large.exception";
 import { TransactionType } from "src/endpoints/transactions/entities/transaction.type";
 import * as JsonDiff from "json-diff";
 import { QueryPagination } from "src/common/entities/query.pagination";
@@ -159,19 +158,12 @@ export class CacheWarmerService {
     const count = await this.poolService.getPoolCountRaw();
     await this.invalidateKey(CacheInfo.TransactionPoolCount().key, count, ttl);
 
-    let pool;
-    try {
-      pool = await this.poolService.getTxPoolRaw();
-    } catch (error) {
-      // nothing else to warm while the pool is too large, which getTxPoolRaw already remembers
-      if (error instanceof TransactionPoolTooLargeException) {
-        return;
-      }
-
-      throw error;
-    }
-
+    // null when the pool is too large, which is cached as well, so that requests answer that from the cache
+    const pool = await this.poolService.getTxPoolRaw();
     await this.invalidateKey(CacheInfo.TransactionPool.key, pool, ttl);
+    if (pool === null) {
+      return;
+    }
 
     // counted from the pool warmed above
     for (const type of Object.values(TransactionType)) {

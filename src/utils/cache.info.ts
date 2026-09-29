@@ -65,11 +65,6 @@ export class CacheInfo {
     };
   }
 
-  static TransactionPoolTooLarge: CacheInfo = {
-    key: 'txpool:tooLarge',
-    ttl: Constants.oneMinute(),
-  };
-
   static ApplicationMostUsed: CacheInfo = {
     key: 'applicationMostUsed',
     ttl: Constants.oneHour(),

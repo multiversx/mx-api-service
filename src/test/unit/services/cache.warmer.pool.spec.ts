@@ -1,6 +1,5 @@
 import { Locker, LockResult } from "@multiversx/sdk-nestjs-common";
 import { CacheWarmerService } from "src/crons/cache.warmer/cache.warmer.service";
-import { TransactionPoolTooLargeException } from "src/endpoints/pool/entities/transaction.pool.too.large.exception";
 import { TransactionType } from "src/endpoints/transactions/entities/transaction.type";
 import { CacheInfo } from "src/utils/cache.info";
 
@@ -50,12 +49,14 @@ describe('CacheWarmerService transaction pool', () => {
     }
   });
 
-  it('should warm only the total count while the pool is too large', async () => {
-    poolService.getTxPoolRaw.mockRejectedValue(new TransactionPoolTooLargeException());
+  it('should cache the pool as null, besides the total count, while it is too large', async () => {
+    poolService.getTxPoolRaw.mockResolvedValue(null);
 
     await warmer.handleTxPoolInvalidations();
 
-    expect(cachingService.set).toHaveBeenCalledTimes(1);
+    expect(cachingService.set).toHaveBeenCalledTimes(2);
     expect(cachingService.set).toHaveBeenCalledWith(CacheInfo.TransactionPoolCount().key, counts.total, ttl);
+    expect(cachingService.set).toHaveBeenCalledWith(CacheInfo.TransactionPool.key, null, ttl);
+    expect(poolService.getPoolCountRaw).toHaveBeenCalledTimes(1);
   });
 });

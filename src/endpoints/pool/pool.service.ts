@@ -76,21 +76,19 @@ export class PoolService {
       CacheInfo.TransactionPool.ttl,
     );
 
-    return this.applyFilters(pool, filter);
-  }
-
-  // a pool found too large is remembered for a while, so that it is not downloaded again, up to the size
-  // limit, on every request until then
-  async getTxPoolRaw(): Promise<TransactionInPool[]> {
-    const isTooLarge = await this.cacheService.get<boolean>(CacheInfo.TransactionPoolTooLarge.key);
-    if (isTooLarge) {
+    if (pool === null) {
       throw new TransactionPoolTooLargeException();
     }
 
+    return this.applyFilters(pool, filter);
+  }
+
+  // null only when the pool is too large to be read. it is cached like the pool itself, so that until it
+  // expires the pool is not downloaded again, up to the size limit, on every request
+  async getTxPoolRaw(): Promise<TransactionInPool[] | null> {
     const pool = await this.gatewayService.getTransactionPool();
     if (!pool) {
-      await this.cacheService.set(CacheInfo.TransactionPoolTooLarge.key, true, CacheInfo.TransactionPoolTooLarge.ttl);
-      throw new TransactionPoolTooLargeException();
+      return null;
     }
 
     return this.parseTransactions(pool);
