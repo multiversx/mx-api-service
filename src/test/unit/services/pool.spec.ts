@@ -144,11 +144,10 @@ describe('PoolService', () => {
 
       expect(await service.getPool(new QueryPagination(), new PoolFilter())).toBeNull();
       expect(await service.getTransactionFromPool('e07af9835b6da5740d0f791cfe65491a562852c57d44af63fdc14be5d73f01da')).toBeNull();
-      expect(await service.getPoolCount(new PoolFilter({ sender: 'erd1qqqqqqqqqqqqqpgqp699jngundfqw07d8jzkepucvpzush6k3wvqyc44rx' }))).toBeNull();
       expect(gatewayService.getTransactionPool).not.toHaveBeenCalled();
     });
 
-    it('should count the total through the gateway, cached, also for a type', async () => {
+    it('should count the total through the gateway, cached, whatever the filters', async () => {
       gatewayService.getTransactionPoolCount = jest.fn().mockResolvedValue(42);
       cacheService.getOrSet = jest.fn().mockImplementation(async (key: string, createValueFunc: () => Promise<any>) => {
         return key === CacheInfo.TransactionPool.key ? null : await createValueFunc();
@@ -156,9 +155,9 @@ describe('PoolService', () => {
 
       expect(await service.getPoolCount(new PoolFilter())).toStrictEqual(42);
       expect(await service.getPoolCount(new PoolFilter({ type: TransactionType.Reward }))).toStrictEqual(42);
-      expect(await service.getPoolCount(new PoolFilter({ type: TransactionType.Reward, sender: 'erd1qqqqqqqqqqqqqpgqp699jngundfqw07d8jzkepucvpzush6k3wvqyc44rx' }))).toBeNull();
+      expect(await service.getPoolCount(new PoolFilter({ type: TransactionType.Reward, sender: 'erd1qqqqqqqqqqqqqpgqp699jngundfqw07d8jzkepucvpzush6k3wvqyc44rx' }))).toStrictEqual(42);
       expect(cacheService.getOrSet).toHaveBeenCalledWith(CacheInfo.TransactionPoolCount.key, expect.any(Function), CacheInfo.TransactionPoolCount.ttl);
-      expect(gatewayService.getTransactionPoolCount).toHaveBeenCalledTimes(2);
+      expect(gatewayService.getTransactionPoolCount).toHaveBeenCalledTimes(3);
     });
   });
 

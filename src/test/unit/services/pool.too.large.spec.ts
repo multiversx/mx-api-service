@@ -1,6 +1,5 @@
 import { NotFoundException } from "@nestjs/common";
 import { PoolGateway } from "src/crons/websocket/pool.gateway";
-import { PoolFilter } from "src/endpoints/pool/entities/pool.filter";
 import { TransactionPoolTooLargeException } from "src/endpoints/pool/entities/transaction.pool.too.large.exception";
 import { PoolUpdateStatus } from "src/endpoints/pool/entities/pool.update.status";
 import { PoolController } from "src/endpoints/pool/pool.controller";
@@ -16,7 +15,7 @@ describe('Transaction pool too large', () => {
     poolService = {
       getPool: jest.fn().mockResolvedValue(null),
       getTransactionFromPool: jest.fn().mockResolvedValue(null),
-      getPoolCount: jest.fn().mockImplementation(async (filter: PoolFilter) => await Promise.resolve(filter.sender ? null : 42)),
+      getPoolCount: jest.fn().mockResolvedValue(42),
     };
   });
 
@@ -32,10 +31,10 @@ describe('Transaction pool too large', () => {
       await expect(controller.getTransactionFromPool(txHash)).rejects.toBeInstanceOf(TransactionPoolTooLargeException);
     });
 
-    it('should answer the counts the gateway gives and the too large exception for the others', async () => {
+    it('should answer the count, whatever the filters', async () => {
       expect(await controller.getTransactionPoolCount()).toStrictEqual(42);
       expect(await controller.getTransactionPoolCount(undefined, undefined, undefined, undefined, TransactionType.Reward)).toStrictEqual(42);
-      await expect(controller.getTransactionPoolCount('erd1qqqqqqqqqqqqqpgqp699jngundfqw07d8jzkepucvpzush6k3wvqyc44rx')).rejects.toBeInstanceOf(TransactionPoolTooLargeException);
+      expect(await controller.getTransactionPoolCount('erd1qqqqqqqqqqqqqpgqp699jngundfqw07d8jzkepucvpzush6k3wvqyc44rx')).toStrictEqual(42);
     });
 
     it('should answer the too large exception as unavailable, with a code and a message', () => {

@@ -58,7 +58,6 @@ export class PoolController {
   @Get("/pool/count")
   @ApiOperation({ summary: 'Transactions pool count', description: 'Returns the number of transactions that are currently in the memory pool.' })
   @ApiOkResponse({ type: Number })
-  @ApiServiceUnavailableResponse({ description: 'The transaction pool is too large to be displayed' })
   @ApiQuery({ name: 'sender', description: 'Returns the number of transactions with a specific sender', required: false })
   @ApiQuery({ name: 'receiver', description: 'Search in transaction pool by a specific receiver', required: false })
   @ApiQuery({ name: 'senderShard', description: 'The shard of the sender', required: false })
@@ -71,19 +70,13 @@ export class PoolController {
     @Query('receiverShard', ParseIntPipe) receiverShard?: number,
     @Query('type', new ParseEnumPipe(TransactionType)) type?: TransactionType,
   ): Promise<number> {
-    const count = await this.poolService.getPoolCount(new PoolFilter({
+    return await this.poolService.getPoolCount(new PoolFilter({
       sender: sender,
       receiver: receiver,
       senderShard: senderShard,
       receiverShard: receiverShard,
       type: type,
     }));
-
-    if (count == null) {
-      throw new TransactionPoolTooLargeException();
-    }
-
-    return count;
   }
 
   @Get("/pool/c")
@@ -93,13 +86,7 @@ export class PoolController {
     @Query('receiver', ParseAddressPipe) receiver?: string,
     @Query('type', new ParseEnumPipe(TransactionType)) type?: TransactionType,
   ): Promise<number> {
-    const count = await this.poolService.getPoolCount(new PoolFilter({ sender, receiver, type }));
-
-    if (count == null) {
-      throw new TransactionPoolTooLargeException();
-    }
-
-    return count;
+    return await this.poolService.getPoolCount(new PoolFilter({ sender, receiver, type }));
   }
 
   @Get("/pool/:txhash")

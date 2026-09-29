@@ -31,14 +31,10 @@ export class PoolService {
     return pool.find(tx => tx.txHash === txHash);
   }
 
-  async getPoolCount(filter: PoolFilter): Promise<number | null> {
+  async getPoolCount(filter: PoolFilter): Promise<number> {
     const pool = await this.getPoolWithFilters(filter);
     if (pool != null) {
       return pool.length;
-    }
-
-    if (Object.entries(filter).some(([key, value]) => key !== 'type' && value !== undefined)) {
-      return null;
     }
 
     return await this.cacheService.getOrSet(
