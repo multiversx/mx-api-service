@@ -5,12 +5,16 @@ import { CacheInfo } from "src/utils/cache.info";
 
 describe('CacheWarmerService transaction pool', () => {
   const ttl = 10;
-  const pool = [{ txHash: 'a', type: TransactionType.Transaction }];
-  const counts: Record<string, number> = {
-    total: 12,
-    [TransactionType.Transaction]: 3,
-    [TransactionType.SmartContractResult]: 4,
-    [TransactionType.Reward]: 5,
+  const totalCount = 12;
+  const pool = [
+    { txHash: 'a', type: TransactionType.Transaction },
+    { txHash: 'b', type: TransactionType.Reward },
+    { txHash: 'c', type: TransactionType.Reward },
+  ];
+  const typeCounts: Record<TransactionType, number> = {
+    [TransactionType.Transaction]: 1,
+    [TransactionType.SmartContractResult]: 0,
+    [TransactionType.Reward]: 2,
   };
 
   let warmer: CacheWarmerService;
@@ -25,7 +29,7 @@ describe('CacheWarmerService transaction pool', () => {
     });
 
     poolService = {
-      getPoolCountRaw: jest.fn().mockImplementation(async (type?: TransactionType) => await Promise.resolve(counts[type ?? 'total'])),
+      getPoolCountRaw: jest.fn().mockResolvedValue(totalCount),
       getTxPoolRaw: jest.fn().mockResolvedValue(pool),
     };
     cachingService = { set: jest.fn() };
@@ -39,19 +43,20 @@ describe('CacheWarmerService transaction pool', () => {
     });
   });
 
-  it('should warm the pool, its total count and the count for every transaction type', async () => {
+  it('should warm the pool, its total count and the count for every transaction type, counted from that pool', async () => {
     await warmer.handleTxPoolInvalidations();
 
-    expect(cachingService.set).toHaveBeenCalledWith(CacheInfo.TransactionPoolCount().key, counts.total, ttl);
+    expect(cachingService.set).toHaveBeenCalledWith(CacheInfo.TransactionPoolCount().key, totalCount, ttl);
     expect(cachingService.set).toHaveBeenCalledWith(CacheInfo.TransactionPool.key, pool, ttl);
     for (const type of Object.values(TransactionType)) {
-      expect(cachingService.set).toHaveBeenCalledWith(CacheInfo.TransactionPoolCount(type).key, counts[type], ttl);
+      expect(cachingService.set).toHaveBeenCalledWith(CacheInfo.TransactionPoolCount(type).key, typeCounts[type], ttl);
     }
+    expect(poolService.getPoolCountRaw).toHaveBeenCalledTimes(1);
   });
 
   it('should request the total count and the pool together', async () => {
     let releaseCount: () => void = () => { };
-    poolService.getPoolCountRaw.mockImplementationOnce(async () => await new Promise<number>(resolve => releaseCount = () => resolve(counts.total)));
+    poolService.getPoolCountRaw.mockImplementationOnce(async () => await new Promise<number>(resolve => releaseCount = () => resolve(totalCount)));
 
     const warming = warmer.handleTxPoolInvalidations();
     await new Promise(resolve => setImmediate(resolve));
@@ -61,7 +66,7 @@ describe('CacheWarmerService transaction pool', () => {
 
     releaseCount();
     await warming;
-    expect(cachingService.set).toHaveBeenCalledWith(CacheInfo.TransactionPoolCount().key, counts.total, ttl);
+    expect(cachingService.set).toHaveBeenCalledWith(CacheInfo.TransactionPoolCount().key, totalCount, ttl);
   });
 
   it('should cache the pool as null, besides the total count, while it is too large', async () => {
@@ -70,7 +75,7 @@ describe('CacheWarmerService transaction pool', () => {
     await warmer.handleTxPoolInvalidations();
 
     expect(cachingService.set).toHaveBeenCalledTimes(2);
-    expect(cachingService.set).toHaveBeenCalledWith(CacheInfo.TransactionPoolCount().key, counts.total, ttl);
+    expect(cachingService.set).toHaveBeenCalledWith(CacheInfo.TransactionPoolCount().key, totalCount, ttl);
     expect(cachingService.set).toHaveBeenCalledWith(CacheInfo.TransactionPool.key, null, ttl);
     expect(poolService.getPoolCountRaw).toHaveBeenCalledTimes(1);
   });

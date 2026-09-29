@@ -8,7 +8,6 @@ import { TransactionType } from "../transactions/entities/transaction.type";
 import { PoolFilter } from "./entities/pool.filter";
 import { ParseArrayPipeOptions } from "@multiversx/sdk-nestjs-common/lib/pipes/entities/parse.array.options";
 import { TransactionPoolTooLarge } from "./entities/transaction.pool.too.large";
-import { TransactionPoolTooLargeError } from "./entities/transaction.pool.too.large.error";
 
 @Controller()
 @ApiTags('pool')
@@ -17,19 +16,6 @@ export class PoolController {
   constructor(
     private readonly poolService: PoolService,
   ) { }
-
-  // a pool too large to be read is not an error for the clients, which show that instead of its content
-  private async unlessTooLarge<T>(getResult: () => Promise<T>): Promise<T | TransactionPoolTooLarge> {
-    try {
-      return await getResult();
-    } catch (error) {
-      if (error instanceof TransactionPoolTooLargeError) {
-        return new TransactionPoolTooLarge();
-      }
-
-      throw error;
-    }
-  }
 
   @Get("/pool")
   @ApiOperation({ summary: 'Transactions pool', description: 'Returns the transactions that are currently in the memory pool.' })
@@ -56,14 +42,17 @@ export class PoolController {
     @Query('type', new ParseEnumPipe(TransactionType)) type?: TransactionType,
     @Query('function', new ParseArrayPipe(new ParseArrayPipeOptions({ allowEmptyString: true }))) functions?: string[],
   ): Promise<TransactionInPool[] | TransactionPoolTooLarge> {
-    return await this.unlessTooLarge(() => this.poolService.getPool(new QueryPagination({ from, size }), new PoolFilter({
+    const pool = await this.poolService.getPool(new QueryPagination({ from, size }), new PoolFilter({
       sender: sender,
       receiver: receiver,
       senderShard: senderShard,
       receiverShard: receiverShard,
       type: type,
       functions: functions,
-    })));
+    }));
+
+    // null when the pool is too large to be read
+    return pool ?? new TransactionPoolTooLarge();
   }
 
   @Get("/pool/count")
@@ -84,13 +73,16 @@ export class PoolController {
     @Query('receiverShard', ParseIntPipe) receiverShard?: number,
     @Query('type', new ParseEnumPipe(TransactionType)) type?: TransactionType,
   ): Promise<number | TransactionPoolTooLarge> {
-    return await this.unlessTooLarge(() => this.poolService.getPoolCount(new PoolFilter({
+    const count = await this.poolService.getPoolCount(new PoolFilter({
       sender: sender,
       receiver: receiver,
       senderShard: senderShard,
       receiverShard: receiverShard,
       type: type,
-    })));
+    }));
+
+    // null when the count needs the pool and the pool is too large to be read
+    return count ?? new TransactionPoolTooLarge();
   }
 
   @Get("/pool/c")
@@ -100,7 +92,8 @@ export class PoolController {
     @Query('receiver', ParseAddressPipe) receiver?: string,
     @Query('type', new ParseEnumPipe(TransactionType)) type?: TransactionType,
   ): Promise<number | TransactionPoolTooLarge> {
-    return await this.unlessTooLarge(() => this.poolService.getPoolCount(new PoolFilter({ sender, receiver, type })));
+    const count = await this.poolService.getPoolCount(new PoolFilter({ sender, receiver, type }));
+    return count ?? new TransactionPoolTooLarge();
   }
 
   @Get("/pool/:txhash")
@@ -113,7 +106,11 @@ export class PoolController {
   async getTransactionFromPool(
     @Param('txhash', ParseTransactionHashPipe) txHash: string,
   ): Promise<TransactionInPool | TransactionPoolTooLarge> {
-    const transaction = await this.unlessTooLarge(() => this.poolService.getTransactionFromPool(txHash));
+    const transaction = await this.poolService.getTransactionFromPool(txHash);
+    if (transaction === null) {
+      return new TransactionPoolTooLarge();
+    }
+
     if (transaction === undefined) {
       throw new NotFoundException('Transaction not found');
     }

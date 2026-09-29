@@ -2,9 +2,10 @@ import { NotFoundException } from "@nestjs/common";
 import { PoolGateway } from "src/crons/websocket/pool.gateway";
 import { PoolFilter } from "src/endpoints/pool/entities/pool.filter";
 import { TransactionPoolTooLarge } from "src/endpoints/pool/entities/transaction.pool.too.large";
-import { TransactionPoolTooLargeError } from "src/endpoints/pool/entities/transaction.pool.too.large.error";
+import { PoolUpdateStatus } from "src/endpoints/pool/entities/pool.update.status";
 import { PoolController } from "src/endpoints/pool/pool.controller";
 import { TransactionType } from "src/endpoints/transactions/entities/transaction.type";
+import { TransactionService } from "src/endpoints/transactions/transaction.service";
 
 describe('Transaction pool too large', () => {
   const tooLarge = { tooLarge: true, message: 'The transaction pool is too large to be displayed' };
@@ -14,12 +15,11 @@ describe('Transaction pool too large', () => {
 
   beforeEach(() => {
     poolService = {
-      getPool: jest.fn().mockRejectedValue(new TransactionPoolTooLargeError()),
-      getTransactionFromPool: jest.fn().mockRejectedValue(new TransactionPoolTooLargeError()),
-      // the total comes from the gateway, only counts that need the pool fail
-      getPoolCount: jest.fn().mockImplementation(async (filter: PoolFilter) => {
-        return filter.type ? await Promise.reject(new TransactionPoolTooLargeError()) : 42;
-      }),
+      // null stands for a pool too large to be read
+      getPool: jest.fn().mockResolvedValue(null),
+      getTransactionFromPool: jest.fn().mockResolvedValue(null),
+      // the total comes from the gateway, only the counts that need the pool are null
+      getPoolCount: jest.fn().mockImplementation(async (filter: PoolFilter) => await Promise.resolve(filter.type ? null : 42)),
     };
   });
 
@@ -50,6 +50,19 @@ describe('Transaction pool too large', () => {
     });
   });
 
+  describe('TransactionService price per unit', () => {
+    it('should leave the prices unknown, rather than at zero, while the pool is too large', async () => {
+      // only the dependencies of the price per unit, without the constructor
+      const transactionService: TransactionService = Object.assign(Object.create(TransactionService.prototype), {
+        blockService: { getBlocks: jest.fn().mockResolvedValue([{ nonce: 100 }]) },
+        networkService: { getConstants: jest.fn().mockResolvedValue({ minGasLimit: 50000, gasPerDataByte: 1500, gasPriceModifier: '0.01' }) },
+        poolService: { getPoolWithFilters: jest.fn().mockResolvedValue(null) },
+      });
+
+      expect(await transactionService.getPpuByShardIdRaw(1)).toBeNull();
+    });
+  });
+
   describe('PoolGateway', () => {
     let gateway: PoolGateway;
     let emit: jest.Mock;
@@ -60,24 +73,24 @@ describe('Transaction pool too large', () => {
       gateway.server = { to: jest.fn().mockReturnValue({ emit }) } as any;
     });
 
-    it('should send the room an empty pool marked as too large, with the total count', async () => {
+    it('should send the room an empty pool with the too large status, and the total count', async () => {
       await gateway.pushPoolForRoom('pool-{"from":0,"size":25}');
 
-      expect(emit).toHaveBeenCalledWith('poolUpdate', { pool: [], poolCount: 42, tooLarge: true });
+      expect(emit).toHaveBeenCalledWith('poolUpdate', { status: PoolUpdateStatus.tooLarge, pool: [], poolCount: 42 });
     });
 
     it('should send no count to a room that filters by type, as that count needs the pool', async () => {
       await gateway.pushPoolForRoom(`pool-{"from":0,"size":25,"type":"${TransactionType.Reward}"}`);
 
-      expect(emit).toHaveBeenCalledWith('poolUpdate', { pool: [], poolCount: null, tooLarge: true });
+      expect(emit).toHaveBeenCalledWith('poolUpdate', { status: PoolUpdateStatus.tooLarge, pool: [], poolCount: null });
     });
 
-    it('should send the pool as before when it can be read', async () => {
+    it('should send the pool with the success status when it can be read', async () => {
       poolService.getPool.mockResolvedValue([{ txHash }]);
 
       await gateway.pushPoolForRoom('pool-{"from":0,"size":25}');
 
-      expect(emit).toHaveBeenCalledWith('poolUpdate', { pool: [{ txHash }], poolCount: 42 });
+      expect(emit).toHaveBeenCalledWith('poolUpdate', { status: PoolUpdateStatus.success, pool: [{ txHash }], poolCount: 42 });
     });
   });
 });

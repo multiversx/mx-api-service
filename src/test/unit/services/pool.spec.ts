@@ -8,7 +8,6 @@ import { PoolService } from "src/endpoints/pool/pool.service";
 import { TransactionType } from "src/endpoints/transactions/entities/transaction.type";
 import { ProtocolService } from "../../../common/protocol/protocol.service";
 import { TransactionActionService } from "../../../endpoints/transactions/transaction-action/transaction.action.service";
-import { TransactionPoolTooLargeError } from "src/endpoints/pool/entities/transaction.pool.too.large.error";
 import { CacheInfo } from "src/utils/cache.info";
 
 describe('PoolService', () => {
@@ -78,7 +77,7 @@ describe('PoolService', () => {
     it('should work and return the pool', async () => {
       const pool = await service.getPool(new QueryPagination(), new PoolFilter());
       expect(pool).toHaveLength(7);
-      expect(pool[0].type).toStrictEqual(TransactionType.Transaction);
+      expect(pool?.[0].type).toStrictEqual(TransactionType.Transaction);
     });
 
     it('should work and return the pool with filters', async () => {
@@ -95,7 +94,7 @@ describe('PoolService', () => {
     it('should work and return the pool with query pagination', async () => {
       const pool = await service.getPool(new QueryPagination({ from: 0, size: 2 }), new PoolFilter({ type: TransactionType.Reward }));
       expect(pool).toHaveLength(2);
-      expect(pool[0].type).toStrictEqual(TransactionType.Reward);
+      expect(pool?.[0].type).toStrictEqual(TransactionType.Reward);
     });
   });
 
@@ -125,8 +124,8 @@ describe('PoolService', () => {
       expect(cacheService.getOrSet).toHaveBeenCalledWith(CacheInfo.TransactionPool.key, expect.any(Function), CacheInfo.TransactionPool.ttl, CacheInfo.TransactionPool.ttl, true);
 
       const pool = await service.getPool(new QueryPagination({ from: 0, size: 100 }), filter);
-      expect(pool.length).toBeGreaterThan(0);
-      expect(poolCount).toStrictEqual(pool.length);
+      expect(pool?.length).toBeGreaterThan(0);
+      expect(poolCount).toStrictEqual(pool?.length);
     });
 
     it('should work and return the pool count with filters', async () => {
@@ -148,15 +147,16 @@ describe('PoolService', () => {
       expect(await service.getTxPoolRaw()).toBeNull();
     });
 
-    it('should answer from the cached null without downloading the pool again', async () => {
+    it('should answer null from the cached null, without downloading the pool again', async () => {
       cacheService.getOrSet = jest.fn().mockImplementation(async (key: string, createValueFunc: () => Promise<any>) => {
         return key === CacheInfo.TransactionPool.key ? null : await createValueFunc();
       });
       gatewayService.getTransactionPool = jest.fn();
 
-      await expect(service.getPool(new QueryPagination(), new PoolFilter())).rejects.toBeInstanceOf(TransactionPoolTooLargeError);
-      await expect(service.getTransactionFromPool('e07af9835b6da5740d0f791cfe65491a562852c57d44af63fdc14be5d73f01da')).rejects.toBeInstanceOf(TransactionPoolTooLargeError);
-      await expect(service.getPoolCount(new PoolFilter({ type: TransactionType.Reward }))).rejects.toBeInstanceOf(TransactionPoolTooLargeError);
+      expect(await service.getPool(new QueryPagination(), new PoolFilter())).toBeNull();
+      expect(await service.getTransactionFromPool('e07af9835b6da5740d0f791cfe65491a562852c57d44af63fdc14be5d73f01da')).toBeNull();
+      expect(await service.getPoolCount(new PoolFilter({ type: TransactionType.Reward }))).toBeNull();
+      expect(await service.getPoolCount(new PoolFilter({ sender: 'erd1qqqqqqqqqqqqqpgqp699jngundfqw07d8jzkepucvpzush6k3wvqyc44rx' }))).toBeNull();
       expect(gatewayService.getTransactionPool).not.toHaveBeenCalled();
     });
 

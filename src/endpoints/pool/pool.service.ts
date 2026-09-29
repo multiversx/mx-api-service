@@ -12,7 +12,6 @@ import { TxInPoolFields } from "src/common/gateway/entities/tx.in.pool.fields";
 import { TransactionActionService } from "../transactions/transaction-action/transaction.action.service";
 import { Transaction } from "../transactions/entities/transaction";
 import { ApiUtils } from "@multiversx/sdk-nestjs-http";
-import { TransactionPoolTooLargeError } from "./entities/transaction.pool.too.large.error";
 
 @Injectable()
 export class PoolService {
@@ -23,16 +22,22 @@ export class PoolService {
     private readonly transactionActionService: TransactionActionService,
   ) { }
 
-  async getTransactionFromPool(txHash: string): Promise<TransactionInPool | undefined> {
+  // undefined when the transaction is not in the pool, null when the pool is too large to be read
+  async getTransactionFromPool(txHash: string): Promise<TransactionInPool | undefined | null> {
     const pool = await this.getPoolWithFilters();
+    if (pool === null) {
+      return null;
+    }
+
     return pool.find(tx => tx.txHash === txHash);
   }
 
-  async getPoolCount(filter: PoolFilter): Promise<number> {
+  // null when the count needs the pool and the pool is too large to be read
+  async getPoolCount(filter: PoolFilter): Promise<number | null> {
     const { type, ...otherFilters } = filter;
     if (Object.values(otherFilters).some(value => value !== undefined)) {
       const pool = await this.getPoolWithFilters(filter);
-      return pool.length;
+      return pool === null ? null : pool.length;
     }
 
     // the total and the count for each type are cached on their own
@@ -45,31 +50,37 @@ export class PoolService {
 
   // the gateway counts the pool itself, so the total needs neither the pool nor its size limit. counts by
   // type are taken from the pool
-  async getPoolCountRaw(type?: TransactionType): Promise<number> {
+  async getPoolCountRaw(type?: TransactionType): Promise<number | null> {
     if (type === undefined) {
       return await this.gatewayService.getTransactionPoolCount();
     }
 
     const pool = await this.getPoolWithFilters(new PoolFilter({ type }));
-    return pool.length;
+    return pool === null ? null : pool.length;
   }
 
+  // null when the pool is too large to be read
   async getPool(
     queryPagination: QueryPagination,
     filter?: PoolFilter,
-  ): Promise<TransactionInPool[]> {
+  ): Promise<TransactionInPool[] | null> {
     if (!this.apiConfigService.isTransactionPoolEnabled()) {
       return [];
     }
 
     const { from, size } = queryPagination;
     const pool = await this.getPoolWithFilters(filter);
+    if (pool === null) {
+      return null;
+    }
+
     return pool.slice(from, from + size);
   }
 
+  // null when the pool is too large to be read
   async getPoolWithFilters(
     filter?: PoolFilter,
-  ): Promise<TransactionInPool[]> {
+  ): Promise<TransactionInPool[] | null> {
     const pool = await this.cacheService.getOrSet(
       CacheInfo.TransactionPool.key,
       async () => await this.getTxPoolRaw(),
@@ -79,7 +90,7 @@ export class PoolService {
     );
 
     if (pool === null) {
-      throw new TransactionPoolTooLargeError();
+      return null;
     }
 
     return this.applyFilters(pool, filter);
