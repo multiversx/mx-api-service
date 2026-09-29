@@ -13,7 +13,7 @@ class CustomSequencer extends Sequencer {
       'delegation-legacy.cs-e2e.ts',
       'accounts.cs-e2e.ts',
       'stake.cs-e2e.ts',
-      'round.cs-e2e.ts',
+      'rounds.cs-e2e.ts',
       'results.cs-e2e.ts',
       'miniblocks.cs-e2e.ts',
     ];
@@ -31,7 +31,9 @@ class CustomSequencer extends Sequencer {
       if (indexB !== -1) {
         return 1;
       }
-      return 0;
+      // the files not listed above share one chain, so the order they run in decides the state each
+      // of them sees. leaving it to the order jest discovered them in makes that differ between runs
+      return testA.path.localeCompare(testB.path);
     });
   }
 }

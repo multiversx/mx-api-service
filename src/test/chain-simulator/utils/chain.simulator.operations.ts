@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { AddressUtils } from "@multiversx/sdk-nestjs-common";
+import { config } from '../config/env.config';
 
 axios.defaults.adapter = 'fetch';
 axios.defaults.headers.common['Connection'] = 'close';
@@ -32,7 +33,7 @@ export async function getNonce(
     return currentNonceResponse.data.data.nonce;
   } catch (e) {
     console.error(e);
-    return 0;
+    throw e;
   }
 }
 
@@ -57,14 +58,37 @@ export async function deploySc(args: DeployScArgs): Promise<string> {
     const scDeployLog = txResponse?.data?.data?.transaction?.logs?.events?.find(
       (event: { identifier: string }) => event.identifier === 'SCDeploy',
     );
+    if (!scDeployLog) {
+      throw new Error(`SC deploy ${txHash} produced no SCDeploy event`);
+    }
+
     console.log(
-      `Deployed SC. tx hash: ${txHash}. address: ${scDeployLog?.address}`,
+      `Deployed SC. tx hash: ${txHash}. address: ${scDeployLog.address}`,
     );
-    return scDeployLog?.address;
+    return scDeployLog.address;
   } catch (e) {
     console.error(e);
-    return 'n/a';
+    throw e;
   }
+}
+
+// the api resolves a token through its document in the tokens index, and caches the answer, including
+// the answer that the token does not exist. anything that makes the api look the token up before it is
+// indexed leaves the token unresolved for as long as that answer is cached, so an issued token is not
+// handed to the tests before it can be found there, through the same query the api runs
+export async function waitForTokenIndexed(identifier: string, timeoutMs: number = 60000) {
+  const deadline = Date.now() + timeoutMs;
+
+  while (Date.now() < deadline) {
+    const response = await axios.get(`${config.elasticUrl}/tokens/_search?q=_id:${identifier}`);
+    if (response.data?.hits?.hits?.length > 0) {
+      return;
+    }
+
+    await new Promise(resolve => setTimeout(resolve, 500));
+  }
+
+  throw new Error(`Token ${identifier} was not indexed within ${timeoutMs}ms`);
 }
 
 export async function issueEsdt(args: IssueEsdtArgs) {
@@ -95,6 +119,8 @@ export async function issueEsdt(args: IssueEsdtArgs) {
   console.log(
     `Issued token with ticker ${args.tokenTicker}. tx hash: ${txHash}. identifier: ${tokenIdentifier}`,
   );
+
+  await waitForTokenIndexed(tokenIdentifier);
   return tokenIdentifier;
 }
 
@@ -160,8 +186,9 @@ export async function sendTransaction(
     );
     return txHash;
   } catch (e) {
+    // rethrown: a placeholder result only moves the failure to some later, unrelated assertion
     console.error(e);
-    return 'n/a';
+    throw e;
   }
 }
 
@@ -287,6 +314,7 @@ export async function issueCollection(args: IssueNftArgs, type: 'NonFungible' | 
     `Issued ${type} collection with ticker ${args.tokenTicker}. tx hash: ${txHash}. identifier: ${tokenIdentifier}`
   );
 
+  await waitForTokenIndexed(tokenIdentifier);
   return tokenIdentifier;
 }
 
@@ -496,6 +524,7 @@ export async function issueMultipleMetaESDTCollections(
       ).toString();
 
       metaEsdtCollectionIdentifiers.push({ identifier: tokenIdentifier });
+      await waitForTokenIndexed(tokenIdentifier);
 
       console.log(
         `Issued MetaESDT collection ${tokenName}. tx hash: ${txHash}. identifier: ${tokenIdentifier}`,
