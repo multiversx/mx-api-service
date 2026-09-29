@@ -88,6 +88,17 @@ export class RoomKeyGenerator {
     return rooms;
   }
 
+  // Renaming a field can move it to a different position in the sorted key, so the key is
+  // rebuilt from its parsed form instead of being patched in place.
+  public static substitute(prefix: string, roomKey: string, from: string, to: string): string {
+    const { [from]: value, ...rest } = JSON.parse(roomKey.slice(prefix.length));
+    if (value === undefined) {
+      return roomKey;
+    }
+
+    return `${prefix}${this.deterministicStringify({ ...rest, [to]: value })}`;
+  }
+
   static deterministicStringify(obj: Record<string, any>): string {
     return JSON.stringify(
       Object.keys(obj)
