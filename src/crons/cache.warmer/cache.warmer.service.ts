@@ -158,7 +158,7 @@ export class CacheWarmerService {
 
     const counts = pool !== null
       ? types.map(type => pool.filter(transaction => type === undefined || transaction.type === type).length)
-      : await Promise.all(types.map(type => this.poolService.getPoolCountFromGateway(type)));
+      : await Promise.all(types.map(type => this.gatewayService.getTransactionPoolCount(type)));
 
     await Promise.all([
       this.invalidateKey(CacheInfo.TransactionPool.key, pool, ttl),

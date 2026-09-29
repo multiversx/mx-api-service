@@ -45,21 +45,13 @@ export class PoolService {
     );
   }
 
-  async getPoolCountRaw(type?: TransactionType): Promise<number | null> {
+  async getPoolCountRaw(type?: TransactionType): Promise<number> {
     const pool = await this.getPoolWithFilters(new PoolFilter({ type }));
     if (pool !== null) {
       return pool.length;
     }
 
-    return await this.getPoolCountFromGateway(type);
-  }
-
-  async getPoolCountFromGateway(type?: TransactionType): Promise<number | null> {
-    if (type !== undefined && type !== TransactionType.Transaction) {
-      return null;
-    }
-
-    return await this.gatewayService.getTransactionPoolCount();
+    return await this.gatewayService.getTransactionPoolCount(type);
   }
 
   async getPool(

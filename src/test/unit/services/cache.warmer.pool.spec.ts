@@ -10,15 +10,16 @@ describe('CacheWarmerService transaction pool', () => {
     { txHash: 'b', type: TransactionType.Reward },
     { txHash: 'c', type: TransactionType.Reward },
   ];
-  const gatewayCounts: Record<string, number | null> = {
+  const gatewayCounts: Record<string, number> = {
     total: 12,
-    [TransactionType.Transaction]: 12,
-    [TransactionType.SmartContractResult]: null,
-    [TransactionType.Reward]: null,
+    [TransactionType.Transaction]: 7,
+    [TransactionType.SmartContractResult]: 3,
+    [TransactionType.Reward]: 2,
   };
 
   let warmer: CacheWarmerService;
   let poolService: any;
+  let gatewayService: any;
   let cachingService: any;
 
   beforeEach(() => {
@@ -27,14 +28,15 @@ describe('CacheWarmerService transaction pool', () => {
       return LockResult.SUCCESS;
     });
 
-    poolService = {
-      getTxPoolRaw: jest.fn().mockResolvedValue(pool),
-      getPoolCountFromGateway: jest.fn().mockImplementation(async (type?: TransactionType) => await Promise.resolve(gatewayCounts[type ?? 'total'])),
+    poolService = { getTxPoolRaw: jest.fn().mockResolvedValue(pool) };
+    gatewayService = {
+      getTransactionPoolCount: jest.fn().mockImplementation(async (type?: TransactionType) => await Promise.resolve(gatewayCounts[type ?? 'total'])),
     };
     cachingService = { set: jest.fn() };
 
     warmer = Object.assign(Object.create(CacheWarmerService.prototype), {
       poolService,
+      gatewayService,
       cachingService,
       apiConfigService: { getTransactionPoolCacheWarmerTtlInSeconds: () => ttl },
       clientProxy: { emit: jest.fn() },
@@ -49,7 +51,7 @@ describe('CacheWarmerService transaction pool', () => {
     expect(cachingService.set).toHaveBeenCalledWith(CacheInfo.TransactionPoolCount(TransactionType.Transaction).key, 1, ttl);
     expect(cachingService.set).toHaveBeenCalledWith(CacheInfo.TransactionPoolCount(TransactionType.SmartContractResult).key, 0, ttl);
     expect(cachingService.set).toHaveBeenCalledWith(CacheInfo.TransactionPoolCount(TransactionType.Reward).key, 2, ttl);
-    expect(poolService.getPoolCountFromGateway).not.toHaveBeenCalled();
+    expect(gatewayService.getTransactionPoolCount).not.toHaveBeenCalled();
   });
 
   it('should warm the pool as null and count the total and every type through the gateway when it is too large', async () => {
@@ -62,6 +64,6 @@ describe('CacheWarmerService transaction pool', () => {
     for (const type of Object.values(TransactionType)) {
       expect(cachingService.set).toHaveBeenCalledWith(CacheInfo.TransactionPoolCount(type).key, gatewayCounts[type], ttl);
     }
-    expect(poolService.getPoolCountFromGateway).toHaveBeenCalledTimes(Object.values(TransactionType).length + 1);
+    expect(gatewayService.getTransactionPoolCount).toHaveBeenCalledTimes(Object.values(TransactionType).length + 1);
   });
 });

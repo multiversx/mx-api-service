@@ -16,7 +16,7 @@ describe('Transaction pool too large', () => {
     poolService = {
       getPool: jest.fn().mockResolvedValue(null),
       getTransactionFromPool: jest.fn().mockResolvedValue(null),
-      getPoolCount: jest.fn().mockImplementation(async (filter: PoolFilter) => await Promise.resolve(filter.type === TransactionType.Reward ? null : 42)),
+      getPoolCount: jest.fn().mockImplementation(async (filter: PoolFilter) => await Promise.resolve(filter.sender ? null : 42)),
     };
   });
 
@@ -35,8 +35,8 @@ describe('Transaction pool too large', () => {
 
     it('should answer the counts the gateway gives and a custom response for the others', async () => {
       expect(await controller.getTransactionPoolCount()).toStrictEqual(42);
-      expect(await controller.getTransactionPoolCount(undefined, undefined, undefined, undefined, TransactionType.Transaction)).toStrictEqual(42);
-      expect(await controller.getTransactionPoolCount(undefined, undefined, undefined, undefined, TransactionType.Reward)).toEqual(tooLarge);
+      expect(await controller.getTransactionPoolCount(undefined, undefined, undefined, undefined, TransactionType.Reward)).toStrictEqual(42);
+      expect(await controller.getTransactionPoolCount('erd1qqqqqqqqqqqqqpgqp699jngundfqw07d8jzkepucvpzush6k3wvqyc44rx')).toEqual(tooLarge);
     });
 
     it('should keep answering other failures as errors', async () => {
@@ -76,10 +76,11 @@ describe('Transaction pool too large', () => {
       expect(emit).toHaveBeenCalledWith('poolUpdate', { pool: null, poolCount: 42 });
     });
 
-    it('should send a null pool with no count to a room of a type the gateway does not count', async () => {
+    it('should send a null pool with the count of the type of the room', async () => {
       await gateway.pushPoolForRoom(`pool-{"from":0,"size":25,"type":"${TransactionType.Reward}"}`);
 
-      expect(emit).toHaveBeenCalledWith('poolUpdate', { pool: null, poolCount: null });
+      expect(poolService.getPoolCount).toHaveBeenCalledWith(new PoolFilter({ type: TransactionType.Reward }));
+      expect(emit).toHaveBeenCalledWith('poolUpdate', { pool: null, poolCount: 42 });
     });
 
     it('should send the pool when it can be read', async () => {
