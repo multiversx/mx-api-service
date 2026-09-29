@@ -7,6 +7,9 @@ import { TransactionType } from "src/endpoints/transactions/entities/transaction
 import { TransactionGetService } from "src/endpoints/transactions/transaction.get.service";
 import { TransactionService } from "src/endpoints/transactions/transaction.service";
 import { TransferService } from "src/endpoints/transfers/transfer.service";
+import { QueryPagination } from "src/common/entities/query.pagination";
+import { SortOrder } from "src/common/entities/sort.order";
+import { TransactionQueryOptions } from "src/endpoints/transactions/entities/transactions.query.options";
 
 describe('Transfers Service', () => {
   let service: TransferService;
@@ -20,6 +23,7 @@ describe('Transfers Service', () => {
           useValue: {
             getTransfers: jest.fn(),
             getTransfersCount: jest.fn(),
+            getBlockByMiniBlockHash: jest.fn(),
           },
         },
         {
@@ -27,6 +31,7 @@ describe('Transfers Service', () => {
           useValue: {
             applyBlockInfo: jest.fn(),
             processTransactions: jest.fn(),
+            processRelayedInfo: jest.fn(),
           },
         },
         {
@@ -268,6 +273,68 @@ describe('Transfers Service', () => {
 
       expect(indexerServiceMock).toHaveBeenCalledWith(filter);
       expect(result).toStrictEqual(2);
+    });
+  });
+  describe('getTransfers - local sorting', () => {
+    // elastic order, the smart contract result's parent is not in this page so it is moved last
+    const options = (init?: Partial<TransactionQueryOptions>) => new TransactionQueryOptions({ withOperations: false, withLogs: false, ...init });
+
+    const elasticOperations = () => [
+      { txHash: 'a', type: 'normal', nonce: 5, timestamp: 100, searchAfter: 'cursor-1' },
+      { txHash: 'x', type: 'unsigned', originalTxHash: 'missing', timestamp: 100, searchAfter: 'cursor-2' },
+      { txHash: 'c', type: 'normal', nonce: 4, timestamp: 100, searchAfter: 'cursor-3' },
+      { txHash: 'b', type: 'normal', nonce: 3, timestamp: 100, searchAfter: 'cursor-4' },
+    ];
+
+    it('keeps the elastic cursors on their positions after sorting', async () => {
+      jest.spyOn(service['indexerService'], 'getTransfers').mockResolvedValue(elasticOperations() as any);
+
+      const result = await service.getTransfers(new TransactionFilter(), new QueryPagination({ size: 4 }), options());
+
+      expect(result.map(transfer => transfer.txHash)).toEqual(['a', 'c', 'b', 'x']);
+      expect(result.map(transfer => transfer.searchAfter)).toEqual(['cursor-1', 'cursor-2', 'cursor-3', 'cursor-4']);
+    });
+
+    it('sorts the pages requested with searchAfter as well', async () => {
+      jest.spyOn(service['indexerService'], 'getTransfers').mockResolvedValue(elasticOperations() as any);
+
+      const result = await service.getTransfers(new TransactionFilter(), new QueryPagination({ size: 4, searchAfter: 'cursor-0' }), options());
+
+      expect(result.map(transfer => transfer.txHash)).toEqual(['a', 'c', 'b', 'x']);
+      expect(result[result.length - 1].searchAfter).toBe('cursor-4');
+    });
+
+    it('follows the requested order when it is ascending', async () => {
+      const ascendingOperations = [
+        { txHash: 'b', type: 'normal', nonce: 3, timestamp: 100, searchAfter: 'cursor-1' },
+        { txHash: 'c', type: 'normal', nonce: 4, timestamp: 100, searchAfter: 'cursor-2' },
+        { txHash: 'x', type: 'unsigned', originalTxHash: 'missing', timestamp: 100, searchAfter: 'cursor-3' },
+        { txHash: 'a', type: 'normal', nonce: 5, timestamp: 100, searchAfter: 'cursor-4' },
+      ];
+      jest.spyOn(service['indexerService'], 'getTransfers').mockResolvedValue(ascendingOperations as any);
+
+      const result = await service.getTransfers(
+        new TransactionFilter({ order: SortOrder.asc }),
+        new QueryPagination({ size: 4, searchAfter: 'cursor-0' }),
+        options(),
+      );
+
+      expect(result.map(transfer => transfer.txHash)).toEqual(['x', 'b', 'c', 'a']);
+      expect(result.map(transfer => transfer.searchAfter)).toEqual(['cursor-1', 'cursor-2', 'cursor-3', 'cursor-4']);
+    });
+
+    it('accepts searchAfter together with withTxsOrder and miniBlockHash', async () => {
+      jest.spyOn(service['indexerService'], 'getTransfers').mockResolvedValue(elasticOperations() as any);
+      jest.spyOn(service['indexerService'], 'getBlockByMiniBlockHash').mockResolvedValue(undefined);
+
+      const result = await service.getTransfers(
+        new TransactionFilter({ miniBlockHash: 'miniblock' }),
+        new QueryPagination({ size: 4, searchAfter: 'cursor-0' }),
+        options({ withTxsOrder: true }),
+      );
+
+      expect(result).toHaveLength(4);
+      expect(result[result.length - 1].searchAfter).toBe('cursor-4');
     });
   });
 });
