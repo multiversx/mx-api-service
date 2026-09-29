@@ -111,13 +111,6 @@ describe('PoolService', () => {
       expect(cacheService.getOrSet).not.toHaveBeenCalledWith(CacheInfo.TransactionPool.key, expect.anything(), expect.anything());
     });
 
-    it('should count the pool when the gateway cannot count it', async () => {
-      gatewayService.getTransactionPoolCount = jest.fn().mockResolvedValue(null);
-
-      const poolCount = await service.getPoolCount(new PoolFilter());
-      expect(poolCount).toStrictEqual(7);
-    });
-
     it('should cache the count for a type apart from the total', async () => {
       const poolCount = await service.getPoolCount(new PoolFilter({ type: TransactionType.Reward }));
       expect(poolCount).toStrictEqual(5);

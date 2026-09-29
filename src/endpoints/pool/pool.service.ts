@@ -44,13 +44,10 @@ export class PoolService {
   }
 
   // the gateway counts the pool itself, so the total needs neither the pool nor its size limit. counts by
-  // type, and the total on gateways that do not have that endpoint yet, are taken from the pool
-  private async getPoolCountRaw(type?: TransactionType): Promise<number> {
+  // type are taken from the pool
+  async getPoolCountRaw(type?: TransactionType): Promise<number> {
     if (type === undefined) {
-      const count = await this.gatewayService.getTransactionPoolCount();
-      if (count !== null) {
-        return count;
-      }
+      return await this.gatewayService.getTransactionPoolCount();
     }
 
     const pool = await this.getPoolWithFilters(new PoolFilter({ type }));

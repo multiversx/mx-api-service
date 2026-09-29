@@ -190,16 +190,8 @@ export class GatewayService {
     });
   }
 
-  // null on gateways that do not have this endpoint yet
-  async getTransactionPoolCount(): Promise<number | null> {
-    // eslint-disable-next-line require-await
-    const result = await this.get('transaction/pool/count', GatewayComponentRequest.transactionPool, async (error) => {
-      return error?.response?.status === 404;
-    });
-
-    if (!result?.txPoolCounts) {
-      return null;
-    }
+  async getTransactionPoolCount(): Promise<number> {
+    const result = await this.get('transaction/pool/count', GatewayComponentRequest.transactionPool);
 
     return Object.values<number>(result.txPoolCounts).reduce((total, count) => total + count, 0);
   }
