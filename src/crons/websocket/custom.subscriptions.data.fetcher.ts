@@ -26,6 +26,8 @@ export class CustomSubscriptionsDataFetcher {
   private readonly logger = new OriginLogger(CustomSubscriptionsDataFetcher.name);
 
   private static readonly batchSize = 10000;
+  private static readonly maxRetries = 3;
+  private static readonly retryDelayMs = 500;
 
   constructor(
     private readonly transferService: TransferService,
@@ -37,8 +39,8 @@ export class CustomSubscriptionsDataFetcher {
   // transactions payload is derived from the transfers payload instead of being queried again.
   async fetchRoundData(timestampMs: number): Promise<CustomSubscriptionsRoundData> {
     const [transfers, events] = await Promise.all([
-      this.fetchTransfers(timestampMs),
-      this.fetchEvents(timestampMs),
+      this.withRetries(`transfers for timestamp '${timestampMs}'`, () => this.fetchTransfers(timestampMs)),
+      this.withRetries(`events for timestamp '${timestampMs}'`, () => this.fetchEvents(timestampMs)),
     ]);
 
     return new CustomSubscriptionsRoundData({
@@ -48,63 +50,74 @@ export class CustomSubscriptionsDataFetcher {
     });
   }
 
-  private async fetchTransfers(timestampMs: number): Promise<Transaction[]> {
-    try {
-      const size = CustomSubscriptionsDataFetcher.batchSize;
-      const filter = new TransactionFilter({ before: timestampMs, after: timestampMs, withTxsRelayedByAddress: true });
-      const options = new TransactionQueryOptions({ withScamInfo: false, withUsername: true, withBlockInfo: false, withLogs: false, withOperations: false, withActionTransferValue: false, withTxsOrder: false, withCanBeIgnoredFlag: true });
+  // after the last retry the round goes on without this data, so a persistent error does not block the next rounds
+  private async withRetries<T>(description: string, fetch: () => Promise<T[]>): Promise<T[]> {
+    const maxRetries = CustomSubscriptionsDataFetcher.maxRetries;
 
-      const allTransfers: Transaction[] = [];
-
-      let batch = await this.transferService.getTransfers(filter, new QueryPagination({ size }), options);
-      allTransfers.push(...batch);
-
-      while (batch.length === size) {
-        const searchAfter = batch[batch.length - 1].searchAfter;
-        if (searchAfter == null) {
-          break;
-        }
-
-        batch = await this.transferService.getTransfers(filter, new QueryPagination({ size, searchAfter }), options);
-
-        allTransfers.push(...batch);
+    let lastError: unknown;
+    for (let retry = 0; retry <= maxRetries; retry++) {
+      if (retry > 0) {
+        this.logger.warn(`Could not fetch ${description}, retrying (${retry}/${maxRetries})`);
+        await new Promise(resolve => setTimeout(resolve, CustomSubscriptionsDataFetcher.retryDelayMs));
       }
 
-      return allTransfers.filter((transfer) => transfer.canBeIgnored !== true);
-    } catch (error) {
-      this.logger.error(`Error fetching transfers for timestamp '${timestampMs}'`);
-      this.logger.error(error);
-      return [];
+      try {
+        return await fetch();
+      } catch (error) {
+        lastError = error;
+      }
     }
+
+    this.logger.error(`Could not fetch ${description} after ${maxRetries} retries, skipping it`);
+    this.logger.error(lastError);
+    return [];
+  }
+
+  private async fetchTransfers(timestampMs: number): Promise<Transaction[]> {
+    const size = CustomSubscriptionsDataFetcher.batchSize;
+    const filter = new TransactionFilter({ before: timestampMs, after: timestampMs, withTxsRelayedByAddress: true });
+    const options = new TransactionQueryOptions({ withScamInfo: false, withUsername: true, withBlockInfo: false, withLogs: false, withOperations: false, withActionTransferValue: false, withTxsOrder: false, withCanBeIgnoredFlag: true });
+
+    const allTransfers: Transaction[] = [];
+
+    let batch = await this.transferService.getTransfers(filter, new QueryPagination({ size }), options);
+    allTransfers.push(...batch);
+
+    while (batch.length === size) {
+      const searchAfter = batch[batch.length - 1].searchAfter;
+      if (searchAfter == null) {
+        break;
+      }
+
+      batch = await this.transferService.getTransfers(filter, new QueryPagination({ size, searchAfter }), options);
+
+      allTransfers.push(...batch);
+    }
+
+    return allTransfers.filter((transfer) => transfer.canBeIgnored !== true);
   }
 
   private async fetchEvents(timestampMs: number): Promise<Events[]> {
-    try {
-      const size = CustomSubscriptionsDataFetcher.batchSize;
-      const filter = new EventsFilter({ before: timestampMs, after: timestampMs });
+    const size = CustomSubscriptionsDataFetcher.batchSize;
+    const filter = new EventsFilter({ before: timestampMs, after: timestampMs });
 
-      const allEvents: Events[] = [];
+    const allEvents: Events[] = [];
 
-      let batch = await this.eventsService.getEvents(new QueryPagination({ size }), filter);
-      allEvents.push(...batch);
+    let batch = await this.eventsService.getEvents(new QueryPagination({ size }), filter);
+    allEvents.push(...batch);
 
-      while (batch.length === size) {
-        const searchAfter = batch[batch.length - 1].searchAfter;
-        if (searchAfter == null) {
-          break;
-        }
-
-        batch = await this.eventsService.getEvents(new QueryPagination({ size, searchAfter }), filter);
-
-        allEvents.push(...batch);
+    while (batch.length === size) {
+      const searchAfter = batch[batch.length - 1].searchAfter;
+      if (searchAfter == null) {
+        break;
       }
 
-      return allEvents;
-    } catch (error) {
-      this.logger.error(`Error fetching events for timestamp '${timestampMs}'`);
-      this.logger.error(error);
-      return [];
+      batch = await this.eventsService.getEvents(new QueryPagination({ size, searchAfter }), filter);
+
+      allEvents.push(...batch);
     }
+
+    return allEvents;
   }
 
   // Transactions are the 'normal' subset of the operations returned for transfers. They are
