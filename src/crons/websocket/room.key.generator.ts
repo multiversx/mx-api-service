@@ -61,31 +61,33 @@ export class RoomKeyGenerator {
   }
 
   private static buildRoomKeys(prefix: string, activeFilters: { key: string; value: any }[]) {
-    const rooms: string[] = [];
-    const subsetCount = 1 << activeFilters.length; // 2^N combinations
-
-    // Start from 1 to ignore the empty set
-    for (let mask = 1; mask < subsetCount; mask++) {
-      const currentSubset: Record<string, any> = {};
-      let skipIteration = false;
-
-      for (let bit = 0; bit < activeFilters.length; bit++) {
-        // Check the bit to decide whether to include the element in the subset
-        if ((mask & (1 << bit)) > 0) {
-          if (currentSubset.hasOwnProperty(activeFilters[bit].key)) {
-            skipIteration = true;
-            continue; // Skip duplicate keys
-          }
-          const item = activeFilters[bit];
-          currentSubset[item.key] = item.value;
-        }
+    const valuesByKey = new Map<string, any[]>();
+    for (const { key, value } of activeFilters) {
+      const values = valuesByKey.get(key) ?? [];
+      if (!values.includes(value)) {
+        values.push(value);
       }
-      if (!skipIteration) {
-        rooms.push(`${prefix}${this.deterministicStringify(currentSubset)}`);
-      }
+
+      valuesByKey.set(key, values);
     }
 
-    return rooms;
+    // a key can hold several values (e.g. one token per transfer) but a room uses at most one of them,
+    // so combinations are built per key instead of per filter to keep this linear in the number of values
+    let combinations: Record<string, any>[] = [{}];
+    for (const [key, values] of valuesByKey) {
+      const extended: Record<string, any>[] = [];
+      for (const combination of combinations) {
+        for (const value of values) {
+          extended.push({ ...combination, [key]: value });
+        }
+      }
+
+      combinations = combinations.concat(extended);
+    }
+
+    return combinations
+      .slice(1)
+      .map(combination => `${prefix}${this.deterministicStringify(combination)}`);
   }
 
   // Renaming a field can move it to a different position in the sorted key, so the key is

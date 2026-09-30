@@ -1,5 +1,6 @@
 import { RoomKeyGenerator } from 'src/crons/websocket/room.key.generator';
 import { TransactionCustomSubscribePayload } from 'src/endpoints/transactions/entities/dtos/transaction.custom.subscribe';
+import { TransferCustomSubscribePayload } from 'src/endpoints/websocket/entities/transfers.custom.payload';
 
 describe('RoomKeyGenerator', () => {
   describe('deterministicStringify', () => {
@@ -97,6 +98,50 @@ describe('RoomKeyGenerator', () => {
       // Only one active key (sender) -> 1 combination
       expect(rooms).toHaveLength(1);
       expect(rooms[0]).toBe('{"sender":"alice"}');
+    });
+
+    it('never puts two tokens in the same room', () => {
+      const data = {
+        sender: 'alice',
+        value: '1',
+        action: { arguments: { transfers: [{ token: 'AAA-123456' }, { token: 'BBB-123456' }] } },
+      } as Record<string, any>;
+
+      const rooms = RoomKeyGenerator.generate('', data, TransferCustomSubscribePayload);
+
+      // sender on/off (2) x token none/EGLD/AAA/BBB (4) - empty room
+      expect(rooms).toHaveLength(7);
+      expect(rooms).toContain('{"sender":"alice","token":"AAA-123456"}');
+      expect(rooms).toContain('{"token":"EGLD"}');
+      expect(rooms.every((r) => r.split('"token"').length <= 2)).toBe(true);
+    });
+
+    it('does not duplicate rooms when the same token is transferred twice', () => {
+      const data = {
+        sender: 'alice',
+        action: { arguments: { transfers: [{ token: 'AAA-123456' }, { token: 'AAA-123456' }] } },
+      } as Record<string, any>;
+
+      const rooms = RoomKeyGenerator.generate('', data, TransferCustomSubscribePayload);
+
+      expect(rooms).toHaveLength(3);
+      expect(new Set(rooms).size).toBe(rooms.length);
+    });
+
+    it('handles transfers with many tokens', () => {
+      const transfers = Array.from({ length: 40 }, (_, i) => ({ token: `TKN${i}-123456` }));
+      const data = {
+        sender: 'alice',
+        receiver: 'bob',
+        function: 'MultiESDTNFTTransfer',
+        action: { arguments: { transfers } },
+      } as Record<string, any>;
+
+      const rooms = RoomKeyGenerator.generate('', data, TransferCustomSubscribePayload);
+
+      expect(rooms).toHaveLength(8 * 41 - 1);
+      expect(rooms).toContain('{"token":"TKN39-123456"}');
+      expect(rooms).toContain('{"function":"MultiESDTNFTTransfer","receiver":"bob","sender":"alice","token":"TKN0-123456"}');
     });
   });
 
