@@ -101,7 +101,12 @@ export class TransactionGetService {
 
   async getTransactionScResultsFromElastic(txHash: string): Promise<SmartContractResult[]> {
     const scResults = await this.indexerService.getTransactionScResults(txHash);
-    return scResults.map(scResult => ApiUtils.mergeObjects(new SmartContractResult(), scResult));
+    return scResults.map(scResult => {
+      if (!scResult.timestampMs) {
+        scResult.timestampMs = scResult.timestamp * 1000;
+      }
+      return ApiUtils.mergeObjects(new SmartContractResult(), scResult);
+    });
   }
 
   async tryGetTransactionFromElastic(txHash: string, fields?: string[]): Promise<TransactionDetailed | null> {

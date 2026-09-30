@@ -16,6 +16,9 @@ export class SmartContractResult {
   timestamp: number = 0;
 
   @ApiProperty({ type: Number })
+  timestampMs: number = 0;
+
+  @ApiProperty({ type: Number })
   nonce: number = 0;
 
   @ApiProperty({ type: Number })

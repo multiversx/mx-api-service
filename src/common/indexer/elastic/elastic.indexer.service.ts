@@ -430,6 +430,7 @@ export class ElasticIndexerService implements IndexerInterface {
       .withSort([
         { name: 'timestamp', order: ElasticSortOrder.ascending },
         { name: 'timestampMs', order: ElasticSortOrder.ascending, missing: 0 },
+        { name: 'nonce', order: ElasticSortOrder.ascending },
         { name: 'uuid.keyword', order: ElasticSortOrder.ascending },
       ])
       .withMustMultiShouldCondition(transactionHashes, hash => QueryType.Match('originalTxHash', hash));
@@ -477,6 +478,7 @@ export class ElasticIndexerService implements IndexerInterface {
       .withSort([
         { name: 'timestamp', order: ElasticSortOrder.descending },
         { name: 'timestampMs', order: ElasticSortOrder.descending, missing: 0 },
+        { name: 'nonce', order: ElasticSortOrder.descending },
         { name: 'uuid.keyword', order: ElasticSortOrder.descending },
       ]);
 
@@ -514,6 +516,7 @@ export class ElasticIndexerService implements IndexerInterface {
       .withSort([
         { name: 'timestamp', order: ElasticSortOrder.descending },
         { name: 'timestampMs', order: ElasticSortOrder.descending, missing: 0 },
+        { name: 'nonce', order: ElasticSortOrder.descending },
         { name: 'uuid.keyword', order: ElasticSortOrder.descending },
       ]);
 
@@ -772,12 +775,13 @@ export class ElasticIndexerService implements IndexerInterface {
     const originalTxHashQuery = QueryType.Match('originalTxHash', txHash);
     const timestamp: ElasticSortProperty = { name: 'timestamp', order: ElasticSortOrder.ascending };
     const timestampMs: ElasticSortProperty = { name: 'timestampMs', order: ElasticSortOrder.ascending, missing: 0 };
+    const nonce: ElasticSortProperty = { name: 'nonce', order: ElasticSortOrder.ascending };
     const uuid: ElasticSortProperty = { name: 'uuid.keyword', order: ElasticSortOrder.ascending };
 
     const elasticQuerySc = ElasticQuery.create()
       .withMustMatchCondition('type', 'unsigned')
       .withPagination({ from: 0, size: 100 })
-      .withSort([timestamp, timestampMs, uuid])
+      .withSort([timestamp, timestampMs, nonce, uuid])
       .withCondition(QueryConditionOptions.must, [originalTxHashQuery]);
 
     const results = await this.elasticService.getList('operations', 'hash', elasticQuerySc);
@@ -804,6 +808,7 @@ export class ElasticIndexerService implements IndexerInterface {
       .withSort([
         { name: 'timestamp', order: ElasticSortOrder.ascending },
         { name: 'timestampMs', order: ElasticSortOrder.ascending, missing: 0 },
+        { name: 'nonce', order: ElasticSortOrder.ascending },
         { name: 'uuid.keyword', order: ElasticSortOrder.ascending }
       ])
       .withMustMultiShouldCondition(hashes, hash => QueryType.Match('originalTxHash', hash));
@@ -1278,6 +1283,8 @@ export class ElasticIndexerService implements IndexerInterface {
       .withSort([
         { name: 'timestamp', order: ElasticSortOrder.descending },
         { name: 'timestampMs', order: ElasticSortOrder.descending, missing: 0 },
+        { name: 'txOrder', order: ElasticSortOrder.descending, missing: 0 },
+        { name: 'order', order: ElasticSortOrder.descending, missing: 0 },
         { name: 'uuid.keyword', order: ElasticSortOrder.descending },
       ]);
 
