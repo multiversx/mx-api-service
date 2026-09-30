@@ -9,6 +9,7 @@ import { TransactionType } from "src/endpoints/transactions/entities/transaction
 import { ProtocolService } from "../../../common/protocol/protocol.service";
 import { TransactionActionService } from "../../../endpoints/transactions/transaction-action/transaction.action.service";
 import { CacheInfo } from "src/utils/cache.info";
+import { TransactionPoolTooLargeException } from "src/endpoints/pool/entities/transaction.pool.too.large.exception";
 
 describe('PoolService', () => {
   let service: PoolService;
@@ -145,6 +146,12 @@ describe('PoolService', () => {
       expect(await service.getPool(new QueryPagination(), new PoolFilter())).toBeNull();
       expect(await service.getTransactionFromPool('e07af9835b6da5740d0f791cfe65491a562852c57d44af63fdc14be5d73f01da')).toBeNull();
       expect(gatewayService.getTransactionPool).not.toHaveBeenCalled();
+    });
+
+    it('should fail the pool with filters, like any other failure, while the pool is too large', async () => {
+      cacheService.getOrSet = jest.fn().mockResolvedValue(null);
+
+      await expect(service.getPoolWithFilters({ senderShard: 0 })).rejects.toBeInstanceOf(TransactionPoolTooLargeException);
     });
 
     it('should count the total through the gateway, cached, whatever the filters', async () => {

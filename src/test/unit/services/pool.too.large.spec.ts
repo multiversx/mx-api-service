@@ -54,11 +54,12 @@ describe('Transaction pool too large', () => {
   });
 
   describe('TransactionService price per unit', () => {
-    it('should leave the prices unknown while the pool is too large', async () => {
+    it('should handle a pool too large like any other failure of the pool', async () => {
       const transactionService: TransactionService = Object.assign(Object.create(TransactionService.prototype), {
         blockService: { getBlocks: jest.fn().mockResolvedValue([{ nonce: 100 }]) },
         networkService: { getConstants: jest.fn().mockResolvedValue({ minGasLimit: 50000, gasPerDataByte: 1500, gasPriceModifier: '0.01' }) },
-        poolService: { getPoolWithFilters: jest.fn().mockResolvedValue(null) },
+        poolService: { getPoolWithFilters: jest.fn().mockRejectedValue(new TransactionPoolTooLargeException()) },
+        logger: { error: jest.fn() },
       });
 
       expect(await transactionService.getPpuByShardIdRaw(1)).toBeNull();

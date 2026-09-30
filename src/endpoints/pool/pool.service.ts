@@ -12,6 +12,7 @@ import { TxInPoolFields } from "src/common/gateway/entities/tx.in.pool.fields";
 import { TransactionActionService } from "../transactions/transaction-action/transaction.action.service";
 import { Transaction } from "../transactions/entities/transaction";
 import { ApiUtils } from "@multiversx/sdk-nestjs-http";
+import { TransactionPoolTooLargeException } from "./entities/transaction.pool.too.large.exception";
 
 @Injectable()
 export class PoolService {
@@ -23,7 +24,7 @@ export class PoolService {
   ) { }
 
   async getTransactionFromPool(txHash: string): Promise<TransactionInPool | undefined | null> {
-    const pool = await this.getPoolWithFilters();
+    const pool = await this.getTxPool();
     if (pool == null) {
       return null;
     }
@@ -32,9 +33,9 @@ export class PoolService {
   }
 
   async getPoolCount(filter: PoolFilter): Promise<number> {
-    const pool = await this.getPoolWithFilters(filter).catch(() => null);
+    const pool = await this.getTxPool().catch(() => null);
     if (pool != null) {
-      return pool.length;
+      return this.applyFilters(pool, filter).length;
     }
 
     return await this.cacheService.getOrSet(
@@ -53,30 +54,33 @@ export class PoolService {
     }
 
     const { from, size } = queryPagination;
-    const pool = await this.getPoolWithFilters(filter);
+    const pool = await this.getTxPool();
     if (pool == null) {
       return null;
     }
 
-    return pool.slice(from, from + size);
+    return this.applyFilters(pool, filter).slice(from, from + size);
   }
 
   async getPoolWithFilters(
     filter?: PoolFilter,
-  ): Promise<TransactionInPool[] | null> {
-    const pool = await this.cacheService.getOrSet(
+  ): Promise<TransactionInPool[]> {
+    const pool = await this.getTxPool();
+    if (pool == null) {
+      throw new TransactionPoolTooLargeException();
+    }
+
+    return this.applyFilters(pool, filter);
+  }
+
+  private async getTxPool(): Promise<TransactionInPool[] | null> {
+    return await this.cacheService.getOrSet(
       CacheInfo.TransactionPool.key,
       async () => await this.getTxPoolRaw(),
       CacheInfo.TransactionPool.ttl,
       CacheInfo.TransactionPool.ttl,
       true,
     );
-
-    if (pool == null) {
-      return null;
-    }
-
-    return this.applyFilters(pool, filter);
   }
 
   async getTxPoolRaw(): Promise<TransactionInPool[] | null> {
