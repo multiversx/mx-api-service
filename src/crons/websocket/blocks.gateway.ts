@@ -10,6 +10,7 @@ import { WsValidationPipe } from 'src/utils/ws-validation.pipe';
 import { OriginLogger } from '@multiversx/sdk-nestjs-common';
 import { RoomKeyGenerator } from './room.key.generator';
 import { LockingGuardInterceptor } from 'src/utils/locking.guard.interceptor';
+import { LatestBlocksTracker } from './latest.blocks.tracker';
 
 @UseFilters(WebsocketExceptionsFilter)
 @WebSocketGateway({ cors: { origin: '*' }, path: '/ws/subscription' })
@@ -20,7 +21,10 @@ export class BlocksGateway {
   @WebSocketServer()
   server!: Server;
 
-  constructor(private readonly blockService: BlockService) { }
+  constructor(
+    private readonly blockService: BlockService,
+    private readonly latestBlocksTracker: LatestBlocksTracker,
+  ) { }
 
   @UseInterceptors(LockingGuardInterceptor)
   @SubscribeMessage('subscribeBlocks')
@@ -81,13 +85,9 @@ export class BlocksGateway {
   }
 
   async pushBlocks(): Promise<void> {
-    const promises: Promise<void>[] = [];
+    const roomNames = await this.latestBlocksTracker.getRoomsWithNewBlocks(BlocksGateway.keyPrefix, this.server.sockets.adapter.rooms);
 
-    for (const [roomName] of this.server.sockets.adapter.rooms) {
-      promises.push(this.pushBlocksForRoom(roomName));
-    }
-
-    await Promise.all(promises);
+    await Promise.all(roomNames.map(roomName => this.pushBlocksForRoom(roomName)));
   }
 }
 

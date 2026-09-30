@@ -10,6 +10,7 @@ import { EventsSubscribePayload } from '../../endpoints/events/entities/events.s
 import { QueryPagination } from 'src/common/entities/query.pagination';
 import { RoomKeyGenerator } from './room.key.generator';
 import { LockingGuardInterceptor } from 'src/utils/locking.guard.interceptor';
+import { LatestBlocksTracker } from './latest.blocks.tracker';
 
 @UseFilters(WebsocketExceptionsFilter)
 @WebSocketGateway({ cors: { origin: '*' }, path: '/ws/subscription' })
@@ -20,7 +21,10 @@ export class EventsGateway {
     @WebSocketServer()
     server!: Server;
 
-    constructor(private readonly eventsService: EventsService) { }
+    constructor(
+        private readonly eventsService: EventsService,
+        private readonly latestBlocksTracker: LatestBlocksTracker,
+    ) { }
 
     @UseInterceptors(LockingGuardInterceptor)
     @SubscribeMessage('subscribeEvents')
@@ -82,12 +86,8 @@ export class EventsGateway {
     }
 
     async pushEvents(): Promise<void> {
-        const promises: Promise<void>[] = [];
+        const roomNames = await this.latestBlocksTracker.getRoomsWithNewBlocks(EventsGateway.keyPrefix, this.server.sockets.adapter.rooms);
 
-        for (const [roomName] of this.server.sockets.adapter.rooms) {
-            promises.push(this.pushEventsForRoom(roomName));
-        }
-
-        await Promise.all(promises);
+        await Promise.all(roomNames.map(roomName => this.pushEventsForRoom(roomName)));
     }
 }

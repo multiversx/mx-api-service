@@ -21,6 +21,7 @@ import { ApiMetricsModule } from 'src/common/metrics/api.metrics.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { PersistenceModule } from 'src/common/persistence/persistence.module';
 import { CustomSubscriptionsDataFetcher } from './custom.subscriptions.data.fetcher';
+import { LatestBlocksTracker } from './latest.blocks.tracker';
 
 @Module({
   imports: [
@@ -39,6 +40,7 @@ import { CustomSubscriptionsDataFetcher } from './custom.subscriptions.data.fetc
   providers: [
     WebsocketCronService,
     CustomSubscriptionsDataFetcher,
+    LatestBlocksTracker,
     ConnectionHandler,
     BlocksGateway,
     NetworkGateway,

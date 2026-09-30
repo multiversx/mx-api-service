@@ -5,6 +5,7 @@ import { UseFilters, UseInterceptors } from '@nestjs/common';
 import { WebsocketExceptionsFilter } from 'src/utils/ws-exceptions.filter';
 import { OriginLogger } from '@multiversx/sdk-nestjs-common';
 import { LockingGuardInterceptor } from 'src/utils/locking.guard.interceptor';
+import { LatestBlocksTracker } from './latest.blocks.tracker';
 
 @UseFilters(WebsocketExceptionsFilter)
 @WebSocketGateway({ cors: { origin: '*' }, path: '/ws/subscription' })
@@ -14,7 +15,10 @@ export class NetworkGateway {
   @WebSocketServer()
   server!: Server;
 
-  constructor(private readonly networkService: NetworkService) { }
+  constructor(
+    private readonly networkService: NetworkService,
+    private readonly latestBlocksTracker: LatestBlocksTracker,
+  ) { }
 
   @UseInterceptors(LockingGuardInterceptor)
   @SubscribeMessage('subscribeStats')
@@ -36,13 +40,16 @@ export class NetworkGateway {
   }
 
   async pushStats() {
-    if (this.server.sockets.adapter.rooms.has('statsRoom')) {
-      try {
-        const stats = await this.networkService.getStats(true);
-        this.server.to('statsRoom').emit('statsUpdate', stats);
-      } catch (error) {
-        this.logger.error(error);
-      }
+    const roomNames = await this.latestBlocksTracker.getRoomsWithNewBlocks('statsRoom', this.server.sockets.adapter.rooms);
+    if (roomNames.length === 0) {
+      return;
+    }
+
+    try {
+      const stats = await this.networkService.getStats(true);
+      this.server.to('statsRoom').emit('statsUpdate', stats);
+    } catch (error) {
+      this.logger.error(error);
     }
   }
 }

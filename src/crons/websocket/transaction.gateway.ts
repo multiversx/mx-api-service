@@ -11,6 +11,7 @@ import { UseFilters, UseInterceptors } from '@nestjs/common';
 import { OriginLogger } from '@multiversx/sdk-nestjs-common';
 import { RoomKeyGenerator } from './room.key.generator';
 import { LockingGuardInterceptor } from 'src/utils/locking.guard.interceptor';
+import { LatestBlocksTracker } from './latest.blocks.tracker';
 @UseFilters(WebsocketExceptionsFilter)
 @WebSocketGateway({ cors: { origin: '*' }, path: '/ws/subscription' })
 export class TransactionsGateway {
@@ -20,7 +21,10 @@ export class TransactionsGateway {
   @WebSocketServer()
   server!: Server;
 
-  constructor(private readonly transactionService: TransactionService) { }
+  constructor(
+    private readonly transactionService: TransactionService,
+    private readonly latestBlocksTracker: LatestBlocksTracker,
+  ) { }
 
   @UseInterceptors(LockingGuardInterceptor)
   @SubscribeMessage('subscribeTransactions')
@@ -133,13 +137,9 @@ export class TransactionsGateway {
   }
 
   async pushTransactions(): Promise<void> {
-    const promises: Promise<void>[] = [];
+    const roomNames = await this.latestBlocksTracker.getRoomsWithNewBlocks(TransactionsGateway.keyPrefix, this.server.sockets.adapter.rooms);
 
-    for (const [roomName] of this.server.sockets.adapter.rooms) {
-      promises.push(this.pushTransactionsForRoom(roomName));
-    }
-
-    await Promise.all(promises);
+    await Promise.all(roomNames.map(roomName => this.pushTransactionsForRoom(roomName)));
   }
 
 }
