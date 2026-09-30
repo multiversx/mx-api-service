@@ -64,6 +64,8 @@ export class PoolGateway {
                 type: filter.type,
             });
 
+            let status = PoolUpdateStatus.success;
+
             const [pool, poolCount] = await Promise.all([
                 this.poolService.getPool(
                     new QueryPagination({
@@ -73,17 +75,16 @@ export class PoolGateway {
                     poolFilter,
                 ).catch((error) => {
                     this.logger.error(error);
-                    return undefined;
+                    status = PoolUpdateStatus.internalServerError;
+                    return null;
                 }),
                 this.poolService.getPoolCount(poolFilter),
             ]);
 
-            if (pool === undefined) {
-                this.server.to(roomName).emit("poolUpdate", { status: PoolUpdateStatus.internalServerError, pool: null, poolCount });
-                return;
+            if (pool == null && status === PoolUpdateStatus.success) {
+                status = PoolUpdateStatus.tooLarge;
             }
 
-            const status = pool === null ? PoolUpdateStatus.tooLarge : PoolUpdateStatus.success;
             this.server.to(roomName).emit("poolUpdate", { status, pool, poolCount });
         } catch (error) {
             this.logger.error(error);
