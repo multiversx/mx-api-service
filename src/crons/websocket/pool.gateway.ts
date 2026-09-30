@@ -79,6 +79,7 @@ export class PoolGateway {
             this.server.to(roomName).emit("poolUpdate", { status, pool, poolCount });
         } catch (error) {
             this.logger.error(error);
+            this.server.to(roomName).emit("poolUpdate", { status: PoolUpdateStatus.internalServerError, pool: null, poolCount: null });
         }
     }
 
