@@ -10,6 +10,7 @@ import { QueryPagination } from 'src/common/entities/query.pagination';
 import { PoolSubscribePayload } from '../../endpoints/pool/entities/pool.subscribe';
 import { RoomKeyGenerator } from './room.key.generator';
 import { LockingGuardInterceptor } from 'src/utils/locking.guard.interceptor';
+import { PoolUpdateStatus } from '../../endpoints/pool/entities/pool.update.status';
 
 @UseFilters(WebsocketExceptionsFilter)
 @WebSocketGateway({ cors: { origin: '*' }, path: '/ws/subscription' })
@@ -63,6 +64,8 @@ export class PoolGateway {
                 type: filter.type,
             });
 
+            let status = PoolUpdateStatus.success;
+
             const [pool, poolCount] = await Promise.all([
                 this.poolService.getPool(
                     new QueryPagination({
@@ -70,13 +73,22 @@ export class PoolGateway {
                         size: filter.size,
                     }),
                     poolFilter,
-                ),
+                ).catch((error) => {
+                    this.logger.error(error);
+                    status = PoolUpdateStatus.internalServerError;
+                    return null;
+                }),
                 this.poolService.getPoolCount(poolFilter),
             ]);
 
-            this.server.to(roomName).emit("poolUpdate", { pool, poolCount });
+            if (pool == null && status === PoolUpdateStatus.success) {
+                status = PoolUpdateStatus.tooLarge;
+            }
+
+            this.server.to(roomName).emit("poolUpdate", { status, pool, poolCount });
         } catch (error) {
             this.logger.error(error);
+            this.server.to(roomName).emit("poolUpdate", { status: PoolUpdateStatus.internalServerError, pool: null, poolCount: null });
         }
     }
 

@@ -182,8 +182,22 @@ export class GatewayService {
     return new NftData(result.tokenData);
   }
 
-  async getTransactionPool(): Promise<TxPoolGatewayResponse> {
-    return await this.get(`transaction/pool?fields=*`, GatewayComponentRequest.transactionPool);
+  async getTransactionPool(): Promise<TxPoolGatewayResponse | null> {
+    try {
+      return await this.get(`transaction/pool?fields=*`, GatewayComponentRequest.transactionPool);
+    } catch (error: any) {
+      if (error?.message?.startsWith('maxContentLength size of')) {
+        return null;
+      }
+
+      throw error;
+    }
+  }
+
+  async getTransactionPoolCount(): Promise<number> {
+    const result = await this.get('transaction/pool/count', GatewayComponentRequest.transactionPool);
+
+    return Object.values<number>(result.txPoolCounts).reduce((total, count) => total + count, 0);
   }
 
   async getTransaction(txHash: string): Promise<Transaction | undefined> {

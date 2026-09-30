@@ -1,12 +1,13 @@
 import { ParseAddressAndMetachainPipe, ParseAddressPipe, ParseEnumPipe, ParseIntPipe, ParseTransactionHashPipe, ParseArrayPipe } from "@multiversx/sdk-nestjs-common";
 import { Controller, DefaultValuePipe, Get, NotFoundException, Param, Query } from "@nestjs/common";
-import { ApiExcludeEndpoint, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiTags } from "@nestjs/swagger";
+import { ApiExcludeEndpoint, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiQuery, ApiServiceUnavailableResponse, ApiTags } from "@nestjs/swagger";
 import { PoolService } from "./pool.service";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { TransactionInPool } from "./entities/transaction.in.pool.dto";
 import { TransactionType } from "../transactions/entities/transaction.type";
 import { PoolFilter } from "./entities/pool.filter";
 import { ParseArrayPipeOptions } from "@multiversx/sdk-nestjs-common/lib/pipes/entities/parse.array.options";
+import { TransactionPoolTooLargeException } from "./entities/transaction.pool.too.large.exception";
 
 @Controller()
 @ApiTags('pool')
@@ -18,6 +19,7 @@ export class PoolController {
   @Get("/pool")
   @ApiOperation({ summary: 'Transactions pool', description: 'Returns the transactions that are currently in the memory pool.' })
   @ApiOkResponse({ type: TransactionInPool, isArray: true })
+  @ApiServiceUnavailableResponse({ description: 'The transaction pool is too large to be displayed' })
   @ApiQuery({ name: 'from', description: 'Number of items to skip for the result set', required: false })
   @ApiQuery({ name: 'size', description: 'Number of items to retrieve', required: false })
   @ApiQuery({ name: 'sender', description: 'Search in transaction pool by a specific sender', required: false })
@@ -37,7 +39,7 @@ export class PoolController {
     @Query('type', new ParseEnumPipe(TransactionType)) type?: TransactionType,
     @Query('function', new ParseArrayPipe(new ParseArrayPipeOptions({ allowEmptyString: true }))) functions?: string[],
   ): Promise<TransactionInPool[]> {
-    return await this.poolService.getPool(new QueryPagination({ from, size }), new PoolFilter({
+    const pool = await this.poolService.getPool(new QueryPagination({ from, size }), new PoolFilter({
       sender: sender,
       receiver: receiver,
       senderShard: senderShard,
@@ -45,6 +47,12 @@ export class PoolController {
       type: type,
       functions: functions,
     }));
+
+    if (pool == null) {
+      throw new TransactionPoolTooLargeException();
+    }
+
+    return pool;
   }
 
   @Get("/pool/count")
@@ -85,10 +93,15 @@ export class PoolController {
   @ApiOperation({ summary: 'Transaction from pool', description: 'Returns a transaction from the memory pool.' })
   @ApiOkResponse({ type: TransactionInPool })
   @ApiNotFoundResponse({ description: 'Transaction not found' })
+  @ApiServiceUnavailableResponse({ description: 'The transaction pool is too large to be displayed' })
   async getTransactionFromPool(
     @Param('txhash', ParseTransactionHashPipe) txHash: string,
   ): Promise<TransactionInPool> {
     const transaction = await this.poolService.getTransactionFromPool(txHash);
+    if (transaction === null) {
+      throw new TransactionPoolTooLargeException();
+    }
+
     if (transaction === undefined) {
       throw new NotFoundException('Transaction not found');
     }
