@@ -95,8 +95,17 @@ describe('Transaction pool too large', () => {
       expect(emit).toHaveBeenCalledWith('poolUpdate', { status: PoolUpdateStatus.success, pool: [{ txHash }], poolCount: 42 });
     });
 
-    it('should send the internal server error status when the pool fails for another reason', async () => {
+    it('should send the internal server error status with the count when the pool fails for another reason', async () => {
       poolService.getPool.mockRejectedValue(new Error('gateway unreachable'));
+
+      await gateway.pushPoolForRoom('pool-{"from":0,"size":25}');
+
+      expect(emit).toHaveBeenCalledWith('poolUpdate', { status: PoolUpdateStatus.internalServerError, pool: null, poolCount: 42 });
+    });
+
+    it('should send the internal server error status without a count when the count fails as well', async () => {
+      poolService.getPool.mockRejectedValue(new Error('gateway unreachable'));
+      poolService.getPoolCount.mockRejectedValue(new Error('gateway unreachable'));
 
       await gateway.pushPoolForRoom('pool-{"from":0,"size":25}');
 

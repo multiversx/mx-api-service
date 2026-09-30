@@ -161,6 +161,18 @@ describe('PoolService', () => {
     });
   });
 
+  describe('pool failing for another reason', () => {
+    it('should still count the total through the gateway', async () => {
+      gatewayService.getTransactionPoolCount = jest.fn().mockResolvedValue(42);
+      cacheService.getOrSet = jest.fn().mockImplementation(async (key: string, createValueFunc: () => Promise<any>) => {
+        return key === CacheInfo.TransactionPool.key ? await Promise.reject(new Error('gateway unreachable')) : await createValueFunc();
+      });
+
+      expect(await service.getPoolCount(new PoolFilter({ type: TransactionType.Reward }))).toStrictEqual(42);
+      await expect(service.getPool(new QueryPagination(), new PoolFilter())).rejects.toThrow('gateway unreachable');
+    });
+  });
+
   describe('getTransactionFromPool', () => {
     it('should work and return the transaction', async () => {
       const tx = await service.getTransactionFromPool("e07af9835b6da5740d0f791cfe65491a562852c57d44af63fdc14be5d73f01da");

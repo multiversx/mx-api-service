@@ -71,11 +71,19 @@ export class PoolGateway {
                         size: filter.size,
                     }),
                     poolFilter,
-                ),
+                ).catch((error) => {
+                    this.logger.error(error);
+                    return undefined;
+                }),
                 this.poolService.getPoolCount(poolFilter),
             ]);
 
-            const status = pool == null ? PoolUpdateStatus.tooLarge : PoolUpdateStatus.success;
+            if (pool === undefined) {
+                this.server.to(roomName).emit("poolUpdate", { status: PoolUpdateStatus.internalServerError, pool: null, poolCount });
+                return;
+            }
+
+            const status = pool === null ? PoolUpdateStatus.tooLarge : PoolUpdateStatus.success;
             this.server.to(roomName).emit("poolUpdate", { status, pool, poolCount });
         } catch (error) {
             this.logger.error(error);

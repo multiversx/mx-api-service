@@ -32,7 +32,7 @@ export class PoolService {
   }
 
   async getPoolCount(filter: PoolFilter): Promise<number> {
-    const pool = await this.getPoolWithFilters(filter);
+    const pool = await this.getPoolWithFilters(filter).catch(() => null);
     if (pool != null) {
       return pool.length;
     }
