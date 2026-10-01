@@ -321,14 +321,18 @@ export class TokenTransferService {
       await this.cachingService.set(CacheInfo.TokenTransferProperties(options.identifier).key, properties, ttl);
     }
 
-    // we clone it since we alter the resulting object 
-    properties = JSON.parse(JSON.stringify(properties));
+    if (!properties) {
+      return null;
+    }
 
-    if (properties && properties.type !== EsdtType.FungibleESDT && options.nonce) {
+    // we clone it since we alter the resulting object 
+    properties = JSON.parse(JSON.stringify(properties)) as TokenTransferProperties;
+
+    if (properties.type !== EsdtType.FungibleESDT && options.nonce) {
       properties.identifier = `${options.identifier}-${options.nonce}`;
     }
 
-    if (properties && options.applyValue && options.timestamp && options.value) {
+    if (options.applyValue && options.timestamp && options.value) {
       const esdtPrice = await this.dataApiService.getEsdtTokenPrice(options.identifier, options.timestamp);
       if (esdtPrice) {
         properties.valueUsd = new BigNumber(esdtPrice).multipliedBy(options.value).shiftedBy(-(properties.decimals ?? 0)).toNumber();
@@ -340,7 +344,7 @@ export class TokenTransferService {
       }
     }
 
-    return properties ?? null;
+    return properties;
   }
 
   async getTokenTransferPropertiesRaw(identifier: string): Promise<TokenTransferProperties | null> {
