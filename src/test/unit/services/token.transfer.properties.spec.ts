@@ -11,7 +11,10 @@ describe('Token properties caching', () => {
   let cachingService: any;
 
   beforeEach(() => {
-    cachingService = { get: jest.fn().mockResolvedValue(undefined), set: jest.fn() };
+    cachingService = {
+      getOrSet: jest.fn(async (_key: string, createValue: () => Promise<any>) => await createValue()),
+      set: jest.fn(),
+    };
   });
 
   describe('TokenTransferService', () => {
@@ -26,8 +29,11 @@ describe('Token properties caching', () => {
     it('should cache existing token properties for the standard ttl', async () => {
       const result = await service.getTokenTransferProperties({ identifier });
 
+      const { key, ttl } = CacheInfo.TokenTransferProperties(identifier);
+
       expect(result?.name).toStrictEqual('Token');
-      expect(cachingService.set).toHaveBeenCalledWith(CacheInfo.TokenTransferProperties(identifier).key, expect.objectContaining({ name: 'Token' }), CacheInfo.TokenTransferProperties(identifier).ttl);
+      expect(cachingService.getOrSet).toHaveBeenCalledWith(key, expect.any(Function), ttl, ttl, false);
+      expect(cachingService.set).not.toHaveBeenCalled();
     });
 
     it('should cache missing token properties for one minute', async () => {
@@ -65,7 +71,7 @@ describe('Token properties caching', () => {
     });
 
     it('should not fetch token properties when they are cached', async () => {
-      cachingService.get.mockResolvedValue(null);
+      cachingService.getOrSet.mockResolvedValue(null);
 
       const result = await service.getTokenTransferProperties({ identifier });
 
@@ -87,8 +93,11 @@ describe('Token properties caching', () => {
 
       const result = await service.getEsdtTokenProperties(identifier);
 
+      const { key, ttl } = CacheInfo.EsdtProperties(identifier);
+
       expect(result).toStrictEqual(properties);
-      expect(cachingService.set).toHaveBeenCalledWith(CacheInfo.EsdtProperties(identifier).key, properties, CacheInfo.EsdtProperties(identifier).ttl);
+      expect(cachingService.getOrSet).toHaveBeenCalledWith(key, expect.any(Function), ttl, ttl, false);
+      expect(cachingService.set).not.toHaveBeenCalled();
     });
 
     it('should cache missing esdt properties for one minute', async () => {

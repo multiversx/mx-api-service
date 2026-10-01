@@ -313,13 +313,20 @@ export class TokenTransferService {
   }
 
   async getTokenTransferProperties(options: { identifier: string, nonce?: string, timestamp?: number, value?: string, applyValue?: boolean }): Promise<TokenTransferProperties | null> {
-    let properties = await this.cachingService.get<TokenTransferProperties | null>(CacheInfo.TokenTransferProperties(options.identifier).key);
-    if (properties === undefined) {
-      properties = await this.getTokenTransferPropertiesRaw(options.identifier);
+    let properties = await this.cachingService.getOrSet(
+      CacheInfo.TokenTransferProperties(options.identifier).key,
+      async () => {
+        const rawProperties = await this.getTokenTransferPropertiesRaw(options.identifier);
+        if (!rawProperties) {
+          await this.cachingService.set(CacheInfo.TokenTransferProperties(options.identifier).key, null, Constants.oneMinute());
+        }
 
-      const ttl = properties ? CacheInfo.TokenTransferProperties(options.identifier).ttl : Constants.oneMinute();
-      await this.cachingService.set(CacheInfo.TokenTransferProperties(options.identifier).key, properties, ttl);
-    }
+        return rawProperties;
+      },
+      CacheInfo.TokenTransferProperties(options.identifier).ttl,
+      CacheInfo.TokenTransferProperties(options.identifier).ttl,
+      false,
+    );
 
     if (!properties) {
       return null;

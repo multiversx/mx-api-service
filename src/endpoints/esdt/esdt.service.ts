@@ -36,13 +36,20 @@ export class EsdtService {
 
   async getEsdtTokenProperties(identifier: string): Promise<TokenProperties | undefined> {
     try {
-      let properties = await this.cachingService.get<TokenProperties | null>(CacheInfo.EsdtProperties(identifier).key);
-      if (properties === undefined) {
-        properties = await this.getEsdtTokenPropertiesRaw(identifier);
+      const properties = await this.cachingService.getOrSet(
+        CacheInfo.EsdtProperties(identifier).key,
+        async () => {
+          const rawProperties = await this.getEsdtTokenPropertiesRaw(identifier);
+          if (!rawProperties) {
+            await this.cachingService.set(CacheInfo.EsdtProperties(identifier).key, null, Constants.oneMinute());
+          }
 
-        const ttl = properties ? CacheInfo.EsdtProperties(identifier).ttl : Constants.oneMinute();
-        await this.cachingService.set(CacheInfo.EsdtProperties(identifier).key, properties, ttl);
-      }
+          return rawProperties;
+        },
+        CacheInfo.EsdtProperties(identifier).ttl,
+        CacheInfo.EsdtProperties(identifier).ttl,
+        false,
+      );
 
       if (!properties) {
         return undefined;
