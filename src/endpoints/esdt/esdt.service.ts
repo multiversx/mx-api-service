@@ -97,10 +97,6 @@ export class EsdtService {
 
   async getEsdtTokenPropertiesRawFromElastic(identifier: string): Promise<TokenProperties | null> {
     const elasticProperties = await this.elasticIndexerService.getEsdtProperties(identifier);
-    if (!elasticProperties) {
-      return null;
-    }
-
     return this.mapEsdtTokenPropertiesFromElastic(elasticProperties);
   }
 
