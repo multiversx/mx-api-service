@@ -52,15 +52,16 @@ describe('Token properties caching', () => {
       });
       cachingService.setMany = jest.fn();
 
-      const logs = [identifier, missingIdentifier].map(tokenIdentifier => ({
+      const logs = [identifier, missingIdentifier, missingIdentifier].map(tokenIdentifier => ({
         address: 'erd1',
         events: [{ identifier: 'ESDTTransfer', address: 'erd1', topics: [Buffer.from(tokenIdentifier).toString('base64'), '', 'AQ=='] }],
       }));
 
       const operations = await service.getOperationsForTransactionLogs('hash', logs as any, 'erd1');
 
-      expect(operations.map(operation => operation.name)).toStrictEqual(['Token', undefined]);
+      expect(operations.map(operation => operation.name)).toStrictEqual(['Token', undefined, undefined]);
       expect(cachingService.setMany).toHaveBeenCalledWith([CacheInfo.TokenTransferProperties(missingIdentifier).key], [null], Constants.oneMinute());
+      expect(esdtService.getEsdtTokenProperties).toHaveBeenCalledTimes(2);
     });
 
     it('should not fetch token properties when they are cached', async () => {

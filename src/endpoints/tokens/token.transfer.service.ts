@@ -77,22 +77,17 @@ export class TokenTransferService {
       [key: string]: TokenTransferProperties | null;
     } = {};
 
-    const missingIdentifiers: string[] = [];
+    const distinctIdentifiers = identifiers.distinct();
 
     await this.cachingService.batchApplyAll(
-      identifiers,
+      distinctIdentifiers,
       identifier => CacheInfo.TokenTransferProperties(identifier).key,
-      async identifier => {
-        const properties = await this.getTokenTransferPropertiesRaw(identifier);
-        if (!properties) {
-          missingIdentifiers.push(identifier);
-        }
-
-        return properties ?? undefined;
-      },
+      async identifier => await this.getTokenTransferPropertiesRaw(identifier) ?? undefined,
       (identifier, value) => tokenProperties[identifier] = value ?? null,
       CacheInfo.TokenTransferProperties('').ttl
     );
+
+    const missingIdentifiers = distinctIdentifiers.filter(identifier => tokenProperties[identifier] === undefined);
 
     if (missingIdentifiers.length > 0) {
       await this.cachingService.setMany(
