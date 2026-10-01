@@ -11,7 +11,7 @@ import { TransactionLogEvent } from "../transactions/entities/transaction.log.ev
 import { TransactionOperationType } from "../transactions/entities/transaction.operation.type";
 import { SmartContractResult } from "../sc-results/entities/smart.contract.result";
 import { TransactionDetailed } from "../transactions/entities/transaction.detailed";
-import { BinaryUtils } from "@multiversx/sdk-nestjs-common";
+import { BinaryUtils, Constants } from "@multiversx/sdk-nestjs-common";
 import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { OriginLogger } from "@multiversx/sdk-nestjs-common";
 import { DataApiService } from "src/common/data-api/data-api.service";
@@ -77,13 +77,30 @@ export class TokenTransferService {
       [key: string]: TokenTransferProperties | null;
     } = {};
 
+    const missingIdentifiers: string[] = [];
+
     await this.cachingService.batchApplyAll(
       identifiers,
       identifier => CacheInfo.TokenTransferProperties(identifier).key,
-      identifier => this.getTokenTransferPropertiesRaw(identifier),
-      (identifier, value) => tokenProperties[identifier] = value,
+      async identifier => {
+        const properties = await this.getTokenTransferPropertiesRaw(identifier);
+        if (!properties) {
+          missingIdentifiers.push(identifier);
+        }
+
+        return properties ?? undefined;
+      },
+      (identifier, value) => tokenProperties[identifier] = value ?? null,
       CacheInfo.TokenTransferProperties('').ttl
     );
+
+    if (missingIdentifiers.length > 0) {
+      await this.cachingService.setMany(
+        missingIdentifiers.map(identifier => CacheInfo.TokenTransferProperties(identifier).key),
+        missingIdentifiers.map(() => null),
+        Constants.oneMinute(),
+      );
+    }
 
     return tokenProperties;
   }
@@ -301,11 +318,13 @@ export class TokenTransferService {
   }
 
   async getTokenTransferProperties(options: { identifier: string, nonce?: string, timestamp?: number, value?: string, applyValue?: boolean }): Promise<TokenTransferProperties | null> {
-    let properties = await this.cachingService.getOrSet(
-      CacheInfo.TokenTransferProperties(options.identifier).key,
-      async () => await this.getTokenTransferPropertiesRaw(options.identifier),
-      CacheInfo.TokenTransferProperties(options.identifier).ttl,
-    );
+    let properties = await this.cachingService.get<TokenTransferProperties | null>(CacheInfo.TokenTransferProperties(options.identifier).key);
+    if (properties === undefined) {
+      properties = await this.getTokenTransferPropertiesRaw(options.identifier);
+
+      const ttl = properties ? CacheInfo.TokenTransferProperties(options.identifier).ttl : Constants.oneMinute();
+      await this.cachingService.set(CacheInfo.TokenTransferProperties(options.identifier).key, properties, ttl);
+    }
 
     // we clone it since we alter the resulting object 
     properties = JSON.parse(JSON.stringify(properties));
@@ -326,7 +345,7 @@ export class TokenTransferService {
       }
     }
 
-    return properties;
+    return properties ?? null;
   }
 
   async getTokenTransferPropertiesRaw(identifier: string): Promise<TokenTransferProperties | null> {

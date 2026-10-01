@@ -36,12 +36,13 @@ export class EsdtService {
 
   async getEsdtTokenProperties(identifier: string): Promise<TokenProperties | undefined> {
     try {
-      const properties = await this.cachingService.getOrSet(
-        CacheInfo.EsdtProperties(identifier).key,
-        async () => await this.getEsdtTokenPropertiesRaw(identifier),
-        Constants.oneWeek(),
-        CacheInfo.EsdtProperties(identifier).ttl
-      );
+      let properties = await this.cachingService.get<TokenProperties | null>(CacheInfo.EsdtProperties(identifier).key);
+      if (properties === undefined) {
+        properties = await this.getEsdtTokenPropertiesRaw(identifier);
+
+        const ttl = properties ? CacheInfo.EsdtProperties(identifier).ttl : Constants.oneMinute();
+        await this.cachingService.set(CacheInfo.EsdtProperties(identifier).key, properties, ttl);
+      }
 
       if (!properties) {
         return undefined;
@@ -96,6 +97,10 @@ export class EsdtService {
 
   async getEsdtTokenPropertiesRawFromElastic(identifier: string): Promise<TokenProperties | null> {
     const elasticProperties = await this.elasticIndexerService.getEsdtProperties(identifier);
+    if (!elasticProperties) {
+      return null;
+    }
+
     return this.mapEsdtTokenPropertiesFromElastic(elasticProperties);
   }
 
