@@ -108,7 +108,12 @@ export class TransactionGetService {
     }
 
     if (orderedByExecution) {
-      scResults = await this.sortScResultsByExecutionOrder(scResults);
+      try {
+        scResults = await this.sortScResultsByExecutionOrder(scResults);
+      } catch (error) {
+        this.logger.error(`Unexpected error when ordering sc results by execution for transaction with hash '${txHash}'`);
+        this.logger.error(error);
+      }
     }
 
     return scResults.map(scResult => ApiUtils.mergeObjects(new SmartContractResult(), scResult));
