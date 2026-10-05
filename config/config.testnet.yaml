@@ -70,6 +70,9 @@ features:
   chainAndromeda:
     enabled: true
     activationEpoch: 4
+  chainSupernova:
+    enabled: true
+    activationTimestampMs: 1775161386000
   stakingV5:
     enabled: true
     activationEpoch: 2519

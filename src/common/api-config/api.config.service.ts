@@ -900,6 +900,14 @@ export class ApiConfigService {
     return this.configService.get<number>('features.chainAndromeda.activationEpoch') ?? 99999;
   }
 
+  isChainSupernovaEnabled(): boolean {
+    return this.configService.get<boolean>('features.chainSupernova.enabled') ?? false;
+  }
+
+  getChainSupernovaActivationTimestampMs(): number {
+    return this.configService.get<number>('features.chainSupernova.activationTimestampMs') ?? Number.MAX_SAFE_INTEGER;
+  }
+
   isStakingV5Enabled(): boolean {
     return this.configService.get<boolean>('features.stakingV5.enabled') ?? false;
   }
