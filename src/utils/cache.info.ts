@@ -57,6 +57,11 @@ export class CacheInfo {
     ttl: Constants.oneSecond(),
   };
 
+  static TransactionPoolCount: CacheInfo = {
+    key: 'txpool:count',
+    ttl: Constants.oneSecond(),
+  };
+
   static ApplicationMostUsed: CacheInfo = {
     key: 'applicationMostUsed',
     ttl: Constants.oneHour(),
