@@ -337,6 +337,27 @@ export class ElasticIndexerService implements IndexerInterface {
     return result.length > 0 ? result[0] : undefined;
   }
 
+  async getBlocksByMiniBlockHashes(miniBlockHashes: string[]): Promise<Block[]> {
+    return await this.getExecutionOrderSourcesByMiniBlockHashes('blocks', miniBlockHashes);
+  }
+
+  async getExecutionResultsByMiniBlockHashes(miniBlockHashes: string[]): Promise<Block[]> {
+    return await this.getExecutionOrderSourcesByMiniBlockHashes('executionresults', miniBlockHashes);
+  }
+
+  private async getExecutionOrderSourcesByMiniBlockHashes(index: string, miniBlockHashes: string[]): Promise<Block[]> {
+    if (miniBlockHashes.length === 0) {
+      return [];
+    }
+
+    const elasticQuery = ElasticQuery.create()
+      .withPagination({ from: 0, size: 1000 })
+      .withFields(['shardId', 'miniBlocksDetails'])
+      .withShouldCondition(miniBlockHashes.map(hash => QueryType.Match('miniBlocksHashes', hash)));
+
+    return await this.elasticService.getList(index, 'hash', elasticQuery);
+  }
+
   async getMiniBlock(miniBlockHash: string): Promise<any> {
     return await this.elasticService.getItem('miniblocks', 'miniBlockHash', miniBlockHash);
   }

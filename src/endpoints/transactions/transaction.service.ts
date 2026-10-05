@@ -283,8 +283,8 @@ export class TransactionService {
     });
   }
 
-  async getTransaction(txHash: string, fields?: string[], withActionTransferValue: boolean = false): Promise<TransactionDetailed | null> {
-    let transaction = await this.transactionGetService.tryGetTransactionFromElastic(txHash, fields);
+  async getTransaction(txHash: string, fields?: string[], withActionTransferValue: boolean = false, scResultsOrderedByExecution: boolean = false): Promise<TransactionDetailed | null> {
+    let transaction = await this.transactionGetService.tryGetTransactionFromElastic(txHash, fields, scResultsOrderedByExecution);
 
     if (transaction === null) {
       transaction = await this.transactionGetService.tryGetTransactionFromGateway(txHash);

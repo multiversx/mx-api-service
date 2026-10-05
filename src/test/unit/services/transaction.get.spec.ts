@@ -108,6 +108,8 @@ describe('TransactionGetService', () => {
       getTransactionScResults: jest.fn(),
       getTransactionReceipts: jest.fn(),
       getNfts: jest.fn(),
+      getBlocksByMiniBlockHashes: jest.fn(),
+      getExecutionResultsByMiniBlockHashes: jest.fn(),
     };
 
     const gatewayServiceMock = {
@@ -120,6 +122,8 @@ describe('TransactionGetService', () => {
 
     const apiConfigServiceMock = {
       getElasticMigratedIndicesConfig: jest.fn(),
+      isChainSupernovaEnabled: jest.fn(),
+      getChainSupernovaActivationTimestampMs: jest.fn(),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -390,6 +394,87 @@ describe('TransactionGetService', () => {
       const result = await service['getTransactionLogsFromElasticInternalEventsIndex'](['hash1']);
 
       expect(result).toEqual([]);
+    });
+  });
+
+  describe('getTransactionScResultsFromElastic', () => {
+    const supernovaActivationTimestampMs = 1789062234000;
+
+    const createScResult = (hash: string, miniBlockHash: string, timestampMs: number): any => ({
+      hash,
+      miniBlockHash,
+      timestamp: Math.floor(timestampMs / 1000),
+      timestampMs,
+    });
+
+    beforeEach(() => {
+      apiConfigService.isChainSupernovaEnabled.mockReturnValue(true);
+      apiConfigService.getChainSupernovaActivationTimestampMs.mockReturnValue(supernovaActivationTimestampMs);
+    });
+
+    it('should keep elastic order when not ordered by execution', async () => {
+      indexerService.getTransactionScResults.mockResolvedValue([
+        createScResult('scr2', 'mb1', 1720000248000),
+        createScResult('scr1', 'mb1', 1720000248000),
+      ]);
+
+      const result = await service.getTransactionScResultsFromElastic(mockTransactionHash);
+
+      expect(result.map(x => x.hash)).toEqual(['scr2', 'scr1']);
+      expect(indexerService.getBlocksByMiniBlockHashes).not.toHaveBeenCalled();
+      expect(indexerService.getExecutionResultsByMiniBlockHashes).not.toHaveBeenCalled();
+    });
+
+    it('should order pre supernova results using execution order from blocks', async () => {
+      indexerService.getTransactionScResults.mockResolvedValue([
+        createScResult('scr2', 'mb1', 1720000248000),
+        createScResult('scr1', 'mb1', 1720000248000),
+      ]);
+      indexerService.getBlocksByMiniBlockHashes.mockResolvedValue([
+        { shardId: 0, miniBlocksDetails: [{ receiverShard: 1, txsHashes: ['scr1', 'scr2'], executionOrderTxsIndices: [1, 0] }] },
+        { shardId: 1, miniBlocksDetails: [{ receiverShard: 1, txsHashes: ['scr1', 'scr2'], executionOrderTxsIndices: [7, 8] }] },
+      ] as any);
+      indexerService.getExecutionResultsByMiniBlockHashes.mockResolvedValue([]);
+
+      const result = await service.getTransactionScResultsFromElastic(mockTransactionHash, true);
+
+      expect(result.map(x => x.hash)).toEqual(['scr1', 'scr2']);
+      expect(indexerService.getBlocksByMiniBlockHashes).toHaveBeenCalledWith(['mb1']);
+      expect(indexerService.getExecutionResultsByMiniBlockHashes).toHaveBeenCalledWith([]);
+    });
+
+    it('should order post supernova results using execution order from execution results', async () => {
+      indexerService.getTransactionScResults.mockResolvedValue([
+        createScResult('scr3', 'mb2', 1791190106400),
+        createScResult('scr2', 'mb1', 1791190104600),
+        createScResult('scr1', 'mb1', 1791190104600),
+      ]);
+      indexerService.getBlocksByMiniBlockHashes.mockResolvedValue([]);
+      indexerService.getExecutionResultsByMiniBlockHashes.mockResolvedValue([
+        { shardId: 1, miniBlocksDetails: [{ receiverShard: 1, txsHashes: ['scr2', 'scr1'], executionOrderTxsIndices: [4, 1] }] },
+        { shardId: 0, miniBlocksDetails: [{ receiverShard: 0, txsHashes: ['scr3'], executionOrderTxsIndices: [0] }] },
+      ] as any);
+
+      const result = await service.getTransactionScResultsFromElastic(mockTransactionHash, true);
+
+      expect(result.map(x => x.hash)).toEqual(['scr1', 'scr2', 'scr3']);
+      expect(indexerService.getBlocksByMiniBlockHashes).toHaveBeenCalledWith([]);
+      expect(indexerService.getExecutionResultsByMiniBlockHashes).toHaveBeenCalledWith(['mb2', 'mb1']);
+    });
+
+    it('should place results without known execution order last within the same timestamp', async () => {
+      indexerService.getTransactionScResults.mockResolvedValue([
+        createScResult('scr2', 'mb1', 1720000248000),
+        createScResult('scr1', 'mb1', 1720000248000),
+      ]);
+      indexerService.getBlocksByMiniBlockHashes.mockResolvedValue([
+        { shardId: 1, miniBlocksDetails: [{ receiverShard: 1, txsHashes: ['scr1'], executionOrderTxsIndices: [3] }] },
+      ] as any);
+      indexerService.getExecutionResultsByMiniBlockHashes.mockResolvedValue([]);
+
+      const result = await service.getTransactionScResultsFromElastic(mockTransactionHash, true);
+
+      expect(result.map(x => x.hash)).toEqual(['scr1', 'scr2']);
     });
   });
 

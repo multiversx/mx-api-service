@@ -225,12 +225,14 @@ export class TransactionController {
   @ApiNotFoundResponse({ description: 'Transaction not found' })
   @ApiQuery({ name: 'fields', description: 'List of fields to filter by', required: false, isArray: true, style: 'form', explode: false })
   @ApiQuery({ name: 'withActionTransferValue', description: 'Returns value in USD and EGLD for transferred tokens within the action attribute', required: false })
+  @ApiQuery({ name: 'scResultsOrderedByExecution', description: 'If set to true, will order the smart contract results by execution order', required: false })
   async getTransaction(
     @Param('txHash', ParseTransactionHashPipe) txHash: string,
     @Query('fields', ParseArrayPipe) fields?: string[],
     @Query('withActionTransferValue', ParseBoolPipe) withActionTransferValue?: boolean,
+    @Query('scResultsOrderedByExecution', ParseBoolPipe) _scResultsOrderedByExecution?: boolean,
   ): Promise<TransactionDetailed> {
-    const transaction = await this.transactionService.getTransaction(txHash, fields, withActionTransferValue);
+    const transaction = await this.transactionService.getTransaction(txHash, fields, withActionTransferValue, true);
 
     if (transaction === null) {
       throw new NotFoundException('Transaction not found');

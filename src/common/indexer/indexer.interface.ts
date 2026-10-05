@@ -82,6 +82,10 @@ export interface IndexerInterface {
 
   getBlockByMiniBlockHash(miniBlockHash: string): Promise<Block | undefined>
 
+  getBlocksByMiniBlockHashes(miniBlockHashes: string[]): Promise<Block[]>
+
+  getExecutionResultsByMiniBlockHashes(miniBlockHashes: string[]): Promise<Block[]>
+
   getMiniBlock(miniBlockHash: string): Promise<MiniBlock>
 
   getMiniBlocks(pagination: QueryPagination, filter: MiniBlockFilter): Promise<MiniBlock[]>
