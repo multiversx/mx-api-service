@@ -137,22 +137,24 @@ export class TransactionGetService {
       this.indexerService.getExecutionResultsByMiniBlockHashes([...postSupernovaMiniBlockHashes]),
     ]);
 
-    const executionOrder = new Map<string, number>();
+    const creationTimestampMs = new Map<string, number>();
+    const creationOrder = new Map<string, number>();
     for (const block of [...blocks, ...executionResults]) {
       for (const miniBlock of block.miniBlocksDetails ?? []) {
-        if (miniBlock.receiverShard !== block.shardId || !miniBlock.executionOrderTxsIndices) {
+        if (miniBlock.senderShard !== block.shardId || !miniBlock.executionOrderTxsIndices) {
           continue;
         }
 
         for (let i = 0; i < miniBlock.txsHashes.length; i++) {
-          executionOrder.set(miniBlock.txsHashes[i], miniBlock.executionOrderTxsIndices[i]);
+          creationTimestampMs.set(miniBlock.txsHashes[i], block.timestampMs ?? block.timestamp * 1000);
+          creationOrder.set(miniBlock.txsHashes[i], miniBlock.executionOrderTxsIndices[i]);
         }
       }
     }
 
     return scResults.sorted(
-      scResult => scResult.timestampMs,
-      scResult => executionOrder.get(scResult.hash) ?? Number.MAX_SAFE_INTEGER,
+      scResult => creationTimestampMs.get(scResult.hash) ?? scResult.timestampMs,
+      scResult => creationOrder.get(scResult.hash) ?? Number.MAX_SAFE_INTEGER,
     );
   }
 

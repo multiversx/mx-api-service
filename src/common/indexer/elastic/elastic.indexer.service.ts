@@ -352,7 +352,7 @@ export class ElasticIndexerService implements IndexerInterface {
 
     const elasticQuery = ElasticQuery.create()
       .withPagination({ from: 0, size: 1000 })
-      .withFields(['shardId', 'miniBlocksDetails'])
+      .withFields(['shardId', 'timestamp', 'timestampMs', 'miniBlocksDetails'])
       .withShouldCondition(miniBlockHashes.map(hash => QueryType.Match('miniBlocksHashes', hash)));
 
     return await this.elasticService.getList(index, 'hash', elasticQuery);
