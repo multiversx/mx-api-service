@@ -151,9 +151,19 @@ export class CacheWarmerService {
 
   @Lock({ name: 'Transaction pool invalidation', verbose: true })
   async handleTxPoolInvalidations() {
+    const ttl = this.apiConfigService.getTransactionPoolCacheWarmerTtlInSeconds();
     const pool = await this.poolService.getTxPoolRaw();
 
-    await this.invalidateKey(CacheInfo.TransactionPool.key, pool, this.apiConfigService.getTransactionPoolCacheWarmerTtlInSeconds());
+    const invalidations = [
+      this.invalidateKey(CacheInfo.TransactionPool.key, pool, ttl),
+    ];
+
+    if (pool == null) {
+      const count = await this.gatewayService.getTransactionPoolCount();
+      invalidations.push(this.invalidateKey(CacheInfo.TransactionPoolCount.key, count, ttl));
+    }
+
+    await Promise.all(invalidations);
   }
 
   @Cron('*/2 * * * *')

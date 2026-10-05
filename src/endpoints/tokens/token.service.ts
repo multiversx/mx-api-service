@@ -761,9 +761,30 @@ export class TokenService {
     }
 
     this.logger.log(`Starting to fetch all tokens`);
+    let tokens = await this.fetchAllTokensWithoutDetails();
+
+    await this.applyTokenDetails(tokens);
+
+    await this.applyTokensCreatedDuringProcessing(tokens);
+
+    this.logger.log(`Sorting and finalizing ${tokens.length} tokens`);
+    tokens = tokens.sortedDescending(
+      token => token.assets ? 1 : 0,
+      token => token.marketCap ? 1 : 0,
+      token => token.isLowLiquidity || token.assets?.priceSource?.type === TokenAssetsPriceSourceType.customUrl ? 0 : (token.marketCap ?? 0),
+      token => token.transactions ?? 0,
+    );
+
+    tokens = [...tokens, await this.buildEgldToken()];
+
+    this.logger.log(`Total tokens processed: ${tokens.length}`);
+    return tokens;
+  }
+
+  private async fetchAllTokensWithoutDetails(): Promise<TokenDetailed[]> {
     const startFungible = Date.now();
     const tokensProperties = await this.esdtService.getAllFungibleTokenProperties();
-    let tokens = tokensProperties.map(properties => ApiUtils.mergeObjects(new TokenDetailed(), properties));
+    const tokens = tokensProperties.map(properties => ApiUtils.mergeObjects(new TokenDetailed(), properties));
     this.logger.log(`Fetched ${tokens.length} fungible tokens in ${Date.now() - startFungible}ms`);
 
     const allAssets = await this.assetsService.getAllTokenAssets();
@@ -785,20 +806,32 @@ export class TokenService {
       tokens.push(this.buildMetaEsdtToken(collection));
     }
 
-    await this.applyTokenDetails(tokens);
-
-    this.logger.log(`Sorting and finalizing ${tokens.length} tokens`);
-    tokens = tokens.sortedDescending(
-      token => token.assets ? 1 : 0,
-      token => token.marketCap ? 1 : 0,
-      token => token.isLowLiquidity || token.assets?.priceSource?.type === TokenAssetsPriceSourceType.customUrl ? 0 : (token.marketCap ?? 0),
-      token => token.transactions ?? 0,
-    );
-
-    tokens = [...tokens, await this.buildEgldToken()];
-
-    this.logger.log(`Total tokens processed: ${tokens.length}`);
     return tokens;
+  }
+
+  private async applyTokensCreatedDuringProcessing(tokens: TokenDetailed[]): Promise<void> {
+    // processing all tokens takes tens of seconds, so re-fetch the token list and
+    // process only the tokens created in the meantime, instead of waiting for the next refresh
+    try {
+      const startFetchAndProcess = Date.now();
+      const processedIdentifiers = new Set(tokens.map(token => token.identifier));
+      const latestTokens = await this.fetchAllTokensWithoutDetails();
+      const newTokens = latestTokens.filter(token => !processedIdentifiers.has(token.identifier));
+
+      if (newTokens.length === 0) {
+        return;
+      }
+
+      await this.applyTokenDetails(newTokens);
+
+      tokens.push(...newTokens);
+
+      const endFetchAndProcess = Date.now();
+      this.logger.log(`Processed ${newTokens.length} tokens created while processing all tokens in ${endFetchAndProcess - startFetchAndProcess}ms`);
+    } catch (error) {
+      this.logger.error('Could not apply tokens created while processing all tokens');
+      this.logger.error(error);
+    }
   }
 
   async getTokenRaw(rawIdentifier: string): Promise<TokenDetailed | undefined> {

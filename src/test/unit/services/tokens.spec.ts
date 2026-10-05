@@ -723,7 +723,8 @@ describe('Token Service', () => {
         expect(apiConfigService.isTokensFetchFeatureEnabled).toHaveBeenCalled();
         expect(esdtService.getAllFungibleTokenProperties).toHaveBeenCalled();
 
-        expect(assetsService.getAllTokenAssets).toHaveBeenCalledTimes(1);
+        // the token list is fetched once for processing and once more to catch tokens created in the meantime
+        expect(assetsService.getAllTokenAssets).toHaveBeenCalledTimes(2);
 
         mockTokens.forEach(mockToken => {
           mockToken.name = mockTokenAssets.name;
@@ -796,6 +797,67 @@ describe('Token Service', () => {
         expect(egldToken?.price).toBe(100);
         expect(egldToken?.supply).toBe('0');
         expect(egldToken?.circulatingSupply).toBe('0');
+      });
+
+      describe('tokens created while processing all tokens', () => {
+        const mockTokenSupply: Partial<EsdtSupply> = { totalSupply: '1000', circulatingSupply: '1000' };
+
+        beforeEach(() => {
+          jest.spyOn(apiConfigService, 'isTokensFetchFeatureEnabled').mockReturnValue(false);
+          jest.spyOn(assetsService, 'getAllTokenAssets').mockResolvedValue({});
+          jest.spyOn(assetsService, 'getTokenAssets').mockResolvedValue(undefined);
+
+          jest.spyOn(tokenService as any, 'batchProcessTokens').mockImplementation(() => Promise.resolve());
+          jest.spyOn(tokenService as any, 'applyMexLiquidity').mockImplementation(() => Promise.resolve());
+          jest.spyOn(tokenService as any, 'applyMexPrices').mockImplementation(() => Promise.resolve());
+          jest.spyOn(tokenService as any, 'applyMexPairType').mockImplementation(() => Promise.resolve());
+          jest.spyOn(tokenService as any, 'applyMexPairTradesCount').mockImplementation(() => Promise.resolve());
+          jest.spyOn(cacheService as any, 'batchApplyAll').mockImplementation(() => Promise.resolve());
+          jest.spyOn(dataApiService, 'getEsdtTokenPrice').mockResolvedValue(undefined);
+          jest.spyOn(dataApiService, 'getEgldPrice').mockResolvedValue(100);
+          jest.spyOn(esdtService, 'getTokenSupply').mockResolvedValue(mockTokenSupply as EsdtSupply);
+        });
+
+        it('should process only the tokens created in the meantime and include them in the result', async () => {
+          jest.spyOn(esdtService, 'getAllFungibleTokenProperties')
+            .mockResolvedValueOnce([new TokenProperties({ identifier: 'OLD-111111' })])
+            .mockResolvedValueOnce([new TokenProperties({ identifier: 'OLD-111111' }), new TokenProperties({ identifier: 'NEW-222222' })]);
+          jest.spyOn(collectionService, 'getNftCollections')
+            .mockResolvedValueOnce([{ collection: 'OLDMETA-333333' } as NftCollection])
+            .mockResolvedValueOnce([{ collection: 'OLDMETA-333333' } as NftCollection, { collection: 'NEWMETA-444444' } as NftCollection]);
+
+          // snapshot the identifiers at call time, since the processed array is extended afterwards
+          const processedBatches: string[][] = [];
+          jest.spyOn(tokenService as any, 'batchProcessTokens').mockImplementation((tokens: any) => {
+            processedBatches.push(tokens.map((t: TokenDetailed) => t.identifier));
+            return Promise.resolve();
+          });
+
+          const result = await tokenService.getAllTokensRaw();
+
+          expect(processedBatches).toEqual([
+            ['OLD-111111', 'OLDMETA-333333'],
+            ['NEW-222222', 'NEWMETA-444444'],
+          ]);
+
+          expect(result.map(t => t.identifier).sort()).toEqual(['EGLD-000000', 'NEW-222222', 'NEWMETA-444444', 'OLD-111111', 'OLDMETA-333333']);
+
+          const newToken = result.find(t => t.identifier === 'NEW-222222');
+          expect(newToken?.type).toBe(TokenType.FungibleESDT);
+          expect(newToken?.supply).toBe(mockTokenSupply.totalSupply);
+        });
+
+        it('should keep the already processed tokens if fetching the latest tokens fails', async () => {
+          jest.spyOn(esdtService, 'getAllFungibleTokenProperties')
+            .mockResolvedValueOnce([new TokenProperties({ identifier: 'OLD-111111' })])
+            .mockRejectedValueOnce(new Error('elastic unavailable'));
+          jest.spyOn(collectionService, 'getNftCollections').mockResolvedValue([{ collection: 'OLDMETA-333333' } as NftCollection]);
+
+          const result = await tokenService.getAllTokensRaw();
+
+          expect((tokenService as any).batchProcessTokens).toHaveBeenCalledTimes(1);
+          expect(result.map(t => t.identifier).sort()).toEqual(['EGLD-000000', 'OLD-111111', 'OLDMETA-333333']);
+        });
       });
     });
 
