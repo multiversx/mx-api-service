@@ -230,9 +230,9 @@ export class TransactionController {
     @Param('txHash', ParseTransactionHashPipe) txHash: string,
     @Query('fields', ParseArrayPipe) fields?: string[],
     @Query('withActionTransferValue', ParseBoolPipe) withActionTransferValue?: boolean,
-    @Query('scResultsOrderedByExecution', ParseBoolPipe) _scResultsOrderedByExecution?: boolean,
+    @Query('scResultsOrderedByExecution', ParseBoolPipe) scResultsOrderedByExecution?: boolean,
   ): Promise<TransactionDetailed> {
-    const transaction = await this.transactionService.getTransaction(txHash, fields, withActionTransferValue, true);
+    const transaction = await this.transactionService.getTransaction(txHash, fields, withActionTransferValue, scResultsOrderedByExecution);
 
     if (transaction === null) {
       throw new NotFoundException('Transaction not found');
