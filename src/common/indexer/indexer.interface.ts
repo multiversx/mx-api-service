@@ -144,7 +144,7 @@ export interface IndexerInterface {
 
   getTokensForAddress(address: string, queryPagination: QueryPagination, filter: TokenFilter): Promise<Token[]>
 
-  getTransactionLogs(hashes: string[], eventsIndex: string, txHashField: string): Promise<ElasticTransactionLogEvent[]>
+  getTransactionLogs(hashes: string[]): Promise<ElasticTransactionLogEvent[]>
 
   getTransactionScResults(txHash: string): Promise<ScResult[]>
 

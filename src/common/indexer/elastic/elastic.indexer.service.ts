@@ -779,17 +779,18 @@ export class ElasticIndexerService implements IndexerInterface {
     return query;
   }
 
-  async getTransactionLogs(hashes: string[], eventsIndex: string, txHashField: string): Promise<any[]> {
+  async getTransactionLogs(hashes: string[]): Promise<any[]> {
     const queries = [];
     for (const hash of hashes) {
-      queries.push(QueryType.Match(txHashField, hash));
+      queries.push(QueryType.Match('txHash', hash));
     }
 
     const elasticQueryLogs = ElasticQuery.create()
       .withPagination({ from: 0, size: 10000 })
+      .withSort([{ name: 'order', order: ElasticSortOrder.ascending }])
       .withCondition(QueryConditionOptions.should, queries);
 
-    return await this.elasticService.getList(eventsIndex, 'id', elasticQueryLogs);
+    return await this.elasticService.getList('events', 'id', elasticQueryLogs);
   }
 
   async getTransactionScResults(txHash: string): Promise<any[]> {

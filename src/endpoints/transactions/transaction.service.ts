@@ -544,7 +544,7 @@ export class TransactionService {
 
         const transactionLogs: TransactionLog[] = logs.filter((log) => transactionHashes.includes(log.id ?? ''));
         transactionDetailed.operations = await this.tokenTransferService.getOperationsForTransaction(transactionDetailed, transactionLogs);
-        transactionDetailed.operations = TransactionUtils.trimOperations(transactionDetailed.sender, transactionDetailed.operations, previousHashes);
+        transactionDetailed.operations = TransactionUtils.trimOperations(transactionDetailed.operations, previousHashes);
       }
 
       if (queryOptions.withLogs) {
@@ -633,7 +633,7 @@ export class TransactionService {
       const transactionLogs: Array<TransactionLog> = logs.filter((log) => transactionHashes.includes(log.id ?? ''));
 
       let operationsRaw: Array<TransactionOperation> = await this.tokenTransferService.getOperationsForTransaction(transaction, transactionLogs);
-      operationsRaw = TransactionUtils.trimOperations(transaction.sender, operationsRaw, previousTransactionHashes);
+      operationsRaw = TransactionUtils.trimOperations(operationsRaw, previousTransactionHashes);
 
       if (operationsRaw.length > 0) {
         operations.push(operationsRaw.map((operation: any) => ApiUtils.mergeObjects(new TransactionOperation(), operation)));

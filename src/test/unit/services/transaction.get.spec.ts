@@ -121,7 +121,6 @@ describe('TransactionGetService', () => {
     };
 
     const apiConfigServiceMock = {
-      getElasticMigratedIndicesConfig: jest.fn(),
       isChainSupernovaEnabled: jest.fn(),
       getChainSupernovaActivationTimestampMs: jest.fn(),
     };
@@ -208,61 +207,6 @@ describe('TransactionGetService', () => {
   });
 
   describe('getTransactionLogsFromElasticInternal', () => {
-    it('should use events index when configured', async () => {
-      const hashes = ['hash1'];
-      apiConfigService.getElasticMigratedIndicesConfig.mockReturnValue({ logs: 'events' });
-
-      jest.spyOn(service as any, 'getTransactionLogsFromElasticInternalEventsIndex')
-        .mockResolvedValue([]);
-
-      await service['getTransactionLogsFromElasticInternal'](hashes);
-
-      expect(service['getTransactionLogsFromElasticInternalEventsIndex']).toHaveBeenCalledWith(hashes);
-    });
-
-    it('should use logs index by default', async () => {
-      const hashes = ['hash1'];
-      apiConfigService.getElasticMigratedIndicesConfig.mockReturnValue({});
-
-      jest.spyOn(service as any, 'getTransactionLogsFromElasticInternalLogsIndex')
-        .mockResolvedValue([]);
-
-      await service['getTransactionLogsFromElasticInternal'](hashes);
-
-      expect(service['getTransactionLogsFromElasticInternalLogsIndex']).toHaveBeenCalledWith(hashes);
-    });
-
-    it('should use logs index when no config is available', async () => {
-      const hashes = ['hash1'];
-      apiConfigService.getElasticMigratedIndicesConfig.mockReturnValue(null as any);
-
-      jest.spyOn(service as any, 'getTransactionLogsFromElasticInternalLogsIndex')
-        .mockResolvedValue([]);
-
-      await service['getTransactionLogsFromElasticInternal'](hashes);
-
-      expect(service['getTransactionLogsFromElasticInternalLogsIndex']).toHaveBeenCalledWith(hashes);
-    });
-  });
-
-  describe('getTransactionLogsFromElasticInternalLogsIndex', () => {
-    it('should call indexer service with correct parameters', async () => {
-      const hashes = ['hash1', 'hash2'];
-      const expectedResult = [
-        { id: 'hash1', address: 'addr1', identifier: 'test', topics: [], order: 0, originalTxHash: 'hash1' },
-        { id: 'hash2', address: 'addr2', identifier: 'test', topics: [], order: 0, originalTxHash: 'hash2' },
-      ];
-
-      indexerService.getTransactionLogs.mockResolvedValue(expectedResult as any);
-
-      const result = await service['getTransactionLogsFromElasticInternalLogsIndex'](hashes);
-
-      expect(indexerService.getTransactionLogs).toHaveBeenCalledWith(hashes, 'logs', '_id');
-      expect(result).toEqual(expectedResult);
-    });
-  });
-
-  describe('getTransactionLogsFromElasticInternalEventsIndex', () => {
     const mockEventsData = [
       {
         txHash: 'hash1',
@@ -302,9 +246,9 @@ describe('TransactionGetService', () => {
     it('should transform events data correctly', async () => {
       indexerService.getTransactionLogs.mockResolvedValue(mockEventsData);
 
-      const result = await service['getTransactionLogsFromElasticInternalEventsIndex'](['hash1', 'hash2']);
+      const result = await service['getTransactionLogsFromElasticInternal'](['hash1', 'hash2']);
 
-      expect(indexerService.getTransactionLogs).toHaveBeenCalledWith(['hash1', 'hash2'], 'events', 'txHash');
+      expect(indexerService.getTransactionLogs).toHaveBeenCalledWith(['hash1', 'hash2']);
       expect(result).toHaveLength(2);
 
       const hash1Log = result.find(log => log.id === 'hash1');
@@ -343,7 +287,7 @@ describe('TransactionGetService', () => {
 
       indexerService.getTransactionLogs.mockResolvedValue([emptyDataEvent]);
 
-      const result = await service['getTransactionLogsFromElasticInternalEventsIndex'](['hash1']);
+      const result = await service['getTransactionLogsFromElasticInternal'](['hash1']);
 
       expect(result).toHaveLength(1);
       const log = result[0];
@@ -379,7 +323,7 @@ describe('TransactionGetService', () => {
 
       indexerService.getTransactionLogs.mockResolvedValue(sameHashEvents);
 
-      const result = await service['getTransactionLogsFromElasticInternalEventsIndex'](['hash1']);
+      const result = await service['getTransactionLogsFromElasticInternal'](['hash1']);
 
       expect(result).toHaveLength(1);
       expect(result[0].id).toBe('hash1');
@@ -391,7 +335,7 @@ describe('TransactionGetService', () => {
     it('should return empty array when no events found', async () => {
       indexerService.getTransactionLogs.mockResolvedValue([]);
 
-      const result = await service['getTransactionLogsFromElasticInternalEventsIndex'](['hash1']);
+      const result = await service['getTransactionLogsFromElasticInternal'](['hash1']);
 
       expect(result).toEqual([]);
     });

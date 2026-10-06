@@ -54,22 +54,8 @@ export class TransactionGetService {
     return result.map(x => ApiUtils.mergeObjects(new TransactionLog(), x));
   }
 
-  private async getTransactionLogsFromElasticInternal(hashes: string[]) {
-    const esMigratedIndices = this.apiConfigService.getElasticMigratedIndicesConfig();
-    const index = esMigratedIndices?.['logs'] ?? 'logs';
-    if (index === 'events') {
-      return await this.getTransactionLogsFromElasticInternalEventsIndex(hashes);
-    }
-
-    return await this.getTransactionLogsFromElasticInternalLogsIndex(hashes);
-  }
-
-  private async getTransactionLogsFromElasticInternalLogsIndex(hashes: string[]): Promise<any[]> {
-    return await this.indexerService.getTransactionLogs(hashes, 'logs', '_id');
-  }
-
-  private async getTransactionLogsFromElasticInternalEventsIndex(hashes: string[]): Promise<any[]> {
-    const rawHits = await this.indexerService.getTransactionLogs(hashes, 'events', 'txHash');
+  private async getTransactionLogsFromElasticInternal(hashes: string[]): Promise<TransactionLog[]> {
+    const rawHits = await this.indexerService.getTransactionLogs(hashes);
 
     const logsMap: Map<string, TransactionLog> = new Map();
 
@@ -215,7 +201,7 @@ export class TransactionGetService {
 
         if (!fields || fields.length === 0 || fields.includes(TransactionOptionalFieldOption.operations)) {
           transactionDetailed.operations = await this.tokenTransferService.getOperationsForTransaction(transactionDetailed, logs);
-          transactionDetailed.operations = TransactionUtils.trimOperations(transactionDetailed.sender, transactionDetailed.operations, previousHashes);
+          transactionDetailed.operations = TransactionUtils.trimOperations(transactionDetailed.operations, previousHashes);
         }
 
         for (const log of logs) {
