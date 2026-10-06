@@ -37,5 +37,19 @@ describe('TokenTransferService', () => {
         'scr2:writeLog',
       ]);
     });
+
+    it('should keep transaction operations first when smart contract results are not loaded', async () => {
+      const transaction = { txHash: 'tx', sender: 'erd1sender' } as unknown as TransactionDetailed;
+
+      const logs = [
+        { id: 'scr1', address: 'erd1receiver', events: [{ identifier: 'writeLog', address: 'erd1receiver', topics: [] }] },
+        { id: 'scr2', address: 'erd1receiver', events: [{ identifier: 'writeLog', address: 'erd1receiver', topics: [] }] },
+        { id: 'tx', address: 'erd1contract', events: [{ identifier: 'writeLog', address: 'erd1contract', topics: [] }] },
+      ] as unknown as TransactionLog[];
+
+      const operations = await service.getOperationsForTransaction(transaction, logs);
+
+      expect(operations.map(operation => operation.id)).toEqual(['tx', 'scr1', 'scr2']);
+    });
   });
 });

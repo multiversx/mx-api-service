@@ -300,6 +300,7 @@ export class ElasticIndexerService implements IndexerInterface {
     }
 
     this.processTransaction(result);
+    this.bulkProcessScResults([result]);
 
     return result;
   }
@@ -456,7 +457,11 @@ export class ElasticIndexerService implements IndexerInterface {
       ])
       .withMustMultiShouldCondition(transactionHashes, hash => QueryType.Match('originalTxHash', hash));
 
-    return await this.elasticService.getList('operations', 'scHash', elasticQuery);
+    const results = await this.elasticService.getList('operations', 'scHash', elasticQuery);
+
+    this.bulkProcessScResults(results);
+
+    return results;
   }
 
   async getAccountsForAddresses(addresses: string[]): Promise<any[]> {
@@ -506,6 +511,7 @@ export class ElasticIndexerService implements IndexerInterface {
     const results = await this.elasticService.getList('operations', 'hash', elasticQuery, pagination.searchAfter);
 
     this.bulkProcessTransactions(results);
+    this.bulkProcessScResults(results);
 
     return results;
   }
@@ -541,7 +547,11 @@ export class ElasticIndexerService implements IndexerInterface {
         { name: 'uuid.keyword', order: ElasticSortOrder.descending },
       ]);
 
-    return await this.elasticService.getList('operations', 'hash', elasticQuery, pagination.searchAfter);
+    const results = await this.elasticService.getList('operations', 'hash', elasticQuery, pagination.searchAfter);
+
+    this.bulkProcessScResults(results);
+
+    return results;
   }
 
   async getAccounts(queryPagination: QueryPagination, filter: AccountQueryOptions, fields?: string[]): Promise<any[]> {
@@ -736,6 +746,14 @@ export class ElasticIndexerService implements IndexerInterface {
     }
   }
 
+  private bulkProcessScResults(scResults: any[]) {
+    for (const scResult of scResults) {
+      if (scResult && !scResult.timestampMs && scResult.timestamp) {
+        scResult.timestampMs = scResult.timestamp * 1000;
+      }
+    }
+  }
+
   private bulkProcessTransactions(transactions: any[]) {
     if (!transactions || transactions.length === 0) {
       return;
@@ -787,7 +805,11 @@ export class ElasticIndexerService implements IndexerInterface {
 
     const elasticQueryLogs = ElasticQuery.create()
       .withPagination({ from: 0, size: 10000 })
-      .withSort([{ name: 'order', order: ElasticSortOrder.ascending }])
+      .withSort([
+        { name: 'timestamp', order: ElasticSortOrder.ascending },
+        { name: 'timestampMs', order: ElasticSortOrder.ascending, missing: 0 },
+        { name: 'order', order: ElasticSortOrder.ascending },
+      ])
       .withCondition(QueryConditionOptions.should, queries);
 
     return await this.elasticService.getList('events', 'id', elasticQueryLogs);
@@ -809,6 +831,7 @@ export class ElasticIndexerService implements IndexerInterface {
     const results = await this.elasticService.getList('operations', 'hash', elasticQuerySc);
 
     this.bulkProcessTransactions(results);
+    this.bulkProcessScResults(results);
 
     return results;
   }
@@ -822,7 +845,7 @@ export class ElasticIndexerService implements IndexerInterface {
       return [];
     }
 
-    const maxSize = Math.min(hashes.length * 10, 1000);
+    const maxSize = Math.min(hashes.length * 100, 10000);
 
     const elasticQuery = ElasticQuery.create()
       .withMustMatchCondition('type', 'unsigned')
@@ -835,7 +858,11 @@ export class ElasticIndexerService implements IndexerInterface {
       ])
       .withMustMultiShouldCondition(hashes, hash => QueryType.Match('originalTxHash', hash));
 
-    return await this.elasticService.getList('operations', 'scHash', elasticQuery);
+    const results = await this.elasticService.getList('operations', 'scHash', elasticQuery);
+
+    this.bulkProcessScResults(results);
+
+    return results;
   }
 
   async getAccountEsdtByIdentifiers(identifiers: string[], pagination?: QueryPagination) {

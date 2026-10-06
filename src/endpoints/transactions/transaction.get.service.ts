@@ -51,7 +51,13 @@ export class TransactionGetService {
       currentHashes = hashes.slice(0, 1000);
     }
 
-    return result.map(x => ApiUtils.mergeObjects(new TransactionLog(), x));
+    const logs = result.map(x => ApiUtils.mergeObjects(new TransactionLog(), x));
+    for (const log of logs) {
+      this.alterDuplicatedTransferValueOnlyEvents(log.events);
+      this.removeDuplicatedESDTTransferEvents(log.events);
+    }
+
+    return logs;
   }
 
   private async getTransactionLogsFromElasticInternal(hashes: string[]): Promise<TransactionLog[]> {
@@ -87,11 +93,6 @@ export class TransactionGetService {
 
   async getTransactionScResultsFromElastic(txHash: string, orderedByExecution: boolean = false): Promise<SmartContractResult[]> {
     let scResults = await this.indexerService.getTransactionScResults(txHash);
-    for (const scResult of scResults) {
-      if (!scResult.timestampMs) {
-        scResult.timestampMs = scResult.timestamp * 1000;
-      }
-    }
 
     if (orderedByExecution) {
       scResults = await this.sortScResultsByExecutionOrder(scResults);
@@ -132,8 +133,13 @@ export class TransactionGetService {
         }
 
         for (let i = 0; i < miniBlock.txsHashes.length; i++) {
+          const executionOrder = miniBlock.executionOrderTxsIndices[i];
+          if (executionOrder === undefined || executionOrder < 0) {
+            continue;
+          }
+
           creationTimestampMs.set(miniBlock.txsHashes[i], block.timestampMs ?? block.timestamp * 1000);
-          creationOrder.set(miniBlock.txsHashes[i], miniBlock.executionOrderTxsIndices[i]);
+          creationOrder.set(miniBlock.txsHashes[i], executionOrder);
         }
       }
     }
@@ -194,10 +200,6 @@ export class TransactionGetService {
 
       if (!fields || fields.length === 0 || fields.includesSome([TransactionOptionalFieldOption.logs, TransactionOptionalFieldOption.operations])) {
         const logs = await this.getTransactionLogsFromElastic(hashes);
-        for (const log of logs) {
-          this.alterDuplicatedTransferValueOnlyEvents(log.events);
-          this.removeDuplicatedESDTTransferEvents(log.events);
-        }
 
         if (!fields || fields.length === 0 || fields.includes(TransactionOptionalFieldOption.operations)) {
           transactionDetailed.operations = await this.tokenTransferService.getOperationsForTransaction(transactionDetailed, logs);

@@ -542,7 +542,9 @@ export class TransactionService {
           previousHashes[scResult.hash] = scResult.prevTxHash;
         }
 
-        const transactionLogs: TransactionLog[] = logs.filter((log) => transactionHashes.includes(log.id ?? ''));
+        const transactionLogs: TransactionLog[] = transactionHashes
+          .map((hash) => logs.find((log) => log.id === hash))
+          .filter((log): log is TransactionLog => log !== undefined);
         transactionDetailed.operations = await this.tokenTransferService.getOperationsForTransaction(transactionDetailed, transactionLogs);
         transactionDetailed.operations = TransactionUtils.trimOperations(transactionDetailed.operations, previousHashes);
       }

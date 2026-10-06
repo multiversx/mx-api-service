@@ -204,6 +204,16 @@ describe('TransactionGetService', () => {
       const result = await service.getTransactionLogsFromElastic([]);
       expect(result).toEqual([]);
     });
+
+    it('should remove duplicated ESDTTransfer events from every log', async () => {
+      const transferEvent = { identifier: 'ESDTTransfer', address: 'erd1sender', topics: ['dG9rZW4=', '', 'AQ==', 'cmVjZWl2ZXI='], data: '', additionalData: [] };
+      jest.spyOn(service as any, 'getTransactionLogsFromElasticInternal')
+        .mockResolvedValue([new TransactionLog({ id: 'hash1', address: 'addr1', events: [{ ...transferEvent }, { ...transferEvent }] as any })]);
+
+      const result = await service.getTransactionLogsFromElastic(['hash1']);
+
+      expect(result[0].events).toHaveLength(1);
+    });
   });
 
   describe('getTransactionLogsFromElasticInternal', () => {
@@ -411,6 +421,22 @@ describe('TransactionGetService', () => {
       expect(result.map(x => x.hash)).toEqual(['scr1', 'scr2', 'scr3']);
       expect(indexerService.getBlocksByMiniBlockHashes).toHaveBeenCalledWith([]);
       expect(indexerService.getExecutionResultsByMiniBlockHashes).toHaveBeenCalledWith(['mb2', 'mb1']);
+    });
+
+    it('should ignore negative execution order sentinels', async () => {
+      indexerService.getTransactionScResults.mockResolvedValue([
+        createScResult('scr3', 'mb1', 1720000248000),
+        createScResult('scr1', 'mb1', 1720000248000),
+        createScResult('scr2', 'mb1', 1720000248000),
+      ]);
+      indexerService.getBlocksByMiniBlockHashes.mockResolvedValue([
+        { shardId: 1, timestampMs: 1720000248000, miniBlocksDetails: [{ senderShard: 1, txsHashes: ['scr1', 'scr2', 'scr3'], executionOrderTxsIndices: [4, 5, -2] }] },
+      ] as any);
+      indexerService.getExecutionResultsByMiniBlockHashes.mockResolvedValue([]);
+
+      const result = await service.getTransactionScResultsFromElastic(mockTransactionHash, true);
+
+      expect(result.map(x => x.hash)).toEqual(['scr1', 'scr2', 'scr3']);
     });
 
     it('should place results without known execution order last within the same timestamp', async () => {
