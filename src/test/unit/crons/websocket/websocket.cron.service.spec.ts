@@ -20,7 +20,13 @@ describe('WebsocketCronService', () => {
     localCache = new Map();
 
     const cacheService = {
-      getLocal: (key: string) => localCache.get(key),
+      getOrSetLocal: async (key: string, createValueFunc: () => Promise<number>) => {
+        if (!localCache.has(key)) {
+          localCache.set(key, await createValueFunc());
+        }
+
+        return localCache.get(key);
+      },
       setLocal: (key: string, value: any) => localCache.set(key, value),
       deleteLocal: (key: string) => localCache.delete(key),
     };
@@ -96,14 +102,12 @@ describe('WebsocketCronService', () => {
     expect(localCache.get(cursorKey)).toBe(2200);
   });
 
-  it('jumps to the latest round when too far behind', async () => {
-    const latest = 10_000_000;
-    localCache.set(cursorKey, latest - 10 * 60 * 1000);
-    mockLatestRound(latest);
+  it('starts from the latest round when the cursor expired', async () => {
+    mockLatestRound(10_000_000);
 
     await service.handleCustomDataUpdate();
 
-    expect(dataFetcher.fetchRoundData).toHaveBeenCalledTimes(1);
-    expect(dataFetcher.fetchRoundData).toHaveBeenCalledWith(latest);
+    expect(dataFetcher.fetchRoundData.mock.calls.map(call => call[0])).toEqual([10_000_000]);
+    expect(localCache.get(cursorKey)).toBe(10_000_600);
   });
 });

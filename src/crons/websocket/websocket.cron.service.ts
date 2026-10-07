@@ -3,7 +3,7 @@ import { Cron, SchedulerRegistry } from '@nestjs/schedule';
 import { TransactionsGateway } from './transaction.gateway';
 import { BlocksGateway } from 'src/crons/websocket/blocks.gateway';
 import { NetworkGateway } from 'src/crons/websocket/network.gateway';
-import { Lock, Locker, OriginLogger } from "@multiversx/sdk-nestjs-common";
+import { Lock, Locker } from "@multiversx/sdk-nestjs-common";
 import { PoolGateway } from 'src/crons/websocket/pool.gateway';
 import { EventsGateway } from 'src/crons/websocket/events.gateway';
 import { WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
@@ -25,9 +25,6 @@ import { CustomSubscriptionsDataFetcher } from './custom.subscriptions.data.fetc
 @Injectable()
 @WebSocketGateway({ cors: { origin: '*' }, path: '/ws/subscription' })
 export class WebsocketCronService implements OnModuleInit {
-  private readonly logger = new OriginLogger(WebsocketCronService.name);
-  private static readonly maxRoundsLagMs = 5 * 60 * 1000;
-
   @WebSocketServer()
   server!: Server;
 
@@ -142,16 +139,9 @@ export class WebsocketCronService implements OnModuleInit {
     const latestRoundOnChainTimestamp = await this.getLatestRoundOnChainTimestamp();
     const latestRoundOnChainTimestampMs = latestRoundOnChainTimestamp.timestampMs ?? latestRoundOnChainTimestamp.timestamp * 1000;
 
-    let roundToProcessTimestampMs = this.cacheService.getLocal<number>(CacheInfo.WsTimestampMsToProcess().key) ?? latestRoundOnChainTimestampMs;
-    if (latestRoundOnChainTimestampMs - roundToProcessTimestampMs > WebsocketCronService.maxRoundsLagMs) {
-      this.logger.warn(`Custom subscriptions are more than ${WebsocketCronService.maxRoundsLagMs}ms behind, skipping rounds from ${roundToProcessTimestampMs} to ${latestRoundOnChainTimestampMs}`);
-      roundToProcessTimestampMs = latestRoundOnChainTimestampMs;
-    }
-
-    // set on every tick so it does not expire while waiting for a lagging indexer
-    this.cacheService.setLocal(
+    let roundToProcessTimestampMs = await this.cacheService.getOrSetLocal(
       CacheInfo.WsTimestampMsToProcess().key,
-      roundToProcessTimestampMs,
+      () => Promise.resolve(latestRoundOnChainTimestampMs),
       CacheInfo.WsTimestampMsToProcess().ttl,
     );
 
