@@ -61,6 +61,7 @@ export class RoomKeyGenerator {
   }
 
   private static buildRoomKeys(prefix: string, activeFilters: { key: string; value: any }[]) {
+    // distinct values per key, e.g. { sender: [alice], token: [AAA, BBB] }
     const valuesByKey = new Map<string, any[]>();
     for (const { key, value } of activeFilters) {
       const values = valuesByKey.get(key) ?? [];
@@ -71,8 +72,9 @@ export class RoomKeyGenerator {
       valuesByKey.set(key, values);
     }
 
-    // a key can hold several values (e.g. one token per transfer) but a room uses at most one of them,
-    // so combinations are built per key instead of per filter to keep this linear in the number of values
+    // a room holds at most one value per key, so combinations are built key by key:
+    // the previous combinations are kept (key missing) and copies are added with each value of the key
+    // e.g. [{}] -> [{}, {sender}] -> [{}, {sender}, {AAA}, {sender, AAA}, {BBB}, {sender, BBB}]
     let combinations: Record<string, any>[] = [{}];
     for (const [key, values] of valuesByKey) {
       const extended: Record<string, any>[] = [];
@@ -85,6 +87,7 @@ export class RoomKeyGenerator {
       combinations = combinations.concat(extended);
     }
 
+    // drop the empty starting combination
     return combinations
       .slice(1)
       .map(combination => `${prefix}${this.deterministicStringify(combination)}`);
