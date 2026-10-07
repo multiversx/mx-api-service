@@ -104,7 +104,10 @@ export class TokenTransferService {
     const scResultsOperations: TransactionOperation[] = this.getOperationsForTransactionScResults(transaction.results ?? []);
     const logsOperations: TransactionOperation[] = await this.getOperationsForTransactionLogs(transaction.txHash, logs, transaction.sender);
 
-    return [...scResultsOperations, ...logsOperations];
+    const hashes = [transaction.txHash, ...(transaction.results ?? []).map(scResult => scResult.hash)];
+    const positionByHash = new Map(hashes.map((hash, index) => [hash, index]));
+
+    return [...scResultsOperations, ...logsOperations].sorted(operation => positionByHash.get(operation.id) ?? hashes.length);
   }
 
 

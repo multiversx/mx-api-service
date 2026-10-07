@@ -51,25 +51,17 @@ export class TransactionGetService {
       currentHashes = hashes.slice(0, 1000);
     }
 
-    return result.map(x => ApiUtils.mergeObjects(new TransactionLog(), x));
-  }
-
-  private async getTransactionLogsFromElasticInternal(hashes: string[]) {
-    const esMigratedIndices = this.apiConfigService.getElasticMigratedIndicesConfig();
-    const index = esMigratedIndices?.['logs'] ?? 'logs';
-    if (index === 'events') {
-      return await this.getTransactionLogsFromElasticInternalEventsIndex(hashes);
+    const logs = result.map(x => ApiUtils.mergeObjects(new TransactionLog(), x));
+    for (const log of logs) {
+      this.alterDuplicatedTransferValueOnlyEvents(log.events);
+      this.removeDuplicatedESDTTransferEvents(log.events);
     }
 
-    return await this.getTransactionLogsFromElasticInternalLogsIndex(hashes);
+    return logs;
   }
 
-  private async getTransactionLogsFromElasticInternalLogsIndex(hashes: string[]): Promise<any[]> {
-    return await this.indexerService.getTransactionLogs(hashes, 'logs', '_id');
-  }
-
-  private async getTransactionLogsFromElasticInternalEventsIndex(hashes: string[]): Promise<any[]> {
-    const rawHits = await this.indexerService.getTransactionLogs(hashes, 'events', 'txHash');
+  private async getTransactionLogsFromElasticInternal(hashes: string[]): Promise<TransactionLog[]> {
+    const rawHits = await this.indexerService.getTransactionLogs(hashes);
 
     const logsMap: Map<string, TransactionLog> = new Map();
 
@@ -99,12 +91,65 @@ export class TransactionGetService {
     return Array.from(logsMap.values());
   }
 
-  async getTransactionScResultsFromElastic(txHash: string): Promise<SmartContractResult[]> {
-    const scResults = await this.indexerService.getTransactionScResults(txHash);
+  async getTransactionScResultsFromElastic(txHash: string, orderedByExecution: boolean = false): Promise<SmartContractResult[]> {
+    let scResults = await this.indexerService.getTransactionScResults(txHash);
+
+    if (orderedByExecution) {
+      scResults = await this.sortScResultsByExecutionOrder(scResults);
+    }
+
     return scResults.map(scResult => ApiUtils.mergeObjects(new SmartContractResult(), scResult));
   }
 
-  async tryGetTransactionFromElastic(txHash: string, fields?: string[]): Promise<TransactionDetailed | null> {
+  private async sortScResultsByExecutionOrder(scResults: any[]): Promise<any[]> {
+    const supernovaActivationTimestampMs = this.apiConfigService.getChainSupernovaActivationTimestampMs();
+
+    const preSupernovaMiniBlockHashes = new Set<string>();
+    const postSupernovaMiniBlockHashes = new Set<string>();
+    for (const scResult of scResults) {
+      if (!scResult.miniBlockHash) {
+        continue;
+      }
+
+      if (scResult.timestampMs >= supernovaActivationTimestampMs) {
+        postSupernovaMiniBlockHashes.add(scResult.miniBlockHash);
+      } else {
+        preSupernovaMiniBlockHashes.add(scResult.miniBlockHash);
+      }
+    }
+
+    const [blocks, executionResults] = await Promise.all([
+      this.indexerService.getBlocksByMiniBlockHashes([...preSupernovaMiniBlockHashes]),
+      this.indexerService.getExecutionResultsByMiniBlockHashes([...postSupernovaMiniBlockHashes]),
+    ]);
+
+    const creationTimestampMs = new Map<string, number>();
+    const creationOrder = new Map<string, number>();
+    for (const block of [...blocks, ...executionResults]) {
+      for (const miniBlock of block.miniBlocksDetails ?? []) {
+        if (miniBlock.senderShard !== block.shardId || !miniBlock.executionOrderTxsIndices) {
+          continue;
+        }
+
+        for (let i = 0; i < miniBlock.txsHashes.length; i++) {
+          const executionOrder = miniBlock.executionOrderTxsIndices[i];
+          if (executionOrder === undefined || executionOrder < 0) {
+            continue;
+          }
+
+          creationTimestampMs.set(miniBlock.txsHashes[i], block.timestampMs ?? block.timestamp * 1000);
+          creationOrder.set(miniBlock.txsHashes[i], executionOrder);
+        }
+      }
+    }
+
+    return scResults.sorted(
+      scResult => creationTimestampMs.get(scResult.hash) ?? scResult.timestampMs,
+      scResult => creationOrder.get(scResult.hash) ?? Number.MAX_SAFE_INTEGER,
+    );
+  }
+
+  async tryGetTransactionFromElastic(txHash: string, fields?: string[], scResultsOrderedByExecution: boolean = false): Promise<TransactionDetailed | null> {
     let transaction: any;
     try {
       transaction = await this.indexerService.getTransaction(txHash);
@@ -136,7 +181,7 @@ export class TransactionGetService {
 
       if (transaction.hasScResults === true || transaction.hasOperations === true &&
         (!fields || fields.length === 0 || fields.includes(TransactionOptionalFieldOption.results))) {
-        transactionDetailed.results = await this.getTransactionScResultsFromElastic(transactionDetailed.txHash);
+        transactionDetailed.results = await this.getTransactionScResultsFromElastic(transactionDetailed.txHash, scResultsOrderedByExecution);
 
         for (const scResult of transactionDetailed.results) {
           hashes.push(scResult.hash);
@@ -154,14 +199,10 @@ export class TransactionGetService {
 
       if (!fields || fields.length === 0 || fields.includesSome([TransactionOptionalFieldOption.logs, TransactionOptionalFieldOption.operations])) {
         const logs = await this.getTransactionLogsFromElastic(hashes);
-        for (const log of logs) {
-          this.alterDuplicatedTransferValueOnlyEvents(log.events);
-          this.removeDuplicatedESDTTransferEvents(log.events);
-        }
 
         if (!fields || fields.length === 0 || fields.includes(TransactionOptionalFieldOption.operations)) {
           transactionDetailed.operations = await this.tokenTransferService.getOperationsForTransaction(transactionDetailed, logs);
-          transactionDetailed.operations = TransactionUtils.trimOperations(transactionDetailed.sender, transactionDetailed.operations, previousHashes);
+          transactionDetailed.operations = TransactionUtils.trimOperations(transactionDetailed.operations, previousHashes);
         }
 
         for (const log of logs) {

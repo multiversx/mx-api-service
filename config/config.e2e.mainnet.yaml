@@ -71,6 +71,8 @@ features:
   chainAndromeda:
     enabled: true
     activationEpoch: 4
+  chainSupernova:
+    activationTimestampMs: 1789062234000
   stakingV5:
     enabled: true
     activationEpoch: 1951
@@ -98,8 +100,6 @@ features:
     durationThresholdMs: 5000
     failureCountThreshold: 5
     resetTimeoutMs: 30000
-  elasticMigratedIndices:
-    logs: 'events'
   statusChecker:
     enabled: false
     thresholds:

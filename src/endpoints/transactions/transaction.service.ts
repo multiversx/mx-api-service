@@ -283,8 +283,8 @@ export class TransactionService {
     });
   }
 
-  async getTransaction(txHash: string, fields?: string[], withActionTransferValue: boolean = false): Promise<TransactionDetailed | null> {
-    let transaction = await this.transactionGetService.tryGetTransactionFromElastic(txHash, fields);
+  async getTransaction(txHash: string, fields?: string[], withActionTransferValue: boolean = false, scResultsOrderedByExecution: boolean = false): Promise<TransactionDetailed | null> {
+    let transaction = await this.transactionGetService.tryGetTransactionFromElastic(txHash, fields, scResultsOrderedByExecution);
 
     if (transaction === null) {
       transaction = await this.transactionGetService.tryGetTransactionFromGateway(txHash);
@@ -542,9 +542,11 @@ export class TransactionService {
           previousHashes[scResult.hash] = scResult.prevTxHash;
         }
 
-        const transactionLogs: TransactionLog[] = logs.filter((log) => transactionHashes.includes(log.id ?? ''));
+        const transactionLogs: TransactionLog[] = transactionHashes
+          .map((hash) => logs.find((log) => log.id === hash))
+          .filter((log): log is TransactionLog => log !== undefined);
         transactionDetailed.operations = await this.tokenTransferService.getOperationsForTransaction(transactionDetailed, transactionLogs);
-        transactionDetailed.operations = TransactionUtils.trimOperations(transactionDetailed.sender, transactionDetailed.operations, previousHashes);
+        transactionDetailed.operations = TransactionUtils.trimOperations(transactionDetailed.operations, previousHashes);
       }
 
       if (queryOptions.withLogs) {
@@ -633,7 +635,7 @@ export class TransactionService {
       const transactionLogs: Array<TransactionLog> = logs.filter((log) => transactionHashes.includes(log.id ?? ''));
 
       let operationsRaw: Array<TransactionOperation> = await this.tokenTransferService.getOperationsForTransaction(transaction, transactionLogs);
-      operationsRaw = TransactionUtils.trimOperations(transaction.sender, operationsRaw, previousTransactionHashes);
+      operationsRaw = TransactionUtils.trimOperations(operationsRaw, previousTransactionHashes);
 
       if (operationsRaw.length > 0) {
         operations.push(operationsRaw.map((operation: any) => ApiUtils.mergeObjects(new TransactionOperation(), operation)));

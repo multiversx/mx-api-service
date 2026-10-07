@@ -300,6 +300,7 @@ export class ElasticIndexerService implements IndexerInterface {
     }
 
     this.processTransaction(result);
+    this.bulkProcessScResults([result]);
 
     return result;
   }
@@ -335,6 +336,27 @@ export class ElasticIndexerService implements IndexerInterface {
 
     const result = await this.elasticService.getList('blocks', '_search', elasticQuery);
     return result.length > 0 ? result[0] : undefined;
+  }
+
+  async getBlocksByMiniBlockHashes(miniBlockHashes: string[]): Promise<Block[]> {
+    return await this.getExecutionOrderSourcesByMiniBlockHashes('blocks', miniBlockHashes);
+  }
+
+  async getExecutionResultsByMiniBlockHashes(miniBlockHashes: string[]): Promise<Block[]> {
+    return await this.getExecutionOrderSourcesByMiniBlockHashes('executionresults', miniBlockHashes);
+  }
+
+  private async getExecutionOrderSourcesByMiniBlockHashes(index: string, miniBlockHashes: string[]): Promise<Block[]> {
+    if (miniBlockHashes.length === 0) {
+      return [];
+    }
+
+    const elasticQuery = ElasticQuery.create()
+      .withPagination({ from: 0, size: 1000 })
+      .withFields(['shardId', 'timestamp', 'timestampMs', 'miniBlocksDetails'])
+      .withShouldCondition(miniBlockHashes.map(hash => QueryType.Match('miniBlocksHashes', hash)));
+
+    return await this.elasticService.getList(index, 'hash', elasticQuery);
   }
 
   async getMiniBlock(miniBlockHash: string): Promise<any> {
@@ -430,11 +452,16 @@ export class ElasticIndexerService implements IndexerInterface {
       .withSort([
         { name: 'timestamp', order: ElasticSortOrder.ascending },
         { name: 'timestampMs', order: ElasticSortOrder.ascending, missing: 0 },
+        { name: 'nonce', order: ElasticSortOrder.ascending },
         { name: 'uuid.keyword', order: ElasticSortOrder.ascending },
       ])
       .withMustMultiShouldCondition(transactionHashes, hash => QueryType.Match('originalTxHash', hash));
 
-    return await this.elasticService.getList('operations', 'scHash', elasticQuery);
+    const results = await this.elasticService.getList('operations', 'scHash', elasticQuery);
+
+    this.bulkProcessScResults(results);
+
+    return results;
   }
 
   async getAccountsForAddresses(addresses: string[]): Promise<any[]> {
@@ -477,12 +504,14 @@ export class ElasticIndexerService implements IndexerInterface {
       .withSort([
         { name: 'timestamp', order: ElasticSortOrder.descending },
         { name: 'timestampMs', order: ElasticSortOrder.descending, missing: 0 },
+        { name: 'nonce', order: ElasticSortOrder.descending },
         { name: 'uuid.keyword', order: ElasticSortOrder.descending },
       ]);
 
     const results = await this.elasticService.getList('operations', 'hash', elasticQuery, pagination.searchAfter);
 
     this.bulkProcessTransactions(results);
+    this.bulkProcessScResults(results);
 
     return results;
   }
@@ -514,10 +543,15 @@ export class ElasticIndexerService implements IndexerInterface {
       .withSort([
         { name: 'timestamp', order: ElasticSortOrder.descending },
         { name: 'timestampMs', order: ElasticSortOrder.descending, missing: 0 },
+        { name: 'nonce', order: ElasticSortOrder.descending },
         { name: 'uuid.keyword', order: ElasticSortOrder.descending },
       ]);
 
-    return await this.elasticService.getList('operations', 'hash', elasticQuery, pagination.searchAfter);
+    const results = await this.elasticService.getList('operations', 'hash', elasticQuery, pagination.searchAfter);
+
+    this.bulkProcessScResults(results);
+
+    return results;
   }
 
   async getAccounts(queryPagination: QueryPagination, filter: AccountQueryOptions, fields?: string[]): Promise<any[]> {
@@ -712,6 +746,14 @@ export class ElasticIndexerService implements IndexerInterface {
     }
   }
 
+  private bulkProcessScResults(scResults: any[]) {
+    for (const scResult of scResults) {
+      if (scResult && !scResult.timestampMs && scResult.timestamp) {
+        scResult.timestampMs = scResult.timestamp * 1000;
+      }
+    }
+  }
+
   private bulkProcessTransactions(transactions: any[]) {
     if (!transactions || transactions.length === 0) {
       return;
@@ -755,34 +797,41 @@ export class ElasticIndexerService implements IndexerInterface {
     return query;
   }
 
-  async getTransactionLogs(hashes: string[], eventsIndex: string, txHashField: string): Promise<any[]> {
+  async getTransactionLogs(hashes: string[]): Promise<any[]> {
     const queries = [];
     for (const hash of hashes) {
-      queries.push(QueryType.Match(txHashField, hash));
+      queries.push(QueryType.Match('txHash', hash));
     }
 
     const elasticQueryLogs = ElasticQuery.create()
       .withPagination({ from: 0, size: 10000 })
+      .withSort([
+        { name: 'timestamp', order: ElasticSortOrder.ascending },
+        { name: 'timestampMs', order: ElasticSortOrder.ascending, missing: 0 },
+        { name: 'order', order: ElasticSortOrder.ascending },
+      ])
       .withCondition(QueryConditionOptions.should, queries);
 
-    return await this.elasticService.getList(eventsIndex, 'id', elasticQueryLogs);
+    return await this.elasticService.getList('events', 'id', elasticQueryLogs);
   }
 
   async getTransactionScResults(txHash: string): Promise<any[]> {
     const originalTxHashQuery = QueryType.Match('originalTxHash', txHash);
     const timestamp: ElasticSortProperty = { name: 'timestamp', order: ElasticSortOrder.ascending };
     const timestampMs: ElasticSortProperty = { name: 'timestampMs', order: ElasticSortOrder.ascending, missing: 0 };
+    const nonce: ElasticSortProperty = { name: 'nonce', order: ElasticSortOrder.ascending };
     const uuid: ElasticSortProperty = { name: 'uuid.keyword', order: ElasticSortOrder.ascending };
 
     const elasticQuerySc = ElasticQuery.create()
       .withMustMatchCondition('type', 'unsigned')
       .withPagination({ from: 0, size: 100 })
-      .withSort([timestamp, timestampMs, uuid])
+      .withSort([timestamp, timestampMs, nonce, uuid])
       .withCondition(QueryConditionOptions.must, [originalTxHashQuery]);
 
     const results = await this.elasticService.getList('operations', 'hash', elasticQuerySc);
 
     this.bulkProcessTransactions(results);
+    this.bulkProcessScResults(results);
 
     return results;
   }
@@ -796,7 +845,7 @@ export class ElasticIndexerService implements IndexerInterface {
       return [];
     }
 
-    const maxSize = Math.min(hashes.length * 10, 1000);
+    const maxSize = Math.min(hashes.length * 100, 10000);
 
     const elasticQuery = ElasticQuery.create()
       .withMustMatchCondition('type', 'unsigned')
@@ -804,11 +853,16 @@ export class ElasticIndexerService implements IndexerInterface {
       .withSort([
         { name: 'timestamp', order: ElasticSortOrder.ascending },
         { name: 'timestampMs', order: ElasticSortOrder.ascending, missing: 0 },
+        { name: 'nonce', order: ElasticSortOrder.ascending },
         { name: 'uuid.keyword', order: ElasticSortOrder.ascending }
       ])
       .withMustMultiShouldCondition(hashes, hash => QueryType.Match('originalTxHash', hash));
 
-    return await this.elasticService.getList('operations', 'scHash', elasticQuery);
+    const results = await this.elasticService.getList('operations', 'scHash', elasticQuery);
+
+    this.bulkProcessScResults(results);
+
+    return results;
   }
 
   async getAccountEsdtByIdentifiers(identifiers: string[], pagination?: QueryPagination) {
@@ -1278,6 +1332,8 @@ export class ElasticIndexerService implements IndexerInterface {
       .withSort([
         { name: 'timestamp', order: ElasticSortOrder.descending },
         { name: 'timestampMs', order: ElasticSortOrder.descending, missing: 0 },
+        { name: 'txOrder', order: ElasticSortOrder.descending, missing: 0 },
+        { name: 'order', order: ElasticSortOrder.descending, missing: 0 },
         { name: 'uuid.keyword', order: ElasticSortOrder.descending },
       ]);
 

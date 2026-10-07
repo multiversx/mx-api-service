@@ -82,6 +82,10 @@ export interface IndexerInterface {
 
   getBlockByMiniBlockHash(miniBlockHash: string): Promise<Block | undefined>
 
+  getBlocksByMiniBlockHashes(miniBlockHashes: string[]): Promise<Block[]>
+
+  getExecutionResultsByMiniBlockHashes(miniBlockHashes: string[]): Promise<Block[]>
+
   getMiniBlock(miniBlockHash: string): Promise<MiniBlock>
 
   getMiniBlocks(pagination: QueryPagination, filter: MiniBlockFilter): Promise<MiniBlock[]>
@@ -140,7 +144,7 @@ export interface IndexerInterface {
 
   getTokensForAddress(address: string, queryPagination: QueryPagination, filter: TokenFilter): Promise<Token[]>
 
-  getTransactionLogs(hashes: string[], eventsIndex: string, txHashField: string): Promise<ElasticTransactionLogEvent[]>
+  getTransactionLogs(hashes: string[]): Promise<ElasticTransactionLogEvent[]>
 
   getTransactionScResults(txHash: string): Promise<ScResult[]>
 
