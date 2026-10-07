@@ -54,6 +54,10 @@ describe('WebsocketCronService', () => {
     jest.spyOn(service as any, 'isElasticDataAvailableForTimestampMs').mockResolvedValue(true);
   });
 
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
   const mockLatestRound = (timestampMs: number) => {
     jest.spyOn(service as any, 'getLatestRoundOnChainTimestamp').mockResolvedValue({ timestampMs, timestamp: Math.floor(timestampMs / 1000) });
   };
@@ -69,17 +73,25 @@ describe('WebsocketCronService', () => {
     expect(localCache.get(cursorKey)).toBe(2800);
   });
 
-  it('does not move past a round whose data could not be fetched', async () => {
+  it('does not move past a round whose data is not yet available in elastic', async () => {
+    jest.useFakeTimers();
     localCache.set(cursorKey, 1000);
     mockLatestRound(1600);
-    dataFetcher.fetchRoundData
-      .mockResolvedValueOnce(new CustomSubscriptionsRoundData())
-      .mockRejectedValueOnce(new Error('elastic unavailable'));
 
-    await expect(service.handleCustomDataUpdate()).rejects.toThrow('elastic unavailable');
+    let isRoundIndexed = false;
+    jest.spyOn(service as any, 'isElasticDataAvailableForTimestampMs')
+      .mockImplementation((timestampMs) => Promise.resolve(timestampMs === 1000 || isRoundIndexed));
+
+    const firstTick = expect(service.handleCustomDataUpdate()).rejects.toThrow('Polling timeout exceeded');
+    await jest.runAllTimersAsync();
+    await firstTick;
+
+    expect(dataFetcher.fetchRoundData.mock.calls.map(call => call[0])).toEqual([1000]);
     expect(localCache.get(cursorKey)).toBe(1600);
 
+    isRoundIndexed = true;
     await service.handleCustomDataUpdate();
+
     expect(dataFetcher.fetchRoundData).toHaveBeenLastCalledWith(1600);
     expect(localCache.get(cursorKey)).toBe(2200);
   });
