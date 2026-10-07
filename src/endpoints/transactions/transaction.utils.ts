@@ -33,8 +33,8 @@ export class TransactionUtils {
     return JSON.stringify(filter) === JSON.stringify(filterToCompareWith);
   }
 
-  static trimOperations(sender: string, operations: TransactionOperation[], previousHashes: Record<string, string>): TransactionOperation[] {
-    let result: TransactionOperation[] = [];
+  static trimOperations(operations: TransactionOperation[], previousHashes: Record<string, string>): TransactionOperation[] {
+    const result: TransactionOperation[] = [];
 
     for (const operation of operations) {
       if (operation.action === TransactionOperationAction.transfer) {
@@ -56,8 +56,6 @@ export class TransactionUtils {
 
       result.push(operation);
     }
-
-    result = result.sorted(x => x.sender === sender ? 0 : 1);
 
     return result;
   }

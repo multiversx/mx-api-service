@@ -11,7 +11,7 @@ import { TransactionLogEvent } from "../transactions/entities/transaction.log.ev
 import { TransactionOperationType } from "../transactions/entities/transaction.operation.type";
 import { SmartContractResult } from "../sc-results/entities/smart.contract.result";
 import { TransactionDetailed } from "../transactions/entities/transaction.detailed";
-import { BinaryUtils } from "@multiversx/sdk-nestjs-common";
+import { BinaryUtils, Constants } from "@multiversx/sdk-nestjs-common";
 import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { OriginLogger } from "@multiversx/sdk-nestjs-common";
 import { DataApiService } from "src/common/data-api/data-api.service";
@@ -77,13 +77,25 @@ export class TokenTransferService {
       [key: string]: TokenTransferProperties | null;
     } = {};
 
+    const distinctIdentifiers = identifiers.distinct();
+
     await this.cachingService.batchApplyAll(
-      identifiers,
+      distinctIdentifiers,
       identifier => CacheInfo.TokenTransferProperties(identifier).key,
-      identifier => this.getTokenTransferPropertiesRaw(identifier),
-      (identifier, value) => tokenProperties[identifier] = value,
+      async identifier => await this.getTokenTransferPropertiesRaw(identifier) ?? undefined,
+      (identifier, value) => tokenProperties[identifier] = value ?? null,
       CacheInfo.TokenTransferProperties('').ttl
     );
+
+    const missingIdentifiers = distinctIdentifiers.filter(identifier => tokenProperties[identifier] === undefined);
+
+    if (missingIdentifiers.length > 0) {
+      await this.cachingService.setMany(
+        missingIdentifiers.map(identifier => CacheInfo.TokenTransferProperties(identifier).key),
+        missingIdentifiers.map(() => null),
+        Constants.oneMinute(),
+      );
+    }
 
     return tokenProperties;
   }
@@ -92,7 +104,10 @@ export class TokenTransferService {
     const scResultsOperations: TransactionOperation[] = this.getOperationsForTransactionScResults(transaction.results ?? []);
     const logsOperations: TransactionOperation[] = await this.getOperationsForTransactionLogs(transaction.txHash, logs, transaction.sender);
 
-    return [...scResultsOperations, ...logsOperations];
+    const hashes = [transaction.txHash, ...(transaction.results ?? []).map(scResult => scResult.hash)];
+    const positionByHash = new Map(hashes.map((hash, index) => [hash, index]));
+
+    return [...scResultsOperations, ...logsOperations].sorted(operation => positionByHash.get(operation.id) ?? hashes.length);
   }
 
 
@@ -303,18 +318,31 @@ export class TokenTransferService {
   async getTokenTransferProperties(options: { identifier: string, nonce?: string, timestamp?: number, value?: string, applyValue?: boolean }): Promise<TokenTransferProperties | null> {
     let properties = await this.cachingService.getOrSet(
       CacheInfo.TokenTransferProperties(options.identifier).key,
-      async () => await this.getTokenTransferPropertiesRaw(options.identifier),
+      async () => {
+        const rawProperties = await this.getTokenTransferPropertiesRaw(options.identifier);
+        if (!rawProperties) {
+          await this.cachingService.set(CacheInfo.TokenTransferProperties(options.identifier).key, null, Constants.oneMinute());
+        }
+
+        return rawProperties;
+      },
       CacheInfo.TokenTransferProperties(options.identifier).ttl,
+      CacheInfo.TokenTransferProperties(options.identifier).ttl,
+      false,
     );
 
-    // we clone it since we alter the resulting object 
-    properties = JSON.parse(JSON.stringify(properties));
+    if (!properties) {
+      return null;
+    }
 
-    if (properties && properties.type !== EsdtType.FungibleESDT && options.nonce) {
+    // we clone it since we alter the resulting object 
+    properties = JSON.parse(JSON.stringify(properties)) as TokenTransferProperties;
+
+    if (properties.type !== EsdtType.FungibleESDT && options.nonce) {
       properties.identifier = `${options.identifier}-${options.nonce}`;
     }
 
-    if (properties && options.applyValue && options.timestamp && options.value) {
+    if (options.applyValue && options.timestamp && options.value) {
       const esdtPrice = await this.dataApiService.getEsdtTokenPrice(options.identifier, options.timestamp);
       if (esdtPrice) {
         properties.valueUsd = new BigNumber(esdtPrice).multipliedBy(options.value).shiftedBy(-(properties.decimals ?? 0)).toNumber();

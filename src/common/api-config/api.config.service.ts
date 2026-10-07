@@ -410,10 +410,6 @@ export class ApiConfigService {
     };
   }
 
-  getElasticMigratedIndicesConfig(): Record<string, string> {
-    return this.configService.get<Record<string, string>>('features.elasticMigratedIndices') ?? {};
-  }
-
   getIsWebsocketApiActive(): boolean {
     return this.configService.get<boolean>('api.websocket') ?? true;
   }
@@ -898,6 +894,10 @@ export class ApiConfigService {
 
   getChainAndromedaActivationEpoch(): number {
     return this.configService.get<number>('features.chainAndromeda.activationEpoch') ?? 99999;
+  }
+
+  getChainSupernovaActivationTimestampMs(): number {
+    return this.configService.get<number>('features.chainSupernova.activationTimestampMs') ?? Number.MAX_SAFE_INTEGER;
   }
 
   isStakingV5Enabled(): boolean {

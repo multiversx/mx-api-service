@@ -182,6 +182,16 @@ export class IndexerService implements IndexerInterface {
   }
 
   @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
+  async getBlocksByMiniBlockHashes(miniBlockHashes: string[]): Promise<Block[]> {
+    return await this.indexerInterface.getBlocksByMiniBlockHashes(miniBlockHashes);
+  }
+
+  @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
+  async getExecutionResultsByMiniBlockHashes(miniBlockHashes: string[]): Promise<Block[]> {
+    return await this.indexerInterface.getExecutionResultsByMiniBlockHashes(miniBlockHashes);
+  }
+
+  @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
   async getMiniBlock(miniBlockHash: string): Promise<MiniBlock> {
     return await this.indexerInterface.getMiniBlock(miniBlockHash);
   }
@@ -312,8 +322,8 @@ export class IndexerService implements IndexerInterface {
   }
 
   @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
-  async getTransactionLogs(hashes: string[], eventsIndex: string, txHashField: string): Promise<ElasticTransactionLogEvent[]> {
-    return await this.indexerInterface.getTransactionLogs(hashes, eventsIndex, txHashField);
+  async getTransactionLogs(hashes: string[]): Promise<ElasticTransactionLogEvent[]> {
+    return await this.indexerInterface.getTransactionLogs(hashes);
   }
 
   @LogPerformanceAsync(MetricsEvents.SetIndexerDuration)
