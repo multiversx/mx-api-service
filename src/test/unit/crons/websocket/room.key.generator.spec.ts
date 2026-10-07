@@ -109,11 +109,17 @@ describe('RoomKeyGenerator', () => {
 
       const rooms = RoomKeyGenerator.generate('', data, TransferCustomSubscribePayload);
 
-      // sender on/off (2) x token none/EGLD/AAA/BBB (4) - empty room
-      expect(rooms).toHaveLength(7);
-      expect(rooms).toContain('{"sender":"alice","token":"AAA-123456"}');
-      expect(rooms).toContain('{"token":"EGLD"}');
-      expect(rooms.every((r) => r.split('"token"').length <= 2)).toBe(true);
+      const expectedRooms = [
+        { sender: 'alice' },
+        { token: 'EGLD' },
+        { token: 'AAA-123456' },
+        { token: 'BBB-123456' },
+        { sender: 'alice', token: 'EGLD' },
+        { sender: 'alice', token: 'AAA-123456' },
+        { sender: 'alice', token: 'BBB-123456' },
+      ].map((room) => RoomKeyGenerator.deterministicStringify(room));
+
+      expect([...rooms].sort()).toEqual(expectedRooms.sort());
     });
 
     it('does not duplicate rooms when the same token is transferred twice', () => {
@@ -124,12 +130,18 @@ describe('RoomKeyGenerator', () => {
 
       const rooms = RoomKeyGenerator.generate('', data, TransferCustomSubscribePayload);
 
-      expect(rooms).toHaveLength(3);
-      expect(new Set(rooms).size).toBe(rooms.length);
+      const expectedRooms = [
+        { sender: 'alice' },
+        { token: 'AAA-123456' },
+        { sender: 'alice', token: 'AAA-123456' },
+      ].map((room) => RoomKeyGenerator.deterministicStringify(room));
+
+      expect([...rooms].sort()).toEqual(expectedRooms.sort());
     });
 
     it('handles transfers with many tokens', () => {
-      const transfers = Array.from({ length: 40 }, (_, i) => ({ token: `TKN${i}-123456` }));
+      const tokens = Array.from({ length: 40 }, (_, i) => `TKN${i}-123456`);
+      const transfers = tokens.map((token) => ({ token }));
       const data = {
         sender: 'alice',
         receiver: 'bob',
@@ -139,9 +151,24 @@ describe('RoomKeyGenerator', () => {
 
       const rooms = RoomKeyGenerator.generate('', data, TransferCustomSubscribePayload);
 
+      const roomsWithoutToken: Record<string, any>[] = [
+        {},
+        { sender: 'alice' },
+        { receiver: 'bob' },
+        { function: 'MultiESDTNFTTransfer' },
+        { sender: 'alice', receiver: 'bob' },
+        { sender: 'alice', function: 'MultiESDTNFTTransfer' },
+        { receiver: 'bob', function: 'MultiESDTNFTTransfer' },
+        { sender: 'alice', receiver: 'bob', function: 'MultiESDTNFTTransfer' },
+      ];
+
+      const expectedRooms = roomsWithoutToken
+        .flatMap((room) => [room, ...tokens.map((token) => ({ ...room, token }))])
+        .filter((room) => Object.keys(room).length > 0)
+        .map((room) => RoomKeyGenerator.deterministicStringify(room));
+
       expect(rooms).toHaveLength(8 * 41 - 1);
-      expect(rooms).toContain('{"token":"TKN39-123456"}');
-      expect(rooms).toContain('{"function":"MultiESDTNFTTransfer","receiver":"bob","sender":"alice","token":"TKN0-123456"}');
+      expect([...rooms].sort()).toEqual(expectedRooms.sort());
     });
   });
 
