@@ -102,7 +102,6 @@ export class TransactionGetService {
   }
 
   private async sortScResultsByExecutionOrder(scResults: any[]): Promise<any[]> {
-    const isChainSupernovaEnabled = this.apiConfigService.isChainSupernovaEnabled();
     const supernovaActivationTimestampMs = this.apiConfigService.getChainSupernovaActivationTimestampMs();
 
     const preSupernovaMiniBlockHashes = new Set<string>();
@@ -112,7 +111,7 @@ export class TransactionGetService {
         continue;
       }
 
-      if (isChainSupernovaEnabled && scResult.timestampMs >= supernovaActivationTimestampMs) {
+      if (scResult.timestampMs >= supernovaActivationTimestampMs) {
         postSupernovaMiniBlockHashes.add(scResult.miniBlockHash);
       } else {
         preSupernovaMiniBlockHashes.add(scResult.miniBlockHash);

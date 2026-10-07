@@ -121,7 +121,6 @@ describe('TransactionGetService', () => {
     };
 
     const apiConfigServiceMock = {
-      isChainSupernovaEnabled: jest.fn(),
       getChainSupernovaActivationTimestampMs: jest.fn(),
     };
 
@@ -362,7 +361,6 @@ describe('TransactionGetService', () => {
     });
 
     beforeEach(() => {
-      apiConfigService.isChainSupernovaEnabled.mockReturnValue(true);
       apiConfigService.getChainSupernovaActivationTimestampMs.mockReturnValue(supernovaActivationTimestampMs);
     });
 

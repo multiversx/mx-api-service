@@ -74,7 +74,6 @@ features:
     enabled: true
     activationEpoch: 4
   chainSupernova:
-    enabled: true
     activationTimestampMs: 1787235980000
   stakingV5:
     enabled: true
