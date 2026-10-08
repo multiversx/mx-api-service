@@ -3,16 +3,16 @@ import { Server, Socket } from 'socket.io';
 import { WsValidationPipe } from 'src/utils/ws-validation.pipe';
 import { WebsocketExceptionsFilter } from 'src/utils/ws-exceptions.filter';
 import { UseFilters, UseInterceptors } from '@nestjs/common';
-import { OriginLogger } from '@multiversx/sdk-nestjs-common';
 import { RoomKeyGenerator } from './room.key.generator';
 import { Transaction } from 'src/endpoints/transactions/entities/transaction';
+import { TransactionDetailed } from 'src/endpoints/transactions/entities/transaction.detailed';
 import { LockingGuardInterceptor } from 'src/utils/locking.guard.interceptor';
 import { TransferCustomSubscribePayload } from 'src/endpoints/websocket/entities/transfers.custom.payload';
+import { RawTransfer } from './custom-subscriptions/raw.transfer';
 
 @UseFilters(WebsocketExceptionsFilter)
 @WebSocketGateway({ cors: { origin: '*' }, path: '/ws/subscription' })
 export class TransfersCustomGateway {
-  private readonly logger = new OriginLogger(TransfersCustomGateway.name);
   static keyPrefix = 'custom-transfer-';
   @WebSocketServer()
   server!: Server;
@@ -45,46 +45,45 @@ export class TransfersCustomGateway {
     return { status: 'unsubscribed' };
   }
 
-  pushTransfersForTimestampMs(timestampMs: number, transfers: Transaction[]): void {
-    try {
-      const transfersFilteredForBroadcast: Map<string, Transaction[]> = new Map();
+  matchRooms(rawTransfers: RawTransfer[]): Map<string, TransactionDetailed[]> {
+    const transfersFilteredForBroadcast: Map<string, TransactionDetailed[]> = new Map();
 
-      for (const transfer of transfers) {
-        const roomKeys = RoomKeyGenerator.generate(
-          TransfersCustomGateway.keyPrefix,
-          transfer,
-          TransferCustomSubscribePayload,
-        );
+    for (const { transfer, tokens } of rawTransfers) {
+      const roomKeys = RoomKeyGenerator.generate(
+        TransfersCustomGateway.keyPrefix,
+        { ...transfer, tokens },
+        TransferCustomSubscribePayload,
+      );
 
-        for (const roomKey of roomKeys) {
-          const substitutions = TransferCustomSubscribePayload.getFieldsSubstitutions();
-          for (const [key, substituteFields] of Object.entries(substitutions)) {
-            for (const substituteField of substituteFields) {
-              const substituteRoomKey = RoomKeyGenerator.substitute(TransfersCustomGateway.keyPrefix, roomKey, substituteField, key);
-              if (this.server.sockets.adapter.rooms.has(substituteRoomKey)) {
-                if (!transfersFilteredForBroadcast.has(substituteRoomKey)) {
-                  transfersFilteredForBroadcast.set(substituteRoomKey, []);
-                }
-                transfersFilteredForBroadcast.get(substituteRoomKey)!.push(transfer);
+      for (const roomKey of roomKeys) {
+        const substitutions = TransferCustomSubscribePayload.getFieldsSubstitutions();
+        for (const [key, substituteFields] of Object.entries(substitutions)) {
+          for (const substituteField of substituteFields) {
+            const substituteRoomKey = RoomKeyGenerator.substitute(TransfersCustomGateway.keyPrefix, roomKey, substituteField, key);
+            if (this.server.sockets.adapter.rooms.has(substituteRoomKey)) {
+              if (!transfersFilteredForBroadcast.has(substituteRoomKey)) {
+                transfersFilteredForBroadcast.set(substituteRoomKey, []);
               }
+              transfersFilteredForBroadcast.get(substituteRoomKey)!.push(transfer);
             }
-          }
-
-          if (this.server.sockets.adapter.rooms.has(roomKey)) {
-            if (!transfersFilteredForBroadcast.has(roomKey)) {
-              transfersFilteredForBroadcast.set(roomKey, []);
-            }
-            transfersFilteredForBroadcast.get(roomKey)!.push(transfer);
           }
         }
-      }
 
-      for (const [roomName] of transfersFilteredForBroadcast) {
-        this.server.to(roomName).emit("customTransferUpdate", { transfers: transfersFilteredForBroadcast.get(roomName)?.distinct(), timestampMs });
+        if (this.server.sockets.adapter.rooms.has(roomKey)) {
+          if (!transfersFilteredForBroadcast.has(roomKey)) {
+            transfersFilteredForBroadcast.set(roomKey, []);
+          }
+          transfersFilteredForBroadcast.get(roomKey)!.push(transfer);
+        }
       }
-    } catch (error) {
-      this.logger.error(error);
     }
+
+    return transfersFilteredForBroadcast;
   }
 
+  broadcast(timestampMs: number, transfersFilteredForBroadcast: Map<string, Transaction[]>): void {
+    for (const [roomName, transfers] of transfersFilteredForBroadcast) {
+      this.server.to(roomName).emit("customTransferUpdate", { transfers: transfers.distinct(), timestampMs });
+    }
+  }
 }

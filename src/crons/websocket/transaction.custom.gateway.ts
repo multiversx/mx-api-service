@@ -3,16 +3,15 @@ import { Server, Socket } from 'socket.io';
 import { WsValidationPipe } from 'src/utils/ws-validation.pipe';
 import { WebsocketExceptionsFilter } from 'src/utils/ws-exceptions.filter';
 import { UseFilters, UseInterceptors } from '@nestjs/common';
-import { OriginLogger } from '@multiversx/sdk-nestjs-common';
 import { TransactionCustomSubscribePayload } from 'src/endpoints/transactions/entities/dtos/transaction.custom.subscribe';
 import { RoomKeyGenerator } from './room.key.generator';
 import { Transaction } from 'src/endpoints/transactions/entities/transaction';
+import { TransactionDetailed } from 'src/endpoints/transactions/entities/transaction.detailed';
 import { LockingGuardInterceptor } from 'src/utils/locking.guard.interceptor';
 
 @UseFilters(WebsocketExceptionsFilter)
 @WebSocketGateway({ cors: { origin: '*' }, path: '/ws/subscription' })
 export class TransactionsCustomGateway {
-  private readonly logger = new OriginLogger(TransactionsCustomGateway.name);
   static keyPrefix = 'custom-tx-';
   @WebSocketServer()
   server!: Server;
@@ -45,32 +44,31 @@ export class TransactionsCustomGateway {
     return { status: 'unsubscribed' };
   }
 
-  pushTransactionsForTimestampMs(timestampMs: number, transactions: Transaction[]): void {
-    try {
-      const txFilteredForBroadcast: Map<string, Transaction[]> = new Map();
-      for (const transaction of transactions) {
-        const roomKeys = RoomKeyGenerator.generate(
-          TransactionsCustomGateway.keyPrefix,
-          transaction,
-          TransactionCustomSubscribePayload,
-        );
+  matchRooms(transactions: TransactionDetailed[]): Map<string, TransactionDetailed[]> {
+    const txFilteredForBroadcast: Map<string, TransactionDetailed[]> = new Map();
+    for (const transaction of transactions) {
+      const roomKeys = RoomKeyGenerator.generate(
+        TransactionsCustomGateway.keyPrefix,
+        transaction,
+        TransactionCustomSubscribePayload,
+      );
 
-        for (const roomKey of roomKeys) {
-          if (this.server.sockets.adapter.rooms.has(roomKey)) {
-            if (!txFilteredForBroadcast.has(roomKey)) {
-              txFilteredForBroadcast.set(roomKey, []);
-            }
-            txFilteredForBroadcast.get(roomKey)!.push(transaction);
+      for (const roomKey of roomKeys) {
+        if (this.server.sockets.adapter.rooms.has(roomKey)) {
+          if (!txFilteredForBroadcast.has(roomKey)) {
+            txFilteredForBroadcast.set(roomKey, []);
           }
+          txFilteredForBroadcast.get(roomKey)!.push(transaction);
         }
       }
-
-      for (const [roomName] of txFilteredForBroadcast) {
-        this.server.to(roomName).emit("customTransactionUpdate", { transactions: txFilteredForBroadcast.get(roomName), timestampMs });
-      }
-    } catch (error) {
-      this.logger.error(error);
     }
+
+    return txFilteredForBroadcast;
   }
 
+  broadcast(timestampMs: number, txFilteredForBroadcast: Map<string, Transaction[]>): void {
+    for (const [roomName, transactions] of txFilteredForBroadcast) {
+      this.server.to(roomName).emit("customTransactionUpdate", { transactions, timestampMs });
+    }
+  }
 }

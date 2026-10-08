@@ -91,7 +91,7 @@ async function bootstrap() {
   }
 
   if (apiConfigService.getIsWebsocketSubscriptionActive()) {
-    const websocketSubscriptionApp = await NestFactory.create(WebsocketSubscriptionModule);
+    const websocketSubscriptionApp = await NestFactory.create(WebsocketSubscriptionModule.forRoot(apiConfigService.getWebsocketSubscriptionDataSource()));
     websocketSubscriptionApp.useWebSocketAdapter(new SubscriptionSocketAdapter(websocketSubscriptionApp, apiConfigService.getWebsocketSubscriptionCompressionThreshold()));
     await websocketSubscriptionApp.listen(apiConfigService.getWebsocketSubscriptionPort());
   }

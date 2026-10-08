@@ -3,6 +3,8 @@ import { TransactionCustomSubscribePayload } from 'src/endpoints/transactions/en
 import { TransferCustomSubscribePayload } from 'src/endpoints/websocket/entities/transfers.custom.payload';
 
 export class RoomKeyGenerator {
+  private static readonly egldIdentifierInMultiTransfer = 'EGLD-000000';
+
   public static generate(
     prefix: string,
     data: Record<string, any>,
@@ -44,14 +46,14 @@ export class RoomKeyGenerator {
       activeFilters.push({ key: 'token', value: 'EGLD' });
     }
 
-    const transfers = data?.action?.arguments?.transfers;
-    if (!Array.isArray(transfers)) {
+    const tokens = data['tokens'];
+    if (!Array.isArray(tokens)) {
       return;
     }
 
-    for (const transfer of transfers) {
-      if (this.isValidFilterValue(transfer?.token)) {
-        activeFilters.push({ key: 'token', value: transfer.token });
+    for (const token of tokens) {
+      if (this.isValidFilterValue(token)) {
+        activeFilters.push({ key: 'token', value: token === this.egldIdentifierInMultiTransfer ? 'EGLD' : token });
       }
     }
   }
