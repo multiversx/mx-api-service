@@ -139,6 +139,30 @@ describe('RoomKeyGenerator', () => {
       expect([...rooms].sort()).toEqual(expectedRooms.sort());
     });
 
+    it('maps EGLD sent in a multi transfer to the EGLD token', () => {
+      const data = {
+        sender: 'alice',
+        value: '0',
+        tokens: ['EGLD-000000', 'AAA-123456'],
+      } as Record<string, any>;
+
+      const rooms = RoomKeyGenerator.generate('', data, TransferCustomSubscribePayload);
+
+      expect(rooms).toContain(RoomKeyGenerator.deterministicStringify({ token: 'EGLD' }));
+      expect(rooms).not.toContain(RoomKeyGenerator.deterministicStringify({ token: 'EGLD-000000' }));
+    });
+
+    it('generates a single EGLD room when EGLD is sent both as value and in a multi transfer', () => {
+      const data = {
+        value: '1',
+        tokens: ['EGLD-000000'],
+      } as Record<string, any>;
+
+      const rooms = RoomKeyGenerator.generate('', data, TransferCustomSubscribePayload);
+
+      expect(rooms).toEqual([RoomKeyGenerator.deterministicStringify({ token: 'EGLD' })]);
+    });
+
     it('handles transfers with many tokens', () => {
       const tokens = Array.from({ length: 40 }, (_, i) => `TKN${i}-123456`);
       const data = {
