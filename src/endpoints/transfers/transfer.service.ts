@@ -22,7 +22,7 @@ export class TransferService {
     private readonly transactionService: TransactionService,
   ) { }
 
-  private sortElasticTransfers(elasticTransfers: any[], order?: SortOrder): any[] {
+  sortElasticTransfers(elasticTransfers: any[], order?: SortOrder): any[] {
     const transactionMap = new Map<string, any>();
     for (const transfer of elasticTransfers) {
       if (transfer.txHash) {
@@ -123,7 +123,31 @@ export class TransferService {
       elasticOperations = this.sortElasticTransfers(elasticOperations, filter.order);
     }
 
-    let transactions: TransactionDetailed[] = [];
+    let transactions = this.mapElasticTransfers(elasticOperations, queryOptions);
+
+    const hasSenderFilter = filter.sender || (filter.senders && filter.senders.length > 0);
+    const hasReceiverFilter = filter.receivers && filter.receivers.length > 0;
+
+    if (filter.address && !hasSenderFilter && !hasReceiverFilter) {
+      transactions = this.transactionService.reorderAccountSentTransactionsByNonce(transactions, filter.address, filter.order);
+    }
+
+    if (queryOptions.withBlockInfo || (fields && fields.includesSome(['senderBlockHash', 'receiverBlockHash', 'senderBlockNonce', 'receiverBlockNonce']))) {
+      await this.transactionService.applyBlockInfo(transactions);
+    }
+
+    if (queryOptions && (queryOptions.withOperations || queryOptions.withLogs)) {
+      queryOptions.withScResultLogs = queryOptions.withLogs;
+      transactions = await this.transactionService.getExtraDetailsForTransactions(elasticOperations, transactions, queryOptions);
+    }
+
+    await this.processTransfers(transactions, queryOptions);
+
+    return transactions;
+  }
+
+  mapElasticTransfers(elasticOperations: any[], queryOptions: TransactionQueryOptions): TransactionDetailed[] {
+    const transactions: TransactionDetailed[] = [];
 
     for (const elasticOperation of elasticOperations) {
       const transaction = ApiUtils.mergeObjects(new TransactionDetailed(), elasticOperation);
@@ -150,22 +174,10 @@ export class TransferService {
       transactions.push(transaction);
     }
 
-    const hasSenderFilter = filter.sender || (filter.senders && filter.senders.length > 0);
-    const hasReceiverFilter = filter.receivers && filter.receivers.length > 0;
+    return transactions;
+  }
 
-    if (filter.address && !hasSenderFilter && !hasReceiverFilter) {
-      transactions = this.transactionService.reorderAccountSentTransactionsByNonce(transactions, filter.address, filter.order);
-    }
-
-    if (queryOptions.withBlockInfo || (fields && fields.includesSome(['senderBlockHash', 'receiverBlockHash', 'senderBlockNonce', 'receiverBlockNonce']))) {
-      await this.transactionService.applyBlockInfo(transactions);
-    }
-
-    if (queryOptions && (queryOptions.withOperations || queryOptions.withLogs)) {
-      queryOptions.withScResultLogs = queryOptions.withLogs;
-      transactions = await this.transactionService.getExtraDetailsForTransactions(elasticOperations, transactions, queryOptions);
-    }
-
+  async processTransfers(transactions: TransactionDetailed[], queryOptions: TransactionQueryOptions): Promise<void> {
     await this.transactionService.processTransactions(transactions, {
       withScamInfo: queryOptions.withScamInfo ?? false,
       withUsername: queryOptions.withUsername ?? false,
@@ -173,8 +185,6 @@ export class TransferService {
     });
 
     this.transactionService.processRelayedInfo(transactions);
-
-    return transactions;
   }
 
   async getTransfersCount(filter: TransactionFilter): Promise<number> {

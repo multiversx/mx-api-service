@@ -44,14 +44,14 @@ export class RoomKeyGenerator {
       activeFilters.push({ key: 'token', value: 'EGLD' });
     }
 
-    const transfers = data?.action?.arguments?.transfers;
-    if (!Array.isArray(transfers)) {
+    const tokens = data['tokens'];
+    if (!Array.isArray(tokens)) {
       return;
     }
 
-    for (const transfer of transfers) {
-      if (this.isValidFilterValue(transfer?.token)) {
-        activeFilters.push({ key: 'token', value: transfer.token });
+    for (const token of tokens) {
+      if (this.isValidFilterValue(token)) {
+        activeFilters.push({ key: 'token', value: token });
       }
     }
   }
