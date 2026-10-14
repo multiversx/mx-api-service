@@ -83,6 +83,7 @@ export class TransactionGetService {
         additionalData: source.additionalData?.map(d => d && d.length > 0 ? BinaryUtils.hexToBase64(d) : d),
         topics: source.topics?.map(t => t && t.length > 0 ? BinaryUtils.hexToBase64(t) : t),
         order: source.order ?? 0,
+        shardID: source.shardID,
       };
 
       logsMap.get(txHash)?.events.push(ApiUtils.mergeObjects(new TransactionLogEvent(), event));
@@ -244,32 +245,21 @@ export class TransactionGetService {
   }
 
   private removeDuplicatedESDTTransferEvents(events: TransactionLogEvent[]) {
-    const esdtTransferEvents = events.filter(x => x.identifier === 'ESDTTransfer');
-
-    if (esdtTransferEvents.length <= 1) {
-      return;
-    }
-
-    const eventGroups = new Map<string, TransactionLogEvent[]>();
-
-    for (const event of esdtTransferEvents) {
-      const contentHash = this.getEventContentHash(event);
-      if (!eventGroups.has(contentHash)) {
-        eventGroups.set(contentHash, []);
-      }
-      const group = eventGroups.get(contentHash);
-      if (group) {
-        group.push(event);
-      }
-    }
-
+    const shardByContentHash = new Map<string, number | undefined>();
     const duplicateEvents = new Set<TransactionLogEvent>();
-    for (const [, eventGroup] of eventGroups) {
-      if (eventGroup.length > 1) {
-        for (let i = 1; i < eventGroup.length; i++) {
-          duplicateEvents.add(eventGroup[i]);
-        }
+
+    for (const event of events) {
+      if (event.identifier !== 'ESDTTransfer') {
+        continue;
       }
+
+      const contentHash = this.getEventContentHash(event);
+      if (shardByContentHash.has(contentHash) && shardByContentHash.get(contentHash) !== event.shardID) {
+        duplicateEvents.add(event);
+        continue;
+      }
+
+      shardByContentHash.set(contentHash, event.shardID);
     }
 
     for (let i = events.length - 1; i >= 0; i--) {

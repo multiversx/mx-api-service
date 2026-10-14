@@ -26,4 +26,7 @@ export class TransactionLogEvent {
 
   @ApiProperty()
   additionalData: string[] | undefined = undefined;
+
+  @ApiProperty({ type: Number, nullable: true })
+  shardID: number | undefined = undefined;
 }
