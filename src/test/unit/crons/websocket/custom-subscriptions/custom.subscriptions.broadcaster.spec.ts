@@ -72,6 +72,18 @@ describe('CustomSubscriptionsBroadcaster', () => {
     );
   });
 
+  it('logs the delay between the broadcast and the round timestamp for each channel with rooms', async () => {
+    jest.useFakeTimers({ now: 5000 });
+    subscribe(TransfersCustomGateway.keyPrefix, { sender: 'alice' });
+    const log = jest.spyOn((broadcaster as any).logger, 'log').mockImplementation(() => undefined);
+
+    await broadcaster.broadcast(new IndexerRound({ timestampMs: 1200, operations: [operation('a', 'alice', 'normal')] }));
+
+    expect(log.mock.calls.map(call => call[0])).toEqual([
+      "Broadcast custom transfers for timestamp '1200' to 1 rooms with a delay of 3800ms",
+    ]);
+  });
+
   it('enriches only the transfers that match a subscription', async () => {
     subscribe(TransfersCustomGateway.keyPrefix, { sender: 'alice' });
     subscribe(TransfersCustomGateway.keyPrefix, { token: 'AAA-123456' });

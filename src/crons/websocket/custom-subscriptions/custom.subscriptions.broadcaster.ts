@@ -54,6 +54,7 @@ export class CustomSubscriptionsBroadcaster {
       const eventsByRoom = this.eventsCustomGateway.matchRooms(events);
 
       this.eventsCustomGateway.broadcast(timestampMs, eventsByRoom);
+      this.logBroadcastDelay('events', timestampMs, eventsByRoom.size);
     } catch (error) {
       this.logger.error(`Could not broadcast custom events for timestamp '${timestampMs}'`);
       this.logger.error(error);
@@ -68,6 +69,7 @@ export class CustomSubscriptionsBroadcaster {
 
     try {
       this.transfersCustomGateway.broadcast(timestampMs, matches.transfersByRoom);
+      this.logBroadcastDelay('transfers', timestampMs, matches.transfersByRoom.size);
     } catch (error) {
       this.logger.error(`Could not broadcast custom transfers for timestamp '${timestampMs}'`);
       this.logger.error(error);
@@ -75,10 +77,19 @@ export class CustomSubscriptionsBroadcaster {
 
     try {
       this.transactionsCustomGateway.broadcast(timestampMs, this.toTransactions(matches.transactionsByRoom));
+      this.logBroadcastDelay('transactions', timestampMs, matches.transactionsByRoom.size);
     } catch (error) {
       this.logger.error(`Could not broadcast custom transactions for timestamp '${timestampMs}'`);
       this.logger.error(error);
     }
+  }
+
+  private logBroadcastDelay(channel: string, timestampMs: number, roomsCount: number): void {
+    if (roomsCount === 0) {
+      return;
+    }
+
+    this.logger.log(`Broadcast custom ${channel} for timestamp '${timestampMs}' to ${roomsCount} rooms with a delay of ${Date.now() - timestampMs}ms`);
   }
 
   private async matchAndEnrichTransfers(timestampMs: number, elasticOperations: Operation[]): Promise<{ transfersByRoom: Map<string, TransactionDetailed[]>; transactionsByRoom: Map<string, TransactionDetailed[]> } | undefined> {
