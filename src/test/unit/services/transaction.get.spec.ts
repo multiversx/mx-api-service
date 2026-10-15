@@ -203,6 +203,20 @@ describe('TransactionGetService', () => {
       const result = await service.getTransactionLogsFromElastic([]);
       expect(result).toEqual([]);
     });
+
+    it('should drop cross-shard ESDTTransfer copies and keep same-shard repeats', async () => {
+      const transfer = { txHash: 'hash1', logAddress: 'erd1sender', identifier: 'ESDTTransfer', address: 'erd1sender', topics: ['746f6b656e', '', '01', '7265636569766572'], data: '', additionalData: [], originalTxHash: '' };
+      indexerService.getTransactionLogs.mockResolvedValue([
+        { ...transfer, order: 0, shardID: 0 },
+        { ...transfer, order: 1, shardID: 0 },
+        { ...transfer, order: 0, shardID: 1 },
+        { ...transfer, order: 1, shardID: 1 },
+      ] as any);
+
+      const result = await service.getTransactionLogsFromElastic(['hash1']);
+
+      expect(result[0].events.map(event => event.shardID)).toEqual([0, 0]);
+    });
   });
 
   describe('getTransactionLogsFromElasticInternal', () => {
