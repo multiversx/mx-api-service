@@ -200,7 +200,7 @@ export class ElasticCustomSubscriptionsDataSource implements OnModuleInit {
 
   private async sleepUntil(timestampMs: number, maxDelayMs: number): Promise<void> {
     const delayMs = timestampMs - Date.now();
-    // if not, network time is desynchronized or the round is already late
+    // if not, the round is already late or network time is desynchronized
     if (delayMs > 0 && delayMs <= maxDelayMs) {
       await this.sleep(delayMs);
     }
