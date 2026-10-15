@@ -56,7 +56,11 @@ export class ElasticCustomSubscriptionsDataSource implements OnModuleInit {
       return;
     }
 
-    const networkConfig = await this.gatewayService.getNetworkConfig();
+    const networkConfig = await this.cacheService.getOrSetLocal(
+      CacheInfo.WsNetworkConfig.key,
+      async () => await this.gatewayService.getNetworkConfig(),
+      CacheInfo.WsNetworkConfig.ttl,
+    );
     const stats = new Stats({ shards: networkConfig.erd_num_shards_without_meta, refreshRate: networkConfig.erd_round_duration });
 
     const roundToProcessTimestampMs = await this.cacheService.getOrSetLocal(
