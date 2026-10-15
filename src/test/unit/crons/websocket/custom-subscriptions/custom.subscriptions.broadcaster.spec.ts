@@ -1,5 +1,5 @@
 import { CustomSubscriptionsBroadcaster } from 'src/crons/websocket/custom-subscriptions/custom.subscriptions.broadcaster';
-import { IndexerRound } from 'src/crons/websocket/custom-subscriptions/indexer.round';
+import { IndexerRound } from 'src/crons/websocket/custom-subscriptions/entities';
 import { EventsCustomGateway } from 'src/crons/websocket/events.custom.gateway';
 import { RoomKeyGenerator } from 'src/crons/websocket/room.key.generator';
 import { TransactionsCustomGateway } from 'src/crons/websocket/transaction.custom.gateway';

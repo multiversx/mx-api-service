@@ -8,7 +8,7 @@ import { Transaction } from 'src/endpoints/transactions/entities/transaction';
 import { TransactionDetailed } from 'src/endpoints/transactions/entities/transaction.detailed';
 import { LockingGuardInterceptor } from 'src/utils/locking.guard.interceptor';
 import { TransferCustomSubscribePayload } from 'src/endpoints/websocket/entities/transfers.custom.payload';
-import { RawTransfer } from './custom-subscriptions/raw.transfer';
+import { RawTransfer } from './custom-subscriptions/entities';
 
 @UseFilters(WebsocketExceptionsFilter)
 @WebSocketGateway({ cors: { origin: '*' }, path: '/ws/subscription' })

@@ -13,8 +13,7 @@ import { ConnectionHandler } from '../connection.handler';
 import { EventsCustomGateway } from '../events.custom.gateway';
 import { TransactionsCustomGateway } from '../transaction.custom.gateway';
 import { TransfersCustomGateway } from '../transfers.custom.gateway';
-import { IndexerRound } from './indexer.round';
-import { RawTransfer } from './raw.transfer';
+import { IndexerRound, RawTransfer } from './entities';
 
 @Injectable()
 export class CustomSubscriptionsBroadcaster {

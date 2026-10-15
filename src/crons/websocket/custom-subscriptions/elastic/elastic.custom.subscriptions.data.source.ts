@@ -1,9 +1,7 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
-import { SchedulerRegistry } from '@nestjs/schedule';
-import { Locker, OriginLogger } from '@multiversx/sdk-nestjs-common';
+import { OriginLogger } from '@multiversx/sdk-nestjs-common';
 import { CacheService } from '@multiversx/sdk-nestjs-cache';
 import { ElasticQuery, ElasticService, ElasticSortOrder, QueryType } from '@multiversx/sdk-nestjs-elastic';
-import { ApiConfigService } from 'src/common/api-config/api.config.service';
 import { QueryPagination } from 'src/common/entities/query.pagination';
 import { GatewayService } from 'src/common/gateway/gateway.service';
 import { Operation } from 'src/common/indexer/entities';
@@ -15,7 +13,7 @@ import { TransactionFilter } from 'src/endpoints/transactions/entities/transacti
 import { CacheInfo } from 'src/utils/cache.info';
 import { RetryUtils } from 'src/utils/retry.utils';
 import { CustomSubscriptionsBroadcaster } from '../custom.subscriptions.broadcaster';
-import { IndexerRound } from '../indexer.round';
+import { IndexerRound } from '../entities';
 
 @Injectable()
 export class ElasticCustomSubscriptionsDataSource implements OnModuleInit {
@@ -25,6 +23,7 @@ export class ElasticCustomSubscriptionsDataSource implements OnModuleInit {
   private static readonly maxRetries = 3;
   private static readonly retryDelayMs = 500;
   private static readonly pollingMaxAttempts = 15;
+  private static readonly idleDelayMs = 1000;
 
   constructor(
     private readonly broadcaster: CustomSubscriptionsBroadcaster,
@@ -32,53 +31,57 @@ export class ElasticCustomSubscriptionsDataSource implements OnModuleInit {
     private readonly elasticService: ElasticService,
     private readonly gatewayService: GatewayService,
     private readonly cacheService: CacheService,
-    private readonly apiConfigService: ApiConfigService,
-    private readonly schedulerRegistry: SchedulerRegistry,
   ) { }
 
   onModuleInit() {
-    const interval = setInterval(async () => {
-      await Locker.lock('Push custom data to subscribers', async () => {
-        await this.processRounds();
-      }, true);
-    }, this.apiConfigService.getWebsocketSubscriptionBroadcastIntervalMs());
-
-    this.schedulerRegistry.addInterval('push-custom-data', interval);
+    void this.processRoundsForever();
   }
 
-  async processRounds(): Promise<void> {
+  private async processRoundsForever(): Promise<void> {
+    while (true) {
+      try {
+        await this.processNextRound();
+      } catch (error) {
+        this.logger.error('Could not process the next custom subscriptions round');
+        this.logger.error(error);
+        await this.sleep(ElasticCustomSubscriptionsDataSource.idleDelayMs);
+      }
+    }
+  }
+
+  async processNextRound(): Promise<void> {
     if (!this.broadcaster.hasSubscriptions()) {
       this.cacheService.deleteLocal(CacheInfo.WsTimestampMsToProcess().key);
+      await this.sleep(ElasticCustomSubscriptionsDataSource.idleDelayMs);
       return;
     }
 
     const networkConfig = await this.gatewayService.getNetworkConfig();
     const stats = new Stats({ shards: networkConfig.erd_num_shards_without_meta, refreshRate: networkConfig.erd_round_duration });
 
-    const latestRoundOnChainTimestamp = await this.getLatestRoundOnChainTimestamp();
-    const latestRoundOnChainTimestampMs = latestRoundOnChainTimestamp.timestampMs ?? latestRoundOnChainTimestamp.timestamp * 1000;
-
-    let roundToProcessTimestampMs = await this.cacheService.getOrSetLocal(
+    const roundToProcessTimestampMs = await this.cacheService.getOrSetLocal(
       CacheInfo.WsTimestampMsToProcess().key,
-      () => Promise.resolve(latestRoundOnChainTimestampMs),
+      async () => await this.getLatestRoundOnChainTimestampMs(),
       CacheInfo.WsTimestampMsToProcess().ttl,
     );
 
+    await this.sleepUntil(roundToProcessTimestampMs + stats.refreshRate);
+
     const pollingDelay = stats.refreshRate / 10;
-    while (roundToProcessTimestampMs <= latestRoundOnChainTimestampMs) {
-      await this.pollUntil(async () => await this.isElasticDataAvailableForTimestampMs(roundToProcessTimestampMs, stats), pollingDelay, ElasticCustomSubscriptionsDataSource.pollingMaxAttempts);
-
-      const roundDataRaw = await this.fetchRoundDataRaw(roundToProcessTimestampMs);
-
-      await this.broadcaster.broadcast(roundDataRaw);
-
-      roundToProcessTimestampMs += stats.refreshRate;
-      this.cacheService.setLocal(
-        CacheInfo.WsTimestampMsToProcess().key,
-        roundToProcessTimestampMs,
-        CacheInfo.WsTimestampMsToProcess().ttl,
-      );
+    const isRoundAvailable = await this.pollUntil(async () => await this.isElasticDataAvailableForTimestampMs(roundToProcessTimestampMs, stats), pollingDelay, ElasticCustomSubscriptionsDataSource.pollingMaxAttempts);
+    if (!isRoundAvailable) {
+      return;
     }
+
+    const roundDataRaw = await this.fetchRoundDataRaw(roundToProcessTimestampMs);
+
+    await this.broadcaster.broadcast(roundDataRaw);
+
+    this.cacheService.setLocal(
+      CacheInfo.WsTimestampMsToProcess().key,
+      roundToProcessTimestampMs + stats.refreshRate,
+      CacheInfo.WsTimestampMsToProcess().ttl,
+    );
   }
 
   async fetchRoundDataRaw(timestampMs: number): Promise<IndexerRound> {
@@ -154,7 +157,7 @@ export class ElasticCustomSubscriptionsDataSource implements OnModuleInit {
     return events;
   }
 
-  private async getLatestRoundOnChainTimestamp(): Promise<{ timestampMs?: number; timestamp: number }> {
+  private async getLatestRoundOnChainTimestampMs(): Promise<number> {
     const elasticQuery = ElasticQuery.create().
       withSort([
         { name: 'timestampMs', order: ElasticSortOrder.descending, missing: 0 },
@@ -163,9 +166,9 @@ export class ElasticCustomSubscriptionsDataSource implements OnModuleInit {
       .withPagination({ from: 0, size: 1 })
       .withFields(['timestampMs', 'timestamp']);
 
-    const rounds = await this.elasticService.getList('rounds', 'round', elasticQuery);
+    const [latestRound] = await this.elasticService.getList('rounds', 'round', elasticQuery);
 
-    return rounds[0];
+    return latestRound.timestampMs ?? latestRound.timestamp * 1000;
   }
 
   private async isElasticDataAvailableForTimestampMs(timestampMs: number, networkStats: Stats) {
@@ -179,11 +182,26 @@ export class ElasticCustomSubscriptionsDataSource implements OnModuleInit {
     return rounds === networkStats.shards + 1; // +1 for metachain
   }
 
-  private async pollUntil(conditionFn: () => Promise<boolean>, intervalMs = 1000, maxAttempts = 30) {
-    let attempts = 0;
-    while (!await conditionFn()) {
-      if (++attempts >= maxAttempts) throw new Error('Polling timeout exceeded');
-      await new Promise(r => setTimeout(r, intervalMs));
+  private async pollUntil(conditionFn: () => Promise<boolean>, intervalMs: number, maxAttempts: number): Promise<boolean> {
+    for (let attempt = 0; attempt < maxAttempts; attempt++) {
+      if (await conditionFn()) {
+        return true;
+      }
+
+      await this.sleep(intervalMs);
     }
+
+    return false;
+  }
+
+  private async sleepUntil(timestampMs: number): Promise<void> {
+    const delayMs = timestampMs - Date.now();
+    if (delayMs > 0) {
+      await this.sleep(delayMs);
+    }
+  }
+
+  private async sleep(delayMs: number): Promise<void> {
+    await new Promise(resolve => setTimeout(resolve, delayMs));
   }
 }

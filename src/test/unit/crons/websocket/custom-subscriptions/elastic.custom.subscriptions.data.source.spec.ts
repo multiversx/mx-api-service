@@ -1,5 +1,5 @@
 import { ElasticCustomSubscriptionsDataSource } from 'src/crons/websocket/custom-subscriptions/elastic/elastic.custom.subscriptions.data.source';
-import { IndexerRound } from 'src/crons/websocket/custom-subscriptions/indexer.round';
+import { IndexerRound } from 'src/crons/websocket/custom-subscriptions/entities';
 import { CacheInfo } from 'src/utils/cache.info';
 
 describe('ElasticCustomSubscriptionsDataSource', () => {
@@ -42,8 +42,6 @@ describe('ElasticCustomSubscriptionsDataSource', () => {
       {} as any,
       gatewayService as any,
       cacheService as any,
-      {} as any,
-      {} as any,
     );
 
     jest.spyOn(dataSource as any, 'isElasticDataAvailableForTimestampMs').mockResolvedValue(true);
@@ -54,59 +52,78 @@ describe('ElasticCustomSubscriptionsDataSource', () => {
   });
 
   const mockLatestRound = (timestampMs: number) => {
-    jest.spyOn(dataSource as any, 'getLatestRoundOnChainTimestamp').mockResolvedValue({ timestampMs, timestamp: Math.floor(timestampMs / 1000) });
+    jest.spyOn(dataSource as any, 'getLatestRoundOnChainTimestampMs').mockResolvedValue(timestampMs);
   };
 
   const broadcastTimestamps = () => broadcaster.broadcast.mock.calls.map(([round]: [IndexerRound]) => round.timestampMs);
 
-  describe('processRounds', () => {
-    it('broadcasts every round up to the latest one and keeps the next one as cursor', async () => {
+  describe('processNextRound', () => {
+    it('broadcasts the round at the cursor and moves the cursor to the next round', async () => {
       localCache.set(cursorKey, 1000);
-      mockLatestRound(1000 + 2 * roundDurationMs);
 
-      await dataSource.processRounds();
-
-      expect(broadcastTimestamps()).toEqual([1000, 1600, 2200]);
-      expect(localCache.get(cursorKey)).toBe(2800);
-    });
-
-    it('does not move past a round whose data is not yet available in elastic', async () => {
-      jest.useFakeTimers();
-      localCache.set(cursorKey, 1000);
-      mockLatestRound(1600);
-
-      let isRoundIndexed = false;
-      jest.spyOn(dataSource as any, 'isElasticDataAvailableForTimestampMs')
-        .mockImplementation((timestampMs) => Promise.resolve(timestampMs === 1000 || isRoundIndexed));
-
-      const firstTick = expect(dataSource.processRounds()).rejects.toThrow('Polling timeout exceeded');
-      await jest.runAllTimersAsync();
-      await firstTick;
-
-      expect(broadcastTimestamps()).toEqual([1000]);
-      expect(localCache.get(cursorKey)).toBe(1600);
-
-      isRoundIndexed = true;
-      await dataSource.processRounds();
+      await dataSource.processNextRound();
+      await dataSource.processNextRound();
 
       expect(broadcastTimestamps()).toEqual([1000, 1600]);
       expect(localCache.get(cursorKey)).toBe(2200);
     });
 
-    it('starts from the latest round when the cursor expired', async () => {
+    it('starts from the latest round when there is no cursor', async () => {
       mockLatestRound(10_000_000);
 
-      await dataSource.processRounds();
+      await dataSource.processNextRound();
 
       expect(broadcastTimestamps()).toEqual([10_000_000]);
       expect(localCache.get(cursorKey)).toBe(10_000_600);
     });
 
+    it('sleeps until the next round starts before polling for the data', async () => {
+      jest.useFakeTimers({ now: 1_000_200 });
+      localCache.set(cursorKey, 1_000_000);
+      const isElasticDataAvailable = jest.spyOn(dataSource as any, 'isElasticDataAvailableForTimestampMs');
+
+      const processing = dataSource.processNextRound();
+      await jest.advanceTimersByTimeAsync(399);
+
+      expect(isElasticDataAvailable).not.toHaveBeenCalled();
+
+      await jest.advanceTimersByTimeAsync(1);
+      await processing;
+
+      expect(isElasticDataAvailable).toHaveBeenCalledTimes(1);
+      expect(broadcastTimestamps()).toEqual([1_000_000]);
+    });
+
+    it('polls right away when the next round already started', async () => {
+      localCache.set(cursorKey, 1000);
+      const isElasticDataAvailable = jest.spyOn(dataSource as any, 'isElasticDataAvailableForTimestampMs');
+
+      await dataSource.processNextRound();
+
+      expect(isElasticDataAvailable).toHaveBeenCalledTimes(1);
+    });
+
+    it('keeps the cursor when the round does not become available while polling', async () => {
+      jest.useFakeTimers();
+      localCache.set(cursorKey, 1000);
+      jest.spyOn(dataSource as any, 'isElasticDataAvailableForTimestampMs').mockResolvedValue(false);
+
+      const processing = dataSource.processNextRound();
+      await jest.runAllTimersAsync();
+      await processing;
+
+      expect(broadcaster.broadcast).not.toHaveBeenCalled();
+      expect(localCache.get(cursorKey)).toBe(1000);
+    });
+
     it('resets the cursor and fetches nothing when there are no subscriptions', async () => {
+      jest.useFakeTimers();
       localCache.set(cursorKey, 1000);
       broadcaster.hasSubscriptions.mockReturnValue(false);
 
-      await dataSource.processRounds();
+      const processing = dataSource.processNextRound();
+      await jest.runAllTimersAsync();
+      await processing;
 
       expect(localCache.has(cursorKey)).toBe(false);
       expect(getTransfers).not.toHaveBeenCalled();
