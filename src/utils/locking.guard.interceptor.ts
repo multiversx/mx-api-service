@@ -34,12 +34,14 @@ export class LockingGuardInterceptor implements NestInterceptor {
     return from(mutex.acquire()).pipe(
       switchMap((release) => {
         try {
-          const totalRoomsGlobal = client.nsp.server.sockets.adapter.rooms.size;
+          // every socket is also in a private room named after its id, those are not subscriptions
+          const namespace = client.nsp.server.sockets;
+          const totalSubscriptionsGlobal = namespace.adapter.rooms.size - namespace.sockets.size;
           const totalClientRooms = client.rooms.size;
           const maxGlobal = this.apiConfigService.getWebsocketMaxSubscriptionsPerInstance();
           const maxClient = this.apiConfigService.getWebsocketMaxSubscriptionsPerClient();
 
-          if (totalRoomsGlobal >= maxGlobal) {
+          if (totalSubscriptionsGlobal >= maxGlobal) {
             throw new WsException(`Max global subscriptions (${maxGlobal}) reached!`);
           }
 

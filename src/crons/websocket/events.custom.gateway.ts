@@ -1,30 +1,20 @@
 import { WebSocketGateway, WebSocketServer, SubscribeMessage, ConnectedSocket, MessageBody } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { UseFilters, UseInterceptors } from '@nestjs/common';
-import { OriginLogger } from '@multiversx/sdk-nestjs-common';
-import { QueryPagination } from 'src/common/entities/query.pagination';
 import { WsValidationPipe } from 'src/utils/ws-validation.pipe';
 import { WebsocketExceptionsFilter } from 'src/utils/ws-exceptions.filter';
 import { RoomKeyGenerator } from './room.key.generator';
-import { EventsService } from 'src/endpoints/events/events.service';
 import { EventsCustomSubscribePayload } from 'src/endpoints/events/entities/events.custom.subscribe';
-import { EventsFilter } from 'src/endpoints/events/entities/events.filter';
 import { Events } from 'src/endpoints/events/entities/events';
 import { LockingGuardInterceptor } from 'src/utils/locking.guard.interceptor';
 
 @UseFilters(WebsocketExceptionsFilter)
 @WebSocketGateway({ cors: { origin: '*' }, path: '/ws/subscription' })
 export class EventsCustomGateway {
-  private readonly logger = new OriginLogger(EventsCustomGateway.name);
-
   static keyPrefix = 'custom-events-';
 
   @WebSocketServer()
   server!: Server;
-
-  constructor(
-    private readonly eventsService: EventsService,
-  ) { }
 
   @UseInterceptors(LockingGuardInterceptor)
   @SubscribeMessage('subscribeCustomEvents')
@@ -57,53 +47,35 @@ export class EventsCustomGateway {
     return { status: 'unsubscribed' };
   }
 
-  async pushEventsForTimestampMs(timestampMs: number): Promise<void> {
-    try {
-      const allEvents: Events[] = [];
-      const size = 10000;
-      const filter = new EventsFilter({ before: timestampMs, after: timestampMs });
+  matchRooms(events: Events[]): Map<string, Events[]> {
+    const eventsFilteredForBroadcast: Map<string, Events[]> = new Map();
 
-      let batch = await this.eventsService.getEvents(new QueryPagination({ size }), filter);
-      allEvents.push(...batch);
+    for (const event of events) {
+      const roomKeys = RoomKeyGenerator.generate(
+        EventsCustomGateway.keyPrefix,
+        event,
+        EventsCustomSubscribePayload,
+      );
 
-      while (batch.length === size) {
-        const searchAfter = batch[batch.length - 1].searchAfter;
-        if (searchAfter == null) {
-          break;
-        }
-
-        batch = await this.eventsService.getEvents(new QueryPagination({ size, searchAfter }), filter);
-
-        allEvents.push(...batch);
-      }
-
-      const eventsFilteredForBroadcast: Map<string, Events[]> = new Map();
-
-      for (const event of allEvents) {
-        const roomKeys = RoomKeyGenerator.generate(
-          EventsCustomGateway.keyPrefix,
-          event,
-          EventsCustomSubscribePayload,
-        );
-
-        for (const roomKey of roomKeys) {
-          if (this.server.sockets.adapter.rooms.has(roomKey)) {
-            if (!eventsFilteredForBroadcast.has(roomKey)) {
-              eventsFilteredForBroadcast.set(roomKey, []);
-            }
-            eventsFilteredForBroadcast.get(roomKey)!.push(event);
+      for (const roomKey of roomKeys) {
+        if (this.server.sockets.adapter.rooms.has(roomKey)) {
+          if (!eventsFilteredForBroadcast.has(roomKey)) {
+            eventsFilteredForBroadcast.set(roomKey, []);
           }
+          eventsFilteredForBroadcast.get(roomKey)!.push(event);
         }
       }
+    }
 
-      for (const [roomName] of eventsFilteredForBroadcast) {
-        this.server.to(roomName).emit("customEventUpdate", {
-          events: eventsFilteredForBroadcast.get(roomName),
-          timestampMs,
-        });
-      }
-    } catch (error) {
-      this.logger.error(error);
+    return eventsFilteredForBroadcast;
+  }
+
+  broadcast(timestampMs: number, eventsFilteredForBroadcast: Map<string, Events[]>): void {
+    for (const [roomName, events] of eventsFilteredForBroadcast) {
+      this.server.to(roomName).emit("customEventUpdate", {
+        events,
+        timestampMs,
+      });
     }
   }
 }
