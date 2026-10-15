@@ -69,7 +69,7 @@ export class ElasticCustomSubscriptionsDataSource implements OnModuleInit {
       CacheInfo.WsTimestampMsToProcess().ttl,
     );
 
-    await this.sleepUntil(roundToProcessTimestampMs + stats.refreshRate);
+    await this.sleepUntil(roundToProcessTimestampMs + stats.refreshRate, stats.refreshRate);
 
     const pollingDelay = stats.refreshRate / 10;
     const isRoundAvailable = await this.pollUntil(async () => await this.isElasticDataAvailableForTimestampMs(roundToProcessTimestampMs, stats), pollingDelay, ElasticCustomSubscriptionsDataSource.pollingMaxAttempts);
@@ -198,9 +198,9 @@ export class ElasticCustomSubscriptionsDataSource implements OnModuleInit {
     return false;
   }
 
-  private async sleepUntil(timestampMs: number): Promise<void> {
+  private async sleepUntil(timestampMs: number, maxDelayMs: number): Promise<void> {
     const delayMs = timestampMs - Date.now();
-    if (delayMs > 0) {
+    if (delayMs > 0 && delayMs <= maxDelayMs) {
       await this.sleep(delayMs);
     }
   }

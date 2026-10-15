@@ -94,6 +94,19 @@ describe('ElasticCustomSubscriptionsDataSource', () => {
       expect(broadcastTimestamps()).toEqual([1_000_000]);
     });
 
+    it('polls right away when the round timestamps are ahead of the local clock', async () => {
+      jest.useFakeTimers({ now: 1_000_000 });
+      localCache.set(cursorKey, 1_300_000);
+      const isElasticDataAvailable = jest.spyOn(dataSource as any, 'isElasticDataAvailableForTimestampMs');
+
+      const processing = dataSource.processNextRound();
+      await jest.advanceTimersByTimeAsync(0);
+      await processing;
+
+      expect(isElasticDataAvailable).toHaveBeenCalledTimes(1);
+      expect(broadcastTimestamps()).toEqual([1_300_000]);
+    });
+
     it('polls right away when the next round already started', async () => {
       localCache.set(cursorKey, 1000);
       const isElasticDataAvailable = jest.spyOn(dataSource as any, 'isElasticDataAvailableForTimestampMs');
