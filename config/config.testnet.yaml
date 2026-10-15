@@ -27,6 +27,7 @@ features:
     maxSubscriptionsPerClient: 10
     broadcastIntervalMs: 600
     compressionThreshold: 1024
+    dataSource: 'elastic'
   eventsNotifier:
     enabled: false
     port: 5674
