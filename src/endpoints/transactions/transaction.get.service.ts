@@ -262,6 +262,10 @@ export class TransactionGetService {
       shardByContentHash.set(contentHash, event.shardID);
     }
 
+    if (duplicateEvents.size === 0) {
+      return;
+    }
+
     for (let i = events.length - 1; i >= 0; i--) {
       if (duplicateEvents.has(events[i])) {
         events.splice(i, 1);
