@@ -204,14 +204,18 @@ describe('TransactionGetService', () => {
       expect(result).toEqual([]);
     });
 
-    it('should remove duplicated ESDTTransfer events from every log', async () => {
-      const transferEvent = { identifier: 'ESDTTransfer', address: 'erd1sender', topics: ['dG9rZW4=', '', 'AQ==', 'cmVjZWl2ZXI='], data: '', additionalData: [] };
-      jest.spyOn(service as any, 'getTransactionLogsFromElasticInternal')
-        .mockResolvedValue([new TransactionLog({ id: 'hash1', address: 'addr1', events: [{ ...transferEvent }, { ...transferEvent }] as any })]);
+    it('should drop cross-shard ESDTTransfer copies and keep same-shard repeats', async () => {
+      const transfer = { txHash: 'hash1', logAddress: 'erd1sender', identifier: 'ESDTTransfer', address: 'erd1sender', topics: ['746f6b656e', '', '01', '7265636569766572'], data: '', additionalData: [], originalTxHash: '' };
+      indexerService.getTransactionLogs.mockResolvedValue([
+        { ...transfer, order: 0, shardID: 0 },
+        { ...transfer, order: 1, shardID: 0 },
+        { ...transfer, order: 0, shardID: 1 },
+        { ...transfer, order: 1, shardID: 1 },
+      ] as any);
 
       const result = await service.getTransactionLogsFromElastic(['hash1']);
 
-      expect(result[0].events).toHaveLength(1);
+      expect(result[0].events.map(event => event.shardID)).toEqual([0, 0]);
     });
   });
 
@@ -602,106 +606,50 @@ describe('TransactionGetService', () => {
   });
 
   describe('removeDuplicatedESDTTransferEvents', () => {
-    it('should remove duplicate ESDTTransfer events with identical content', () => {
-      const events = [
-        new TransactionLogEvent({
-          identifier: 'ESDTTransfer',
-          address: 'erd1qyu5wthldzr8wx5c9ucg8kjagg0jfs53s8nr3zpz3hypefsdd8ssycr6th',
-          topics: ['T05FLTgzYTdjMA==', '', 'CteOvFrGIAAA', 'O7KEpcfOqbXzBNR3sVA22d7LTk6wxoyr3gsDuSXrKdg='],
-          additionalData: ['', 'RVNEVFRyYW5zZmVy', 'T05FLTgzYTdjMA==', 'CteOvFrGIAAA'],
-        }),
-        new TransactionLogEvent({
-          identifier: 'writeLog',
-          address: 'erd18wegffw8e65mtucy63mmz5pkm80vknjwkrrge277pvpmjf0t98vq0wgr49',
-          topics: ['ATlHLv9ohncamC8wg9pdQh8kwpGB5jiIIo3IHKYNaeE='],
-          data: 'QDZmNmI=',
-          additionalData: ['QDZmNmI='],
-        }),
-        new TransactionLogEvent({
-          identifier: 'ESDTTransfer',
-          address: 'erd1qyu5wthldzr8wx5c9ucg8kjagg0jfs53s8nr3zpz3hypefsdd8ssycr6th',
-          topics: ['T05FLTgzYTdjMA==', '', 'CteOvFrGIAAA', 'O7KEpcfOqbXzBNR3sVA22d7LTk6wxoyr3gsDuSXrKdg='],
-          additionalData: ['', 'RVNEVFRyYW5zZmVy', 'T05FLTgzYTdjMA==', 'CteOvFrGIAAA'],
-        }),
-        new TransactionLogEvent({
-          identifier: 'completedTxEvent',
-          address: 'erd18wegffw8e65mtucy63mmz5pkm80vknjwkrrge277pvpmjf0t98vq0wgr49',
-          topics: ['RaB5PmNc/Gb1ucHpxQ8Q2XviQgobRKw0nvrlRqSpED4='],
-        }),
-      ];
-
-      service['removeDuplicatedESDTTransferEvents'](events);
-
-      expect(events.length).toBe(3);
-
-      const esdtTransferEvents = events.filter(e => e.identifier === 'ESDTTransfer');
-      expect(esdtTransferEvents.length).toBe(1);
-
-      expect(events.filter(e => e.identifier === 'writeLog').length).toBe(1);
-      expect(events.filter(e => e.identifier === 'completedTxEvent').length).toBe(1);
+    const createEvent = (identifier: string, shardID: number, order: number, amount: string = 'AQ=='): TransactionLogEvent => new TransactionLogEvent({
+      identifier,
+      address: 'erd1address1',
+      topics: ['dG9rZW4=', '', amount, 'cmVjZWl2ZXI='],
+      data: '',
+      additionalData: [],
+      order,
+      shardID,
     });
 
-    it('should not remove ESDTTransfer events with different content', () => {
+    it('should drop the destination shard copy of a cross-shard ESDTTransfer', () => {
       const events = [
-        new TransactionLogEvent({
-          identifier: 'ESDTTransfer',
-          address: 'erd1address1',
-          topics: ['topic1', 'topic2'],
-          data: 'data1',
-          additionalData: ['additional1'],
-        }),
-        new TransactionLogEvent({
-          identifier: 'ESDTTransfer',
-          address: 'erd1address2',
-          topics: ['topic3', 'topic4'],
-          data: 'data2',
-          additionalData: ['additional2'],
-        }),
+        createEvent('ESDTTransfer', 0, 0),
+        createEvent('ESDTTransfer', 1, 0),
+        createEvent('writeLog', 1, 1),
       ];
 
       service['removeDuplicatedESDTTransferEvents'](events);
 
-      // Should keep both events since they have different content
-      expect(events.length).toBe(2);
-      expect(events.filter(e => e.identifier === 'ESDTTransfer').length).toBe(2);
+      expect(events.map(event => `${event.identifier}:${event.shardID}`)).toEqual(['ESDTTransfer:0', 'writeLog:1']);
     });
 
-    it('should do nothing when there are no ESDTTransfer events', () => {
+    it('should keep identical ESDTTransfer events emitted on the same shard', () => {
       const events = [
-        new TransactionLogEvent({
-          identifier: 'writeLog',
-          address: 'erd1address1',
-          topics: ['topic1'],
-          data: 'data1',
-        }),
-        new TransactionLogEvent({
-          identifier: 'completedTxEvent',
-          address: 'erd1address2',
-          topics: ['topic2'],
-          data: 'data2',
-        }),
+        createEvent('ESDTTransfer', 1, 0),
+        createEvent('ESDTTransfer', 1, 1),
+        createEvent('ESDTTransfer', 1, 2, 'Ag=='),
+        createEvent('ESDTTransfer', 1, 3, 'Ag=='),
       ];
 
-      const originalLength = events.length;
       service['removeDuplicatedESDTTransferEvents'](events);
 
-      expect(events.length).toBe(originalLength);
+      expect(events.map(event => event.order)).toEqual([0, 1, 2, 3]);
     });
 
-    it('should do nothing when there is only one ESDTTransfer event', () => {
+    it('should keep ESDTTransfer events with different content', () => {
       const events = [
-        new TransactionLogEvent({
-          identifier: 'ESDTTransfer',
-          address: 'erd1address1',
-          topics: ['topic1'],
-          data: 'data1',
-        }),
+        createEvent('ESDTTransfer', 0, 0, 'AQ=='),
+        createEvent('ESDTTransfer', 1, 0, 'Ag=='),
       ];
 
       service['removeDuplicatedESDTTransferEvents'](events);
 
-      expect(events.length).toBe(1);
-      expect(events[0].identifier).toBe('ESDTTransfer');
+      expect(events).toHaveLength(2);
     });
   });
 
