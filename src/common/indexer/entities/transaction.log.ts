@@ -26,4 +26,5 @@ export interface ElasticTransactionLogEvent extends ElasticSortable {
   originalTxHash: string;
   logAddress: string;
   additionalData?: string[];
+  shardID?: number;
 }
