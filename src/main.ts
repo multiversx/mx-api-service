@@ -132,9 +132,6 @@ async function bootstrap() {
         prefetchCount: apiConfigService.getNftProcessParallelism(),
         queueOptions: {
           durable: true,
-          // arguments: {
-          //   'x-single-active-consumer': true,
-          // },
           deadLetterExchange: apiConfigService.getNftQueueDlqName(),
         },
       },
