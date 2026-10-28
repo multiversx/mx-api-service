@@ -719,6 +719,20 @@ export class CacheInfo {
     };
   }
 
+  static AddressEsdtTrieBusy(address: string): CacheInfo {
+    return {
+      key: `addressEsdtTrieBusy:${address}`,
+      ttl: Constants.oneSecond() * 10,
+    };
+  }
+
+  static AddressEsdtTrieLimit(address: string): CacheInfo {
+    return {
+      key: `addressEsdtTrieLimit:${address}`,
+      ttl: Constants.oneHour(),
+    };
+  }
+
   static GithubKeysValidated(identity: string): CacheInfo {
     return {
       key: `githubKeysValidated:${identity}`,

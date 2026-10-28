@@ -3,6 +3,7 @@ import { ApiExcludeController, ApiQuery, ApiResponse, ApiTags } from "@nestjs/sw
 import { VmQueryRequest } from "../vm.query/entities/vm.query.request";
 import { VmQueryService } from "../vm.query/vm.query.service";
 import { GatewayService } from "src/common/gateway/gateway.service";
+import { GatewayIterateKeysService } from "src/common/gateway/gateway.iterate.keys.service";
 import { Response, Request } from "express";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
 import { PluginService } from "src/common/plugins/plugin.service";
@@ -21,6 +22,7 @@ export class GatewayProxyController {
 
   constructor(
     private readonly gatewayService: GatewayService,
+    private readonly gatewayIterateKeysService: GatewayIterateKeysService,
     private readonly vmQueryService: VmQueryService,
     private readonly cachingService: CacheService,
     private readonly pluginService: PluginService,
@@ -51,6 +53,10 @@ export class GatewayProxyController {
     try {
       return await this.gatewayGet(`address/${address}/keys`, GatewayComponentRequest.addressKeys);
     } catch (error: any) {
+      if (error.response?.error?.includes('trie collection limit exceeded')) {
+        return await this.getAddressKeysFromIterateKeys(address);
+      }
+
       this.logger.error(`Error fetching address keys for address ${address}: ${error.message}`);
       throw new BadRequestException(error.response?.data || 'An error occurred while fetching address keys');
     }
@@ -375,6 +381,24 @@ export class GatewayProxyController {
   @Get('/network/gas-configs')
   async getGasConfigs() {
     return await this.gatewayGet('network/gas-configs', GatewayComponentRequest.gasConfigs);
+  }
+
+  private async getAddressKeysFromIterateKeys(address: string) {
+    try {
+      const result = await this.gatewayIterateKeysService.iterateKeys(address);
+
+      return {
+        data: {
+          pairs: result.pairs,
+          blockInfo: result.blockInfo,
+        },
+        error: '',
+        code: 'successful',
+      };
+    } catch (error: any) {
+      this.logger.error(`Error iterating address keys for address ${address}: ${error.message}`);
+      throw new BadRequestException(error.response || 'An error occurred while iterating address keys');
+    }
   }
 
   private async gatewayGet(url: string, component: GatewayComponentRequest, params: any = undefined, errorHandler?: (error: any) => Promise<boolean>) {

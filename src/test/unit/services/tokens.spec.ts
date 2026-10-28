@@ -86,7 +86,8 @@ describe('Token Service', () => {
         {
           provide: EsdtAddressService,
           useValue: {
-            getAllEsdtsForAddressFromGateway: jest.fn(),
+            getAllEsdtsForAddressFromGatewayWithIterateKeysFallback: jest.fn(),
+            cacheTrieOperationsError: jest.fn(),
           },
         },
         {

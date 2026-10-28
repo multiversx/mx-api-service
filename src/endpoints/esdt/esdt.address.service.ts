@@ -22,6 +22,10 @@ import { MetricsService } from "@multiversx/sdk-nestjs-monitoring";
 import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { TrieOperationsTimeoutError } from "./exceptions/trie.operations.timeout.error";
+import { TrieOperationsBusyError } from "./exceptions/trie.operations.busy.error";
+import { TrieOperationsLimitError } from "./exceptions/trie.operations.limit.error";
+import { GatewayIterateKeysService } from "src/common/gateway/gateway.iterate.keys.service";
+import { EsdtStorageDecoder } from "src/utils/esdt.storage.decoder";
 import { CacheInfo } from "src/utils/cache.info";
 import { AssetsService } from "src/common/assets/assets.service";
 import { NftQueryOptions } from "../nfts/entities/nft.query.options";
@@ -36,6 +40,7 @@ export class EsdtAddressService {
     private readonly esdtService: EsdtService,
     private readonly indexerService: IndexerService,
     private readonly gatewayService: GatewayService,
+    private readonly gatewayIterateKeysService: GatewayIterateKeysService,
     private readonly cachingService: CacheService,
     private readonly metricsService: MetricsService,
     private readonly protocolService: ProtocolService,
@@ -191,21 +196,44 @@ export class EsdtAddressService {
   }
 
   private async getNftsForAddressFromGatewayWithElasticFallback(address: string, filter: NftFilter, pagination: QueryPagination, options?: NftQueryOptions): Promise<NftAccount[]> {
-    const isTrieTimeout = await this.cachingService.get<boolean>(CacheInfo.AddressEsdtTrieTimeout(address).key);
-    if (isTrieTimeout) {
+    const isTrieBusy = this.cachingService.getLocal<boolean>(CacheInfo.AddressEsdtTrieBusy(address).key);
+    const trieFlags = await this.cachingService.getMany<boolean>([
+      CacheInfo.AddressEsdtTrieTimeout(address).key,
+      CacheInfo.AddressEsdtTrieLimit(address).key,
+    ]);
+    if (isTrieBusy || trieFlags.some(flag => flag)) {
       return await this.getNftsForAddressFromElastic(address, filter, pagination, options);
     }
 
     try {
       return await this.getNftsForAddressFromGateway(address, filter, pagination, options);
     } catch (error) {
-      if (error instanceof TrieOperationsTimeoutError) {
-        await this.cachingService.set(CacheInfo.AddressEsdtTrieTimeout(address).key, true, CacheInfo.AddressEsdtTrieTimeout(address).ttl);
+      const isTrieError = await this.cacheTrieOperationsError(address, error);
+      if (isTrieError) {
         return await this.getNftsForAddressFromElastic(address, filter, pagination, options);
       }
 
       throw error;
     }
+  }
+
+  async cacheTrieOperationsError(address: string, error: any): Promise<boolean> {
+    if (error instanceof TrieOperationsBusyError) {
+      this.cachingService.setLocal(CacheInfo.AddressEsdtTrieBusy(address).key, true, CacheInfo.AddressEsdtTrieBusy(address).ttl);
+      return true;
+    }
+
+    if (error instanceof TrieOperationsTimeoutError) {
+      await this.cachingService.set(CacheInfo.AddressEsdtTrieTimeout(address).key, true, CacheInfo.AddressEsdtTrieTimeout(address).ttl);
+      return true;
+    }
+
+    if (error instanceof TrieOperationsLimitError) {
+      await this.cachingService.set(CacheInfo.AddressEsdtTrieLimit(address).key, true, CacheInfo.AddressEsdtTrieLimit(address).ttl);
+      return true;
+    }
+
+    return false;
   }
 
   private async getNftsForAddressFromGateway(address: string, filter: NftFilter, pagination: QueryPagination, options?: NftQueryOptions): Promise<NftAccount[]> {
@@ -347,9 +375,7 @@ export class EsdtAddressService {
           return true;
         }
 
-        if (errorMessage.includes('trie operations timeout')) {
-          throw new TrieOperationsTimeoutError();
-        }
+        this.throwTrieOperationsError(errorMessage);
       }
 
       return false;
@@ -360,6 +386,62 @@ export class EsdtAddressService {
     }
 
     return esdtResult.esdts;
+  }
+
+  private throwTrieOperationsError(errorMessage: string) {
+    if (errorMessage.includes('trie operations timeout')) {
+      throw new TrieOperationsTimeoutError();
+    }
+
+    if (errorMessage.includes('too many concurrent trie operations')) {
+      throw new TrieOperationsBusyError();
+    }
+
+    if (errorMessage.includes('trie collection limit exceeded')) {
+      throw new TrieOperationsLimitError();
+    }
+  }
+
+  async getAllEsdtsForAddressFromGatewayWithIterateKeysFallback(address: string): Promise<{ [key: string]: any }> {
+    const isTrieLimit = await this.cachingService.get<boolean>(CacheInfo.AddressEsdtTrieLimit(address).key);
+    if (!isTrieLimit) {
+      try {
+        return await this.getAllEsdtsForAddressFromGateway(address);
+      } catch (error) {
+        if (!(error instanceof TrieOperationsLimitError)) {
+          throw error;
+        }
+
+        await this.cachingService.set(CacheInfo.AddressEsdtTrieLimit(address).key, true, CacheInfo.AddressEsdtTrieLimit(address).ttl);
+      }
+    }
+
+    return await this.getAllEsdtsForAddressFromIterateKeys(address);
+  }
+
+  private async getAllEsdtsForAddressFromIterateKeys(address: string): Promise<{ [key: string]: any }> {
+    const cacheKey = `address:${address}:esdts:iterate-keys`;
+    const cachedValue = this.cachingService.getLocal<{ [key: string]: any }>(cacheKey);
+    if (cachedValue) {
+      return cachedValue;
+    }
+
+    // eslint-disable-next-line require-await
+    const result = await this.gatewayIterateKeysService.iterateKeys(address, EsdtStorageDecoder.esdtKeyPrefix, async (error) => {
+      const errorMessage = error?.response?.data?.error;
+      if (errorMessage) {
+        this.throwTrieOperationsError(errorMessage);
+      }
+
+      return false;
+    });
+
+    const esdts = EsdtStorageDecoder.decodeTokens(result.pairs);
+
+    const ttl = await this.protocolService.getSecondsRemainingUntilNextRound();
+    this.cachingService.setLocal(cacheKey, esdts, ttl);
+
+    return esdts;
   }
 
   private pendingRequestsDictionary: { [key: string]: any } = {};

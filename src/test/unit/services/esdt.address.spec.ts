@@ -4,6 +4,7 @@ import { Test } from "@nestjs/testing";
 import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { AssetsService } from "src/common/assets/assets.service";
 import { GatewayService } from "src/common/gateway/gateway.service";
+import { GatewayIterateKeysService } from "src/common/gateway/gateway.iterate.keys.service";
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { ProtocolService } from "src/common/protocol/protocol.service";
 import { CollectionService } from "src/endpoints/collections/collection.service";
@@ -54,9 +55,16 @@ describe('EsdtAddressService', () => {
           },
         },
         {
+          provide: GatewayIterateKeysService,
+          useValue: {
+            iterateKeys: jest.fn(),
+          },
+        },
+        {
           provide: CacheService,
           useValue: {
             get: jest.fn(),
+            getMany: jest.fn(),
             set: jest.fn(),
             getLocal: jest.fn(),
             setLocal: jest.fn(),

@@ -37,7 +37,6 @@ import { NftType } from "../nfts/entities/nft.type";
 import { AccountType, TokenType } from "src/common/indexer/entities";
 import { TokenAssetsPriceSourceType } from "src/common/assets/entities/token.assets.price.source.type";
 import { DataApiService } from "src/common/data-api/data-api.service";
-import { TrieOperationsTimeoutError } from "../esdt/exceptions/trie.operations.timeout.error";
 import { TokenSupplyOptions } from "./entities/token.supply.options";
 import { TransferService } from "../transfers/transfer.service";
 import { MexPairService } from "../mex/mex.pair.service";
@@ -313,16 +312,17 @@ export class TokenService {
   }
 
   async getTokensForAddressFromGatewayWithElasticFallback(address: string, queryPagination: QueryPagination, filter: TokenFilter): Promise<TokenWithBalance[]> {
+    const isTrieBusy = this.cachingService.getLocal<boolean>(CacheInfo.AddressEsdtTrieBusy(address).key);
     const isTrieTimeout = await this.cachingService.get<boolean>(CacheInfo.AddressEsdtTrieTimeout(address).key);
-    if (isTrieTimeout) {
+    if (isTrieBusy || isTrieTimeout) {
       return await this.getTokensForAddressFromElastic(address, queryPagination, filter);
     }
 
     try {
       return await this.getTokensForAddressFromGateway(address, queryPagination, filter);
     } catch (error) {
-      if (error instanceof TrieOperationsTimeoutError) {
-        await this.cachingService.set(CacheInfo.AddressEsdtTrieTimeout(address).key, true, CacheInfo.AddressEsdtTrieTimeout(address).ttl);
+      const isTrieError = await this.esdtAddressService.cacheTrieOperationsError(address, error);
+      if (isTrieError) {
         return await this.getTokensForAddressFromElastic(address, queryPagination, filter);
       }
 
@@ -400,7 +400,7 @@ export class TokenService {
       tokensIndexed[token.identifier] = token;
     }
 
-    const esdts = await this.esdtAddressService.getAllEsdtsForAddressFromGateway(address);
+    const esdts = await this.esdtAddressService.getAllEsdtsForAddressFromGatewayWithIterateKeysFallback(address);
 
     const tokensWithBalance: TokenWithBalance[] = [];
 
