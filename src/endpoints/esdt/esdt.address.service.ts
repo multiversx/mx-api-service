@@ -26,6 +26,7 @@ import { TrieOperationsBusyError } from "./exceptions/trie.operations.busy.error
 import { TrieOperationsLimitError } from "./exceptions/trie.operations.limit.error";
 import { TrieIterateKeysError } from "./exceptions/trie.iterate.keys.error";
 import { GatewayIterateKeysService } from "src/common/gateway/gateway.iterate.keys.service";
+import { IterateKeysPageLimitError } from "src/common/gateway/exceptions/iterate.keys.page.limit.error";
 import { EsdtStorageDecoder } from "src/utils/esdt.storage.decoder";
 import { CacheInfo } from "src/utils/cache.info";
 import { AssetsService } from "src/common/assets/assets.service";
@@ -55,7 +56,7 @@ export class EsdtAddressService {
 
   async getNftsForAddress(address: string, filter: NftFilter, pagination: QueryPagination, source?: EsdtDataSource, options?: NftQueryOptions): Promise<NftAccount[]> {
     if (filter.identifiers && filter.identifiers.length === 1) {
-      return await this.getNftsForAddressFromGateway(address, filter, pagination, options);
+      return await this.getNftForAddressFromGatewayWithElasticFallback(address, filter, pagination, options);
     }
 
     if (source === EsdtDataSource.elastic || AddressUtils.isSmartContractAddress(address)) {
@@ -193,6 +194,20 @@ export class EsdtAddressService {
         // @ts-ignore
         delete collection.timestamp;
       }
+    }
+  }
+
+  private async getNftForAddressFromGatewayWithElasticFallback(address: string, filter: NftFilter, pagination: QueryPagination, options?: NftQueryOptions): Promise<NftAccount[]> {
+    try {
+      return await this.getNftsForAddressFromGateway(address, filter, pagination, options);
+    } catch (error) {
+      if (ContextTracker.get()?.deepHistoryBlockNonce) {
+        throw error;
+      }
+
+      this.logger.error(`Error fetching NFT ${filter.identifiers?.[0]} for address ${address} from gateway, falling back to elastic`);
+      this.logger.error(error);
+      return await this.getNftsForAddressFromElastic(address, filter, pagination, options);
     }
   }
 
@@ -465,6 +480,10 @@ export class EsdtAddressService {
     try {
       pairs = await this.gatewayIterateKeysService.iterateKeys(address, EsdtStorageDecoder.esdtKeyPrefix);
     } catch (error: any) {
+      if (error instanceof IterateKeysPageLimitError) {
+        throw new TrieOperationsTimeoutError();
+      }
+
       const errorMessage = error?.response?.error;
       if (errorMessage) {
         this.throwTrieOperationsError(errorMessage);

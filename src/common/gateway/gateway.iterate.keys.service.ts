@@ -1,10 +1,12 @@
 import { Injectable } from "@nestjs/common";
 import { GatewayService } from "./gateway.service";
 import { GatewayComponentRequest } from "./entities/gateway.component.request";
+import { IterateKeysPageLimitError } from "./exceptions/iterate.keys.page.limit.error";
 
 @Injectable()
 export class GatewayIterateKeysService {
   private readonly numKeysPerRequest = 5000;
+  private readonly maxPages = 40;
   private readonly maxAttemptsPerRequest = 3;
   private readonly busyRetryDelayMs = 300;
 
@@ -16,8 +18,14 @@ export class GatewayIterateKeysService {
     const keyPrefixHex = Buffer.from(keyPrefix ?? '').toString('hex');
     const pairs: Record<string, string> = {};
     let iteratorState: string[] = [];
+    let pages = 0;
 
     do {
+      if (pages >= this.maxPages) {
+        throw new IterateKeysPageLimitError();
+      }
+
+      pages++;
       const response = await this.getKeysPage(address, iteratorState);
 
       for (const [key, value] of Object.entries<string>(response?.pairs ?? {})) {
