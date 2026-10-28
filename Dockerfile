@@ -9,8 +9,7 @@ COPY --chown=node . /app
 
 RUN npm install 
 
-# should be removed if you are using custom plugins
-RUN npm run init
+RUN [ -f src/plugins/plugin.module.ts ] || npm run init
 
 RUN npm run build
 
