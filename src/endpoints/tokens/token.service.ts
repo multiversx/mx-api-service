@@ -243,7 +243,25 @@ export class TokenService {
       return await this.getTokenCountForAddressFromElastic(address, filter);
     }
 
-    return await this.getTokenCountForAddressFromGateway(address, filter);
+    return await this.getTokenCountForAddressFromGatewayWithElasticFallback(address, filter);
+  }
+
+  async getTokenCountForAddressFromGatewayWithElasticFallback(address: string, filter: TokenFilter): Promise<number> {
+    const isEsdtTrieUnavailable = await this.isEsdtTrieUnavailable(address, filter);
+    if (isEsdtTrieUnavailable) {
+      return await this.getTokenCountForAddressFromElastic(address, filter);
+    }
+
+    try {
+      return await this.getTokenCountForAddressFromGateway(address, filter);
+    } catch (error) {
+      const isTrieError = await this.esdtAddressService.cacheTrieOperationsError(address, error);
+      if (isTrieError) {
+        return await this.getTokenCountForAddressFromElastic(address, filter);
+      }
+
+      throw error;
+    }
   }
 
   async getTokenCountForAddressFromElastic(address: string, filter: TokenFilter): Promise<number> {
@@ -312,9 +330,8 @@ export class TokenService {
   }
 
   async getTokensForAddressFromGatewayWithElasticFallback(address: string, queryPagination: QueryPagination, filter: TokenFilter): Promise<TokenWithBalance[]> {
-    const isTrieBusy = this.cachingService.getLocal<boolean>(CacheInfo.AddressEsdtTrieBusy(address).key);
-    const isTrieTimeout = await this.cachingService.get<boolean>(CacheInfo.AddressEsdtTrieTimeout(address).key);
-    if (isTrieBusy || isTrieTimeout) {
+    const isEsdtTrieUnavailable = await this.isEsdtTrieUnavailable(address, filter);
+    if (isEsdtTrieUnavailable) {
       return await this.getTokensForAddressFromElastic(address, queryPagination, filter);
     }
 
@@ -328,6 +345,25 @@ export class TokenService {
 
       throw error;
     }
+  }
+
+  private async isEsdtTrieUnavailable(address: string, filter: TokenFilter): Promise<boolean> {
+    const isTrieBusy = this.cachingService.getLocal<boolean>(CacheInfo.AddressEsdtTrieBusy(address).key);
+    if (isTrieBusy) {
+      return true;
+    }
+
+    const isTrieTimeout = await this.cachingService.get<boolean>(CacheInfo.AddressEsdtTrieTimeout(address).key);
+    if (isTrieTimeout) {
+      return true;
+    }
+
+    if (filter.includeMetaESDT === true) {
+      const isTrieLimit = await this.cachingService.get<boolean>(CacheInfo.AddressEsdtTrieLimit(address).key);
+      return isTrieLimit === true;
+    }
+
+    return false;
   }
 
   async getTokensForAddressFromGateway(address: string, queryPagination: QueryPagination, filter: TokenFilter): Promise<TokenWithBalance[]> {
@@ -400,7 +436,9 @@ export class TokenService {
       tokensIndexed[token.identifier] = token;
     }
 
-    const esdts = await this.esdtAddressService.getAllEsdtsForAddressFromGatewayWithIterateKeysFallback(address);
+    const esdts = filter.includeMetaESDT === true
+      ? await this.esdtAddressService.getAllEsdtsForAddressFromGateway(address)
+      : await this.esdtAddressService.getAllEsdtsForAddressFromGatewayWithIterateKeysFallback(address);
 
     const tokensWithBalance: TokenWithBalance[] = [];
 

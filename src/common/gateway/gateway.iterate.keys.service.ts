@@ -1,7 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { GatewayService } from "./gateway.service";
 import { GatewayComponentRequest } from "./entities/gateway.component.request";
-import { IterateKeysResult } from "./entities/iterate.keys.result";
 
 @Injectable()
 export class GatewayIterateKeysService {
@@ -13,26 +12,24 @@ export class GatewayIterateKeysService {
     private readonly gatewayService: GatewayService,
   ) { }
 
-  async iterateKeys(address: string, keyPrefix?: string): Promise<IterateKeysResult> {
+  async iterateKeys(address: string, keyPrefix?: string): Promise<Record<string, string>> {
     const keyPrefixHex = Buffer.from(keyPrefix ?? '').toString('hex');
-    const result = new IterateKeysResult();
+    const pairs: Record<string, string> = {};
     let iteratorState: string[] = [];
 
     do {
       const response = await this.getKeysPage(address, iteratorState);
 
-      result.blockInfo = result.blockInfo ?? response?.blockInfo;
-
       for (const [key, value] of Object.entries<string>(response?.pairs ?? {})) {
         if (key.startsWith(keyPrefixHex)) {
-          result.pairs[key] = value;
+          pairs[key] = value;
         }
       }
 
       iteratorState = response?.newIteratorState ?? [];
     } while (iteratorState.length > 0);
 
-    return result;
+    return pairs;
   }
 
   private async getKeysPage(address: string, iteratorState: string[]): Promise<any> {

@@ -16,7 +16,7 @@ import { NftCollectionWithRoles } from "../collections/entities/nft.collection.w
 import { CollectionService } from "../collections/collection.service";
 import { CollectionFilter } from "../collections/entities/collection.filter";
 import { CollectionRoles } from "../tokens/entities/collection.roles";
-import { AddressUtils, BinaryUtils, OriginLogger } from '@multiversx/sdk-nestjs-common';
+import { AddressUtils, BinaryUtils, ContextTracker, OriginLogger } from '@multiversx/sdk-nestjs-common';
 import { ApiUtils } from "@multiversx/sdk-nestjs-http";
 import { MetricsService } from "@multiversx/sdk-nestjs-monitoring";
 import { CacheService } from "@multiversx/sdk-nestjs-cache";
@@ -54,7 +54,7 @@ export class EsdtAddressService {
 
   async getNftsForAddress(address: string, filter: NftFilter, pagination: QueryPagination, source?: EsdtDataSource, options?: NftQueryOptions): Promise<NftAccount[]> {
     if (filter.identifiers && filter.identifiers.length === 1) {
-      return await this.getNftsForAddressFromGatewayWithElasticFallback(address, filter, pagination, options);
+      return await this.getNftsForAddressFromGateway(address, filter, pagination, options);
     }
 
     if (source === EsdtDataSource.elastic || AddressUtils.isSmartContractAddress(address)) {
@@ -420,7 +420,8 @@ export class EsdtAddressService {
   }
 
   private async getAllEsdtsForAddressFromIterateKeys(address: string): Promise<{ [key: string]: any }> {
-    const pendingRequestKey = `${address}:iterate-keys`;
+    const cacheInfo = CacheInfo.AddressEsdtsFromIterateKeys(address, ContextTracker.get()?.deepHistoryBlockNonce);
+    const pendingRequestKey = cacheInfo.key;
     let pendingRequest = this.pendingRequestsDictionary[pendingRequestKey];
     if (pendingRequest) {
       const result = await pendingRequest;
@@ -428,8 +429,7 @@ export class EsdtAddressService {
       return result;
     }
 
-    const cacheKey = `address:${address}:esdts:iterate-keys`;
-    const cachedValue = this.cachingService.getLocal<{ [key: string]: any }>(cacheKey);
+    const cachedValue = this.cachingService.getLocal<{ [key: string]: any }>(cacheInfo.key);
     if (cachedValue) {
       this.metricsService.incrementCachedApiHit('Gateway.AccountEsdtsIterateKeys');
       return cachedValue;
@@ -445,17 +445,16 @@ export class EsdtAddressService {
       delete this.pendingRequestsDictionary[pendingRequestKey];
     }
 
-    const ttl = await this.protocolService.getSecondsRemainingUntilNextRound();
-    this.cachingService.setLocal(cacheKey, esdts, ttl);
+    this.cachingService.setLocal(cacheInfo.key, esdts, cacheInfo.ttl);
 
     return esdts;
   }
 
   private async getAllEsdtsForAddressFromIterateKeysRaw(address: string): Promise<{ [key: string]: any }> {
     try {
-      const result = await this.gatewayIterateKeysService.iterateKeys(address, EsdtStorageDecoder.esdtKeyPrefix);
+      const pairs = await this.gatewayIterateKeysService.iterateKeys(address, EsdtStorageDecoder.esdtKeyPrefix);
 
-      return EsdtStorageDecoder.decodeTokens(result.pairs);
+      return EsdtStorageDecoder.decodeTokens(pairs);
     } catch (error: any) {
       const errorMessage = error?.response?.error;
       if (errorMessage) {
