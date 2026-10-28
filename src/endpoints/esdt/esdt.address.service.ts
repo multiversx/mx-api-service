@@ -16,7 +16,7 @@ import { NftCollectionWithRoles } from "../collections/entities/nft.collection.w
 import { CollectionService } from "../collections/collection.service";
 import { CollectionFilter } from "../collections/entities/collection.filter";
 import { CollectionRoles } from "../tokens/entities/collection.roles";
-import { AddressUtils, BinaryUtils, ContextTracker, OriginLogger } from '@multiversx/sdk-nestjs-common';
+import { AddressUtils, BinaryUtils, ContextTracker, OriginLogger, PendingExecuter } from '@multiversx/sdk-nestjs-common';
 import { ApiUtils } from "@multiversx/sdk-nestjs-http";
 import { MetricsService } from "@multiversx/sdk-nestjs-monitoring";
 import { CacheService } from "@multiversx/sdk-nestjs-cache";
@@ -36,6 +36,7 @@ import { NftQueryOptions } from "../nfts/entities/nft.query.options";
 export class EsdtAddressService {
   private readonly logger = new OriginLogger(EsdtAddressService.name);
   private readonly NFT_THUMBNAIL_PREFIX: string;
+  private readonly iterateKeysExecuter = new PendingExecuter();
 
   constructor(
     private readonly apiConfigService: ApiConfigService,
@@ -445,22 +446,9 @@ export class EsdtAddressService {
   }
 
   private async getAllEsdtsForAddressFromIterateKeys(address: string): Promise<{ [key: string]: any }> {
-    const pendingRequestKey = `${address}:iterate-keys:${ContextTracker.get()?.deepHistoryBlockNonce ?? 'latest'}`;
-    let pendingRequest = this.pendingRequestsDictionary[pendingRequestKey];
-    if (pendingRequest) {
-      const result = await pendingRequest;
-      this.metricsService.incrementPendingApiHit('Gateway.AccountEsdtsIterateKeys');
-      return result;
-    }
+    const key = `${address}:${ContextTracker.get()?.deepHistoryBlockNonce ?? 'latest'}`;
 
-    pendingRequest = this.getAllEsdtsForAddressFromIterateKeysRaw(address);
-    this.pendingRequestsDictionary[pendingRequestKey] = pendingRequest;
-
-    try {
-      return await pendingRequest;
-    } finally {
-      delete this.pendingRequestsDictionary[pendingRequestKey];
-    }
+    return await this.iterateKeysExecuter.execute(key, async () => await this.getAllEsdtsForAddressFromIterateKeysRaw(address));
   }
 
   private async getAllEsdtsForAddressFromIterateKeysRaw(address: string): Promise<{ [key: string]: any }> {
