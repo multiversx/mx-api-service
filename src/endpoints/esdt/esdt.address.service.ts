@@ -16,12 +16,18 @@ import { NftCollectionWithRoles } from "../collections/entities/nft.collection.w
 import { CollectionService } from "../collections/collection.service";
 import { CollectionFilter } from "../collections/entities/collection.filter";
 import { CollectionRoles } from "../tokens/entities/collection.roles";
-import { AddressUtils, BinaryUtils, OriginLogger } from '@multiversx/sdk-nestjs-common';
+import { AddressUtils, BinaryUtils, ContextTracker, OriginLogger, PendingExecuter } from '@multiversx/sdk-nestjs-common';
 import { ApiUtils } from "@multiversx/sdk-nestjs-http";
 import { MetricsService } from "@multiversx/sdk-nestjs-monitoring";
 import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { IndexerService } from "src/common/indexer/indexer.service";
 import { TrieOperationsTimeoutError } from "./exceptions/trie.operations.timeout.error";
+import { TrieOperationsBusyError } from "./exceptions/trie.operations.busy.error";
+import { TrieOperationsLimitError } from "./exceptions/trie.operations.limit.error";
+import { TrieIterateKeysError } from "./exceptions/trie.iterate.keys.error";
+import { GatewayIterateKeysService } from "src/common/gateway/gateway.iterate.keys.service";
+import { IterateKeysPageLimitError } from "src/common/gateway/exceptions/iterate.keys.page.limit.error";
+import { EsdtStorageDecoder } from "src/utils/esdt.storage.decoder";
 import { CacheInfo } from "src/utils/cache.info";
 import { AssetsService } from "src/common/assets/assets.service";
 import { NftQueryOptions } from "../nfts/entities/nft.query.options";
@@ -30,12 +36,14 @@ import { NftQueryOptions } from "../nfts/entities/nft.query.options";
 export class EsdtAddressService {
   private readonly logger = new OriginLogger(EsdtAddressService.name);
   private readonly NFT_THUMBNAIL_PREFIX: string;
+  private readonly iterateKeysExecuter = new PendingExecuter();
 
   constructor(
     private readonly apiConfigService: ApiConfigService,
     private readonly esdtService: EsdtService,
     private readonly indexerService: IndexerService,
     private readonly gatewayService: GatewayService,
+    private readonly gatewayIterateKeysService: GatewayIterateKeysService,
     private readonly cachingService: CacheService,
     private readonly metricsService: MetricsService,
     private readonly protocolService: ProtocolService,
@@ -49,7 +57,7 @@ export class EsdtAddressService {
 
   async getNftsForAddress(address: string, filter: NftFilter, pagination: QueryPagination, source?: EsdtDataSource, options?: NftQueryOptions): Promise<NftAccount[]> {
     if (filter.identifiers && filter.identifiers.length === 1) {
-      return await this.getNftsForAddressFromGatewayWithElasticFallback(address, filter, pagination, options);
+      return await this.getNftForAddressFromGatewayWithElasticFallback(address, filter, pagination, options);
     }
 
     if (source === EsdtDataSource.elastic || AddressUtils.isSmartContractAddress(address)) {
@@ -190,22 +198,68 @@ export class EsdtAddressService {
     }
   }
 
+  private async getNftForAddressFromGatewayWithElasticFallback(address: string, filter: NftFilter, pagination: QueryPagination, options?: NftQueryOptions): Promise<NftAccount[]> {
+    try {
+      return await this.getNftsForAddressFromGateway(address, filter, pagination, options);
+    } catch (error) {
+      if (ContextTracker.get()?.deepHistoryBlockNonce) {
+        throw error;
+      }
+
+      this.logger.error(`Error fetching NFT ${filter.identifiers?.[0]} for address ${address} from gateway, falling back to elastic`);
+      this.logger.error(error);
+      return await this.getNftsForAddressFromElastic(address, filter, pagination, options);
+    }
+  }
+
   private async getNftsForAddressFromGatewayWithElasticFallback(address: string, filter: NftFilter, pagination: QueryPagination, options?: NftQueryOptions): Promise<NftAccount[]> {
-    const isTrieTimeout = await this.cachingService.get<boolean>(CacheInfo.AddressEsdtTrieTimeout(address).key);
-    if (isTrieTimeout) {
+    if (ContextTracker.get()?.deepHistoryBlockNonce) {
+      return await this.getNftsForAddressFromGateway(address, filter, pagination, options);
+    }
+
+    const isTrieBusy = this.cachingService.getLocal<boolean>(CacheInfo.EsdtTrieBusy.key);
+    const trieFlags = await this.cachingService.getMany<boolean>([
+      CacheInfo.AddressEsdtTrieTimeout(address).key,
+      CacheInfo.AddressEsdtTrieLimit(address).key,
+    ]);
+    if (isTrieBusy || trieFlags.some(flag => flag)) {
       return await this.getNftsForAddressFromElastic(address, filter, pagination, options);
     }
 
     try {
       return await this.getNftsForAddressFromGateway(address, filter, pagination, options);
     } catch (error) {
-      if (error instanceof TrieOperationsTimeoutError) {
-        await this.cachingService.set(CacheInfo.AddressEsdtTrieTimeout(address).key, true, CacheInfo.AddressEsdtTrieTimeout(address).ttl);
+      const isTrieError = await this.cacheTrieOperationsError(address, error);
+      if (isTrieError) {
         return await this.getNftsForAddressFromElastic(address, filter, pagination, options);
       }
 
       throw error;
     }
+  }
+
+  async cacheTrieOperationsError(address: string, error: any): Promise<boolean> {
+    if (error instanceof TrieOperationsBusyError) {
+      this.cachingService.setLocal(CacheInfo.EsdtTrieBusy.key, true, CacheInfo.EsdtTrieBusy.ttl);
+      return true;
+    }
+
+    if (error instanceof TrieIterateKeysError) {
+      await this.cachingService.set(CacheInfo.EsdtIterateKeysFailed.key, true, CacheInfo.EsdtIterateKeysFailed.ttl);
+      return true;
+    }
+
+    if (error instanceof TrieOperationsTimeoutError) {
+      await this.cachingService.set(CacheInfo.AddressEsdtTrieTimeout(address).key, true, CacheInfo.AddressEsdtTrieTimeout(address).ttl);
+      return true;
+    }
+
+    if (error instanceof TrieOperationsLimitError) {
+      await this.cachingService.set(CacheInfo.AddressEsdtTrieLimit(address).key, true, CacheInfo.AddressEsdtTrieLimit(address).ttl);
+      return true;
+    }
+
+    return false;
   }
 
   private async getNftsForAddressFromGateway(address: string, filter: NftFilter, pagination: QueryPagination, options?: NftQueryOptions): Promise<NftAccount[]> {
@@ -347,9 +401,7 @@ export class EsdtAddressService {
           return true;
         }
 
-        if (errorMessage.includes('trie operations timeout')) {
-          throw new TrieOperationsTimeoutError();
-        }
+        this.throwTrieOperationsError(errorMessage);
       }
 
       return false;
@@ -360,6 +412,64 @@ export class EsdtAddressService {
     }
 
     return esdtResult.esdts;
+  }
+
+  private throwTrieOperationsError(errorMessage: string) {
+    if (errorMessage.includes('trie operations timeout')) {
+      throw new TrieOperationsTimeoutError();
+    }
+
+    if (errorMessage.includes('too many concurrent trie operations')) {
+      throw new TrieOperationsBusyError();
+    }
+
+    if (errorMessage.includes('trie collection limit exceeded')) {
+      throw new TrieOperationsLimitError();
+    }
+  }
+
+  async getAllEsdtsForAddressFromGatewayWithIterateKeysFallback(address: string): Promise<{ [key: string]: any }> {
+    const isTrieLimit = await this.cachingService.get<boolean>(CacheInfo.AddressEsdtTrieLimit(address).key);
+    if (!isTrieLimit) {
+      try {
+        return await this.getAllEsdtsForAddressFromGateway(address);
+      } catch (error) {
+        if (!(error instanceof TrieOperationsLimitError)) {
+          throw error;
+        }
+
+        await this.cachingService.set(CacheInfo.AddressEsdtTrieLimit(address).key, true, CacheInfo.AddressEsdtTrieLimit(address).ttl);
+      }
+    }
+
+    return await this.getAllEsdtsForAddressFromIterateKeys(address);
+  }
+
+  private async getAllEsdtsForAddressFromIterateKeys(address: string): Promise<{ [key: string]: any }> {
+    const key = `${address}:${ContextTracker.get()?.deepHistoryBlockNonce ?? 'latest'}`;
+
+    return await this.iterateKeysExecuter.execute(key, async () => await this.getAllEsdtsForAddressFromIterateKeysRaw(address));
+  }
+
+  private async getAllEsdtsForAddressFromIterateKeysRaw(address: string): Promise<{ [key: string]: any }> {
+    let pairs: Record<string, string>;
+    try {
+      pairs = await this.gatewayIterateKeysService.iterateKeys(address, EsdtStorageDecoder.esdtKeyPrefix);
+    } catch (error: any) {
+      if (error instanceof IterateKeysPageLimitError) {
+        throw new TrieOperationsTimeoutError();
+      }
+
+      const errorMessage = error?.response?.error;
+      if (errorMessage) {
+        this.throwTrieOperationsError(errorMessage);
+      }
+
+      this.logger.error(`Iterate keys failed for address ${address}: ${errorMessage ?? error?.message}`);
+      throw new TrieIterateKeysError();
+    }
+
+    return EsdtStorageDecoder.decodeTokens(pairs);
   }
 
   private pendingRequestsDictionary: { [key: string]: any } = {};

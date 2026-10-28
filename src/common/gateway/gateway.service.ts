@@ -39,6 +39,7 @@ export class GatewayService {
     GatewayComponentRequest.addressEsdt,
     GatewayComponentRequest.addressEsdtBalance,
     GatewayComponentRequest.addressNftByNonce,
+    GatewayComponentRequest.addressIterateKeys,
     GatewayComponentRequest.vmQuery,
   ]);
 

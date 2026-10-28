@@ -67,6 +67,7 @@ describe('Token Service', () => {
           {
             getOrSet: jest.fn(),
             get: jest.fn(),
+            getMany: jest.fn().mockResolvedValue([]),
             batchSet: jest.fn(),
             getLocal: jest.fn(),
             deleteInCache: jest.fn(),
@@ -86,7 +87,8 @@ describe('Token Service', () => {
         {
           provide: EsdtAddressService,
           useValue: {
-            getAllEsdtsForAddressFromGateway: jest.fn(),
+            getAllEsdtsForAddressFromGatewayWithIterateKeysFallback: jest.fn(),
+            cacheTrieOperationsError: jest.fn(),
           },
         },
         {

@@ -28,6 +28,7 @@ export enum GatewayComponentRequest {
   addressShard = 'addressShard',
   addressStorage = 'addressStorage',
   addressKeys = 'addressKeys',
+  addressIterateKeys = 'addressIterateKeys',
   guardianData = 'guardianData',
   addressTransactions = 'addressTransactions',
   simulateTransaction = 'simulateTransaction',
