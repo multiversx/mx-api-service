@@ -348,22 +348,21 @@ export class TokenService {
   }
 
   private async isEsdtTrieUnavailable(address: string, filter: TokenFilter): Promise<boolean> {
-    const isTrieBusy = this.cachingService.getLocal<boolean>(CacheInfo.AddressEsdtTrieBusy(address).key);
+    const isTrieBusy = this.cachingService.getLocal<boolean>(CacheInfo.EsdtTrieBusy.key);
     if (isTrieBusy) {
       return true;
     }
 
-    const isTrieTimeout = await this.cachingService.get<boolean>(CacheInfo.AddressEsdtTrieTimeout(address).key);
+    const [isTrieTimeout, isTrieLimit, isIterateKeysFailed] = await this.cachingService.getMany<boolean>([
+      CacheInfo.AddressEsdtTrieTimeout(address).key,
+      CacheInfo.AddressEsdtTrieLimit(address).key,
+      CacheInfo.EsdtIterateKeysFailed.key,
+    ]);
     if (isTrieTimeout) {
       return true;
     }
 
-    if (filter.includeMetaESDT === true) {
-      const isTrieLimit = await this.cachingService.get<boolean>(CacheInfo.AddressEsdtTrieLimit(address).key);
-      return isTrieLimit === true;
-    }
-
-    return false;
+    return isTrieLimit === true && (filter.includeMetaESDT === true || isIterateKeysFailed === true);
   }
 
   async getTokensForAddressFromGateway(address: string, queryPagination: QueryPagination, filter: TokenFilter): Promise<TokenWithBalance[]> {

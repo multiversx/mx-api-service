@@ -719,12 +719,15 @@ export class CacheInfo {
     };
   }
 
-  static AddressEsdtTrieBusy(address: string): CacheInfo {
-    return {
-      key: `addressEsdtTrieBusy:${address}`,
-      ttl: Constants.oneSecond() * 10,
-    };
-  }
+  static EsdtTrieBusy: CacheInfo = {
+    key: 'esdtTrieBusy',
+    ttl: Constants.oneSecond() * 10,
+  };
+
+  static EsdtIterateKeysFailed: CacheInfo = {
+    key: 'esdtIterateKeysFailed',
+    ttl: Constants.oneMinute() * 5,
+  };
 
   static AddressEsdtsFromIterateKeys(address: string, blockNonce?: number): CacheInfo {
     return {

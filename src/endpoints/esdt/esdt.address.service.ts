@@ -24,6 +24,7 @@ import { IndexerService } from "src/common/indexer/indexer.service";
 import { TrieOperationsTimeoutError } from "./exceptions/trie.operations.timeout.error";
 import { TrieOperationsBusyError } from "./exceptions/trie.operations.busy.error";
 import { TrieOperationsLimitError } from "./exceptions/trie.operations.limit.error";
+import { TrieIterateKeysError } from "./exceptions/trie.iterate.keys.error";
 import { GatewayIterateKeysService } from "src/common/gateway/gateway.iterate.keys.service";
 import { EsdtStorageDecoder } from "src/utils/esdt.storage.decoder";
 import { CacheInfo } from "src/utils/cache.info";
@@ -196,7 +197,7 @@ export class EsdtAddressService {
   }
 
   private async getNftsForAddressFromGatewayWithElasticFallback(address: string, filter: NftFilter, pagination: QueryPagination, options?: NftQueryOptions): Promise<NftAccount[]> {
-    const isTrieBusy = this.cachingService.getLocal<boolean>(CacheInfo.AddressEsdtTrieBusy(address).key);
+    const isTrieBusy = this.cachingService.getLocal<boolean>(CacheInfo.EsdtTrieBusy.key);
     const trieFlags = await this.cachingService.getMany<boolean>([
       CacheInfo.AddressEsdtTrieTimeout(address).key,
       CacheInfo.AddressEsdtTrieLimit(address).key,
@@ -219,7 +220,12 @@ export class EsdtAddressService {
 
   async cacheTrieOperationsError(address: string, error: any): Promise<boolean> {
     if (error instanceof TrieOperationsBusyError) {
-      this.cachingService.setLocal(CacheInfo.AddressEsdtTrieBusy(address).key, true, CacheInfo.AddressEsdtTrieBusy(address).ttl);
+      this.cachingService.setLocal(CacheInfo.EsdtTrieBusy.key, true, CacheInfo.EsdtTrieBusy.ttl);
+      return true;
+    }
+
+    if (error instanceof TrieIterateKeysError) {
+      await this.cachingService.set(CacheInfo.EsdtIterateKeysFailed.key, true, CacheInfo.EsdtIterateKeysFailed.ttl);
       return true;
     }
 
@@ -461,7 +467,8 @@ export class EsdtAddressService {
         this.throwTrieOperationsError(errorMessage);
       }
 
-      throw error;
+      this.logger.error(`Iterate keys failed for address ${address}: ${errorMessage ?? error?.message}`);
+      throw new TrieIterateKeysError();
     }
   }
 
