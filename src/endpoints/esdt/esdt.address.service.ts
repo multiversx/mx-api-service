@@ -420,28 +420,50 @@ export class EsdtAddressService {
   }
 
   private async getAllEsdtsForAddressFromIterateKeys(address: string): Promise<{ [key: string]: any }> {
+    const pendingRequestKey = `${address}:iterate-keys`;
+    let pendingRequest = this.pendingRequestsDictionary[pendingRequestKey];
+    if (pendingRequest) {
+      const result = await pendingRequest;
+      this.metricsService.incrementPendingApiHit('Gateway.AccountEsdtsIterateKeys');
+      return result;
+    }
+
     const cacheKey = `address:${address}:esdts:iterate-keys`;
     const cachedValue = this.cachingService.getLocal<{ [key: string]: any }>(cacheKey);
     if (cachedValue) {
+      this.metricsService.incrementCachedApiHit('Gateway.AccountEsdtsIterateKeys');
       return cachedValue;
     }
 
-    // eslint-disable-next-line require-await
-    const result = await this.gatewayIterateKeysService.iterateKeys(address, EsdtStorageDecoder.esdtKeyPrefix, async (error) => {
-      const errorMessage = error?.response?.data?.error;
-      if (errorMessage) {
-        this.throwTrieOperationsError(errorMessage);
-      }
+    pendingRequest = this.getAllEsdtsForAddressFromIterateKeysRaw(address);
+    this.pendingRequestsDictionary[pendingRequestKey] = pendingRequest;
 
-      return false;
-    });
-
-    const esdts = EsdtStorageDecoder.decodeTokens(result.pairs);
+    let esdts: { [key: string]: any };
+    try {
+      esdts = await pendingRequest;
+    } finally {
+      delete this.pendingRequestsDictionary[pendingRequestKey];
+    }
 
     const ttl = await this.protocolService.getSecondsRemainingUntilNextRound();
     this.cachingService.setLocal(cacheKey, esdts, ttl);
 
     return esdts;
+  }
+
+  private async getAllEsdtsForAddressFromIterateKeysRaw(address: string): Promise<{ [key: string]: any }> {
+    try {
+      const result = await this.gatewayIterateKeysService.iterateKeys(address, EsdtStorageDecoder.esdtKeyPrefix);
+
+      return EsdtStorageDecoder.decodeTokens(result.pairs);
+    } catch (error: any) {
+      const errorMessage = error?.response?.error;
+      if (errorMessage) {
+        this.throwTrieOperationsError(errorMessage);
+      }
+
+      throw error;
+    }
   }
 
   private pendingRequestsDictionary: { [key: string]: any } = {};
