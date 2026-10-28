@@ -818,6 +818,11 @@ export class CacheInfo {
     };
   }
 
+  static WsNetworkConfig: CacheInfo = {
+    key: 'wsNetworkConfig',
+    ttl: Constants.oneSecond() * 30,
+  };
+
   static TokenIssuancePendingRequestHash(hash: string): CacheInfo {
     return {
       key: `tokenIssuancePendingRequestHash:${hash}`,

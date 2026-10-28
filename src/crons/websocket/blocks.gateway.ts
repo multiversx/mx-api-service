@@ -8,6 +8,7 @@ import { UseFilters, UseInterceptors } from '@nestjs/common';
 import { WebsocketExceptionsFilter } from 'src/utils/ws-exceptions.filter';
 import { WsValidationPipe } from 'src/utils/ws-validation.pipe';
 import { OriginLogger } from '@multiversx/sdk-nestjs-common';
+import { RoomKeyGenerator } from './room.key.generator';
 import { LockingGuardInterceptor } from 'src/utils/locking.guard.interceptor';
 
 @UseFilters(WebsocketExceptionsFilter)
@@ -27,7 +28,7 @@ export class BlocksGateway {
     @ConnectedSocket() client: Socket,
     @MessageBody(new WsValidationPipe()) payload: BlockSubscribePayload
   ) {
-    const filterIdentifier = JSON.stringify(payload);
+    const filterIdentifier = RoomKeyGenerator.deterministicStringify(payload);
     const roomName = `${BlocksGateway.keyPrefix}${filterIdentifier}`;
 
     if (!client.rooms.has(roomName)) {
@@ -42,7 +43,7 @@ export class BlocksGateway {
     @ConnectedSocket() client: Socket,
     @MessageBody(new WsValidationPipe()) payload: BlockSubscribePayload
   ) {
-    const filterIdentifier = JSON.stringify(payload);
+    const filterIdentifier = RoomKeyGenerator.deterministicStringify(payload);
     const roomName = `${BlocksGateway.keyPrefix}${filterIdentifier}`;
 
     if (client.rooms.has(roomName)) {
