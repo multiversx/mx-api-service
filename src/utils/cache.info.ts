@@ -729,13 +729,6 @@ export class CacheInfo {
     ttl: Constants.oneMinute() * 5,
   };
 
-  static AddressEsdtsFromIterateKeys(address: string, blockNonce?: number): CacheInfo {
-    return {
-      key: `address:${address}:esdts:iterate-keys:${blockNonce ?? 'latest'}`,
-      ttl: Constants.oneMinute(),
-    };
-  }
-
   static AddressEsdtTrieLimit(address: string): CacheInfo {
     return {
       key: `addressEsdtTrieLimit:${address}`,

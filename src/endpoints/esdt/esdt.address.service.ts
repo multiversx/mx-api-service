@@ -445,8 +445,7 @@ export class EsdtAddressService {
   }
 
   private async getAllEsdtsForAddressFromIterateKeys(address: string): Promise<{ [key: string]: any }> {
-    const cacheInfo = CacheInfo.AddressEsdtsFromIterateKeys(address, ContextTracker.get()?.deepHistoryBlockNonce);
-    const pendingRequestKey = cacheInfo.key;
+    const pendingRequestKey = `${address}:iterate-keys:${ContextTracker.get()?.deepHistoryBlockNonce ?? 'latest'}`;
     let pendingRequest = this.pendingRequestsDictionary[pendingRequestKey];
     if (pendingRequest) {
       const result = await pendingRequest;
@@ -454,25 +453,14 @@ export class EsdtAddressService {
       return result;
     }
 
-    const cachedValue = this.cachingService.getLocal<{ [key: string]: any }>(cacheInfo.key);
-    if (cachedValue) {
-      this.metricsService.incrementCachedApiHit('Gateway.AccountEsdtsIterateKeys');
-      return cachedValue;
-    }
-
     pendingRequest = this.getAllEsdtsForAddressFromIterateKeysRaw(address);
     this.pendingRequestsDictionary[pendingRequestKey] = pendingRequest;
 
-    let esdts: { [key: string]: any };
     try {
-      esdts = await pendingRequest;
+      return await pendingRequest;
     } finally {
       delete this.pendingRequestsDictionary[pendingRequestKey];
     }
-
-    this.cachingService.setLocal(cacheInfo.key, esdts, cacheInfo.ttl);
-
-    return esdts;
   }
 
   private async getAllEsdtsForAddressFromIterateKeysRaw(address: string): Promise<{ [key: string]: any }> {
