@@ -19,7 +19,7 @@ import { SortOrder } from "src/common/entities/sort.order";
 import { TokenSort } from "./entities/token.sort";
 import { TokenWithRoles } from "./entities/token.with.roles";
 import { TokenWithRolesFilter } from "./entities/token.with.roles.filter";
-import { AddressUtils, BinaryUtils, NumberUtils, TokenUtils } from "@multiversx/sdk-nestjs-common";
+import { AddressUtils, BinaryUtils, ContextTracker, NumberUtils, TokenUtils } from "@multiversx/sdk-nestjs-common";
 import { ApiService, ApiUtils } from "@multiversx/sdk-nestjs-http";
 import { ConcurrencyUtils } from "src/utils/concurrency.utils";
 import { CacheService } from "@multiversx/sdk-nestjs-cache";
@@ -247,6 +247,10 @@ export class TokenService {
   }
 
   async getTokenCountForAddressFromGatewayWithElasticFallback(address: string, filter: TokenFilter): Promise<number> {
+    if (ContextTracker.get()?.deepHistoryBlockNonce) {
+      return await this.getTokenCountForAddressFromGateway(address, filter);
+    }
+
     const isEsdtTrieUnavailable = await this.isEsdtTrieUnavailable(address, filter);
     if (isEsdtTrieUnavailable) {
       return await this.getTokenCountForAddressFromElastic(address, filter);
@@ -330,6 +334,10 @@ export class TokenService {
   }
 
   async getTokensForAddressFromGatewayWithElasticFallback(address: string, queryPagination: QueryPagination, filter: TokenFilter): Promise<TokenWithBalance[]> {
+    if (ContextTracker.get()?.deepHistoryBlockNonce) {
+      return await this.getTokensForAddressFromGateway(address, queryPagination, filter);
+    }
+
     const isEsdtTrieUnavailable = await this.isEsdtTrieUnavailable(address, filter);
     if (isEsdtTrieUnavailable) {
       return await this.getTokensForAddressFromElastic(address, queryPagination, filter);

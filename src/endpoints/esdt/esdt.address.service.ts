@@ -197,6 +197,10 @@ export class EsdtAddressService {
   }
 
   private async getNftsForAddressFromGatewayWithElasticFallback(address: string, filter: NftFilter, pagination: QueryPagination, options?: NftQueryOptions): Promise<NftAccount[]> {
+    if (ContextTracker.get()?.deepHistoryBlockNonce) {
+      return await this.getNftsForAddressFromGateway(address, filter, pagination, options);
+    }
+
     const isTrieBusy = this.cachingService.getLocal<boolean>(CacheInfo.EsdtTrieBusy.key);
     const trieFlags = await this.cachingService.getMany<boolean>([
       CacheInfo.AddressEsdtTrieTimeout(address).key,
@@ -457,10 +461,9 @@ export class EsdtAddressService {
   }
 
   private async getAllEsdtsForAddressFromIterateKeysRaw(address: string): Promise<{ [key: string]: any }> {
+    let pairs: Record<string, string>;
     try {
-      const pairs = await this.gatewayIterateKeysService.iterateKeys(address, EsdtStorageDecoder.esdtKeyPrefix);
-
-      return EsdtStorageDecoder.decodeTokens(pairs);
+      pairs = await this.gatewayIterateKeysService.iterateKeys(address, EsdtStorageDecoder.esdtKeyPrefix);
     } catch (error: any) {
       const errorMessage = error?.response?.error;
       if (errorMessage) {
@@ -470,6 +473,8 @@ export class EsdtAddressService {
       this.logger.error(`Iterate keys failed for address ${address}: ${errorMessage ?? error?.message}`);
       throw new TrieIterateKeysError();
     }
+
+    return EsdtStorageDecoder.decodeTokens(pairs);
   }
 
   private pendingRequestsDictionary: { [key: string]: any } = {};
