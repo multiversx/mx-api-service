@@ -199,7 +199,7 @@ export class CacheWarmerService {
     }
   }
 
-  @Cron("*/6 * * * * *")
+  @Cron(CronExpression.EVERY_SECOND)
   @Lock({ name: 'Guest caching recompute', verbose: true })
   async handleGuestCache() {
     if (this.apiConfigService.isGuestCacheFeatureActive()) {
@@ -211,7 +211,7 @@ export class CacheWarmerService {
     }
   }
 
-  @Cron("*/6 * * * * *")
+  @Cron(CronExpression.EVERY_SECOND)
   @Lock({ name: 'Latest block recompute' })
   async handleLatestBlock() {
     const block = await this.blockService.getLatestBlockRaw();
