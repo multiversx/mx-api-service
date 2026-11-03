@@ -411,6 +411,7 @@ export class AccountService {
       {
         erd_nonce,
       },
+      roundDurationMs,
     ] = await Promise.all([
       this.vmQueryService.vmQuery(
         delegationContractAddress,
@@ -423,6 +424,7 @@ export class AccountService {
         'getNumBlocksBeforeUnBond',
       ),
       this.gatewayService.getNetworkStatus(`${delegationContractShardId}`),
+      this.protocolService.getRoundDurationMs(),
     ]);
 
     const numBlocksBeforeUnBond = parseInt(BinaryUtils.base64ToBigInt(encodedNumBlocksBeforeUnBond).toString());
@@ -435,7 +437,7 @@ export class AccountService {
         const deferredPayment = BinaryUtils.base64ToBigInt(encodedDeferredPayment).toString();
         const unstakedNonce = parseInt(BinaryUtils.base64ToBigInt(encodedUnstakedNonce).toString());
         const blocksLeft = Math.max(0, unstakedNonce + numBlocksBeforeUnBond - erdNonce);
-        const secondsLeft = blocksLeft * 6; // 6 seconds per block
+        const secondsLeft = Math.ceil(blocksLeft * roundDurationMs / 1000);
 
         result.push({ deferredPayment, secondsLeft });
       }

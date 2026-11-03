@@ -43,6 +43,19 @@ export class ProtocolService {
     return shardCount;
   }
 
+  async getRoundDurationMs(): Promise<number> {
+    return await this.cachingService.getOrSet(
+      CacheInfo.RoundDuration.key,
+      async () => await this.getRoundDurationMsRaw(),
+      CacheInfo.RoundDuration.ttl,
+    );
+  }
+
+  private async getRoundDurationMsRaw(): Promise<number> {
+    const networkConfig = await this.gatewayService.getNetworkConfig();
+    return networkConfig.erd_round_duration;
+  }
+
   private async getShardIdsRaw(): Promise<number[]> {
     const shardCount = await this.getShardCountRaw();
     const metaChainShardId = this.apiConfigService.getMetaChainShardId();

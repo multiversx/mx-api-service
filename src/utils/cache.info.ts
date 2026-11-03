@@ -37,6 +37,11 @@ export class CacheInfo {
     ttl: Constants.oneWeek(),
   };
 
+  static RoundDuration: CacheInfo = {
+    key: 'roundDuration',
+    ttl: Constants.oneMinute(),
+  };
+
   static GenesisTimestamp: CacheInfo = {
     key: 'genesisTimestamp',
     ttl: Constants.oneWeek(),
