@@ -1,4 +1,4 @@
-import { OriginLogger } from "@multiversx/sdk-nestjs-common";
+import { Constants, OriginLogger } from "@multiversx/sdk-nestjs-common";
 import { PerformanceProfiler } from "@multiversx/sdk-nestjs-monitoring";
 import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { forwardRef, Inject, Injectable } from "@nestjs/common";
@@ -6,7 +6,6 @@ import { EventEmitter2 } from '@nestjs/event-emitter';
 import { LogMetricsEvent } from "src/common/entities/log.metrics.event";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
 import { GatewayService } from "src/common/gateway/gateway.service";
-import { ProtocolService } from "src/common/protocol/protocol.service";
 import { MetricsEvents } from "src/utils/metrics-events.constants";
 import { SettingsService } from "src/common/settings/settings.service";
 
@@ -18,22 +17,9 @@ export class VmQueryService {
     @Inject(forwardRef(() => CacheService))
     private readonly cachingService: CacheService,
     private readonly gatewayService: GatewayService,
-    private readonly protocolService: ProtocolService,
     private readonly eventEmitter: EventEmitter2,
     private readonly settingsService: SettingsService,
   ) { }
-
-  private async computeTtls(): Promise<{ localTtl: number, remoteTtl: number; }> {
-    const secondsRemainingUntilNextRound = await this.protocolService.getSecondsRemainingUntilNextRound();
-
-    // no need to store value remotely just to evict it one second later
-    const remoteTtl = secondsRemainingUntilNextRound > 1 ? secondsRemainingUntilNextRound : 0;
-
-    return {
-      localTtl: secondsRemainingUntilNextRound,
-      remoteTtl,
-    };
-  }
 
   async vmQueryFullResult(contract: string, func: string, caller: string | undefined = undefined, args: string[] = [], value: string | undefined = undefined, timestamp: number | undefined): Promise<any> {
     let key = `vm-query:${contract}:${func}`;
@@ -49,13 +35,11 @@ export class VmQueryService {
       key += `{${timestamp}}`;
     }
 
-    const { localTtl, remoteTtl } = await this.computeTtls();
-
     return await this.cachingService.getOrSet(
       key,
       async () => await this.vmQueryRaw(contract, func, caller, args, value),
-      remoteTtl,
-      localTtl
+      0,
+      Constants.oneSecond()
     );
   }
 
@@ -74,14 +58,11 @@ export class VmQueryService {
       if (skipCache) {
         result = await this.vmQueryRaw(contract, func, caller, args, value);
       } else {
-
-        const { localTtl, remoteTtl } = await this.computeTtls();
-
         result = await this.cachingService.getOrSet(
           key,
           async () => await this.vmQueryRaw(contract, func, caller, args, value),
-          remoteTtl,
-          localTtl
+          0,
+          Constants.oneSecond()
         );
       }
 

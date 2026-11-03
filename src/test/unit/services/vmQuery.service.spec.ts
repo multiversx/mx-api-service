@@ -2,7 +2,6 @@ import { CacheService } from "@multiversx/sdk-nestjs-cache";
 import { EventEmitter2 } from "@nestjs/event-emitter";
 import { TestingModule, Test } from "@nestjs/testing";
 import { GatewayService } from "src/common/gateway/gateway.service";
-import { ProtocolService } from "src/common/protocol/protocol.service";
 import { SettingsService } from "src/common/settings/settings.service";
 import { VmQueryService } from "src/endpoints/vm.query/vm.query.service";
 
@@ -10,7 +9,6 @@ describe('VmQueryService', () => {
   let service: VmQueryService;
   let cacheService: CacheService;
   let gatewayService: GatewayService;
-  let protocolService: ProtocolService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -29,12 +27,6 @@ describe('VmQueryService', () => {
           },
         },
         {
-          provide: ProtocolService,
-          useValue: {
-            getSecondsRemainingUntilNextRound: jest.fn(),
-          },
-        },
-        {
           provide: SettingsService,
           useValue: {
             getUseVmQueryTracingFlag: jest.fn(),
@@ -47,7 +39,6 @@ describe('VmQueryService', () => {
     service = module.get<VmQueryService>(VmQueryService);
     cacheService = module.get<CacheService>(CacheService);
     gatewayService = module.get<GatewayService>(GatewayService);
-    protocolService = module.get<ProtocolService>(ProtocolService);
   });
 
   it('should be defined', () => {
@@ -62,14 +53,10 @@ describe('VmQueryService', () => {
     const value = 'value';
     const key = `vm-query:${contract}:${func}:${caller}@${args.join('@')}`;
 
-    beforeEach(() => {
-      jest.spyOn(protocolService, 'getSecondsRemainingUntilNextRound').mockResolvedValue(10);
-    });
-
     it('should call CacheService.getOrSet with the correct arguments', async () => {
       jest.spyOn(gatewayService, 'createRaw').mockResolvedValue({ data: {} });
       await service.vmQueryFullResult(contract, func, caller, args, value, undefined);
-      expect(cacheService.getOrSet).toHaveBeenCalledWith(key, expect.any(Function), 10, 10);
+      expect(cacheService.getOrSet).toHaveBeenCalledWith(key, expect.any(Function), 0, 1);
     });
   });
 
@@ -81,10 +68,6 @@ describe('VmQueryService', () => {
     const value = 'value';
     const returnData = ['returnData1', 'returnData2'];
     const vmQueryResult = { data: { data: { returnData } } };
-
-    beforeEach(() => {
-      jest.spyOn(protocolService, 'getSecondsRemainingUntilNextRound').mockResolvedValue(10);
-    });
 
     it('should return the vm query result if skipCache is true', async () => {
       jest.spyOn(service, 'vmQueryRaw').mockResolvedValue(vmQueryResult);
