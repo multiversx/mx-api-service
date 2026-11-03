@@ -38,8 +38,8 @@ export class VmQueryService {
     return await this.cachingService.getOrSet(
       key,
       async () => await this.vmQueryRaw(contract, func, caller, args, value),
-      0,
-      Constants.oneSecond()
+      Constants.oneSecond(),
+      Constants.oneSecond(),
     );
   }
 
@@ -61,8 +61,8 @@ export class VmQueryService {
         result = await this.cachingService.getOrSet(
           key,
           async () => await this.vmQueryRaw(contract, func, caller, args, value),
-          0,
-          Constants.oneSecond()
+          Constants.oneSecond(),
+          Constants.oneSecond(),
         );
       }
 

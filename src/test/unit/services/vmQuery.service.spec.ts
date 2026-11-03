@@ -56,7 +56,7 @@ describe('VmQueryService', () => {
     it('should call CacheService.getOrSet with the correct arguments', async () => {
       jest.spyOn(gatewayService, 'createRaw').mockResolvedValue({ data: {} });
       await service.vmQueryFullResult(contract, func, caller, args, value, undefined);
-      expect(cacheService.getOrSet).toHaveBeenCalledWith(key, expect.any(Function), 0, 1);
+      expect(cacheService.getOrSet).toHaveBeenCalledWith(key, expect.any(Function), 1, 1);
     });
   });
 
