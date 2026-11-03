@@ -5,7 +5,6 @@ import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { AssetsService } from "src/common/assets/assets.service";
 import { GatewayService } from "src/common/gateway/gateway.service";
 import { IndexerService } from "src/common/indexer/indexer.service";
-import { ProtocolService } from "src/common/protocol/protocol.service";
 import { CollectionService } from "src/endpoints/collections/collection.service";
 import { CollectionFilter } from "src/endpoints/collections/entities/collection.filter";
 import { EsdtAddressService } from "src/endpoints/esdt/esdt.address.service";
@@ -18,7 +17,6 @@ describe('EsdtAddressService', () => {
   let indexerService: IndexerService;
   let cacheService: CacheService;
   let metricsService: MetricsService;
-  let protocolService: ProtocolService;
 
   beforeEach(async () => {
     const moduleRef = await Test.createTestingModule({
@@ -71,12 +69,6 @@ describe('EsdtAddressService', () => {
           },
         },
         {
-          provide: ProtocolService,
-          useValue: {
-            getSecondsRemainingUntilNextRound: jest.fn(),
-          },
-        },
-        {
           provide: NftExtendedAttributesService,
           useValue: {
             getTags: jest.fn(),
@@ -101,7 +93,6 @@ describe('EsdtAddressService', () => {
     indexerService = moduleRef.get<IndexerService>(IndexerService);
     cacheService = moduleRef.get<CacheService>(CacheService);
     metricsService = moduleRef.get<MetricsService>(MetricsService);
-    protocolService = moduleRef.get<ProtocolService>(ProtocolService);
   });
 
   it('service should be defined', () => {
@@ -222,16 +213,14 @@ describe('EsdtAddressService', () => {
 
     it('should update the cache with new ESDTs data for a given address', async () => {
       const address = 'some-address';
-      const ttl = 1000;
 
       jest.spyOn(cacheService, 'getLocal').mockReturnValueOnce(null);
       jest.spyOn(cacheService, 'setLocal');
-      jest.spyOn(protocolService, 'getSecondsRemainingUntilNextRound').mockResolvedValue(ttl);
 
       await service.getAllEsdtsForAddressFromGateway(address);
       const result = await service.getAllEsdtsForAddressFromGateway(address);
 
-      expect(cacheService.setLocal).toHaveBeenCalledWith(`address:${address}:esdts`, expect.anything(), ttl);
+      expect(cacheService.setLocal).toHaveBeenCalledWith(`address:${address}:esdts`, expect.anything(), 1);
       expect(result).toBeDefined();
     });
   });
