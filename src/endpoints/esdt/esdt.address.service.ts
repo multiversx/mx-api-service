@@ -3,7 +3,6 @@ import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { QueryPagination } from "src/common/entities/query.pagination";
 import { GatewayComponentRequest } from "src/common/gateway/entities/gateway.component.request";
 import { GatewayService } from "src/common/gateway/gateway.service";
-import { ProtocolService } from "src/common/protocol/protocol.service";
 import { TokenHelpers } from "src/utils/token.helpers";
 import { EsdtDataSource } from "./entities/esdt.data.source";
 import { EsdtService } from "./esdt.service";
@@ -16,7 +15,7 @@ import { NftCollectionWithRoles } from "../collections/entities/nft.collection.w
 import { CollectionService } from "../collections/collection.service";
 import { CollectionFilter } from "../collections/entities/collection.filter";
 import { CollectionRoles } from "../tokens/entities/collection.roles";
-import { AddressUtils, BinaryUtils, OriginLogger } from '@multiversx/sdk-nestjs-common';
+import { AddressUtils, BinaryUtils, Constants, OriginLogger } from '@multiversx/sdk-nestjs-common';
 import { ApiUtils } from "@multiversx/sdk-nestjs-http";
 import { MetricsService } from "@multiversx/sdk-nestjs-monitoring";
 import { CacheService } from "@multiversx/sdk-nestjs-cache";
@@ -38,7 +37,6 @@ export class EsdtAddressService {
     private readonly gatewayService: GatewayService,
     private readonly cachingService: CacheService,
     private readonly metricsService: MetricsService,
-    private readonly protocolService: ProtocolService,
     private readonly nftExtendedAttributesService: NftExtendedAttributesService,
     @Inject(forwardRef(() => CollectionService))
     private readonly collectionService: CollectionService,
@@ -389,9 +387,7 @@ export class EsdtAddressService {
       delete this.pendingRequestsDictionary[address];
     }
 
-    const ttl = await this.protocolService.getSecondsRemainingUntilNextRound();
-
-    this.cachingService.setLocal(`address:${address}:esdts`, esdts, ttl);
+    this.cachingService.setLocal(`address:${address}:esdts`, esdts, Constants.oneSecond());
 
     return esdts;
   }

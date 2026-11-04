@@ -1,0 +1,47 @@
+name: Docker build
+
+on:
+  pull_request:
+    branches: [main, development]
+    paths:
+      - 'Dockerfile'
+      - 'entrypoint.py'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'src/plugins.template/**'
+      - '.github/workflows/docker-build.yml'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        plugins: [default, custom]
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Add custom plugins
+        if: matrix.plugins == 'custom'
+        run: |
+          mkdir -p src/plugins
+          cp src/plugins.template/plugin.module.ts.template src/plugins/plugin.module.ts
+          echo 'export const CUSTOM_PLUGINS_MARKER = true;' >> src/plugins/plugin.module.ts
+
+      - name: Build image
+        run: docker build -t mx-api-service:test .
+
+      - name: Check build output
+        run: |
+          docker run --rm --entrypoint sh mx-api-service:test -c 'test -f /app/dist/src/main.js && test -f /app/dist/src/plugins/plugin.module.js'
+
+      - name: Check custom plugins are kept
+        if: matrix.plugins == 'custom'
+        run: |
+          docker run --rm --entrypoint sh mx-api-service:test -c 'grep -q CUSTOM_PLUGINS_MARKER /app/dist/src/plugins/plugin.module.js'
+
+      - name: Check default plugins are used
+        if: matrix.plugins == 'default'
+        run: |
+          docker run --rm --entrypoint sh mx-api-service:test -c '! grep -q CUSTOM_PLUGINS_MARKER /app/dist/src/plugins/plugin.module.js'
