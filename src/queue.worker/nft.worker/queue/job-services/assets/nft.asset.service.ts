@@ -7,6 +7,7 @@ import { ApiConfigService } from "src/common/api-config/api.config.service";
 import { NftMedia } from "src/endpoints/nfts/entities/nft.media";
 import { CacheInfo } from "src/utils/cache.info";
 import { CachingUtils } from "src/utils/caching.utils";
+import { isSafePublicUrl, publicHttpsAgent } from "src/utils/ip.utils";
 import { TokenHelpers } from "src/utils/token.helpers";
 import { AWSService } from "../thumbnails/aws.service";
 
@@ -28,13 +29,17 @@ export class NftAssetService {
 
     try {
       const mediaUrl = TokenHelpers.computeNftUri(fileUrl, this.apiConfigService.getMediaUrl() + '/nfts/asset');
+      if (!await isSafePublicUrl(mediaUrl)) {
+        this.logger.log(`Skipped uploading asset for NFT with identifier '${identifier}' from non-public url '${mediaUrl}'`);
+        return;
+      }
 
       const fileResult: any = await CachingUtils.executeOptimistic({
         cachingService: this.cachingService,
         description: `Uploading assets to S3 for NFT with identifier '${identifier}', file url '${fileUrl}'`,
         key: CacheInfo.PendingUploadAsset(cacheIdentifier).key,
         ttl: CacheInfo.PendingUploadAsset(cacheIdentifier).ttl,
-        action: async () => await this.apiService.get(mediaUrl, { responseType: 'arraybuffer', timeout: this.API_TIMEOUT_MILLISECONDS, skipRedirects: true }),
+        action: async () => await this.apiService.get(mediaUrl, { responseType: 'arraybuffer', timeout: this.API_TIMEOUT_MILLISECONDS, skipRedirects: true, httpsAgent: publicHttpsAgent }),
       });
 
       const file = fileResult.data;
@@ -56,8 +61,13 @@ export class NftAssetService {
 
       const url = TokenHelpers.computeNftUri(media.originalUrl, prefix);
 
+      const isExternalUrl = !url.startsWith(prefix);
+      if (isExternalUrl && !await isSafePublicUrl(url)) {
+        return false;
+      }
+
       // eslint-disable-next-line require-await
-      const response = await this.apiService.head(url, { skipRedirects: true }, async (error) => {
+      const response = await this.apiService.head(url, { skipRedirects: true, httpsAgent: isExternalUrl ? publicHttpsAgent : undefined }, async (error) => {
         const status = error.response?.status;
         if ([HttpStatus.FOUND, HttpStatus.NOT_FOUND, HttpStatus.FORBIDDEN].includes(status)) {
           return true;

@@ -14,6 +14,7 @@ import { TokenHelpers } from "src/utils/token.helpers";
 import { OriginLogger } from "@multiversx/sdk-nestjs-common";
 import { CacheInfo } from "src/utils/cache.info";
 import { CachingUtils } from "src/utils/caching.utils";
+import { publicHttpsAgent } from "src/utils/ip.utils";
 
 @Injectable()
 export class NftThumbnailService {
@@ -202,7 +203,7 @@ export class NftThumbnailService {
       description: `Generating thumbnail for NFT with identifier '${nftIdentifier}', url '${fileUrl}' and url hash '${urlHash}'`,
       key: CacheInfo.PendingGenerateThumbnail(cacheIdentifier).key,
       ttl: CacheInfo.PendingGenerateThumbnail(cacheIdentifier).ttl,
-      action: async () => await this.apiService.get(fileUrl, { responseType: 'arraybuffer', timeout: this.API_TIMEOUT_MILLISECONDS, skipRedirects: true }),
+      action: async () => await this.apiService.get(fileUrl, { responseType: 'arraybuffer', timeout: this.API_TIMEOUT_MILLISECONDS, skipRedirects: true, httpsAgent: publicHttpsAgent }),
     });
 
     if (!fileResult) {
