@@ -46,7 +46,7 @@ def convert_value(value_str):
             try:
                 return int(value)  # Convert to integer
             except ValueError:
-                print(f"Error: Cannot convert '{value_str}' to a number.")
+                print("Error: Cannot convert value to a number.")
                 return None
         # ARRAY
         case 'arr':   
@@ -55,9 +55,9 @@ def convert_value(value_str):
                 try:
                     return json.loads(value)  # Convert the string to a list
                 except json.JSONDecodeError:
-                    print(f"Error: Cannot decode '{value_str}' as a JSON array.")
+                    print("Error: Cannot decode value as a JSON array.")
                     return None
-            print(f"Error: '{value_str}' is not a valid array format.")
+            print("Error: Value is not a valid array format.")
             return None  # Return None if the array format is incorrect            
         # RAW
         case 'raw':
@@ -88,7 +88,7 @@ def modify_yaml_variable(data, variable_name, new_value):
                 # Parse the value as a JSON array
                 sub_data[final_key] = json.loads(new_value[4:])  # Strip 'arr:' and parse
             except json.JSONDecodeError:
-                print(f"Error decoding JSON array in value: {new_value}")
+                print(f"Error decoding JSON array for key: {final_key}")
         else:
             sub_data[final_key] = new_value
     else:
@@ -112,7 +112,7 @@ def modify_yaml_variable(data, variable_name, new_value):
         try:
             sub_data[final_key] = json.loads(new_value[4:])
         except json.JSONDecodeError:
-            print(f"Error decoding JSON array in value: {new_value}")
+            print(f"Error decoding JSON array for key: {final_key}")
             return
     else:
         sub_data[final_key] = new_value
@@ -137,7 +137,7 @@ def main():
     # Iterate over all environment variables starting with 'CFG_' for YAML
     for variable_name, new_value in os.environ.items():
         if variable_name.startswith('CFG_'):
-            print(f"Updating YAML variable: {variable_name} with value: {new_value}")
+            print(f"Updating YAML variable: {variable_name}")
             # Convert value based on the type (bool, num, raw, or default to string)
             converted_value = convert_value(new_value)
             if converted_value is not None:
@@ -146,7 +146,7 @@ def main():
     # Iterate over all environment variables starting with 'DAPP_' for JSON
     for variable_name, new_value in os.environ.items():
         if variable_name.startswith('DAPP_'):
-            print(f"Updating JSON variable: {variable_name} with value: {new_value}")
+            print(f"Updating JSON variable: {variable_name}")
             # Convert value based on the type (bool, num, raw, or default to string)
             converted_value = convert_value(new_value)
             if converted_value is not None:
