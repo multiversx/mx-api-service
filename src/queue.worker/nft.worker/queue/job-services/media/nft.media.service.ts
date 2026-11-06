@@ -16,6 +16,7 @@ import { isSafePublicUrl, publicHttpsAgent } from "src/utils/ip.utils";
 
 @Injectable()
 export class NftMediaService {
+  public static readonly MAX_FILE_SIZE = 64 * 1024 * 1024;
   private readonly logger = new OriginLogger(NftMediaService.name);
   private readonly IPFS_REQUEST_TIMEOUT = Constants.oneSecond() * 30 * 1000;
   private readonly NFT_THUMBNAIL_PREFIX: string;
@@ -170,6 +171,6 @@ export class NftMediaService {
   }
 
   private isFileSizeAccepted(fileSize: number): boolean {
-    return fileSize <= 64 * 1024 * 1024; // ~64MB
+    return fileSize <= NftMediaService.MAX_FILE_SIZE;
   }
 }
