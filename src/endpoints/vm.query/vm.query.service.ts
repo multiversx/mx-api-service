@@ -31,6 +31,10 @@ export class VmQueryService {
       key += `@${args.join('@')}`;
     }
 
+    if (value) {
+      key += `#${value}`;
+    }
+
     if (timestamp) {
       key += `{${timestamp}}`;
     }
@@ -51,6 +55,10 @@ export class VmQueryService {
 
     if (args.length > 0) {
       key += `@${args.join('@')}`;
+    }
+
+    if (value) {
+      key += `#${value}`;
     }
 
     try {
