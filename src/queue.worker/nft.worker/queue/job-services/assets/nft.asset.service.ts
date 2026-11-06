@@ -10,6 +10,7 @@ import { CachingUtils } from "src/utils/caching.utils";
 import { isSafePublicUrl, publicHttpsAgent } from "src/utils/ip.utils";
 import { TokenHelpers } from "src/utils/token.helpers";
 import { AWSService } from "../thumbnails/aws.service";
+import { NftMediaService } from "../media/nft.media.service";
 
 @Injectable()
 export class NftAssetService {
@@ -39,7 +40,7 @@ export class NftAssetService {
         description: `Uploading assets to S3 for NFT with identifier '${identifier}', file url '${fileUrl}'`,
         key: CacheInfo.PendingUploadAsset(cacheIdentifier).key,
         ttl: CacheInfo.PendingUploadAsset(cacheIdentifier).ttl,
-        action: async () => await this.apiService.get(mediaUrl, { responseType: 'arraybuffer', timeout: this.API_TIMEOUT_MILLISECONDS, skipRedirects: true, httpsAgent: publicHttpsAgent }),
+        action: async () => await this.apiService.get(mediaUrl, { responseType: 'arraybuffer', timeout: this.API_TIMEOUT_MILLISECONDS, skipRedirects: true, httpsAgent: publicHttpsAgent, maxContentLength: NftMediaService.MAX_FILE_SIZE }),
       });
 
       const file = fileResult.data;
