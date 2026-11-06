@@ -51,12 +51,25 @@ describe('VmQueryService', () => {
     const caller = 'caller';
     const args = ['arg1', 'arg2'];
     const value = 'value';
-    const key = `vm-query:${contract}:${func}:${caller}@${args.join('@')}`;
+    const key = `vm-query:${contract}:${func}:${caller}@${args.join('@')}#${value}`;
 
     it('should call CacheService.getOrSet with the correct arguments', async () => {
       jest.spyOn(gatewayService, 'createRaw').mockResolvedValue({ data: {} });
       await service.vmQueryFullResult(contract, func, caller, args, value, undefined);
       expect(cacheService.getOrSet).toHaveBeenCalledWith(key, expect.any(Function), 1, 1);
+    });
+
+    it('should use different cache keys for different values', async () => {
+      await service.vmQueryFullResult(contract, func, caller, args, '1', undefined);
+      await service.vmQueryFullResult(contract, func, caller, args, '2', undefined);
+      await service.vmQueryFullResult(contract, func, caller, args, undefined, undefined);
+
+      const keys = (cacheService.getOrSet as jest.Mock).mock.calls.map(call => call[0]);
+      expect(keys).toEqual([
+        `vm-query:${contract}:${func}:${caller}@${args.join('@')}#1`,
+        `vm-query:${contract}:${func}:${caller}@${args.join('@')}#2`,
+        `vm-query:${contract}:${func}:${caller}@${args.join('@')}`,
+      ]);
     });
   });
 
@@ -79,6 +92,12 @@ describe('VmQueryService', () => {
       jest.spyOn(cacheService, 'getOrSet').mockResolvedValue(vmQueryResult);
       const result = await service.vmQuery(contract, func, caller, args, value, false);
       expect(result).toBe(returnData);
+    });
+
+    it('should include the value in the cache key', async () => {
+      jest.spyOn(cacheService, 'getOrSet').mockResolvedValue(vmQueryResult);
+      await service.vmQuery(contract, func, caller, args, value, false);
+      expect(cacheService.getOrSet).toHaveBeenCalledWith(`vm-query:${contract}:${func}:${caller}@${args.join('@')}#${value}`, expect.any(Function), 1, 1);
     });
 
     it('should throw an error if the vm query fails', async () => {
