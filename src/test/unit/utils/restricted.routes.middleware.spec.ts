@@ -29,6 +29,47 @@ describe('RestrictedRoutesMiddleware', () => {
     expect(next).not.toHaveBeenCalled();
   });
 
+  it.each([
+    '/docs/package.json/',
+    '/DOCS/package.json',
+    '/Docs/package.json',
+    '/docs//package.json',
+    '/docs/./package.json',
+    '/docs/x/../package.json',
+    '/docs/%70ackage.json',
+  ])('should throw NotFoundException for the restricted route variant %s', (path) => {
+    apiConfigService.getRestrictedRoutes.mockReturnValue(['/docs/package.json']);
+
+    const req = { path } as Request;
+    const res = {} as Response;
+    const next = jest.fn();
+
+    expect(() => middleware.use(req, res, next)).toThrow(NotFoundException);
+    expect(next).not.toHaveBeenCalled();
+  });
+
+  it('should normalize the configured restricted routes', () => {
+    apiConfigService.getRestrictedRoutes.mockReturnValue(['/Docs/Package.json/']);
+
+    const req = { path: '/docs/package.json' } as Request;
+    const res = {} as Response;
+    const next = jest.fn();
+
+    expect(() => middleware.use(req, res, next)).toThrow(NotFoundException);
+  });
+
+  it('should call next for malformed encoded paths that are not restricted', () => {
+    apiConfigService.getRestrictedRoutes.mockReturnValue(['/blocked']);
+
+    const req = { path: '/allowed%E0%A4%A' } as Request;
+    const res = {} as Response;
+    const next = jest.fn();
+
+    middleware.use(req, res, next);
+
+    expect(next).toHaveBeenCalledTimes(1);
+  });
+
   it('should call next when route is not restricted', () => {
     apiConfigService.getRestrictedRoutes.mockReturnValue(['/blocked']);
 
