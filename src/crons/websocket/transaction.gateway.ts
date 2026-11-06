@@ -47,7 +47,7 @@ export class TransactionsGateway {
 
     TransactionFilter.validate(transactionFilter, payload.size || 25);
 
-    const filterIdentifier = JSON.stringify(payload);
+    const filterIdentifier = RoomKeyGenerator.deterministicStringify(payload);
     const roomName = `${TransactionsGateway.keyPrefix}${filterIdentifier}`;
 
     if (!client.rooms.has(roomName)) {

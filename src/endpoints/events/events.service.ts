@@ -27,7 +27,7 @@ export class EventsService {
     return await this.indexerService.getEventsCount(filter);
   }
 
-  private mapEvent(eventData: IndexerEvents): Events {
+  mapEvent(eventData: IndexerEvents): Events {
     return new Events({
       txHash: eventData._id,
       logAddress: eventData.logAddress,
