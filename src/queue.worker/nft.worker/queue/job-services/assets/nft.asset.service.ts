@@ -30,7 +30,7 @@ export class NftAssetService {
     try {
       const mediaUrl = TokenHelpers.computeNftUri(fileUrl, this.apiConfigService.getMediaUrl() + '/nfts/asset');
       if (!await isSafePublicUrl(mediaUrl)) {
-        this.logger.log(`Skipped uploading asset for NFT with identifier '${identifier}' from non-public url '${mediaUrl}'`);
+        this.logger.warn(`Refused uploading asset for NFT with identifier '${identifier}' from non-public url '${mediaUrl}'`);
         return;
       }
 
@@ -63,6 +63,7 @@ export class NftAssetService {
 
       const isExternalUrl = !url.startsWith(prefix);
       if (isExternalUrl && !await isSafePublicUrl(url)) {
+        this.logger.warn(`Refused checking uploaded asset for non-public url '${url}'`);
         return false;
       }
 

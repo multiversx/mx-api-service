@@ -1,4 +1,5 @@
 import { lookup, promises as dns } from 'dns';
+import { request } from 'https';
 import { isPublicIp, isSafePublicUrl, publicHttpsAgent } from 'src/utils/ip.utils';
 
 jest.mock('dns', () => ({
@@ -96,6 +97,25 @@ describe('IP Utils', () => {
         expect(error?.message).toContain('non-public address');
         done();
       });
+    });
+
+    it('rejects hosts without addresses', (done) => {
+      mockCallbackLookup.mockImplementationOnce((_hostname, _options, callback) => callback(null, []));
+
+      agentLookup('example.com', {}, (error: Error | null) => {
+        expect(error?.message).toContain('does not resolve to any address');
+        done();
+      });
+    });
+
+    it.each(['127.0.0.1', '::1'])('refuses connections to the non-public ip literal %s', (hostname, done) => {
+      request({ hostname, port: 443, agent: publicHttpsAgent })
+        .on('error', (error) => {
+          expect(error.message).toBe(`Refusing connection to non-public address '${hostname}'`);
+          expect(mockCallbackLookup).not.toHaveBeenCalled();
+          done();
+        })
+        .end();
     });
 
     it('resolves public addresses', (done) => {

@@ -14,7 +14,7 @@ import { TokenHelpers } from "src/utils/token.helpers";
 import { OriginLogger } from "@multiversx/sdk-nestjs-common";
 import { CacheInfo } from "src/utils/cache.info";
 import { CachingUtils } from "src/utils/caching.utils";
-import { publicHttpsAgent } from "src/utils/ip.utils";
+import { isSafePublicUrl, publicHttpsAgent } from "src/utils/ip.utils";
 
 @Injectable()
 export class NftThumbnailService {
@@ -193,6 +193,11 @@ export class NftThumbnailService {
 
     if (!fileUrl || !fileUrl.startsWith('https://')) {
       this.logger.log(`NFT with identifier '${nftIdentifier}' and url '${fileUrl}' doesn't exist or is invalid`);
+      return GenerateThumbnailResult.noUrl;
+    }
+
+    if (!await isSafePublicUrl(fileUrl)) {
+      this.logger.warn(`Refused generating thumbnail for NFT with identifier '${nftIdentifier}' from non-public url '${fileUrl}'`);
       return GenerateThumbnailResult.noUrl;
     }
 

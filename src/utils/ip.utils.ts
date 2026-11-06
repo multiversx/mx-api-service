@@ -1,4 +1,4 @@
-import { lookup, promises as dns } from 'dns';
+import { lookup, LookupAddress, promises as dns } from 'dns';
 import { Agent } from 'https';
 import { BlockList, isIP, LookupFunction } from 'net';
 
@@ -51,6 +51,10 @@ export function isPublicIp(address: string): boolean {
   return !nonPublicAddresses.check(address, family === 4 ? 'ipv4' : 'ipv6');
 }
 
+function hasOnlyPublicAddresses(addresses: LookupAddress[]): boolean {
+  return addresses.length > 0 && addresses.every(item => isPublicIp(item.address));
+}
+
 const publicAddressLookup: LookupFunction = (hostname, options, callback) => {
   lookup(hostname, { ...options, all: true }, (error, addresses) => {
     if (error) {
@@ -58,9 +62,9 @@ const publicAddressLookup: LookupFunction = (hostname, options, callback) => {
       return;
     }
 
-    const nonPublicAddress = addresses.find(item => !isPublicIp(item.address));
-    if (addresses.length === 0 || nonPublicAddress) {
-      callback(new Error(`Host '${hostname}' resolves to non-public address '${nonPublicAddress?.address}'`), '');
+    if (!hasOnlyPublicAddresses(addresses)) {
+      const reason = addresses.length === 0 ? 'does not resolve to any address' : 'resolves to a non-public address';
+      callback(new Error(`Host '${hostname}' ${reason}`), '');
       return;
     }
 
@@ -73,7 +77,18 @@ const publicAddressLookup: LookupFunction = (hostname, options, callback) => {
   });
 };
 
-export const publicHttpsAgent = new Agent({ lookup: publicAddressLookup });
+class PublicHttpsAgent extends Agent {
+  createConnection(options: any, callback: any) {
+    if (isIP(options.host) && !isPublicIp(options.host)) {
+      callback(new Error(`Refusing connection to non-public address '${options.host}'`));
+      return undefined;
+    }
+
+    return super.createConnection(options, callback);
+  }
+}
+
+export const publicHttpsAgent = new PublicHttpsAgent({ lookup: publicAddressLookup });
 
 export async function isSafePublicUrl(urlString: string): Promise<boolean> {
   try {
@@ -85,7 +100,7 @@ export async function isSafePublicUrl(urlString: string): Promise<boolean> {
 
     const addresses = await dns.lookup(parsedUrl.hostname, { all: true });
 
-    return addresses.length > 0 && addresses.every(item => isPublicIp(item.address));
+    return hasOnlyPublicAddresses(addresses);
   } catch {
     return false;
   }

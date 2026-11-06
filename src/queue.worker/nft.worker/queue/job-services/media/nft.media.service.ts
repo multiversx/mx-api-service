@@ -141,7 +141,12 @@ export class NftMediaService {
 
   private async getFilePropertiesFromHeaders(uri: string, prefix: string): Promise<{ contentType: string, contentLength: number } | null> {
     const url = this.getUrl(uri, prefix);
-    if (url.endsWith('.json') || await isSafePublicUrl(url) === false) {
+    if (url.endsWith('.json')) {
+      return null;
+    }
+
+    if (!await isSafePublicUrl(url)) {
+      this.logger.warn(`Refused fetching file properties from non-public url '${url}'`);
       return null;
     }
 
