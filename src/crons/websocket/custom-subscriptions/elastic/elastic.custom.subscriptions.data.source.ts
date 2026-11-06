@@ -1,7 +1,7 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { OriginLogger } from '@multiversx/sdk-nestjs-common';
 import { CacheService } from '@multiversx/sdk-nestjs-cache';
-import { ElasticQuery, ElasticService, ElasticSortOrder, QueryType } from '@multiversx/sdk-nestjs-elastic';
+import { ElasticQuery, ElasticService, ElasticSortOrder, QueryType, RangeGreaterThanOrEqual } from '@multiversx/sdk-nestjs-elastic';
 import { QueryPagination } from 'src/common/entities/query.pagination';
 import { GatewayService } from 'src/common/gateway/gateway.service';
 import { Operation } from 'src/common/indexer/entities';
@@ -69,7 +69,7 @@ export class ElasticCustomSubscriptionsDataSource implements OnModuleInit {
       CacheInfo.WsTimestampMsToProcess().ttl,
     );
 
-    await this.sleepUntil(roundToProcessTimestampMs + stats.refreshRate, stats.refreshRate);
+    await this.sleepUntil(roundToProcessTimestampMs, stats.refreshRate);
 
     const pollingDelay = stats.refreshRate / 10;
     const isRoundAvailable = await this.pollUntil(async () => await this.isElasticDataAvailableForTimestampMs(roundToProcessTimestampMs, stats), pollingDelay, ElasticCustomSubscriptionsDataSource.pollingMaxAttempts);
@@ -176,14 +176,14 @@ export class ElasticCustomSubscriptionsDataSource implements OnModuleInit {
   }
 
   private async isElasticDataAvailableForTimestampMs(timestampMs: number, networkStats: Stats) {
-    const nextRoundTimestampMs = timestampMs + networkStats.refreshRate;
-
-    const rounds = await this.elasticService.getCount(
-      'rounds',
-      ElasticQuery.create().withMustCondition(QueryType.Match('timestampMs', nextRoundTimestampMs))
+    const indexedShards = await this.elasticService.getCount(
+      'values',
+      ElasticQuery.create()
+        .withMustCondition(QueryType.Prefix('key', 'shard_'))
+        .withRangeFilter('timestampMs', new RangeGreaterThanOrEqual(timestampMs))
     );
 
-    return rounds === networkStats.shards + 1; // +1 for metachain
+    return indexedShards === networkStats.shards + 1; // +1 for metachain
   }
 
   private async pollUntil(conditionFn: () => Promise<boolean>, intervalMs: number, maxAttempts: number): Promise<boolean> {
