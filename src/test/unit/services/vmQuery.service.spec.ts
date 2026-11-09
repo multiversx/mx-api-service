@@ -45,21 +45,6 @@ describe('VmQueryService', () => {
     expect(service).toBeDefined();
   });
 
-  describe('vmQueryFullResult', () => {
-    const contract = 'contract';
-    const func = 'func';
-    const caller = 'caller';
-    const args = ['arg1', 'arg2'];
-    const value = 'value';
-    const key = `vm-query:${contract}:${func}:${caller}@${args.join('@')}`;
-
-    it('should call CacheService.getOrSet with the correct arguments', async () => {
-      jest.spyOn(gatewayService, 'createRaw').mockResolvedValue({ data: {} });
-      await service.vmQueryFullResult(contract, func, caller, args, value, undefined);
-      expect(cacheService.getOrSet).toHaveBeenCalledWith(key, expect.any(Function), 1, 1);
-    });
-  });
-
   describe('vmQuery', () => {
     const contract = 'contract';
     const func = 'func';

@@ -214,10 +214,10 @@ export class GatewayProxyController {
   @UseInterceptors(DeepHistoryInterceptor)
   async queryLegacy(
     @Body() query: VmQueryRequest,
-    @Query('timestamp', ParseIntPipe) timestamp: number | undefined,
+    @Query('timestamp', ParseIntPipe) _timestamp: number | undefined,
   ) {
     try {
-      return await this.vmQueryService.vmQueryFullResult(query.scAddress, query.funcName, query.caller, query.args, query.value, timestamp);
+      return await this.vmQueryService.vmQueryRaw(query.scAddress, query.funcName, query.caller, query.args, query.value);
     } catch (error: any) {
       throw new BadRequestException(error.response.data);
     }
