@@ -21,32 +21,6 @@ export class VmQueryService {
     private readonly settingsService: SettingsService,
   ) { }
 
-  async vmQueryFullResult(contract: string, func: string, caller: string | undefined = undefined, args: string[] = [], value: string | undefined = undefined, timestamp: number | undefined): Promise<any> {
-    let key = `vm-query:${contract}:${func}`;
-    if (caller) {
-      key += `:${caller}`;
-    }
-
-    if (args.length > 0) {
-      key += `@${args.join('@')}`;
-    }
-
-    if (value) {
-      key += `#${value}`;
-    }
-
-    if (timestamp) {
-      key += `{${timestamp}}`;
-    }
-
-    return await this.cachingService.getOrSet(
-      key,
-      async () => await this.vmQueryRaw(contract, func, caller, args, value),
-      Constants.oneSecond(),
-      Constants.oneSecond(),
-    );
-  }
-
   async vmQuery(contract: string, func: string, caller: string | undefined = undefined, args: string[] = [], value: string | undefined = undefined, skipCache: boolean = false): Promise<string[]> {
     let key = `vm-query:${contract}:${func}`;
     if (caller) {
@@ -55,10 +29,6 @@ export class VmQueryService {
 
     if (args.length > 0) {
       key += `@${args.join('@')}`;
-    }
-
-    if (value) {
-      key += `#${value}`;
     }
 
     try {

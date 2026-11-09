@@ -18,11 +18,11 @@ export class VmQueryController {
   @UseInterceptors(DeepHistoryInterceptor)
   async query(
     @Body() query: VmQueryRequest,
-    @Query('timestamp', ParseIntPipe) timestamp: number | undefined,
+    @Query('timestamp', ParseIntPipe) _timestamp: number | undefined,
   ) {
     let result: any;
     try {
-      result = await this.vmQueryService.vmQueryFullResult(query.scAddress, query.funcName, query.caller, query.args, query.value, timestamp);
+      result = await this.vmQueryService.vmQueryRaw(query.scAddress, query.funcName, query.caller, query.args, query.value);
     } catch (error: any) {
       throw new BadRequestException({
         statusCode: HttpStatus.BAD_REQUEST,
