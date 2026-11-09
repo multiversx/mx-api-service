@@ -195,6 +195,7 @@ inflation:
   - 719203
 stakingV5Inflation:
   - 1262802
+  - 1371031
 nftProcess:
   parallelism: 1
   maxRetries: 3
