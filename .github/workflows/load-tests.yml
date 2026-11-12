@@ -16,7 +16,7 @@ jobs:
     - name: Set up Node.js
       uses: actions/setup-node@v6
       with:
-        node-version: '24.22'
+        node-version: '24.x'
 
     - name: Install dependencies
       run: npm ci
@@ -77,7 +77,7 @@ jobs:
     - name: Set up Node.js
       uses: actions/setup-node@v6
       with:
-        node-version: '24.22'
+        node-version: '24.x'
 
     - name: Install dependencies
       run: npm ci
@@ -142,7 +142,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: '24.22'
+          node-version: '24.x'
 
       - name: Compare test results
         run: |
