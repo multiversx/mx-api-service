@@ -1,28 +1,20 @@
 import { WebSocketGateway, WebSocketServer, SubscribeMessage, ConnectedSocket, MessageBody } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { TransactionService } from '../../endpoints/transactions/transaction.service';
-import { TransactionFilter } from '../../endpoints/transactions/entities/transaction.filter';
-import { QueryPagination } from 'src/common/entities/query.pagination';
 import { WsValidationPipe } from 'src/utils/ws-validation.pipe';
 import { WebsocketExceptionsFilter } from 'src/utils/ws-exceptions.filter';
 import { UseFilters, UseInterceptors } from '@nestjs/common';
-import { OriginLogger } from '@multiversx/sdk-nestjs-common';
 import { TransactionCustomSubscribePayload } from 'src/endpoints/transactions/entities/dtos/transaction.custom.subscribe';
 import { RoomKeyGenerator } from './room.key.generator';
 import { Transaction } from 'src/endpoints/transactions/entities/transaction';
+import { TransactionDetailed } from 'src/endpoints/transactions/entities/transaction.detailed';
 import { LockingGuardInterceptor } from 'src/utils/locking.guard.interceptor';
 
 @UseFilters(WebsocketExceptionsFilter)
 @WebSocketGateway({ cors: { origin: '*' }, path: '/ws/subscription' })
 export class TransactionsCustomGateway {
-  private readonly logger = new OriginLogger(TransactionsCustomGateway.name);
   static keyPrefix = 'custom-tx-';
   @WebSocketServer()
   server!: Server;
-
-  constructor(
-    private readonly transactionService: TransactionService,
-  ) { }
 
   @UseInterceptors(LockingGuardInterceptor)
   @SubscribeMessage('subscribeCustomTransactions')
@@ -52,50 +44,31 @@ export class TransactionsCustomGateway {
     return { status: 'unsubscribed' };
   }
 
-  async pushTransactionsForTimestampMs(timestampMs: number): Promise<void> {
-    try {
-      const allTransactions: Transaction[] = [];
-      const size = 10000;
-      const filter = new TransactionFilter({ before: timestampMs, after: timestampMs });
+  matchRooms(transactions: TransactionDetailed[]): Map<string, TransactionDetailed[]> {
+    const txFilteredForBroadcast: Map<string, TransactionDetailed[]> = new Map();
+    for (const transaction of transactions) {
+      const roomKeys = RoomKeyGenerator.generate(
+        TransactionsCustomGateway.keyPrefix,
+        transaction,
+        TransactionCustomSubscribePayload,
+      );
 
-      let batch = await this.transactionService.getTransactions(filter, new QueryPagination({ size }));
-      allTransactions.push(...batch);
-
-      while (batch.length === size) {
-        const searchAfter = batch[batch.length - 1].searchAfter;
-        if (searchAfter == null) {
-          break;
-        }
-
-        batch = await this.transactionService.getTransactions(filter, new QueryPagination({ size, searchAfter }));
-
-        allTransactions.push(...batch);
-      }
-
-      const txFilteredForBroadcast: Map<string, Transaction[]> = new Map();
-      for (const transaction of allTransactions) {
-        const roomKeys = RoomKeyGenerator.generate(
-          TransactionsCustomGateway.keyPrefix,
-          transaction,
-          TransactionCustomSubscribePayload,
-        );
-
-        for (const roomKey of roomKeys) {
-          if (this.server.sockets.adapter.rooms.has(roomKey)) {
-            if (!txFilteredForBroadcast.has(roomKey)) {
-              txFilteredForBroadcast.set(roomKey, []);
-            }
-            txFilteredForBroadcast.get(roomKey)!.push(transaction);
+      for (const roomKey of roomKeys) {
+        if (this.server.sockets.adapter.rooms.has(roomKey)) {
+          if (!txFilteredForBroadcast.has(roomKey)) {
+            txFilteredForBroadcast.set(roomKey, []);
           }
+          txFilteredForBroadcast.get(roomKey)!.push(transaction);
         }
       }
-
-      for (const [roomName] of txFilteredForBroadcast) {
-        this.server.to(roomName).emit("customTransactionUpdate", { transactions: txFilteredForBroadcast.get(roomName), timestampMs });
-      }
-    } catch (error) {
-      this.logger.error(error);
     }
+
+    return txFilteredForBroadcast;
   }
 
+  broadcast(timestampMs: number, txFilteredForBroadcast: Map<string, Transaction[]>): void {
+    for (const [roomName, transactions] of txFilteredForBroadcast) {
+      this.server.to(roomName).emit("customTransactionUpdate", { transactions, timestampMs });
+    }
+  }
 }

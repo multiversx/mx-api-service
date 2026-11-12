@@ -19,6 +19,9 @@ export class TransactionQueryOptions {
   withActionTransferValue?: boolean;
   withTxsOrder?: boolean;
 
+  // used only internal
+  withCanBeIgnoredFlag?: boolean = false;
+
   static applyDefaultOptions(size: number, options: TransactionQueryOptions): TransactionQueryOptions {
     if (size <= TransactionQueryOptions.SCAM_INFO_MAX_SIZE) {
       options.withScamInfo = true;
