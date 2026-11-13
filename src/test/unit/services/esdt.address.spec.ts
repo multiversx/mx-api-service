@@ -48,6 +48,7 @@ describe('EsdtAddressService', () => {
           provide: GatewayService,
           useValue: {
             get: jest.fn(),
+            getPaged: jest.fn(),
             getAddressEsdtRoles: jest.fn(),
           },
         },

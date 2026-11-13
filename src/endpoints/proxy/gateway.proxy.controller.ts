@@ -47,9 +47,13 @@ export class GatewayProxyController {
   }
 
   @Get('/address/:address/keys')
-  async getAddressKeys(@Param('address', ParseAddressPipe) address: string) {
+  async getAddressKeys(
+    @Param('address', ParseAddressPipe) address: string,
+    @Query('numKeys', ParseIntPipe) numKeys?: number,
+    @Query('iteratorState') iteratorState?: string,
+  ) {
     try {
-      return await this.gatewayGet(`address/${address}/keys`, GatewayComponentRequest.addressKeys);
+      return await this.gatewayGet(`address/${address}/keys`, GatewayComponentRequest.addressKeys, this.getTriePageParams(numKeys, iteratorState));
     } catch (error: any) {
       this.logger.error(`Error fetching address keys for address ${address}: ${error.message}`);
       throw new BadRequestException(error.response?.data || 'An error occurred while fetching address keys');
@@ -79,9 +83,13 @@ export class GatewayProxyController {
   }
 
   @Get('/address/:address/esdt')
-  async getAddressEsdt(@Param('address', ParseAddressPipe) address: string) {
+  async getAddressEsdt(
+    @Param('address', ParseAddressPipe) address: string,
+    @Query('numKeys', ParseIntPipe) numKeys?: number,
+    @Query('iteratorState') iteratorState?: string,
+  ) {
     // eslint-disable-next-line require-await
-    return await this.gatewayGet(`address/${address}/esdt`, GatewayComponentRequest.addressDetails, undefined, async (error) => {
+    return await this.gatewayGet(`address/${address}/esdt`, GatewayComponentRequest.addressDetails, this.getTriePageParams(numKeys, iteratorState), async (error) => {
       const message = error.response?.data?.error;
       if (message && message.includes('account was not found')) {
         throw error;
@@ -375,6 +383,17 @@ export class GatewayProxyController {
   @Get('/network/gas-configs')
   async getGasConfigs() {
     return await this.gatewayGet('network/gas-configs', GatewayComponentRequest.gasConfigs);
+  }
+
+  private getTriePageParams(numKeys?: number, iteratorState?: string): Record<string, string | number | undefined> | undefined {
+    if (numKeys === undefined && iteratorState === undefined) {
+      return undefined;
+    }
+
+    return {
+      numKeys,
+      iteratorState: iteratorState !== undefined ? encodeURIComponent(iteratorState) : undefined,
+    };
   }
 
   private async gatewayGet(url: string, component: GatewayComponentRequest, params: any = undefined, errorHandler?: (error: any) => Promise<boolean>) {
