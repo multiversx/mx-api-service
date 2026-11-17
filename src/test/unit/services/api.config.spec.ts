@@ -1698,7 +1698,7 @@ describe('API Config', () => {
         .spyOn(ConfigService.prototype, "get")
         .mockImplementation(jest.fn(() => undefined));
 
-      expect(() => apiConfigService.getWebsocketSubscriptionRabbitMqUrl()).toThrowError('No features.websocketSubscription.dataSource.url present');
+      expect(() => apiConfigService.getWebsocketSubscriptionRabbitMqUrl()).toThrowError('No features.websocketSubscription.dataSource.rabbitmq.url present');
     });
   });
 

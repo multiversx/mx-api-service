@@ -1031,20 +1031,20 @@ export class ApiConfigService {
   }
 
   getWebsocketSubscriptionRabbitMqUrl(): string {
-    const url = this.configService.get<string>('features.websocketSubscription.dataSource.url');
+    const url = this.configService.get<string>('features.websocketSubscription.dataSource.rabbitmq.url');
     if (!url) {
-      throw new Error('No features.websocketSubscription.dataSource.url present');
+      throw new Error('No features.websocketSubscription.dataSource.rabbitmq.url present');
     }
 
     return url;
   }
 
   getWebsocketSubscriptionRabbitMqExchange(): string {
-    return this.configService.get<string>('features.websocketSubscription.dataSource.exchange') ?? 'indexer_blocks';
+    return this.configService.get<string>('features.websocketSubscription.dataSource.rabbitmq.exchange') ?? 'indexer_blocks';
   }
 
   getWebsocketSubscriptionRabbitMqQueue(): string {
-    return this.configService.get<string>('features.websocketSubscription.dataSource.queue') ?? 'api-websocket-custom-subscriptions';
+    return this.configService.get<string>('features.websocketSubscription.dataSource.rabbitmq.queue') ?? 'api-websocket-custom-subscriptions';
   }
 
   getWebsocketMaxSubscriptionsPerInstance(): number {

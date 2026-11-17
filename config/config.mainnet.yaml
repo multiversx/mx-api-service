@@ -29,6 +29,10 @@ features:
     compressionThreshold: 1024
     dataSource:
       type: 'elastic'
+      rabbitmq:
+        url: 'amqp://guest:guest@127.0.0.1:5672'
+        exchange: 'indexer_blocks'
+        queue: 'api-websocket-custom-subscriptions'
   eventsNotifier:
     enabled: false
     port: 5674
