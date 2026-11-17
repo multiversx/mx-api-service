@@ -23,6 +23,7 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
 import { PersistenceModule } from 'src/common/persistence/persistence.module';
 import { CustomSubscriptionsBroadcaster } from './custom-subscriptions/custom.subscriptions.broadcaster';
 import { ElasticCustomSubscriptionsDataSource } from './custom-subscriptions/elastic/elastic.custom.subscriptions.data.source';
+import { RabbitMqCustomSubscriptionsDataSource } from './custom-subscriptions/rabbitmq/rabbitmq.custom.subscriptions.data.source';
 
 @Module({
   imports: [
@@ -59,6 +60,11 @@ export class WebsocketSubscriptionModule {
         return {
           module: WebsocketSubscriptionModule,
           providers: [ElasticCustomSubscriptionsDataSource],
+        };
+      case WebsocketSubscriptionDataSource.rabbitmq:
+        return {
+          module: WebsocketSubscriptionModule,
+          providers: [RabbitMqCustomSubscriptionsDataSource],
         };
     }
   }

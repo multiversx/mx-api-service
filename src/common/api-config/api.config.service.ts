@@ -1030,6 +1030,19 @@ export class ApiConfigService {
     return dataSource;
   }
 
+  getWebsocketSubscriptionRabbitMqUrl(): string {
+    const url = this.configService.get<string>('features.websocketSubscription.rabbitmq.url');
+    if (!url) {
+      throw new Error('No features.websocketSubscription.rabbitmq.url present');
+    }
+
+    return url;
+  }
+
+  getWebsocketSubscriptionRabbitMqExchange(): string {
+    return this.configService.get<string>('features.websocketSubscription.rabbitmq.exchange') ?? 'indexer_blocks';
+  }
+
   getWebsocketMaxSubscriptionsPerInstance(): number {
     return this.configService.get<number>('features.websocketSubscription.maxSubscriptionsPerInstance') ?? 10_000;
   }

@@ -28,6 +28,9 @@ features:
     broadcastIntervalMs: 600
     compressionThreshold: 1024
     dataSource: 'elastic'
+    rabbitmq:
+      url: 'amqp://guest:guest@127.0.0.1:5672'
+      exchange: 'indexer_blocks'
   eventsNotifier:
     enabled: false
     port: 5674
