@@ -1680,7 +1680,35 @@ describe('API Config', () => {
         .spyOn(ConfigService.prototype, "get")
         .mockImplementation(jest.fn(() => 'kafka'));
 
-      expect(() => apiConfigService.getWebsocketSubscriptionDataSource()).toThrowError("Invalid features.websocketSubscription.dataSource 'kafka'");
+      expect(() => apiConfigService.getWebsocketSubscriptionDataSource()).toThrowError("Invalid features.websocketSubscription.dataSource.type 'kafka'");
+    });
+  });
+
+  describe('getWebsocketSubscriptionRabbitMqUrl', () => {
+    it("should return the rabbitmq url of the data source", () => {
+      jest
+        .spyOn(ConfigService.prototype, "get")
+        .mockImplementation(jest.fn(() => 'amqp://guest:guest@127.0.0.1:5672'));
+
+      expect(apiConfigService.getWebsocketSubscriptionRabbitMqUrl()).toEqual('amqp://guest:guest@127.0.0.1:5672');
+    });
+
+    it("should throw error when the rabbitmq url is missing", () => {
+      jest
+        .spyOn(ConfigService.prototype, "get")
+        .mockImplementation(jest.fn(() => undefined));
+
+      expect(() => apiConfigService.getWebsocketSubscriptionRabbitMqUrl()).toThrowError('No features.websocketSubscription.dataSource.url present');
+    });
+  });
+
+  describe('getWebsocketSubscriptionRabbitMqExchange', () => {
+    it("should default to indexer_blocks when no exchange is configured", () => {
+      jest
+        .spyOn(ConfigService.prototype, "get")
+        .mockImplementation(jest.fn(() => undefined));
+
+      expect(apiConfigService.getWebsocketSubscriptionRabbitMqExchange()).toEqual('indexer_blocks');
     });
   });
 });
