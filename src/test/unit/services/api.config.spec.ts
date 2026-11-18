@@ -1711,14 +1711,4 @@ describe('API Config', () => {
       expect(apiConfigService.getWebsocketSubscriptionRabbitMqExchange()).toEqual('indexer_blocks');
     });
   });
-
-  describe('getWebsocketSubscriptionRabbitMqQueue', () => {
-    it("should default to api-websocket-custom-subscriptions when no queue is configured", () => {
-      jest
-        .spyOn(ConfigService.prototype, "get")
-        .mockImplementation(jest.fn(() => undefined));
-
-      expect(apiConfigService.getWebsocketSubscriptionRabbitMqQueue()).toEqual('api-websocket-custom-subscriptions');
-    });
-  });
 });

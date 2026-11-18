@@ -1043,10 +1043,6 @@ export class ApiConfigService {
     return this.configService.get<string>('features.websocketSubscription.dataSource.rabbitmq.exchange') ?? 'indexer_blocks';
   }
 
-  getWebsocketSubscriptionRabbitMqQueue(): string {
-    return this.configService.get<string>('features.websocketSubscription.dataSource.rabbitmq.queue') ?? 'api-websocket-custom-subscriptions';
-  }
-
   getWebsocketMaxSubscriptionsPerInstance(): number {
     return this.configService.get<number>('features.websocketSubscription.maxSubscriptionsPerInstance') ?? 10_000;
   }

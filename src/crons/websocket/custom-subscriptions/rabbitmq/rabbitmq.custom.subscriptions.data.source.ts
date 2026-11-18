@@ -1,5 +1,4 @@
 import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
-import { hostname } from 'os';
 import { OriginLogger } from '@multiversx/sdk-nestjs-common';
 import { AmqpConnection } from '@golevelup/nestjs-rabbitmq';
 import { ApiConfigService } from 'src/common/api-config/api.config.service';
@@ -9,8 +8,6 @@ import { IndexerBlock, IndexerRound } from '../entities';
 @Injectable()
 export class RabbitMqCustomSubscriptionsDataSource implements OnModuleInit, OnModuleDestroy {
   private readonly logger = new OriginLogger(RabbitMqCustomSubscriptionsDataSource.name);
-
-  private static readonly queueExpiresMs = 60_000;
 
   private connection?: AmqpConnection;
 
@@ -32,12 +29,10 @@ export class RabbitMqCustomSubscriptionsDataSource implements OnModuleInit, OnMo
       {
         exchange: this.apiConfigService.getWebsocketSubscriptionRabbitMqExchange(),
         routingKey: '',
-        queue: `${this.apiConfigService.getWebsocketSubscriptionRabbitMqQueue()}-${hostname()}`,
         queueOptions: {
-          durable: true,
-          arguments: {
-            'x-expires': RabbitMqCustomSubscriptionsDataSource.queueExpiresMs,
-          },
+          exclusive: true,
+          autoDelete: true,
+          durable: false,
         },
       },
       'consumeBlock',
