@@ -3,7 +3,6 @@ import { OriginLogger } from '@multiversx/sdk-nestjs-common';
 import { AmqpConnection } from '@golevelup/nestjs-rabbitmq';
 import { ApiConfigService } from 'src/common/api-config/api.config.service';
 import { CustomSubscriptionsBroadcaster } from '../custom.subscriptions.broadcaster';
-import { ElasticCustomSubscriptionsDataSource } from '../elastic/elastic.custom.subscriptions.data.source';
 import { IndexerBlock, IndexerRound } from '../entities';
 
 @Injectable()
@@ -11,20 +10,13 @@ export class RabbitMqCustomSubscriptionsDataSource implements OnModuleInit, OnMo
   private readonly logger = new OriginLogger(RabbitMqCustomSubscriptionsDataSource.name);
 
   private static readonly exchangeCheckIntervalMs = 5000;
-  private static readonly messagesFlowCheckIntervalMs = 1000;
 
   private connection?: AmqpConnection;
   private isSubscribed = false;
-  private isFallbackActive = false;
-  private lastMessageAtMs = Date.now();
-  private lastTimestampMs?: number;
-  private minTimestampMs = 0;
   private exchangeCheckTimeout?: NodeJS.Timeout;
-  private messagesFlowCheckInterval?: NodeJS.Timeout;
 
   constructor(
     private readonly broadcaster: CustomSubscriptionsBroadcaster,
-    private readonly elasticDataSource: ElasticCustomSubscriptionsDataSource,
     private readonly apiConfigService: ApiConfigService,
   ) { }
 
@@ -42,14 +34,10 @@ export class RabbitMqCustomSubscriptionsDataSource implements OnModuleInit, OnMo
     if (this.connection.connected) {
       await this.subscribeWhenExchangeExists();
     }
-
-    this.lastMessageAtMs = Date.now();
-    this.messagesFlowCheckInterval = setInterval(() => this.checkMessagesFlow(), RabbitMqCustomSubscriptionsDataSource.messagesFlowCheckIntervalMs);
   }
 
   async onModuleDestroy(): Promise<void> {
     clearTimeout(this.exchangeCheckTimeout);
-    clearInterval(this.messagesFlowCheckInterval);
     await this.connection?.close();
   }
 
@@ -103,34 +91,14 @@ export class RabbitMqCustomSubscriptionsDataSource implements OnModuleInit, OnMo
     }
   }
 
-  checkMessagesFlow(): void {
-    const fallbackAfterMs = this.apiConfigService.getWebsocketSubscriptionRabbitMqFallbackAfterMs();
-    if (this.isFallbackActive || Date.now() - this.lastMessageAtMs < fallbackAfterMs) {
-      return;
-    }
-
-    this.isFallbackActive = true;
-    this.logger.warn(`No blocks received from RabbitMQ for ${fallbackAfterMs}ms, falling back to elastic`);
-
-    this.elasticDataSource.start(this.lastTimestampMs);
-  }
-
   async consumeBlock(block: IndexerBlock | undefined): Promise<void> {
-    this.lastMessageAtMs = Date.now();
-
     try {
-      const round = this.toIndexerRound(block);
-      if (!round) {
+      if (!this.broadcaster.hasSubscriptions()) {
         return;
       }
 
-      if (this.isFallbackActive) {
-        this.stopFallback(round.timestampMs);
-      }
-
-      this.lastTimestampMs = Math.max(this.lastTimestampMs ?? 0, round.timestampMs);
-
-      if (round.timestampMs < this.minTimestampMs || !this.broadcaster.hasSubscriptions()) {
+      const round = this.toIndexerRound(block);
+      if (!round) {
         return;
       }
 
@@ -139,14 +107,6 @@ export class RabbitMqCustomSubscriptionsDataSource implements OnModuleInit, OnMo
       this.logger.error(`An unhandled error occurred when consuming the block '${block?.hash}' from shard '${block?.shardID}'`);
       this.logger.error(error);
     }
-  }
-
-  private stopFallback(timestampMs: number): void {
-    this.minTimestampMs = Math.max(timestampMs, this.elasticDataSource.getTimestampMsToProcess() ?? 0);
-    this.elasticDataSource.stopAt(this.minTimestampMs);
-    this.isFallbackActive = false;
-
-    this.logger.log(`Blocks are received again from RabbitMQ, elastic stops at timestamp '${this.minTimestampMs}'`);
   }
 
   private toIndexerRound(block: IndexerBlock | undefined): IndexerRound | undefined {

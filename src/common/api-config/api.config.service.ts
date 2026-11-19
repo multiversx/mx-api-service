@@ -1043,10 +1043,6 @@ export class ApiConfigService {
     return this.configService.get<string>('features.websocketSubscription.dataSource.rabbitmq.exchange') ?? 'indexer_blocks';
   }
 
-  getWebsocketSubscriptionRabbitMqFallbackAfterMs(): number {
-    return this.configService.get<number>('features.websocketSubscription.dataSource.rabbitmq.fallbackAfterMs') ?? 10_000;
-  }
-
   getWebsocketMaxSubscriptionsPerInstance(): number {
     return this.configService.get<number>('features.websocketSubscription.maxSubscriptionsPerInstance') ?? 10_000;
   }

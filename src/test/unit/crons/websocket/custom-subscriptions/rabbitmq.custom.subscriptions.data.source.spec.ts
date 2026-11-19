@@ -2,23 +2,18 @@ import { IndexerRound } from 'src/crons/websocket/custom-subscriptions/entities'
 import { RabbitMqCustomSubscriptionsDataSource } from 'src/crons/websocket/custom-subscriptions/rabbitmq/rabbitmq.custom.subscriptions.data.source';
 
 describe('RabbitMqCustomSubscriptionsDataSource', () => {
-  const fallbackAfterMs = 10_000;
-
   let broadcaster: { hasSubscriptions: jest.Mock; broadcast: jest.Mock };
-  let elasticDataSource: { start: jest.Mock; stopAt: jest.Mock; getTimestampMsToProcess: jest.Mock };
   let dataSource: RabbitMqCustomSubscriptionsDataSource;
 
   beforeEach(() => {
     jest.useFakeTimers({ now: 1_000_000 });
 
     broadcaster = { hasSubscriptions: jest.fn().mockReturnValue(true), broadcast: jest.fn() };
-    elasticDataSource = { start: jest.fn(), stopAt: jest.fn(), getTimestampMsToProcess: jest.fn() };
     const apiConfigService = {
       getWebsocketSubscriptionRabbitMqExchange: () => 'indexer_blocks',
-      getWebsocketSubscriptionRabbitMqFallbackAfterMs: () => fallbackAfterMs,
     };
 
-    dataSource = new RabbitMqCustomSubscriptionsDataSource(broadcaster as any, elasticDataSource as any, apiConfigService as any);
+    dataSource = new RabbitMqCustomSubscriptionsDataSource(broadcaster as any, apiConfigService as any);
   });
 
   afterEach(() => {
@@ -80,62 +75,6 @@ describe('RabbitMqCustomSubscriptionsDataSource', () => {
       broadcaster.broadcast.mockRejectedValue(new Error('broadcast failed'));
 
       await expect(dataSource.consumeBlock(block([{ hash: 'a', timestampMs: 1000 }], []))).resolves.toBeUndefined();
-    });
-  });
-
-  describe('fallback to elastic', () => {
-    it('does not fall back while blocks are received', async () => {
-      jest.advanceTimersByTime(fallbackAfterMs - 1);
-      await dataSource.consumeBlock(block([], []));
-      jest.advanceTimersByTime(fallbackAfterMs - 1);
-
-      dataSource.checkMessagesFlow();
-
-      expect(elasticDataSource.start).not.toHaveBeenCalled();
-    });
-
-    it('starts elastic from the last received timestamp when no block is received for a while', async () => {
-      await dataSource.consumeBlock(block([{ hash: 'a', timestampMs: 1000 }], []));
-      jest.advanceTimersByTime(fallbackAfterMs);
-
-      dataSource.checkMessagesFlow();
-      dataSource.checkMessagesFlow();
-
-      expect(elasticDataSource.start).toHaveBeenCalledTimes(1);
-      expect(elasticDataSource.start).toHaveBeenCalledWith(1000);
-    });
-
-    it('starts elastic from the latest round when no block was ever received', () => {
-      jest.advanceTimersByTime(fallbackAfterMs);
-
-      dataSource.checkMessagesFlow();
-
-      expect(elasticDataSource.start).toHaveBeenCalledWith(undefined);
-    });
-
-    it('stops elastic at the first block received again and skips the blocks elastic delivers', async () => {
-      jest.advanceTimersByTime(fallbackAfterMs);
-      dataSource.checkMessagesFlow();
-      elasticDataSource.getTimestampMsToProcess.mockReturnValue(1600);
-
-      await dataSource.consumeBlock(block([{ hash: 'a', timestampMs: 2200 }], []));
-      await dataSource.consumeBlock(block([{ hash: 'b', timestampMs: 1600 }], []));
-      await dataSource.consumeBlock(block([{ hash: 'c', timestampMs: 2800 }], []));
-
-      expect(elasticDataSource.stopAt).toHaveBeenCalledTimes(1);
-      expect(elasticDataSource.stopAt).toHaveBeenCalledWith(2200);
-      expect(broadcastTimestamps()).toEqual([2200, 2800]);
-    });
-
-    it('does not deliver again the rounds elastic already delivered', async () => {
-      jest.advanceTimersByTime(fallbackAfterMs);
-      dataSource.checkMessagesFlow();
-      elasticDataSource.getTimestampMsToProcess.mockReturnValue(3400);
-
-      await dataSource.consumeBlock(block([{ hash: 'a', timestampMs: 2200 }], []));
-
-      expect(elasticDataSource.stopAt).toHaveBeenCalledWith(3400);
-      expect(broadcaster.broadcast).not.toHaveBeenCalled();
     });
   });
 

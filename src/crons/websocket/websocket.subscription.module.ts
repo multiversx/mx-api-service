@@ -64,7 +64,7 @@ export class WebsocketSubscriptionModule {
       case WebsocketSubscriptionDataSource.rabbitmq:
         return {
           module: WebsocketSubscriptionModule,
-          providers: [ElasticCustomSubscriptionsDataSource, RabbitMqCustomSubscriptionsDataSource],
+          providers: [RabbitMqCustomSubscriptionsDataSource],
         };
     }
   }
