@@ -27,7 +27,12 @@ features:
     maxSubscriptionsPerClient: 10
     broadcastIntervalMs: 600
     compressionThreshold: 1024
-    dataSource: 'elastic'
+    dataSource:
+      # 'elastic' or 'rabbitmq', only one data source is active at a time
+      type: 'elastic'
+      rabbitmq:
+        url: 'amqp://guest:guest@127.0.0.1:5672'
+        exchange: 'indexer_blocks'
   eventsNotifier:
     enabled: false
     port: 5674
