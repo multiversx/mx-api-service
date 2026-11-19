@@ -114,8 +114,13 @@ export class RabbitMqCustomSubscriptionsDataSource implements OnModuleInit, OnMo
     const events = block?.events ?? [];
 
     const firstItem = operations[0] ?? events[0];
-    const timestampMs = firstItem?.timestampMs ?? firstItem?.timestamp * 1000;
+    if (!firstItem) {
+      return undefined;
+    }
+
+    const timestampMs = firstItem.timestampMs ?? firstItem.timestamp * 1000;
     if (!timestampMs) {
+      this.logger.error(`Block '${block?.hash}' from shard '${block?.shardID}' has no timestamp`);
       return undefined;
     }
 

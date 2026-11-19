@@ -51,16 +51,22 @@ describe('RabbitMqCustomSubscriptionsDataSource', () => {
       expect(broadcastTimestamps()).toEqual([2000]);
     });
 
-    it('does not broadcast a block without a timestamp', async () => {
+    it('logs an error and does not broadcast a block without a timestamp', async () => {
+      const logError = jest.spyOn((dataSource as any).logger, 'error').mockImplementation();
+
       await dataSource.consumeBlock(block([{ hash: 'a' }], []));
 
       expect(broadcaster.broadcast).not.toHaveBeenCalled();
+      expect(logError).toHaveBeenCalledWith(`Block 'block' from shard '1' has no timestamp`);
     });
 
-    it('does not broadcast an empty block', async () => {
+    it('does not broadcast and does not log an empty block', async () => {
+      const logError = jest.spyOn((dataSource as any).logger, 'error').mockImplementation();
+
       await dataSource.consumeBlock(block([], []));
 
       expect(broadcaster.broadcast).not.toHaveBeenCalled();
+      expect(logError).not.toHaveBeenCalled();
     });
 
     it('does not broadcast when there are no subscriptions', async () => {
