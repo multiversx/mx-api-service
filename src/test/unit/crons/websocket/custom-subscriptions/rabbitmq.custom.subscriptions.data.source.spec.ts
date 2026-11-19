@@ -2,60 +2,176 @@ import { IndexerRound } from 'src/crons/websocket/custom-subscriptions/entities'
 import { RabbitMqCustomSubscriptionsDataSource } from 'src/crons/websocket/custom-subscriptions/rabbitmq/rabbitmq.custom.subscriptions.data.source';
 
 describe('RabbitMqCustomSubscriptionsDataSource', () => {
+  const fallbackAfterMs = 10_000;
+
   let broadcaster: { hasSubscriptions: jest.Mock; broadcast: jest.Mock };
+  let elasticDataSource: { start: jest.Mock; stopAt: jest.Mock; getTimestampMsToProcess: jest.Mock };
   let dataSource: RabbitMqCustomSubscriptionsDataSource;
 
   beforeEach(() => {
+    jest.useFakeTimers({ now: 1_000_000 });
+
     broadcaster = { hasSubscriptions: jest.fn().mockReturnValue(true), broadcast: jest.fn() };
-    dataSource = new RabbitMqCustomSubscriptionsDataSource(broadcaster as any, {} as any);
+    elasticDataSource = { start: jest.fn(), stopAt: jest.fn(), getTimestampMsToProcess: jest.fn() };
+    const apiConfigService = {
+      getWebsocketSubscriptionRabbitMqExchange: () => 'indexer_blocks',
+      getWebsocketSubscriptionRabbitMqFallbackAfterMs: () => fallbackAfterMs,
+    };
+
+    dataSource = new RabbitMqCustomSubscriptionsDataSource(broadcaster as any, elasticDataSource as any, apiConfigService as any);
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
   });
 
   const block = (operations: any[], events: any[]) => ({ shardID: 1, hash: 'block', round: 10, operations, events });
 
-  it('broadcasts the operations and the events of the block under their timestamp', async () => {
-    await dataSource.consumeBlock(block(
-      [{ hash: 'a', type: 'normal', operation: 'transfer', timestampMs: 1000 }],
-      [{ id: 'e', identifier: 'ESDTTransfer', timestampMs: 1000 }],
-    ));
+  const broadcastTimestamps = () => broadcaster.broadcast.mock.calls.map(([round]: [IndexerRound]) => round.timestampMs);
 
-    expect(broadcaster.broadcast).toHaveBeenCalledWith(new IndexerRound({
-      timestampMs: 1000,
-      operations: [{ hash: 'a', txHash: 'a', type: 'normal', operation: 'transfer', function: 'transfer', timestampMs: 1000 } as any],
-      events: [{ id: 'e', _id: 'e', identifier: 'ESDTTransfer', timestampMs: 1000 } as any],
-    }));
+  describe('consumeBlock', () => {
+    it('broadcasts the operations and the events of the block under their timestamp', async () => {
+      await dataSource.consumeBlock(block(
+        [{ hash: 'a', type: 'normal', operation: 'transfer', timestampMs: 1000 }],
+        [{ id: 'e', identifier: 'ESDTTransfer', timestampMs: 1000 }],
+      ));
+
+      expect(broadcaster.broadcast).toHaveBeenCalledWith(new IndexerRound({
+        timestampMs: 1000,
+        operations: [{ hash: 'a', txHash: 'a', type: 'normal', operation: 'transfer', function: 'transfer', timestampMs: 1000 } as any],
+        events: [{ id: 'e', _id: 'e', identifier: 'ESDTTransfer', timestampMs: 1000 } as any],
+      }));
+    });
+
+    it('keeps the function of the operation when it is present', async () => {
+      await dataSource.consumeBlock(block([{ hash: 'a', operation: 'transfer', function: 'swap', timestampMs: 1000 }], []));
+
+      const [round] = broadcaster.broadcast.mock.calls[0];
+      expect(round.operations[0].function).toBe('swap');
+    });
+
+    it('uses the timestamp in seconds when there is no timestamp in milliseconds', async () => {
+      await dataSource.consumeBlock(block([], [{ id: 'e', timestamp: 2 }]));
+
+      expect(broadcastTimestamps()).toEqual([2000]);
+    });
+
+    it('does not broadcast a block without a timestamp', async () => {
+      await dataSource.consumeBlock(block([{ hash: 'a' }], []));
+
+      expect(broadcaster.broadcast).not.toHaveBeenCalled();
+    });
+
+    it('does not broadcast an empty block', async () => {
+      await dataSource.consumeBlock(block([], []));
+
+      expect(broadcaster.broadcast).not.toHaveBeenCalled();
+    });
+
+    it('does not broadcast when there are no subscriptions', async () => {
+      broadcaster.hasSubscriptions.mockReturnValue(false);
+
+      await dataSource.consumeBlock(block([{ hash: 'a', timestampMs: 1000 }], []));
+
+      expect(broadcaster.broadcast).not.toHaveBeenCalled();
+    });
+
+    it('does not throw when the broadcast fails', async () => {
+      broadcaster.broadcast.mockRejectedValue(new Error('broadcast failed'));
+
+      await expect(dataSource.consumeBlock(block([{ hash: 'a', timestampMs: 1000 }], []))).resolves.toBeUndefined();
+    });
   });
 
-  it('keeps the function of the operation when it is present', async () => {
-    await dataSource.consumeBlock(block([{ hash: 'a', operation: 'transfer', function: 'swap', timestampMs: 1000 }], []));
+  describe('fallback to elastic', () => {
+    it('does not fall back while blocks are received', async () => {
+      jest.advanceTimersByTime(fallbackAfterMs - 1);
+      await dataSource.consumeBlock(block([], []));
+      jest.advanceTimersByTime(fallbackAfterMs - 1);
 
-    const [round] = broadcaster.broadcast.mock.calls[0];
-    expect(round.operations[0].function).toBe('swap');
+      dataSource.checkMessagesFlow();
+
+      expect(elasticDataSource.start).not.toHaveBeenCalled();
+    });
+
+    it('starts elastic from the last received timestamp when no block is received for a while', async () => {
+      await dataSource.consumeBlock(block([{ hash: 'a', timestampMs: 1000 }], []));
+      jest.advanceTimersByTime(fallbackAfterMs);
+
+      dataSource.checkMessagesFlow();
+      dataSource.checkMessagesFlow();
+
+      expect(elasticDataSource.start).toHaveBeenCalledTimes(1);
+      expect(elasticDataSource.start).toHaveBeenCalledWith(1000);
+    });
+
+    it('starts elastic from the latest round when no block was ever received', () => {
+      jest.advanceTimersByTime(fallbackAfterMs);
+
+      dataSource.checkMessagesFlow();
+
+      expect(elasticDataSource.start).toHaveBeenCalledWith(undefined);
+    });
+
+    it('stops elastic at the first block received again and skips the blocks elastic delivers', async () => {
+      jest.advanceTimersByTime(fallbackAfterMs);
+      dataSource.checkMessagesFlow();
+      elasticDataSource.getTimestampMsToProcess.mockReturnValue(1600);
+
+      await dataSource.consumeBlock(block([{ hash: 'a', timestampMs: 2200 }], []));
+      await dataSource.consumeBlock(block([{ hash: 'b', timestampMs: 1600 }], []));
+      await dataSource.consumeBlock(block([{ hash: 'c', timestampMs: 2800 }], []));
+
+      expect(elasticDataSource.stopAt).toHaveBeenCalledTimes(1);
+      expect(elasticDataSource.stopAt).toHaveBeenCalledWith(2200);
+      expect(broadcastTimestamps()).toEqual([2200, 2800]);
+    });
+
+    it('does not deliver again the rounds elastic already delivered', async () => {
+      jest.advanceTimersByTime(fallbackAfterMs);
+      dataSource.checkMessagesFlow();
+      elasticDataSource.getTimestampMsToProcess.mockReturnValue(3400);
+
+      await dataSource.consumeBlock(block([{ hash: 'a', timestampMs: 2200 }], []));
+
+      expect(elasticDataSource.stopAt).toHaveBeenCalledWith(3400);
+      expect(broadcaster.broadcast).not.toHaveBeenCalled();
+    });
   });
 
-  it('uses the timestamp in seconds when there is no timestamp in milliseconds', async () => {
-    await dataSource.consumeBlock(block([], [{ id: 'e', timestamp: 2 }]));
+  describe('subscribeWhenExchangeExists', () => {
+    let channel: { on: jest.Mock; checkExchange: jest.Mock; close: jest.Mock };
+    let createSubscriber: jest.Mock;
 
-    const [round] = broadcaster.broadcast.mock.calls[0];
-    expect(round.timestampMs).toBe(2000);
-  });
+    beforeEach(() => {
+      channel = { on: jest.fn(), checkExchange: jest.fn(), close: jest.fn() };
+      createSubscriber = jest.fn();
+      (dataSource as any).connection = { connection: { createChannel: jest.fn().mockResolvedValue(channel) }, createSubscriber };
+    });
 
-  it('does not broadcast an empty block', async () => {
-    await dataSource.consumeBlock(block([], []));
+    it('binds an exclusive auto-delete queue to the exchange when it exists', async () => {
+      await dataSource.subscribeWhenExchangeExists();
+      await dataSource.subscribeWhenExchangeExists();
 
-    expect(broadcaster.broadcast).not.toHaveBeenCalled();
-  });
+      expect(channel.checkExchange).toHaveBeenCalledWith('indexer_blocks');
+      expect(createSubscriber).toHaveBeenCalledTimes(1);
+      expect(createSubscriber.mock.calls[0][1]).toEqual({
+        exchange: 'indexer_blocks',
+        routingKey: '',
+        queueOptions: { exclusive: true, autoDelete: true, durable: false },
+      });
+    });
 
-  it('does not broadcast when there are no subscriptions', async () => {
-    broadcaster.hasSubscriptions.mockReturnValue(false);
+    it('checks the exchange again later when it does not exist', async () => {
+      channel.checkExchange.mockRejectedValueOnce(new Error('NOT_FOUND'));
 
-    await dataSource.consumeBlock(block([{ hash: 'a', timestampMs: 1000 }], []));
+      await dataSource.subscribeWhenExchangeExists();
 
-    expect(broadcaster.broadcast).not.toHaveBeenCalled();
-  });
+      expect(createSubscriber).not.toHaveBeenCalled();
 
-  it('does not throw when the broadcast fails', async () => {
-    broadcaster.broadcast.mockRejectedValue(new Error('broadcast failed'));
+      await jest.advanceTimersByTimeAsync(5000);
 
-    await expect(dataSource.consumeBlock(block([{ hash: 'a', timestampMs: 1000 }], []))).resolves.toBeUndefined();
+      expect(createSubscriber).toHaveBeenCalledTimes(1);
+    });
   });
 });

@@ -1,6 +1,8 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { OriginLogger } from '@multiversx/sdk-nestjs-common';
 import { CacheService } from '@multiversx/sdk-nestjs-cache';
+import { ApiConfigService } from 'src/common/api-config/api.config.service';
+import { WebsocketSubscriptionDataSource } from 'src/common/api-config/entities/websocket.subscription.data.source';
 import { ElasticQuery, ElasticService, ElasticSortOrder, QueryType } from '@multiversx/sdk-nestjs-elastic';
 import { QueryPagination } from 'src/common/entities/query.pagination';
 import { GatewayService } from 'src/common/gateway/gateway.service';
@@ -25,20 +27,50 @@ export class ElasticCustomSubscriptionsDataSource implements OnModuleInit {
   private static readonly pollingMaxAttempts = 15;
   private static readonly idleDelayMs = 1000;
 
+  private isRunning = false;
+  private stopAtTimestampMs?: number;
+  private roundsLoop?: Promise<void>;
+
   constructor(
     private readonly broadcaster: CustomSubscriptionsBroadcaster,
     private readonly indexerService: IndexerService,
     private readonly elasticService: ElasticService,
     private readonly gatewayService: GatewayService,
     private readonly cacheService: CacheService,
+    private readonly apiConfigService: ApiConfigService,
   ) { }
 
   onModuleInit() {
-    void this.processRoundsForever();
+    if (this.apiConfigService.getWebsocketSubscriptionDataSource() === WebsocketSubscriptionDataSource.elastic) {
+      this.start();
+    }
+  }
+
+  start(fromTimestampMs?: number): void {
+    if (fromTimestampMs !== undefined) {
+      this.cacheService.setLocal(CacheInfo.WsTimestampMsToProcess().key, fromTimestampMs, CacheInfo.WsTimestampMsToProcess().ttl);
+    } else {
+      this.cacheService.deleteLocal(CacheInfo.WsTimestampMsToProcess().key);
+    }
+
+    this.stopAtTimestampMs = undefined;
+    this.isRunning = true;
+
+    if (!this.roundsLoop) {
+      this.roundsLoop = this.processRoundsForever();
+    }
+  }
+
+  stopAt(timestampMs: number): void {
+    this.stopAtTimestampMs = timestampMs;
+  }
+
+  getTimestampMsToProcess(): number | undefined {
+    return this.cacheService.getLocal<number>(CacheInfo.WsTimestampMsToProcess().key);
   }
 
   private async processRoundsForever(): Promise<void> {
-    while (true) {
+    while (this.isRunning) {
       try {
         await this.processNextRound();
       } catch (error) {
@@ -47,11 +79,18 @@ export class ElasticCustomSubscriptionsDataSource implements OnModuleInit {
         await this.sleep(ElasticCustomSubscriptionsDataSource.idleDelayMs);
       }
     }
+
+    this.roundsLoop = undefined;
   }
 
   async processNextRound(): Promise<void> {
     if (!this.broadcaster.hasSubscriptions()) {
       this.cacheService.deleteLocal(CacheInfo.WsTimestampMsToProcess().key);
+      if (this.stopAtTimestampMs !== undefined) {
+        this.isRunning = false;
+        return;
+      }
+
       await this.sleep(ElasticCustomSubscriptionsDataSource.idleDelayMs);
       return;
     }
@@ -68,6 +107,11 @@ export class ElasticCustomSubscriptionsDataSource implements OnModuleInit {
       async () => await this.getLatestRoundOnChainTimestampMs(),
       CacheInfo.WsTimestampMsToProcess().ttl,
     );
+
+    if (this.stopAtTimestampMs !== undefined && roundToProcessTimestampMs >= this.stopAtTimestampMs) {
+      this.isRunning = false;
+      return;
+    }
 
     await this.sleepUntil(roundToProcessTimestampMs + stats.refreshRate, stats.refreshRate);
 

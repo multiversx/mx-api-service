@@ -1711,4 +1711,14 @@ describe('API Config', () => {
       expect(apiConfigService.getWebsocketSubscriptionRabbitMqExchange()).toEqual('indexer_blocks');
     });
   });
+
+  describe('getWebsocketSubscriptionRabbitMqFallbackAfterMs', () => {
+    it("should default to 10 seconds when no value is configured", () => {
+      jest
+        .spyOn(ConfigService.prototype, "get")
+        .mockImplementation(jest.fn(() => undefined));
+
+      expect(apiConfigService.getWebsocketSubscriptionRabbitMqFallbackAfterMs()).toEqual(10_000);
+    });
+  });
 });

@@ -33,6 +33,7 @@ features:
       rabbitmq:
         url: 'amqp://guest:guest@127.0.0.1:5672'
         exchange: 'indexer_blocks'
+        fallbackAfterMs: 10000
   eventsNotifier:
     enabled: false
     port: 5674

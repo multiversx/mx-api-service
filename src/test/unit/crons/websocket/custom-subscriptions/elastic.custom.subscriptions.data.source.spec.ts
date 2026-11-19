@@ -11,6 +11,7 @@ describe('ElasticCustomSubscriptionsDataSource', () => {
   let getTransfers: jest.Mock;
   let getEvents: jest.Mock;
   let broadcaster: { hasSubscriptions: jest.Mock; broadcast: jest.Mock };
+  let apiConfigService: { getWebsocketSubscriptionDataSource: jest.Mock };
   let dataSource: ElasticCustomSubscriptionsDataSource;
 
   beforeEach(() => {
@@ -24,9 +25,12 @@ describe('ElasticCustomSubscriptionsDataSource', () => {
 
         return localCache.get(key);
       },
+      getLocal: (key: string) => localCache.get(key),
       setLocal: (key: string, value: any) => localCache.set(key, value),
       deleteLocal: (key: string) => localCache.delete(key),
     };
+
+    apiConfigService = { getWebsocketSubscriptionDataSource: jest.fn().mockReturnValue('elastic') };
 
     const gatewayService = {
       getNetworkConfig: jest.fn().mockResolvedValue({ erd_round_duration: roundDurationMs, erd_num_shards_without_meta: shards }),
@@ -42,6 +46,7 @@ describe('ElasticCustomSubscriptionsDataSource', () => {
       {} as any,
       gatewayService as any,
       cacheService as any,
+      apiConfigService as any,
     );
 
     jest.spyOn(dataSource as any, 'isElasticDataAvailableForTimestampMs').mockResolvedValue(true);
@@ -141,6 +146,63 @@ describe('ElasticCustomSubscriptionsDataSource', () => {
       expect(localCache.has(cursorKey)).toBe(false);
       expect(getTransfers).not.toHaveBeenCalled();
       expect(broadcaster.broadcast).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('start', () => {
+    it('starts processing the rounds on init only when elastic is the data source', () => {
+      const processRoundsForever = jest.spyOn(dataSource as any, 'processRoundsForever').mockResolvedValue(undefined);
+
+      apiConfigService.getWebsocketSubscriptionDataSource.mockReturnValue('rabbitmq');
+      dataSource.onModuleInit();
+
+      expect(processRoundsForever).not.toHaveBeenCalled();
+
+      apiConfigService.getWebsocketSubscriptionDataSource.mockReturnValue('elastic');
+      dataSource.onModuleInit();
+
+      expect(processRoundsForever).toHaveBeenCalledTimes(1);
+    });
+
+    it('starts from the provided timestamp', () => {
+      jest.spyOn(dataSource as any, 'processRoundsForever').mockResolvedValue(undefined);
+
+      dataSource.start(1000);
+
+      expect(dataSource.getTimestampMsToProcess()).toBe(1000);
+    });
+
+    it('starts from the latest round when no timestamp is provided', () => {
+      jest.spyOn(dataSource as any, 'processRoundsForever').mockResolvedValue(undefined);
+      localCache.set(cursorKey, 1000);
+
+      dataSource.start();
+
+      expect(dataSource.getTimestampMsToProcess()).toBeUndefined();
+    });
+
+    it('stops before the round it has to stop at', async () => {
+      jest.useFakeTimers();
+      localCache.set(cursorKey, 1000);
+
+      dataSource.start(1000);
+      dataSource.stopAt(2200);
+      await jest.runAllTimersAsync();
+
+      expect(broadcastTimestamps()).toEqual([1000, 1600]);
+      expect(dataSource.getTimestampMsToProcess()).toBe(2200);
+    });
+
+    it('stops right away when there are no subscriptions', async () => {
+      jest.useFakeTimers();
+      broadcaster.hasSubscriptions.mockReturnValue(false);
+
+      dataSource.start(1000);
+      dataSource.stopAt(2200);
+      await jest.runAllTimersAsync();
+
+      expect(broadcaster.broadcast).not.toHaveBeenCalled();
+      expect((dataSource as any).roundsLoop).toBeUndefined();
     });
   });
 
