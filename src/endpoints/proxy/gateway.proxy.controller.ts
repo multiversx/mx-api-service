@@ -11,6 +11,7 @@ import { CacheService, NoCache } from "@multiversx/sdk-nestjs-cache";
 import { OriginLogger } from "@multiversx/sdk-nestjs-common";
 import { DeepHistoryInterceptor } from "src/interceptors/deep-history.interceptor";
 import { DisableFieldsInterceptorOnController } from "@multiversx/sdk-nestjs-http";
+import { IterateKeysRequest } from "src/common/gateway/entities/iterate-keys-request";
 
 @Controller()
 @ApiTags('proxy')
@@ -84,6 +85,19 @@ export class GatewayProxyController {
     return await this.gatewayGet(`address/${address}/esdt`, GatewayComponentRequest.addressDetails, undefined, async (error) => {
       const message = error.response?.data?.error;
       if (message && message.includes('account was not found')) {
+        throw error;
+      }
+
+      return false;
+    });
+  }
+
+  @Post('/address/iterate-keys')
+  async iterateKeys(@Body() request: IterateKeysRequest) {
+    // eslint-disable-next-line require-await
+    return await this.gatewayPost('address/iterate-keys', GatewayComponentRequest.addressIterateKeys, request, async (error) => {
+      const errorMessage = error?.response?.data?.error;
+      if (errorMessage && errorMessage.includes('account was not found')) {
         throw error;
       }
 
