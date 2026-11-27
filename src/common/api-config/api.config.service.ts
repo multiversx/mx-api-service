@@ -5,6 +5,7 @@ import { DatabaseConnectionOptions } from '../persistence/entities/connection.op
 import { StatusCheckerThresholds } from './entities/status-checker-thresholds';
 import { LogTopic } from '@multiversx/sdk-transaction-processor/lib/types/log-topic';
 import { TimeUtils } from 'src/utils/time.utils';
+import { WebsocketSubscriptionDataSource } from './entities/websocket.subscription.data.source';
 
 @Injectable()
 export class ApiConfigService {
@@ -1014,6 +1015,19 @@ export class ApiConfigService {
 
   getWebsocketSubscriptionBroadcastIntervalMs(): number {
     return this.configService.get<number>('features.websocketSubscription.broadcastIntervalMs') ?? 1000;
+  }
+
+  getWebsocketSubscriptionCompressionThreshold(): number | undefined {
+    return this.configService.get<number>('features.websocketSubscription.compressionThreshold');
+  }
+
+  getWebsocketSubscriptionDataSource(): WebsocketSubscriptionDataSource {
+    const dataSource = this.configService.get<WebsocketSubscriptionDataSource>('features.websocketSubscription.dataSource') ?? WebsocketSubscriptionDataSource.elastic;
+    if (!Object.values(WebsocketSubscriptionDataSource).includes(dataSource)) {
+      throw new Error(`Invalid features.websocketSubscription.dataSource '${dataSource}'`);
+    }
+
+    return dataSource;
   }
 
   getWebsocketMaxSubscriptionsPerInstance(): number {

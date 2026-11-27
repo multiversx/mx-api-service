@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { DynamicModule, Module } from '@nestjs/common';
 import { ScheduleModule } from '@nestjs/schedule';
 import { TransactionModule } from 'src/endpoints/transactions/transaction.module';
 import { WebsocketCronService } from './websocket.cron.service';
@@ -12,15 +12,17 @@ import { TransactionsGateway } from './transaction.gateway';
 import { PoolGateway } from './pool.gateway';
 import { EventsGateway } from './events.gateway';
 import { ConnectionHandler } from './connection.handler';
-import { RoundModule } from 'src/endpoints/rounds/round.module';
 import { TransactionsCustomGateway } from './transaction.custom.gateway';
 import { EventsCustomGateway } from './events.custom.gateway';
 import { ApiConfigModule } from 'src/common/api-config/api.config.module';
+import { WebsocketSubscriptionDataSource } from 'src/common/api-config/entities/websocket.subscription.data.source';
 import { TransfersCustomGateway } from './transfers.custom.gateway';
 import { TransferModule } from 'src/endpoints/transfers/transfer.module';
 import { ApiMetricsModule } from 'src/common/metrics/api.metrics.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { PersistenceModule } from 'src/common/persistence/persistence.module';
+import { CustomSubscriptionsBroadcaster } from './custom-subscriptions/custom.subscriptions.broadcaster';
+import { ElasticCustomSubscriptionsDataSource } from './custom-subscriptions/elastic/elastic.custom.subscriptions.data.source';
 
 @Module({
   imports: [
@@ -32,13 +34,13 @@ import { PersistenceModule } from 'src/common/persistence/persistence.module';
     NetworkModule,
     PoolModule,
     EventsModule,
-    RoundModule,
     TransferModule,
     ApiConfigModule,
     ApiMetricsModule,
   ],
   providers: [
     WebsocketCronService,
+    CustomSubscriptionsBroadcaster,
     ConnectionHandler,
     BlocksGateway,
     NetworkGateway,
@@ -50,4 +52,14 @@ import { PersistenceModule } from 'src/common/persistence/persistence.module';
     TransfersCustomGateway,
   ],
 })
-export class WebsocketSubscriptionModule { }
+export class WebsocketSubscriptionModule {
+  static forRoot(dataSource: WebsocketSubscriptionDataSource): DynamicModule {
+    switch (dataSource) {
+      case WebsocketSubscriptionDataSource.elastic:
+        return {
+          module: WebsocketSubscriptionModule,
+          providers: [ElasticCustomSubscriptionsDataSource],
+        };
+    }
+  }
+}

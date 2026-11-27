@@ -203,6 +203,7 @@ export class EsdtService {
 
   async getAllFungibleTokenPropertiesFromGateway(): Promise<TokenProperties[]> {
     let tokensIdentifiers: string[];
+
     try {
       tokensIdentifiers = await this.gatewayService.getEsdtFungibleTokens();
     } catch (error) {

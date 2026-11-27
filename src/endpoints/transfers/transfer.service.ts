@@ -22,7 +22,7 @@ export class TransferService {
     private readonly transactionService: TransactionService,
   ) { }
 
-  private sortElasticTransfers(elasticTransfers: any[], order?: SortOrder): any[] {
+  sortElasticTransfers(elasticTransfers: any[], order?: SortOrder): any[] {
     const transactionMap = new Map<string, any>();
     for (const transfer of elasticTransfers) {
       if (transfer.txHash) {
@@ -123,27 +123,7 @@ export class TransferService {
       elasticOperations = this.sortElasticTransfers(elasticOperations, filter.order);
     }
 
-    let transactions: TransactionDetailed[] = [];
-
-    for (const elasticOperation of elasticOperations) {
-      const transaction = ApiUtils.mergeObjects(new TransactionDetailed(), elasticOperation);
-      transaction.type = elasticOperation.type === 'normal' ? TransactionType.Transaction : TransactionType.SmartContractResult;
-      if (elasticOperation.relayer) {
-        transaction.relayer = elasticOperation.relayer;
-        transaction.isRelayed = true;
-      } else {
-        transaction.relayer = elasticOperation.relayerAddr;
-      }
-
-      if (transaction.type === TransactionType.SmartContractResult) {
-        delete transaction.gasLimit;
-        delete transaction.gasPrice;
-        delete transaction.gasUsed;
-        delete transaction.nonce;
-        delete transaction.round;
-      }
-      transactions.push(transaction);
-    }
+    let transactions = this.mapElasticTransfers(elasticOperations, queryOptions);
 
     const hasSenderFilter = filter.sender || (filter.senders && filter.senders.length > 0);
     const hasReceiverFilter = filter.receivers && filter.receivers.length > 0;
@@ -161,6 +141,43 @@ export class TransferService {
       transactions = await this.transactionService.getExtraDetailsForTransactions(elasticOperations, transactions, queryOptions);
     }
 
+    await this.processTransfers(transactions, queryOptions);
+
+    return transactions;
+  }
+
+  mapElasticTransfers(elasticOperations: any[], queryOptions: TransactionQueryOptions): TransactionDetailed[] {
+    const transactions: TransactionDetailed[] = [];
+
+    for (const elasticOperation of elasticOperations) {
+      const transaction = ApiUtils.mergeObjects(new TransactionDetailed(), elasticOperation);
+      transaction.type = elasticOperation.type === 'normal' ? TransactionType.Transaction : TransactionType.SmartContractResult;
+
+      if (queryOptions.withCanBeIgnoredFlag) {
+        transaction.canBeIgnored = elasticOperation.canBeIgnored;
+      }
+
+      if (elasticOperation.relayer) {
+        transaction.relayer = elasticOperation.relayer;
+        transaction.isRelayed = true;
+      } else {
+        transaction.relayer = elasticOperation.relayerAddr;
+      }
+
+      if (transaction.type === TransactionType.SmartContractResult) {
+        delete transaction.gasLimit;
+        delete transaction.gasPrice;
+        delete transaction.gasUsed;
+        delete transaction.nonce;
+        delete transaction.round;
+      }
+      transactions.push(transaction);
+    }
+
+    return transactions;
+  }
+
+  async processTransfers(transactions: TransactionDetailed[], queryOptions: TransactionQueryOptions): Promise<void> {
     await this.transactionService.processTransactions(transactions, {
       withScamInfo: queryOptions.withScamInfo ?? false,
       withUsername: queryOptions.withUsername ?? false,
@@ -168,8 +185,6 @@ export class TransferService {
     });
 
     this.transactionService.processRelayedInfo(transactions);
-
-    return transactions;
   }
 
   async getTransfersCount(filter: TransactionFilter): Promise<number> {
