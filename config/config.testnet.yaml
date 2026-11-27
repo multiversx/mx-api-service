@@ -199,7 +199,9 @@ inflation:
   - 719203
 stakingV5Inflation:
   - 930117
-# november 2025 testnet supply: 21_242_828. first year rewards = 50% * (8.75% * supply) = 930117
+  - 1013066
+# november 2025 testnet supply: 21_242_828. first year rewards = 50% * (8.757% * supply) = 930117
+# projected supply at epoch 6899 (start of year 2): 23_137_281. second year rewards = 50% * (8.757% * supply) = 1013066
 # TODO: calculate the inflation for upcoming years based on the inflation decay
 nftProcess:
   parallelism: 1
