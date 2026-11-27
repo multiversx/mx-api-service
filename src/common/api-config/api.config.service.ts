@@ -1022,12 +1022,25 @@ export class ApiConfigService {
   }
 
   getWebsocketSubscriptionDataSource(): WebsocketSubscriptionDataSource {
-    const dataSource = this.configService.get<WebsocketSubscriptionDataSource>('features.websocketSubscription.dataSource') ?? WebsocketSubscriptionDataSource.elastic;
+    const dataSource = this.configService.get<WebsocketSubscriptionDataSource>('features.websocketSubscription.dataSource.type') ?? WebsocketSubscriptionDataSource.elastic;
     if (!Object.values(WebsocketSubscriptionDataSource).includes(dataSource)) {
-      throw new Error(`Invalid features.websocketSubscription.dataSource '${dataSource}'`);
+      throw new Error(`Invalid features.websocketSubscription.dataSource.type '${dataSource}'`);
     }
 
     return dataSource;
+  }
+
+  getWebsocketSubscriptionRabbitMqUrl(): string {
+    const url = this.configService.get<string>('features.websocketSubscription.dataSource.rabbitmq.url');
+    if (!url) {
+      throw new Error('No features.websocketSubscription.dataSource.rabbitmq.url present');
+    }
+
+    return url;
+  }
+
+  getWebsocketSubscriptionRabbitMqExchange(): string {
+    return this.configService.get<string>('features.websocketSubscription.dataSource.rabbitmq.exchange') ?? 'indexer_blocks';
   }
 
   getWebsocketMaxSubscriptionsPerInstance(): number {
