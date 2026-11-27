@@ -338,7 +338,7 @@ export class EsdtAddressService {
 
   private async getAllEsdtsForAddressFromGatewayRaw(address: string): Promise<{ [key: string]: any }> {
     // eslint-disable-next-line require-await
-    const esdtResult = await this.gatewayService.get(`address/${address}/esdt`, GatewayComponentRequest.addressEsdt, async (error) => {
+    const esdtResult = await this.gatewayService.getPaged(`address/${address}/esdt`, GatewayComponentRequest.addressEsdt, 'esdts', async (error) => {
       const errorMessage = error?.response?.data?.error;
       if (errorMessage) {
         if (errorMessage.includes('account was not found')) {

@@ -13,7 +13,7 @@ import { NetworkStatus } from "./entities/network.status";
 import { NftData } from "./entities/nft.data";
 import { TokenData } from "./entities/token.data";
 import { Transaction } from "./entities/transaction";
-import { forwardRef, Inject, Injectable } from "@nestjs/common";
+import { forwardRef, HttpStatus, Inject, Injectable } from "@nestjs/common";
 import { ApiConfigService } from "../api-config/api.config.service";
 import { BinaryUtils, ContextTracker } from "@multiversx/sdk-nestjs-common";
 import { ApiService, ApiSettings } from "@multiversx/sdk-nestjs-http";
@@ -41,6 +41,11 @@ export class GatewayService {
     GatewayComponentRequest.addressNftByNonce,
     GatewayComponentRequest.vmQuery,
   ]);
+
+  private readonly maxTriePages = 1000;
+  private readonly maxTrieWalkRestarts = 1;
+  private readonly maxTrieBusyRetries = 5;
+  private readonly trieBusyRetryDelayMs = 200;
 
   constructor(
     private readonly apiConfigService: ApiConfigService,
@@ -117,12 +122,12 @@ export class GatewayService {
   }
 
   async getEsdtFungibleTokens(): Promise<string[]> {
-    const result = await this.get('network/esdt/fungible-tokens', GatewayComponentRequest.allFungibleTokens);
+    const result = await this.getPaged('network/esdt/fungible-tokens', GatewayComponentRequest.allFungibleTokens, 'tokens');
     return result.tokens;
   }
 
   async getAddressEsdtRoles(address: string): Promise<EsdtAddressRoles> {
-    const result = await this.get(`address/${address}/esdts/roles`, GatewayComponentRequest.addressEsdtAllRoles);
+    const result = await this.getPaged(`address/${address}/esdts/roles`, GatewayComponentRequest.addressEsdtAllRoles, 'roles');
     return result;
   }
 
@@ -226,6 +231,63 @@ export class GatewayService {
     this.applyDeepHistoryBlockInfoIfRequired(component, result);
 
     return result?.data?.data;
+  }
+
+  async getPaged(url: string, component: GatewayComponentRequest, itemsField: string, errorHandler?: (error: any) => Promise<boolean>): Promise<any> {
+    for (let restart = 0; ; restart++) {
+      try {
+        return await this.getAllPages(url, component, itemsField, errorHandler);
+      } catch (error: any) {
+        const isIteratorNodeUnavailable = error?.response?.error?.includes('iterator node unavailable');
+        if (!isIteratorNodeUnavailable || restart >= this.maxTrieWalkRestarts) {
+          throw error;
+        }
+      }
+    }
+  }
+
+  private async getAllPages(url: string, component: GatewayComponentRequest, itemsField: string, errorHandler?: (error: any) => Promise<boolean>): Promise<any> {
+    let result: any = undefined;
+    let pageUrl = url;
+
+    for (let page = 0; page < this.maxTriePages; page++) {
+      const data = await this.getTriePage(pageUrl, component, errorHandler);
+      if (!data) {
+        return result;
+      }
+
+      const { iteratorState, ...pageData } = data;
+      if (result === undefined) {
+        result = pageData;
+      } else if (Array.isArray(result[itemsField])) {
+        result[itemsField] = result[itemsField].concat(pageData[itemsField] ?? []);
+      } else {
+        result[itemsField] = { ...result[itemsField], ...pageData[itemsField] };
+      }
+
+      if (!iteratorState) {
+        return result;
+      }
+
+      const encodedIteratorState = Buffer.from(JSON.stringify(iteratorState)).toString('base64url');
+      pageUrl = `${url}${url.includes('?') ? '&' : '?'}iteratorState=${encodedIteratorState}`;
+    }
+
+    throw new Error(`Trie walk for '${url}' exceeded ${this.maxTriePages} pages`);
+  }
+
+  private async getTriePage(url: string, component: GatewayComponentRequest, errorHandler?: (error: any) => Promise<boolean>): Promise<any> {
+    for (let retry = 0; ; retry++) {
+      try {
+        return await this.get(url, component, errorHandler);
+      } catch (error: any) {
+        if (error?.status !== HttpStatus.TOO_MANY_REQUESTS || retry >= this.maxTrieBusyRetries) {
+          throw error;
+        }
+
+        await new Promise(resolve => setTimeout(resolve, this.trieBusyRetryDelayMs * (retry + 1)));
+      }
+    }
   }
 
   @LogPerformanceAsync(MetricsEvents.SetGatewayDuration, { argIndex: 1 })
