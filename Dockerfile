@@ -1,4 +1,4 @@
-FROM node:24.22.1-alpine AS build
+FROM node:24.22.3-alpine AS build
 
 WORKDIR /app
 RUN chown -R node:node /app
@@ -13,7 +13,7 @@ RUN [ -f src/plugins/plugin.module.ts ] || npm run init
 
 RUN npm run build
 
-FROM node:24.22.1-alpine
+FROM node:24.22.3-alpine
 
 ENV PYTHONUNBUFFERED=1
 RUN apk add --no-cache python3 py3-pip py3-ruamel.yaml git ffmpeg
